@@ -1,0 +1,928 @@
+﻿import React, { useEffect, useRef, useState, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+  matchGermanPhrase as match,
+  matchEnglishPhrase as matchEnglish,
+} from "@/lib/germanTextMatch";
+import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
+import {
+  isSpeechRecognitionSupported,
+  listenGermanOnce,
+  speechRecognitionUserHint,
+} from "@/lib/speechRecognition";
+import {
+  Volume2, Mic2, ChevronRight, CheckCircle2, X,
+  BookOpen, ArrowRight,
+  MessageSquareQuote, RotateCcw, Target, Languages
+} from "lucide-react";
+
+// Section
+function tts(text: string, rate = 0.88) {
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE"; u.rate = rate;
+  window.speechSynthesis.speak(u);
+}
+function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) => void) {
+  if (!el) return;
+  const s = el.selectionStart ?? el.value.length;
+  const e = el.selectionEnd ?? s;
+  const next = el.value.slice(0, s) + char + el.value.slice(e);
+  set(next);
+  requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + char.length, s + char.length); });
+}
+
+// Section
+function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {["Ä","ä","Ö","ö","Ü","ü","ß"].map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+// Section
+const PHASES = ["Read", "Listen", "Speak", "Type", "Translate"] as const;
+type Phase = typeof PHASES[number];
+
+function PhaseDots({ current }: { current: Phase }) {
+  const idx = PHASES.indexOf(current);
+  return (
+    <div className="grid gap-2 rounded-2xl bg-zinc-50 p-2 sm:grid-cols-5">
+      {PHASES.map((p, i) => (
+        <div
+          key={p}
+          className={cn(
+            "flex items-center justify-center gap-2 rounded-xl px-3 py-2 transition-all",
+            i === idx ? "bg-zinc-950 text-white shadow-sm" : i < idx ? "bg-white text-zinc-950" : "text-zinc-400"
+          )}
+        >
+          <div className={cn(
+            "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black transition-all",
+            i === idx ? "bg-white text-zinc-950" : i < idx ? "bg-[var(--yellow)] text-zinc-950" : "bg-zinc-200 text-zinc-500"
+          )}>
+            {i + 1}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wide">
+            {p}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Section
+// Section
+// Only advances when the user types the sentence correctly.
+function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void }) {
+  const [phase, setPhase] = useState<Phase>("Read");
+  const [input, setInput] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [enInput, setEnInput] = useState("");
+  const [enChecked, setEnChecked] = useState(false);
+  const [enAttempts, setEnAttempts] = useState(0);
+  const [speechListening, setSpeechListening] = useState(false);
+  const [speechTranscript, setSpeechTranscript] = useState("");
+  const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
+  const [speechErr, setSpeechErr] = useState<string | null>(null);
+  const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const enInputRef = useRef<HTMLInputElement>(null);
+  const speechAbortRef = useRef<AbortController | null>(null);
+  const speechSupported = useMemo(() => isSpeechRecognitionSupported(), []);
+  const englishVariant = useMemo(() => getEnglishVariant(), []);
+  const displayEnglish = useMemo(() => formatEnglishText(item.en, englishVariant), [item.en, englishVariant]);
+  const result   = useMemo(() => match(input, item.de), [input, item.de]);
+  const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
+
+  // Auto-play TTS when entering Listen phase
+  useEffect(() => {
+    if (phase === "Listen") tts(item.de);
+  }, [phase, item.de]);
+
+  // Reset speech UI when entering Speak or sentence changes
+  useEffect(() => {
+    if (phase === "Speak") {
+      speechAbortRef.current?.abort();
+      setSpeechListening(false);
+      setSpeechTranscript("");
+      setSpeechPhraseMatch(null);
+      setSpeechErr(null);
+    }
+  }, [phase, item.de]);
+
+  useEffect(() => {
+    if (phase !== "Speak") {
+      speechAbortRef.current?.abort();
+      setSpeechListening(false);
+    }
+  }, [phase]);
+
+  useEffect(() => () => speechAbortRef.current?.abort(), []);
+
+  // Focus input when entering Type or Translate phase
+  useEffect(() => {
+    if (phase === "Type")      setTimeout(() => inputRef.current?.focus(), 100);
+    if (phase === "Translate") setTimeout(() => enInputRef.current?.focus(), 100);
+  }, [phase]);
+
+  const handleSpeechCheck = () => {
+    if (speechListening || !speechSupported) return;
+    speechAbortRef.current?.abort();
+    const ac = new AbortController();
+    speechAbortRef.current = ac;
+    setSpeechErr(null);
+    setSpeechPhraseMatch(null);
+    setSpeechTranscript("");
+    setSpeechListening(true);
+    listenGermanOnce({ signal: ac.signal })
+      .then(({ transcript }) => {
+        setSpeechTranscript(transcript);
+        setSpeechPhraseMatch(match(transcript, item.de));
+      })
+      .catch((e) => {
+        if (ac.signal.aborted) return;
+        const code = e instanceof Error ? e.message : "unknown";
+        if (code !== "aborted") setSpeechErr(speechRecognitionUserHint(code));
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setSpeechListening(false);
+      });
+  };
+
+  const advance = () => {
+    const order: Phase[] = ["Read", "Listen", "Speak", "Type", "Translate"];
+    const next = order[order.indexOf(phase) + 1];
+    if (next) setPhase(next);
+  };
+
+  const checkAnswer = () => {
+    if (!input.trim() || checked) return;
+    setChecked(true);
+    tts(item.de, result.ok ? 0.88 : 0.75);
+    if (result.ok) {
+      setTimeout(advance, 900);
+    } else {
+      setAttempts(a => a + 1);
+    }
+  };
+
+  const retry = () => { setInput(""); setChecked(false); };
+
+  const checkEnAnswer = () => {
+    if (!enInput.trim() || enChecked) return;
+    setEnChecked(true);
+    if (enResult.ok) {
+      setTimeout(onNext, 900);
+    } else {
+      setEnAttempts(a => a + 1);
+    }
+  };
+
+  const retryEn = () => { setEnInput(""); setEnChecked(false); };
+  const markKnown = () => {
+    setGrade("know");
+    if (item?.id) onGradeItem?.(item.id, "know");
+    onNext();
+  };
+  const markStruggle = () => {
+    setGrade("struggle");
+    if (item?.id) onGradeItem?.(item.id, "struggle");
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      if (!event.altKey || isTyping) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "k") {
+        event.preventDefault();
+        markKnown();
+      }
+      if (key === "s") {
+        event.preventDefault();
+        markStruggle();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [item?.id, onGradeItem]);
+
+  // Encouraging messages that rotate
+  const encouragements = ["Speak at a normal pace.", "Focus on the vowel sounds.", "Try it once clearly.", "Replay if you need the model."];
+  const enc = encouragements[attempts % encouragements.length];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-3xl space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-700 shadow-[inset_0_0_0_1px_#e4e4e7]">
+            <Languages className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-black text-zinc-950">Sentence practice</p>
+            <p className="text-xs font-semibold text-zinc-500">Read, hear, say, type, then translate.</p>
+          </div>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7]">
+          <Target className="h-4 w-4 text-zinc-400" />
+          Build one useful sentence
+        </div>
+      </div>
+
+      {/* Phase dots */}
+      <PhaseDots current={phase} />
+
+      {/* Sentence display card */}
+      <div className={cn(
+        "space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
+      )}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">German sentence</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              aria-label="Mark known and skip to the next item. Shortcut Alt K"
+              className="grade-btn grade-btn-known"
+              onClick={markKnown}
+              type="button"
+            >
+              Know it
+              <kbd className="grade-kbd">Alt K</kbd>
+            </button>
+            <button
+              aria-label="Mark this item as a struggle. Shortcut Alt S"
+              className="grade-btn grade-btn-struggle"
+              onClick={markStruggle}
+              type="button"
+            >
+              Struggle
+              <kbd className="grade-kbd">Alt S</kbd>
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
+              onClick={() => tts(item.de, 0.82)}
+              type="button"
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+              Hear it
+            </button>
+          </div>
+        </div>
+        <div className={cn(
+          "text-4xl font-black leading-tight tracking-tight text-zinc-950 transition-all duration-300 sm:text-5xl",
+          phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
+          phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
+        )}>
+          {item.de}
+        </div>
+
+        {/* Section */}
+        <AnimatePresence>
+          {grade === "struggle" && (
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-700">
+              Marked as struggle. This item will stay in practice instead of being skipped next time.
+            </motion.div>
+          )}
+          {phase !== "Read" && phase !== "Translate" && (
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
+              {displayEnglish}
+            </motion.div>
+          )}
+          {phase === "Translate" && (
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
+              What does this mean in English?
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Phase-specific controls */}
+      <AnimatePresence mode="wait">
+
+        {/* READ phase */}
+        {phase === "Read" && (
+          <motion.div key="read" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Read the sentence once before listening.</p>
+            <Button onClick={advance}
+              className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+              Continue <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* LISTEN phase */}
+        {phase === "Listen" && (
+          <motion.div key="listen" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Listen once, then replay if you need it.</p>
+            <div className="flex gap-3">
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => tts(item.de)}
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
+                <Volume2 className="h-5 w-5" />
+              </motion.button>
+              <Button onClick={advance}
+                className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                Continue <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Section */}
+        {phase === "Speak" && (
+          <motion.div key="speak" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Say it out loud. {enc}</p>
+            {speechSupported ? (
+              <>
+                <Button type="button" onClick={handleSpeechCheck} disabled={speechListening}
+                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white text-sm font-black text-zinc-900 hover:bg-zinc-50 disabled:opacity-70">
+                  {speechListening ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                      </span>
+                      Listening... speak now
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <Mic2 className="h-5 w-5" /> Check with microphone
+                    </span>
+                  )}
+                </Button>
+                {speechErr ? <p className="text-center text-xs text-rose-700">{speechErr}</p> : null}
+                <AnimatePresence>
+                  {speechPhraseMatch && speechTranscript ? (
+                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 text-xs font-semibold uppercase",
+                        speechPhraseMatch.ok ? "text-emerald-500" : "text-rose-500"
+                      )}>
+                      {speechPhraseMatch.ok ? <CheckCircle2 className="h-4 w-4" /> : null}
+                      {speechPhraseMatch.ok
+                        ? speechPhraseMatch.spellingNote ? "Close match" : "Nice match"
+                        : "Try again"}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+                <p className="text-center text-[10px] text-zinc-600">
+                  Uses the browser speech recognizer (Chrome / Edge recommended). Requires microphone permission.
+                </p>
+              </>
+            ) : (
+              <p className="text-center text-xs text-zinc-500">
+                Speech recognition is not available here - practice aloud, then continue when ready.
+              </p>
+            )}
+            <div className="flex gap-3">
+              <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => tts(item.de, 0.75)}
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
+                <Volume2 className="h-5 w-5" />
+              </motion.button>
+              <Button type="button" onClick={advance}
+                className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                Continue <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* TYPE phase */}
+        {phase === "Type" && (
+          <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Now type the sentence exactly.</p>
+
+            <div className="space-y-3">
+              <Input ref={inputRef}
+                className={cn(
+                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                  checked && result.ok  ? "border-emerald-300 bg-emerald-50" :
+                  checked && !result.ok ? "border-rose-300 bg-rose-50" :
+                                          "focus:border-[var(--accent)]"
+                )}
+                placeholder="Type the sentence..."
+                value={input}
+                onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
+                onKeyDown={e => e.key === "Enter" && (checked && result.ok ? onNext() : checkAnswer())}
+                disabled={checked && result.ok}
+              />
+              <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />
+            </div>
+
+            {/* Feedback */}
+            <AnimatePresence>
+              {checked && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className={cn("rounded-lg border p-5 text-center space-y-2",
+                    result.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                  {result.ok ? (
+                    <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold text-lg">
+                      <CheckCircle2 className="h-5 w-5" />
+                      {result.spellingNote ? "Close enough - watch the spelling next time" : "Perfect!"}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-rose-700 font-semibold">Not quite - try again</div>
+                      <div className="text-xs text-zinc-500">Target: <span className="text-zinc-950 font-semibold">{item.de}</span></div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Action button */}
+            {checked && !result.ok ? (
+              <div className="flex gap-3">
+                <Button onClick={retry} variant="outline"
+                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+                <Button onClick={onNext}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  Skip
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={checked && result.ok ? advance : checkAnswer}
+                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                {checked && result.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+              </Button>
+            )}
+          </motion.div>
+        )}
+
+        {/* TRANSLATE phase */}
+        {phase === "Translate" && (
+          <motion.div key="translate" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Now type the English translation.</p>
+            <div className="space-y-3">
+              <Input ref={enInputRef}
+                className={cn(
+                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                  enChecked && enResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                  enChecked && !enResult.ok ? "border-rose-300 bg-rose-50" :
+                                              "focus:border-[var(--accent)]"
+                )}
+                placeholder="Type the English meaning..."
+                value={enInput}
+                onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
+                onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? onNext() : checkEnAnswer())}
+                disabled={enChecked && enResult.ok}
+              />
+            </div>
+            <AnimatePresence>
+              {enChecked && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className={cn("rounded-lg border p-5 text-center space-y-2",
+                    enResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                  {enResult.ok ? (
+                    <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold text-lg">
+                      <CheckCircle2 className="h-5 w-5" /> That's it!
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-rose-700 font-semibold">Not quite</div>
+                      <div className="text-xs text-zinc-500">Answer: <span className="text-zinc-950 font-semibold">{displayEnglish}</span></div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {enChecked && !enResult.ok ? (
+              <div className="flex gap-3">
+                <Button onClick={retryEn} variant="outline"
+                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+                <Button onClick={onNext}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  Skip
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={enChecked && enResult.ok ? onNext : checkEnAnswer}
+                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                {enChecked && enResult.ok ? <>Continue <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+              </Button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// Section
+function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void }) {
+  const lines: any[] = dialogue?.lines ?? [];
+  const [lineIdx, setLineIdx] = useState(0);
+  const [input, setInput] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const line = lines[lineIdx];
+  const isLast = lineIdx >= lines.length - 1;
+  const result = useMemo(() => match(input, line?.de ?? ""), [input, line]);
+
+  useEffect(() => { if (line?.de) tts(line.de); }, [lineIdx]);
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, [lineIdx]);
+
+  if (!line) { onNext(); return null; }
+
+  const checkLine = () => {
+    if (!input.trim() || checked) return;
+    setChecked(true);
+    tts(line.de);
+    if (result.ok) setTimeout(nextLine, 900);
+  };
+
+  const nextLine = () => {
+    if (isLast) { onNext(); return; }
+    setLineIdx(i => i + 1);
+    setInput("");
+    setChecked(false);
+    setGrade(null);
+  };
+
+  const lineGradeId = line?.id ?? `dialogue-${dialogue?.title ?? "line"}-${lineIdx}-${line?.de ?? ""}`;
+  const markKnown = () => {
+    setGrade("know");
+    onGradeItem?.(lineGradeId, "know");
+    nextLine();
+  };
+  const markStruggle = () => {
+    setGrade("struggle");
+    onGradeItem?.(lineGradeId, "struggle");
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      if (!event.altKey || isTyping) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "k") {
+        event.preventDefault();
+        markKnown();
+      }
+      if (key === "s") {
+        event.preventDefault();
+        markStruggle();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lineGradeId, onGradeItem]);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 w-full max-w-2xl">
+      <div className="text-center space-y-1">
+        <Badge variant="outline" className="rounded-full border-pink-500/30 bg-pink-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-pink-300">
+          <MessageSquareQuote className="mr-1.5 h-3 w-3" /> {dialogue.title}
+        </Badge>
+        <div className="text-xs text-zinc-600">{lineIdx + 1} / {lines.length}</div>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          <button
+            aria-label="Mark known and skip this line. Shortcut Alt K"
+            className="grade-btn grade-btn-known"
+            onClick={markKnown}
+            type="button"
+          >
+            Know it
+            <kbd className="grade-kbd">Alt K</kbd>
+          </button>
+          <button
+            aria-label="Mark this line as a struggle. Shortcut Alt S"
+            className="grade-btn grade-btn-struggle"
+            onClick={markStruggle}
+            type="button"
+          >
+            Struggle
+            <kbd className="grade-kbd">Alt S</kbd>
+          </button>
+        </div>
+      </div>
+
+      {/* Conversation so far */}
+      <div className="space-y-3 max-h-48 overflow-y-auto">
+        {lines.slice(0, lineIdx).map((l: any, i: number) => (
+          <div key={i} className={cn("flex gap-3", l.speaker === "B" && "flex-row-reverse")}>
+            <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-500 shrink-0">{l.speaker}</div>
+            <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 space-y-0.5",
+              l.speaker === "A" ? "bg-white border border-zinc-200" : "bg-zinc-50 border border-zinc-200")}>
+              <div className="text-sm font-bold text-zinc-950">{l.de}</div>
+              <div className="text-xs text-zinc-500">{l.en}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Current line to type */}
+      <div className={cn("rounded-lg border p-6 space-y-3",
+        line.speaker === "A" ? "border-zinc-200 bg-white" : "border-zinc-200 bg-white")}>
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-400">{line.speaker}</div>
+          <div className="text-base text-zinc-500 italic">{line.en}</div>
+          <button onClick={() => tts(line.de)} className="ml-auto text-zinc-600 hover:text-zinc-950 transition-colors">
+            <Volume2 className="h-4 w-4" />
+          </button>
+        </div>
+        <Input ref={inputRef}
+          className={cn("h-12 text-base font-bold rounded-lg border-zinc-200 bg-white px-5 text-zinc-950 transition-all placeholder:text-zinc-400",
+            checked && result.ok ? "border-emerald-500/40" : checked ? "border-rose-500/40" : "focus:border-[var(--accent)]")}
+          placeholder="Type this line..."
+          value={input}
+          onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
+          onKeyDown={e => e.key === "Enter" && (checked && result.ok ? nextLine() : checkLine())}
+          disabled={checked && result.ok}
+        />
+        <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />
+      </div>
+
+      <AnimatePresence>
+        {checked && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            className={cn("rounded-lg border p-4 text-center",
+              result.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
+            {result.ok ? <span className="font-semibold text-sm">Spot on!</span>
+              : <div className="space-y-1"><div className="font-semibold text-sm">Not quite</div><div className="text-xs text-zinc-400">{line.de}</div></div>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex gap-3">
+        {checked && !result.ok && (
+          <Button onClick={() => { setInput(""); setChecked(false); }} variant="outline"
+            className="flex-1 h-12 rounded-lg border-zinc-200 bg-white text-zinc-700 font-semibold">
+            <RotateCcw className="mr-2 h-4 w-4" /> Retry
+          </Button>
+        )}
+        <Button onClick={checked && result.ok ? nextLine : checkLine}
+          className={cn("flex-1 h-12 rounded-lg text-sm font-semibold transition-all",
+            checked && result.ok ? "bg-zinc-950 text-white"
+            : "bg-zinc-950 text-white")}>
+          {checked && result.ok ? (isLast ? "Done" : "Next line") : "Check"}
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Section
+function CompleteScreen({ onNext }: { onNext: () => void }) {
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 text-center py-8 w-full max-w-xl">
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 12 }}
+        className="hidden"></motion.div>
+      <div className="space-y-2">
+        <div className="text-4xl font-semibold tracking-tight text-zinc-950">Lesson complete</div>
+        <div className="text-zinc-500 text-sm">Good work. Review this again later to keep it active.</div>
+      </div>
+      <Button onClick={onNext}
+        className="h-12 w-full rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">
+        Finish <ArrowRight className="ml-2 h-5 w-5" />
+      </Button>
+    </motion.div>
+  );
+}
+
+// Section
+const JOURNAL_STORAGE_KEY = "german-lab-journal";
+
+function saveJournalEntry(entry: object) {
+  try {
+    const raw = localStorage.getItem(JOURNAL_STORAGE_KEY);
+    const log = raw ? JSON.parse(raw) : [];
+    log.unshift(entry);
+    localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(log.slice(0, 100)));
+  } catch {}
+}
+
+function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
+  stepsCompleted: number; totalSteps: number; onDone: () => void;
+}) {
+  const [wentWell, setWentWell]       = useState("");
+  const [struggling, setStruggling]   = useState("");
+  const [mood, setMood]               = useState<string | null>(null);
+  const [saved, setSaved]             = useState(false);
+
+  const moods = [
+    { emoji: "High", label: "On fire" },
+    { emoji: "Good", label: "Good" },
+    { emoji: "Okay", label: "Okay" },
+    { emoji: "Tough", label: "Tough" },
+  ];
+
+  const save = () => {
+    saveJournalEntry({
+      date: new Date().toISOString(),
+      stepsCompleted,
+      totalSteps,
+      mood,
+      wentWell: wentWell.trim(),
+      struggling: struggling.trim(),
+    });
+    setSaved(true);
+    setTimeout(onDone, 800);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50/95 p-6 backdrop-blur-sm"
+    >
+      <Card className="w-full max-w-lg space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+        <div className="text-center space-y-1">
+          <div className="text-2xl"></div>
+          <div className="text-xl font-semibold text-zinc-950">Quick reflection</div>
+          <div className="text-xs text-zinc-500">
+            {stepsCompleted} of {totalSteps} steps done - takes 30 seconds
+          </div>
+        </div>
+
+        {/* Mood */}
+        <div className="space-y-2">
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">How did it feel?</div>
+          <div className="flex gap-2">
+            {moods.map(m => (
+              <motion.button key={m.label} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+                onClick={() => setMood(m.label)}
+                className={cn(
+                  "flex-1 py-3 rounded-2xl border text-center transition-all",
+                  mood === m.label
+                    ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                    : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50"
+                )}>
+                <div className="text-xl">{m.emoji}</div>
+                <div className="text-[9px] font-semibold uppercase tracking-wide mt-0.5">{m.label}</div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* What went well */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+            What clicked today?
+          </label>
+          <textarea
+            value={wentWell}
+            onChange={e => setWentWell(e.target.value)}
+            placeholder="e.g. the cafe dialogue felt natural, articles are making more sense..."
+            rows={2}
+            className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
+          />
+        </div>
+
+        {/* Struggling */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+            Any words or phrases giving you trouble?
+          </label>
+          <textarea
+            value={struggling}
+            onChange={e => setStruggling(e.target.value)}
+            placeholder="e.g. Wochenende, separable verbs, der/die/das..."
+            rows={2}
+            className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <Button onClick={onDone} variant="ghost"
+            className="h-12 flex-1 rounded-lg border border-zinc-200 bg-white text-xs font-semibold uppercase text-zinc-500 hover:bg-zinc-50">
+            Skip
+          </Button>
+          <Button onClick={save} disabled={saved}
+            className="h-12 flex-1 rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">
+            {saved ? "Saved" : "Save & exit"}
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+// Section
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem }: any) {
+  const [index, setIndex] = useState(0);
+
+  const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
+  const step = safeSteps[Math.min(index, safeSteps.length - 1)];
+  const progress = safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
+  const next = () => { if (index < safeSteps.length - 1) setIndex(i => i + 1); else onComplete(); };
+
+  const handleCancel = () => onCancel(index);
+  const skipStep = () => next();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey || event.key !== "ArrowRight") return;
+      event.preventDefault();
+      skipStep();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [index, safeSteps.length]);
+
+  const kind: string = step?.type || step?.kind || "complete";
+
+  return (
+    <div className="guided-session fixed inset-0 z-[500] flex flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-950 selection:bg-[var(--accent-dim)]">
+
+      {/* Header */}
+      <header className="relative z-10 flex items-center gap-4 border-b border-zinc-200 bg-white px-6 py-4">
+        <div className="flex shrink-0 items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Lesson</div>
+            <div className="text-base font-semibold tracking-tight text-zinc-950">
+              {index + 1} <span className="text-zinc-500">of {steps.length}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="mb-1.5 flex justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            <span>Progress</span><span className="text-zinc-700">{progress}%</span>
+          </div>
+          <Progress value={progress} variant="teal" className="h-1.5" />
+        </div>
+        {import.meta.env.DEV && (
+          <Button variant="ghost" onClick={skipStep}
+            className="skip-step-btn">
+            <span>Skip</span>
+            <kbd>Alt →</kbd>
+          </Button>
+        )}
+        <Button variant="ghost" onClick={handleCancel}
+          className="h-9 shrink-0 rounded-lg px-3 text-zinc-500 transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-900 hover:shadow-[0_0_8px_0_rgba(161,161,170,0.6)]">
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </header>
+
+      {/* Main */}
+      <main className="relative z-10 flex flex-1 items-center justify-center overflow-y-auto p-6">
+        <AnimatePresence mode="wait">
+          <motion.div key={index}
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="flex w-full max-w-4xl justify-center">
+            <Card className="relative w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_22px_60px_rgba(25,27,38,0.08)] sm:p-7">
+              <div className="relative z-10 flex flex-col items-center">
+                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} />}
+                {kind === "dialogue"  && <DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} />}
+                {kind === "complete"  && <CompleteScreen onNext={onComplete} />}
+                {!["sentence","dialogue","complete"].includes(kind) && (
+                  <div className="py-12 text-center space-y-4">
+                    <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>
+                    <Button onClick={next} className="h-12 rounded-lg bg-zinc-950 px-8 text-sm font-semibold text-white hover:bg-zinc-800">
+                      Continue <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+    </div>
+  );
+}
+
+
+
