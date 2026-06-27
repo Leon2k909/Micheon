@@ -1,12 +1,13 @@
 import React, { useId, useEffect } from "react";
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { VOCAB_MILESTONES } from "@/lib/data";
+import { effectsReduced } from "@/lib/effects";
 
 const VOCAB_TARGET = 16000;
 
 function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number; stroke?: number }) {
   const id = useId();
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() || effectsReduced();
   const r = (size - stroke) / 2;
   const circ = r * 2 * Math.PI;
   const dotR = stroke * 0.6;

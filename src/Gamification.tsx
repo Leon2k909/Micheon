@@ -14,6 +14,7 @@ import {
   Target,
   Trophy,
   LogOut,
+  Zap,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -44,6 +45,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 }
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { applyTheme, getTheme, type Theme } from "@/lib/theme";
+import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
@@ -292,6 +294,7 @@ export default function GamificationPanel({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [theme, setTheme] = useState<Theme>(getTheme);
+  const [effects, setEffects] = useState<Effects>(getEffects);
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -335,6 +338,12 @@ export default function GamificationPanel({
     const next: Theme = theme === "dark" ? "light" : "dark";
     applyTheme(next);
     setTheme(next);
+  };
+
+  const toggleEffects = () => {
+    const next: Effects = effects === "lite" ? "full" : "lite";
+    applyEffects(next);
+    setEffects(next);
   };
 
   const updateEnglishVariant = (value: EnglishVariant) => {
@@ -466,6 +475,31 @@ export default function GamificationPanel({
                   {theme === "dark" ? "Dark mode" : "Light mode"}
                 </span>
                 <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">Change</span>
+              </button>
+
+              <button
+                aria-pressed={effects === "lite"}
+                aria-label="Toggle reduced effects"
+                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                onClick={toggleEffects}
+                type="button"
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                    <Zap className="h-4 w-4" /> Reduce effects
+                  </span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                    Turns off glows and continuous animations to save battery on slower devices.
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                    effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                  )}
+                >
+                  {effects === "lite" ? "On" : "Off"}
+                </span>
               </button>
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">

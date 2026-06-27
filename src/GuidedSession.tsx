@@ -11,6 +11,7 @@ import {
   matchEnglishPhrase as matchEnglish,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
+import { effectsReduced } from "@/lib/effects";
 import {
   isSpeechRecognitionSupported,
   listenGermanOnce,
@@ -758,7 +759,7 @@ const CONFETTI_COLORS = ["#7834f7", "#a177ff", "#46d59a", "#ffd233", "#ff8528"];
 
 /** One-shot confetti burst — pure framer-motion, no extra deps. Skipped for reduced-motion. */
 function Confetti({ count = 40 }: { count?: number }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() || effectsReduced();
   const pieces = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({

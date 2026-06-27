@@ -17,6 +17,7 @@ import {
 
 import { Part } from "@/lib/types";
 import { isBulkPartKey } from "@/lib/contentBank";
+import { AnimatedBars } from "@/components/AnimatedBars";
 
 type ProgressStats = {
   totalXp: number;
@@ -351,13 +352,13 @@ export function DashboardView({
           { icon: Gamepad2, label: "Practice mastery", value: gameMasteryCount.toLocaleString(), tab: "games" },
         ].map((item) => (
           <button
-            className="card card-hover flex items-center gap-4 p-5 text-left"
+            className="card card-hover eq-host flex items-center gap-4 p-5 text-left"
             key={item.label}
             onClick={() => setActiveTab(item.tab)}
             type="button"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-[var(--accent)]">
-              <item.icon className="h-5 w-5" />
+              {item.icon === BarChart3 ? <AnimatedBars className="h-5 w-5" /> : <item.icon className="h-5 w-5" />}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-black text-[var(--text-1)]">{item.label}</p>

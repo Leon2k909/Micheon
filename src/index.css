@@ -213,6 +213,37 @@ a { color: inherit; text-decoration: none; }
   .continue-glow::after { animation: none; }
 }
 
+/* ── Equalizer bars: dance when the hosting card (.eq-host) is hovered ── */
+.eq-bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.eq-host:hover .eq-bar {
+  animation: eq-bounce 0.95s ease-in-out infinite;
+}
+
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.45); }
+  50%      { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-host:hover .eq-bar { animation: none; }
+}
+
+/* ── Reduce-effects ("lite") mode: drop the heavy, always-running effects ──
+   The animated conic gradient + blur halo are replaced by a cheap, static
+   accent ring/shadow that's painted once. */
+[data-fx="lite"] .continue-glow::before,
+[data-fx="lite"] .continue-glow::after {
+  display: none;
+}
+
+[data-fx="lite"] .eq-host:hover .eq-bar {
+  animation: none;
+}
+
 .ghost-btn {
   border: 1px solid transparent;
   border-radius: 12px;
