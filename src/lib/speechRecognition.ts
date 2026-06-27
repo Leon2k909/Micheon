@@ -41,11 +41,21 @@ export function speechRecognitionUserHint(errorCode: string): string {
 export type ListenGermanOptions = {
   /** Abort to cancel listening early */
   signal?: AbortSignal;
+  /** Live partial transcripts as the user speaks (for on-screen feedback). */
+  onInterim?: (text: string) => void;
+  /** Fires once the recognizer confirms the microphone is actually capturing audio. */
+  onAudioStart?: () => void;
+  /** Hard stop if nothing comes back, so the UI never hangs on "Listening...". Default 12s. */
+  timeoutMs?: number;
 };
 
 /**
  * Listen for a single German utterance and return the best transcript.
  * Cancels any in-progress speech synthesis to reduce echo.
+ *
+ * Uses interim results so callers can show what is being heard live — this is
+ * also the clearest way to tell a "mic not capturing" problem (no interim text,
+ * no audio-start) apart from a "captured but didn't match" problem.
  */
 export function listenGermanOnce(options?: ListenGermanOptions): Promise<{ transcript: string; confidence: number }> {
   return new Promise((resolve, reject) => {
@@ -61,15 +71,24 @@ export function listenGermanOnce(options?: ListenGermanOptions): Promise<{ trans
 
     const rec = new Ctor();
     rec.lang = "de-DE";
-    rec.interimResults = false;
+    rec.interimResults = true;
     rec.continuous = false;
     rec.maxAlternatives = 1;
 
     let settled = false;
+    let gotAudio = false;
+    let bestInterim = "";
+    const timeoutMs = options?.timeoutMs ?? 12000;
+
+    const watchdog = setTimeout(() => {
+      // Nothing resolved in time — most often the mic captured no audio.
+      settle(() => reject(new Error(gotAudio ? "no-speech" : "audio-capture")));
+    }, timeoutMs);
 
     const settle = (fn: () => void) => {
       if (settled) return;
       settled = true;
+      clearTimeout(watchdog);
       try {
         rec.stop();
       } catch {
@@ -93,16 +112,33 @@ export function listenGermanOnce(options?: ListenGermanOptions): Promise<{ trans
 
     options?.signal?.addEventListener("abort", onAbort, { once: true });
 
+    rec.onaudiostart = () => {
+      gotAudio = true;
+      options?.onAudioStart?.();
+    };
+
     rec.onresult = (event: SpeechRecognitionEvent) => {
-      const last = event.results[event.results.length - 1];
-      if (!last?.[0]) return;
-      const alt = last[0];
-      settle(() =>
-        resolve({
-          transcript: String(alt.transcript ?? "").trim(),
-          confidence: typeof alt.confidence === "number" ? alt.confidence : 0,
-        })
-      );
+      let finalTranscript = "";
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const res = event.results[i];
+        const text = String(res?.[0]?.transcript ?? "");
+        if (res.isFinal) finalTranscript += text;
+        else interim += text;
+      }
+      if (interim.trim()) {
+        bestInterim = interim.trim();
+        options?.onInterim?.(bestInterim);
+      }
+      if (finalTranscript.trim()) {
+        const alt = event.results[event.results.length - 1]?.[0];
+        settle(() =>
+          resolve({
+            transcript: finalTranscript.trim(),
+            confidence: typeof alt?.confidence === "number" ? alt.confidence : 0,
+          })
+        );
+      }
     };
 
     rec.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -111,7 +147,14 @@ export function listenGermanOnce(options?: ListenGermanOptions): Promise<{ trans
     };
 
     rec.onend = () => {
-      if (!settled) settle(() => reject(new Error("no-speech")));
+      if (settled) return;
+      // Ended without a final result. If we caught interim words, use them;
+      // otherwise report whether the mic ever delivered audio.
+      if (bestInterim) {
+        settle(() => resolve({ transcript: bestInterim, confidence: 0 }));
+      } else {
+        settle(() => reject(new Error(gotAudio ? "no-speech" : "audio-capture")));
+      }
     };
 
     try {

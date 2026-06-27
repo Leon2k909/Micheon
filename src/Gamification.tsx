@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
   BookOpen,
   CalendarDays,
+  Camera,
   Check,
   Flame,
   Moon,
@@ -15,6 +16,32 @@ import {
   LogOut,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
+
+/** Read an image file, downscale it, and return a small JPEG data URL for local storage. */
+async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = dataUrl;
+  });
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { applyTheme, getTheme, type Theme } from "@/lib/theme";
 import { ActivityCard } from "@/components/lab/ActivityCard";
@@ -267,6 +294,27 @@ export default function GamificationPanel({
   const [theme, setTheme] = useState<Theme>(getTheme);
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(user.avatar);
+
+  const onAvatarFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await fileToAvatarDataUrl(file);
+      setAvatarPreview(dataUrl);
+      setAuthUser({ ...user, avatar: dataUrl });
+      window.location.reload();
+    } catch {
+      /* ignore unreadable image */
+    }
+  };
+
+  const removeAvatar = () => {
+    setAvatarPreview(undefined);
+    setAuthUser({ ...user, avatar: undefined });
+    window.location.reload();
+  };
   const { cur, nxt, pct, into, needed } = getLevelInfo(stats.totalXp ?? 0);
   const words = (stats.totalReviews || 0) + (stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
@@ -306,8 +354,8 @@ export default function GamificationPanel({
                 Manage your name, theme, and words learned outside German Lab.
               </p>
             </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)]">
-              {user.name?.[0]?.toUpperCase() ?? "?"}
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)]">
+              {avatarPreview ? <img src={avatarPreview} alt="" className="h-full w-full object-cover" /> : (user.name?.[0]?.toUpperCase() ?? "?")}
             </div>
           </div>
         </section>
@@ -335,11 +383,23 @@ export default function GamificationPanel({
           <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Account details</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Your display name and login email.</p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Your photo, display name, and login email.</p>
+              <div className="mt-5 flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  aria-label="Change profile photo"
+                  className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)] ring-2 ring-[var(--surface)]"
+                >
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    user.name?.[0]?.toUpperCase() ?? "?"
+                  )}
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <Camera className="h-5 w-5" />
+                  </span>
+                </button>
                 <div className="min-w-0 flex-1">
                   {isEditingName ? (
                     <div className="flex gap-2">
@@ -372,6 +432,23 @@ export default function GamificationPanel({
                     </div>
                   )}
                 </div>
+              </div>
+
+              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => avatarInputRef.current?.click()} className="ghost-btn h-9 px-3 text-xs">
+                  {avatarPreview ? "Change photo" : "Upload photo"}
+                </button>
+                {avatarPreview && (
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    className="h-9 rounded-xl px-3 text-xs font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
+                  >
+                    Remove
+                  </button>
+                )}
+                <span className="text-[11px] font-semibold text-[var(--text-3)]">Square images look best — stored on this device.</span>
               </div>
             </div>
 

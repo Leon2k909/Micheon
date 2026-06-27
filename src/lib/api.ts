@@ -7,6 +7,17 @@ import {
 } from "./data";
 import { Blueprint, Part, VocabItem, Dialogue, Phrase } from "./types";
 
+/** fetch() that always rejects/aborts after `ms`, so a slow host can't hang a load. */
+async function fetchWithTimeout(url: string, ms = 6000, init?: RequestInit) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function normalize(text: string) {
   return String(text ?? "").toLowerCase().trim().replace(/[.!?]/g, "").replace(/\s+/g, " ");
 }
@@ -118,7 +129,7 @@ async function fetchFromKaikki(word: string) {
   const urls = buildKaikkiJsonUrlCandidates(word);
   for (const url of urls) {
     try {
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url, 5000);
       if (!response.ok) continue;
       const text = await response.text();
       const parsed = parseJsonl(text);
@@ -236,7 +247,7 @@ async function fetchFromWiktionary(word: string) {
   if (!word) return null;
   try {
     const url = `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`;
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, 5000);
     if (!response.ok) return null;
     const data = await response.json();
     const deDefs = (data as any)?.de ?? [];
@@ -256,7 +267,7 @@ async function fetchFromWiktionary(word: string) {
 export async function fetchRemoteGermanWordCatalog() {
   for (const url of REMOTE_GERMAN_WORD_LIST_URLS) {
     try {
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url, 8000);
       if (!response.ok) continue;
       const contentType = response.headers.get("content-type") ?? "";
 
@@ -356,7 +367,7 @@ export async function fetchWokabularyWordBank() {
 
   for (const url of WOKABULARY_GERMAN_ENGLISH_CSV_URLS) {
     try {
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url, 6000);
       if (!response.ok) continue;
 
       const text = await response.text();

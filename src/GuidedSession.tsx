@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -30,6 +30,40 @@ function tts(text: string, rate = 0.88) {
   u.lang = "de-DE"; u.rate = rate;
   window.speechSynthesis.speak(u);
 }
+
+// ── Subtle game-feel sounds (Web Audio, no assets) ────────────────
+let _audioCtx: AudioContext | null = null;
+function getAudioCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const Ctor = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctor) return null;
+    if (!_audioCtx) _audioCtx = new Ctor();
+    return _audioCtx;
+  } catch { return null; }
+}
+function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", gain = 0.05) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") ctx.resume();
+    const now = ctx.currentTime;
+    freqs.forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = f;
+      const start = now + i * dur * 0.85;
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(start); osc.stop(start + dur);
+    });
+  } catch { /* ignore */ }
+}
+const playCorrect = () => playTone([523.25, 783.99], 0.12, "sine", 0.045);   // C5 → G5 ding
+const playWrong = () => playTone([180], 0.18, "triangle", 0.04);             // soft low thunk
 function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) => void) {
   if (!el) return;
   const s = el.selectionStart ?? el.value.length;
@@ -88,7 +122,13 @@ function PhaseDots({ current }: { current: Phase }) {
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void }) {
+function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
+  const shakeControls = useAnimationControls();
+  const reactToAnswer = (ok: boolean) => {
+    onAnswer?.(ok);
+    if (ok) shakeControls.start({ scale: [1, 1.05, 1], transition: { duration: 0.32 } });
+    else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
+  };
   const [phase, setPhase] = useState<Phase>("Read");
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -150,10 +190,15 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
     setSpeechPhraseMatch(null);
     setSpeechTranscript("");
     setSpeechListening(true);
-    listenGermanOnce({ signal: ac.signal })
+    listenGermanOnce({
+      signal: ac.signal,
+      onInterim: (text) => { if (!ac.signal.aborted) setSpeechTranscript(text); },
+    })
       .then(({ transcript }) => {
         setSpeechTranscript(transcript);
-        setSpeechPhraseMatch(match(transcript, item.de));
+        const m = match(transcript, item.de);
+        setSpeechPhraseMatch(m);
+        reactToAnswer(m.ok);
       })
       .catch((e) => {
         if (ac.signal.aborted) return;
@@ -174,6 +219,7 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
+    reactToAnswer(result.ok);
     tts(item.de, result.ok ? 0.88 : 0.75);
     if (result.ok) {
       setTimeout(advance, 900);
@@ -187,6 +233,7 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
   const checkEnAnswer = () => {
     if (!enInput.trim() || enChecked) return;
     setEnChecked(true);
+    reactToAnswer(enResult.ok);
     if (enResult.ok) {
       setTimeout(onNext, 900);
     } else {
@@ -326,7 +373,7 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">Read the sentence once before listening.</p>
             <Button onClick={advance}
-              className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+              className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
               Continue <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
@@ -344,7 +391,7 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
                 <Volume2 className="h-5 w-5" />
               </motion.button>
               <Button onClick={advance}
-                className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -375,6 +422,11 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
                   )}
                 </Button>
                 {speechErr ? <p className="text-center text-xs text-rose-700">{speechErr}</p> : null}
+                {speechTranscript ? (
+                  <p className="text-center text-xs text-zinc-500">
+                    Heard: <span className="font-semibold text-zinc-800">"{speechTranscript}"</span>
+                  </p>
+                ) : null}
                 <AnimatePresence>
                   {speechPhraseMatch && speechTranscript ? (
                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -405,7 +457,7 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
                 <Volume2 className="h-5 w-5" />
               </motion.button>
               <Button type="button" onClick={advance}
-                className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -419,19 +471,21 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
             <p className="text-center text-sm font-semibold text-zinc-500">Now type the sentence exactly.</p>
 
             <div className="space-y-3">
-              <Input ref={inputRef}
-                className={cn(
-                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                  checked && result.ok  ? "border-emerald-300 bg-emerald-50" :
-                  checked && !result.ok ? "border-rose-300 bg-rose-50" :
-                                          "focus:border-[var(--accent)]"
-                )}
-                placeholder="Type the sentence..."
-                value={input}
-                onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
-                onKeyDown={e => e.key === "Enter" && (checked && result.ok ? onNext() : checkAnswer())}
-                disabled={checked && result.ok}
-              />
+              <motion.div animate={shakeControls}>
+                <Input ref={inputRef}
+                  className={cn(
+                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                    checked && result.ok  ? "border-emerald-300 bg-emerald-50" :
+                    checked && !result.ok ? "border-rose-300 bg-rose-50" :
+                                            "focus:border-[var(--accent)]"
+                  )}
+                  placeholder="Type the sentence..."
+                  value={input}
+                  onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
+                  onKeyDown={e => e.key === "Enter" && (checked && result.ok ? onNext() : checkAnswer())}
+                  disabled={checked && result.ok}
+                />
+              </motion.div>
               <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />
             </div>
 
@@ -483,19 +537,21 @@ function SentenceExercise({ item, onNext, onGradeItem }: { item: any; onNext: ()
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">Now type the English translation.</p>
             <div className="space-y-3">
-              <Input ref={enInputRef}
-                className={cn(
-                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                  enChecked && enResult.ok  ? "border-emerald-300 bg-emerald-50" :
-                  enChecked && !enResult.ok ? "border-rose-300 bg-rose-50" :
-                                              "focus:border-[var(--accent)]"
-                )}
-                placeholder="Type the English meaning..."
-                value={enInput}
-                onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
-                onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? onNext() : checkEnAnswer())}
-                disabled={enChecked && enResult.ok}
-              />
+              <motion.div animate={shakeControls}>
+                <Input ref={enInputRef}
+                  className={cn(
+                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                    enChecked && enResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                    enChecked && !enResult.ok ? "border-rose-300 bg-rose-50" :
+                                                "focus:border-[var(--accent)]"
+                  )}
+                  placeholder="Type the English meaning..."
+                  value={enInput}
+                  onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
+                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? onNext() : checkEnAnswer())}
+                  disabled={enChecked && enResult.ok}
+                />
+              </motion.div>
             </div>
             <AnimatePresence>
               {enChecked && (
@@ -698,19 +754,106 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
 }
 
 // Section
+const CONFETTI_COLORS = ["#7834f7", "#a177ff", "#46d59a", "#ffd233", "#ff8528"];
+
+/** One-shot confetti burst — pure framer-motion, no extra deps. Skipped for reduced-motion. */
+function Confetti({ count = 40 }: { count?: number }) {
+  const reduce = useReducedMotion();
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        id: i,
+        x: (Math.random() * 2 - 1) * 280,
+        y: 140 + Math.random() * 260,
+        rot: (Math.random() * 2 - 1) * 540,
+        delay: Math.random() * 0.2,
+        dur: 1.5 + Math.random() * 1.1,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        w: 6 + Math.random() * 6,
+        h: 9 + Math.random() * 8,
+      })),
+    [count]
+  );
+  if (reduce) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center overflow-visible" aria-hidden>
+      {pieces.map((p) => (
+        <motion.span
+          key={p.id}
+          className="absolute top-0"
+          style={{ width: p.w, height: p.h, backgroundColor: p.color, borderRadius: 2 }}
+          initial={{ opacity: 0, x: 0, y: 0, rotate: 0, scale: 0.6 }}
+          animate={{ opacity: [0, 1, 1, 0], x: p.x, y: p.y, rotate: p.rot, scale: 1 }}
+          transition={{ duration: p.dur, delay: p.delay, ease: [0.2, 0.6, 0.3, 1] }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Section
 function CompleteScreen({ onNext }: { onNext: () => void }) {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 text-center py-8 w-full max-w-xl">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 12 }}
-        className="hidden"></motion.div>
-      <div className="space-y-2">
-        <div className="text-4xl font-semibold tracking-tight text-zinc-950">Lesson complete</div>
-        <div className="text-zinc-500 text-sm">Good work. Review this again later to keep it active.</div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="relative w-full max-w-xl space-y-7 py-10 text-center"
+    >
+      <Confetti />
+
+      {/* Springy success mark with an expanding ring */}
+      <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+        <motion.span
+          className="absolute inset-0 rounded-full"
+          style={{ background: "var(--accent)" }}
+          initial={{ scale: 0.2, opacity: 0.4 }}
+          animate={{ scale: 1.8, opacity: 0 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        />
+        <motion.div
+          initial={{ scale: 0, rotate: -25 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 260, damping: 13, delay: 0.05 }}
+          className="flex h-20 w-20 items-center justify-center rounded-full"
+          style={{ background: "var(--accent)", boxShadow: "0 12px 34px rgba(120,52,247,0.45)" }}
+        >
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: [0, 1.25, 1] }}
+            transition={{ delay: 0.22, duration: 0.4, ease: "easeOut" }}
+          >
+            <CheckCircle2 className="h-11 w-11 text-white" />
+          </motion.span>
+        </motion.div>
       </div>
-      <Button onClick={onNext}
-        className="h-12 w-full rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">
-        Finish <ArrowRight className="ml-2 h-5 w-5" />
-      </Button>
+
+      <div className="space-y-2">
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="text-4xl font-black tracking-tight text-zinc-950"
+        >
+          Lesson complete!
+        </motion.div>
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          className="text-sm font-semibold text-zinc-500"
+        >
+          Nice work — that's another one in the bank. 🎉
+        </motion.div>
+      </div>
+
+      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
+        <Button
+          onClick={onNext}
+          className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800"
+        >
+          Finish <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </motion.div>
     </motion.div>
   );
 }
@@ -836,6 +979,28 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 // Section
 export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem }: any) {
   const [index, setIndex] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
+  const comboRef = useRef(0);
+  const praiseId = useRef(0);
+
+  const registerAnswer = (ok: boolean) => {
+    if (ok) {
+      const n = comboRef.current + 1;
+      comboRef.current = n;
+      setCombo(n);
+      playCorrect();
+      if (n === 3 || n === 5 || n === 10 || (n > 10 && n % 5 === 0)) {
+        const id = ++praiseId.current;
+        setPraise({ id, text: `🔥 ${n} in a row!` });
+        setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
+      }
+    } else {
+      comboRef.current = 0;
+      setCombo(0);
+      playWrong();
+    }
+  };
 
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
@@ -903,7 +1068,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             className="flex w-full max-w-4xl justify-center">
             <Card className="relative w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_22px_60px_rgba(25,27,38,0.08)] sm:p-7">
               <div className="relative z-10 flex flex-col items-center">
-                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} />}
+                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
                 {kind === "dialogue"  && <DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} />}
                 {kind === "complete"  && <CompleteScreen onNext={onComplete} />}
                 {!["sentence","dialogue","complete"].includes(kind) && (
@@ -919,6 +1084,45 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Combo streak chip */}
+      <AnimatePresence>
+        {combo >= 2 && (
+          <motion.div
+            key="combo-chip"
+            initial={{ opacity: 0, y: -10, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="pointer-events-none absolute left-1/2 top-24 z-30 -translate-x-1/2"
+          >
+            <motion.div
+              key={combo}
+              initial={{ scale: 1.35 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 12 }}
+              className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-black text-white shadow-[0_8px_22px_rgba(120,52,247,0.45)]"
+            >
+              🔥 {combo} combo
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Milestone praise pop */}
+      <AnimatePresence>
+        {praise && (
+          <motion.div
+            key={praise.id}
+            initial={{ opacity: 0, y: 10, scale: 0.6 }}
+            animate={{ opacity: 1, y: -44, scale: 1 }}
+            exit={{ opacity: 0, y: -70 }}
+            transition={{ duration: 1.3, ease: "easeOut" }}
+            className="pointer-events-none absolute left-1/2 top-1/3 z-40 -translate-x-1/2 text-3xl font-black text-[var(--accent)] drop-shadow-[0_2px_10px_rgba(120,52,247,0.4)]"
+          >
+            {praise.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

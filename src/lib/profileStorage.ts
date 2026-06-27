@@ -1,5 +1,6 @@
 export const PROFILE_STORAGE_KEY = "german-arena-profile";
 export const AUTH_USER_KEY = "german-arena-auth";
+export const SIGNED_OUT_KEY = "german-arena-signed-out";
 
 export interface UserProfile {
   id: string;
@@ -43,9 +44,15 @@ export function getAuthUser(): UserProfile | null {
   }
 }
 
-export function getOrCreateDefaultAuthUser(): UserProfile {
+export function getOrCreateDefaultAuthUser(): UserProfile | null {
   const existing = getAuthUser();
   if (existing) return existing;
+  // Respect an explicit sign-out: don't silently recreate the default user.
+  if (typeof window !== "undefined") {
+    try {
+      if (window.localStorage.getItem(SIGNED_OUT_KEY) === "1") return null;
+    } catch { /* ignore */ }
+  }
   setAuthUser(DEFAULT_LOCAL_USER);
   saveScopedJson("german-lab-placement-done", true, DEFAULT_LOCAL_USER);
   saveScopedJson("active-part", "part3", DEFAULT_LOCAL_USER);
@@ -59,6 +66,15 @@ export function setAuthUser(user: UserProfile | null) {
     return;
   }
   window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+  // Signing in (or saving a profile) clears any prior sign-out marker.
+  try { window.localStorage.removeItem(SIGNED_OUT_KEY); } catch { /* ignore */ }
+}
+
+/** Log out for real: drop the session and remember that it was intentional. */
+export function signOut() {
+  if (typeof window === "undefined") return;
+  setAuthUser(null);
+  try { window.localStorage.setItem(SIGNED_OUT_KEY, "1"); } catch { /* ignore */ }
 }
 
 export function getScopedKey(key: string, profile: UserProfile | null) {

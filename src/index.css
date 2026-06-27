@@ -153,6 +153,66 @@ a { color: inherit; text-decoration: none; }
 
 .accent-btn:active { transform: scale(0.985); }
 
+/* ── Continue-learning button: a glowing light that travels around the border ── */
+@property --cg-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.continue-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Both pseudos draw a conic "comet" clipped to a thin border ring via mask. */
+.continue-glow::before,
+.continue-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  /* Purple + white comet: the purple shows on light/near-white buttons,
+     the white core shows on dark/purple buttons — visible in every theme. */
+  background: conic-gradient(
+    from var(--cg-angle),
+    transparent 0deg,
+    transparent 192deg,
+    var(--accent) 252deg,
+    #ffffff 292deg,
+    #ffffff 318deg,
+    var(--accent) 352deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: continue-glow-spin 3.2s linear infinite;
+}
+
+/* Soft outer halo so the travelling light actually glows. */
+.continue-glow::after {
+  padding: 4px;
+  filter: blur(10px);
+  opacity: 1;
+}
+
+@keyframes continue-glow-spin {
+  to { --cg-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .continue-glow::before,
+  .continue-glow::after { animation: none; }
+}
+
 .ghost-btn {
   border: 1px solid transparent;
   border-radius: 12px;

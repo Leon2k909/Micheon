@@ -3,16 +3,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Bell,
-  BellRing,
+  BellOff,
   BookOpen,
   Gamepad2,
   Languages,
   LayoutDashboard,
+  LogOut,
   Menu,
+  Repeat,
   Search,
+  User,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getLevelInfo } from "@/Gamification";
 
 const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -44,8 +48,12 @@ interface TopNavProps {
   streak?: number;
   xp?: number;
   userName?: string;
+  userEmail?: string;
   userInitial?: string;
+  avatarUrl?: string;
   onAvatarClick?: () => void;
+  onSignOut?: () => void;
+  onSwitchCourse?: () => void;
   notifications?: TopNavNotification[];
   searchItems?: TopNavSearchItem[];
   onBrandClick?: () => void;
@@ -61,8 +69,12 @@ export function TopNav({
   streak = 0,
   xp = 0,
   userName = "",
+  userEmail = "",
   userInitial,
+  avatarUrl,
   onAvatarClick,
+  onSignOut,
+  onSwitchCourse,
   notifications = [],
   searchItems = [],
   onBrandClick,
@@ -74,10 +86,21 @@ export function TopNav({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return localStorage.getItem("germ-notifications-muted") === "1"; } catch { return false; }
+  });
   const [searchQuery, setSearchQuery] = useState("");
+  const [dragTabId, setDragTabId] = useState<string | null>(null);
+  const dragTabRef = useRef<string | null>(null);
+  const dragStartRef = useRef<string | null>(null);
+  const draggingRef = useRef(false);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initial = userInitial ?? (userName ? userName[0].toUpperCase() : "?");
   const unreadCount = notifications.filter((item) => item.unread).length;
+  const level = getLevelInfo(xp);
   const filteredSearchItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const items = query
@@ -100,11 +123,13 @@ export function TopNav({
     setMobileOpen(false);
     setSearchOpen(false);
     setNotificationsOpen(false);
+    setAvatarMenuOpen(false);
   };
 
   const closeOverlays = () => {
     setSearchOpen(false);
     setNotificationsOpen(false);
+    setAvatarMenuOpen(false);
     setSearchQuery("");
   };
 
@@ -116,6 +141,61 @@ export function TopNav({
   const selectNotification = (item: TopNavNotification) => {
     item.onSelect?.();
     closeOverlays();
+  };
+
+  // Drag the nav selection: press a tab and slide across to carry it to another.
+  const startTabDrag = (id: string) => {
+    draggingRef.current = true;
+    dragStartRef.current = id;
+    dragTabRef.current = id;
+    setDragTabId(id); // instant pill feedback on press
+    const finish = () => {
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+      draggingRef.current = false;
+      // Only navigate from here if the press actually slid to a different tab.
+      // A plain tap is handled by the button's onClick, so we never double-fire.
+      if (dragTabRef.current && dragTabRef.current !== dragStartRef.current) {
+        openTab(dragTabRef.current);
+      }
+    };
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+  };
+
+  const dragOverTab = (id: string) => {
+    if (!draggingRef.current || dragTabRef.current === id) return;
+    dragTabRef.current = id;
+    setDragTabId(id);
+  };
+
+  // Once the real selection settles (or changes elsewhere), drop the drag highlight
+  // so the single sliding pill never bounces between the dragged tab and the active one.
+  useEffect(() => {
+    if (!draggingRef.current) setDragTabId(null);
+  }, [activeTab]);
+
+  // While dragging, pick the tab under the cursor by x-position (robust to enter quirks).
+  const handleNavPointerMove = (event: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const x = event.clientX;
+    for (const item of NAV) {
+      const el = tabRefs.current[item.id];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right) {
+        dragOverTab(item.id);
+        return;
+      }
+    }
+  };
+
+  const toggleMuted = () => {
+    setMuted((value) => {
+      const next = !value;
+      try { localStorage.setItem("germ-notifications-muted", next ? "1" : "0"); } catch {}
+      return next;
+    });
   };
 
   return (
@@ -140,25 +220,37 @@ export function TopNav({
 
           <nav
             aria-label="Main"
-            className="hidden h-14 items-center gap-1.5 rounded-full bg-[var(--surface-2)] p-1.5 md:flex"
+            className="relative hidden h-14 select-none items-center gap-1.5 rounded-full bg-[var(--surface-2)] p-1.5 md:flex"
+            onPointerMove={handleNavPointerMove}
           >
             {NAV.map((item) => {
-              const active = item.id === activeTab;
+              const isTarget = (dragTabId ?? activeTab) === item.id;
               return (
                 <button
-                  aria-current={active ? "page" : undefined}
+                  ref={(el) => { tabRefs.current[item.id] = el; }}
+                  aria-current={item.id === activeTab ? "page" : undefined}
                   className={cn(
-                    "flex h-11 items-center gap-2 rounded-full px-[18px] text-[13px] font-bold leading-none transition-all duration-200 active:scale-[0.98]",
-                    active
-                      ? "bg-neutral-900 text-white shadow-[0_6px_14px_rgba(15,23,42,0.18)]"
+                    "relative flex h-11 cursor-grab items-center gap-2 rounded-full px-[18px] text-[13px] font-bold leading-none transition-colors active:cursor-grabbing",
+                    isTarget
+                      ? "text-white"
                       : "text-[var(--text-1)]/70 hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
                   )}
                   key={item.id}
                   onClick={() => openTab(item.id)}
+                  onPointerDown={() => startTabDrag(item.id)}
+                  onPointerEnter={() => dragOverTab(item.id)}
                   type="button"
                 >
-                  <item.icon className="h-[17px] w-[17px] shrink-0 stroke-[1.9]" />
-                  <span>{item.label}</span>
+                  {isTarget && (
+                    <motion.span
+                      aria-hidden="true"
+                      layoutId="nav-pill"
+                      className="absolute inset-0 rounded-full bg-neutral-900 shadow-[0_6px_14px_rgba(15,23,42,0.18)]"
+                      transition={{ type: "spring", stiffness: 700, damping: 46, mass: 0.7 }}
+                    />
+                  )}
+                  <item.icon className="relative z-10 h-[17px] w-[17px] shrink-0 stroke-[1.9]" />
+                  <span className="relative z-10">{item.label}</span>
                 </button>
               );
             })}
@@ -177,9 +269,25 @@ export function TopNav({
                 <span className="hidden lg:inline">{readerLabel}</span>
               </button>
             )}
-            <div className="hidden items-center gap-2 rounded-full bg-[var(--surface-2)] px-3 py-2 text-[12px] font-bold text-[var(--text-2)] lg:flex">
-              <span className="h-2 w-2 rounded-full bg-[var(--yellow)]" />
-              {xp.toLocaleString()} XP
+            <div
+              className="hidden items-center gap-2.5 rounded-full bg-[var(--surface-2)] py-1.5 pl-1.5 pr-3.5 lg:flex"
+              title={level.nxt ? `Level ${level.cur.level} — ${level.pct}% to ${level.nxt.label}` : `Level ${level.cur.level} — max level`}
+            >
+              <div className="relative h-7 w-7">
+                <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28" aria-hidden="true">
+                  <circle cx="14" cy="14" r="12" fill="none" stroke="var(--surface-3)" strokeWidth="3" />
+                  <circle
+                    cx="14" cy="14" r="12" fill="none" stroke="var(--yellow)" strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 12}
+                    strokeDashoffset={(2 * Math.PI * 12) * (1 - level.pct / 100)}
+                  />
+                </svg>
+                <span className="absolute inset-0 grid place-items-center text-[10px] font-black text-[var(--text-1)]">
+                  {level.cur.level}
+                </span>
+              </div>
+              <span className="text-[12px] font-black text-[var(--text-1)]">{xp.toLocaleString()} XP</span>
             </div>
             <button
               aria-label="Search"
@@ -192,6 +300,7 @@ export function TopNav({
               onClick={() => {
                 setSearchOpen((value) => !value);
                 setNotificationsOpen(false);
+                setAvatarMenuOpen(false);
               }}
               type="button"
             >
@@ -208,21 +317,33 @@ export function TopNav({
               onClick={() => {
                 setNotificationsOpen((value) => !value);
                 setSearchOpen(false);
+                setAvatarMenuOpen(false);
               }}
               type="button"
             >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
+              {muted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+              {!muted && unreadCount > 0 && (
                 <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[var(--yellow)] ring-2 ring-[var(--surface)]" />
               )}
             </button>
             <button
-              aria-label="Profile"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent-dim)] text-sm font-black text-[var(--accent)] ring-2 ring-[var(--surface)] transition-transform active:scale-95"
-              onClick={onAvatarClick}
+              aria-label="Account menu"
+              aria-haspopup="menu"
+              aria-expanded={avatarMenuOpen}
+              data-testid="topnav-avatar"
+              className={cn(
+                "flex h-11 w-11 items-center justify-center overflow-hidden rounded-full text-sm font-black ring-2 transition-transform active:scale-95",
+                avatarUrl ? "" : "bg-[var(--accent-dim)] text-[var(--accent)]",
+                avatarMenuOpen ? "ring-[var(--accent)]" : "ring-[var(--surface)]"
+              )}
+              onClick={() => {
+                setAvatarMenuOpen((value) => !value);
+                setSearchOpen(false);
+                setNotificationsOpen(false);
+              }}
               type="button"
             >
-              {initial}
+              {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : initial}
             </button>
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -343,12 +464,29 @@ export function TopNav({
                 <div>
                   <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">Notifications</h2>
                   <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
-                    {unreadCount > 0 ? `${unreadCount} item${unreadCount === 1 ? "" : "s"} need attention.` : "You are up to date."}
+                    {muted
+                      ? "Muted — the alert dot is hidden."
+                      : unreadCount > 0
+                        ? `${unreadCount} item${unreadCount === 1 ? "" : "s"} need attention.`
+                        : "You are up to date."}
                   </p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                  <BellRing className="h-5 w-5" />
-                </div>
+                <button
+                  type="button"
+                  onClick={toggleMuted}
+                  aria-pressed={muted}
+                  aria-label={muted ? "Unmute notifications" : "Mute notifications"}
+                  title={muted ? "Notifications muted — click to unmute" : "Mute notifications"}
+                  data-testid="notifications-mute"
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors active:scale-95",
+                    muted
+                      ? "bg-[var(--surface-2)] text-[var(--text-3)] hover:text-[var(--text-1)]"
+                      : "bg-[var(--accent-dim)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
+                  )}
+                >
+                  {muted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+                </button>
               </div>
 
               <div className="mt-4 grid gap-2">
@@ -380,6 +518,70 @@ export function TopNav({
                 ))}
               </div>
             </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {avatarMenuOpen && (
+          <motion.div
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[130] px-4 pt-[86px]"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            onClick={closeOverlays}
+          >
+            <motion.div
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              className="ml-auto mr-4 w-[264px] rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-[0_28px_80px_var(--shadow-strong)]"
+              data-testid="avatar-menu"
+              exit={{ opacity: 0, y: -8, scale: 0.985 }}
+              initial={{ opacity: 0, y: -10, scale: 0.985 }}
+              onClick={(event) => event.stopPropagation()}
+              role="menu"
+              transition={{ type: "spring", stiffness: 360, damping: 34 }}
+            >
+              <div className="flex items-center gap-3 rounded-[16px] bg-[var(--surface-2)] p-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-sm font-black text-[var(--accent)]">
+                  {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : initial}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black text-[var(--text-1)]">{userName || "Your profile"}</p>
+                  {userEmail && <p className="truncate text-xs font-semibold text-[var(--text-3)]">{userEmail}</p>}
+                </div>
+              </div>
+
+              <div className="mt-1.5 grid gap-0.5">
+                <button
+                  className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  onClick={() => { onAvatarClick?.(); closeOverlays(); }}
+                  role="menuitem"
+                  type="button"
+                >
+                  <User className="h-4 w-4" /> Profile settings
+                </button>
+                {onSwitchCourse && (
+                  <button
+                    className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => { onSwitchCourse(); closeOverlays(); }}
+                    role="menuitem"
+                    type="button"
+                  >
+                    <Repeat className="h-4 w-4" /> Switch course
+                  </button>
+                )}
+                {onSignOut && (
+                  <button
+                    className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
+                    onClick={() => { closeOverlays(); onSignOut(); }}
+                    role="menuitem"
+                    type="button"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </button>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -423,9 +625,9 @@ export function TopNav({
                   }}
                   type="button"
                 >
-                  <Bell className="h-4 w-4" />
+                  {muted ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
                   Alerts
-                  {unreadCount > 0 && (
+                  {!muted && unreadCount > 0 && (
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[var(--yellow)]" />
                   )}
                 </button>

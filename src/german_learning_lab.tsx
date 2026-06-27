@@ -10,12 +10,14 @@ import GuidedSession from "@/GuidedSession";
 import GamificationPanel from "@/Gamification";
 import { GamesView } from "@/games/GamesView";
 import { buildApiPartFromResolved, buildRemoteWordBankParts, fetchGermanApiVocabulary, fetchRemoteGermanWordCatalog, fetchWokabularyWordBank } from "@/lib/api";
+import { buildBundledParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
-import { getAuthUser, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
+import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
 import { getMasteredCount } from "@/lib/mastery";
 import { recordActivitySession } from "@/lib/activity";
+import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
 import { CourseLessonsView } from "@/components/course/CourseLessonsView";
@@ -51,7 +53,7 @@ export default function GermanLearningLab() {
     totalXp:           loadScopedJson("totalXp", 0, user) as number,
     sessionsCompleted: loadScopedJson("sessionsCompleted", 0, user) as number,
     totalReviews:      loadScopedJson("totalReviews", 0, user) as number,
-    streak:            loadScopedJson("streak", 1, user) as number,
+    streak:            getStreak(user),
     externalWords:     loadScopedJson("externalWords", user.externalWordsLearned ?? 0, user) as number,
   }));
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
@@ -65,10 +67,12 @@ export default function GermanLearningLab() {
   }, []);
 
   useEffect(() => {
+    // Reliability floor: blueprint lessons + bundled curated phrasebank +
+    // bundled Tatoeba sentence library. This always works, even fully offline.
     const resolved: Record<string, Part> = {};
     for (const [k, bp] of Object.entries(allPartBlueprints))
       resolved[k] = buildApiPartFromResolved(bp as Blueprint, {});
-    setApiParts(resolved);
+    setApiParts({ ...resolved, ...buildBundledParts() });
 
     let cancelled = false;
     async function loadRemoteWordBank() {
@@ -231,6 +235,7 @@ export default function GermanLearningLab() {
   const completeCourseLesson = (lessonId: string) => {
     const done = loadCourseProgress(activeCourseId, user);
     if (!done.includes(lessonId)) saveCourseProgress(activeCourseId, [...done, lessonId], user);
+    updateStats({ streak: recordStreakDay(user) });
     setCourseSessionLesson(undefined);
   };
   const sessionLesson = activeCourse?.lessons?.find((l) => l.id === courseSessionLesson);
@@ -263,6 +268,7 @@ export default function GermanLearningLab() {
           totalXp: progressStats.totalXp + xp,
           sessionsCompleted: progressStats.sessionsCompleted + 1,
           totalReviews: progressStats.totalReviews + Math.floor(sessionSteps.length / 2),
+          streak: recordStreakDay(user),
         });
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
@@ -413,8 +419,12 @@ export default function GermanLearningLab() {
         streak={progressStats.streak}
         xp={progressStats.totalXp}
         userName={user.name}
+        userEmail={user.email}
+        avatarUrl={user.avatar}
         notifications={topNavNotifications}
         onAvatarClick={() => openTab("profile")}
+        onSignOut={() => { signOut(); window.location.reload(); }}
+        onSwitchCourse={() => setCourseSwitcherOpen(true)}
         searchItems={topNavSearchItems}
         brandName={activeCourse?.name ?? "German Lab"}
         onOpenReader={courseHasReader ? () => openReader() : undefined}

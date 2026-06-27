@@ -1,36 +1,77 @@
-import React, { useId } from "react";
-import { motion } from "framer-motion";
+import React, { useId, useEffect } from "react";
+import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { VOCAB_MILESTONES } from "@/lib/data";
 
 const VOCAB_TARGET = 16000;
 
-function Ring({ value, size = 100, stroke = 7 }: { value: number; size?: number; stroke?: number }) {
+function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number; stroke?: number }) {
   const id = useId();
+  const reduce = useReducedMotion();
   const r = (size - stroke) / 2;
   const circ = r * 2 * Math.PI;
-  const offset = circ - (value / 100) * circ;
+  const dotR = stroke * 0.6;
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+
+  // One animated value drives everything (number, arc fill, tip bead) in lockstep.
+  const mv = useMotionValue(reduce ? value : 0);
+  useEffect(() => {
+    if (reduce) { mv.set(value); return; }
+    const controls = animate(mv, value, { duration: 1.1, ease: [0.16, 1, 0.3, 1] });
+    return () => controls.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, reduce]);
+
+  const pctText = useTransform(mv, (v) => Math.round(v));
+  const dashOffset = useTransform(mv, (v) => circ - (clamp(v) / 100) * circ);
+  const dotCx = useTransform(mv, (v) => size / 2 + r * Math.cos((clamp(v) / 100) * 2 * Math.PI));
+  const dotCy = useTransform(mv, (v) => size / 2 + r * Math.sin((clamp(v) / 100) * 2 * Math.PI));
+
   return (
     <div className="relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
-      <svg aria-hidden="true" className="absolute inset-0 -rotate-90" height={size} width={size}>
+      <svg aria-hidden="true" className="absolute inset-0 -rotate-90" height={size} width={size} style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id={id} x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#7834f7" />
+            <stop offset="55%" stopColor="#b06bff" />
             <stop offset="100%" stopColor="#ffd233" />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} fill="none" r={r} stroke="var(--border)" strokeWidth={stroke} />
+
+        {/* Track */}
+        <circle cx={size / 2} cy={size / 2} fill="none" r={r} stroke="var(--border)" strokeWidth={stroke} strokeOpacity={0.7} />
+
+        {/* Progress arc */}
         <motion.circle
-          animate={{ strokeDashoffset: offset }}
           cx={size / 2} cy={size / 2} fill="none"
-          initial={{ strokeDashoffset: circ }}
           r={r} stroke={`url(#${id})`}
           strokeDasharray={circ} strokeLinecap="round" strokeWidth={stroke}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            strokeDashoffset: dashOffset,
+            filter: "drop-shadow(0 0 5px rgba(255,210,51,0.5)) drop-shadow(0 0 11px rgba(120,52,247,0.4))",
+          }}
         />
+
+        {/* Glowing tip bead with a breathing sonar-pulse halo */}
+        {value > 0 && (
+          <>
+            <motion.circle
+              cx={dotCx} cy={dotCy} fill="rgba(255,210,51,0.45)"
+              animate={reduce ? { r: dotR * 1.6, opacity: 0.4 } : { r: [dotR * 1.1, dotR * 2.8], opacity: [0.55, 0] }}
+              transition={reduce ? {} : { duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+            />
+            <motion.circle
+              cx={dotCx} cy={dotCy} r={dotR} fill="#fff3c4" stroke="#ffd233" strokeWidth={1.5}
+              style={{ filter: "drop-shadow(0 0 6px rgba(255,210,51,0.9))" }}
+            />
+          </>
+        )}
       </svg>
+
       <div className="relative flex flex-col items-center">
-        <span className="text-xl font-bold text-[var(--text-1)]">{value}%</span>
-        <span className="text-[10px] text-[var(--text-3)]">mastered</span>
+        <span className="text-xl font-black tracking-tight text-[var(--text-1)]">
+          <motion.span>{pctText}</motion.span>%
+        </span>
+        <span className="text-[10px] font-semibold text-[var(--text-3)]">mastered</span>
       </div>
     </div>
   );
@@ -76,7 +117,7 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
             </p>
           )}
         </div>
-        <Ring value={vocabPct} size={96} stroke={7} />
+        <Ring value={vocabPct} size={100} stroke={8} />
       </div>
 
       {/* Progress bar with milestone ticks */}

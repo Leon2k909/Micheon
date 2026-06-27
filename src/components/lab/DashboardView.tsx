@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { Part } from "@/lib/types";
+import { isBulkPartKey } from "@/lib/contentBank";
 
 type ProgressStats = {
   totalXp: number;
@@ -160,7 +161,7 @@ function CurrentCourseCard({
       </div>
 
       <button
-        className="accent-btn mt-6 inline-flex h-12 w-full items-center justify-center gap-2 text-sm"
+        className="accent-btn continue-glow mt-6 inline-flex h-12 w-full items-center justify-center gap-2 text-sm"
         onClick={() => onOpenLesson(lessonId)}
         type="button"
       >
@@ -280,8 +281,8 @@ export function DashboardView({
 }) {
   const lessonId = activePart ?? pathParts[0]?.[0] ?? "part1";
   const activeIndex = Math.max(0, pathParts.findIndex(([key]) => key === lessonId));
-  const coreParts = pathParts.filter(([key]) => !key.startsWith("wordbank"));
-  const wordBankParts = pathParts.filter(([key]) => key.startsWith("wordbank"));
+  const coreParts = pathParts.filter(([key]) => !isBulkPartKey(key));
+  const wordBankParts = pathParts.filter(([key]) => isBulkPartKey(key));
   const totalWords = pathParts.reduce((sum, [, part]) => sum + part.vocab.length, 0);
   const wordBankWords = wordBankParts.reduce((sum, [, part]) => sum + part.vocab.length, 0);
   const coreActiveIndex = Math.max(0, coreParts.findIndex(([key]) => key === lessonId));

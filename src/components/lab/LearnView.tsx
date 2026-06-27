@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, CheckCircle2, Clock3, Headphones } from "lucide-react";
 import { Part } from "@/lib/types";
+import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 
 export function LearnView({
   apiParts,
@@ -11,8 +12,8 @@ export function LearnView({
   onOpenLesson: (id: string) => void;
 }) {
   const parts = Object.entries(apiParts);
-  const coreParts = parts.filter(([key]) => !key.startsWith("wordbank"));
-  const wordBankParts = parts.filter(([key]) => key.startsWith("wordbank"));
+  const coreParts = parts.filter(([key]) => !isBulkPartKey(key));
+  const wordBankParts = parts.filter(([key]) => isBulkPartKey(key));
 
   return (
     <div className="space-y-4">
@@ -31,7 +32,7 @@ export function LearnView({
             </div>
             <div className="rounded-2xl bg-[var(--surface-2)] px-4 py-3">
               <p className="text-2xl font-black text-[var(--text-1)]">{wordBankParts.length}</p>
-              <p className="text-[11px] font-bold text-[var(--text-3)]">word-bank sets</p>
+              <p className="text-[11px] font-bold text-[var(--text-3)]">practice sets</p>
             </div>
           </div>
         </div>
@@ -53,7 +54,7 @@ export function LearnView({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                  {key.startsWith("wordbank") ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
+                  {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
                 </div>
                 <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--text-1)]">
                   {part.level}
@@ -68,7 +69,7 @@ export function LearnView({
                     <Clock3 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-[var(--text-1)]">{part.vocab.length} items</p>
+                    <p className="text-xs font-black text-[var(--text-1)]">{partItemCount(part)} items</p>
                     <p className="text-[11px] font-semibold text-[var(--text-3)]">10-15 min</p>
                   </div>
                 </div>
