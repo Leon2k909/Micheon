@@ -21,7 +21,7 @@ import {
 import {
   Volume2, Mic2, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages
+  MessageSquareQuote, RotateCcw, Target, Languages, Flame
 } from "lucide-react";
 
 // Section
@@ -1223,7 +1223,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       playCorrect();
       if (n === 3 || n === 5 || n === 10 || (n > 10 && n % 5 === 0)) {
         const id = ++praiseId.current;
-        setPraise({ id, text: `🔥 ${n} in a row!` });
+        setPraise({ id, text: `${n} in a row!` });
         setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
       }
     } else {
@@ -1331,9 +1331,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               initial={{ scale: 1.35 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 420, damping: 12 }}
-              className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-black text-white shadow-[0_8px_22px_rgba(120,52,247,0.45)]"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-black text-white shadow-[0_8px_22px_rgba(120,52,247,0.45)]"
             >
-              🔥 {combo} combo
+              <Flame className="h-4 w-4 fill-current" strokeWidth={2.5} />
+              {combo} combo
             </motion.div>
           </motion.div>
         )}
@@ -1348,8 +1349,9 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             animate={{ opacity: 1, y: -44, scale: 1 }}
             exit={{ opacity: 0, y: -70 }}
             transition={{ duration: 1.3, ease: "easeOut" }}
-            className="pointer-events-none absolute left-1/2 top-1/3 z-40 -translate-x-1/2 text-3xl font-black text-[var(--accent)] drop-shadow-[0_2px_10px_rgba(120,52,247,0.4)]"
+            className="pointer-events-none absolute left-1/2 top-1/3 z-40 inline-flex -translate-x-1/2 items-center gap-2 text-3xl font-black text-[var(--accent)] drop-shadow-[0_2px_10px_rgba(120,52,247,0.4)]"
           >
+            <Flame className="h-7 w-7 fill-current" strokeWidth={2.5} />
             {praise.text}
           </motion.div>
         )}
