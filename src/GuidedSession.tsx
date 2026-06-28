@@ -33,6 +33,19 @@ function tts(text: string, rate = 0.88, lang = "de-DE") {
   window.speechSynthesis.speak(u);
 }
 
+// Play several utterances back to back (one cancel, then queue) — used to hear
+// the German and French of a sentence in sequence on the Listen step.
+function ttsSequence(items: { text: string; rate?: number; lang: string }[]) {
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  for (const { text, rate = 0.88, lang } of items) {
+    if (!text) continue;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.rate = rate;
+    window.speechSynthesis.speak(u);
+  }
+}
+
 // ── Subtle game-feel sounds (Web Audio, no assets) ────────────────
 let _audioCtx: AudioContext | null = null;
 function getAudioCtx(): AudioContext | null {
@@ -109,11 +122,23 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 const PHASES = ["Read", "Listen", "Speak", "Type", "Translate"] as const;
 type Phase = typeof PHASES[number] | "French";
 
+// In French companion mode the flow tests the two target languages (German +
+// French) and uses English only as the shown meaning, so the English-typing
+// "Translate" step is replaced by the French step.
+const BILINGUAL_PHASES: Phase[] = ["Read", "Listen", "Speak", "Type", "French"];
+
+// "Type" is the German-typing step; label it "German" in bilingual mode so the
+// two language steps read clearly as German / French.
+function phaseLabel(p: Phase, withFrench: boolean) {
+  if (withFrench && p === "Type") return "German";
+  return p;
+}
+
 function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench?: boolean }) {
-  const allPhases: Phase[] = withFrench ? [...PHASES, "French"] : [...PHASES];
+  const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
-    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2", withFrench ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
+    <div className="grid gap-2 rounded-2xl bg-zinc-50 p-2 sm:grid-cols-5">
       {allPhases.map((p, i) => (
         <div
           key={p}
@@ -129,10 +154,54 @@ function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench
             {i + 1}
           </div>
           <span className="text-[10px] font-black uppercase tracking-wide">
-            {p}
+            {phaseLabel(p, withFrench)}
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// A single labeled language row (German / French) for bilingual companion mode.
+// `active` highlights the language the learner is currently being asked to type.
+function LangBlock({ label, text, active, onHear, speechState }: {
+  label: string;
+  text: string;
+  active?: boolean;
+  onHear: () => void;
+  speechState?: { ok: boolean } | null;
+}) {
+  return (
+    <div className={cn(
+      "rounded-2xl p-4 transition-all",
+      active
+        ? "border-[1.5px] border-[var(--accent)] bg-white shadow-[0_0_0_3px_rgba(120,52,247,0.12)]"
+        : "border border-zinc-100 bg-zinc-50/70"
+    )}>
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-zinc-400">
+          {label}
+          {active && (
+            <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[9px] font-black text-white">
+              type this
+            </span>
+          )}
+        </span>
+        <button
+          type="button"
+          aria-label={`Hear the ${label} sentence`}
+          onClick={onHear}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7] transition-colors hover:bg-zinc-50"
+        >
+          <Volume2 className="h-4 w-4" />
+        </button>
+      </div>
+      <div className={cn(
+        "text-2xl font-black leading-tight tracking-tight sm:text-3xl",
+        speechState?.ok ? "text-emerald-500" : speechState && !speechState.ok ? "text-rose-500" : "text-zinc-950"
+      )}>
+        {text}
+      </div>
     </div>
   );
 }
@@ -176,10 +245,12 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const hasFr = companion === "fr" && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
 
-  // Auto-play TTS when entering Listen phase
+  // Auto-play TTS when entering Listen phase (German, then French in companion mode)
   useEffect(() => {
-    if (phase === "Listen") tts(item.de);
-  }, [phase, item.de]);
+    if (phase !== "Listen") return;
+    if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
+    else tts(item.de);
+  }, [phase, item.de, item.fr, hasFr]);
 
   // Reset speech UI when entering Speak or sentence changes
   useEffect(() => {
@@ -238,7 +309,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   };
 
   const advance = () => {
-    const order: Phase[] = ["Read", "Listen", "Speak", "Type", "Translate"];
+    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
     const next = order[order.indexOf(phase) + 1];
     if (next) setPhase(next);
   };
@@ -330,7 +401,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           </div>
           <div>
             <p className="text-sm font-black text-zinc-950">Sentence practice</p>
-            <p className="text-xs font-semibold text-zinc-500">Read, hear, say, type, then translate.</p>
+            <p className="text-xs font-semibold text-zinc-500">
+              {hasFr ? "Read, hear, say, then type it in German and French." : "Read, hear, say, type, then translate."}
+            </p>
           </div>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7]">
@@ -347,7 +420,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         "space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
       )}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">German sentence</span>
+          <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">
+            {hasFr ? "German + French" : "German sentence"}
+          </span>
           <div className="flex flex-wrap items-center gap-2">
             <button
               aria-label="Mark known and skip to the next item. Shortcut Alt K"
@@ -367,42 +442,72 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               Struggle
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
-            <button
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
-              onClick={() => tts(item.de, 0.82)}
-              type="button"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              Hear it
-            </button>
+            {!hasFr && (
+              <button
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
+                onClick={() => tts(item.de, 0.82)}
+                type="button"
+              >
+                <Volume2 className="h-3.5 w-3.5" />
+                Hear it
+              </button>
+            )}
           </div>
         </div>
-        <div className={cn(
-          "text-4xl font-black leading-tight tracking-tight text-zinc-950 transition-all duration-300 sm:text-5xl",
-          phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
-          phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
-        )}>
-          {item.de}
-        </div>
 
-        {/* Section */}
+        {hasFr ? (
+          /* ── Bilingual: German + French shown together, English as meaning ── */
+          <div className="space-y-3">
+            <LangBlock
+              label="German"
+              text={item.de}
+              active={phase === "Type"}
+              onHear={() => tts(item.de, 0.85, "de-DE")}
+              speechState={phase === "Speak" ? speechPhraseMatch : null}
+            />
+            <LangBlock
+              label="French"
+              text={item.fr}
+              active={phase === "French"}
+              onHear={() => tts(item.fr, 0.85, "fr-FR")}
+              speechState={null}
+            />
+            <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
+              Meaning: <span className="text-zinc-700">{displayEnglish}</span>
+            </div>
+          </div>
+        ) : (
+          /* ── German only (original) ── */
+          <>
+            <div className={cn(
+              "text-4xl font-black leading-tight tracking-tight text-zinc-950 transition-all duration-300 sm:text-5xl",
+              phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
+              phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
+            )}>
+              {item.de}
+            </div>
+            <AnimatePresence>
+              {phase !== "Read" && phase !== "Translate" && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
+                  {displayEnglish}
+                </motion.div>
+              )}
+              {phase === "Translate" && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
+                  What does this mean in English?
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+
         <AnimatePresence>
           {grade === "struggle" && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-700">
               Marked as struggle. This item will stay in practice instead of being skipped next time.
-            </motion.div>
-          )}
-          {phase !== "Read" && phase !== "Translate" && (
-            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
-              {displayEnglish}
-            </motion.div>
-          )}
-          {phase === "Translate" && (
-            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
-              What does this mean in English?
             </motion.div>
           )}
         </AnimatePresence>
@@ -415,7 +520,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         {phase === "Read" && (
           <motion.div key="read" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Read the sentence once before listening.</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {hasFr ? "Read both the German and French before listening." : "Read the sentence once before listening."}
+            </p>
             <Button onClick={advance}
               className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
               Continue <ChevronRight className="ml-2 h-4 w-4" />
@@ -512,7 +619,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         {phase === "Type" && (
           <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Now type the sentence exactly.</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
+            </p>
 
             <div className="space-y-3">
               <motion.div animate={shakeControls}>
@@ -718,6 +827,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
   const result = useMemo(() => match(input, line?.de ?? ""), [input, line]);
+  const companionFr = useMemo(() => getCompanion() === "fr", []);
 
   useEffect(() => { if (line?.de) tts(line.de); }, [lineIdx]);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, [lineIdx]);
@@ -808,6 +918,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
             <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 space-y-0.5",
               l.speaker === "A" ? "bg-white border border-zinc-200" : "bg-zinc-50 border border-zinc-200")}>
               <div className="text-sm font-bold text-zinc-950">{l.de}</div>
+              {companionFr && l.fr && <div className="text-sm font-bold text-[var(--accent)]">{l.fr}</div>}
               <div className="text-xs text-zinc-500">{l.en}</div>
             </div>
           </div>
@@ -819,7 +930,15 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
         line.speaker === "A" ? "border-zinc-200 bg-white" : "border-zinc-200 bg-white")}>
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-400">{line.speaker}</div>
-          <div className="text-base text-zinc-500 italic">{line.en}</div>
+          <div className="flex-1">
+            <div className="text-base text-zinc-500 italic">{line.en}</div>
+            {companionFr && line.fr && (
+              <div className="mt-0.5 text-sm font-bold text-[var(--accent)]">
+                <span className="mr-1.5 text-[10px] font-black uppercase tracking-wide text-zinc-400">FR</span>
+                {line.fr}
+              </div>
+            )}
+          </div>
           <button onClick={() => tts(line.de)} className="ml-auto text-zinc-600 hover:text-zinc-950 transition-colors">
             <Volume2 className="h-4 w-4" />
           </button>
