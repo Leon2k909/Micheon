@@ -15,6 +15,7 @@ import {
   Trophy,
   LogOut,
   Zap,
+  Languages,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -46,6 +47,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { applyTheme, getTheme, type Theme } from "@/lib/theme";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
+import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
@@ -295,6 +297,7 @@ export default function GamificationPanel({
   const [newName, setNewName] = useState(user.name);
   const [theme, setTheme] = useState<Theme>(getTheme);
   const [effects, setEffects] = useState<Effects>(getEffects);
+  const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -344,6 +347,12 @@ export default function GamificationPanel({
     const next: Effects = effects === "lite" ? "full" : "lite";
     applyEffects(next);
     setEffects(next);
+  };
+
+  const toggleCompanion = () => {
+    const next: Companion = companion === "fr" ? "none" : "fr";
+    setCompanion(next);
+    setCompanionState(next);
   };
 
   const updateEnglishVariant = (value: EnglishVariant) => {
@@ -499,6 +508,31 @@ export default function GamificationPanel({
                   )}
                 >
                   {effects === "lite" ? "On" : "Off"}
+                </span>
+              </button>
+
+              <button
+                aria-pressed={companion === "fr"}
+                aria-label="Toggle learning French alongside German"
+                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                onClick={toggleCompanion}
+                type="button"
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                    <Languages className="h-4 w-4" /> Learn French too
+                  </span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                    Practise the French for each sentence right alongside the German. Two languages, one lesson.
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                    companion === "fr" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                  )}
+                >
+                  {companion === "fr" ? "On" : "Off"}
                 </span>
               </button>
 

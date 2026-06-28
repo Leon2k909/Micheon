@@ -12,6 +12,7 @@ import {
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
+import { getCompanion } from "@/lib/companion";
 import {
   isSpeechRecognitionSupported,
   listenGermanOnce,
@@ -24,11 +25,11 @@ import {
 } from "lucide-react";
 
 // Section
-function tts(text: string, rate = 0.88) {
+function tts(text: string, rate = 0.88, lang = "de-DE") {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "de-DE"; u.rate = rate;
+  u.lang = lang; u.rate = rate;
   window.speechSynthesis.speak(u);
 }
 
@@ -89,15 +90,31 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   );
 }
 
+// French accent helper row for the French typing phase
+function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {["é","è","ê","à","â","ç","î","ô","û","œ"].map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
 // Section
 const PHASES = ["Read", "Listen", "Speak", "Type", "Translate"] as const;
-type Phase = typeof PHASES[number];
+type Phase = typeof PHASES[number] | "French";
 
-function PhaseDots({ current }: { current: Phase }) {
-  const idx = PHASES.indexOf(current);
+function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench?: boolean }) {
+  const allPhases: Phase[] = withFrench ? [...PHASES, "French"] : [...PHASES];
+  const idx = allPhases.indexOf(current);
   return (
-    <div className="grid gap-2 rounded-2xl bg-zinc-50 p-2 sm:grid-cols-5">
-      {PHASES.map((p, i) => (
+    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2", withFrench ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
+      {allPhases.map((p, i) => (
         <div
           key={p}
           className={cn(
@@ -137,6 +154,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [enInput, setEnInput] = useState("");
   const [enChecked, setEnChecked] = useState(false);
   const [enAttempts, setEnAttempts] = useState(0);
+  const [frInput, setFrInput] = useState("");
+  const [frChecked, setFrChecked] = useState(false);
+  const [frAttempts, setFrAttempts] = useState(0);
   const [speechListening, setSpeechListening] = useState(false);
   const [speechTranscript, setSpeechTranscript] = useState("");
   const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
@@ -144,12 +164,17 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const enInputRef = useRef<HTMLInputElement>(null);
+  const frInputRef = useRef<HTMLInputElement>(null);
   const speechAbortRef = useRef<AbortController | null>(null);
   const speechSupported = useMemo(() => isSpeechRecognitionSupported(), []);
   const englishVariant = useMemo(() => getEnglishVariant(), []);
   const displayEnglish = useMemo(() => formatEnglishText(item.en, englishVariant), [item.en, englishVariant]);
   const result   = useMemo(() => match(input, item.de), [input, item.de]);
   const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
+  // French companion: tested as an extra phase when enabled and the item has French.
+  const companion = useMemo(() => getCompanion(), []);
+  const hasFr = companion === "fr" && typeof item.fr === "string" && item.fr.trim().length > 0;
+  const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
 
   // Auto-play TTS when entering Listen phase
   useEffect(() => {
@@ -180,6 +205,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   useEffect(() => {
     if (phase === "Type")      setTimeout(() => inputRef.current?.focus(), 100);
     if (phase === "Translate") setTimeout(() => enInputRef.current?.focus(), 100);
+    if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
   }, [phase]);
 
   const handleSpeechCheck = () => {
@@ -231,18 +257,35 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
   const retry = () => { setInput(""); setChecked(false); };
 
+  // After the English translation: go to the French phase if active, else finish.
+  const finishOrFrench = () => { if (hasFr) setPhase("French"); else onNext(); };
+
   const checkEnAnswer = () => {
     if (!enInput.trim() || enChecked) return;
     setEnChecked(true);
     reactToAnswer(enResult.ok);
     if (enResult.ok) {
-      setTimeout(onNext, 900);
+      setTimeout(finishOrFrench, 900);
     } else {
       setEnAttempts(a => a + 1);
     }
   };
 
   const retryEn = () => { setEnInput(""); setEnChecked(false); };
+
+  const checkFrAnswer = () => {
+    if (!frInput.trim() || frChecked) return;
+    setFrChecked(true);
+    reactToAnswer(frResult.ok);
+    tts(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
+    if (frResult.ok) {
+      setTimeout(onNext, 900);
+    } else {
+      setFrAttempts(a => a + 1);
+    }
+  };
+
+  const retryFr = () => { setFrInput(""); setFrChecked(false); };
   const markKnown = () => {
     setGrade("know");
     if (item?.id) onGradeItem?.(item.id, "know");
@@ -297,7 +340,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
       </div>
 
       {/* Phase dots */}
-      <PhaseDots current={phase} />
+      <PhaseDots current={phase} withFrench={hasFr} />
 
       {/* Sentence display card */}
       <div className={cn(
@@ -549,7 +592,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   placeholder="Type the English meaning..."
                   value={enInput}
                   onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? onNext() : checkEnAnswer())}
+                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? finishOrFrench() : checkEnAnswer())}
                   disabled={enChecked && enResult.ok}
                 />
               </motion.div>
@@ -584,10 +627,78 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </Button>
               </div>
             ) : (
-              <Button onClick={enChecked && enResult.ok ? onNext : checkEnAnswer}
+              <Button onClick={enChecked && enResult.ok ? finishOrFrench : checkEnAnswer}
                 className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
-                {enChecked && enResult.ok ? <>Continue <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {enChecked && enResult.ok ? <>{hasFr ? "Next: French" : "Continue"} <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
+            )}
+          </motion.div>
+        )}
+
+        {/* FRENCH phase (companion language) */}
+        {phase === "French" && (
+          <motion.div key="french" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">Now type the same sentence in French.</p>
+            <div className="space-y-3">
+              <motion.div animate={shakeControls}>
+                <Input ref={frInputRef}
+                  className={cn(
+                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                    frChecked && frResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                    frChecked && !frResult.ok ? "border-rose-300 bg-rose-50" :
+                                                "focus:border-[var(--accent)]"
+                  )}
+                  placeholder="Type it in French..."
+                  value={frInput}
+                  onChange={e => { setFrInput(e.target.value); if (frChecked) setFrChecked(false); }}
+                  onKeyDown={e => e.key === "Enter" && (frChecked && frResult.ok ? onNext() : checkFrAnswer())}
+                  disabled={frChecked && frResult.ok}
+                />
+              </motion.div>
+              <FrenchCharBar onInsert={c => insertAt(frInputRef.current, c, setFrInput)} />
+            </div>
+            <AnimatePresence>
+              {frChecked && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className={cn("rounded-lg border p-5 text-center space-y-2",
+                    frResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                  {frResult.ok ? (
+                    <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold text-lg">
+                      <CheckCircle2 className="h-5 w-5" /> {frResult.spellingNote ? "Close — mind the accents" : "Parfait !"}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-rose-700 font-semibold">Not quite</div>
+                      <div className="text-xs text-zinc-500">French: <span className="text-zinc-950 font-semibold">{item.fr}</span></div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {frChecked && !frResult.ok ? (
+              <div className="flex gap-3">
+                <Button onClick={retryFr} variant="outline"
+                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+                <Button onClick={onNext}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  Skip
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={() => tts(item.fr, 0.82, "fr-FR")}
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
+                  <Volume2 className="h-5 w-5" />
+                </motion.button>
+                <Button onClick={frChecked && frResult.ok ? onNext : checkFrAnswer}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                  {frChecked && frResult.ok ? <>Continue <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                </Button>
+              </div>
             )}
           </motion.div>
         )}

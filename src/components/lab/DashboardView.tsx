@@ -201,7 +201,7 @@ function ScheduleCard({
         className={[
         "group flex min-h-[236px] flex-col overflow-hidden rounded-[22px] p-4 text-left transition-all active:scale-[0.99]",
         active
-          ? "bg-[var(--accent)] text-white shadow-[0_18px_35px_rgba(120,52,247,0.22)]"
+          ? "lesson-card-active"
           : "bg-[var(--surface-2)] text-[var(--text-1)] hover:bg-[var(--surface)] hover:shadow-[0_14px_34px_var(--shadow)]",
       ].join(" ")}
       onClick={() => onOpenLesson(id)}

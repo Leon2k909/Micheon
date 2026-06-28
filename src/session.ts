@@ -54,12 +54,12 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const queue: any[] = [];
   const usedSentences = new Set<string>();
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = []) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     if (isKnownItem(reviewState, id, aliases)) return;
     usedSentences.add(key);
-    queue.push({ type: EX.SENTENCE, item: { id, de, en } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -73,17 +73,17 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       const exEn = word.exampleEn?.trim()
         ? word.exampleEn
         : buildCarrier(word.de, word.en, word.tip).en;
-      addSentence(word.example, exEn, id, aliases);
+      addSentence(word.example, exEn, id, aliases, word.exampleFr);
     } else {
       const carrier = buildCarrier(word.de, word.en, word.tip);
-      addSentence(carrier.de, carrier.en, id, aliases);
+      addSentence(carrier.de, carrier.en, id, aliases, word.fr);
     }
   });
 
   // ── Phrases ──────────────────────────────────────────────────
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`);
+    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr);
   });
 
   // ── Dialogue lines ───────────────────────────────────────────
@@ -104,11 +104,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       queue.push({ type: EX.DIALOGUE, dialogue: { ...d, lines: usable } });
       // Then drill each line as a sentence exercise
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`]);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr);
       });
     } else {
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`]);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr);
       });
     }
   });

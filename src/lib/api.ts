@@ -451,6 +451,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
       lookup: seed.lookup,
       example: toGermanDisplayText(entry?.examples?.[0] ?? ""),
       exampleEn: entry?.exampleTranslations?.[0] ?? "",
+      exampleFr: entry?.exampleTranslationsFr?.[0] ?? "",
       pos: entry?.pos ?? "",
     };
   });
@@ -476,10 +477,12 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     const entry = resolvedEntries[seed.lookup] ?? getFallbackEntry(seed.lookup);
     const examples = Array.isArray(entry?.examples) ? entry.examples : [];
     const translations = Array.isArray(entry?.exampleTranslations) ? entry.exampleTranslations : [];
+    const frTranslations = Array.isArray(entry?.exampleTranslationsFr) ? entry.exampleTranslationsFr : [];
     return examples.map((ex: string, i: number) => ({
       de: toGermanDisplayText(ex),
       en: translations[i] ?? toLearnerGloss(seed.fallbackEn, entry?.glosses, seed.lookup),
-      use: `Practice sentence for ${seed.lookup}.`
+      use: `Practice sentence for ${seed.lookup}.`,
+      fr: frTranslations[i],
     }));
   }).filter((p, i, a) => a.findIndex(t => t.de === p.de) === i).slice(0, 10);
 
@@ -489,7 +492,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     if (chunk.length < 2) continue;
     dialogues.push({
       title: `${blueprint.theme} · Practice ${Math.floor(i / 4) + 1}`,
-      lines: chunk.map((line, index) => ({ speaker: index % 2 === 0 ? "A" : "B", de: line.de, en: line.en })),
+      lines: chunk.map((line, index) => ({ speaker: index % 2 === 0 ? "A" : "B", de: line.de, en: line.en, fr: line.fr })),
     });
   }
 

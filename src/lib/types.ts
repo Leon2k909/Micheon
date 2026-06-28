@@ -10,6 +10,7 @@ export interface DialogueLine {
   speaker: string;
   de: string;
   en: string;
+  fr?: string;
 }
 
 export interface Dialogue {
@@ -21,6 +22,7 @@ export interface Phrase {
   de: string;
   en: string;
   use: string;
+  fr?: string;
 }
 
 export interface Blueprint {
@@ -42,6 +44,8 @@ export interface VocabItem {
   example: string;
   exampleEn: string;
   pos: string;
+  fr?: string;
+  exampleFr?: string;
 }
 
 export interface ArticleQuestion {

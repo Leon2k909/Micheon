@@ -169,7 +169,7 @@ export default function GermanLearningLab() {
     const partWithKey = { ...part, partKey: id };
     const items = part.vocab.map((item, i) => ({
       id: `${id}-${i}`, de: item.de, en: item.en, tip: item.tip,
-      example: item.example, kind: "vocab", lookup: item.lookup,
+      example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
     }));
     const reviewState = loadCompleted();
     const steps = buildSession(partWithKey, items, reviewState, 0);
