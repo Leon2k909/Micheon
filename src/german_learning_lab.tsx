@@ -272,6 +272,7 @@ export default function GermanLearningLab() {
         });
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
+      onAdvance={(step: any) => markCompleted([step])}
       steps={sessionSteps}
     />
   );

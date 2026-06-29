@@ -1391,7 +1391,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 }
 
 // Section
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onAdvance }: any) {
   const [index, setIndex] = useState(0);
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
@@ -1419,7 +1419,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
   const progress = safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
-  const next = () => { if (index < safeSteps.length - 1) setIndex(i => i + 1); else onComplete(); };
+  const next = () => {
+    // Persist the item we're leaving immediately, so closing the app mid-session
+    // doesn't lose progress (onComplete/onCancel only fire on full finish or the
+    // in-app exit, never on an abrupt window/tab close).
+    const current = safeSteps[index];
+    if (current) onAdvance?.(current);
+    if (index < safeSteps.length - 1) setIndex(i => i + 1); else onComplete();
+  };
 
   const handleCancel = () => onCancel(index);
   const skipStep = () => next();
