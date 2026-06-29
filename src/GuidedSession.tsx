@@ -120,12 +120,13 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 
 // Section
 const PHASES = ["Read", "Listen", "Speak", "Type", "Translate"] as const;
-type Phase = typeof PHASES[number] | "French";
+type Phase = typeof PHASES[number] | "French" | "Memory";
 
 // In French companion mode the flow tests the two target languages (German +
 // French) and uses English only as the shown meaning, so the English-typing
-// "Translate" step is replaced by the French step.
-const BILINGUAL_PHASES: Phase[] = ["Read", "Listen", "Speak", "Type", "French"];
+// "Translate" step is replaced by the French step. "Memory" is a final recall
+// phase where no sentence is shown — the learner types both from memory.
+const BILINGUAL_PHASES: Phase[] = ["Read", "Listen", "Speak", "Type", "French", "Memory"];
 
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French.
@@ -138,7 +139,7 @@ function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
-    <div className="grid gap-2 rounded-2xl bg-zinc-50 p-2 sm:grid-cols-5">
+    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2", allPhases.length > 5 ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
       {allPhases.map((p, i) => (
         <div
           key={p}
@@ -248,6 +249,10 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [frInput, setFrInput] = useState("");
   const [frChecked, setFrChecked] = useState(false);
   const [frAttempts, setFrAttempts] = useState(0);
+  const [memDeInput, setMemDeInput] = useState("");
+  const [memDeChecked, setMemDeChecked] = useState(false);
+  const [memFrInput, setMemFrInput] = useState("");
+  const [memFrChecked, setMemFrChecked] = useState(false);
   const [speechListening, setSpeechListening] = useState(false);
   const [speechTranscript, setSpeechTranscript] = useState("");
   const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
@@ -256,6 +261,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const inputRef = useRef<HTMLInputElement>(null);
   const enInputRef = useRef<HTMLInputElement>(null);
   const frInputRef = useRef<HTMLInputElement>(null);
+  const memDeRef = useRef<HTMLInputElement>(null);
+  const memFrRef = useRef<HTMLInputElement>(null);
   const speechAbortRef = useRef<AbortController | null>(null);
   const speechSupported = useMemo(() => isSpeechRecognitionSupported(), []);
   const englishVariant = useMemo(() => getEnglishVariant(), []);
@@ -266,6 +273,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const companion = useMemo(() => getCompanion(), []);
   const hasFr = companion === "fr" && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
+  const memDeResult = useMemo(() => match(memDeInput, item.de), [memDeInput, item.de]);
+  const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
   // Auto-play TTS when entering Listen phase (German, then French in companion mode)
   useEffect(() => {
@@ -299,6 +308,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (phase === "Type")      setTimeout(() => inputRef.current?.focus(), 100);
     if (phase === "Translate") setTimeout(() => enInputRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
+    if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
   }, [phase]);
 
   const handleSpeechCheck = () => {
@@ -372,13 +382,29 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     reactToAnswer(frResult.ok);
     tts(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
     if (frResult.ok) {
-      setTimeout(onNext, 900);
+      setTimeout(hasFr ? advance : onNext, 900);
     } else {
       setFrAttempts(a => a + 1);
     }
   };
 
   const retryFr = () => { setFrInput(""); setFrChecked(false); };
+
+  const checkMemory = () => {
+    if (!memDeInput.trim() && !memFrInput.trim()) return;
+    setMemDeChecked(true);
+    setMemFrChecked(true);
+    const bothOk = memDeResult.ok && memFrResult.ok;
+    reactToAnswer(bothOk);
+    if (memDeResult.ok) tts(item.de, 0.88, "de-DE");
+    if (bothOk) setTimeout(onNext, 1000);
+  };
+  const retryMemory = () => {
+    setMemDeInput(""); setMemDeChecked(false);
+    setMemFrInput(""); setMemFrChecked(false);
+    setTimeout(() => memDeRef.current?.focus(), 50);
+  };
+
   const markKnown = () => {
     setGrade("know");
     if (item?.id) onGradeItem?.(item.id, "know");
@@ -478,30 +504,38 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         </div>
 
         {hasFr ? (
-          /* ── Bilingual: German + French shown together, English as meaning ── */
-          <div className="space-y-3">
-            <LangBlock
-              label="German"
-              text={item.de}
-              active={phase === "Type"}
-              onHear={() => tts(item.de, 0.85, "de-DE")}
-              speechState={phase === "Speak" ? speechPhraseMatch : null}
-              onKnown={markKnown}
-              onStruggle={markStruggle}
-            />
-            <LangBlock
-              label="French"
-              text={item.fr}
-              active={phase === "French"}
-              onHear={() => tts(item.fr, 0.85, "fr-FR")}
-              speechState={null}
-              onKnown={markKnown}
-              onStruggle={markStruggle}
-            />
-            <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
-              Meaning: <span className="text-zinc-700">{displayEnglish}</span>
+          phase === "Memory" ? (
+            /* ── Memory phase: only English shown, recall both languages ── */
+            <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-center">
+              <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-zinc-400">Meaning</p>
+              <p className="text-2xl font-black text-zinc-950">{displayEnglish}</p>
             </div>
-          </div>
+          ) : (
+            /* ── Bilingual: German + French shown together, English as meaning ── */
+            <div className="space-y-3">
+              <LangBlock
+                label="German"
+                text={item.de}
+                active={phase === "Type"}
+                onHear={() => tts(item.de, 0.85, "de-DE")}
+                speechState={phase === "Speak" ? speechPhraseMatch : null}
+                onKnown={markKnown}
+                onStruggle={markStruggle}
+              />
+              <LangBlock
+                label="French"
+                text={item.fr}
+                active={phase === "French"}
+                onHear={() => tts(item.fr, 0.85, "fr-FR")}
+                speechState={null}
+                onKnown={markKnown}
+                onStruggle={markStruggle}
+              />
+              <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
+                Meaning: <span className="text-zinc-700">{displayEnglish}</span>
+              </div>
+            </div>
+          )
         ) : (
           /* ── German only (original) ── */
           <>
@@ -829,11 +863,107 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
                   <Volume2 className="h-5 w-5" />
                 </motion.button>
-                <Button onClick={frChecked && frResult.ok ? onNext : checkFrAnswer}
+                <Button onClick={frChecked && frResult.ok ? advance : checkFrAnswer}
                   className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
-                  {frChecked && frResult.ok ? <>Continue <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                  {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
                 </Button>
               </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* MEMORY phase — recall both sentences without prompts */}
+        {phase === "Memory" && (
+          <motion.div key="memory" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              Now recall both from memory. No hints — just the meaning above.
+            </p>
+            <div className="space-y-3">
+              {/* German recall input */}
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400 pl-1">German</p>
+                <motion.div animate={shakeControls}>
+                  <Input ref={memDeRef}
+                    className={cn(
+                      "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                      memDeChecked && memDeResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                      memDeChecked && !memDeResult.ok ? "border-rose-300 bg-rose-50" :
+                                                        "focus:border-[var(--accent)]"
+                    )}
+                    placeholder="Type the German sentence..."
+                    value={memDeInput}
+                    onChange={e => { setMemDeInput(e.target.value); if (memDeChecked) { setMemDeChecked(false); setMemFrChecked(false); } }}
+                    onKeyDown={e => e.key === "Enter" && memFrRef.current?.focus()}
+                    disabled={memDeChecked && memDeResult.ok && memFrChecked && memFrResult.ok}
+                  />
+                </motion.div>
+                <CharBar onInsert={c => insertAt(memDeRef.current, c, setMemDeInput)} />
+              </div>
+              {/* French recall input */}
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400 pl-1">French</p>
+                <Input ref={memFrRef}
+                  className={cn(
+                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                    memFrChecked && memFrResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                    memFrChecked && !memFrResult.ok ? "border-rose-300 bg-rose-50" :
+                                                      "focus:border-[var(--accent)]"
+                  )}
+                  placeholder="Type the French sentence..."
+                  value={memFrInput}
+                  onChange={e => { setMemFrInput(e.target.value); if (memFrChecked) { setMemDeChecked(false); setMemFrChecked(false); } }}
+                  onKeyDown={e => e.key === "Enter" && (!memDeChecked ? checkMemory() : undefined)}
+                  disabled={memDeChecked && memDeResult.ok && memFrChecked && memFrResult.ok}
+                />
+                <FrenchCharBar onInsert={c => insertAt(memFrRef.current, c, setMemFrInput)} />
+              </div>
+            </div>
+
+            {/* Feedback */}
+            <AnimatePresence>
+              {(memDeChecked || memFrChecked) && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="space-y-2">
+                  <div className={cn("rounded-lg border p-3 text-sm space-y-1",
+                    memDeResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                    <div className="flex items-center gap-2 font-semibold">
+                      {memDeResult.ok
+                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">German correct</span></>
+                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">German: <span className="text-zinc-950">{item.de}</span></span></>}
+                    </div>
+                  </div>
+                  <div className={cn("rounded-lg border p-3 text-sm space-y-1",
+                    memFrResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                    <div className="flex items-center gap-2 font-semibold">
+                      {memFrResult.ok
+                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">French correct</span></>
+                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">French: <span className="text-zinc-950">{item.fr}</span></span></>}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Actions */}
+            {memDeChecked && !(memDeResult.ok && memFrResult.ok) ? (
+              <div className="flex gap-3">
+                <Button onClick={retryMemory} variant="outline"
+                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+                <Button onClick={onNext}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  Skip
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={memDeChecked && memDeResult.ok && memFrResult.ok ? onNext : checkMemory}
+                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                {memDeChecked && memDeResult.ok && memFrResult.ok
+                  ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></>
+                  : "Check both"}
+              </Button>
             )}
           </motion.div>
         )}
