@@ -13,4 +13,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      // Forward TTS requests to the Node voice server in dev.
+      "/api": "http://localhost:3001",
+    },
+  },
 });

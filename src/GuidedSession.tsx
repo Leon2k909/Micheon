@@ -13,6 +13,7 @@ import {
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
+import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
   listenGermanOnce,
@@ -24,27 +25,9 @@ import {
   MessageSquareQuote, RotateCcw, Target, Languages, Flame
 } from "lucide-react";
 
-// Section
-function tts(text: string, rate = 0.88, lang = "de-DE") {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; u.rate = rate;
-  window.speechSynthesis.speak(u);
-}
-
-// Play several utterances back to back (one cancel, then queue) — used to hear
-// the German and French of a sentence in sequence on the Listen step.
-function ttsSequence(items: { text: string; rate?: number; lang: string }[]) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  for (const { text, rate = 0.88, lang } of items) {
-    if (!text) continue;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang; u.rate = rate;
-    window.speechSynthesis.speak(u);
-  }
-}
+// TTS now runs through the /api/tts server (premium Microsoft voices in every
+// browser) with an automatic fall back to the browser's built-in speechSynthesis.
+// See src/lib/voice.ts.
 
 // ── Subtle game-feel sounds (Web Audio, no assets) ────────────────
 let _audioCtx: AudioContext | null = null;

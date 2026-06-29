@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
+import { tts } from "@/lib/voice";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
@@ -16,12 +17,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 function speak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "de-DE";
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
+  tts(text, 0.9, "de-DE");
 }
 
 function StatusButton({
