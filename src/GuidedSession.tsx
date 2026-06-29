@@ -1316,7 +1316,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50/95 p-6 backdrop-blur-sm"
+      className="app-overlay fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50/95 p-6 backdrop-blur-sm"
     >
       <Card className="w-full max-w-lg space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
         <div className="text-center space-y-1">
@@ -1438,7 +1438,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const kind: string = step?.type || step?.kind || "complete";
 
   return (
-    <div className="guided-session fixed inset-0 z-[500] flex flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-950 selection:bg-[var(--accent-dim)]">
+    <div className="guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-950 selection:bg-[var(--accent-dim)]">
 
       {/* Header */}
       <header className="relative z-10 flex items-center gap-4 border-b border-zinc-200 bg-white px-6 py-4">

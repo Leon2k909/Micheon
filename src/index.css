@@ -113,6 +113,11 @@ button { cursor: pointer; }
 :root { --titlebar-h: 0px; --app-h: 100dvh; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
+/* Full-screen fixed overlays (lesson view, completion screen, login) cover the
+   whole viewport from top:0, which would slide under the desktop title bar.
+   In the Electron build, start them just below the bar instead. */
+html.is-electron .app-overlay { top: var(--titlebar-h); }
+
 .titlebar {
   height: var(--titlebar-h);
   display: flex;
