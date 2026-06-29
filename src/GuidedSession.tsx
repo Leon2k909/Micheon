@@ -135,7 +135,11 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   return p;
 }
 
-function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench?: boolean }) {
+function PhaseDots({ current, withFrench = false, onClickPhase }: {
+  current: Phase;
+  withFrench?: boolean;
+  onClickPhase?: (p: Phase) => void;
+}) {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
@@ -143,8 +147,10 @@ function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench
       {allPhases.map((p, i) => (
         <div
           key={p}
+          onClick={() => i < idx && onClickPhase?.(p)}
           className={cn(
             "flex items-center justify-center gap-2 rounded-xl px-3 py-2 transition-all",
+            i < idx ? "cursor-pointer hover:bg-zinc-200" : "",
             i === idx ? "bg-zinc-950 text-white shadow-sm" : i < idx ? "bg-white text-zinc-950" : "text-zinc-400"
           )}
         >
@@ -253,6 +259,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [memDeChecked, setMemDeChecked] = useState(false);
   const [memFrInput, setMemFrInput] = useState("");
   const [memFrChecked, setMemFrChecked] = useState(false);
+  const [deHintLen, setDeHintLen] = useState(0);
+  const [frHintLen, setFrHintLen] = useState(0);
   const [speechListening, setSpeechListening] = useState(false);
   const [speechTranscript, setSpeechTranscript] = useState("");
   const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
@@ -308,7 +316,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (phase === "Type")      setTimeout(() => inputRef.current?.focus(), 100);
     if (phase === "Translate") setTimeout(() => enInputRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
-    if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
+    if (phase === "Memory")    { setDeHintLen(0); setFrHintLen(0); setTimeout(() => memDeRef.current?.focus(), 100); }
   }, [phase]);
 
   const handleSpeechCheck = () => {
@@ -345,6 +353,14 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     const next = order[order.indexOf(phase) + 1];
     if (next) setPhase(next);
   };
+
+  const goBack = () => {
+    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
+    const prev = order[order.indexOf(phase) - 1];
+    if (prev) setPhase(prev);
+  };
+
+  const goToPhase = (p: Phase) => setPhase(p);
 
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
@@ -461,7 +477,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
       </div>
 
       {/* Phase dots */}
-      <PhaseDots current={phase} withFrench={hasFr} />
+      <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
 
       {/* Sentence display card */}
       <div className={cn(
@@ -606,6 +622,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -672,6 +689,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -741,6 +759,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 {checked && result.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -801,6 +820,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 {enChecked && enResult.ok ? <>{hasFr ? "Next: French" : "Continue"} <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -869,6 +889,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </Button>
               </div>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -877,12 +898,23 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <motion.div key="memory" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              Now recall both from memory. No hints — just the meaning above.
+              Recall both sentences from memory. Press Hint if you're stuck.
             </p>
             <div className="space-y-3">
               {/* German recall input */}
               <div className="space-y-1.5">
-                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400 pl-1">German</p>
+                <div className="flex items-center justify-between pl-1">
+                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">German</p>
+                  <button type="button" onClick={() => setDeHintLen(n => Math.min(n + 1, item.de.length))}
+                    className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
+                    {deHintLen === 0 ? "Hint" : deHintLen >= item.de.length ? "Full hint" : `Hint (${deHintLen}/${item.de.length})`}
+                  </button>
+                </div>
+                {deHintLen > 0 && (
+                  <p className="text-center font-mono text-sm text-zinc-500 tracking-wide">
+                    {item.de.slice(0, deHintLen)}{deHintLen < item.de.length ? "…" : ""}
+                  </p>
+                )}
                 <motion.div animate={shakeControls}>
                   <Input ref={memDeRef}
                     className={cn(
@@ -902,7 +934,18 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
               {/* French recall input */}
               <div className="space-y-1.5">
-                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400 pl-1">French</p>
+                <div className="flex items-center justify-between pl-1">
+                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">French</p>
+                  <button type="button" onClick={() => setFrHintLen(n => Math.min(n + 1, (item.fr ?? "").length))}
+                    className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
+                    {frHintLen === 0 ? "Hint" : frHintLen >= (item.fr ?? "").length ? "Full hint" : `Hint (${frHintLen}/${(item.fr ?? "").length})`}
+                  </button>
+                </div>
+                {frHintLen > 0 && (
+                  <p className="text-center font-mono text-sm text-zinc-500 tracking-wide">
+                    {(item.fr ?? "").slice(0, frHintLen)}{frHintLen < (item.fr ?? "").length ? "…" : ""}
+                  </p>
+                )}
                 <Input ref={memFrRef}
                   className={cn(
                     "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
@@ -965,6 +1008,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   : "Check both"}
               </Button>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
       </AnimatePresence>
