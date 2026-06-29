@@ -194,7 +194,7 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
             <button
               type="button"
               onClick={onKnown}
-              className="grade-btn grade-btn-known !h-7 !rounded-full !px-3 !text-[10px]"
+              className="grade-btn grade-btn-known !h-7 !rounded-full !px-3 !text-xs"
             >
               Know it
             </button>
@@ -203,7 +203,7 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
             <button
               type="button"
               onClick={onStruggle}
-              className="grade-btn grade-btn-struggle !h-7 !rounded-full !px-3 !text-[10px]"
+              className="grade-btn grade-btn-struggle !h-7 !rounded-full !px-3 !text-xs"
             >
               Struggle
             </button>
