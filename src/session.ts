@@ -57,8 +57,13 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
-    if (isKnownItem(reviewState, id, aliases)) return;
+    // Claim this sentence text up front, even if we're about to skip it for being
+    // known. The same German sentence appears in the data under several ids (e.g.
+    // as a vocab example AND a phrase). Without claiming it here, marking one copy
+    // "known" would skip that id but let an identical sentence with a different id
+    // slip back in on the next session.
     usedSentences.add(key);
+    if (isKnownItem(reviewState, id, aliases)) return;
     queue.push({ type: EX.SENTENCE, item: { id, de, en, fr } });
   };
 
