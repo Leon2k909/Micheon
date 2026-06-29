@@ -31,3 +31,4 @@ tsconfig.tsbuildinfo
 *.njsproj
 *.sln
 *.sw?
+release/

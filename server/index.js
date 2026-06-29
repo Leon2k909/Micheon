@@ -13,11 +13,10 @@
 
 import express from "express";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 3001;
 
 // Default neural voice per language. Override per-request with ?voice=.
 const VOICE_BY_LANG = {
@@ -104,6 +103,18 @@ app.use((req, res, next) => {
   res.sendFile(path.join(dist, "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`germ TTS server listening on http://localhost:${PORT}`);
-});
+// Start listening. Returns a promise that resolves once the server is up, so
+// callers (e.g. the Electron main process) can wait before loading the window.
+export function startServer(port = process.env.PORT || 3001) {
+  return new Promise((resolve) => {
+    const srv = app.listen(port, () => {
+      console.log(`germ TTS server listening on http://localhost:${port}`);
+      resolve(srv);
+    });
+  });
+}
+
+// Auto-start when run directly (node server/index.js), but not when imported.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  startServer();
+}
