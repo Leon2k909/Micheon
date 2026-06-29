@@ -412,7 +412,7 @@ export default function GermanLearningLab() {
   );
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--bg)] text-[var(--text-1)]">
+    <div className="min-h-[var(--app-h)] bg-[var(--bg)] text-[var(--text-1)]">
       <TopNav
         activeTab={activeTab}
         setActiveTab={openTab}

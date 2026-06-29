@@ -6,7 +6,7 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, shell, ipcMain } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import { startServer } from "../server/index.js";
@@ -43,15 +43,25 @@ async function createWindow() {
     minHeight: 600,
     backgroundColor: "#0b0b0f",
     title: "German Lab",
-    autoHideMenuBar: true,
+    // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
+    // for a clean, on-brand look like Discord/Slack.
+    frame: false,
     icon: path.join(__dirname, "..", "public", "favicon.svg"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
 
   mainWindow.loadURL(`http://localhost:${PORT}`);
+
+  // Tell the renderer when the window is maximized/restored so the title bar's
+  // maximize button can show the correct icon.
+  const sendMaxState = () =>
+    mainWindow?.webContents.send("window:maximize-change", mainWindow.isMaximized());
+  mainWindow.on("maximize", sendMaxState);
+  mainWindow.on("unmaximize", sendMaxState);
 
   // Open external links (http/https to other sites) in the user's real browser
   // instead of inside the app window.
@@ -67,6 +77,16 @@ async function createWindow() {
     mainWindow = null;
   });
 }
+
+// Window-control IPC from the custom title bar.
+ipcMain.on("window:minimize", () => mainWindow?.minimize());
+ipcMain.on("window:toggle-maximize", () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMaximized()) mainWindow.unmaximize();
+  else mainWindow.maximize();
+});
+ipcMain.on("window:close", () => mainWindow?.close());
+ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 
 app.whenReady().then(createWindow);
 

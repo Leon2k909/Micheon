@@ -62,8 +62,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[500] overflow-y-auto bg-[#f7f6f2] text-zinc-950">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl items-center gap-10 px-5 py-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
+    <div className="fixed bottom-0 left-0 right-0 top-[var(--titlebar-h)] z-[500] overflow-y-auto bg-[#f7f6f2] text-zinc-950">
+      <div className="mx-auto grid min-h-[var(--app-h)] w-full max-w-7xl items-center gap-10 px-5 py-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
         <motion.section
           animate={{ opacity: 1, y: 0 }}
           className="py-6"

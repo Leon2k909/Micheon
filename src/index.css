@@ -105,6 +105,61 @@ html, body {
 
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
+
+/* ── Electron desktop title bar ────────────────────────────────────────────
+   --app-h is the height app screens should fill. On the website it's the full
+   viewport; in the desktop build we subtract the custom title bar so nothing
+   overflows. The .is-electron class is added in main.tsx only inside Electron. */
+:root { --titlebar-h: 0px; --app-h: 100dvh; }
+html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
+
+.titlebar {
+  height: var(--titlebar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+  -webkit-app-region: drag; /* whole bar drags the window */
+  position: relative;
+  z-index: 1000;
+}
+.titlebar-drag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding-left: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.titlebar-logo { width: 16px; height: 16px; opacity: 0.95; }
+.titlebar-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+.titlebar-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag; /* buttons must be clickable */
+}
+.titlebar-btn {
+  width: 46px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  opacity: 0.75;
+  transition: background-color 120ms, opacity 120ms, color 120ms;
+}
+.titlebar-btn:hover { background: color-mix(in srgb, var(--text-1) 12%, transparent); opacity: 1; }
+.titlebar-close:hover { background: #e81123; color: #ffffff; opacity: 1; }
 button:disabled { cursor: not-allowed; }
 img, svg { display: block; }
 a { color: inherit; text-decoration: none; }

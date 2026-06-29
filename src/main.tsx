@@ -9,6 +9,9 @@ import { applyEffects, getEffects } from "./lib/effects";
 applyTheme(getTheme());
 applyEffects(getEffects());
 
+// Flag the desktop (Electron) build so the custom title bar + height offset apply.
+if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");
+
 const container = document.getElementById("root");
 if (container) {
   createRoot(container).render(

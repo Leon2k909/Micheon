@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import GermanLearningLab from "./german_learning_lab";
 import { LoginScreen } from "./components/LoginScreen";
+import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, getOrCreateDefaultAuthUser, UserProfile } from "./lib/profileStorage";
 
 export default function App() {
@@ -12,9 +13,15 @@ export default function App() {
     if (active) setUser(active);
   }, []);
 
-  if (!user) {
-    return <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />;
-  }
-
-  return <GermanLearningLab />;
+  // TitleBar renders only inside the Electron desktop build (no-op on the website).
+  return (
+    <>
+      <TitleBar />
+      {user ? (
+        <GermanLearningLab />
+      ) : (
+        <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
+      )}
+    </>
+  );
 }
