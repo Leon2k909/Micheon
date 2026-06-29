@@ -1506,30 +1506,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         </AnimatePresence>
       </main>
 
-      {/* Combo streak chip */}
-      <AnimatePresence>
-        {combo >= 2 && (
-          <motion.div
-            key="combo-chip"
-            initial={{ opacity: 0, y: -10, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="pointer-events-none absolute left-1/2 top-24 z-30 -translate-x-1/2"
-          >
-            <motion.div
-              key={combo}
-              initial={{ scale: 1.35 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 420, damping: 12 }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-black text-white shadow-[0_8px_22px_rgba(120,52,247,0.45)]"
-            >
-              <Flame className="h-4 w-4 fill-current" strokeWidth={2.5} />
-              {combo} combo
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Milestone praise pop */}
       <AnimatePresence>
         {praise && (
