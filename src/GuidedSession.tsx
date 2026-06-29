@@ -423,26 +423,26 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">
             {hasFr ? "German + French" : "German sentence"}
           </span>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              aria-label="Mark known and skip to the next item. Shortcut Alt K"
-              className="grade-btn grade-btn-known"
-              onClick={markKnown}
-              type="button"
-            >
-              Know it
-              <kbd className="grade-kbd">Alt K</kbd>
-            </button>
-            <button
-              aria-label="Mark this item as a struggle. Shortcut Alt S"
-              className="grade-btn grade-btn-struggle"
-              onClick={markStruggle}
-              type="button"
-            >
-              Struggle
-              <kbd className="grade-kbd">Alt S</kbd>
-            </button>
-            {!hasFr && (
+          {!hasFr && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                aria-label="Mark known and skip to the next item. Shortcut Alt K"
+                className="grade-btn grade-btn-known"
+                onClick={markKnown}
+                type="button"
+              >
+                Know it
+                <kbd className="grade-kbd">Alt K</kbd>
+              </button>
+              <button
+                aria-label="Mark this item as a struggle. Shortcut Alt S"
+                className="grade-btn grade-btn-struggle"
+                onClick={markStruggle}
+                type="button"
+              >
+                Struggle
+                <kbd className="grade-kbd">Alt S</kbd>
+              </button>
               <button
                 className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
                 onClick={() => tts(item.de, 0.82)}
@@ -451,8 +451,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 <Volume2 className="h-3.5 w-3.5" />
                 Hear it
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {hasFr ? (
