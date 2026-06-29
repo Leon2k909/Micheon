@@ -164,12 +164,14 @@ function PhaseDots({ current, withFrench = false }: { current: Phase; withFrench
 
 // A single labeled language row (German / French) for bilingual companion mode.
 // `active` highlights the language the learner is currently being asked to type.
-function LangBlock({ label, text, active, onHear, speechState }: {
+function LangBlock({ label, text, active, onHear, speechState, onKnown, onStruggle }: {
   label: string;
   text: string;
   active?: boolean;
   onHear: () => void;
   speechState?: { ok: boolean } | null;
+  onKnown?: () => void;
+  onStruggle?: () => void;
 }) {
   return (
     <div className={cn(
@@ -187,14 +189,34 @@ function LangBlock({ label, text, active, onHear, speechState }: {
             </span>
           )}
         </span>
-        <button
-          type="button"
-          aria-label={`Hear the ${label} sentence`}
-          onClick={onHear}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7] transition-colors hover:bg-zinc-50"
-        >
-          <Volume2 className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          {onKnown && (
+            <button
+              type="button"
+              onClick={onKnown}
+              className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100"
+            >
+              Know it
+            </button>
+          )}
+          {onStruggle && (
+            <button
+              type="button"
+              onClick={onStruggle}
+              className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-100"
+            >
+              Struggle
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label={`Hear the ${label} sentence`}
+            onClick={onHear}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7] transition-colors hover:bg-zinc-50"
+          >
+            <Volume2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <div className={cn(
         "text-2xl font-black leading-tight tracking-tight sm:text-3xl",
@@ -464,6 +486,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               active={phase === "Type"}
               onHear={() => tts(item.de, 0.85, "de-DE")}
               speechState={phase === "Speak" ? speechPhraseMatch : null}
+              onKnown={markKnown}
+              onStruggle={markStruggle}
             />
             <LangBlock
               label="French"
@@ -471,6 +495,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               active={phase === "French"}
               onHear={() => tts(item.fr, 0.85, "fr-FR")}
               speechState={null}
+              onKnown={markKnown}
+              onStruggle={markStruggle}
             />
             <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
               Meaning: <span className="text-zinc-700">{displayEnglish}</span>
