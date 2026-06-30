@@ -579,7 +579,7 @@ export default function GamificationPanel({
                   <option value="auto">Auto-detect (English)</option>
                   <option value="british">British English</option>
                   <option value="american">American English</option>
-                  <option value="german">Deutsch — learn English instead</option>
+                  <option value="german">Deutsch</option>
                 </select>
               </div>
 
@@ -760,7 +760,7 @@ export default function GamificationPanel({
                 <option value="auto">Auto-detect (English)</option>
                 <option value="british">British English</option>
                 <option value="american">American English</option>
-                <option value="german">Deutsch — learn English instead</option>
+                <option value="german">Deutsch</option>
               </select>
             </div>
 
