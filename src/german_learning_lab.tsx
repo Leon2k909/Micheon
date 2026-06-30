@@ -9,9 +9,10 @@ import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
 import GamificationPanel from "@/Gamification";
 import { GamesView } from "@/games/GamesView";
-import { buildApiPartFromResolved, buildRemoteWordBankParts, fetchGermanApiVocabulary, fetchRemoteGermanWordCatalog, fetchWokabularyWordBank } from "@/lib/api";
+import { buildApiPartFromResolved, buildRemoteWordBankParts } from "@/lib/api";
 import { buildBundledParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
+import bundledWordBank from "@/lib/bundledWordBank.json";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
@@ -68,46 +69,16 @@ export default function GermanLearningLab() {
 
   useEffect(() => {
     // Reliability floor: blueprint lessons + bundled curated phrasebank +
-    // bundled Tatoeba sentence library. This always works, even fully offline.
+    // bundled Tatoeba sentence library + the bundled frequency word bank
+    // (2,500 most-common German words with EN/FR translations). All of this is
+    // shipped with the app, so it works every time, fully offline, no flaky
+    // remote fetches (the old remote sources were CORS-blocked or cold-started
+    // and gave inconsistent counts).
     const resolved: Record<string, Part> = {};
     for (const [k, bp] of Object.entries(allPartBlueprints))
       resolved[k] = buildApiPartFromResolved(bp as Blueprint, {});
-    setApiParts({ ...resolved, ...buildBundledParts() });
-
-    let cancelled = false;
-    async function loadRemoteWordBank() {
-      const apiItems = await fetchGermanApiVocabulary(["a1", "a2", "b1"], 250);
-      let remoteParts = buildRemoteWordBankParts(apiItems, 50);
-
-      if (Object.keys(remoteParts).length === 0) {
-        remoteParts = buildRemoteWordBankParts(await fetchWokabularyWordBank(), 50);
-      }
-
-      if (Object.keys(remoteParts).length === 0) {
-        const words = await fetchRemoteGermanWordCatalog();
-        remoteParts = buildRemoteWordBankParts(
-          words.map((word) => ({
-            de: word,
-            en: "Word-bank item",
-            tip: "word",
-            lookup: word,
-            example: "",
-            exampleEn: "",
-            pos: "",
-          })),
-          50
-        );
-      }
-
-      if (!cancelled && Object.keys(remoteParts).length > 0) {
-        setApiParts((current) => ({ ...current, ...remoteParts }));
-      }
-    }
-
-    loadRemoteWordBank();
-    return () => {
-      cancelled = true;
-    };
+    const wordBankParts = buildRemoteWordBankParts(bundledWordBank as any[], 50);
+    setApiParts({ ...resolved, ...buildBundledParts(), ...wordBankParts });
   }, []);
 
   const deferredTab = useDeferredValue(activeTab);
