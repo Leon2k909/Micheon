@@ -269,26 +269,6 @@ export function TopNav({
                 <span className="hidden lg:inline">{readerLabel}</span>
               </button>
             )}
-            <div
-              className="hidden items-center gap-2.5 rounded-full bg-[var(--surface-2)] py-1.5 pl-1.5 pr-3.5 lg:flex"
-              title={level.nxt ? `Level ${level.cur.level} — ${level.pct}% to ${level.nxt.label}` : `Level ${level.cur.level} — max level`}
-            >
-              <div className="relative h-7 w-7">
-                <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28" aria-hidden="true">
-                  <circle cx="14" cy="14" r="12" fill="none" stroke="var(--surface-3)" strokeWidth="3" />
-                  <circle
-                    cx="14" cy="14" r="12" fill="none" stroke="var(--yellow)" strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 12}
-                    strokeDashoffset={(2 * Math.PI * 12) * (1 - level.pct / 100)}
-                  />
-                </svg>
-                <span className="absolute inset-0 grid place-items-center text-[10px] font-black text-[var(--text-1)]">
-                  {level.cur.level}
-                </span>
-              </div>
-              <span className="text-[12px] font-black text-[var(--text-1)]">{xp.toLocaleString()} XP</span>
-            </div>
             <button
               aria-label="Search"
               aria-expanded={searchOpen}
@@ -326,25 +306,51 @@ export function TopNav({
                 <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[var(--yellow)] ring-2 ring-[var(--surface)]" />
               )}
             </button>
-            <button
-              aria-label="Account menu"
-              aria-haspopup="menu"
-              aria-expanded={avatarMenuOpen}
-              data-testid="topnav-avatar"
+            {/* Profile chip — level ring + XP fused with the avatar so they read
+                as one unit. The ring/XP only show on lg; the avatar (the menu
+                trigger) is always visible. */}
+            <div
               className={cn(
-                "flex h-11 w-11 items-center justify-center overflow-hidden rounded-full text-sm font-black ring-2 transition-transform active:scale-95",
-                avatarUrl ? "" : "bg-[var(--accent-dim)] text-[var(--accent)]",
-                avatarMenuOpen ? "ring-[var(--accent)]" : "ring-[var(--surface)]"
+                "flex items-center gap-2.5 rounded-full transition-colors lg:pl-3.5 lg:pr-1 lg:py-1",
+                avatarMenuOpen ? "lg:bg-[var(--accent-dim)]" : "lg:bg-[var(--surface-2)]"
               )}
-              onClick={() => {
-                setAvatarMenuOpen((value) => !value);
-                setSearchOpen(false);
-                setNotificationsOpen(false);
-              }}
-              type="button"
+              title={level.nxt ? `Level ${level.cur.level} — ${level.pct}% to ${level.nxt.label}` : `Level ${level.cur.level} — max level`}
             >
-              {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : initial}
-            </button>
+              <div className="relative hidden h-7 w-7 lg:block">
+                <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28" aria-hidden="true">
+                  <circle cx="14" cy="14" r="12" fill="none" stroke="var(--surface-3)" strokeWidth="3" />
+                  <circle
+                    cx="14" cy="14" r="12" fill="none" stroke="var(--yellow)" strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 12}
+                    strokeDashoffset={(2 * Math.PI * 12) * (1 - level.pct / 100)}
+                  />
+                </svg>
+                <span className="absolute inset-0 grid place-items-center text-[10px] font-black text-[var(--text-1)]">
+                  {level.cur.level}
+                </span>
+              </div>
+              <span className="hidden text-[12px] font-black text-[var(--text-1)] lg:inline">{xp.toLocaleString()} XP</span>
+              <button
+                aria-label="Account menu"
+                aria-haspopup="menu"
+                aria-expanded={avatarMenuOpen}
+                data-testid="topnav-avatar"
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-sm font-black ring-2 transition-transform active:scale-95",
+                  avatarUrl ? "" : "bg-[var(--accent-dim)] text-[var(--accent)]",
+                  avatarMenuOpen ? "ring-[var(--accent)]" : "ring-[var(--surface)]"
+                )}
+                onClick={() => {
+                  setAvatarMenuOpen((value) => !value);
+                  setSearchOpen(false);
+                  setNotificationsOpen(false);
+                }}
+                type="button"
+              >
+                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : initial}
+              </button>
+            </div>
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] md:hidden"
