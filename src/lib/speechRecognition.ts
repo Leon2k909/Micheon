@@ -41,6 +41,8 @@ export function speechRecognitionUserHint(errorCode: string): string {
 export type ListenGermanOptions = {
   /** Abort to cancel listening early */
   signal?: AbortSignal;
+  /** BCP-47 language to recognise (default de-DE). Set en-US when learning English. */
+  lang?: string;
   /** Live partial transcripts as the user speaks (for on-screen feedback). */
   onInterim?: (text: string) => void;
   /** Fires once the recognizer confirms the microphone is actually capturing audio. */
@@ -70,7 +72,7 @@ export function listenGermanOnce(options?: ListenGermanOptions): Promise<{ trans
     }
 
     const rec = new Ctor();
-    rec.lang = "de-DE";
+    rec.lang = options?.lang ?? "de-DE";
     rec.interimResults = true;
     rec.continuous = false;
     rec.maxAlternatives = 1;

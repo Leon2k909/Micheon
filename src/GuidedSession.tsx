@@ -13,6 +13,7 @@ import {
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
+import { learningEnglish } from "@/lib/direction";
 import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
@@ -257,12 +258,26 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const speechAbortRef = useRef<AbortController | null>(null);
   const speechSupported = useMemo(() => isSpeechRecognitionSupported(), []);
   const englishVariant = useMemo(() => getEnglishVariant(), []);
-  const displayEnglish = useMemo(() => formatEnglishText(item.en, englishVariant), [item.en, englishVariant]);
+  // Learning direction: by default German is the target (item.de) and English the
+  // meaning (item.en). When learning English, the session builder has already
+  // swapped the fields, so item.de IS the English target — we just need the right
+  // TTS/speech language and labels.
+  const learnEn = useMemo(() => learningEnglish(), []);
+  const targetLang = learnEn ? "en-US" : "de-DE";
+  const targetLabel = learnEn ? "English" : "German";
+  const meaningLabel = learnEn ? "German" : "English";
+  // The meaning text (item.en) is already English in normal mode (apply spelling
+  // variant) but is German when learning English (show as-is).
+  const displayEnglish = useMemo(
+    () => (learnEn ? item.en : formatEnglishText(item.en, englishVariant)),
+    [item.en, englishVariant, learnEn]
+  );
   const result   = useMemo(() => match(input, item.de), [input, item.de]);
   const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
-  // French companion: tested as an extra phase when enabled and the item has French.
+  // French companion: tested as an extra phase when enabled and the item has French
+  // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
-  const hasFr = companion === "fr" && typeof item.fr === "string" && item.fr.trim().length > 0;
+  const hasFr = companion === "fr" && !learnEn && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
   const memDeResult = useMemo(() => match(memDeInput, item.de), [memDeInput, item.de]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
@@ -271,7 +286,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   useEffect(() => {
     if (phase !== "Listen") return;
     if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
-    else tts(item.de);
+    else tts(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr]);
 
   // Reset speech UI when entering Speak or sentence changes
@@ -313,6 +328,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     setSpeechListening(true);
     listenGermanOnce({
       signal: ac.signal,
+      lang: targetLang,
       onInterim: (text) => { if (!ac.signal.aborted) setSpeechTranscript(text); },
     })
       .then(({ transcript }) => {
@@ -349,7 +365,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (!input.trim() || checked) return;
     setChecked(true);
     reactToAnswer(result.ok);
-    tts(item.de, result.ok ? 0.88 : 0.75);
+    tts(item.de, result.ok ? 0.88 : 0.75, targetLang);
     if (result.ok) {
       setTimeout(advance, 900);
     } else {
@@ -468,7 +484,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
       )}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">
-            {hasFr ? "German + French" : "German sentence"}
+            {hasFr ? "German + French" : `${targetLabel} sentence`}
           </span>
           {!hasFr && (
             <div className="flex flex-wrap items-center gap-2">
@@ -492,7 +508,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </button>
               <button
                 className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
-                onClick={() => tts(item.de, 0.82)}
+                onClick={() => tts(item.de, 0.82, targetLang)}
                 type="button"
               >
                 <Volume2 className="h-3.5 w-3.5" />
@@ -555,7 +571,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {phase === "Translate" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
-                  What does this mean in English?
+                  What does this mean in {meaningLabel}?
                 </motion.div>
               )}
             </AnimatePresence>
@@ -596,7 +612,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             <p className="text-center text-sm font-semibold text-zinc-500">Listen once, then replay if you need it.</p>
             <div className="flex gap-3">
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={() => tts(item.de)}
+                onClick={() => tts(item.de, 0.88, targetLang)}
                 className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
                 <Volume2 className="h-5 w-5" />
               </motion.button>
@@ -663,7 +679,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             )}
             <div className="flex gap-3">
               <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={() => tts(item.de, 0.75)}
+                onClick={() => tts(item.de, 0.75, targetLang)}
                 className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
                 <Volume2 className="h-5 w-5" />
               </motion.button>
@@ -750,7 +766,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         {phase === "Translate" && (
           <motion.div key="translate" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Now type the English translation.</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">Now type the {meaningLabel} translation.</p>
             <div className="space-y-3">
               <motion.div animate={shakeControls}>
                 <Input ref={enInputRef}
@@ -760,7 +776,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                     enChecked && !enResult.ok ? "border-rose-300 bg-rose-50" :
                                                 "focus:border-[var(--accent)]"
                   )}
-                  placeholder="Type the English meaning..."
+                  placeholder={`Type the ${meaningLabel} meaning...`}
                   value={enInput}
                   onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? finishOrFrench() : checkEnAnswer())}
@@ -1010,9 +1026,11 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
   const result = useMemo(() => match(input, line?.de ?? ""), [input, line]);
-  const companionFr = useMemo(() => getCompanion() === "fr", []);
+  const learnEn = useMemo(() => learningEnglish(), []);
+  const targetLang = learnEn ? "en-US" : "de-DE";
+  const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);
 
-  useEffect(() => { if (line?.de) tts(line.de); }, [lineIdx]);
+  useEffect(() => { if (line?.de) tts(line.de, 0.88, targetLang); }, [lineIdx]);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, [lineIdx]);
 
   if (!line) { onNext(); return null; }
@@ -1020,7 +1038,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const checkLine = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
-    tts(line.de);
+    tts(line.de, 0.88, targetLang);
     if (result.ok) setTimeout(nextLine, 900);
   };
 
@@ -1122,7 +1140,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
               </div>
             )}
           </div>
-          <button onClick={() => tts(line.de)} className="ml-auto text-zinc-600 hover:text-zinc-950 transition-colors">
+          <button onClick={() => tts(line.de, 0.88, targetLang)} className="ml-auto text-zinc-600 hover:text-zinc-950 transition-colors">
             <Volume2 className="h-4 w-4" />
           </button>
         </div>

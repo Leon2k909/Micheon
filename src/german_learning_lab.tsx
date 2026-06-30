@@ -16,6 +16,7 @@ import bundledWordBank from "@/lib/bundledWordBank.json";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
+import { learningEnglish } from "@/lib/direction";
 import { getMasteredCount } from "@/lib/mastery";
 import { recordActivitySession } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
@@ -31,6 +32,25 @@ type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
   totalReviews: number; streak: number; externalWords: number;
 };
+
+// Flip a built session step's display fields (de<->en) so the English text becomes
+// the thing you read/hear/type and the German becomes the meaning. Used when the
+// learner is a German speaker studying English. IDs and everything else are kept.
+function swapStepForEnglish(step: any): any {
+  if (step?.type === "sentence" && step.item) {
+    return { ...step, item: { ...step.item, de: step.item.en, en: step.item.de } };
+  }
+  if (step?.type === "dialogue" && Array.isArray(step.dialogue?.lines)) {
+    return {
+      ...step,
+      dialogue: {
+        ...step.dialogue,
+        lines: step.dialogue.lines.map((l: any) => ({ ...l, de: l.en, en: l.de })),
+      },
+    };
+  }
+  return step;
+}
 
 export default function GermanLearningLab() {
   const user = getAuthUser()!;
@@ -151,7 +171,11 @@ export default function GermanLearningLab() {
       example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
     }));
     const reviewState = loadCompleted();
-    const steps = buildSession(partWithKey, items, reviewState, 0);
+    let steps = buildSession(partWithKey, items, reviewState, 0);
+    // German speaker learning English: show the same content the other way round
+    // (English is the target you type/hear; German is the meaning). IDs are left
+    // untouched so progress tracking stays consistent in either direction.
+    if (learningEnglish()) steps = steps.map(swapStepForEnglish);
     const hasContent = steps.some(s => s.type === "sentence" || s.type === "dialogue");
 
     if (!hasContent) {
