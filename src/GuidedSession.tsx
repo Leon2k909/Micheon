@@ -1067,8 +1067,8 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 w-full max-w-2xl">
       <div className="text-center space-y-1">
-        <Badge variant="outline" className="rounded-full border-pink-500/30 bg-pink-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-pink-300">
-          <MessageSquareQuote className="mr-1.5 h-3 w-3" /> {dialogue.title}
+        <Badge variant="outline" className="rounded-full border-pink-500/30 bg-pink-500/10 px-5 py-2 text-base font-black uppercase tracking-[0.14em] text-pink-300">
+          <MessageSquareQuote className="mr-2 h-5 w-5" /> {dialogue.title}
         </Badge>
         <div className="text-xs text-zinc-600">{lineIdx + 1} / {lines.length}</div>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
