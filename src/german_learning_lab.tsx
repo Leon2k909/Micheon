@@ -121,13 +121,21 @@ export default function GermanLearningLab() {
     try {
       const existing = loadCompleted();
       const next = { ...existing };
-      stepsToMark
-        .filter(s => s.type === "sentence" && s.item?.id)
-        .forEach(s => {
-          if (next[s.item.id]?.lastGrade !== "struggle") {
-            next[s.item.id] = { lastGrade: "know", updatedAt: new Date().toISOString() };
-          }
-        });
+      const markKnown = (id: string) => {
+        if (id && next[id]?.lastGrade !== "struggle") {
+          next[id] = { lastGrade: "know", updatedAt: new Date().toISOString() };
+        }
+      };
+      stepsToMark.forEach((s) => {
+        if (s.type === "sentence" && s.item?.id) {
+          markKnown(s.item.id);
+        } else if (s.type === "dialogue" && Array.isArray(s.dialogue?.lines)) {
+          // Completing a conversation means every line was practised — persist
+          // each line, otherwise the same dialogue rebuilds every session and
+          // the learner loops on it instead of advancing to new content.
+          s.dialogue.lines.forEach((line: any) => { if (line?.id) markKnown(line.id); });
+        }
+      });
       saveReviewGrades(next);
     } catch {}
   };
