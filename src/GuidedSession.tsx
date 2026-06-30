@@ -754,7 +754,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={checked && result.ok ? advance : checkAnswer}
-                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 {checked && result.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
@@ -815,7 +815,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={enChecked && enResult.ok ? finishOrFrench : checkEnAnswer}
-                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 {enChecked && enResult.ok ? <>{hasFr ? "Next: French" : "Continue"} <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
@@ -883,7 +883,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   <Volume2 className="h-5 w-5" />
                 </motion.button>
                 <Button onClick={frChecked && frResult.ok ? advance : checkFrAnswer}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                  className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                   {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
                 </Button>
               </div>
@@ -1001,7 +1001,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={memDeChecked && memDeResult.ok && memFrResult.ok ? onNext : checkMemory}
-                className="h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 {memDeChecked && memDeResult.ok && memFrResult.ok
                   ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></>
                   : "Check both"}
@@ -1175,7 +1175,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
           </Button>
         )}
         <Button onClick={checked && result.ok ? nextLine : checkLine}
-          className={cn("flex-1 h-12 rounded-lg text-sm font-semibold transition-all",
+          className={cn("continue-glow flex-1 h-12 rounded-lg text-sm font-semibold transition-all",
             checked && result.ok ? "bg-zinc-950 text-white"
             : "bg-zinc-950 text-white")}>
           {checked && result.ok ? (isLast ? "Done" : "Next line") : "Check"}
