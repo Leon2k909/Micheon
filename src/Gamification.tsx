@@ -519,31 +519,6 @@ export default function GamificationPanel({
                 </span>
               </button>
 
-              <button
-                aria-pressed={direction === "learn-en"}
-                aria-label="Switch to learning English, for German speakers"
-                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                onClick={toggleDirection}
-                type="button"
-              >
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                    <Languages className="h-4 w-4" /> Englisch lernen (for German speakers)
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    Flip the app: English becomes what you read, hear and type, with German shown as the meaning.
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                    direction === "learn-en" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
-                  )}
-                >
-                  {direction === "learn-en" ? "On" : "Off"}
-                </span>
-              </button>
-
               {direction === "learn-de" && (
               <button
                 aria-pressed={companion === "fr"}
@@ -574,7 +549,7 @@ export default function GamificationPanel({
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[var(--text-1)]">English spelling</p>
+                    <p className="text-sm font-black text-[var(--text-1)]">Language</p>
                     <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                       Auto uses your browser/keyboard language. Current: {resolvedEnglishVariant === "british" ? "British" : "American"} English.
                     </p>
@@ -592,6 +567,31 @@ export default function GamificationPanel({
                   <option value="british">British English</option>
                   <option value="american">American English</option>
                 </select>
+
+                <button
+                  aria-pressed={direction === "learn-en"}
+                  aria-label="Switch to learning English, for German speakers"
+                  className="mt-3 flex w-full items-start justify-between gap-3 rounded-[14px] bg-[var(--surface-2)] px-3.5 py-3 text-left"
+                  onClick={toggleDirection}
+                  type="button"
+                >
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                      <Languages className="h-4 w-4" /> Englisch lernen (for German speakers)
+                    </span>
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      Flip the app: English becomes what you read, hear and type, with German shown as the meaning.
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                      direction === "learn-en" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--text-2)]"
+                    )}
+                  >
+                    {direction === "learn-en" ? "On" : "Off"}
+                  </span>
+                </button>
               </div>
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
@@ -752,7 +752,7 @@ export default function GamificationPanel({
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[var(--text-1)]">English spelling</p>
+                  <p className="text-sm font-black text-[var(--text-1)]">Language</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                     Auto uses your browser/keyboard language. Current: {resolvedEnglishVariant === "british" ? "British" : "American"} English.
                   </p>
@@ -770,6 +770,31 @@ export default function GamificationPanel({
                 <option value="british">British English</option>
                 <option value="american">American English</option>
               </select>
+
+              <button
+                aria-pressed={direction === "learn-en"}
+                aria-label="Switch to learning English, for German speakers"
+                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[14px] bg-[var(--surface-2)] px-3.5 py-3 text-left"
+                onClick={toggleDirection}
+                type="button"
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                    <Languages className="h-4 w-4" /> Englisch lernen (for German speakers)
+                  </span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                    Flip the app: English becomes what you read, hear and type, with German shown as the meaning.
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                    direction === "learn-en" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--text-2)]"
+                  )}
+                >
+                  {direction === "learn-en" ? "On" : "Off"}
+                </span>
+              </button>
             </div>
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
