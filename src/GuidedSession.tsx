@@ -14,6 +14,7 @@ import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
+import { isElectronApp } from "@/lib/platform";
 import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
@@ -256,7 +257,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const memDeRef = useRef<HTMLInputElement>(null);
   const memFrRef = useRef<HTMLInputElement>(null);
   const speechAbortRef = useRef<AbortController | null>(null);
-  const speechSupported = useMemo(() => isSpeechRecognitionSupported(), []);
+  // Electron's bundled Chromium reports SpeechRecognition as available but it
+  // always fails with a "network" error at runtime — it's missing the Google
+  // API key that real Chrome/Edge builds have baked in, and there's no
+  // supported way to add it from userland. So the mic check is skipped
+  // entirely in the desktop app rather than showing a misleading error.
+  const desktopApp = useMemo(() => isElectronApp(), []);
+  const speechSupported = useMemo(() => isSpeechRecognitionSupported() && !desktopApp, [desktopApp]);
   const englishVariant = useMemo(() => getEnglishVariant(), []);
   // Learning direction: by default German is the target (item.de) and English the
   // meaning (item.en). When learning English, the session builder has already
@@ -674,7 +681,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </>
             ) : (
               <p className="text-center text-xs text-zinc-500">
-                Speech recognition is not available here - practice aloud, then continue when ready.
+                {desktopApp
+                  ? "Microphone check isn't available in the desktop app (a Chromium limitation) - practice aloud, then continue when ready. Open the website in Chrome or Edge for mic checking."
+                  : "Speech recognition is not available here - practice aloud, then continue when ready."}
               </p>
             )}
             <div className="flex gap-3">
