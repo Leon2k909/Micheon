@@ -43,14 +43,14 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
 
   if (!lesson) {
     return (
-      <div className="fixed inset-0 z-[180] flex items-center justify-center bg-[var(--bg)] text-[var(--text-1)]">
+      <div className="app-overlay fixed inset-0 z-[180] flex items-center justify-center bg-[var(--bg)] text-[var(--text-1)]">
         <p className="text-sm font-semibold">This course has no lessons yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[180] flex flex-col bg-[var(--bg)] text-[var(--text-1)]">
+    <div className="app-overlay fixed inset-0 z-[180] flex flex-col bg-[var(--bg)] text-[var(--text-1)]">
       {/* Header */}
       <header className="flex items-center gap-4 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3 sm:px-6">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-2)] text-base font-black text-[var(--accent)]">

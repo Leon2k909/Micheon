@@ -258,7 +258,7 @@ function CodeStepView({
             <button
               type="button"
               onClick={checked && result.ok ? onPass : handleCheck}
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
+              className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
             >
               {checked && result.ok ? <>Next <ArrowRight className="h-4 w-4" /></> : "Check"}
             </button>
@@ -277,7 +277,7 @@ function ConceptStepView({ blocks, onNext }: { blocks: SessionStep extends never
       <button
         type="button"
         onClick={onNext}
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
+        className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
       >
         Continue <ChevronRight className="h-4 w-4" />
       </button>
@@ -324,7 +324,7 @@ function QuizStepView({ q, options, explanation, onNext }: { q: string; options:
         )}
       </div>
       {answered && (
-        <button type="button" onClick={onNext} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
+        <button type="button" onClick={onNext} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
           Continue <ArrowRight className="h-4 w-4" />
         </button>
       )}
@@ -361,7 +361,7 @@ export function CourseSession({
   const canGoBack = index > 0;
 
   return (
-    <div className="fixed inset-0 z-[500] flex flex-col bg-[var(--bg)] text-[var(--text-1)]">
+    <div className="app-overlay fixed inset-0 z-[500] flex flex-col bg-[var(--bg)] text-[var(--text-1)]">
       {/* Header */}
       <header className="flex items-center gap-4 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <div className="flex shrink-0 items-center gap-3">
@@ -427,7 +427,7 @@ export function CourseSession({
                   <h2 className="text-3xl font-black tracking-tight text-[var(--text-1)]">Lesson complete</h2>
                   <p className="text-sm font-semibold text-[var(--text-3)]">You read the concepts and typed the code. Keep the momentum going.</p>
                 </div>
-                <button type="button" onClick={onComplete} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
+                <button type="button" onClick={onComplete} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
                   Finish <ArrowRight className="h-5 w-5" />
                 </button>
               </motion.div>
