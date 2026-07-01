@@ -37,11 +37,13 @@ function getAsr(): Promise<any> {
       // anywhere (website or Electron) without special server config.
       try { (env.backends as any).onnx.wasm.numThreads = 1; } catch { /* ignore */ }
       // whisper-tiny is multilingual (handles de/en/fr with one model). Force the
-      // CPU/WASM backend and 8-bit quantized weights so it's the ~40MB download
-      // and doesn't depend on WebGPU being available.
+      // CPU/WASM backend. Use full-precision (fp32) weights: the 8-bit quantized
+      // build fails on this onnxruntime-web version ("Missing required scale ...
+      // MatMulNBits"), and fp32 avoids the n-bit matmul path entirely. Larger
+      // one-time download (~150MB) but reliably compatible and still offline after.
       return pipeline("automatic-speech-recognition", "Xenova/whisper-tiny", {
         device: "wasm",
-        dtype: "q8",
+        dtype: "fp32",
       });
     })();
   }

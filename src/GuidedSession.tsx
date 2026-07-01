@@ -708,7 +708,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </AnimatePresence>
                 <p className="text-center text-[10px] text-zinc-600">
                   {useWhisper
-                    ? "Runs a free offline speech model on your device. First use downloads it once (~40MB), then works offline. Requires microphone permission."
+                    ? "Runs a free offline speech model on your device. First use downloads it once, then works offline. Requires microphone permission."
                     : "Uses the browser speech recognizer (Chrome / Edge recommended). Requires microphone permission."}
                 </p>
               </>
