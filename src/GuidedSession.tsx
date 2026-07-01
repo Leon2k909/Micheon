@@ -21,6 +21,7 @@ import {
   listenGermanOnce,
   speechRecognitionUserHint,
 } from "@/lib/speechRecognition";
+import { isWhisperSupported, listenWhisperOnce } from "@/lib/whisperRecognition";
 import {
   Volume2, Mic2, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -250,6 +251,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [speechTranscript, setSpeechTranscript] = useState("");
   const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
   const [speechErr, setSpeechErr] = useState<string | null>(null);
+  const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const enInputRef = useRef<HTMLInputElement>(null);
@@ -257,13 +259,17 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const memDeRef = useRef<HTMLInputElement>(null);
   const memFrRef = useRef<HTMLInputElement>(null);
   const speechAbortRef = useRef<AbortController | null>(null);
-  // Electron's bundled Chromium reports SpeechRecognition as available but it
-  // always fails with a "network" error at runtime — it's missing the Google
-  // API key that real Chrome/Edge builds have baked in, and there's no
-  // supported way to add it from userland. So the mic check is skipped
-  // entirely in the desktop app rather than showing a misleading error.
+  // Speech recognition has two backends:
+  //  - Website: the browser's webkitSpeechRecognition (instant, no download).
+  //  - Desktop app: that backend can't reach Google's servers from Electron, so
+  //    we use an offline Whisper model (transformers.js) instead — free, no key,
+  //    downloads once (~40MB) then works offline.
   const desktopApp = useMemo(() => isElectronApp(), []);
-  const speechSupported = useMemo(() => isSpeechRecognitionSupported() && !desktopApp, [desktopApp]);
+  const useWhisper = useMemo(() => desktopApp && isWhisperSupported(), [desktopApp]);
+  const speechSupported = useMemo(
+    () => useWhisper || (isSpeechRecognitionSupported() && !desktopApp),
+    [useWhisper, desktopApp]
+  );
   const englishVariant = useMemo(() => getEnglishVariant(), []);
   // Learning direction: by default German is the target (item.de) and English the
   // meaning (item.en). When learning English, the session builder has already
@@ -332,26 +338,44 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     setSpeechErr(null);
     setSpeechPhraseMatch(null);
     setSpeechTranscript("");
+    setSpeechStatus(null);
     setSpeechListening(true);
-    listenGermanOnce({
-      signal: ac.signal,
-      lang: targetLang,
-      onInterim: (text) => { if (!ac.signal.aborted) setSpeechTranscript(text); },
-    })
-      .then(({ transcript }) => {
-        setSpeechTranscript(transcript);
-        const m = match(transcript, item.de);
-        setSpeechPhraseMatch(m);
-        reactToAnswer(m.ok);
-      })
-      .catch((e) => {
-        if (ac.signal.aborted) return;
-        const code = e instanceof Error ? e.message : "unknown";
-        if (code !== "aborted") setSpeechErr(speechRecognitionUserHint(code));
-      })
-      .finally(() => {
-        if (!ac.signal.aborted) setSpeechListening(false);
-      });
+
+    const onDone = ({ transcript }: { transcript: string }) => {
+      setSpeechTranscript(transcript);
+      const m = match(transcript, item.de);
+      setSpeechPhraseMatch(m);
+      reactToAnswer(m.ok);
+    };
+    const onErr = (e: unknown) => {
+      if (ac.signal.aborted) return;
+      const code = e instanceof Error ? e.message : "unknown";
+      if (code !== "aborted") setSpeechErr(speechRecognitionUserHint(code));
+    };
+    const onSettle = () => {
+      if (!ac.signal.aborted) { setSpeechListening(false); setSpeechStatus(null); }
+    };
+
+    if (useWhisper) {
+      // Offline Whisper (desktop app). First run downloads the model.
+      listenWhisperOnce({
+        signal: ac.signal,
+        lang: targetLang,
+        onState: (state) => {
+          if (ac.signal.aborted) return;
+          if (state === "loading-model") setSpeechStatus("Preparing speech model (one-time download)…");
+          else if (state === "listening") setSpeechStatus(null);
+          else if (state === "transcribing") setSpeechStatus("Checking what you said…");
+        },
+      }).then(onDone).catch(onErr).finally(onSettle);
+    } else {
+      // Browser speech recognition (website).
+      listenGermanOnce({
+        signal: ac.signal,
+        lang: targetLang,
+        onInterim: (text) => { if (!ac.signal.aborted) setSpeechTranscript(text); },
+      }).then(onDone).catch(onErr).finally(onSettle);
+    }
   };
 
   const advance = () => {
@@ -642,13 +666,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 <Button type="button" onClick={handleSpeechCheck} disabled={speechListening}
                   className="h-14 w-full rounded-2xl border border-zinc-200 bg-white text-sm font-black text-zinc-900 hover:bg-zinc-50 disabled:opacity-70">
                   {speechListening ? (
-                    <span className="inline-flex items-center gap-2">
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
-                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    speechStatus ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700" />
+                        {speechStatus}
                       </span>
-                      Listening... speak now
-                    </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        </span>
+                        Listening... speak now
+                      </span>
+                    )
                   ) : (
                     <span className="inline-flex items-center gap-2">
                       <Mic2 className="h-5 w-5" /> Check with microphone
@@ -676,14 +707,14 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   ) : null}
                 </AnimatePresence>
                 <p className="text-center text-[10px] text-zinc-600">
-                  Uses the browser speech recognizer (Chrome / Edge recommended). Requires microphone permission.
+                  {useWhisper
+                    ? "Runs a free offline speech model on your device. First use downloads it once (~40MB), then works offline. Requires microphone permission."
+                    : "Uses the browser speech recognizer (Chrome / Edge recommended). Requires microphone permission."}
                 </p>
               </>
             ) : (
               <p className="text-center text-xs text-zinc-500">
-                {desktopApp
-                  ? "Microphone check isn't available in the desktop app (a Chromium limitation) - practice aloud, then continue when ready. Open the website in Chrome or Edge for mic checking."
-                  : "Speech recognition is not available here - practice aloud, then continue when ready."}
+                Speech recognition is not available here (no microphone access) - practice aloud, then continue when ready.
               </p>
             )}
             <div className="flex gap-3">
