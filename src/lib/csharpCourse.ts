@@ -14,8 +14,14 @@ export const csharpCourse: Course = {
       section: "C# basics",
       badge: "lesson 1",
       blocks: [
-        { type: "p", text: "In Python you write `x = 42` and Python figures out the rest. C# requires you to declare what kind of thing a variable holds — and once declared, that type never changes." },
-        { type: "callout", variant: "python", text: "From Python: Python is dynamically typed — variables can hold anything. C# is statically typed — every variable has one fixed type decided at compile time. The upside: the compiler catches type errors before your game ever runs." },
+        { type: "p",
+          text: "In Python you write `x = 42` and Python figures out the rest. C# requires you to declare what kind of thing a variable holds — and once declared, that type never changes.",
+          textJs: "In JavaScript you write `let x = 42` and the variable can later hold anything. C# requires you to declare what kind of thing a variable holds — and once declared, that type never changes.",
+          textNew: "A variable is a named box that stores a value. In C# you declare what kind of thing the box holds — a number, some text, a true/false — and once declared, that type never changes." },
+        { type: "callout", variant: "python",
+          text: "From Python: Python is dynamically typed — variables can hold anything. C# is statically typed — every variable has one fixed type decided at compile time. The upside: the compiler catches type errors before your game ever runs.",
+          textJs: "From JavaScript: JS is dynamically typed — variables can hold anything (and TypeScript types are erased at runtime). C# is statically typed for real — every variable has one fixed type enforced at compile time. The upside: the compiler catches type errors before your game ever runs.",
+          textNew: "Why types? Every value in C# has a fixed type the compiler knows about. That sounds strict, but it means a whole category of bugs gets caught before your game ever runs." },
         { type: "h3", text: "Declaring variables" },
         { type: "p", text: "The pattern is always: type name = value;" },
         { type: "code", code: `int age = 25;
@@ -72,13 +78,22 @@ if (username != null) {
       section: "C# basics",
       badge: "lesson 3",
       blocks: [
-        { type: "p", text: "Same idea as Python — make decisions, repeat things. C# uses curly braces `{}` instead of indentation, and conditions need parentheses `()`." },
+        { type: "p",
+          text: "Same idea as Python — make decisions, repeat things. C# uses curly braces `{}` instead of indentation, and conditions need parentheses `()`.",
+          textJs: "Almost identical to JavaScript — same curly braces `{}`, same parentheses `()` around conditions. Your muscle memory mostly transfers.",
+          textNew: "Control flow is how a program makes decisions and repeats work. C# wraps each branch in curly braces `{}` and each condition in parentheses `()`." },
         { type: "twocol", left: { lang: "Python", code: `if score >= 90:
     print("A")
 elif score >= 70:
     print("B")
 else:
-    print("C")` }, right: { lang: "C#", code: `if (score >= 90) {
+    print("C")` }, leftJs: { lang: "JavaScript", code: `if (score >= 90) {
+    console.log("A");
+} else if (score >= 70) {
+    console.log("B");
+} else {
+    console.log("C");
+}` }, right: { lang: "C#", code: `if (score >= 90) {
     Log.Info("A");
 } else if (score >= 70) {
     Log.Info("B");
@@ -95,7 +110,9 @@ else:
 };` },
         { type: "h3", text: "Loops" },
         { type: "twocol", left: { lang: "Python", code: `for name in names:
-    print(name)` }, right: { lang: "C#", code: `foreach (var name in names) {
+    print(name)` }, leftJs: { lang: "JavaScript", code: `for (const name of names) {
+    console.log(name);
+}` }, right: { lang: "C#", code: `foreach (var name in names) {
     Log.Info(name);
 }` } },
         { type: "quiz", q: "In s&box, what should you use instead of `Console.WriteLine()` to print debug messages?", options: [
@@ -114,7 +131,9 @@ else:
       blocks: [
         { type: "p", text: "Methods are reusable named blocks of code. In C# you declare what type goes in and what type comes out — the compiler enforces this." },
         { type: "twocol", left: { lang: "Python", code: `def add(a, b):
-    return a + b` }, right: { lang: "C#", code: `int Add(int a, int b) {
+    return a + b` }, leftJs: { lang: "JavaScript", code: `function add(a, b) {
+    return a + b;
+}` }, right: { lang: "C#", code: `int Add(int a, int b) {
     return a + b;
 }` } },
         { type: "h3", text: "Expression body shorthand" },
@@ -145,10 +164,15 @@ void TakeDamage(float amount) {
       section: "Collections",
       badge: "lesson 5",
       blocks: [
-        { type: "p", text: "Like Python lists, but you declare what type the list holds using angle brackets." },
+        { type: "p",
+          text: "Like Python lists, but you declare what type the list holds using angle brackets.",
+          textJs: "Like JavaScript arrays, but you declare what type the list holds using angle brackets.",
+          textNew: "A List is an ordered collection that grows as you add items. You declare what type it holds using angle brackets." },
         { type: "twocol", left: { lang: "Python", code: `enemies = []
 enemies.append(goblin)
-count = len(enemies)` }, right: { lang: "C#", code: `var enemies = new List<Enemy>();
+count = len(enemies)` }, leftJs: { lang: "JavaScript", code: `const enemies = [];
+enemies.push(goblin);
+const count = enemies.length;` }, right: { lang: "C#", code: `var enemies = new List<Enemy>();
 enemies.Add(goblin);
 int count = enemies.Count;` } },
         { type: "code", code: `var scores = new List<int> { 90, 85, 72 };
@@ -172,10 +196,15 @@ int last  = scores[^1];   // ^ = from the end` },
       section: "Collections",
       badge: "lesson 6",
       blocks: [
-        { type: "p", text: "Key-value lookup — identical concept to Python dicts, just with explicit types for both key and value." },
+        { type: "p",
+          text: "Key-value lookup — identical concept to Python dicts, just with explicit types for both key and value.",
+          textJs: "Key-value lookup — like a JS object or `Map`, just with explicit types for both key and value.",
+          textNew: "A Dictionary stores key → value pairs, so you can look up a value instantly by its key — like finding a player's score by their name." },
         { type: "twocol", left: { lang: "Python", code: `scores = {"Alice": 100}
 scores["Bob"] = 85
-val = scores.get("Carol", 0)` }, right: { lang: "C#", code: `var scores = new Dictionary<string, int>();
+val = scores.get("Carol", 0)` }, leftJs: { lang: "JavaScript", code: `const scores = { Alice: 100 };
+scores["Bob"] = 85;
+const val = scores["Carol"] ?? 0;` }, right: { lang: "C#", code: `var scores = new Dictionary<string, int>();
 scores["Alice"] = 100;
 scores["Bob"] = 85;
 scores.TryGetValue("Carol", out int v);` } },
@@ -201,11 +230,19 @@ if (scores.TryGetValue("Carol", out int carolScore)) {
       section: "Collections",
       badge: "lesson 7",
       blocks: [
-        { type: "p", text: "LINQ lets you filter, transform and query collections in readable chained code. Python equivalent: list comprehensions and `filter()`/`map()`." },
+        { type: "p",
+          text: "LINQ lets you filter, transform and query collections in readable chained code. Python equivalent: list comprehensions and `filter()`/`map()`.",
+          textJs: "LINQ lets you filter, transform and query collections in readable chained code. JavaScript equivalent: `filter()`, `map()` and `reduce()` on arrays — LINQ will feel very familiar.",
+          textNew: "LINQ lets you filter, transform and query collections in readable chained code — one of C#'s best features. Read each step like a sentence: \"keep the ones where…\", \"take the name of each…\"." },
         { type: "twocol", left: { lang: "Python", code: `alive = [e for e in enemies
          if e.health > 0]
 names = [e.name for e in alive]
-total = sum(e.health for e in alive)` }, right: { lang: "C#", code: `var alive = enemies
+total = sum(e.health for e in alive)` }, leftJs: { lang: "JavaScript", code: `const alive = enemies
+  .filter(e => e.health > 0);
+const names = alive
+  .map(e => e.name);
+const total = alive.reduce(
+  (sum, e) => sum + e.health, 0);` }, right: { lang: "C#", code: `var alive = enemies
   .Where(e => e.Health > 0);
 var names = alive
   .Select(e => e.Name);

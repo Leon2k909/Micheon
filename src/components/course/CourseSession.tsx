@@ -2,7 +2,8 @@ import React, { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Code2, RotateCcw, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Course, Lesson } from "@/lib/courses";
+import { resolveLessonForBackground, type Course, type Lesson } from "@/lib/courses";
+import { getCodeBackground } from "@/lib/codeBackground";
 import { buildLessonSession, checkCode, type SessionStep } from "@/lib/courseSession";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 import { HighlightedCode } from "@/components/course/highlight";
@@ -343,7 +344,10 @@ export function CourseSession({
   onComplete: () => void;
   onExit: () => void;
 }) {
-  const steps = useMemo<SessionStep[]>(() => buildLessonSession(lesson), [lesson]);
+  const steps = useMemo<SessionStep[]>(
+    () => buildLessonSession(resolveLessonForBackground(lesson, getCodeBackground())),
+    [lesson]
+  );
   const [index, setIndex] = useState(0);
   const [codeDrafts, setCodeDrafts] = useState<Record<number, string>>({});
   const step = steps[Math.min(index, steps.length - 1)];

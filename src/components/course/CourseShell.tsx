@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/courses";
-import { loadCourseProgress, saveCourseProgress } from "@/lib/courses";
+import { loadCourseProgress, resolveLessonForBackground, saveCourseProgress } from "@/lib/courses";
+import { getCodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 
@@ -129,7 +130,7 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
             </div>
 
             <div className="mt-4">
-              <LessonBlocks blocks={lesson.blocks} onQuizCorrect={() => markComplete(lesson.id)} />
+              <LessonBlocks blocks={resolveLessonForBackground(lesson, getCodeBackground()).blocks} onQuizCorrect={() => markComplete(lesson.id)} />
             </div>
 
             <div className="mt-8 flex items-center justify-between border-t border-[var(--border)] pt-5">

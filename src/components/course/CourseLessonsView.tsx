@@ -1,9 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, Code2 } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Code2, Sparkles } from "lucide-react";
 import type { Course } from "@/lib/courses";
 import { loadCourseProgress } from "@/lib/courses";
+import { CODE_BACKGROUND_LABEL, getCodeBackground, setCodeBackground, type CodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
+
+const BACKGROUND_OPTIONS: { key: CodeBackground; label: string; sub: string }[] = [
+  { key: "python", label: "🐍 Python", sub: "Explanations compare C# to Python" },
+  { key: "js", label: "🟨 JavaScript", sub: "Explanations compare C# to JS" },
+  { key: "new", label: "🌱 I'm new to coding", sub: "No comparisons — plain-English explanations" },
+];
+
+// Course tagline adapted to the learner's background.
+function taglineFor(course: Course, bg: CodeBackground | null): string {
+  if (course.id !== "csharp" || !bg || bg === "python") return course.tagline;
+  if (bg === "js") return "Learn C# from JavaScript, then build games in s&box.";
+  return "Learn C# from scratch, then build games in s&box.";
+}
 
 export function CourseLessonsView({
   course,
@@ -16,6 +30,16 @@ export function CourseLessonsView({
 }) {
   const lessons = course.lessons ?? [];
   const completed = new Set(loadCourseProgress(course.id, getAuthUser()));
+  const [background, setBackgroundState] = useState<CodeBackground | null>(getCodeBackground);
+  const [pickingBackground, setPickingBackground] = useState(false);
+  const isProgramming = course.kind === "programming";
+  const showPicker = isProgramming && (background === null || pickingBackground);
+
+  const pickBackground = (bg: CodeBackground) => {
+    setCodeBackground(bg);
+    setBackgroundState(bg);
+    setPickingBackground(false);
+  };
 
   const sections: [string, typeof lessons][] = [];
   for (const l of lessons) {
@@ -32,7 +56,17 @@ export function CourseLessonsView({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{course.name}</h1>
-            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">{course.tagline}</p>
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">{taglineFor(course, background)}</p>
+            {isProgramming && background && !showPicker && (
+              <button
+                type="button"
+                onClick={() => setPickingBackground(true)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)]"
+              >
+                <Sparkles className="h-3 w-3 text-[var(--accent)]" />
+                Tailored for: {CODE_BACKGROUND_LABEL[background]} · change
+              </button>
+            )}
           </div>
           <button
             type="button"
@@ -53,6 +87,42 @@ export function CourseLessonsView({
           </div>
         </div>
       </section>
+
+      {showPicker && (
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card border-[1.5px] border-[var(--accent)] p-5 sm:p-6"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">
+              Which language do you already know?
+            </h2>
+          </div>
+          <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--text-2)]">
+            The course adapts its explanations and side-by-side code comparisons to the language you already speak.
+          </p>
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+            {BACKGROUND_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => pickBackground(opt.key)}
+                className={
+                  "rounded-2xl border p-4 text-left transition-colors " +
+                  (background === opt.key
+                    ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                    : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]")
+                }
+              >
+                <p className="text-sm font-black text-[var(--text-1)]">{opt.label}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{opt.sub}</p>
+              </button>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {sections.map(([section, items]) => (
         <section key={section}>
