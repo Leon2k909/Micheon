@@ -6,8 +6,11 @@ export function normalizeGermanInput(t: string) {
   return String(t ?? "")
     .toLowerCase()
     .trim()
-    .replace(/[.!?,;:]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/[’'`´]/g, "")        // apostrophes don't matter: "don't" == "dont"
+    .replace(/[-–—/]/g, " ")       // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
+    .replace(/[.!?,;:"()]/g, "")   // drop sentence punctuation
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function normalizeGermanLenient(t: string) {
