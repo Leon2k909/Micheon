@@ -12,6 +12,8 @@
 // browser's built-in speechSynthesis if this server is unavailable.
 
 import express from "express";
+import fs from "fs";
+import os from "os";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
@@ -57,6 +59,89 @@ function cacheSet(key, buf) {
 }
 
 const app = express();
+app.use(express.json({ limit: "1mb" }));
+
+const appdataDir = path.join(process.env.APPDATA || os.homedir(), "germ");
+const appdataFile = path.join(appdataDir, "shared-progress.json");
+const workspaceFile = path.resolve(__dirname, "../shared-progress.json");
+
+function readSharedStorage() {
+  let appdataData = { items: {} };
+  let workspaceData = { items: {} };
+
+  try {
+    if (fs.existsSync(appdataFile)) {
+      appdataData = JSON.parse(fs.readFileSync(appdataFile, "utf8"));
+    }
+  } catch (e) {
+    console.error("Error reading AppData storage:", e);
+  }
+
+  try {
+    if (fs.existsSync(workspaceFile)) {
+      workspaceData = JSON.parse(fs.readFileSync(workspaceFile, "utf8"));
+    }
+  } catch (e) {
+    console.error("Error reading workspace storage:", e);
+  }
+
+  const mergedItems = { ...(appdataData.items || {}), ...(workspaceData.items || {}) };
+  const appdataTime = appdataData.updatedAt ? new Date(appdataData.updatedAt).getTime() : 0;
+  const workspaceTime = workspaceData.updatedAt ? new Date(workspaceData.updatedAt).getTime() : 0;
+  let mergedUpdatedAt = appdataData.updatedAt || workspaceData.updatedAt || new Date().toISOString();
+
+  if (appdataTime > workspaceTime) {
+    Object.assign(mergedItems, appdataData.items || {});
+    mergedUpdatedAt = appdataData.updatedAt;
+  } else if (workspaceTime > appdataTime) {
+    Object.assign(mergedItems, workspaceData.items || {});
+    mergedUpdatedAt = workspaceData.updatedAt;
+  }
+
+  return {
+    items: mergedItems,
+    updatedAt: mergedUpdatedAt
+  };
+}
+
+function writeSharedStorage(next) {
+  const raw = JSON.stringify(next, null, 2);
+
+  try {
+    fs.mkdirSync(appdataDir, { recursive: true });
+    fs.writeFileSync(appdataFile, raw);
+  } catch (e) {
+    console.error("Failed to write to AppData storage:", e);
+  }
+
+  try {
+    fs.writeFileSync(workspaceFile, raw);
+  } catch (e) {
+    console.error("Failed to write to workspace storage:", e);
+  }
+}
+
+app.get("/api/storage", (_req, res) => {
+  res.json(readSharedStorage());
+});
+
+app.post("/api/storage", (req, res) => {
+  const incoming = req.body?.items;
+  if (!incoming || typeof incoming !== "object") {
+    return res.status(400).json({ error: "missing items" });
+  }
+
+  const current = readSharedStorage();
+  const items = { ...(current.items || {}) };
+  for (const [key, value] of Object.entries(incoming)) {
+    if (typeof key !== "string") continue;
+    if (value == null) delete items[key];
+    else items[key] = String(value);
+  }
+  const next = { ...current, items, updatedAt: new Date().toISOString() };
+  writeSharedStorage(next);
+  res.json({ ok: true, count: Object.keys(items).length });
+});
 
 app.get("/api/tts", async (req, res) => {
   const text = String(req.query.text || "").slice(0, 600).trim();

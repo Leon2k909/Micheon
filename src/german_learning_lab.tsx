@@ -179,23 +179,39 @@ export default function GermanLearningLab() {
     const hasContent = steps.some(s => s.type === "sentence" || s.type === "dialogue");
 
     if (!hasContent) {
-      // This part is fully done — advance to the next part
+      // Find next part with unread content or replay in review mode without wiping progress
       const partKeys = Object.keys(apiParts);
       const currentIdx = partKeys.indexOf(id);
-      const nextId = partKeys[currentIdx + 1];
+      let nextIdWithContent: string | undefined;
 
-      if (nextId && apiParts[nextId]) {
-        // Move to next part and start it
-        setActivePart(nextId);
-        saveScopedJson("active-part", nextId, user);
-        startSession(nextId);
+      for (let i = currentIdx + 1; i < partKeys.length; i++) {
+        const pId = partKeys[i];
+        const p = apiParts[pId];
+        if (!p) continue;
+        const pWithKey = { ...p, partKey: pId };
+        const pItems = p.vocab.map((item, index) => ({
+          id: `${pId}-${index}`, de: item.de, en: item.en, tip: item.tip,
+          example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
+        }));
+        const pSteps = buildSession(pWithKey, pItems, reviewState, 0);
+        if (pSteps.some(s => s.type === "sentence" || s.type === "dialogue")) {
+          nextIdWithContent = pId;
+          break;
+        }
+      }
+
+      if (nextIdWithContent) {
+        setActivePart(nextIdWithContent);
+        saveScopedJson("active-part", nextIdWithContent, user);
+        startSession(nextIdWithContent);
         return;
       } else {
-        // All parts done — reset completed and replay from current
-        saveScopedJson(COMPLETED_KEY, [], user);
+        // All course lessons are completed — replay requested part in review mode (without wiping COMPLETED_KEY)
         setActivePart(id);
         saveScopedJson("active-part", id, user);
-        setSessionSteps(buildSession(partWithKey, items, {}, 0));
+        let reviewSteps = buildSession(partWithKey, items, {}, 0);
+        if (learningEnglish()) reviewSteps = reviewSteps.map(swapStepForEnglish);
+        setSessionSteps(reviewSteps);
       }
     } else {
       setActivePart(id);

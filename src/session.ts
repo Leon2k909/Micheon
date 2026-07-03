@@ -143,6 +143,7 @@ function buildCarrier(de: string, en: string, tip?: string): { de: string; en: s
 // ── Catalog of every learnable item (for the word/sentence tracker) ──
 export type CatalogItem = {
   id: string;
+  aliases?: string[];
   de: string;
   en: string;
   kind: "vocab" | "phrase" | "dialogue";
@@ -165,22 +166,23 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   const out: CatalogItem[] = [];
   const seen = new Set<string>();
 
-  const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string) => {
+  const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string, aliases: string[] = []) => {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
     seen.add(key);
-    out.push({ id, de, en, kind, partKey, partLabel, level, lookup });
+    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup });
   };
 
   vocab.forEach((word, i) => {
     const id = getVocabId(partKey, word, i);
+    const aliases = [`${partKey}-vocab-${i}`];
     if (hasSentenceShape(word.example) &&
         word.example.trim().toLowerCase() !== word.de.trim().toLowerCase()) {
       const exEn = word.exampleEn?.trim() ? word.exampleEn : buildCarrier(word.de, word.en, word.tip).en;
-      push(word.example, exEn, id, "vocab", word.lookup ?? word.de);
+      push(word.example, exEn, id, "vocab", word.lookup ?? word.de, aliases);
     } else {
       const carrier = buildCarrier(word.de, word.en, word.tip);
-      push(carrier.de, carrier.en, id, "vocab", word.lookup ?? word.de);
+      push(carrier.de, carrier.en, id, "vocab", word.lookup ?? word.de, aliases);
     }
   });
 
@@ -193,7 +195,8 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     (d.lines ?? []).forEach((line: any, li: number) => {
       if (!hasSentenceShape(line.de)) return;
       const id = line?.id ?? `${partKey}-dlg-${di}-${li}`;
-      push(line.de, line.en, id, "dialogue");
+      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line?.de ?? ""}`;
+      push(line.de, line.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId]);
     });
   });
 
@@ -207,4 +210,3 @@ export function buildCatalog(apiParts: Record<string, any>): CatalogItem[] {
   }
   return out;
 }
-

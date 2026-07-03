@@ -1,4 +1,4 @@
-import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
+import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
 
 export const ACTIVITY_LOG_KEY = "activity-log";
 export const COMPLETED_KEY = "session-completed";
@@ -16,6 +16,35 @@ export type GradeStore = Record<string, GradeRecord>;
 const DAY_MS = 86_400_000;
 const MAX_SESSION_SEC = 7_200; // cap a single session at 2h to ignore "left tab open"
 
+function normalizeLegacyGrade(grade: string | undefined) {
+  if (grade === "know" || grade === "known" || grade === "easy" || grade === "good") return "know";
+  if (grade === "struggle" || grade === "hard" || grade === "again") return "struggle";
+  return null;
+}
+
+function loadLegacyGradeStore(): GradeStore {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem("german-lab-review-state");
+    if (!raw) return {};
+    const legacy = JSON.parse(raw);
+    if (!legacy || typeof legacy !== "object" || Array.isArray(legacy)) return {};
+
+    const migrated: GradeStore = {};
+    for (const [id, rec] of Object.entries<any>(legacy)) {
+      const lastGrade = normalizeLegacyGrade(rec?.lastGrade);
+      if (!lastGrade) continue;
+      migrated[id] = {
+        lastGrade,
+        updatedAt: typeof rec?.updatedAt === "string" ? rec.updatedAt : new Date().toISOString(),
+      };
+    }
+    return migrated;
+  } catch {
+    return {};
+  }
+}
+
 export function loadActivitySessions(profile: UserProfile | null = getAuthUser()): ActivitySession[] {
   const raw = loadScopedJson<ActivitySession[]>(ACTIVITY_LOG_KEY, [], profile);
   return Array.isArray(raw) ? raw : [];
@@ -29,6 +58,17 @@ export function recordActivitySession(entry: ActivitySession, profile: UserProfi
 }
 
 export function loadGradeStore(profile: UserProfile | null = getAuthUser()): GradeStore {
+  if (typeof window !== "undefined") {
+    const scopedKey = getScopedKey(COMPLETED_KEY, profile);
+    if (window.localStorage.getItem(scopedKey) == null) {
+      const migrated = loadLegacyGradeStore();
+      if (Object.keys(migrated).length > 0) {
+        saveGradeStore(migrated, profile);
+        return migrated;
+      }
+    }
+  }
+
   const raw = loadScopedJson<any>(COMPLETED_KEY, {}, profile) ?? {};
   if (Array.isArray(raw)) {
     // legacy array form: ids known with no timestamp

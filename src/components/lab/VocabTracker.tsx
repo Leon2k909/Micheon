@@ -85,7 +85,7 @@ export function VocabTracker({
     let struggle = 0;
     let fresh = 0;
     for (const item of catalog) {
-      const s = statusForId(grades, item.id);
+      const s = statusForId(grades, item.id, item.aliases);
       if (s === "known") known += 1;
       else if (s === "struggle") struggle += 1;
       else fresh += 1;
@@ -96,7 +96,7 @@ export function VocabTracker({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return catalog.filter((item) => {
-      const status = statusForId(grades, item.id);
+      const status = statusForId(grades, item.id, item.aliases);
       if (filter !== "all" && status !== filter) return false;
       if (!q) return true;
       return (
@@ -110,7 +110,7 @@ export function VocabTracker({
   const visible = filtered.slice(0, limit);
 
   const apply = (item: CatalogItem, status: ItemStatus) => {
-    const next = setItemStatus(item.id, status, user);
+    const next = setItemStatus(item.id, status, user, item.aliases);
     setGrades({ ...next });
   };
 
@@ -177,7 +177,7 @@ export function VocabTracker({
 
       <div className="mt-4 divide-y divide-[var(--border)]">
         {visible.map((item) => {
-          const status = statusForId(grades, item.id);
+          const status = statusForId(grades, item.id, item.aliases);
           return (
             <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
               <button
