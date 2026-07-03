@@ -32,3 +32,16 @@ tsconfig.tsbuildinfo
 *.sln
 *.sw?
 release/
+
+# Local scratch / recovery files (not part of the app)
+sbox-docs/
+brute-recover.cjs
+merge-recovered.cjs
+recover-level.js
+recover.cjs
+recovered.json
+shared-progress.json
+tree.json
+cf.html
+old-rpc.html
+wb.html
