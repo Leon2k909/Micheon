@@ -1128,7 +1128,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
         <Badge variant="outline" className="rounded-full border-pink-500/30 bg-pink-500/10 px-5 py-2 text-base font-black uppercase tracking-[0.14em] text-pink-300">
           <MessageSquareQuote className="mr-2 h-5 w-5" /> {dialogue.title}
         </Badge>
-        <div className="text-xs text-zinc-600">{lineIdx + 1} / {lines.length}</div>
+        <div className="text-xs font-black tracking-wide text-zinc-500">{lineIdx + 1} / {lines.length}</div>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           <button
             aria-label="Mark known and skip this line. Shortcut Alt K"
@@ -1155,37 +1155,38 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
       <div className="space-y-3 max-h-48 overflow-y-auto">
         {lines.slice(0, lineIdx).map((l: any, i: number) => (
           <div key={i} className={cn("flex gap-3", l.speaker === "B" && "flex-row-reverse")}>
-            <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-500 shrink-0">{l.speaker}</div>
+            <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-black text-zinc-500 shrink-0">{l.speaker}</div>
             <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 space-y-0.5",
               l.speaker === "A" ? "bg-white border border-zinc-200" : "bg-zinc-50 border border-zinc-200")}>
-              <div className="text-sm font-bold text-zinc-950">{l.de}</div>
-              {companionFr && l.fr && <div className="text-sm font-bold text-[var(--accent)]">{l.fr}</div>}
-              <div className="text-xs text-zinc-500">{l.en}</div>
+              <div className="text-sm font-black tracking-tight text-zinc-950">{l.de}</div>
+              {companionFr && l.fr && <div className="text-sm font-black tracking-tight text-[var(--accent)]">{l.fr}</div>}
+              <div className="text-xs font-semibold text-zinc-500">{l.en}</div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Current line to type */}
-      <div className={cn("rounded-lg border p-6 space-y-3",
-        line.speaker === "A" ? "border-zinc-200 bg-white" : "border-zinc-200 bg-white")}>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-400">{line.speaker}</div>
-          <div className="flex-1">
-            <div className="text-base text-zinc-500 italic">{line.en}</div>
+      <div className="rounded-[24px] border border-zinc-200 bg-white p-6 space-y-4 shadow-[0_14px_34px_rgba(25,27,38,0.06)]">
+        <div className="flex items-start gap-3">
+          <div className="h-8 w-8 rounded-full bg-[var(--accent-dim)] flex items-center justify-center text-[11px] font-black text-[var(--accent)] shrink-0">{line.speaker}</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">Type this in {learnEn ? "English" : "German"}</p>
+            <div className="mt-0.5 text-xl font-black leading-tight tracking-tight text-zinc-950 sm:text-2xl">{line.en}</div>
             {companionFr && line.fr && (
-              <div className="mt-0.5 text-sm font-bold text-[var(--accent)]">
+              <div className="mt-1 text-sm font-black tracking-tight text-[var(--accent)]">
                 <span className="mr-1.5 text-[10px] font-black uppercase tracking-wide text-zinc-400">FR</span>
                 {line.fr}
               </div>
             )}
           </div>
-          <button onClick={() => tts(line.de, 0.88, targetLang)} className="ml-auto text-zinc-600 hover:text-zinc-950 transition-colors">
+          <button onClick={() => tts(line.de, 0.88, targetLang)}
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7] transition-colors hover:bg-zinc-50 hover:text-zinc-950">
             <Volume2 className="h-4 w-4" />
           </button>
         </div>
         <Input ref={inputRef}
-          className={cn("h-12 text-base font-bold rounded-lg border-zinc-200 bg-white px-5 text-zinc-950 transition-all placeholder:text-zinc-400",
+          className={cn("h-14 rounded-2xl border-zinc-200 bg-white px-5 text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
             checked && result.ok ? "border-emerald-500/40" : checked ? "border-rose-500/40" : "focus:border-[var(--accent)]")}
           placeholder="Type this line..."
           value={input}
@@ -1199,10 +1200,10 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
       <AnimatePresence>
         {checked && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-            className={cn("rounded-lg border p-4 text-center",
+            className={cn("rounded-2xl border p-4 text-center",
               result.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
-            {result.ok ? <span className="font-semibold text-sm">Spot on!</span>
-              : <div className="space-y-1"><div className="font-semibold text-sm">Not quite</div><div className="text-xs text-zinc-400">{line.de}</div></div>}
+            {result.ok ? <span className="text-sm font-black">Spot on!</span>
+              : <div className="space-y-1"><div className="text-sm font-black">Not quite</div><div className="text-xs font-bold text-zinc-500">{line.de}</div></div>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -1210,14 +1211,13 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
       <div className="flex gap-3">
         {checked && !result.ok && (
           <Button onClick={() => { setInput(""); setChecked(false); }} variant="outline"
-            className="flex-1 h-12 rounded-lg border-zinc-200 bg-white text-zinc-700 font-semibold">
+            className="flex-1 h-14 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
             <RotateCcw className="mr-2 h-4 w-4" /> Retry
           </Button>
         )}
         <Button onClick={checked && result.ok ? nextLine : checkLine}
-          className={cn("continue-glow flex-1 h-12 rounded-lg text-sm font-semibold transition-all",
-            checked && result.ok ? "bg-zinc-950 text-white"
-            : "bg-zinc-950 text-white")}>
+          className={cn("continue-glow flex-1 h-14 rounded-2xl text-sm font-black transition-all",
+            "bg-zinc-950 text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800")}>
           {checked && result.ok ? (isLast ? "Done" : "Next line") : "Check"}
         </Button>
       </div>
