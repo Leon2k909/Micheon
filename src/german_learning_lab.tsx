@@ -141,10 +141,19 @@ export default function GermanLearningLab() {
     try {
       const existing = loadCompleted();
       const next = { ...existing };
+      const sessionStart = sessionStartRef.current ?? Date.now();
       const markKnown = (id: string) => {
-        if (id && next[id]?.lastGrade !== "struggle") {
-          next[id] = { lastGrade: "know", updatedAt: new Date().toISOString() };
+        if (!id) return;
+        const prior = next[id];
+        if (prior?.lastGrade === "struggle") {
+          // A struggle marked DURING this session keeps the item in practice.
+          // But a struggle from a PREVIOUS session is cleared by completing the
+          // item again — otherwise there is no way out: the item requeues every
+          // session forever (the "same one lesson on every continue" loop).
+          const struggledAt = prior.updatedAt ? Date.parse(prior.updatedAt) : 0;
+          if (struggledAt >= sessionStart) return;
         }
+        next[id] = { lastGrade: "know", updatedAt: new Date().toISOString() };
       };
       stepsToMark.forEach((s) => {
         if (s.type === "sentence" && s.item?.id) {
