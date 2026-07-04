@@ -126,18 +126,23 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
 
 // ── Carrier sentence templates ────────────────────────────────
 function buildCarrier(de: string, en: string, tip?: string): { de: string; en: string } {
+  // Many word-bank entries carry multiple glosses ("be, exist") — baking them
+  // all into the carrier would make the English answer key untypeable. Use the
+  // first gloss only.
+  const gloss = String(en ?? "").split(/[,;/]/)[0].trim();
   const t = (tip ?? "").toLowerCase();
   if (t === "verb") {
-    return { de: `Ich kann ${de}.`, en: `I can ${en.replace(/^to /, "")}.` };
+    return { de: `Ich kann ${de}.`, en: `I can ${gloss.replace(/^to /, "")}.` };
   }
   if (t === "adjective") {
-    return { de: `Das ist ${de}.`, en: `That is ${en}.` };
+    return { de: `Das ist ${de}.`, en: `That is ${gloss}.` };
   }
   if (t === "adverb") {
-    return { de: `Ich lerne ${de}.`, en: `I am learning ${en}.` };
+    return { de: `Ich lerne ${de}.`, en: `I am learning ${gloss}.` };
   }
-  // noun / default
-  return { de: `Ich sehe ${de}.`, en: `I see ${en.replace(/^(a|an|the) /i, "")}.` };
+  // noun / default. "sehen" takes the accusative: der Mann -> Ich sehe DEN Mann.
+  const deAccusative = de.replace(/^der /i, "den ");
+  return { de: `Ich sehe ${deAccusative}.`, en: `I see ${gloss.replace(/^(a|an|the) /i, "")}.` };
 }
 
 // ── Catalog of every learnable item (for the word/sentence tracker) ──

@@ -15,10 +15,13 @@ export function normalizeGermanInput(t: string) {
 
 export function normalizeGermanLenient(t: string) {
   return normalizeGermanInput(t)
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/ü/g, "u")
     .replace(/ß/g, "ss")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    // Fold ALL diacritics (ä ö ü, and French é è ê à ç î ô û…) to their base
+    // letter, so answers typed without accents still match leniently.
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/ae/g, "a")
     .replace(/oe/g, "o")
     .replace(/ue/g, "u");
@@ -55,12 +58,85 @@ function expandEnglishContractions(t: string) {
   return s;
 }
 
+// Answer keys sometimes carry helper notes in parentheses, e.g.
+// "Ok, sleep well. Love ya! (hab dich lieb)" — those are display hints, never
+// something the learner should have to type.
+function stripParentheticals(t: string) {
+  return String(t ?? "").replace(/\([^)]*\)/g, " ");
+}
+
+// English articles are meaning-neutral for these translations: "I see the
+// cash" and "I see cash" both show the German was understood.
+function stripArticles(t: string) {
+  return t.replace(/\b(a|an|the)\b/g, " ");
+}
+
+// True when a and b differ by at most one edit: insert/delete/substitute, or
+// one adjacent swap ("learnign" == "learning").
+function withinOneEdit(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (a.length === b.length) {
+    const diffs: number[] = [];
+    for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) diffs.push(k);
+    if (diffs.length === 1) return true; // substitution
+    if (diffs.length === 2) {
+      const [x, y] = diffs;
+      return y === x + 1 && a[x] === b[y] && a[y] === b[x]; // adjacent swap
+    }
+    return false;
+  }
+  const [s, l] = a.length < b.length ? [a, b] : [b, a];
+  if (l.length - s.length > 1) return false;
+  let i = 0, j = 0, skipped = false;
+  while (i < s.length && j < l.length) {
+    if (s[i] === l[j]) { i++; j++; continue; }
+    if (skipped) return false;
+    skipped = true;
+    j++; // skip the extra char in the longer word
+  }
+  return true;
+}
+
+// Word-by-word typo tolerance: same word count, each word exact or (length >= 5
+// on both sides and within one edit), at most 2 fuzzy words per sentence.
+function typoClose(a: string, b: string): boolean {
+  const wa = a.split(" ").filter(Boolean);
+  const wb = b.split(" ").filter(Boolean);
+  if (wa.length !== wb.length || wa.length === 0) return false;
+  let fuzzy = 0;
+  for (let k = 0; k < wa.length; k++) {
+    if (wa[k] === wb[k]) continue;
+    if (wa[k].length >= 5 && wb[k].length >= 5 && withinOneEdit(wa[k], wb[k])) {
+      if (++fuzzy > 2) return false;
+      continue;
+    }
+    return false;
+  }
+  return fuzzy > 0;
+}
+
 export function matchEnglishPhrase(input: string, target: string) {
-  const inputNorm = normalizeEnglishSpelling(input);
-  const targetNorm = normalizeEnglishSpelling(target);
-  // Plain comparison first ("dont" == "don't" via apostrophe stripping), then
-  // retry with contractions expanded ("it is" == "it's", "let us" == "let's").
+  const inputNorm = stripParentheticals(normalizeEnglishSpelling(input));
+  const targetNorm = stripParentheticals(normalizeEnglishSpelling(target));
+  // Tier 1: plain ("dont" == "don't" via apostrophe stripping).
   const plain = matchGermanPhrase(inputNorm, targetNorm);
   if (plain.ok) return plain;
-  return matchGermanPhrase(expandEnglishContractions(inputNorm), expandEnglishContractions(targetNorm));
+  // Tier 2: contractions expanded ("it is" == "it's", "let us" == "let's").
+  const inputC = expandEnglishContractions(inputNorm);
+  const targetC = expandEnglishContractions(targetNorm);
+  const contracted = matchGermanPhrase(inputC, targetC);
+  if (contracted.ok) return contracted;
+  // Tier 3: articles ignored ("I see the cash" == "I see cash").
+  const articles = matchGermanPhrase(stripArticles(inputC), stripArticles(targetC));
+  if (articles.ok) return articles;
+  // Tier 4: small typos ("alredy" == "already") — flagged as a spelling note.
+  // Tried on both the plain and the contraction-expanded pair, since a sloppy
+  // input ("its") may only align with one form of the target.
+  if (
+    typoClose(normalizeGermanInput(inputNorm), normalizeGermanInput(targetNorm)) ||
+    typoClose(normalizeGermanInput(inputC), normalizeGermanInput(targetC))
+  ) {
+    return { ok: true, spellingNote: true };
+  }
+  return { ok: false, spellingNote: false };
 }
