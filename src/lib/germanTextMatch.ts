@@ -58,6 +58,21 @@ function expandEnglishContractions(t: string) {
   return s;
 }
 
+// Canonicalize grammatical paraphrases that mean the same thing, so British
+// and American forms both pass: "Have you got this?" == "Do you have this?",
+// "She's got a car" == "She has a car". Both sides are reduced to the same
+// bare form ("you have this") purely for comparison — never for display.
+function canonicalizeEnglish(t: string) {
+  return t
+    .replace(/\bgonna\b/g, "going to")
+    .replace(/\bwanna\b/g, "want to")
+    .replace(/\b(do|does|did) (\w+) have\b/g, "$2 have")   // do-support: "do you have" -> "you have"
+    .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
+    .replace(/\bhas (\w+) got\b/g, "$1 have")              // "has she got" -> "she have"
+    .replace(/\b(\w+) (?:has|have|is) got\b/g, "$1 have")  // "she has/is got" (is = 's expansion) -> "she have"
+    .replace(/\bhas\b/g, "have");                          // person-neutral for comparison only
+}
+
 // Answer keys sometimes carry helper notes in parentheses, e.g.
 // "Ok, sleep well. Love ya! (hab dich lieb)" — those are display hints, never
 // something the learner should have to type.
@@ -129,12 +144,21 @@ export function matchEnglishPhrase(input: string, target: string) {
   // Tier 3: articles ignored ("I see the cash" == "I see cash").
   const articles = matchGermanPhrase(stripArticles(inputC), stripArticles(targetC));
   if (articles.ok) return articles;
-  // Tier 4: small typos ("alredy" == "already") — flagged as a spelling note.
-  // Tried on both the plain and the contraction-expanded pair, since a sloppy
+  // Tier 4: grammatical paraphrases ("Have you got X?" == "Do you have X?"),
+  // alone and with articles ignored.
+  const inputK = canonicalizeEnglish(inputC);
+  const targetK = canonicalizeEnglish(targetC);
+  const canonical = matchGermanPhrase(inputK, targetK);
+  if (canonical.ok) return canonical;
+  const canonicalArticles = matchGermanPhrase(stripArticles(inputK), stripArticles(targetK));
+  if (canonicalArticles.ok) return canonicalArticles;
+  // Tier 5: small typos ("alredy" == "already") — flagged as a spelling note.
+  // Tried on plain, contraction-expanded and canonical pairs, since a sloppy
   // input ("its") may only align with one form of the target.
   if (
     typoClose(normalizeGermanInput(inputNorm), normalizeGermanInput(targetNorm)) ||
-    typoClose(normalizeGermanInput(inputC), normalizeGermanInput(targetC))
+    typoClose(normalizeGermanInput(inputC), normalizeGermanInput(targetC)) ||
+    typoClose(normalizeGermanInput(inputK), normalizeGermanInput(targetK))
   ) {
     return { ok: true, spellingNote: true };
   }
