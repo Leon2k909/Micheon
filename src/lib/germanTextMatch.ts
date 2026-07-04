@@ -6,9 +6,9 @@ export function normalizeGermanInput(t: string) {
   return String(t ?? "")
     .toLowerCase()
     .trim()
-    .replace(/[’'`´]/g, "")        // apostrophes don't matter: "don't" == "dont"
-    .replace(/[-–—/]/g, " ")       // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
-    .replace(/[.!?,;:"()]/g, "")   // drop sentence punctuation
+    .replace(/[’'`´‘]/g, "")            // apostrophes don't matter: "don't" == "dont"
+    .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
+    .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop sentence punctuation incl. curly/German/French quotes
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -130,7 +130,17 @@ function typoClose(a: string, b: string): boolean {
   return fuzzy > 0;
 }
 
-export function matchEnglishPhrase(input: string, target: string) {
+export function matchEnglishPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean } {
+  // "A / B" answer keys offer alternatives — accept a match against either
+  // side (or the whole thing). Recurse per segment, slash-free.
+  if (/\//.test(String(target ?? ""))) {
+    const segments = String(target).split("/").map((s) => s.trim()).filter(Boolean);
+    for (const seg of segments) {
+      const r = matchEnglishPhrase(input, seg);
+      if (r.ok) return r;
+    }
+    // fall through: compare against the whole key with "/" as a space
+  }
   const inputNorm = stripParentheticals(normalizeEnglishSpelling(input));
   const targetNorm = stripParentheticals(normalizeEnglishSpelling(target));
   // Tier 1: plain ("dont" == "don't" via apostrophe stripping).

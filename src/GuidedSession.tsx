@@ -762,7 +762,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   disabled={checked && result.ok}
                 />
               </motion.div>
-              <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />
+              {!learnEn && <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />}
             </div>
 
             {/* Feedback */}
@@ -1200,7 +1200,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
           onKeyDown={e => e.key === "Enter" && (checked && result.ok ? nextLine() : checkLine())}
           disabled={checked && result.ok}
         />
-        <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />
+        {!learnEn && <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />}
       </div>
 
       <AnimatePresence>
