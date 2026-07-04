@@ -288,14 +288,17 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     () => (learnEn ? item.en : formatEnglishText(item.en, englishVariant)),
     [item.en, englishVariant, learnEn]
   );
-  const result   = useMemo(() => match(input, item.de), [input, item.de]);
+  // In learn-English mode the target text is English — use the English matcher
+  // so contractions ("it's" == "it is") and spelling variants are accepted.
+  const matchTarget = learnEn ? matchEnglish : match;
+  const result   = useMemo(() => matchTarget(input, item.de), [input, item.de, matchTarget]);
   const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
   // French companion: tested as an extra phase when enabled and the item has French
   // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
   const hasFr = companion === "fr" && !learnEn && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
-  const memDeResult = useMemo(() => match(memDeInput, item.de), [memDeInput, item.de]);
+  const memDeResult = useMemo(() => matchTarget(memDeInput, item.de), [memDeInput, item.de, matchTarget]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
   // Auto-play TTS when entering Listen phase (German, then French in companion mode)
@@ -1068,7 +1071,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const inputRef = useRef<HTMLInputElement>(null);
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
-  const result = useMemo(() => match(input, line?.de ?? ""), [input, line]);
+  const result = useMemo(() => (learningEnglish() ? matchEnglish : match)(input, line?.de ?? ""), [input, line]);
   const learnEn = useMemo(() => learningEnglish(), []);
   const targetLang = learnEn ? "en-US" : "de-DE";
   const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);
