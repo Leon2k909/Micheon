@@ -8,6 +8,8 @@
 // blocked), we fall back to the browser's built-in speechSynthesis so audio never
 // goes fully silent — it just won't be the premium voice.
 
+import { AUDIO_MUTE_EVENT, isAudioMuted } from "@/lib/audioMute";
+
 type SeqItem = { text: string; rate?: number; lang: string };
 
 const DEFAULT_RATE = 0.88;
@@ -28,6 +30,16 @@ function hardStop() {
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
+}
+
+// Muting mid-playback cuts the current voice off immediately.
+if (typeof window !== "undefined") {
+  window.addEventListener(AUDIO_MUTE_EVENT, () => {
+    if (isAudioMuted()) {
+      playSeq += 1; // invalidate in-flight sequences
+      hardStop();
+    }
+  });
 }
 
 function speakFallback(text: string, rate: number, lang: string): Promise<void> {
@@ -80,15 +92,17 @@ async function playOne(item: SeqItem, token: number): Promise<void> {
   }
 }
 
-/** Speak a single phrase. Interrupts whatever is currently playing. */
+/** Speak a single phrase. Interrupts whatever is currently playing. No-op while muted. */
 export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<void> {
+  if (isAudioMuted()) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
   return playOne({ text, rate, lang }, token);
 }
 
-/** Speak several phrases back-to-back (e.g. German then French on the Listen step). */
+/** Speak several phrases back-to-back (e.g. German then French on the Listen step). No-op while muted. */
 export function ttsSequence(items: SeqItem[]): Promise<void> {
+  if (isAudioMuted()) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
   return (async () => {
