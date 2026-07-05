@@ -52,9 +52,28 @@ const CONTRACTIONS: [RegExp, string][] = [
   [/\b(it|that|there|here|what|who|where|how|he|she)'s\b/g, "$1 is"],
 ];
 
+// Common text-speak, expanded on BOTH sides: the learner may type "pls", and
+// some answer keys (the texting pack) themselves contain "rn"/"idk" — so the
+// full words must also match those keys.
+const TEXT_SPEAK: [RegExp, string][] = [
+  [/\bpls\b/g, "please"], [/\bplz\b/g, "please"],
+  [/\bthx\b/g, "thanks"], [/\btysm\b/g, "thank you so much"], [/\bty\b/g, "thank you"],
+  [/\bu\b/g, "you"], [/\bur\b/g, "your"], [/\br\b/g, "are"], [/\bim\b/g, "i am"],
+  [/\bidk\b/g, "i do not know"], [/\bdunno\b/g, "do not know"],
+  [/\bcuz\b/g, "because"], [/\bcos\b/g, "because"], [/\bbc\b/g, "because"],
+  [/\brn\b/g, "right now"], [/\bnvm\b/g, "never mind"], [/\bnp\b/g, "no problem"],
+  [/\bbtw\b/g, "by the way"], [/\bomw\b/g, "on my way"],
+  [/\btho\b/g, "though"], [/\bthru\b/g, "through"],
+  [/\btmrw\b/g, "tomorrow"], [/\btmr\b/g, "tomorrow"],
+  [/\bppl\b/g, "people"], [/\bmsg\b/g, "message"],
+  [/\bokay\b/g, "ok"], [/\bkk\b/g, "ok"],
+  [/\bgotta\b/g, "got to"], [/\bgn\b/g, "good night"],
+];
+
 function expandEnglishContractions(t: string) {
   let s = String(t ?? "").toLowerCase().replace(/[’`´]/g, "'");
   for (const [re, sub] of CONTRACTIONS) s = s.replace(re, sub);
+  for (const [re, sub] of TEXT_SPEAK) s = s.replace(re, sub);
   return s;
 }
 
@@ -66,6 +85,7 @@ function canonicalizeEnglish(t: string) {
   return t
     .replace(/\bgonna\b/g, "going to")
     .replace(/\bwanna\b/g, "want to")
+    .replace(/\bthank you\b/g, "thanks")
     .replace(/\b(do|does|did) (\w+) have\b/g, "$2 have")   // do-support: "do you have" -> "you have"
     .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
     .replace(/\bhas (\w+) got\b/g, "$1 have")              // "has she got" -> "she have"
@@ -140,6 +160,13 @@ export function matchEnglishPhrase(input: string, target: string): { ok: boolean
       if (r.ok) return r;
     }
     // fall through: compare against the whole key with "/" as a space
+  }
+  // "ur" is ambiguous text-speak (your / you are). The main table expands it to
+  // "your"; if that fails, retry once with "you are" (recursion-safe: the
+  // replacement removes the token).
+  if (/\bur\b/i.test(String(input ?? ""))) {
+    const alt = matchEnglishPhrase(String(input).replace(/\bur\b/gi, "you are"), target);
+    if (alt.ok) return alt;
   }
   const inputNorm = stripParentheticals(normalizeEnglishSpelling(input));
   const targetNorm = stripParentheticals(normalizeEnglishSpelling(target));
