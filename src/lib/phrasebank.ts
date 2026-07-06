@@ -179,7 +179,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Die Rechnung, bitte.", en: "The bill, please.", use: "Asking for the bill" },
       { de: "Zusammen oder getrennt?", en: "Together or separately?", use: "You'll be asked this" },
       { de: "Getrennt, bitte.", en: "Separately, please.", use: "Splitting the bill" },
-      { de: "Das hat gut geschmeckt, danke.", en: "That was delicious, thank you.", use: "Leaving happy" },
+      { de: "Das hat gut geschmeckt, danke.", en: "That was delicious, thank you. / That tasted good, thanks.", use: "Leaving happy" },
     ],
   },
   {

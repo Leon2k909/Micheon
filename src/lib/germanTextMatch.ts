@@ -132,8 +132,26 @@ function withinOneEdit(a: string, b: string): boolean {
   return true;
 }
 
+// A single edit at the very end of a word involving s/d is usually GRAMMAR,
+// not a typo — "tastes" vs "tasted" (tense), "plays" vs "played". Those must
+// not be forgiven; the learner's tense reading is part of the answer.
+function isInflectionEdit(a: string, b: string): boolean {
+  if (a.length === b.length) {
+    return (
+      a.slice(0, -1) === b.slice(0, -1) &&
+      "sd".includes(a[a.length - 1]) &&
+      "sd".includes(b[b.length - 1])
+    );
+  }
+  const [short, long] = a.length < b.length ? [a, b] : [b, a];
+  if (long.length - short.length !== 1) return false;
+  const last = long[long.length - 1];
+  return long.slice(0, -1) === short && (last === "s" || last === "d");
+}
+
 // Word-by-word typo tolerance: same word count, each word exact or (length >= 5
 // on both sides and within one edit), at most 2 fuzzy words per sentence.
+// Final-letter s/d edits are excluded — that's tense/agreement, not spelling.
 function typoClose(a: string, b: string): boolean {
   const wa = a.split(" ").filter(Boolean);
   const wb = b.split(" ").filter(Boolean);
@@ -141,7 +159,11 @@ function typoClose(a: string, b: string): boolean {
   let fuzzy = 0;
   for (let k = 0; k < wa.length; k++) {
     if (wa[k] === wb[k]) continue;
-    if (wa[k].length >= 5 && wb[k].length >= 5 && withinOneEdit(wa[k], wb[k])) {
+    if (
+      wa[k].length >= 5 && wb[k].length >= 5 &&
+      withinOneEdit(wa[k], wb[k]) &&
+      !isInflectionEdit(wa[k], wb[k])
+    ) {
       if (++fuzzy > 2) return false;
       continue;
     }
