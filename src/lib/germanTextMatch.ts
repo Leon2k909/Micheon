@@ -49,7 +49,7 @@ const CONTRACTIONS: [RegExp, string][] = [
   [/\b(\w+)'ve\b/g, "$1 have"],          // I've, you've, they've
   [/\b(\w+)'ll\b/g, "$1 will"],          // I'll, it'll, we'll
   [/\b(\w+)'d\b/g, "$1 would"],          // I'd, he'd
-  [/\b(it|that|there|here|what|who|where|how|he|she)'s\b/g, "$1 is"],
+  [/\b(it|that|there|here|what|who|where|when|why|how|he|she)'s\b/g, "$1 is"],
 ];
 
 // Common text-speak, expanded on BOTH sides: the learner may type "pls", and
@@ -68,6 +68,10 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bppl\b/g, "people"], [/\bmsg\b/g, "message"],
   [/\bokay\b/g, "ok"], [/\bkk\b/g, "ok"],
   [/\bgotta\b/g, "got to"], [/\bgn\b/g, "good night"],
+  // apostrophe-less question contractions — unambiguous tokens
+  [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
+  [/\bwhos\b/g, "who is"], [/\bwhys\b/g, "why is"], [/\bhows\b/g, "how is"],
+  [/\bthats\b/g, "that is"], [/\btheres\b/g, "there is"], [/\bheres\b/g, "here is"],
 ];
 
 function expandEnglishContractions(t: string) {

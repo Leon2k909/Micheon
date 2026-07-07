@@ -199,7 +199,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Es ist gleich um die Ecke.", en: "It's just around the corner.", use: "Typical reply" },
       { de: "Ich habe mich verlaufen.", en: "I'm lost.", use: "On foot" },
       { de: "Eine Fahrkarte nach München, bitte.", en: "A ticket to Munich, please.", use: "Buying a ticket" },
-      { de: "Wann fährt der nächste Zug?", en: "When does the next train leave?", use: "Timetable" },
+      { de: "Wann fährt der nächste Zug?", en: "When does the next train leave? / When is the next train? / When does the next train go?", use: "Timetable" },
       { de: "Von welchem Gleis fährt der Zug?", en: "Which platform does the train leave from?", use: "At the station" },
       { de: "Hält dieser Bus am Markt?", en: "Does this bus stop at the market?", use: "On the bus" },
       { de: "Wo muss ich umsteigen?", en: "Where do I have to change?", use: "Connections" },
