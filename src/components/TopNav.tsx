@@ -6,6 +6,7 @@ import {
   BellOff,
   BookOpen,
   Gamepad2,
+  GraduationCap,
   Languages,
   LayoutDashboard,
   LogOut,
@@ -23,6 +24,7 @@ const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { id: "learn", icon: BookOpen, label: "Lessons" },
   { id: "games", icon: Gamepad2, label: "Practice" },
+  { id: "grammar", icon: GraduationCap, label: "Grammar" },
 ];
 
 export type TopNavSearchItem = {

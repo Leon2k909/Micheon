@@ -9,6 +9,8 @@ import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
 import GamificationPanel from "@/Gamification";
 import { GamesView } from "@/games/GamesView";
+import ClozeTabContent from "@/lab/ClozeTabContent";
+import GrammarTabContent from "@/lab/GrammarTabContent";
 import { buildApiPartFromResolved, buildRemoteWordBankParts } from "@/lib/api";
 import { buildBundledParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
@@ -413,6 +415,11 @@ export default function GermanLearningLab() {
     )
   ) : deferredTab === "profile" ? (
     <GamificationPanel profileOnly stats={progressStats} user={user} onUpdateStats={updateStats} apiParts={apiParts} onSwitchCourse={() => setCourseSwitcherOpen(true)} activeCourseName={activeCourse?.name ?? "German"} />
+  ) : deferredTab === "grammar" ? (
+    <div className="space-y-4">
+      <ClozeTabContent />
+      <GrammarTabContent />
+    </div>
   ) : deferredTab === "games" ? (
     <GamesView 
       totalReviews={progressStats.totalReviews}

@@ -172,7 +172,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "treffen",        lookup: "treffen",    fallbackEn: "to meet",     tip: "verb" },
       { de: "planen",         lookup: "planen",     fallbackEn: "to plan",     tip: "verb" },
       { de: "zusammen",       lookup: "zusammen",   fallbackEn: "together",    tip: "adverb" },
-      { de: "naechste Woche", lookup: "Woche",      fallbackEn: "next week",   tip: "phrase" },
+      { de: "nächste Woche", lookup: "Woche",      fallbackEn: "next week",   tip: "phrase" },
       { de: "klingen",        lookup: "klingen",    fallbackEn: "to sound",    tip: "verb" },
     ],
     dialogues: [
@@ -186,7 +186,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     phrases: [
       { de: "Hast du später Zeit?",         en: "Do you have time later?",    use: "Making plans",        fr: "As-tu le temps plus tard ?" },
       { de: "Das ist eine gute Idee.",        en: "That is a good idea.",       use: "Reacting positively", fr: "C'est une bonne idée." },
-      { de: "Ich bin naechste Woche frei.",   en: "I am free next week.",       use: "Scheduling",          fr: "Je suis libre la semaine prochaine." },
+      { de: "Ich bin nächste Woche frei.",   en: "I am free next week.",       use: "Scheduling",          fr: "Je suis libre la semaine prochaine." },
       { de: "Lass uns anfangen.",             en: "Let us start.",              use: "Useful group phrase", fr: "Commençons." },
     ],
   },
@@ -443,7 +443,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Das ist voll der Hammer.",      en: "That's totally awesome.",        use: "Opinion",    fr: "C'est vraiment le feu." },
       { de: "Das ist mir Wurst.",            en: "I couldn't care less.",          use: "Opinion",    fr: "Je m'en fiche." },
       { de: "Das ist totaler Quatsch.",      en: "That's total nonsense.",         use: "Opinion",    fr: "C'est n'importe quoi." },
-      { de: "Mach kein Stress.",             en: "Don't make a fuss.",             use: "Reaction",   fr: "Te prends pas la tête." },
+      { de: "Mach keinen Stress.",             en: "Don't make a fuss.",             use: "Reaction",   fr: "Te prends pas la tête." },
       { de: "Das ist so cringe.",            en: "That's so cringe.",              use: "Gen-Z",      fr: "C'est trop cringe." },
       { de: "Ich bin voll lost.",            en: "I'm totally clueless.",          use: "Feeling",    fr: "Je suis complètement perdu." },
       { de: "Ich hab null Bock.",            en: "I'm not in the mood at all.",    use: "Feeling",    fr: "J'ai zéro envie." },
@@ -694,7 +694,7 @@ export const verbConjugations: Record<string, Record<string, string>> = {
   machen:   { ich: "mache",  du: "machst",  er: "macht",  wir: "machen",  ihr: "macht",   sie: "machen" },
   geben:    { ich: "gebe",   du: "gibst",   er: "gibt",   wir: "geben",   ihr: "gebt",    sie: "geben" },
   nehmen:   { ich: "nehme",  du: "nimmst",  er: "nimmt",  wir: "nehmen",  ihr: "nehmt",   sie: "nehmen" },
-  wissen:   { ich: "weiss",  du: "weisst",  er: "weiss",  wir: "wissen",  ihr: "wisst",   sie: "wissen" },
+  wissen:   { ich: "weiß",  du: "weißt",  er: "weiß",  wir: "wissen",  ihr: "wisst",   sie: "wissen" },
 };
 
 export const separableVerbs = [

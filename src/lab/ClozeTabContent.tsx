@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ClozeTab } from "@/ClozeGrammar.jsx";
+import { ClozeTab } from "@/ClozeGrammar";
 
 export default function ClozeTabContent() {
   return (

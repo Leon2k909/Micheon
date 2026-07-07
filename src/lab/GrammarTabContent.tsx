@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { GrammarTab } from "@/ClozeGrammar.jsx";
+import { GrammarTab } from "@/ClozeGrammar";
 
 export default function GrammarTabContent() {
   return (
