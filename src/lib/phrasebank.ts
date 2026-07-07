@@ -220,7 +220,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Haben Sie ein Zimmer frei?", en: "Do you have a room available?", use: "Without a booking" },
       { de: "Ein Einzelzimmer, bitte.", en: "A single room, please.", use: "Room type" },
       { de: "Ein Doppelzimmer für drei Nächte.", en: "A double room for three nights.", use: "Booking" },
-      { de: "Was kostet die Nacht?", en: "How much is it per night?", use: "Asking the rate" },
+      { de: "Was kostet die Nacht?", en: "How much is it per night? / What does the night cost? / How much does the night cost? / What is the cost for the night? / How much is the night?", use: "Asking the rate" },
       { de: "Ist das Frühstück inklusive?", en: "Is breakfast included?", use: "Checking" },
       { de: "Um wie viel Uhr ist Check-out?", en: "What time is check-out?", use: "Practical question" },
       { de: "Wo ist der Aufzug?", en: "Where's the lift?", use: "Finding your way" },

@@ -90,6 +90,7 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bgonna\b/g, "going to")
     .replace(/\bwanna\b/g, "want to")
     .replace(/\bthank you\b/g, "thanks")
+    .replace(/\bper\b/g, "for")  // "per night" == "for the night" (articles drop in the same tier)
     .replace(/\b(do|does|did) (\w+) have\b/g, "$2 have")   // do-support: "do you have" -> "you have"
     .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
     .replace(/\bhas (\w+) got\b/g, "$1 have")              // "has she got" -> "she have"
