@@ -216,6 +216,17 @@ export function matchEnglishPhrase(input: string, target: string): { ok: boolean
   if (canonical.ok) return canonical;
   const canonicalArticles = matchGermanPhrase(stripArticles(inputK), stripArticles(targetK));
   if (canonicalArticles.ok) return canonicalArticles;
+  // Tier 4.5: compound-word spacing — "wifi" == "Wi-Fi" == "wi fi",
+  // "checkout" == "check-out". Hyphens became spaces during normalization, so
+  // comparing with ALL spaces removed folds every compound-spacing variant.
+  // Cross-compare every normalization form: a sloppy input ("isnt", "hes")
+  // may only align with the target's UNexpanded form and vice versa.
+  const spaceless = (s: string) => normalizeGermanInput(s).replace(/ /g, "");
+  const inputForms = [inputNorm, inputC, inputK].map(spaceless);
+  const targetForms = [targetNorm, targetC, targetK].map(spaceless);
+  if (inputForms.some((i) => targetForms.includes(i))) {
+    return { ok: true, spellingNote: false };
+  }
   // Tier 5: small typos ("alredy" == "already") — flagged as a spelling note.
   // Tried on plain, contraction-expanded and canonical pairs, since a sloppy
   // input ("its") may only align with one form of the target.
