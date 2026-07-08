@@ -252,7 +252,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Das Meeting wurde verschoben.", en: "The meeting was postponed.", use: "Schedule change" },
       { de: "Ich bin damit einverstanden.", en: "I agree with that.", use: "Agreeing" },
       { de: "Das sehe ich anders.", en: "I see it differently.", use: "Polite disagreement" },
-      { de: "Können wir einen Termin vereinbaren?", en: "Can we arrange a meeting?", use: "Scheduling" },
+      { de: "Können wir einen Termin vereinbaren?", en: "Can we arrange a meeting? / Can we book an appointment? / Can we schedule an appointment? / Can we make an appointment?", use: "Scheduling" },
       { de: "Ich melde mich später.", en: "I'll get back to you later.", use: "Deferring" },
       { de: "Vielen Dank für Ihre Hilfe.", en: "Thank you for your help.", use: "Closing politely" },
       { de: "Schönen Feierabend!", en: "Have a good evening (after work)!", use: "End of workday" },
