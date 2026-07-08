@@ -341,7 +341,7 @@ export const curatedTopics: CuratedTopic[] = [
     focus: "Expressing and supporting opinions naturally.",
     phrases: [
       { de: "Ich denke, dass das stimmt.", en: "I think that's right. / I think that is true.", use: "Stating a view" },
-      { de: "Meiner Meinung nach ist das falsch.", en: "In my opinion, that's wrong.", use: "Opinion phrase" },
+      { de: "Meiner Meinung nach ist das falsch.", en: "In my opinion, that's wrong. / In my opinion, that is false.", use: "Opinion phrase" },
       { de: "Ich finde das interessant.", en: "I find that interesting.", use: "Reacting" },
       { de: "Da hast du recht.", en: "You're right about that. / You're right.", use: "Agreeing" },
       { de: "Das stimmt nicht ganz.", en: "That's not quite right. / That is not quite true.", use: "Mild disagreement" },
