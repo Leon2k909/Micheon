@@ -39,17 +39,21 @@ export function matchGermanPhrase(input: string, target: string) {
 // are ambiguous in rare cases — "he's gone" as "he has" — an acceptable trade
 // for beginner-level sentences.)
 const CONTRACTIONS: [RegExp, string][] = [
-  [/\blet's\b/g, "let us"],
-  [/\bwon't\b/g, "will not"],
-  [/\bcan't\b/g, "cannot"],
-  [/\bshan't\b/g, "shall not"],
-  [/\b(\w+)n't\b/g, "$1 not"],           // don't, isn't, wasn't, couldn't…
-  [/\bi'm\b/g, "i am"],
-  [/\b(\w+)'re\b/g, "$1 are"],           // you're, we're, they're
-  [/\b(\w+)'ve\b/g, "$1 have"],          // I've, you've, they've
-  [/\b(\w+)'ll\b/g, "$1 will"],          // I'll, it'll, we'll
-  [/\b(\w+)'d\b/g, "$1 would"],          // I'd, he'd
-  [/\b(it|that|there|here|what|who|where|when|why|how|he|she)'s\b/g, "$1 is"],
+  [/\blet[’'`´]?s\b/gi, "let us"],
+  [/\bwon[’'`´]?t\b/gi, "will not"],
+  [/\bcan[’'`´]?t\b/gi, "cannot"],
+  [/\bshan[’'`´]?t\b/gi, "shall not"],
+  [/\b(\w+)n[’'`´]?t\b/gi, "$1 not"],           // don't/dont, isn't/isnt, wasn't/wasnt, couldn't/couldnt…
+  [/\bi[’'`´]?m\b/gi, "i am"],
+  [/\b(\w+)[’'`´]re\b/gi, "$1 are"],             // you're, we're, they're
+  [/\b(you|they)re\b/gi, "$1 are"],              // youre, theyre (avoiding 'were' conflict)
+  [/\b(\w+)[’'`´]ve\b/gi, "$1 have"],            // I've, you've...
+  [/\b(i|you|we|they)ve\b/gi, "$1 have"],        // ive, youve, weve, theyve
+  [/\b(\w+)[’'`´]ll\b/gi, "$1 will"],
+  [/\b(i|you|he|she|it|they)ll\b/gi, "$1 will"], // ill, youll... (avoiding 'well' conflict)
+  [/\b(\w+)[’'`´]d\b/gi, "$1 would"],
+  [/\b(you|he|she|we|they)d\b/gi, "$1 would"],   // youd, hed... (avoiding 'id' conflict)
+  [/\b(it|that|there|here|what|who|where|when|why|how|he|she)[’'`´]?s\b/gi, "$1 is"], // it's/its, that's/thats...
 ];
 
 // Common text-speak, expanded on BOTH sides: the learner may type "pls", and
@@ -107,7 +111,25 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
     .replace(/\bhas (\w+) got\b/g, "$1 have")              // "has she got" -> "she have"
     .replace(/\b(\w+) (?:has|have|is) got\b/g, "$1 have")  // "she has/is got" (is = 's expansion) -> "she have"
-    .replace(/\bhas\b/g, "have");                          // person-neutral for comparison only
+    .replace(/\bhas\b/g, "have")                          // person-neutral for comparison only
+    
+    // Polite request / question equivalents
+    .replace(/\bcould\b/g, "can")
+    
+    // Common vocabulary synonyms
+    .replace(/\bavailable\b/g, "free")
+    .replace(/\breserved\b/g, "booked")
+    .replace(/\belevator\b/g, "lift")
+    .replace(/\bcheck\b/g, "bill")
+    .replace(/\b(restroom|bathroom|washroom|loo)\b/g, "toilet")
+    .replace(/\b(arrange|schedule|set up)\b/g, "make")
+    .replace(/\b(meeting|date)\b/g, "appointment")
+    .replace(/\b(pub|bar)\b/g, "pub")
+    .replace(/\b(underground|metro|tube)\b/g, "subway")
+    .replace(/\bstore\b/g, "shop")
+    .replace(/\bfootball\b/g, "soccer")
+    .replace(/\b(purse|handbag)\b/g, "bag")
+    .replace(/\bauto\b/g, "car");
 }
 
 // Answer keys sometimes carry helper notes in parentheses, e.g.
