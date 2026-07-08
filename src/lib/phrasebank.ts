@@ -246,7 +246,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Das mache ich sofort.", en: "I'll do that right away.", use: "Confirming" },
       { de: "Können Sie mir das erklären?", en: "Could you explain that to me?", use: "Asking for clarity" },
       { de: "Ich bin in einer Besprechung.", en: "I'm in a meeting.", use: "Being unavailable" },
-      { de: "Ich schicke Ihnen eine E-Mail.", en: "I'll send you an email. / I will email you.", use: "Following up" },
+      { de: "Ich schicke Ihnen eine E-Mail.", en: "I'll send you an email. / I will email you. / I send you an email. / I'm sending you an email.", use: "Following up" },
       { de: "Haben Sie kurz Zeit?", en: "Do you have a minute? / Do you have a moment?", use: "Polite interruption" },
       { de: "Wann ist die Frist?", en: "When's the deadline? / What is the deadline?", use: "Checking timing" },
       { de: "Das Meeting wurde verschoben.", en: "The meeting was postponed.", use: "Schedule change" },
