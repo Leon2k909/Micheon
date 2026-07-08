@@ -105,7 +105,11 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bgonna\b/g, "going to")
     .replace(/\bwanna\b/g, "want to")
     .replace(/\bthank you\b/g, "thanks")
-    .replace(/\bper\b/g, "for")  // "per night" == "for the night" (articles drop in the same tier)
+    .replace(/\bper\b/g, "for")          // "per night" == "for the night" (articles drop in the same tier)
+    .replace(/\bcould\b/g, "can")        // polite request forms are interchangeable for comprehension
+    .replace(/\bmay (i|we)\b/g, "can $1") // "May I speak to..." == "Can I speak to..."
+    .replace(/\bshall\b/g, "should")     // "Shall we meet?" == "Should we meet?"
+    .replace(/\b(alright|all right)\b/g, "ok")   // "alright" == "all right" == "okay" ("okay" already folds to "ok")
     .replace(/\b(\d{1,3})\b/g, (m) => NUM_WORDS[m] ?? m)  // "3 nights" == "three nights"
     .replace(/\b(do|does|did) (\w+) have\b/g, "$2 have")   // do-support: "do you have" -> "you have"
     .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
