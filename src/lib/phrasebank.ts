@@ -303,7 +303,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Ich habe kein Netz.", en: "I have no signal. / I have no service. / I have no reception.", use: "Mobile data" },
       { de: "Mein Akku ist fast leer.", en: "My battery is almost dead. / My battery is almost empty.", use: "Common complaint" },
       { de: "Kann ich mein Handy hier aufladen?", en: "Can I charge my phone here?", use: "Request" },
-      { de: "Ich schreibe dir eine Nachricht.", en: "I'll text you. / I will write you a message. / I will send you a message.", use: "Messaging" },
+      { de: "Ich schreibe dir eine Nachricht.", en: "I'll text you. / I will write you a message. / I will send you a message. / I write you a message. / I'm writing you a message.", use: "Messaging" },
       { de: "Schick mir die Adresse.", en: "Send me the address.", use: "Casual request" },
     ],
   },
