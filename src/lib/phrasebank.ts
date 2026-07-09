@@ -415,9 +415,9 @@ export const curatedTopics: CuratedTopic[] = [
     phrases: [
       { de: "Wie ist das Wetter heute?", en: "How's the weather today?", use: "Opener" },
       { de: "Es ist schön draußen.", en: "It's lovely outside. / It's nice outside. / It's beautiful outside.", use: "Positive" },
-      { de: "Es regnet.", en: "It's raining.", use: "Weather" },
-      { de: "Es schneit.", en: "It's snowing.", use: "Weather" },
-      { de: "Die Sonne scheint.", en: "The sun is shining.", use: "Weather" },
+      { de: "Es regnet.", en: "It's raining. / It rains.", use: "Weather" },
+      { de: "Es schneit.", en: "It's snowing. / It snows.", use: "Weather" },
+      { de: "Die Sonne scheint.", en: "The sun is shining. / The sun shines.", use: "Weather" },
       { de: "Es ist kalt.", en: "It's cold.", use: "Weather" },
       { de: "Es ist heiß.", en: "It's hot.", use: "Weather" },
       { de: "Es ist windig.", en: "It's windy.", use: "Weather" },
