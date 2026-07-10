@@ -220,22 +220,22 @@ export function ClozeTab() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-500">{index + 1} / {CLOZE_EXERCISES.length} · Score: {score}</div>
-        <Badge variant="outline">{tip?.level ?? "A1"}</Badge>
+        <div className="text-sm font-bold text-[var(--text-3)]">{index + 1} / {CLOZE_EXERCISES.length} · Score: {score}</div>
+        <Badge variant="outline" className="border-[var(--border)] font-black text-[var(--text-2)]">{tip?.level ?? "A1"}</Badge>
       </div>
 
-      <div className="rounded-3xl border bg-white p-8 shadow-sm space-y-5">
+      <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_14px_34px_rgba(25,27,38,0.06)] space-y-5">
         {/* Sentence with blank */}
-        <div className="text-2xl font-semibold text-center leading-relaxed">
+        <div className="text-2xl font-black tracking-tight text-center leading-relaxed text-zinc-950">
           {parts[0]}
           <span className={`inline-block border-b-2 min-w-[80px] mx-1 text-center align-bottom
-            ${checked ? (correct ? "border-green-500 text-green-700" : "border-red-400 text-red-600") : "border-slate-400"}`}>
+            ${checked ? (correct ? "border-emerald-500 text-emerald-600" : "border-rose-400 text-rose-600") : "border-zinc-400 text-[var(--accent)]"}`}>
             {checked ? ex.answer : (input || "\u00A0")}
           </span>
           {parts[1]}
         </div>
 
-        <div className="text-sm text-slate-400 text-center">{ex.hint}</div>
+        <div className="text-sm font-semibold text-zinc-500 text-center">{ex.hint}</div>
 
         <Input
           ref={inputRef}
@@ -243,17 +243,17 @@ export function ClozeTab() {
           onChange={handleChange}
           onKeyDown={e => { if (e.key === "Enter") { if (checked && correct) { next(); } else check(); } }}
           placeholder="Fill in the blank…"
-          className="rounded-2xl text-center h-12 text-base"
+          className="h-12 rounded-2xl border-zinc-200 bg-white text-center text-base font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[var(--accent)]"
           disabled={checked && !correct}
         />
 
         {!checked && (
-          <Button className="w-full rounded-2xl" onClick={check} disabled={!input.trim()}>Check</Button>
+          <Button className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800 disabled:opacity-40" onClick={check} disabled={!input.trim()}>Check</Button>
         )}
 
         {checked && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-            className={`rounded-2xl p-3 text-sm text-center ${correct ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+            className={`rounded-2xl p-3 text-sm font-bold text-center ${correct ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"}`}>
             {correct
               ? <span className="flex items-center gap-2 justify-center font-medium"><CheckCircle2 className="h-4 w-4" /> Correct!</span>
               : <span className="font-medium"><XCircle className="h-4 w-4 inline mr-1" />Answer: <strong>{ex.answer}</strong></span>
@@ -262,11 +262,11 @@ export function ClozeTab() {
         )}
 
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button variant="outline" size="sm" className="rounded-2xl gap-1" onClick={() => setShowTip(v => !v)}>
+          <Button variant="outline" size="sm" className="rounded-2xl gap-1 border-zinc-200 bg-white font-bold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950" onClick={() => setShowTip(v => !v)}>
             <Lightbulb className="h-3 w-3" /> Grammar tip
           </Button>
           {checked && (
-            <Button size="sm" className="rounded-2xl gap-1" onClick={next}>
+            <Button size="sm" className="rounded-2xl gap-1 bg-zinc-950 font-black text-white hover:bg-zinc-800" onClick={next}>
               Next <ChevronRight className="h-3 w-3" />
             </Button>
           )}
@@ -276,7 +276,7 @@ export function ClozeTab() {
           {showTip && tip && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
               className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm space-y-2 overflow-hidden">
-              <div className="font-semibold text-amber-900">{tip.title}</div>
+              <div className="font-black text-amber-900">{tip.title}</div>
               <div className="text-amber-800">{tip.summary}</div>
               <div className="text-amber-700 italic">💡 {tip.tip}</div>
             </motion.div>
@@ -299,9 +299,9 @@ export function GrammarTab() {
         {GRAMMAR_TIPS.map(t => (
           <button key={t.id} onClick={() => setSelected(t.id)}
             className={`w-full text-left rounded-2xl border px-4 py-3 text-sm transition
-              ${selected === t.id ? "bg-slate-900 text-white border-slate-900" : "bg-white hover:bg-slate-50"}`}>
-            <div className="font-medium">{t.title}</div>
-            <div className={`text-xs mt-0.5 ${selected === t.id ? "text-slate-300" : "text-slate-400"}`}>{t.level}</div>
+              ${selected === t.id ? "bg-[var(--accent)] text-white border-transparent" : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"}`}>
+            <div className="font-black">{t.title}</div>
+            <div className={`text-xs mt-0.5 ${selected === t.id ? "text-white/70" : "text-zinc-500"}`}>{t.level}</div>
           </button>
         ))}
       </div>
@@ -310,21 +310,21 @@ export function GrammarTab() {
       {tip && (
         <AnimatePresence mode="wait">
           <motion.div key={tip.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-            className="rounded-3xl border bg-white p-6 shadow-sm space-y-5">
+            className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] space-y-5">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <BookOpen className="h-5 w-5 text-slate-500" />
-                <span className="text-xl font-bold">{tip.title}</span>
-                <Badge variant="outline">{tip.level}</Badge>
+                <BookOpen className="h-5 w-5 text-[var(--accent)]" />
+                <span className="text-xl font-black text-zinc-950">{tip.title}</span>
+                <Badge variant="outline" className="border-zinc-200 font-black text-zinc-600">{tip.level}</Badge>
               </div>
-              <p className="text-slate-600">{tip.summary}</p>
+              <p className="font-semibold text-zinc-600">{tip.summary}</p>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 p-4 space-y-2">
+            <div className="rounded-2xl bg-zinc-50 p-4 space-y-2">
               {tip.rules.map((r, i) => (
                 <div key={i} className="flex items-start gap-2 text-sm">
-                  <span className="text-slate-400 mt-0.5">•</span>
-                  <span className="text-slate-700">{r}</span>
+                  <span className="mt-0.5 text-[var(--accent)]">•</span>
+                  <span className="font-semibold text-zinc-700">{r}</span>
                 </div>
               ))}
             </div>
@@ -335,11 +335,11 @@ export function GrammarTab() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-sm font-semibold text-slate-700">Examples</div>
+              <div className="text-sm font-black text-zinc-700">Examples</div>
               {tip.examples.map((ex, i) => (
-                <div key={i} className="rounded-2xl border bg-white px-4 py-3">
-                  <div className="font-medium text-slate-900">{ex.de}</div>
-                  <div className="text-sm text-slate-500 mt-0.5">{ex.en}</div>
+                <div key={i} className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <div className="font-black text-zinc-950">{ex.de}</div>
+                  <div className="mt-0.5 text-sm font-semibold text-zinc-500">{ex.en}</div>
                 </div>
               ))}
             </div>
