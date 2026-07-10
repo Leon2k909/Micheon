@@ -275,10 +275,10 @@ export function ClozeTab() {
         <AnimatePresence>
           {showTip && tip && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-              className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm space-y-2 overflow-hidden">
-              <div className="font-black text-amber-900">{tip.title}</div>
-              <div className="text-amber-800">{tip.summary}</div>
-              <div className="text-amber-700 italic">💡 {tip.tip}</div>
+              className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-sm space-y-2 overflow-hidden">
+              <div className="font-black text-amber-600">{tip.title}</div>
+              <div className="font-semibold text-amber-700">{tip.summary}</div>
+              <div className="font-semibold text-amber-600 italic">💡 {tip.tip}</div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -329,9 +329,9 @@ export function GrammarTab() {
               ))}
             </div>
 
-            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm">
-              <span className="font-semibold text-amber-900">💡 Tip: </span>
-              <span className="text-amber-800">{tip.tip}</span>
+            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-sm">
+              <span className="font-black text-amber-600">💡 Tip: </span>
+              <span className="font-semibold text-amber-700">{tip.tip}</span>
             </div>
 
             <div className="space-y-2">

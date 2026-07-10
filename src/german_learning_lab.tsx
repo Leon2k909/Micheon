@@ -418,7 +418,7 @@ export default function GermanLearningLab() {
   ) : deferredTab === "profile" ? (
     <GamificationPanel profileOnly stats={progressStats} user={user} onUpdateStats={updateStats} apiParts={apiParts} onSwitchCourse={() => setCourseSwitcherOpen(true)} activeCourseName={activeCourse?.name ?? "German"} />
   ) : deferredTab === "grammar" ? (
-    <div className="space-y-4">
+    <div className="guided-session space-y-4">
       <ClozeTabContent />
       <GrammarTabContent />
     </div>
