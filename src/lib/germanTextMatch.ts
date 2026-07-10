@@ -73,6 +73,7 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bokay\b/g, "ok"], [/\bkk\b/g, "ok"],
   [/\bgotta\b/g, "got to"], [/\bgn\b/g, "good night"],
   [/\bofc\b/g, "of course"],
+  [/\bsec\b/g, "second"],
   // apostrophe-less question contractions — unambiguous tokens
   [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
   [/\bwhos\b/g, "who is"], [/\bwhys\b/g, "why is"], [/\bhows\b/g, "how is"],
