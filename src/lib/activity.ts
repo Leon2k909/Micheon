@@ -1,4 +1,5 @@
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
+import { recordSuccess, recordStruggle } from "@/lib/memoryStrength";
 
 export const ACTIVITY_LOG_KEY = "activity-log";
 export const COMPLETED_KEY = "session-completed";
@@ -10,7 +11,14 @@ export type ActivitySession = {
   dialogues: number;
 };
 
-export type GradeRecord = { lastGrade?: string; updatedAt?: string };
+export type GradeRecord = {
+  lastGrade?: string;
+  updatedAt?: string;
+  /** spaced-repetition ladder fields — see lib/memoryStrength.ts */
+  successes?: number;
+  intervalDays?: number;
+  dueAt?: string;
+};
 export type GradeStore = Record<string, GradeRecord>;
 
 const DAY_MS = 86_400_000;
@@ -107,8 +115,11 @@ export function setItemStatus(
   }
   if (status === "new") {
     delete store[id];
+  } else if (status === "known") {
+    // Feed the spaced-repetition ladder so manual marks build strength too.
+    store[id] = recordSuccess(store[id]);
   } else {
-    store[id] = { lastGrade: status === "known" ? "know" : "struggle", updatedAt: new Date().toISOString() };
+    store[id] = recordStruggle();
   }
   saveGradeStore(store, profile);
   return store;

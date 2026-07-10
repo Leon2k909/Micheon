@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, AlertTriangle, Search, Volume2 } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
+import { strengthInfo, type GradeRecord } from "@/lib/memoryStrength";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -18,6 +19,57 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 
 function speak(text: string) {
   tts(text, 0.9, "de-DE");
+}
+
+function recordFor(grades: GradeStore, id: string, aliases: string[] = []): GradeRecord | undefined {
+  for (const key of [id, ...aliases]) {
+    const rec = grades?.[key];
+    if (rec?.lastGrade) return rec;
+  }
+  return undefined;
+}
+
+/**
+ * Memory strength meter: 5 pips fill as the spaced-repetition ladder climbs
+ * (1d -> 3d -> 7d -> 14d -> 30d -> 90d review intervals). "Due" means the item
+ * is about to return to lessons for review.
+ */
+function StrengthMeter({ record }: { record: GradeRecord | undefined }) {
+  const s = strengthInfo(record);
+  const struggling = record?.lastGrade === "struggle";
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5" aria-label={`Memory strength: ${s.label}`}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span
+            key={n}
+            className={cn(
+              "h-1.5 w-3 rounded-full",
+              n <= s.level
+                ? struggling ? "bg-amber-500" : "bg-[var(--success-text)]"
+                : "bg-[var(--surface-3)]"
+            )}
+          />
+        ))}
+      </div>
+      <span className={cn(
+        "text-[10px] font-black uppercase tracking-wide",
+        struggling ? "text-amber-600" : s.level > 0 ? "text-[var(--success-text)]" : "text-[var(--text-3)]"
+      )}>
+        {s.label}
+      </span>
+      {s.due && (
+        <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
+          due for review
+        </span>
+      )}
+      {!s.due && s.dueInDays != null && s.level > 0 && (
+        <span className="text-[10px] font-bold text-[var(--text-3)]">
+          review in {s.dueInDays}d
+        </span>
+      )}
+    </div>
+  );
 }
 
 function StatusButton({
@@ -84,13 +136,17 @@ export function VocabTracker({
     let known = 0;
     let struggle = 0;
     let fresh = 0;
+    let due = 0;
     for (const item of catalog) {
       const s = statusForId(grades, item.id, item.aliases);
-      if (s === "known") known += 1;
+      if (s === "known") {
+        known += 1;
+        if (strengthInfo(recordFor(grades, item.id, item.aliases)).due) due += 1;
+      }
       else if (s === "struggle") struggle += 1;
       else fresh += 1;
     }
-    return { known, struggle, new: fresh, total: catalog.length };
+    return { known, struggle, new: fresh, due, total: catalog.length };
   }, [catalog, grades]);
 
   const filtered = useMemo(() => {
@@ -136,6 +192,10 @@ export function VocabTracker({
           <div className="rounded-2xl bg-[var(--success-bg)] px-3 py-2">
             <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.known}</p>
             <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">known</p>
+          </div>
+          <div className="rounded-2xl bg-[var(--accent-dim)] px-3 py-2">
+            <p className="text-lg font-black leading-none text-[var(--accent)]">{counts.due}</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--accent)] opacity-80">due review</p>
           </div>
           <div className="rounded-2xl bg-amber-500/15 px-3 py-2">
             <p className="text-lg font-black leading-none text-amber-600">{counts.struggle}</p>
@@ -193,6 +253,7 @@ export function VocabTracker({
                 <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                   {item.en} · {item.partLabel}
                 </p>
+                <StrengthMeter record={recordFor(grades, item.id, item.aliases)} />
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <StatusButton

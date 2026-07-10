@@ -1,5 +1,7 @@
 // Guided session engine — every step is a full sentence exercise
 
+import { isDueForReview, overdueBy, REVIEWS_PER_SESSION } from "@/lib/memoryStrength";
+
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
   DIALOGUE: "dialogue",   // line-by-line conversation practice
@@ -35,8 +37,19 @@ function getVocabId(partKey: string, word: any, index: number) {
   return `${partKey}-vocab-${stableIdPart(semanticKey)}`;
 }
 
+function findRecord(reviewState: any, itemId: string, aliases: string[] = []) {
+  for (const id of [itemId, ...aliases]) {
+    const rec = reviewState?.[id];
+    if (rec?.lastGrade) return rec;
+  }
+  return undefined;
+}
+
+// "Known" only holds until the item's spaced-repetition review comes due —
+// then it re-enters lessons as a review.
 function isKnownItem(reviewState: any, itemId: string, aliases: string[] = []) {
-  return [itemId, ...aliases].some((id) => Boolean(reviewState?.[id]?.lastGrade === "know"));
+  const rec = findRecord(reviewState, itemId, aliases);
+  return rec?.lastGrade === "know" && !isDueForReview(rec);
 }
 
 /**
@@ -63,7 +76,12 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     // "known" would skip that id but let an identical sentence with a different id
     // slip back in on the next session.
     usedSentences.add(key);
-    if (isKnownItem(reviewState, id, aliases)) return;
+    const rec = findRecord(reviewState, id, aliases);
+    if (rec?.lastGrade === "know") {
+      if (!isDueForReview(rec)) return;                 // still remembered — skip
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr } });
+      return;                                            // due — back in as a review
+    }
     queue.push({ type: EX.SENTENCE, item: { id, de, en, fr } });
   };
 
@@ -118,8 +136,16 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     }
   });
 
+  // ── Cap reviews so a due backlog never floods the session ────
+  // Most-overdue first — those are the items closest to being forgotten.
+  const reviews = queue
+    .filter((s) => s.review)
+    .sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0))
+    .slice(0, REVIEWS_PER_SESSION);
+  const fresh = queue.filter((s) => !s.review);
+
   // ── Shuffle for variety, keep COMPLETE at end ────────────────
-  const shuffled = shuffle(queue);
+  const shuffled = shuffle([...fresh, ...reviews]);
   shuffled.push({ type: EX.COMPLETE });
   return shuffled;
 }

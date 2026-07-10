@@ -18,6 +18,7 @@ import bundledWordBank from "@/lib/bundledWordBank.json";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
+import { recordSuccess, recordStruggle } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import { getMasteredCount } from "@/lib/mastery";
 import { recordActivitySession } from "@/lib/activity";
@@ -134,7 +135,7 @@ export default function GermanLearningLab() {
       const existing = loadCompleted();
       saveReviewGrades({
         ...existing,
-        [itemId]: { lastGrade: grade, updatedAt: new Date().toISOString() },
+        [itemId]: grade === "know" ? recordSuccess(existing[itemId]) : recordStruggle(),
       });
     } catch {}
   };
@@ -155,7 +156,8 @@ export default function GermanLearningLab() {
           const struggledAt = prior.updatedAt ? Date.parse(prior.updatedAt) : 0;
           if (struggledAt >= sessionStart) return;
         }
-        next[id] = { lastGrade: "know", updatedAt: new Date().toISOString() };
+        // One rung up the memory ladder; the item comes back for review when due.
+        next[id] = recordSuccess(prior);
       };
       stepsToMark.forEach((s) => {
         if (s.type === "sentence" && s.item?.id) {
