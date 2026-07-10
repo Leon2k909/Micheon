@@ -67,7 +67,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const queue: any[] = [];
   const usedSentences = new Set<string>();
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -79,10 +79,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const rec = findRecord(reviewState, id, aliases);
     if (rec?.lastGrade === "know") {
       if (!isDueForReview(rec)) return;                 // still remembered — skip
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -96,17 +96,17 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       const exEn = word.exampleEn?.trim()
         ? word.exampleEn
         : buildCarrier(word.de, word.en, word.tip).en;
-      addSentence(word.example, exEn, id, aliases, word.exampleFr);
+      addSentence(word.example, exEn, id, aliases, word.exampleFr, word.use);
     } else {
       const carrier = buildCarrier(word.de, word.en, word.tip);
-      addSentence(carrier.de, carrier.en, id, aliases, word.fr);
+      addSentence(carrier.de, carrier.en, id, aliases, word.fr, word.use);
     }
   });
 
   // ── Phrases ──────────────────────────────────────────────────
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr);
+    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr, ph.use);
   });
 
   // ── Dialogue lines ───────────────────────────────────────────
@@ -127,11 +127,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       queue.push({ type: EX.DIALOGUE, dialogue: { ...d, lines: usable } });
       // Then drill each line as a sentence exercise
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use);
       });
     } else {
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use);
       });
     }
   });
@@ -182,6 +182,8 @@ export type CatalogItem = {
   partLabel: string;
   level?: string;
   lookup?: string;
+  /** usage context from the data, e.g. "Informal", "Asking the time" */
+  use?: string;
 };
 
 /**
@@ -197,11 +199,11 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   const out: CatalogItem[] = [];
   const seen = new Set<string>();
 
-  const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string, aliases: string[] = []) => {
+  const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string, aliases: string[] = [], use?: string) => {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
     seen.add(key);
-    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup });
+    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use });
   };
 
   vocab.forEach((word, i) => {
@@ -210,16 +212,16 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     if (hasSentenceShape(word.example) &&
         word.example.trim().toLowerCase() !== word.de.trim().toLowerCase()) {
       const exEn = word.exampleEn?.trim() ? word.exampleEn : buildCarrier(word.de, word.en, word.tip).en;
-      push(word.example, exEn, id, "vocab", word.lookup ?? word.de, aliases);
+      push(word.example, exEn, id, "vocab", word.lookup ?? word.de, aliases, word.use);
     } else {
       const carrier = buildCarrier(word.de, word.en, word.tip);
-      push(carrier.de, carrier.en, id, "vocab", word.lookup ?? word.de, aliases);
+      push(carrier.de, carrier.en, id, "vocab", word.lookup ?? word.de, aliases, word.use);
     }
   });
 
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    push(ph.de, ph.en, `${partKey}-phrase-${i}`, "phrase");
+    push(ph.de, ph.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], ph.use);
   });
 
   dialogues.forEach((d, di) => {

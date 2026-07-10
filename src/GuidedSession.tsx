@@ -17,6 +17,7 @@ import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
 import { isAudioMuted } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
+import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
@@ -78,6 +79,35 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
 }
 
 // Section
+/**
+ * Register + usage context chips: tells the learner WHO you say this to
+ * (du = friends/family vs Sie = polite) and WHEN you'd use it. The usage
+ * note is hidden during Translate — some notes would give the answer away.
+ */
+function UsageChips({ de, use, hideUse }: { de: string; use?: string; hideUse?: boolean }) {
+  const register = detectRegister(de);
+  if (!register && (!use || hideUse)) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {register === "informal" && (
+        <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-black text-emerald-600">
+          {REGISTER_LABEL.informal}
+        </span>
+      )}
+      {register === "formal" && (
+        <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-black text-indigo-500">
+          {REGISTER_LABEL.formal}
+        </span>
+      )}
+      {use && !hideUse && (
+        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-500">
+          {use}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
@@ -554,6 +584,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             </div>
           )}
         </div>
+
+        {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
+        <UsageChips
+          de={learnEn ? item.en : item.de}
+          use={item.use}
+          hideUse={phase === "Translate"}
+        />
 
         {hasFr ? (
           phase === "Memory" ? (
@@ -1179,6 +1216,9 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">Type this in {learnEn ? "English" : "German"}</p>
             <div className="mt-0.5 text-xl font-black leading-tight tracking-tight text-zinc-950 sm:text-2xl">{line.en}</div>
+            <div className="mt-1.5">
+              <UsageChips de={learnEn ? line.en : line.de} />
+            </div>
             {companionFr && line.fr && (
               <div className="mt-1 text-sm font-black tracking-tight text-[var(--accent)]">
                 <span className="mr-1.5 text-[10px] font-black uppercase tracking-wide text-zinc-400">FR</span>

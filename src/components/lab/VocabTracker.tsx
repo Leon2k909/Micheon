@@ -251,7 +251,7 @@ export function VocabTracker({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-[var(--text-1)]">{item.de}</p>
                 <p className="truncate text-xs font-semibold text-[var(--text-3)]">
-                  {item.en} · {item.partLabel}
+                  {item.en} · {item.partLabel}{item.use ? ` · ${item.use}` : ""}
                 </p>
                 <StrengthMeter record={recordFor(grades, item.id, item.aliases)} />
               </div>
