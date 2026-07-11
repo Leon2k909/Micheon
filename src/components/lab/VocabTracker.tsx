@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
-import { frequencyInfo } from "@/lib/wordFrequency";
+import { frequencyInfo, frequencyRank } from "@/lib/wordFrequency";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -260,7 +260,7 @@ export function VocabTracker({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return catalog.filter((item) => {
+    const matches = catalog.filter((item) => {
       const status = statusForId(grades, item.id, item.aliases);
       if (filter !== "all" && status !== filter) return false;
       if (!q) return true;
@@ -270,6 +270,8 @@ export function VocabTracker({
         item.partLabel.toLowerCase().includes(q)
       );
     });
+    // Common words first; unranked items (sentences, slang) keep catalog order after.
+    return matches.sort((a, b) => frequencyRank(a.lookup) - frequencyRank(b.lookup));
   }, [catalog, grades, filter, query]);
 
   const visible = filtered.slice(0, limit);

@@ -1,6 +1,7 @@
 // Guided session engine — every step is a full sentence exercise
 
 import { isDueForReview, overdueBy, REVIEWS_PER_SESSION } from "@/lib/memoryStrength";
+import { frequencyRank } from "@/lib/wordFrequency";
 
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
@@ -142,12 +143,18 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     .filter((s) => s.review)
     .sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0))
     .slice(0, REVIEWS_PER_SESSION);
-  const fresh = queue.filter((s) => !s.review);
 
-  // ── Shuffle for variety, keep COMPLETE at end ────────────────
-  const shuffled = shuffle([...fresh, ...reviews]);
-  shuffled.push({ type: EX.COMPLETE });
-  return shuffled;
+  // ── Common words first ────────────────────────────────────────
+  // Shuffle for variety, then stable-sort by frequency rank: ranked vocab
+  // comes up most-common-first, while unranked items (phrases, dialogue
+  // lines, slang) keep their shuffled order after it. Reviews lead the
+  // session — they're the items closest to being forgotten.
+  const fresh = shuffle(queue.filter((s) => !s.review))
+    .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup));
+
+  const ordered = [...reviews, ...fresh];
+  ordered.push({ type: EX.COMPLETE });
+  return ordered;
 }
 
 // ── Carrier sentence templates ────────────────────────────────

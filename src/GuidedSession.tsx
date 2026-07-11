@@ -106,7 +106,7 @@ function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lo
       )}
       {freq && (
         <span
-          title={`Rank #${freq.rank} in the 2,500 most common German words`}
+          title={freq.hint}
           className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
         >
           {freq.label}
