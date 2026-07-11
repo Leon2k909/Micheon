@@ -453,6 +453,9 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
       exampleEn: entry?.exampleTranslations?.[0] ?? "",
       exampleFr: entry?.exampleTranslationsFr?.[0] ?? "",
       pos: entry?.pos ?? "",
+      // usage note from the seed ("The word gamers actually say") — shown as
+      // a chip in lessons and the tracker.
+      use: (seed as any).use,
     };
   });
 

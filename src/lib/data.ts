@@ -329,8 +329,8 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     description: "Real callouts and voice-comm slang for shooters like Call of Duty — positions, status, and how German gamers actually talk.",
     focus: "Communicate fast in-game: call positions, status, and team plays with authentic gamer slang (English verbs get German endings: er campt, er pusht).",
     seeds: [
-      { de: "der Gegner",    lookup: "Gegner",    fallbackEn: "opponent", tip: "noun", article: "der" },
-      { de: "der Feind",     lookup: "Feind",     fallbackEn: "enemy",            tip: "noun", article: "der" },
+      { de: "der Gegner",    lookup: "Gegner",    fallbackEn: "opponent", tip: "noun", article: "der", use: "The word gamers actually say" },
+      { de: "der Feind",     lookup: "Feind",     fallbackEn: "enemy",            tip: "noun", article: "der", use: "Military/story word — in games say Gegner" },
       { de: "die Deckung",   lookup: "Deckung",   fallbackEn: "cover",            tip: "noun", article: "die" },
       { de: "die Granate",   lookup: "Granate",   fallbackEn: "grenade",          tip: "noun", article: "die" },
       { de: "die Munition",  lookup: "Munition",  fallbackEn: "ammo",             tip: "noun", article: "die" },
@@ -367,7 +367,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     phrases: [
       { de: "Er ist oben.",                          en: "He's upstairs.",                  use: "Position callout",  fr: "Il est en haut." },
       { de: "Er ist unten.",                         en: "He's downstairs.",                use: "Position callout",  fr: "Il est en bas." },
-      { de: "Feind im Schlafzimmer!",                en: "Enemy in the bedroom!",           use: "Position callout",  fr: "Ennemi dans la chambre !" },
+      { de: "Gegner im Schlafzimmer!",               en: "Enemy in the bedroom!",           use: "Position callout",  fr: "Ennemi dans la chambre !" },
       { de: "Sniper auf dem Dach!",                  en: "Sniper on the roof!",             use: "Position callout",  fr: "Sniper sur le toit !" },
       { de: "Hinter dir!",                           en: "Behind you!",                     use: "Warning",           fr: "Derrière toi !" },
       { de: "Er flankiert uns von rechts.",          en: "He's flanking us from the right.", use: "Position callout", fr: "Il nous contourne par la droite." },

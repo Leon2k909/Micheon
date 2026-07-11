@@ -46,6 +46,8 @@ export interface VocabItem {
   pos: string;
   fr?: string;
   exampleFr?: string;
+  /** usage note, e.g. "The word gamers actually say" — shown as a chip */
+  use?: string;
 }
 
 export interface ArticleQuestion {

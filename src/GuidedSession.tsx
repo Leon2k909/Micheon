@@ -18,6 +18,7 @@ import { isElectronApp } from "@/lib/platform";
 import { isAudioMuted } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
+import { frequencyInfo } from "@/lib/wordFrequency";
 import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
@@ -81,12 +82,16 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
 // Section
 /**
  * Register + usage context chips: tells the learner WHO you say this to
- * (du = friends/family vs Sie = polite) and WHEN you'd use it. The usage
- * note is hidden during Translate — some notes would give the answer away.
+ * (du = friends/family vs Sie = polite), WHEN you'd use it, and — for vocab
+ * items — how COMMON the word is (rank in the frequency word bank), so
+ * same-meaning words are distinguishable ("Gegner" is a top-2,500 word,
+ * "Feind" isn't). The usage note is hidden during Translate — some notes
+ * would give the answer away.
  */
-function UsageChips({ de, use, hideUse }: { de: string; use?: string; hideUse?: boolean }) {
+function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lookup?: string; hideUse?: boolean }) {
   const register = detectRegister(de);
-  if (!register && (!use || hideUse)) return null;
+  const freq = frequencyInfo(lookup);
+  if (!register && !freq && (!use || hideUse)) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {register === "informal" && (
@@ -97,6 +102,14 @@ function UsageChips({ de, use, hideUse }: { de: string; use?: string; hideUse?: 
       {register === "formal" && (
         <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-black text-indigo-500">
           {REGISTER_LABEL.formal}
+        </span>
+      )}
+      {freq && (
+        <span
+          title={`Rank #${freq.rank} in the 2,500 most common German words`}
+          className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
+        >
+          {freq.label}
         </span>
       )}
       {use && !hideUse && (
@@ -589,6 +602,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         <UsageChips
           de={learnEn ? item.en : item.de}
           use={item.use}
+          lookup={item.lookup}
           hideUse={phase === "Translate"}
         />
 

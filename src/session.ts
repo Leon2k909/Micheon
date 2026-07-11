@@ -67,7 +67,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const queue: any[] = [];
   const usedSentences = new Set<string>();
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -79,10 +79,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const rec = findRecord(reviewState, id, aliases);
     if (rec?.lastGrade === "know") {
       if (!isDueForReview(rec)) return;                 // still remembered — skip
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use, lookup } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -96,10 +96,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       const exEn = word.exampleEn?.trim()
         ? word.exampleEn
         : buildCarrier(word.de, word.en, word.tip).en;
-      addSentence(word.example, exEn, id, aliases, word.exampleFr, word.use);
+      addSentence(word.example, exEn, id, aliases, word.exampleFr, word.use, word.lookup ?? word.de);
     } else {
       const carrier = buildCarrier(word.de, word.en, word.tip);
-      addSentence(carrier.de, carrier.en, id, aliases, word.fr, word.use);
+      addSentence(carrier.de, carrier.en, id, aliases, word.fr, word.use, word.lookup ?? word.de);
     }
   });
 
