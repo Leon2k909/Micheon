@@ -309,7 +309,10 @@ export function TopNav({
                 <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[var(--yellow)] ring-2 ring-[var(--surface)]" />
               )}
             </button>
-            <MuteButton className="hidden h-10 w-10 rounded-full text-[var(--text-1)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] sm:flex" />
+            <MuteButton
+              className="hidden h-10 w-10 rounded-full text-[var(--text-1)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] sm:flex"
+              iconClassName="h-5 w-5"
+            />
             {/* Profile chip — level ring + XP fused with the avatar so they read
                 as one unit. The ring/XP only show on lg; the avatar (the menu
                 trigger) is always visible. */}

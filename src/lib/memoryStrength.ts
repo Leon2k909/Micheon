@@ -15,6 +15,8 @@ export type GradeRecord = {
   intervalDays?: number;
   /** when this item should come back for review */
   dueAt?: string;
+  /** never schedule a review again — the tier above Mastered */
+  permanent?: boolean;
 };
 
 /**
@@ -111,9 +113,23 @@ export function setStrengthLevel(level: number, now = Date.now()): GradeRecord |
   };
 }
 
-/** True when a known item's scheduled review has arrived. */
+/**
+ * Above Mastered: for words so easy they should never come back at all — a
+ * deliberate "I will never forget this" call, distinct from the timed ladder.
+ */
+export function recordPermanent(now = Date.now()): GradeRecord {
+  return {
+    lastGrade: "know",
+    updatedAt: new Date(now).toISOString(),
+    successes: REVIEW_INTERVALS_DAYS.length + 1,
+    intervalDays: Infinity,
+    permanent: true,
+  };
+}
+
+/** True when a known item's scheduled review has arrived. Permanent items are never due. */
 export function isDueForReview(record: GradeRecord | undefined, now = Date.now()): boolean {
-  if (!record || record.lastGrade !== "know") return false;
+  if (!record || record.lastGrade !== "know" || record.permanent) return false;
   const { dueAtMs } = normalize(record);
   return dueAtMs != null && now >= dueAtMs;
 }
@@ -131,6 +147,8 @@ export type StrengthInfo = {
   /** days until the next review; negative = overdue */
   dueInDays: number | null;
   due: boolean;
+  /** never reviewed again — the tier above Mastered */
+  permanent: boolean;
 };
 
 const STRENGTH_LABELS = ["New", "Learning", "Familiar", "Strong", "Solid", "Mastered"];
@@ -138,10 +156,16 @@ const STRENGTH_LABELS = ["New", "Learning", "Familiar", "Strong", "Solid", "Mast
 /** Display info for the tracker: ladder level, label, and review timing. */
 export function strengthInfo(record: GradeRecord | undefined, now = Date.now()): StrengthInfo {
   if (!record || (record.lastGrade !== "know" && record.lastGrade !== "struggle")) {
-    return { level: 0, label: STRENGTH_LABELS[0], dueInDays: null, due: false };
+    return { level: 0, label: STRENGTH_LABELS[0], dueInDays: null, due: false, permanent: false };
   }
   if (record.lastGrade === "struggle") {
-    return { level: 0, label: "Struggling", dueInDays: null, due: false };
+    // Rung 1, not 0: a struggling word has actually been attempted and
+    // reset to the bottom of the ladder — it shouldn't look visually
+    // identical to a word that's never been seen at all.
+    return { level: 1, label: "Struggling", dueInDays: null, due: false, permanent: false };
+  }
+  if (record.permanent) {
+    return { level: STRENGTH_LABELS.length - 1, label: "Permanent", dueInDays: null, due: false, permanent: true };
   }
   const { successes, dueAtMs } = normalize(record);
   const level = Math.min(successes, STRENGTH_LABELS.length - 1);
@@ -149,6 +173,7 @@ export function strengthInfo(record: GradeRecord | undefined, now = Date.now()):
   return {
     level,
     label: STRENGTH_LABELS[level],
+    permanent: false,
     dueInDays,
     due: dueAtMs != null && now >= dueAtMs,
   };

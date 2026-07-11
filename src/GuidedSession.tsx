@@ -1577,7 +1577,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             <kbd>Alt →</kbd>
           </Button>
         )}
-        <MuteButton className="shrink-0" />
+        <MuteButton className="shrink-0" iconClassName="h-3.5 w-3.5" />
         <Button variant="ghost" onClick={handleCancel}
           className="h-9 shrink-0 rounded-lg px-3 text-zinc-500 transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-900 hover:shadow-[0_0_8px_0_rgba(161,161,170,0.6)]">
           <X className="h-3.5 w-3.5" />

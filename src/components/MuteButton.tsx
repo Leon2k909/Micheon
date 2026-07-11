@@ -8,7 +8,7 @@ import { AUDIO_MUTE_EVENT, isAudioMuted, toggleAudioMuted } from "@/lib/audioMut
  * everywhere; state persists and stays in sync across every placement via a
  * window event.
  */
-export function MuteButton({ className }: { className?: string }) {
+export function MuteButton({ className, iconClassName = "h-4 w-4" }: { className?: string; iconClassName?: string }) {
   const [muted, setMuted] = useState(isAudioMuted);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function MuteButton({ className }: { className?: string }) {
         className
       )}
     >
-      {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      {muted ? <VolumeX className={iconClassName} /> : <Volume2 className={iconClassName} />}
     </button>
   );
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, AlertTriangle, Search, Volume2 } from "lucide-react";
+import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
-import { strengthInfo, setStrengthLevel, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
+import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -38,7 +38,15 @@ function recordFor(grades: GradeStore, id: string, aliases: string[] = []): Grad
  * this cold, put me at Solid" or "I clicked too far, back to Learning")
  * instead of having to replay the item in a lesson to climb the ladder.
  */
-function StrengthMeter({ record, onSetLevel }: { record: GradeRecord | undefined; onSetLevel: (level: number) => void }) {
+function StrengthMeter({
+  record,
+  onSetLevel,
+  onSetPermanent,
+}: {
+  record: GradeRecord | undefined;
+  onSetLevel: (level: number) => void;
+  onSetPermanent: () => void;
+}) {
   const s = strengthInfo(record);
   const struggling = record?.lastGrade === "struggle";
   return (
@@ -62,19 +70,40 @@ function StrengthMeter({ record, onSetLevel }: { record: GradeRecord | undefined
             />
           </button>
         ))}
+        {/* Above Mastered: never schedule this word for review again. */}
+        <button
+          type="button"
+          title={s.permanent ? "Never reviewed again" : "Mark permanent — never show this again"}
+          onClick={(e) => { e.stopPropagation(); onSetPermanent(); }}
+          className="cursor-pointer p-1 -m-1"
+        >
+          <Star
+            className={cn(
+              "h-3 w-3 transition-transform hover:scale-125",
+              s.permanent
+                ? "fill-[var(--accent)] text-[var(--accent)]"
+                : "text-[var(--surface-3)] hover:text-[var(--accent)]/60"
+            )}
+          />
+        </button>
       </div>
       <span className={cn(
         "text-[10px] font-black uppercase tracking-wide",
-        struggling ? "text-amber-600" : s.level > 0 ? "text-[var(--success-text)]" : "text-[var(--text-3)]"
+        struggling ? "text-amber-600" : s.permanent ? "text-[var(--accent)]" : s.level > 0 ? "text-[var(--success-text)]" : "text-[var(--text-3)]"
       )}>
         {s.label}
       </span>
-      {s.due && (
+      {s.permanent && (
+        <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
+          never reviewed again
+        </span>
+      )}
+      {!s.permanent && s.due && (
         <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
           due for review
         </span>
       )}
-      {!s.due && s.dueInDays != null && s.level > 0 && (
+      {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
         <span className="text-[10px] font-bold text-[var(--text-3)]">
           review in {s.dueInDays}d
         </span>
@@ -192,6 +221,15 @@ export function VocabTracker({
     setGrades({ ...store });
   };
 
+  // Above Mastered: mark a word so easy it should never be reviewed again.
+  const applyPermanent = (item: CatalogItem) => {
+    const store = loadGradeStore(user);
+    for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
+    store[item.id] = recordPermanent();
+    saveGradeStore(store, user);
+    setGrades({ ...store });
+  };
+
   if (catalog.length === 0) {
     return (
       <section className="card p-5 sm:p-6">
@@ -278,6 +316,7 @@ export function VocabTracker({
                 <StrengthMeter
                   record={recordFor(grades, item.id, item.aliases)}
                   onSetLevel={(level) => applyStrength(item, level)}
+                  onSetPermanent={() => applyPermanent(item)}
                 />
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
