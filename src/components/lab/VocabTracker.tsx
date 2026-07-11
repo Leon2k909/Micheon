@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star } from "lucide-react";
+import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star, Check, Minus, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
-import { loadGradeStore, saveGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
+import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
@@ -152,6 +152,73 @@ function StatusButton({
   );
 }
 
+function BulkActionButton({
+  icon: Icon,
+  label,
+  tone,
+  onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  tone: "known" | "struggle" | "new" | "permanent";
+  onClick: () => void;
+}) {
+  const tones: Record<string, string> = {
+    known: "border-[var(--success-text)]/30 text-[var(--success-text)] hover:bg-[var(--success-bg)]",
+    struggle: "border-amber-500/40 text-amber-600 hover:bg-amber-500/15",
+    new: "border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-3)]",
+    permanent: "border-[var(--accent)]/40 text-[var(--accent)] hover:bg-[var(--accent-dim)]",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-8 items-center gap-1.5 rounded-full border bg-[var(--surface)] px-3 text-[11px] font-black transition-colors",
+        tones[tone]
+      )}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
+/** Checkbox-style toggle used for row selection and the header select-all control. */
+function SelectBox({
+  checked,
+  indeterminate = false,
+  onClick,
+  label,
+  size = "h-5 w-5",
+}: {
+  checked: boolean;
+  indeterminate?: boolean;
+  onClick: () => void;
+  label: string;
+  size?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      aria-pressed={checked}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+        size,
+        checked || indeterminate
+          ? "border-[var(--accent)] bg-[var(--accent)]"
+          : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--accent)]/50"
+      )}
+    >
+      {checked && <Check className="h-3.5 w-3.5 text-white" />}
+      {!checked && indeterminate && <Minus className="h-3.5 w-3.5 text-white" />}
+    </button>
+  );
+}
+
 export function VocabTracker({
   apiParts,
   user = getAuthUser(),
@@ -163,6 +230,7 @@ export function VocabTracker({
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(40);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const onUpdate = () => setGrades(loadGradeStore(user));
@@ -205,6 +273,26 @@ export function VocabTracker({
 
   const visible = filtered.slice(0, limit);
 
+  // "Select all" targets every FILTERED item, not just the currently
+  // rendered/paginated slice — selecting only what's on screen would be
+  // confusing once more rows load in via "Show more".
+  const allFilteredSelected = filtered.length > 0 && filtered.every((i) => selected.has(i.id));
+  const someFilteredSelected = filtered.some((i) => selected.has(i.id));
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllFiltered = () => {
+    setSelected(allFilteredSelected ? new Set() : new Set(filtered.map((i) => i.id)));
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
   const apply = (item: CatalogItem, status: ItemStatus) => {
     const next = setItemStatus(item.id, status, user, item.aliases);
     setGrades({ ...next });
@@ -226,6 +314,26 @@ export function VocabTracker({
     const store = loadGradeStore(user);
     for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
     store[item.id] = recordPermanent();
+    saveGradeStore(store, user);
+    setGrades({ ...store });
+  };
+
+  // Bulk actions apply to every selected item in one load/save cycle.
+  const bulkApplyStatus = (status: ItemStatus) => {
+    const targets = catalog.filter((i) => selected.has(i.id));
+    if (targets.length === 0) return;
+    const next = setItemsStatus(targets.map((i) => ({ id: i.id, aliases: i.aliases })), status, user);
+    setGrades({ ...next });
+  };
+
+  const bulkApplyPermanent = () => {
+    const targets = catalog.filter((i) => selected.has(i.id));
+    if (targets.length === 0) return;
+    const store = loadGradeStore(user);
+    for (const item of targets) {
+      for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
+      store[item.id] = recordPermanent();
+    }
     saveGradeStore(store, user);
     setGrades({ ...store });
   };
@@ -269,6 +377,13 @@ export function VocabTracker({
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
+        <SelectBox
+          checked={allFilteredSelected}
+          indeterminate={someFilteredSelected && !allFilteredSelected}
+          onClick={toggleSelectAllFiltered}
+          label={allFilteredSelected ? "Deselect all" : `Select all ${filtered.length} shown`}
+          size="h-8 w-8"
+        />
         {FILTERS.map((f) => (
           <button
             key={f.key}
@@ -295,11 +410,38 @@ export function VocabTracker({
         </div>
       </div>
 
+      {selected.size > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-dim)] px-4 py-3">
+          <span className="text-xs font-black text-[var(--accent)]">
+            {selected.size} selected
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-1.5">
+            <BulkActionButton tone="known" icon={CheckCircle2} label="Known" onClick={() => bulkApplyStatus("known")} />
+            <BulkActionButton tone="struggle" icon={AlertTriangle} label="Struggle" onClick={() => bulkApplyStatus("struggle")} />
+            <BulkActionButton tone="new" icon={Circle} label="To learn" onClick={() => bulkApplyStatus("new")} />
+            <BulkActionButton tone="permanent" icon={Star} label="Permanent" onClick={bulkApplyPermanent} />
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
+            >
+              <XIcon className="h-3.5 w-3.5" />
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 divide-y divide-[var(--border)]">
         {visible.map((item) => {
           const status = statusForId(grades, item.id, item.aliases);
           return (
             <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
+              <SelectBox
+                checked={selected.has(item.id)}
+                onClick={() => toggleSelect(item.id)}
+                label={selected.has(item.id) ? `Deselect ${item.de}` : `Select ${item.de}`}
+              />
               <button
                 type="button"
                 onClick={() => speak(item.de)}

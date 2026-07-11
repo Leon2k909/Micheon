@@ -127,6 +127,33 @@ export function setItemStatus(
   return store;
 }
 
+/**
+ * Bulk version of setItemStatus — one load/save cycle for many items instead
+ * of N, so a bulk-select action in the tracker doesn't hammer localStorage
+ * (and fire N separate "grades-updated" events) for a multi-item selection.
+ */
+export function setItemsStatus(
+  items: { id: string; aliases?: string[] }[],
+  status: ItemStatus,
+  profile: UserProfile | null = getAuthUser()
+) {
+  const store = loadGradeStore(profile);
+  for (const { id, aliases = [] } of items) {
+    for (const alias of aliases) {
+      if (alias !== id) delete store[alias];
+    }
+    if (status === "new") {
+      delete store[id];
+    } else if (status === "known") {
+      store[id] = recordDeclaredKnown(store[id]);
+    } else {
+      store[id] = recordStruggle();
+    }
+  }
+  saveGradeStore(store, profile);
+  return store;
+}
+
 
 export type DayBucket = { dayStart: number; minutes: number; items: number };
 
