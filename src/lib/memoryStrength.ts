@@ -61,6 +61,25 @@ export function recordStruggle(now = Date.now()): GradeRecord {
   };
 }
 
+/**
+ * Manual override: jump straight to a ladder rung (0-5) instead of climbing
+ * one success at a time. Lets the learner correct the tracker directly —
+ * "I already know this cold" or "I don't actually remember this" — without
+ * replaying it in a lesson first. level 0 clears the item back to New.
+ */
+export function setStrengthLevel(level: number, now = Date.now()): GradeRecord | null {
+  const clamped = Math.max(0, Math.min(REVIEW_INTERVALS_DAYS.length, Math.round(level)));
+  if (clamped === 0) return null; // caller should delete the record entirely
+  const intervalDays = REVIEW_INTERVALS_DAYS[clamped - 1];
+  return {
+    lastGrade: "know",
+    updatedAt: new Date(now).toISOString(),
+    successes: clamped,
+    intervalDays,
+    dueAt: new Date(now + intervalDays * DAY_MS).toISOString(),
+  };
+}
+
 /** True when a known item's scheduled review has arrived. */
 export function isDueForReview(record: GradeRecord | undefined, now = Date.now()): boolean {
   if (!record || record.lastGrade !== "know") return false;

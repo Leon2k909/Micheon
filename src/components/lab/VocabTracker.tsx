@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Circle, AlertTriangle, Search, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
-import { loadGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
-import { strengthInfo, type GradeRecord } from "@/lib/memoryStrength";
+import { loadGradeStore, saveGradeStore, setItemStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
+import { strengthInfo, setStrengthLevel, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -33,21 +33,28 @@ function recordFor(grades: GradeStore, id: string, aliases: string[] = []): Grad
  * Memory strength meter: 5 pips fill as the spaced-repetition ladder climbs
  * (1d -> 3d -> 7d -> 14d -> 30d -> 90d review intervals). "Due" means the item
  * is about to return to lessons for review.
+ *
+ * Each pip is clickable: jump straight to that rung (e.g. "I already know
+ * this cold, put me at Solid" or "I clicked too far, back to Learning")
+ * instead of having to replay the item in a lesson to climb the ladder.
  */
-function StrengthMeter({ record }: { record: GradeRecord | undefined }) {
+function StrengthMeter({ record, onSetLevel }: { record: GradeRecord | undefined; onSetLevel: (level: number) => void }) {
   const s = strengthInfo(record);
   const struggling = record?.lastGrade === "struggle";
   return (
     <div className="mt-1 flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5" aria-label={`Memory strength: ${s.label}`}>
+      <div className="flex items-center gap-0.5" aria-label={`Memory strength: ${s.label}. Click a bar to set it directly.`}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <span
+          <button
             key={n}
+            type="button"
+            title={`Set to ${REVIEW_INTERVALS_DAYS[n - 1]}d review (rung ${n}/5)`}
+            onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
             className={cn(
-              "h-1.5 w-3 rounded-full",
+              "h-2.5 w-3 rounded-full transition-transform hover:scale-110 cursor-pointer",
               n <= s.level
                 ? struggling ? "bg-amber-500" : "bg-[var(--success-text)]"
-                : "bg-[var(--surface-3)]"
+                : "bg-[var(--surface-3)] hover:bg-[var(--surface-3)]/70"
             )}
           />
         ))}
@@ -170,6 +177,17 @@ export function VocabTracker({
     setGrades({ ...next });
   };
 
+  // Direct ladder override — writes the exact rung instead of climbing one
+  // success at a time, so the learner can correct the tracker on the spot.
+  const applyStrength = (item: CatalogItem, level: number) => {
+    const store = loadGradeStore(user);
+    for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
+    const rec = setStrengthLevel(level);
+    if (rec) store[item.id] = rec; else delete store[item.id];
+    saveGradeStore(store, user);
+    setGrades({ ...store });
+  };
+
   if (catalog.length === 0) {
     return (
       <section className="card p-5 sm:p-6">
@@ -253,7 +271,10 @@ export function VocabTracker({
                 <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                   {item.en} · {item.partLabel}{item.use ? ` · ${item.use}` : ""}
                 </p>
-                <StrengthMeter record={recordFor(grades, item.id, item.aliases)} />
+                <StrengthMeter
+                  record={recordFor(grades, item.id, item.aliases)}
+                  onSetLevel={(level) => applyStrength(item, level)}
+                />
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <StatusButton
