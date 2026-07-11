@@ -18,7 +18,7 @@ import bundledWordBank from "@/lib/bundledWordBank.json";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
-import { recordSuccess, recordStruggle } from "@/lib/memoryStrength";
+import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import { getMasteredCount } from "@/lib/mastery";
 import { recordActivitySession } from "@/lib/activity";
@@ -130,12 +130,15 @@ export default function GermanLearningLab() {
     saveScopedJson(COMPLETED_KEY, grades, user);
   };
 
+  // Explicit skip button ("Know it") — a declaration of prior knowledge, not
+  // a drill result, so it jumps most of the way up the ladder rather than
+  // climbing one rung like an earned recall does. See recordDeclaredKnown.
   const markGrade = (itemId: string, grade: "know" | "struggle") => {
     try {
       const existing = loadCompleted();
       saveReviewGrades({
         ...existing,
-        [itemId]: grade === "know" ? recordSuccess(existing[itemId]) : recordStruggle(),
+        [itemId]: grade === "know" ? recordDeclaredKnown(existing[itemId]) : recordStruggle(),
       });
     } catch {}
   };

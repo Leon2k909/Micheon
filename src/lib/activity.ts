@@ -1,5 +1,5 @@
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
-import { recordSuccess, recordStruggle } from "@/lib/memoryStrength";
+import { recordDeclaredKnown, recordStruggle } from "@/lib/memoryStrength";
 
 export const ACTIVITY_LOG_KEY = "activity-log";
 export const COMPLETED_KEY = "session-completed";
@@ -116,8 +116,10 @@ export function setItemStatus(
   if (status === "new") {
     delete store[id];
   } else if (status === "known") {
-    // Feed the spaced-repetition ladder so manual marks build strength too.
-    store[id] = recordSuccess(store[id]);
+    // Same declaration as the lesson's "Know it" skip button — jumps most
+    // of the way up the ladder rather than climbing one rung. See
+    // recordDeclaredKnown in memoryStrength.ts.
+    store[id] = recordDeclaredKnown(store[id]);
   } else {
     store[id] = recordStruggle();
   }

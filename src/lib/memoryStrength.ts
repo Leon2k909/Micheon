@@ -57,6 +57,31 @@ export function recordSuccess(prior: GradeRecord | undefined, now = Date.now()):
   };
 }
 
+/**
+ * Rung a learner explicitly DECLARES known — the "Know it" button, which
+ * skips the exercise outright rather than testing recall. That's a stronger
+ * claim than one successful drill rep ("I already know this coming in", not
+ * "I just got it right once"), so it jumps straight to the second-highest
+ * rung instead of climbing one step at a time. A second confirmation later
+ * (it resurfaces for review and you still know it) completes the climb to
+ * Mastered — preserving the core SRS idea that lasting memory needs more
+ * than one success, just letting a genuine "I know this" skip most of the
+ * climb instead of starting from scratch like a brand-new word would.
+ */
+export function recordDeclaredKnown(prior: GradeRecord | undefined, now = Date.now()): GradeRecord {
+  const priorSuccesses = prior?.lastGrade === "struggle" ? 0 : normalize(prior).successes;
+  const nearMastered = REVIEW_INTERVALS_DAYS.length - 1; // one rung below the top
+  const successes = priorSuccesses >= nearMastered ? priorSuccesses + 1 : nearMastered;
+  const intervalDays = REVIEW_INTERVALS_DAYS[Math.min(successes - 1, REVIEW_INTERVALS_DAYS.length - 1)];
+  return {
+    lastGrade: "know",
+    updatedAt: new Date(now).toISOString(),
+    successes,
+    intervalDays,
+    dueAt: new Date(now + intervalDays * DAY_MS).toISOString(),
+  };
+}
+
 /** A struggle: ladder resets — strength is rebuilt from the bottom. */
 export function recordStruggle(now = Date.now()): GradeRecord {
   return {
