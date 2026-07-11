@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
-import { frequencyInfo, frequencyRank } from "@/lib/wordFrequency";
+import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -457,7 +457,12 @@ export function VocabTracker({
                 <p className="truncate text-sm font-black text-[var(--text-1)]">{item.de}</p>
                 <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                   {item.en} · {item.partLabel}{item.use ? ` · ${item.use}` : ""}
-                  {(() => { const f = frequencyInfo(item.lookup); return f ? <span className="font-black text-sky-600"> · {f.label}</span> : null; })()}
+                  {(() => {
+                    const syn = synonymNote(item.lookup);
+                    if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={syn.hint}> · {syn.label}</span>;
+                    const f = frequencyInfo(item.lookup);
+                    return f ? <span className="font-black text-sky-600"> · {f.label}</span> : null;
+                  })()}
                 </p>
                 <StrengthMeter
                   record={recordFor(grades, item.id, item.aliases)}

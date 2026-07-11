@@ -41,3 +41,40 @@ export function frequencyInfo(word: string | undefined): FrequencyInfo {
 export function frequencyRank(word: string | undefined): number {
   return frequencyInfo(word)?.rank ?? Infinity;
 }
+
+// ── Same-meaning pairs taught in the app ─────────────────────────────────
+// When two taught words mean the same thing, the chip names the sibling
+// instead of a bare tier: "less common than Gegner" beats "less common".
+// Only pairs with a clear-cut preference are listed — beginnen/anfangen
+// (written rank favours beginnen, speech favours anfangen) is deliberately
+// absent, because a wrong "more common" claim is worse than none.
+const SYNONYM_PAIRS: { common: string; rare: string; context?: string }[] = [
+  { common: "Gegner", rare: "Feind", context: "in games & everyday talk" },
+  { common: "Auto", rare: "Wagen" },
+  { common: "schnell", rare: "rasch" },
+];
+
+export type SynonymNote = { kind: "common" | "rare"; label: string; hint: string } | null;
+
+/** Comparative note when a taught same-meaning sibling exists. */
+export function synonymNote(word: string | undefined): SynonymNote {
+  if (!word) return null;
+  const key = String(word).toLowerCase().trim().replace(/^(der|die|das)\s+/, "");
+  for (const pair of SYNONYM_PAIRS) {
+    if (pair.rare.toLowerCase() === key) {
+      return {
+        kind: "rare",
+        label: `less common than ${pair.common}`,
+        hint: `Germans usually say ${pair.common}${pair.context ? ` ${pair.context}` : ""}`,
+      };
+    }
+    if (pair.common.toLowerCase() === key) {
+      return {
+        kind: "common",
+        label: `more common than ${pair.rare}`,
+        hint: `Prefer this over ${pair.rare}`,
+      };
+    }
+  }
+  return null;
+}

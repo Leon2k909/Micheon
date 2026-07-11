@@ -18,7 +18,7 @@ import { isElectronApp } from "@/lib/platform";
 import { isAudioMuted } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
-import { frequencyInfo } from "@/lib/wordFrequency";
+import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { tts, ttsSequence } from "@/lib/voice";
 import {
   isSpeechRecognitionSupported,
@@ -91,7 +91,8 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
 function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lookup?: string; hideUse?: boolean }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
-  if (!register && !freq && (!use || hideUse)) return null;
+  const syn = synonymNote(lookup);
+  if (!register && !freq && !syn && (!use || hideUse)) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {register === "informal" && (
@@ -104,7 +105,16 @@ function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lo
           {REGISTER_LABEL.formal}
         </span>
       )}
-      {freq && (
+      {syn ? (
+        <span
+          title={syn.hint}
+          className={syn.kind === "rare"
+            ? "rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-black text-amber-600"
+            : "rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"}
+        >
+          {syn.label}
+        </span>
+      ) : freq && (
         <span
           title={freq.hint}
           className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
