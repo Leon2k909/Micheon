@@ -50,13 +50,17 @@ function StrengthMeter({ record, onSetLevel }: { record: GradeRecord | undefined
             type="button"
             title={`Set to ${REVIEW_INTERVALS_DAYS[n - 1]}d review (rung ${n}/5)`}
             onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
-            className={cn(
-              "h-2.5 w-3 rounded-full transition-transform hover:scale-110 cursor-pointer",
-              n <= s.level
-                ? struggling ? "bg-amber-500" : "bg-[var(--success-text)]"
-                : "bg-[var(--surface-3)] hover:bg-[var(--surface-3)]/70"
-            )}
-          />
+            className="cursor-pointer p-1 -m-1"
+          >
+            <span
+              className={cn(
+                "block h-1.5 w-3 rounded-full transition-transform hover:scale-125",
+                n <= s.level
+                  ? struggling ? "bg-amber-500" : "bg-[var(--success-text)]"
+                  : "bg-[var(--surface-3)] hover:bg-[var(--surface-3)]/70"
+              )}
+            />
+          </button>
         ))}
       </div>
       <span className={cn(

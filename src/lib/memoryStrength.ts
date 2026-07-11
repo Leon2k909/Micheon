@@ -17,8 +17,14 @@ export type GradeRecord = {
   dueAt?: string;
 };
 
-/** Leitner-style ladder: days until the next review after N consecutive successes. */
-export const REVIEW_INTERVALS_DAYS = [1, 3, 7, 14, 30, 90];
+/**
+ * Leitner-style ladder: days until the next review after N consecutive
+ * successes. One rung per named strength tier (Learning..Mastered — see
+ * STRENGTH_LABELS below), so a word you've truly nailed five times running
+ * isn't re-tested again for half a year — genuinely knowing something means
+ * it takes a long time to forget it.
+ */
+export const REVIEW_INTERVALS_DAYS = [1, 3, 10, 30, 180];
 
 /** Reviews mixed into a single session are capped so due backlogs never flood a lesson. */
 export const REVIEWS_PER_SESSION = 6;
