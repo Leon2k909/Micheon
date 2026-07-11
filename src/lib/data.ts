@@ -244,8 +244,8 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     focus: "Build simple introductions, family descriptions, and people-based phrases.",
     seeds: [
       { de: "die Familie",  lookup: "Familie",   fallbackEn: "family",        tip: "noun",    article: "die" },
-      { de: "der Freund",   lookup: "Freund",    fallbackEn: "friend",        tip: "noun",    article: "der" },
-      { de: "die Freundin", lookup: "Freundin",  fallbackEn: "female friend", tip: "noun",    article: "die" },
+      { de: "der Freund",   lookup: "Freund",    fallbackEn: "friend",        tip: "noun",    article: "der", use: "Careful: mein Freund = my boyfriend — ein Freund von mir = a friend" },
+      { de: "die Freundin", lookup: "Freundin",  fallbackEn: "female friend", tip: "noun",    article: "die", use: "Careful: meine Freundin = my girlfriend — eine Freundin von mir = a friend" },
       { de: "das Kind",     lookup: "Kind",      fallbackEn: "child",         tip: "noun",    article: "das" },
       { de: "helfen",       lookup: "helfen",    fallbackEn: "to help",       tip: "verb" },
       { de: "freundlich",   lookup: "freundlich",fallbackEn: "friendly",      tip: "adjective" },
@@ -687,7 +687,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
   },
   part20: {
     label: "Part 20", level: "B1", theme: "Flirting & intimacy (18+)",
-    description: "Adult flirting, desire, staying over — and the consent language that matters most. Everything here uses du: this is strictly informal territory.",
+    description: "Adult flirting, desire, staying over — and the consent language that matters most. Everything here uses du, and every phrase is said the same by any gender — German doesn't gender these sentences.",
     focus: "Flirt like an adult, say what you want, hear what they want, and check in — clearly and confidently.",
     seeds: [
       { de: "flirten",            lookup: "flirten",       fallbackEn: "to flirt",        tip: "verb" },
