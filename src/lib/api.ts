@@ -473,7 +473,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     };
   });
 
-  const phrases = blueprint.seeds.flatMap((seed) => {
+  const examplePhrases = blueprint.seeds.flatMap((seed) => {
     const entry = resolvedEntries[seed.lookup] ?? getFallbackEntry(seed.lookup);
     const examples = Array.isArray(entry?.examples) ? entry.examples : [];
     const translations = Array.isArray(entry?.exampleTranslations) ? entry.exampleTranslations : [];
@@ -486,9 +486,18 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     }));
   }).filter((p, i, a) => a.findIndex(t => t.de === p.de) === i).slice(0, 10);
 
-  const dialogues: Dialogue[] = [];
-  for (let i = 0; i < phrases.length; i += 4) {
-    const chunk = phrases.slice(i, i + 4);
+  // Hand-authored phrases are first-class content — the slang, texting,
+  // gaming, and intimacy packs live in blueprint.phrases. They were being
+  // silently dropped, so none of that authored content ever reached lessons.
+  const authoredPhrases = Array.isArray(blueprint.phrases) ? blueprint.phrases : [];
+  const phrases = [...authoredPhrases, ...examplePhrases]
+    .filter((p, i, a) => a.findIndex(t => t.de === p.de) === i);
+
+  // Authored dialogues first, then auto-generated practice rounds built from
+  // the dictionary example sentences.
+  const dialogues: Dialogue[] = Array.isArray(blueprint.dialogues) ? [...blueprint.dialogues] : [];
+  for (let i = 0; i < examplePhrases.length; i += 4) {
+    const chunk = examplePhrases.slice(i, i + 4);
     if (chunk.length < 2) continue;
     dialogues.push({
       title: `${blueprint.theme} · Practice ${Math.floor(i / 4) + 1}`,
