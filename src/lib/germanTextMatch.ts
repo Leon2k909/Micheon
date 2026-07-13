@@ -24,12 +24,67 @@ export function normalizeGermanLenient(t: string) {
     .replace(/[̀-ͯ]/g, "")
     .replace(/ae/g, "a")
     .replace(/oe/g, "o")
-    .replace(/ue/g, "u");
+    .replace(/ue/g, "u")
+    // Colloquial / spoken contractions
+    .replace(/\bnix\b/g, "nichts")
+    .replace(/\bmachs\b/g, "mach es")
+    .replace(/\bgibts\b/g, "gibt es")
+    .replace(/\bgehts\b/g, "geht es")
+    .replace(/\bists\b/g, "ist es");
 }
 
-export function matchGermanPhrase(input: string, target: string) {
-  if (normalizeGermanInput(input) === normalizeGermanInput(target)) return { ok: true, spellingNote: false };
-  if (normalizeGermanLenient(input) === normalizeGermanLenient(target)) return { ok: true, spellingNote: true };
+export function normalizeGermanInputCaseSensitive(t: string) {
+  return String(t ?? "")
+    .trim()
+    .replace(/[’'`´‘]/g, "")            // apostrophes don't matter
+    .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces
+    .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop punctuation
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizeGermanLenientCaseSensitive(t: string) {
+  return normalizeGermanInputCaseSensitive(t)
+    .replace(/ß/g, "ss")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ae/g, "a")
+    .replace(/oe/g, "o")
+    .replace(/ue/g, "u")
+    .replace(/\bnix\b/g, "nichts")
+    .replace(/\bmachs\b/g, "mach es")
+    .replace(/\bgibts\b/g, "gibt es")
+    .replace(/\bgehts\b/g, "geht es")
+    .replace(/\bists\b/g, "ist es");
+}
+
+export function matchGermanPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean } {
+  const normInputCS = normalizeGermanInputCaseSensitive(input);
+  const normTargetCS = normalizeGermanInputCaseSensitive(target);
+
+  if (normInputCS === normTargetCS) {
+    return { ok: true, spellingNote: false };
+  }
+
+  const lenientInputCS = normalizeGermanLenientCaseSensitive(input);
+  const lenientTargetCS = normalizeGermanLenientCaseSensitive(target);
+
+  if (lenientInputCS === lenientTargetCS) {
+    return { ok: true, spellingNote: true };
+  }
+
+  // Check if it would match case-insensitively
+  const normInputCI = normalizeGermanInput(input);
+  const normTargetCI = normalizeGermanInput(target);
+  const lenientInputCI = normalizeGermanLenient(input);
+  const lenientTargetCI = normalizeGermanLenient(target);
+
+  if (normInputCI === normTargetCI || lenientInputCI === lenientTargetCI) {
+    return { ok: false, spellingNote: false, capitalizationError: true };
+  }
+
   return { ok: false, spellingNote: false };
 }
 

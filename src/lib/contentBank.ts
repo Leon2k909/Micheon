@@ -20,7 +20,16 @@ interface RawSentence {
   level: string;
 }
 
-const tatoebaSentences = tatoebaRaw as RawSentence[];
+const tatoebaSentences = (tatoebaRaw as RawSentence[]).map(s => {
+  if (s.de === "Kann ich essen?") {
+    return {
+      ...s,
+      de: "Kann ich das essen?",
+      en: "Can I eat this? / Can I eat?"
+    };
+  }
+  return s;
+});
 
 const TATOEBA_PREFIX = "tatoeba";
 const LEVEL_ORDER = ["A1", "A2", "B1", "B2"];
@@ -86,11 +95,42 @@ export function buildCuratedParts(): Record<string, Part> {
   return out;
 }
 
+function determineUse(de: string): string {
+  if (de === "Ist es Zeit?") {
+    return "Uncommon (better: Ist es so weit? / Ist es an der Zeit?)";
+  }
+  if (de === "Wie war das?") {
+    return "Uncommon (better: Wie bitte?)";
+  }
+  if (de === "Das hat Zeit.") {
+    return "Uncommon / Formal (better: Das kann warten)";
+  }
+  if (de === "Dich will ich.") {
+    return "Uncommon / Poetic inversion (better: Ich will dich)";
+  }
+  if (/^Die (kommen nicht|wissen das|schaffen das|lieben das|sind nicht hier|sind nicht gut|hören nicht zu|verstehen das nicht)\./.test(de)) {
+    const betterForm = de.replace(/^Die /, "Sie ");
+    return `Colloquial / Can sound disrespectful (better: ${betterForm})`;
+  }
+  if (de === "Ich will Zeit.") {
+    return "Uncommon phrasing (better: Ich brauche Zeit)";
+  }
+  return "Real-world sentence";
+}
+
 /** Tatoeba slice → "real sentence" packs grouped by level (keys like "tatoeba-a1-1"). */
 export function buildTatoebaParts(perPack = 50): Record<string, Part> {
   const byLevel: Record<string, RawSentence[]> = {};
   for (const s of tatoebaSentences) {
-    (byLevel[s.level] ??= []).push(s);
+    let targetLevel = s.level;
+    if (s.de === "Wie war das?") targetLevel = "B2";
+    if (s.de === "Das hat Zeit.") targetLevel = "B1";
+    if (s.de === "Dich will ich.") targetLevel = "B2";
+    if (s.de === "Ich will Zeit.") targetLevel = "B1";
+    if (/^Die (kommen nicht|wissen das|schaffen das|lieben das|sind nicht hier|sind nicht gut|hören nicht zu|verstehen das nicht)\./.test(s.de)) {
+      targetLevel = "B2";
+    }
+    (byLevel[targetLevel] ??= []).push({ ...s, level: targetLevel });
   }
 
   const out: Record<string, Part> = {};
@@ -103,7 +143,7 @@ export function buildTatoebaParts(perPack = 50): Record<string, Part> {
       const phrases: Phrase[] = chunk.map((s) => ({
         de: s.de,
         en: s.en,
-        use: "Real-world sentence",
+        use: determineUse(s.de),
       }));
       const key = `${TATOEBA_PREFIX}-${level.toLowerCase()}-${packNo}`;
       out[key] = buildPartFromPhrases(
@@ -123,27 +163,18 @@ export function buildTatoebaParts(perPack = 50): Record<string, Part> {
 }
 
 /**
- * Everything bundled, in display order: curated lessons first, then the
- * Tatoeba sentence library. Blueprint parts are merged before these by the caller.
+ * Everything bundled, in display order: curated lessons first.
+ * Blueprint parts are merged before these by the caller.
  */
 export function buildBundledParts(): Record<string, Part> {
-  return {
-    ...buildCuratedParts(),
-    ...buildTatoebaParts(),
-  };
+  return buildCuratedParts();
 }
 
-/** Flat pool of every bundled sentence (curated + Tatoeba) for games / review. */
+/** Flat pool of every bundled sentence (curated only) for games / review. */
 export function getAllBundledSentences(): Phrase[] {
-  const curated = curatedTopics.flatMap((t) => t.phrases);
-  const tatoeba: Phrase[] = tatoebaSentences.map((s) => ({
-    de: s.de,
-    en: s.en,
-    use: "Real-world sentence",
-  }));
-  return [...curated, ...tatoeba];
+  return curatedTopics.flatMap((t) => t.phrases);
 }
 
 /** Count of bundled sentences, for stats/labels. */
 export const BUNDLED_SENTENCE_COUNT =
-  curatedTopics.reduce((n, t) => n + t.phrases.length, 0) + tatoebaSentences.length;
+  curatedTopics.reduce((n, t) => n + t.phrases.length, 0);
