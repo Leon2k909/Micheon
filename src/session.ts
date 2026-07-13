@@ -148,8 +148,29 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // comes up most-common-first, while unranked items (phrases, dialogue
   // lines, slang) keep their shuffled order after it. Reviews lead the
   // session — they're the items closest to being forgotten.
-  const fresh = shuffle(queue.filter((s) => !s.review))
+  const sorted = shuffle(queue.filter((s) => !s.review))
     .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup));
+
+  // ── Dialogues are capstones, not cold-opens ──────────────────
+  // The dialogue step asks the learner to TYPE each line, so it must come
+  // AFTER the sentence exercises that teach those lines — never before.
+  // Lines are matched by text (not id): the same sentence can be drilled
+  // under a phrase id when it appears in both places.
+  const dialogueSteps = sorted.filter((s) => s.type === EX.DIALOGUE);
+  const fresh = sorted.filter((s) => s.type !== EX.DIALOGUE);
+  for (const d of dialogueSteps) {
+    const lineTexts = new Set(
+      (d.dialogue?.lines ?? []).map((l: any) => String(l.de ?? "").trim().toLowerCase())
+    );
+    let lastIdx = -1;
+    fresh.forEach((s, i) => {
+      if (s.type === EX.SENTENCE && lineTexts.has(String(s.item?.de ?? "").trim().toLowerCase())) {
+        lastIdx = i;
+      }
+    });
+    if (lastIdx === -1) fresh.push(d);            // no teachable lines left — run it last
+    else fresh.splice(lastIdx + 1, 0, d);          // right after its final line drill
+  }
 
   const ordered = [...reviews, ...fresh];
   ordered.push({ type: EX.COMPLETE });
