@@ -340,7 +340,6 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "campen",        lookup: "campen",    fallbackEn: "to camp",          tip: "verb" },
       { de: "pushen",        lookup: "pushen",    fallbackEn: "to push",          tip: "verb" },
       { de: "rushen",        lookup: "rushen",    fallbackEn: "to rush",          tip: "verb" },
-      { de: "flankieren",    lookup: "flankieren",fallbackEn: "to flank",         tip: "verb", use: "Dictionary verb — in games it gets clipped to flanken" },
       { de: "heilen",        lookup: "heilen",    fallbackEn: "to heal",          tip: "verb" },
       { de: "zielen",        lookup: "zielen",    fallbackEn: "to aim",           tip: "verb" },
     ],
@@ -371,6 +370,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Sniper auf dem Dach!",                  en: "Sniper on the roof!",             use: "Position callout",  fr: "Sniper sur le toit !" },
       { de: "Hinter dir!",                           en: "Behind you!",                     use: "Warning",           fr: "Derrière toi !" },
       { de: "Er kommt von rechts.",                  en: "He's coming from the right. / He's coming from the right!", use: "Position callout — what you actually shout", fr: "Il arrive par la droite." },
+      { de: "Er kommt von hinten.",                  en: "He's coming from behind. / He comes behind us. / He's coming up behind us.", use: "Position callout", fr: "Il arrive par derrière." },
       { de: "Ich lade nach, gib mir Deckung.",       en: "I'm reloading, cover me.",        use: "Status callout",    fr: "Je recharge, couvre-moi." },
       { de: "Ich bin low HP.",                       en: "I'm low HP.",                     use: "Status callout",    fr: "Je suis low HP." },
       { de: "Ich bin one-shot.",                     en: "One more hit and I'm dead.",      use: "Status callout",    fr: "Un coup et je suis mort." },
@@ -914,7 +914,6 @@ export const entryFallbacks: Record<string, any> = {
   campen:     { word: "campen",     pos: "verb",      glosses: ["to camp"],                    formsCount: 4, examples: ["Einer campt in der Ecke."],      exampleTranslations: ["Someone's camping in the corner."], exampleTranslationsFr: ["Quelqu'un campe dans le coin."] },
   pushen:     { word: "pushen",     pos: "verb",      glosses: ["to push"],                    formsCount: 4, examples: ["Ich pushe von links."],           exampleTranslations: ["I'm pushing from the left."], exampleTranslationsFr: ["Je push par la gauche."] },
   rushen:     { word: "rushen",     pos: "verb",      glosses: ["to rush"],                    formsCount: 4, examples: ["Lass uns rushen!"],               exampleTranslations: ["Let's rush!"], exampleTranslationsFr: ["On rush !"] },
-  flankieren: { word: "flankieren", pos: "verb",      glosses: ["to flank"],                   formsCount: 4, examples: ["Pass auf, die flanken uns!"],  exampleTranslations: ["Watch out, they're flanking us! / Careful, they're flanking us!"], exampleTranslationsFr: ["Attention, ils nous contournent !"] },
   heilen:     { word: "heilen",     pos: "verb",      glosses: ["to heal"],                    formsCount: 4, examples: ["Ich bin low, muss kurz heilen."], exampleTranslations: ["I'm low, need to heal."], exampleTranslationsFr: ["Je suis low, je dois me soigner."] },
   zielen:     { word: "zielen",     pos: "verb",      glosses: ["to aim"],                     formsCount: 4, examples: ["Besser zielen, Alter!"],          exampleTranslations: ["Aim better, dude!"], exampleTranslationsFr: ["Vise mieux, bro !"] },
 };
