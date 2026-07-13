@@ -167,6 +167,10 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bmay (i|we)\b/g, "can $1") // "May I speak to..." == "Can I speak to..."
     .replace(/\bshall\b/g, "should")     // "Shall we meet?" == "Should we meet?"
     .replace(/\b(alright|all right)\b/g, "ok")   // "alright" == "all right" == "okay" ("okay" already folds to "ok")
+    // whose/who's homophone: the app tests GERMAN comprehension — an English
+    // homophone slip ("whos turn is it") shouldn't fail the lesson. "whose"
+    // folds to "who is", the same form the contraction expander gives whos/who's.
+    .replace(/\bwhose\b/g, "who is")
     .replace(/\b(\d{1,3})\b/g, (m) => NUM_WORDS[m] ?? m)  // "3 nights" == "three nights"
     .replace(/\b(do|does|did) (\w+) have\b/g, "$2 have")   // do-support: "do you have" -> "you have"
     .replace(/\bhave (\w+) got\b/g, "$1 have")             // "have you got" -> "you have"
