@@ -2,6 +2,7 @@
 
 import { isDueForReview, overdueBy, REVIEWS_PER_SESSION } from "@/lib/memoryStrength";
 import { frequencyRank } from "@/lib/wordFrequency";
+import { packMeta } from "@/lib/curriculum";
 
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
@@ -55,9 +56,8 @@ function isKnownItem(reviewState: any, itemId: string, aliases: string[] = []) {
 
 /**
  * Build a session where every step is a full-sentence exercise.
- * For each vocab word we use its example sentence when available,
- * otherwise we wrap the word in a simple carrier sentence.
- * Phrases and dialogue lines are used as-is.
+ * Every sentence is hand-written: vocab words appear only through their
+ * predefined example sentences; phrases and dialogue lines are used as-is.
  */
 export function buildSession(part: any, studyItems: any[], reviewState: any, _reviewStep: number) {
   const partKey = part.partKey ?? "part";
@@ -67,6 +67,9 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
 
   const queue: any[] = [];
   const usedSentences = new Set<string>();
+  // Niche/casual packs label every item so uncommon German is never
+  // mistaken for the everyday thing to say.
+  const tierNote = packMeta(partKey).note;
 
   const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string) => {
     const key = de.trim().toLowerCase();
@@ -80,27 +83,23 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const rec = findRecord(reviewState, id, aliases);
     if (rec?.lastGrade === "know") {
       if (!isDueForReview(rec)) return;                 // still remembered — skip
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use, lookup } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use, lookup, tierNote } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
+  // Hand-written example sentences ONLY. Words without a predefined example
+  // (and its predefined translation) are skipped — no fabricated carrier
+  // drills ("Ich sehe den …"), no guessed translations.
   vocab.forEach((word, i) => {
     const id = getVocabId(partKey, word, i);
     const aliases = [`${partKey}-vocab-${i}`];
     if (hasSentenceShape(word.example) &&
-        word.example.trim().toLowerCase() !== word.de.trim().toLowerCase()) {
-      // Use the example sentence with its own English translation when available.
-      // Fall back to building a carrier so item.en is always a full sentence, never a single word.
-      const exEn = word.exampleEn?.trim()
-        ? word.exampleEn
-        : buildCarrier(word.de, word.en, word.tip).en;
-      addSentence(word.example, exEn, id, aliases, word.exampleFr, word.use, word.lookup ?? word.de);
-    } else {
-      const carrier = buildCarrier(word.de, word.en, word.tip);
-      addSentence(carrier.de, carrier.en, id, aliases, word.fr, word.use, word.lookup ?? word.de);
+        word.example.trim().toLowerCase() !== word.de.trim().toLowerCase() &&
+        word.exampleEn?.trim()) {
+      addSentence(word.example, word.exampleEn, id, aliases, word.exampleFr, word.use, word.lookup ?? word.de);
     }
   });
 
@@ -157,27 +156,6 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   return ordered;
 }
 
-// ── Carrier sentence templates ────────────────────────────────
-function buildCarrier(de: string, en: string, tip?: string): { de: string; en: string } {
-  // Many word-bank entries carry multiple glosses ("be, exist") — baking them
-  // all into the carrier would make the English answer key untypeable. Use the
-  // first gloss only.
-  const gloss = String(en ?? "").split(/[,;/]/)[0].trim();
-  const t = (tip ?? "").toLowerCase();
-  if (t === "verb") {
-    return { de: `Ich kann ${de}.`, en: `I can ${gloss.replace(/^to /, "")}.` };
-  }
-  if (t === "adjective") {
-    return { de: `Das ist ${de}.`, en: `That is ${gloss}.` };
-  }
-  if (t === "adverb") {
-    return { de: `Ich lerne ${de}.`, en: `I am learning ${gloss}.` };
-  }
-  // noun / default. "sehen" takes the accusative: der Mann -> Ich sehe DEN Mann.
-  const deAccusative = de.replace(/^der /i, "den ");
-  return { de: `Ich sehe ${deAccusative}.`, en: `I see ${gloss.replace(/^(a|an|the) /i, "")}.` };
-}
-
 // ── Catalog of every learnable item (for the word/sentence tracker) ──
 export type CatalogItem = {
   id: string;
@@ -213,16 +191,15 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use });
   };
 
+  // Hand-written examples only — mirrors buildSession, so the tracker
+  // never lists a sentence the lessons cannot teach.
   vocab.forEach((word, i) => {
     const id = getVocabId(partKey, word, i);
     const aliases = [`${partKey}-vocab-${i}`];
     if (hasSentenceShape(word.example) &&
-        word.example.trim().toLowerCase() !== word.de.trim().toLowerCase()) {
-      const exEn = word.exampleEn?.trim() ? word.exampleEn : buildCarrier(word.de, word.en, word.tip).en;
-      push(word.example, exEn, id, "vocab", word.lookup ?? word.de, aliases, word.use);
-    } else {
-      const carrier = buildCarrier(word.de, word.en, word.tip);
-      push(carrier.de, carrier.en, id, "vocab", word.lookup ?? word.de, aliases, word.use);
+        word.example.trim().toLowerCase() !== word.de.trim().toLowerCase() &&
+        word.exampleEn?.trim()) {
+      push(word.example, word.exampleEn, id, "vocab", word.lookup ?? word.de, aliases, word.use);
     }
   });
 

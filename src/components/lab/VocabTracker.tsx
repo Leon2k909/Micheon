@@ -5,6 +5,7 @@ import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
+import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 
@@ -462,6 +463,10 @@ export function VocabTracker({
                     if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={syn.hint}> · {syn.label}</span>;
                     const f = frequencyInfo(item.lookup);
                     return f ? <span className="font-black text-sky-600"> · {f.label}</span> : null;
+                  })()}
+                  {(() => {
+                    const note = packMeta(item.partKey).note;
+                    return note ? <span className="font-black text-violet-500"> · {note}</span> : null;
                   })()}
                 </p>
                 <StrengthMeter

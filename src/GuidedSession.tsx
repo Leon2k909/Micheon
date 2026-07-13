@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,13 +88,36 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lookup?: string; hideUse?: boolean }) {
+function UsageChips({ de, use, lookup, tierNote, hideUse }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
   const syn = synonymNote(lookup);
-  if (!register && !freq && !syn && (!use || hideUse)) return null;
+  const isWarning = use && (
+    use.toLowerCase().includes("uncommon") ||
+    use.toLowerCase().includes("warning") ||
+    use.toLowerCase().includes("incorrect") ||
+    use.toLowerCase().includes("avoid")
+  );
+  const isSlang = use && (
+    use.toLowerCase().includes("slang") ||
+    use.toLowerCase().includes("informal") ||
+    use.toLowerCase().includes("friends") ||
+    use.toLowerCase().includes("colloquial") ||
+    use.toLowerCase().includes("casual")
+  );
+
+  if (!register && !freq && !syn && !tierNote && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {/* Niche/casual pack note — uncommon German is always labelled */}
+      {tierNote && (
+        <span
+          title="Not everyday neutral German — use in the right company"
+          className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[11px] font-black text-violet-500"
+        >
+          {tierNote}
+        </span>
+      )}
       {register === "informal" && (
         <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-black text-emerald-600">
           {REGISTER_LABEL.informal}
@@ -122,8 +145,15 @@ function UsageChips({ de, use, lookup, hideUse }: { de: string; use?: string; lo
           {freq.label}
         </span>
       )}
-      {use && !hideUse && (
-        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-500">
+      {use && (!hideUse || isWarning || isSlang) && (
+        <span className={cn(
+          "rounded-full px-2.5 py-1 text-[11px] font-bold border",
+          isWarning
+            ? "bg-rose-500/10 text-rose-600 font-black border-rose-500/20"
+            : isSlang
+              ? "bg-amber-500/10 text-amber-600 font-black border-amber-500/20"
+              : "bg-zinc-100 text-zinc-500 border-transparent"
+        )}>
           {use}
         </span>
       )}
@@ -613,6 +643,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           de={learnEn ? item.en : item.de}
           use={item.use}
           lookup={item.lookup}
+          tierNote={item.tierNote}
           hideUse={phase === "Translate"}
         />
 
@@ -839,7 +870,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <div className="text-rose-700 font-semibold">Not quite - try again</div>
+                      <div className="text-rose-700 font-semibold">
+                        {result.capitalizationError
+                          ? "Capitalization error! In German, nouns and formal 'Sie/Ihnen/Ihr' must be capitalized."
+                          : "Not quite - try again"}
+                      </div>
                       <div className="text-xs text-zinc-500">Target: <span className="text-zinc-950 font-semibold">{item.de}</span></div>
                     </div>
                   )}
@@ -1273,7 +1308,14 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
             className={cn("rounded-2xl border p-4 text-center",
               result.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
             {result.ok ? <span className="text-sm font-black">Spot on!</span>
-              : <div className="space-y-1"><div className="text-sm font-black">Not quite</div><div className="text-xs font-bold text-zinc-500">{line.de}</div></div>}
+              : <div className="space-y-1">
+                  <div className="text-sm font-black">
+                    {result.capitalizationError
+                      ? "Capitalization error! In German, nouns and formal 'Sie/Ihnen/Ihr' must be capitalized."
+                      : "Not quite"}
+                  </div>
+                  <div className="text-xs font-bold text-zinc-500">{line.de}</div>
+                </div>}
           </motion.div>
         )}
       </AnimatePresence>

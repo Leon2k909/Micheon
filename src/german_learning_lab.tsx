@@ -11,10 +11,10 @@ import GamificationPanel from "@/Gamification";
 import { GamesView } from "@/games/GamesView";
 import ClozeTabContent from "@/lab/ClozeTabContent";
 import GrammarTabContent from "@/lab/GrammarTabContent";
-import { buildApiPartFromResolved, buildRemoteWordBankParts } from "@/lib/api";
-import { buildBundledParts } from "@/lib/contentBank";
+import { buildApiPartFromResolved } from "@/lib/api";
+import { orderParts } from "@/lib/curriculum";
+import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
-import bundledWordBank from "@/lib/bundledWordBank.json";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildSession } from "@/session";
@@ -100,9 +100,25 @@ export default function GermanLearningLab() {
     const resolved: Record<string, Part> = {};
     for (const [k, bp] of Object.entries(allPartBlueprints))
       resolved[k] = buildApiPartFromResolved(bp as Blueprint, {});
-    const wordBankParts = buildRemoteWordBankParts(bundledWordBank as any[], 50);
-    setApiParts({ ...resolved, ...buildBundledParts(), ...wordBankParts });
+    // Hand-written packs only, served in hard-coded curriculum order (see
+    // lib/curriculum.ts): everyday core first, niche/casual last. The old
+    // auto-generated word-bank carrier parts are gone — every lesson
+    // sentence is predefined by hand.
+    // Tatoeba packs are the FINAL tier: real native-written sentences as
+    // extra practice, unlocked only after the curated curriculum, each item
+    // labelled ("Real-world sentence — extra practice").
+    setApiParts(orderParts({ ...resolved, ...buildBundledParts(), ...buildTatoebaParts() }));
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(apiParts).length > 0 && !apiParts[activePart]) {
+      const firstValid = Object.keys(apiParts)[0];
+      if (firstValid) {
+        setActivePart(firstValid);
+        saveScopedJson("active-part", firstValid, user);
+      }
+    }
+  }, [apiParts, activePart, user]);
 
   const deferredTab = useDeferredValue(activeTab);
   const currentPart = apiParts[activePart];
@@ -176,8 +192,11 @@ export default function GermanLearningLab() {
     } catch {}
   };
 
-  const startSession = (partId: string) => {
-    const id   = apiParts[partId] ? partId : activePart;
+  const startSession = (partId?: string) => {
+    // Explicit pack picks are respected; Continue Learning passes no id and
+    // starts from the top of the curriculum, so the most common German is
+    // always served (and must be mastered) first.
+    const id   = partId && apiParts[partId] ? partId : (Object.keys(apiParts)[0] ?? activePart);
     const part = apiParts[id];
     if (!part) return;
 
@@ -195,13 +214,16 @@ export default function GermanLearningLab() {
     const hasContent = steps.some(s => s.type === "sentence" || s.type === "dialogue");
 
     if (!hasContent) {
-      // Find next part with unread content or replay in review mode without wiping progress
+      // Walk the WHOLE curriculum from the top, not just forward: earlier
+      // packs may hold due reviews or unfinished tier-1 content, and the
+      // most common German must be re-served (and mastered) before anything
+      // rarer further down the order unlocks.
       const partKeys = Object.keys(apiParts);
-      const currentIdx = partKeys.indexOf(id);
       let nextIdWithContent: string | undefined;
 
-      for (let i = currentIdx + 1; i < partKeys.length; i++) {
+      for (let i = 0; i < partKeys.length; i++) {
         const pId = partKeys[i];
+        if (pId === id) continue; // already checked above
         const p = apiParts[pId];
         if (!p) continue;
         const pWithKey = { ...p, partKey: pId };
@@ -384,7 +406,7 @@ export default function GermanLearningLab() {
       body: currentPart?.focus ?? "Continue your current German lesson.",
       actionLabel: "Start lesson",
       unread: !dailyLessonDone,
-      onSelect: () => startSession(activePart),
+      onSelect: () => startSession(),
     },
     {
       id: "daily-target",
@@ -392,7 +414,7 @@ export default function GermanLearningLab() {
       body: dailyLessonDone ? "You have a session recorded. Add a few words if you want extra progress." : "Finish 1 lesson and track 5 words to move today forward.",
       actionLabel: dailyLessonDone ? "View profile" : "Continue",
       unread: !dailyLessonDone,
-      onSelect: () => (dailyLessonDone ? openTab("profile") : startSession(activePart)),
+      onSelect: () => (dailyLessonDone ? openTab("profile") : startSession()),
     },
     {
       id: "word-bank",
