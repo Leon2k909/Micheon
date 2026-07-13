@@ -193,10 +193,62 @@ export default function GermanLearningLab() {
   };
 
   const startSession = (partId?: string) => {
-    // Explicit pack picks are respected; Continue Learning passes no id and
-    // starts from the top of the curriculum, so the most common German is
-    // always served (and must be mastered) first.
-    const id   = partId && apiParts[partId] ? partId : (Object.keys(apiParts)[0] ?? activePart);
+    // Explicit pack picks are respected. Continue Learning passes no id and
+    // gets the curriculum treatment: due reviews from ANY pack first (most
+    // overdue anywhere — even a pack far down the order — so nothing learned
+    // is left to rot), then the first pack in curriculum order that still
+    // has fresh content. The most common German is always served first.
+    const reviewState = loadCompleted();
+    const explicit = partId && apiParts[partId] ? partId : null;
+
+    if (!explicit) {
+      const keys = Object.keys(apiParts);
+      const globalReviews: any[] = [];
+      const seenDe = new Set<string>();
+      let freshId: string | undefined;
+      let freshSteps: any[] = [];
+
+      for (const pId of keys) {
+        const p = apiParts[pId];
+        if (!p) continue;
+        const s = buildSession({ ...p, partKey: pId }, [], reviewState, 0);
+        for (const st of s) {
+          if (st.type === "sentence" && st.review && !seenDe.has(st.item.de)) {
+            seenDe.add(st.item.de);
+            globalReviews.push(st);
+          }
+        }
+        if (!freshId) {
+          const fresh = s.filter(
+            (st: any) => (st.type === "sentence" && !st.review) || st.type === "dialogue"
+          );
+          if (fresh.length) { freshId = pId; freshSteps = fresh; }
+        }
+      }
+
+      globalReviews.sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0));
+      const reviews = globalReviews.slice(0, 6);
+      const reviewDe = new Set(reviews.map((r: any) => r.item.de));
+      const fresh = freshSteps.filter(
+        (st: any) => st.type !== "sentence" || !reviewDe.has(st.item.de)
+      );
+
+      if (reviews.length > 0 || fresh.length > 0) {
+        const id = freshId ?? keys[0];
+        let steps = [...reviews, ...fresh, { type: "complete" }];
+        if (learningEnglish()) steps = steps.map(swapStepForEnglish);
+        setActivePart(id);
+        saveScopedJson("active-part", id, user);
+        setSessionSteps(steps);
+        sessionStartRef.current = Date.now();
+        setShowGuidedSession(true);
+        return;
+      }
+      // Everything known and nothing due — fall through to a review replay
+      // of the first pack below.
+    }
+
+    const id   = explicit ?? (Object.keys(apiParts)[0] ?? activePart);
     const part = apiParts[id];
     if (!part) return;
 
@@ -205,7 +257,6 @@ export default function GermanLearningLab() {
       id: `${id}-${i}`, de: item.de, en: item.en, tip: item.tip,
       example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
     }));
-    const reviewState = loadCompleted();
     let steps = buildSession(partWithKey, items, reviewState, 0);
     // German speaker learning English: show the same content the other way round
     // (English is the target you type/hear; German is the meaning). IDs are left

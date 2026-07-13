@@ -163,9 +163,11 @@ function CurrentCourseCard({
 
       <button
         className="accent-btn continue-glow mt-6 inline-flex h-12 w-full items-center justify-center gap-2 text-sm"
-        onClick={() => onOpenLesson(lessonId)}
+        onClick={() => onOpenLesson("")}
         type="button"
       >
+        {/* No pack id: serve global due reviews + the first pack in
+            curriculum order with fresh content — never just the last-visited pack. */}
         Continue learning
         <ArrowRight className="h-4 w-4" />
       </button>
