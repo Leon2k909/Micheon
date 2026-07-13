@@ -538,7 +538,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Wo ist die Sicherheitskontrolle?", en: "Where is security? / Where is the security check?", use: "Most common airport query" },
       { de: "Wo ist das Gate?", en: "Where is the gate?", use: "Very common airport query" },
       { de: "Ich reise nur mit Handgepäck.", en: "I'm only travelling with hand luggage. / I only have carry-on baggage.", use: "At check-in" },
-      { de: "Kann ich mein Gepäck hier aufgeben?", en: "Can I check my luggage here? / Can I check in my bags here?", use: "At check-in" },
+      { de: "Kann ich mein Gepäck hier aufgeben?", en: "Can I check my luggage here? / Can I check in my bags here?", use: "At check-in — aufgeben is the official word for checking bags; abgeben is just dropping something off" },
       { de: "Haben Sie Ihren Reisepass dabei?", en: "Do you have your passport with you? / Do you have your passport?", use: "Official check" },
       { de: "Der Flug hat Verspätung.", en: "The flight is delayed.", use: "Flight status update" },
       { de: "Der Flug ist ausgebucht.", en: "The flight is fully booked.", use: "Flight status update" },
