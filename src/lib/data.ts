@@ -752,6 +752,48 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Wir haben miteinander geschlafen.",  en: "We slept together.",                        use: "Telling someone about it — neutral, not crude", fr: "On a couché ensemble." },
     ],
   },
+  part21: {
+    label: "Part 21", level: "A2-B1", theme: "Idioms & expressions (Redewendungen)",
+    description: "The idioms Germans actually drop into everyday talk — each with its literal image so it sticks, and a note on when it fits.",
+    focus: "Understand and use the most common German idioms without translating them word for word.",
+    seeds: [],
+    dialogues: [
+      { title: "Vor der Prüfung", lines: [
+        { speaker: "A", de: "Morgen ist meine Prüfung.",                 en: "My exam is tomorrow.",                          fr: "Mon examen est demain." },
+        { speaker: "B", de: "Ich drücke dir die Daumen!",               en: "Fingers crossed for you!",                       fr: "Je croise les doigts pour toi !" },
+        { speaker: "A", de: "Danke, ich bin jetzt schon fix und fertig.", en: "Thanks, I'm already exhausted.",               fr: "Merci, je suis déjà crevé." },
+        { speaker: "B", de: "Du schaffst das. Übung macht den Meister.", en: "You've got this. Practice makes perfect.",      fr: "Tu vas y arriver. C'est en forgeant qu'on devient forgeron." },
+      ]},
+      { title: "Keine Ahnung", lines: [
+        { speaker: "A", de: "Hast du die Aufgabe verstanden?",            en: "Did you understand the task?",                  fr: "Tu as compris l'exercice ?" },
+        { speaker: "B", de: "Ich verstehe nur Bahnhof.",                  en: "I don't understand a thing.",                   fr: "Pour moi c'est du chinois." },
+        { speaker: "A", de: "Red nicht um den heißen Brei herum, frag ihn einfach.", en: "Stop beating around the bush, just ask him.", fr: "Arrête de tourner autour du pot, demande-lui." },
+        { speaker: "B", de: "Okay, okay. Jetzt reicht's aber.",           en: "Okay, okay. That's enough now.",                fr: "Ok, ok. Ça suffit maintenant." },
+      ]},
+    ],
+    phrases: [
+      { de: "Ich drücke dir die Daumen.",        en: "Fingers crossed for you. / I'm keeping my fingers crossed for you.", use: "Very common — literally 'I press my thumbs for you'", fr: "Je croise les doigts pour toi." },
+      { de: "Das ist mir Wurst.",                 en: "I couldn't care less. / I don't care.",     use: "Very common, casual — literally 'that's sausage to me'", fr: "Je m'en fiche." },
+      { de: "Ich verstehe nur Bahnhof.",          en: "I don't understand a thing. / It's all Greek to me.", use: "Very common — literally 'I only understand train station'", fr: "Pour moi c'est du chinois." },
+      { de: "Ich habe die Nase voll.",            en: "I'm fed up. / I've had enough.",            use: "Very common — literally 'my nose is full'", fr: "J'en ai marre." },
+      { de: "Du gehst mir auf die Nerven.",       en: "You're getting on my nerves.",              use: "Very common, direct — friends or real annoyance", fr: "Tu me tapes sur les nerfs." },
+      { de: "Ich bin fix und fertig.",            en: "I'm completely exhausted. / I'm wiped out.", use: "Very common after a long day", fr: "Je suis crevé." },
+      { de: "Das ist nicht mein Bier.",           en: "That's not my problem. / That's none of my business.", use: "Casual — literally 'that's not my beer'", fr: "Ce ne sont pas mes oignons." },
+      { de: "Jetzt haben wir den Salat.",         en: "Now we're in a mess. / Now we've got a fine mess.", use: "Casual — literally 'now we have the salad'", fr: "Nous voilà dans de beaux draps." },
+      { de: "Da hast du Schwein gehabt.",         en: "You got lucky there. / You were lucky there.", use: "Casual — literally 'you had pig'", fr: "Tu as eu de la chance." },
+      { de: "Red nicht um den heißen Brei herum.", en: "Stop beating around the bush.",            use: "Common — literally 'don't talk around the hot porridge'", fr: "Arrête de tourner autour du pot." },
+      { de: "Da bist du auf dem Holzweg.",        en: "You're barking up the wrong tree. / You're on the wrong track.", use: "Common — literally 'you're on the wood path'", fr: "Tu fais fausse route." },
+      { de: "Lass die Kirche im Dorf.",           en: "Don't exaggerate. / Let's not get carried away.", use: "Common — literally 'leave the church in the village'", fr: "N'exagère pas." },
+      { de: "Hast du Tomaten auf den Augen?",     en: "Are you blind? / Can't you see that?",      use: "Casual, teasing — literally 'do you have tomatoes on your eyes?'", fr: "T'as pas les yeux en face des trous ?" },
+      { de: "Zwei Fliegen mit einer Klappe schlagen.", en: "Kill two birds with one stone.",       use: "Common — literally 'hit two flies with one swat'", fr: "Faire d'une pierre deux coups." },
+      { de: "Ich schwebe auf Wolke sieben.",      en: "I'm on cloud nine.",                        use: "Common for new love — literally 'floating on cloud seven'", fr: "Je suis sur mon petit nuage." },
+      { de: "Hals- und Beinbruch!",               en: "Break a leg! / Good luck!",                 use: "Slightly old-school wish — literally 'neck and leg break'", fr: "Merde ! (pour souhaiter bonne chance)" },
+      { de: "Ich hab richtig Bock drauf.",        en: "I'm really up for it. / I'm really keen.",  use: "Very common, casual — Bock = desire/appetite", fr: "J'ai trop envie." },
+      { de: "Übung macht den Meister.",           en: "Practice makes perfect.",                   use: "Common proverb — literally 'practice makes the master'", fr: "C'est en forgeant qu'on devient forgeron." },
+      { de: "Ende gut, alles gut.",               en: "All's well that ends well.",                use: "Common proverb", fr: "Tout est bien qui finit bien." },
+      { de: "Das Leben ist kein Ponyhof.",        en: "Life isn't a bed of roses. / Life isn't fair.", use: "Casual, wry — literally 'life is no pony farm'", fr: "La vie n'est pas un long fleuve tranquille." },
+    ],
+  },
 };
 
 export const verbConjugations: Record<string, Record<string, string>> = {

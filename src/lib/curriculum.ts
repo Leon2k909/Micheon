@@ -49,6 +49,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-housing",
   "cb-work",
   "part10",           // Work and study
+  "part21",           // Idioms & expressions (Redewendungen)
   "cb-phone",
   "part15",           // Texting & chat shorthand
   "cb-hotel",
