@@ -30,6 +30,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part5",            // Food and cafe
   "cb-shopping",
   "cb-grocery",
+  "cb-money",
   "cb-directions",
   "part6",            // Directions and movement
   "part3",            // Home and routine
@@ -38,6 +39,8 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-family",
   "cb-weather",
   "cb-reactions",
+  "cb-connectors",
+  "cb-celebrations",
   "cb-plans",
   "part4",            // Plans and conversation
   "cb-health",
@@ -47,6 +50,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part8",            // Core verbs
   "part9",            // Home and daily errands
   "cb-housing",
+  "cb-amt",
   "cb-work",
   "part10",           // Work and study
   "part21",           // Idioms & expressions (Redewendungen)
@@ -56,8 +60,10 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-opinions",
   "part11",           // Opinions and media
   "part12",           // Travel and problems
+  "cb-driving",
   "cb-hobbies",
   "cb-social",
+  "cb-emotions",
   "cb-nightlife",
   "cb-dating",
   "part18",           // Dating, flirting & social
