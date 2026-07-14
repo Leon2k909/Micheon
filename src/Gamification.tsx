@@ -45,7 +45,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
-import { applyTheme, getTheme, type Theme } from "@/lib/theme";
+import { setTheme as persistTheme, getTheme, type Theme } from "@/lib/theme";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
@@ -341,8 +341,8 @@ export default function GamificationPanel({
 
   const toggleTheme = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
-    applyTheme(next);
-    setTheme(next);
+    persistTheme(next); // paint + persist locally + sync to shared store
+    setTheme(next); // update local React state
   };
 
   const toggleEffects = () => {

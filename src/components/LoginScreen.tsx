@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  Languages,
   Mail,
   ShieldCheck,
   User,
@@ -12,6 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MicheonMark, MicheonWordmark } from "@/components/MicheonLogo";
 import { buildProfileId, findProfileByEmail, setAuthUser, UserProfile } from "@/lib/profileStorage";
 
 interface LoginScreenProps {
@@ -75,9 +75,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           initial={{ opacity: 0, y: 14 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/20 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-            <Languages className="h-3.5 w-3.5" />
-            Micheon
+          <div className="inline-flex items-center gap-3 text-zinc-900">
+            <MicheonMark size={46} />
+            <MicheonWordmark height={22} />
           </div>
 
           <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-6xl">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Minus, Square, X, Copy } from "lucide-react";
+import { MicheonMark } from "./MicheonLogo";
 
 // Window-control API injected by the Electron preload (electron/preload.cjs).
 // On the website this is undefined, so the title bar renders nothing.
@@ -24,7 +25,7 @@ export function TitleBar() {
   return (
     <div className="titlebar">
       <div className="titlebar-drag">
-        <img src="/favicon.svg" alt="" className="titlebar-logo" />
+        <MicheonMark size={17} className="titlebar-logo" />
         <span className="titlebar-title">Micheon</span>
       </div>
       <div className="titlebar-controls">

@@ -90,6 +90,12 @@ function setupAutoUpdate() {
   if (!app.isPackaged) return;
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
+  // Always full-download the installer. Differential (block-map) downloads diff
+  // against the currently-installed build; across a big change (e.g. the
+  // Learn German -> Micheon rename) that diff is huge and, over GitHub's
+  // repo-rename redirect, its many range requests can stall. Full downloads are
+  // a single resumable request and just work.
+  autoUpdater.disableDifferentialDownload = true;
 
   autoUpdater.on("error", (err) => console.error("[updater] error:", err?.message ?? err));
   autoUpdater.on("checking-for-update", () => console.log("[updater] checking for updates…"));

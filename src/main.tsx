@@ -2,11 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { applyTheme, getTheme } from "./lib/theme";
+import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 
-// Apply saved theme + effects preference before first render to avoid flash
-applyTheme(getTheme());
+// Paint saved theme + effects preference before first render to avoid flash.
+// Paint-only (no sync) so it can't clobber the shared value hydrate will load.
+applyThemeToDom(getTheme());
 applyEffects(getEffects());
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
