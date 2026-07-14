@@ -310,14 +310,16 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
+function SentenceExercise({ item, onNext, onGradeItem, onAnswer, recheck }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void; recheck?: boolean }) {
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean) => {
     onAnswer?.(ok);
     if (ok) shakeControls.start({ scale: [1, 1.05, 1], transition: { duration: 0.32 } });
     else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
   };
-  const [phase, setPhase] = useState<Phase>("Read");
+  // Quick knowledge check: skip straight to the recall phase — the sentence
+  // was taught minutes ago; this is the "do you still have it?" pass.
+  const [phase, setPhase] = useState<Phase>(recheck ? (item?.fr ? "Memory" : "Translate") : "Read");
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -596,7 +598,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
       </div>
 
       {/* Phase dots */}
-      <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
+      {recheck ? (
+        <div className="flex justify-center">
+          <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">
+            Quick check — you saw this a moment ago
+          </span>
+        </div>
+      ) : (
+        <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
+      )}
 
       {/* Sentence display card */}
       <div className={cn(
@@ -1660,7 +1670,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             className="flex w-full max-w-4xl justify-center">
             <Card className="relative w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_22px_60px_rgba(25,27,38,0.08)] sm:p-7">
               <div className="relative z-10 flex flex-col items-center">
-                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
+                {kind === "sentence"  && <SentenceExercise item={step.item} recheck={step.recheck} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
                 {kind === "dialogue"  && <DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} />}
                 {kind === "complete"  && <CompleteScreen onNext={onComplete} />}
                 {!["sentence","dialogue","complete"].includes(kind) && (

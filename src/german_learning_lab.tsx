@@ -164,8 +164,12 @@ export default function GermanLearningLab() {
       const existing = loadCompleted();
       const next = { ...existing };
       const sessionStart = sessionStartRef.current ?? Date.now();
+      // One climb per item per session: rechecks and dialogue lines repeat the
+      // same id in the step list, and completion is a single recall event.
+      const counted = new Set<string>();
       const markKnown = (id: string) => {
-        if (!id) return;
+        if (!id || counted.has(id)) return;
+        counted.add(id);
         const prior = next[id];
         if (prior?.lastGrade === "struggle") {
           // A struggle marked DURING this session keeps the item in practice.

@@ -172,7 +172,34 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     else fresh.splice(lastIdx + 1, 0, d);          // right after its final line drill
   }
 
-  const ordered = [...reviews, ...fresh];
+  // ── In-session reinforcement ─────────────────────────────────
+  // One exposure isn't memory: a sentence you just learned comes back a few
+  // steps later as a quick knowledge check (translate-only), and in longer
+  // sessions the earliest items get one more check at the end — the longest
+  // gap since practice — before the day-scale reviews take over.
+  const isNewSentence = (s: any) => s.type === EX.SENTENCE && !s.review;
+  const reinforced: any[] = [];
+  const pendingChecks: { countdown: number; step: any }[] = [];
+  for (const s of fresh) {
+    reinforced.push(s);
+    for (const q of pendingChecks) q.countdown -= 1;
+    while (pendingChecks.length && pendingChecks[0].countdown <= 0) {
+      reinforced.push(pendingChecks.shift()!.step);
+    }
+    if (isNewSentence(s)) {
+      pendingChecks.push({ countdown: 3, step: { type: EX.SENTENCE, recheck: true, item: s.item } });
+    }
+  }
+  pendingChecks.forEach((q) => reinforced.push(q.step));
+
+  const newItems = fresh.filter(isNewSentence);
+  if (newItems.length >= 8) {
+    newItems.slice(0, Math.ceil(newItems.length / 3)).forEach((s) => {
+      reinforced.push({ type: EX.SENTENCE, recheck: true, item: s.item });
+    });
+  }
+
+  const ordered = [...reviews, ...reinforced];
   ordered.push({ type: EX.COMPLETE });
   return ordered;
 }
