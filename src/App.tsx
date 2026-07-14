@@ -38,7 +38,7 @@ export default function App() {
       <TitleBar />
       {!ready ? (
         <div className="flex min-h-[100dvh] items-center justify-center bg-[var(--bg)] text-[var(--text-1)]">
-          <div className="card px-6 py-4 text-sm font-black">Loading German Lab</div>
+          <div className="card px-6 py-4 text-sm font-black">Loading Learn German</div>
         </div>
       ) : user ? (
         <GermanLearningLab />

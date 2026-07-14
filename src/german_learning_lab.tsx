@@ -545,7 +545,7 @@ export default function GermanLearningLab() {
         onSignOut={() => { signOut(); window.location.reload(); }}
         onSwitchCourse={() => setCourseSwitcherOpen(true)}
         searchItems={topNavSearchItems}
-        brandName={activeCourse?.name ?? "German Lab"}
+        brandName={activeCourse?.name ?? "Learn German"}
         onOpenReader={courseHasReader ? () => openReader() : undefined}
         readerLabel="Course material"
       />

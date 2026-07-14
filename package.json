@@ -18,7 +18,7 @@
   },
   "build": {
     "appId": "com.germ.germanlab",
-    "productName": "German Lab",
+    "productName": "Learn German",
     "files": [
       "electron/**",
       "server/**",

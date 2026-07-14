@@ -82,7 +82,7 @@ export function Sidebar({ activeTab, setActiveTab, isExpanded, setIsExpanded }: 
                 exit={{ opacity: 0, width: 0 }}
                 className="flex flex-col justify-center overflow-hidden whitespace-nowrap"
               >
-                <p className="text-base font-black tracking-tight text-[var(--text-1)]">German Lab</p>
+                <p className="text-base font-black tracking-tight text-[var(--text-1)]">Learn German</p>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-2)]">Premium</p>
               </motion.div>
             )}
@@ -191,7 +191,7 @@ export function Sidebar({ activeTab, setActiveTab, isExpanded, setIsExpanded }: 
                   <Languages className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[var(--text-1)]">German Lab</p>
+                  <p className="text-sm font-semibold text-[var(--text-1)]">Learn German</p>
                   <p className="text-xs text-[var(--text-3)]">Daily practice</p>
                 </div>
               </div>

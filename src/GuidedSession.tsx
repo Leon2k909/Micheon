@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   matchGermanPhrase as match,
   matchEnglishPhrase as matchEnglish,
+  normalizeGermanLenient,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
@@ -194,8 +195,30 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 // No separate "Listen" step: the German is spoken automatically when it first
 // appears (Read) and again before you say it (Speak). Type and Translate each
 // run twice — the second round builds the memory through repeated production.
-const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain"] as const;
+const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
+
+/**
+ * Blank out 1-2 content words from a sentence for the spoken gap-fill stage.
+ * Picks the longest word (most meaningful), plus a second long word for
+ * sentences of 6+ words. Returns the display string with "____" for blanks
+ * and the list of missing words (bare, no punctuation) to say.
+ */
+function computeGap(de: string): { display: string; words: string[] } {
+  const tokens = String(de ?? "").trim().split(/\s+/).filter(Boolean);
+  const bare = (w: string) => w.replace(/[^a-zA-Zäöüßäöü]/gi, "");
+  // rank candidate indices by bare-letter length (skip 1-2 letter words like articles)
+  const ranked = tokens
+    .map((w, i) => ({ i, len: bare(w).length }))
+    .filter((x) => x.len >= 3)
+    .sort((a, b) => b.len - a.len);
+  const howMany = tokens.length >= 6 ? 2 : 1;
+  const blanks = new Set(ranked.slice(0, howMany).map((x) => x.i));
+  if (blanks.size === 0 && tokens.length) blanks.add(0); // fallback: at least one blank
+  const words = tokens.filter((_, i) => blanks.has(i)).map(bare);
+  const display = tokens.map((w, i) => (blanks.has(i) ? "____" : w)).join(" ");
+  return { display, words };
+}
 
 // In French companion mode the flow tests the two target languages (German +
 // French) and uses English only as the shown meaning, so the English-typing
@@ -210,6 +233,7 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
+  if (p === "Gap") return "Say gap";
   return p;
 }
 
@@ -221,7 +245,8 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
-    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2", allPhases.length > 5 ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
+    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2",
+      allPhases.length >= 7 ? "sm:grid-cols-7" : allPhases.length === 6 ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
       {allPhases.map((p, i) => (
         <div
           key={p}
@@ -371,6 +396,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const targetLang = learnEn ? "en-US" : "de-DE";
   const targetLabel = learnEn ? "English" : "German";
   const meaningLabel = learnEn ? "German" : "English";
+  // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
+  const gap = useMemo(() => computeGap(item.de), [item.de]);
   // The meaning text (item.en) is already English in normal mode (apply spelling
   // variant) but is German when learning English (show as-is).
   const displayEnglish = useMemo(
@@ -400,9 +427,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     else tts(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr]);
 
-  // Reset speech UI when entering Speak or sentence changes
+  // Reset speech UI when entering a speech phase (Speak/Gap) or sentence changes
   useEffect(() => {
-    if (phase === "Speak") {
+    if (phase === "Speak" || phase === "Gap") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
       setSpeechTranscript("");
@@ -412,7 +439,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   }, [phase, item.de]);
 
   useEffect(() => {
-    if (phase !== "Speak") {
+    if (phase !== "Speak" && phase !== "Gap") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
     }
@@ -428,7 +455,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (phase === "Memory")    { setDeHintLen(0); setFrHintLen(0); setTimeout(() => memDeRef.current?.focus(), 100); }
   }, [phase]);
 
-  const handleSpeechCheck = () => {
+  const handleSpeechCheck = (gapMode = false) => {
     if (speechListening || !speechSupported) return;
     speechAbortRef.current?.abort();
     const ac = new AbortController();
@@ -441,9 +468,23 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
     const onDone = ({ transcript }: { transcript: string }) => {
       setSpeechTranscript(transcript);
-      const m = match(transcript, item.de);
+      // Gap stage: the learner says only the MISSING word(s), so accept the
+      // recording if the transcript contains each blanked word (order-free,
+      // extra words fine). Otherwise match the whole sentence as usual.
+      let m: { ok: boolean; spellingNote: boolean };
+      if (gapMode) {
+        const heard = normalizeGermanLenient(transcript);
+        const ok = gap.words.length > 0 && gap.words.every((w) => {
+          const nw = normalizeGermanLenient(w);
+          return nw.length > 0 && heard.includes(nw);
+        });
+        m = { ok, spellingNote: false };
+      } else {
+        m = match(transcript, item.de);
+      }
       setSpeechPhraseMatch(m);
       reactToAnswer(m.ok);
+      if (m.ok && gapMode) setTimeout(onNext, 900);   // Gap is the last phase → finish
     };
     const onErr = (e: unknown) => {
       if (ac.signal.aborted) return;
@@ -713,7 +754,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
               phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
             )}>
-              {item.de}
+              {/* Gap stage hides the answer: show the blanked sentence, revealed once correct. */}
+              {phase === "Gap" && !speechPhraseMatch?.ok ? gap.display : item.de}
             </div>
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
@@ -979,6 +1021,64 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   : "Check"}
               </Button>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+          </motion.div>
+        )}
+
+        {/* GAP phase — say the missing word(s) */}
+        {phase === "Gap" && (
+          <motion.div key="gap" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              Fill the blank — say the missing {gap.words.length > 1 ? "words" : "word"} out loud.
+            </p>
+            {speechSupported ? (
+              <>
+                <Button type="button" onClick={() => handleSpeechCheck(true)} disabled={speechListening}
+                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white text-sm font-black text-zinc-900 hover:bg-zinc-50 disabled:opacity-70">
+                  {speechListening ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                      </span>
+                      {speechStatus ?? "Listening... say the missing word"}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2"><Mic2 className="h-5 w-5" /> Say the missing word</span>
+                  )}
+                </Button>
+                {speechErr ? <p className="text-center text-xs text-rose-700">{speechErr}</p> : null}
+                {speechTranscript ? (
+                  <p className="text-center text-xs text-zinc-500">Heard: <span className="font-semibold text-zinc-800">"{speechTranscript}"</span></p>
+                ) : null}
+                <AnimatePresence>
+                  {speechPhraseMatch && speechTranscript ? (
+                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className={cn("rounded-lg border p-4 text-center text-sm font-semibold",
+                        speechPhraseMatch.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
+                      {speechPhraseMatch.ok
+                        ? <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> That's it!</span>
+                        : <>Not quite — the missing {gap.words.length > 1 ? "words are" : "word is"} <span className="text-zinc-950">{gap.words.join(" ")}</span></>}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </>
+            ) : (
+              <p className="text-center text-xs text-zinc-500">
+                No microphone here — say the missing {gap.words.length > 1 ? "words" : "word"} aloud, then finish.
+              </p>
+            )}
+            <div className="flex gap-3">
+              <button type="button" onClick={() => tts(item.de, 0.75, targetLang)} aria-label="Hear the full sentence"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 active:scale-95">
+                <Volume2 className="h-5 w-5" />
+              </button>
+              <Button type="button" onClick={onNext}
+                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800">
+                {speechPhraseMatch?.ok ? "Done" : "Skip"} <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
