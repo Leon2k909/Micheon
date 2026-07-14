@@ -233,7 +233,7 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
-  if (p === "Gap") return "Say gap";
+  if (p === "Gap") return "Fill in";
   return p;
 }
 
@@ -252,18 +252,18 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
           key={p}
           onClick={() => i < idx && onClickPhase?.(p)}
           className={cn(
-            "flex items-center justify-center gap-2 rounded-xl px-3 py-2 transition-all",
+            "flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2 transition-all",
             i < idx ? "cursor-pointer hover:bg-zinc-200" : "",
             i === idx ? "bg-zinc-950 text-white shadow-sm" : i < idx ? "bg-white text-zinc-950" : "text-zinc-400"
           )}
         >
           <div className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black transition-all",
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-all",
             i === idx ? "bg-white text-zinc-950" : i < idx ? "bg-[var(--yellow)] text-zinc-950" : "bg-zinc-200 text-zinc-500"
           )}>
             {i + 1}
           </div>
-          <span className="text-[10px] font-black uppercase tracking-wide">
+          <span className="truncate text-[10px] font-black uppercase tracking-wide">
             {phaseLabel(p, withFrench)}
           </span>
         </div>
@@ -355,6 +355,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const [enInput, setEnInput] = useState("");
   const [enChecked, setEnChecked] = useState(false);
   const [enAttempts, setEnAttempts] = useState(0);
+  const [gapInput, setGapInput] = useState("");
+  const [gapChecked, setGapChecked] = useState(false);
+  const gapInputRef = useRef<HTMLInputElement>(null);
   const [frInput, setFrInput] = useState("");
   const [frChecked, setFrChecked] = useState(false);
   const [frAttempts, setFrAttempts] = useState(0);
@@ -409,6 +412,17 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const matchTarget = learnEn ? matchEnglish : match;
   const result   = useMemo(() => matchTarget(input, item.de), [input, item.de, matchTarget]);
   const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
+  // Gap stage: the typed answer just needs to contain each missing word
+  // (order-free, ß/case tolerant), so a single blank accepts the one word and
+  // two blanks accept both in either order.
+  const gapResult = useMemo(() => {
+    const typed = normalizeGermanLenient(gapInput);
+    const ok = gap.words.length > 0 && gap.words.every((w) => {
+      const nw = normalizeGermanLenient(w);
+      return nw.length > 0 && typed.includes(nw);
+    });
+    return { ok };
+  }, [gapInput, gap.words]);
   // French companion: tested as an extra phase when enabled and the item has French
   // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
@@ -427,9 +441,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     else tts(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr]);
 
-  // Reset speech UI when entering a speech phase (Speak/Gap) or sentence changes
+  // Reset speech UI when entering Speak or sentence changes
   useEffect(() => {
-    if (phase === "Speak" || phase === "Gap") {
+    if (phase === "Speak") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
       setSpeechTranscript("");
@@ -439,7 +453,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   }, [phase, item.de]);
 
   useEffect(() => {
-    if (phase !== "Speak" && phase !== "Gap") {
+    if (phase !== "Speak") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
     }
@@ -451,11 +465,12 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   useEffect(() => {
     if (phase === "Type" || phase === "TypeAgain")           setTimeout(() => inputRef.current?.focus(), 100);
     if (phase === "Translate" || phase === "TranslateAgain") setTimeout(() => enInputRef.current?.focus(), 100);
+    if (phase === "Gap")       setTimeout(() => gapInputRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
     if (phase === "Memory")    { setDeHintLen(0); setFrHintLen(0); setTimeout(() => memDeRef.current?.focus(), 100); }
   }, [phase]);
 
-  const handleSpeechCheck = (gapMode = false) => {
+  const handleSpeechCheck = () => {
     if (speechListening || !speechSupported) return;
     speechAbortRef.current?.abort();
     const ac = new AbortController();
@@ -468,23 +483,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
     const onDone = ({ transcript }: { transcript: string }) => {
       setSpeechTranscript(transcript);
-      // Gap stage: the learner says only the MISSING word(s), so accept the
-      // recording if the transcript contains each blanked word (order-free,
-      // extra words fine). Otherwise match the whole sentence as usual.
-      let m: { ok: boolean; spellingNote: boolean };
-      if (gapMode) {
-        const heard = normalizeGermanLenient(transcript);
-        const ok = gap.words.length > 0 && gap.words.every((w) => {
-          const nw = normalizeGermanLenient(w);
-          return nw.length > 0 && heard.includes(nw);
-        });
-        m = { ok, spellingNote: false };
-      } else {
-        m = match(transcript, item.de);
-      }
+      const m = match(transcript, item.de);
       setSpeechPhraseMatch(m);
       reactToAnswer(m.ok);
-      if (m.ok && gapMode) setTimeout(onNext, 900);   // Gap is the last phase → finish
     };
     const onErr = (e: unknown) => {
       if (ac.signal.aborted) return;
@@ -537,6 +538,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   useEffect(() => {
     if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
     if (phase === "TranslateAgain") { setEnInput(""); setEnChecked(false); setEnAttempts(0); }
+    if (phase === "Gap") { setGapInput(""); setGapChecked(false); }
   }, [phase]);
 
   const goBack = () => {
@@ -576,6 +578,14 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   };
 
   const retryEn = () => { setEnInput(""); setEnChecked(false); };
+
+  const checkGap = () => {
+    if (!gapInput.trim() || gapChecked) return;
+    setGapChecked(true);
+    reactToAnswer(gapResult.ok);
+    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(onNext, 900); }  // Gap is last → finish
+  };
+  const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
   const checkFrAnswer = () => {
     if (!frInput.trim() || frChecked) return;
@@ -755,7 +765,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
             )}>
               {/* Gap stage hides the answer: show the blanked sentence, revealed once correct. */}
-              {phase === "Gap" && !speechPhraseMatch?.ok ? gap.display : item.de}
+              {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display : item.de}
             </div>
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
@@ -1025,60 +1035,59 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           </motion.div>
         )}
 
-        {/* GAP phase — say the missing word(s) */}
+        {/* GAP phase — type the missing word(s) */}
         {phase === "Gap" && (
           <motion.div key="gap" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              Fill the blank — say the missing {gap.words.length > 1 ? "words" : "word"} out loud.
+              Fill the blank — type the missing {gap.words.length > 1 ? "words" : "word"}.
             </p>
-            {speechSupported ? (
-              <>
-                <Button type="button" onClick={() => handleSpeechCheck(true)} disabled={speechListening}
-                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white text-sm font-black text-zinc-900 hover:bg-zinc-50 disabled:opacity-70">
-                  {speechListening ? (
-                    <span className="inline-flex items-center gap-2">
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
-                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
-                      </span>
-                      {speechStatus ?? "Listening... say the missing word"}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2"><Mic2 className="h-5 w-5" /> Say the missing word</span>
-                  )}
+            <motion.div animate={shakeControls}>
+              <Input ref={gapInputRef}
+                className={cn(
+                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
+                  gapChecked && gapResult.ok  ? "border-emerald-300 bg-emerald-50" :
+                  gapChecked && !gapResult.ok ? "border-rose-300 bg-rose-50" :
+                                                "focus:border-[var(--accent)]"
+                )}
+                placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
+                value={gapInput}
+                onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
+                onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? onNext() : checkGap())}
+                disabled={gapChecked && gapResult.ok}
+              />
+            </motion.div>
+            {!learnEn && <CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} />}
+
+            <AnimatePresence>
+              {gapChecked && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className={cn("rounded-lg border p-4 text-center text-sm font-semibold",
+                    gapResult.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
+                  {gapResult.ok
+                    ? <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> That's it!</span>
+                    : <>Not quite — the missing {gap.words.length > 1 ? "words are" : "word is"} <span className="text-zinc-950">{gap.words.join(" ")}</span></>}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {gapChecked && !gapResult.ok ? (
+              <div className="flex gap-3">
+                <Button onClick={retryGap} variant="outline"
+                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
                 </Button>
-                {speechErr ? <p className="text-center text-xs text-rose-700">{speechErr}</p> : null}
-                {speechTranscript ? (
-                  <p className="text-center text-xs text-zinc-500">Heard: <span className="font-semibold text-zinc-800">"{speechTranscript}"</span></p>
-                ) : null}
-                <AnimatePresence>
-                  {speechPhraseMatch && speechTranscript ? (
-                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className={cn("rounded-lg border p-4 text-center text-sm font-semibold",
-                        speechPhraseMatch.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
-                      {speechPhraseMatch.ok
-                        ? <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> That's it!</span>
-                        : <>Not quite — the missing {gap.words.length > 1 ? "words are" : "word is"} <span className="text-zinc-950">{gap.words.join(" ")}</span></>}
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </>
+                <Button onClick={onNext}
+                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  Skip
+                </Button>
+              </div>
             ) : (
-              <p className="text-center text-xs text-zinc-500">
-                No microphone here — say the missing {gap.words.length > 1 ? "words" : "word"} aloud, then finish.
-              </p>
-            )}
-            <div className="flex gap-3">
-              <button type="button" onClick={() => tts(item.de, 0.75, targetLang)} aria-label="Hear the full sentence"
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 active:scale-95">
-                <Volume2 className="h-5 w-5" />
-              </button>
-              <Button type="button" onClick={onNext}
-                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800">
-                {speechPhraseMatch?.ok ? "Done" : "Skip"} <ArrowRight className="ml-2 h-5 w-5" />
+              <Button onClick={gapChecked && gapResult.ok ? onNext : checkGap}
+                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                {gapChecked && gapResult.ok ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
-            </div>
+            )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
