@@ -34,7 +34,7 @@
     "publish": {
       "provider": "github",
       "owner": "Leon2k909",
-      "repo": "germ"
+      "repo": "Micheon"
     },
     "win": {
       "target": "nsis"

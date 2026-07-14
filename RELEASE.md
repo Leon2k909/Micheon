@@ -7,7 +7,7 @@ Releases, so you only ever hand someone the installer once.
 
 ## One-time setup
 
-Auto-update reads the GitHub Releases feed of **`Leon2k909/germ`**. That repo
+Auto-update reads the GitHub Releases feed of **`Leon2k909/Micheon`**. That repo
 must be **public** so the installed app can read releases without a token.
 (If it's private, the app can't fetch updates without embedding a secret.)
 
