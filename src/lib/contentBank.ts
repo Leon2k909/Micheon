@@ -118,10 +118,29 @@ function determineUse(de: string): string {
   return "Real-world sentence";
 }
 
+/**
+ * A "word" is a whitespace token containing at least one letter or digit —
+ * so bare punctuation tokens (a stray "." or "„") don't inflate the count.
+ */
+function wordCount(s: string): number {
+  return String(s ?? "").trim().split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+/**
+ * The corpus is full of trivial 2-4 word fragments ("Ich wollte das.",
+ * "Das ist es.") that teach almost nothing about German word order. The
+ * Tatoeba tier's whole job is "how real full sentences are built," so it
+ * only takes sentences of at least this many words. Genuinely useful short
+ * phrases (greetings, reactions, idioms) live in the hand-curated packs
+ * instead, where they carry proper usage notes.
+ */
+const TATOEBA_MIN_WORDS = 5;
+
 /** Tatoeba slice → "real sentence" packs grouped by level (keys like "tatoeba-a1-1"). */
 export function buildTatoebaParts(perPack = 50): Record<string, Part> {
   const byLevel: Record<string, RawSentence[]> = {};
   for (const s of tatoebaSentences) {
+    if (wordCount(s.de) < TATOEBA_MIN_WORDS) continue;   // no trivial fragments
     let targetLevel = s.level;
     if (s.de === "Wie war das?") targetLevel = "B2";
     if (s.de === "Das hat Zeit.") targetLevel = "B1";
