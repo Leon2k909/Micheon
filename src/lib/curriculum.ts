@@ -39,6 +39,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-family",
   "cb-weather",
   "cb-reactions",
+  "cb-shortreplies",
   "cb-connectors",
   "cb-celebrations",
   "cb-plans",
