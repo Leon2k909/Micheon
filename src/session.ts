@@ -1,6 +1,6 @@
 // Guided session engine — every step is a full sentence exercise
 
-import { isDueForReview, overdueBy, REVIEWS_PER_SESSION } from "@/lib/memoryStrength";
+import { isDueForReview, overdueBy } from "@/lib/memoryStrength";
 import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 
@@ -83,7 +83,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const rec = findRecord(reviewState, id, aliases);
     if (rec?.lastGrade === "know") {
       if (!isDueForReview(rec)) return;                 // still remembered — skip
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), item: { id, de, en, fr, use, lookup, tierNote } });
+      // interval = how many days it's currently spaced by (1 = learned ~a day
+      // ago and weakest; larger = higher mastery). The review picker uses it to
+      // favour recent phrases and mix in one older one.
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote } });
       return;                                            // due — back in as a review
     }
     queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote } });
@@ -136,55 +139,21 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     }
   });
 
-  // ── Cap reviews so a due backlog never floods the session ────
-  // Most-overdue first — those are the items closest to being forgotten.
-  const reviews = queue
-    .filter((s) => s.review)
-    .sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0))
-    .slice(0, REVIEWS_PER_SESSION);
-
-  // ── Common words first ────────────────────────────────────────
-  // Shuffle for variety, then stable-sort by frequency rank: ranked vocab
-  // comes up most-common-first, while unranked items (phrases, dialogue
-  // lines, slang) keep their shuffled order after it. Reviews lead the
-  // session — they're the items closest to being forgotten.
-  const sorted = shuffle(queue.filter((s) => !s.review))
-    .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup));
-
-  // ── In-session reinforcement: "3 new, then the same 3 again" ──
-  // New phrases are drilled in blocks of 3, and each block is immediately
-  // followed by the same 3 as identical full exercises — the "3 new, 3 of
-  // the same" rhythm (A B C · A B C), so every phrase is practised at least
-  // twice per lesson, its repeat a few steps after the first. In longer
-  // sessions the earliest block — the longest gap since it was first seen —
-  // gets a THIRD pass at the very end (so most phrases hit 2×, the first
-  // ones 3×). Across lessons the spaced-repetition ladder (1, 3, 10, 30,
-  // 180 days) takes over. markCompleted still climbs the ladder once per id.
-  const BATCH = 3;
-  // Small, predictable lessons: at most NEW_PER_LESSON brand-new phrases,
-  // each drilled then repeated. So a lesson is a clean "3 new, 3 same" block
-  // (6 steps) — the pack's remaining fresh phrases wait for the next lesson
-  // instead of spilling in as a ragged partial batch.
-  const NEW_PER_LESSON = 3;
-  const freshSentences = sorted
-    .filter((s) => s.type === EX.SENTENCE && !s.review)
+  // ── New phrases: 3 per lesson, most common first, no in-lesson repeat ──
+  // A phrase is shown ONCE when new. Its repetition now happens ACROSS
+  // lessons: it returns tomorrow as an "old" review, and the spaced-repetition
+  // ladder pushes it further out each time you recall it (1, 3, 10, 30, 180
+  // days) — so it takes longer and longer to come back as you master it.
+  const freshSentences = shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
+    .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup))
     .slice(0, NEW_PER_LESSON);
   const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
-  const repeat = (s: any) => ({ type: EX.SENTENCE, item: s.item });
-  const reinforced: any[] = [];
-  for (let i = 0; i < freshSentences.length; i += BATCH) {
-    const group = freshSentences.slice(i, i + BATCH);
-    reinforced.push(...group);              // the new ones
-    reinforced.push(...group.map(repeat));  // the same ones again
-  }
 
   // ── Dialogues are capstones, placed right after their lines are drilled ──
-  // The dialogue step asks the learner to TYPE each line, so it must come
-  // AFTER the sentence exercises that teach those lines. Lines are matched
-  // by text (the same sentence can be drilled under more than one id).
-  // Only run a dialogue when at least one of its lines was drilled this lesson,
-  // so a capped lesson never opens a conversation whose lines you haven't seen.
-  const dialogueSteps = sorted
+  // Only run a dialogue when a line of it was drilled this lesson, so a capped
+  // lesson never opens a conversation whose lines you haven't seen.
+  const newBlock: any[] = [...freshSentences];
+  const dialogueSteps = queue
     .filter((s) => s.type === EX.DIALOGUE)
     .filter((d: any) => (d.dialogue?.lines ?? []).some((l: any) => servedDe.has(String(l.de ?? "").trim().toLowerCase())));
   for (const d of dialogueSteps) {
@@ -192,23 +161,45 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       (d.dialogue?.lines ?? []).map((l: any) => String(l.de ?? "").trim().toLowerCase())
     );
     let lastIdx = -1;
-    reinforced.forEach((s, i) => {
-      if (s.type === EX.SENTENCE && lineTexts.has(String(s.item?.de ?? "").trim().toLowerCase())) {
-        lastIdx = i;
-      }
+    newBlock.forEach((s, i) => {
+      if (s.type === EX.SENTENCE && lineTexts.has(String(s.item?.de ?? "").trim().toLowerCase())) lastIdx = i;
     });
-    if (lastIdx === -1) reinforced.push(d);            // no teachable lines left — run it last
-    else reinforced.splice(lastIdx + 1, 0, d);          // right after its final line drill
+    if (lastIdx === -1) newBlock.push(d);
+    else newBlock.splice(lastIdx + 1, 0, d);
   }
 
-  // Earliest block gets a third pass at the end (2 or 3 times total).
-  if (freshSentences.length >= 8) {
-    reinforced.push(...freshSentences.slice(0, Math.ceil(freshSentences.length / 3)).map(repeat));
-  }
+  // ── Old phrases: up to 3 due reviews — mostly recent, plus one older ──
+  const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
 
-  const ordered = [...reviews, ...reinforced];
+  // 3 new, then 3 old.
+  const ordered = [...newBlock, ...reviews];
   ordered.push({ type: EX.COMPLETE });
   return ordered;
+}
+
+/** At most NEW_PER_LESSON brand-new phrases per lesson. */
+const NEW_PER_LESSON = 3;
+/** At most OLD_PER_LESSON due reviews per lesson. */
+export const OLD_PER_LESSON = 3;
+
+/**
+ * Choose which due reviews to show. Favours the WEAKEST memories (shortest
+ * spacing interval — usually phrases learned a day or two ago) for most of the
+ * slots, and reserves one slot for a more-mastered OLDER phrase, so a lesson's
+ * "old" half is mostly recent with an occasional long-tail review. Deduped by
+ * German text; ties broken by most-overdue.
+ */
+export function pickReviews(due: any[], n: number): any[] {
+  if (due.length <= n) return due;
+  const weakestFirst = [...due].sort((a, b) => (a.interval ?? 1) - (b.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0));
+  const picks: any[] = weakestFirst.slice(0, Math.max(0, n - 1));   // n-1 most-recent/weakest
+  const has = (r: any) => picks.some((p) => p.item?.de === r.item?.de);
+  const older = [...due]
+    .sort((a, b) => (b.interval ?? 1) - (a.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0))
+    .find((r) => !has(r));                                          // one most-mastered, not already picked
+  if (older) picks.push(older);
+  for (const r of weakestFirst) { if (picks.length >= n) break; if (!has(r)) picks.push(r); }  // backfill
+  return picks.slice(0, n);
 }
 
 // ── Catalog of every learnable item (for the word/sentence tracker) ──

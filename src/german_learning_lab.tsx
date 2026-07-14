@@ -17,7 +17,7 @@ import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildSession } from "@/session";
+import { buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
 import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import { getMasteredCount } from "@/lib/mastery";
@@ -230,8 +230,9 @@ export default function GermanLearningLab() {
         }
       }
 
-      globalReviews.sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0));
-      const reviews = globalReviews.slice(0, 6);
+      // 3 new (from the first pack with fresh content) + 3 old due reviews
+      // (mostly recent, one older — see pickReviews). New first, then old.
+      const reviews = pickReviews(globalReviews, OLD_PER_LESSON);
       const reviewDe = new Set(reviews.map((r: any) => r.item.de));
       const fresh = freshSteps.filter(
         (st: any) => st.type !== "sentence" || !reviewDe.has(st.item.de)
@@ -239,7 +240,7 @@ export default function GermanLearningLab() {
 
       if (reviews.length > 0 || fresh.length > 0) {
         const id = freshId ?? keys[0];
-        let steps = [...reviews, ...fresh, { type: "complete" }];
+        let steps = [...fresh, ...reviews, { type: "complete" }];
         if (learningEnglish()) steps = steps.map(swapStepForEnglish);
         setActivePart(id);
         saveScopedJson("active-part", id, user);
