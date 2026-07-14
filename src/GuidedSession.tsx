@@ -1607,6 +1607,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
   const progress = safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
+  // Count only real exercises, not the final "lesson complete" summary screen,
+  // so the header reads "4 of 6", not "4 of 7".
+  const exerciseCount = safeSteps.filter((s: any) => s.type !== "complete").length || 1;
+  const exercisePos = Math.min(index + 1, exerciseCount);
   const next = () => {
     // Persist the item we're leaving immediately, so closing the app mid-session
     // doesn't lose progress (onComplete/onCancel only fire on full finish or the
@@ -1644,7 +1648,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Lesson</div>
             <div className="text-base font-semibold tracking-tight text-zinc-950">
-              {index + 1} <span className="text-zinc-500">of {steps.length}</span>
+              {exercisePos} <span className="text-zinc-500">of {exerciseCount}</span>
             </div>
           </div>
         </div>
