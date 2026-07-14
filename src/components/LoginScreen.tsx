@@ -12,7 +12,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { buildProfileId, setAuthUser, UserProfile } from "@/lib/profileStorage";
+import { buildProfileId, findProfileByEmail, setAuthUser, UserProfile } from "@/lib/profileStorage";
 
 interface LoginScreenProps {
   onLogin: (user: UserProfile) => void;
@@ -47,9 +47,14 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setLoading(true);
 
     window.setTimeout(() => {
-      const user: UserProfile = {
-        id: buildProfileId(name || "Student", email),
-        name: name || "Student",
+      // If this email has signed in on this device before, reconnect to that
+      // exact account (same id => same progress) instead of deriving a new,
+      // empty profile. This keeps progress tied to the email across sign-outs.
+      const existing = findProfileByEmail(email);
+      const fallbackName = name || email.split("@")[0] || "Student";
+      const user: UserProfile = existing ?? {
+        id: buildProfileId(fallbackName, email),
+        name: fallbackName,
         email,
         joinedAt: new Date().toISOString(),
         externalWordsLearned: 0,

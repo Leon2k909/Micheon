@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import GermanLearningLab from "./german_learning_lab";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
-import { clearLegacyAutoLoginUser, getAuthUser, hydrateLocalStorageFromSharedStorage, UserProfile } from "./lib/profileStorage";
+import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -14,11 +14,15 @@ export default function App() {
     async function boot() {
       await hydrateLocalStorageFromSharedStorage();
       if (cancelled) return;
-      // One-time cleanup of the old hardcoded auto-login profile.
-      clearLegacyAutoLoginUser();
-      // No auto-login: show the login/sign-up screen unless this device already
-      // has a signed-in profile. Everyone creates their own account.
-      setUser(getAuthUser());
+      // No hardcoded default: a device with no signed-in profile shows the
+      // sign-in screen, so each person creates their own account. A device that
+      // already has a profile (synced via the local shared store) stays signed
+      // in across browsers/app restarts and keeps its progress.
+      const current = getAuthUser();
+      // Keep the email->profile registry seeded with the signed-in account so a
+      // future email-only login reconnects to it (and its scoped progress).
+      if (current) recordKnownProfile(current);
+      setUser(current);
       setReady(true);
     }
 

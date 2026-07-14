@@ -1,6 +1,7 @@
 export const PROFILE_STORAGE_KEY = "german-arena-profile";
 export const AUTH_USER_KEY = "german-arena-auth";
 export const SIGNED_OUT_KEY = "german-arena-signed-out";
+export const KNOWN_PROFILES_KEY = "german-arena-known-profiles";
 const SHARED_SYNC_PREFIXES = [
   "german-arena-",
   "active-part:",
@@ -10,10 +11,12 @@ const SHARED_SYNC_PREFIXES = [
   "sessionsCompleted:",
   "totalReviews:",
   "streak:",
+  "streak-last-day:",
   "externalWords:",
   "activity-log:",
   "course-progress:",
   "active-course:",
+  "english-variant:",
   "gl-",
   "vocab-mastery",
   "germ-mastery-set",
@@ -53,6 +56,41 @@ export function buildProfileId(name: string, email: string) {
   const n = slugify(name);
   const e = slugify(email);
   return [n, e].filter(Boolean).join("--") || "anonymous";
+}
+
+function readKnownProfiles(): Record<string, UserProfile> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(KNOWN_PROFILES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Remember a profile keyed by its email so signing back in with the same email
+ * reconnects to the exact same account — same id, so the same scoped progress.
+ * Progress lives under the profile id, so a stable id per email is what keeps
+ * "my progress lives on my email" true across sign-outs and re-logins.
+ */
+export function recordKnownProfile(user: UserProfile) {
+  if (typeof window === "undefined" || !user?.email) return;
+  const map = readKnownProfiles();
+  const key = slugify(user.email);
+  if (JSON.stringify(map[key]) === JSON.stringify(user)) return;
+  map[key] = user;
+  const raw = JSON.stringify(map);
+  try { window.localStorage.setItem(KNOWN_PROFILES_KEY, raw); } catch { /* ignore */ }
+  syncSharedItems({ [KNOWN_PROFILES_KEY]: raw });
+}
+
+/** Look up a previously-seen profile by email (case/format-insensitive). */
+export function findProfileByEmail(email: string): UserProfile | null {
+  if (!email) return null;
+  return readKnownProfiles()[slugify(email)] || null;
 }
 
 export function getAuthUser(): UserProfile | null {
@@ -151,6 +189,8 @@ export function setAuthUser(user: UserProfile | null) {
   const raw = JSON.stringify(user);
   window.localStorage.setItem(AUTH_USER_KEY, raw);
   syncSharedItems({ [AUTH_USER_KEY]: raw });
+  // Remember this account by email so a later email-only login reconnects to it.
+  recordKnownProfile(user);
   // Signing in (or saving a profile) clears any prior sign-out marker.
   try { window.localStorage.removeItem(SIGNED_OUT_KEY); } catch { /* ignore */ }
   syncSharedItems({ [SIGNED_OUT_KEY]: null });
@@ -162,27 +202,6 @@ export function signOut() {
   setAuthUser(null);
   try { window.localStorage.setItem(SIGNED_OUT_KEY, "1"); } catch { /* ignore */ }
   syncSharedItems({ [SIGNED_OUT_KEY]: "1" });
-}
-
-// Older builds silently auto-created a single hardcoded profile and logged
-// everyone into it. This is that profile's id.
-const LEGACY_AUTO_LOGIN_ID = "leon--leon-ordifydirect-com";
-
-/**
- * One-time migration: if this device is still carrying the old hardcoded
- * auto-login profile, drop it (locally and on the shared store) so the person
- * lands on the sign-in screen and creates their own account. Their scoped
- * progress is left untouched — signing back in with the same details restores
- * it. No-op for anyone who created their own profile. Returns true if it
- * removed the legacy profile.
- */
-export function clearLegacyAutoLoginUser(): boolean {
-  const existing = getAuthUser();
-  if (existing && existing.id === LEGACY_AUTO_LOGIN_ID) {
-    setAuthUser(null);
-    return true;
-  }
-  return false;
 }
 
 export function getScopedKey(key: string, profile: UserProfile | null) {
