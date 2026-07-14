@@ -1,4 +1,4 @@
-# Building & auto-updating Learn German
+# Building & auto-updating Micheon
 
 The Windows build is **all-in-one**: one installer contains the app, the built
 front-end, and the local TTS server (it runs inside the app — nothing separate
@@ -25,22 +25,33 @@ must be **public** so the installed app can read releases without a token.
    npm run release
    ```
 
-   This builds `Learn German Setup <version>.exe`, its `.blockmap`, and
-   `latest.yml`, then uploads them to a **draft** GitHub Release. Go to the repo's
-   **Releases** page and click **Publish** on that draft.
+   With `build.publish.releaseType: "release"` this builds
+   `Micheon Setup <version>.exe`, its `.blockmap`, and `latest.yml`, and
+   publishes them straight to a **published** GitHub Release tagged `v<version>`
+   — not a draft (electron-updater ignores drafts).
 
-   *Manual alternative (no token):* run `npm run electron:dist`, then create a
-   GitHub Release tagged `v<version>` and upload **all three** files from the
-   `release/` folder — the `.exe`, the `.exe.blockmap`, and `latest.yml`. The
-   filenames must match what `latest.yml` lists.
+3. **Verify the feed is complete.** The `.exe` upload can succeed while the
+   `latest.yml`/`.blockmap` upload fails (e.g. a transient error, or a
+   "published releases must have a valid tag" 422 if the tag didn't exist yet),
+   leaving the release without the file the updater actually reads. Check:
 
-3. Done. Every installed copy checks GitHub on launch (and hourly), downloads the
+   ```bash
+   curl -sL https://github.com/Leon2k909/Micheon/releases/latest/download/latest.yml
+   ```
+
+   It must return `version: <the new version>`. If `latest.yml` is missing (404)
+   or shows an older version, re-upload the three files from `release/` to the
+   release (asset names must match what `latest.yml` lists, e.g.
+   `Micheon-Setup-<version>.exe`). Without a correct `latest.yml` on the latest
+   release, no installed copy sees the update.
+
+4. Done. Every installed copy checks GitHub on launch (and hourly), downloads the
    new version in the background, and installs it silently the next time the app
    is closed and reopened.
 
 ## Giving it to someone the first time
 
-Send them **`Learn German Setup <version>.exe`** (from `release/`, or the GitHub
+Send them **`Micheon Setup <version>.exe`** (from `release/`, or the GitHub
 Release page). It installs per-user in one click. Windows SmartScreen may warn on
 first run because the build isn't code-signed — **More info → Run anyway**, once.
 After that, updates are automatic; they never re-download by hand.
