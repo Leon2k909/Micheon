@@ -11,7 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MicheonMark, MicheonWordmark } from "@/components/MicheonLogo";
+import { MicheonLogo } from "@/components/MicheonLogo";
 import { buildProfileId, findProfileByEmail, setAuthUser, UserProfile } from "@/lib/profileStorage";
 
 interface LoginScreenProps {
@@ -75,9 +75,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           initial={{ opacity: 0, y: 14 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="inline-flex items-center gap-3 text-zinc-900">
-            <MicheonMark size={46} />
-            <MicheonWordmark height={22} />
+          <div className="text-zinc-900">
+            <MicheonLogo theme="light" height={128} />
           </div>
 
           <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-6xl">
