@@ -161,20 +161,32 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // ones 3×). Across lessons the spaced-repetition ladder (1, 3, 10, 30,
   // 180 days) takes over. markCompleted still climbs the ladder once per id.
   const BATCH = 3;
-  const freshSentences = sorted.filter((s) => s.type === EX.SENTENCE && !s.review);
+  // Small, predictable lessons: at most NEW_PER_LESSON brand-new phrases,
+  // each drilled then repeated. So a lesson is a clean "3 new, 3 same" block
+  // (6 steps) — the pack's remaining fresh phrases wait for the next lesson
+  // instead of spilling in as a ragged partial batch.
+  const NEW_PER_LESSON = 3;
+  const freshSentences = sorted
+    .filter((s) => s.type === EX.SENTENCE && !s.review)
+    .slice(0, NEW_PER_LESSON);
+  const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
   const repeat = (s: any) => ({ type: EX.SENTENCE, item: s.item });
   const reinforced: any[] = [];
   for (let i = 0; i < freshSentences.length; i += BATCH) {
     const group = freshSentences.slice(i, i + BATCH);
-    reinforced.push(...group);              // 3 new
-    reinforced.push(...group.map(repeat));  // the same 3 again
+    reinforced.push(...group);              // the new ones
+    reinforced.push(...group.map(repeat));  // the same ones again
   }
 
   // ── Dialogues are capstones, placed right after their lines are drilled ──
   // The dialogue step asks the learner to TYPE each line, so it must come
   // AFTER the sentence exercises that teach those lines. Lines are matched
   // by text (the same sentence can be drilled under more than one id).
-  const dialogueSteps = sorted.filter((s) => s.type === EX.DIALOGUE);
+  // Only run a dialogue when at least one of its lines was drilled this lesson,
+  // so a capped lesson never opens a conversation whose lines you haven't seen.
+  const dialogueSteps = sorted
+    .filter((s) => s.type === EX.DIALOGUE)
+    .filter((d: any) => (d.dialogue?.lines ?? []).some((l: any) => servedDe.has(String(l.de ?? "").trim().toLowerCase())));
   for (const d of dialogueSteps) {
     const lineTexts = new Set(
       (d.dialogue?.lines ?? []).map((l: any) => String(l.de ?? "").trim().toLowerCase())
