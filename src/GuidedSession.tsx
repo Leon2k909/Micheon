@@ -191,19 +191,25 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 }
 
 // Section
-const PHASES = ["Read", "Listen", "Speak", "Type", "Translate"] as const;
+// No separate "Listen" step: the German is spoken automatically when it first
+// appears (Read) and again before you say it (Speak). Type and Translate each
+// run twice — the second round builds the memory through repeated production.
+const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
 
 // In French companion mode the flow tests the two target languages (German +
 // French) and uses English only as the shown meaning, so the English-typing
 // "Translate" step is replaced by the French step. "Memory" is a final recall
 // phase where no sentence is shown — the learner types both from memory.
-const BILINGUAL_PHASES: Phase[] = ["Read", "Listen", "Speak", "Type", "French", "Memory"];
+const BILINGUAL_PHASES: Phase[] = ["Read", "Speak", "Type", "French", "Memory"];
 
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
-// two language steps read clearly as German / French.
+// two language steps read clearly as German / French. The second-round steps
+// get short labels of their own.
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
+  if (p === "TypeAgain") return "Type 2";
+  if (p === "TranslateAgain") return "Recall";
   return p;
 }
 
@@ -385,8 +391,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
   // Auto-play TTS when entering Listen phase (German, then French in companion mode)
+  // Speak the German automatically whenever it first comes on screen — on Read
+  // (see + hear) and again on Speak (hear, then repeat it). No separate Listen
+  // step. tts() is a no-op while muted, so the mute button still silences it.
   useEffect(() => {
-    if (phase !== "Listen") return;
+    if (phase !== "Read" && phase !== "Speak") return;
     if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
     else tts(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr]);
@@ -413,8 +422,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
   // Focus input when entering Type or Translate phase
   useEffect(() => {
-    if (phase === "Type")      setTimeout(() => inputRef.current?.focus(), 100);
-    if (phase === "Translate") setTimeout(() => enInputRef.current?.focus(), 100);
+    if (phase === "Type" || phase === "TypeAgain")           setTimeout(() => inputRef.current?.focus(), 100);
+    if (phase === "Translate" || phase === "TranslateAgain") setTimeout(() => enInputRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
     if (phase === "Memory")    { setDeHintLen(0); setFrHintLen(0); setTimeout(() => memDeRef.current?.focus(), 100); }
   }, [phase]);
@@ -473,6 +482,22 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (next) setPhase(next);
   };
 
+  // Advance to the next phase, or finish the exercise if this was the last one.
+  // Used by the typing steps so the second Translate round ends the exercise.
+  const advanceOrFinish = () => {
+    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
+    const next = order[order.indexOf(phase) + 1];
+    if (next) setPhase(next); else finishOrFrench();
+  };
+
+  // The second Type / Translate rounds reuse the first round's input state, so
+  // clear it when the round begins — otherwise it shows the previous answer as
+  // already-correct.
+  useEffect(() => {
+    if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
+    if (phase === "TranslateAgain") { setEnInput(""); setEnChecked(false); setEnAttempts(0); }
+  }, [phase]);
+
   const goBack = () => {
     const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
     const prev = order[order.indexOf(phase) - 1];
@@ -503,7 +528,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     setEnChecked(true);
     reactToAnswer(enResult.ok);
     if (enResult.ok) {
-      setTimeout(finishOrFrench, 900);
+      setTimeout(advanceOrFinish, 900);
     } else {
       setEnAttempts(a => a + 1);
     }
@@ -644,7 +669,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           use={item.use}
           lookup={item.lookup}
           tierNote={item.tierNote}
-          hideUse={phase === "Translate"}
+          hideUse={phase === "Translate" || phase === "TranslateAgain"}
         />
 
         {hasFr ? (
@@ -691,13 +716,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {item.de}
             </div>
             <AnimatePresence>
-              {phase !== "Read" && phase !== "Translate" && (
+              {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
                   {displayEnglish}
                 </motion.div>
               )}
-              {phase === "Translate" && (
+              {(phase === "Translate" || phase === "TranslateAgain") && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
                   What does this mean in {meaningLabel}?
@@ -725,32 +750,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <motion.div key="read" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {hasFr ? "Read both the German and French before listening." : "Read the sentence once before listening."}
+              {hasFr ? "Read and listen to the German and French." : "Read and listen — it plays automatically."}
             </p>
-            <Button onClick={advance}
-              className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
-              Continue <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-        )}
-
-        {/* LISTEN phase */}
-        {phase === "Listen" && (
-          <motion.div key="listen" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Listen once, then replay if you need it.</p>
             <div className="flex gap-3">
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              <button type="button"
                 onClick={() => tts(item.de, 0.88, targetLang)}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
+                aria-label="Hear it again"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 active:scale-95">
                 <Volume2 className="h-5 w-5" />
-              </motion.button>
+              </button>
               <Button onClick={advance}
                 className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
           </motion.div>
         )}
 
@@ -831,11 +844,12 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         )}
 
         {/* TYPE phase */}
-        {phase === "Type" && (
+        {(phase === "Type" || phase === "TypeAgain") && (
           <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
+              {phase === "TypeAgain" ? "Type the German once more — build the memory."
+                : hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
             </p>
 
             <div className="space-y-3">
@@ -850,7 +864,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   placeholder="Type the sentence..."
                   value={input}
                   onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (checked && result.ok ? onNext() : checkAnswer())}
+                  onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
                   disabled={checked && result.ok}
                 />
               </motion.div>
@@ -905,10 +919,12 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         )}
 
         {/* TRANSLATE phase */}
-        {phase === "Translate" && (
+        {(phase === "Translate" || phase === "TranslateAgain") && (
           <motion.div key="translate" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Now type the {meaningLabel} translation.</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {phase === "TranslateAgain" ? `Type the ${meaningLabel} once more — lock it in.` : `Now type the ${meaningLabel} translation.`}
+            </p>
             <div className="space-y-3">
               <motion.div animate={shakeControls}>
                 <Input ref={enInputRef}
@@ -921,7 +937,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   placeholder={`Type the ${meaningLabel} meaning...`}
                   value={enInput}
                   onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? finishOrFrench() : checkEnAnswer())}
+                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
                   disabled={enChecked && enResult.ok}
                 />
               </motion.div>
@@ -956,9 +972,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </Button>
               </div>
             ) : (
-              <Button onClick={enChecked && enResult.ok ? finishOrFrench : checkEnAnswer}
+              <Button onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}
                 className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
-                {enChecked && enResult.ok ? <>{hasFr ? "Next: French" : "Continue"} <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {enChecked && enResult.ok
+                  ? <>{hasFr ? "Next: French" : phase === "Translate" ? "One more round" : "Done"} <ArrowRight className="ml-2 h-5 w-5" /></>
+                  : "Check"}
               </Button>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
