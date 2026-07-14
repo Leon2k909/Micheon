@@ -9,7 +9,10 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+import electronUpdater from "electron-updater";
 import { startServer } from "../server/index.js";
+
+const { autoUpdater } = electronUpdater;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -78,6 +81,37 @@ async function createWindow() {
   });
 }
 
+// ── Auto-update ──────────────────────────────────────────────────────────
+// Checks the GitHub releases feed on launch (and hourly). When a newer version
+// is published, it downloads it in the background and installs it silently the
+// next time the app quits — so the user never re-downloads or reinstalls by
+// hand. Only runs in the packaged app; a dev run has no update feed.
+function setupAutoUpdate() {
+  if (!app.isPackaged) return;
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on("error", (err) => console.error("[updater] error:", err?.message ?? err));
+  autoUpdater.on("checking-for-update", () => console.log("[updater] checking for updates…"));
+  autoUpdater.on("update-available", (info) => console.log("[updater] update available:", info.version));
+  autoUpdater.on("update-not-available", () => console.log("[updater] already up to date"));
+  autoUpdater.on("download-progress", (p) => console.log(`[updater] downloading ${Math.round(p.percent)}%`));
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log("[updater] update downloaded:", info.version, "— will install on quit");
+    // Let the app show a subtle "Update ready, restart to apply" hint if it wants.
+    mainWindow?.webContents.send("update:downloaded", info.version);
+  });
+
+  autoUpdater.checkForUpdatesAndNotify().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
+  // Re-check periodically for long-running sessions.
+  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 60 * 60 * 1000);
+}
+
+// Renderer can ask to apply the downloaded update immediately (restart + install).
+ipcMain.on("update:install-now", () => {
+  autoUpdater.quitAndInstall();
+});
+
 // Window-control IPC from the custom title bar.
 ipcMain.on("window:minimize", () => mainWindow?.minimize());
 ipcMain.on("window:toggle-maximize", () => {
@@ -88,7 +122,10 @@ ipcMain.on("window:toggle-maximize", () => {
 ipcMain.on("window:close", () => mainWindow?.close());
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  await createWindow();
+  setupAutoUpdate();
+});
 
 // macOS: re-create a window when the dock icon is clicked and none are open.
 app.on("activate", () => {

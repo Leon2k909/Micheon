@@ -1,7 +1,9 @@
 {
   "name": "germ",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Learn German — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
+  "author": "Leon",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -13,6 +15,7 @@
     "electron": "npm run build && electron .",
     "electron:run": "electron .",
     "electron:dist": "npm run build && electron-builder",
+    "release": "npm run build && electron-builder --publish always",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -28,8 +31,19 @@
     "directories": {
       "output": "release"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "Leon2k909",
+      "repo": "germ"
+    },
     "win": {
       "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "deleteAppDataOnUninstall": false
     },
     "mac": {
       "target": "dmg"
@@ -49,6 +63,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "edge-tts-universal": "^1.4.0",
+    "electron-updater": "^6.8.9",
     "express": "^5.2.1",
     "framer-motion": "^12.36.0",
     "level": "^10.0.0",

@@ -15,4 +15,13 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("window:maximize-change", handler);
     return () => ipcRenderer.removeListener("window:maximize-change", handler);
   },
+  // Auto-update: fires with the new version once an update has finished
+  // downloading (it will also install automatically on next quit). Returns an
+  // unsubscribe function. installUpdate() restarts and applies it right away.
+  onUpdateDownloaded: (cb) => {
+    const handler = (_e, version) => cb(version);
+    ipcRenderer.on("update:downloaded", handler);
+    return () => ipcRenderer.removeListener("update:downloaded", handler);
+  },
+  installUpdate: () => ipcRenderer.send("update:install-now"),
 });
