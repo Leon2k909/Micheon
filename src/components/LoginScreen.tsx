@@ -72,7 +72,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/20 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
             <Languages className="h-3.5 w-3.5" />
-            Learn German
+            Micheon
           </div>
 
           <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-6xl">
@@ -120,7 +120,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                     {isLogin ? "Welcome back" : "Create profile"}
                   </p>
                   <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950">
-                    {isLogin ? "Continue learning" : "Start Learn German"}
+                    {isLogin ? "Continue learning" : "Start Micheon"}
                   </h2>
                 </div>
               </div>

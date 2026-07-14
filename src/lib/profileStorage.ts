@@ -41,14 +41,6 @@ export interface UserProfile {
   externalWordsLearned: number;
 }
 
-export const DEFAULT_LOCAL_USER: UserProfile = {
-  id: "leon--leon-ordifydirect-com",
-  name: "Leon",
-  email: "leon@ordifydirect.com",
-  joinedAt: "2026-06-05T00:00:00.000Z",
-  externalWordsLearned: 0,
-};
-
 export function slugify(value: string) {
   return String(value ?? "")
     .trim()
@@ -148,20 +140,6 @@ export async function hydrateLocalStorageFromSharedStorage() {
   }
 }
 
-export function getOrCreateDefaultAuthUser(): UserProfile | null {
-  const existing = getAuthUser();
-  if (existing) return existing;
-  // Respect an explicit sign-out: don't silently recreate the default user.
-  if (typeof window !== "undefined") {
-    try {
-      if (window.localStorage.getItem(SIGNED_OUT_KEY) === "1") return null;
-    } catch { /* ignore */ }
-  }
-  setAuthUser(DEFAULT_LOCAL_USER);
-  saveScopedJson("german-lab-placement-done", true, DEFAULT_LOCAL_USER);
-  saveScopedJson("active-part", "part3", DEFAULT_LOCAL_USER);
-  return DEFAULT_LOCAL_USER;
-}
 
 export function setAuthUser(user: UserProfile | null) {
   if (typeof window === "undefined") return;
@@ -184,6 +162,27 @@ export function signOut() {
   setAuthUser(null);
   try { window.localStorage.setItem(SIGNED_OUT_KEY, "1"); } catch { /* ignore */ }
   syncSharedItems({ [SIGNED_OUT_KEY]: "1" });
+}
+
+// Older builds silently auto-created a single hardcoded profile and logged
+// everyone into it. This is that profile's id.
+const LEGACY_AUTO_LOGIN_ID = "leon--leon-ordifydirect-com";
+
+/**
+ * One-time migration: if this device is still carrying the old hardcoded
+ * auto-login profile, drop it (locally and on the shared store) so the person
+ * lands on the sign-in screen and creates their own account. Their scoped
+ * progress is left untouched — signing back in with the same details restores
+ * it. No-op for anyone who created their own profile. Returns true if it
+ * removed the legacy profile.
+ */
+export function clearLegacyAutoLoginUser(): boolean {
+  const existing = getAuthUser();
+  if (existing && existing.id === LEGACY_AUTO_LOGIN_ID) {
+    setAuthUser(null);
+    return true;
+  }
+  return false;
 }
 
 export function getScopedKey(key: string, profile: UserProfile | null) {

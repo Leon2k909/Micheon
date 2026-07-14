@@ -69,7 +69,7 @@ export type Course = {
   tagline: string;
   icon: string;          // emoji for the switcher
   available: boolean;
-  builtIn?: boolean;     // the native Learn German experience
+  builtIn?: boolean;     // the native Micheon experience
   lessons?: Lesson[];    // present for in-app courses (e.g. csharp)
 };
 

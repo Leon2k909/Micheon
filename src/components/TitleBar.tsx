@@ -25,7 +25,7 @@ export function TitleBar() {
     <div className="titlebar">
       <div className="titlebar-drag">
         <img src="/favicon.svg" alt="" className="titlebar-logo" />
-        <span className="titlebar-title">Learn German</span>
+        <span className="titlebar-title">Micheon</span>
       </div>
       <div className="titlebar-controls">
         <button className="titlebar-btn" onClick={() => desktop.minimize()} aria-label="Minimize">

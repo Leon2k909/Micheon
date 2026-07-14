@@ -62,7 +62,7 @@ export default function GermanLearningLab() {
   );
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showPlacementTest, setShowPlacementTest] = useState<boolean>(
-    () => user.email.toLowerCase() !== "leon@ordifydirect.com" && loadScopedJson("german-lab-placement-done", false, user) === false
+    () => loadScopedJson("german-lab-placement-done", false, user) === false
   );
   const [showGuidedSession, setShowGuidedSession] = useState(false);
   const [sessionSteps, setSessionSteps] = useState<any[]>([]);
@@ -545,7 +545,7 @@ export default function GermanLearningLab() {
         onSignOut={() => { signOut(); window.location.reload(); }}
         onSwitchCourse={() => setCourseSwitcherOpen(true)}
         searchItems={topNavSearchItems}
-        brandName={activeCourse?.name ?? "Learn German"}
+        brandName={activeCourse?.name ?? "Micheon"}
         onOpenReader={courseHasReader ? () => openReader() : undefined}
         readerLabel="Course material"
       />

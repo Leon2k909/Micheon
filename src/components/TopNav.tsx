@@ -81,7 +81,7 @@ export function TopNav({
   notifications = [],
   searchItems = [],
   onBrandClick,
-  brandName = "Learn German",
+  brandName = "Micheon",
   brandIcon,
   onOpenReader,
   readerLabel = "Course material",
@@ -391,7 +391,7 @@ export function TopNav({
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-3)]" />
                 <input
-                  aria-label="Search Learn German"
+                  aria-label="Search Micheon"
                   className="h-14 w-full rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] pl-12 pr-12 text-base font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)] focus:bg-[var(--surface)]"
                   data-testid="search-input"
                   onChange={(event) => setSearchQuery(event.target.value)}

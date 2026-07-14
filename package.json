@@ -2,7 +2,7 @@
   "name": "germ",
   "private": true,
   "version": "1.0.0",
-  "description": "Learn German — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
+  "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
   "main": "electron/main.js",
@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "com.germ.germanlab",
-    "productName": "Learn German",
+    "productName": "Micheon",
     "files": [
       "electron/**",
       "server/**",

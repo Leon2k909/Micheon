@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import GermanLearningLab from "./german_learning_lab";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
-import { getOrCreateDefaultAuthUser, hydrateLocalStorageFromSharedStorage, UserProfile } from "./lib/profileStorage";
+import { clearLegacyAutoLoginUser, getAuthUser, hydrateLocalStorageFromSharedStorage, UserProfile } from "./lib/profileStorage";
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -14,7 +14,11 @@ export default function App() {
     async function boot() {
       await hydrateLocalStorageFromSharedStorage();
       if (cancelled) return;
-      setUser(getOrCreateDefaultAuthUser());
+      // One-time cleanup of the old hardcoded auto-login profile.
+      clearLegacyAutoLoginUser();
+      // No auto-login: show the login/sign-up screen unless this device already
+      // has a signed-in profile. Everyone creates their own account.
+      setUser(getAuthUser());
       setReady(true);
     }
 
@@ -38,7 +42,7 @@ export default function App() {
       <TitleBar />
       {!ready ? (
         <div className="flex min-h-[100dvh] items-center justify-center bg-[var(--bg)] text-[var(--text-1)]">
-          <div className="card px-6 py-4 text-sm font-black">Loading Learn German</div>
+          <div className="card px-6 py-4 text-sm font-black">Loading Micheon</div>
         </div>
       ) : user ? (
         <GermanLearningLab />

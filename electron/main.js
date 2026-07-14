@@ -45,7 +45,7 @@ async function createWindow() {
     minWidth: 880,
     minHeight: 600,
     backgroundColor: "#0b0b0f",
-    title: "Learn German",
+    title: "Micheon",
     // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
     // for a clean, on-brand look like Discord/Slack.
     frame: false,
