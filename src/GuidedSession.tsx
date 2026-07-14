@@ -307,87 +307,17 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
   );
 }
 
-/**
- * Passive re-exposure: a sentence learned a few steps ago is simply SHOWN
- * again — target, meaning, audio, and its usage chips — with no quiz. This
- * is the "just tell me again" pass; recall testing is saved for later
- * (end-of-session rechecks and the day-scale reviews).
- */
-function SentenceReminder({ item, onNext }: { item: any; onNext: () => void }) {
-  const learnEn = useMemo(() => learningEnglish(), []);
-  const targetLang = learnEn ? "en-US" : "de-DE";
-  const hasFr = useMemo(
-    () => getCompanion() === "fr" && !learnEn && typeof item?.fr === "string" && item.fr.trim().length > 0,
-    [learnEn, item?.fr]
-  );
-
-  // Hear it once on arrival (unless muted) — a reminder is meant to re-expose.
-  useEffect(() => {
-    if (!isAudioMuted()) tts(item.de, 0.88, targetLang);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.de]);
-
-  return (
-    <div className="flex w-full flex-col items-center gap-5 py-2">
-      <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">
-        Remember this one
-      </span>
-
-      <button
-        type="button"
-        onClick={() => tts(item.de, 0.85, targetLang)}
-        aria-label="Hear it again"
-        className="flex flex-col items-center gap-3 rounded-2xl px-4 py-2 transition-colors hover:bg-zinc-50"
-      >
-        <span className="text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
-          {item.de}
-        </span>
-        {hasFr && (
-          <span className="text-lg font-black tracking-tight text-[var(--accent)]">{item.fr}</span>
-        )}
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-400">
-          <Volume2 className="h-3.5 w-3.5" /> Tap to hear it
-        </span>
-      </button>
-
-      <div className="rounded-2xl bg-zinc-50 px-4 py-2 text-base font-semibold text-zinc-600">
-        {item.en}
-      </div>
-
-      <UsageChips de={learnEn ? item.en : item.de} use={item.use} lookup={item.lookup} tierNote={item.tierNote} />
-
-      <Button
-        onClick={onNext}
-        className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800"
-      >
-        Got it, keep going
-        <ArrowRight className="ml-1 h-4 w-4" />
-      </Button>
-    </div>
-  );
-}
-
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, onNext, onGradeItem, onAnswer, recheck }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void; recheck?: boolean }) {
+function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean) => {
     onAnswer?.(ok);
     if (ok) shakeControls.start({ scale: [1, 1.05, 1], transition: { duration: 0.32 } });
     else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
   };
-  // Quick recall check: skip straight to the recall phase — the sentence was
-  // taught earlier this session; this is the "do you still have it?" pass.
-  // Gate the French recall (Memory) on the ACTUAL French-companion mode, not
-  // merely on the item carrying an fr field — otherwise an English-only
-  // learner gets asked for French.
-  const [phase, setPhase] = useState<Phase>(() => {
-    if (!recheck) return "Read";
-    const frMode = getCompanion() === "fr" && !learningEnglish()
-      && typeof item?.fr === "string" && item.fr.trim().length > 0;
-    return frMode ? "Memory" : "Translate";
-  });
+  const [phase, setPhase] = useState<Phase>("Read");
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -666,15 +596,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer, recheck }: { it
       </div>
 
       {/* Phase dots */}
-      {recheck ? (
-        <div className="flex justify-center">
-          <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">
-            Quick check — you saw this a moment ago
-          </span>
-        </div>
-      ) : (
-        <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
-      )}
+      <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
 
       {/* Sentence display card */}
       <div className={cn(
@@ -1738,8 +1660,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             className="flex w-full max-w-4xl justify-center">
             <Card className="relative w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_22px_60px_rgba(25,27,38,0.08)] sm:p-7">
               <div className="relative z-10 flex flex-col items-center">
-                {kind === "sentence" && step.remind && <SentenceReminder item={step.item} onNext={next} />}
-                {kind === "sentence" && !step.remind && <SentenceExercise item={step.item} recheck={step.recheck} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
+                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
                 {kind === "dialogue"  && <DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} />}
                 {kind === "complete"  && <CompleteScreen onNext={onComplete} />}
                 {!["sentence","dialogue","complete"].includes(kind) && (

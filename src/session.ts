@@ -173,34 +173,32 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   }
 
   // ── In-session reinforcement ─────────────────────────────────
-  // One exposure isn't memory — but re-testing something you learned 30
-  // seconds ago isn't learning either, it's just annoying. So there are two
-  // distinct follow-ups:
-  //   • REMINDER (a few steps later): the sentence is simply shown again —
-  //     German + meaning + audio, no quiz. Passive re-exposure while it's
-  //     still fresh, so it sinks in before you're ever asked to recall it.
-  //   • TEST (end of a longer session): the earliest items — the longest gap
-  //     since you saw them — get an actual recall check before the day-scale
-  //     reviews take over.
+  // One exposure isn't memory. A sentence you just learned comes back as the
+  // SAME full exercise — read, listen, speak, type, translate, all five
+  // stages again — a few steps later (spaced within the session, not
+  // back-to-back). In longer sessions the earliest items — the longest gap
+  // since you saw them — get a third full pass at the end, before the
+  // day-scale reviews take over. Each repeat is an identical sentence step,
+  // so it plays exactly like the first time.
   const isNewSentence = (s: any) => s.type === EX.SENTENCE && !s.review;
   const reinforced: any[] = [];
-  const pendingReminders: { countdown: number; step: any }[] = [];
+  const pendingRepeats: { countdown: number; step: any }[] = [];
   for (const s of fresh) {
     reinforced.push(s);
-    for (const q of pendingReminders) q.countdown -= 1;
-    while (pendingReminders.length && pendingReminders[0].countdown <= 0) {
-      reinforced.push(pendingReminders.shift()!.step);
+    for (const q of pendingRepeats) q.countdown -= 1;
+    while (pendingRepeats.length && pendingRepeats[0].countdown <= 0) {
+      reinforced.push(pendingRepeats.shift()!.step);
     }
     if (isNewSentence(s)) {
-      pendingReminders.push({ countdown: 3, step: { type: EX.SENTENCE, remind: true, item: s.item } });
+      pendingRepeats.push({ countdown: 3, step: { type: EX.SENTENCE, item: s.item } });
     }
   }
-  pendingReminders.forEach((q) => reinforced.push(q.step));
+  pendingRepeats.forEach((q) => reinforced.push(q.step));
 
   const newItems = fresh.filter(isNewSentence);
   if (newItems.length >= 8) {
     newItems.slice(0, Math.ceil(newItems.length / 3)).forEach((s) => {
-      reinforced.push({ type: EX.SENTENCE, recheck: true, item: s.item });
+      reinforced.push({ type: EX.SENTENCE, item: s.item });
     });
   }
 
