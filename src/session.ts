@@ -151,55 +151,47 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const sorted = shuffle(queue.filter((s) => !s.review))
     .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup));
 
-  // ── Dialogues are capstones, not cold-opens ──────────────────
+  // ── In-session reinforcement: "3 new, then the same 3 again" ──
+  // New phrases are drilled in blocks of 3, and each block is immediately
+  // followed by the same 3 as identical full exercises — the "3 new, 3 of
+  // the same" rhythm (A B C · A B C), so every phrase is practised at least
+  // twice per lesson, its repeat a few steps after the first. In longer
+  // sessions the earliest block — the longest gap since it was first seen —
+  // gets a THIRD pass at the very end (so most phrases hit 2×, the first
+  // ones 3×). Across lessons the spaced-repetition ladder (1, 3, 10, 30,
+  // 180 days) takes over. markCompleted still climbs the ladder once per id.
+  const BATCH = 3;
+  const freshSentences = sorted.filter((s) => s.type === EX.SENTENCE && !s.review);
+  const repeat = (s: any) => ({ type: EX.SENTENCE, item: s.item });
+  const reinforced: any[] = [];
+  for (let i = 0; i < freshSentences.length; i += BATCH) {
+    const group = freshSentences.slice(i, i + BATCH);
+    reinforced.push(...group);              // 3 new
+    reinforced.push(...group.map(repeat));  // the same 3 again
+  }
+
+  // ── Dialogues are capstones, placed right after their lines are drilled ──
   // The dialogue step asks the learner to TYPE each line, so it must come
-  // AFTER the sentence exercises that teach those lines — never before.
-  // Lines are matched by text (not id): the same sentence can be drilled
-  // under a phrase id when it appears in both places.
+  // AFTER the sentence exercises that teach those lines. Lines are matched
+  // by text (the same sentence can be drilled under more than one id).
   const dialogueSteps = sorted.filter((s) => s.type === EX.DIALOGUE);
-  const fresh = sorted.filter((s) => s.type !== EX.DIALOGUE);
   for (const d of dialogueSteps) {
     const lineTexts = new Set(
       (d.dialogue?.lines ?? []).map((l: any) => String(l.de ?? "").trim().toLowerCase())
     );
     let lastIdx = -1;
-    fresh.forEach((s, i) => {
+    reinforced.forEach((s, i) => {
       if (s.type === EX.SENTENCE && lineTexts.has(String(s.item?.de ?? "").trim().toLowerCase())) {
         lastIdx = i;
       }
     });
-    if (lastIdx === -1) fresh.push(d);            // no teachable lines left — run it last
-    else fresh.splice(lastIdx + 1, 0, d);          // right after its final line drill
+    if (lastIdx === -1) reinforced.push(d);            // no teachable lines left — run it last
+    else reinforced.splice(lastIdx + 1, 0, d);          // right after its final line drill
   }
 
-  // ── In-session reinforcement ─────────────────────────────────
-  // One exposure isn't memory. A sentence you just learned comes back as the
-  // SAME full exercise — read, listen, speak, type, translate, all five
-  // stages again — a few steps later (spaced within the session, not
-  // back-to-back). In longer sessions the earliest items — the longest gap
-  // since you saw them — get a third full pass at the end, before the
-  // day-scale reviews take over. Each repeat is an identical sentence step,
-  // so it plays exactly like the first time.
-  const isNewSentence = (s: any) => s.type === EX.SENTENCE && !s.review;
-  const reinforced: any[] = [];
-  const pendingRepeats: { countdown: number; step: any }[] = [];
-  for (const s of fresh) {
-    reinforced.push(s);
-    for (const q of pendingRepeats) q.countdown -= 1;
-    while (pendingRepeats.length && pendingRepeats[0].countdown <= 0) {
-      reinforced.push(pendingRepeats.shift()!.step);
-    }
-    if (isNewSentence(s)) {
-      pendingRepeats.push({ countdown: 3, step: { type: EX.SENTENCE, item: s.item } });
-    }
-  }
-  pendingRepeats.forEach((q) => reinforced.push(q.step));
-
-  const newItems = fresh.filter(isNewSentence);
-  if (newItems.length >= 8) {
-    newItems.slice(0, Math.ceil(newItems.length / 3)).forEach((s) => {
-      reinforced.push({ type: EX.SENTENCE, item: s.item });
-    });
+  // Earliest block gets a third pass at the end (2 or 3 times total).
+  if (freshSentences.length >= 8) {
+    reinforced.push(...freshSentences.slice(0, Math.ceil(freshSentences.length / 3)).map(repeat));
   }
 
   const ordered = [...reviews, ...reinforced];
