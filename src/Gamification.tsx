@@ -216,7 +216,7 @@ function ProgressSummaryCard({
         ))}
       </div>
 
-      <div className="mt-4 rounded-[20px] bg-[var(--accent)] p-4 text-white">
+      <div className="mt-4 rounded-[20px] p-4 text-white" style={{ background: "var(--feature-gradient)" }}>
         <div className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/12">
             <Target className="h-4 w-4" />
@@ -265,7 +265,7 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
         </div>
       </div>
 
-      <div className="mt-4 rounded-[20px] bg-[var(--accent)] p-4 text-white">
+      <div className="mt-4 rounded-[20px] p-4 text-white" style={{ background: "var(--feature-gradient)" }}>
         <p className="text-xs font-bold opacity-70">Words tracked</p>
         <p className="mt-1 text-3xl font-black tracking-tight">{words.toLocaleString()}</p>
         <p className="mt-3 text-xs font-semibold opacity-75">
