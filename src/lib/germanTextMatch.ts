@@ -276,6 +276,30 @@ function typoClose(a: string, b: string): boolean {
   return fuzzy > 0;
 }
 
+// Fold an -ing gerund to its base so "to listen" and "listening" compare equal
+// ("listening" -> "listen", "running" -> "run", "swimming" -> "swim"). Only for
+// words > 4 chars, so short non-gerunds (king, ring, sing) are left alone. Tense
+// endings (-ed, -s) are deliberately NOT folded — those carry meaning.
+function stemGerund(w: string): string {
+  if (w.length > 4 && w.endsWith("ing")) {
+    return w.slice(0, -3).replace(/([a-z])\1$/, "$1"); // drop "ing"; collapse a doubled consonant
+  }
+  return w;
+}
+
+// Reduce a sentence to its meaning-bearing words in ORDER: drop articles and the
+// infinitive/preposition "to", and fold gerunds. Keeping the order means a
+// reversed sentence ("the woman gives the man" vs "the man gives the woman")
+// still fails, so this only forgives phrasing, never meaning.
+function reduceForMeaning(s: string): string {
+  const FUNC = new Set(["a", "an", "the", "to"]);
+  return normalizeGermanInput(s)
+    .split(" ")
+    .filter((w) => w && !FUNC.has(w))
+    .map(stemGerund)
+    .join(" ");
+}
+
 export function matchEnglishPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean } {
   // "A / B" answer keys offer alternatives — accept a match against either
   // side (or the whole thing). Recurse per segment, slash-free.
@@ -335,6 +359,14 @@ export function matchEnglishPhrase(input: string, target: string): { ok: boolean
     typoClose(normalizeGermanInput(inputK), normalizeGermanInput(targetK))
   ) {
     return { ok: true, spellingNote: true };
+  }
+  // Tier 6: meaning-reduced ordered match — folds gerund/infinitive
+  // ("to listen" == "listening") and drops articles/"to", but keeps word order,
+  // so valid rephrasings pass while reversed/wrong-order answers still fail.
+  const reducedInput = reduceForMeaning(inputK);
+  const reducedTarget = reduceForMeaning(targetK);
+  if (reducedTarget && reducedInput === reducedTarget) {
+    return { ok: true, spellingNote: false };
   }
   return { ok: false, spellingNote: false };
 }
