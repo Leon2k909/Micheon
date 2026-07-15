@@ -21,7 +21,7 @@ export function FluencyMeter({ vocab, compact }: { vocab: number; compact?: bool
         </div>
         <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
           {f.next
-            ? <><span className="font-black text-[var(--text-2)]">{f.toNext.toLocaleString()}</span> more learned to reach “{f.next.label}”</>
+            ? <><span className="font-black text-[var(--text-2)]">{f.toFluent.toLocaleString()}</span> more to go until you're fully fluent</>
             : "You've reached fluent — keep it sharp."}
         </p>
       </div>
@@ -57,8 +57,9 @@ export function FluencyMeter({ vocab, compact }: { vocab: number; compact?: bool
       <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
         {f.next ? (
           <>
-            <span className="font-black text-[var(--text-1)]">{f.toNext.toLocaleString()}</span> more words &amp; phrases
-            until <span className="font-black text-[var(--text-2)]">“{f.next.label}”</span> — {f.next.blurb.toLowerCase()}
+            <span className="font-black text-[var(--text-1)]">{f.toFluent.toLocaleString()}</span> more words &amp; phrases
+            until you're <span className="font-black text-[var(--text-2)]">fully fluent</span> — able to keep up with real
+            natives. Next stage: “{f.next.label}”.
           </>
         ) : (
           "You've reached fluent — keep it sharp with daily review."

@@ -53,5 +53,6 @@ export function getFluency(vocab: number) {
   const span = next ? next.min - cur.min : 1;
   const pctToNext = next ? Math.max(0, Math.min(100, Math.round(((v - cur.min) / span) * 100))) : 100;
   const overallPct = Math.min(100, Math.round((v / FLUENT_TARGET) * 100));
-  return { vocab: v, cur, next, toNext, pctToNext, overallPct, index: i, total: FLUENCY_STAGES.length };
+  const toFluent = Math.max(0, FLUENT_TARGET - v); // distance to the final "Fluent" milestone
+  return { vocab: v, cur, next, toNext, toFluent, pctToNext, overallPct, index: i, total: FLUENCY_STAGES.length };
 }

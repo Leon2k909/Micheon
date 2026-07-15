@@ -305,7 +305,7 @@ export function DashboardView({
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="grid gap-4 md:grid-cols-2"
+      className="grid items-start gap-4 md:grid-cols-2"
       initial={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.25 }}
     >
