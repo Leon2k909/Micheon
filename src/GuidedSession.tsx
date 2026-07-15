@@ -206,7 +206,7 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 // No separate "Listen" step: the German is spoken automatically when it first
 // appears (Read) and again before you say it (Speak). Type and Translate each
 // run twice — the second round builds the memory through repeated production.
-const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap"] as const;
+const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "SpeakAll"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
 
 /**
@@ -245,6 +245,7 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
+  if (p === "SpeakAll") return "Say it";
   return p;
 }
 
@@ -256,28 +257,26 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
-    <div className={cn("grid gap-2 rounded-2xl bg-zinc-50 p-2",
-      allPhases.length >= 7 ? "sm:grid-cols-7" : allPhases.length === 6 ? "sm:grid-cols-6" : "sm:grid-cols-5")}>
+    <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-2xl bg-zinc-50 p-2">
       {allPhases.map((p, i) => (
-        <div
+        <button
           key={p}
+          type="button"
+          title={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
+          aria-label={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
+          disabled={i >= idx}
           onClick={() => i < idx && onClickPhase?.(p)}
           className={cn(
-            "flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2 transition-all",
-            i < idx ? "cursor-pointer hover:bg-zinc-200" : "",
-            i === idx ? "bg-zinc-950 text-white shadow-sm" : i < idx ? "bg-white text-zinc-950" : "text-zinc-400"
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-black transition-all",
+            i === idx
+              ? "bg-zinc-950 text-white shadow-sm scale-110"
+              : i < idx
+                ? "cursor-pointer bg-[var(--yellow)] text-zinc-950 hover:brightness-95"
+                : "bg-zinc-200 text-zinc-500"
           )}
         >
-          <div className={cn(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-all",
-            i === idx ? "bg-white text-zinc-950" : i < idx ? "bg-[var(--yellow)] text-zinc-950" : "bg-zinc-200 text-zinc-500"
-          )}>
-            {i + 1}
-          </div>
-          <span className="truncate text-[10px] font-black uppercase tracking-wide">
-            {phaseLabel(p, withFrench)}
-          </span>
-        </div>
+          {i + 1}
+        </button>
       ))}
     </div>
   );
@@ -454,7 +453,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
   // Reset speech UI when entering Speak or sentence changes
   useEffect(() => {
-    if (phase === "Speak") {
+    if (phase === "Speak" || phase === "SpeakAll") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
       setSpeechTranscript("");
@@ -464,7 +463,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   }, [phase, item.de]);
 
   useEffect(() => {
-    if (phase !== "Speak") {
+    if (phase !== "Speak" && phase !== "SpeakAll") {
       speechAbortRef.current?.abort();
       setSpeechListening(false);
     }
@@ -594,7 +593,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (!gapInput.trim() || gapChecked) return;
     setGapChecked(true);
     reactToAnswer(gapResult.ok);
-    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(onNext, 900); }  // Gap is last → finish
+    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }  // → stage 8 (Say it)
   };
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
@@ -773,11 +772,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <>
             <div className={cn(
               "text-4xl font-black leading-tight tracking-tight text-zinc-950 transition-all duration-300 sm:text-5xl",
-              phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
-              phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
+              (phase === "Speak" || phase === "SpeakAll") && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
+              (phase === "Speak" || phase === "SpeakAll") && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
             )}>
-              {/* Gap stage hides the answer: show the blanked sentence, revealed once correct. */}
-              {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display : item.de}
+              {/* Gap + Say-it stages hide the German answer, revealed once correct. */}
+              {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
+                : phase === "SpeakAll" && !speechPhraseMatch ? "• • •"
+                : item.de}
             </div>
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
@@ -901,6 +902,79 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <Button type="button" onClick={advance}
                 className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+          </motion.div>
+        )}
+
+        {/* SAY IT phase (stage 8): read the English, speak the WHOLE German from memory */}
+        {phase === "SpeakAll" && (
+          <motion.div key="speakall" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              Say the whole sentence in German — from the English above.
+            </p>
+            {speechSupported ? (
+              <>
+                <Button type="button" onClick={handleSpeechCheck} disabled={speechListening}
+                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white text-sm font-black text-zinc-900 hover:bg-zinc-50 disabled:opacity-70">
+                  {speechListening ? (
+                    speechStatus ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700" />
+                        {speechStatus}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        </span>
+                        Listening... say it now
+                      </span>
+                    )
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <Mic2 className="h-5 w-5" /> Say it in German
+                    </span>
+                  )}
+                </Button>
+                {speechErr ? <p className="text-center text-xs text-rose-700">{speechErr}</p> : null}
+                {speechTranscript ? (
+                  <p className="text-center text-xs text-zinc-500">
+                    Heard: <span className="font-semibold text-zinc-800">"{speechTranscript}"</span>
+                  </p>
+                ) : null}
+                <AnimatePresence>
+                  {speechPhraseMatch && speechTranscript ? (
+                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 text-xs font-semibold uppercase",
+                        speechPhraseMatch.ok ? "text-emerald-500" : "text-rose-500"
+                      )}>
+                      {speechPhraseMatch.ok ? <CheckCircle2 className="h-4 w-4" /> : null}
+                      {speechPhraseMatch.ok
+                        ? speechPhraseMatch.spellingNote ? "Close match" : "Nice match"
+                        : "Not quite — the German is shown above"}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </>
+            ) : (
+              <p className="text-center text-xs text-zinc-500">
+                Speech recognition isn't available here — say the German out loud from memory, then finish.
+              </p>
+            )}
+            <div className="flex gap-3">
+              <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => tts(item.de, 0.75, targetLang)}
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
+                <Volume2 className="h-5 w-5" />
+              </motion.button>
+              <Button type="button" onClick={onNext}
+                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                Done <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
@@ -1065,7 +1139,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
                 value={gapInput}
                 onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
-                onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? onNext() : checkGap())}
+                onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
                 disabled={gapChecked && gapResult.ok}
               />
             </motion.div>
@@ -1089,15 +1163,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> Try again
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={advanceOrFinish}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   Skip
                 </Button>
               </div>
             ) : (
-              <Button onClick={gapChecked && gapResult.ok ? onNext : checkGap}
+              <Button onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}
                 className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
-                {gapChecked && gapResult.ok ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {gapChecked && gapResult.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>

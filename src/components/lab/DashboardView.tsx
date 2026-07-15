@@ -99,23 +99,6 @@ function ProgressCard({
       <div className="mt-4">
         <FluencyMeter vocab={vocab} compact />
       </div>
-
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { icon: Trophy, value: progressStats.totalXp.toLocaleString(), label: "Practice points" },
-          { icon: BookOpen, value: wordsTracked.toLocaleString(), label: "Words tracked" },
-          { icon: CalendarDays, value: progressStats.sessionsCompleted.toLocaleString(), label: sessionsLabel },
-          { icon: Target, value: nextLessons.length.toLocaleString(), label: "Lessons ready" },
-        ].map((item) => (
-          <div className="rounded-[18px] bg-[var(--surface-2)] p-3" key={item.label}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">
-              <item.icon className="h-4 w-4" />
-            </div>
-            <p className="mt-3 text-lg font-black leading-none text-[var(--text-1)]">{item.value}</p>
-            <p className="mt-1 text-[11px] font-semibold text-[var(--text-3)]">{item.label}</p>
-          </div>
-        ))}
-      </div>
     </section>
   );
 }
