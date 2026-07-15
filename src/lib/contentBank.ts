@@ -171,7 +171,7 @@ export function buildTatoebaParts(perPack = 50): Record<string, Part> {
           level,
           theme: `Real sentences ${level} · Set ${packNo}`,
           description:
-            "Authentic German sentences with English translations, sourced from the open Tatoeba corpus.",
+            "Authentic German sentences with English translations — real practice at this level.",
           focus: "Absorb how real, everyday sentences are built at this level.",
         },
         phrases

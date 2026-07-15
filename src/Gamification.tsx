@@ -668,6 +668,19 @@ export default function GamificationPanel({
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </section>
+
+        <p className="px-1 pb-1 text-center text-[11px] font-medium leading-relaxed text-[var(--text-3)]">
+          Some real-sentence practice is sourced from the{" "}
+          <a
+            href="https://tatoeba.org"
+            target="_blank"
+            rel="noreferrer"
+            className="underline transition-colors hover:text-[var(--text-1)]"
+          >
+            Tatoeba
+          </a>{" "}
+          project, used under CC BY 2.0 FR.
+        </p>
       </div>
     );
   }
