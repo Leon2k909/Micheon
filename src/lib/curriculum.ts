@@ -78,6 +78,10 @@ export const CURRICULUM_ORDER: string[] = [
   "part19",           // Loadouts & gunsmith talk
   "part20",           // Flirting & intimacy (18+)
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
+  "part23",           // B2 — health & the doctor (detailed)
+  "part24",           // B2 — work & professional communication
+  "part25",           // B2-C1 — society, news & current affairs
+  "part26",           // C1 — university & academic life
 ];
 
 const TIER1 = new Set(CURRICULUM_ORDER.slice(0, CURRICULUM_ORDER.indexOf("part8")));
