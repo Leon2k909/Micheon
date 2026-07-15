@@ -49,7 +49,7 @@ async function createWindow() {
     // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
     // for a clean, on-brand look like Discord/Slack.
     frame: false,
-    icon: path.join(__dirname, "..", "public", "favicon.svg"),
+    icon: path.join(__dirname, "..", "dist", "icon.png"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

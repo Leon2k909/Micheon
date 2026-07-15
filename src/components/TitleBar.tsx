@@ -24,7 +24,7 @@ export function TitleBar() {
   return (
     <div className="titlebar">
       <div className="titlebar-drag">
-        <img src="/favicon.svg" alt="" className="titlebar-logo" />
+        <img src="/icon-64.png" alt="" className="titlebar-logo" />
         <span className="titlebar-title">Micheon</span>
       </div>
       <div className="titlebar-controls">
