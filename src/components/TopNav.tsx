@@ -239,7 +239,7 @@ export function TopNav({
                     "relative flex h-11 cursor-grab items-center gap-2 rounded-full px-[18px] text-[13px] font-bold leading-none transition-colors active:cursor-grabbing",
                     isTarget
                       ? "text-white"
-                      : "text-[var(--text-1)]/70 hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
+                      : "text-[var(--text-1)]/70 hover:text-[var(--text-1)]"
                   )}
                   key={item.id}
                   onClick={() => openTab(item.id)}

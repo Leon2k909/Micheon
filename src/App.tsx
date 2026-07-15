@@ -5,6 +5,7 @@ import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { MicheonLogo } from "./components/MicheonLogo";
+import { UpdateBanner } from "./components/UpdateBanner";
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <>
       <TitleBar />
+      <UpdateBanner />
       {!ready ? (
         <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[var(--bg)] text-[var(--text-1)]">
           <MicheonLogo theme={getTheme()} height={150} className="animate-pulse" />
