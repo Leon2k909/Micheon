@@ -264,15 +264,14 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
           type="button"
           title={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
           aria-label={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
-          disabled={i >= idx}
-          onClick={() => i < idx && onClickPhase?.(p)}
+          onClick={() => onClickPhase?.(p)}
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-black transition-all",
+            "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-[12px] font-black transition-all",
             i === idx
               ? "bg-zinc-950 text-white shadow-sm scale-110"
               : i < idx
-                ? "cursor-pointer bg-[var(--yellow)] text-zinc-950 hover:brightness-95"
-                : "bg-zinc-200 text-zinc-500"
+                ? "bg-emerald-500 text-white hover:brightness-110"
+                : "bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700"
           )}
         >
           {i + 1}
