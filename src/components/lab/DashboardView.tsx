@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { FluencyMeter } from "@/components/FluencyMeter";
+import { countKnownVocab } from "@/lib/fluency";
 import {
   ArrowRight,
   BarChart3,
@@ -42,6 +44,7 @@ function ProgressCard({
   nextLessons: Array<[string, Part]>;
 }) {
   const wordsTracked = progressStats.totalReviews + progressStats.externalWords;
+  const vocab = countKnownVocab(undefined, progressStats.externalWords);
   const nextLesson = nextLessons[0]?.[1];
   const nextLessonTitle = nextLesson?.theme ?? "German conversation basics";
   const sessionsLabel = progressStats.sessionsCompleted === 1 ? "session" : "sessions";
@@ -91,6 +94,10 @@ function ProgressCard({
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <FluencyMeter vocab={vocab} compact />
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">

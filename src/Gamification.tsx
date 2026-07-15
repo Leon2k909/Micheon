@@ -46,6 +46,8 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 }
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { setTheme as persistTheme, getTheme, type Theme } from "@/lib/theme";
+import { FluencyMeter } from "@/components/FluencyMeter";
+import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
@@ -65,13 +67,13 @@ type Level = { level: number; label: string; xpRequired: number };
 
 const LEVELS: Level[] = [
   { level: 1, label: "Getting started", xpRequired: 0 },
-  { level: 2, label: "Daily learner", xpRequired: 100 },
-  { level: 3, label: "Sentence builder", xpRequired: 300 },
-  { level: 4, label: "Practical speaker", xpRequired: 650 },
-  { level: 5, label: "Conversation ready", xpRequired: 1100 },
-  { level: 6, label: "Confident learner", xpRequired: 1800 },
-  { level: 7, label: "Advanced routine", xpRequired: 2800 },
-  { level: 8, label: "Long-term fluency", xpRequired: 4200 },
+  { level: 2, label: "Warming up", xpRequired: 100 },
+  { level: 3, label: "Finding a rhythm", xpRequired: 300 },
+  { level: 4, label: "In the groove", xpRequired: 650 },
+  { level: 5, label: "Committed", xpRequired: 1100 },
+  { level: 6, label: "Dedicated", xpRequired: 1800 },
+  { level: 7, label: "Relentless", xpRequired: 2800 },
+  { level: 8, label: "Unstoppable", xpRequired: 4200 },
 ];
 
 const MILESTONES = [
@@ -141,6 +143,7 @@ function ProgressSummaryCard({
   stats,
   words,
   earned,
+  vocab,
 }: {
   cur: Level;
   nxt: Level | null;
@@ -150,19 +153,20 @@ function ProgressSummaryCard({
   stats: Stats;
   words: number;
   earned: number;
+  vocab: number;
 }) {
-  const xpToNext = nxt ? Math.max(0, needed - into) : 0;
   const nextMilestone = MILESTONES.find((item) => !item.check(stats));
+  const fluency = getFluency(vocab);
 
   return (
     <section className="card flex min-w-0 flex-col justify-between overflow-hidden p-5 sm:p-6">
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1 text-xs font-black text-[var(--accent)]">
-            Level {cur.level}
+            {fluency.cur.label}
           </span>
           <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-            {cur.label}
+            Practice Lv {cur.level}
           </span>
         </div>
         <h1 className="mt-5 text-3xl font-black leading-tight tracking-tight text-[var(--text-1)]">
@@ -173,34 +177,8 @@ function ProgressSummaryCard({
         </p>
       </div>
 
-      <div className="mt-6 rounded-[24px] bg-[var(--surface-2)] p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-black text-[var(--text-3)]">Next level</p>
-            <p className="mt-1 truncate text-lg font-black text-[var(--text-1)]">
-              {nxt ? nxt.label : "Long-term fluency"}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
-              {nxt ? `${xpToNext.toLocaleString()} XP left` : "Maximum level reached"}
-            </p>
-          </div>
-          <div className="rounded-2xl bg-[var(--surface)] px-3 py-2 text-right shadow-[inset_0_0_0_1px_var(--border)]">
-            <p className="text-2xl font-black leading-none text-[var(--text-1)]">{pct}%</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">level</p>
-          </div>
-        </div>
-        <div className="mt-4 h-3 rounded-full bg-[var(--surface)]">
-          <motion.div
-            animate={{ width: `${pct}%` }}
-            className="h-full rounded-full bg-[var(--yellow)]"
-            initial={{ width: 0 }}
-            transition={{ duration: 0.55 }}
-          />
-        </div>
-        <div className="mt-3 flex items-center justify-between text-xs font-semibold text-[var(--text-3)]">
-          <span>{into.toLocaleString()} XP in level</span>
-          <span>{needed.toLocaleString()} XP goal</span>
-        </div>
+      <div className="mt-6">
+        <FluencyMeter vocab={vocab} />
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
@@ -325,6 +303,7 @@ export default function GamificationPanel({
   };
   const { cur, nxt, pct, into, needed } = getLevelInfo(stats.totalXp ?? 0);
   const words = (stats.totalReviews || 0) + (stats.externalWords || 0);
+  const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
 
   const saveName = () => {
@@ -607,7 +586,7 @@ export default function GamificationPanel({
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
           <ActivityCard className="min-w-0" progressStats={stats} />
-          <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} />
+          <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} vocab={vocab} />
           <ActivitySidePanel earned={earned} stats={stats} words={words} />
         </section>
 
@@ -689,7 +668,7 @@ export default function GamificationPanel({
     <div className="space-y-4">
       <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
         <ActivityCard className="min-w-0" progressStats={stats} />
-        <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} />
+        <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} vocab={vocab} />
         <ActivitySidePanel earned={earned} stats={stats} words={words} />
       </section>
 
