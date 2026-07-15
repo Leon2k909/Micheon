@@ -7,7 +7,6 @@ import {
   BookOpen,
   Gamepad2,
   GraduationCap,
-  Languages,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -212,8 +211,12 @@ export function TopNav({
             aria-label="Switch course"
             title="Switch course"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--ink)] text-[var(--ink-text)] transition-transform group-hover:scale-105 group-hover:shadow-[0_0_12px_0_rgba(157,141,241,0.5)]">
-              {brandIcon ? <span className="text-lg font-black">{brandIcon}</span> : <Languages className="h-5 w-5" />}
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl transition-transform group-hover:scale-105 group-hover:shadow-[0_0_12px_0_rgba(157,141,241,0.5)]">
+              {brandIcon ? (
+                <span className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--ink)] text-lg font-black text-[var(--ink-text)]">{brandIcon}</span>
+              ) : (
+                <img src="/icon.png" alt="Micheon" className="h-full w-full object-cover" />
+              )}
             </div>
             <div className="hidden sm:block">
               <p className="text-[15px] font-black tracking-tight text-[var(--text-1)]">{brandName}</p>
