@@ -608,7 +608,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     if (!sayInput.trim() || sayChecked) return;
     setSayChecked(true);
     reactToAnswer(sayResult.ok);
-    if (sayResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(onNext, 900); } // stage 8 is last → finish
+    if (sayResult.ok) {
+      tts(item.de, 0.88, targetLang);
+      setTimeout(onNext, 900); // correct → finish; the item can level up
+    } else if (item?.id) {
+      // Failed the final written recall: mark a struggle so the lesson-completion
+      // pass does NOT level it up — it stays in practice and keeps coming back.
+      setGrade("struggle");
+      onGradeItem?.(item.id, "struggle");
+    }
   };
   const retrySay = () => { setSayInput(""); setSayChecked(false); setTimeout(() => sayRef.current?.focus(), 50); };
 
