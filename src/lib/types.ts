@@ -23,6 +23,9 @@ export interface Phrase {
   en: string;
   use: string;
   fr?: string;
+  /** Shorter colloquial form people actually say out loud, for longer phrases
+   *  (e.g. "Ich weiß es nicht" → "Weiß nicht"). Omitted when already short. */
+  short?: string;
 }
 
 export interface Blueprint {

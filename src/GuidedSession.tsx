@@ -89,7 +89,7 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, tierNote, hideUse }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean }) {
+function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
   const syn = synonymNote(lookup);
@@ -107,7 +107,10 @@ function UsageChips({ de, use, lookup, tierNote, hideUse }: { de: string; use?: 
     use.toLowerCase().includes("casual")
   );
 
-  if (!register && !freq && !syn && !tierNote && (!use || (hideUse && !isWarning && !isSlang))) return null;
+  // Short colloquial form (e.g. "Weiß nicht" for "Ich weiß es nicht"). Hidden
+  // during Translate — it's an alternative German phrasing and would give it away.
+  const showShort = Boolean(short && !hideUse && short.trim().toLowerCase() !== de.trim().toLowerCase());
+  if (!register && !freq && !syn && !tierNote && !showShort && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Niche/casual pack note — uncommon German is always labelled */}
@@ -156,6 +159,14 @@ function UsageChips({ de, use, lookup, tierNote, hideUse }: { de: string; use?: 
               : "bg-zinc-100 text-zinc-500 border-transparent"
         )}>
           {use}
+        </span>
+      )}
+      {showShort && (
+        <span
+          title="Shorter form people actually say out loud"
+          className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
+        >
+          Short: “{short}”
         </span>
       )}
     </div>
@@ -720,6 +731,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           use={item.use}
           lookup={item.lookup}
           tierNote={item.tierNote}
+          short={learnEn ? undefined : item.short}
           hideUse={phase === "Translate" || phase === "TranslateAgain"}
         />
 
