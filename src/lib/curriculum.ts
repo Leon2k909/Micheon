@@ -70,6 +70,8 @@ export const CURRICULUM_ORDER: string[] = [
   "part18",           // Dating, flirting & social
   "part27",           // Deep love & affection (partner register)
   "part30",           // Arguing & making up
+  "part32",           // Relationship talk: check-ins & hard questions
+  "part34",           // Psychology & emotions
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
@@ -85,7 +87,9 @@ export const CURRICULUM_ORDER: string[] = [
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
   "part23",           // B2 — health & the doctor (detailed)
   "part24",           // B2 — work & professional communication
+  "part35",           // Work, money & the world
   "part25",           // B2-C1 — society, news & current affairs
+  "part33",           // Talking politics & big topics (casual)
   "part26",           // C1 — university & academic life
 ];
 
