@@ -68,6 +68,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-nightlife",
   "cb-dating",
   "part18",           // Dating, flirting & social
+  "part27",           // Deep love & affection (partner register)
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
