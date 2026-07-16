@@ -69,15 +69,19 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-dating",
   "part18",           // Dating, flirting & social
   "part27",           // Deep love & affection (partner register)
+  "part30",           // Arguing & making up
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
   "cb-denglish",
   "part16",           // Regional greetings & expressions
   "part17",           // Banter & friendly trash talk
+  "part31",           // Jokes, banter & humour
+  "part29",           // Swearing & insults (strong language)
   "part13",           // Gaming & FPS callouts
   "part19",           // Loadouts & gunsmith talk
   "part20",           // Flirting & intimacy (18+)
+  "part28",           // Passion & desire (18+)
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
   "part23",           // B2 — health & the doctor (detailed)
   "part24",           // B2 — work & professional communication
@@ -95,6 +99,9 @@ const TIER3_NOTES: Record<string, string> = {
   part13: "Gamer talk",
   part19: "Gamer talk",
   part20: "18+ · intimate",
+  part28: "18+ · intimate",
+  part29: "Strong language — know it, use with care",
+  part31: "Banter & humour — casual",
 };
 
 /** Tier + note for a pack key. Tatoeba packs are extra practice at the very end. */
