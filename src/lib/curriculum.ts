@@ -69,6 +69,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part37",           // Beauty, makeup & appearance
   "cb-social",
   "cb-emotions",
+  "part46",           // Real talk: gossip, fears & what you really think
   "cb-nightlife",
   "part38",           // Drinking, gambling & addiction
   "cb-dating",
@@ -78,6 +79,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part32",           // Relationship talk: check-ins & hard questions
   "part34",           // Psychology & emotions
   "part41",           // Milestones: proposals, weddings & family plans
+  "part47",           // Family problems & faith
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
@@ -89,12 +91,14 @@ export const CURRICULUM_ORDER: string[] = [
   "part13",           // Gaming & FPS callouts
   "part19",           // Loadouts & gunsmith talk
   "part42",           // Gaming: classes, settings & lobbies
+  "part45",           // Online gaming culture: cheaters, Steam & Discord
   "part20",           // Flirting & intimacy (18+)
   "part28",           // Passion & desire (18+)
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
   "part23",           // B2 — health & the doctor (detailed)
   "part24",           // B2 — work & professional communication
   "part35",           // Work, money & the world
+  "part44",           // AI, science & the future
   "part25",           // B2-C1 — society, news & current affairs
   "part33",           // Talking politics & big topics (casual)
   "part40",           // Conspiracies & rabbit holes
@@ -111,6 +115,7 @@ const TIER3_NOTES: Record<string, string> = {
   part13: "Gamer talk",
   part19: "Gamer talk",
   part42: "Gamer talk",
+  part45: "Gamer talk",
   part20: "18+ · intimate",
   part28: "18+ · intimate",
   part29: "Strong language — know it, use with care",
