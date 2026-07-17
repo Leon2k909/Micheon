@@ -58,6 +58,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part21",           // Idioms & expressions (Redewendungen)
   "cb-phone",
   "part15",           // Texting & chat shorthand
+  "part43",           // Computers & tech (Windows, Linux & gadgets)
   "cb-hotel",
   "cb-opinions",
   "part11",           // Opinions and media
@@ -87,6 +88,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part29",           // Swearing & insults (strong language)
   "part13",           // Gaming & FPS callouts
   "part19",           // Loadouts & gunsmith talk
+  "part42",           // Gaming: classes, settings & lobbies
   "part20",           // Flirting & intimacy (18+)
   "part28",           // Passion & desire (18+)
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
@@ -108,6 +110,7 @@ const TIER3_NOTES: Record<string, string> = {
   part17: "Banter — close friends only",
   part13: "Gamer talk",
   part19: "Gamer talk",
+  part42: "Gamer talk",
   part20: "18+ · intimate",
   part28: "18+ · intimate",
   part29: "Strong language — know it, use with care",
