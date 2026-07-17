@@ -23,6 +23,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-greetings",
   "cb-introductions",
   "part1",            // Starter basics
+  "part57",           // Talking about learning German (& other skills)
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
@@ -82,9 +83,11 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-driving",
   "cb-traffic-fines",
   "cb-train-travel",
+  "part59",           // Outdoors: walks, hikes & getting there
   "cb-hobbies",
   "cb-flea-markets",
   "cb-football-culture",
+  "part58",           // Football & watching sports
   "cb-pets-animals",
   "part36",           // Gym & training
   "part37",           // Beauty, makeup & appearance
@@ -94,6 +97,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-emotions",
   "cb-dreams-aspirations",
   "part46",           // Real talk: gossip, fears & what you really think
+  "part53",           // Comfort calls, sleep & beliefs
   "cb-nightlife",
   "part48",           // Smoking, vaping & smoke breaks
   "cb-beer-culture",
@@ -103,6 +107,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part27",           // Deep love & affection (partner register)
   "part30",           // Arguing & making up
   "part32",           // Relationship talk: check-ins & hard questions
+  "part52",           // Trust, cheating & the gender wars
   "part34",           // Psychology & emotions
   "part41",           // Milestones: proposals, weddings & family plans
   "part47",           // Family problems & faith
@@ -132,6 +137,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part24",           // B2 — work & professional communication
   "part35",           // Work, money & the world
   "part44",           // AI, science & the future
+  "part54",           // Investing: assets, interest & inflation
   "part25",           // B2-C1 — society, news & current affairs
   "part33",           // Talking politics & big topics (casual)
   "cb-social-issues",
