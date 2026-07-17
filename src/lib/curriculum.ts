@@ -54,6 +54,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-amt",
   "cb-work",
   "part10",           // Work and study
+  "part39",           // School days & bullying
   "part21",           // Idioms & expressions (Redewendungen)
   "cb-phone",
   "part15",           // Texting & chat shorthand
@@ -63,15 +64,19 @@ export const CURRICULUM_ORDER: string[] = [
   "part12",           // Travel and problems
   "cb-driving",
   "cb-hobbies",
+  "part36",           // Gym & training
+  "part37",           // Beauty, makeup & appearance
   "cb-social",
   "cb-emotions",
   "cb-nightlife",
+  "part38",           // Drinking, gambling & addiction
   "cb-dating",
   "part18",           // Dating, flirting & social
   "part27",           // Deep love & affection (partner register)
   "part30",           // Arguing & making up
   "part32",           // Relationship talk: check-ins & hard questions
   "part34",           // Psychology & emotions
+  "part41",           // Milestones: proposals, weddings & family plans
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
@@ -90,6 +95,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part35",           // Work, money & the world
   "part25",           // B2-C1 — society, news & current affairs
   "part33",           // Talking politics & big topics (casual)
+  "part40",           // Conspiracies & rabbit holes
   "part26",           // C1 — university & academic life
 ];
 
