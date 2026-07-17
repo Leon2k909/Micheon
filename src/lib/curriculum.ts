@@ -79,6 +79,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-opinions",
   "part11",           // Opinions and media
   "part55",           // Stars, movies & series
+  "part61",           // Music, concerts & festivals
   "part12",           // Travel and problems
   "cb-driving",
   "cb-traffic-fines",
@@ -94,6 +95,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-barber-requests",
   "cb-body-skin",
   "cb-social",
+  "part62",           // Hosting, visiting & neighbours
   "cb-emotions",
   "cb-dreams-aspirations",
   "part46",           // Real talk: gossip, fears & what you really think
@@ -111,6 +113,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part34",           // Psychology & emotions
   "part41",           // Milestones: proposals, weddings & family plans
   "part47",           // Family problems & faith
+  "part60",           // Condolences, loss & being there
   "cb-family-problems",
   "cb-kids-school",
   // ── Tier 3 · niche / very casual — always labelled ──────────
