@@ -25,12 +25,16 @@ export const CURRICULUM_ORDER: string[] = [
   "part1",            // Starter basics
   "cb-smalltalk",
   "cb-numbers-time",
+  "cb-letters-numbers",
   "part2",            // Travel and daily tasks
   "cb-food",
+  "part49",           // Cooking at home & food culture
   "part5",            // Food and cafe
+  "cb-diet-allergies",
   "cb-shopping",
   "cb-grocery",
   "cb-money",
+  "cb-money-woes",
   "cb-directions",
   "part6",            // Directions and movement
   "part3",            // Home and routine
@@ -51,26 +55,48 @@ export const CURRICULUM_ORDER: string[] = [
   "part8",            // Core verbs
   "part9",            // Home and daily errands
   "cb-housing",
+  "cb-gardening-plants",
+  "cb-apartment-repairs",
   "cb-amt",
+  "part51",           // Getting help: hotlines, bank & repairs
+  "cb-medical-bureaucracy",
+  "cb-post-packages",
+  "cb-german-rules",
+  "cb-finance-insurance",
   "cb-work",
+  "cb-salary-negotiations",
   "part10",           // Work and study
   "part39",           // School days & bullying
   "part21",           // Idioms & expressions (Redewendungen)
   "cb-phone",
   "part15",           // Texting & chat shorthand
   "part43",           // Computers & tech (Windows, Linux & gadgets)
+  "part50",           // Streaming & making videos
+  "part56",           // Making games & coding
+  "cb-internet-support",
   "cb-hotel",
   "cb-opinions",
   "part11",           // Opinions and media
+  "part55",           // Stars, movies & series
   "part12",           // Travel and problems
   "cb-driving",
+  "cb-traffic-fines",
+  "cb-train-travel",
   "cb-hobbies",
+  "cb-flea-markets",
+  "cb-football-culture",
+  "cb-pets-animals",
   "part36",           // Gym & training
   "part37",           // Beauty, makeup & appearance
+  "cb-barber-requests",
+  "cb-body-skin",
   "cb-social",
   "cb-emotions",
+  "cb-dreams-aspirations",
   "part46",           // Real talk: gossip, fears & what you really think
   "cb-nightlife",
+  "part48",           // Smoking, vaping & smoke breaks
+  "cb-beer-culture",
   "part38",           // Drinking, gambling & addiction
   "cb-dating",
   "part18",           // Dating, flirting & social
@@ -80,18 +106,25 @@ export const CURRICULUM_ORDER: string[] = [
   "part34",           // Psychology & emotions
   "part41",           // Milestones: proposals, weddings & family plans
   "part47",           // Family problems & faith
+  "cb-family-problems",
+  "cb-kids-school",
   // ── Tier 3 · niche / very casual — always labelled ──────────
   "cb-slang-friends",
   "part14",           // Everyday slang & youth talk
+  "cb-modal-particles",
   "cb-denglish",
   "part16",           // Regional greetings & expressions
   "part17",           // Banter & friendly trash talk
+  "cb-people-subcultures",
   "part31",           // Jokes, banter & humour
   "part29",           // Swearing & insults (strong language)
   "part13",           // Gaming & FPS callouts
   "part19",           // Loadouts & gunsmith talk
   "part42",           // Gaming: classes, settings & lobbies
   "part45",           // Online gaming culture: cheaters, Steam & Discord
+  "cb-fighting-styles",
+  "cb-tics-tourettes",
+  "cb-neurodiversity",
   "part20",           // Flirting & intimacy (18+)
   "part28",           // Passion & desire (18+)
   "part22",           // B2 — discussion, argument & hypotheticals (advanced)
@@ -101,7 +134,9 @@ export const CURRICULUM_ORDER: string[] = [
   "part44",           // AI, science & the future
   "part25",           // B2-C1 — society, news & current affairs
   "part33",           // Talking politics & big topics (casual)
+  "cb-social-issues",
   "part40",           // Conspiracies & rabbit holes
+  "cb-crime-jail",
   "part26",           // C1 — university & academic life
 ];
 
@@ -109,13 +144,20 @@ const TIER1 = new Set(CURRICULUM_ORDER.slice(0, CURRICULUM_ORDER.indexOf("part8"
 const TIER3_NOTES: Record<string, string> = {
   "cb-slang-friends": "Slang — close friends only",
   part14: "Youth slang — casual only",
+  "cb-modal-particles": "Modal particles — conversational fillers",
   "cb-denglish": "Denglish — very casual",
   part16: "Regional — not used everywhere",
   part17: "Banter — close friends only",
+  "cb-people-subcultures": "Social types & subcultures",
   part13: "Gamer talk",
   part19: "Gamer talk",
   part42: "Gamer talk",
   part45: "Gamer talk",
+  "cb-fighting-styles": "Combat & fighting styles",
+  "cb-tics-tourettes": "Tics & Tourette's",
+  "cb-neurodiversity": "Neurodiversity & focus",
+  "cb-crime-jail": "Crime & legal vocabulary",
+  "cb-social-issues": "Social issues & equality",
   part20: "18+ · intimate",
   part28: "18+ · intimate",
   part29: "Strong language — know it, use with care",

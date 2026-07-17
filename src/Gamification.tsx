@@ -509,32 +509,7 @@ export default function GamificationPanel({
                 </span>
               </button>
 
-              {direction === "learn-de" && (
-              <button
-                aria-pressed={companion === "fr"}
-                aria-label="Toggle learning French alongside German"
-                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                onClick={toggleCompanion}
-                type="button"
-              >
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                    <Languages className="h-4 w-4" /> Learn French too
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    Practise the French for each sentence right alongside the German. Two languages, one lesson.
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                    companion === "fr" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
-                  )}
-                >
-                  {companion === "fr" ? "On" : "Off"}
-                </span>
-              </button>
-              )}
+
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
