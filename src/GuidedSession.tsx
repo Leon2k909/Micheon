@@ -10,6 +10,7 @@ import {
   matchGermanPhrase as match,
   matchEnglishPhrase as matchEnglish,
   normalizeGermanLenient,
+  primaryAnswer,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
@@ -20,7 +21,8 @@ import { isAudioMuted } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
-import { tts, ttsSequence } from "@/lib/voice";
+import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
+import { ui } from "@/lib/i18n";
 import {
   isSpeechRecognitionSupported,
   listenGermanOnce,
@@ -277,8 +279,8 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
         <button
           key={p}
           type="button"
-          title={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
-          aria-label={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
+          title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
+          aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
           onClick={() => onClickPhase?.(p)}
           className={cn("pdot", i === idx ? "pdot-active" : i < idx ? "pdot-done" : "pdot-todo")}
         >
@@ -323,7 +325,7 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
               onClick={onKnown}
               className="grade-btn grade-btn-known !h-7 !rounded-full !px-3 !text-xs"
             >
-              Know it
+              {ui("Know it")}
             </button>
           )}
           {onStruggle && (
@@ -332,7 +334,7 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
               onClick={onStruggle}
               className="grade-btn grade-btn-struggle !h-7 !rounded-full !px-3 !text-xs"
             >
-              Struggle
+              {ui("Struggle")}
             </button>
           )}
           <button
@@ -366,6 +368,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
     else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
   };
   const [phase, setPhase] = useState<Phase>("Read");
+  // True while the app voice is actually speaking — drives the waveform accent.
+  const [ttsOn, setTtsOn] = useState(false);
+  useEffect(() => {
+    const onSpeak = (e: Event) => setTtsOn(Boolean((e as CustomEvent).detail));
+    window.addEventListener(TTS_SPEAKING_EVENT, onSpeak);
+    return () => window.removeEventListener(TTS_SPEAKING_EVENT, onSpeak);
+  }, []);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -435,6 +444,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const result   = useMemo(() => matchTarget(input, item.de), [input, item.de, matchTarget]);
   const sayResult = useMemo(() => matchTarget(sayInput, item.de), [sayInput, item.de, matchTarget]);
   const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
+  // Only the most common phrasing is SHOWN; alternates still count as correct.
+  const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
   // Gap stage: the typed answer just needs to contain each missing word
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
@@ -574,6 +585,25 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
   const goToPhase = (p: Phase) => setPhase(p);
 
+  // Auto-advance: once the typed answer is strictly correct (no lenient/typo
+  // pass), confirm it automatically — no Check press needed.
+  useEffect(() => {
+    if ((phase === "Type" || phase === "TypeAgain") && !checked && input.trim() && result.ok && !result.spellingNote) checkAnswer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
+  useEffect(() => {
+    if ((phase === "Translate" || phase === "TranslateAgain") && !enChecked && enInput.trim() && enResult.ok && !enResult.spellingNote) checkEnAnswer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enInput]);
+  useEffect(() => {
+    if (phase === "Gap" && !gapChecked && gapInput.trim() && gapResult.ok) checkGap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gapInput]);
+  useEffect(() => {
+    if (phase === "SpeakAll" && !sayChecked && sayInput.trim() && sayResult.ok && !sayResult.spellingNote) checkSay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sayInput]);
+
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
@@ -700,15 +730,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             <Languages className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-black text-zinc-950">Sentence practice</p>
+            <p className="text-sm font-black text-zinc-950">{ui("Sentence practice")}</p>
             <p className="text-xs font-semibold text-zinc-500">
-              {hasFr ? "Read, hear, say, then type it in German and French." : "Read, hear, say, type, then translate."}
+              {hasFr ? "Read, hear, say, then type it in German and French." : ui("Read, hear, say, type, then translate.")}
             </p>
           </div>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7]">
           <Target className="h-4 w-4 text-zinc-400" />
-          Build one useful sentence
+          {ui("Build one useful sentence")}
         </div>
       </div>
 
@@ -720,14 +750,14 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
         "lesson-shell space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
       )}>
         {/* Decorative audio-wave accent (mockup) */}
-        <div aria-hidden className="lesson-wave">
+        <div aria-hidden className={cn("lesson-wave", ttsOn && "wave-live")}>
           {[0.5, 0.9, 0.35, 1, 0.6, 0.8, 0.3, 0.75, 0.45, 0.95].map((h, i) => (
             <span key={i} style={{ "--h": h, "--i": i } as React.CSSProperties} />
           ))}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="lesson-kicker">
-            {hasFr ? "German + French" : `${targetLabel} sentence`}
+            {hasFr ? "German + French" : ui(`${targetLabel} sentence`)}
           </span>
           {!hasFr && (
             <div className="flex flex-wrap items-center gap-2">
@@ -737,7 +767,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 onClick={markKnown}
                 type="button"
               >
-                Know it
+                {ui("Know it")}
                 <kbd className="grade-kbd">Alt K</kbd>
               </button>
               <button
@@ -746,7 +776,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 onClick={markStruggle}
                 type="button"
               >
-                Struggle
+                {ui("Struggle")}
                 <kbd className="grade-kbd">Alt S</kbd>
               </button>
               <button
@@ -755,7 +785,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 type="button"
               >
                 <Volume2 className="h-3.5 w-3.5" />
-                Hear it
+                {ui("Hear it")}
               </button>
             </div>
           )}
@@ -776,7 +806,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             /* ── Memory phase: only English shown, recall both languages ── */
             <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-center">
               <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-zinc-400">Meaning</p>
-              <p className="text-2xl font-black text-zinc-950">{displayEnglish}</p>
+              <p className="text-2xl font-black text-zinc-950">{shownEnglish}</p>
             </div>
           ) : (
             /* ── Bilingual: German + French shown together, English as meaning ── */
@@ -800,7 +830,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 onStruggle={markStruggle}
               />
               <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
-                Meaning: <span className="text-zinc-700">{displayEnglish}</span>
+                Meaning: <span className="text-zinc-700">{shownEnglish}</span>
               </div>
             </div>
           )
@@ -823,7 +853,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
-                  {displayEnglish}
+                  {shownEnglish}
                 </motion.div>
               )}
               {(phase === "Translate" || phase === "TranslateAgain") && (
@@ -854,7 +884,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <motion.div key="read" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {hasFr ? "Read and listen to the German and French." : "Read and listen — it plays automatically."}
+              {hasFr ? "Read and listen to the German and French." : ui("Read and listen — it plays automatically.")}
             </p>
             <div className="flex gap-3">
               <button type="button"
@@ -865,7 +895,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </button>
               <Button onClick={advance}
                 className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                Continue <ChevronRight className="ml-2 h-4 w-4" />
+                {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </motion.div>
@@ -940,10 +970,10 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </motion.button>
               <Button type="button" onClick={advance}
                 className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                Continue <ChevronRight className="ml-2 h-4 w-4" />
+                {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -952,7 +982,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <motion.div key="speakall" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              Type the whole German sentence — from the English above.
+              {`Type the whole ${targetLabel} sentence — from the ${meaningLabel} above.`}
             </p>
             <motion.div animate={shakeControls}>
               <Input ref={sayRef}
@@ -962,7 +992,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   sayChecked && !sayResult.ok ? "border-rose-300 bg-rose-50" :
                                                 "focus:border-[var(--accent)]"
                 )}
-                placeholder="Type the German sentence..."
+                placeholder={`Type the ${targetLabel} sentence...`}
                 value={sayInput}
                 onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
                 onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
@@ -987,20 +1017,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retrySay} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <Button onClick={sayChecked && sayResult.ok ? onNext : checkSay}
                 className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {sayChecked && sayResult.ok ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {sayChecked && sayResult.ok ? <>{ui("Done")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -1009,7 +1039,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {phase === "TypeAgain" ? "Type the German once more — build the memory."
+              {phase === "TypeAgain" ? `Type the ${targetLabel} once more — build the memory.`
                 : hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
             </p>
 
@@ -1062,20 +1092,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retry} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <Button onClick={checked && result.ok ? advance : checkAnswer}
                 className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {checked && result.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {checked && result.ok ? <>{ui("Next")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -1114,8 +1144,8 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <div className="text-rose-700 font-semibold">Not quite</div>
-                      <div className="text-xs text-zinc-500">Answer: <span className="text-zinc-950 font-semibold">{displayEnglish}</span></div>
+                      <div className="text-rose-700 font-semibold">{ui("Not quite")}</div>
+                      <div className="text-xs text-zinc-500">{ui("Answer:")} <span className="text-zinc-950 font-semibold">{shownEnglish}</span></div>
                     </div>
                   )}
                 </motion.div>
@@ -1125,11 +1155,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retryEn} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
@@ -1137,10 +1167,10 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {enChecked && enResult.ok
                   ? <>{hasFr ? "Next: French" : phase === "Translate" ? "One more round" : "Done"} <ArrowRight className="ml-2 h-5 w-5" /></>
-                  : "Check"}
+                  : ui("Check")}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -1184,20 +1214,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retryGap} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={advanceOrFinish}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <Button onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}
                 className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {gapChecked && gapResult.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                {gapChecked && gapResult.ok ? <>{ui("Next")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -1235,7 +1265,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <div className="text-rose-700 font-semibold">Not quite</div>
+                      <div className="text-rose-700 font-semibold">{ui("Not quite")}</div>
                       <div className="text-xs text-zinc-500">French: <span className="text-zinc-950 font-semibold">{item.fr}</span></div>
                     </div>
                   )}
@@ -1246,11 +1276,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retryFr} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
@@ -1262,11 +1292,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </motion.button>
                 <Button onClick={frChecked && frResult.ok ? advance : checkFrAnswer}
                   className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                  {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
+                  {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
                 </Button>
               </div>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
 
@@ -1370,22 +1400,22 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               <div className="flex gap-3">
                 <Button onClick={retryMemory} variant="outline"
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  Skip
+                  {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <Button onClick={memDeChecked && memDeResult.ok && memFrResult.ok ? onNext : checkMemory}
                 className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {memDeChecked && memDeResult.ok && memFrResult.ok
-                  ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></>
+                  ? <>{ui("Done")} <ArrowRight className="ml-2 h-5 w-5" /></>
                   : "Check both"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1474,7 +1504,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
             onClick={markKnown}
             type="button"
           >
-            Know it
+            {ui("Know it")}
             <kbd className="grade-kbd">Alt K</kbd>
           </button>
           <button
@@ -1483,7 +1513,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
             onClick={markStruggle}
             type="button"
           >
-            Struggle
+            {ui("Struggle")}
             <kbd className="grade-kbd">Alt S</kbd>
           </button>
         </div>
@@ -1566,7 +1596,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
         <Button onClick={checked && result.ok ? nextLine : checkLine}
           className={cn("continue-glow flex-1 h-14 rounded-2xl text-sm font-black transition-all",
             "bg-zinc-950 text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800")}>
-          {checked && result.ok ? (isLast ? "Done" : "Next line") : "Check"}
+          {checked && result.ok ? (isLast ? "Done" : "Next line") : ui("Check")}
         </Button>
       </div>
     </motion.div>
@@ -1784,7 +1814,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
         <div className="flex gap-3">
           <Button onClick={onDone} variant="ghost"
             className="h-12 flex-1 rounded-lg border border-zinc-200 bg-white text-xs font-semibold uppercase text-zinc-500 hover:bg-zinc-50">
-            Skip
+            {ui("Skip")}
           </Button>
           <Button onClick={save} disabled={saved}
             className="h-12 flex-1 rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">

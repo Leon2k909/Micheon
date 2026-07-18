@@ -14,6 +14,15 @@ type SeqItem = { text: string; rate?: number; lang: string };
 
 const DEFAULT_RATE = 0.88;
 
+/** Fired on window with detail=true when speech starts and detail=false when it
+ *  ends or is interrupted — lets the UI (lesson waveform) react to the voice. */
+export const TTS_SPEAKING_EVENT = "tts-speaking";
+function emitSpeaking(on: boolean) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(TTS_SPEAKING_EVENT, { detail: on }));
+  }
+}
+
 let currentAudio: HTMLAudioElement | null = null;
 // Monotonic token: every new top-level play call bumps this so any in-flight
 // playback or fetch from a previous call knows to bail (mirrors speechSynthesis.cancel).
@@ -23,6 +32,7 @@ let playSeq = 0;
 const urlCache = new Map<string, string>();
 
 function hardStop() {
+  emitSpeaking(false);
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
@@ -48,6 +58,7 @@ function speakFallback(text: string, rate: number, lang: string): Promise<void> 
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
     u.rate = rate;
+    u.onstart = () => emitSpeaking(true);
     u.onend = () => resolve();
     u.onerror = () => resolve();
     window.speechSynthesis.speak(u);
@@ -72,6 +83,7 @@ function playUrl(url: string, token: number): Promise<void> {
     if (token !== playSeq) return resolve();
     const audio = new Audio(url);
     currentAudio = audio;
+    audio.onplaying = () => { if (token === playSeq) emitSpeaking(true); };
     audio.onended = () => resolve();
     audio.onerror = () => resolve();
     audio.play().catch(() => resolve());
@@ -97,7 +109,9 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
   if (isAudioMuted()) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
-  return playOne({ text, rate, lang }, token);
+  return playOne({ text, rate, lang }, token).finally(() => {
+    if (token === playSeq) emitSpeaking(false);
+  });
 }
 
 /** Speak several phrases back-to-back (e.g. German then French on the Listen step). No-op while muted. */
@@ -110,7 +124,9 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
       if (token !== playSeq) break;
       await playOne(item, token);
     }
-  })();
+  })().finally(() => {
+    if (token === playSeq) emitSpeaking(false);
+  });
 }
 
 /** Warm the cache for a phrase without playing it (optional, for snappier UX). */

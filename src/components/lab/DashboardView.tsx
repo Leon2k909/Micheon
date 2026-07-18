@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Part } from "@/lib/types";
+import { ui } from "@/lib/i18n";
 import { isBulkPartKey } from "@/lib/contentBank";
 import { AnimatedBars } from "@/components/AnimatedBars";
 
@@ -54,8 +55,8 @@ function ProgressCard({
       <div>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Today's German progress</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Your next useful step, streak, and practice totals.</p>
+            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Today's German progress")}</h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Your next useful step, streak, and practice totals.")}</p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--success-bg)] px-3 py-1 text-[11px] font-black text-[var(--success-text)]">
             <Flame className="h-3.5 w-3.5 flame-anim" />
@@ -73,14 +74,14 @@ function ProgressCard({
               <span className="text-5xl font-black leading-none tracking-tight text-[var(--text-1)]">{progressPercent}</span>
               <span className="pb-1 text-lg font-black text-[var(--text-1)]">%</span>
             </div>
-            <p className="mt-2 text-xs font-bold text-[var(--text-3)]">Course complete</p>
+            <p className="mt-2 text-xs font-bold text-[var(--text-3)]">{ui("Course complete")}</p>
             <div className="mt-4 h-2.5 rounded-full bg-[var(--surface-3)]">
               <div className="h-full rounded-full bg-[var(--yellow)]" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
 
           <div className="min-w-0">
-            <p className="text-[11px] font-black text-[var(--text-3)]">Next up</p>
+            <p className="text-[11px] font-black text-[var(--text-3)]">{ui("Next up")}</p>
             <h3 className="mt-1 truncate text-2xl font-black tracking-tight text-[var(--text-1)]">{nextLessonTitle}</h3>
             <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--text-2)]">
               {nextLesson?.focus ?? "Build the basics you need for everyday German conversations."}
@@ -90,7 +91,7 @@ function ProgressCard({
             </div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
               <Sparkles className="h-4 w-4 text-[var(--text-3)]" />
-              Finish one lesson to move today forward
+              {ui("Finish one lesson to move today forward")}
             </div>
           </div>
         </div>
@@ -122,7 +123,7 @@ function CurrentCourseCard({
             {currentPart?.level ?? "A1"}
           </span>
           <span className="course-feature-pill-success rounded-full px-3 py-1 text-[11px] font-black">
-            Daily plan
+            {ui("Daily plan")}
           </span>
         </div>
         <h2 className="course-feature-title mt-4 text-2xl font-black leading-tight tracking-tight">
@@ -135,13 +136,13 @@ function CurrentCourseCard({
 
       <div className="mt-6 grid gap-3">
         <div className="course-feature-panel rounded-[18px] p-4">
-          <p className="course-feature-label text-[11px] font-bold">Current focus</p>
+          <p className="course-feature-label text-[11px] font-bold">{ui("Current focus")}</p>
           <p className="course-feature-title mt-2 line-clamp-2 text-sm font-black leading-5">
             {(currentPart?.focus ?? "Listen, speak, type, translate").replace(/\.$/, "")}
           </p>
         </div>
         <div className="course-feature-panel rounded-[18px] p-4">
-          <p className="course-feature-label text-[11px] font-bold">Course progress</p>
+          <p className="course-feature-label text-[11px] font-bold">{ui("Course progress")}</p>
           <div className="mt-3 flex items-center gap-3">
             <div className="course-feature-progress-track h-4 flex-1 rounded-full">
               <div className="course-feature-progress h-full rounded-full" style={{ width: `${progressPercent}%` }} />
@@ -158,7 +159,7 @@ function CurrentCourseCard({
       >
         {/* No pack id: serve global due reviews + the first pack in
             curriculum order with fresh content — never just the last-visited pack. */}
-        Continue learning
+        {ui("Continue learning")}
         <ArrowRight className="h-4 w-4" />
       </button>
     </section>

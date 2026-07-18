@@ -1,4 +1,5 @@
 import { getFluency, FLUENCY_STAGES } from "@/lib/fluency";
+import { ui } from "@/lib/i18n";
 
 /**
  * Honest "how far to fluency" meter. `vocab` = distinct items the learner
@@ -14,7 +15,7 @@ export function FluencyMeter({ vocab, compact }: { vocab: number; compact?: bool
       <div className="rounded-[18px] bg-[var(--surface-2)] p-3.5">
         <div className="flex items-baseline justify-between gap-2">
           <p className="text-sm font-black text-[var(--text-1)]">{f.cur.label}</p>
-          <p className="text-xs font-black text-[var(--text-3)]">{f.overallPct}% to fluent</p>
+          <p className="text-xs font-black text-[var(--text-3)]">{f.overallPct}% {ui("to fluent")}</p>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--surface)]">
           <div className="h-full rounded-full" style={{ width: `${Math.max(4, f.overallPct)}%`, background: "var(--feature-gradient)" }} />
@@ -32,13 +33,13 @@ export function FluencyMeter({ vocab, compact }: { vocab: number; compact?: bool
     <div className="rounded-[24px] bg-[var(--surface-2)] p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-black text-[var(--text-3)]">You're at</p>
+          <p className="text-xs font-black text-[var(--text-3)]">{ui("You're at")}</p>
           <p className="mt-1 truncate text-lg font-black text-[var(--text-1)]">{f.cur.label}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{f.cur.blurb}</p>
         </div>
         <div className="shrink-0 rounded-2xl bg-[var(--surface)] px-3 py-2 text-right shadow-[inset_0_0_0_1px_var(--border)]">
           <p className="text-2xl font-black leading-none text-[var(--text-1)]">{f.overallPct}%</p>
-          <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">to fluent</p>
+          <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">{ui("to fluent")}</p>
         </div>
       </div>
 

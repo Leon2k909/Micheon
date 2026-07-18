@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ui } from "@/lib/i18n";
 import { MuteButton } from "@/components/MuteButton";
 import { getLevelInfo } from "@/Gamification";
 
@@ -220,7 +221,7 @@ export function TopNav({
             </div>
             <div className="hidden sm:block">
               <p className="text-[15px] font-black tracking-tight text-[var(--text-1)]">{brandName}</p>
-              <p className="text-[11px] font-semibold text-[var(--text-3)]">{streak} day streak · switch</p>
+              <p className="text-[11px] font-semibold text-[var(--text-3)]">{streak} {ui("day streak · switch")}</p>
             </div>
           </button>
 
@@ -256,7 +257,7 @@ export function TopNav({
                     />
                   )}
                   <item.icon className="relative z-10 h-[17px] w-[17px] shrink-0 stroke-[1.9]" />
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10">{ui(item.label)}</span>
                 </button>
               );
             })}

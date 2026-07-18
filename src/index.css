@@ -577,28 +577,35 @@ a { color: inherit; text-decoration: none; }
     0 24px 60px color-mix(in srgb, var(--accent) 16%, var(--shadow)) !important;
 }
 
-/* Decorative audio-wave accent in the card corner (mockup's waveform). */
+/* Decorative audio-wave accent: sits mid-right (clear of the Know it /
+   Struggle / Hear it row) and only animates while the voice is speaking. */
 .lesson-wave {
   position: absolute;
-  top: 26px;
+  top: 50%;
   right: 24px;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 4px;
   height: 40px;
-  opacity: 0.5;
+  opacity: 0.18;
   pointer-events: none;
+  transition: opacity 0.35s ease;
   -webkit-mask-image: linear-gradient(to left, #000 60%, transparent);
   mask-image: linear-gradient(to left, #000 60%, transparent);
 }
+.lesson-wave.wave-live { opacity: 0.75; }
 .lesson-wave span {
   width: 4px;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 40%, transparent));
   height: calc(8px + var(--h) * 28px);
-  animation: lesson-wave-pulse 2.8s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 0.15s);
+  transform: scaleY(0.55);
+  animation: lesson-wave-pulse 1.1s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.09s);
+  animation-play-state: paused;
 }
+.lesson-wave.wave-live span { animation-play-state: running; }
 @keyframes lesson-wave-pulse {
   0%, 100% { transform: scaleY(0.7); opacity: 0.7; }
   50% { transform: scaleY(1); opacity: 1; }

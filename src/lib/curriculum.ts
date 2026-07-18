@@ -33,6 +33,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part5",            // Food and cafe
   "cb-diet-allergies",
   "cb-shopping",
+  "part63",           // Clothes shopping & returns
   "cb-grocery",
   "cb-money",
   "cb-money-woes",
@@ -47,11 +48,13 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-shortreplies",
   "cb-connectors",
   "cb-celebrations",
+  "part66",           // German holidays: Weihnachtsmarkt to Karneval
   "cb-plans",
   "part4",            // Plans and conversation
   "cb-health",
   "cb-emergencies",
   "cb-travel",
+  "part64",           // Flying & the airport
   // ── Tier 2 · common, situational ────────────────────────────
   "part8",            // Core verbs
   "part9",            // Home and daily errands
@@ -63,9 +66,11 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-medical-bureaucracy",
   "cb-post-packages",
   "cb-german-rules",
+  "part67",           // Very German things: Pfand, Muelltrennung & Sauna
   "cb-finance-insurance",
   "cb-work",
   "cb-salary-negotiations",
+  "part65",           // Job applications & the Zeugnis code
   "part10",           // Work and study
   "part39",           // School days & bullying
   "part21",           // Idioms & expressions (Redewendungen)
