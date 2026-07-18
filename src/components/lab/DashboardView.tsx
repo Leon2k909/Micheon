@@ -63,11 +63,11 @@ function ProgressCard({
           </span>
         </div>
 
-        <div className="mt-5 grid items-center gap-5 rounded-[26px] bg-[var(--surface-2)] p-5 sm:grid-cols-[150px_minmax(0,1fr)]">
+        <div className="mt-5 grid items-center gap-5 rounded-[26px] border border-[var(--accent)]/15 bg-gradient-to-br from-[var(--accent)]/10 via-[var(--surface-2)] to-[var(--surface-2)] p-5 sm:grid-cols-[150px_minmax(0,1fr)]">
           <div className="flex min-h-[132px] flex-col justify-center border-b border-[var(--border)] pb-5 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
             <div className="flex items-center gap-2 text-[var(--text-3)]">
               <Target className="h-4 w-4" />
-              <span className="text-[10px] font-black">A1-A2 path</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.14em]">A1-A2 path</span>
             </div>
             <div className="mt-4 flex items-end gap-1.5">
               <span className="text-5xl font-black leading-none tracking-tight text-[var(--text-1)]">{progressPercent}</span>
@@ -75,18 +75,18 @@ function ProgressCard({
             </div>
             <p className="mt-2 text-xs font-bold text-[var(--text-3)]">Course complete</p>
             <div className="mt-4 h-2.5 rounded-full bg-[var(--surface-3)]">
-              <div className="h-full rounded-full bg-[var(--yellow)]" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full rounded-full shadow-[0_0_12px_rgba(139,70,255,0.45)]" style={{ width: `${progressPercent}%`, background: "var(--feature-gradient)" }} />
             </div>
           </div>
 
           <div className="min-w-0">
-            <p className="text-[11px] font-black text-[var(--text-3)]">Next up</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">Next up</p>
             <h3 className="mt-1 truncate text-2xl font-black tracking-tight text-[var(--text-1)]">{nextLessonTitle}</h3>
             <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--text-2)]">
               {nextLesson?.focus ?? "Build the basics you need for everyday German conversations."}
             </p>
             <div className="mt-4 h-3 rounded-full bg-[var(--surface)]">
-              <div className="h-full rounded-full bg-[var(--yellow)]" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full rounded-full shadow-[0_0_12px_rgba(139,70,255,0.45)]" style={{ width: `${progressPercent}%`, background: "var(--feature-gradient)" }} />
             </div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
               <Sparkles className="h-4 w-4 text-[var(--text-3)]" />
@@ -116,7 +116,13 @@ function CurrentCourseCard({
 }) {
   return (
     <section className="card course-feature-card flex flex-col justify-between p-5 sm:p-6">
-      <div>
+      {/* Decorative audio-wave accent, echoing the lesson screen */}
+      <div aria-hidden className="hero-wave">
+        {[0.55, 0.9, 0.35, 1, 0.65, 0.85, 0.3, 0.75, 0.5, 0.95, 0.4, 0.7].map((h, i) => (
+          <span key={i} style={{ "--h": h, "--i": i } as React.CSSProperties} />
+        ))}
+      </div>
+      <div className="relative">
         <div className="flex items-center justify-between gap-3">
           <span className="course-feature-pill rounded-full px-3 py-1 text-[11px] font-black">
             {currentPart?.level ?? "A1"}
@@ -152,7 +158,7 @@ function CurrentCourseCard({
       </div>
 
       <button
-        className="accent-btn continue-glow mt-6 inline-flex h-12 w-full items-center justify-center gap-2 text-sm"
+        className="hero-cta continue-glow mt-6 inline-flex h-12 w-full items-center justify-center gap-2 text-sm"
         onClick={() => onOpenLesson("")}
         type="button"
       >

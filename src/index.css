@@ -330,10 +330,70 @@ a { color: inherit; text-decoration: none; }
 
 .course-feature-card {
   color: #ffffff;
-  border-color: color-mix(in srgb, #ffffff 18%, var(--accent));
-  background: var(--feature-gradient);
-  box-shadow: 0 24px 70px color-mix(in srgb, var(--accent) 28%, transparent);
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, #ffffff 26%, var(--accent));
+  /* Layered luminous purple: radial blooms over the base gradient keep it
+     vivid and airy rather than flat/dark. */
+  background:
+    radial-gradient(120% 90% at 88% 0%, rgb(216 180 254 / 0.38) 0%, transparent 52%),
+    radial-gradient(110% 100% at 0% 100%, rgb(96 165 250 / 0.30) 0%, transparent 55%),
+    linear-gradient(135deg, #8b46ff 0%, #9a5cff 45%, #7433f0 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 24px 70px color-mix(in srgb, var(--accent) 34%, transparent);
 }
+
+/* Decorative audio-wave accent (top right of the hero), like the lesson mockup. */
+.hero-wave {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+  opacity: 0.6;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to left, #000 62%, transparent);
+  mask-image: linear-gradient(to left, #000 62%, transparent);
+}
+.hero-wave span {
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(216 180 254 / 0.55));
+  height: calc(10px + var(--h) * 30px);
+  animation: hero-wave-pulse 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.16s);
+}
+@keyframes hero-wave-pulse {
+  0%, 100% { transform: scaleY(0.72); opacity: 0.75; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-wave span { animation: none; }
+}
+
+/* Hero CTA: the mockup's glowing gradient action button. */
+.hero-cta {
+  border: 1px solid rgb(255 255 255 / 0.34);
+  border-radius: 16px;
+  background: linear-gradient(90deg, #a06bff 0%, #8b46ff 55%, #7c3aed 100%);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 10px 30px rgb(124 58 237 / 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.hero-cta:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 14px 38px rgb(124 58 237 / 0.65);
+}
+.hero-cta:active { transform: translateY(0) scale(0.99); }
 
 /* Active "Now" lesson card: same rich purple gradient as the hero card. */
 .lesson-card-active {
@@ -355,26 +415,44 @@ a { color: inherit; text-decoration: none; }
 }
 
 .course-feature-pill {
-  background: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.32);
   color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(6px);
 }
 
 .course-feature-pill-success {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(255 255 255 / 0.2);
+  border: 1px solid rgb(255 255 255 / 0.35);
   color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(6px);
 }
 
 .course-feature-panel {
-  border: 1px solid rgb(255 255 255 / 0.2);
-  background: rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.26);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.19), rgb(255 255 255 / 0.10));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.course-feature-label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
 }
 
 .course-feature-progress {
-  background: #ffffff;
+  background: linear-gradient(90deg, #ffffff 0%, #e9d5ff 100%);
+  box-shadow: 0 0 14px rgb(255 255 255 / 0.55);
 }
 
 .course-feature-progress-track {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(0 0 0 / 0.22);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.25);
 }
 
 .skeleton {
