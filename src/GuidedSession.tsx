@@ -240,6 +240,21 @@ const BILINGUAL_PHASES: Phase[] = ["Read", "Speak", "Type", "French", "Memory"];
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French. The second-round steps
 // get short labels of their own.
+// Underline the item's key word (its dictionary lookup form) in the sentence,
+// like the mockup's highlighted word. Plain text when the word isn't found.
+function renderKeyWord(sentence: string, lookup?: string) {
+  if (!lookup || lookup.length < 3) return sentence;
+  const i = sentence.toLowerCase().indexOf(lookup.toLowerCase());
+  if (i < 0) return sentence;
+  return (
+    <>
+      {sentence.slice(0, i)}
+      <span className="word-key">{sentence.slice(i, i + lookup.length)}</span>
+      {sentence.slice(i + lookup.length)}
+    </>
+  );
+}
+
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
   if (p === "TypeAgain") return "Type 2";
@@ -257,7 +272,7 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-2xl bg-zinc-50 p-2">
+    <div className="flex flex-wrap items-center justify-center gap-2 p-1">
       {allPhases.map((p, i) => (
         <button
           key={p}
@@ -265,14 +280,7 @@ function PhaseDots({ current, withFrench = false, onClickPhase }: {
           title={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
           aria-label={`Stage ${i + 1}: ${phaseLabel(p, withFrench)}`}
           onClick={() => onClickPhase?.(p)}
-          className={cn(
-            "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-[12px] font-black transition-all",
-            i === idx
-              ? "bg-zinc-950 text-white shadow-sm scale-110"
-              : i < idx
-                ? "bg-emerald-500 text-white hover:brightness-110"
-                : "bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700"
-          )}
+          className={cn("pdot", i === idx ? "pdot-active" : i < idx ? "pdot-done" : "pdot-todo")}
         >
           {i + 1}
         </button>
@@ -709,10 +717,16 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
       {/* Sentence display card */}
       <div className={cn(
-        "space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
+        "lesson-shell space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
       )}>
+        {/* Decorative audio-wave accent (mockup) */}
+        <div aria-hidden className="lesson-wave">
+          {[0.5, 0.9, 0.35, 1, 0.6, 0.8, 0.3, 0.75, 0.45, 0.95].map((h, i) => (
+            <span key={i} style={{ "--h": h, "--i": i } as React.CSSProperties} />
+          ))}
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-[11px] font-black text-zinc-600">
+          <span className="lesson-kicker">
             {hasFr ? "German + French" : `${targetLabel} sentence`}
           </span>
           {!hasFr && (
@@ -803,7 +817,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {/* Gap + Write-it stages hide the German answer, revealed once you answer. */}
               {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
                 : phase === "SpeakAll" && !sayChecked ? "• • •"
-                : item.de}
+                : renderKeyWord(item.de, item.lookup)}
             </div>
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
@@ -850,7 +864,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 <Volume2 className="h-5 w-5" />
               </button>
               <Button onClick={advance}
-                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -925,11 +939,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 <Volume2 className="h-5 w-5" />
               </motion.button>
               <Button type="button" onClick={advance}
-                className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
                 Continue <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -982,11 +996,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={sayChecked && sayResult.ok ? onNext : checkSay}
-                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {sayChecked && sayResult.ok ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -1057,11 +1071,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={checked && result.ok ? advance : checkAnswer}
-                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {checked && result.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -1120,13 +1134,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}
-                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {enChecked && enResult.ok
                   ? <>{hasFr ? "Next: French" : phase === "Translate" ? "One more round" : "Done"} <ArrowRight className="ml-2 h-5 w-5" /></>
                   : "Check"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -1179,11 +1193,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}
-                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {gapChecked && gapResult.ok ? <>Next <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -1247,12 +1261,12 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   <Volume2 className="h-5 w-5" />
                 </motion.button>
                 <Button onClick={frChecked && frResult.ok ? advance : checkFrAnswer}
-                  className="continue-glow h-14 flex-1 rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                  className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
                   {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : "Check"}
                 </Button>
               </div>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
 
@@ -1365,13 +1379,13 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               </div>
             ) : (
               <Button onClick={memDeChecked && memDeResult.ok && memFrResult.ok ? onNext : checkMemory}
-                className="continue-glow h-14 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800">
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
                 {memDeChecked && memDeResult.ok && memFrResult.ok
                   ? <>Done <ArrowRight className="ml-2 h-5 w-5" /></>
                   : "Check both"}
               </Button>
             )}
-            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 hover:text-zinc-600">← Back</button>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">← Back</button>
           </motion.div>
         )}
       </AnimatePresence>
