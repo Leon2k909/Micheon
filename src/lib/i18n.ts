@@ -29,6 +29,8 @@ const DE: Record<string, string> = {
   "One more round": "Noch eine Runde",
   "Not quite": "Nicht ganz",
   "Answer:": "Antwort:",
+  "People would understand you — but that's the literal translation.": "Man würde dich verstehen — aber das ist wörtlich übersetzt.",
+  "The natural way is:": "Natürlich sagt man:",
   "That's it!": "Genau!",
   "Perfect!": "Perfekt!",
   "Nice match": "Sehr gut",

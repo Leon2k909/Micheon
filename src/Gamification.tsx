@@ -51,6 +51,7 @@ import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
+import { AppearanceEditor } from "@/components/AppearanceEditor";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
@@ -606,6 +607,8 @@ export default function GamificationPanel({
             })}
           </div>
         </section>
+
+        <AppearanceEditor />
 
         <VocabTracker apiParts={apiParts} user={user} />
 

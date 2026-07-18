@@ -4,11 +4,13 @@ import "./index.css";
 import App from "./App";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
+import { applyCustomTheme } from "./lib/customTheme";
 
 // Paint saved theme + effects preference before first render to avoid flash.
 // Paint-only (no sync) so it can't clobber the shared value hydrate will load.
 applyThemeToDom(getTheme());
 applyEffects(getEffects());
+applyCustomTheme();
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
 if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");

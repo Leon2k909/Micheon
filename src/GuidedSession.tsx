@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   matchGermanPhrase as match,
+  matchGermanSentence,
   matchEnglishPhrase as matchEnglish,
   normalizeGermanLenient,
   primaryAnswer,
@@ -362,9 +363,12 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
 // Only advances when the user types the sentence correctly.
 function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
   const shakeControls = useAnimationControls();
-  const reactToAnswer = (ok: boolean) => {
+  const reactToAnswer = (ok: boolean, gentle = false) => {
     onAnswer?.(ok);
     if (ok) shakeControls.start({ scale: [1, 1.05, 1], transition: { duration: 0.32 } });
+    // A coached near-miss ("people would understand you") gets a soft pulse,
+    // not the hard error shake — it's a teaching moment, not a slap.
+    else if (gentle) shakeControls.start({ scale: [1, 1.02, 1], transition: { duration: 0.3 } });
     else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
   };
   const [phase, setPhase] = useState<Phase>("Read");
@@ -440,10 +444,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   );
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
-  const matchTarget = learnEn ? matchEnglish : match;
+  const matchTarget = learnEn ? matchEnglish : matchGermanSentence;
   const result   = useMemo(() => matchTarget(input, item.de), [input, item.de, matchTarget]);
   const sayResult = useMemo(() => matchTarget(sayInput, item.de), [sayInput, item.de, matchTarget]);
-  const enResult = useMemo(() => matchEnglish(enInput, displayEnglish), [enInput, displayEnglish]);
+  // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
+  // the answer is German — each direction gets its own synonym/coach matcher.
+  const enResult = useMemo(
+    () => (learnEn ? matchGermanSentence : matchEnglish)(enInput, displayEnglish),
+    [enInput, displayEnglish, learnEn]
+  );
   // Only the most common phrasing is SHOWN; alternates still count as correct.
   const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
   // Gap stage: the typed answer just needs to contain each missing word
@@ -607,7 +616,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
-    reactToAnswer(result.ok);
+    reactToAnswer(result.ok, !!result.phrasingNote);
     tts(item.de, result.ok ? 0.88 : 0.75, targetLang);
     if (result.ok) {
       setTimeout(advance, 900);
@@ -624,7 +633,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const checkEnAnswer = () => {
     if (!enInput.trim() || enChecked) return;
     setEnChecked(true);
-    reactToAnswer(enResult.ok);
+    reactToAnswer(enResult.ok, !!enResult.phrasingNote);
     if (enResult.ok) {
       setTimeout(advanceOrFinish, 900);
     } else {
@@ -645,7 +654,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const checkSay = () => {
     if (!sayInput.trim() || sayChecked) return;
     setSayChecked(true);
-    reactToAnswer(sayResult.ok);
+    reactToAnswer(sayResult.ok, !!sayResult.phrasingNote);
     if (sayResult.ok) {
       tts(item.de, 0.88, targetLang);
       setTimeout(onNext, 900); // correct → finish; the item can level up
@@ -1005,9 +1014,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {sayChecked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className={cn("rounded-lg border p-4 text-center text-sm font-semibold",
-                    sayResult.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
+                    sayResult.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" :
+                    sayResult.phrasingNote ? "border-amber-500/25 bg-amber-500/10 text-amber-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
                   {sayResult.ok
                     ? <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> {sayResult.spellingNote ? "Close — mind the spelling" : "Perfect!"}</span>
+                    : sayResult.phrasingNote
+                    ? <span className="space-y-1 block">
+                        <span className="block">{ui("People would understand you — but that's the literal translation.")}</span>
+                        <span className="block text-xs text-zinc-500">{ui("The natural way is:")} <span className="text-zinc-950">{item.de}</span></span>
+                      </span>
                     : <>Not quite — the answer is <span className="text-zinc-950">{item.de}</span></>}
                 </motion.div>
               )}
@@ -1067,11 +1082,21 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {checked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className={cn("rounded-lg border p-5 text-center space-y-2",
-                    result.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                    result.ok ? "border-emerald-500/20 bg-emerald-500/10" :
+                    result.phrasingNote ? "border-amber-500/25 bg-amber-500/10" : "border-rose-500/20 bg-rose-500/10")}>
                   {result.ok ? (
                     <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold text-lg">
                       <CheckCircle2 className="h-5 w-5" />
                       {result.spellingNote ? "Close enough - watch the spelling next time" : "Perfect!"}
+                    </div>
+                  ) : result.phrasingNote ? (
+                    <div className="space-y-1.5">
+                      <div className="text-amber-700 font-semibold text-lg">
+                        {ui("People would understand you — but that's the literal translation.")}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {ui("The natural way is:")} <span className="text-zinc-950 font-semibold">{item.de}</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1137,10 +1162,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {enChecked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className={cn("rounded-lg border p-5 text-center space-y-2",
-                    enResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
+                    enResult.ok ? "border-emerald-500/20 bg-emerald-500/10" :
+                    enResult.phrasingNote ? "border-amber-500/25 bg-amber-500/10" : "border-rose-500/20 bg-rose-500/10")}>
                   {enResult.ok ? (
                     <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold text-lg">
                       <CheckCircle2 className="h-5 w-5" /> That's it!
+                    </div>
+                  ) : enResult.phrasingNote ? (
+                    <div className="space-y-1.5">
+                      <div className="text-amber-700 font-semibold text-lg">
+                        {ui("People would understand you — but that's the literal translation.")}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {ui("The natural way is:")} <span className="text-zinc-950 font-semibold">{shownEnglish}</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1433,7 +1468,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const inputRef = useRef<HTMLInputElement>(null);
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
-  const result = useMemo(() => (learningEnglish() ? matchEnglish : match)(input, line?.de ?? ""), [input, line]);
+  const result = useMemo(() => (learningEnglish() ? matchEnglish : matchGermanSentence)(input, line?.de ?? ""), [input, line]);
   const learnEn = useMemo(() => learningEnglish(), []);
   const targetLang = learnEn ? "en-US" : "de-DE";
   const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);

@@ -71,7 +71,7 @@ export function normalizeGermanLenientCaseSensitive(t: string) {
     .replace(/\bgerne\b/g, "gern");
 }
 
-export function matchGermanPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean } {
+export function matchGermanPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
   const normInputCS = normalizeGermanInputCaseSensitive(input);
   const normTargetCS = normalizeGermanInputCaseSensitive(target);
 
@@ -99,6 +99,76 @@ export function matchGermanPhrase(input: string, target: string): { ok: boolean;
   return { ok: false, spellingNote: false };
 }
 
+// ─── German-side synonyms & coaching ────────────────────────────────────────
+// The same philosophy as the English tiers, for typed GERMAN answers: genuinely
+// interchangeable German passes silently; a literal English-transfer phrasing
+// ("Ich bin kalt" for "Mir ist kalt") is rejected with a phrasingNote so the
+// UI coaches instead of red-Xing. These run on normalizeGermanInput output
+// (lowercase, punctuation stripped, umlauts INTACT), so patterns carry ö/oe
+// alternates; lenient umlaut folding is applied after.
+// NOTE: these live in matchGermanSentence, NOT matchGermanPhrase — the latter
+// doubles as the raw comparator inside the English tiers, where German folds
+// must never run.
+const GERMAN_SYNONYMS: [RegExp, string][] = [
+  // möchte (polite) and wollen both say "want" — person kept per pair
+  [/\bm(?:ö|oe)chte\b/g, "will"],
+  [/\bm(?:ö|oe)chtest\b/g, "willst"],
+  [/\bm(?:ö|oe)chten\b/g, "wollen"],
+  [/\b(super|prima|spitze|mega)\b/g, "toll"],
+  [/\b(tschau|ciao)\b/g, "tschüss"],
+  [/\b(hi|hey)\b/g, "hallo"],
+  [/\bsorry\b/g, "entschuldigung"],       // Sorry is everyday German
+  [/\bentschuldige\b/g, "entschuldigung"],
+  // Cross-gender noun pairs fold WITH their article so each side stays
+  // grammatical German ("das Klo" == "die Toilette", never "das Toilette").
+  [/\bdas klo\b/g, "die toilette"],
+  [/\bdem klo\b/g, "der toilette"],
+  [/\bein klo\b/g, "eine toilette"],
+  [/\baufs klo\b/g, "auf die toilette"],   // "Ich muss aufs Klo"
+  [/\b(?:der|den) wagen\b/g, "das auto"],
+  [/\bdem wagen\b/g, "dem auto"],
+  [/\beinen wagen\b/g, "ein auto"],
+  [/\bk(?:ö|oe)stlich\b/g, "lecker"],
+  [/\bdefekt\b/g, "kaputt"],
+  [/\bdoktor\b/g, "arzt"],
+  [/\beventuell\b/g, "vielleicht"],
+  [/\brasch\b/g, "schnell"],
+];
+
+// Classic English→German literal transfers: understandable, but not German.
+const GERMAN_NEAR_MISS: [RegExp, string][] = [
+  // "I am cold/warm/hot/bored" — German uses the dative: "Mir ist kalt"
+  [/\bich bin (kalt|warm|hei(?:ß|ss)|langweilig)\b/g, "mir ist $1"],
+  // "I'm good/bad" as a state — German asks how it GOES: "Mir geht es gut"
+  [/\bich bin gut\b/g, "mir geht es gut"],
+  [/\bich bin schlecht\b/g, "mir geht es schlecht"],
+];
+
+const applyFolds = (t: string, folds: [RegExp, string][]) => {
+  let s = t;
+  for (const [re, sub] of folds) s = s.replace(re, sub);
+  return s;
+};
+
+/**
+ * Full German answer check: strict tiers first (via matchGermanPhrase), then
+ * interchangeable-German synonyms (silent accept), then English-transfer
+ * literals (rejected with phrasingNote so the UI coaches kindly).
+ * Use THIS for German answers; matchGermanPhrase stays the raw comparator.
+ */
+export function matchGermanSentence(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
+  const base = matchGermanPhrase(input, target);
+  if (base.ok || base.capitalizationError) return base;
+  const syn = (s: string) =>
+    normalizeGermanLenient(applyFolds(normalizeGermanInput(s), GERMAN_SYNONYMS));
+  const synInput = syn(input);
+  const synTarget = syn(target);
+  if (synInput === synTarget) return { ok: true, spellingNote: false };
+  const near = (s: string) => normalizeGermanLenient(applyFolds(applyFolds(normalizeGermanInput(s), GERMAN_SYNONYMS), GERMAN_NEAR_MISS));
+  if (near(input) === near(target)) return { ok: false, spellingNote: false, phrasingNote: true };
+  return base;
+}
+
 // Expand common English contractions so "it's already late" == "it is already
 // late", "let's start" == "let us start", etc. Applied to BOTH the answer key
 // and the learner's input, so either form is accepted. (The 's/'d expansions
@@ -109,7 +179,10 @@ const CONTRACTIONS: [RegExp, string][] = [
   [/\bwon[’'`´]?t\b/gi, "will not"],
   [/\bcan[’'`´]?t\b/gi, "cannot"],
   [/\bshan[’'`´]?t\b/gi, "shall not"],
-  [/\b(\w+)n[’'`´]?t\b/gi, "$1 not"],           // don't/dont, isn't/isnt, wasn't/wasnt, couldn't/couldnt…
+  // Only real auxiliary stems — a generic (\w+)nt would mangle ordinary words
+  // ending in "nt" ("want" -> "wa not", "went" -> "we not", "moment"…).
+  [/\b(do|does|did|is|are|was|were|has|have|had|would|should|could|must|need|ought)n[’'`´]?t\b/gi, "$1 not"],
+  [/\bain[’'`´]?t\b/gi, "is not"],
   [/\bi[’'`´]?m\b/gi, "i am"],
   [/\b(\w+)[’'`´]re\b/gi, "$1 are"],             // you're, we're, they're
   [/\b(you|they)re\b/gi, "$1 are"],              // youre, theyre (avoiding 'were' conflict)
@@ -383,7 +456,38 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bamusing\b/g, "funny")
     .replace(/\b(at the end|in the end)\b/g, "in the end")
     .replace(/\bevery day\b/g, "daily")
+    .replace(/\bstudy(ing)?\b/g, "learn$1")   // lernen covers both; people interchange them
     .replace(/\bpossibly\b/g, "maybe");
+}
+
+// ─── Tier 7: "understandable" near-misses ───────────────────────────────────
+// Classic German→English transfer: phrasings an English speaker fully
+// understands but wouldn't say. These are accepted (the learner communicated)
+// with a phrasingNote so the UI can coach: "people will understand you — more
+// natural is: …". They run LAST, so a properly-phrased answer never gets
+// flagged — only answers that failed every silent tier land here.
+const NEAR_MISS: [RegExp, string][] = [
+  // "ich will" = want — Germans say "I will…" for "I want to…", and will/can
+  // requests blur ("Will you help?" / "Can you help?"). All soft-equal.
+  [/\b(?:will|can|want(?:s)? to|would like to)\b/g, "~mod~"],
+  // bekommen ≠ become: "Can I become a beer?" means "Can I get a beer?"
+  [/\bbecome(s)?\b/g, "get$1"],
+  [/\bbecame\b/g, "got"],
+  [/\bchef\b/g, "boss"],                  // der Chef = the boss, not a cook
+  [/\bhandy\b/g, "phone"],                // das Handy = mobile phone
+  [/\bsince\b/g, "for"],                  // "I'm here since two weeks" (seit)
+  // machen covers make AND do: "I make my homework" (tense kept per pair)
+  [/\bmake\b/g, "do"], [/\bmakes\b/g, "does"],
+  [/\bmade\b/g, "did"], [/\bmaking\b/g, "doing"],
+  [/\bwith the (bus|train|tram|car|bike|taxi|subway)\b/g, "by $1"], // mit dem Bus
+  [/\binformations\b/g, "info"],          // die Informationen (canonical form is "info")
+  [/\bpersons\b/g, "people"],             // die Personen
+];
+
+function applyNearMiss(t: string): string {
+  let s = t;
+  for (const [re, sub] of NEAR_MISS) s = s.replace(re, sub);
+  return s;
 }
 
 // Answer keys sometimes carry helper notes in parentheses, e.g.
@@ -489,7 +593,10 @@ function reduceForMeaning(s: string): string {
     .join(" ");
 }
 
-export function matchEnglishPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean } {
+export function matchEnglishPhrase(
+  input: string,
+  target: string
+): { ok: boolean; spellingNote: boolean; phrasingNote?: boolean } {
   // "A / B" answer keys offer alternatives — accept a match against either
   // side (or the whole thing). Recurse per segment, slash-free.
   if (/\//.test(String(target ?? ""))) {
@@ -556,6 +663,21 @@ export function matchEnglishPhrase(input: string, target: string): { ok: boolean
   const reducedTarget = reduceForMeaning(targetK);
   if (reducedTarget && reducedInput === reducedTarget) {
     return { ok: true, spellingNote: false };
+  }
+  // Tier 7: recognizable German-style literal translation ("I will eat" for
+  // "I want to eat", "Can I become a coffee?"). NOT accepted — a literal
+  // transfer isn't the English being taught — but flagged so the UI can coach
+  // kindly ("people would understand you — the natural way is …") instead of
+  // showing a cold "wrong". Runs last: anything that matched a silent tier
+  // above never reaches here.
+  const inputM = applyNearMiss(inputK);
+  const targetM = applyNearMiss(targetK);
+  if (
+    matchGermanPhrase(inputM, targetM).ok ||
+    matchGermanPhrase(stripArticles(inputM), stripArticles(targetM)).ok ||
+    (reduceForMeaning(targetM) && reduceForMeaning(inputM) === reduceForMeaning(targetM))
+  ) {
+    return { ok: false, spellingNote: false, phrasingNote: true };
   }
   return { ok: false, spellingNote: false };
 }
