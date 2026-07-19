@@ -6,6 +6,10 @@ name: linux-release
 on:
   push:
     tags: ["v*"]
+  # Releases are created via the API here, which doesn't fire tag-push events —
+  # this trigger covers that path.
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -40,7 +44,7 @@ jobs:
       - name: Attach artifacts to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
         run: |
           gh release upload "$TAG" \
             release/*.AppImage \
