@@ -133,6 +133,35 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   [/\bdoktor\b/g, "arzt"],
   [/\beventuell\b/g, "vielleicht"],
   [/\brasch\b/g, "schnell"],
+  // ── Verified loanword/sibling pairs (adversarially checked against data.ts) ──
+  [/\bklub\b/g, "verein"],                     // Traditionsklub — same gender
+  [/\bschiri\b/g, "schiedsrichter"],           // everyone says Schiri
+  [/\bgym\b/g, "fitnessstudio"],               // exact token only — never touches Gymnasium
+  [/\bprotein\b/g, "eiweiß"],
+  [/\brunterladen\b/g, "herunterladen"],
+  [/\brunter\b/g, "herunter"],                 // colloquial adverb, same meaning
+  [/\bsettings\b/g, "einstellungen"],
+  [/\bcheaten\b/g, "schummeln"], [/\bcheatet\b/g, "schummelt"], [/\bgecheatet\b/g, "geschummelt"],
+  [/\bwishlist\b/g, "wunschliste"],
+  [/\bcontent\b/g, "inhalt"],
+  // das Update / die Aktualisierung — cross-gender, article-paired first
+  [/\bdas update\b/g, "die aktualisierung"],
+  [/\bdem update\b/g, "der aktualisierung"],
+  [/\bupdates\b/g, "aktualisierungen"], [/\bupdate\b/g, "aktualisierung"],
+  [/\bcrush\b/g, "schwarm"],                   // der Crush = der Schwarm
+  // das Tattoo / die Tätowierung — cross-gender
+  [/\bdas tattoo\b/g, "die tätowierung"],
+  [/\btattoos\b/g, "tätowierungen"], [/\btattoo\b/g, "tätowierung"],
+  [/\bpennen\b/g, "schlafen"], [/\bpennt\b/g, "schläft"], [/\bpenne\b/g, "schlafe"], [/\bgepennt\b/g, "geschlafen"],
+  [/\bsmartphone\b/g, "handy"],
+  [/\bgigs\b/g, "auftritte"], [/\bgig\b/g, "auftritt"],
+  [/\btannenbaum\b/g, "weihnachtsbaum"],
+  [/\bkassenbon\b/g, "bon"],
+  [/\bim angebot\b/g, "reduziert"],
+  [/\bbewerbungsgespr(?:ä|ae)ch\b/g, "vorstellungsgespräch"],
+  // kriegen == bekommen (colloquial "get") — person/tense kept per pair
+  [/\bkriege\b/g, "bekomme"], [/\bkriegst\b/g, "bekommst"], [/\bkriegt\b/g, "bekommt"],
+  [/\bkriegen\b/g, "bekommen"], [/\bgekriegt\b/g, "bekommen"],
 ];
 
 // Classic English→German literal transfers: understandable, but not German.

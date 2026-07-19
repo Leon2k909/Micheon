@@ -1,0 +1,308 @@
+[
+ {
+  "taught": "das Ticket",
+  "alt": "die Fahrkarte",
+  "prefer": "either",
+  "note": "Die Fahrkarte is the traditional official word on buses and trains (Fahrkartenkontrolle), but Ticket is at least as common today, especially among younger speakers (Handyticket, Deutschlandticket). For concerts and cinema it's die Eintrittskarte, not Fahrkarte."
+ },
+ {
+  "taught": "die Mannschaft",
+  "alt": "das Team",
+  "prefer": "either",
+  "note": "Das Team is at least as common in everyday German and is the default at work, where Mannschaft would sound like a sports metaphor. In football both are used; Mannschaft is the slightly more traditional fan word."
+ },
+ {
+  "taught": "der Verein",
+  "alt": "der Klub",
+  "prefer": "taught",
+  "note": "Football media also say Klub (often spelled Club) — Traditionsklub, Klub-WM — but in everyday speech your home club is always your Verein, and Verein is the only word for non-sports clubs and associations (e.V.)."
+ },
+ {
+  "taught": "das Spiel",
+  "alt": "das Match",
+  "prefer": "taught",
+  "note": "Football fans in Germany say Spiel; Match is common in tennis, boxing, gaming, and in Austria. And only Spiel covers the 'game' side of the gloss — a board game or video game is ein Spiel, never ein Match."
+ },
+ {
+  "taught": "der Schiedsrichter",
+  "alt": "der Schiri",
+  "prefer": "alt",
+  "note": "Everyone, even TV commentators, just says Schiri; Schiedsrichter is what you'll see in writing and hear in formal match reports."
+ },
+ {
+  "taught": "das Fitnessstudio",
+  "alt": "das Gym",
+  "prefer": "either",
+  "note": "Duden-attested casual short form; very common among younger speakers ('ich geh ins Gym'), but Fitnessstudio is still the neutral standard."
+ },
+ {
+  "taught": "das Eiweiß",
+  "alt": "das Protein",
+  "prefer": "either",
+  "note": "In gym and nutrition talk Protein is at least as common as Eiweiß; both are das. Only Eiweiß also means egg white."
+ },
+ {
+  "taught": "die Kniebeuge",
+  "alt": "die Squats",
+  "prefer": "either",
+  "note": "Lifters genuinely say Squats — but only in the plural. Match Squats against Kniebeugen; the singular 'der Squat' is rare, and 'die Squats' is just the plural article."
+ },
+ {
+  "taught": "der Computer",
+  "alt": "der Rechner",
+  "prefer": "either",
+  "note": "Computer, Rechner and PC are all everyday words for the same machine; Rechner leans slightly office/tech but any adult uses it."
+ },
+ {
+  "taught": "herunterladen",
+  "alt": "runterladen",
+  "prefer": "alt",
+  "note": "In speech almost everyone clips it to runterladen ('Lad dir die App runter'); herunterladen is the written/neutral form. downloaden also exists (gedownloadet) but sounds more marketing."
+ },
+ {
+  "taught": "hochladen",
+  "alt": "uploaden",
+  "prefer": "taught",
+  "note": "uploaden is Duden-attested (geuploadet/upgeloadet) and understood everywhere, but hochladen is what people actually say."
+ },
+ {
+  "taught": "abstürzen",
+  "alt": "crashen",
+  "prefer": "taught",
+  "note": "Gamers also say crashen (ist gecrasht), but abstürzen is the standard verb for a crashing program."
+ },
+ {
+  "taught": "muten",
+  "alt": "stummschalten",
+  "prefer": "taught",
+  "note": "In voice chat everyone says muten (du bist gemutet); stummschalten is what the software menu says and the word for phones (Handy stummschalten)."
+ },
+ {
+  "taught": "die Einstellungen",
+  "alt": "die Settings",
+  "prefer": "taught",
+  "note": "Younger gamers often say Settings out loud, but Einstellungen is the default word for everyone else and what every German UI says."
+ },
+ {
+  "taught": "die Warteschlange",
+  "alt": "die Queue",
+  "prefer": "taught",
+  "note": "Gamers say die Queue (English pronunciation); in the supermarket it is simply die Schlange."
+ },
+ {
+  "taught": "cheaten",
+  "alt": "schummeln",
+  "prefer": "taught",
+  "note": "In video games it is cheaten (using cheats/hacks); schummeln is mild, harmless cheating — board games, cards, school tests. Serious deception is betrügen; cheating on a partner is fremdgehen."
+ },
+ {
+  "taught": "die Wishlist",
+  "alt": "die Wunschliste",
+  "prefer": "either",
+  "note": "Steam's own German interface says Wunschliste, but players commonly say Wishlist (auf meiner Wishlist)."
+ },
+ {
+  "taught": "der Content",
+  "alt": "der Inhalt",
+  "prefer": "taught",
+  "note": "In creator/social-media talk everyone says Content; der Inhalt is the normal German word for content everywhere else (of a book, bottle, website) — outside the creator niche the two are not interchangeable."
+ },
+ {
+  "taught": "das Update",
+  "alt": "die Aktualisierung",
+  "prefer": "taught",
+  "note": "Update is fully standard German (das Update, ein Update rausbringen); die Aktualisierung is correct but stiff — it lives in software menus and formal writing, not speech."
+ },
+ {
+  "taught": "das Date",
+  "alt": "die Verabredung",
+  "prefer": "taught",
+  "note": "For a romantic date Germans say Date (das Date, ein Date haben); eine Verabredung is any arranged meet-up — also with friends or the dentist — so it doesn't specifically signal romance and sounds neutral to formal."
+ },
+ {
+  "taught": "der Schwarm",
+  "alt": "der Crush",
+  "prefer": "either",
+  "note": "Under-30s mostly say Crush (der Crush, now Duden-listed); der Schwarm is the classic word everyone understands, though it can sound a bit schoolyard-sweet to Gen Z."
+ },
+ {
+  "taught": "das Tattoo",
+  "alt": "die Tätowierung",
+  "prefer": "taught",
+  "note": "Everyone says Tattoo; die Tätowierung is the formal/official term you meet in regulations, medical or police contexts."
+ },
+ {
+  "taught": "die Toilette",
+  "alt": "das Klo",
+  "prefer": "taught",
+  "note": "Among friends or at home Germans say Klo ('Wo ist das Klo?'); with strangers, staff, or in a restaurant die Toilette is the polite default — which is exactly the situation this phrase is for."
+ },
+ {
+  "taught": "die Speisekarte",
+  "alt": "die Karte",
+  "prefer": "either",
+  "note": "In a restaurant most people just say die Karte ('Die Karte, bitte'); outside that context die Karte means card, ticket or map, so Speisekarte is the unambiguous word."
+ },
+ {
+  "taught": "öffnen",
+  "alt": "aufmachen",
+  "prefer": "alt",
+  "note": "For doors, windows and bottles everyday speech strongly favours aufmachen ('Machst du mal das Fenster auf?'); öffnen is neutral-to-formal and the default for shops opening, files and official contexts. Note aufmachen is separable: ich mache ... auf."
+ },
+ {
+  "taught": "freundlich",
+  "alt": "nett",
+  "prefer": "alt",
+  "note": "When describing a person, nett is the word Germans reach for first ('Die war echt nett'); freundlich is still everyday German but leans toward demeanour (ein freundlicher Kellner) and fixed phrases like 'Mit freundlichen Grüßen'. Beware 'ganz nett' — already faint praise."
+ },
+ {
+  "taught": "interessant",
+  "alt": "spannend",
+  "prefer": "either",
+  "note": "Spannend is just as common and often sounds more enthusiastic; literally 'suspenseful/exciting', but in everyday speech it covers most uses of 'interesting'."
+ },
+ {
+  "taught": "hungrig",
+  "alt": "Hunger haben",
+  "prefer": "alt",
+  "note": "Germans say 'Ich habe Hunger'; predicative 'Ich bin hungrig' is rare in speech. Hungrig is still fine attributively (hungrige Kinder). Note it's a verb phrase, not a drop-in adjective swap."
+ },
+ {
+  "taught": "das Geschäft",
+  "alt": "der Laden",
+  "prefer": "alt",
+  "note": "In everyday talk it is der Laden ('der Laden hat zu'); Geschäft is a notch more formal/neutral. Watch the gender: der Laden vs das Geschäft. Laden also colloquially means the whole operation ('der Laden läuft')."
+ },
+ {
+  "taught": "der Freund",
+  "alt": "der Kumpel",
+  "prefer": "taught",
+  "note": "Kumpel = buddy/mate, casual register, essentially male-only, and neatly avoids the mein Freund = boyfriend trap. Freund is still the base word to learn; Kumpel is slightly weaker (a mate, not necessarily a close friend)."
+ },
+ {
+  "taught": "die Kohle",
+  "alt": "das Geld",
+  "prefer": "alt",
+  "note": "Kohle is casual slang for cash (correctly taught in the slang unit); das Geld is the neutral default every learner needs first — you say Geld at a bank or in any formal context, never Kohle."
+ },
+ {
+  "taught": "die Klamotten",
+  "alt": "die Kleidung",
+  "prefer": "taught",
+  "note": "Klamotten is the casual everyday word; Kleidung is the neutral standard term. Watch the grammar: Klamotten is plural-only, Kleidung is singular (die Kleidung ist / die Klamotten sind)."
+ },
+ {
+  "taught": "chillen",
+  "alt": "entspannen",
+  "prefer": "either",
+  "note": "Chillen is casual and also means 'to hang out'; the standard verb is reflexive: sich entspannen. They overlap only in the pure relaxing sense."
+ },
+ {
+  "taught": "pennen",
+  "alt": "schlafen",
+  "prefer": "alt",
+  "note": "Pennen is slangy (salopp); schlafen is the normal word for sleeping."
+ },
+ {
+  "taught": "das Handy",
+  "alt": "das Smartphone",
+  "prefer": "taught",
+  "note": "Germans say Handy for any mobile phone; Smartphone is common in ads, news, and tech contexts but slightly stiffer in conversation."
+ },
+ {
+  "taught": "der Lieblingssong",
+  "alt": "das Lieblingslied",
+  "prefer": "either",
+  "note": "Song and Lied are both completely normal; Song feels a touch more modern and pop-oriented. Mind the articles: der Song, das Lied."
+ },
+ {
+  "taught": "der Auftritt",
+  "alt": "der Gig",
+  "prefer": "either",
+  "note": "Musicians and fans casually call a concert a Gig; Auftritt is the neutral word and also covers any public appearance."
+ },
+ {
+  "taught": "zelten",
+  "alt": "campen",
+  "prefer": "either",
+  "note": "Campen is just as common but broader — it also covers caravans and camper vans, while zelten specifically means sleeping in a tent. In shooters campen means holding a spot."
+ },
+ {
+  "taught": "versterben",
+  "alt": "sterben",
+  "prefer": "alt",
+  "note": "In normal conversation say sterben; versterben belongs in obituaries, official notices and doctors' language — using it casually sounds distant."
+ },
+ {
+  "taught": "der Tannenbaum",
+  "alt": "der Weihnachtsbaum",
+  "prefer": "either",
+  "note": "Weihnachtsbaum is arguably the more common everyday word for the Christmas tree; Tannenbaum is equally normal in speech and carries the traditional/song flavour (O Tannenbaum)."
+ },
+ {
+  "taught": "der Karneval",
+  "alt": "der Fasching",
+  "prefer": "either",
+  "note": "It is Karneval in the Rhineland and the national media, Fasching in Bavaria, Austria and much of the east — same festival, different region."
+ },
+ {
+  "taught": "der Kassenbon",
+  "alt": "der Bon",
+  "prefer": "either",
+  "note": "At the till Germans say Bon, Kassenbon, Kassenzettel or Beleg interchangeably — cashiers usually ask with the short form ('Brauchen Sie den Bon?')."
+ },
+ {
+  "taught": "reduziert",
+  "alt": "im Angebot",
+  "prefer": "either",
+  "note": "Im Angebot is the everyday phrase for promotional deals (supermarket weekly offers); reduziert is the marked-down price tag, especially clearance and clothing. Shop windows use the English 'Sale'."
+ },
+ {
+  "taught": "die Bordkarte",
+  "alt": "der Boardingpass",
+  "prefer": "either",
+  "note": "Both are used; Boardingpass (Duden-attested) is common in speech and some airline apps, while staff and announcements usually say Bordkarte ('Ihre Bordkarte, bitte')."
+ },
+ {
+  "taught": "die Rückmeldung",
+  "alt": "das Feedback",
+  "prefer": "either",
+  "note": "In office German Feedback is at least as common as Rückmeldung; note that Rückmeldung also covers a plain reply or hearing back ('noch keine Rückmeldung bekommen'), where Feedback fits less naturally."
+ },
+ {
+  "taught": "das Vorstellungsgespräch",
+  "alt": "das Bewerbungsgespräch",
+  "prefer": "taught",
+  "note": "Bewerbungsgespräch is a fully valid everyday synonym, but Vorstellungsgespräch is the more common term and what most people (and job postings) actually say; casually both shorten to 'das Gespräch'."
+ },
+ {
+  "taught": "die Flitterwochen",
+  "alt": "die Hochzeitsreise",
+  "prefer": "either",
+  "note": "Hochzeitsreise (singular) is the equally common, slightly more formal word for the honeymoon trip; Flitterwochen (always plural) covers the honeymoon period as a whole."
+ },
+ {
+  "taught": "die Granate",
+  "alt": "die Nade",
+  "prefer": "taught",
+  "note": "In shooter voice chat German gamers genuinely say 'Nade' ('wirf ne Nade'); in writing and outside FPS comms it is always Granate."
+ },
+ {
+  "taught": "der Schaden",
+  "alt": "der Damage",
+  "prefer": "either",
+  "note": "In games Germans constantly say 'Damage' or 'DMG' ('macht keinen Damage'); Schaden is the correct German word and also fully natural in gaming speech ('Der macht zu viel Schaden')."
+ },
+ {
+  "taught": "bekommen",
+  "alt": "kriegen",
+  "prefer": "either",
+  "note": "In spoken German kriegen is at least as common as bekommen — the app itself glosses it that way (line 2084) — but it stays informal: fine among friends, avoided in formal writing and polite emails."
+ },
+ {
+  "taught": "die Folge",
+  "alt": "die Episode",
+  "prefer": "taught",
+  "note": "Episode is fine German too — streaming UIs use it — but Folge is what people actually say ('die neue Folge')."
+ }
+]

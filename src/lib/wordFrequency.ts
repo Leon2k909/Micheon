@@ -54,12 +54,18 @@ const SYNONYM_PAIRS: { common: string; rare: string; context?: string }[] = [
   { common: "schnell", rare: "rasch" },
 ];
 
-export type SynonymNote = { kind: "common" | "rare"; label: string; hint: string } | null;
+export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hint: string } | null;
+
+// Native-verified loanword/sibling pairs (see scratch/loanword-workflow):
+// which anglicism or synonym Germans really use alongside the taught word.
+// prefer: which side everyday speech reaches for ("either" = both common).
+import loanwordPairs from "@/lib/loanwordPairs.json";
+const bare = (s: string) => String(s ?? "").toLowerCase().trim().replace(/^(der|die|das)\s+/, "");
 
 /** Comparative note when a taught same-meaning sibling exists. */
 export function synonymNote(word: string | undefined): SynonymNote {
   if (!word) return null;
-  const key = String(word).toLowerCase().trim().replace(/^(der|die|das)\s+/, "");
+  const key = bare(word);
   for (const pair of SYNONYM_PAIRS) {
     if (pair.rare.toLowerCase() === key) {
       return {
@@ -75,6 +81,18 @@ export function synonymNote(word: string | undefined): SynonymNote {
         hint: `Prefer this over ${pair.rare}`,
       };
     }
+  }
+  // Loanword siblings: tell the learner what Germans actually say day to day.
+  for (const p of loanwordPairs as { taught: string; alt: string; prefer: string; note: string }[]) {
+    const t = bare(p.taught), a = bare(p.alt);
+    if (key !== t && key !== a) continue;
+    const other = key === t ? p.alt : p.taught;
+    const viewedPreferred =
+      p.prefer === "either" || (key === t ? p.prefer === "taught" : p.prefer === "alt");
+    if (p.prefer !== "either" && !viewedPreferred) {
+      return { kind: "rare", label: `Germans usually say ${other}`, hint: p.note };
+    }
+    return { kind: "also", label: `also: ${other}`, hint: p.note };
   }
   return null;
 }

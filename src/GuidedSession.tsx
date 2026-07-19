@@ -362,35 +362,56 @@ function MicButton({ lang, onText, inputRef }: {
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   const [live, setLive] = useState(false);
+  const [status, setStatus] = useState<"listening" | "model" | "transcribing" | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Same engine choice as the Speak stage: the desktop app can't reach
+  // Google's speech service, so it uses the bundled offline Whisper model;
+  // the website uses the browser's SpeechRecognition.
+  const useWhisper = useMemo(() => isElectronApp() && isWhisperSupported(), []);
   useEffect(() => () => abortRef.current?.abort(), []);
-  if (!isSpeechRecognitionSupported()) return null;
+  if (!useWhisper && !isSpeechRecognitionSupported()) return null;
 
   const toggle = async () => {
-    if (live) { abortRef.current?.abort(); setLive(false); return; }
+    if (live) { abortRef.current?.abort(); setLive(false); setStatus(null); return; }
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setLive(true);
+    setStatus("listening");
     try {
-      const { transcript } = await listenGermanOnce({
-        lang,
-        signal: ctrl.signal,
-        onInterim: (t) => onText(t),
-      });
-      onText(transcript);
+      if (useWhisper) {
+        const { transcript } = await listenWhisperOnce({
+          lang,
+          signal: ctrl.signal,
+          onState: (s) => setStatus(s === "loading-model" ? "model" : s === "transcribing" ? "transcribing" : "listening"),
+        });
+        onText(transcript);
+      } else {
+        const { transcript } = await listenGermanOnce({
+          lang,
+          signal: ctrl.signal,
+          onInterim: (t) => onText(t),
+        });
+        onText(transcript);
+      }
     } catch {
-      /* aborted / no speech — leave whatever interim text arrived */
+      /* aborted / no speech — leave whatever text arrived */
     } finally {
       setLive(false);
+      setStatus(null);
       inputRef?.current?.focus();
     }
   };
+
+  const title = !live ? "Speak instead of typing"
+    : status === "model" ? "Preparing speech model (one-time download)…"
+    : status === "transcribing" ? "Checking what you said…"
+    : "Listening — tap to stop";
 
   return (
     <button
       type="button"
       aria-label={live ? "Stop dictation" : "Dictate your answer"}
-      title={live ? "Stop dictation" : "Speak instead of typing"}
+      title={title}
       className={cn("fs-mic", live && "is-live")}
       onMouseDown={(e) => e.preventDefault()}
       onClick={toggle}
@@ -1000,18 +1021,11 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             <p className="text-center text-sm font-semibold text-zinc-500">
               {hasFr ? "Read and listen to the German and French." : ui("Read and listen — it plays automatically.")}
             </p>
-            <div className="flex gap-3">
-              <button type="button"
-                onClick={() => tts(item.de, 0.88, targetLang)}
-                aria-label="Hear it again"
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 active:scale-95">
-                <Volume2 className="h-5 w-5" />
-              </button>
-              <Button onClick={advance}
-                className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            {/* One Hear-it only — the purple listen button in the heading replays. */}
+            <Button onClick={advance}
+              className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
+              {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
           </motion.div>
         )}
 
@@ -1116,7 +1130,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
                   disabled={sayChecked && sayResult.ok}
                 />
-                {!learnEn && <div className="fs-chars"><CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} /></div>}
                 <MicButton lang={targetLang} onText={t => { setSayInput(t); if (sayChecked) setSayChecked(false); }} inputRef={sayRef} />
                 <button type="button" className="fs-check" onClick={sayChecked && sayResult.ok ? onNext : checkSay}>
                   <span className="fs-check-label">{sayChecked && sayResult.ok ? ui("Done") : ui("Check")}</span>
@@ -1124,6 +1137,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </button>
               </div>
             </motion.div>
+            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} /></div>}
 
             <AnimatePresence>
               {sayChecked && (
@@ -1188,7 +1202,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
                   disabled={checked && result.ok}
                 />
-                {!learnEn && <div className="fs-chars"><CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} /></div>}
                 <MicButton lang={targetLang} onText={t => { setInput(t); if (checked) setChecked(false); }} inputRef={inputRef} />
                 <button type="button" className="fs-check" onClick={checked && result.ok ? advance : checkAnswer}>
                   <span className="fs-check-label">{checked && result.ok ? ui("Next") : ui("Check")}</span>
@@ -1196,6 +1209,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </button>
               </div>
             </motion.div>
+            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} /></div>}
 
             {/* Feedback */}
             <AnimatePresence>
@@ -1276,7 +1290,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
                   disabled={enChecked && enResult.ok}
                 />
-                {learnEn && <div className="fs-chars"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
                 <MicButton
                   lang={learnEn ? "de-DE" : "en-US"}
                   onText={t => { setEnInput(t); if (enChecked) setEnChecked(false); }}
@@ -1288,6 +1301,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </button>
               </div>
             </motion.div>
+            {learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
             <AnimatePresence>
               {enChecked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -1359,7 +1373,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
                   disabled={gapChecked && gapResult.ok}
                 />
-                {!learnEn && <div className="fs-chars"><CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} /></div>}
                 <MicButton lang={targetLang} onText={t => { setGapInput(t); if (gapChecked) setGapChecked(false); }} inputRef={gapInputRef} />
                 <button type="button" className="fs-check" onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}>
                   <span className="fs-check-label">{gapChecked && gapResult.ok ? ui("Next") : ui("Check")}</span>
@@ -1367,6 +1380,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 </button>
               </div>
             </motion.div>
+            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} /></div>}
 
             <AnimatePresence>
               {gapChecked && (

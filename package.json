@@ -51,7 +51,14 @@
       "target": "dmg"
     },
     "linux": {
-      "target": "AppImage"
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Education",
+      "synopsis": "Offline German lessons with premium voice and spaced repetition",
+      "maintainer": "Leon2k909 <leon@ordifydirect.com>"
     }
   },
   "dependencies": {
