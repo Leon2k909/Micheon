@@ -759,3 +759,249 @@ a { color: inherit; text-decoration: none; }
 [data-theme="light"] .guided-session .lesson-cta:hover {
   background: linear-gradient(90deg, #a97bff 0%, #9553ff 55%, #8443f0 100%);
 }
+
+/* ═══════════════ Focus lesson (micheon-focus-prototype) ═══════════════
+   The lesson overlay is a deliberate always-dark "focus mode" regardless of
+   app theme, matching the prototype. Everything is scoped to .guided-session. */
+.guided-session.fs-app {
+  --fs-bg: #0d0e13;
+  --fs-surface: #1a1b24;
+  --fs-surface-2: #20212c;
+  --fs-deep: #111219;
+  --fs-line: rgba(255, 255, 255, 0.09);
+  --fs-line-strong: rgba(255, 255, 255, 0.14);
+  --fs-text: #f8f8fb;
+  --fs-text-2: #d4d5df;
+  --fs-muted: #9a9dab;
+  --fs-muted-2: #757887;
+  --fs-purple: #8b4cff;
+  --fs-grad: linear-gradient(135deg, #7834f7 0%, #9a5cff 52%, #6b2ee6 100%);
+  --fs-yellow: #ffd23f;
+  --fs-yellow-hover: #ffdd69;
+  color: var(--fs-text);
+  background:
+    linear-gradient(180deg, rgba(139, 76, 255, 0.105) 0, rgba(139, 76, 255, 0.025) 176px, transparent 330px),
+    linear-gradient(180deg, #15151d 0%, #101118 54%, #0d0e13 100%);
+}
+
+/* ── topbar ── */
+.fs-topbar {
+  position: relative; z-index: 10; height: 68px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 20px; padding: 0 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(19, 20, 27, 0.94);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14);
+}
+.fs-brand { display: inline-flex; align-items: center; gap: 11px; }
+.fs-brand img {
+  width: 38px; height: 38px; border-radius: 12px;
+  border: 1px solid rgba(194, 166, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 18px rgba(76, 31, 160, 0.25);
+}
+.fs-brand span { font-size: 12px; font-weight: 850; letter-spacing: 0.24em; color: var(--fs-text); }
+.fs-progress { flex: 1; display: grid; grid-template-columns: auto minmax(120px, 520px) auto; align-items: center; justify-content: center; gap: 13px; }
+.fs-progress .fs-progress-copy { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; }
+.fs-progress .fs-progress-copy span { color: var(--fs-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.fs-progress .fs-progress-copy strong { font-size: 13px; color: var(--fs-text); }
+.fs-progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 2px rgba(0,0,0,0.32); }
+.fs-progress-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #a66bff, #7c3aed); box-shadow: 0 0 14px rgba(139,76,255,0.28); transition: width 0.35s cubic-bezier(0.2,0.85,0.2,1); }
+.fs-progress-pct { color: var(--fs-text-2); font-size: 12px; font-weight: 700; }
+.guided-session .fs-iconbtn {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border: 1px solid var(--fs-line); border-radius: 13px;
+  background: rgba(255,255,255,0.025); color: var(--fs-muted); cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+.guided-session .fs-iconbtn:hover { transform: translateY(-2px); border-color: rgba(168,120,255,0.28); background: rgba(139,76,255,0.07); color: var(--fs-text); }
+
+/* ── card ── */
+.fs-card {
+  overflow: hidden; width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.105); border-radius: 30px;
+  background: linear-gradient(180deg, rgba(29, 30, 40, 0.985), rgba(23, 24, 32, 0.985));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+.fs-card-body { padding: 24px 30px 22px; }
+
+/* ── stage route ── */
+.fs-stagebar { padding: 18px 30px 19px; border-bottom: 1px solid rgba(255,255,255,0.07); background: rgba(13,14,20,0.23); }
+.fs-stagemeta { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 14px; }
+.fs-stagemeta > div { display: flex; align-items: baseline; gap: 11px; }
+.fs-stagemeta span { color: var(--fs-muted); font-size: 11px; font-weight: 820; letter-spacing: 0.1em; text-transform: uppercase; }
+.fs-stagemeta strong { color: var(--fs-text); font-size: 15px; letter-spacing: -0.01em; }
+.fs-stagemeta .fs-stagehint { color: var(--fs-muted-2); font-size: 10px; }
+.fs-stagetrack { position: relative; display: grid; align-items: start; }
+.fs-stageline { position: absolute; z-index: 0; top: 21px; height: 3px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,0.09); }
+.fs-stageline i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7834f7, #a264ff); box-shadow: 0 0 14px rgba(139,76,255,0.36); transition: width 0.35s cubic-bezier(0.2,0.85,0.2,1); }
+.guided-session .fs-stagebtn { position: relative; z-index: 1; display: grid; justify-items: center; gap: 7px; border: 0; padding: 0; background: transparent; color: var(--fs-muted); cursor: pointer; }
+.guided-session .fs-stagebtn > span {
+  width: 43px; height: 43px; display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+  background: #262732; color: #b0b2bf;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 5px 0 #111219, 0 10px 18px rgba(0,0,0,0.14);
+  font-size: 14px; font-weight: 880;
+  transition: transform 0.2s cubic-bezier(0.2,0.9,0.2,1), background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.guided-session .fs-stagebtn small { color: inherit; font-size: 11px; font-weight: 720; }
+.guided-session .fs-stagebtn:hover > span { transform: translateY(-3px); border-color: rgba(168,120,255,0.27); color: var(--fs-text); background: #2b2c39; }
+.guided-session .fs-stagebtn.is-done { color: #bfa9f3; }
+.guided-session .fs-stagebtn.is-done > span { border-color: rgba(177,139,255,0.31); background: var(--fs-grad); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.26), 0 5px 0 #3b176f, 0 11px 21px rgba(69,25,141,0.2); }
+.guided-session .fs-stagebtn.is-active { color: #ffe264; }
+.guided-session .fs-stagebtn.is-active > span {
+  transform: translateY(-3px); border-color: #ffe987; background: var(--fs-yellow); color: #261f05;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 6px 0 #a77b00, 0 13px 24px rgba(255,210,63,0.16);
+}
+
+/* ── heading ── */
+.fs-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.fs-eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #bda8ed; font-size: 11px; font-weight: 850; letter-spacing: 0.13em; text-transform: uppercase; }
+.fs-eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--fs-yellow); box-shadow: 0 0 16px rgba(255,210,63,0.35); }
+.fs-h1 { margin: 0; color: var(--fs-text); font-size: clamp(24px, 2vw, 31px); line-height: 1.08; letter-spacing: -0.04em; font-weight: 850; }
+.fs-sub { margin: 6px 0 0; color: var(--fs-muted); font-size: 14px; font-weight: 600; }
+.guided-session .fs-listen {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--fs-line-strong); border-radius: 16px; padding: 6px 14px 6px 6px;
+  background: rgba(255,255,255,0.025); color: var(--fs-text-2); cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.guided-session .fs-listen:hover { transform: translateY(-2px); border-color: rgba(168,120,255,0.32); background: rgba(139,76,255,0.07); }
+.fs-listen-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--fs-grad); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 9px 19px rgba(71,25,151,0.24); }
+.fs-listen strong { color: var(--fs-text); font-size: 13px; display: block; text-align: left; }
+.fs-listen small { color: var(--fs-muted); font-size: 10px; display: block; text-align: left; }
+.fs-listen.is-speaking .fs-listen-icon { animation: fsListenPulse 0.82s ease-in-out infinite; }
+@keyframes fsListenPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 0 24px rgba(139,76,255,0.34); } }
+
+/* grade pills (Know it / Struggle) restyled for dark */
+.guided-session .grade-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--fs-line); border-radius: 999px; padding: 7px 13px;
+  background: rgba(255,255,255,0.025); color: var(--fs-text-2);
+  font-size: 11px; font-weight: 800; cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+.guided-session .grade-btn:hover { transform: translateY(-2px); color: #fff; }
+.guided-session .grade-btn-known:hover { border-color: rgba(105,225,173,0.4); background: rgba(105,225,173,0.08); }
+.guided-session .grade-btn-struggle:hover { border-color: rgba(255,140,160,0.4); background: rgba(255,140,160,0.08); }
+.guided-session .grade-kbd { border: 1px solid var(--fs-line); border-radius: 6px; padding: 1px 5px; font-size: 9px; color: var(--fs-muted); background: rgba(255,255,255,0.03); }
+
+/* ── sentence board ── */
+.fs-board {
+  position: relative; margin-top: 4px; padding: 14px 20px 22px;
+  border: 1px solid rgba(202,187,235,0.14); border-radius: 22px;
+  background: linear-gradient(180deg, #151620, #111219);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), inset 0 -18px 34px rgba(0,0,0,0.11), 0 8px 0 #0a0b10, 0 22px 42px rgba(0,0,0,0.26);
+  transition: border-color 0.2s ease;
+}
+.fs-board:hover { border-color: rgba(168,120,255,0.23); }
+.fs-board-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.fs-board-top span { color: #bda8ed; font-size: 10px; font-weight: 850; letter-spacing: 0.13em; text-transform: uppercase; }
+.fs-board-top small { color: var(--fs-muted-2); font-size: 11px; }
+.fs-line {
+  min-height: 84px; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
+  gap: 0.18em; padding: 14px 4px 0; text-align: center;
+  color: #fafafd; font-size: clamp(28px, 3.4vw, 44px); font-weight: 860; line-height: 1.12; letter-spacing: -0.045em;
+}
+.guided-session .fs-word {
+  position: relative; border: 0; border-radius: 0.24em; padding: 0.1em 0.08em 0.14em;
+  background: transparent; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+  transition: transform 0.18s cubic-bezier(0.2,0.9,0.2,1), background 0.18s ease, color 0.18s ease;
+}
+.guided-session .fs-word::after { content: ""; position: absolute; left: 16%; right: 16%; bottom: 0.05em; height: 3px; border-radius: 999px; background: transparent; transform: scaleX(0.45); transition: transform 0.18s ease, background 0.18s ease; }
+.guided-session .fs-word:hover { transform: translateY(-4px); background: rgba(139,76,255,0.085); color: #fff; }
+.guided-session .fs-word:hover::after { background: rgba(168,120,255,0.64); transform: scaleX(1); }
+.guided-session .fs-word.word-key-hl { color: #cdbbff; }
+.guided-session .fs-word.word-key-hl::after { background: #9b63ff; transform: scaleX(1); }
+.fs-line.is-good { color: #8fe8c2; }
+.fs-line.is-bad { color: #ff9cb0; }
+
+/* ── translation row ── */
+.fs-trow { display: flex; align-items: center; gap: 12px; padding: 12px 4px 4px; }
+.fs-chip { flex: 0 0 auto; min-width: 36px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(168,120,255,0.2); border-radius: 10px; background: rgba(139,76,255,0.08); color: #c6b2f8; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; padding: 0 8px; }
+.fs-trow p { margin: 0; color: var(--fs-text-2); font-size: clamp(15px, 1.15vw, 18px); line-height: 1.35; font-weight: 600; }
+
+/* ── answer panel ── */
+.fs-panel {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center;
+  min-height: 68px; padding: 7px;
+  border: 1px solid var(--fs-line-strong); border-radius: 20px; background: #111219;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 16px 32px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.fs-panel:focus-within { transform: translateY(-2px); border-color: rgba(168,120,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 38px rgba(0,0,0,0.24), 0 0 0 4px rgba(139,76,255,0.065); }
+.fs-panel.is-good { border-color: rgba(105,225,173,0.5); }
+.fs-panel.is-bad { border-color: rgba(255,140,160,0.48); }
+.fs-panel.is-coach { border-color: rgba(255,210,63,0.42); }
+.fs-prompt { display: flex; align-items: center; gap: 10px; padding: 0 14px 0 4px; border-right: 1px solid var(--fs-line); }
+.fs-prompt span { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: var(--fs-grad); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 9px 19px rgba(71,25,151,0.23); font-size: 10px; font-weight: 900; }
+.fs-prompt strong { color: var(--fs-text-2); font-size: 13px; white-space: nowrap; }
+.guided-session .fs-panel input {
+  width: 100%; min-width: 0; height: 52px; border: 0 !important; outline: 0 !important; box-shadow: none !important;
+  padding: 0 16px; background: transparent !important; color: var(--fs-text) !important; caret-color: var(--fs-yellow);
+  font-size: clamp(17px, 1.25vw, 20px); font-weight: 600; text-align: left;
+}
+.guided-session .fs-panel input::placeholder { color: #6f7280; opacity: 1; }
+.fs-chars { display: flex; gap: 4px; padding-right: 4px; }
+.guided-session .fs-chars button {
+  width: 34px; height: 34px; border: 1px solid var(--fs-line); border-radius: 10px;
+  background: rgba(255,255,255,0.025); color: var(--fs-text-2); font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+.guided-session .fs-chars button:hover { transform: translateY(-2px); border-color: rgba(255,210,63,0.3); background: rgba(255,210,63,0.065); color: #ffe470; }
+.guided-session .fs-mic {
+  width: 40px; height: 40px; margin-right: 4px; flex: 0 0 auto; display: grid; place-items: center;
+  border: 1px solid var(--fs-line); border-radius: 12px;
+  background: rgba(255,255,255,0.025); color: var(--fs-muted); cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+.guided-session .fs-mic:hover { transform: translateY(-2px); border-color: rgba(168,120,255,0.32); color: var(--fs-text); background: rgba(139,76,255,0.07); }
+.guided-session .fs-mic.is-live { border-color: rgba(255,140,160,0.55); background: rgba(255,140,160,0.1); color: #ff9cb0; animation: fsMicPulse 1s ease-in-out infinite; }
+@keyframes fsMicPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,140,160,0.25); } 50% { box-shadow: 0 0 0 6px rgba(255,140,160,0.06); } }
+/* Compact check: sized to sit inside the panel with breathing room (the
+   prototype's 64px button touched the panel border). */
+.guided-session .fs-check {
+  height: 50px; min-width: 116px; margin-left: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  border: 0; border-radius: 15px; background: var(--fs-yellow); color: #261e04;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.78), 0 5px 0 #a77b00, 0 12px 20px rgba(0,0,0,0.2);
+  font-size: 15px; font-weight: 900; cursor: pointer;
+  transition: transform 0.17s ease, box-shadow 0.17s ease, background 0.17s ease;
+}
+.guided-session .fs-check:hover { transform: translateY(-2px); background: var(--fs-yellow-hover); box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 7px 0 #a77b00, 0 15px 24px rgba(0,0,0,0.22); }
+.guided-session .fs-check:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.78), 0 2px 0 #a77b00, 0 7px 12px rgba(0,0,0,0.18); }
+.guided-session .fs-check:disabled { opacity: 0.55; cursor: default; transform: none; }
+.fs-hint { min-height: 24px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 11px; color: var(--fs-muted); font-size: 13px; font-weight: 620; }
+.fs-hint kbd { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--fs-line); border-radius: 7px; color: #aaaeba; font-size: 12px; }
+
+/* ── dark coherence for legacy utility classes inside the lesson ── */
+.guided-session .bg-white { background: var(--fs-surface) !important; }
+.guided-session .bg-zinc-50, .guided-session .bg-zinc-50\/70 { background: var(--fs-surface-2) !important; }
+.guided-session .bg-zinc-100 { background: #262732 !important; }
+.guided-session .hover\:bg-zinc-50:hover, .guided-session .hover\:bg-zinc-100:hover, .guided-session .hover\:bg-zinc-200:hover { background: #2b2c39 !important; }
+.guided-session .border-zinc-100, .guided-session .border-zinc-200, .guided-session .hover\:border-zinc-300:hover { border-color: var(--fs-line-strong) !important; }
+.guided-session .text-zinc-950, .guided-session .text-zinc-900, .guided-session .hover\:text-zinc-900:hover { color: var(--fs-text) !important; }
+.guided-session .text-zinc-700, .guided-session .text-zinc-600 { color: var(--fs-text-2) !important; }
+.guided-session .text-zinc-500, .guided-session .text-zinc-400 { color: var(--fs-muted) !important; }
+.guided-session .text-emerald-700 { color: #7ce3b5 !important; }
+.guided-session .text-emerald-600 { color: #6fdcab !important; }
+.guided-session .text-amber-700, .guided-session .text-amber-600 { color: #ffd76e !important; }
+.guided-session .text-rose-700, .guided-session .text-rose-600 { color: #ff9cb0 !important; }
+.guided-session .border-emerald-300 { border-color: rgba(105,225,173,0.45) !important; }
+.guided-session .border-rose-300 { border-color: rgba(255,140,160,0.45) !important; }
+.guided-session .bg-emerald-50 { background: rgba(105,225,173,0.08) !important; }
+.guided-session .bg-rose-50 { background: rgba(255,140,160,0.08) !important; }
+
+@media (max-width: 860px) {
+  .fs-progress { display: none; }
+  .fs-card-body { padding: 18px 14px 16px; }
+  .fs-stagebar { padding: 14px 12px 15px; }
+  .guided-session .fs-stagebtn > span { width: 36px; height: 36px; border-radius: 11px; font-size: 12px; }
+  .guided-session .fs-stagebtn small { display: none; }
+  .fs-stageline { top: 18px; }
+  .fs-prompt strong { display: none; }
+  .fs-chars { display: none; }
+  .guided-session .fs-check { min-width: 58px; }
+  .guided-session .fs-check .fs-check-label { display: none; }
+  .fs-listen strong, .fs-listen small { display: none; }
+  .fs-listen { padding-right: 6px; }
+}

@@ -267,29 +267,148 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   return p;
 }
 
-function PhaseDots({ current, withFrench = false, onClickPhase }: {
+// Big stage title for the lesson heading ("Build the sentence" style).
+function phaseHeading(p: Phase, withFrench: boolean): string {
+  switch (p) {
+    case "Read": return "Read & listen";
+    case "Speak": return "Say it out loud";
+    case "Type": return withFrench ? "Type the German" : "Type the sentence";
+    case "TypeAgain": return "Type it once more";
+    case "Translate": return "Translate the meaning";
+    case "TranslateAgain": return "Recall the meaning";
+    case "Gap": return "Fill the blank";
+    case "SpeakAll": return "Build from memory";
+    case "French": return "Type the French";
+    case "Memory": return "Recall both languages";
+    default: return "Sentence practice";
+  }
+}
+
+// The sentence as tappable words — click any word to hear just that word.
+// Keeps the key-word underline from renderKeyWord via the word-key-hl class.
+function TappableSentence({ text, lookup, lang }: { text: string; lookup?: string; lang: string }) {
+  const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
+  const low = (lookup ?? "").toLowerCase();
+  return (
+    <>
+      {words.map((w, i) => (
+        <button
+          key={`${w}-${i}`}
+          type="button"
+          className={cn("fs-word", low && low.length >= 3 && w.toLowerCase().includes(low) && "word-key-hl")}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => tts(w.replace(/[.,!?;:"«»„“]/g, ""), 0.82, lang)}
+        >
+          {w}
+        </button>
+      ))}
+    </>
+  );
+}
+
+// Prototype-style stage route: numbered squares with labels on a progress
+// line. Clicking a stage jumps to it (same behaviour the dots had).
+function StageRoute({ current, withFrench = false, onClickPhase }: {
   current: Phase;
   withFrench?: boolean;
   onClickPhase?: (p: Phase) => void;
 }) {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
+  const n = allPhases.length;
+  const half = 100 / (n * 2); // center of first/last column, in %
+  // Fill runs from the first stage's center to the current stage's center.
+  const fillPct = n > 1 ? (Math.max(idx, 0) / (n - 1)) * 100 : 0;
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 p-1">
-      {allPhases.map((p, i) => (
-        <button
-          key={p}
-          type="button"
-          title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
-          aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
-          onClick={() => onClickPhase?.(p)}
-          className={cn("pdot", i === idx ? "pdot-active" : i < idx ? "pdot-done" : "pdot-todo")}
-        >
-          {i + 1}
-        </button>
-      ))}
+    <div className="fs-stagebar">
+      <div className="fs-stagemeta">
+        <div>
+          <span>{ui("Stage")} {idx + 1} {ui("of")} {n}</span>
+          <strong>{ui(phaseLabel(current, withFrench))}</strong>
+        </div>
+        <span className="fs-stagehint">{ui("Jump to any stage")}</span>
+      </div>
+      <div className="fs-stagetrack" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
+        <div className="fs-stageline" style={{ left: `${half}%`, right: `${half}%` }} aria-hidden>
+          <i style={{ width: `${fillPct}%` }} />
+        </div>
+        {allPhases.map((p, i) => (
+          <button
+            key={p}
+            type="button"
+            title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
+            aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
+            aria-current={i === idx ? "step" : undefined}
+            onClick={() => onClickPhase?.(p)}
+            className={cn("fs-stagebtn", i === idx ? "is-active" : i < idx && "is-done")}
+          >
+            <span>{i + 1}</span>
+            <small>{ui(phaseLabel(p, withFrench))}</small>
+          </button>
+        ))}
+      </div>
     </div>
   );
+}
+
+/**
+ * Mic dictation for the answer boxes: tap to speak, interim words stream into
+ * the input live, tap again to stop. Hidden when the browser has no
+ * SpeechRecognition (the TTS voices still work everywhere).
+ */
+function MicButton({ lang, onText, inputRef }: {
+  lang: string;
+  onText: (text: string) => void;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+}) {
+  const [live, setLive] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []);
+  if (!isSpeechRecognitionSupported()) return null;
+
+  const toggle = async () => {
+    if (live) { abortRef.current?.abort(); setLive(false); return; }
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    setLive(true);
+    try {
+      const { transcript } = await listenGermanOnce({
+        lang,
+        signal: ctrl.signal,
+        onInterim: (t) => onText(t),
+      });
+      onText(transcript);
+    } catch {
+      /* aborted / no speech — leave whatever interim text arrived */
+    } finally {
+      setLive(false);
+      inputRef?.current?.focus();
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={live ? "Stop dictation" : "Dictate your answer"}
+      title={live ? "Stop dictation" : "Speak instead of typing"}
+      className={cn("fs-mic", live && "is-live")}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={toggle}
+    >
+      <Mic2 style={{ width: 18, height: 18 }} />
+    </button>
+  );
+}
+
+// Keep the caret in the active answer box: when focus drifts to the body
+// (e.g. after clicking a pill or empty space), pull it back — but never steal
+// focus from another input (the Memory phase has two).
+function refocusOnBlur(ref: React.RefObject<HTMLInputElement | null>) {
+  return (e: React.FocusEvent<HTMLInputElement>) => {
+    const next = e.relatedTarget as HTMLElement | null;
+    if (next && (next.tagName === "INPUT" || next.tagName === "TEXTAREA" || next.isContentEditable)) return;
+    setTimeout(() => ref.current?.focus(), 80);
+  };
 }
 
 // A single labeled language row (German / French) for bilingual companion mode.
@@ -708,9 +827,9 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const isTyping = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
-      if (!event.altKey || isTyping) return;
+      // The answer box keeps focus permanently now, so Alt combos must work
+      // while "typing" — Alt+K/S never inserts a character anyway.
+      if (!event.altKey) return;
 
       const key = event.key.toLowerCase();
       if (key === "k") {
@@ -732,72 +851,55 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const enc = encouragements[attempts % encouragements.length];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-3xl space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-zinc-700 shadow-[inset_0_0_0_1px_#e4e4e7]">
-            <Languages className="h-5 w-5" />
-          </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
+      {/* Stage route (full-bleed inside the card) */}
+      <StageRoute current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
+
+      <div className="fs-card-body space-y-4">
+        {/* Heading: eyebrow + stage title + Hear it / grade pills */}
+        <div className="fs-heading">
           <div>
-            <p className="text-sm font-black text-zinc-950">{ui("Sentence practice")}</p>
-            <p className="text-xs font-semibold text-zinc-500">
+            <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
+            <h1 className="fs-h1">{ui(phaseHeading(phase, hasFr))}</h1>
+            <p className="fs-sub">
               {hasFr ? "Read, hear, say, then type it in German and French." : ui("Read, hear, say, type, then translate.")}
             </p>
           </div>
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-zinc-600 shadow-[inset_0_0_0_1px_#e4e4e7]">
-          <Target className="h-4 w-4 text-zinc-400" />
-          {ui("Build one useful sentence")}
-        </div>
-      </div>
-
-      {/* Phase dots */}
-      <PhaseDots current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
-
-      {/* Sentence display card */}
-      <div className={cn(
-        "lesson-shell space-y-5 rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_14px_34px_rgba(25,27,38,0.06)] transition-all duration-300 sm:p-8"
-      )}>
-        {/* Decorative audio-wave accent (mockup) */}
-        <div aria-hidden className={cn("lesson-wave", ttsOn && "wave-live")}>
-          {[0.5, 0.9, 0.35, 1, 0.6, 0.8, 0.3, 0.75, 0.45, 0.95].map((h, i) => (
-            <span key={i} style={{ "--h": h, "--i": i } as React.CSSProperties} />
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="lesson-kicker">
-            {hasFr ? "German + French" : ui(`${targetLabel} sentence`)}
-          </span>
-          {!hasFr && (
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                aria-label="Mark known and skip to the next item. Shortcut Alt K"
-                className="grade-btn grade-btn-known"
-                onClick={markKnown}
-                type="button"
-              >
-                {ui("Know it")}
-                <kbd className="grade-kbd">Alt K</kbd>
-              </button>
-              <button
-                aria-label="Mark this item as a struggle. Shortcut Alt S"
-                className="grade-btn grade-btn-struggle"
-                onClick={markStruggle}
-                type="button"
-              >
-                {ui("Struggle")}
-                <kbd className="grade-kbd">Alt S</kbd>
-              </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-1.5 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100"
-                onClick={() => tts(item.de, 0.82, targetLang)}
-                type="button"
-              >
-                <Volume2 className="h-3.5 w-3.5" />
-                {ui("Hear it")}
-              </button>
-            </div>
-          )}
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            {!hasFr && (
+              <>
+                <button
+                  aria-label="Mark known and skip to the next item. Shortcut Alt K"
+                  className="grade-btn grade-btn-known"
+                  onClick={markKnown}
+                  type="button"
+                >
+                  {ui("Know it")}
+                  <kbd className="grade-kbd">Alt K</kbd>
+                </button>
+                <button
+                  aria-label="Mark this item as a struggle. Shortcut Alt S"
+                  className="grade-btn grade-btn-struggle"
+                  onClick={markStruggle}
+                  type="button"
+                >
+                  {ui("Struggle")}
+                  <kbd className="grade-kbd">Alt S</kbd>
+                </button>
+              </>
+            )}
+            <button
+              className={cn("fs-listen", ttsOn && "is-speaking")}
+              onClick={() => tts(item.de, 0.82, targetLang)}
+              type="button"
+            >
+              <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
+              <span>
+                <strong>{ui("Hear it")}</strong>
+                <small>{ui("Tap to replay")}</small>
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
@@ -844,31 +946,35 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             </div>
           )
         ) : (
-          /* ── German only (original) ── */
+          /* ── German only: prototype sentence board with tappable words ── */
           <>
-            <div className={cn(
-              "text-4xl font-black leading-tight tracking-tight text-zinc-950 transition-all duration-300 sm:text-5xl",
-              phase === "Speak" && speechPhraseMatch?.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
-              phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]",
-              phase === "SpeakAll" && sayChecked && sayResult.ok && "text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]",
-              phase === "SpeakAll" && sayChecked && !sayResult.ok && "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.25)]"
-            )}>
-              {/* Gap + Write-it stages hide the German answer, revealed once you answer. */}
-              {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
-                : phase === "SpeakAll" && !sayChecked ? "• • •"
-                : renderKeyWord(item.de, item.lookup)}
+            <div className="fs-board">
+              <div className="fs-board-top">
+                <span>{ui(targetLabel)}</span>
+                <small>{ui("Tap a word to hear it")}</small>
+              </div>
+              <div className={cn(
+                "fs-line transition-all duration-300",
+                (phase === "Speak" && speechPhraseMatch?.ok) || (phase === "SpeakAll" && sayChecked && sayResult.ok) ? "is-good" : "",
+                (phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok) || (phase === "SpeakAll" && sayChecked && !sayResult.ok) ? "is-bad" : ""
+              )}>
+                {/* Gap + Write-it stages hide the answer, revealed once you answer. */}
+                {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
+                  : phase === "SpeakAll" && !sayChecked ? "• • •"
+                  : <TappableSentence text={item.de} lookup={item.lookup} lang={targetLang} />}
+              </div>
             </div>
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
-                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-600">
-                  {shownEnglish}
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
+                  <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+                  <p>{shownEnglish}</p>
                 </motion.div>
               )}
               {(phase === "Translate" || phase === "TranslateAgain") && (
-                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-500">
-                  What does this mean in {meaningLabel}?
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
+                  <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+                  <p className="text-sm">What does this mean in {meaningLabel}?</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -883,7 +989,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
       {/* Phase-specific controls */}
       <AnimatePresence mode="wait">
@@ -994,21 +1099,31 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               {`Type the whole ${targetLabel} sentence — from the ${meaningLabel} above.`}
             </p>
             <motion.div animate={shakeControls}>
-              <Input ref={sayRef}
-                className={cn(
-                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                  sayChecked && sayResult.ok  ? "border-emerald-300 bg-emerald-50" :
-                  sayChecked && !sayResult.ok ? "border-rose-300 bg-rose-50" :
-                                                "focus:border-[var(--accent)]"
-                )}
-                placeholder={`Type the ${targetLabel} sentence...`}
-                value={sayInput}
-                onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
-                onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
-                disabled={sayChecked && sayResult.ok}
-              />
+              <div className={cn("fs-panel",
+                sayChecked && sayResult.ok && "is-good",
+                sayChecked && !sayResult.ok && (sayResult.phrasingNote ? "is-coach" : "is-bad"))}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <strong>{ui(`Type in ${targetLabel}`)}</strong>
+                </div>
+                <Input ref={sayRef}
+                  className="fs-input"
+                  placeholder={`Type the ${targetLabel} sentence...`}
+                  autoFocus
+                  onBlur={refocusOnBlur(sayRef)}
+                  value={sayInput}
+                  onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
+                  onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
+                  disabled={sayChecked && sayResult.ok}
+                />
+                {!learnEn && <div className="fs-chars"><CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} /></div>}
+                <MicButton lang={targetLang} onText={t => { setSayInput(t); if (sayChecked) setSayChecked(false); }} inputRef={sayRef} />
+                <button type="button" className="fs-check" onClick={sayChecked && sayResult.ok ? onNext : checkSay}>
+                  <span className="fs-check-label">{sayChecked && sayResult.ok ? ui("Done") : ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
             </motion.div>
-            {!learnEn && <CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} />}
 
             <AnimatePresence>
               {sayChecked && (
@@ -1031,19 +1146,16 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             {sayChecked && !sayResult.ok ? (
               <div className="flex gap-3">
                 <Button onClick={retrySay} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
-              <Button onClick={sayChecked && sayResult.ok ? onNext : checkSay}
-                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {sayChecked && sayResult.ok ? <>{ui("Done")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
-              </Button>
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1058,24 +1170,32 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                 : hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
             </p>
 
-            <div className="space-y-3">
-              <motion.div animate={shakeControls}>
+            <motion.div animate={shakeControls}>
+              <div className={cn("fs-panel",
+                checked && result.ok && "is-good",
+                checked && !result.ok && (result.phrasingNote ? "is-coach" : "is-bad"))}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <strong>{ui(`Type in ${targetLabel}`)}</strong>
+                </div>
                 <Input ref={inputRef}
-                  className={cn(
-                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                    checked && result.ok  ? "border-emerald-300 bg-emerald-50" :
-                    checked && !result.ok ? "border-rose-300 bg-rose-50" :
-                                            "focus:border-[var(--accent)]"
-                  )}
+                  className="fs-input"
                   placeholder="Type the sentence..."
+                  autoFocus
+                  onBlur={refocusOnBlur(inputRef)}
                   value={input}
                   onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
                   disabled={checked && result.ok}
                 />
-              </motion.div>
-              {!learnEn && <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />}
-            </div>
+                {!learnEn && <div className="fs-chars"><CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} /></div>}
+                <MicButton lang={targetLang} onText={t => { setInput(t); if (checked) setChecked(false); }} inputRef={inputRef} />
+                <button type="button" className="fs-check" onClick={checked && result.ok ? advance : checkAnswer}>
+                  <span className="fs-check-label">{checked && result.ok ? ui("Next") : ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
 
             {/* Feedback */}
             <AnimatePresence>
@@ -1112,23 +1232,20 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               )}
             </AnimatePresence>
 
-            {/* Action button */}
+            {/* Wrong answer: retry / skip. Otherwise the panel's Check handles it. */}
             {checked && !result.ok ? (
               <div className="flex gap-3">
                 <Button onClick={retry} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
-              <Button onClick={checked && result.ok ? advance : checkAnswer}
-                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {checked && result.ok ? <>{ui("Next")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
-              </Button>
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1141,23 +1258,36 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             <p className="text-center text-sm font-semibold text-zinc-500">
               {phase === "TranslateAgain" ? `Type the ${meaningLabel} once more — lock it in.` : `Now type the ${meaningLabel} translation.`}
             </p>
-            <div className="space-y-3">
-              <motion.div animate={shakeControls}>
+            <motion.div animate={shakeControls}>
+              <div className={cn("fs-panel",
+                enChecked && enResult.ok && "is-good",
+                enChecked && !enResult.ok && (enResult.phrasingNote ? "is-coach" : "is-bad"))}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "DE" : "EN"}</span>
+                  <strong>{ui(`Type in ${meaningLabel}`)}</strong>
+                </div>
                 <Input ref={enInputRef}
-                  className={cn(
-                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                    enChecked && enResult.ok  ? "border-emerald-300 bg-emerald-50" :
-                    enChecked && !enResult.ok ? "border-rose-300 bg-rose-50" :
-                                                "focus:border-[var(--accent)]"
-                  )}
+                  className="fs-input"
                   placeholder={`Type the ${meaningLabel} meaning...`}
+                  autoFocus
+                  onBlur={refocusOnBlur(enInputRef)}
                   value={enInput}
                   onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
                   disabled={enChecked && enResult.ok}
                 />
-              </motion.div>
-            </div>
+                {learnEn && <div className="fs-chars"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
+                <MicButton
+                  lang={learnEn ? "de-DE" : "en-US"}
+                  onText={t => { setEnInput(t); if (enChecked) setEnChecked(false); }}
+                  inputRef={enInputRef}
+                />
+                <button type="button" className="fs-check" onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}>
+                  <span className="fs-check-label">{enChecked && enResult.ok ? ui("Next") : ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
             <AnimatePresence>
               {enChecked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -1189,21 +1319,16 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             {enChecked && !enResult.ok ? (
               <div className="flex gap-3">
                 <Button onClick={retryEn} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
-              <Button onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}
-                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {enChecked && enResult.ok
-                  ? <>{hasFr ? "Next: French" : phase === "Translate" ? "One more round" : "Done"} <ArrowRight className="ml-2 h-5 w-5" /></>
-                  : ui("Check")}
-              </Button>
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1217,21 +1342,31 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
               Fill the blank — type the missing {gap.words.length > 1 ? "words" : "word"}.
             </p>
             <motion.div animate={shakeControls}>
-              <Input ref={gapInputRef}
-                className={cn(
-                  "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                  gapChecked && gapResult.ok  ? "border-emerald-300 bg-emerald-50" :
-                  gapChecked && !gapResult.ok ? "border-rose-300 bg-rose-50" :
-                                                "focus:border-[var(--accent)]"
-                )}
-                placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
-                value={gapInput}
-                onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
-                onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
-                disabled={gapChecked && gapResult.ok}
-              />
+              <div className={cn("fs-panel",
+                gapChecked && gapResult.ok && "is-good",
+                gapChecked && !gapResult.ok && "is-bad")}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <strong>{ui("Fill in")}</strong>
+                </div>
+                <Input ref={gapInputRef}
+                  className="fs-input"
+                  placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
+                  autoFocus
+                  onBlur={refocusOnBlur(gapInputRef)}
+                  value={gapInput}
+                  onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
+                  onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
+                  disabled={gapChecked && gapResult.ok}
+                />
+                {!learnEn && <div className="fs-chars"><CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} /></div>}
+                <MicButton lang={targetLang} onText={t => { setGapInput(t); if (gapChecked) setGapChecked(false); }} inputRef={gapInputRef} />
+                <button type="button" className="fs-check" onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}>
+                  <span className="fs-check-label">{gapChecked && gapResult.ok ? ui("Next") : ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
             </motion.div>
-            {!learnEn && <CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} />}
 
             <AnimatePresence>
               {gapChecked && (
@@ -1248,19 +1383,16 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             {gapChecked && !gapResult.ok ? (
               <div className="flex gap-3">
                 <Button onClick={retryGap} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={advanceOrFinish}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
-              <Button onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}
-                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {gapChecked && gapResult.ok ? <>{ui("Next")} <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
-              </Button>
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1273,19 +1405,29 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             <p className="text-center text-sm font-semibold text-zinc-500">Now type the same sentence in French.</p>
             <div className="space-y-3">
               <motion.div animate={shakeControls}>
-                <Input ref={frInputRef}
-                  className={cn(
-                    "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
-                    frChecked && frResult.ok  ? "border-emerald-300 bg-emerald-50" :
-                    frChecked && !frResult.ok ? "border-rose-300 bg-rose-50" :
-                                                "focus:border-[var(--accent)]"
-                  )}
-                  placeholder="Type it in French..."
-                  value={frInput}
-                  onChange={e => { setFrInput(e.target.value); if (frChecked) setFrChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (frChecked && frResult.ok ? onNext() : checkFrAnswer())}
-                  disabled={frChecked && frResult.ok}
-                />
+                <div className={cn("fs-panel",
+                  frChecked && frResult.ok && "is-good",
+                  frChecked && !frResult.ok && "is-bad")}>
+                  <div className="fs-prompt">
+                    <span>FR</span>
+                    <strong>Type in French</strong>
+                  </div>
+                  <Input ref={frInputRef}
+                    className="fs-input"
+                    placeholder="Type it in French..."
+                    autoFocus
+                    onBlur={refocusOnBlur(frInputRef)}
+                    value={frInput}
+                    onChange={e => { setFrInput(e.target.value); if (frChecked) setFrChecked(false); }}
+                    onKeyDown={e => e.key === "Enter" && (frChecked && frResult.ok ? onNext() : checkFrAnswer())}
+                    disabled={frChecked && frResult.ok}
+                  />
+                  <MicButton lang="fr-FR" onText={t => { setFrInput(t); if (frChecked) setFrChecked(false); }} inputRef={frInputRef} />
+                  <button type="button" className="fs-check" onClick={frChecked && frResult.ok ? onNext : checkFrAnswer}>
+                    <span className="fs-check-label">{frChecked && frResult.ok ? ui("Done") : ui("Check")}</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               </motion.div>
               <FrenchCharBar onInsert={c => insertAt(frInputRef.current, c, setFrInput)} />
             </div>
@@ -1310,26 +1452,16 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
             {frChecked && !frResult.ok ? (
               <div className="flex gap-3">
                 <Button onClick={retryFr} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onNext}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-3">
-                <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                  onClick={() => tts(item.fr, 0.82, "fr-FR")}
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
-                  <Volume2 className="h-5 w-5" />
-                </motion.button>
-                <Button onClick={frChecked && frResult.ok ? advance : checkFrAnswer}
-                  className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                  {frChecked && frResult.ok ? <>Next: Memory <ArrowRight className="ml-2 h-5 w-5" /></> : ui("Check")}
-                </Button>
-              </div>
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1454,6 +1586,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
@@ -1506,9 +1639,9 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const isTyping = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
-      if (!event.altKey || isTyping) return;
+      // The answer box keeps focus permanently now, so Alt combos must work
+      // while "typing" — Alt+K/S never inserts a character anyway.
+      if (!event.altKey) return;
 
       const key = event.key.toLowerCase();
       if (key === "k") {
@@ -1920,56 +2053,51 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const kind: string = step?.type || step?.kind || "complete";
 
   return (
-    <div className="guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-950 selection:bg-[var(--accent-dim)]">
+    <div className="guided-session fs-app app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans">
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center gap-4 border-b border-zinc-200 bg-white px-6 py-4">
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
-            <BookOpen className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Lesson</div>
-            <div className="text-base font-semibold tracking-tight text-zinc-950">
-              {exercisePos} <span className="text-zinc-500">of {exerciseCount}</span>
-            </div>
-          </div>
+      {/* Topbar: brand · lesson progress · mute/close */}
+      <header className="fs-topbar">
+        <div className="fs-brand">
+          <img src="/icon-64.png" alt="" />
+          <span>MICHEON</span>
         </div>
-        <div className="flex-1">
-          <div className="mb-1.5 flex justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            <span>Progress</span><span className="text-zinc-700">{progress}%</span>
+        <div className="fs-progress">
+          <div className="fs-progress-copy">
+            <span>{ui("Lesson")}</span>
+            <strong>{exercisePos} {ui("of")} {exerciseCount}</strong>
           </div>
-          <Progress value={progress} variant="teal" className="h-1.5" />
+          <div className="fs-progress-track"><i style={{ width: `${progress}%` }} /></div>
+          <strong className="fs-progress-pct">{progress}%</strong>
         </div>
-        {import.meta.env.DEV && (
-          <Button variant="ghost" onClick={skipStep}
-            className="skip-step-btn">
-            <span>Skip</span>
-            <kbd>Alt →</kbd>
-          </Button>
-        )}
-        <MuteButton className="shrink-0" iconClassName="h-3.5 w-3.5" />
-        <Button variant="ghost" onClick={handleCancel}
-          className="h-9 shrink-0 rounded-lg px-3 text-zinc-500 transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-900 hover:shadow-[0_0_8px_0_rgba(161,161,170,0.6)]">
-          <X className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          {import.meta.env.DEV && (
+            <Button variant="ghost" onClick={skipStep} className="skip-step-btn">
+              <span>Skip</span>
+              <kbd>Alt →</kbd>
+            </Button>
+          )}
+          <MuteButton className="fs-iconbtn shrink-0" iconClassName="h-4 w-4" />
+          <button type="button" aria-label="Close lesson" className="fs-iconbtn" onClick={handleCancel}>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex flex-1 items-center justify-center overflow-y-auto p-6">
+      <main className="relative z-10 flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-7">
         <AnimatePresence mode="wait">
           <motion.div key={index}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="flex w-full max-w-4xl justify-center">
-            <Card className="relative w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_22px_60px_rgba(25,27,38,0.08)] sm:p-7">
-              <div className="relative z-10 flex flex-col items-center">
+            className="flex w-full max-w-5xl justify-center">
+            <div className="fs-card relative">
+              <div className="relative z-10 flex flex-col">
                 {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
-                {kind === "dialogue"  && <DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} />}
-                {kind === "complete"  && <CompleteScreen onNext={onComplete} />}
+                {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} /></div>}
+                {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
                 {!["sentence","dialogue","complete"].includes(kind) && (
-                  <div className="py-12 text-center space-y-4">
+                  <div className="fs-card-body py-12 text-center space-y-4">
                     <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>
                     <Button onClick={next} className="h-12 rounded-lg bg-zinc-950 px-8 text-sm font-semibold text-white hover:bg-zinc-800">
                       Continue <ArrowRight className="ml-2 h-4 w-4" />
@@ -1977,7 +2105,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </motion.div>
         </AnimatePresence>
       </main>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111219" />
+  <title>Micheon — Focus Lesson</title>
+  <link rel="stylesheet" href="./focus.css" />
+</head>
+<body>
+  <main class="micheon-app">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Micheon home">
+        <span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand__name">MICHEON</span>
+      </a>
+
+      <div class="lesson-progress" aria-label="Lesson progress">
+        <div class="lesson-progress__copy"><span>Lesson</span><strong>2 of 6</strong></div>
+        <div class="lesson-progress__track"><i></i></div>
+        <strong class="lesson-progress__percent">33%</strong>
+      </div>
+
+      <div class="topbar__actions">
+        <button class="icon-button" id="soundToggle" type="button" aria-label="Toggle sound">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z"/><path d="M15.4 9.3a3.8 3.8 0 0 1 0 5.4M18.1 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>
+        </button>
+        <button class="icon-button" type="button" aria-label="Close lesson">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <section class="lesson-card" aria-labelledby="lessonTitle">
+        <nav class="stage-route" aria-label="Sentence learning stages">
+          <div class="stage-route__meta">
+            <div>
+              <span id="stageCount">Stage 5 of 8</span>
+              <strong id="stageLabel">Build from memory</strong>
+            </div>
+            <span class="stage-route__hint">Jump to any stage</span>
+          </div>
+
+          <div class="stage-route__track" id="stageTrack">
+            <div class="stage-route__line" aria-hidden="true"><i id="stageFill"></i></div>
+            <button class="stage-button is-done" type="button" data-stage="1"><span>1</span><small>Hear</small></button>
+            <button class="stage-button is-done" type="button" data-stage="2"><span>2</span><small>Read</small></button>
+            <button class="stage-button is-done" type="button" data-stage="3"><span>3</span><small>Shadow</small></button>
+            <button class="stage-button is-done" type="button" data-stage="4"><span>4</span><small>Meaning</small></button>
+            <button class="stage-button is-active" type="button" data-stage="5" aria-current="step"><span>5</span><small>Build</small></button>
+            <button class="stage-button" type="button" data-stage="6"><span>6</span><small>Translate</small></button>
+            <button class="stage-button" type="button" data-stage="7"><span>7</span><small>Speak</small></button>
+            <button class="stage-button" type="button" data-stage="8"><span>8</span><small>Master</small></button>
+          </div>
+        </nav>
+
+        <div class="lesson-content">
+          <div class="lesson-heading">
+            <div>
+              <span class="eyebrow"><i></i> Sentence practice</span>
+              <h1 id="lessonTitle">Build the sentence</h1>
+              <p>Listen once, then type it from memory.</p>
+            </div>
+
+            <button class="listen-button" id="listenButton" type="button">
+              <span class="listen-button__icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z"/><path d="M15.4 9.3a3.8 3.8 0 0 1 0 5.4M18.1 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>
+              </span>
+              <span><strong>Hear it</strong><small>Space</small></span>
+            </button>
+          </div>
+
+          <section class="sentence-board" id="sentenceBoard" aria-label="German sentence">
+            <div class="sentence-board__topline">
+              <span>German</span>
+              <small>Tap a word to hear it</small>
+            </div>
+            <div class="sentence-viewport" id="sentenceViewport">
+              <div class="sentence-line" id="sentenceLine">
+                <button class="word" type="button" data-word="Korrigier">Korrigier</button>
+                <button class="word" type="button" data-word="mich">mich</button>
+                <button class="word" type="button" data-word="bitte,">bitte,</button>
+                <button class="word" type="button" data-word="wenn">wenn</button>
+                <button class="word" type="button" data-word="ich">ich</button>
+                <button class="word" type="button" data-word="Fehler">Fehler</button>
+                <button class="word" type="button" data-word="mache.">mache.</button>
+              </div>
+            </div>
+          </section>
+
+          <div class="translation-row">
+            <div class="translation-row__copy">
+              <span class="language-chip">EN</span>
+              <p>Please correct me when I make mistakes.</p>
+            </div>
+            <button class="coach-link" id="coachButton" type="button">
+              Why this works
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+
+          <form class="answer-panel" id="answerForm" autocomplete="off">
+            <div class="answer-panel__prompt">
+              <span>DE</span>
+              <strong>Type in German</strong>
+            </div>
+            <label class="sr-only" for="answerInput">Type the German sentence</label>
+            <input id="answerInput" spellcheck="false" placeholder="Korrigier mich bitte…" />
+            <div class="special-characters" aria-label="German characters">
+              <button type="button" data-char="ä">ä</button>
+              <button type="button" data-char="ö">ö</button>
+              <button type="button" data-char="ü">ü</button>
+              <button type="button" data-char="ß">ß</button>
+            </div>
+            <button class="check-button" type="submit">
+              <span>Check</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+            </button>
+          </form>
+
+          <div class="feedback" id="feedback" aria-live="polite">
+            <span class="feedback__icon">↵</span>
+            <span id="feedbackText">Press Enter when you are ready.</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="coach-card" id="coachCard" aria-hidden="true">
+      <button class="coach-card__close" id="coachClose" type="button" aria-label="Close explanation">×</button>
+      <span class="coach-card__eyebrow">Quick explanation</span>
+      <h2>“Bitte” keeps the request warm and natural.</h2>
+      <p>After <b>wenn</b>, the conjugated verb moves to the end of the clause.</p>
+      <div class="grammar-demo"><span>wenn</span><i></i><span>ich</span><i></i><strong>mache</strong></div>
+      <small>Tap any word in the sentence to hear it by itself.</small>
+    </aside>
+  </main>
+  <script src="./focus.js"></script>
+</body>
+</html>
