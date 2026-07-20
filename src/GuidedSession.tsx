@@ -421,15 +421,42 @@ function MicButton({ lang, onText, inputRef }: {
   );
 }
 
-// Keep the caret in the active answer box: when focus drifts to the body
-// (e.g. after clicking a pill or empty space), pull it back — but never steal
-// focus from another input (the Memory phase has two).
-function refocusOnBlur(ref: React.RefObject<HTMLInputElement | null>) {
-  return (e: React.FocusEvent<HTMLInputElement>) => {
-    const next = e.relatedTarget as HTMLElement | null;
-    if (next && (next.tagName === "INPUT" || next.tagName === "TEXTAREA" || next.isContentEditable)) return;
-    setTimeout(() => ref.current?.focus(), 80);
-  };
+// Keep the caret in the active answer box WITHOUT breaking text selection.
+//
+// Naively refocusing on every blur steals focus mid-drag, so selecting the
+// German sentence (or any text) is impossible. Instead we only pull focus
+// back when the user is not selecting text and did not deliberately move to
+// another control — and we do it on mouseup/keyup rather than on blur, so a
+// click-drag selection is left completely alone.
+function useStickyFocus(ref: React.RefObject<HTMLInputElement | null>, active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const el = () => ref.current;
+    el()?.focus();
+
+    const INTERACTIVE = "input, textarea, select, button, a, [contenteditable], [role='button'], [tabindex]";
+    const shouldSkip = () => {
+      // Something is highlighted — never yank focus away from a selection.
+      const sel = window.getSelection?.();
+      if (sel && !sel.isCollapsed && String(sel).trim().length > 0) return true;
+      // The user is focused on another real control (button, other input…).
+      const a = document.activeElement as HTMLElement | null;
+      if (a && a !== document.body && a !== el() && a.closest?.(INTERACTIVE)) return true;
+      return false;
+    };
+
+    const restore = () => { if (!shouldSkip()) el()?.focus(); };
+    // After a click/drag finishes, and after modifier-key shortcuts.
+    const onMouseUp = () => setTimeout(restore, 0);
+    const onKeyUp = (e: KeyboardEvent) => { if (e.key === "Tab") return; setTimeout(restore, 0); };
+
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("keyup", onKeyUp);
+    return () => {
+      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("keyup", onKeyUp);
+    };
+  }, [ref, active]);
 }
 
 // A single labeled language row (German / French) for bilingual companion mode.
@@ -554,6 +581,15 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
   const memDeRef = useRef<HTMLInputElement>(null);
   const memFrRef = useRef<HTMLInputElement>(null);
   const speechAbortRef = useRef<AbortController | null>(null);
+
+  // The answer box stays focused so you can always just type — but selecting
+  // text (the sentence, the meaning) is never interrupted. One hook per typing
+  // phase; only the active phase's box claims focus.
+  useStickyFocus(inputRef, phase === "Type" || phase === "TypeAgain");
+  useStickyFocus(enInputRef, phase === "Translate" || phase === "TranslateAgain");
+  useStickyFocus(gapInputRef, phase === "Gap");
+  useStickyFocus(sayRef, phase === "SpeakAll");
+  useStickyFocus(frInputRef, phase === "French");
   // Speech recognition has two backends:
   //  - Website: the browser's webkitSpeechRecognition (instant, no download).
   //  - Desktop app: that backend can't reach Google's servers from Electron, so
@@ -1124,7 +1160,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="fs-input"
                   placeholder={`Type the ${targetLabel} sentence...`}
                   autoFocus
-                  onBlur={refocusOnBlur(sayRef)}
                   value={sayInput}
                   onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
                   onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
@@ -1196,7 +1231,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="fs-input"
                   placeholder="Type the sentence..."
                   autoFocus
-                  onBlur={refocusOnBlur(inputRef)}
                   value={input}
                   onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
@@ -1284,7 +1318,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="fs-input"
                   placeholder={`Type the ${meaningLabel} meaning...`}
                   autoFocus
-                  onBlur={refocusOnBlur(enInputRef)}
                   value={enInput}
                   onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
@@ -1367,7 +1400,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="fs-input"
                   placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
                   autoFocus
-                  onBlur={refocusOnBlur(gapInputRef)}
                   value={gapInput}
                   onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
                   onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
@@ -1430,7 +1462,6 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                     className="fs-input"
                     placeholder="Type it in French..."
                     autoFocus
-                    onBlur={refocusOnBlur(frInputRef)}
                     value={frInput}
                     onChange={e => { setFrInput(e.target.value); if (frChecked) setFrChecked(false); }}
                     onKeyDown={e => e.key === "Enter" && (frChecked && frResult.ok ? onNext() : checkFrAnswer())}
@@ -1825,6 +1856,24 @@ function Confetti({ count = 40 }: { count?: number }) {
 
 // Section
 function CompleteScreen({ onNext }: { onNext: () => void }) {
+  // Auto-finish: the celebration plays, then the lesson closes itself and the
+  // next one is queued up — no "Finish" press needed. Any key/click skips the
+  // wait, and the button stays for anyone who reaches for it.
+  const done = useRef(false);
+  const finish = () => { if (!done.current) { done.current = true; onNext(); } };
+  useEffect(() => {
+    const t = setTimeout(finish, 2600);
+    const skip = () => { clearTimeout(t); finish(); };
+    window.addEventListener("keydown", skip);
+    window.addEventListener("mousedown", skip);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("keydown", skip);
+      window.removeEventListener("mousedown", skip);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}

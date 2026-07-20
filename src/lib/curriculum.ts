@@ -58,6 +58,7 @@ export const CURRICULUM_ORDER: string[] = [
   // ── Tier 2 · common, situational ────────────────────────────
   "part8",            // Core verbs
   "part9",            // Home and daily errands
+  "part68",          // Daily home talk: couples, flatmates & feelings
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",

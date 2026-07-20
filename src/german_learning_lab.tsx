@@ -383,6 +383,10 @@ export default function GermanLearningLab() {
           totalReviews: progressStats.totalReviews + Math.floor(sessionSteps.length / 2),
           streak: recordStreakDay(user),
         });
+        // Roll straight into the next lesson — no "Continue learning" press.
+        // Deferred so markCompleted's state lands first, otherwise the next
+        // session would be built from stale review data and repeat itself.
+        setTimeout(() => startSession(), 260);
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
       onAdvance={(step: any) => markCompleted([step])}
