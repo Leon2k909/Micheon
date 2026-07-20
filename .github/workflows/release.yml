@@ -1,0 +1,95 @@
+# Builds the desktop artifacts for every version tag / published release and
+# attaches them to that release.
+#
+# Windows is built here rather than on the dev machine because local antivirus
+# real-time scanning holds the freshly extracted Electron binaries, making
+# electron-builder's win-unpacked.tmp -> win-unpacked rename fail (EPERM/EBUSY).
+# CI runners have no such interference. Linux can't be cross-built from Windows
+# at all (native modules), so CI owns both platforms.
+#
+# NOTE: .blockmap files are deliberately NOT uploaded. electron-updater uses
+# them for differential downloads, which stall on this app's installer — the
+# full download is reliable, so we ship exe + latest.yml only.
+name: release-build
+
+on:
+  push:
+    tags: ["v*"]
+  # Releases are created via the API here, which doesn't fire tag-push events.
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to attach builds to (e.g. v1.0.27)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build UI
+        run: npm run build
+
+      - name: Package ${{ matrix.platform }}
+        run: npx electron-builder --${{ matrix.platform }} --publish never
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Normalise Windows artifact name
+        if: matrix.platform == 'win'
+        shell: bash
+        run: |
+          # latest.yml refers to the hyphenated name; electron-builder writes
+          # the spaced one. Publish both-safe by renaming to match the feed.
+          cd release
+          for f in *Setup*.exe; do
+            [ -e "$f" ] || continue
+            target="$(echo "$f" | tr ' ' '-')"
+            [ "$f" = "$target" ] || mv "$f" "$target"
+          done
+          ls -la *.exe latest.yml
+
+      - name: Attach Windows artifacts
+        if: matrix.platform == 'win'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+        run: |
+          gh release upload "$TAG" release/*.exe release/latest.yml \
+            --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Attach Linux artifacts
+        if: matrix.platform == 'linux'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+        run: |
+          gh release upload "$TAG" \
+            release/*.AppImage \
+            release/*.deb \
+            release/latest-linux.yml \
+            --clobber --repo "$GITHUB_REPOSITORY"
