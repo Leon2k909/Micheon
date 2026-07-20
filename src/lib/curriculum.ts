@@ -59,6 +59,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part8",            // Core verbs
   "part9",            // Home and daily errands
   "part68",          // Daily home talk: couples, flatmates & feelings
+  "part69",          // People, opinions & reactions
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",
