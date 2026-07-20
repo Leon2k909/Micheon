@@ -4,7 +4,7 @@
 
 Micheon is a native-feeling desktop language tutor that runs entirely on your machine. There's no subscription, no login server, no cloud calls for content, and no usage limits. You download it once, and everything — thousands of sentences, dialogues, grammar drills, and natural-sounding speech — works on a plane, on the train, or with the Wi-Fi off.
 
-> Repo folder: `germ` · Product name: **Micheon** · Platform: Windows desktop (Electron)
+> Repo folder: `germ` · Product name: **Micheon** · Platforms: Windows and Linux desktop (Electron)
 
 ---
 
@@ -46,8 +46,10 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 ### Option A — Install the app (recommended)
 
 1. Go to the [Releases](https://github.com/Leon2k909/Micheon/releases) page.
-2. Download the latest `Micheon-Setup-x.y.z.exe`.
-3. Run it. Micheon installs, creates a Start-menu entry, and launches.
+2. Download the build for your system:
+   - **Windows** — `Micheon-Setup-x.y.z.exe`
+   - **Linux** — the `.AppImage` (make it executable and run it) or the `.deb`
+3. Run it. Micheon installs, creates a menu entry, and launches.
 4. Create a local profile, pick your course, and start your first daily lesson.
 
 The app checks for updates on its own and installs them the next time you close it.
@@ -130,7 +132,9 @@ electron/main.js            Electron desktop wrapper + auto-update
 
 ## Building a release
 
-`npm run electron:dist` produces the installer under `dist/`. A release is published by uploading the `Micheon-Setup-x.y.z.exe` and `latest.yml` to a GitHub release; existing installs then pick up the update automatically on next launch.
+Releases are built by CI. Bump the version, push, and publish a GitHub release for the `vX.Y.Z` tag — [`.github/workflows/release.yml`](.github/workflows/release.yml) then packages Windows and Linux on clean runners and attaches the artifacts (`.exe` + `latest.yml`, `.AppImage` + `.deb` + `latest-linux.yml`). Existing installs pick up the update automatically on next launch.
+
+Locally, `npm run electron:dist` produces a build under `release/` for testing. Note that antivirus real-time scanning can lock the extracted Electron binaries mid-package on Windows (`EPERM ... rename win-unpacked.tmp`) — which is precisely why release packaging lives in CI.
 
 ---
 
