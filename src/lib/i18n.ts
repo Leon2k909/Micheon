@@ -37,6 +37,8 @@ const DE: Record<string, string> = {
   "Close match": "Fast genau",
   "Heard:": "Gehört:",
   // Focus-lesson chrome
+  "German": "Deutsch",
+  "English": "Englisch",
   "Lesson": "Lektion",
   "of": "von",
   "Jump to any stage": "Springe zu jedem Schritt",
