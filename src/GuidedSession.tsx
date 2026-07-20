@@ -29,7 +29,7 @@ import {
   listenGermanOnce,
   speechRecognitionUserHint,
 } from "@/lib/speechRecognition";
-import { isWhisperSupported, listenWhisperOnce } from "@/lib/whisperRecognition";
+import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, preloadWhisper } from "@/lib/whisperRecognition";
 import {
   Volume2, Mic2, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -363,61 +363,90 @@ function MicButton({ lang, onText, inputRef }: {
 }) {
   const [live, setLive] = useState(false);
   const [status, setStatus] = useState<"listening" | "model" | "transcribing" | null>(null);
+  const [pct, setPct] = useState(0);
+  const [level, setLevel] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const sessionRef = useRef<{ stop: () => void } | null>(null);
   // Same engine choice as the Speak stage: the desktop app can't reach
   // Google's speech service, so it uses the bundled offline Whisper model;
   // the website uses the browser's SpeechRecognition.
   const useWhisper = useMemo(() => isElectronApp() && isWhisperSupported(), []);
+  // Warm the model as soon as the answer box exists, so the first tap is
+  // instant instead of a silent multi-minute download at the worst moment.
+  useEffect(() => { if (useWhisper) preloadWhisper(); }, [useWhisper]);
   useEffect(() => () => abortRef.current?.abort(), []);
   if (!useWhisper && !isSpeechRecognitionSupported()) return null;
 
+  const reset = () => { setLive(false); setStatus(null); setLevel(0); inputRef?.current?.focus(); };
+
   const toggle = async () => {
-    if (live) { abortRef.current?.abort(); setLive(false); setStatus(null); return; }
+    // Second tap = "I'm done" — keep what was said and transcribe it.
+    if (live) { sessionRef.current?.stop(); return; }
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setLive(true);
-    setStatus("listening");
+    setStatus(useWhisper && !isWhisperReady() ? "model" : "listening");
+    setPct(0);
     try {
       if (useWhisper) {
-        const { transcript } = await listenWhisperOnce({
+        const session = listenWhisper({
           lang,
           signal: ctrl.signal,
           onState: (s) => setStatus(s === "loading-model" ? "model" : s === "transcribing" ? "transcribing" : "listening"),
+          onProgress: setPct,
+          onLevel: setLevel,
         });
-        onText(transcript);
+        sessionRef.current = session;
+        const { transcript } = await session.result;
+        if (transcript) onText(transcript);
       } else {
+        sessionRef.current = { stop: () => ctrl.abort() };
         const { transcript } = await listenGermanOnce({
           lang,
           signal: ctrl.signal,
           onInterim: (t) => onText(t),
         });
-        onText(transcript);
+        if (transcript) onText(transcript);
       }
     } catch {
       /* aborted / no speech — leave whatever text arrived */
     } finally {
-      setLive(false);
-      setStatus(null);
-      inputRef?.current?.focus();
+      sessionRef.current = null;
+      reset();
     }
   };
 
-  const title = !live ? "Speak instead of typing"
-    : status === "model" ? "Preparing speech model (one-time download)…"
-    : status === "transcribing" ? "Checking what you said…"
-    : "Listening — tap to stop";
+  const label = status === "model"
+      ? (pct > 0 && pct < 100 ? `${ui("Preparing voice…")} ${pct}%` : ui("Preparing voice…"))
+    : status === "transcribing" ? ui("Reading it back…")
+    : status === "listening" ? ui("Listening — tap to stop")
+    : null;
 
   return (
-    <button
-      type="button"
-      aria-label={live ? "Stop dictation" : "Dictate your answer"}
-      title={title}
-      className={cn("fs-mic", live && "is-live")}
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={toggle}
-    >
-      <Mic2 style={{ width: 18, height: 18 }} />
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={live ? "Stop dictation" : "Dictate your answer"}
+        title={live ? String(label) : "Speak instead of typing"}
+        className={cn("fs-mic", live && "is-live", status === "model" && "is-loading")}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={toggle}
+      >
+        <Mic2 style={{ width: 18, height: 18 }} />
+        {/* Live input level — visible proof the mic is actually hearing you. */}
+        {status === "listening" && (
+          <span className="fs-mic-level" style={{ transform: `scaleY(${0.25 + Math.min(1, level) * 0.75})` }} />
+        )}
+      </button>
+      {label && (
+        <span className="fs-mic-status" role="status">
+          {status === "model" && pct > 0 && pct < 100 && (
+            <span className="fs-mic-bar"><i style={{ width: `${pct}%` }} /></span>
+          )}
+          {label}
+        </span>
+      )}
+    </>
   );
 }
 
