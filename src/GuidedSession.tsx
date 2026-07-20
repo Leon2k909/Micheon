@@ -557,7 +557,7 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
+function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { item: any; onNext: () => void; onSkip?: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean, gentle = false) => {
     onAnswer?.(ok);
@@ -1227,7 +1227,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={onSkip ?? onNext}
                   className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -1316,7 +1316,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={onSkip ?? onNext}
                   className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -1398,7 +1398,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={onSkip ?? onNext}
                   className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -1529,7 +1529,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={onSkip ?? onNext}
                   className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -1643,7 +1643,7 @@ function SentenceExercise({ item, onNext, onGradeItem, onAnswer }: { item: any; 
                   className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onNext}
+                <Button onClick={onSkip ?? onNext}
                   className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -2119,17 +2119,24 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   // so the header reads "4 of 6", not "4 of 7".
   const exerciseCount = safeSteps.filter((s: any) => s.type !== "complete").length || 1;
   const exercisePos = Math.min(index + 1, exerciseCount);
-  const next = () => {
-    // Persist the item we're leaving immediately, so closing the app mid-session
-    // doesn't lose progress (onComplete/onCancel only fire on full finish or the
-    // in-app exit, never on an abrupt window/tab close).
+  // Persist the item we're leaving immediately, so closing the app mid-session
+  // doesn't lose progress (onComplete/onCancel only fire on full finish or the
+  // in-app exit, never on an abrupt window/tab close).
+  //
+  // `skipped` matters: skipping used to travel the same path as a clean recall,
+  // so pressing Skip (or Alt+Right, or Skip after a wrong answer) promoted the
+  // item up the memory ladder and scheduled it months out — and inflated the
+  // fluency estimate, which counts the same records. A skipped item is left
+  // exactly as it was.
+  const leaveStep = (skipped: boolean) => {
     const current = safeSteps[index];
-    if (current) onAdvance?.(current);
+    if (current) onAdvance?.(current, skipped);
     if (index < safeSteps.length - 1) setIndex(i => i + 1); else onComplete();
   };
+  const next = () => leaveStep(false);
 
   const handleCancel = () => onCancel(index);
-  const skipStep = () => next();
+  const skipStep = () => leaveStep(true);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -2185,7 +2192,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             className="flex w-full max-w-5xl justify-center">
             <div className="fs-card relative">
               <div className="relative z-10 flex flex-col">
-                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} />}
+                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
                 {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} /></div>}
                 {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
                 {!["sentence","dialogue","complete"].includes(kind) && (

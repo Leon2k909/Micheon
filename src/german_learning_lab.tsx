@@ -389,7 +389,9 @@ export default function GermanLearningLab() {
         setTimeout(() => startSession(), 260);
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
-      onAdvance={(step: any) => markCompleted([step])}
+      // A skipped item is NOT a recall — marking it would climb the memory
+      // ladder and schedule it out for months, and inflate the fluency count.
+      onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}
       steps={sessionSteps}
     />
   );
