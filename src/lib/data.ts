@@ -94,7 +94,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich gehe heute in die Stadt.", en: "I'm going into town today. / I am going to the city today.", use: "Straightforward present tense that reuses three of Part 1's own seed words at once (gehen, heute, die Stadt). Key point: \"in die Stadt\" is accusative because it's movement towards — \"in der Stadt\" (dative) would mean you're already there.", fr: "Je vais en ville aujourd'hui.", short: "Ich geh heute in die Stadt." },
       { de: "Ich verstehe nicht.",           en: "I do not understand.",    use: "Useful when confused",    fr: "Je ne comprends pas." },
       { de: "Können Sie das wiederholen?",  en: "Can you repeat that?",    use: "Helpful in conversation", fr: "Pouvez-vous répéter ?" },
-      { de: "Ich komme aus England.",        en: "I come from England.",    use: "Basic introduction",      fr: "Je viens d'Angleterre." },
+      { de: "Ich weiß nicht.", en: "I don't know. / I do not know.", use: "Core survival phrase, any register — the natural partner to Part 1's \"Ich verstehe nicht.\" Watch the irregular form: ich weiß, du weißt, er weiß (never \"ich weiße\").", fr: "Je ne sais pas.", short: "Weiß nicht." },
     ],
   },
   part2: {
@@ -2000,7 +2000,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     phrases: [
       { de: "Prost!", en: "Cheers!", use: "Universal toast, any register from student bar to wedding. Make eye contact while clinking — Germans genuinely notice if you don't.", fr: "Santé !" },
       { de: "Auf uns!", en: "To us!", use: "Warm toast among friends, couples, teams celebrating something together. Follows or replaces 'Prost'.", fr: "À nous !" },
-      { de: "Zum Wohl!", en: "Your health!", use: "Slightly more formal toast — wine rather than beer, dinner parties, older company. Perfectly safe everywhere.", fr: "À votre santé !" },
+      { de: "Komm, wir stoßen auf deinen neuen Job an!", en: "Come on, let's drink to your new job! / Come on, let's toast your new job!", use: "Casual du-register. This is the pattern the seed word needs: anstoßen AUF + Akkusativ (auf den Erfolg, aufs neue Jahr, auf dich). Separable, so the prefix lands at the end: wir stoßen darauf an. And keep eye contact while clinking.", fr: "Allez, on trinque à ton nouveau boulot !", short: "Auf deinen neuen Job!" },
       { de: "Gehen wir noch auf ein Feierabendbier?", en: "Shall we grab an after-work beer?", use: "Neutral, friendly — the standard low-commitment invitation to colleagues. Declining is fine and needs no excuse.", fr: "On va boire une petite bière après le boulot ?", short: "Feierabendbier?" },
       { de: "Ich trink heute nichts, ich fahre.", en: "I'm not drinking tonight, I'm driving.", use: "Neutral, universally accepted — ends the topic instantly. Nobody argues with the designated driver in Germany.", fr: "Je ne bois pas ce soir, je conduis." },
       { de: "Für mich ein Alkoholfreies, bitte.", en: "An alcohol-free beer for me, please.", use: "Completely normal order — alcohol-free beer is everywhere in Germany and carries zero stigma, even at parties.", fr: "Pour moi, une bière sans alcool, s'il vous plaît." },
