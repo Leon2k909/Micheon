@@ -13,16 +13,24 @@
 name: release-build
 
 on:
+  # Creating a release via the API also creates the tag, which fires this.
+  # A `release: [published]` trigger was removed: it fired a SECOND identical
+  # run, and the two raced to upload the same asset names — one won, the other
+  # died on the upload step and reported the release as failed even though the
+  # artifacts were fine. workflow_dispatch covers publishing against a tag that
+  # already exists.
   push:
     tags: ["v*"]
-  # Releases are created via the API here, which doesn't fire tag-push events.
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to attach builds to (e.g. v1.0.27)"
+        description: "Existing release tag to attach builds to (e.g. v1.0.30)"
         required: true
+
+# Belt and braces: never let two runs for the same tag upload concurrently.
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -76,7 +84,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
           gh release upload "$TAG" release/*.exe release/latest.yml \
             --clobber --repo "$GITHUB_REPOSITORY"
@@ -86,7 +94,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
           gh release upload "$TAG" \
             release/*.AppImage \
