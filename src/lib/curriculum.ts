@@ -60,6 +60,18 @@ export const CURRICULUM_ORDER: string[] = [
   "part9",            // Home and daily errands
   "part68",          // Daily home talk: couples, flatmates & feelings
   "part69",          // People, opinions & reactions
+  "part70",          // Keeping a conversation going
+  "part71",          // Opinions, agreeing & disagreeing
+  "part72",          // Making & changing plans
+  "part73",          // Everyday work life
+  "part74",          // Phone calls & voice notes
+  "part75",          // Getting around
+  "part76",          // Eating & drinking out
+  "part77",          // When shopping goes wrong
+  "part78",          // Health between normal people
+  "part79",          // Being there for someone
+  "part80",          // Neighbours & shared living
+  "part81",          // Phones, streaming & group chats
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",
