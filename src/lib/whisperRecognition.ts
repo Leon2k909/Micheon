@@ -15,6 +15,8 @@
 //  - Download progress is reported so the UI can show it; a silent multi-minute
 //    download is indistinguishable from a broken button.
 
+import { voiceModelConfig } from "@/lib/voiceModel";
+
 type ListenState = "loading-model" | "listening" | "transcribing";
 
 export type WhisperListenOptions = {
@@ -40,17 +42,26 @@ const LANG_MAP: Record<string, string> = {
 };
 
 let asrPromise: Promise<any> | null = null;
+let loadedRepo: string | null = null;
 let modelReady = false;
 let lastProgress = 0;
 
 /** True once the model is downloaded and warm — the UI can skip the wait copy. */
 export function isWhisperReady(): boolean {
-  return modelReady;
+  return modelReady && loadedRepo === voiceModelConfig().repo;
 }
 
 /** Lazily load (and cache) the Whisper pipeline. First call downloads the model. */
 function getAsr(onProgress?: (p: number) => void): Promise<any> {
+  const { repo, dtype } = voiceModelConfig();
+  // Switching the quality setting invalidates the warm pipeline.
+  if (asrPromise && loadedRepo !== repo) {
+    asrPromise = null;
+    modelReady = false;
+    lastProgress = 0;
+  }
   if (!asrPromise) {
+    loadedRepo = repo;
     asrPromise = (async () => {
       const { pipeline, env } = await import("@huggingface/transformers");
       // Multi-threaded WASM needs SharedArrayBuffer, which needs cross-origin
@@ -61,13 +72,13 @@ function getAsr(onProgress?: (p: number) => void): Promise<any> {
         const cores = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 1 : 1;
         (env.backends as any).onnx.wasm.numThreads = isolated ? Math.max(1, Math.min(4, cores - 1)) : 1;
       } catch { /* ignore */ }
-      // whisper-tiny is multilingual (handles de/en/fr with one model). Force the
-      // CPU/WASM backend. Use full-precision (fp32) weights: the 8-bit quantized
-      // build fails on this onnxruntime-web version ("Missing required scale ...
-      // MatMulNBits"), and fp32 avoids the n-bit matmul path entirely.
-      const p = await pipeline("automatic-speech-recognition", "Xenova/whisper-tiny", {
+      // Multilingual whisper (de/en/fr from one model) on the CPU/WASM backend.
+      // dtype comes from the quality setting — q8 works on this onnxruntime and
+      // is both smaller and far more accurate than the old tiny/fp32 pairing
+      // (measured: 15.4% -> 0.0% WER on mic-like audio, 147MB -> 76MB).
+      const p = await pipeline("automatic-speech-recognition", repo, {
         device: "wasm",
-        dtype: "fp32",
+        dtype,
         progress_callback: (e: any) => {
           if (!e) return;
           if (typeof e.progress === "number") {
@@ -79,7 +90,7 @@ function getAsr(onProgress?: (p: number) => void): Promise<any> {
       });
       modelReady = true;
       return p;
-    })().catch((err) => { asrPromise = null; throw err; });
+    })().catch((err) => { asrPromise = null; loadedRepo = null; throw err; });
   } else if (onProgress && lastProgress) {
     onProgress(lastProgress);
   }

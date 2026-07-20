@@ -50,6 +50,8 @@ import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
+import { getVoiceModel, setVoiceModel, VOICE_MODELS, type VoiceModelChoice } from "@/lib/voiceModel";
+import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { AppearanceEditor } from "@/components/AppearanceEditor";
 import { ActivityCard } from "@/components/lab/ActivityCard";
@@ -278,6 +280,7 @@ export default function GamificationPanel({
   const [theme, setTheme] = useState<Theme>(getTheme);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
+  const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
@@ -329,6 +332,12 @@ export default function GamificationPanel({
     const next: Effects = effects === "lite" ? "full" : "lite";
     applyEffects(next);
     setEffects(next);
+  };
+
+  const toggleVoiceModel = () => {
+    const next: VoiceModelChoice = voiceModel === "accurate" ? "balanced" : "accurate";
+    setVoiceModel(next);
+    setVoiceModelState(next);
   };
 
   const toggleCompanion = () => {
@@ -509,6 +518,37 @@ export default function GamificationPanel({
                   {effects === "lite" ? "On" : "Off"}
                 </span>
               </button>
+
+              {/* Dictation accuracy — desktop app only, where speech runs on the
+                  bundled offline model. Both options are more accurate than the
+                  old default; this trades download size and speed for noise
+                  robustness. */}
+              {isElectronApp() && (
+                <button
+                  aria-pressed={voiceModel === "accurate"}
+                  aria-label="Toggle higher-accuracy dictation model"
+                  className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                  onClick={toggleVoiceModel}
+                  type="button"
+                >
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                      <Mic2 className="h-4 w-4" /> Dictation accuracy
+                    </span>
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      {VOICE_MODELS[voiceModel].note}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                      voiceModel === "accurate" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                    )}
+                  >
+                    {VOICE_MODELS[voiceModel].label}
+                  </span>
+                </button>
+              )}
 
 
 

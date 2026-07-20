@@ -98,5 +98,8 @@
     "globals": "^17.4.0",
     "typescript": "^6.0.2",
     "vite": "^6.3.5"
+  },
+  "overrides": {
+    "onnxruntime-web": "1.27.0"
   }
 }
