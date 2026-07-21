@@ -45,7 +45,11 @@ type ProgressStats = {
 // learner is a German speaker studying English. IDs and everything else are kept.
 function swapStepForEnglish(step: any): any {
   if (step?.type === "sentence" && step.item) {
-    return { ...step, item: { ...step.item, de: step.item.en, en: step.item.de } };
+    // `say` respells the GERMAN aloud. After the swap the learner is saying the
+    // English line, so the hint would be pronunciation advice for the wrong
+    // sentence — drop it rather than mislead.
+    const { say, ...item } = step.item;
+    return { ...step, item: { ...item, de: step.item.en, en: step.item.de } };
   }
   if (step?.type === "dialogue" && Array.isArray(step.dialogue?.lines)) {
     return {

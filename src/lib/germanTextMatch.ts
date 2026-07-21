@@ -70,13 +70,26 @@ export function normalizeGermanLenientCaseSensitive(t: string) {
     .replace(/ae/g, "a")
     .replace(/oe/g, "o")
     .replace(/ue/g, "u")
-    .replace(/\bnix\b/g, "nichts")
-    .replace(/\bmachs\b/g, "mach es")
-    .replace(/\bgibts\b/g, "gibt es")
-    .replace(/\bgehts\b/g, "geht es")
-    .replace(/\bists\b/g, "ist es")
-    .replace(/\bachso\b/g, "ach so")   // both spellings are in use; accept either
-    .replace(/\bgerne\b/g, "gern");
+    // Case-INSENSITIVE match with the original capital put back, because this
+    // normalizer preserves case on purpose. Written lowercase-only, these folds
+    // silently did nothing at the start of a sentence — "Gibts?" stayed put
+    // while the target "Gibt es?" folded, and the answer came back rejected for
+    // a capitalisation error the learner never made.
+    .replace(/\bnix\b/gi, keepCase("nichts"))
+    .replace(/\bmachs\b/gi, keepCase("mach es"))
+    .replace(/\bgibts\b/gi, keepCase("gibt es"))
+    .replace(/\bgehts\b/gi, keepCase("geht es"))
+    .replace(/\bists\b/gi, keepCase("ist es"))
+    .replace(/\bachso\b/gi, keepCase("ach so"))  // both spellings are in use
+    .replace(/\bgerne\b/gi, keepCase("gern"));
+}
+
+/** Replacement that carries the matched word's leading capital across. */
+function keepCase(replacement: string) {
+  return (match: string) =>
+    match[0] === match[0].toUpperCase()
+      ? replacement[0].toUpperCase() + replacement.slice(1)
+      : replacement;
 }
 
 export function matchGermanPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
@@ -170,6 +183,26 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // kriegen == bekommen (colloquial "get") — person/tense kept per pair
   [/\bkriege\b/g, "bekomme"], [/\bkriegst\b/g, "bekommst"], [/\bkriegt\b/g, "bekommt"],
   [/\bkriegen\b/g, "bekommen"], [/\bgekriegt\b/g, "bekommen"],
+
+  // ── Written form vs. spoken form ────────────────────────────────────────
+  // Germans drop the ich-form -e constantly ("ich hab", "ich geh", "ich mach",
+  // "ich versteh") and always contract "gibt es" to "gibt's". Both spellings
+  // are the same sentence, so both must be accepted whichever one is taught —
+  // otherwise teaching the form people actually say would start rejecting the
+  // form the learner read in a book, which is exactly the pettiness we're
+  // trying to remove.
+  //
+  // Folded UP to the written -e form, and only after "ich", so ordinary nouns
+  // are untouched: this can never turn "die Arbeit" into "die Arbeite" because
+  // it only fires on "ich arbeit". Verbs whose ich-form has no -e to drop
+  // (weiß, will, muss, kann, soll, darf, mag) are deliberately absent — adding
+  // them would invent words like "ich weiße".
+  [
+    /\bich (hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart)\b(?!e)/g,
+    "ich $1e",
+  ],
+  // "gibt's" / "gibts" == "gibt es"; likewise "geht's", "hat's".
+  [/\b(gibt|geht|hat|passt|klappt|läuft|l(?:ä|ae)uft)['’]?s\b/g, "$1 es"],
 ];
 
 // Classic English→German literal transfers: understandable, but not German.

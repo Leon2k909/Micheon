@@ -1010,6 +1010,18 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           </div>
         )}
 
+        {/* How it actually sounds. Germans swallow far more than the spelling
+            admits — gehen is "gehn", nichts is "nix", kannst du is "kannste" —
+            so a learner who reads the line as written is understood but marked
+            instantly as foreign. Shown on the phases where they SAY it, and
+            hidden while typing (the respelling would hand over the spelling). */}
+        {item.say && (phase === "Read" || phase === "Speak" || phase === "SpeakAll") && (
+          <div className="fs-say">
+            <span className="fs-when-label">{ui("How it's really said")}</span>
+            <p>{item.say}</p>
+          </div>
+        )}
+
         {hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
