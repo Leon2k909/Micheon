@@ -71,7 +71,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // mistaken for the everyday thing to say.
   const tierNote = packMeta(partKey).note;
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -86,10 +86,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -109,7 +109,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // ── Phrases ──────────────────────────────────────────────────
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr, ph.use, undefined, ph.short);
+    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr, ph.use, undefined, ph.short, ph.when);
   });
 
   // ── Dialogue lines ───────────────────────────────────────────

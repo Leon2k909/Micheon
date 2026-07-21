@@ -1048,3 +1048,38 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(90deg, #a66bff, #7c3aed);
   transition: width 0.25s ease;
 }
+
+/* ── "When you'd say it" ──
+   The situation that triggers a phrase, for sentences whose moment isn't
+   obvious from the words. Deliberately a readable line rather than another
+   chip: chips are scanned and ignored, and this is the part people actually
+   need to read. */
+.fs-when {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 2px;
+  padding: 10px 14px;
+  border-left: 3px solid rgba(168, 120, 255, 0.55);
+  border-radius: 0 12px 12px 0;
+  background: rgba(139, 76, 255, 0.07);
+}
+.fs-when-label {
+  flex: 0 0 auto;
+  color: #bda8ed;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fs-when p {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+@media (max-width: 860px) {
+  .fs-when { flex-direction: column; gap: 4px; padding: 9px 12px; }
+}

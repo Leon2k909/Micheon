@@ -26,6 +26,12 @@ export interface Phrase {
   /** Shorter colloquial form people actually say out loud, for longer phrases
    *  (e.g. "Ich weiß es nicht" → "Weiß nicht"). Omitted when already short. */
   short?: string;
+  /** The SITUATION that triggers this phrase, for sentences whose moment isn't
+   *  obvious from the words. `use` explains the language ("ausfallen: fällt
+   *  klein aus = runs small"); `when` explains when you'd open your mouth
+   *  ("Holding up a jumper in a shop, or before ordering a size online").
+   *  Omit when the sentence speaks for itself ("Ich gehe ins Bett."). */
+  when?: string;
 }
 
 export interface Blueprint {

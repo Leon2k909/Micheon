@@ -45,6 +45,7 @@ const DE: Record<string, string> = {
   "Tap a word to hear it": "Tippe ein Wort, um es zu hören",
   "Tap to replay": "Zum Wiederholen tippen",
   "Press Enter when you are ready.": "Drücke Enter, wenn du bereit bist.",
+  "When you'd say it": "Wann man das sagt",
   "Preparing voice…": "Spracherkennung wird vorbereitet…",
   "Reading it back…": "Wird ausgewertet…",
   "Listening — tap to stop": "Ich höre zu — zum Beenden tippen",

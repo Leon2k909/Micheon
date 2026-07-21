@@ -998,6 +998,18 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           hideUse={phase === "Translate" || phase === "TranslateAgain"}
         />
 
+        {/* When you'd actually say it. The usage chip explains the LANGUAGE;
+            this explains the MOMENT — without it, a phrase like "Wie fällt das
+            aus?" leaves you knowing the grammar and still not knowing when to
+            open your mouth. Hidden during Translate for the same reason the
+            usage note is: it can give the answer away. */}
+        {item.when && phase !== "Translate" && phase !== "TranslateAgain" && (
+          <div className="fs-when">
+            <span className="fs-when-label">{ui("When you'd say it")}</span>
+            <p>{item.when}</p>
+          </div>
+        )}
+
         {hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
