@@ -8,8 +8,6 @@
 
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import path from "path";
-import fs from "fs";
-import { exec, execSync } from "child_process";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
 import { startServer } from "../server/index.js";
@@ -84,80 +82,39 @@ async function createWindow() {
 }
 
 // ── Auto-update ──────────────────────────────────────────────────────────
-function performGitPullIfDev() {
-  const rootDir = path.join(__dirname, "..");
-  const gitDir = path.join(rootDir, ".git");
-  if (!fs.existsSync(gitDir)) return;
-
-  console.log("[updater] Local git repo detected. Executing git pull...");
-  exec("git pull", { cwd: rootDir, timeout: 15000 }, (error, stdout, stderr) => {
-    if (error) {
-      console.error("[updater] git pull failed:", error.message);
-      return;
-    }
-    console.log("[updater] git pull response:", stdout || stderr);
-    if (stdout && !stdout.includes("Already up to date.")) {
-      console.log("[updater] New commits pulled! Rebuilding app frontend...");
-      exec("npx vite build", { cwd: rootDir, timeout: 30000 }, (buildErr) => {
-        if (!buildErr) {
-          console.log("[updater] Rebuild finished! Reloading window...");
-          if (mainWindow) {
-            mainWindow.reload();
-            mainWindow.webContents.send("update:downloaded", "latest git commit");
-          }
-        } else {
-          console.error("[updater] Vite build error:", buildErr.message);
-        }
-      });
-    }
-  });
-}
-
-// Checks the GitHub releases feed on launch (and hourly), and pulls git if running in a repo.
+// Checks the GitHub releases feed on launch (and hourly). When a newer version
+// is published, it downloads it in the background and installs it silently the
+// next time the app quits — so the user never re-downloads or reinstalls by
+// hand. Only runs in the packaged app; a dev run has no update feed.
 function setupAutoUpdate() {
-  const rootDir = path.join(__dirname, "..");
-  const gitDir = path.join(rootDir, ".git");
+  if (!app.isPackaged) return;
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  // Always full-download the installer. Differential (block-map) downloads diff
+  // against the currently-installed build; across a big change (e.g. the
+  // Learn German -> Micheon rename) that diff is huge and, over GitHub's
+  // repo-rename redirect, its many range requests can stall. Full downloads are
+  // a single resumable request and just work.
+  autoUpdater.disableDifferentialDownload = true;
 
-  if (fs.existsSync(gitDir)) {
-    performGitPullIfDev();
-  }
+  autoUpdater.on("error", (err) => console.error("[updater] error:", err?.message ?? err));
+  autoUpdater.on("checking-for-update", () => console.log("[updater] checking for updates…"));
+  autoUpdater.on("update-available", (info) => console.log("[updater] update available:", info.version));
+  autoUpdater.on("update-not-available", () => console.log("[updater] already up to date"));
+  autoUpdater.on("download-progress", (p) => console.log(`[updater] downloading ${Math.round(p.percent)}%`));
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log("[updater] update downloaded:", info.version, "— will install on quit");
+    // Let the app show a subtle "Update ready, restart to apply" hint if it wants.
+    mainWindow?.webContents.send("update:downloaded", info.version);
+  });
 
-  if (app.isPackaged) {
-    autoUpdater.autoDownload = true;
-    autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.disableDifferentialDownload = true;
-
-    autoUpdater.on("error", (err) => console.error("[updater] error:", err?.message ?? err));
-    autoUpdater.on("checking-for-update", () => console.log("[updater] checking for updates…"));
-    autoUpdater.on("update-available", (info) => console.log("[updater] update available:", info.version));
-    autoUpdater.on("update-not-available", () => console.log("[updater] already up to date"));
-    autoUpdater.on("download-progress", (p) => console.log(`[updater] downloading ${Math.round(p.percent)}%`));
-    autoUpdater.on("update-downloaded", (info) => {
-      console.log("[updater] update downloaded:", info.version, "— will install on quit");
-      mainWindow?.webContents.send("update:downloaded", info.version);
-    });
-
-    autoUpdater.checkForUpdatesAndNotify().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
-    setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 60 * 60 * 1000);
-  }
+  autoUpdater.checkForUpdatesAndNotify().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
+  // Re-check periodically for long-running sessions.
+  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 60 * 60 * 1000);
 }
 
 // Renderer can ask to apply the downloaded update immediately (restart + install).
 ipcMain.on("update:install-now", () => {
-  const rootDir = path.join(__dirname, "..");
-  const gitDir = path.join(rootDir, ".git");
-  if (fs.existsSync(gitDir)) {
-    console.log("[updater] Manual restart requested. Pulling git & rebuilding...");
-    try {
-      execSync("git pull", { cwd: rootDir, encoding: "utf8", timeout: 15000 });
-      execSync("npx vite build", { cwd: rootDir, stdio: "inherit", timeout: 30000 });
-    } catch (err) {
-      console.error("[updater] Relaunch pull/build error:", err?.message ?? err);
-    }
-    app.relaunch();
-    app.exit(0);
-    return;
-  }
   autoUpdater.quitAndInstall();
 });
 
