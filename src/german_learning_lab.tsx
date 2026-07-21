@@ -56,7 +56,13 @@ function swapStepForEnglish(step: any): any {
 }
 
 export default function GermanLearningLab() {
-  const user = getAuthUser()!;
+  const user = getAuthUser() ?? {
+    id: "default",
+    name: "Learner",
+    email: "",
+    joinedAt: new Date().toISOString(),
+    externalWordsLearned: 0,
+  };
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
@@ -130,7 +136,7 @@ export default function GermanLearningLab() {
     Object.entries(merged).forEach(([k, v]) => saveScopedJson(k, v, user));
   };
 
-  const openTab = (tab: string) => startTransition(() => setActiveTab(tab));
+  const openTab = (tab: string) => setActiveTab(tab);
 
   const COMPLETED_KEY = "session-completed";
 
@@ -496,20 +502,20 @@ export default function GermanLearningLab() {
     },
   ];
 
-  const view = deferredTab === "learn" ? (
+  const view = activeTab === "learn" ? (
     courseHasReader && activeCourse ? (
       <CourseLessonsView course={activeCourse} onOpenLesson={(id) => startCourseLesson(id)} onOpenReader={() => openReader()} />
     ) : (
       <LearnView apiParts={apiParts} onOpenLesson={startSession} />
     )
-  ) : deferredTab === "profile" ? (
+  ) : activeTab === "profile" ? (
     <GamificationPanel profileOnly stats={progressStats} user={user} onUpdateStats={updateStats} apiParts={apiParts} onSwitchCourse={() => setCourseSwitcherOpen(true)} activeCourseName={activeCourse?.name ?? "German"} />
-  ) : deferredTab === "grammar" ? (
+  ) : activeTab === "grammar" ? (
     <div className="guided-session space-y-4">
       <ClozeTabContent />
       <GrammarTabContent />
     </div>
-  ) : deferredTab === "games" ? (
+  ) : activeTab === "games" ? (
     <GamesView 
       totalReviews={progressStats.totalReviews}
       externalWords={progressStats.externalWords}

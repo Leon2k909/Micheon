@@ -98,7 +98,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Das freut mich.", en: "I'm glad to hear that.", use: "Positive reaction" },
       { de: "Schade!", en: "What a shame! / Too bad! / That is a shame!", use: "Disappointment" },
       { de: "Genau!", en: "Exactly!", use: "Agreement" },
-      { de: "Ach so!", en: "Oh, I see!", use: "Understanding something" },
+      { de: "Achso! / Ach so!", en: "Oh, I see!", use: "Understanding something" },
       { de: "Wirklich?", en: "Really?", use: "Surprise" },
       { de: "Kein Stress.", en: "No worries. / No stress.", use: "Calming someone" },
       { de: "Viel Glück!", en: "Good luck!", use: "Wishing well" },
