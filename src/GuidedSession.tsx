@@ -650,8 +650,21 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
   const matchTarget = learnEn ? matchEnglish : matchGermanSentence;
-  const result   = useMemo(() => matchTarget(input, item.de), [input, item.de, matchTarget]);
-  const sayResult = useMemo(() => matchTarget(sayInput, item.de), [sayInput, item.de, matchTarget]);
+  // Where the spoken short form is what we teach, the fuller written form the
+  // learner will have met in a book stays correct too. Taking the better of the
+  // two results means the shown answer is the one people say, without punishing
+  // anyone who typed the one people write.
+  const matchEither = React.useCallback(
+    (typed: string) => {
+      const primary = matchTarget(typed, item.de);
+      if (primary.ok || !item.long) return primary;
+      const alt = matchTarget(typed, item.long);
+      return alt.ok ? alt : primary;
+    },
+    [item.de, item.long, matchTarget]
+  );
+  const result   = useMemo(() => matchEither(input), [input, matchEither]);
+  const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
   // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
   // the answer is German — each direction gets its own synonym/coach matcher.
   const enResult = useMemo(
@@ -1019,6 +1032,16 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           <div className="fs-say">
             <span className="fs-when-label">{ui("How it's really said")}</span>
             <p>{item.say}</p>
+          </div>
+        )}
+
+        {/* We teach the form people say; this is the fuller one they'll meet in
+            print. Shown on Read only — during Type it would be a second answer
+            on screen, and it counts as correct anyway (see matchEither). */}
+        {item.long && phase === "Read" && (
+          <div className="fs-say">
+            <span className="fs-when-label">{ui("Written in full")}</span>
+            <p>{item.long}</p>
           </div>
         )}
 

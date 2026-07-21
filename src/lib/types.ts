@@ -36,6 +36,10 @@ export interface Phrase {
    *  ("Wir gehen nach Hause." → "sounds like: veer GEHN nach HOW-zuh").
    *  No IPA. Omit unless reading it as written would sound clearly off. */
   say?: string;
+  /** The fuller written form, when the SHORT one is what people actually say
+   *  and is therefore what we teach. Shown as a footnote and accepted as an
+   *  answer, so a learner who met the long form in a book is not marked wrong. */
+  long?: string;
 }
 
 export interface Blueprint {
