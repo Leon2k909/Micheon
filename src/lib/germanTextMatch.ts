@@ -19,6 +19,7 @@ export function normalizeGermanInput(t: string) {
     .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
     .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop sentence punctuation incl. curly/German/French quotes
     .replace(/\bachso\b/g, "ach so")    // both spellings are current; neither is a mistake
+    .replace(/\bnaja\b/g, "na ja")      // same for Naja / Na ja
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -54,6 +55,7 @@ export function normalizeGermanInputCaseSensitive(t: string) {
     // Same Achso/Ach so fold, capitalisation preserved so this case-sensitive
     // path still compares like with like.
     .replace(/\bachso\b/gi, (m) => (m[0] === "A" ? "Ach so" : "ach so"))
+    .replace(/\bnaja\b/gi, (m) => (m[0] === "N" ? "Na ja" : "na ja"))
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -516,6 +518,13 @@ function canonicalizeEnglish(t: string) {
     .replace(/\b(currently|at the moment)\b/g, "now")
     .replace(/\btruly\b/g, "really")
     .replace(/\bindeed\b/g, "really")
+    // "sehr/echt/wirklich" all render as very OR really — interchangeable
+    // intensifiers, so neither spelling of the learner's instinct is wrong.
+    .replace(/\b(very|really)\b/g, "very")
+    // "to"/"too" is a homophone slip, not a comprehension failure — but ONLY
+    // before a degree word. A blanket to->too would wreck every infinitive
+    // and preposition ("I want to go", "to the station").
+    .replace(/\bto (?=(fast|quick|slow|much|many|late|early|big|small|large|hot|cold|warm|expensive|cheap|loud|quiet|hard|easy|long|short|far|near|old|young|tired|busy|difficult|heavy|light|strong|weak|often|soon|late)\b)/g, "too ")
     .replace(/\b(a little|a little bit|slightly)\b/g, "a bit")
     .replace(/\b(choose|select|pick)\b/g, "choose")
     .replace(/\bdiscover\b/g, "find")

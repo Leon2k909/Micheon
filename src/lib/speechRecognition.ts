@@ -3,13 +3,45 @@
  * Uses SpeechRecognition (Chrome/Edge/Safari webkit). Requires HTTPS or localhost.
  */
 
+// The Web Speech API is not in TypeScript's DOM lib, so declare the slice we
+// use. These are type-only (erased at runtime) but leaving them unresolved
+// makes the undefined-name build gate unable to distinguish a harmless missing
+// DOM type from a genuinely missing import — which is exactly the mistake that
+// shipped a blank Profile settings page.
+interface SpeechRecognitionAlternativeLike { transcript: string; confidence: number }
+interface SpeechRecognitionResultLike {
+  readonly isFinal: boolean;
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternativeLike;
+}
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: { readonly length: number; [index: number]: SpeechRecognitionResultLike };
+}
+interface SpeechRecognitionErrorEvent extends Event { readonly error: string }
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onaudiostart: ((this: SpeechRecognition, ev: Event) => void) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
+}
+
 type SpeechRecognitionCtor = new () => SpeechRecognition;
 
 function getSpeechRecognitionCtor(): SpeechRecognitionCtor | null {
   if (typeof window === "undefined") return null;
-  const w = window as Window &
-    typeof globalThis & { webkitSpeechRecognition?: SpeechRecognitionCtor };
-  return window.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+  const w = window as Window & typeof globalThis & {
+    SpeechRecognition?: SpeechRecognitionCtor;
+    webkitSpeechRecognition?: SpeechRecognitionCtor;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 export function isSpeechRecognitionSupported(): boolean {

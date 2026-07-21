@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+    // Without this, TS 6+ treats the deprecated `moduleResolution: node10` and
+    // `baseUrl` below as ERRORS and aborts before checking a single source
+    // file — so `tsc --noEmit` exits 0 having verified nothing. That is how a
+    // missing `Mic2` import shipped: it only rendered inside Electron, and the
+    // typechecker that should have caught it was never actually running.
+    "ignoreDeprecations": "6.0",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],

@@ -648,7 +648,7 @@ export const curatedTopics: CuratedTopic[] = [
     description: "The little words Germans sprinkle into every sentence — doch, halt, mal, na ja. Mastering these is what makes you sound fluent instead of textbook.",
     focus: "Soften, connect, and react like a native speaker.",
     phrases: [
-      { de: "Na ja, mal sehen.", en: "Well, we'll see. / Well, let's see.", use: "Softens an answer — extremely common" },
+      { de: "Naja, mal sehen.", en: "Well, we'll see. / Well, let's see.", use: "Softens an answer — extremely common" },
       { de: "Also, ich finde das gut.", en: "Well, I think that's good. / Well, I find that good.", use: "Also opens a thought — said constantly" },
       { de: "Übrigens, wie war dein Wochenende?", en: "By the way, how was your weekend?", use: "Übrigens = by the way" },
       { de: "Eigentlich wollte ich zu Hause bleiben.", en: "Actually I wanted to stay home. / Actually I wanted to stay at home.", use: "Eigentlich = actually/originally" },

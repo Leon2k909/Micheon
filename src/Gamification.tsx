@@ -16,6 +16,7 @@ import {
   LogOut,
   Zap,
   Languages,
+  Mic2,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
