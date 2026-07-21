@@ -40,6 +40,7 @@ export function normalizeGermanLenient(t: string) {
     .replace(/\bgibts\b/g, "gibt es")
     .replace(/\bgehts\b/g, "geht es")
     .replace(/\bists\b/g, "ist es")
+    .replace(/\bachso\b/gi, "ach so")
     .replace(/\bgerne\b/g, "gern");
 }
 

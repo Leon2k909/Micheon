@@ -80,12 +80,12 @@ const LEVELS: Level[] = [
 ];
 
 const MILESTONES = [
-  { id: "first_session", label: "First lesson", desc: "Complete one guided lesson.", check: (s: Stats) => s.sessionsCompleted >= 1 },
-  { id: "streak_3", label: "Three-day streak", desc: "Return for three separate days.", check: (s: Stats) => s.streak >= 3 },
-  { id: "reviews_50", label: "50 review items", desc: "Build recognition through recall.", check: (s: Stats) => s.totalReviews >= 50 },
-  { id: "xp_500", label: "500 XP", desc: "Show steady practice momentum.", check: (s: Stats) => s.totalXp >= 500 },
-  { id: "words_200", label: "200 tracked words", desc: "Combine lessons and word-bank items.", check: (s: Stats) => s.totalReviews + s.externalWords >= 200 },
-  { id: "week", label: "Seven-day rhythm", desc: "Keep a full week of returns.", check: (s: Stats) => s.streak >= 7 },
+  { id: "first_session", label: "First lesson", desc: "Complete one guided lesson.", check: (s: Stats) => (s?.sessionsCompleted ?? 0) >= 1 },
+  { id: "streak_3", label: "Three-day streak", desc: "Return for three separate days.", check: (s: Stats) => (s?.streak ?? 0) >= 3 },
+  { id: "reviews_50", label: "50 review items", desc: "Build recognition through recall.", check: (s: Stats) => (s?.totalReviews ?? 0) >= 50 },
+  { id: "xp_500", label: "500 XP", desc: "Show steady practice momentum.", check: (s: Stats) => (s?.totalXp ?? 0) >= 500 },
+  { id: "words_200", label: "200 tracked words", desc: "Combine lessons and word-bank items.", check: (s: Stats) => ((s?.totalReviews ?? 0) + (s?.externalWords ?? 0)) >= 200 },
+  { id: "week", label: "Seven-day rhythm", desc: "Keep a full week of returns.", check: (s: Stats) => (s?.streak ?? 0) >= 7 },
 ];
 
 export function getLevelInfo(xp: number) {
@@ -274,18 +274,32 @@ export default function GamificationPanel({
   onSwitchCourse?: () => void;
   activeCourseName?: string;
 }) {
-  const [externalInput, setExternalInput] = useState(stats.externalWords.toString());
+  const safeStats: Stats = {
+    totalXp: stats?.totalXp ?? 0,
+    sessionsCompleted: stats?.sessionsCompleted ?? 0,
+    totalReviews: stats?.totalReviews ?? 0,
+    streak: stats?.streak ?? 0,
+    externalWords: stats?.externalWords ?? 0,
+  };
+  const safeUser: UserProfile = user ?? {
+    id: "default",
+    name: "Learner",
+    email: "",
+    joinedAt: new Date().toISOString(),
+    externalWordsLearned: 0,
+  };
+  const [externalInput, setExternalInput] = useState((safeStats.externalWords ?? 0).toString());
   const [isEditingName, setIsEditingName] = useState(false);
-  const [newName, setNewName] = useState(user.name);
+  const [newName, setNewName] = useState(safeUser.name ?? "");
   const [theme, setTheme] = useState<Theme>(getTheme);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
-  const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
+  const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(safeUser));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(user.avatar);
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(safeUser.avatar);
 
   const onAvatarFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -305,10 +319,10 @@ export default function GamificationPanel({
     setAuthUser({ ...user, avatar: undefined });
     window.location.reload();
   };
-  const { cur, nxt, pct, into, needed } = getLevelInfo(stats.totalXp ?? 0);
-  const words = (stats.totalReviews || 0) + (stats.externalWords || 0);
-  const vocab = countKnownVocab(user, stats.externalWords || 0);
-  const earned = MILESTONES.filter((item) => item.check(stats)).length;
+  const { cur, nxt, pct, into, needed } = getLevelInfo(safeStats.totalXp ?? 0);
+  const words = (safeStats.totalReviews || 0) + (safeStats.externalWords || 0);
+  const vocab = countKnownVocab(safeUser, safeStats.externalWords || 0);
+  const earned = MILESTONES.filter((item) => item.check(safeStats)).length;
 
   const saveName = () => {
     if (!newName.trim()) return;
