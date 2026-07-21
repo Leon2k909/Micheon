@@ -72,6 +72,18 @@ export const CURRICULUM_ORDER: string[] = [
   "part79",          // Being there for someone
   "part80",          // Neighbours & shared living
   "part81",          // Phones, streaming & group chats
+  "part82",          // Family & relatives
+  "part83",          // Weather & seasons
+  "part84",          // Sport & exercise
+  "part85",          // Money between friends
+  "part86",          // Pets & animals
+  "part87",          // Clothes & getting ready
+  "part88",          // Kids & parenting
+  "part89",          // Learning & studying
+  "part90",          // Driving & cars
+  "part91",          // Weekends & free time
+  "part92",          // Music, films & books
+  "part93",          // Venting & getting it off your chest
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",
