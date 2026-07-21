@@ -1896,6 +1896,78 @@ function Confetti({ count = 40 }: { count?: number }) {
 }
 
 // Section
+/**
+ * A single Sie-or-du situation question, shown at the end of a lesson that
+ * taught a register-committing sentence.
+ *
+ * Getting it wrong is not punished — no XP loss, no repeat drilling. The point
+ * is the explanation underneath, which is shown either way; a wrong answer just
+ * brings the question back in a few days instead of a few months.
+ */
+function RegisterCheck({ question, onAnswer, onNext }: any) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const answered = picked !== null;
+  const correct = picked === question.answer;
+
+  const choose = (i: number) => {
+    if (answered) return;
+    setPicked(i);
+    onAnswer?.(question.id, i === question.answer);
+  };
+
+  return (
+    <div className="fs-card-body w-full space-y-6 py-8">
+      <div className="space-y-2 text-center">
+        <span className="fs-when-label">{ui("Quick check")}</span>
+        <p className="text-2xl font-semibold leading-snug tracking-tight">{question.prompt}</p>
+      </div>
+
+      <div className="mx-auto flex w-full max-w-md flex-col gap-3">
+        {question.options.map((opt: string, i: number) => {
+          const isAnswer = i === question.answer;
+          const state = !answered ? "idle" : isAnswer ? "right" : i === picked ? "wrong" : "muted";
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled={answered}
+              onClick={() => choose(i)}
+              className={
+                "rounded-xl border-2 px-5 py-4 text-left text-base font-medium transition " +
+                (state === "idle"
+                  ? "border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50"
+                  : state === "right"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                  : state === "wrong"
+                  ? "border-rose-400 bg-rose-50 text-rose-900"
+                  : "border-zinc-100 text-zinc-400")
+              }
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {answered && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto w-full max-w-md space-y-4"
+        >
+          <p className="text-sm font-semibold">
+            {correct ? ui("That's it.") : ui("Worth knowing:")}
+          </p>
+          <p className="text-sm leading-relaxed text-zinc-600">{question.explain}</p>
+          <Button onClick={onNext} className="h-12 w-full rounded-lg text-sm font-semibold">
+            {ui("Got it")} <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 function CompleteScreen({ onNext }: { onNext: () => void }) {
   // Auto-finish: the celebration plays, then the lesson closes itself and the
   // next one is queued up — no "Finish" press needed. Any key/click skips the
@@ -2099,7 +2171,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 }
 
 // Section
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onAdvance }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onAdvance, onRegisterAnswer }: any) {
   const [index, setIndex] = useState(0);
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
@@ -2206,8 +2278,9 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               <div className="relative z-10 flex flex-col">
                 {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
                 {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} /></div>}
+                {kind === "register"  && <RegisterCheck question={step.question} onAnswer={onRegisterAnswer} onNext={next} />}
                 {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
-                {!["sentence","dialogue","complete"].includes(kind) && (
+                {!["sentence","dialogue","complete","register"].includes(kind) && (
                   <div className="fs-card-body py-12 text-center space-y-4">
                     <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>
                     <Button onClick={next} className="h-12 rounded-lg bg-zinc-950 px-8 text-sm font-semibold text-white hover:bg-zinc-800">

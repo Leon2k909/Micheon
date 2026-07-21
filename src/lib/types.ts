@@ -32,6 +32,10 @@ export interface Phrase {
    *  ("Holding up a jumper in a shop, or before ordering a size online").
    *  Omit when the sentence speaks for itself ("Ich gehe ins Bett."). */
   when?: string;
+  /** Plain-English respelling for phrases a learner would read aloud wrongly
+   *  ("Wir gehen nach Hause." → "sounds like: veer GEHN nach HOW-zuh").
+   *  No IPA. Omit unless reading it as written would sound clearly off. */
+  say?: string;
 }
 
 export interface Blueprint {

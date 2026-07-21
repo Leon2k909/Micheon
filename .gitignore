@@ -47,3 +47,4 @@ old-rpc.html
 wb.html
 scratch/
 dist/
+*.stackdump

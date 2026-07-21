@@ -20,6 +20,10 @@ import { Blueprint, Part } from "@/lib/types";
 import { buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
 import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
+import {
+  detectRegister, pickRegisterQuestion, recordRegisterAnswer,
+  type Register, type RegisterState,
+} from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
 import { recordActivitySession } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
@@ -53,6 +57,36 @@ function swapStepForEnglish(step: any): any {
     };
   }
   return step;
+}
+
+const REGISTER_KEY = "register-checks";
+
+/**
+ * Slip one Sie-or-du situation question into a lesson, just before the finish
+ * screen — but only when the lesson actually taught a sentence that commits to
+ * a register, and only when a question is due. Typing a sentence right proves
+ * nothing about knowing who to say it to.
+ *
+ * Skipped entirely for German speakers learning English: the du/Sie split is
+ * the thing they already have and English lacks.
+ */
+function withRegisterCheck(steps: any[], user: any): any[] {
+  if (learningEnglish()) return steps;
+  const registers = Array.from(
+    new Set(
+      steps
+        .filter((s) => s?.type === "sentence" && s.item?.de)
+        .map((s) => detectRegister(s.item.de))
+        .filter(Boolean) as Register[]
+    )
+  );
+  const state = (loadScopedJson<RegisterState>(REGISTER_KEY, {}, user) as RegisterState) ?? {};
+  const question = pickRegisterQuestion(registers, state);
+  if (!question) return steps;
+
+  const completeAt = steps.findIndex((s) => s?.type === "complete");
+  const at = completeAt === -1 ? steps.length : completeAt;
+  return [...steps.slice(0, at), { type: "register", question }, ...steps.slice(at)];
 }
 
 export default function GermanLearningLab() {
@@ -248,7 +282,7 @@ export default function GermanLearningLab() {
         if (learningEnglish()) steps = steps.map(swapStepForEnglish);
         setActivePart(id);
         saveScopedJson("active-part", id, user);
-        setSessionSteps(steps);
+        setSessionSteps(withRegisterCheck(steps, user));
         sessionStartRef.current = Date.now();
         setShowGuidedSession(true);
         return;
@@ -309,12 +343,12 @@ export default function GermanLearningLab() {
         saveScopedJson("active-part", id, user);
         let reviewSteps = buildSession(partWithKey, items, {}, 0);
         if (learningEnglish()) reviewSteps = reviewSteps.map(swapStepForEnglish);
-        setSessionSteps(reviewSteps);
+        setSessionSteps(withRegisterCheck(reviewSteps, user));
       }
     } else {
       setActivePart(id);
       saveScopedJson("active-part", id, user);
-      setSessionSteps(steps);
+      setSessionSteps(withRegisterCheck(steps, user));
     }
     sessionStartRef.current = Date.now();
     setShowGuidedSession(true);
@@ -396,6 +430,10 @@ export default function GermanLearningLab() {
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
       onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}
+      onRegisterAnswer={(id: string, correct: boolean) => {
+        const state = (loadScopedJson<RegisterState>(REGISTER_KEY, {}, user) as RegisterState) ?? {};
+        saveScopedJson(REGISTER_KEY, recordRegisterAnswer(state, id, correct), user);
+      }}
       steps={sessionSteps}
     />
   );
