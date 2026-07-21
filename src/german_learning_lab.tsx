@@ -1,5 +1,5 @@
-import React, { startTransition, useDeferredValue, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 import { TopNav, type TopNavNotification, type TopNavSearchItem } from "@/components/TopNav";
 import { DashboardView } from "@/components/lab/DashboardView";
@@ -120,7 +120,6 @@ export default function GermanLearningLab() {
     }
   }, [apiParts, activePart, user]);
 
-  const deferredTab = useDeferredValue(activeTab);
   const currentPart = apiParts[activePart];
   const pathParts   = Object.entries(apiParts);
 
@@ -130,7 +129,12 @@ export default function GermanLearningLab() {
     Object.entries(merged).forEach(([k, v]) => saveScopedJson(k, v, user));
   };
 
-  const openTab = (tab: string) => startTransition(() => setActiveTab(tab));
+  // Tab switches must be SYNCHRONOUS. This used to be
+  // `startTransition(() => setActiveTab(tab))` with the view reading a
+  // `useDeferredValue` copy — React then treated the switch as low priority and,
+  // combined with the mode="wait" tab wrapper below, the profile
+  // view never actually swapped in: clicking "Profile settings" did nothing.
+  const openTab = (tab: string) => setActiveTab(tab);
 
   const COMPLETED_KEY = "session-completed";
 
@@ -496,20 +500,20 @@ export default function GermanLearningLab() {
     },
   ];
 
-  const view = deferredTab === "learn" ? (
+  const view = activeTab === "learn" ? (
     courseHasReader && activeCourse ? (
       <CourseLessonsView course={activeCourse} onOpenLesson={(id) => startCourseLesson(id)} onOpenReader={() => openReader()} />
     ) : (
       <LearnView apiParts={apiParts} onOpenLesson={startSession} />
     )
-  ) : deferredTab === "profile" ? (
+  ) : activeTab === "profile" ? (
     <GamificationPanel profileOnly stats={progressStats} user={user} onUpdateStats={updateStats} apiParts={apiParts} onSwitchCourse={() => setCourseSwitcherOpen(true)} activeCourseName={activeCourse?.name ?? "German"} />
-  ) : deferredTab === "grammar" ? (
+  ) : activeTab === "grammar" ? (
     <div className="guided-session space-y-4">
       <ClozeTabContent />
       <GrammarTabContent />
     </div>
-  ) : deferredTab === "games" ? (
+  ) : activeTab === "games" ? (
     <GamesView 
       totalReviews={progressStats.totalReviews}
       externalWords={progressStats.externalWords}
@@ -578,17 +582,21 @@ export default function GermanLearningLab() {
 
 
       <main className="mx-auto max-w-[1380px] px-4 py-5 pb-24 sm:px-6 lg:py-8 xl:pb-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={deferredTab}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            initial={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {view}
-          </motion.div>
-        </AnimatePresence>
+        {/* No mode="wait" here on purpose. With it, the incoming tab could not
+            mount until the outgoing one finished its exit animation — and if
+            that animation never completed (reduced motion, a backgrounded
+            window, an interrupted transition) the tab silently never changed.
+            That is what made "Profile settings" appear to do nothing. Fading
+            the new view in over the old one is a cosmetic downgrade of ~0.2s
+            and makes navigation unconditional. */}
+        <motion.div
+          key={activeTab}
+          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {view}
+        </motion.div>
       </main>
     </div>
   );

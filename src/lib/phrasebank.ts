@@ -98,7 +98,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Das freut mich.", en: "I'm glad to hear that.", use: "Positive reaction" },
       { de: "Schade!", en: "What a shame! / Too bad! / That is a shame!", use: "Disappointment" },
       { de: "Genau!", en: "Exactly!", use: "Agreement" },
-      { de: "Ach so!", en: "Oh, I see!", use: "Understanding something" },
+      { de: "Achso!", en: "Oh, I see!", use: "Understanding something — the penny dropping, said with a falling tone. Written 'Achso' by most people and 'Ach so' by Duden; both are accepted here. NOTE: German targets can't carry ' / ' alternatives (the slash normalises to a space), so the variant lives in the matcher, not in this string." },
       { de: "Wirklich?", en: "Really?", use: "Surprise" },
       { de: "Kein Stress.", en: "No worries. / No stress.", use: "Calming someone" },
       { de: "Viel Glück!", en: "Good luck!", use: "Wishing well" },

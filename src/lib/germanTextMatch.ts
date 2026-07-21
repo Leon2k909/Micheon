@@ -18,6 +18,7 @@ export function normalizeGermanInput(t: string) {
     .replace(/[’'`´‘]/g, "")            // apostrophes don't matter: "don't" == "dont"
     .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
     .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop sentence punctuation incl. curly/German/French quotes
+    .replace(/\bachso\b/g, "ach so")    // both spellings are current; neither is a mistake
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -40,6 +41,7 @@ export function normalizeGermanLenient(t: string) {
     .replace(/\bgibts\b/g, "gibt es")
     .replace(/\bgehts\b/g, "geht es")
     .replace(/\bists\b/g, "ist es")
+    .replace(/\bachso\b/g, "ach so")   // both spellings are in use; accept either
     .replace(/\bgerne\b/g, "gern");
 }
 
@@ -49,6 +51,9 @@ export function normalizeGermanInputCaseSensitive(t: string) {
     .replace(/[’'`´‘]/g, "")            // apostrophes don't matter
     .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces
     .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop punctuation
+    // Same Achso/Ach so fold, capitalisation preserved so this case-sensitive
+    // path still compares like with like.
+    .replace(/\bachso\b/gi, (m) => (m[0] === "A" ? "Ach so" : "ach so"))
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -68,6 +73,7 @@ export function normalizeGermanLenientCaseSensitive(t: string) {
     .replace(/\bgibts\b/g, "gibt es")
     .replace(/\bgehts\b/g, "geht es")
     .replace(/\bists\b/g, "ist es")
+    .replace(/\bachso\b/g, "ach so")   // both spellings are in use; accept either
     .replace(/\bgerne\b/g, "gern");
 }
 
