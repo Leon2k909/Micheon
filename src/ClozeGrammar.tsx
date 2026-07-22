@@ -133,6 +133,31 @@ export const GRAMMAR_TIPS = [
       { de: "Ruf mich bitte an!", en: "Please call me!" },
     ],
   },
+  // Individual phrases carry their own "sounds like" hint, but these reductions
+  // turn up in hundreds of sentences each — repeating them per phrase would be
+  // noise. They belong here once, as rules.
+  {
+    id: "spoken_reductions",
+    title: "How German is really said",
+    level: "A1",
+    summary: "Germans do not pronounce every letter they write. These few habits are the difference between sounding like a textbook and sounding like a person — and they are not sloppy speech, they are simply how the language is spoken.",
+    rules: [
+      "eu is the 'oy' in boy: freue = FROY-uh, heute = HOY-tuh, Leute = LOY-tuh. Never 'ee-oo'.",
+      "-en endings swallow the e: machen = 'mach'n', haben = 'hab'n' (often just 'ham'), gehen = 'gehn', sehen = 'sehn'.",
+      "Final -ig is said '-ich', a soft hiss: richtig = RISH-tish, fertig = FAIR-tish. Never a hard g or k.",
+      "Final -er is an 'uh': Vater = FAH-tuh, Mutter = MOO-tuh, wieder = VEE-duh.",
+      "du glues onto the verb: kannst du = 'kannste', hast du = 'haste', bist du = 'biste'. (Careful: musst du is 'musste' out loud, but musste is also a real word meaning 'had to'.)",
+      "nicht loses its t in relaxed speech: 'nich'. gibt es becomes \"gibt's\". nichts is often just 'nix'.",
+      "ich, nicht, richtig use a soft hiss near the h of 'huge'. ach, noch, Buch use a throaty kh like Scottish 'loch'.",
+      "w is an English v, v is an f, s before a vowel buzzes like z, z is 'ts', and st/sp at the start of a word are 'sht'/'shp'.",
+    ],
+    tip: "You are never wrong to say the full written form — everyone understands it. But you will understand others far better once you know what they are dropping.",
+    examples: [
+      { de: "Ich freue mich.", en: "I'm looking forward to it. — said 'ish FROY-uh mish'" },
+      { de: "Wollen wir nach Hause gehen?", en: "Shall we go home? — 'VOLL'n veer nach HOW-zuh gehn'" },
+      { de: "Hast du das nicht gesehen?", en: "Didn't you see that? — 'HASS-te das nich guh-ZAYN'" },
+    ],
+  },
 ];
 
 // ── Cloze exercises ───────────────────────────────────────────────────────────
