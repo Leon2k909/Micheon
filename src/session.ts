@@ -20,7 +20,7 @@ function shuffle(arr: any[]) {
 }
 
 function hasSentenceShape(text: string) {
-  return String(text ?? "").trim().split(/\s+/).filter(Boolean).length >= 2;
+  return String(text ?? "").trim().split(/\s+/).filter(Boolean).length >= 1;
 }
 
 function stableIdPart(value: any) {
@@ -192,6 +192,24 @@ export const OLD_PER_LESSON = 3;
 export function pickReviews(due: any[], n: number): any[] {
   if (due.length <= n) return due;
   const weakestFirst = [...due].sort((a, b) => (a.interval ?? 1) - (b.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0));
+  
+  const firstGroup = weakestFirst[0]?.item?.group;
+  if (firstGroup) {
+    const groupMatches = weakestFirst.filter((r) => r.item?.group === firstGroup);
+    if (groupMatches.length > 1) {
+      const picks: any[] = [];
+      for (const r of groupMatches) {
+        if (picks.length >= n) break;
+        picks.push(r);
+      }
+      for (const r of weakestFirst) {
+        if (picks.length >= n) break;
+        if (!picks.some((p) => p.item?.de === r.item?.de)) picks.push(r);
+      }
+      return picks.slice(0, n);
+    }
+  }
+
   const picks: any[] = weakestFirst.slice(0, Math.max(0, n - 1));   // n-1 most-recent/weakest
   const has = (r: any) => picks.some((p) => p.item?.de === r.item?.de);
   const older = [...due]

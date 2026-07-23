@@ -22,6 +22,8 @@ export interface Phrase {
   de: string;
   en: string;
   use: string;
+  /** Related phrases learned together, e.g. several ways to say goodbye. */
+  group?: string;
   fr?: string;
   /** Shorter colloquial form people actually say out loud, for longer phrases
    *  (e.g. "Ich weiß es nicht" → "Weiß nicht"). Omitted when already short. */
