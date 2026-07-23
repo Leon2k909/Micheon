@@ -24,6 +24,9 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-introductions",
   "part1",            // Starter basics
   "part57",           // Talking about learning German (& other skills)
+  "cb-conversation-repair",
+  "cb-reactions",
+  "cb-shortreplies",
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
@@ -44,8 +47,6 @@ export const CURRICULUM_ORDER: string[] = [
   "part7",            // People and family
   "cb-family",
   "cb-weather",
-  "cb-reactions",
-  "cb-shortreplies",
   "cb-connectors",
   "cb-celebrations",
   "part66",           // German holidays: Weihnachtsmarkt to Karneval

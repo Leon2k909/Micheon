@@ -17,6 +17,7 @@ import os from "os";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
+import { getCodexPetCatalog, resolveCodexPetSpritesheet } from "./codexPets.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -141,6 +142,20 @@ app.post("/api/storage", (req, res) => {
   const next = { ...current, items, updatedAt: new Date().toISOString() };
   writeSharedStorage(next);
   res.json({ ok: true, count: Object.keys(items).length });
+});
+
+app.get("/api/codex-pets", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json(getCodexPetCatalog());
+});
+
+app.get("/api/codex-pets/:source/:id/spritesheet", (req, res) => {
+  const spritesheet = resolveCodexPetSpritesheet(req.params.source, req.params.id);
+  if (!spritesheet) return res.status(404).json({ error: "pet not found" });
+
+  res.set("Cache-Control", "private, max-age=3600");
+  res.set("Content-Type", "image/webp");
+  return res.sendFile(spritesheet, { dotfiles: "allow" });
 });
 
 app.get("/api/tts", async (req, res) => {

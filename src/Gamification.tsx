@@ -46,7 +46,14 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
-import { setTheme as persistTheme, getTheme, type Theme } from "@/lib/theme";
+import {
+  getTheme,
+  getThemePreset,
+  setTheme as persistTheme,
+  setThemePreset as persistThemePreset,
+  type Theme,
+  type ThemePreset,
+} from "@/lib/theme";
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
@@ -55,9 +62,14 @@ import { getVoiceModel, setVoiceModel, VOICE_MODELS, type VoiceModelChoice } fro
 import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { AppearanceEditor } from "@/components/AppearanceEditor";
+import { ThemePresetPicker } from "@/components/ThemePresetPicker";
+import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
+import { LearningModePicker } from "@/components/LearningModePicker";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
+import { resetCustomTheme } from "@/lib/customTheme";
+import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
 
 type Stats = {
   totalXp: number;
@@ -279,10 +291,12 @@ export default function GamificationPanel({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [theme, setTheme] = useState<Theme>(getTheme);
+  const [themePreset, setThemePreset] = useState<ThemePreset>(getThemePreset);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
+  const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -329,6 +343,13 @@ export default function GamificationPanel({
     setTheme(next); // update local React state
   };
 
+  const chooseThemePreset = (next: ThemePreset) => {
+    if (next === themePreset) return;
+    persistThemePreset(next);
+    resetCustomTheme();
+    setThemePreset(next);
+  };
+
   const toggleEffects = () => {
     const next: Effects = effects === "lite" ? "full" : "lite";
     applyEffects(next);
@@ -350,6 +371,11 @@ export default function GamificationPanel({
   const updateEnglishVariant = (value: EnglishVariant) => {
     setEnglishVariantState(value);
     setEnglishVariant(value, user);
+  };
+
+  const updateLearningMode = (value: LearningMode) => {
+    setLearningMode(value);
+    setLearningModeState(value);
   };
 
   // Single dropdown covering "what's your language": pick an English variant to
@@ -481,10 +507,13 @@ export default function GamificationPanel({
 
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Preferences</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Theme and external progress settings.</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Learning, appearance, and progress settings.</p>
+              <div className="mt-5">
+                <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
+              </div>
               <button
                 aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-                className="mt-5 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
+                className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
                 onClick={toggleTheme}
                 type="button"
               >
@@ -524,6 +553,8 @@ export default function GamificationPanel({
                   bundled offline model. Both options are more accurate than the
                   old default; this trades download size and speed for noise
                   robustness. */}
+              <CodexPetPicker />
+
               {isElectronApp() && (
                 <button
                   aria-pressed={voiceModel === "accurate"}
@@ -551,7 +582,7 @@ export default function GamificationPanel({
                 </button>
               )}
 
-
+              <LearningModePicker value={learningMode} onChange={updateLearningMode} />
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -736,9 +767,10 @@ export default function GamificationPanel({
           </div>
 
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+            <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
             <button
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              className="flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
+              className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
               onClick={toggleTheme}
               type="button"
             >
@@ -748,6 +780,8 @@ export default function GamificationPanel({
               </span>
               <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">Change</span>
             </button>
+
+            <LearningModePicker value={learningMode} onChange={updateLearningMode} />
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">

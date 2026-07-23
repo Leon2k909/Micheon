@@ -30,7 +30,7 @@
   --feature-gradient: linear-gradient(135deg, #7834f7 0%, #8b4cff 52%, #6b2ee6 100%);
 }
 
-[data-theme="light"] {
+html[data-theme="light"] {
   color-scheme: light;
   --bg: #d9d9e6;
   --surface: #ffffff;
@@ -59,7 +59,7 @@
   --shadow-strong: rgba(25, 27, 38, 0.09);
 }
 
-[data-theme="dark"] {
+html[data-theme="dark"] {
   color-scheme: dark;
   --bg: #11121a;
   --surface: #1b1d27;
@@ -86,6 +86,58 @@
   --info-text: #8fc6ff;
   --shadow: rgba(0, 0, 0, 0.24);
   --shadow-strong: rgba(0, 0, 0, 0.34);
+}
+
+/*
+ * Astryx bridge
+ *
+ * Butter presets are supplied by Meta's runtime Theme provider. Micheon's
+ * existing Tailwind components consume these aliases, so the Astryx theme is
+ * the source of truth without duplicating the application or its routes.
+ */
+html[data-theme-preset="butter"],
+html[data-theme-preset="butter-purple"] {
+  --bg: var(--color-background-body);
+  --surface: var(--color-background-surface);
+  --surface-2: var(--color-background-muted);
+  --surface-3: color-mix(in srgb, var(--color-background-muted) 76%, var(--color-border));
+  --border: var(--color-border);
+  --border-2: var(--color-border-emphasized);
+  --text-1: var(--color-text-primary);
+  --text-2: var(--color-text-secondary);
+  --text-3: var(--color-text-disabled);
+  --accent: var(--color-accent);
+  --accent-dim: var(--color-accent-muted);
+  --accent-text: var(--color-on-accent);
+  --accent-hover: color-mix(in srgb, var(--color-accent) 84%, var(--color-text-primary));
+  --scrollbar: var(--color-border-emphasized);
+  --ink: var(--color-background-inverted);
+  --ink-text: var(--color-on-accent);
+  --success-bg: var(--color-success-muted);
+  --success-text: var(--color-success);
+  --info-bg: var(--color-accent-muted);
+  --info-text: var(--color-text-accent);
+  --shadow: var(--color-shadow);
+  --shadow-strong: color-mix(in srgb, var(--color-shadow) 80%, black 20%);
+}
+
+html[data-theme-preset="butter"] {
+  --mint: #5dce5f;
+  --yellow: #f8c726;
+  --orange: #ffa347;
+  --feature-gradient: linear-gradient(135deg, #225bff 0%, #5681ff 54%, #203a6c 100%);
+}
+
+html[data-theme-preset="butter-purple"] {
+  --mint: #1d9dcc;
+  --yellow: #e5c64f;
+  --orange: #e57b54;
+  --feature-gradient: linear-gradient(135deg, #7834f7 0%, #9b72f6 52%, #5420bd 100%);
+}
+
+html[data-theme-preset="butter"] body,
+html[data-theme-preset="butter-purple"] body {
+  font-family: var(--font-family-body);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -192,6 +244,12 @@ a { color: inherit; text-decoration: none; }
   border-radius: 24px;
   box-shadow: 0 18px 45px var(--shadow);
   transition: background 180ms, border-color 180ms, box-shadow 180ms, transform 180ms;
+}
+
+html[data-theme-preset="butter"] .card,
+html[data-theme-preset="butter-purple"] .card {
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-med);
 }
 
 .card-hover:hover {

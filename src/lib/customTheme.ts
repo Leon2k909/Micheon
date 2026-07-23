@@ -7,6 +7,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 // light/dark base theme, and anything not overridden keeps following the
 // theme toggle.
 const KEY = "gl-custom-theme";
+export const CUSTOM_THEME_CHANGE_EVENT = "micheon:custom-theme";
 
 export type CustomTheme = Record<string, string>;
 
@@ -66,14 +67,20 @@ export function setCustomTheme(patch: CustomTheme) {
   try { localStorage.setItem(KEY, raw); } catch { /* ignore */ }
   syncLocalStorageItem(KEY, raw);
   applyCustomTheme(next);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(CUSTOM_THEME_CHANGE_EVENT));
+  }
   return next;
 }
 
-/** Back to the stock look (light/dark theme untouched). */
+/** Back to the selected preset (light/dark mode untouched). */
 export function resetCustomTheme() {
   try { localStorage.removeItem(KEY); } catch { /* ignore */ }
   syncLocalStorageItem(KEY, null);
   applyCustomTheme({});
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(CUSTOM_THEME_CHANGE_EVENT));
+  }
 }
 
 /** The value a picker should show: the override if set, else the theme's value. */

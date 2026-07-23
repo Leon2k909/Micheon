@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Paintbrush, RotateCcw } from "lucide-react";
 import {
+  CUSTOM_THEME_CHANGE_EVENT,
   THEME_COLOR_SLOTS,
   GRADIENT_SLOTS,
   getCustomTheme,
@@ -13,10 +14,16 @@ import {
 /**
  * Full appearance control: every core colour and the hero gradient are live
  * colour pickers. Changes apply instantly, persist, and sync with the account
- * on this machine. Reset returns to the stock light/dark theme.
+ * on this machine. Reset returns to the selected preset and light/dark mode.
  */
 export function AppearanceEditor() {
   const [overrides, setOverrides] = useState<CustomTheme>(() => getCustomTheme());
+
+  useEffect(() => {
+    const syncOverrides = () => setOverrides(getCustomTheme());
+    window.addEventListener(CUSTOM_THEME_CHANGE_EVENT, syncOverrides);
+    return () => window.removeEventListener(CUSTOM_THEME_CHANGE_EVENT, syncOverrides);
+  }, []);
 
   const change = (key: string, value: string) => {
     setOverrides(setCustomTheme({ [key]: value }));

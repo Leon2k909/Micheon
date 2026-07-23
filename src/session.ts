@@ -3,6 +3,7 @@
 import { isDueForReview, overdueBy } from "@/lib/memoryStrength";
 import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
+import { getLearningMode, phraseForLearningMode } from "@/lib/learningMode";
 
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
@@ -64,6 +65,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const vocab: any[]     = part.vocab     ?? [];
   const phrases: any[]   = part.phrases   ?? [];
   const dialogues: any[] = part.dialogues ?? [];
+  const learningMode = getLearningMode();
 
   const queue: any[] = [];
   const usedSentences = new Set<string>();
@@ -71,7 +73,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // mistaken for the everyday thing to say.
   const tierNote = packMeta(partKey).note;
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -86,10 +88,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -109,14 +111,28 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // ── Phrases ──────────────────────────────────────────────────
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    addSentence(ph.de, ph.en, `${partKey}-phrase-${i}`, [], ph.fr, ph.use, undefined, ph.short, ph.when, ph.say, ph.long);
+    const lessonPhrase = phraseForLearningMode(ph, learningMode);
+    addSentence(
+      lessonPhrase.de,
+      lessonPhrase.en,
+      `${partKey}-phrase-${i}`,
+      [],
+      lessonPhrase.fr,
+      lessonPhrase.use,
+      undefined,
+      lessonPhrase.short,
+      lessonPhrase.when,
+      lessonPhrase.say,
+      lessonPhrase.long,
+      lessonPhrase.group
+    );
   });
 
   // ── Dialogue lines ───────────────────────────────────────────
   dialogues.forEach((d, di) => {
     const usable = (d.lines ?? [])
       .map((line: any, li: number) => ({
-        ...line,
+        ...phraseForLearningMode(line, learningMode),
         originalIndex: li,
         id: line?.id ?? `${partKey}-dlg-${di}-${li}`,
       }))
@@ -130,11 +146,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       queue.push({ type: EX.DIALOGUE, dialogue: { ...d, lines: usable } });
       // Then drill each line as a sentence exercise
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use, undefined, line.short, line.when, line.say, line.long, line.group);
       });
     } else {
       usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use);
+        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use, undefined, line.short, line.when, line.say, line.long, line.group);
       });
     }
   });
@@ -144,9 +160,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // lessons: it returns tomorrow as an "old" review, and the spaced-repetition
   // ladder pushes it further out each time you recall it (1, 3, 10, 30, 180
   // days) — so it takes longer and longer to come back as you master it.
-  const freshSentences = shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
-    .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup))
-    .slice(0, NEW_PER_LESSON);
+  const freshSentences = pickFresh(
+    shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
+      .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup)),
+    NEW_PER_LESSON
+  );
   const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
 
   // ── Dialogues are capstones, placed right after their lines are drilled ──
@@ -181,6 +199,22 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
 const NEW_PER_LESSON = 3;
 /** At most OLD_PER_LESSON due reviews per lesson. */
 export const OLD_PER_LESSON = 3;
+
+/**
+ * When a selected phrase belongs to a related set, keep the rest of the lesson
+ * in that set where possible. This teaches contrasts such as Bis gleich / Bis
+ * später / Bis bald together instead of scattering them across the course.
+ */
+export function pickFresh(fresh: any[], n: number): any[] {
+  if (fresh.length <= n) return fresh;
+  const first = fresh[0];
+  const group = first?.item?.group;
+  if (!group) return fresh.slice(0, n);
+
+  const related = fresh.filter((step) => step.item?.group === group);
+  const others = fresh.filter((step) => step.item?.group !== group);
+  return [...related, ...others].slice(0, n);
+}
 
 /**
  * Choose which due reviews to show. Favours the WEAKEST memories (shortest
@@ -247,6 +281,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   const level = part?.level;
   const out: CatalogItem[] = [];
   const seen = new Set<string>();
+  const learningMode = getLearningMode();
 
   const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string, aliases: string[] = [], use?: string) => {
     const key = de.trim().toLowerCase();
@@ -269,15 +304,17 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
 
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
-    push(ph.de, ph.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], ph.use);
+    const catalogPhrase = phraseForLearningMode(ph, learningMode);
+    push(catalogPhrase.de, catalogPhrase.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use);
   });
 
   dialogues.forEach((d, di) => {
     (d.lines ?? []).forEach((line: any, li: number) => {
       if (!hasSentenceShape(line.de)) return;
+      const catalogLine = phraseForLearningMode(line, learningMode);
       const id = line?.id ?? `${partKey}-dlg-${di}-${li}`;
       const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line?.de ?? ""}`;
-      push(line.de, line.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId]);
+      push(catalogLine.de, catalogLine.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId], catalogLine.use);
     });
   });
 

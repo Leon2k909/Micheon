@@ -3,10 +3,12 @@ import GermanLearningLab from "./german_learning_lab";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
-import { applyThemeToDom, getTheme } from "./lib/theme";
+import { applyStoredThemePreferences, getTheme } from "./lib/theme";
 import { applyCustomTheme } from "./lib/customTheme";
 import { MicheonLogo } from "./components/MicheonLogo";
 import { UpdateBanner } from "./components/UpdateBanner";
+import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
+import { CodexPetProvider } from "./components/codexPets/CodexPetProvider";
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -20,7 +22,7 @@ export default function App() {
       if (cancelled) return;
       // Hydration may have pulled a synced theme; repaint so the DOM matches
       // the stored preference and dark mode survives restarts.
-      applyThemeToDom(getTheme());
+      applyStoredThemePreferences();
       // Hydration may have pulled synced appearance overrides; repaint them too.
       applyCustomTheme();
       // No hardcoded default: a device with no signed-in profile shows the
@@ -58,10 +60,15 @@ export default function App() {
         <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[var(--bg)] text-[var(--text-1)]">
           <MicheonLogo theme={getTheme()} height={150} className="animate-pulse" />
         </div>
-      ) : user ? (
-        <GermanLearningLab />
       ) : (
-        <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
+        <CodexPetProvider>
+          {user ? (
+            <GermanLearningLab />
+          ) : (
+            <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
+          )}
+          <CodexPetLayer />
+        </CodexPetProvider>
       )}
     </>
   );

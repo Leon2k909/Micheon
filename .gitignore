@@ -32,6 +32,7 @@ tsconfig.tsbuildinfo
 *.sln
 *.sw?
 release/
+release-audit/
 
 # Local scratch / recovery files (not part of the app)
 sbox-docs/

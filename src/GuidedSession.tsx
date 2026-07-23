@@ -166,10 +166,10 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string;
       )}
       {showShort && (
         <span
-          title="Shorter form people actually say out loud"
+          title="Natural form people commonly use in conversation"
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
-          Short: “{short}”
+          People say: “{short}”
         </span>
       )}
     </div>
@@ -689,7 +689,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
   const companion = useMemo(() => getCompanion(), []);
   const hasFr = companion === "fr" && !learnEn && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
-  const memDeResult = useMemo(() => matchTarget(memDeInput, item.de), [memDeInput, item.de, matchTarget]);
+  const memDeResult = useMemo(() => matchEither(memDeInput), [memDeInput, matchEither]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
   // Auto-play TTS when entering Listen phase (German, then French in companion mode)

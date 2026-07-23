@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+import { useAppThemePreferences } from "@/components/AppThemeProvider";
+import { AstryxAppShell } from "@/components/astryx/AstryxAppShell";
+import { AstryxDashboardView } from "@/components/astryx/AstryxDashboardView";
 import { TopNav, type TopNavNotification, type TopNavSearchItem } from "@/components/TopNav";
 import { DashboardView } from "@/components/lab/DashboardView";
 import { LearnView } from "@/components/lab/LearnView";
@@ -95,6 +98,7 @@ function withRegisterCheck(steps: any[], user: any): any[] {
 
 export default function GermanLearningLab() {
   const user = getAuthUser()!;
+  const themePreferences = useAppThemePreferences();
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
@@ -569,6 +573,16 @@ export default function GermanLearningLab() {
         onOpenReader={() => openReader()}
         onBrowseLessons={() => openTab("learn")}
       />
+    ) : themePreferences.preset !== "default" ? (
+      <AstryxDashboardView
+        currentPart={currentPart}
+        onOpenLesson={startSession}
+        pathParts={pathParts}
+        progressStats={progressStats}
+        gameMasteryCount={gameMasteryCount}
+        setActiveTab={openTab}
+        activePart={activePart}
+      />
     ) : (
       <DashboardView
         currentPart={currentPart}
@@ -581,6 +595,64 @@ export default function GermanLearningLab() {
       />
     )
   );
+
+  if (themePreferences.preset !== "default") {
+    return (
+      <>
+        <AstryxAppShell
+          activeTab={activeTab}
+          avatarUrl={user.avatar}
+          brandName={activeCourse?.name ?? "Micheon"}
+          notifications={topNavNotifications}
+          onSignOut={() => {
+            signOut();
+            window.location.reload();
+          }}
+          onSwitchCourse={() => setCourseSwitcherOpen(true)}
+          searchItems={topNavSearchItems}
+          setActiveTab={openTab}
+          streak={progressStats.streak}
+          theme={themePreferences.theme}
+          userEmail={user.email}
+          userName={user.name}
+          xp={progressStats.totalXp}
+        >
+          <motion.div
+            key={activeTab}
+            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {view}
+          </motion.div>
+        </AstryxAppShell>
+
+        <CourseSwitcher
+          open={courseSwitcherOpen}
+          activeCourseId={activeCourseId}
+          onSelect={handleSelectCourse}
+          onClose={() => setCourseSwitcherOpen(false)}
+        />
+
+        {courseReaderOpen && activeCourse && courseHasReader && (
+          <CourseShell
+            course={activeCourse}
+            initialLessonId={courseReaderLesson}
+            onExit={() => setCourseReaderOpen(false)}
+          />
+        )}
+
+        {sessionLesson && activeCourse && (
+          <CourseSession
+            course={activeCourse}
+            lesson={sessionLesson}
+            onComplete={() => completeCourseLesson(sessionLesson.id)}
+            onExit={() => setCourseSessionLesson(undefined)}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="min-h-[var(--app-h)] bg-[var(--bg)] text-[var(--text-1)]">
