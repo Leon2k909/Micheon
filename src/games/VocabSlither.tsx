@@ -3,21 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Trophy, Volume2, Info, ChevronRight, Sparkles, Maximize, Minimize } from 'lucide-react';
 import { speakGerman } from '@/lib/tts';
 import { allPartBlueprints, entryFallbacks } from '@/lib/data';
+import {
+  speakGameTarget,
+  useGameContent,
+  useGameDeck,
+  type GameContentEntry,
+} from '@/games/gameContent';
 import { recordWordMastery } from '@/lib/mastery';
-import { fetchRemoteGermanWordCatalog } from '@/lib/api';
 import { ui } from '@/lib/i18n';
 
 // --- Game Constants ---
 const WORLD_SIZE = 4000;
 const INITIAL_FOOD_COUNT = 250;
-const SNAKE_SPEED = 0.5;
-const TURN_SPEED = 0.03;
+const SNAKE_SPEED = 115;
+const TURN_RESPONSE = 5.5;
 const SEGMENT_DISTANCE = 11; // Distance between segments
 const INITIAL_LENGTH = 15;
 const GROWTH_PER_FOOD = 6;
 const BOT_COUNT = 15;
-const BOT_SNAKE_SPEED = 0.6;
-const BOT_TURN_SPEED = 0.02;
+const BOT_SNAKE_SPEED = 82;
+const BOT_TURN_RESPONSE = 2.8;
+const BOOST_MULTIPLIER = 1.85;
+const ENGLISH_TARGET_FOOD_COUNT = 6;
+const ENGLISH_TARGET_RING_RADIUS = 520;
 
 // --- Word Bank Category System ---
 const ARTICLE_RULES = [
@@ -110,6 +118,8 @@ interface Food extends Point {
   color: string;
   size: number;
   isBlob?: boolean;
+  masteryKey?: string;
+  source?: GameContentEntry;
 }
 
 interface BotSnake {
@@ -122,7 +132,45 @@ interface BotSnake {
     nextTurnTime: number;
 }
 
+function drawCenteredLines(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines = 2
+) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (ctx.measureText(candidate).width <= maxWidth || line.length === 0) {
+      line = candidate;
+      continue;
+    }
+    lines.push(line);
+    line = word;
+    if (lines.length >= maxLines - 1) break;
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  if (lines.join(' ').length < text.length) {
+    const lastIndex = lines.length - 1;
+    let shortened = lines[lastIndex] ?? '';
+    while (shortened.length > 1 && ctx.measureText(`${shortened}…`).width > maxWidth) {
+      shortened = shortened.slice(0, -1);
+    }
+    lines[lastIndex] = `${shortened.trimEnd()}…`;
+  }
+  lines.forEach((value, index) => ctx.fillText(value, x, y + index * lineHeight));
+}
+
 export default function VocabSlither() {
+  const { entries: trackerEntries, learningDirection } = useGameContent();
+  const { next: nextTrackerEntry } = useGameDeck();
+  const learnsEnglish = learningDirection === "learn-en";
+  const categories = React.useMemo(() => CATEGORIES, []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef({ x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 });
@@ -135,13 +183,13 @@ export default function VocabSlither() {
   const [highScore, setHighScore] = useState(() => {
     try { return parseInt(localStorage.getItem('slither-hs') ?? '0', 10); } catch { return 0; }
   });
-  const [currentCategory, setCurrentCategory] = useState(CATEGORIES[0]);
+  const [currentCategory, setCurrentCategory] = useState(categories[0]);
+  const [englishTarget, setEnglishTarget] = useState<GameContentEntry>(() => trackerEntries[0] ?? nextTrackerEntry());
   const [lastEatenWord, setLastEatenWord] = useState<string | null>(null);
   const [isBoosting, setIsBoosting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const [growAmount, setGrowAmount] = useState(0);
   const [wordsEatenInCurrentTarget, setWordsEatenInCurrentTarget] = useState(0);
 
   // Refs for high-performance physics (avoiding React re-renders)
@@ -163,15 +211,51 @@ export default function VocabSlither() {
   const isBoostingRef = useRef(false);
   const scoreAccumulatorRef = useRef(0);
   const botsRef = useRef<BotSnake[]>([]);
+  const lastFrameRef = useRef(0);
+  const scoreRef = useRef(0);
+  const highScoreRef = useRef(highScore);
+  const growthPendingRef = useRef(0);
+  const currentCategoryRef = useRef(currentCategory);
+  const englishTargetRef = useRef(englishTarget);
+  const targetProgressRef = useRef(0);
+
+  const addScore = (points: number) => {
+    scoreRef.current = Math.max(0, scoreRef.current + points);
+    setScore(scoreRef.current);
+  };
+
+  const changeCategory = (category: typeof categories[number]) => {
+    currentCategoryRef.current = category;
+    setCurrentCategory(category);
+  };
+
+  const changeEnglishTarget = (entry: GameContentEntry) => {
+    englishTargetRef.current = entry;
+    setEnglishTarget(entry);
+  };
+
+  const handleGameOver = () => {
+    const finalScore = scoreRef.current;
+    if (finalScore > highScoreRef.current) {
+      highScoreRef.current = finalScore;
+      setHighScore(finalScore);
+      try { localStorage.setItem('slither-hs', String(finalScore)); } catch {}
+    }
+    setGameState('gameOver');
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+  };
 
   // --- Initialization ---
   const initGame = useCallback(() => {
     const startX = WORLD_SIZE / 2;
     const startY = WORLD_SIZE / 2;
     
-    // Select random category
-    const cat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-    setCurrentCategory(cat);
+    // German learners classify nouns by article. English learners chase the
+    // English translation of a German prompt.
+    const cat = categories[Math.floor(Math.random() * categories.length)];
+    changeCategory(cat);
+    const targetEntry = nextTrackerEntry();
+    changeEnglishTarget(targetEntry);
 
     // Init snake
     const segments: Point[] = [];
@@ -186,9 +270,15 @@ export default function VocabSlither() {
     };
 
     // Init food
-    const initialFood: Food[] = [];
-    for (let i = 0; i < INITIAL_FOOD_COUNT; i++) {
-      initialFood.push(spawnFood());
+    const initialFood: Food[] = learnsEnglish
+      ? spawnEnglishTargetFoods(
+          targetEntry,
+          { x: startX, y: startY },
+          ENGLISH_TARGET_FOOD_COUNT
+        )
+      : [];
+    while (initialFood.length < INITIAL_FOOD_COUNT) {
+      initialFood.push(spawnSpacedFood(initialFood));
     }
     foodRef.current = initialFood;
 
@@ -200,13 +290,17 @@ export default function VocabSlither() {
     botsRef.current = initialBots;
 
     cameraRef.current = { x: startX, y: startY };
+    lastFrameRef.current = 0;
+    scoreRef.current = 0;
+    growthPendingRef.current = 0;
+    scoreAccumulatorRef.current = 0;
+    targetProgressRef.current = 0;
     setScore(0);
-    setGrowAmount(0);
     setWordsEatenInCurrentTarget(0);
     setGameState('playing');
     setIsPaused(false);
     setLastEatenWord(null);
-  }, []);
+  }, [categories, learnsEnglish, nextTrackerEntry]);
 
   const spawnBot = (): BotSnake => {
       const x = Math.random() * WORLD_SIZE;
@@ -231,37 +325,106 @@ export default function VocabSlither() {
       };
   };
 
-  const spawnFood = useCallback((): Food => {
-    // Ensure we have words
-    const catsWithWords = CATEGORIES.filter(c => c.words.length > 0);
+  const spawnFood = (
+    forcedEnglishEntry?: GameContentEntry,
+    near?: Point,
+    nearRadius = 0
+  ): Food => {
+    let x = Math.random() * WORLD_SIZE;
+    let y = Math.random() * WORLD_SIZE;
+    if (near && nearRadius > 0) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 130 + Math.random() * Math.max(80, nearRadius - 130);
+      x = Math.max(40, Math.min(WORLD_SIZE - 40, near.x + Math.cos(angle) * distance));
+      y = Math.max(40, Math.min(WORLD_SIZE - 40, near.y + Math.sin(angle) * distance));
+    }
+
+    if (learnsEnglish) {
+      const source = forcedEnglishEntry ?? nextTrackerEntry();
+      const palette = ['#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#22c55e'];
+      const colorIndex = Array.from(source.id).reduce((total, character) => total + character.charCodeAt(0), 0) % palette.length;
+      return {
+        category: `entry:${source.id}`,
+        color: palette[colorIndex],
+        id: Math.random(),
+        masteryKey: source.de,
+        size: 9 + Math.random() * 5,
+        source,
+        translation: source.clue,
+        word: source.target,
+        x,
+        y,
+      };
+    }
+
+    const catsWithWords = categories.filter(c => c.words.length > 0);
     const cat = catsWithWords[Math.floor(Math.random() * catsWithWords.length)];
     const wordObj = cat.words[Math.floor(Math.random() * cat.words.length)];
-
     const colors = {
-      "der": "#3b82f6", // Blue
-      "die": "#ec4899", // Pink
-      "das": "#10b981"  // Green
+      der: '#3b82f6',
+      die: '#ec4899',
+      das: '#10b981',
     };
 
-    const germanWord = wordObj?.de || "Hund";
-    let english = (wordObj?.en || "").trim();
+    const germanWord = wordObj?.de || 'Hund';
+    let english = (wordObj?.en || '').trim();
     if (!english) {
-      // Fall back to the offline gloss dictionary so we always have an English meaning to show.
       const fallback = entryFallbacks[germanWord.toLowerCase()];
-      english = fallback?.glosses?.[0] || "";
+      english = fallback?.glosses?.[0] || '';
     }
 
     return {
-      id: Math.random(),
-      x: Math.random() * WORLD_SIZE,
-      y: Math.random() * WORLD_SIZE,
-      word: germanWord,
-      translation: english,
       category: cat.target,
       color: colors[cat.target as keyof typeof colors],
-      size: 6 + Math.random() * 6
+      id: Math.random(),
+      masteryKey: germanWord,
+      size: 7 + Math.random() * 6,
+      translation: english,
+      word: germanWord,
+      x,
+      y,
     };
-  }, [currentCategory]);
+  };
+
+  const isFoodPlacementClear = (candidate: Food, existing: Food[]) =>
+    existing.every((food) => (
+      Math.abs(candidate.x - food.x) > 190 ||
+      Math.abs(candidate.y - food.y) > 76
+    ));
+
+  const spawnSpacedFood = (
+    existing: Food[],
+    forcedEnglishEntry?: GameContentEntry
+  ): Food => {
+    let candidate = spawnFood(forcedEnglishEntry);
+    for (let attempt = 0; attempt < 24; attempt += 1) {
+      if (isFoodPlacementClear(candidate, existing)) return candidate;
+      candidate = spawnFood(forcedEnglishEntry);
+    }
+    return candidate;
+  };
+
+  const spawnEnglishTargetFoods = (
+    entry: GameContentEntry,
+    center: Point,
+    count: number,
+    occupied: Food[] = []
+  ): Food[] => {
+    const phase = Math.random() * Math.PI * 2;
+    const foods: Food[] = [];
+    for (let index = 0; index < count; index += 1) {
+      let food = spawnFood(entry);
+      for (let attempt = 0; attempt < 18; attempt += 1) {
+        const angle = phase + (index / count) * Math.PI * 2 + attempt * 0.19;
+        const radius = ENGLISH_TARGET_RING_RADIUS + ((index + attempt) % 2) * 180;
+        food.x = Math.max(80, Math.min(WORLD_SIZE - 80, center.x + Math.cos(angle) * radius));
+        food.y = Math.max(80, Math.min(WORLD_SIZE - 80, center.y + Math.sin(angle) * radius));
+        if (isFoodPlacementClear(food, [...occupied, ...foods])) break;
+      }
+      foods.push(food);
+    }
+    return foods;
+  };
 
   const spawnParticles = (x: number, y: number, color: string, count: number) => {
     for (let i = 0; i < count; i++) {
@@ -314,12 +477,7 @@ export default function VocabSlither() {
     }
   };
 
-  const handleGameOver = () => {
-    setGameState('gameOver');
-    if (requestRef.current) cancelAnimationFrame(requestRef.current);
-  };
-
-  const updateBots = (currentTime: number) => {
+  const updateBots = (currentTime: number, deltaSeconds: number) => {
     const bots = botsRef.current;
     const snake = snakeRef.current;
     
@@ -333,12 +491,12 @@ export default function VocabSlither() {
         let diff = bot.targetAngle - bot.angle;
         while (diff < -Math.PI) diff += Math.PI * 2;
         while (diff > Math.PI) diff -= Math.PI * 2;
-        bot.angle += diff * BOT_TURN_SPEED;
+        bot.angle += diff * (1 - Math.exp(-BOT_TURN_RESPONSE * deltaSeconds));
 
         const head = bot.segments[0];
         const newHead = {
-            x: head.x + Math.cos(bot.angle) * BOT_SNAKE_SPEED,
-            y: head.y + Math.sin(bot.angle) * BOT_SNAKE_SPEED
+            x: head.x + Math.cos(bot.angle) * BOT_SNAKE_SPEED * deltaSeconds,
+            y: head.y + Math.sin(bot.angle) * BOT_SNAKE_SPEED * deltaSeconds
         };
 
         // Boundary bounce
@@ -413,7 +571,7 @@ export default function VocabSlither() {
                         }
                     });
                     bots[i] = spawnBot();
-                    setScore(s => s + 100);
+                    addScore(100);
                     break;
                 }
             }
@@ -435,7 +593,7 @@ export default function VocabSlither() {
     }
   };
 
-  const update = () => {
+  const update = (timestamp: number) => {
     if (gameState !== 'playing' || isPaused) {
        if (isPaused) draw(); // Still draw if paused
        requestRef.current = requestAnimationFrame(update);
@@ -444,26 +602,30 @@ export default function VocabSlither() {
 
     const snake = snakeRef.current;
     const head = snake.segments[0];
+    const previousFrame = lastFrameRef.current || timestamp;
+    const deltaSeconds = Math.min(0.04, Math.max(0, (timestamp - previousFrame) / 1000));
+    const frameScale = deltaSeconds * 60;
+    lastFrameRef.current = timestamp;
 
     // Speed calculation (Boost costs score)
-    const canBoost = isBoostingRef.current && score > 10;
-    const currentSpeed = canBoost ? SNAKE_SPEED * 2.2 : SNAKE_SPEED;
+    const canBoost = isBoostingRef.current && scoreRef.current > 10;
+    const currentSpeed = canBoost ? SNAKE_SPEED * BOOST_MULTIPLIER : SNAKE_SPEED;
 
     let diff = snake.targetAngle - snake.angle;
     while (diff < -Math.PI) diff += Math.PI * 2;
     while (diff > Math.PI) diff -= Math.PI * 2;
-    snake.angle += diff * TURN_SPEED;
+    snake.angle += diff * (1 - Math.exp(-TURN_RESPONSE * deltaSeconds));
 
     const newHead = {
-      x: head.x + Math.cos(snake.angle) * currentSpeed,
-      y: head.y + Math.sin(snake.angle) * currentSpeed
+      x: head.x + Math.cos(snake.angle) * currentSpeed * deltaSeconds,
+      y: head.y + Math.sin(snake.angle) * currentSpeed * deltaSeconds
     };
 
     if (canBoost) {
-        scoreAccumulatorRef.current++;
-        if (scoreAccumulatorRef.current > 15) {
-            setScore(s => Math.max(0, s - 1));
-            scoreAccumulatorRef.current = 0;
+        scoreAccumulatorRef.current += deltaSeconds;
+        if (scoreAccumulatorRef.current >= 0.25) {
+            addScore(-1);
+            scoreAccumulatorRef.current -= 0.25;
         }
     }
 
@@ -492,65 +654,94 @@ export default function VocabSlither() {
     }
     
     // Smooth Length Growth
-    if (growAmount > 0) {
+    if (growthPendingRef.current > 0) {
         const tail = newSegments[newSegments.length - 1];
         newSegments.push({...tail});
-        setGrowAmount(g => g - 1);
+        growthPendingRef.current -= 1;
     }
     
     snake.segments = newSegments;
-    cameraRef.current.x += (head.x - cameraRef.current.x) * 0.1;
-    cameraRef.current.y += (head.y - cameraRef.current.y) * 0.1;
+    const cameraFollow = 1 - Math.exp(-7 * deltaSeconds);
+    cameraRef.current.x += (newHead.x - cameraRef.current.x) * cameraFollow;
+    cameraRef.current.y += (newHead.y - cameraRef.current.y) * cameraFollow;
 
-    updateBots(performance.now());
+    updateBots(timestamp, deltaSeconds);
 
     // Food Collision (Optimized distance check)
     const nextFood = [];
+    let queuedEnglishTarget: GameContentEntry | null = null;
     for (const f of foodRef.current) {
         const dx = head.x - f.x;
         const dy = head.y - f.y;
         const distSq = dx*dx + dy*dy;
         if (distSq < 900) { // 30*30
             if (f.category === 'blob') {
-                setScore(s => s + 10);
-                setGrowAmount(g => g + 8);
-            } else if (f.category === currentCategory.target) {
-                setScore(s => s + 20);
-                setGrowAmount(g => g + GROWTH_PER_FOOD);
+                addScore(10);
+                growthPendingRef.current += 8;
+            } else if (
+              learnsEnglish
+                ? f.source?.id === englishTargetRef.current.id
+                : f.category === currentCategoryRef.current.target
+            ) {
+                addScore(20);
+                growthPendingRef.current += GROWTH_PER_FOOD;
                 setLastEatenWord(`${f.word} (${f.translation})`);
-                speakGerman(f.word);
-                recordWordMastery(f.word);
-                
-                // Track progress for article rotation
-                setWordsEatenInCurrentTarget(prev => {
-                    const next = prev + 1;
-                    if (next >= 5) {
-                        const otherCats = CATEGORIES.filter(c => c.target !== currentCategory.target);
-                        setCurrentCategory(otherCats[Math.floor(Math.random() * otherCats.length)]);
-                        return 0;
-                    }
-                    return next;
-                });
+                if (f.source) void speakGameTarget(f.source);
+                else speakGerman(f.word);
+                recordWordMastery(f.masteryKey ?? f.word);
+
+                const nextProgress = (targetProgressRef.current + 1) % 5;
+                targetProgressRef.current = nextProgress;
+                setWordsEatenInCurrentTarget(nextProgress);
+
+                if (learnsEnglish) {
+                  const nextTarget = nextTrackerEntry();
+                  changeEnglishTarget(nextTarget);
+                  queuedEnglishTarget = nextTarget;
+                } else if (nextProgress === 0) {
+                  const activeCategory = currentCategoryRef.current;
+                  const otherCats = categories.filter(c => c.target !== activeCategory.target);
+                  if (otherCats.length > 0) {
+                    changeCategory(otherCats[Math.floor(Math.random() * otherCats.length)]);
+                  }
+                }
             } else {
-                setScore(s => Math.max(0, s - 5));
+                addScore(-5);
             }
             // Only respawn if it wasnt a blob
             if (f.category !== 'blob') {
-                nextFood.push(spawnFood());
+                nextFood.push(spawnSpacedFood(nextFood));
             }
         } else {
             nextFood.push(f);
         }
     }
+    if (queuedEnglishTarget) {
+      const replaceIndices = new Set(
+        Array.from({ length: nextFood.length }, (_, index) => index)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, ENGLISH_TARGET_FOOD_COUNT)
+      );
+      const preservedFood = nextFood.filter((_, index) => !replaceIndices.has(index));
+      const targetFoods = spawnEnglishTargetFoods(
+        queuedEnglishTarget,
+        newHead,
+        ENGLISH_TARGET_FOOD_COUNT,
+        preservedFood
+      );
+      nextFood.length = 0;
+      nextFood.push(...preservedFood, ...targetFoods);
+    }
     foodRef.current = nextFood;
 
     // Update Particles
     particlesRef.current = particlesRef.current.filter(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= 0.98; // Friction
-        p.vy *= 0.98;
-        p.life -= p.decay;
+        p.x += p.vx * frameScale;
+        p.y += p.vy * frameScale;
+        const friction = Math.pow(0.98, frameScale);
+        p.vx *= friction;
+        p.vy *= friction;
+        p.life -= p.decay * frameScale;
         return p.life > 0;
     });
 
@@ -621,16 +812,28 @@ export default function VocabSlither() {
       ctx.fillStyle = f.color;
       ctx.beginPath(); ctx.arc(screenX, screenY, f.size, 0, Math.PI * 2); ctx.fill();
 
-      // Text labels
+      // Keep long tracker phrases readable without filling the arena.
+      const labelWidth = learnsEnglish ? 156 : 190;
+      const labelY = screenY + f.size + 18;
+      if (learnsEnglish) {
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(screenX - labelWidth / 2 - 8, labelY - 14, labelWidth + 16, 38, 7);
+        ctx.fill();
+      }
       ctx.fillStyle = 'white';
-      ctx.font = 'bold 13px "Outfit", sans-serif';
+      ctx.font = learnsEnglish
+        ? '700 12px "Outfit", sans-serif'
+        : 'bold 13px "Outfit", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(f.word, screenX, screenY + f.size + 18);
-      if (f.translation && f.translation !== "..." && f.translation !== "Discovery") {
+      ctx.textBaseline = 'middle';
+      drawCenteredLines(ctx, f.word, screenX, labelY, labelWidth, 14, 2);
+      if (!learnsEnglish && f.translation && f.translation !== "..." && f.translation !== "Discovery") {
           ctx.font = '600 11px "Outfit", sans-serif';
           ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-          ctx.fillText(`(${f.translation})`, screenX, screenY + f.size + 32);
+          drawCenteredLines(ctx, `(${f.translation})`, screenX, screenY + f.size + 48, 180, 13, 2);
       }
+      ctx.textBaseline = 'alphabetic';
     });
 
     // --- 4. DRAW BOTS (CULLING) ---
@@ -762,6 +965,7 @@ export default function VocabSlither() {
 
   // Load thousands once on mount
   useEffect(() => {
+    if (learnsEnglish) return;
     const loadThousands = async () => {
         try {
             // Using a high-quality community dictionary with Key=German, Value=English
@@ -793,7 +997,7 @@ export default function VocabSlither() {
         }
     };
     loadThousands();
-  }, []);
+  }, [learnsEnglish]);
 
   // Sync state to ref for physics loop
   useEffect(() => {
@@ -802,12 +1006,13 @@ export default function VocabSlither() {
 
   useEffect(() => {
     if (gameState === 'playing') {
+      lastFrameRef.current = 0;
       requestRef.current = requestAnimationFrame(update);
     }
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [gameState, currentCategory, isPaused]);
+  }, [gameState, currentCategory, isPaused, categories, englishTarget]);
 
   // Periodic Food Refresh to ensure variety
   useEffect(() => {
@@ -823,7 +1028,14 @@ export default function VocabSlither() {
        }
     }, 15000);
     return () => clearInterval(interval);
-  }, [gameState, isPaused]);
+  }, [gameState, isPaused, learnsEnglish, englishTarget]);
+
+  useEffect(() => {
+    if (gameState !== 'idle') {
+      setGameState('idle');
+      setIsPaused(false);
+    }
+  }, [learningDirection]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -832,10 +1044,16 @@ export default function VocabSlither() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-black text-white flex items-center gap-3">
-               <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">{ui("Slither Deutsch")}</span>
+               <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                 {ui(learnsEnglish ? "English Slither" : "Slither Deutsch")}
+               </span>
                <Sparkles className="h-6 w-6 text-amber-400 fill-amber-400" />
             </h2>
-            <p className="text-slate-400 text-sm mt-1">{ui("Collect the correct articles to grow your snake!")}</p>
+            <p className="text-slate-400 text-sm mt-1">
+              {ui(learnsEnglish
+                ? "Collect the English word or phrase that matches the German prompt!"
+                : "Collect the correct articles to grow your snake!")}
+            </p>
           </div>
           <div className="flex gap-4">
             <div className="bg-slate-800/80 border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
@@ -901,17 +1119,25 @@ export default function VocabSlither() {
               animate={{ x: 0, opacity: 1 }}
               className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 rounded-3xl shadow-2xl"
             >
-              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">{ui("Target Article")}</p>
+              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">
+                {ui(learnsEnglish ? "German prompt" : "Target Article")}
+              </p>
               <div className="flex items-center gap-5">
-                <span className={`text-4xl font-black px-4 py-2 rounded-xl ${
-                  currentCategory.target === 'der' ? 'text-blue-400 bg-blue-400/10 border border-blue-400/20 shadow-[0_0_20px_rgba(59,130,246,0.2)]' :
-                  currentCategory.target === 'die' ? 'text-pink-400 bg-pink-400/10 border border-pink-400/20 shadow-[0_0_20px_rgba(236,72,153,0.2)]' :
-                  'text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+                <span className={`max-w-sm rounded-xl border px-4 py-2 font-black ${
+                  learnsEnglish
+                    ? 'border-violet-400/25 bg-violet-400/10 text-xl leading-tight text-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.18)]'
+                    : currentCategory.target === 'der'
+                    ? 'border-blue-400/20 bg-blue-400/10 text-4xl text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+                    : currentCategory.target === 'die'
+                    ? 'border-pink-400/20 bg-pink-400/10 text-4xl text-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.2)]'
+                    : 'border-emerald-400/20 bg-emerald-400/10 text-4xl text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
                 }`}>
-                  {currentCategory.target.toUpperCase()}
+                  {learnsEnglish ? englishTarget.clue : currentCategory.target.toUpperCase()}
                 </span>
                 <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-medium italic">{ui("Progression:")}</p>
+                    <p className="text-xs text-slate-400 font-medium italic">
+                      {ui(learnsEnglish ? "Translations this round" : "Progression:")}
+                    </p>
                     <div className="flex gap-1.5">
                         {[...Array(5)].map((_, i) => (
                             <div 
@@ -922,6 +1148,11 @@ export default function VocabSlither() {
                             />
                         ))}
                     </div>
+                    {learnsEnglish && (
+                      <p className="max-w-[14rem] text-xs font-semibold text-slate-400">
+                        {ui("Find its English match in the arena.")}
+                      </p>
+                    )}
                 </div>
               </div>
             </motion.div>
@@ -959,7 +1190,9 @@ export default function VocabSlither() {
                         <Volume2 className="h-5 w-5 text-accent" />
                     </div>
                     <span className="text-lg tracking-tight">
-                        <span className="opacity-50 font-medium mr-2">{currentCategory.target}</span>
+                        {!learnsEnglish && (
+                          <span className="opacity-50 font-medium mr-2">{currentCategory.target}</span>
+                        )}
                         {lastEatenWord}
                     </span>
                 </motion.div>
@@ -1015,7 +1248,9 @@ export default function VocabSlither() {
                 </motion.div>
                 <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">{ui("Enter the Arena")}</h3>
                 <p className="text-slate-400 mb-10 leading-relaxed text-lg">
-                  {ui("Master the German articles! Guide your snake to consume words that match your target. Watch out for world boundaries and enemy bots!")}
+                  {ui(learnsEnglish
+                    ? "Read the German prompt, then steer into its English translation. Every correct answer gives you a new phrase. Avoid the wrong choices and enemy snakes."
+                    : "Master the German articles! Guide your snake to consume words that match your target. Watch out for world boundaries and enemy bots!")}
                 </p>
                 <button 
                   onClick={initGame}
@@ -1097,23 +1332,44 @@ export default function VocabSlither() {
             <div>
                 <p className="text-lg font-black text-white mb-1">{ui("How to play")}</p>
                 <p className="text-sm text-slate-400 leading-relaxed">
-                    {ui("Move your mouse to steer. Hold click or Space to boost speed (costs score). Eat words matching the Target Article to grow. Avoid hitting Bots! If a bot hits your body, you get bonus points.")}
+                    {ui(learnsEnglish
+                      ? "Move your mouse to steer. Hold click or Space to boost. Read the German prompt and collect its English translation. Wrong choices cost points; enemy snakes end the run."
+                      : "Move your mouse to steer. Hold click or Space to boost speed (costs score). Eat words matching the Target Article to grow. Avoid hitting Bots! If a bot hits your body, you get bonus points.")}
                 </p>
             </div>
         </div>
         <div className="bg-slate-800/20 border border-slate-700/30 p-6 rounded-[2rem] flex items-center justify-around">
-            <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
-                <span className="text-xs font-black text-slate-300 tracking-wider">DER</span>
-            </div>
-            <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.6)]" />
-                <span className="text-xs font-black text-slate-300 tracking-wider">DIE</span>
-            </div>
-            <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.6)]" />
-                <span className="text-xs font-black text-slate-300 tracking-wider">DAS</span>
-            </div>
+            {learnsEnglish ? (
+              <>
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="w-8 h-8 rounded-full bg-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.55)]" />
+                  <span className="text-xs font-black text-slate-300">{ui("German clue")}</span>
+                </div>
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="w-8 h-8 rounded-full bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.55)]" />
+                  <span className="text-xs font-black text-slate-300">{ui("English choices")}</span>
+                </div>
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-500 px-2 text-xs font-black text-slate-950">+20</div>
+                  <span className="text-xs font-black text-slate-300">{ui("Correct match")}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
+                    <span className="text-xs font-black text-slate-300 tracking-wider">DER</span>
+                </div>
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.6)]" />
+                    <span className="text-xs font-black text-slate-300 tracking-wider">DIE</span>
+                </div>
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.6)]" />
+                    <span className="text-xs font-black text-slate-300 tracking-wider">DAS</span>
+                </div>
+              </>
+            )}
         </div>
       </div>
     </div>

@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Trophy, Volume2, Settings, X, Check, Maximize, Minimize } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
 import { allPartBlueprints, entryFallbacks } from "@/lib/data";
+import {
+  speakGameTarget,
+  useGameContent,
+  type GameContentEntry,
+} from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
 
@@ -123,7 +128,7 @@ const EXTENDED_WORDS: { de: string; en: string }[] = [
 ];
 
 // article is stored separately so showArticle toggle works
-type WordEntry = { de: string; en: string; article?: string };
+type WordEntry = { de: string; en: string; article?: string; source?: GameContentEntry };
 
 function buildWordBank(): WordEntry[] {
   const seen = new Set<string>();
@@ -175,7 +180,7 @@ const BASE_ROWS = 16;
 const BASE_CELL = 28; // px
 
 // ── Sentence bank from blueprint phrases + dialogues ──────────
-type SentenceEntry = { de: string; en: string; words: string[] };
+type SentenceEntry = { de: string; en: string; words: string[]; source?: GameContentEntry };
 
 function buildSentenceBank(): SentenceEntry[] {
   const bank: SentenceEntry[] = [];
@@ -219,7 +224,15 @@ interface WordTile {
   isTarget: boolean;
 }
 
-function spawnWordTiles(words: string[], nextIdx: number, snake: Pos[], cols: number, rows: number, classic = false): WordTile[] {
+function spawnWordTiles(
+  words: string[],
+  nextIdx: number,
+  snake: Pos[],
+  cols: number,
+  rows: number,
+  classic = false,
+  sentenceBank: SentenceEntry[] = SENTENCE_BANK
+): WordTile[] {
   const occupied = [...snake];
   const tiles: WordTile[] = [];
   // Spawn the target word + up to 4 decoy words from other sentences
@@ -231,7 +244,7 @@ function spawnWordTiles(words: string[], nextIdx: number, snake: Pos[], cols: nu
   tiles.push({ pos, word: needed, id: Date.now() + Math.random(), isTarget: true });
 
   if (!classic) {
-    const allWords = SENTENCE_BANK.flatMap(s => s.words);
+    const allWords = sentenceBank.flatMap(s => s.words);
     const decoys = allWords.filter(w => w.toLowerCase() !== needed.toLowerCase());
     const DECOY_COUNT = Math.min(5, words.length + 1);
     let attempts = 0;
@@ -286,6 +299,27 @@ function spawnTiles(word: string, nextIdx: number, snake: Pos[], existing: Tile[
 }
 
 export default function SnakeGame() {
+  const { entries: trackerEntries } = useGameContent();
+  const wordBank = React.useMemo<WordEntry[]>(
+    () => trackerEntries.map((entry) => ({
+      de: entry.letters.join(""),
+      en: entry.clue,
+      source: entry,
+    })),
+    [trackerEntries]
+  );
+  const sentenceBank = React.useMemo<SentenceEntry[]>(
+    () => trackerEntries.map((entry) => ({
+      de: entry.target,
+      en: entry.clue,
+      source: entry,
+      words: entry.target
+        .replace(/[.,!?;:()[\]{}"“”„]/g, "")
+        .split(/\s+/)
+        .filter(Boolean),
+    })).filter((entry) => entry.words.length >= 2),
+    [trackerEntries]
+  );
   const [showArticle, setShowArticle] = useState(false);
   const [classicMode, setClassicMode] = useState(false);
   const [isInfinite, setIsInfinite] = useState(false);
@@ -310,19 +344,23 @@ export default function SnakeGame() {
   const sentenceQueueRef = useRef<SentenceEntry[]>([]);
   const pickNextSentence = (): SentenceEntry => {
     if (sentenceQueueRef.current.length === 0) {
-      sentenceQueueRef.current = [...SENTENCE_BANK].sort(() => Math.random() - 0.5);
+      sentenceQueueRef.current = [...(sentenceBank.length > 0 ? sentenceBank : SENTENCE_BANK)]
+        .sort(() => Math.random() - 0.5);
     }
     return sentenceQueueRef.current.pop()!;
   };
-  const [sentenceEntry, setSentenceEntry] = useState<SentenceEntry>(() => SENTENCE_BANK[0]);
+  const [sentenceEntry, setSentenceEntry] = useState<SentenceEntry>(
+    () => sentenceBank[0] ?? SENTENCE_BANK[0]
+  );
   const [wordTiles, setWordTiles] = useState<WordTile[]>([]);
 
   // Shuffle queue so all words are seen before repeating
-  const wordQueueRef = useRef<typeof WORD_BANK>([]);
+  const wordQueueRef = useRef<WordEntry[]>([]);
   const pickNextWord = () => {
     if (wordQueueRef.current.length === 0) {
       // Refill and shuffle
-      wordQueueRef.current = [...WORD_BANK].sort(() => Math.random() - 0.5);
+      wordQueueRef.current = [...(wordBank.length > 0 ? wordBank : WORD_BANK)]
+        .sort(() => Math.random() - 0.5);
     }
     return wordQueueRef.current.pop()!;
   };
@@ -349,14 +387,19 @@ export default function SnakeGame() {
   });
   const [wrongFlash, setWrongFlash] = useState(false);
 
+  useEffect(() => {
+    wordQueueRef.current = [];
+    sentenceQueueRef.current = [];
+  }, [sentenceBank, wordBank]);
+
   const gameRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stateRef = useRef({ snake, dir, pendingDir, tiles, nextIdx, spelled, word, phase, score, wordTiles, sentenceEntry });
+  const stateRef = useRef({ snake, dir, pendingDir, tiles, nextIdx, spelled, word, phase, score, wordEntry, wordTiles, sentenceEntry });
 
   // Sync ref
   useEffect(() => {
-    stateRef.current = { snake, dir, pendingDir, tiles, nextIdx, spelled, word, phase, score, wordTiles, sentenceEntry };
+    stateRef.current = { snake, dir, pendingDir, tiles, nextIdx, spelled, word, phase, score, wordEntry, wordTiles, sentenceEntry };
   });
 
   const toggleFullscreen = () => {
@@ -378,7 +421,7 @@ export default function SnakeGame() {
     if (sentenceMode) {
       const entry = pickNextSentence();
       setSentenceEntry(entry);
-      setWordTiles(spawnWordTiles(entry.words, 0, s, COLS, ROWS, classicMode));
+      setWordTiles(spawnWordTiles(entry.words, 0, s, COLS, ROWS, classicMode, sentenceBank));
       setNextIdx(0);
       setSpelled("");
       setWord(entry.de);
@@ -404,7 +447,7 @@ export default function SnakeGame() {
     setScore(0);
     setWordsCompleted(0);
     gameRef.current?.focus();
-  }, [showArticle, classicMode, COLS, ROWS, sentenceMode]);
+  }, [showArticle, classicMode, COLS, ROWS, sentenceMode, sentenceBank]);
 
   // Game loop
   useEffect(() => {
@@ -414,7 +457,7 @@ export default function SnakeGame() {
     }
 
     loopRef.current = setInterval(() => {
-      const { snake, pendingDir, tiles, wordTiles, nextIdx, spelled, word, score, sentenceEntry } = stateRef.current;
+      const { snake, pendingDir, tiles, wordTiles, nextIdx, spelled, word, score, wordEntry, sentenceEntry } = stateRef.current;
       const d = pendingDir;
       stateRef.current.dir = d;
       
@@ -450,7 +493,9 @@ export default function SnakeGame() {
 
           if (newNextIdx >= sentenceEntry.words.length) {
             // Sentence complete
-            speakGerman(sentenceEntry.de);
+            if (sentenceEntry.source) void speakGameTarget(sentenceEntry.source);
+            else speakGerman(sentenceEntry.de);
+            recordWordMastery(sentenceEntry.source?.de ?? sentenceEntry.de);
             setSnake(newSnake);
             setNextIdx(newNextIdx);
             setScore(newScore);
@@ -463,7 +508,7 @@ export default function SnakeGame() {
               setTranslation(entry.en);
               setNextIdx(0);
               setSpelled("");
-              setWordTiles(spawnWordTiles(entry.words, 0, newSnake, COLS, ROWS, classicMode));
+              setWordTiles(spawnWordTiles(entry.words, 0, newSnake, COLS, ROWS, classicMode, sentenceBank));
               setScore(newScore);
               return;
             }
@@ -478,7 +523,7 @@ export default function SnakeGame() {
           setNextIdx(newNextIdx);
           setScore(newScore);
           setSnake(newSnake);
-          setWordTiles(spawnWordTiles(sentenceEntry.words, newNextIdx, newSnake, COLS, ROWS, classicMode));
+          setWordTiles(spawnWordTiles(sentenceEntry.words, newNextIdx, newSnake, COLS, ROWS, classicMode, sentenceBank));
         } else {
           newSnake = [next, ...snake.slice(0, -1)];
           setSnake(newSnake);
@@ -517,8 +562,9 @@ export default function SnakeGame() {
 
         if (newNextIdx >= word.length) {
           // Word complete — speak it!
-          speakGerman(word.toLowerCase());
-          recordWordMastery(word);
+          if (wordEntry.source) void speakGameTarget(wordEntry.source);
+          else speakGerman(word.toLowerCase());
+          recordWordMastery(wordEntry.source?.de ?? word);
           
           if (isInfinite) {
             // Pick next word immediately
@@ -569,7 +615,7 @@ export default function SnakeGame() {
     }, 130);
 
     return () => { if (loopRef.current) clearInterval(loopRef.current); };
-  }, [phase, highScore, isPaused, classicMode, isInfinite, COLS, ROWS, sentenceMode]);
+  }, [phase, highScore, isPaused, classicMode, isInfinite, COLS, ROWS, sentenceMode, sentenceBank]);
 
   // Keyboard controls
   useEffect(() => {
@@ -945,8 +991,8 @@ export default function SnakeGame() {
                     <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Word Snake")}</p>
                     <p className="max-w-xs text-center text-sm text-[var(--text-3)]">
                       {ui(sentenceMode
-                        ? "Eat the glowing word-blocks in order to build the German sentence. Wrong word = game over."
-                        : "Eat the glowing letters in order to spell the German word. Wrong letter = game over.")}
+                        ? "Eat the glowing word-blocks in order to build the target sentence. Wrong word = game over."
+                        : "Eat the glowing letters in order to spell the target word or phrase. Wrong letter = game over.")}
                     </p>
                     <button
                       className="accent-btn px-6 py-2.5 text-sm"
@@ -972,7 +1018,11 @@ export default function SnakeGame() {
                       <button
                         aria-label={ui("Hear pronunciation")}
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)] transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)] active:scale-95"
-                        onClick={() => speakGerman(word.toLowerCase())}
+                        onClick={() => {
+                          const source = sentenceMode ? sentenceEntry.source : wordEntry.source;
+                          if (source) void speakGameTarget(source);
+                          else speakGerman(word.toLowerCase());
+                        }}
                         type="button"
                       >
                         <Volume2 className="h-4 w-4" />

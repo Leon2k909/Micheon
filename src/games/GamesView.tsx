@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { MasteryCard } from "@/components/lab/MasteryCard";
+import { GameContentProvider } from "@/games/gameContent";
 import { ui } from "@/lib/i18n";
 
 const SnakeGame = lazy(() => import("@/games/SnakeGame"));
@@ -27,21 +28,21 @@ const GAMES = [
   {
     id: "snake",
     title: "Word Snake",
-    description: "Steer through letters in order and spell useful German words.",
+    description: "Steer through tracker words and phrases in your target language.",
     icon: CircleDot,
     component: SnakeGame,
   },
   {
     id: "falling",
     title: "Falling Letters",
-    description: "Catch the correct letters before they leave the screen.",
+    description: "Catch letters from your tracker without repeating the same small list.",
     icon: Target,
     component: FallingLetters,
   },
   {
     id: "whack",
     title: "Letter Tap",
-    description: "Tap the right letter quickly to train visual recall.",
+    description: "Tap letters from tracker words and phrases to train visual recall.",
     icon: Crosshair,
     component: WhackAMole,
   },
@@ -55,27 +56,33 @@ const GAMES = [
   {
     id: "minesweeper",
     title: "Vocab Minesweeper",
-    description: "Translate carefully to reveal cells and avoid wrong picks.",
+    description: "Translate tracker words and phrases to reveal cells safely.",
     icon: Grid3X3,
     component: VocabMinesweeper,
   },
   {
     id: "slither",
     title: "Vocab Slither",
-    description: "Match the target word while keeping the run alive.",
+    description: "Collect tracker words and phrases while keeping the run alive.",
     icon: Bug,
     component: VocabSlither,
   },
   {
     id: "hole",
     title: "Object Collector",
-    description: "Collect objects and learn their German names as you grow.",
+    description: "Collect objects and learn their names in your target language.",
     icon: Blocks,
     component: HoleGame,
   },
 ];
 
-export function GamesView({ totalReviews = 0, externalWords = 0, gameMasteryCount = 0 }: {
+export function GamesView({
+  apiParts,
+  totalReviews = 0,
+  externalWords = 0,
+  gameMasteryCount = 0,
+}: {
+  apiParts: Record<string, unknown>;
   totalReviews?: number;
   externalWords?: number;
   gameMasteryCount?: number;
@@ -118,7 +125,9 @@ export function GamesView({ totalReviews = 0, externalWords = 0, gameMasteryCoun
               </div>
             }
           >
-            <game.component />
+            <GameContentProvider apiParts={apiParts}>
+              <game.component />
+            </GameContentProvider>
           </Suspense>
         </motion.div>
       ) : (

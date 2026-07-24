@@ -27,6 +27,7 @@ import {
 import {
   Bell,
   BookOpen,
+  ClipboardCheck,
   Gamepad2,
   GraduationCap,
   Languages,
@@ -65,6 +66,7 @@ const NAV_ITEMS = [
   { id: "dashboard", label: "Today", icon: LayoutDashboard },
   { id: "learn", label: "Learning path", icon: BookOpen },
   { id: "games", label: "Games", icon: Gamepad2 },
+  { id: "tests", label: "Tests", icon: ClipboardCheck },
   { id: "grammar", label: "Grammar", icon: GraduationCap },
   { id: "profile", label: "Preferences", icon: Settings },
 ] as const;
@@ -76,7 +78,7 @@ function AstryxNavigation({
   return (
     <>
       <SideNavSection title={ui("Learn")} isHeaderHidden>
-        {NAV_ITEMS.slice(0, 4).map((item) => (
+        {NAV_ITEMS.slice(0, 5).map((item) => (
           <SideNavItem
             icon={item.icon}
             isSelected={activeTab === item.id}

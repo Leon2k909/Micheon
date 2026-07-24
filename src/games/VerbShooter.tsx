@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2 } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
+import { useGameContent } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
+import { tts } from "@/lib/voice";
 
 // ── Verb conjugation data ─────────────────────────────────────
 const VERBS: { infinitive: string; en: string; pronoun: string; correct: string; wrong: string[] }[] = [
@@ -66,7 +68,43 @@ function pickVerb() {
 }
 
 export default function VerbShooter() {
-  const [verb, setVerb] = useState(() => pickVerb());
+  const { learningDirection } = useGameContent();
+  const learnsEnglish = learningDirection === "learn-en";
+
+  const buildPrompt = useCallback(() => {
+    const source = pickVerb();
+    if (!learnsEnglish) return source;
+
+    const pronouns: Record<string, string> = {
+      du: "you",
+      er: "he",
+      ich: "I",
+      wir: "we",
+    };
+    const pronoun = pronouns[source.pronoun] ?? source.pronoun;
+    const base = source.en.replace(/^to\s+/i, "");
+    const thirdPerson = pronoun === "he";
+    let correct = base;
+    if (base === "be") correct = pronoun === "I" ? "am" : thirdPerson ? "is" : "are";
+    else if (base === "have") correct = thirdPerson ? "has" : "have";
+    else if (thirdPerson) correct = /(?:s|sh|ch|x|z|o)$/i.test(base) ? `${base}es` : `${base}s`;
+
+    const decoys = base === "be"
+      ? ["am", "is", "are", "be"]
+      : base === "have"
+        ? ["have", "has", "had", "having"]
+        : [base, `${base}s`, `${base}es`, `${base}ed`];
+
+    return {
+      correct,
+      en: source.infinitive,
+      infinitive: base,
+      pronoun,
+      wrong: Array.from(new Set(decoys.filter((value) => value !== correct))).slice(0, 3),
+    };
+  }, [learnsEnglish]);
+
+  const [verb, setVerb] = useState(() => buildPrompt());
   const [invaders, setInvaders] = useState<Invader[]>([]);
   const [bullets, setBullets] = useState<Bullet[]>([]);
   const [cannonCol, setCannonCol] = useState(Math.floor(COLS / 2));
@@ -98,14 +136,14 @@ export default function VerbShooter() {
   }, []);
 
   const nextRound = useCallback(() => {
-    const v = pickVerb();
+    const v = buildPrompt();
     setVerb(v);
     setBullets([]);
     spawnWave(v);
-  }, [spawnWave]);
+  }, [buildPrompt, spawnWave]);
 
   const newGame = useCallback(() => {
-    const v = pickVerb();
+    const v = buildPrompt();
     setVerb(v);
     setScore(0);
     setStreak(0);
@@ -113,7 +151,7 @@ export default function VerbShooter() {
     setBullets([]);
     setPhase("playing");
     spawnWave(v);
-  }, [spawnWave]);
+  }, [buildPrompt, spawnWave]);
 
   // Fall + bullet loop
   useEffect(() => {
@@ -186,8 +224,11 @@ export default function VerbShooter() {
           setHighScore(newScore);
           try { localStorage.setItem("verbshooter-hs", String(newScore)); } catch {}
         }
-        setTimeout(() => speakGerman(`${verb.pronoun} ${verb.correct}`), 200);
-        recordWordMastery(verb.correct);
+        setTimeout(() => {
+          if (learnsEnglish) void tts(`${verb.pronoun} ${verb.correct}`, 0.9, "en-US");
+          else speakGerman(`${verb.pronoun} ${verb.correct}`);
+        }, 200);
+        recordWordMastery(`${verb.infinitive}:${verb.pronoun}`);
         // Brief pause then next round
         setTimeout(() => {
           if (stateRef.current.phase === "playing") nextRound();
@@ -195,7 +236,7 @@ export default function VerbShooter() {
       }
     }, 50);
     return () => clearInterval(loopRef.current!);
-  }, [phase, highScore, nextRound]);
+  }, [phase, highScore, learnsEnglish, nextRound]);
 
   // Keyboard
   useEffect(() => {
@@ -238,7 +279,9 @@ export default function VerbShooter() {
       {/* Prompt card */}
       <div className="card flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <div>
-          <p className="text-xs text-[var(--text-3)]">{ui("Complete the sentence")}</p>
+          <p className="text-xs text-[var(--text-3)]">
+            {ui(learnsEnglish ? "Complete the English sentence" : "Complete the German sentence")}
+          </p>
           <p className="mt-1 text-xl font-bold text-[var(--text-1)]">
             <span className="text-[var(--accent)]">{verb.pronoun}</span>{" "}
             <span className="rounded border border-dashed border-[var(--border)] px-3 py-0.5 text-[var(--text-3)]">???</span>
@@ -353,7 +396,11 @@ export default function VerbShooter() {
                       <span className="font-bold text-[var(--text-1)]">{verb.pronoun}</span>{" "}
                       <span className="font-bold text-[var(--accent)]">{verb.correct}</span>
                     </p>
-                    <p className="text-xs text-[var(--text-3)]">{verb.pronoun} {verb.correct} = {verb.pronoun} {verb.en}</p>
+                    <p className="text-xs text-[var(--text-3)]">
+                      {learnsEnglish
+                        ? `${verb.en} = ${verb.pronoun} ${verb.correct}`
+                        : `${verb.pronoun} ${verb.correct} = ${verb.en}`}
+                    </p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
                       <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>

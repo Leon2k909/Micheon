@@ -1,35 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Flag, Clock } from "lucide-react";
-import { speakGerman } from "@/lib/tts";
+import {
+  speakGameTarget,
+  useGameDeck,
+  type GameContentEntry,
+} from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
 
 // ── Vocab bank ────────────────────────────────────────────────
-const VOCAB: { de: string; en: string }[] = [
-  { de: "Hund", en: "dog" }, { de: "Katze", en: "cat" }, { de: "Haus", en: "house" },
-  { de: "Buch", en: "book" }, { de: "Wasser", en: "water" }, { de: "Brot", en: "bread" },
-  { de: "Schule", en: "school" }, { de: "Auto", en: "car" }, { de: "Baum", en: "tree" },
-  { de: "Tisch", en: "table" }, { de: "Stuhl", en: "chair" }, { de: "Fenster", en: "window" },
-  { de: "Blume", en: "flower" }, { de: "Vogel", en: "bird" }, { de: "Apfel", en: "apple" },
-  { de: "Milch", en: "milk" }, { de: "Kind", en: "child" }, { de: "Stadt", en: "city" },
-  { de: "Sonne", en: "sun" }, { de: "Mond", en: "moon" }, { de: "Herz", en: "heart" },
-  { de: "Wald", en: "forest" }, { de: "Meer", en: "sea" }, { de: "Nacht", en: "night" },
-  { de: "Tag", en: "day" }, { de: "Zeit", en: "time" }, { de: "Mann", en: "man" },
-  { de: "Frau", en: "woman" }, { de: "Hand", en: "hand" }, { de: "Kopf", en: "head" },
-  { de: "Auge", en: "eye" }, { de: "Ohr", en: "ear" }, { de: "Mund", en: "mouth" },
-  { de: "Nase", en: "nose" }, { de: "Bein", en: "leg" }, { de: "Arm", en: "arm" },
-  { de: "Tür", en: "door" }, { de: "Weg", en: "way" }, { de: "Geld", en: "money" },
-  { de: "Arbeit", en: "work" }, { de: "Leben", en: "life" }, { de: "Welt", en: "world" },
-  { de: "Land", en: "country" }, { de: "Straße", en: "street" }, { de: "Zug", en: "train" },
-  { de: "Flugzeug", en: "airplane" }, { de: "Schiff", en: "ship" }, { de: "Brücke", en: "bridge" },
-  { de: "Berg", en: "mountain" }, { de: "Fluss", en: "river" }, { de: "See", en: "lake" },
-  { de: "Feuer", en: "fire" }, { de: "Eis", en: "ice" }, { de: "Regen", en: "rain" },
-  { de: "Schnee", en: "snow" }, { de: "Wind", en: "wind" }, { de: "Wolke", en: "cloud" },
-  { de: "Himmel", en: "sky" }, { de: "Erde", en: "earth" }, { de: "Stein", en: "stone" },
-  { de: "Gold", en: "gold" }, { de: "Silber", en: "silver" }, { de: "Eisen", en: "iron" },
-];
-
 // ── Difficulty presets ────────────────────────────────────────
 const DIFFICULTIES = {
   easy:   { cols: 8,  rows: 8,  mines: 8,  timer: 12, label: "Easy" },
@@ -44,7 +24,7 @@ interface Cell {
   isRevealed: boolean;
   isFlagged: boolean;
   adjacentMines: number;
-  vocab: { de: string; en: string };
+  vocab: GameContentEntry;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -56,9 +36,15 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function buildGrid(cols: number, rows: number, mines: number, safeIdx: number): Cell[] {
+function buildGrid(
+  cols: number,
+  rows: number,
+  mines: number,
+  safeIdx: number,
+  vocab: GameContentEntry[]
+): Cell[] {
   const total = cols * rows;
-  const shuffledVocab = shuffle(VOCAB);
+  const shuffledVocab = shuffle(vocab);
 
   // Place mines avoiding the first-click cell and its neighbors
   const safeRow = Math.floor(safeIdx / cols);
@@ -126,12 +112,13 @@ const ADJACENT_COLORS = ["", "text-blue-400", "text-green-400", "text-rose-400",
 
 // ── Component ─────────────────────────────────────────────────
 export default function VocabMinesweeper() {
+  const { draw, learningDirection } = useGameDeck();
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [cells, setCells] = useState<Cell[]>([]);
   const [phase, setPhase] = useState<"idle" | "playing" | "won" | "dead">("idle");
 
   // Quiz overlay state
-  const [quizCell, setQuizCell] = useState<{ idx: number; vocab: { de: string; en: string } } | null>(null);
+  const [quizCell, setQuizCell] = useState<{ idx: number; vocab: GameContentEntry } | null>(null);
   const [answer, setAnswer] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
@@ -203,7 +190,10 @@ export default function VocabMinesweeper() {
 
     if (correct) {
       setQuizResult("correct");
-      if (quizCell) recordWordMastery(quizCell.vocab.de);
+      if (quizCell) {
+        recordWordMastery(quizCell.vocab.de);
+        void speakGameTarget(quizCell.vocab);
+      }
       setTimeout(() => {
         const { cells, score } = stateRef.current;
         const idx = stateRef.current.cells.findIndex((_, i) => i === quizCell?.idx);
@@ -252,8 +242,14 @@ export default function VocabMinesweeper() {
 
   const submitAnswer = () => {
     if (!quizCell || quizResult) return;
-    const userAns = answer.trim().toLowerCase();
-    const correct = quizCell.vocab.en.toLowerCase().split("/").some(v => v.trim() === userAns);
+    const normalizeAnswer = (value: string) => value
+      .normalize("NFC")
+      .toLocaleLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const userAns = normalizeAnswer(answer);
+    const correct = normalizeAnswer(quizCell.vocab.target) === userAns;
     handleQuizResult(correct);
   };
 
@@ -279,18 +275,22 @@ export default function VocabMinesweeper() {
     setAnswer("");
     setQuizResult(null);
     setQuizCell({ idx, vocab: cell.vocab });
-    speakGerman(cell.vocab.de.toLowerCase());
   };
 
   const handleFirstClick = (idx: number) => {
     if (cells.length > 0) { handleCellClick(idx); return; }
     // Build grid on first click
-    const built = buildGrid(cfg.cols, cfg.rows, cfg.mines, idx);
+    const built = buildGrid(
+      cfg.cols,
+      cfg.rows,
+      cfg.mines,
+      idx,
+      draw(cfg.cols * cfg.rows)
+    );
     setCells(built);
     setAnswer("");
     setQuizResult(null);
     setQuizCell({ idx, vocab: built[idx].vocab });
-    speakGerman(built[idx].vocab.de.toLowerCase());
   };
 
   const handleRightClick = (e: React.MouseEvent, idx: number) => {
@@ -313,7 +313,7 @@ export default function VocabMinesweeper() {
       <div>
         <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Vocab Minesweeper")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          {ui("Click a cell — translate the German word to reveal it safely. Wrong answer = mine.")}
+          {ui("Click a cell and translate the prompt to reveal it safely. Wrong answer = mine.")}
         </p>
       </div>
 
@@ -433,7 +433,7 @@ export default function VocabMinesweeper() {
                   <>
                     <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Vocab Minesweeper")}</p>
                     <p className="max-w-[260px] text-center text-sm text-[var(--text-3)]">
-                      {ui("Click any cell to reveal it. Translate the German word correctly to defuse it. Wrong answer = boom.")}
+                      {ui("Click any cell to reveal it. Translate the prompt correctly to defuse it. Wrong answer = boom.")}
                     </p>
                     <button className="accent-btn px-6 py-2.5 text-sm" onClick={() => newGame()} type="button">
                       {ui("Start game")}
@@ -497,13 +497,15 @@ export default function VocabMinesweeper() {
               </div>
 
               <div className="mb-1 flex items-center justify-between">
-                <p className="text-xs text-[var(--text-3)]">{ui("Translate to English")}</p>
+                <p className="text-xs text-[var(--text-3)]">
+                  {ui(learningDirection === "learn-en" ? "Translate to English" : "Translate to German")}
+                </p>
                 <span className={`text-sm font-bold ${timeLeft <= 3 ? "text-rose-400" : "text-[var(--text-3)]"}`}>
                   {timeLeft}s
                 </span>
               </div>
 
-              <p className="mb-4 text-3xl font-bold text-[var(--text-1)]">{quizCell.vocab.de}</p>
+              <p className="mb-4 text-3xl font-bold text-[var(--text-1)]">{quizCell.vocab.clue}</p>
 
               {quizResult === null ? (
                 <form onSubmit={e => { e.preventDefault(); submitAnswer(); }} className="flex gap-2">
@@ -512,7 +514,7 @@ export default function VocabMinesweeper() {
                     autoComplete="off"
                     className="flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-sm text-[var(--text-1)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
                     onChange={e => setAnswer(e.target.value)}
-                    placeholder={ui("English translation...")}
+                    placeholder={ui(learningDirection === "learn-en" ? "English translation..." : "German translation...")}
                     type="text"
                     value={answer}
                   />
@@ -521,13 +523,13 @@ export default function VocabMinesweeper() {
               ) : quizResult === "correct" ? (
                 <div className="flex items-center gap-2 text-[var(--accent)]">
                   <span className="text-xl">✓</span>
-                  <span className="font-semibold">{ui("Correct!")} "{quizCell.vocab.en}"</span>
+                  <span className="font-semibold">{ui("Correct!")} "{quizCell.vocab.target}"</span>
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-rose-400">
                     <span className="text-xl">✗</span>
-                    <span className="font-semibold">{ui("It was")} "{quizCell.vocab.en}"</span>
+                    <span className="font-semibold">{ui("It was")} "{quizCell.vocab.target}"</span>
                   </div>
                   <p className="text-xs text-[var(--text-3)]">💥 {ui("Mine triggered...")}</p>
                 </div>

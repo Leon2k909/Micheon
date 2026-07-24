@@ -1,0 +1,832 @@
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Brain,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  Flame,
+  Headphones,
+  Languages,
+  MessageCircle,
+  RotateCcw,
+  Shuffle,
+  Sparkles,
+  Sprout,
+  Trophy,
+  X,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { loadGradeStore, statusForId, type ItemStatus } from "@/lib/activity";
+import { learningEnglish } from "@/lib/direction";
+import { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "@/lib/germanTextMatch";
+import { ui, uiIsGerman } from "@/lib/i18n";
+import type { UserProfile } from "@/lib/profileStorage";
+import type { Part } from "@/lib/types";
+import { tts } from "@/lib/voice";
+import { buildCatalog, type CatalogItem } from "@/session";
+
+type TestPresetId =
+  | "easy-vocabulary"
+  | "hard-vocabulary"
+  | "everyday-phrases"
+  | "hard-phrases"
+  | "mixed"
+  | "weak-spots";
+
+type TestDirection = "course" | "reverse" | "mixed";
+type AnswerLanguage = "de" | "en";
+
+type TestItem = {
+  id: string;
+  aliases?: string[];
+  de: string;
+  en: string;
+  kind: "vocabulary" | "phrase";
+  level: string;
+  topic: string;
+  hard: boolean;
+  status: ItemStatus;
+  due: boolean;
+};
+
+type TestQuestion = {
+  item: TestItem;
+  answerLanguage: AnswerLanguage;
+};
+
+type TestResult = {
+  question: TestQuestion;
+  answer: string;
+  correct: boolean;
+  skipped: boolean;
+  spellingNote?: boolean;
+  phrasingNote?: boolean;
+};
+
+type TestPreset = {
+  id: TestPresetId;
+  title: string;
+  description: string;
+  eyebrow: string;
+  icon: typeof Sprout;
+  tone: "accent" | "yellow" | "green" | "orange" | "ink" | "rose";
+  filter: (item: TestItem) => boolean;
+};
+
+const TEST_LENGTHS = [10, 20, 30] as const;
+
+const PRESETS: TestPreset[] = [
+  {
+    id: "easy-vocabulary",
+    title: "Easy vocabulary",
+    description: "Common A1-A2 words for fast, confident recall.",
+    eyebrow: "Vocabulary",
+    icon: Sprout,
+    tone: "green",
+    filter: (item) => item.kind === "vocabulary" && !item.hard,
+  },
+  {
+    id: "hard-vocabulary",
+    title: "Hard vocabulary",
+    description: "Longer and higher-level words that need more precision.",
+    eyebrow: "Vocabulary",
+    icon: Brain,
+    tone: "accent",
+    filter: (item) => item.kind === "vocabulary" && item.hard,
+  },
+  {
+    id: "everyday-phrases",
+    title: "Everyday phrases",
+    description: "Short, useful lines for natural daily conversation.",
+    eyebrow: "Phrases",
+    icon: MessageCircle,
+    tone: "yellow",
+    filter: (item) => item.kind === "phrase" && !item.hard,
+  },
+  {
+    id: "hard-phrases",
+    title: "Hard phrases",
+    description: "Longer B1+ sentences, expressions, and word order.",
+    eyebrow: "Phrases",
+    icon: Flame,
+    tone: "orange",
+    filter: (item) => item.kind === "phrase" && item.hard,
+  },
+  {
+    id: "mixed",
+    title: "Mixed challenge",
+    description: "Vocabulary and phrases from across your full course.",
+    eyebrow: "All topics",
+    icon: Shuffle,
+    tone: "ink",
+    filter: () => true,
+  },
+  {
+    id: "weak-spots",
+    title: "Weak spots",
+    description: "Items you marked difficult or that are due for review.",
+    eyebrow: "Personal review",
+    icon: AlertTriangle,
+    tone: "rose",
+    filter: (item) => item.status === "struggle" || item.due,
+  },
+];
+
+const toneClasses: Record<TestPreset["tone"], { icon: string; chip: string }> = {
+  accent: {
+    icon: "bg-[var(--accent-dim)] text-[var(--accent)]",
+    chip: "bg-[var(--accent-dim)] text-[var(--accent)]",
+  },
+  yellow: {
+    icon: "bg-[var(--yellow-dim)] text-[var(--yellow-ink)]",
+    chip: "bg-[var(--yellow-dim)] text-[var(--yellow-ink)]",
+  },
+  green: {
+    icon: "bg-emerald-500/12 text-emerald-500",
+    chip: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400",
+  },
+  orange: {
+    icon: "bg-orange-500/12 text-orange-500",
+    chip: "bg-orange-500/12 text-orange-600 dark:text-orange-400",
+  },
+  ink: {
+    icon: "bg-[var(--ink)] text-[var(--ink-text)]",
+    chip: "bg-[var(--surface-3)] text-[var(--text-2)]",
+  },
+  rose: {
+    icon: "bg-rose-500/12 text-rose-500",
+    chip: "bg-rose-500/12 text-rose-600 dark:text-rose-400",
+  },
+};
+
+function normalizeKey(value: string) {
+  return String(value ?? "").trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
+}
+
+function isHardLevel(level: string) {
+  return /(?:B1|B2|C1|C2)/i.test(level);
+}
+
+function isDue(item: CatalogItem, grades: ReturnType<typeof loadGradeStore>) {
+  const now = Date.now();
+  return [item.id, ...(item.aliases ?? [])].some((id) => {
+    const dueAt = grades[id]?.dueAt;
+    return dueAt ? Date.parse(dueAt) <= now : false;
+  });
+}
+
+function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): TestItem[] {
+  const grades = loadGradeStore(profile);
+  const catalog = buildCatalog(apiParts);
+  const catalogVocab = new Map<string, CatalogItem>();
+  const seen = new Set<string>();
+  const bank: TestItem[] = [];
+
+  for (const item of catalog) {
+    if (item.kind !== "vocab") continue;
+    const lookup = normalizeKey(item.lookup ?? item.de);
+    catalogVocab.set(`${item.partKey}::${lookup}`, item);
+  }
+
+  const add = (item: TestItem) => {
+    if (!item.de.trim() || !item.en.trim()) return;
+    const key = `${normalizeKey(item.de)}::${normalizeKey(item.en)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    bank.push(item);
+  };
+
+  for (const [partKey, part] of Object.entries(apiParts)) {
+    const level = part.level ?? "";
+    const topic = part.theme ?? part.label ?? partKey;
+
+    (part.vocab ?? []).forEach((word, index) => {
+      const source =
+        catalogVocab.get(`${partKey}::${normalizeKey(word.lookup ?? word.de)}`) ??
+        catalogVocab.get(`${partKey}::${normalizeKey(word.de)}`);
+      const id = source?.id ?? `${partKey}-test-vocab-${index}`;
+      const aliases = source?.aliases ?? [];
+      const status = statusForId(grades, id, aliases);
+      const longWord = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length >= 13;
+      add({
+        id,
+        aliases,
+        de: word.de,
+        en: word.en,
+        kind: "vocabulary",
+        level,
+        topic,
+        hard: isHardLevel(level) || longWord,
+        status,
+        due: source ? isDue(source, grades) : false,
+      });
+    });
+  }
+
+  for (const item of catalog) {
+    if (item.kind === "vocab") continue;
+    const wordCount = normalizeKey(item.de).split(" ").filter(Boolean).length;
+    add({
+      id: item.id,
+      aliases: item.aliases,
+      de: item.de,
+      en: item.en,
+      kind: "phrase",
+      level: item.level ?? "",
+      topic: item.partLabel,
+      hard: isHardLevel(item.level ?? "") || wordCount >= 8,
+      status: statusForId(grades, item.id, item.aliases),
+      due: isDue(item, grades),
+    });
+  }
+
+  return bank;
+}
+
+function shuffled<T>(items: T[]) {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+}
+
+function answerLanguageFor(direction: TestDirection, index: number): AnswerLanguage {
+  const courseLanguage: AnswerLanguage = learningEnglish() ? "en" : "de";
+  if (direction === "course") return courseLanguage;
+  if (direction === "reverse") return courseLanguage === "de" ? "en" : "de";
+  return index % 2 === 0 ? courseLanguage : courseLanguage === "de" ? "en" : "de";
+}
+
+function getQuestionCopy(question: TestQuestion) {
+  const answerIsGerman = question.answerLanguage === "de";
+  return {
+    source: answerIsGerman ? primaryAnswer(question.item.en) : question.item.de,
+    sourceLanguage: answerIsGerman ? "en" : "de",
+    target: answerIsGerman ? question.item.de : question.item.en,
+    targetLabel: answerIsGerman ? "German" : "English",
+  } as const;
+}
+
+function directionLabel(direction: TestDirection) {
+  const german = ui("German");
+  const english = ui("English");
+  const course = learningEnglish() ? `${german} → ${english}` : `${english} → ${german}`;
+  const reverse = learningEnglish() ? `${english} → ${german}` : `${german} → ${english}`;
+  if (direction === "course") return course;
+  if (direction === "reverse") return reverse;
+  return ui("Both directions");
+}
+
+function PresetCard({
+  count,
+  preset,
+  selected,
+  onSelect,
+}: {
+  count: number;
+  preset: TestPreset;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const Icon = preset.icon;
+  const disabled = count === 0;
+  return (
+    <button
+      aria-pressed={selected}
+      className={cn(
+        "group relative min-h-[188px] overflow-hidden rounded-[22px] border p-5 text-left transition-all",
+        selected
+          ? "border-[var(--accent)] bg-[var(--accent-dim)] shadow-[0_16px_40px_var(--shadow)]"
+          : "border-[var(--border)] bg-[var(--surface)] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_16px_38px_var(--shadow)]",
+        disabled && "cursor-not-allowed opacity-55 hover:translate-y-0 hover:shadow-none"
+      )}
+      data-testid={`test-preset-${preset.id}`}
+      disabled={disabled}
+      onClick={onSelect}
+      type="button"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className={cn("flex h-12 w-12 items-center justify-center rounded-[16px]", toneClasses[preset.tone].icon)}>
+          <Icon className="h-5 w-5 stroke-[2.1]" />
+        </span>
+        {selected ? (
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent)] text-white">
+            <Check className="h-4 w-4 stroke-[3]" />
+          </span>
+        ) : (
+          <ChevronRight className="mt-2 h-5 w-5 text-[var(--text-3)] transition-transform group-hover:translate-x-0.5" />
+        )}
+      </div>
+      <span className={cn("mt-5 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase", toneClasses[preset.tone].chip)}>
+        {ui(preset.eyebrow)}
+      </span>
+      <h3 className="mt-2 text-lg font-black tracking-tight text-[var(--text-1)]">{ui(preset.title)}</h3>
+      <p className="mt-1.5 text-sm font-semibold leading-5 text-[var(--text-3)]">{ui(preset.description)}</p>
+      <p className="mt-4 text-xs font-black text-[var(--text-2)]">
+        {count.toLocaleString()} {ui(count === 1 ? "question available" : "questions available")}
+      </p>
+    </button>
+  );
+}
+
+export function TestsView({
+  apiParts,
+  profile,
+}: {
+  apiParts: Record<string, Part>;
+  profile: UserProfile;
+}) {
+  const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, profile]);
+  const [presetId, setPresetId] = useState<TestPresetId>("easy-vocabulary");
+  const [testLength, setTestLength] = useState<(typeof TEST_LENGTHS)[number]>(10);
+  const [direction, setDirection] = useState<TestDirection>("course");
+  const [questions, setQuestions] = useState<TestQuestion[]>([]);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [feedback, setFeedback] = useState<TestResult | null>(null);
+  const [results, setResults] = useState<TestResult[]>([]);
+  const [finished, setFinished] = useState(false);
+
+  const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
+  const selectedPool = useMemo(
+    () => bank.filter(selectedPreset.filter),
+    [bank, selectedPreset]
+  );
+  const presetCounts = useMemo(
+    () => Object.fromEntries(PRESETS.map((preset) => [preset.id, bank.filter(preset.filter).length])),
+    [bank]
+  ) as Record<TestPresetId, number>;
+  const currentQuestion = questions[questionIndex];
+  const currentCopy = currentQuestion ? getQuestionCopy(currentQuestion) : null;
+  const correctCount = results.filter((result) => result.correct).length;
+  const scorePercent = results.length ? Math.round((correctCount / results.length) * 100) : 0;
+
+  const resetTest = () => {
+    setQuestions([]);
+    setQuestionIndex(0);
+    setAnswer("");
+    setFeedback(null);
+    setResults([]);
+    setFinished(false);
+  };
+
+  const startTest = () => {
+    const picked = shuffled(selectedPool).slice(0, Math.min(testLength, selectedPool.length));
+    setQuestions(
+      picked.map((item, index) => ({
+        item,
+        answerLanguage: answerLanguageFor(direction, index),
+      }))
+    );
+    setQuestionIndex(0);
+    setAnswer("");
+    setFeedback(null);
+    setResults([]);
+    setFinished(false);
+  };
+
+  const gradeAnswer = (skipped = false) => {
+    if (!currentQuestion || feedback) return;
+    const copy = getQuestionCopy(currentQuestion);
+    const match = skipped
+      ? { ok: false, spellingNote: false }
+      : currentQuestion.answerLanguage === "de"
+        ? matchGermanSentence(answer, copy.target)
+        : matchEnglishPhrase(answer, copy.target);
+    const result: TestResult = {
+      question: currentQuestion,
+      answer,
+      correct: match.ok,
+      skipped,
+      spellingNote: match.spellingNote,
+      phrasingNote: match.phrasingNote,
+    };
+    setFeedback(result);
+    setResults((current) => [...current, result]);
+  };
+
+  const nextQuestion = () => {
+    if (!feedback) return;
+    if (questionIndex >= questions.length - 1) {
+      setFinished(true);
+      return;
+    }
+    setQuestionIndex((index) => index + 1);
+    setAnswer("");
+    setFeedback(null);
+  };
+
+  const hearPrompt = () => {
+    if (!currentCopy) return;
+    void tts(
+      currentCopy.source,
+      0.88,
+      currentCopy.sourceLanguage === "de" ? "de-DE" : "en-GB"
+    );
+  };
+
+  if (finished) {
+    const missed = results.filter((result) => !result.correct);
+    return (
+      <div className="mx-auto max-w-[1120px]" data-testid="test-results">
+        <section className="relative overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_22px_55px_var(--shadow)] sm:p-9">
+          <div className="absolute inset-x-0 top-0 h-1.5 bg-[var(--accent)]" />
+          <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-dim)] px-3 py-1.5 text-xs font-black text-[var(--accent)]">
+                <Trophy className="h-4 w-4" />
+                {ui("Test complete")}
+              </span>
+              <h1 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-1)] sm:text-4xl">
+                {scorePercent >= 80 ? ui("Strong result") : scorePercent >= 60 ? ui("Good progress") : ui("Keep practising")}
+              </h1>
+              <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-[var(--text-3)]">
+                {ui("Review the answers you missed, then try the same level again or build a different test.")}
+              </p>
+            </div>
+            <div className="flex min-w-[220px] items-center gap-5 rounded-[22px] bg-[var(--surface-2)] p-5">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-[7px] border-[var(--accent)] bg-[var(--surface)]">
+                <span className="text-2xl font-black text-[var(--text-1)]">{scorePercent}%</span>
+              </div>
+              <div>
+                <p className="text-2xl font-black text-[var(--text-1)]">{correctCount}/{results.length}</p>
+                <p className="text-xs font-bold text-[var(--text-3)]">{ui("correct answers")}</p>
+              </div>
+            </div>
+          </div>
+
+          {missed.length > 0 ? (
+            <div className="mt-8 border-t border-[var(--border)] pt-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-black text-[var(--text-1)]">{ui("Answers to review")}</h2>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("These are worth another quick pass.")}</p>
+                </div>
+                <span className="rounded-full bg-rose-500/12 px-3 py-1.5 text-xs font-black text-rose-500">
+                  {missed.length} {ui("to review")}
+                </span>
+              </div>
+              <div className="mt-4 divide-y divide-[var(--border)] rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] px-4">
+                {missed.slice(0, 8).map((result, index) => {
+                  const copy = getQuestionCopy(result.question);
+                  return (
+                    <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
+                      <p className="font-bold text-[var(--text-2)]">{copy.source}</p>
+                      <ArrowRight className="hidden h-4 w-4 text-[var(--text-3)] sm:block" />
+                      <p className="font-black text-[var(--text-1)] sm:text-right">{primaryAnswer(copy.target)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 flex items-center gap-3 rounded-[20px] bg-emerald-500/10 p-5 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-6 w-6" />
+              <p className="font-black">{ui("Perfect score — every answer was correct.")}</p>
+            </div>
+          )}
+
+          <div className="mt-7 flex flex-wrap gap-3">
+            <button
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] bg-[var(--ink)] px-5 text-sm font-black text-[var(--ink-text)] transition-transform active:scale-[0.98]"
+              onClick={startTest}
+              type="button"
+            >
+              <RotateCcw className="h-4 w-4" />
+              {ui("Retake test")}
+            </button>
+            <button
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)] px-5 text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)]"
+              onClick={resetTest}
+              type="button"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {ui("Choose another test")}
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (currentQuestion && currentCopy) {
+    const progress = Math.round(((questionIndex + (feedback ? 1 : 0)) / questions.length) * 100);
+    return (
+      <div className="mx-auto max-w-[1060px]" data-testid="test-runner">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <button
+            className="inline-flex items-center gap-2 text-sm font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
+            onClick={resetTest}
+            type="button"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {ui("Exit test")}
+          </button>
+          <p className="text-xs font-black uppercase text-[var(--text-3)]">
+            {ui("Question")} {questionIndex + 1} {ui("of")} {questions.length}
+          </p>
+        </div>
+
+        <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-3)]">
+          <motion.div
+            animate={{ width: `${progress}%` }}
+            className="h-full rounded-full bg-[var(--accent)]"
+            initial={false}
+            transition={{ type: "spring", stiffness: 240, damping: 28 }}
+          />
+        </div>
+
+        <section className="mt-5 overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_60px_var(--shadow)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-6 py-5 sm:px-8">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[var(--accent-dim)] text-[var(--accent)]">
+                <ClipboardCheck className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-black uppercase text-[var(--accent)]">{ui(selectedPreset.title)}</p>
+                <p className="mt-0.5 text-sm font-bold text-[var(--text-3)]">{directionLabel(direction)}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-black text-[var(--text-2)]">
+                {correctCount} {ui("correct")}
+              </span>
+              <span className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-black text-[var(--text-2)]">
+                {currentQuestion.item.level || ui("Course")}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-5 rounded-[22px] bg-[var(--surface-2)] p-5 sm:p-7">
+              <div>
+                <p className="text-[11px] font-black uppercase text-[var(--text-3)]">
+                  {ui("Translate into")} {ui(currentCopy.targetLabel)}
+                </p>
+                <h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-[var(--text-1)] sm:text-4xl">
+                  {currentCopy.source}
+                </h1>
+                <p className="mt-4 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
+              </div>
+              <button
+                aria-label={ui("Hear prompt")}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-[var(--accent)] text-white shadow-[0_8px_20px_var(--shadow)] transition-transform hover:scale-105 active:scale-95"
+                onClick={hearPrompt}
+                title={ui("Hear prompt")}
+                type="button"
+              >
+                <Headphones className="h-5 w-5" />
+              </button>
+            </div>
+
+            <label className="mt-6 block">
+              <span className="mb-2 block text-xs font-black uppercase text-[var(--text-3)]">
+                {ui("Your answer")}
+              </span>
+              <input
+                autoFocus
+                className={cn(
+                  "h-16 w-full rounded-[18px] border-2 bg-[var(--surface)] px-5 text-lg font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
+                  feedback
+                    ? feedback.correct
+                      ? "border-emerald-500"
+                      : "border-rose-500"
+                    : "border-[var(--border-2)] focus:border-[var(--accent)]"
+                )}
+                data-testid="test-answer"
+                disabled={Boolean(feedback)}
+                onChange={(event) => setAnswer(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  if (feedback) nextQuestion();
+                  else if (answer.trim()) gradeAnswer();
+                }}
+                placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
+                value={answer}
+              />
+            </label>
+
+            {feedback && (
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className={cn(
+                  "mt-4 rounded-[18px] border p-4",
+                  feedback.correct
+                    ? "border-emerald-500/25 bg-emerald-500/10"
+                    : "border-rose-500/25 bg-rose-500/10"
+                )}
+                initial={{ opacity: 0, y: 5 }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className={cn(
+                    "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+                    feedback.correct ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                  )}>
+                    {feedback.correct ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                  </span>
+                  <div>
+                    <p className={cn("font-black", feedback.correct ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                      {feedback.correct
+                        ? ui(feedback.spellingNote ? "Correct — check the spelling note." : "Correct answer")
+                        : ui(feedback.skipped ? "Question skipped" : feedback.phrasingNote ? "Understandable, but not the natural answer." : "Not quite")}
+                    </p>
+                    {!feedback.correct && (
+                      <p className="mt-1 text-sm font-semibold text-[var(--text-2)]">
+                        {ui("Accepted answer")}: <strong className="font-black">{primaryAnswer(currentCopy.target)}</strong>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              {!feedback ? (
+                <>
+                  <button
+                    className="h-12 rounded-[16px] px-4 text-sm font-black text-[var(--text-3)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => gradeAnswer(true)}
+                    type="button"
+                  >
+                    {ui("Skip question")}
+                  </button>
+                  <button
+                    className="inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-[16px] bg-[var(--accent)] px-6 text-sm font-black text-white shadow-[0_8px_0_var(--accent-pressed)] transition-transform hover:-translate-y-0.5 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-45"
+                    data-testid="check-test-answer"
+                    disabled={!answer.trim()}
+                    onClick={() => gradeAnswer()}
+                    type="button"
+                  >
+                    {ui("Check answer")}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="ml-auto inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-[16px] bg-[var(--ink)] px-6 text-sm font-black text-[var(--ink-text)] transition-transform active:scale-[0.98]"
+                  data-testid="next-test-question"
+                  onClick={nextQuestion}
+                  type="button"
+                >
+                  {questionIndex === questions.length - 1 ? ui("See results") : ui("Next question")}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-[1240px]" data-testid="tests-view">
+      <section className="relative overflow-hidden rounded-[28px] bg-[var(--ink)] px-6 py-7 text-[var(--ink-text)] shadow-[0_24px_60px_var(--shadow-strong)] sm:px-8 sm:py-9">
+        <div className="absolute inset-y-0 left-0 w-1.5 bg-[var(--accent)]" />
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black">
+              <Sparkles className="h-4 w-4 text-[var(--yellow)]" />
+              {ui("Build a focused test")}
+            </span>
+            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{ui("Tests")}</h1>
+            <p className="mt-2 max-w-xl text-sm font-semibold leading-6 opacity-70">
+              {ui("Choose what you want to test, set the challenge, and get a clear score without changing your lesson progress.")}
+            </p>
+          </div>
+          <div className="grid w-full grid-cols-3 gap-2 sm:gap-3 lg:w-auto">
+            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
+              <p className="text-base font-black sm:text-xl">{bank.filter((item) => item.kind === "vocabulary").length.toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Words")}</p>
+            </div>
+            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
+              <p className="text-base font-black sm:text-xl">{bank.filter((item) => item.kind === "phrase").length.toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Phrases")}</p>
+            </div>
+            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
+              <p className="text-base font-black sm:text-xl">{presetCounts["weak-spots"].toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Weak spots")}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <section>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase text-[var(--accent)]">{ui("Test library")}</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--text-1)]">{ui("What do you want to practise?")}</h2>
+            </div>
+            <p className="hidden text-sm font-bold text-[var(--text-3)] sm:block">{PRESETS.length} {ui("test types")}</p>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2">
+            {PRESETS.map((preset) => (
+              <PresetCard
+                count={presetCounts[preset.id]}
+                key={preset.id}
+                onSelect={() => setPresetId(preset.id)}
+                preset={preset}
+                selected={presetId === preset.id}
+              />
+            ))}
+          </div>
+        </section>
+
+        <aside className="h-fit rounded-[24px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_18px_45px_var(--shadow)] xl:sticky xl:top-[112px]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[var(--accent-dim)] text-[var(--accent)]">
+              <ClipboardCheck className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Test setup")}</p>
+              <h2 className="font-black text-[var(--text-1)]">{ui(selectedPreset.title)}</h2>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Number of questions")}</p>
+            <div className="mt-2 grid grid-cols-3 gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">
+              {TEST_LENGTHS.map((length) => (
+                <button
+                  aria-pressed={testLength === length}
+                  className={cn(
+                    "h-10 rounded-[12px] text-sm font-black transition-colors",
+                    testLength === length
+                      ? "bg-[var(--surface)] text-[var(--text-1)] shadow-sm"
+                      : "text-[var(--text-3)] hover:text-[var(--text-1)]"
+                  )}
+                  key={length}
+                  onClick={() => setTestLength(length)}
+                  type="button"
+                >
+                  {length}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Translation direction")}</p>
+            <div className="mt-2 grid gap-2">
+              {(["course", "reverse", "mixed"] as TestDirection[]).map((option) => (
+                <button
+                  aria-pressed={direction === option}
+                  className={cn(
+                    "flex min-h-11 items-center justify-between gap-3 rounded-[14px] border px-3.5 text-left text-sm font-black transition-colors",
+                    direction === option
+                      ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                      : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)]"
+                  )}
+                  key={option}
+                  onClick={() => setDirection(option)}
+                  type="button"
+                >
+                  <span className="flex items-center gap-2">
+                    {option === "mixed" ? <Shuffle className="h-4 w-4" /> : <Languages className="h-4 w-4" />}
+                    {directionLabel(option)}
+                  </span>
+                  {direction === option && <Check className="h-4 w-4" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-[16px] bg-[var(--surface-2)] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-bold text-[var(--text-3)]">{ui("Questions")}</span>
+              <strong className="text-sm font-black text-[var(--text-1)]">
+                {Math.min(testLength, selectedPool.length)}
+              </strong>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-sm font-bold text-[var(--text-3)]">{ui("Available")}</span>
+              <strong className="text-sm font-black text-[var(--text-1)]">
+                {selectedPool.length.toLocaleString()}
+              </strong>
+            </div>
+          </div>
+
+          <button
+            className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-[17px] bg-[var(--accent)] px-5 text-sm font-black text-white shadow-[0_8px_0_var(--accent-pressed)] transition-transform hover:-translate-y-0.5 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-45"
+            data-testid="start-test"
+            disabled={selectedPool.length === 0}
+            onClick={startTest}
+            type="button"
+          >
+            {ui("Start test")}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </aside>
+      </div>
+    </div>
+  );
+}

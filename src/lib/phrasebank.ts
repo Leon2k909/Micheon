@@ -853,7 +853,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Wird gemacht.", en: "Will do. / Consider it done.", use: "Accepting a task" },
       { de: "Wie gesagt.", en: "Like I said. / As I said.", use: "Referring back to your point" },
       { de: "Ach was!", en: "No way! / Come on!", use: "Disbelief or playful dismissal" },
-      { de: "Und ob!", en: "You bet! / And how!", use: "An emphatic yes" },
+      { de: "Und ob!", en: "Absolutely! / Of course!", use: "An emphatic yes — stronger than a simple ja" },
       { de: "Ganz genau.", en: "Exactly. / Precisely.", use: "Strong agreement" },
       { de: "Na sicher!", en: "Of course! / Sure!", use: "Emphatic casual yes" },
       { de: "Ich hab doch gesagt, dass wir das schaffen!", long: "Ich habe doch gesagt, dass wir das schaffen!", en: "I told you we'd make it! / I did say we would make it!", use: "I told you so (doch adds emphasis)" },

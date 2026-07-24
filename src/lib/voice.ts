@@ -9,6 +9,7 @@
 // goes fully silent — it just won't be the premium voice.
 
 import { AUDIO_MUTE_EVENT, isAudioMuted } from "@/lib/audioMute";
+import { firstSpokenAlternative } from "@/lib/spokenText";
 
 type SeqItem = { text: string; rate?: number; lang: string };
 
@@ -91,7 +92,8 @@ function playUrl(url: string, token: number): Promise<void> {
 }
 
 async function playOne(item: SeqItem, token: number): Promise<void> {
-  const { text, lang } = item;
+  const { lang } = item;
+  const text = firstSpokenAlternative(item.text);
   const rate = item.rate ?? DEFAULT_RATE;
   if (!text) return;
   try {
@@ -131,6 +133,7 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
 
 /** Warm the cache for a phrase without playing it (optional, for snappier UX). */
 export function preloadTts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): void {
-  if (!text) return;
-  getAudioUrl(text, rate, lang).catch(() => {});
+  const spokenText = firstSpokenAlternative(text);
+  if (!spokenText) return;
+  getAudioUrl(spokenText, rate, lang).catch(() => {});
 }

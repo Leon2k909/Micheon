@@ -2,6 +2,7 @@
  * Speak text in German using the best available TTS voice.
  * Priority: Microsoft Edge neural voices → any de-DE voice → any de voice → fallback.
  */
+import { firstSpokenAlternative } from "@/lib/spokenText";
 
 // Voice preference order — Edge neural voices first, then standard Windows voices
 const PREFERRED_VOICES = [
@@ -36,9 +37,12 @@ function pickGermanVoice(): SpeechSynthesisVoice | null {
 export function speakGerman(text: string, rate = 0.88, pitch = 1): void {
   if (!("speechSynthesis" in window)) return;
 
+  const spokenText = firstSpokenAlternative(text);
+  if (!spokenText) return;
+
   window.speechSynthesis.cancel();
 
-  const utter = new SpeechSynthesisUtterance(text);
+  const utter = new SpeechSynthesisUtterance(spokenText);
   utter.lang = "de-DE";
   utter.rate = rate;
   utter.pitch = pitch;

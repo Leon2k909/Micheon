@@ -8,7 +8,9 @@ export default function GrammarTabContent() {
     <Card className="rounded-3xl shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">📖 {ui("Grammar reference")}</CardTitle>
-        <CardDescription>{ui("Quick rules with examples — refer back whenever something feels unclear.")}</CardDescription>
+        <CardDescription>
+          {ui("Choose a German grammar topic to see the rule, a useful tip, and examples.")}
+        </CardDescription>
       </CardHeader>
       <CardContent><GrammarTab /></CardContent>
     </Card>

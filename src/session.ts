@@ -267,6 +267,13 @@ export type CatalogItem = {
   lookup?: string;
   /** usage context from the data, e.g. "Informal", "Asking the time" */
   use?: string;
+  fr?: string;
+  short?: string;
+  when?: string;
+  say?: string;
+  long?: string;
+  group?: string;
+  tierNote?: string;
 };
 
 /**
@@ -279,15 +286,25 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   const dialogues: any[] = part?.dialogues ?? [];
   const partLabel = part?.theme ?? part?.label ?? partKey;
   const level = part?.level;
+  const tierNote = packMeta(partKey).note;
   const out: CatalogItem[] = [];
   const seen = new Set<string>();
   const learningMode = getLearningMode();
 
-  const push = (de: string, en: string, id: string, kind: CatalogItem["kind"], lookup?: string, aliases: string[] = [], use?: string) => {
+  const push = (
+    de: string,
+    en: string,
+    id: string,
+    kind: CatalogItem["kind"],
+    lookup?: string,
+    aliases: string[] = [],
+    use?: string,
+    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "when" | "say" | "long" | "group">> = {}
+  ) => {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
     seen.add(key);
-    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use });
+    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use, tierNote, ...coaching });
   };
 
   // Hand-written examples only — mirrors buildSession, so the tracker
@@ -298,14 +315,23 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     if (hasSentenceShape(word.example) &&
         word.example.trim().toLowerCase() !== word.de.trim().toLowerCase() &&
         word.exampleEn?.trim()) {
-      push(word.example, word.exampleEn, id, "vocab", word.lookup ?? word.de, aliases, word.use);
+      push(word.example, word.exampleEn, id, "vocab", word.lookup ?? word.de, aliases, word.use, {
+        fr: word.exampleFr,
+      });
     }
   });
 
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
     const catalogPhrase = phraseForLearningMode(ph, learningMode);
-    push(catalogPhrase.de, catalogPhrase.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use);
+    push(catalogPhrase.de, catalogPhrase.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use, {
+      fr: catalogPhrase.fr,
+      short: catalogPhrase.short,
+      when: catalogPhrase.when,
+      say: catalogPhrase.say,
+      long: catalogPhrase.long,
+      group: catalogPhrase.group,
+    });
   });
 
   dialogues.forEach((d, di) => {
@@ -314,7 +340,14 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
       const catalogLine = phraseForLearningMode(line, learningMode);
       const id = line?.id ?? `${partKey}-dlg-${di}-${li}`;
       const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line?.de ?? ""}`;
-      push(catalogLine.de, catalogLine.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId], catalogLine.use);
+      push(catalogLine.de, catalogLine.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId], catalogLine.use, {
+        fr: catalogLine.fr,
+        short: catalogLine.short,
+        when: catalogLine.when,
+        say: catalogLine.say,
+        long: catalogLine.long,
+        group: catalogLine.group,
+      });
     });
   });
 

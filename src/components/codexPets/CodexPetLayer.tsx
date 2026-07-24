@@ -6,8 +6,9 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, History, X } from "lucide-react";
 
+import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { ui } from "@/lib/i18n";
@@ -118,9 +119,18 @@ function storedPetSize(): PetSize {
 }
 
 export function CodexPetLayer() {
-  const { clearSpeech, selectPet, selectedPet, speak, speech } = useCodexPets();
+  const {
+    answerQuestion,
+    clearSpeech,
+    history,
+    selectPet,
+    selectedPet,
+    speak,
+    speech,
+  } = useCodexPets();
   const [animation, setAnimation] = useState("idle");
   const [dragging, setDragging] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [petSize, setPetSize] = useState<PetSize>(storedPetSize);
   const { height: petHeight, width: petWidth } = petDimensions(petSize);
@@ -225,14 +235,6 @@ export function CodexPetLayer() {
 
   if (!selectedPet) return null;
 
-  const greet = () => {
-    const chatter = [...PET_GREETINGS, ...PET_TIPS];
-    speak(ui(chatter[greetingIndex.current++ % chatter.length]), {
-      durationMs: 4200,
-      mood: "greeting",
-    });
-  };
-
   const movePet = (nextPosition: PetPosition) => {
     const next = clampPosition(
       nextPosition,
@@ -300,7 +302,8 @@ export function CodexPetLayer() {
       suppressClick.current = false;
       return;
     }
-    greet();
+    clearSpeech();
+    setHistoryOpen(true);
   };
 
   const applyPetSize = (nextSize: PetSize) => {
@@ -343,10 +346,18 @@ export function CodexPetLayer() {
   const menuHorizontalClass = bubbleOnRight ? "left-0" : "right-0";
 
   return (
-    <div
-      className="pointer-events-none fixed z-[700]"
-      style={{ height: petHeight, left: position.x, top: position.y, width: petWidth }}
-    >
+    <>
+      {historyOpen && (
+        <CodexPetHistoryPanel
+          history={history}
+          onAnswer={answerQuestion}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
+      <div
+        className="pointer-events-none fixed z-[700]"
+        style={{ height: petHeight, left: position.x, top: position.y, width: petWidth }}
+      >
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -382,15 +393,15 @@ export function CodexPetLayer() {
               </div>
               <div
                 aria-label={ui("Pet size")}
-                className="grid grid-cols-3 gap-1 rounded-md bg-[var(--surface-2)] p-1"
+                className="grid grid-cols-3 gap-1.5 rounded-lg bg-[var(--surface-2)] p-1.5"
                 role="group"
               >
                 {(Object.keys(PET_SIZE_PRESETS) as PetSize[]).map((size) => (
                   <button
                     aria-checked={petSize === size}
-                    className={`flex h-9 items-center justify-center gap-1 rounded px-2 text-xs font-bold capitalize transition-colors ${
+                    className={`flex h-8 min-w-0 items-center justify-center rounded-md px-1 text-xs font-bold capitalize transition-colors ${
                       petSize === size
-                        ? "bg-[var(--surface)] text-[var(--text-1)] shadow-sm"
+                        ? "bg-[var(--surface)] text-[var(--text-1)] shadow-[inset_0_0_0_1px_var(--border-2),0_1px_2px_rgb(0_0_0_/_0.16)]"
                         : "text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
                     }`}
                     key={size}
@@ -398,12 +409,24 @@ export function CodexPetLayer() {
                     role="menuitemradio"
                     type="button"
                   >
-                    {petSize === size && <Check aria-hidden="true" className="h-3.5 w-3.5" />}
                     {ui(size[0].toUpperCase() + size.slice(1))}
                   </button>
                 ))}
               </div>
               <div className="my-2 h-px bg-[var(--border-1)]" />
+              <button
+                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                onClick={() => {
+                  setMenuOpen(false);
+                  clearSpeech();
+                  setHistoryOpen(true);
+                }}
+                role="menuitem"
+                type="button"
+              >
+                <History aria-hidden="true" className="h-4 w-4" />
+                {ui("Message history")}
+              </button>
               <button
                 className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                 onClick={() => {
@@ -427,13 +450,53 @@ export function CodexPetLayer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-atomic="true"
             aria-live="polite"
-            className={`absolute ${bubbleVerticalClass} ${bubbleHorizontalClass} w-max max-w-[min(15rem,calc(100vw-2rem))] rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-4 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]`}
+            className={`pointer-events-auto absolute ${bubbleVerticalClass} ${bubbleHorizontalClass} w-max max-w-[min(15rem,calc(100vw-2rem))] rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]`}
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
-            role="status"
+            onPointerDown={(event) => event.stopPropagation()}
+            role={speech.question ? "group" : "status"}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
-            {speech.text}
+            <div className="flex items-start gap-2">
+              <p className="min-w-0 flex-1">{speech.text}</p>
+              <button
+                aria-label={ui("Open message history")}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                onClick={() => {
+                  clearSpeech();
+                  setHistoryOpen(true);
+                }}
+                title={ui("Message history")}
+                type="button"
+              >
+                <History className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            {speech.question && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {(["yes", "no"] as const).map((answer) => {
+                  const selected = speech.answer === answer;
+                  return (
+                    <button
+                      aria-pressed={selected}
+                      className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-black transition-colors ${
+                        selected
+                          ? answer === "yes"
+                            ? "border-emerald-500 bg-emerald-500 text-white"
+                            : "border-rose-500 bg-rose-500 text-white"
+                          : "border-[var(--border-2)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)] hover:text-[var(--text-1)]"
+                      }`}
+                      key={answer}
+                      onClick={() => answerQuestion(speech.id, answer)}
+                      type="button"
+                    >
+                      {selected && <Check className="h-3.5 w-3.5" />}
+                      {ui(answer === "yes" ? "Yes" : "No")}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <span
               aria-hidden="true"
               className={`absolute ${tailVerticalClass} ${tailHorizontalClass} h-4 w-4 rotate-45 border-[var(--border-2)] bg-[var(--surface)]`}
@@ -451,7 +514,7 @@ export function CodexPetLayer() {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
-        title={`${ui("Drag")} ${selectedPet.displayName} ${ui("to move. Right-click for options.")}`}
+        title={`${ui("Drag")} ${selectedPet.displayName} ${ui("to move. Click for messages or right-click for options.")}`}
         type="button"
       >
         <CodexPetSprite
@@ -462,6 +525,7 @@ export function CodexPetLayer() {
           size={petWidth}
         />
       </button>
-    </div>
+      </div>
+    </>
   );
 }

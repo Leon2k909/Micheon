@@ -5,6 +5,7 @@ import {
   Bell,
   BellOff,
   BookOpen,
+  ClipboardCheck,
   Gamepad2,
   GraduationCap,
   LayoutDashboard,
@@ -24,6 +25,7 @@ const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { id: "learn", icon: BookOpen, label: "Lessons" },
   { id: "games", icon: Gamepad2, label: "Practice" },
+  { id: "tests", icon: ClipboardCheck, label: "Tests" },
   { id: "grammar", icon: GraduationCap, label: "Grammar" },
 ];
 
@@ -227,7 +229,7 @@ export function TopNav({
 
           <nav
             aria-label={ui("Main")}
-            className="relative hidden h-14 select-none items-center gap-1.5 rounded-full bg-[var(--surface-2)] p-1.5 md:flex"
+            className="relative hidden h-14 select-none items-center gap-1 rounded-full bg-[var(--surface-2)] p-1.5 lg:flex"
             onPointerMove={handleNavPointerMove}
           >
             {NAV.map((item) => {
@@ -237,7 +239,7 @@ export function TopNav({
                   ref={(el) => { tabRefs.current[item.id] = el; }}
                   aria-current={item.id === activeTab ? "page" : undefined}
                   className={cn(
-                    "relative flex h-11 cursor-grab items-center gap-2 rounded-full px-[18px] text-[13px] font-bold leading-none transition-colors active:cursor-grabbing",
+                    "relative flex h-11 cursor-grab items-center gap-2 rounded-full px-4 text-[13px] font-bold leading-none transition-colors active:cursor-grabbing xl:px-[18px]",
                     isTarget
                       ? "text-white"
                       : "text-[var(--text-1)]/70 hover:text-[var(--text-1)]"
@@ -370,7 +372,7 @@ export function TopNav({
             </div>
             <button
               aria-label={ui(mobileOpen ? "Close menu" : "Open menu")}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] lg:hidden"
               onClick={() => setMobileOpen((value) => !value)}
               type="button"
             >
@@ -619,7 +621,7 @@ export function TopNav({
         {mobileOpen && (
           <motion.div
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[120] bg-black/20 px-4 pt-[96px] backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-[120] bg-black/20 px-4 pt-[96px] backdrop-blur-sm lg:hidden"
             exit={{ opacity: 0 }}
             initial={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}

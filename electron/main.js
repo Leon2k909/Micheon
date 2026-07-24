@@ -277,15 +277,33 @@ ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
 
 ipcMain.on("pet-overlay:speak", (event, payload) => {
   if (!eventCameFrom(event, mainWindow) || !petWindow || petWindow.isDestroyed()) return;
-  if (!payload || typeof payload.text !== "string") return;
-  const text = payload.text.trim().slice(0, 240);
-  if (!text) return;
+  const message = payload?.message;
+  if (!message || typeof message.id !== "string" || typeof message.text !== "string") return;
+  const text = message.text.trim().slice(0, 240);
+  const id = message.id.trim().slice(0, 96);
+  if (!id || !text) return;
   const durationMs = Number(payload.options?.durationMs);
+  const question = message.question;
   petWindow.webContents.send("pet-overlay:speech", {
-    text,
+    message: {
+      createdAt: Number.isFinite(Number(message.createdAt)) ? Number(message.createdAt) : Date.now(),
+      id,
+      mood: typeof message.mood === "string" ? message.mood : "greeting",
+      question: question && typeof question.itemId === "string"
+        ? {
+            aliases: Array.isArray(question.aliases)
+              ? question.aliases.filter((value) => typeof value === "string").slice(0, 12)
+              : [],
+            answerLanguage: question.answerLanguage === "en" ? "en" : "de",
+            de: typeof question.de === "string" ? question.de.slice(0, 180) : "",
+            en: typeof question.en === "string" ? question.en.slice(0, 180) : "",
+            itemId: question.itemId.slice(0, 180),
+          }
+        : undefined,
+      text,
+    },
     options: {
       durationMs: Number.isFinite(durationMs) ? durationMs : undefined,
-      mood: typeof payload.options?.mood === "string" ? payload.options.mood : undefined,
     },
   });
 });

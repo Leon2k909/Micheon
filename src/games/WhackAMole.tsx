@@ -1,23 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2 } from "lucide-react";
-import { speakGerman } from "@/lib/tts";
+import {
+  speakGameTarget,
+  useGameDeck,
+  type GameContentEntry,
+} from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
 
-const WORD_BANK = [
-  { de: "HAUS", en: "house" }, { de: "HUND", en: "dog" }, { de: "KATZE", en: "cat" },
-  { de: "BUCH", en: "book" }, { de: "WASSER", en: "water" }, { de: "BROT", en: "bread" },
-  { de: "SCHULE", en: "school" }, { de: "AUTO", en: "car" }, { de: "BAUM", en: "tree" },
-  { de: "TISCH", en: "table" }, { de: "STUHL", en: "chair" }, { de: "FENSTER", en: "window" },
-  { de: "BLUME", en: "flower" }, { de: "VOGEL", en: "bird" }, { de: "APFEL", en: "apple" },
-  { de: "MILCH", en: "milk" }, { de: "KIND", en: "child" }, { de: "STADT", en: "city" },
-  { de: "SONNE", en: "sun" }, { de: "MOND", en: "moon" }, { de: "HERZ", en: "heart" },
-  { de: "WALD", en: "forest" }, { de: "MEER", en: "sea" }, { de: "NACHT", en: "night" },
-];
-
 const HOLES = 9; // 3x3 grid
-const WRONG_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const WRONG_LETTERS = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜẞ");
 
 interface Mole {
   id: number;
@@ -30,12 +23,16 @@ interface Mole {
 
 let moleId = 0;
 
-function pickEntry() {
-  return WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+function pickLetter(entry: GameContentEntry, nextIdx: number, isCorrect: boolean) {
+  const needed = entry.letters[nextIdx];
+  if (isCorrect) return needed;
+  const decoys = WRONG_LETTERS.filter((letter) => letter !== needed);
+  return decoys[Math.floor(Math.random() * decoys.length)];
 }
 
 export default function WhackAMole() {
-  const [entry, setEntry] = useState(() => pickEntry());
+  const { next: nextEntry } = useGameDeck("letters");
+  const [entry, setEntry] = useState(() => nextEntry());
   const [nextIdx, setNextIdx] = useState(0);
   const [spelled, setSpelled] = useState("");
   const [moles, setMoles] = useState<Mole[]>([]);
@@ -53,14 +50,14 @@ export default function WhackAMole() {
   const spawnRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const newGame = useCallback(() => {
-    const e = pickEntry();
+    const e = nextEntry();
     setEntry(e);
     setNextIdx(0);
     setSpelled("");
     setMoles([]);
     setScore(0);
     setPhase("playing");
-  }, []);
+  }, [nextEntry]);
 
   // Spawn moles
   useEffect(() => {
@@ -74,9 +71,8 @@ export default function WhackAMole() {
 
       const holeIdx = freeHoles[Math.floor(Math.random() * freeHoles.length)];
       const isCorrect = Math.random() < 0.4;
-      const letter = isCorrect
-        ? entry.de[nextIdx]
-        : WRONG_LETTERS.replace(entry.de[nextIdx], "")[Math.floor(Math.random() * 25)];
+      const letter = pickLetter(entry, nextIdx, isCorrect);
+      if (!letter) return;
 
       const id = moleId++;
       setMoles(prev => [...prev, { id, holeIdx, letter, isCorrect, visible: true, whacked: false }]);
@@ -86,7 +82,7 @@ export default function WhackAMole() {
       setTimeout(() => {
         setMoles(prev => {
           const m = prev.find(x => x.id === id);
-          if (m && !m.whacked && m.isCorrect && m.letter === stateRef.current.entry.de[stateRef.current.nextIdx]) {
+          if (m && !m.whacked && m.isCorrect && m.letter === stateRef.current.entry.letters[stateRef.current.nextIdx]) {
             // Correct mole escaped — game over
             setWrongFlash(true);
             setTimeout(() => setWrongFlash(false), 400);
@@ -107,7 +103,7 @@ export default function WhackAMole() {
     if (!mole.visible || mole.whacked || phase !== "playing") return;
     const { nextIdx, spelled, entry, score } = stateRef.current;
 
-    if (mole.isCorrect && mole.letter === entry.de[nextIdx]) {
+    if (mole.isCorrect && mole.letter === entry.letters[nextIdx]) {
       // Correct
       const newNextIdx = nextIdx + 1;
       const newSpelled = spelled + mole.letter;
@@ -117,14 +113,14 @@ export default function WhackAMole() {
       setSpelled(newSpelled);
       setScore(newScore);
 
-      if (newNextIdx >= entry.de.length) {
+      if (newNextIdx >= entry.letters.length) {
         setPhase("won");
         recordWordMastery(entry.de);
         if (newScore > highScore) {
           setHighScore(newScore);
           try { localStorage.setItem("whack-hs", String(newScore)); } catch {}
         }
-        setTimeout(() => speakGerman(entry.de.toLowerCase()), 350);
+        setTimeout(() => speakGameTarget(entry), 350);
       }
     } else {
       // Wrong
@@ -148,9 +144,9 @@ export default function WhackAMole() {
       {/* Word display */}
       <div className="card flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <div>
-          <p className="text-xs text-[var(--text-3)]">{ui("Spell this word")}</p>
-          <div className="mt-1.5 flex items-center gap-1.5">
-            {entry.de.split("").map((ch, i) => (
+          <p className="text-xs text-[var(--text-3)]">{ui("Spell this word or phrase")}</p>
+          <div className="mt-1.5 flex max-w-3xl flex-wrap items-center gap-1.5">
+            {entry.letters.map((ch, i) => (
               <span key={i} className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-bold transition-all ${
                 i < spelled.length
                   ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
@@ -163,7 +159,8 @@ export default function WhackAMole() {
             ))}
           </div>
           <p className="mt-1.5 text-xs text-[var(--text-3)]">
-            {ui("English:")} <span className="font-medium text-[var(--text-2)]">{entry.en}</span>
+            {ui(entry.clueLanguage === "de" ? "German:" : "English:")}{" "}
+            <span className="font-medium text-[var(--text-2)]">{entry.clue}</span>
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -206,7 +203,7 @@ export default function WhackAMole() {
                         className={`absolute bottom-3 z-10 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-2 text-base font-bold shadow-lg transition-colors select-none ${
                           isFlashing
                             ? "border-rose-500 bg-rose-500/20 text-rose-400"
-                            : mole.isCorrect && mole.letter === entry.de[nextIdx]
+                            : mole.isCorrect && mole.letter === entry.letters[nextIdx]
                             ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)] shadow-[0_0_16px_rgba(88,230,217,0.4)]"
                             : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)]"
                         }`}
@@ -247,16 +244,16 @@ export default function WhackAMole() {
                   <>
                     <motion.div animate={{ scale: 1 }} initial={{ scale: 0 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="text-5xl">🎉</motion.div>
                     <div className="flex items-center gap-3">
-                      <p className="text-2xl font-bold text-[var(--text-1)]">{entry.de}</p>
+                      <p className="max-w-sm text-center text-2xl font-bold text-[var(--text-1)]">{entry.target}</p>
                       <button
                         aria-label={ui("Hear pronunciation")}
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)] transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)] active:scale-95"
-                        onClick={() => speakGerman(entry.de.toLowerCase())} type="button"
+                        onClick={() => speakGameTarget(entry)} type="button"
                       >
                         <Volume2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <p className="text-sm text-[var(--text-3)]">{entry.en}</p>
+                    <p className="text-sm text-[var(--text-3)]">{entry.clue}</p>
                     <p className="text-xs text-[var(--text-3)]">+{score} {ui("points")}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
                       <RotateCcw className="h-4 w-4" /> {ui("Next word")}
@@ -267,9 +264,9 @@ export default function WhackAMole() {
                   <>
                     <p className="text-lg font-semibold text-rose-400">{ui("Wrong letter!")}</p>
                     <p className="text-sm text-[var(--text-3)]">
-                      {ui("You needed")} <span className="font-bold text-[var(--accent)]">{entry.de[nextIdx]}</span>
+                      {ui("You needed")} <span className="font-bold text-[var(--accent)]">{entry.letters[nextIdx]}</span>
                     </p>
-                    <p className="text-xs text-[var(--text-3)]">{entry.de} = {entry.en}</p>
+                    <p className="text-xs text-[var(--text-3)]">{entry.target} = {entry.clue}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
                       <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>

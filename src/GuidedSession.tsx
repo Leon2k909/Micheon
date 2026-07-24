@@ -34,7 +34,7 @@ import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, p
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages, Flame
+  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -207,10 +207,10 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 }
 
 // Section
-// No separate "Listen" step: the German is spoken automatically when it first
-// appears (Read) and again before you say it (Speak). Type and Translate each
-// run twice — the second round builds the memory through repeated production.
-const PHASES = ["Read", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "SpeakAll"] as const;
+// The recognition round follows the first exposure: learners hear the target
+// with the answer hidden, then choose it from the other phrases in the lesson.
+// Type and Translate each run twice to build memory through production.
+const PHASES = ["Read", "ListenPick", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
 
 /**
@@ -235,11 +235,77 @@ function computeGap(de: string): { display: string; words: string[] } {
   return { display, words };
 }
 
+type OrderToken = {
+  id: string;
+  text: string;
+  answerIndex: number;
+};
+
+function buildOrderTokens(sentence: string): OrderToken[] {
+  const tokens = String(sentence ?? "").trim().split(/\s+/).filter(Boolean).map((text, answerIndex) => ({
+    id: `${answerIndex}-${text}`,
+    text,
+    answerIndex,
+  }));
+  if (tokens.length < 2) return tokens;
+
+  let seed = Array.from(sentence).reduce((total, char) => ((total * 31) + char.charCodeAt(0)) >>> 0, 2166136261);
+  const shuffled = [...tokens];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    seed = ((seed * 1664525) + 1013904223) >>> 0;
+    const swapAt = seed % (index + 1);
+    [shuffled[index], shuffled[swapAt]] = [shuffled[swapAt], shuffled[index]];
+  }
+  if (shuffled.every((token, index) => token.answerIndex === index)) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+  return shuffled;
+}
+
+function moveOrderToken(tokens: OrderToken[], from: number, to: number): OrderToken[] {
+  if (from === to || from < 0 || to < 0 || from >= tokens.length || to >= tokens.length) return tokens;
+  const next = [...tokens];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
+function choiceKey(value: string): string {
+  return String(value ?? "").trim().toLocaleLowerCase("de-DE");
+}
+
+function choiceHash(value: string): number {
+  let hash = 2166136261;
+  for (const char of value) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function buildListeningChoices(answer: string, pool: string[], limit = 4): string[] {
+  const answerKey = choiceKey(answer);
+  const seen = new Set<string>([answerKey]);
+  const distractors = pool
+    .map((value) => String(value ?? "").trim())
+    .filter((value) => {
+      const key = choiceKey(value);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => choiceHash(`${answer}|${a}`) - choiceHash(`${answer}|${b}`))
+    .slice(0, Math.max(0, limit - 1));
+
+  return [answer, ...distractors]
+    .sort((a, b) => choiceHash(`position|${answer}|${a}`) - choiceHash(`position|${answer}|${b}`));
+}
+
 // In French companion mode the flow tests the two target languages (German +
 // French) and uses English only as the shown meaning, so the English-typing
 // "Translate" step is replaced by the French step. "Memory" is a final recall
 // phase where no sentence is shown — the learner types both from memory.
-const BILINGUAL_PHASES: Phase[] = ["Read", "Speak", "Type", "French", "Memory"];
+const BILINGUAL_PHASES: Phase[] = ["Read", "ListenPick", "Speak", "Type", "French", "Memory"];
 
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French. The second-round steps
@@ -261,9 +327,11 @@ function renderKeyWord(sentence: string, lookup?: string) {
 
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
+  if (p === "ListenPick") return "Pick it";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
+  if (p === "Order") return "Word order";
   if (p === "SpeakAll") return "Write it";
   return p;
 }
@@ -272,12 +340,14 @@ function phaseLabel(p: Phase, withFrench: boolean) {
 function phaseHeading(p: Phase, withFrench: boolean): string {
   switch (p) {
     case "Read": return "Read & listen";
+    case "ListenPick": return "What did you hear?";
     case "Speak": return "Say it out loud";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
     case "TypeAgain": return "Type it once more";
     case "Translate": return "Translate the meaning";
     case "TranslateAgain": return "Recall the meaning";
     case "Gap": return "Fill the blank";
+    case "Order": return "Build the sentence";
     case "SpeakAll": return "Build from memory";
     case "French": return "Type the French";
     case "Memory": return "Recall both languages";
@@ -577,7 +647,14 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { item: any; onNext: () => void; onSkip?: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
+function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeItem, onAnswer }: {
+  item: any;
+  listeningChoicePool: string[];
+  onNext: () => void;
+  onSkip?: () => void;
+  onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
+  onAnswer?: (correct: boolean) => void;
+}) {
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean, gentle = false) => {
     onAnswer?.(ok);
@@ -604,8 +681,14 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
   const [gapInput, setGapInput] = useState("");
   const [gapChecked, setGapChecked] = useState(false);
   const gapInputRef = useRef<HTMLInputElement>(null);
+  const [listeningChoice, setListeningChoice] = useState<string | null>(null);
+  const [listeningChecked, setListeningChecked] = useState(false);
+  const [orderTokens, setOrderTokens] = useState<OrderToken[]>(() => buildOrderTokens(item.de));
+  const [orderChecked, setOrderChecked] = useState(false);
+  const [orderSelected, setOrderSelected] = useState<number | null>(null);
+  const draggedOrderIndex = useRef<number | null>(null);
 
-  // Stage 8 "Write it": type the whole German from the English prompt.
+  // Stage 10 "Write it": type the whole German from the English prompt.
   const [sayInput, setSayInput] = useState("");
   const [sayChecked, setSayChecked] = useState(false);
   const sayRef = useRef<HTMLInputElement>(null);
@@ -667,6 +750,11 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
     () => (learnEn ? item.en : formatEnglishText(item.en, englishVariant)),
     [item.en, englishVariant, learnEn]
   );
+  const listeningChoices = useMemo(
+    () => buildListeningChoices(item.de, listeningChoicePool),
+    [item.de, listeningChoicePool]
+  );
+  const listeningCorrect = listeningChoice !== null && choiceKey(listeningChoice) === choiceKey(item.de);
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
   const matchTarget = learnEn ? matchEnglish : matchGermanSentence;
@@ -704,6 +792,10 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
     });
     return { ok };
   }, [gapInput, gap.words]);
+  const orderIsCorrect = useMemo(
+    () => orderTokens.length > 0 && orderTokens.every((token, index) => token.answerIndex === index),
+    [orderTokens]
+  );
   // French companion: tested as an extra phase when enabled and the item has French
   // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
@@ -712,13 +804,12 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
   const memDeResult = useMemo(() => matchEither(memDeInput), [memDeInput, matchEither]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
-  // Auto-play TTS when entering Listen phase (German, then French in companion mode)
-  // Speak the German automatically whenever it first comes on screen — on Read
-  // (see + hear) and again on Speak (hear, then repeat it). No separate Listen
-  // step. tts() is a no-op while muted, so the mute button still silences it.
+  // Speak automatically on first exposure, listening recognition, and speaking
+  // practice. TTS is a no-op while muted, so the global mute still applies.
   useEffect(() => {
-    if (phase !== "Read" && phase !== "Speak") return;
-    if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
+    if (phase !== "Read" && phase !== "ListenPick" && phase !== "Speak") return;
+    if (phase === "ListenPick") tts(item.de, 0.88, targetLang);
+    else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
     else tts(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr]);
 
@@ -818,11 +909,39 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
   // clear it when the round begins — otherwise it shows the previous answer as
   // already-correct.
   useEffect(() => {
+    if (phase === "ListenPick") {
+      setListeningChoice(null);
+      setListeningChecked(false);
+    }
     if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
     if (phase === "TranslateAgain") { setEnInput(""); setEnChecked(false); setEnAttempts(0); }
     if (phase === "Gap") { setGapInput(""); setGapChecked(false); }
+    if (phase === "Order") {
+      setOrderTokens(buildOrderTokens(item.de));
+      setOrderChecked(false);
+      setOrderSelected(null);
+      draggedOrderIndex.current = null;
+    }
     if (phase === "SpeakAll") { setSayInput(""); setSayChecked(false); }
-  }, [phase]);
+  }, [phase, item.de]);
+
+  useEffect(() => {
+    if (phase !== "ListenPick") return;
+    const handleChoiceKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || listeningChecked) return;
+      const optionIndex = Number(event.key) - 1;
+      const option = listeningChoices[optionIndex];
+      if (!option) return;
+      event.preventDefault();
+      setListeningChoice(option);
+      setListeningChecked(true);
+      const ok = choiceKey(option) === choiceKey(item.de);
+      reactToAnswer(ok);
+      if (ok) window.setTimeout(advanceOrFinish, 900);
+    };
+    window.addEventListener("keydown", handleChoiceKey);
+    return () => window.removeEventListener("keydown", handleChoiceKey);
+  }, [phase, listeningChecked, listeningChoices, item.de]);
 
   const goBack = () => {
     const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
@@ -881,13 +1000,58 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
 
   const retryEn = () => { setEnInput(""); setEnChecked(false); };
 
+  const chooseListeningAnswer = (choice: string) => {
+    if (listeningChecked) return;
+    setListeningChoice(choice);
+    setListeningChecked(true);
+    const ok = choiceKey(choice) === choiceKey(item.de);
+    reactToAnswer(ok);
+    if (ok) window.setTimeout(advanceOrFinish, 900);
+  };
+
+  const retryListening = () => {
+    setListeningChoice(null);
+    setListeningChecked(false);
+    tts(item.de, 0.88, targetLang);
+  };
+
   const checkGap = () => {
     if (!gapInput.trim() || gapChecked) return;
     setGapChecked(true);
     reactToAnswer(gapResult.ok);
-    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }  // → stage 8 (Say it)
+    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }  // → stage 8 (word order)
   };
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
+
+  const reorderToken = (from: number, to: number) => {
+    setOrderTokens((tokens) => moveOrderToken(tokens, from, to));
+    setOrderChecked(false);
+    setOrderSelected(null);
+  };
+
+  const selectOrderToken = (index: number) => {
+    if (orderSelected === null) {
+      setOrderSelected(index);
+      return;
+    }
+    reorderToken(orderSelected, index);
+  };
+
+  const checkOrder = () => {
+    if (orderChecked) return;
+    setOrderChecked(true);
+    reactToAnswer(orderIsCorrect);
+    if (orderIsCorrect) {
+      tts(item.de, 0.88, targetLang);
+      setTimeout(advanceOrFinish, 900);
+    }
+  };
+
+  const retryOrder = () => {
+    setOrderTokens(buildOrderTokens(item.de));
+    setOrderChecked(false);
+    setOrderSelected(null);
+  };
 
   const checkSay = () => {
     if (!sayInput.trim() || sayChecked) return;
@@ -981,7 +1145,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
             <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
             <h1 className="fs-h1">{ui(phaseHeading(phase, hasFr))}</h1>
             <p className="fs-sub">
-              {hasFr ? "Read, hear, say, then type it in German and French." : ui("Read, hear, say, type, then translate.")}
+              {hasFr ? "Read, listen, choose, say, then type it in German and French." : ui("Read, listen, choose, say, type, then translate.")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -1007,36 +1171,40 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                 </button>
               </>
             )}
-            <button
-              className={cn("fs-listen", ttsOn && "is-speaking")}
-              onClick={() => tts(item.de, 0.82, targetLang)}
-              type="button"
-            >
-              <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
-              <span>
-                <strong>{ui("Hear it")}</strong>
-                <small>{ui("Tap to replay")}</small>
-              </span>
-            </button>
+            {phase !== "ListenPick" && (
+              <button
+                className={cn("fs-listen", ttsOn && "is-speaking")}
+                onClick={() => tts(item.de, 0.82, targetLang)}
+                type="button"
+              >
+                <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
+                <span>
+                  <strong>{ui("Hear it")}</strong>
+                  <small>{ui("Tap to replay")}</small>
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
-        <UsageChips
-          de={learnEn ? item.en : item.de}
-          use={item.use}
-          lookup={item.lookup}
-          tierNote={item.tierNote}
-          short={learnEn ? undefined : item.short}
-          hideUse={phase === "Translate" || phase === "TranslateAgain"}
-        />
+        {phase !== "ListenPick" && (
+          <UsageChips
+            de={learnEn ? item.en : item.de}
+            use={item.use}
+            lookup={item.lookup}
+            tierNote={item.tierNote}
+            short={learnEn ? undefined : item.short}
+            hideUse={phase === "Translate" || phase === "TranslateAgain"}
+          />
+        )}
 
         {/* When you'd actually say it. The usage chip explains the LANGUAGE;
             this explains the MOMENT — without it, a phrase like "Wie fällt das
             aus?" leaves you knowing the grammar and still not knowing when to
             open your mouth. Hidden during Translate for the same reason the
             usage note is: it can give the answer away. */}
-        {item.when && phase !== "Translate" && phase !== "TranslateAgain" && (
+        {item.when && phase !== "ListenPick" && phase !== "Translate" && phase !== "TranslateAgain" && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
             <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
@@ -1065,7 +1233,25 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           </div>
         )}
 
-        {hasFr ? (
+        {phase === "ListenPick" ? (
+          <button
+            type="button"
+            className={cn("fs-listening-prompt", ttsOn && "is-speaking")}
+            onClick={() => tts(item.de, 0.82, targetLang)}
+            aria-label={ui("Replay the phrase")}
+          >
+            <span className="fs-listening-disc"><Volume2 className="h-7 w-7" /></span>
+            <span className="fs-listening-copy">
+              <strong>{ui("Listen carefully")}</strong>
+              <small>{ui("Tap to hear the phrase again")}</small>
+            </span>
+            <span className="fs-listening-wave" aria-hidden>
+              {[14, 25, 38, 21, 32, 18, 28].map((height, index) => (
+                <i key={`${height}-${index}`} style={{ height }} />
+              ))}
+            </span>
+          </button>
+        ) : hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
             <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-center">
@@ -1111,8 +1297,9 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                 (phase === "Speak" && speechPhraseMatch?.ok) || (phase === "SpeakAll" && sayChecked && sayResult.ok) ? "is-good" : "",
                 (phase === "Speak" && speechPhraseMatch && !speechPhraseMatch.ok) || (phase === "SpeakAll" && sayChecked && !sayResult.ok) ? "is-bad" : ""
               )}>
-                {/* Gap + Write-it stages hide the answer, revealed once you answer. */}
+                {/* Retrieval stages hide the answer, then reveal it after a correct response. */}
                 {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
+                  : phase === "Order" && !(orderChecked && orderIsCorrect) ? "• • •"
                   : phase === "SpeakAll" && !sayChecked ? "• • •"
                   : <TappableSentence text={item.de} lang={targetLang} />}
               </div>
@@ -1163,7 +1350,79 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           </motion.div>
         )}
 
-        {/* Section */}
+        {/* LISTEN & PICK phase */}
+        {phase === "ListenPick" && (
+          <motion.div
+            key="listen-pick"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-4"
+          >
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui(`Choose the ${targetLabel} phrase you heard.`)}
+            </p>
+            <div className="fs-listening-choices" role="group" aria-label={ui("Listening choices")}>
+              {listeningChoices.map((choice, choiceIndex) => {
+                const isSelected = listeningChoice === choice;
+                const isAnswer = choiceKey(choice) === choiceKey(item.de);
+                return (
+                  <button
+                    key={choice}
+                    type="button"
+                    aria-pressed={isSelected}
+                    disabled={listeningChecked}
+                    onClick={() => chooseListeningAnswer(choice)}
+                    className={cn(
+                      "fs-listening-choice",
+                      listeningChecked && isAnswer && "is-correct",
+                      listeningChecked && isSelected && !isAnswer && "is-wrong"
+                    )}
+                  >
+                    <span>{choiceIndex + 1}</span>
+                    <strong>{choice}</strong>
+                    {listeningChecked && isAnswer && <CheckCircle2 className="h-5 w-5" />}
+                    {listeningChecked && isSelected && !isAnswer && <X className="h-5 w-5" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence>
+              {listeningChecked && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={cn("fs-result", listeningCorrect ? "is-good" : "is-bad")}
+                >
+                  <strong>{ui(listeningCorrect ? "That's it!" : "Not quite")}</strong>
+                  <span>
+                    {listeningCorrect
+                      ? ui("You matched the spoken phrase.")
+                      : <>{ui("Answer:")} <strong>{item.de}</strong></>}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!listeningCorrect && listeningChecked && (
+              <Button
+                type="button"
+                onClick={retryListening}
+                className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {ui("Hear it and try again")}
+              </Button>
+            )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
+              {ui("← Back")}
+            </button>
+          </motion.div>
+        )}
+
+        {/* SPEAK phase */}
         {phase === "Speak" && (
           <motion.div key="speak" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
@@ -1239,7 +1498,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           </motion.div>
         )}
 
-        {/* WRITE IT phase (stage 8): read the English, TYPE the whole German from memory */}
+        {/* WRITE IT phase (stage 10): read the English, TYPE the whole German from memory */}
         {phase === "SpeakAll" && (
           <motion.div key="speakall" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
@@ -1538,6 +1797,98 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
             ) : (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
+          </motion.div>
+        )}
+
+        {/* WORD ORDER phase — arrange the sentence before writing it unaided. */}
+        {phase === "Order" && (
+          <motion.div key="order" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui("Drag the words into the correct order. You can also select a word, then choose where to move it.")}
+            </p>
+
+            <motion.div animate={shakeControls} className="fs-order-panel">
+              <div
+                className="fs-order-list"
+                role="group"
+                aria-label={ui(learnEn ? "English words to arrange" : "German words to arrange")}
+              >
+                {orderTokens.map((token, tokenIndex) => (
+                  <button
+                    key={token.id}
+                    type="button"
+                    draggable
+                    aria-pressed={orderSelected === tokenIndex}
+                    aria-label={`${token.text}, ${ui("position")} ${tokenIndex + 1}`}
+                    className={cn(
+                      "fs-order-token",
+                      orderSelected === tokenIndex && "is-selected",
+                      orderChecked && orderIsCorrect && "is-correct"
+                    )}
+                    onClick={() => selectOrderToken(tokenIndex)}
+                    onDragStart={(event) => {
+                      draggedOrderIndex.current = tokenIndex;
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", String(tokenIndex));
+                    }}
+                    onDragEnd={() => {
+                      draggedOrderIndex.current = null;
+                    }}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      const from = draggedOrderIndex.current ?? Number(event.dataTransfer.getData("text/plain"));
+                      if (Number.isInteger(from)) reorderToken(from, tokenIndex);
+                      draggedOrderIndex.current = null;
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "ArrowLeft" && tokenIndex > 0) {
+                        event.preventDefault();
+                        reorderToken(tokenIndex, tokenIndex - 1);
+                      }
+                      if (event.key === "ArrowRight" && tokenIndex < orderTokens.length - 1) {
+                        event.preventDefault();
+                        reorderToken(tokenIndex, tokenIndex + 1);
+                      }
+                    }}
+                  >
+                    <GripVertical aria-hidden="true" className="h-4 w-4" />
+                    <span>{token.text}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="fs-order-help">{ui("Drag, click two words, or use the arrow keys to reorder.")}</p>
+            </motion.div>
+
+            {orderChecked && (
+              <div className={cn("fs-result", orderIsCorrect ? "is-good" : "is-bad")} role="status">
+                <strong>{ui(orderIsCorrect ? "Correct word order" : "Not quite")}</strong>
+                <span>{ui(orderIsCorrect ? "The sentence is ready to write from memory." : "Rearrange the words and check again.")}</span>
+              </div>
+            )}
+
+            {!orderChecked ? (
+              <Button onClick={checkOrder}
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
+                {ui("Check word order")} <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            ) : !orderIsCorrect ? (
+              <div className="flex gap-3">
+                <Button onClick={retryOrder} variant="outline"
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Shuffle again")}
+                </Button>
+                <Button onClick={advanceOrFinish}
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  {ui("Skip")}
+                </Button>
+              </div>
+            ) : null}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
@@ -2271,11 +2622,13 @@ function SessionFlashcardPreview({
   cards,
   index,
   onIndexChange,
+  onKnown,
   onStart,
 }: {
   cards: SessionPreviewCard[];
   index: number;
   onIndexChange: (index: number) => void;
+  onKnown: (itemId: string) => void;
   onStart: () => void;
 }) {
   const card = cards[Math.min(index, cards.length - 1)];
@@ -2309,7 +2662,7 @@ function SessionFlashcardPreview({
         <div>
           <span className="fs-eyebrow"><i />{ui("Lesson preview")}</span>
           <h1 className="fs-h1">{ui("Meet today's phrases")}</h1>
-          <p className="fs-sub">{ui("Review both languages before the eight-stage sentence practice.")}</p>
+          <p className="fs-sub">{ui("Review both languages before the ten-stage sentence practice.")}</p>
         </div>
         <span className="fs-preview-count">
           {index + 1} <small>{ui("of")} {cards.length}</small>
@@ -2343,8 +2696,18 @@ function SessionFlashcardPreview({
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="fs-flashcard"
         >
-          <div className="fs-flashcard-badge">
-            {ui(card.review ? "Review phrase" : "New phrase")}
+          <div className="fs-flashcard-topline">
+            <div className="fs-flashcard-badge">
+              {ui(card.review ? "Review phrase" : "New phrase")}
+            </div>
+            <button
+              type="button"
+              className="fs-flashcard-known"
+              onClick={() => onKnown(card.id)}
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {ui("Know it")}
+            </button>
           </div>
 
           <div className="fs-flashcard-language">
@@ -2402,7 +2765,7 @@ function SessionFlashcardPreview({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak } = useCodexPets();
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
@@ -2416,6 +2779,12 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const announcedComplete = useRef(false);
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
+  const listeningChoicePool = useMemo(
+    () => safeSteps
+      .filter((candidate: any) => candidate?.type === "sentence" && candidate.item?.de)
+      .map((candidate: any) => String(candidate.item.de)),
+    [steps]
+  );
   const inPreview = previewActive && previewCards.length > 0;
 
   const registerAnswer = (ok: boolean) => {
@@ -2522,7 +2891,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       <header className="fs-topbar">
         <div className="fs-brand">
           <img src="/icon-64.png" alt="" />
-          <span>MICHEON</span>
+          <div className="fs-brand-copy">
+            <span className="fs-brand-name">MICHEON</span>
+            <span className="fs-brand-byline">{ui("made with love by Leon & Michelle")}</span>
+          </div>
         </div>
         <div className="fs-progress">
           <div className="fs-progress-copy">
@@ -2563,11 +2935,12 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     cards={previewCards}
                     index={previewIndex}
                     onIndexChange={setPreviewIndex}
+                    onKnown={onPreviewKnown ?? ((itemId: string) => onGradeItem?.(itemId, "know"))}
                     onStart={() => setPreviewActive(false)}
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
+                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}

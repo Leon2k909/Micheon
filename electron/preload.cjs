@@ -28,11 +28,28 @@ contextBridge.exposeInMainWorld("germDesktop", {
   movePetOverlayBy: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:move-by", deltaX, deltaY),
   sendPetOverlaySpeech: (payload) => {
     const durationMs = Number(payload?.options?.durationMs);
+    const message = payload?.message;
+    const question = message?.question;
     ipcRenderer.send("pet-overlay:speak", {
-      text: typeof payload?.text === "string" ? payload.text : "",
+      message: {
+        createdAt: Number.isFinite(Number(message?.createdAt)) ? Number(message.createdAt) : Date.now(),
+        id: typeof message?.id === "string" ? message.id.slice(0, 96) : "",
+        mood: typeof message?.mood === "string" ? message.mood : "greeting",
+        question: question && typeof question.itemId === "string"
+          ? {
+              aliases: Array.isArray(question.aliases)
+                ? question.aliases.filter((value) => typeof value === "string").slice(0, 12)
+                : [],
+              answerLanguage: question.answerLanguage === "en" ? "en" : "de",
+              de: typeof question.de === "string" ? question.de.slice(0, 180) : "",
+              en: typeof question.en === "string" ? question.en.slice(0, 180) : "",
+              itemId: question.itemId.slice(0, 180),
+            }
+          : undefined,
+        text: typeof message?.text === "string" ? message.text.slice(0, 240) : "",
+      },
       options: {
         durationMs: Number.isFinite(durationMs) ? durationMs : undefined,
-        mood: typeof payload?.options?.mood === "string" ? payload.options.mood : undefined,
       },
     });
   },

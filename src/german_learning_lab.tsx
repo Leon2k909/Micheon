@@ -5,6 +5,7 @@ import { useAppThemePreferences } from "@/components/AppThemeProvider";
 import { AstryxAppShell } from "@/components/astryx/AstryxAppShell";
 import { AstryxDashboardView } from "@/components/astryx/AstryxDashboardView";
 import { TopNav, type TopNavNotification, type TopNavSearchItem } from "@/components/TopNav";
+import { TestsView } from "@/components/tests/TestsView";
 import { DashboardView } from "@/components/lab/DashboardView";
 import { LearnView } from "@/components/lab/LearnView";
 import { AppLoadingState } from "@/components/lab/Shared";
@@ -18,7 +19,7 @@ import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
 import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
-import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
+import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildCatalog, buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
 import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
@@ -28,7 +29,7 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
-import { loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
+import { COMPLETED_KEY, loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
@@ -135,6 +136,7 @@ export default function GermanLearningLab() {
     externalWords:     loadScopedJson("externalWords", user.externalWordsLearned ?? 0, user) as number,
   }));
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
+  const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);
   const petQuizIndex = React.useRef(0);
   petSpeechRef.current = petSpeech;
@@ -147,19 +149,32 @@ export default function GermanLearningLab() {
         const en = item.en?.trim() ?? "";
         return de.length >= 2 && en.length >= 2 && de.length <= 64 && en.length <= 64;
       });
-      const seen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) !== "new");
+      const seen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) === "struggle");
       const unseen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) === "new");
       return [...seen, ...unseen].slice(0, 1200);
     },
-    [apiParts, user]
+    [apiParts, gradeRevision, user]
   );
+
+  useEffect(() => {
+    const scopedGradeKey = getScopedKey(COMPLETED_KEY, user);
+    const refreshGrades = () => setGradeRevision((revision) => revision + 1);
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === scopedGradeKey) refreshGrades();
+    };
+    window.addEventListener("grades-updated", refreshGrades);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("grades-updated", refreshGrades);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!selectedPet || showGuidedSession || showPlacementTest || petQuizItems.length === 0) {
       return undefined;
     }
 
-    let answerTimer: number | undefined;
     let questionTimer: number | undefined;
     const learnsEnglish = learningEnglish();
 
@@ -180,20 +195,22 @@ export default function GermanLearningLab() {
       const question = learnsEnglish
         ? `Weißt du, wie man „${item.de}“ auf Englisch sagt?`
         : `Do you know how to say “${item.en}” in German?`;
-      const answer = learnsEnglish
-        ? `Auf Englisch: “${item.en}”.`
-        : `In German: „${item.de}“.`;
-
-      petSpeak(question, { durationMs: 6500, mood: "greeting" });
-      answerTimer = window.setTimeout(() => {
-        petSpeak(answer, { durationMs: 5000, mood: "success" });
-      }, 7000);
+      petSpeak(question, {
+        durationMs: 20000,
+        mood: "greeting",
+        question: {
+          aliases: item.aliases,
+          answerLanguage: learnsEnglish ? "en" : "de",
+          de: item.de,
+          en: item.en,
+          itemId: item.id,
+        },
+      });
       scheduleQuestion(120000);
     };
 
     scheduleQuestion(30000);
     return () => {
-      if (answerTimer) window.clearTimeout(answerTimer);
       if (questionTimer) window.clearTimeout(questionTimer);
     };
   }, [petQuizItems, petSpeak, selectedPet, showGuidedSession, showPlacementTest]);
@@ -277,6 +294,55 @@ export default function GermanLearningLab() {
         [itemId]: grade === "know" ? recordDeclaredKnown(existing[itemId]) : recordStruggle(),
       });
     } catch {}
+  };
+
+  const replaceKnownPreviewItem = (itemId: string) => {
+    markGrade(itemId, "know");
+    setSessionSteps((current) => {
+      const replaceAt = current.findIndex(
+        (step) => step?.type === "sentence" && step.item?.id === itemId
+      );
+      if (replaceAt < 0) return current;
+
+      const usedIds = new Set(
+        current
+          .filter((step) => step?.type === "sentence" && step.item?.id)
+          .map((step) => String(step.item.id))
+      );
+      const grades = loadGradeStore(user);
+      const candidates = buildCatalog(apiParts).filter(
+        (item) => !usedIds.has(item.id) && statusForId(grades, item.id, item.aliases) === "new"
+      );
+      const replacement =
+        candidates.find((item) => item.partKey === activePart) ??
+        candidates[0];
+
+      if (!replacement) return current;
+
+      let replacementStep: any = {
+        type: "sentence",
+        item: {
+          id: replacement.id,
+          aliases: replacement.aliases,
+          de: replacement.de,
+          en: replacement.en,
+          fr: replacement.fr,
+          lookup: replacement.lookup,
+          use: replacement.use,
+          short: replacement.short,
+          when: replacement.when,
+          say: replacement.say,
+          long: replacement.long,
+          group: replacement.group,
+          tierNote: replacement.tierNote,
+        },
+      };
+      if (learningEnglish()) replacementStep = swapStepForEnglish(replacementStep);
+
+      const next = [...current];
+      next[replaceAt] = replacementStep;
+      return next;
+    });
   };
 
   const markCompleted = (stepsToMark: any[]) => {
@@ -509,6 +575,7 @@ export default function GermanLearningLab() {
         setTimeout(() => startSession(), 260);
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
+      onPreviewKnown={replaceKnownPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
       onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}
@@ -551,6 +618,14 @@ export default function GermanLearningLab() {
       group: ui("Page"),
       actionLabel: ui("Open"),
       onSelect: () => openTab("games"),
+    },
+    {
+      id: "page-tests",
+      title: ui("Tests"),
+      subtitle: ui("Build vocabulary, phrase, mixed, or weak-spot tests at your level."),
+      group: ui("Page"),
+      actionLabel: ui("Open"),
+      onSelect: () => openTab("tests"),
     },
     {
       id: "page-profile",
@@ -635,10 +710,13 @@ export default function GermanLearningLab() {
     </div>
   ) : activeTab === "games" ? (
     <GamesView 
+      apiParts={apiParts}
       totalReviews={progressStats.totalReviews}
       externalWords={progressStats.externalWords}
       gameMasteryCount={gameMasteryCount}
     />
+  ) : activeTab === "tests" ? (
+    <TestsView apiParts={apiParts} profile={user} />
   ) : (
     courseHasReader && activeCourse ? (
       <CourseDashboardView

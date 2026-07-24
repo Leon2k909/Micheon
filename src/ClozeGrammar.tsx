@@ -359,6 +359,7 @@ function normalize(t) {
 
 // ── ClozeTab component ────────────────────────────────────────────────────────
 export function ClozeTab() {
+  const learnsEnglish = uiIsGerman();
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -367,8 +368,8 @@ export function ClozeTab() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
 
-  const exercises = uiIsGerman() ? ENGLISH_CLOZE_EXERCISES : CLOZE_EXERCISES;
-  const tips = uiIsGerman() ? ENGLISH_GRAMMAR_TIPS : GRAMMAR_TIPS;
+  const exercises = learnsEnglish ? ENGLISH_CLOZE_EXERCISES : CLOZE_EXERCISES;
+  const tips = learnsEnglish ? ENGLISH_GRAMMAR_TIPS : GRAMMAR_TIPS;
   const ex = exercises[index % exercises.length];
   const tip = tips.find(t => t.id === ex.tip_id);
   const correct = normalize(input) === normalize(ex.answer);
@@ -407,6 +408,16 @@ export function ClozeTab() {
 
   return (
     <div className="space-y-5">
+      <div className="rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent)]/10 px-4 py-3">
+        <div className="text-xs font-black uppercase text-[var(--accent)]">{ui("Your task")}</div>
+        <div className="mt-1 font-bold text-[var(--text-1)]">
+          {ui("Which German word completes this sentence?")}
+        </div>
+        <div className="mt-0.5 text-sm font-medium text-[var(--text-2)]">
+          {ui("Type the missing German word, then check your answer.")}
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="text-sm font-bold text-[var(--text-3)]">{index + 1} / {exercises.length} · {ui("Score")}: {score}</div>
         <Badge variant="outline" className="border-[var(--border)] font-black text-[var(--text-2)]">{tip?.level ?? "A1"}</Badge>
@@ -425,15 +436,23 @@ export function ClozeTab() {
 
         <div className="text-sm font-semibold text-zinc-500 text-center">{ex.hint}</div>
 
-        <Input
-          ref={inputRef}
-          value={input}
-          onChange={handleChange}
-          onKeyDown={e => { if (e.key === "Enter") { if (checked && correct) { next(); } else check(); } }}
-          placeholder={ui("Fill in the blank…")}
-          className="h-12 rounded-2xl border-zinc-200 bg-white text-center text-base font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[var(--accent)]"
-          disabled={checked && !correct}
-        />
+        <div className="space-y-2">
+          <label htmlFor="grammar-cloze-answer" className="block text-sm font-black text-[var(--text-2)]">
+            {ui("Missing German word")}
+          </label>
+          <Input
+            id="grammar-cloze-answer"
+            ref={inputRef}
+            value={input}
+            onChange={handleChange}
+            onKeyDown={e => { if (e.key === "Enter") { if (checked && correct) { next(); } else check(); } }}
+            placeholder={ui("Type the German word…")}
+            className="h-12 rounded-2xl border-zinc-200 bg-white text-center text-base font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[var(--accent)]"
+            disabled={checked && !correct}
+            lang={learnsEnglish ? "en" : "de"}
+            autoComplete="off"
+          />
+        </div>
 
         {!checked && (
           <Button className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800 disabled:opacity-40" onClick={check} disabled={!input.trim()}>{ui("Check")}</Button>

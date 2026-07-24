@@ -158,8 +158,21 @@ app.get("/api/codex-pets/:source/:id/spritesheet", (req, res) => {
   return res.sendFile(spritesheet, { dotfiles: "allow" });
 });
 
+function firstSpokenAlternative(value) {
+  const text = String(value || "").trim();
+  const separatorIndex = text.search(/\s+\/\s+/u);
+  const firstAlternative = separatorIndex === -1
+    ? text
+    : text.slice(0, separatorIndex).trim();
+
+  return firstAlternative
+    .replace(/\band\/or\b/giu, "and or")
+    .replace(/\bund\/oder\b/giu, "und oder")
+    .replace(/(\p{L}+)\/\p{L}+/gu, "$1");
+}
+
 app.get("/api/tts", async (req, res) => {
-  const text = String(req.query.text || "").slice(0, 600).trim();
+  const text = firstSpokenAlternative(String(req.query.text || "").slice(0, 600));
   if (!text) return res.status(400).json({ error: "missing text" });
 
   const lang = String(req.query.lang || "de-DE");
