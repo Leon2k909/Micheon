@@ -446,6 +446,8 @@ const DE: Record<string, string> = {
   "Pet messages": "Maskottchen-Nachrichten",
   "You can change answers to earlier questions.": "Du kannst Antworten auf frühere Fragen jederzeit ändern.",
   "Close history": "Verlauf schließen",
+  "Dismiss message": "Nachricht entfernen",
+  "Dismiss speech": "Sprechblase schließen",
   "No pet messages yet": "Noch keine Maskottchen-Nachrichten",
   "Tips and questions will appear here after the mascot speaks.": "Tipps und Fragen erscheinen hier, nachdem das Maskottchen gesprochen hat.",
   "Yes": "Ja",

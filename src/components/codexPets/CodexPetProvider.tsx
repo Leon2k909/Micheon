@@ -63,6 +63,7 @@ type CodexPetSpeechOptions = {
 type CodexPetContextValue = {
   answerQuestion: (messageId: string, answer: CodexPetAnswer, announce?: boolean) => void;
   clearSpeech: () => void;
+  dismissMessage: (messageId: string) => void;
   error: string | null;
   history: CodexPetSpeech[];
   isLoading: boolean;
@@ -133,6 +134,24 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       savePetHistory(limited);
       historyRef.current = limited;
       return limited;
+    });
+  }, []);
+
+  const dismissMessage = useCallback((messageId: string) => {
+    setHistory((current) => {
+      if (!current.some((message) => message.id === messageId)) return current;
+      const next = current.filter((message) => message.id !== messageId);
+      savePetHistory(next);
+      historyRef.current = next;
+      return next;
+    });
+    setSpeech((current) => {
+      if (current?.id !== messageId) return current;
+      if (speechTimer.current !== null) {
+        window.clearTimeout(speechTimer.current);
+        speechTimer.current = null;
+      }
+      return null;
     });
   }, []);
 
@@ -217,6 +236,14 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       const next = loadPetHistory();
       historyRef.current = next;
       setHistory(next);
+      setSpeech((current) => {
+        if (!current || next.some((message) => message.id === current.id)) return current;
+        if (speechTimer.current !== null) {
+          window.clearTimeout(speechTimer.current);
+          speechTimer.current = null;
+        }
+        return null;
+      });
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
@@ -287,6 +314,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     () => ({
       answerQuestion,
       clearSpeech,
+      dismissMessage,
       error,
       history,
       isLoading,
@@ -298,7 +326,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       speak,
       speech,
     }),
-    [answerQuestion, clearSpeech, error, history, isLoading, pets, refresh, selectedKey, selectedPet, selectPet, speak, speech]
+    [answerQuestion, clearSpeech, dismissMessage, error, history, isLoading, pets, refresh, selectedKey, selectedPet, selectPet, speak, speech]
   );
 
   return <CodexPetContext.Provider value={value}>{children}</CodexPetContext.Provider>;

@@ -122,6 +122,7 @@ export function CodexPetLayer() {
   const {
     answerQuestion,
     clearSpeech,
+    dismissMessage,
     history,
     selectPet,
     selectedPet,
@@ -352,6 +353,7 @@ export function CodexPetLayer() {
           history={history}
           onAnswer={answerQuestion}
           onClose={() => setHistoryOpen(false)}
+          onDismiss={dismissMessage}
         />
       )}
       <div
@@ -459,18 +461,29 @@ export function CodexPetLayer() {
           >
             <div className="flex items-start gap-2">
               <p className="min-w-0 flex-1">{speech.text}</p>
-              <button
-                aria-label={ui("Open message history")}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                onClick={() => {
-                  clearSpeech();
-                  setHistoryOpen(true);
-                }}
-                title={ui("Message history")}
-                type="button"
-              >
-                <History className="h-3.5 w-3.5" />
-              </button>
+              <div className="flex shrink-0 items-center gap-0.5">
+                <button
+                  aria-label={ui("Open message history")}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  onClick={() => {
+                    clearSpeech();
+                    setHistoryOpen(true);
+                  }}
+                  title={ui("Message history")}
+                  type="button"
+                >
+                  <History className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  aria-label={ui("Dismiss speech")}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  onClick={clearSpeech}
+                  title={ui("Dismiss speech")}
+                  type="button"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
             {speech.question && (
               <div className="mt-3 grid grid-cols-2 gap-2">

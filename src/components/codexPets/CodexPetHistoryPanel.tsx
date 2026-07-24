@@ -11,10 +11,12 @@ export function CodexPetHistoryPanel({
   history,
   onAnswer,
   onClose,
+  onDismiss,
 }: {
   history: CodexPetSpeech[];
   onAnswer: (messageId: string, answer: CodexPetAnswer, announce?: boolean) => void;
   onClose: () => void;
+  onDismiss: (messageId: string) => void;
 }) {
   const messages = [...history].reverse();
 
@@ -62,16 +64,27 @@ export function CodexPetHistoryPanel({
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs font-bold leading-5 text-[var(--text-1)]">{message.text}</p>
-                  <time
-                    className="flex shrink-0 items-center gap-1 text-[9px] font-bold text-[var(--text-3)]"
-                    dateTime={new Date(message.createdAt).toISOString()}
-                  >
-                    <Clock3 className="h-2.5 w-2.5" />
-                    {new Date(message.createdAt).toLocaleTimeString(uiLocale(), {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </time>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <time
+                      className="flex items-center gap-1 text-[9px] font-bold text-[var(--text-3)]"
+                      dateTime={new Date(message.createdAt).toISOString()}
+                    >
+                      <Clock3 className="h-2.5 w-2.5" />
+                      {new Date(message.createdAt).toLocaleTimeString(uiLocale(), {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </time>
+                    <button
+                      aria-label={ui("Dismiss message")}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                      onClick={() => onDismiss(message.id)}
+                      title={ui("Dismiss message")}
+                      type="button"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {message.question && (

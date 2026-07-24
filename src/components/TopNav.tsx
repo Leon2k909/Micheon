@@ -229,7 +229,7 @@ export function TopNav({
 
           <nav
             aria-label={ui("Main")}
-            className="relative hidden h-14 select-none items-center gap-1 rounded-full bg-[var(--surface-2)] p-1.5 lg:flex"
+            className="relative hidden h-14 select-none items-center gap-1 rounded-full bg-[var(--surface-2)] p-1.5 xl:flex"
             onPointerMove={handleNavPointerMove}
           >
             {NAV.map((item) => {
@@ -372,7 +372,7 @@ export function TopNav({
             </div>
             <button
               aria-label={ui(mobileOpen ? "Close menu" : "Open menu")}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] xl:hidden"
               onClick={() => setMobileOpen((value) => !value)}
               type="button"
             >
@@ -621,7 +621,7 @@ export function TopNav({
         {mobileOpen && (
           <motion.div
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[120] bg-black/20 px-4 pt-[96px] backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[120] bg-black/20 px-4 pt-[96px] backdrop-blur-sm xl:hidden"
             exit={{ opacity: 0 }}
             initial={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}

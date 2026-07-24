@@ -722,31 +722,34 @@ export function TestsView({
 
   return (
     <div className="mx-auto max-w-[1240px]" data-testid="tests-view">
-      <section className="relative overflow-hidden rounded-[28px] bg-[var(--ink)] px-6 py-7 text-[var(--ink-text)] shadow-[0_24px_60px_var(--shadow-strong)] sm:px-8 sm:py-9">
-        <div className="absolute inset-y-0 left-0 w-1.5 bg-[var(--accent)]" />
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black">
-              <Sparkles className="h-4 w-4 text-[var(--yellow)]" />
-              {ui("Build a focused test")}
+      <section className="rounded-[24px] border border-[var(--border)] bg-[var(--surface)] px-5 py-5 shadow-[0_18px_45px_var(--shadow)] sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex max-w-2xl items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-[var(--accent-dim)] text-[var(--accent)]">
+              <Sparkles className="h-5 w-5" />
             </span>
-            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{ui("Tests")}</h1>
-            <p className="mt-2 max-w-xl text-sm font-semibold leading-6 opacity-70">
-              {ui("Choose what you want to test, set the challenge, and get a clear score without changing your lesson progress.")}
-            </p>
+            <div>
+              <p className="text-xs font-black uppercase text-[var(--accent)]">
+                {ui("Build a focused test")}
+              </p>
+              <h1 className="mt-1 text-2xl font-black text-[var(--text-1)] sm:text-3xl">{ui("Tests")}</h1>
+              <p className="mt-1 max-w-xl text-sm font-semibold leading-6 text-[var(--text-3)]">
+                {ui("Choose what you want to test, set the challenge, and get a clear score without changing your lesson progress.")}
+              </p>
+            </div>
           </div>
-          <div className="grid w-full grid-cols-3 gap-2 sm:gap-3 lg:w-auto">
-            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
-              <p className="text-base font-black sm:text-xl">{bank.filter((item) => item.kind === "vocabulary").length.toLocaleString()}</p>
-              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Words")}</p>
+          <div className="grid w-full grid-cols-3 divide-x divide-[var(--border)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] lg:w-auto">
+            <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
+              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "vocabulary").length.toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Words")}</p>
             </div>
-            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
-              <p className="text-base font-black sm:text-xl">{bank.filter((item) => item.kind === "phrase").length.toLocaleString()}</p>
-              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Phrases")}</p>
+            <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
+              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "phrase").length.toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Phrases")}</p>
             </div>
-            <div className="min-w-0 rounded-[16px] bg-white/10 px-2.5 py-3 sm:min-w-[92px] sm:px-3">
-              <p className="text-base font-black sm:text-xl">{presetCounts["weak-spots"].toLocaleString()}</p>
-              <p className="mt-0.5 text-[10px] font-bold uppercase opacity-65">{ui("Weak spots")}</p>
+            <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
+              <p className="text-lg font-black text-[var(--text-1)]">{presetCounts["weak-spots"].toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Weak spots")}</p>
             </div>
           </div>
         </div>
