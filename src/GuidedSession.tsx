@@ -34,7 +34,8 @@ import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, p
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical, ArrowLeftRight
+  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical, ArrowLeftRight,
+  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -395,7 +396,7 @@ function phaseHeading(p: Phase, withFrench: boolean): string {
     case "Speak": return "Say it out loud";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
     case "TypeAgain": return "Type it once more";
-    case "Translate": return "Translate the meaning";
+    case "Translate": return "Translate this sentence";
     case "TranslateAgain": return "Recall the meaning";
     case "Gap": return "Fill the blank";
     case "Order": return "Build the sentence";
@@ -629,6 +630,146 @@ function useStickyFocus(ref: React.RefObject<HTMLInputElement | null>, active: b
   }, [ref, active]);
 }
 
+function buildRecallHint(answer: string): string {
+  const words = primaryAnswer(answer).trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+
+  return words.map((word, wordIndex) => {
+    if (words.length > 1 && wordIndex === 0) return word;
+
+    let revealedLetter = false;
+    return Array.from(word).map((character) => {
+      if (!/[\p{L}\p{N}]/u.test(character)) return character;
+      if (!revealedLetter) {
+        revealedLetter = true;
+        return character;
+      }
+      return "•";
+    }).join("");
+  }).join(" ");
+}
+
+function RecallHelp({
+  answer,
+  hint,
+}: {
+  answer: string;
+  hint?: string;
+}) {
+  const [level, setLevel] = useState<0 | 1 | 2>(0);
+  const shownText = level === 2 ? primaryAnswer(answer) : (hint ?? buildRecallHint(answer));
+
+  return (
+    <div className={cn("fs-recall-help", level > 0 && "is-open", level === 2 && "is-answer")}>
+      <div className="fs-recall-help-row">
+        <span className="fs-recall-help-label">
+          <Lightbulb aria-hidden="true" className="h-4 w-4" />
+          {ui("Need help?")}
+        </span>
+        <button
+          type="button"
+          className="fs-recall-help-action"
+          onClick={() => setLevel(level === 0 ? 1 : level === 1 ? 2 : 1)}
+          aria-expanded={level > 0}
+        >
+          {level === 0 ? (
+            <><Lightbulb aria-hidden="true" className="h-4 w-4" /> {ui("Hint")}</>
+          ) : level === 1 ? (
+            <><Eye aria-hidden="true" className="h-4 w-4" /> {ui("Show answer")}</>
+          ) : (
+            <><EyeOff aria-hidden="true" className="h-4 w-4" /> {ui("Hide answer")}</>
+          )}
+        </button>
+      </div>
+      <AnimatePresence initial={false}>
+        {level > 0 && (
+          <motion.div
+            key={level}
+            initial={{ opacity: 0, height: 0, y: -4 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -4 }}
+            className="fs-recall-help-content"
+            role="status"
+            aria-live="polite"
+          >
+            <span>{ui(level === 2 ? "Answer" : "Hint")}</span>
+            <strong>{shownText}</strong>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function TranslationWordBank({
+  tokens,
+  selected,
+  disabled,
+  checked,
+  correct,
+  onPick,
+  onRemove,
+}: {
+  tokens: OrderToken[];
+  selected: OrderToken[];
+  disabled: boolean;
+  checked: boolean;
+  correct: boolean;
+  onPick: (token: OrderToken) => void;
+  onRemove: (index: number) => void;
+}) {
+  const selectedIds = new Set(selected.map((token) => token.id));
+
+  return (
+    <div className={cn(
+      "fs-translation-bank",
+      checked && correct && "is-good",
+      checked && !correct && "is-bad"
+    )}>
+      <div className="fs-translation-answer" aria-label={ui("Your answer")}>
+        <span className="fs-translation-bank-label">{ui("Your answer")}</span>
+        <div className="fs-translation-picked" aria-live="polite">
+          {selected.length === 0 ? (
+            <span className="fs-translation-placeholder">{ui("Choose words to build your answer.")}</span>
+          ) : selected.map((token, index) => (
+            <button
+              key={`${token.id}-picked`}
+              type="button"
+              className="fs-translation-picked-word"
+              onClick={() => onRemove(index)}
+              disabled={disabled}
+              aria-label={`${ui("Remove word")}: ${token.text}`}
+            >
+              {token.text}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="fs-translation-options" aria-label={ui("Available words")}>
+        <span className="fs-translation-bank-label">{ui("Available words")}</span>
+        <div>
+          {tokens.map((token) => {
+            const used = selectedIds.has(token.id);
+            return (
+              <button
+                key={token.id}
+                type="button"
+                className={cn("fs-translation-option", used && "is-used")}
+                onClick={() => onPick(token)}
+                disabled={disabled || used}
+                aria-hidden={used}
+                tabIndex={used ? -1 : 0}
+              >
+                {token.text}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // A single labeled language row (German / French) for bilingual companion mode.
 // `active` highlights the language the learner is currently being asked to type.
 function LangBlock({ label, text, active, onHear, speechState, onKnown, onStruggle }: {
@@ -729,6 +870,8 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const [enInput, setEnInput] = useState("");
   const [enChecked, setEnChecked] = useState(false);
   const [enAttempts, setEnAttempts] = useState(0);
+  const [translationMode, setTranslationMode] = useState<"bank" | "type">("bank");
+  const [translationPicked, setTranslationPicked] = useState<OrderToken[]>([]);
   const [gapInput, setGapInput] = useState("");
   const [gapChecked, setGapChecked] = useState(false);
   const gapInputRef = useRef<HTMLInputElement>(null);
@@ -752,8 +895,6 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const [memDeChecked, setMemDeChecked] = useState(false);
   const [memFrInput, setMemFrInput] = useState("");
   const [memFrChecked, setMemFrChecked] = useState(false);
-  const [deHintLen, setDeHintLen] = useState(0);
-  const [frHintLen, setFrHintLen] = useState(0);
   const [speechListening, setSpeechListening] = useState(false);
   const [speechTranscript, setSpeechTranscript] = useState("");
   const [speechPhraseMatch, setSpeechPhraseMatch] = useState<{ ok: boolean; spellingNote: boolean } | null>(null);
@@ -771,7 +912,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   // text (the sentence, the meaning) is never interrupted. One hook per typing
   // phase; only the active phase's box claims focus.
   useStickyFocus(inputRef, phase === "Type" || phase === "TypeAgain");
-  useStickyFocus(enInputRef, phase === "Translate" || phase === "TranslateAgain");
+  useStickyFocus(enInputRef, (phase === "Translate" || phase === "TranslateAgain") && translationMode === "type");
   useStickyFocus(gapInputRef, phase === "Gap");
   useStickyFocus(sayRef, phase === "SpeakAll");
   useStickyFocus(frInputRef, phase === "French");
@@ -835,12 +976,15 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
   // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
   // the answer is German — each direction gets its own synonym/coach matcher.
-  const enResult = useMemo(
-    () => (learnEn ? matchGermanSentence : matchEnglish)(enInput, displayEnglish),
-    [enInput, displayEnglish, learnEn]
-  );
-  // Only the most common phrasing is SHOWN; alternates still count as correct.
   const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
+  const translationTokens = useMemo(() => buildOrderTokens(shownEnglish), [shownEnglish]);
+  const translationAnswer = translationMode === "bank"
+    ? translationPicked.map((token) => token.text).join(" ")
+    : enInput;
+  const enResult = useMemo(
+    () => (learnEn ? matchGermanSentence : matchEnglish)(translationAnswer, displayEnglish),
+    [translationAnswer, displayEnglish, learnEn]
+  );
   // Gap stage: the typed answer just needs to contain each missing word
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
@@ -896,12 +1040,14 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   // Focus input when entering Type or Translate phase
   useEffect(() => {
     if (phase === "Type" || phase === "TypeAgain")           setTimeout(() => inputRef.current?.focus(), 100);
-    if (phase === "Translate" || phase === "TranslateAgain") setTimeout(() => enInputRef.current?.focus(), 100);
+    if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type") {
+      setTimeout(() => enInputRef.current?.focus(), 100);
+    }
     if (phase === "Gap")       setTimeout(() => gapInputRef.current?.focus(), 100);
     if (phase === "SpeakAll")  setTimeout(() => sayRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
-    if (phase === "Memory")    { setDeHintLen(0); setFrHintLen(0); setTimeout(() => memDeRef.current?.focus(), 100); }
-  }, [phase]);
+    if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
+  }, [phase, translationMode]);
 
   const handleSpeechCheck = () => {
     if (speechListening || !speechSupported) return;
@@ -978,7 +1124,20 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
       setMissingWordChecked(false);
     }
     if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
-    if (phase === "TranslateAgain") { setEnInput(""); setEnChecked(false); setEnAttempts(0); }
+    if (phase === "Translate") {
+      setEnInput("");
+      setEnChecked(false);
+      setEnAttempts(0);
+      setTranslationPicked([]);
+      setTranslationMode("bank");
+    }
+    if (phase === "TranslateAgain") {
+      setEnInput("");
+      setEnChecked(false);
+      setEnAttempts(0);
+      setTranslationPicked([]);
+      setTranslationMode("type");
+    }
     if (phase === "Gap") { setGapInput(""); setGapChecked(false); }
     if (phase === "Order") {
       setOrderTokens(buildOrderTokens(item.de));
@@ -1022,10 +1181,6 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
   useEffect(() => {
-    if ((phase === "Translate" || phase === "TranslateAgain") && !enChecked && enInput.trim() && enResult.ok && !enResult.spellingNote) checkEnAnswer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enInput]);
-  useEffect(() => {
     if (phase === "Gap" && !gapChecked && gapInput.trim() && gapResult.ok) checkGap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gapInput]);
@@ -1052,7 +1207,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const finishOrFrench = () => { if (hasFr) setPhase("French"); else onNext(); };
 
   const checkEnAnswer = () => {
-    if (!enInput.trim() || enChecked) return;
+    if (!translationAnswer.trim() || enChecked) return;
     setEnChecked(true);
     reactToAnswer(enResult.ok, !!enResult.phrasingNote);
     if (enResult.ok) {
@@ -1062,7 +1217,36 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     }
   };
 
-  const retryEn = () => { setEnInput(""); setEnChecked(false); };
+  const retryEn = () => {
+    setEnInput("");
+    setTranslationPicked([]);
+    setEnChecked(false);
+    if (translationMode === "type") setTimeout(() => enInputRef.current?.focus(), 50);
+  };
+
+  const chooseTranslationMode = (mode: "bank" | "type") => {
+    if (mode === translationMode || (enChecked && enResult.ok)) return;
+    if (mode === "type") {
+      setEnInput(translationPicked.map((token) => token.text).join(" "));
+      setTranslationPicked([]);
+      setTimeout(() => enInputRef.current?.focus(), 50);
+    } else {
+      setEnInput("");
+      setTranslationPicked([]);
+    }
+    setEnChecked(false);
+    setTranslationMode(mode);
+  };
+
+  const pickTranslationToken = (token: OrderToken) => {
+    if (enChecked || translationPicked.some((picked) => picked.id === token.id)) return;
+    setTranslationPicked((picked) => [...picked, token]);
+  };
+
+  const removeTranslationToken = (index: number) => {
+    if (enChecked) return;
+    setTranslationPicked((picked) => picked.filter((_, pickedIndex) => pickedIndex !== index));
+  };
 
   const chooseListeningAnswer = (choice: string) => {
     if (listeningChecked) return;
@@ -1726,6 +1910,9 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               </div>
             </motion.div>
             {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} /></div>}
+            {!(sayChecked && sayResult.ok) && (
+              <RecallHelp key={`${item.id}-write-${phase}`} answer={item.de} />
+            )}
 
             <AnimatePresence>
               {sayChecked && (
@@ -1857,37 +2044,119 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
           <motion.div key="translate" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {phase === "TranslateAgain" ? `Type the ${meaningLabel} once more — lock it in.` : `Now type the ${meaningLabel} translation.`}
+              {ui(phase === "TranslateAgain"
+                ? "Recall the translation. Use the word bank if you need support."
+                : "Build the translation with the words below, or type it yourself.")}
             </p>
-            <motion.div animate={shakeControls}>
-              <div className={cn("fs-panel",
-                enChecked && enResult.ok && "is-good",
-                enChecked && !enResult.ok && (enResult.phrasingNote ? "is-coach" : "is-bad"))}>
-                <div className="fs-prompt">
-                  <span>{learnEn ? "DE" : "EN"}</span>
-                  <strong>{ui(`Type in ${meaningLabel}`)}</strong>
-                </div>
-                <Input ref={enInputRef}
-                  className="fs-input"
-                  placeholder={`Type the ${meaningLabel} meaning...`}
-                  autoFocus
-                  value={enInput}
-                  onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
+
+            <div className="fs-translation-toolbar">
+              <div className="fs-translation-modes" role="group" aria-label={ui("Answer mode")}>
+                <button
+                  type="button"
+                  className={cn(translationMode === "bank" && "is-active")}
+                  aria-pressed={translationMode === "bank"}
+                  onClick={() => chooseTranslationMode("bank")}
                   disabled={enChecked && enResult.ok}
-                />
-                <MicButton
-                  lang={learnEn ? "de-DE" : "en-US"}
-                  onText={t => { setEnInput(t); if (enChecked) setEnChecked(false); }}
-                  inputRef={enInputRef}
-                />
-                <button type="button" className="fs-check" onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}>
-                  <span className="fs-check-label">{enChecked && enResult.ok ? ui("Next") : ui("Check")}</span>
-                  <ArrowRight className="h-4 w-4" />
+                >
+                  <MousePointerClick aria-hidden="true" className="h-4 w-4" />
+                  {ui("Word bank")}
+                </button>
+                <button
+                  type="button"
+                  className={cn(translationMode === "type" && "is-active")}
+                  aria-pressed={translationMode === "type"}
+                  onClick={() => chooseTranslationMode("type")}
+                  disabled={enChecked && enResult.ok}
+                >
+                  <Keyboard aria-hidden="true" className="h-4 w-4" />
+                  {ui("Type")}
                 </button>
               </div>
-            </motion.div>
-            {learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
+              {translationMode === "bank" && translationPicked.length > 0 && !enChecked && (
+                <button
+                  type="button"
+                  className="fs-translation-clear"
+                  onClick={() => setTranslationPicked([])}
+                >
+                  <X aria-hidden="true" className="h-4 w-4" />
+                  {ui("Clear")}
+                </button>
+              )}
+            </div>
+
+            <AnimatePresence mode="wait" initial={false}>
+              {translationMode === "bank" ? (
+                <motion.div
+                  key="translation-bank"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="space-y-3"
+                >
+                  <motion.div animate={shakeControls}>
+                    <TranslationWordBank
+                      tokens={translationTokens}
+                      selected={translationPicked}
+                      disabled={enChecked}
+                      checked={enChecked}
+                      correct={enResult.ok}
+                      onPick={pickTranslationToken}
+                      onRemove={removeTranslationToken}
+                    />
+                  </motion.div>
+                  <Button
+                    type="button"
+                    onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}
+                    disabled={translationPicked.length === 0 || (enChecked && !enResult.ok)}
+                    className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black"
+                  >
+                    {ui(enChecked && enResult.ok ? "Next" : "Check translation")}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="translation-type"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="space-y-3"
+                >
+                  <motion.div animate={shakeControls}>
+                    <div className={cn("fs-panel",
+                      enChecked && enResult.ok && "is-good",
+                      enChecked && !enResult.ok && (enResult.phrasingNote ? "is-coach" : "is-bad"))}>
+                      <div className="fs-prompt">
+                        <span>{learnEn ? "DE" : "EN"}</span>
+                        <strong>{ui(`Type in ${meaningLabel}`)}</strong>
+                      </div>
+                      <Input ref={enInputRef}
+                        className="fs-input"
+                        placeholder={`Type the ${meaningLabel} meaning...`}
+                        autoFocus
+                        value={enInput}
+                        onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
+                        onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
+                        disabled={enChecked && enResult.ok}
+                      />
+                      <MicButton
+                        lang={learnEn ? "de-DE" : "en-US"}
+                        onText={t => { setEnInput(t); if (enChecked) setEnChecked(false); }}
+                        inputRef={enInputRef}
+                      />
+                      <button type="button" className="fs-check" onClick={enChecked && enResult.ok ? advanceOrFinish : checkEnAnswer}>
+                        <span className="fs-check-label">{enChecked && enResult.ok ? ui("Next") : ui("Check")}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                  {learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {!(enChecked && enResult.ok) && (
+              <RecallHelp key={`${item.id}-translate-${phase}`} answer={shownEnglish} />
+            )}
             <AnimatePresence>
               {enChecked && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -1927,8 +2196,10 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
                   {ui("Skip")}
                 </Button>
               </div>
-            ) : (
+            ) : translationMode === "type" ? (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
+            ) : (
+              <div className="fs-hint">{ui("Choose the words, then check your answer.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
@@ -1966,6 +2237,13 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               </div>
             </motion.div>
             {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} /></div>}
+            {!(gapChecked && gapResult.ok) && (
+              <RecallHelp
+                key={`${item.id}-gap`}
+                answer={gap.words.join(" ")}
+                hint={buildRecallHint(gap.words.join(" "))}
+              />
+            )}
 
             <AnimatePresence>
               {gapChecked && (
@@ -2060,6 +2338,9 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               </div>
               <p className="fs-order-help">{ui("Drag, click two words, or use the arrow keys to reorder.")}</p>
             </motion.div>
+            {!orderIsCorrect && (
+              <RecallHelp key={`${item.id}-order`} answer={item.de} />
+            )}
 
             {orderChecked && (
               <div className={cn("fs-result", orderIsCorrect ? "is-good" : "is-bad")} role="status">
@@ -2167,18 +2448,9 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
             <div className="space-y-3">
               {/* German recall input */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between pl-1">
+                <div className="flex items-center pl-1">
                   <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">{ui("German")}</p>
-                  <button type="button" onClick={() => setDeHintLen(n => Math.min(n + 1, item.de.length))}
-                    className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
-                    {deHintLen === 0 ? "Hint" : deHintLen >= item.de.length ? "Full hint" : `Hint (${deHintLen}/${item.de.length})`}
-                  </button>
                 </div>
-                {deHintLen > 0 && (
-                  <p className="text-center font-mono text-sm text-zinc-500 tracking-wide">
-                    {item.de.slice(0, deHintLen)}{deHintLen < item.de.length ? "…" : ""}
-                  </p>
-                )}
                 <motion.div animate={shakeControls}>
                   <Input ref={memDeRef}
                     className={cn(
@@ -2195,21 +2467,15 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
                   />
                 </motion.div>
                 <CharBar onInsert={c => insertAt(memDeRef.current, c, setMemDeInput)} />
+                {!(memDeChecked && memDeResult.ok) && (
+                  <RecallHelp key={`${item.id}-memory-de`} answer={item.de} />
+                )}
               </div>
               {/* French recall input */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between pl-1">
+                <div className="flex items-center pl-1">
                   <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">{ui("French")}</p>
-                  <button type="button" onClick={() => setFrHintLen(n => Math.min(n + 1, (item.fr ?? "").length))}
-                    className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
-                    {frHintLen === 0 ? "Hint" : frHintLen >= (item.fr ?? "").length ? "Full hint" : `Hint (${frHintLen}/${(item.fr ?? "").length})`}
-                  </button>
                 </div>
-                {frHintLen > 0 && (
-                  <p className="text-center font-mono text-sm text-zinc-500 tracking-wide">
-                    {(item.fr ?? "").slice(0, frHintLen)}{frHintLen < (item.fr ?? "").length ? "…" : ""}
-                  </p>
-                )}
                 <Input ref={memFrRef}
                   className={cn(
                     "h-14 rounded-2xl border-zinc-200 bg-white px-4 text-center text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
@@ -2224,6 +2490,9 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
                   disabled={memDeChecked && memDeResult.ok && memFrChecked && memFrResult.ok}
                 />
                 <FrenchCharBar onInsert={c => insertAt(memFrRef.current, c, setMemFrInput)} />
+                {!(memFrChecked && memFrResult.ok) && (
+                  <RecallHelp key={`${item.id}-memory-fr`} answer={item.fr ?? ""} />
+                )}
               </div>
             </div>
 
@@ -2425,6 +2694,9 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
           disabled={checked && result.ok}
         />
         {!learnEn && <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />}
+        {!(checked && result.ok) && (
+          <RecallHelp key={`${lineGradeId}-dialogue`} answer={line.de} />
+        )}
       </div>
 
       <AnimatePresence>
