@@ -36,7 +36,27 @@ permissions:
   contents: write
 
 jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure GitHub release exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists"
+          else
+            gh release create "$TAG" \
+              --verify-tag \
+              --generate-notes \
+              --title "Micheon $TAG" \
+              --repo "$GITHUB_REPOSITORY"
+          fi
+
   build:
+    needs: prepare-release
     strategy:
       fail-fast: false
       matrix:
