@@ -34,7 +34,7 @@ import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, p
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical
+  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical, ArrowLeftRight
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -207,11 +207,37 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 }
 
 // Section
-// The recognition round follows the first exposure: learners hear the target
-// with the answer hidden, then choose it from the other phrases in the lesson.
+// The recognition rounds follow the first exposure: learners identify a whole
+// spoken phrase, then identify one missing word from audio-only choices.
 // Type and Translate each run twice to build memory through production.
-const PHASES = ["Read", "ListenPick", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
+const PHASES = ["Read", "ListenPick", "MissingWord", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
+
+function spokenWord(token: string): string {
+  return String(token ?? "").replace(/[^a-zA-ZäöüßÄÖÜéèêàâçîôûœÉÈÊÀÂÇÎÔÛŒ'’'-]/g, "");
+}
+
+type MissingWordPrompt = {
+  answer: string;
+  display: string;
+};
+
+function computeListeningGap(sentence: string): MissingWordPrompt {
+  const tokens = String(sentence ?? "").trim().split(/\s+/).filter(Boolean);
+  const candidates = tokens
+    .map((token, index) => ({ index, answer: spokenWord(token) }))
+    .filter(({ answer }) => answer.length >= 3)
+    .sort((a, b) => b.answer.length - a.answer.length)
+    .slice(0, 4)
+    .sort((a, b) => choiceHash(`${sentence}|${a.index}`) - choiceHash(`${sentence}|${b.index}`));
+  const selected = candidates[0] ?? (tokens.length ? { index: 0, answer: spokenWord(tokens[0]) } : null);
+  if (!selected?.answer) return { answer: "", display: sentence };
+
+  return {
+    answer: selected.answer,
+    display: tokens.map((token, index) => (index === selected.index ? "____" : token)).join(" "),
+  };
+}
 
 /**
  * Blank out 1-2 content words from a sentence for the spoken gap-fill stage.
@@ -301,11 +327,34 @@ function buildListeningChoices(answer: string, pool: string[], limit = 4): strin
     .sort((a, b) => choiceHash(`position|${answer}|${a}`) - choiceHash(`position|${answer}|${b}`));
 }
 
+function buildMissingWordChoices(answer: string, pool: string[], limit = 3): string[] {
+  const answerKey = choiceKey(answer);
+  const seen = new Set<string>([answerKey]);
+  const distractors = pool
+    .flatMap((sentence) => String(sentence ?? "").trim().split(/\s+/))
+    .map(spokenWord)
+    .filter((word) => {
+      const key = choiceKey(word);
+      if (word.length < 2 || !key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => {
+      const lengthDifference = Math.abs(a.length - answer.length) - Math.abs(b.length - answer.length);
+      return lengthDifference || choiceHash(`${answer}|${a}`) - choiceHash(`${answer}|${b}`);
+    })
+    .slice(0, Math.max(0, limit - 1));
+
+  return [answer, ...distractors]
+    .filter(Boolean)
+    .sort((a, b) => choiceHash(`missing-position|${answer}|${a}`) - choiceHash(`missing-position|${answer}|${b}`));
+}
+
 // In French companion mode the flow tests the two target languages (German +
 // French) and uses English only as the shown meaning, so the English-typing
 // "Translate" step is replaced by the French step. "Memory" is a final recall
 // phase where no sentence is shown — the learner types both from memory.
-const BILINGUAL_PHASES: Phase[] = ["Read", "ListenPick", "Speak", "Type", "French", "Memory"];
+const BILINGUAL_PHASES: Phase[] = ["Read", "ListenPick", "MissingWord", "Speak", "Type", "French", "Memory"];
 
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French. The second-round steps
@@ -328,6 +377,7 @@ function renderKeyWord(sentence: string, lookup?: string) {
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
   if (p === "ListenPick") return "Pick it";
+  if (p === "MissingWord") return "Missing word";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
@@ -341,6 +391,7 @@ function phaseHeading(p: Phase, withFrench: boolean): string {
   switch (p) {
     case "Read": return "Read & listen";
     case "ListenPick": return "What did you hear?";
+    case "MissingWord": return "Listen for the missing word";
     case "Speak": return "Say it out loud";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
     case "TypeAgain": return "Type it once more";
@@ -683,12 +734,14 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const gapInputRef = useRef<HTMLInputElement>(null);
   const [listeningChoice, setListeningChoice] = useState<string | null>(null);
   const [listeningChecked, setListeningChecked] = useState(false);
+  const [missingWordChoice, setMissingWordChoice] = useState<string | null>(null);
+  const [missingWordChecked, setMissingWordChecked] = useState(false);
   const [orderTokens, setOrderTokens] = useState<OrderToken[]>(() => buildOrderTokens(item.de));
   const [orderChecked, setOrderChecked] = useState(false);
   const [orderSelected, setOrderSelected] = useState<number | null>(null);
   const draggedOrderIndex = useRef<number | null>(null);
 
-  // Stage 10 "Write it": type the whole German from the English prompt.
+  // Final "Write it" stage: type the whole target sentence from its meaning.
   const [sayInput, setSayInput] = useState("");
   const [sayChecked, setSayChecked] = useState(false);
   const sayRef = useRef<HTMLInputElement>(null);
@@ -755,6 +808,13 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     [item.de, listeningChoicePool]
   );
   const listeningCorrect = listeningChoice !== null && choiceKey(listeningChoice) === choiceKey(item.de);
+  const missingWord = useMemo(() => computeListeningGap(item.de), [item.de]);
+  const missingWordChoices = useMemo(
+    () => buildMissingWordChoices(missingWord.answer, listeningChoicePool),
+    [missingWord.answer, listeningChoicePool]
+  );
+  const missingWordCorrect = missingWordChoice !== null
+    && choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
   const matchTarget = learnEn ? matchEnglish : matchGermanSentence;
@@ -913,6 +973,10 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
       setListeningChoice(null);
       setListeningChecked(false);
     }
+    if (phase === "MissingWord") {
+      setMissingWordChoice(null);
+      setMissingWordChecked(false);
+    }
     if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
     if (phase === "TranslateAgain") { setEnInput(""); setEnChecked(false); setEnAttempts(0); }
     if (phase === "Gap") { setGapInput(""); setGapChecked(false); }
@@ -1013,6 +1077,28 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     setListeningChoice(null);
     setListeningChecked(false);
     tts(item.de, 0.88, targetLang);
+  };
+
+  const selectMissingWord = (choice: string) => {
+    if (missingWordChecked) return;
+    setMissingWordChoice(choice);
+    tts(choice, 0.78, targetLang);
+  };
+
+  const checkMissingWord = () => {
+    if (!missingWordChoice || missingWordChecked) return;
+    const ok = choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
+    setMissingWordChecked(true);
+    reactToAnswer(ok);
+    if (ok) {
+      tts(item.de, 0.88, targetLang);
+      window.setTimeout(advanceOrFinish, 900);
+    }
+  };
+
+  const retryMissingWord = () => {
+    setMissingWordChoice(null);
+    setMissingWordChecked(false);
   };
 
   const checkGap = () => {
@@ -1171,7 +1257,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
                 </button>
               </>
             )}
-            {phase !== "ListenPick" && (
+            {phase !== "ListenPick" && phase !== "MissingWord" && (
               <button
                 className={cn("fs-listen", ttsOn && "is-speaking")}
                 onClick={() => tts(item.de, 0.82, targetLang)}
@@ -1188,7 +1274,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
         </div>
 
         {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
-        {phase !== "ListenPick" && (
+        {phase !== "ListenPick" && phase !== "MissingWord" && (
           <UsageChips
             de={learnEn ? item.en : item.de}
             use={item.use}
@@ -1204,7 +1290,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
             aus?" leaves you knowing the grammar and still not knowing when to
             open your mouth. Hidden during Translate for the same reason the
             usage note is: it can give the answer away. */}
-        {item.when && phase !== "ListenPick" && phase !== "Translate" && phase !== "TranslateAgain" && (
+        {item.when && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
             <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
@@ -1251,6 +1337,24 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               ))}
             </span>
           </button>
+        ) : phase === "MissingWord" ? (
+          <>
+            <div className="fs-board">
+              <div className="fs-board-top">
+                <span>{ui(targetLabel)}</span>
+                <small>{ui("Choose the sound that completes the sentence")}</small>
+              </div>
+              <div className="fs-line">
+                {missingWordChecked && missingWordCorrect
+                  ? <TappableSentence text={item.de} lang={targetLang} />
+                  : missingWord.display}
+              </div>
+            </div>
+            <div className="fs-trow">
+              <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+              <p>{shownEnglish}</p>
+            </div>
+          </>
         ) : hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
@@ -1414,6 +1518,98 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {ui("Hear it and try again")}
+              </Button>
+            )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
+              {ui("← Back")}
+            </button>
+          </motion.div>
+        )}
+
+        {/* LISTEN FOR THE MISSING WORD phase */}
+        {phase === "MissingWord" && (
+          <motion.div
+            key="missing-word"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-4"
+          >
+            <p className="fs-missing-instruction">
+              {ui("Listen to each option and choose the word that completes the sentence.")}
+            </p>
+            <div className="fs-missing-audio-list" role="group" aria-label={ui("Missing-word audio choices")}>
+              {missingWordChoices.map((choice, choiceIndex) => {
+                const isSelected = missingWordChoice === choice;
+                const isAnswer = choiceKey(choice) === choiceKey(missingWord.answer);
+                return (
+                  <button
+                    key={`${choice}-${choiceIndex}`}
+                    type="button"
+                    aria-label={`${ui("Play option")} ${choiceIndex + 1}`}
+                    aria-pressed={isSelected}
+                    disabled={missingWordChecked}
+                    onClick={() => selectMissingWord(choice)}
+                    className={cn(
+                      "fs-missing-audio-option",
+                      isSelected && "is-selected",
+                      ttsOn && isSelected && "is-speaking",
+                      missingWordChecked && isAnswer && "is-correct",
+                      missingWordChecked && isSelected && !isAnswer && "is-wrong"
+                    )}
+                  >
+                    <span className="fs-missing-option-number">{choiceIndex + 1}</span>
+                    <Volume2 className="fs-missing-volume h-5 w-5" />
+                    <span className="fs-missing-wave" aria-hidden>
+                      {[13, 24, 38, 19, 32, 16, 29, 21, 35].map((height, index) => (
+                        <i key={`${height}-${index}`} style={{ height: height + ((choiceIndex + index) % 3) * 2 }} />
+                      ))}
+                    </span>
+                    {missingWordChecked && isAnswer && <CheckCircle2 className="h-5 w-5" />}
+                    {missingWordChecked && isSelected && !isAnswer && <X className="h-5 w-5" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence>
+              {missingWordChecked && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={cn("fs-result", missingWordCorrect ? "is-good" : "is-bad")}
+                >
+                  <strong>{ui(missingWordCorrect ? "That's it!" : "Not quite")}</strong>
+                  <span>
+                    {missingWordCorrect
+                      ? ui("You found the missing word.")
+                      : <>{ui("The missing word is")} <strong>{missingWord.answer}</strong>.</>}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!missingWordChecked && (
+              <button
+                type="button"
+                className="fs-check fs-missing-check"
+                onClick={checkMissingWord}
+                disabled={!missingWordChoice}
+                aria-label={ui("Check missing word")}
+              >
+                <span className="fs-check-label">{ui("Check")}</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+            {!missingWordCorrect && missingWordChecked && (
+              <Button
+                type="button"
+                onClick={retryMissingWord}
+                className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {ui("Listen and try again")}
               </Button>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
@@ -2662,7 +2858,7 @@ function SessionFlashcardPreview({
         <div>
           <span className="fs-eyebrow"><i />{ui("Lesson preview")}</span>
           <h1 className="fs-h1">{ui("Meet today's phrases")}</h1>
-          <p className="fs-sub">{ui("Review both languages before the ten-stage sentence practice.")}</p>
+            <p className="fs-sub">{ui("Review both languages before sentence practice.")}</p>
         </div>
         <span className="fs-preview-count">
           {index + 1} <small>{ui("of")} {cards.length}</small>
@@ -2757,7 +2953,228 @@ function SessionFlashcardPreview({
           {ui("Previous")}
         </button>
         <button type="button" onClick={next} className="fs-preview-next">
-          {ui(isLast ? "Start sentence practice" : "Next flashcard")}
+          {ui(isLast ? "Start matching" : "Next flashcard")}
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type MatchDirection = "en-de" | "de-en";
+type MatchingItem = SessionPreviewCard & { matchId: string };
+
+function buildMatchingItems(cards: SessionPreviewCard[]): MatchingItem[] {
+  return cards.map((card, index) => ({
+    ...card,
+    matchId: `${card.id}-${index}`,
+    german: primaryAnswer(card.german),
+    english: primaryAnswer(card.english),
+  }));
+}
+
+function shuffledMatchTargets(items: MatchingItem[], direction: MatchDirection): MatchingItem[] {
+  const shuffled = [...items].sort(
+    (a, b) => choiceHash(`match|${direction}|${a.matchId}`) - choiceHash(`match|${direction}|${b.matchId}`)
+  );
+  if (
+    shuffled.length > 1
+    && shuffled.every((item, index) => item.matchId === items[index]?.matchId)
+  ) {
+    shuffled.push(shuffled.shift()!);
+  }
+  return shuffled;
+}
+
+function SessionMatchingPairs({
+  cards,
+  onAnswer,
+  onProgress,
+  onComplete,
+}: {
+  cards: SessionPreviewCard[];
+  onAnswer?: (correct: boolean) => void;
+  onProgress: (matched: number) => void;
+  onComplete: () => void;
+}) {
+  const items = useMemo(() => buildMatchingItems(cards), [cards]);
+  const [direction, setDirection] = useState<MatchDirection>(
+    () => learningEnglish() ? "de-en" : "en-de"
+  );
+  const [sourceId, setSourceId] = useState<string | null>(null);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [matchedIds, setMatchedIds] = useState<Set<string>>(() => new Set());
+  const [wrongIds, setWrongIds] = useState<Set<string>>(() => new Set());
+  const [resolving, setResolving] = useState(false);
+  const resetTimer = useRef<number | undefined>(undefined);
+
+  const targetItems = useMemo(
+    () => shuffledMatchTargets(items, direction),
+    [items, direction]
+  );
+  const sourceLanguage = direction === "en-de" ? "English" : "German";
+  const targetLanguage = direction === "en-de" ? "German" : "English";
+  const sourceText = (item: MatchingItem) => direction === "en-de" ? item.english : item.german;
+  const targetText = (item: MatchingItem) => direction === "en-de" ? item.german : item.english;
+  const complete = items.length > 0 && matchedIds.size === items.length;
+
+  useEffect(() => {
+    onProgress(matchedIds.size);
+  }, [matchedIds, onProgress]);
+
+  useEffect(() => () => {
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+  }, []);
+
+  const resetRound = (nextDirection: MatchDirection) => {
+    if (nextDirection === direction) return;
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    setDirection(nextDirection);
+    setSourceId(null);
+    setTargetId(null);
+    setMatchedIds(new Set());
+    setWrongIds(new Set());
+    setResolving(false);
+  };
+
+  const checkPair = (nextSourceId: string, nextTargetId: string) => {
+    if (nextSourceId === nextTargetId) {
+      setMatchedIds((current) => {
+        const next = new Set(current);
+        next.add(nextSourceId);
+        return next;
+      });
+      setSourceId(null);
+      setTargetId(null);
+      onAnswer?.(true);
+      return;
+    }
+
+    setWrongIds(new Set([nextSourceId, nextTargetId]));
+    setResolving(true);
+    onAnswer?.(false);
+    resetTimer.current = window.setTimeout(() => {
+      setSourceId(null);
+      setTargetId(null);
+      setWrongIds(new Set());
+      setResolving(false);
+    }, 650);
+  };
+
+  const selectSource = (matchId: string) => {
+    if (resolving || matchedIds.has(matchId)) return;
+    setSourceId(matchId);
+    if (targetId) checkPair(matchId, targetId);
+  };
+
+  const selectTarget = (matchId: string) => {
+    if (resolving || matchedIds.has(matchId)) return;
+    setTargetId(matchId);
+    if (sourceId) checkPair(sourceId, matchId);
+  };
+
+  return (
+    <div className="fs-card-body fs-matching">
+      <div className="fs-matching-head">
+        <div>
+          <span className="fs-eyebrow"><i />{ui("Quick match")}</span>
+          <h1 className="fs-h1">{ui("Match today's phrases")}</h1>
+          <p className="fs-sub">{ui("Choose one phrase from each column.")}</p>
+        </div>
+
+        <div className="fs-match-direction" role="group" aria-label={ui("Matching direction")}>
+          <button
+            type="button"
+            aria-pressed={direction === "en-de"}
+            className={direction === "en-de" ? "is-active" : undefined}
+            onClick={() => resetRound("en-de")}
+          >
+            <span>EN</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+            <span>DE</span>
+            <small>{ui("English to German")}</small>
+          </button>
+          <button
+            type="button"
+            aria-pressed={direction === "de-en"}
+            className={direction === "de-en" ? "is-active" : undefined}
+            onClick={() => resetRound("de-en")}
+          >
+            <span>DE</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+            <span>EN</span>
+            <small>{ui("German to English")}</small>
+          </button>
+        </div>
+      </div>
+
+      <div className="fs-match-board">
+        <div className="fs-match-column-head">
+          <span>{ui(sourceLanguage)}</span>
+          <ArrowLeftRight className="h-4 w-4" />
+          <span>{ui(targetLanguage)}</span>
+        </div>
+
+        <div className="fs-match-grid">
+          {items.map((sourceItem, rowIndex) => {
+            const targetItem = targetItems[rowIndex];
+            const sourceMatched = matchedIds.has(sourceItem.matchId);
+            const targetMatched = matchedIds.has(targetItem.matchId);
+            return (
+              <React.Fragment key={`${direction}-${sourceItem.matchId}`}>
+                <button
+                  type="button"
+                  className={cn(
+                    "fs-match-option",
+                    sourceId === sourceItem.matchId && "is-selected",
+                    sourceMatched && "is-matched",
+                    wrongIds.has(sourceItem.matchId) && "is-wrong"
+                  )}
+                  aria-pressed={sourceId === sourceItem.matchId}
+                  disabled={sourceMatched || resolving}
+                  onClick={() => selectSource(sourceItem.matchId)}
+                >
+                  <span>{sourceText(sourceItem)}</span>
+                  {sourceMatched && <CheckCircle2 className="h-4 w-4" />}
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "fs-match-option",
+                    targetId === targetItem.matchId && "is-selected",
+                    targetMatched && "is-matched",
+                    wrongIds.has(targetItem.matchId) && "is-wrong"
+                  )}
+                  aria-pressed={targetId === targetItem.matchId}
+                  disabled={targetMatched || resolving}
+                  onClick={() => selectTarget(targetItem.matchId)}
+                >
+                  <span>{targetText(targetItem)}</span>
+                  {targetMatched && <CheckCircle2 className="h-4 w-4" />}
+                </button>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="fs-match-footer">
+        <div className="fs-match-progress" aria-live="polite">
+          <div>
+            <strong>{complete ? ui("All pairs matched") : `${ui("Matched")} ${matchedIds.size} ${ui("of")} ${items.length}`}</strong>
+            <span>{ui(complete ? "Ready for sentence practice." : "Match every pair to continue.")}</span>
+          </div>
+          <div className="fs-match-progress-track" aria-hidden>
+            <i style={{ width: `${items.length ? (matchedIds.size / items.length) * 100 : 0}%` }} />
+          </div>
+        </div>
+        <button
+          type="button"
+          className="fs-preview-next"
+          disabled={!complete}
+          onClick={onComplete}
+        >
+          {ui("Start sentence practice")}
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -2770,6 +3187,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [matchingActive, setMatchingActive] = useState(false);
+  const [matchingProgress, setMatchingProgress] = useState(0);
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
   const comboRef = useRef(0);
@@ -2786,6 +3205,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     [steps]
   );
   const inPreview = previewActive && previewCards.length > 0;
+  const inMatching = matchingActive && previewCards.length > 1;
+  const inIntro = inPreview || inMatching;
 
   const registerAnswer = (ok: boolean) => {
     if (ok) {
@@ -2826,7 +3247,9 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
   const progress = inPreview
     ? Math.round(((previewIndex + 1) / previewCards.length) * 100)
-    : safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
+    : inMatching
+      ? Math.round((matchingProgress / previewCards.length) * 100)
+      : safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
   // Count only real exercises, not the final "lesson complete" summary screen,
   // so the header reads "4 of 6", not "4 of 7".
   const exerciseCount = safeSteps.filter((s: any) => s.type !== "complete").length || 1;
@@ -2849,7 +3272,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
 
   const handleCancel = () => onCancel(index);
   const skipStep = () => {
-    if (inPreview) return;
+    if (inIntro) return;
     petSpeak("No problem. Let's try the next one.", {
       durationMs: 2800,
       mood: "encourage",
@@ -2866,7 +3289,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [inPreview, index, safeSteps.length]);
+  }, [inIntro, index, safeSteps.length]);
 
   const kind: string = step?.type || step?.kind || "complete";
 
@@ -2898,16 +3321,16 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         </div>
         <div className="fs-progress">
           <div className="fs-progress-copy">
-            <span>{ui(inPreview ? "Preview" : "Lesson")}</span>
+            <span>{ui(inPreview ? "Preview" : inMatching ? "Matching" : "Lesson")}</span>
             <strong>
-              {inPreview ? previewIndex + 1 : exercisePos} {ui("of")} {inPreview ? previewCards.length : exerciseCount}
+              {inPreview ? previewIndex + 1 : inMatching ? matchingProgress : exercisePos} {ui("of")} {inIntro ? previewCards.length : exerciseCount}
             </strong>
           </div>
           <div className="fs-progress-track"><i style={{ width: `${progress}%` }} /></div>
           <strong className="fs-progress-pct">{progress}%</strong>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {import.meta.env.DEV && !inPreview && (
+          {import.meta.env.DEV && !inIntro && (
             <Button variant="ghost" onClick={skipStep} className="skip-step-btn">
               <span>{ui("Skip")}</span>
               <kbd>Alt →</kbd>
@@ -2923,7 +3346,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       {/* Main */}
       <main className="relative z-10 flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-7">
         <AnimatePresence mode="wait">
-          <motion.div key={inPreview ? "preview" : index}
+          <motion.div key={inPreview ? "preview" : inMatching ? "matching" : index}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -2936,7 +3359,17 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     index={previewIndex}
                     onIndexChange={setPreviewIndex}
                     onKnown={onPreviewKnown ?? ((itemId: string) => onGradeItem?.(itemId, "know"))}
-                    onStart={() => setPreviewActive(false)}
+                    onStart={() => {
+                      setPreviewActive(false);
+                      setMatchingActive(previewCards.length > 1);
+                    }}
+                  />
+                ) : inMatching ? (
+                  <SessionMatchingPairs
+                    cards={previewCards}
+                    onAnswer={registerAnswer}
+                    onProgress={setMatchingProgress}
+                    onComplete={() => setMatchingActive(false)}
                   />
                 ) : (
                   <>
