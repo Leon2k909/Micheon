@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { loadGradeStore, statusForId, type ItemStatus } from "@/lib/activity";
+import { loadGradeStore, setItemStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
 import { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
@@ -354,6 +354,7 @@ export function TestsView({
   const [feedback, setFeedback] = useState<TestResult | null>(null);
   const [results, setResults] = useState<TestResult[]>([]);
   const [finished, setFinished] = useState(false);
+  const [knownResultIds, setKnownResultIds] = useState<Set<string>>(() => new Set());
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
   const selectedPool = useMemo(
@@ -376,6 +377,7 @@ export function TestsView({
     setFeedback(null);
     setResults([]);
     setFinished(false);
+    setKnownResultIds(new Set());
   };
 
   const startTest = () => {
@@ -391,6 +393,7 @@ export function TestsView({
     setFeedback(null);
     setResults([]);
     setFinished(false);
+    setKnownResultIds(new Set());
   };
 
   const gradeAnswer = (skipped = false) => {
@@ -422,6 +425,16 @@ export function TestsView({
     setQuestionIndex((index) => index + 1);
     setAnswer("");
     setFeedback(null);
+  };
+
+  const markKnown = (item: TestItem, continueTest = false) => {
+    setItemStatus(item.id, "known", profile, item.aliases);
+    setKnownResultIds((current) => {
+      const next = new Set(current);
+      next.add(item.id);
+      return next;
+    });
+    if (continueTest) nextQuestion();
   };
 
   const hearPrompt = () => {
@@ -477,11 +490,21 @@ export function TestsView({
               <div className="mt-4 divide-y divide-[var(--border)] rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] px-4">
                 {missed.slice(0, 8).map((result, index) => {
                   const copy = getQuestionCopy(result.question);
+                  const markedKnown = knownResultIds.has(result.question.item.id);
                   return (
-                    <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
+                    <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
                       <p className="font-bold text-[var(--text-2)]">{copy.source}</p>
                       <ArrowRight className="hidden h-4 w-4 text-[var(--text-3)] sm:block" />
                       <p className="font-black text-[var(--text-1)] sm:text-right">{primaryAnswer(copy.target)}</p>
+                      <button
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-black text-emerald-600 transition-colors hover:bg-emerald-500/15 disabled:cursor-default disabled:opacity-65 dark:text-emerald-400"
+                        disabled={markedKnown}
+                        onClick={() => markKnown(result.question.item)}
+                        type="button"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        {ui(markedKnown ? "Known" : "Know it")}
+                      </button>
                     </div>
                   );
                 })}
@@ -670,15 +693,25 @@ export function TestsView({
                   </button>
                 </>
               ) : (
-                <button
-                  className="ml-auto inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-[16px] bg-[var(--ink)] px-6 text-sm font-black text-[var(--ink-text)] transition-transform active:scale-[0.98]"
-                  data-testid="next-test-question"
-                  onClick={nextQuestion}
-                  type="button"
-                >
-                  {questionIndex === questions.length - 1 ? ui("See results") : ui("Next question")}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+                <div className="ml-auto flex flex-wrap justify-end gap-3">
+                  <button
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 px-5 text-sm font-black text-emerald-600 transition-colors hover:bg-emerald-500/15 dark:text-emerald-400"
+                    onClick={() => markKnown(currentQuestion.item, true)}
+                    type="button"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {ui("Know it")}
+                  </button>
+                  <button
+                    className="inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-[16px] bg-[var(--ink)] px-6 text-sm font-black text-[var(--ink-text)] transition-transform active:scale-[0.98]"
+                    data-testid="next-test-question"
+                    onClick={nextQuestion}
+                    type="button"
+                  >
+                    {questionIndex === questions.length - 1 ? ui("See results") : ui("Next question")}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               )}
             </div>
           </div>

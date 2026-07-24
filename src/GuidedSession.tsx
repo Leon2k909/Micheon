@@ -1585,28 +1585,24 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-            {!hasFr && (
-              <>
-                <button
-                  aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
-                  className="grade-btn grade-btn-known"
-                  onClick={markKnown}
-                  type="button"
-                >
-                  {ui("Know it")}
-                  <kbd className="grade-kbd">Alt K</kbd>
-                </button>
-                <button
-                  aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
-                  className="grade-btn grade-btn-struggle"
-                  onClick={markStruggle}
-                  type="button"
-                >
-                  {ui("Struggle")}
-                  <kbd className="grade-kbd">Alt S</kbd>
-                </button>
-              </>
-            )}
+            <button
+              aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
+              className="grade-btn grade-btn-known"
+              onClick={markKnown}
+              type="button"
+            >
+              {ui("Know it")}
+              <kbd className="grade-kbd">Alt K</kbd>
+            </button>
+            <button
+              aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
+              className="grade-btn grade-btn-struggle"
+              onClick={markStruggle}
+              type="button"
+            >
+              {ui("Struggle")}
+              <kbd className="grade-kbd">Alt S</kbd>
+            </button>
             {phase !== "MeaningPick" && phase !== "ListenPick" && phase !== "MissingWord" && (
               <button
                 className={cn("fs-listen", ttsOn && "is-speaking")}
@@ -1744,8 +1740,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 active={phase === "Type"}
                 onHear={() => tts(item.de, 0.85, "de-DE")}
                 speechState={phase === "Speak" ? speechPhraseMatch : null}
-                onKnown={markKnown}
-                onStruggle={markStruggle}
               />
               <LangBlock
                 label="French"
@@ -1753,8 +1747,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 active={phase === "French"}
                 onHear={() => tts(item.fr, 0.85, "fr-FR")}
                 speechState={null}
-                onKnown={markKnown}
-                onStruggle={markStruggle}
               />
               <div className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-500">
                 Meaning: <span className="text-zinc-700">{shownEnglish}</span>

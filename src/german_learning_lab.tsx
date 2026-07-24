@@ -357,14 +357,11 @@ export default function GermanLearningLab() {
         if (!id || counted.has(id)) return;
         counted.add(id);
         const prior = next[id];
-        if (prior?.lastGrade === "struggle") {
-          // A struggle marked DURING this session keeps the item in practice.
-          // But a struggle from a PREVIOUS session is cleared by completing the
-          // item again — otherwise there is no way out: the item requeues every
-          // session forever (the "same one lesson on every continue" loop).
-          const struggledAt = prior.updatedAt ? Date.parse(prior.updatedAt) : 0;
-          if (struggledAt >= sessionStart) return;
-        }
+        // Items are saved as each step is left and once more when the lesson
+        // closes. "Know it" also writes immediately. Keep all three paths from
+        // advancing the same memory record more than once in one session.
+        const updatedAt = prior?.updatedAt ? Date.parse(prior.updatedAt) : 0;
+        if (Number.isFinite(updatedAt) && updatedAt >= sessionStart) return;
         // One rung up the memory ladder; the item comes back for review when due.
         next[id] = recordSuccess(prior);
       };
