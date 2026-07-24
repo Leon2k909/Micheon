@@ -13,23 +13,16 @@
 name: release-build
 
 on:
-  # Creating a release via the API also creates the tag, which fires this.
-  # A `release: [published]` trigger was removed: it fired a SECOND identical
-  # run, and the two raced to upload the same asset names — one won, the other
-  # died on the upload step and reported the release as failed even though the
-  # artifacts were fine. workflow_dispatch covers publishing against a tag that
-  # already exists.
   push:
-    tags: ["v*"]
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to attach builds to (e.g. v1.0.30)"
+        description: "Release tag to build or rebuild (e.g. v1.0.38)"
         required: true
 
-# Belt and braces: never let two runs for the same tag upload concurrently.
 concurrency:
-  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -38,25 +31,41 @@ permissions:
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      should_build: ${{ steps.release.outputs.should_build }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Ensure GitHub release exists
+        id: release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || '' }}
         run: |
+          TAG="${REQUESTED_TAG:-v$(node -p "require('./package.json').version")}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists"
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              echo "should_build=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_build=false" >> "$GITHUB_OUTPUT"
+            fi
           else
             gh release create "$TAG" \
-              --verify-tag \
+              --target "$GITHUB_SHA" \
               --generate-notes \
               --title "Micheon $TAG" \
               --repo "$GITHUB_REPOSITORY"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
           fi
 
   build:
     needs: prepare-release
+    if: needs.prepare-release.outputs.should_build == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -104,7 +113,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           gh release upload "$TAG" release/*.exe release/latest.yml \
             --clobber --repo "$GITHUB_REPOSITORY"
@@ -114,7 +123,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           gh release upload "$TAG" \
             release/*.AppImage \
