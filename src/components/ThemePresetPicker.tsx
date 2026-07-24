@@ -1,6 +1,7 @@
 import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ThemePreset } from "@/lib/theme";
+import { ui } from "@/lib/i18n";
 
 type PresetOption = {
   id: ThemePreset;
@@ -23,7 +24,7 @@ const OPTIONS: PresetOption[] = [
     label: "Butter",
     description: "Warm surfaces with Butter's blue accent.",
     system: "Astryx",
-    colors: ["#fdfbe4", "#ffffff", "#225bff", "#fdee8c"],
+    colors: ["#fdfbe4", "#ffffff", "#225bff", "#7fa3ff"],
   },
   {
     id: "butter-purple",
@@ -45,19 +46,19 @@ export function ThemePresetPicker({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-black text-[var(--text-1)]">Interface theme</p>
+          <p className="text-sm font-black text-[var(--text-1)]">{ui("Interface theme")}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-            Choose the design system separately from light or dark mode.
+            {ui("Choose the design system separately from light or dark mode.")}
           </p>
         </div>
         <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-dim)] px-2.5 py-1 text-[10px] font-black text-[var(--accent)]">
           <Sparkles className="h-3 w-3" />
-          3 themes
+          {ui("3 themes")}
         </span>
       </div>
 
       <div
-        aria-label="Interface theme"
+        aria-label={ui("Interface theme")}
         className="mt-3 grid gap-2 sm:grid-cols-3"
         role="radiogroup"
       >
@@ -98,10 +99,10 @@ export function ThemePresetPicker({
               <span className="mt-2.5 flex items-start justify-between gap-2">
                 <span className="min-w-0">
                   <span className="block truncate text-xs font-black text-[var(--text-1)]">
-                    {option.label}
+                    {ui(option.label)}
                   </span>
                   <span className="mt-0.5 block text-[9px] font-black uppercase text-[var(--text-3)]">
-                    {option.system}
+                    {ui(option.system)}
                   </span>
                 </span>
                 <span
@@ -116,7 +117,7 @@ export function ThemePresetPicker({
                 </span>
               </span>
               <span className="mt-2 block text-[10px] font-semibold leading-4 text-[var(--text-3)]">
-                {option.description}
+                {ui(option.description)}
               </span>
             </button>
           );
@@ -124,7 +125,7 @@ export function ThemePresetPicker({
       </div>
 
       <p className="mt-2 text-[10px] font-semibold leading-4 text-[var(--text-3)]">
-        Choosing a preset clears manual colour overrides so the selected design is shown accurately.
+        {ui("Choosing a preset clears manual colour overrides so the selected design is shown accurately.")}
       </p>
     </div>
   );

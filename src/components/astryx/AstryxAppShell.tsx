@@ -42,6 +42,7 @@ import {
 import type { TopNavNotification, TopNavSearchItem } from "@/components/TopNav";
 import type { Theme } from "@/lib/theme";
 import { setTheme } from "@/lib/theme";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 type AstryxAppShellProps = {
   activeTab: string;
@@ -74,22 +75,22 @@ function AstryxNavigation({
 }: Pick<AstryxAppShellProps, "activeTab" | "setActiveTab">) {
   return (
     <>
-      <SideNavSection title="Learn" isHeaderHidden>
+      <SideNavSection title={ui("Learn")} isHeaderHidden>
         {NAV_ITEMS.slice(0, 4).map((item) => (
           <SideNavItem
             icon={item.icon}
             isSelected={activeTab === item.id}
             key={item.id}
-            label={item.label}
+            label={ui(item.label)}
             onClick={() => setActiveTab(item.id)}
           />
         ))}
       </SideNavSection>
-      <SideNavSection title="Account">
+      <SideNavSection title={ui("Account")}>
         <SideNavItem
           icon={Settings}
           isSelected={activeTab === "profile"}
-          label="Preferences"
+          label={ui("Preferences")}
           onClick={() => setActiveTab("profile")}
         />
       </SideNavSection>
@@ -129,8 +130,8 @@ function AstryxSearchDialog({
         header={
           <DialogHeader
             onOpenChange={onOpenChange}
-            subtitle="Find a real lesson, game, or account page."
-            title="Search Micheon"
+            subtitle={ui("Find a real lesson, game, or account page.")}
+            title={ui("Search Micheon")}
           />
         }
         content={
@@ -139,22 +140,22 @@ function AstryxSearchDialog({
               <TextInput
                 hasAutoFocus
                 hasClear
-                label="Search"
+                label={ui("Search")}
                 onChange={setQuery}
-                placeholder="Search lessons, phrases, and games"
+                placeholder={ui("Search lessons, phrases, and games")}
                 startIcon={Search}
                 value={query}
               />
               <List
                 density="compact"
                 hasDividers
-                header={<Heading level={3}>{results.length ? "Results" : "No matches"}</Heading>}
+                header={<Heading level={3}>{ui(results.length ? "Results" : "No matches")}</Heading>}
               >
                 {results.map((item) => (
                   <ListItem
                     description={`${item.group} · ${item.subtitle}`}
                     endContent={
-                      item.actionLabel ? <Badge label={item.actionLabel} variant="purple" /> : undefined
+                      item.actionLabel ? <Badge label={ui(item.actionLabel)} variant="purple" /> : undefined
                     }
                     key={item.id}
                     label={item.title}
@@ -190,23 +191,29 @@ function AstryxNotificationsDialog({
         header={
           <DialogHeader
             onOpenChange={onOpenChange}
-            subtitle={`${notifications.filter((item) => item.unread).length} useful update${
-              notifications.filter((item) => item.unread).length === 1 ? "" : "s"
-            } waiting.`}
-            title="Notifications"
+            subtitle={
+              uiIsGerman()
+                ? `${notifications.filter((item) => item.unread).length} nützliche ${
+                    notifications.filter((item) => item.unread).length === 1 ? "Meldung wartet" : "Meldungen warten"
+                  }.`
+                : `${notifications.filter((item) => item.unread).length} useful update${
+                    notifications.filter((item) => item.unread).length === 1 ? "" : "s"
+                  } waiting.`
+            }
+            title={ui("Notifications")}
           />
         }
         content={
           <LayoutContent>
-            <List hasDividers header={<Heading level={3}>Today</Heading>}>
+            <List hasDividers header={<Heading level={3}>{ui("Today")}</Heading>}>
               {notifications.map((notification) => (
                 <ListItem
-                  description={notification.body}
+                  description={ui(notification.body)}
                   endContent={
-                    notification.unread ? <Badge label="New" variant="blue" /> : undefined
+                    notification.unread ? <Badge label={ui("New")} variant="blue" /> : undefined
                   }
                   key={notification.id}
-                  label={notification.title}
+                  label={ui(notification.title)}
                   onClick={() => select(notification)}
                   startContent={<Icon color={notification.unread ? "accent" : "secondary"} icon={Bell} />}
                 />
@@ -218,7 +225,7 @@ function AstryxNotificationsDialog({
           <LayoutFooter>
             <HStack hAlign="end">
               <Button
-                label="Close notifications"
+                label={ui("Close notifications")}
                 onClick={() => onOpenChange(false)}
                 variant="secondary"
               />
@@ -263,13 +270,13 @@ export function AstryxAppShell({
                 <HStack gap={2} wrap="wrap">
                   <Button
                     icon={<Icon icon={Repeat} size="sm" />}
-                    label="Switch course"
+                    label={ui("Switch course")}
                     onClick={onSwitchCourse}
                     variant="secondary"
                   />
                   <Button
                     icon={<Icon icon={LogOut} size="sm" />}
-                    label="Sign out"
+                    label={ui("Sign out")}
                     onClick={onSignOut}
                     variant="ghost"
                   />
@@ -296,33 +303,33 @@ export function AstryxAppShell({
                 <Button
                   icon={<Icon icon={Search} size="sm" />}
                   isIconOnly
-                  label="Search"
+                  label={ui("Search")}
                   onClick={() => setSearchOpen(true)}
-                  tooltip="Search lessons, phrases, and games"
+                  tooltip={ui("Search lessons, phrases, and games")}
                   variant="ghost"
                 />
                 <Button
                   icon={<Icon icon={Bell} size="sm" />}
                   isIconOnly
-                  label="Notifications"
+                  label={ui("Notifications")}
                   onClick={() => setNotificationsOpen(true)}
-                  tooltip="Open notifications"
+                  tooltip={ui("Open notifications")}
                   variant="ghost"
                 />
                 <Button
                   icon={<Icon icon={theme === "light" ? Moon : Sun} size="sm" />}
                   isIconOnly
-                  label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                  label={ui(theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
                   onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                  tooltip={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                  tooltip={ui(theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
                   variant="ghost"
                 />
                 <Button
                   icon={<Icon icon={Settings} size="sm" />}
                   isIconOnly
-                  label="Preferences"
+                  label={ui("Preferences")}
                   onClick={() => setActiveTab("profile")}
-                  tooltip="Open preferences"
+                  tooltip={ui("Open preferences")}
                   variant="ghost"
                 />
               </>
@@ -336,18 +343,18 @@ export function AstryxAppShell({
               >
                 <TopNavHeading
                   heading="Micheon"
-                  subheading="made with love by Leon & Michelle"
+                  subheading={ui("made with love by Leon & Michelle")}
                   logo={
                     <NavIcon icon={<Icon color="inherit" icon={Languages} size="sm" />} />
                   }
                 />
               </span>
             }
-            label="Micheon navigation"
+            label={ui("Micheon navigation")}
             startContent={
               <HStack gap={2} vAlign="center">
                 <Badge label={brandName} variant="neutral" />
-                <Badge label={`${streak} day streak`} variant="purple" />
+                <Badge label={`${streak} ${ui("day streak")}`} variant="purple" />
                 <Text color="secondary" type="supporting">
                   {xp.toLocaleString()} XP
                 </Text>

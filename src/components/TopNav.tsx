@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui } from "@/lib/i18n";
+import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import { MuteButton } from "@/components/MuteButton";
 import { getLevelInfo } from "@/Gamification";
 
@@ -209,8 +209,8 @@ export function TopNav({
             className="group flex shrink-0 items-center gap-3 rounded-2xl px-1 text-left"
             onClick={() => (onBrandClick ? onBrandClick() : openTab("dashboard"))}
             type="button"
-            aria-label="Switch course"
-            title="Switch course"
+            aria-label={ui("Switch course")}
+            title={ui("Switch course")}
           >
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl transition-transform group-hover:scale-105 group-hover:shadow-[0_0_12px_0_rgba(157,141,241,0.5)]">
               {brandIcon ? (
@@ -220,13 +220,13 @@ export function TopNav({
               )}
             </div>
             <div className="hidden sm:block">
-              <p className="text-[15px] font-black tracking-tight text-[var(--text-1)]">{brandName}</p>
-              <p className="text-[11px] font-semibold text-[var(--text-3)]">{streak} {ui("day streak · switch")}</p>
+              <p className="text-[15px] font-black tracking-tight text-[var(--text-1)]">{ui(brandName)}</p>
+              <p className="text-[11px] font-semibold text-[var(--text-3)]">{ui("made with love by Leon & Michelle")}</p>
             </div>
           </button>
 
           <nav
-            aria-label="Main"
+            aria-label={ui("Main")}
             className="relative hidden h-14 select-none items-center gap-1.5 rounded-full bg-[var(--surface-2)] p-1.5 md:flex"
             onPointerMove={handleNavPointerMove}
           >
@@ -266,18 +266,18 @@ export function TopNav({
           <div className="flex shrink-0 items-center gap-2">
             {onOpenReader && (
               <button
-                aria-label={readerLabel}
-                title={readerLabel}
+                aria-label={ui(readerLabel)}
+                title={ui(readerLabel)}
                 onClick={onOpenReader}
                 className="hidden h-10 items-center gap-2 rounded-full bg-[var(--accent-dim)] px-3.5 text-[12px] font-black text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white sm:flex"
                 type="button"
               >
                 <BookOpen className="h-4 w-4" />
-                <span className="hidden lg:inline">{readerLabel}</span>
+                <span className="hidden lg:inline">{ui(readerLabel)}</span>
               </button>
             )}
             <button
-              aria-label="Search"
+              aria-label={ui("Search")}
               aria-expanded={searchOpen}
               className={cn(
                 "hidden h-10 w-10 items-center justify-center rounded-full text-[var(--text-1)] transition-colors sm:flex",
@@ -294,7 +294,7 @@ export function TopNav({
               <Search className="h-5 w-5" />
             </button>
             <button
-              aria-label="Notifications"
+              aria-label={ui("Notifications")}
               aria-expanded={notificationsOpen}
               className={cn(
                 "relative hidden h-10 w-10 items-center justify-center rounded-full text-[var(--text-1)] transition-colors sm:flex",
@@ -325,7 +325,13 @@ export function TopNav({
                 "flex items-center gap-2.5 rounded-full transition-colors lg:pl-3.5 lg:pr-1 lg:py-1",
                 avatarMenuOpen ? "lg:bg-[var(--accent-dim)]" : "lg:bg-[var(--surface-2)]"
               )}
-              title={level.nxt ? `Level ${level.cur.level} — ${level.pct}% to ${level.nxt.label}` : `Level ${level.cur.level} — max level`}
+              title={uiIsGerman()
+                ? level.nxt
+                  ? `Stufe ${level.cur.level} — ${level.pct}% bis ${ui(level.nxt.label)}`
+                  : `Stufe ${level.cur.level} — höchste Stufe`
+                : level.nxt
+                  ? `Level ${level.cur.level} — ${level.pct}% to ${level.nxt.label}`
+                  : `Level ${level.cur.level} — max level`}
             >
               <div className="relative hidden h-7 w-7 lg:block">
                 <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28" aria-hidden="true">
@@ -343,7 +349,7 @@ export function TopNav({
               </div>
               <span className="hidden text-[12px] font-black text-[var(--text-1)] lg:inline">{xp.toLocaleString()} XP</span>
               <button
-                aria-label="Account menu"
+                aria-label={ui("Account menu")}
                 aria-haspopup="menu"
                 aria-expanded={avatarMenuOpen}
                 data-testid="topnav-avatar"
@@ -363,7 +369,7 @@ export function TopNav({
               </button>
             </div>
             <button
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-label={ui(mobileOpen ? "Close menu" : "Open menu")}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-1)] md:hidden"
               onClick={() => setMobileOpen((value) => !value)}
               type="button"
@@ -395,7 +401,7 @@ export function TopNav({
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-3)]" />
                 <input
-                  aria-label="Search Micheon"
+                  aria-label={ui("Search Micheon")}
                   className="h-14 w-full rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] pl-12 pr-12 text-base font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)] focus:bg-[var(--surface)]"
                   data-testid="search-input"
                   onChange={(event) => setSearchQuery(event.target.value)}
@@ -403,13 +409,13 @@ export function TopNav({
                     if (event.key === "Escape") closeOverlays();
                     if (event.key === "Enter" && filteredSearchItems[0]) selectSearchItem(filteredSearchItems[0]);
                   }}
-                  placeholder="Search lessons, practice, progress"
+                  placeholder={ui("Search lessons, practice, progress")}
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                 />
                 <button
-                  aria-label="Close search"
+                  aria-label={ui("Close search")}
                   className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--text-3)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
                   onClick={closeOverlays}
                   type="button"
@@ -432,14 +438,16 @@ export function TopNav({
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-[var(--accent-dim)] px-2.5 py-1 text-[10px] font-black text-[var(--accent)]">
-                              {item.group}
+                              {ui(item.group)}
                             </span>
                             {item.actionLabel && (
-                              <span className="text-[11px] font-bold text-[var(--text-3)]">{item.actionLabel}</span>
+                              <span className="text-[11px] font-bold text-[var(--text-3)]">{ui(item.actionLabel)}</span>
                             )}
                           </div>
-                          <p className="mt-2 truncate text-base font-black text-[var(--text-1)]">{item.title}</p>
-                          <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[var(--text-3)]">{item.subtitle}</p>
+                          <p className="mt-2 truncate text-base font-black text-[var(--text-1)]">{uiOr(item.title, "Lerninhalt")}</p>
+                          <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[var(--text-3)]">
+                            {uiOr(item.subtitle, "Öffne diesen Lerninhalt, um weiterzumachen.")}
+                          </p>
                         </div>
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--ink-text)] transition-transform group-hover:translate-x-0.5">
                           <ArrowRight className="h-4 w-4" />
@@ -449,8 +457,8 @@ export function TopNav({
                   </div>
                 ) : (
                   <div className="rounded-[20px] bg-[var(--surface-2)] p-6 text-center">
-                    <p className="text-sm font-black text-[var(--text-1)]">No matching result</p>
-                    <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Try a lesson name, German topic, or practice type.</p>
+                    <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching result")}</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Try a lesson name, German topic, or practice type.")}</p>
                   </div>
                 )}
               </div>
@@ -479,21 +487,23 @@ export function TopNav({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">Notifications</h2>
+                  <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Notifications")}</h2>
                   <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
                     {muted
-                      ? "Muted — the alert dot is hidden."
+                      ? ui("Muted — the alert dot is hidden.")
                       : unreadCount > 0
-                        ? `${unreadCount} item${unreadCount === 1 ? "" : "s"} need attention.`
-                        : "You are up to date."}
+                        ? uiIsGerman()
+                          ? `${unreadCount} ${unreadCount === 1 ? "Eintrag benötigt" : "Einträge benötigen"} deine Aufmerksamkeit.`
+                          : `${unreadCount} item${unreadCount === 1 ? "" : "s"} need attention.`
+                        : ui("You are up to date.")}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={toggleMuted}
                   aria-pressed={muted}
-                  aria-label={muted ? "Unmute notifications" : "Mute notifications"}
-                  title={muted ? "Notifications muted — click to unmute" : "Mute notifications"}
+                  aria-label={ui(muted ? "Unmute notifications" : "Mute notifications")}
+                  title={ui(muted ? "Notifications muted — click to unmute" : "Mute notifications")}
                   data-testid="notifications-mute"
                   className={cn(
                     "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors active:scale-95",
@@ -522,11 +532,13 @@ export function TopNav({
                       )}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-black text-[var(--text-1)]">{item.title}</span>
-                      <span className="mt-1 block text-sm font-semibold leading-5 text-[var(--text-3)]">{item.body}</span>
+                      <span className="block text-sm font-black text-[var(--text-1)]">{uiOr(item.title, "Lernhinweis")}</span>
+                      <span className="mt-1 block text-sm font-semibold leading-5 text-[var(--text-3)]">
+                        {uiOr(item.body, "Eine neue Lernaufgabe ist bereit.")}
+                      </span>
                       {item.actionLabel && (
                         <span className="mt-3 inline-flex items-center gap-1 text-xs font-black text-[var(--accent)]">
-                          {item.actionLabel}
+                          {ui(item.actionLabel)}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </span>
                       )}
@@ -563,7 +575,7 @@ export function TopNav({
                   {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : initial}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-[var(--text-1)]">{userName || "Your profile"}</p>
+                  <p className="truncate text-sm font-black text-[var(--text-1)]">{userName || ui("Your profile")}</p>
                   {userEmail && <p className="truncate text-xs font-semibold text-[var(--text-3)]">{userEmail}</p>}
                 </div>
               </div>
@@ -575,7 +587,7 @@ export function TopNav({
                   role="menuitem"
                   type="button"
                 >
-                  <User className="h-4 w-4" /> Profile settings
+                  <User className="h-4 w-4" /> {ui("Profile settings")}
                 </button>
                 {onSwitchCourse && (
                   <button
@@ -584,7 +596,7 @@ export function TopNav({
                     role="menuitem"
                     type="button"
                   >
-                    <Repeat className="h-4 w-4" /> Switch course
+                    <Repeat className="h-4 w-4" /> {ui("Switch course")}
                   </button>
                 )}
                 {onSignOut && (
@@ -594,7 +606,7 @@ export function TopNav({
                     role="menuitem"
                     type="button"
                   >
-                    <LogOut className="h-4 w-4" /> Sign out
+                    <LogOut className="h-4 w-4" /> {ui("Sign out")}
                   </button>
                 )}
               </div>
@@ -631,7 +643,7 @@ export function TopNav({
                   type="button"
                 >
                   <Search className="h-4 w-4" />
-                  Search
+                  {ui("Search")}
                 </button>
                 <button
                   className="relative flex items-center justify-center gap-2 rounded-2xl bg-[var(--surface-2)] px-3 py-3 text-sm font-black text-[var(--text-1)]"
@@ -643,7 +655,7 @@ export function TopNav({
                   type="button"
                 >
                   {muted ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-                  Alerts
+                  {ui("Alerts")}
                   {!muted && unreadCount > 0 && (
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[var(--yellow)]" />
                   )}
@@ -663,7 +675,7 @@ export function TopNav({
                     type="button"
                   >
                     <item.icon className="h-5 w-5" />
-                    {item.label}
+                    {ui(item.label)}
                   </button>
                 );
               })}

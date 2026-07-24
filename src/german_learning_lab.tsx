@@ -20,7 +20,7 @@ import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
 import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import {
@@ -28,15 +28,17 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
-import { recordActivitySession } from "@/lib/activity";
+import { loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
 import { CourseLessonsView } from "@/components/course/CourseLessonsView";
 import { CourseDashboardView } from "@/components/course/CourseDashboardView";
 import { CourseSession } from "@/components/course/CourseSession";
+import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { getActiveCourseId, setActiveCourseId, loadCourseProgress, saveCourseProgress } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
@@ -48,10 +50,11 @@ type ProgressStats = {
 // learner is a German speaker studying English. IDs and everything else are kept.
 function swapStepForEnglish(step: any): any {
   if (step?.type === "sentence" && step.item) {
-    // `say` respells the GERMAN aloud. After the swap the learner is saying the
-    // English line, so the hint would be pronunciation advice for the wrong
-    // sentence — drop it rather than mislead.
-    const { say, ...item } = step.item;
+    // These fields explain German register, pronunciation, short forms, or
+    // usage. After the swap the learner is practising the English line, so
+    // keeping them would show irrelevant German-specific coaching.
+    const item = { ...step.item };
+    for (const key of ["say", "long", "short", "use", "when", "tierNote"]) delete item[key];
     return { ...step, item: { ...item, de: step.item.en, en: step.item.de } };
   }
   if (step?.type === "dialogue" && Array.isArray(step.dialogue?.lines)) {
@@ -59,7 +62,11 @@ function swapStepForEnglish(step: any): any {
       ...step,
       dialogue: {
         ...step.dialogue,
-        lines: step.dialogue.lines.map((l: any) => ({ ...l, de: l.en, en: l.de })),
+        lines: step.dialogue.lines.map((line: any) => {
+          const rest = { ...line };
+          for (const key of ["say", "long", "short", "use", "when", "tierNote"]) delete rest[key];
+          return { ...rest, de: line.en, en: line.de };
+        }),
       },
     };
   }
@@ -99,6 +106,11 @@ function withRegisterCheck(steps: any[], user: any): any[] {
 export default function GermanLearningLab() {
   const user = getAuthUser()!;
   const themePreferences = useAppThemePreferences();
+  const {
+    selectedPet,
+    speak: petSpeak,
+    speech: petSpeech,
+  } = useCodexPets();
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
@@ -123,6 +135,68 @@ export default function GermanLearningLab() {
     externalWords:     loadScopedJson("externalWords", user.externalWordsLearned ?? 0, user) as number,
   }));
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
+  const petSpeechRef = React.useRef(petSpeech);
+  const petQuizIndex = React.useRef(0);
+  petSpeechRef.current = petSpeech;
+
+  const petQuizItems = React.useMemo(
+    () => {
+      const grades = loadGradeStore(user);
+      const eligible = buildCatalog(apiParts).filter((item) => {
+        const de = item.de?.trim() ?? "";
+        const en = item.en?.trim() ?? "";
+        return de.length >= 2 && en.length >= 2 && de.length <= 64 && en.length <= 64;
+      });
+      const seen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) !== "new");
+      const unseen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) === "new");
+      return [...seen, ...unseen].slice(0, 1200);
+    },
+    [apiParts, user]
+  );
+
+  useEffect(() => {
+    if (!selectedPet || showGuidedSession || showPlacementTest || petQuizItems.length === 0) {
+      return undefined;
+    }
+
+    let answerTimer: number | undefined;
+    let questionTimer: number | undefined;
+    const learnsEnglish = learningEnglish();
+
+    const scheduleQuestion = (delayMs: number) => {
+      questionTimer = window.setTimeout(askQuestion, delayMs);
+    };
+
+    const askQuestion = () => {
+      if (petSpeechRef.current) {
+        scheduleQuestion(15000);
+        return;
+      }
+
+      const index = (petQuizIndex.current * 37) % petQuizItems.length;
+      const item = petQuizItems[index];
+      petQuizIndex.current += 1;
+
+      const question = learnsEnglish
+        ? `Weißt du, wie man „${item.de}“ auf Englisch sagt?`
+        : `Do you know how to say “${item.en}” in German?`;
+      const answer = learnsEnglish
+        ? `Auf Englisch: “${item.en}”.`
+        : `In German: „${item.de}“.`;
+
+      petSpeak(question, { durationMs: 6500, mood: "greeting" });
+      answerTimer = window.setTimeout(() => {
+        petSpeak(answer, { durationMs: 5000, mood: "success" });
+      }, 7000);
+      scheduleQuestion(120000);
+    };
+
+    scheduleQuestion(30000);
+    return () => {
+      if (answerTimer) window.clearTimeout(answerTimer);
+      if (questionTimer) window.clearTimeout(questionTimer);
+    };
+  }, [petQuizItems, petSpeak, selectedPet, showGuidedSession, showPlacementTest]);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -456,42 +530,42 @@ export default function GermanLearningLab() {
   const topNavSearchItems: TopNavSearchItem[] = [
     {
       id: "page-dashboard",
-      title: "Dashboard",
-      subtitle: "Today, schedule, next lesson, and daily target.",
-      group: "Page",
-      actionLabel: "Open",
+      title: ui("Dashboard"),
+      subtitle: ui("Today, schedule, next lesson, and daily target."),
+      group: ui("Page"),
+      actionLabel: ui("Open"),
       onSelect: () => openTab("dashboard"),
     },
     {
       id: "page-lessons",
-      title: "Lessons",
-      subtitle: "Browse all German modules and word-bank sets.",
-      group: "Page",
-      actionLabel: "Open",
+      title: ui("Lessons"),
+      subtitle: ui(uiIsGerman() ? "Browse all English modules and word-bank sets." : "Browse all German modules and word-bank sets."),
+      group: ui("Page"),
+      actionLabel: ui("Open"),
       onSelect: () => openTab("learn"),
     },
     {
       id: "page-practice",
-      title: "Practice library",
-      subtitle: "Games for spelling, recall, verbs, and quick recognition.",
-      group: "Page",
-      actionLabel: "Open",
+      title: ui("Practice library"),
+      subtitle: ui("Games for spelling, recall, verbs, and quick recognition."),
+      group: ui("Page"),
+      actionLabel: ui("Open"),
       onSelect: () => openTab("games"),
     },
     {
       id: "page-profile",
-      title: "Profile and progress",
-      subtitle: "Settings, account details, milestones, XP, and learning totals.",
-      group: "Page",
-      actionLabel: "Open",
+      title: ui("Profile and progress"),
+      subtitle: ui("Settings, account details, milestones, XP, and learning totals."),
+      group: ui("Page"),
+      actionLabel: ui("Open"),
       onSelect: () => openTab("profile"),
     },
     ...pathParts.map(([id, part]) => ({
       id: `lesson-${id}`,
       title: part.theme,
       subtitle: `${part.level} · ${part.description}`,
-      group: id.startsWith("wordbank") ? "Word bank" : "Lesson",
-      actionLabel: "Start",
+      group: ui(id.startsWith("wordbank") ? "Word bank" : "Lesson"),
+      actionLabel: ui("Start"),
       onSelect: () => startSession(id),
     })),
     ...[
@@ -505,8 +579,8 @@ export default function GermanLearningLab() {
       id: `practice-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
       title,
       subtitle,
-      group: "Practice",
-      actionLabel: "Open",
+      group: ui("Practice"),
+      actionLabel: ui("Open"),
       onSelect: () => openTab("games"),
     })),
   ];
@@ -514,33 +588,33 @@ export default function GermanLearningLab() {
   const topNavNotifications: TopNavNotification[] = [
     {
       id: "next-lesson",
-      title: `${currentPart?.theme ?? "Next lesson"} is ready`,
-      body: currentPart?.focus ?? "Continue your current German lesson.",
-      actionLabel: "Start lesson",
+      title: `${currentPart?.theme ?? ui("Next lesson")} ${ui("is ready")}`,
+      body: currentPart?.focus ?? ui(uiIsGerman() ? "Continue your current English lesson." : "Continue your current German lesson."),
+      actionLabel: ui("Start lesson"),
       unread: !dailyLessonDone,
       onSelect: () => startSession(),
     },
     {
       id: "daily-target",
-      title: dailyLessonDone ? "Daily lesson logged" : "Daily target waiting",
-      body: dailyLessonDone ? "You have a session recorded. Add a few words if you want extra progress." : "Finish 1 lesson and track 5 words to move today forward.",
-      actionLabel: dailyLessonDone ? "View profile" : "Continue",
+      title: ui(dailyLessonDone ? "Daily lesson logged" : "Daily target waiting"),
+      body: ui(dailyLessonDone ? "You have a session recorded. Add a few words if you want extra progress." : "Finish 1 lesson and track 5 words to move today forward."),
+      actionLabel: ui(dailyLessonDone ? "View profile" : "Continue"),
       unread: !dailyLessonDone,
       onSelect: () => (dailyLessonDone ? openTab("profile") : startSession()),
     },
     {
       id: "word-bank",
-      title: `${totalWords.toLocaleString()} words available`,
-      body: `${wordBankParts.length.toLocaleString()} word-bank sets are ready when you want more vocabulary.`,
-      actionLabel: "Browse lessons",
+      title: `${totalWords.toLocaleString()} ${ui("words available")}`,
+      body: `${wordBankParts.length.toLocaleString()} ${ui("word-bank sets are ready when you want more vocabulary.")}`,
+      actionLabel: ui("Browse lessons"),
       unread: wordsTracked < 5,
       onSelect: () => openTab("learn"),
     },
     {
       id: "streak",
-      title: `${progressStats.streak} day streak`,
-      body: progressStats.streak > 1 ? "Keep the rhythm going with one short session." : "Start building a habit with one focused lesson.",
-      actionLabel: "View profile",
+      title: `${progressStats.streak} ${ui("day streak")}`,
+      body: ui(progressStats.streak > 1 ? "Keep the rhythm going with one short session." : "Start building a habit with one focused lesson."),
+      actionLabel: ui("View profile"),
       unread: false,
       onSelect: () => openTab("profile"),
     },

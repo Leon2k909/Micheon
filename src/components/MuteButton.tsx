@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AUDIO_MUTE_EVENT, isAudioMuted, toggleAudioMuted } from "@/lib/audioMute";
+import { ui } from "@/lib/i18n";
 
 /**
  * Global audio mute toggle. Silences the TTS voices and the game-feel sounds
@@ -20,9 +21,9 @@ export function MuteButton({ className, iconClassName = "h-4 w-4" }: { className
   return (
     <button
       type="button"
-      aria-label={muted ? "Unmute audio" : "Mute audio"}
+      aria-label={ui(muted ? "Unmute audio" : "Mute audio")}
       aria-pressed={muted}
-      title={muted ? "Unmute audio" : "Mute audio"}
+      title={ui(muted ? "Unmute audio" : "Mute audio")}
       onClick={toggleAudioMuted}
       className={cn(
         "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",

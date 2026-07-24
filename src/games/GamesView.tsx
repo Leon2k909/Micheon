@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { MasteryCard } from "@/components/lab/MasteryCard";
+import { ui } from "@/lib/i18n";
 
 const SnakeGame = lazy(() => import("@/games/SnakeGame"));
 const FallingLetters = lazy(() => import("@/games/FallingLetters"));
@@ -105,14 +106,14 @@ export function GamesView({ totalReviews = 0, externalWords = 0, gameMasteryCoun
             type="button"
           >
             <ChevronLeft className="h-4 w-4" />
-            Practice library
+            {ui("Practice library")}
           </button>
           <Suspense
             fallback={
               <div className="card flex min-h-[360px] items-center justify-center p-8 text-center">
                 <div>
                   <div className="mx-auto h-14 w-14 rounded-2xl skeleton" />
-                  <p className="mt-4 text-sm font-black text-[var(--text-1)]">Loading practice game</p>
+                  <p className="mt-4 text-sm font-black text-[var(--text-1)]">{ui("Loading practice game")}</p>
                 </div>
               </div>
             }
@@ -131,22 +132,22 @@ export function GamesView({ totalReviews = 0, externalWords = 0, gameMasteryCoun
         >
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
             <section className="card p-5 sm:p-6">
-              <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">Practice library</h1>
+              <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Practice library")}</h1>
               <p className="mt-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
-                Short games for spelling, recall, verbs, and quick recognition. Pick one and jump straight in.
+                {ui("Short games for spelling, recall, verbs, and quick recognition. Pick one and jump straight in.")}
               </p>
               <div className="relative mt-6">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
                 <input
                   className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)] focus:bg-white"
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search practice games"
+                  placeholder={ui("Search practice games")}
                   type="text"
                   value={searchQuery}
                 />
                 {searchQuery && (
                   <button
-                    aria-label="Clear search"
+                    aria-label={ui("Clear search")}
                     className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[var(--text-3)]"
                     onClick={() => setSearchQuery("")}
                     type="button"
@@ -177,11 +178,11 @@ export function GamesView({ totalReviews = 0, externalWords = 0, gameMasteryCoun
                     <item.icon className="h-5 w-5" />
                   </div>
                   <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--text-3)]">
-                    Play
+                    {ui("Play")}
                   </span>
                 </div>
-                <p className="mt-6 text-lg font-black tracking-tight text-[var(--text-1)]">{item.title}</p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--text-3)]">{item.description}</p>
+                <p className="mt-6 text-lg font-black tracking-tight text-[var(--text-1)]">{ui(item.title)}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--text-3)]">{ui(item.description)}</p>
               </motion.button>
             ))}
           </section>

@@ -1,0 +1,6 @@
+{
+    "id":  "monkey",
+    "displayName":  "Monkey",
+    "description":  "A compact friendly monkey pet with a readable face and playful mascot proportions.",
+    "spritesheetPath":  "spritesheet.webp"
+}

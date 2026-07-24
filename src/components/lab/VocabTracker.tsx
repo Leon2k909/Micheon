@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star, Check, Minus, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildCatalog, type CatalogItem } from "@/session";
@@ -8,9 +8,12 @@ import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
+import { ui, uiIsGerman } from "@/lib/i18n";
+import { targetLangTag } from "@/lib/direction";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
+const PAGE_SIZE = 40;
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
@@ -20,7 +23,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 function speak(text: string) {
-  tts(text, 0.9, "de-DE");
+  tts(text, 0.9, targetLangTag());
 }
 
 function recordFor(grades: GradeStore, id: string, aliases: string[] = []): GradeRecord | undefined {
@@ -53,12 +56,14 @@ function StrengthMeter({
   const struggling = record?.lastGrade === "struggle";
   return (
     <div className="mt-1 flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5" aria-label={`Memory strength: ${s.label}. Click a bar to set it directly.`}>
+      <div className="flex items-center gap-0.5" aria-label={`${ui("Memory strength")}: ${ui(s.label)}. ${ui("Click a bar to set it directly.")}`}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
-            title={`Set to ${REVIEW_INTERVALS_DAYS[n - 1]}d review (rung ${n}/5)`}
+            title={uiIsGerman()
+              ? `Auf ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "Tag" : "Tage"} Wiederholungsabstand setzen (Stufe ${n}/5)`
+              : `Set to ${REVIEW_INTERVALS_DAYS[n - 1]}d review (rung ${n}/5)`}
             onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
             className="cursor-pointer p-1 -m-1"
           >
@@ -75,7 +80,7 @@ function StrengthMeter({
         {/* Above Mastered: never schedule this word for review again. */}
         <button
           type="button"
-          title={s.permanent ? "Never reviewed again" : "Mark permanent — never show this again"}
+          title={ui(s.permanent ? "Never reviewed again" : "Mark permanent — never show this again")}
           onClick={(e) => { e.stopPropagation(); onSetPermanent(); }}
           className="cursor-pointer p-1 -m-1"
         >
@@ -93,21 +98,21 @@ function StrengthMeter({
         "text-[10px] font-black uppercase tracking-wide",
         struggling ? "text-amber-600" : s.permanent ? "text-[var(--accent)]" : s.level > 0 ? "text-[var(--success-text)]" : "text-[var(--text-3)]"
       )}>
-        {s.label}
+        {ui(s.label)}
       </span>
       {s.permanent && (
         <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
-          never reviewed again
+          {ui("never reviewed again")}
         </span>
       )}
       {!s.permanent && s.due && (
         <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
-          due for review
+          {ui("due for review")}
         </span>
       )}
       {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
         <span className="text-[10px] font-bold text-[var(--text-3)]">
-          review in {s.dueInDays}d
+          {ui("review in")} {s.dueInDays} {ui("days short")}
         </span>
       )}
     </div>
@@ -231,8 +236,10 @@ export function VocabTracker({
   const [grades, setGrades] = useState<GradeStore>(() => loadGradeStore(user));
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
-  const [limit, setLimit] = useState(40);
+  const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const listRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onUpdate = () => setGrades(loadGradeStore(user));
@@ -276,6 +283,27 @@ export function VocabTracker({
   }, [catalog, grades, filter, query]);
 
   const visible = filtered.slice(0, limit);
+
+  useEffect(() => {
+    const root = listRef.current;
+    const target = loadMoreRef.current;
+    if (!root || !target || visible.length >= filtered.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setLimit((current) => Math.min(filtered.length, current + PAGE_SIZE));
+      },
+      { root, rootMargin: "180px 0px", threshold: 0.01 }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [filtered.length, visible.length]);
+
+  const resetList = () => {
+    setLimit(PAGE_SIZE);
+    window.requestAnimationFrame(() => listRef.current?.scrollTo({ top: 0 }));
+  };
 
   // "Select all" targets every FILTERED item, not just the currently
   // rendered/paginated slice — selecting only what's on screen would be
@@ -345,8 +373,8 @@ export function VocabTracker({
   if (catalog.length === 0) {
     return (
       <section className="card p-5 sm:p-6">
-        <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Word & sentence tracker</h2>
-        <p className="mt-2 text-sm font-semibold text-[var(--text-3)]">Loading your vocabulary catalog…</p>
+        <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Word & sentence tracker")}</h2>
+        <p className="mt-2 text-sm font-semibold text-[var(--text-3)]">{ui("Loading your vocabulary catalog…")}</p>
       </section>
     );
   }
@@ -355,27 +383,27 @@ export function VocabTracker({
     <section className="card p-5 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Word & sentence tracker</h2>
+          <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Word & sentence tracker")}</h2>
           <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
-            Review what you know, mark struggles, or reset items back to learn again.
+            {ui("Review what you know, mark struggles, or reset items back to learn again.")}
           </p>
         </div>
         <div className="flex gap-2 text-center">
           <div className="rounded-2xl bg-[var(--success-bg)] px-3 py-2">
             <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.known}</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">known</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">{ui("known")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--accent-dim)] px-3 py-2">
             <p className="text-lg font-black leading-none text-[var(--accent)]">{counts.due}</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--accent)] opacity-80">due review</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--accent)] opacity-80">{ui("due review")}</p>
           </div>
           <div className="rounded-2xl bg-amber-500/15 px-3 py-2">
             <p className="text-lg font-black leading-none text-amber-600">{counts.struggle}</p>
-            <p className="mt-1 text-[10px] font-black text-amber-600 opacity-80">struggling</p>
+            <p className="mt-1 text-[10px] font-black text-amber-600 opacity-80">{ui("struggling")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--surface-2)] px-3 py-2">
             <p className="text-lg font-black leading-none text-[var(--text-1)]">{counts.new}</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">to learn</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">{ui("to learn")}</p>
           </div>
         </div>
       </div>
@@ -385,14 +413,18 @@ export function VocabTracker({
           checked={allFilteredSelected}
           indeterminate={someFilteredSelected && !allFilteredSelected}
           onClick={toggleSelectAllFiltered}
-          label={allFilteredSelected ? "Deselect all" : `Select all ${filtered.length} shown`}
+          label={allFilteredSelected
+            ? ui("Deselect all")
+            : uiIsGerman()
+              ? `Alle ${filtered.length} angezeigten Einträge auswählen`
+              : `Select all ${filtered.length} shown`}
           size="h-8 w-8"
         />
         {FILTERS.map((f) => (
           <button
             key={f.key}
             type="button"
-            onClick={() => { setFilter(f.key); setLimit(40); }}
+            onClick={() => { setFilter(f.key); resetList(); }}
             className={cn(
               "rounded-full px-3 py-1.5 text-xs font-black transition-colors",
               filter === f.key
@@ -400,15 +432,15 @@ export function VocabTracker({
                 : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
             )}
           >
-            {f.label}
+            {ui(f.label)}
           </button>
         ))}
         <div className="relative ml-auto min-w-[180px] flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
           <input
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setLimit(40); }}
-            placeholder="Search German or English…"
+            onChange={(e) => { setQuery(e.target.value); resetList(); }}
+            placeholder={ui("Search German or English…")}
             className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
           />
         </div>
@@ -417,99 +449,109 @@ export function VocabTracker({
       {selected.size > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-dim)] px-4 py-3">
           <span className="text-xs font-black text-[var(--accent)]">
-            {selected.size} selected
+            {selected.size} {ui("selected")}
           </span>
           <div className="ml-auto flex flex-wrap items-center gap-1.5">
-            <BulkActionButton tone="known" icon={CheckCircle2} label="Known" onClick={() => bulkApplyStatus("known")} />
-            <BulkActionButton tone="struggle" icon={AlertTriangle} label="Struggle" onClick={() => bulkApplyStatus("struggle")} />
-            <BulkActionButton tone="new" icon={Circle} label="To learn" onClick={() => bulkApplyStatus("new")} />
-            <BulkActionButton tone="permanent" icon={Star} label="Permanent" onClick={bulkApplyPermanent} />
+            <BulkActionButton tone="known" icon={CheckCircle2} label={ui("Known")} onClick={() => bulkApplyStatus("known")} />
+            <BulkActionButton tone="struggle" icon={AlertTriangle} label={ui("Struggle")} onClick={() => bulkApplyStatus("struggle")} />
+            <BulkActionButton tone="new" icon={Circle} label={ui("To learn")} onClick={() => bulkApplyStatus("new")} />
+            <BulkActionButton tone="permanent" icon={Star} label={ui("Permanent")} onClick={bulkApplyPermanent} />
             <button
               type="button"
               onClick={clearSelection}
               className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
             >
               <XIcon className="h-3.5 w-3.5" />
-              Clear
+              {ui("Clear")}
             </button>
           </div>
         </div>
       )}
 
-      <div className="mt-4 divide-y divide-[var(--border)]">
-        {visible.map((item) => {
-          const status = statusForId(grades, item.id, item.aliases);
-          return (
-            <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
-              <SelectBox
-                checked={selected.has(item.id)}
-                onClick={() => toggleSelect(item.id)}
-                label={selected.has(item.id) ? `Deselect ${item.de}` : `Select ${item.de}`}
-              />
-              <button
-                type="button"
-                onClick={() => speak(item.de)}
-                aria-label="Play German audio"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
-              >
-                <Volume2 className="h-4 w-4" />
-              </button>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-black text-[var(--text-1)]">{item.de}</p>
-                <p className="truncate text-xs font-semibold text-[var(--text-3)]">
-                  {item.en} · {item.partLabel}{item.use ? ` · ${item.use}` : ""}
-                  {(() => {
-                    const syn = synonymNote(item.lookup);
-                    if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={syn.hint}> · {syn.label}</span>;
-                    const f = frequencyInfo(item.lookup);
-                    return f ? <span className="font-black text-sky-600"> · {f.label}</span> : null;
-                  })()}
-                  {(() => {
-                    const note = packMeta(item.partKey).note;
-                    return note ? <span className="font-black text-violet-500"> · {note}</span> : null;
-                  })()}
-                </p>
-                <StrengthMeter
-                  record={recordFor(grades, item.id, item.aliases)}
-                  onSetLevel={(level) => applyStrength(item, level)}
-                  onSetPermanent={() => applyPermanent(item)}
+      <div
+        ref={listRef}
+        className="mt-4 h-[min(34rem,65vh)] min-h-[24rem] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
+        aria-label={ui("Word & sentence tracker")}
+        tabIndex={0}
+      >
+        <div className="divide-y divide-[var(--border)]">
+          {visible.map((item) => {
+            const status = statusForId(grades, item.id, item.aliases);
+            const primaryText = uiIsGerman() ? item.en : item.de;
+            const meaningText = uiIsGerman() ? item.de : item.en;
+            return (
+              <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
+                <SelectBox
+                  checked={selected.has(item.id)}
+                  onClick={() => toggleSelect(item.id)}
+                  label={`${selected.has(item.id) ? ui("Deselect") : ui("Select")} ${primaryText}`}
                 />
+                <button
+                  type="button"
+                  onClick={() => speak(primaryText)}
+                  aria-label={ui(uiIsGerman() ? "Play English audio" : "Play German audio")}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
+                  <p className="truncate text-xs font-semibold text-[var(--text-3)]">
+                    {meaningText} · {ui(item.partLabel)}
+                    {!uiIsGerman() && item.use ? ` · ${ui(item.use)}` : ""}
+                    {!uiIsGerman() && (() => {
+                        const syn = synonymNote(item.lookup);
+                        if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
+                        const f = frequencyInfo(item.lookup);
+                        return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
+                      })()}
+                    {!uiIsGerman() && (() => {
+                        const note = packMeta(item.partKey).note;
+                        return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
+                      })()}
+                  </p>
+                  <StrengthMeter
+                    record={recordFor(grades, item.id, item.aliases)}
+                    onSetLevel={(level) => applyStrength(item, level)}
+                    onSetPermanent={() => applyPermanent(item)}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <StatusButton
+                    tone="known" icon={CheckCircle2} label={ui("Known")}
+                    active={status === "known"}
+                    onClick={() => apply(item, status === "known" ? "new" : "known")}
+                  />
+                  <StatusButton
+                    tone="struggle" icon={AlertTriangle} label={ui("Struggle")}
+                    active={status === "struggle"}
+                    onClick={() => apply(item, status === "struggle" ? "new" : "struggle")}
+                  />
+                  <StatusButton
+                    tone="new" icon={Circle} label={ui("To learn")}
+                    active={status === "new"}
+                    onClick={() => apply(item, "new")}
+                  />
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <StatusButton
-                  tone="known" icon={CheckCircle2} label="Known"
-                  active={status === "known"}
-                  onClick={() => apply(item, status === "known" ? "new" : "known")}
-                />
-                <StatusButton
-                  tone="struggle" icon={AlertTriangle} label="Struggle"
-                  active={status === "struggle"}
-                  onClick={() => apply(item, status === "struggle" ? "new" : "struggle")}
-                />
-                <StatusButton
-                  tone="new" icon={Circle} label="To learn"
-                  active={status === "new"}
-                  onClick={() => apply(item, "new")}
-                />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 && (
+          <p className="py-8 text-center text-sm font-semibold text-[var(--text-3)]">{ui("No items match this filter.")}</p>
+        )}
+
+        {visible.length < filtered.length && (
+          <div
+            ref={loadMoreRef}
+            className="flex h-10 items-center justify-center text-xs font-bold text-[var(--text-3)]"
+            role="status"
+          >
+            {ui("Loading more…")}
+          </div>
+        )}
       </div>
-
-      {filtered.length === 0 && (
-        <p className="py-8 text-center text-sm font-semibold text-[var(--text-3)]">No items match this filter.</p>
-      )}
-
-      {visible.length < filtered.length && (
-        <button
-          type="button"
-          onClick={() => setLimit((l) => l + 40)}
-          className="mt-4 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-black text-[var(--text-2)] hover:bg-[var(--surface-3)]"
-        >
-          Show more ({filtered.length - visible.length} remaining)
-        </button>
-      )}
     </section>
   );
 }

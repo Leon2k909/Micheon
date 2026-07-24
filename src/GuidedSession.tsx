@@ -13,17 +13,18 @@ import {
   normalizeGermanLenient,
   primaryAnswer,
 } from "@/lib/germanTextMatch";
-import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
+import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
 import { isAudioMuted } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
+import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
-import { ui } from "@/lib/i18n";
+import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import {
   isSpeechRecognitionSupported,
   listenGermanOnce,
@@ -31,7 +32,7 @@ import {
 } from "@/lib/speechRecognition";
 import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, preloadWhisper } from "@/lib/whisperRecognition";
 import {
-  Volume2, Mic2, ChevronRight, CheckCircle2, X,
+  Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
   MessageSquareQuote, RotateCcw, Target, Languages, Flame
 } from "lucide-react";
@@ -119,37 +120,37 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string;
       {/* Niche/casual pack note — uncommon German is always labelled */}
       {tierNote && (
         <span
-          title="Not everyday neutral German — use in the right company"
+          title={ui("Not everyday neutral German — use in the right company")}
           className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[11px] font-black text-violet-500"
         >
-          {tierNote}
+          {uiOr(tierNote, "Besonderer Sprachgebrauch")}
         </span>
       )}
       {register === "informal" && (
         <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-black text-emerald-600">
-          {REGISTER_LABEL.informal}
+          {ui(REGISTER_LABEL.informal)}
         </span>
       )}
       {register === "formal" && (
         <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-black text-indigo-500">
-          {REGISTER_LABEL.formal}
+          {ui(REGISTER_LABEL.formal)}
         </span>
       )}
       {syn ? (
         <span
-          title={syn.hint}
+          title={uiOr(syn.hint, "Hinweis zur Wortwahl")}
           className={syn.kind === "rare"
             ? "rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-black text-amber-600"
             : "rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"}
         >
-          {syn.label}
+          {uiOr(syn.label, "Hinweis zur Wortwahl")}
         </span>
       ) : freq && (
         <span
-          title={freq.hint}
+          title={ui(freq.hint)}
           className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
         >
-          {freq.label}
+          {ui(freq.label)}
         </span>
       )}
       {use && (!hideUse || isWarning || isSlang) && (
@@ -161,15 +162,15 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string;
               ? "bg-amber-500/10 text-amber-600 font-black border-amber-500/20"
               : "bg-zinc-100 text-zinc-500 border-transparent"
         )}>
-          {use}
+          {uiOr(use, "Hinweis zur Verwendung")}
         </span>
       )}
       {showShort && (
         <span
-          title="Natural form people commonly use in conversation"
+          title={ui("Natural form people commonly use in conversation")}
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
-          People say: “{short}”
+          {ui("People say")}: “{short}”
         </span>
       )}
     </div>
@@ -285,19 +286,38 @@ function phaseHeading(p: Phase, withFrench: boolean): string {
 }
 
 // The sentence as tappable words — click any word to hear just that word.
-// Keeps the key-word underline from renderKeyWord via the word-key-hl class.
-function TappableSentence({ text, lookup, lang }: { text: string; lookup?: string; lang: string }) {
+function TappableSentence({ text, lang }: { text: string; lang: string }) {
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
-  const low = (lookup ?? "").toLowerCase();
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const playingTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (playingTimer.current) window.clearTimeout(playingTimer.current);
+  }, []);
+
+  const playWord = (word: string, index: number) => {
+    const spokenWord = word.replace(/[.,!?;:"«»„“]/g, "");
+    if (!spokenWord) return;
+    if (playingTimer.current) window.clearTimeout(playingTimer.current);
+    setPlayingIndex(index);
+    tts(spokenWord, 0.82, lang);
+    playingTimer.current = window.setTimeout(
+      () => setPlayingIndex(null),
+      Math.min(1600, 800 + spokenWord.length * 45)
+    );
+  };
+
   return (
     <>
       {words.map((w, i) => (
         <button
           key={`${w}-${i}`}
           type="button"
-          className={cn("fs-word", low && low.length >= 3 && w.toLowerCase().includes(low) && "word-key-hl")}
+          className={cn("fs-word", playingIndex === i && "is-playing")}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => tts(w.replace(/[.,!?;:"«»„“]/g, ""), 0.82, lang)}
+          onClick={() => playWord(w, i)}
+          aria-label={`${ui("Hear it")}: ${w}`}
+          title={ui("Tap a word to hear it")}
         >
           {w}
         </button>
@@ -968,7 +988,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
             {!hasFr && (
               <>
                 <button
-                  aria-label="Mark known and skip to the next item. Shortcut Alt K"
+                  aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
                   className="grade-btn grade-btn-known"
                   onClick={markKnown}
                   type="button"
@@ -977,7 +997,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                   <kbd className="grade-kbd">Alt K</kbd>
                 </button>
                 <button
-                  aria-label="Mark this item as a struggle. Shortcut Alt S"
+                  aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
                   className="grade-btn grade-btn-struggle"
                   onClick={markStruggle}
                   type="button"
@@ -1019,7 +1039,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
         {item.when && phase !== "Translate" && phase !== "TranslateAgain" && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
-            <p>{item.when}</p>
+            <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
           </div>
         )}
 
@@ -1031,7 +1051,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
         {item.say && (phase === "Read" || phase === "Speak" || phase === "SpeakAll") && (
           <div className="fs-say">
             <span className="fs-when-label">{ui("How it's really said")}</span>
-            <p>{item.say}</p>
+            <p>{uiOr(item.say, "Achte auf eine natürliche Aussprache.")}</p>
           </div>
         )}
 
@@ -1049,7 +1069,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
             <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-center">
-              <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-zinc-400">Meaning</p>
+              <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-zinc-400">{ui("Meaning")}</p>
               <p className="text-2xl font-black text-zinc-950">{shownEnglish}</p>
             </div>
           ) : (
@@ -1094,7 +1114,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                 {/* Gap + Write-it stages hide the answer, revealed once you answer. */}
                 {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
                   : phase === "SpeakAll" && !sayChecked ? "• • •"
-                  : <TappableSentence text={item.de} lookup={item.lookup} lang={targetLang} />}
+                  : <TappableSentence text={item.de} lang={targetLang} />}
               </div>
             </div>
             <AnimatePresence>
@@ -1107,7 +1127,9 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
               {(phase === "Translate" || phase === "TranslateAgain") && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
                   <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
-                  <p className="text-sm">What does this mean in {meaningLabel}?</p>
+                  <p className="text-sm">
+                    {uiIsGerman() ? `Was bedeutet das auf ${ui(meaningLabel)}?` : `What does this mean in ${meaningLabel}?`}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1118,7 +1140,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
           {grade === "struggle" && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-700">
-              Marked as struggle. This item will stay in practice instead of being skipped next time.
+              {ui("Marked as struggle. This item will stay in practice instead of being skipped next time.")}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1145,7 +1167,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
         {phase === "Speak" && (
           <motion.div key="speak" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Say it out loud. {enc}</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">{ui("Say it out loud.")} {ui(enc)}</p>
             {speechSupported ? (
               <>
                 <Button type="button" onClick={handleSpeechCheck} disabled={speechListening}
@@ -1263,7 +1285,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                         <span className="block">{ui("People would understand you — but that's the literal translation.")}</span>
                         <span className="block text-xs text-zinc-500">{ui("The natural way is:")} <span className="text-zinc-950">{item.de}</span></span>
                       </span>
-                    : <>Not quite — the answer is <span className="text-zinc-950">{item.de}</span></>}
+                    : <>{ui("Not quite — the answer is")} <span className="text-zinc-950">{item.de}</span></>}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1349,7 +1371,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                           ? "Capitalization error! In German, nouns and formal 'Sie/Ihnen/Ihr' must be capitalized."
                           : "Not quite - try again"}
                       </div>
-                      <div className="text-xs text-zinc-500">Target: <span className="text-zinc-950 font-semibold">{item.de}</span></div>
+                      <div className="text-xs text-zinc-500">{ui("Target:")} <span className="text-zinc-950 font-semibold">{item.de}</span></div>
                     </div>
                   )}
                 </motion.div>
@@ -1524,7 +1546,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
         {phase === "French" && (
           <motion.div key="french" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
-            <p className="text-center text-sm font-semibold text-zinc-500">Now type the same sentence in French.</p>
+            <p className="text-center text-sm font-semibold text-zinc-500">{ui("Now type the same sentence in French.")}</p>
             <div className="space-y-3">
               <motion.div animate={shakeControls}>
                 <div className={cn("fs-panel",
@@ -1532,7 +1554,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                   frChecked && !frResult.ok && "is-bad")}>
                   <div className="fs-prompt">
                     <span>FR</span>
-                    <strong>Type in French</strong>
+                    <strong>{ui("Type in French")}</strong>
                   </div>
                   <Input ref={frInputRef}
                     className="fs-input"
@@ -1564,7 +1586,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                   ) : (
                     <div className="space-y-2">
                       <div className="text-rose-700 font-semibold">{ui("Not quite")}</div>
-                      <div className="text-xs text-zinc-500">French: <span className="text-zinc-950 font-semibold">{item.fr}</span></div>
+                      <div className="text-xs text-zinc-500">{ui("French:")} <span className="text-zinc-950 font-semibold">{item.fr}</span></div>
                     </div>
                   )}
                 </motion.div>
@@ -1599,7 +1621,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
               {/* German recall input */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between pl-1">
-                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">German</p>
+                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">{ui("German")}</p>
                   <button type="button" onClick={() => setDeHintLen(n => Math.min(n + 1, item.de.length))}
                     className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
                     {deHintLen === 0 ? "Hint" : deHintLen >= item.de.length ? "Full hint" : `Hint (${deHintLen}/${item.de.length})`}
@@ -1630,7 +1652,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
               {/* French recall input */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between pl-1">
-                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">French</p>
+                  <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">{ui("French")}</p>
                   <button type="button" onClick={() => setFrHintLen(n => Math.min(n + 1, (item.fr ?? "").length))}
                     className="text-[10px] font-bold text-zinc-400 hover:text-[var(--accent)]">
                     {frHintLen === 0 ? "Hint" : frHintLen >= (item.fr ?? "").length ? "Full hint" : `Hint (${frHintLen}/${(item.fr ?? "").length})`}
@@ -1667,16 +1689,16 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
                     memDeResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
                     <div className="flex items-center gap-2 font-semibold">
                       {memDeResult.ok
-                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">German correct</span></>
-                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">German: <span className="text-zinc-950">{item.de}</span></span></>}
+                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">{ui("German correct")}</span></>
+                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">{ui("German")}: <span className="text-zinc-950">{item.de}</span></span></>}
                     </div>
                   </div>
                   <div className={cn("rounded-lg border p-3 text-sm space-y-1",
                     memFrResult.ok ? "border-emerald-500/20 bg-emerald-500/10" : "border-rose-500/20 bg-rose-500/10")}>
                     <div className="flex items-center gap-2 font-semibold">
                       {memFrResult.ok
-                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">French correct</span></>
-                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">French: <span className="text-zinc-950">{item.fr}</span></span></>}
+                        ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-emerald-700">{ui("French correct")}</span></>
+                        : <><X className="h-4 w-4 text-rose-600" /><span className="text-rose-700">{ui("French:")} <span className="text-zinc-950">{item.fr}</span></span></>}
                     </div>
                   </div>
                 </motion.div>
@@ -1713,7 +1735,7 @@ function SentenceExercise({ item, onNext, onSkip, onGradeItem, onAnswer }: { ite
 }
 
 // Section
-function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void }) {
+function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
   const lines: any[] = dialogue?.lines ?? [];
   const [lineIdx, setLineIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -1735,6 +1757,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
   const checkLine = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
+    onAnswer?.(result.ok);
     tts(line.de, 0.88, targetLang);
     if (result.ok) setTimeout(nextLine, 900);
   };
@@ -1862,7 +1885,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem }: { dialogue: any; on
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             className={cn("rounded-2xl border p-4 text-center",
               result.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
-            {result.ok ? <span className="text-sm font-black">Spot on!</span>
+            {result.ok ? <span className="text-sm font-black">{ui("Spot on!")}</span>
               : <div className="space-y-1">
                   <div className="text-sm font-black">
                     {result.capitalizationError
@@ -2136,15 +2159,17 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
       <Card className="w-full max-w-lg space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
         <div className="text-center space-y-1">
           <div className="text-2xl"></div>
-          <div className="text-xl font-semibold text-zinc-950">Quick reflection</div>
+          <div className="text-xl font-semibold text-zinc-950">{ui("Quick reflection")}</div>
           <div className="text-xs text-zinc-500">
-            {stepsCompleted} of {totalSteps} steps done - takes 30 seconds
+            {uiIsGerman()
+              ? `${stepsCompleted} von ${totalSteps} Schritten geschafft · dauert 30 Sekunden`
+              : `${stepsCompleted} of ${totalSteps} steps done · takes 30 seconds`}
           </div>
         </div>
 
         {/* Mood */}
         <div className="space-y-2">
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">How did it feel?</div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{ui("How did it feel?")}</div>
           <div className="flex gap-2">
             {moods.map(m => (
               <motion.button key={m.label} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
@@ -2156,7 +2181,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
                     : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50"
                 )}>
                 <div className="text-xl">{m.emoji}</div>
-                <div className="text-[9px] font-semibold uppercase tracking-wide mt-0.5">{m.label}</div>
+                <div className="text-[9px] font-semibold uppercase tracking-wide mt-0.5">{ui(m.label)}</div>
               </motion.button>
             ))}
           </div>
@@ -2165,12 +2190,12 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
         {/* What went well */}
         <div className="space-y-2">
           <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-            What clicked today?
+            {ui("What clicked today?")}
           </label>
           <textarea
             value={wentWell}
             onChange={e => setWentWell(e.target.value)}
-            placeholder="e.g. the cafe dialogue felt natural, articles are making more sense..."
+            placeholder={ui("e.g. the cafe dialogue felt natural, articles are making more sense...")}
             rows={2}
             className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
           />
@@ -2179,12 +2204,12 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
         {/* Struggling */}
         <div className="space-y-2">
           <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-            Any words or phrases giving you trouble?
+            {ui("Any words or phrases giving you trouble?")}
           </label>
           <textarea
             value={struggling}
             onChange={e => setStruggling(e.target.value)}
-            placeholder="e.g. Wochenende, separable verbs, der/die/das..."
+            placeholder={ui("e.g. Wochenende, separable verbs, der/die/das...")}
             rows={2}
             className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
           />
@@ -2197,7 +2222,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
           </Button>
           <Button onClick={save} disabled={saved}
             className="h-12 flex-1 rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">
-            {saved ? "Saved" : "Save & exit"}
+            {ui(saved ? "Saved" : "Save & exit")}
           </Button>
         </div>
       </Card>
@@ -2206,12 +2231,192 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 }
 
 // Section
+type SessionPreviewCard = {
+  id: string;
+  german: string;
+  english: string;
+  use?: string;
+  review: boolean;
+};
+
+function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
+  const learnEn = learningEnglish();
+  const englishVariant = getEnglishVariant();
+  const seen = new Set<string>();
+  const cards: SessionPreviewCard[] = [];
+
+  for (const step of steps) {
+    if (step?.type !== "sentence" || !step.item) continue;
+    const german = String(learnEn ? step.item.en : step.item.de).trim();
+    const englishSource = String(learnEn ? step.item.de : step.item.en).trim();
+    const english = formatEnglishText(englishSource, englishVariant);
+    if (!german || !english) continue;
+    const key = `${german.toLocaleLowerCase("de-DE")}\u0000${english.toLocaleLowerCase("en-GB")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cards.push({
+      id: String(step.item.id ?? key),
+      german,
+      english,
+      use: step.item.use,
+      review: Boolean(step.review),
+    });
+    if (cards.length === 6) break;
+  }
+
+  return cards;
+}
+
+function SessionFlashcardPreview({
+  cards,
+  index,
+  onIndexChange,
+  onStart,
+}: {
+  cards: SessionPreviewCard[];
+  index: number;
+  onIndexChange: (index: number) => void;
+  onStart: () => void;
+}) {
+  const card = cards[Math.min(index, cards.length - 1)];
+  const isLast = index === cards.length - 1;
+  const englishVoice = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
+
+  const previous = () => onIndexChange(Math.max(0, index - 1));
+  const next = () => {
+    if (isLast) onStart();
+    else onIndexChange(index + 1);
+  };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft" && index > 0) {
+        event.preventDefault();
+        previous();
+      }
+      if (event.key === "ArrowRight" || event.key === "Enter") {
+        event.preventDefault();
+        next();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [index, isLast]);
+
+  return (
+    <div className="fs-card-body fs-preview">
+      <div className="fs-preview-head">
+        <div>
+          <span className="fs-eyebrow"><i />{ui("Lesson preview")}</span>
+          <h1 className="fs-h1">{ui("Meet today's phrases")}</h1>
+          <p className="fs-sub">{ui("Review both languages before the eight-stage sentence practice.")}</p>
+        </div>
+        <span className="fs-preview-count">
+          {index + 1} <small>{ui("of")} {cards.length}</small>
+        </span>
+      </div>
+
+      <div className="fs-preview-route" aria-label={ui("Flashcard progress")}>
+        {cards.map((item, cardIndex) => (
+          <button
+            key={item.id}
+            type="button"
+            aria-label={`${ui("Flashcard")} ${cardIndex + 1}`}
+            aria-current={cardIndex === index ? "step" : undefined}
+            className={cn(
+              cardIndex === index && "is-active",
+              cardIndex < index && "is-seen"
+            )}
+            onClick={() => onIndexChange(cardIndex)}
+          >
+            {cardIndex + 1}
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={card.id}
+          initial={{ opacity: 0, x: 26 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -26 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="fs-flashcard"
+        >
+          <div className="fs-flashcard-badge">
+            {ui(card.review ? "Review phrase" : "New phrase")}
+          </div>
+
+          <div className="fs-flashcard-language">
+            <div>
+              <span>{ui("German")}</span>
+              <strong lang="de">{card.german}</strong>
+            </div>
+            <button
+              type="button"
+              aria-label={`${ui("Hear it")}: ${card.german}`}
+              onClick={() => tts(card.german, 0.82, "de-DE")}
+            >
+              <Volume2 className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="fs-flashcard-divider" aria-hidden>
+            <span>{ui("means")}</span>
+          </div>
+
+          <div className="fs-flashcard-language">
+            <div>
+              <span>{ui("English")}</span>
+              <strong lang="en">{card.english}</strong>
+            </div>
+            <button
+              type="button"
+              aria-label={`${ui("Hear it")}: ${card.english}`}
+              onClick={() => tts(card.english, 0.82, englishVoice)}
+            >
+              <Volume2 className="h-5 w-5" />
+            </button>
+          </div>
+
+          {card.use && <p className="fs-flashcard-note">{card.use}</p>}
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="fs-preview-actions">
+        <button
+          type="button"
+          onClick={previous}
+          disabled={index === 0}
+          className="fs-preview-back"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          {ui("Previous")}
+        </button>
+        <button type="button" onClick={next} className="fs-preview-next">
+          {ui(isLast ? "Start sentence practice" : "Next flashcard")}
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onAdvance, onRegisterAnswer }: any) {
+  const { speak: petSpeak } = useCodexPets();
   const [index, setIndex] = useState(0);
+  const [previewActive, setPreviewActive] = useState(true);
+  const [previewIndex, setPreviewIndex] = useState(0);
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
   const comboRef = useRef(0);
   const praiseId = useRef(0);
+  const correctPraiseIndex = useRef(0);
+  const retryPraiseIndex = useRef(0);
+  const announcedComplete = useRef(false);
+  const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
+  const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
+  const inPreview = previewActive && previewCards.length > 0;
 
   const registerAnswer = (ok: boolean) => {
     if (ok) {
@@ -2223,17 +2428,36 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         const id = ++praiseId.current;
         setPraise({ id, text: `${n} in a row!` });
         setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
+        petSpeak(`${n} correct in a row! Excellent work.`, {
+          durationMs: 3800,
+          mood: "celebrate",
+        });
+      } else {
+        const messages = ["Well done!", "Sehr gut! Very good.", "Nice work!", "You got it."];
+        petSpeak(messages[correctPraiseIndex.current++ % messages.length], {
+          mood: "success",
+        });
       }
     } else {
       comboRef.current = 0;
       setCombo(0);
       playWrong();
+      const messages = [
+        "Nearly. Try once more.",
+        "Keep going. Check the hint.",
+        "No problem. You can get the next one.",
+      ];
+      petSpeak(messages[retryPraiseIndex.current++ % messages.length], {
+        durationMs: 3400,
+        mood: "encourage",
+      });
     }
   };
 
-  const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
-  const progress = safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
+  const progress = inPreview
+    ? Math.round(((previewIndex + 1) / previewCards.length) * 100)
+    : safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
   // Count only real exercises, not the final "lesson complete" summary screen,
   // so the header reads "4 of 6", not "4 of 7".
   const exerciseCount = safeSteps.filter((s: any) => s.type !== "complete").length || 1;
@@ -2255,7 +2479,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const next = () => leaveStep(false);
 
   const handleCancel = () => onCancel(index);
-  const skipStep = () => leaveStep(true);
+  const skipStep = () => {
+    if (inPreview) return;
+    petSpeak("No problem. Let's try the next one.", {
+      durationMs: 2800,
+      mood: "encourage",
+    });
+    leaveStep(true);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -2266,9 +2497,23 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [index, safeSteps.length]);
+  }, [inPreview, index, safeSteps.length]);
 
   const kind: string = step?.type || step?.kind || "complete";
+
+  useEffect(() => {
+    if (kind !== "complete" || announcedComplete.current) return;
+    announcedComplete.current = true;
+    petSpeak("Lesson complete. Well done!", {
+      durationMs: 5000,
+      mood: "celebrate",
+    });
+  }, [kind, petSpeak]);
+
+  const registerRegisterAnswer = (questionId: string, ok: boolean) => {
+    registerAnswer(ok);
+    onRegisterAnswer?.(questionId, ok);
+  };
 
   return (
     <div className="guided-session fs-app app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans">
@@ -2281,21 +2526,23 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         </div>
         <div className="fs-progress">
           <div className="fs-progress-copy">
-            <span>{ui("Lesson")}</span>
-            <strong>{exercisePos} {ui("of")} {exerciseCount}</strong>
+            <span>{ui(inPreview ? "Preview" : "Lesson")}</span>
+            <strong>
+              {inPreview ? previewIndex + 1 : exercisePos} {ui("of")} {inPreview ? previewCards.length : exerciseCount}
+            </strong>
           </div>
           <div className="fs-progress-track"><i style={{ width: `${progress}%` }} /></div>
           <strong className="fs-progress-pct">{progress}%</strong>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {import.meta.env.DEV && (
+          {import.meta.env.DEV && !inPreview && (
             <Button variant="ghost" onClick={skipStep} className="skip-step-btn">
-              <span>Skip</span>
+              <span>{ui("Skip")}</span>
               <kbd>Alt →</kbd>
             </Button>
           )}
           <MuteButton className="fs-iconbtn shrink-0" iconClassName="h-4 w-4" />
-          <button type="button" aria-label="Close lesson" className="fs-iconbtn" onClick={handleCancel}>
+          <button type="button" aria-label={ui("Close lesson")} className="fs-iconbtn" onClick={handleCancel}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -2304,24 +2551,35 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       {/* Main */}
       <main className="relative z-10 flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-7">
         <AnimatePresence mode="wait">
-          <motion.div key={index}
+          <motion.div key={inPreview ? "preview" : index}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex w-full max-w-5xl justify-center">
             <div className="fs-card relative">
               <div className="relative z-10 flex flex-col">
-                {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
-                {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} /></div>}
-                {kind === "register"  && <RegisterCheck question={step.question} onAnswer={onRegisterAnswer} onNext={next} />}
-                {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
-                {!["sentence","dialogue","complete","register"].includes(kind) && (
-                  <div className="fs-card-body py-12 text-center space-y-4">
-                    <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>
-                    <Button onClick={next} className="h-12 rounded-lg bg-zinc-950 px-8 text-sm font-semibold text-white hover:bg-zinc-800">
-                      Continue <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
+                {inPreview ? (
+                  <SessionFlashcardPreview
+                    cards={previewCards}
+                    index={previewIndex}
+                    onIndexChange={setPreviewIndex}
+                    onStart={() => setPreviewActive(false)}
+                  />
+                ) : (
+                  <>
+                    {kind === "sentence"  && <SentenceExercise item={step.item} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
+                    {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
+                    {!["sentence","dialogue","complete","register"].includes(kind) && (
+                      <div className="fs-card-body py-12 text-center space-y-4">
+                        <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>
+                        <Button onClick={next} className="h-12 rounded-lg bg-zinc-950 px-8 text-sm font-semibold text-white hover:bg-zinc-800">
+                          Continue <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -1,4 +1,5 @@
 const KEY = "gl-direction";
+export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 
 // Which language the learner is studying. "learn-de" is the app's original mode
 // (English speaker learning German). "learn-en" flips it so a German speaker
@@ -12,7 +13,10 @@ export function getLearningDirection(): LearningDirection {
 }
 
 export function setLearningDirection(d: LearningDirection) {
-  if (typeof window !== "undefined") localStorage.setItem(KEY, d);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(KEY, d);
+    window.dispatchEvent(new CustomEvent(DIRECTION_CHANGE_EVENT, { detail: d }));
+  }
 }
 
 export function learningEnglish(): boolean {

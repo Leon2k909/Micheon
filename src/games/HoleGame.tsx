@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Trophy, Maximize, Minimize, ChevronRight, Sparkles, Map, Target } from 'lucide-react';
 import { recordWordMastery } from '@/lib/mastery';
+import { ui } from '@/lib/i18n';
 
 // --- Game Constants ---
 const WORLD_SIZE = 3000;
@@ -414,15 +415,15 @@ export default function HoleGame() {
           <h2 className="text-3xl font-black text-white flex items-center gap-3 italic">
             HOLE.DE <Sparkles className="h-6 w-6 text-amber-400" />
           </h2>
-          <p className="text-slate-400 text-sm mt-1">Consume the city to grow. Use your mouse to steer!</p>
+          <p className="text-slate-400 text-sm mt-1">{ui("Consume the city to grow. Use your mouse to steer!")}</p>
         </div>
         <div className="flex gap-4">
             <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Size</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Size")}</p>
               <p className="text-2xl font-black text-white">{Math.round(playerRef.current.radius)}m</p>
             </div>
             <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Score</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
               <p className="text-2xl font-black text-white">{score}</p>
             </div>
         </div>
@@ -438,7 +439,7 @@ export default function HoleGame() {
         <button 
           onClick={toggleFullscreen}
           className="absolute top-8 right-8 z-20 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          title={ui(isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen")}
         >
           {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
         </button>
@@ -447,11 +448,11 @@ export default function HoleGame() {
         {isFullscreen && gameState === 'playing' && (
             <div className="absolute top-8 left-8 flex gap-4 pointer-events-none">
                 <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Size</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Size")}</p>
                     <p className="text-2xl font-black text-white">{Math.round(playerRef.current.radius)}m</p>
                 </div>
                 <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Score</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
                     <p className="text-2xl font-black text-white">{score}</p>
                 </div>
             </div>
@@ -466,19 +467,18 @@ export default function HoleGame() {
             >
               <div className="max-w-md">
                 <div className="w-24 h-24 bg-black rounded-full mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)] border-4 border-white/10" />
-                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Object Collector</h3>
+                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">{ui("Object Collector")}</h3>
                 <p className="text-slate-400 mb-10 leading-relaxed">
-                  You are a black hole in a German city. Eat small objects to grow. 
-                  Once you're big enough, you can consume cars, trees, and even houses! 
+                  {ui("You are a black hole in a German city. Eat small objects to grow. Once you're big enough, you can consume cars, trees, and even houses!")}
                 </p>
                 <div className="flex flex-col gap-4">
                     <button 
                     onClick={initGame}
                     className="bg-white text-slate-950 px-12 py-5 rounded-2xl font-black text-xl hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
                     >
-                    START CONSUMING <ChevronRight className="h-6 w-6" />
+                    {ui("Start consuming")} <ChevronRight className="h-6 w-6" />
                     </button>
-                    <p className="text-xs text-slate-500">Press ESC to pause â€¢ Mouse to steer</p>
+                    <p className="text-xs text-slate-500">{ui("Press ESC to pause · Mouse to steer")}</p>
                 </div>
               </div>
             </motion.div>
@@ -490,19 +490,19 @@ export default function HoleGame() {
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center"
             >
                 <div className="bg-slate-900/90 border border-slate-700/50 p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6">
-                    <h3 className="text-6xl font-black text-white tracking-widest uppercase italic">Paused</h3>
-                    <p className="text-slate-400">German city life is on hold. Press <b>ESC</b> to resume.</p>
+                    <h3 className="text-6xl font-black text-white tracking-widest uppercase italic">{ui("Paused")}</h3>
+                    <p className="text-slate-400">{ui("German city life is on hold. Press ESC to resume.")}</p>
                     <button 
                         onClick={() => setIsPaused(false)}
                         className="bg-white text-slate-950 px-10 py-4 rounded-2xl font-black text-lg hover:bg-slate-100 transition-colors shadow-xl active:scale-95 flex items-center gap-2"
                     >
-                        RESUME MISSION
+                        {ui("Resume mission")}
                     </button>
                     <button 
                         onClick={() => { setGameState('idle'); setIsPaused(false); }}
                         className="text-slate-500 hover:text-white transition-colors text-sm font-medium"
                     >
-                        Quit to Menu
+                        {ui("Quit to Menu")}
                     </button>
                 </div>
             </motion.div>
@@ -513,11 +513,11 @@ export default function HoleGame() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="absolute inset-0 bg-rose-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center"
             >
-              <h3 className="text-6xl font-black text-white mb-2 uppercase italic tracking-tighter">CONSUMED!</h3>
-              <p className="text-rose-200/60 mb-12">A larger hole has swallowed you.</p>
+              <h3 className="text-6xl font-black text-white mb-2 uppercase italic tracking-tighter">{ui("Consumed!")}</h3>
+              <p className="text-rose-200/60 mb-12">{ui("A larger hole has swallowed you.")}</p>
               
               <div className="bg-white/10 border border-white/10 px-12 py-8 rounded-[2rem] mb-12">
-                <p className="text-xs text-rose-300 font-bold uppercase tracking-widest mb-2">Final Score</p>
+                <p className="text-xs text-rose-300 font-bold uppercase tracking-widest mb-2">{ui("Final Score")}</p>
                 <p className="text-7xl font-black text-white">{score}</p>
               </div>
 
@@ -525,7 +525,7 @@ export default function HoleGame() {
                 onClick={initGame}
                 className="bg-white text-slate-950 px-12 py-5 rounded-2xl font-black text-xl hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
               >
-                <RotateCcw className="h-6 w-6" /> TRY AGAIN
+                <RotateCcw className="h-6 w-6" /> {ui("Try again")}
               </button>
             </motion.div>
           )}
@@ -537,22 +537,22 @@ export default function HoleGame() {
           <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
               <Map className="h-8 w-8 text-blue-400" />
               <div>
-                  <p className="text-white font-bold">World Size</p>
-                  <p className="text-slate-500 text-sm">3000m x 3000m City</p>
+                  <p className="text-white font-bold">{ui("World Size")}</p>
+                  <p className="text-slate-500 text-sm">{ui("3000m x 3000m City")}</p>
               </div>
           </div>
           <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
               <Target className="h-8 w-8 text-emerald-400" />
               <div>
-                  <p className="text-white font-bold">Growth Tier</p>
-                  <p className="text-slate-500 text-sm">Houses unlock at 150m</p>
+                  <p className="text-white font-bold">{ui("Growth Tier")}</p>
+                  <p className="text-slate-500 text-sm">{ui("Houses unlock at 150m")}</p>
               </div>
           </div>
           <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
               <Sparkles className="h-8 w-8 text-amber-400" />
               <div>
-                  <p className="text-white font-bold">Vocabulary</p>
-                  <p className="text-slate-300 text-sm">7 Unique City Objects</p>
+                  <p className="text-white font-bold">{ui("Vocabulary")}</p>
+                  <p className="text-slate-300 text-sm">{ui("7 Unique City Objects")}</p>
               </div>
           </div>
       </div>

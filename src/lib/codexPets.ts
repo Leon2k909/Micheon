@@ -13,7 +13,7 @@ export type CodexPet = {
   id: string;
   displayName: string;
   description: string;
-  source: "custom" | "legacy" | "builtin";
+  source: "custom" | "legacy" | "builtin" | "micheon" | "micheon-custom";
   frame: {
     width: number;
     height: number;
@@ -27,7 +27,7 @@ export type CodexPet = {
 export type CodexPetCatalog = {
   pets: CodexPet[];
   selectedPetKey: string | null;
-  source: "codex-home";
+  source: "micheon-and-codex";
 };
 
 export function codexPetKey(pet: Pick<CodexPet, "source" | "id">) {

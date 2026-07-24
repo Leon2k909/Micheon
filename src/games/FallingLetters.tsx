@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2, ArrowLeft, ArrowRight } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
 import { recordWordMastery } from "@/lib/mastery";
+import { ui } from "@/lib/i18n";
 
 const WORD_BANK = [
   { de: "HAUS", en: "house" }, { de: "HUND", en: "dog" }, { de: "KATZE", en: "cat" },
@@ -173,16 +174,16 @@ export default function FallingLetters() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-[var(--text-1)]">Falling Letters</h2>
+        <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Falling Letters")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          Move the catcher to collect the correct letters in order.
+          {ui("Move the catcher to collect the correct letters in order.")}
         </p>
       </div>
 
       {/* Word display */}
       <div className="card flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <div>
-          <p className="text-xs text-[var(--text-3)]">Spell this word</p>
+          <p className="text-xs text-[var(--text-3)]">{ui("Spell this word")}</p>
           <div className="mt-1.5 flex items-center gap-1.5">
             {entry.de.split("").map((ch, i) => (
               <span key={i} className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-bold transition-all ${
@@ -197,16 +198,16 @@ export default function FallingLetters() {
             ))}
           </div>
           <p className="mt-1.5 text-xs text-[var(--text-3)]">
-            English: <span className="font-medium text-[var(--text-2)]">{entry.en}</span>
+            {ui("English:")} <span className="font-medium text-[var(--text-2)]">{entry.en}</span>
           </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Score</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Score")}</p>
             <p className="text-2xl font-bold text-[var(--text-1)]">{score}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Best</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Best")}</p>
             <div className="flex items-center gap-1">
               <Trophy className="h-3.5 w-3.5 text-amber-400" />
               <p className="text-2xl font-bold text-[var(--text-1)]">{highScore}</p>
@@ -273,11 +274,11 @@ export default function FallingLetters() {
               >
                 {phase === "idle" && (
                   <>
-                    <p className="text-lg font-semibold text-[var(--text-1)]">Falling Letters</p>
+                    <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Falling Letters")}</p>
                     <p className="max-w-xs text-center text-sm text-[var(--text-3)]">
-                      Move the catcher with ← → to collect the glowing letters in order. Catch a wrong letter and it's game over.
+                      {ui("Move the catcher with ← → to collect the glowing letters in order. Catch a wrong letter and it's game over.")}
                     </p>
-                    <button className="accent-btn px-6 py-2.5 text-sm" onClick={newGame} type="button">Start game</button>
+                    <button className="accent-btn px-6 py-2.5 text-sm" onClick={newGame} type="button">{ui("Start game")}</button>
                   </>
                 )}
                 {phase === "won" && (
@@ -286,7 +287,7 @@ export default function FallingLetters() {
                     <div className="flex items-center gap-3">
                       <p className="text-2xl font-bold text-[var(--text-1)]">{entry.de}</p>
                       <button
-                        aria-label="Hear pronunciation"
+                        aria-label={ui("Hear pronunciation")}
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)] transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)] active:scale-95"
                         onClick={() => speakGerman(entry.de.toLowerCase())} type="button"
                       >
@@ -294,21 +295,21 @@ export default function FallingLetters() {
                       </button>
                     </div>
                     <p className="text-sm text-[var(--text-3)]">{entry.en}</p>
-                    <p className="text-xs text-[var(--text-3)]">+{score} points</p>
+                    <p className="text-xs text-[var(--text-3)]">+{score} {ui("points")}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
-                      <RotateCcw className="h-4 w-4" /> Next word
+                      <RotateCcw className="h-4 w-4" /> {ui("Next word")}
                     </button>
                   </>
                 )}
                 {phase === "wrong" && (
                   <>
-                    <p className="text-lg font-semibold text-rose-400">Wrong letter!</p>
+                    <p className="text-lg font-semibold text-rose-400">{ui("Wrong letter!")}</p>
                     <p className="text-sm text-[var(--text-3)]">
-                      You needed <span className="font-bold text-[var(--accent)]">{entry.de[nextIdx]}</span>
+                      {ui("You needed")} <span className="font-bold text-[var(--accent)]">{entry.de[nextIdx]}</span>
                     </p>
                     <p className="text-xs text-[var(--text-3)]">{entry.de} = {entry.en}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
-                      <RotateCcw className="h-4 w-4" /> Try again
+                      <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>
                   </>
                 )}
@@ -332,7 +333,7 @@ export default function FallingLetters() {
         </div>
 
         <p className="text-xs text-[var(--text-3)]">
-          ← → arrow keys to move · Catch the <span className="font-semibold text-[var(--accent)]">glowing</span> letter next
+          {ui("← → arrow keys to move · Catch the glowing letter next")}
         </p>
       </div>
     </div>

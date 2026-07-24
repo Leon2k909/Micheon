@@ -70,6 +70,7 @@ import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
 import { resetCustomTheme } from "@/lib/customTheme";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 type Stats = {
   totalXp: number;
@@ -179,17 +180,17 @@ function ProgressSummaryCard({
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1 text-xs font-black text-[var(--accent)]">
-            {fluency.cur.label}
+            {ui(fluency.cur.label)}
           </span>
           <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-            Practice Lv {cur.level}
+            {ui("Practice Lv")} {cur.level}
           </span>
         </div>
         <h1 className="mt-5 text-3xl font-black leading-tight tracking-tight text-[var(--text-1)]">
-          Your German progress
+          {ui(uiIsGerman() ? "Your English progress" : "Your German progress")}
         </h1>
         <p className="mt-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
-          Your level, next target, and practice momentum in one place.
+          {ui("Your level, next target, and practice momentum in one place.")}
         </p>
       </div>
 
@@ -200,8 +201,8 @@ function ProgressSummaryCard({
       <div className="mt-4 grid grid-cols-3 gap-3">
         {[
           { label: "XP", value: stats.totalXp.toLocaleString() },
-          { label: "Words", value: words.toLocaleString() },
-          { label: "Milestones", value: `${earned}/6` },
+          { label: ui("Words"), value: words.toLocaleString() },
+          { label: ui("Milestones"), value: `${earned}/6` },
         ].map((item) => (
           <div className="rounded-[18px] bg-[var(--surface-2)] p-3" key={item.label}>
             <p className="text-lg font-black leading-none text-[var(--text-1)]">{item.value}</p>
@@ -216,10 +217,10 @@ function ProgressSummaryCard({
             <Target className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold opacity-70">Next target</p>
-            <p className="mt-1 text-sm font-black">{nextMilestone?.label ?? "Keep the rhythm"}</p>
+            <p className="text-xs font-bold opacity-70">{ui("Next target")}</p>
+            <p className="mt-1 text-sm font-black">{ui(nextMilestone?.label ?? "Keep the rhythm")}</p>
             <p className="mt-1 text-xs font-semibold leading-5 opacity-75">
-              {nextMilestone?.desc ?? "You have reached every current milestone."}
+              {ui(nextMilestone?.desc ?? "You have reached every current milestone.")}
             </p>
           </div>
         </div>
@@ -234,8 +235,8 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
       <div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-black text-[var(--text-1)]">This week</p>
-            <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">Quick read on your practice rhythm.</p>
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("This week")}</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">{ui("Quick read on your practice rhythm.")}</p>
           </div>
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
             <CalendarDays className="h-5 w-5" />
@@ -244,9 +245,9 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
 
         <div className="mt-6 space-y-3">
           {[
-            { label: "Day streak", value: `${stats.streak}`, tone: "bg-[var(--orange)]" },
-            { label: "Sessions", value: `${stats.sessionsCompleted}`, tone: "bg-[var(--mint)]" },
-            { label: "Milestones", value: `${earned}/6`, tone: "bg-[var(--accent)]" },
+            { label: ui("Day streak"), value: `${stats.streak}`, tone: "bg-[var(--orange)]" },
+            { label: ui("Sessions"), value: `${stats.sessionsCompleted}`, tone: "bg-[var(--mint)]" },
+            { label: ui("Milestones"), value: `${earned}/6`, tone: "bg-[var(--accent)]" },
           ].map((item) => (
             <div className="rounded-[18px] bg-[var(--surface-2)] p-4" key={item.label}>
               <div className="flex items-center justify-between gap-3">
@@ -260,10 +261,10 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
       </div>
 
       <div className="mt-4 rounded-[20px] p-4 text-white" style={{ background: "var(--feature-gradient)" }}>
-        <p className="text-xs font-bold opacity-70">Words tracked</p>
+        <p className="text-xs font-bold opacity-70">{ui("Words tracked")}</p>
         <p className="mt-1 text-3xl font-black tracking-tight">{words.toLocaleString()}</p>
         <p className="mt-3 text-xs font-semibold opacity-75">
-          Keep short daily blocks going before adding longer review sessions.
+          {ui("Keep short daily blocks going before adding longer review sessions.")}
         </p>
       </div>
     </aside>
@@ -401,10 +402,10 @@ export default function GamificationPanel({
         <section className="card overflow-hidden p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-black text-[var(--accent)]">Account</p>
-              <h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--text-1)]">Profile settings</h1>
+              <p className="text-sm font-black text-[var(--accent)]">{ui("Account")}</p>
+              <h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Profile settings")}</h1>
               <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-3)]">
-                Manage your name, theme, and words learned outside Micheon.
+                {ui("Manage your name, theme, and words learned outside Micheon.")}
               </p>
             </div>
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)]">
@@ -419,8 +420,8 @@ export default function GamificationPanel({
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-[var(--text-3)]">Current course</p>
-              <p className="mt-0.5 text-lg font-black text-[var(--text-1)]">{activeCourseName}</p>
+              <p className="text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Current course")}</p>
+              <p className="mt-0.5 text-lg font-black text-[var(--text-1)]">{ui(activeCourseName)}</p>
             </div>
           </div>
           <button
@@ -428,20 +429,20 @@ export default function GamificationPanel({
             onClick={onSwitchCourse}
             className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90"
           >
-            Switch course
+            {ui("Switch course")}
           </button>
         </section>
 
         <section className="card overflow-hidden">
           <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Account details</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Your photo, display name, and login email.</p>
+              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Account details")}</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Your photo, display name, and login email.")}</p>
               <div className="mt-5 flex items-center gap-4">
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  aria-label="Change profile photo"
+                  aria-label={ui("Change profile photo")}
                   className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)] ring-2 ring-[var(--surface)]"
                 >
                   {avatarPreview ? (
@@ -475,7 +476,7 @@ export default function GamificationPanel({
                         <p className="truncate text-xs font-semibold text-[var(--text-3)]">{user.email}</p>
                       </div>
                       <button
-                        aria-label="Edit profile name"
+                        aria-label={ui("Edit profile name")}
                         className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-2)] hover:text-[var(--accent)]"
                         onClick={() => setIsEditingName(true)}
                         type="button"
@@ -490,7 +491,7 @@ export default function GamificationPanel({
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <button type="button" onClick={() => avatarInputRef.current?.click()} className="ghost-btn h-9 px-3 text-xs">
-                  {avatarPreview ? "Change photo" : "Upload photo"}
+                  {ui(avatarPreview ? "Change photo" : "Upload photo")}
                 </button>
                 {avatarPreview && (
                   <button
@@ -498,45 +499,45 @@ export default function GamificationPanel({
                     onClick={removeAvatar}
                     className="h-9 rounded-xl px-3 text-xs font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
                   >
-                    Remove
+                    {ui("Remove")}
                   </button>
                 )}
-                <span className="text-[11px] font-semibold text-[var(--text-3)]">Square images look best — stored on this device.</span>
+                <span className="text-[11px] font-semibold text-[var(--text-3)]">{ui("Square images look best — stored on this device.")}</span>
               </div>
             </div>
 
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Preferences</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Learning, appearance, and progress settings.</p>
+              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Learning, appearance, and progress settings.")}</p>
               <div className="mt-5">
                 <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
               </div>
               <button
-                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
                 className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
                 onClick={toggleTheme}
                 type="button"
               >
                 <span className="flex items-center gap-2">
                   {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                  {theme === "dark" ? "Dark mode" : "Light mode"}
+                  {ui(theme === "dark" ? "Dark mode" : "Light mode")}
                 </span>
-                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">Change</span>
+                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
               </button>
 
               <button
                 aria-pressed={effects === "lite"}
-                aria-label="Toggle reduced effects"
+                aria-label={ui("Toggle reduced effects")}
                 className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
                 onClick={toggleEffects}
                 type="button"
               >
                 <span className="min-w-0">
                   <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                    <Zap className="h-4 w-4" /> Reduce effects
+                    <Zap className="h-4 w-4" /> {ui("Reduce effects")}
                   </span>
                   <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    Turns off glows and continuous animations to save battery on slower devices.
+                    {ui("Turns off glows and continuous animations to save battery on slower devices.")}
                   </span>
                 </span>
                 <span
@@ -545,7 +546,7 @@ export default function GamificationPanel({
                     effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
                   )}
                 >
-                  {effects === "lite" ? "On" : "Off"}
+                  {ui(effects === "lite" ? "On" : "Off")}
                 </span>
               </button>
 
@@ -558,14 +559,14 @@ export default function GamificationPanel({
               {isElectronApp() && (
                 <button
                   aria-pressed={voiceModel === "accurate"}
-                  aria-label="Toggle higher-accuracy dictation model"
+                  aria-label={ui("Toggle higher-accuracy dictation model")}
                   className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
                   onClick={toggleVoiceModel}
                   type="button"
                 >
                   <span className="min-w-0">
                     <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                      <Mic2 className="h-4 w-4" /> Dictation accuracy
+                      <Mic2 className="h-4 w-4" /> {ui("Dictation accuracy")}
                     </span>
                     <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
                       {VOICE_MODELS[voiceModel].note}
@@ -587,10 +588,10 @@ export default function GamificationPanel({
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[var(--text-1)]">Language</p>
+                    <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
                     <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                       {direction === "learn-en"
-                        ? "Learning English as a German speaker — German is shown as the meaning."
+                        ? ui("Learning English as a German speaker — German is shown as the meaning.")
                         : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                     </p>
                   </div>
@@ -603,17 +604,17 @@ export default function GamificationPanel({
                   onChange={(event) => updateLanguageSelection(event.target.value)}
                   value={LANGUAGE_SELECT_VALUE}
                 >
-                  <option value="auto">Auto-detect (English)</option>
-                  <option value="british">British English</option>
-                  <option value="american">American English</option>
+                  <option value="auto">{ui("Auto-detect (English)")}</option>
+                  <option value="british">{ui("British English")}</option>
+                  <option value="american">{ui("American English")}</option>
                   <option value="german">Deutsch</option>
                 </select>
               </div>
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-                <p className="text-sm font-black text-[var(--text-1)]">External word count</p>
+                <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  Add words learned elsewhere so the app can show a more honest vocabulary total.
+                  {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
                 </p>
                 <input
                   className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
@@ -639,17 +640,17 @@ export default function GamificationPanel({
         </section>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <StatCard color="bg-[var(--accent)]" icon={BarChart3} label="Total XP" value={stats.totalXp.toLocaleString()} />
-          <StatCard color="bg-[var(--mint)]" icon={BookOpen} label="Lessons done" value={stats.sessionsCompleted.toLocaleString()} />
-          <StatCard color="bg-[var(--orange)]" icon={Flame} label="Day streak" value={stats.streak.toLocaleString()} />
-          <StatCard color="bg-[var(--ink)]" icon={Target} label="Words tracked" value={words.toLocaleString()} />
+          <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
+          <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
+          <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
+          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={words.toLocaleString()} />
         </section>
 
         <section className="card p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Milestones</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} of {MILESTONES.length} reached</p>
+              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Milestones")}</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} {ui("of")} {MILESTONES.length} {ui("reached")}</p>
             </div>
             <Trophy className="h-6 w-6 text-[var(--accent)]" />
           </div>
@@ -670,8 +671,8 @@ export default function GamificationPanel({
                       {ok ? <Check className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-[var(--text-1)]">{item.label}</p>
-                      <p className="text-xs font-semibold text-[var(--text-3)]">{item.desc}</p>
+                      <p className="text-sm font-black text-[var(--text-1)]">{ui(item.label)}</p>
+                      <p className="text-xs font-semibold text-[var(--text-3)]">{ui(item.desc)}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -686,20 +687,20 @@ export default function GamificationPanel({
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
           <div>
-            <p className="text-sm font-black text-[var(--text-1)]">Sign out</p>
-            <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">You'll return to the login screen. Progress stays saved on this device.</p>
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Sign out")}</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">{ui("You'll return to the login screen. Progress stays saved on this device.")}</p>
           </div>
           <button
             type="button"
             onClick={signOut}
             className="inline-flex items-center gap-2 rounded-full bg-[var(--red-bg,#3a2026)] px-4 py-2.5 text-sm font-black text-[var(--red-text,#ff8a9b)] transition-opacity hover:opacity-90"
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut className="h-4 w-4" /> {ui("Sign out")}
           </button>
         </section>
 
         <p className="px-1 pb-1 text-center text-[11px] font-medium leading-relaxed text-[var(--text-3)]">
-          Some real-sentence practice is sourced from the{" "}
+          {ui("Some real-sentence practice is sourced from the")}{" "}
           <a
             href="https://tatoeba.org"
             target="_blank"
@@ -708,7 +709,7 @@ export default function GamificationPanel({
           >
             Tatoeba
           </a>{" "}
-          project, used under CC BY 2.0 FR.
+          {ui("project, used under CC BY 2.0 FR.")}
         </p>
       </div>
     );
@@ -725,8 +726,8 @@ export default function GamificationPanel({
       <section className="card overflow-hidden">
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Profile settings</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Account details, theme, and external word tracking.</p>
+            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Profile settings")}</h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Account details, theme, and external word tracking.")}</p>
             <div className="mt-5 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">
                 <ShieldCheck className="h-5 w-5" />
@@ -753,7 +754,7 @@ export default function GamificationPanel({
                       <p className="truncate text-xs font-semibold text-[var(--text-3)]">{user.email}</p>
                     </div>
                     <button
-                      aria-label="Edit profile name"
+                      aria-label={ui("Edit profile name")}
                       className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-2)] hover:text-[var(--accent)]"
                       onClick={() => setIsEditingName(true)}
                       type="button"
@@ -769,16 +770,16 @@ export default function GamificationPanel({
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
             <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
             <button
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
               className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
               onClick={toggleTheme}
               type="button"
             >
               <span className="flex items-center gap-2">
                 {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                {theme === "dark" ? "Dark mode" : "Light mode"}
+                {ui(theme === "dark" ? "Dark mode" : "Light mode")}
               </span>
-              <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">Change</span>
+              <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
             </button>
 
             <LearningModePicker value={learningMode} onChange={updateLearningMode} />
@@ -786,10 +787,10 @@ export default function GamificationPanel({
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[var(--text-1)]">Language</p>
+                  <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                     {direction === "learn-en"
-                      ? "Learning English as a German speaker — German is shown as the meaning."
+                      ? ui("Learning English as a German speaker — German is shown as the meaning.")
                       : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                   </p>
                 </div>
@@ -802,17 +803,17 @@ export default function GamificationPanel({
                 onChange={(event) => updateLanguageSelection(event.target.value)}
                 value={LANGUAGE_SELECT_VALUE}
               >
-                <option value="auto">Auto-detect (English)</option>
-                <option value="british">British English</option>
-                <option value="american">American English</option>
+                <option value="auto">{ui("Auto-detect (English)")}</option>
+                <option value="british">{ui("British English")}</option>
+                <option value="american">{ui("American English")}</option>
                 <option value="german">Deutsch</option>
               </select>
             </div>
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-              <p className="text-sm font-black text-[var(--text-1)]">External word count</p>
+              <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
               <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                Add words learned elsewhere so the app can show a more honest vocabulary total.
+                {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
               </p>
               <input
                 className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
@@ -832,17 +833,17 @@ export default function GamificationPanel({
       </section>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <StatCard color="bg-[var(--accent)]" icon={BarChart3} label="Total XP" value={stats.totalXp.toLocaleString()} />
-        <StatCard color="bg-[var(--mint)]" icon={BookOpen} label="Lessons done" value={stats.sessionsCompleted.toLocaleString()} />
-        <StatCard color="bg-[var(--orange)]" icon={Flame} label="Day streak" value={stats.streak.toLocaleString()} />
-        <StatCard color="bg-[var(--ink)]" icon={Target} label="Words tracked" value={words.toLocaleString()} />
+        <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
+        <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
+        <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
+        <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={words.toLocaleString()} />
       </section>
 
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Milestones</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} of {MILESTONES.length} reached</p>
+            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Milestones")}</h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} {ui("of")} {MILESTONES.length} {ui("reached")}</p>
           </div>
           <Trophy className="h-6 w-6 text-[var(--accent)]" />
         </div>
@@ -861,9 +862,9 @@ export default function GamificationPanel({
                   <div className={ok ? "flex h-8 w-8 items-center justify-center rounded-full bg-[var(--mint)] text-white" : "flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[var(--text-3)]"}>
                     <Check className="h-4 w-4" />
                   </div>
-                  <p className="text-sm font-black text-[var(--text-1)]">{item.label}</p>
+                  <p className="text-sm font-black text-[var(--text-1)]">{ui(item.label)}</p>
                 </div>
-                <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">{item.desc}</p>
+                <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(item.desc)}</p>
               </div>
             );
           })}

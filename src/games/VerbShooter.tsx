@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2 } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
 import { recordWordMastery } from "@/lib/mastery";
+import { ui } from "@/lib/i18n";
 
 // ── Verb conjugation data ─────────────────────────────────────
 const VERBS: { infinitive: string; en: string; pronoun: string; correct: string; wrong: string[] }[] = [
@@ -228,16 +229,16 @@ export default function VerbShooter() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-[var(--text-1)]">Verb Shooter</h2>
+        <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Verb Shooter")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          Shoot the correct conjugation before it reaches you.
+          {ui("Shoot the correct conjugation before it reaches you.")}
         </p>
       </div>
 
       {/* Prompt card */}
       <div className="card flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <div>
-          <p className="text-xs text-[var(--text-3)]">Complete the sentence</p>
+          <p className="text-xs text-[var(--text-3)]">{ui("Complete the sentence")}</p>
           <p className="mt-1 text-xl font-bold text-[var(--text-1)]">
             <span className="text-[var(--accent)]">{verb.pronoun}</span>{" "}
             <span className="rounded border border-dashed border-[var(--border)] px-3 py-0.5 text-[var(--text-3)]">???</span>
@@ -248,17 +249,17 @@ export default function VerbShooter() {
         </div>
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Score</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Score")}</p>
             <p className="text-2xl font-bold text-[var(--text-1)]">{score}</p>
           </div>
           {streak > 1 && (
             <div className="text-center">
-              <p className="text-xs text-[var(--text-3)]">Streak</p>
+              <p className="text-xs text-[var(--text-3)]">{ui("Streak")}</p>
               <p className="text-2xl font-bold text-amber-400">×{streak}</p>
             </div>
           )}
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Best</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Best")}</p>
             <div className="flex items-center gap-1">
               <Trophy className="h-3.5 w-3.5 text-amber-400" />
               <p className="text-2xl font-bold text-[var(--text-1)]">{highScore}</p>
@@ -338,23 +339,23 @@ export default function VerbShooter() {
               >
                 {phase === "idle" && (
                   <>
-                    <p className="text-lg font-semibold text-[var(--text-1)]">Verb Shooter</p>
+                    <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Verb Shooter")}</p>
                     <p className="max-w-xs text-center text-sm text-[var(--text-3)]">
-                      Move with ← → and shoot with Space. Hit the correct conjugation. Wrong answer = game over.
+                      {ui("Move with ← → and shoot with Space. Hit the correct conjugation. Wrong answer = game over.")}
                     </p>
-                    <button className="accent-btn px-6 py-2.5 text-sm" onClick={newGame} type="button">Start game</button>
+                    <button className="accent-btn px-6 py-2.5 text-sm" onClick={newGame} type="button">{ui("Start game")}</button>
                   </>
                 )}
                 {phase === "wrong" && (
                   <>
-                    <p className="text-lg font-semibold text-rose-400">Wrong!</p>
+                    <p className="text-lg font-semibold text-rose-400">{ui("Wrong!")}</p>
                     <p className="text-sm text-[var(--text-3)]">
                       <span className="font-bold text-[var(--text-1)]">{verb.pronoun}</span>{" "}
                       <span className="font-bold text-[var(--accent)]">{verb.correct}</span>
                     </p>
                     <p className="text-xs text-[var(--text-3)]">{verb.pronoun} {verb.correct} = {verb.pronoun} {verb.en}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={newGame} type="button">
-                      <RotateCcw className="h-4 w-4" /> Try again
+                      <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>
                   </>
                 )}
@@ -382,7 +383,7 @@ export default function VerbShooter() {
         </div>
 
         <p className="text-xs text-[var(--text-3)]">
-          ← → to move · Space to shoot · Hit the <span className="font-semibold text-[var(--accent)]">correct</span> conjugation
+          {ui("← → to move · Space to shoot · Hit the correct conjugation")}
         </p>
       </div>
     </div>

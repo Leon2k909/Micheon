@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { BookOpen, CalendarDays, ChevronDown, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadActivitySessions, loadGradeStore, summarizeActivity } from "@/lib/activity";
+import { ui, uiIsGerman, uiLocale } from "@/lib/i18n";
 
 type ProgressStats = {
   totalXp: number;
@@ -16,8 +17,6 @@ const RANGE_OPTIONS = [
   { label: "Last 14 days", days: 14 },
   { label: "Last 30 days", days: 30 },
 ];
-
-const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function ActivityCard({ progressStats, className }: { progressStats: ProgressStats; className?: string }) {
   const [range, setRange] = useState(RANGE_OPTIONS[0]);
@@ -52,10 +51,10 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
     <section className={cn("card p-5 sm:p-6", className)}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Activity</h2>
+          <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Activity")}</h2>
           <div className="mt-5 flex items-end gap-2">
             <span className="text-5xl font-black tracking-tight text-[var(--text-1)]">{hours}</span>
-            <span className="pb-2 text-xs font-bold leading-4 text-[var(--text-3)]">hours<br />spent</span>
+            <span className="pb-2 text-xs font-bold leading-4 text-[var(--text-3)]">{ui("hours")}<br />{ui("spent")}</span>
           </div>
         </div>
 
@@ -67,7 +66,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
             type="button"
           >
             <CalendarDays className="h-4 w-4" />
-            {range.label}
+            {ui(range.label)}
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
           </button>
 
@@ -88,7 +87,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
                   }}
                   type="button"
                 >
-                  {option.label}
+                  {ui(option.label)}
                 </button>
               ))}
             </div>
@@ -100,13 +99,16 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
         {hasData ? (
           <>
             <div className="absolute left-0 top-0 rounded-full bg-[var(--ink)] px-2 py-1 text-[10px] font-bold text-[var(--ink-text)]">
-              {summary.activeDays} active {summary.activeDays === 1 ? "day" : "days"}
+              {uiIsGerman()
+                ? `${summary.activeDays} ${summary.activeDays === 1 ? "aktiver Tag" : "aktive Tage"}`
+                : `${summary.activeDays} active ${summary.activeDays === 1 ? "day" : "days"}`}
             </div>
             <div className="flex h-full items-end gap-2 pt-6">
               {chartBuckets.map((bucket, index) => {
                 const heightPct = bucket.minutes > 0 ? Math.max(8, (bucket.minutes / maxMinutes) * 100) : 4;
                 const isToday = index === chartBuckets.length - 1;
-                const weekday = WEEKDAY[new Date(bucket.dayStart).getDay()];
+                const weekday = new Intl.DateTimeFormat(uiLocale(), { weekday: "short" })
+                  .format(new Date(bucket.dayStart));
                 return (
                   <div className="flex h-full flex-1 flex-col items-center justify-end gap-2" key={bucket.dayStart}>
                     <div
@@ -119,7 +121,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
                             : "bg-[#cbbbf8] dark:bg-[#4b3a78]"
                       )}
                       style={{ height: `${heightPct}%` }}
-                      title={`${weekday}: ${bucket.minutes.toFixed(0)} min, ${bucket.items} items`}
+                      title={`${weekday}: ${bucket.minutes.toFixed(0)} min, ${bucket.items} ${ui("items")}`}
                     />
                     <span className="text-[10px] font-semibold text-[var(--text-3)]">{weekday}</span>
                   </div>
@@ -129,19 +131,19 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
-            <p className="text-sm font-black text-[var(--text-2)]">No activity yet</p>
-            <p className="text-xs font-semibold text-[var(--text-3)]">Finish a lesson to start tracking real time and progress.</p>
+            <p className="text-sm font-black text-[var(--text-2)]">{ui("No activity yet")}</p>
+            <p className="text-xs font-semibold text-[var(--text-3)]">{ui("Finish a lesson to start tracking real time and progress.")}</p>
           </div>
         )}
       </div>
 
       <div className="mt-6 rounded-[20px] bg-[var(--surface-2)] p-4">
-        <p className="text-sm font-black text-[var(--text-1)]">This range</p>
+        <p className="text-sm font-black text-[var(--text-1)]">{ui("This range")}</p>
         <div className="mt-4 space-y-4">
           {[
-            { label: "Lessons completed", value: `${summary.sessionsCount} ${summary.sessionsCount === 1 ? "session" : "sessions"}`, time: `${summary.hours.toFixed(1)} h`, icon: BookOpen },
-            { label: "Words marked known", value: `${knownInRange} ${knownInRange === 1 ? "item" : "items"}`, time: `${itemsInRange} graded`, icon: Headphones },
-            { label: "Day streak", value: `${progressStats.streak} ${progressStats.streak === 1 ? "day" : "days"}`, time: `${summary.activeDays} active`, icon: MessageCircle },
+            { label: ui("Lessons completed"), value: `${summary.sessionsCount} ${ui(summary.sessionsCount === 1 ? "session" : "sessions")}`, time: `${summary.hours.toFixed(1)} h`, icon: BookOpen },
+            { label: ui("Words marked known"), value: `${knownInRange} ${ui(knownInRange === 1 ? "item" : "items")}`, time: `${itemsInRange} ${ui("graded")}`, icon: Headphones },
+            { label: ui("Day streak"), value: `${progressStats.streak} ${ui(progressStats.streak === 1 ? "day" : "days")}`, time: `${summary.activeDays} ${ui("active")}`, icon: MessageCircle },
           ].map((item) => (
             <div className="flex items-center gap-3" key={item.label}>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">

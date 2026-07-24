@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MicheonLogo } from "@/components/MicheonLogo";
 import { buildProfileId, findProfileByEmail, setAuthUser, UserProfile } from "@/lib/profileStorage";
+import { ui } from "@/lib/i18n";
 
 interface LoginScreenProps {
   onLogin: (user: UserProfile) => void;
@@ -80,19 +81,18 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           </div>
 
           <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-6xl">
-            Practical German, one focused lesson at a time.
+            {ui("Practical German, one focused lesson at a time.")}
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-600">
-            Return to your current module, keep your progress, and build the words and phrases you need for real
-            conversations.
+            {ui("Return to your current module, keep your progress, and build the words and phrases you need for real conversations.")}
           </p>
 
           <div className="mt-8 grid max-w-2xl gap-3">
             {essentials.map((item) => (
               <div key={item} className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-                <p className="text-sm leading-6 text-zinc-700">{item}</p>
+                <p className="text-sm leading-6 text-zinc-700">{ui(item)}</p>
               </div>
             ))}
           </div>
@@ -100,8 +100,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           <div className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
             {previewModules.map((module) => (
               <div key={module.label} className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-                <p className="text-sm font-semibold text-zinc-950">{module.label}</p>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">{module.detail}</p>
+                <p className="text-sm font-semibold text-zinc-950">{ui(module.label)}</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">{ui(module.detail)}</p>
               </div>
             ))}
           </div>
@@ -121,29 +121,29 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    {isLogin ? "Welcome back" : "Create profile"}
+                    {ui(isLogin ? "Welcome back" : "Create profile")}
                   </p>
                   <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950">
-                    {isLogin ? "Continue learning" : "Start Micheon"}
+                    {ui(isLogin ? "Continue learning" : "Start Micheon")}
                   </h2>
                 </div>
               </div>
             </div>
 
             <p className="mt-5 text-sm leading-6 text-zinc-600">
-              This uses a local profile, so you can get back to your lesson without setting up a remote account.
+              {ui("This uses a local profile, so you can get back to your lesson without setting up a remote account.")}
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               {!isLogin ? (
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Name</span>
+                  <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{ui("Name")}</span>
                   <div className="relative">
                     <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
                     <Input
                       className={inputClassName()}
                       onChange={(event) => setName(event.target.value)}
-                      placeholder="Your name"
+                      placeholder={ui("Your name")}
                       required={!isLogin}
                       value={name}
                     />
@@ -152,7 +152,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Email</span>
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{ui("Email")}</span>
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
                   <Input
@@ -171,7 +171,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 disabled={loading}
                 type="submit"
               >
-                {loading ? "Opening your lessons..." : isLogin ? "Continue" : "Create profile"}
+                {ui(loading ? "Opening your lessons..." : isLogin ? "Continue" : "Create profile")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </form>
@@ -182,12 +182,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 onClick={() => setIsLogin((current) => !current)}
                 type="button"
               >
-                {isLogin ? "Need a profile?" : "Already have a profile?"}
+                {ui(isLogin ? "Need a profile?" : "Already have a profile?")}
               </button>
 
               <div className="flex items-center gap-2 text-xs text-zinc-500">
                 <ShieldCheck className="h-4 w-4 text-teal-700" />
-                Local profile
+                {ui("Local profile")}
               </div>
             </div>
           </div>

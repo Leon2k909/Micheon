@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Flag, Clock } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
 import { recordWordMastery } from "@/lib/mastery";
+import { ui } from "@/lib/i18n";
 
 // ── Vocab bank ────────────────────────────────────────────────
 const VOCAB: { de: string; en: string }[] = [
@@ -310,9 +311,9 @@ export default function VocabMinesweeper() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-[var(--text-1)]">Vocab Minesweeper</h2>
+        <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Vocab Minesweeper")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          Click a cell — translate the German word to reveal it safely. Wrong answer = mine.
+          {ui("Click a cell — translate the German word to reveal it safely. Wrong answer = mine.")}
         </p>
       </div>
 
@@ -322,14 +323,14 @@ export default function VocabMinesweeper() {
           <div className="flex items-center gap-1.5 text-sm">
             <span className="text-base">💣</span>
             <span className="font-bold text-[var(--text-1)]">{minesLeft}</span>
-            <span className="text-[var(--text-3)]">left</span>
+            <span className="text-[var(--text-3)]">{ui("left")}</span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
             <Clock className="h-3.5 w-3.5 text-[var(--text-3)]" />
             <span className="font-bold text-[var(--text-1)]">{elapsedTime}s</span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="text-[var(--text-3)]">Score</span>
+            <span className="text-[var(--text-3)]">{ui("Score")}</span>
             <span className="font-bold text-[var(--text-1)]">{score}</span>
           </div>
           <div className="flex items-center gap-1">
@@ -351,7 +352,7 @@ export default function VocabMinesweeper() {
               onClick={() => { if (phase === "idle") setDifficulty(d); else newGame(d); }}
               type="button"
             >
-              {DIFFICULTIES[d].label}
+              {ui(DIFFICULTIES[d].label)}
             </button>
           ))}
           <button
@@ -361,10 +362,10 @@ export default function VocabMinesweeper() {
                 : "border-[var(--border)] text-[var(--text-3)] hover:border-[var(--border-2)]"
             }`}
             onClick={() => setFlagMode(f => !f)}
-            title="Toggle flag mode (or right-click cells)"
+            title={ui("Toggle flag mode (or right-click cells)")}
             type="button"
           >
-            <Flag className="h-3 w-3" /> Flag
+            <Flag className="h-3 w-3" /> {ui("Flag")}
           </button>
         </div>
       </div>
@@ -430,32 +431,32 @@ export default function VocabMinesweeper() {
               >
                 {phase === "idle" && (
                   <>
-                    <p className="text-lg font-semibold text-[var(--text-1)]">Vocab Minesweeper</p>
+                    <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Vocab Minesweeper")}</p>
                     <p className="max-w-[260px] text-center text-sm text-[var(--text-3)]">
-                      Click any cell to reveal it. Translate the German word correctly to defuse it. Wrong answer = boom.
+                      {ui("Click any cell to reveal it. Translate the German word correctly to defuse it. Wrong answer = boom.")}
                     </p>
                     <button className="accent-btn px-6 py-2.5 text-sm" onClick={() => newGame()} type="button">
-                      Start game
+                      {ui("Start game")}
                     </button>
                   </>
                 )}
                 {phase === "won" && (
                   <>
                     <motion.div animate={{ scale: 1 }} initial={{ scale: 0 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="text-5xl">🎉</motion.div>
-                    <p className="text-lg font-semibold text-[var(--text-1)]">Board cleared!</p>
-                    <p className="text-sm text-[var(--text-3)]">+{score} points · {elapsedTime}s</p>
+                    <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Board cleared!")}</p>
+                    <p className="text-sm text-[var(--text-3)]">+{score} {ui("points")} · {elapsedTime}s</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={() => newGame()} type="button">
-                      <RotateCcw className="h-4 w-4" /> Play again
+                      <RotateCcw className="h-4 w-4" /> {ui("Play again")}
                     </button>
                   </>
                 )}
                 {phase === "dead" && (
                   <>
                     <div className="text-5xl">💥</div>
-                    <p className="text-lg font-semibold text-rose-400">Boom!</p>
-                    <p className="text-sm text-[var(--text-3)]">Score: {score}</p>
+                    <p className="text-lg font-semibold text-rose-400">{ui("Boom!")}</p>
+                    <p className="text-sm text-[var(--text-3)]">{ui("Score")}: {score}</p>
                     <button className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm" onClick={() => newGame()} type="button">
-                      <RotateCcw className="h-4 w-4" /> Try again
+                      <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>
                   </>
                 )}
@@ -496,7 +497,7 @@ export default function VocabMinesweeper() {
               </div>
 
               <div className="mb-1 flex items-center justify-between">
-                <p className="text-xs text-[var(--text-3)]">Translate to English</p>
+                <p className="text-xs text-[var(--text-3)]">{ui("Translate to English")}</p>
                 <span className={`text-sm font-bold ${timeLeft <= 3 ? "text-rose-400" : "text-[var(--text-3)]"}`}>
                   {timeLeft}s
                 </span>
@@ -511,24 +512,24 @@ export default function VocabMinesweeper() {
                     autoComplete="off"
                     className="flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-sm text-[var(--text-1)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
                     onChange={e => setAnswer(e.target.value)}
-                    placeholder="English translation..."
+                    placeholder={ui("English translation...")}
                     type="text"
                     value={answer}
                   />
-                  <button className="accent-btn px-4 py-2.5 text-sm" type="submit">Go</button>
+                  <button className="accent-btn px-4 py-2.5 text-sm" type="submit">{ui("Go")}</button>
                 </form>
               ) : quizResult === "correct" ? (
                 <div className="flex items-center gap-2 text-[var(--accent)]">
                   <span className="text-xl">✓</span>
-                  <span className="font-semibold">Correct! "{quizCell.vocab.en}"</span>
+                  <span className="font-semibold">{ui("Correct!")} "{quizCell.vocab.en}"</span>
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-rose-400">
                     <span className="text-xl">✗</span>
-                    <span className="font-semibold">It was "{quizCell.vocab.en}"</span>
+                    <span className="font-semibold">{ui("It was")} "{quizCell.vocab.en}"</span>
                   </div>
-                  <p className="text-xs text-[var(--text-3)]">💥 Mine triggered...</p>
+                  <p className="text-xs text-[var(--text-3)]">💥 {ui("Mine triggered...")}</p>
                 </div>
               )}
             </motion.div>
@@ -537,7 +538,7 @@ export default function VocabMinesweeper() {
       </AnimatePresence>
 
       <p className="text-center text-xs text-[var(--text-3)]">
-        Click to reveal · Right-click or use Flag mode to mark mines · Translate correctly to defuse
+        {ui("Click to reveal · Right-click or use Flag mode to mark mines · Translate correctly to defuse")}
       </p>
     </div>
   );

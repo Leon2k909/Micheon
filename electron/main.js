@@ -6,7 +6,8 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, screen } from "electron";
+import fs from "node:fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
@@ -19,8 +20,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Local port for the embedded server. Deliberately uncommon so it won't collide
 // with the dev server (3001) or other tooling on the user's machine.
 const PORT = process.env.GERM_PORT || 41730;
+const PET_OVERLAY_WIDTH = 360;
+const PET_OVERLAY_HEIGHT = 320;
+const PET_OVERLAY_MARGIN = 16;
 
 let mainWindow = null;
+let petWindow = null;
+let serverStarted = false;
+let savePetBoundsTimer = null;
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port again.
@@ -35,9 +42,127 @@ if (!app.requestSingleInstanceLock()) {
   });
 }
 
+async function ensureServer() {
+  if (serverStarted) return;
+  await startServer(PORT);
+  serverStarted = true;
+}
+
+function petBoundsFile() {
+  return path.join(app.getPath("userData"), "pet-overlay-bounds.json");
+}
+
+function clampPetPosition(x, y) {
+  const display = screen.getDisplayNearestPoint({ x, y });
+  const workArea = display.workArea;
+  return {
+    x: Math.round(Math.min(
+      Math.max(x, workArea.x),
+      workArea.x + workArea.width - PET_OVERLAY_WIDTH
+    )),
+    y: Math.round(Math.min(
+      Math.max(y, workArea.y),
+      workArea.y + workArea.height - PET_OVERLAY_HEIGHT
+    )),
+  };
+}
+
+function initialPetPosition() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(petBoundsFile(), "utf8"));
+    if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y)) {
+      return clampPetPosition(saved.x, saved.y);
+    }
+  } catch {
+    // First launch or an invalid bounds file falls back to the primary display.
+  }
+
+  const workArea = screen.getPrimaryDisplay().workArea;
+  return {
+    x: workArea.x + workArea.width - PET_OVERLAY_WIDTH - PET_OVERLAY_MARGIN,
+    y: workArea.y + workArea.height - PET_OVERLAY_HEIGHT - PET_OVERLAY_MARGIN,
+  };
+}
+
+function savePetBounds() {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  const { x, y } = petWindow.getBounds();
+  try {
+    fs.writeFileSync(petBoundsFile(), JSON.stringify({ x, y }));
+  } catch (error) {
+    console.error("[pet] unable to save overlay bounds:", error?.message ?? error);
+  }
+}
+
+function schedulePetBoundsSave() {
+  if (savePetBoundsTimer) clearTimeout(savePetBoundsTimer);
+  savePetBoundsTimer = setTimeout(savePetBounds, 180);
+}
+
+function createPetOverlayWindow() {
+  if (petWindow && !petWindow.isDestroyed()) return petWindow;
+  const position = initialPetPosition();
+
+  petWindow = new BrowserWindow({
+    width: PET_OVERLAY_WIDTH,
+    height: PET_OVERLAY_HEIGHT,
+    x: position.x,
+    y: position.y,
+    show: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: "#00000000",
+    alwaysOnTop: true,
+    focusable: false,
+    hasShadow: false,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    title: "Micheon mascot",
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      backgroundThrottling: false,
+      preload: path.join(__dirname, "preload.cjs"),
+    },
+  });
+
+  petWindow.setAlwaysOnTop(true, "floating");
+  petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
+    console.error("[pet] unable to load overlay:", error?.message ?? error);
+  });
+  petWindow.on("move", schedulePetBoundsSave);
+  petWindow.on("closed", () => {
+    petWindow = null;
+  });
+  petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  return petWindow;
+}
+
+function setPetOverlayVisible(visible) {
+  if (!visible) {
+    petWindow?.hide();
+    return;
+  }
+  const overlay = createPetOverlayWindow();
+  overlay.setAlwaysOnTop(true, "floating");
+  overlay.showInactive();
+}
+
+function eventCameFrom(event, window) {
+  return Boolean(
+    window
+    && !window.isDestroyed()
+    && event.sender.id === window.webContents.id
+  );
+}
+
 async function createWindow() {
   // Boot the embedded web + TTS server first, then load it.
-  await startServer(PORT);
+  await ensureServer();
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -57,7 +182,8 @@ async function createWindow() {
     },
   });
 
-  mainWindow.loadURL(`http://localhost:${PORT}`);
+  await mainWindow.loadURL(`http://localhost:${PORT}`);
+  createPetOverlayWindow();
 
   // Tell the renderer when the window is maximized/restored so the title bar's
   // maximize button can show the correct icon.
@@ -78,6 +204,7 @@ async function createWindow() {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+    if (petWindow && !petWindow.isDestroyed()) petWindow.destroy();
   });
 }
 
@@ -127,6 +254,41 @@ ipcMain.on("window:toggle-maximize", () => {
 });
 ipcMain.on("window:close", () => mainWindow?.close());
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
+
+ipcMain.on("pet-overlay:set-visible", (event, visible) => {
+  const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
+  if (!trustedSender) return;
+  setPetOverlayVisible(Boolean(visible));
+});
+
+ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  const dx = Number(deltaX);
+  const dy = Number(deltaY);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+  const [x, y] = petWindow.getPosition();
+  const next = clampPetPosition(
+    x + Math.max(-160, Math.min(160, dx)),
+    y + Math.max(-160, Math.min(160, dy))
+  );
+  petWindow.setPosition(next.x, next.y);
+  schedulePetBoundsSave();
+});
+
+ipcMain.on("pet-overlay:speak", (event, payload) => {
+  if (!eventCameFrom(event, mainWindow) || !petWindow || petWindow.isDestroyed()) return;
+  if (!payload || typeof payload.text !== "string") return;
+  const text = payload.text.trim().slice(0, 240);
+  if (!text) return;
+  const durationMs = Number(payload.options?.durationMs);
+  petWindow.webContents.send("pet-overlay:speech", {
+    text,
+    options: {
+      durationMs: Number.isFinite(durationMs) ? durationMs : undefined,
+      mood: typeof payload.options?.mood === "string" ? payload.options.mood : undefined,
+    },
+  });
+});
 
 app.whenReady().then(async () => {
   await createWindow();

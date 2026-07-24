@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, CheckCircle2, Clock3, Headphones } from "lucide-react";
 import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
+import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 
 export function LearnView({
   apiParts,
@@ -20,19 +21,21 @@ export function LearnView({
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">Lessons</h1>
+            <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Lessons")}</h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">
-              Work through practical German in short blocks: read, listen, speak, type, and translate.
+              {ui(uiIsGerman()
+                ? "Work through practical English in short blocks: read, listen, speak, type, and translate."
+                : "Work through practical German in short blocks: read, listen, speak, type, and translate.")}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-2xl bg-[var(--surface-2)] px-4 py-3">
               <p className="text-2xl font-black text-[var(--text-1)]">{coreParts.length}</p>
-              <p className="text-[11px] font-bold text-[var(--text-3)]">core modules</p>
+              <p className="text-[11px] font-bold text-[var(--text-3)]">{ui("core modules")}</p>
             </div>
             <div className="rounded-2xl bg-[var(--surface-2)] px-4 py-3">
               <p className="text-2xl font-black text-[var(--text-1)]">{wordBankParts.length}</p>
-              <p className="text-[11px] font-bold text-[var(--text-3)]">practice sets</p>
+              <p className="text-[11px] font-bold text-[var(--text-3)]">{ui("practice sets")}</p>
             </div>
           </div>
         </div>
@@ -60,8 +63,12 @@ export function LearnView({
                   {part.level}
                 </span>
               </div>
-              <h2 className="mt-5 text-xl font-black leading-tight tracking-tight text-[var(--text-1)]">{part.theme}</h2>
-              <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[var(--text-2)]">{part.description}</p>
+              <h2 className="mt-5 text-xl font-black leading-tight tracking-tight text-[var(--text-1)]">
+                {uiOr(part.theme, "Konversationsmodul")}
+              </h2>
+              <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
+                {uiOr(part.description, "Praktische Sätze und Wörter für natürliche Gespräche zu diesem Thema.")}
+              </p>
 
               <div className="mt-6 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -69,7 +76,7 @@ export function LearnView({
                     <Clock3 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-[var(--text-1)]">{partItemCount(part)} items</p>
+                    <p className="text-xs font-black text-[var(--text-1)]">{partItemCount(part)} {ui("items")}</p>
                     <p className="text-[11px] font-semibold text-[var(--text-3)]">10-15 min</p>
                   </div>
                 </div>
@@ -88,9 +95,9 @@ export function LearnView({
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-[var(--text-1)]">Conversation coverage</h2>
+            <h2 className="text-lg font-black text-[var(--text-1)]">{ui("Conversation coverage")}</h2>
             <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
-              The current path covers greetings, daily routines, travel, food, questions, basic opinions, and common sentence patterns.
+              {ui("The current path covers greetings, daily routines, travel, food, questions, basic opinions, and common sentence patterns.")}
             </p>
           </div>
         </div>

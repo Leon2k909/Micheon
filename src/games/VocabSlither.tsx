@@ -5,6 +5,7 @@ import { speakGerman } from '@/lib/tts';
 import { allPartBlueprints, entryFallbacks } from '@/lib/data';
 import { recordWordMastery } from '@/lib/mastery';
 import { fetchRemoteGermanWordCatalog } from '@/lib/api';
+import { ui } from '@/lib/i18n';
 
 // --- Game Constants ---
 const WORLD_SIZE = 4000;
@@ -831,18 +832,18 @@ export default function VocabSlither() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-black text-white flex items-center gap-3">
-               <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Slither Deutsch</span>
+               <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">{ui("Slither Deutsch")}</span>
                <Sparkles className="h-6 w-6 text-amber-400 fill-amber-400" />
             </h2>
-            <p className="text-slate-400 text-sm mt-1">Collect the correct articles to grow your snake!</p>
+            <p className="text-slate-400 text-sm mt-1">{ui("Collect the correct articles to grow your snake!")}</p>
           </div>
           <div className="flex gap-4">
             <div className="bg-slate-800/80 border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Score</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
               <p className="text-2xl font-black text-white">{score}</p>
             </div>
             <div className="bg-slate-800/80 border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Best</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Best")}</p>
               <div className="flex items-center gap-1.5 justify-center">
                 <Trophy className="h-4 w-4 text-amber-500" />
                 <p className="text-2xl font-black text-white">{highScore}</p>
@@ -872,7 +873,7 @@ export default function VocabSlither() {
         <button 
           onClick={toggleFullscreen}
           className="absolute top-8 right-8 z-20 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          title={ui(isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen")}
         >
           {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
         </button>
@@ -886,7 +887,7 @@ export default function VocabSlither() {
                     exit={{ scale: 1.2, opacity: 0 }}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-white/20 font-black text-8xl italic tracking-tighter"
                 >
-                    BOOST
+                    {ui("Boost")}
                 </motion.div>
             )}
         </AnimatePresence>
@@ -900,7 +901,7 @@ export default function VocabSlither() {
               animate={{ x: 0, opacity: 1 }}
               className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 rounded-3xl shadow-2xl"
             >
-              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">Target Article</p>
+              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">{ui("Target Article")}</p>
               <div className="flex items-center gap-5">
                 <span className={`text-4xl font-black px-4 py-2 rounded-xl ${
                   currentCategory.target === 'der' ? 'text-blue-400 bg-blue-400/10 border border-blue-400/20 shadow-[0_0_20px_rgba(59,130,246,0.2)]' :
@@ -910,7 +911,7 @@ export default function VocabSlither() {
                   {currentCategory.target.toUpperCase()}
                 </span>
                 <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-medium italic">Progression:</p>
+                    <p className="text-xs text-slate-400 font-medium italic">{ui("Progression:")}</p>
                     <div className="flex gap-1.5">
                         {[...Array(5)].map((_, i) => (
                             <div 
@@ -929,11 +930,11 @@ export default function VocabSlither() {
             {isFullscreen && (
                 <div className="flex gap-4">
                     <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Score</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
                         <p className="text-2xl font-black text-white">{score}</p>
                     </div>
                     <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">Best</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Best")}</p>
                         <div className="flex items-center gap-1.5 justify-center">
                             <Trophy className="h-4 w-4 text-amber-500" />
                             <p className="text-2xl font-black text-white">{highScore}</p>
@@ -1012,16 +1013,15 @@ export default function VocabSlither() {
                 >
                    <Sparkles className="h-14 w-14 fill-accent/10" />
                 </motion.div>
-                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Enter the Arena</h3>
+                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">{ui("Enter the Arena")}</h3>
                 <p className="text-slate-400 mb-10 leading-relaxed text-lg">
-                  Master the German articles! Guide your snake to consume words that match your target. 
-                  Watch out for world boundaries and <b>enemy bots</b>!
+                  {ui("Master the German articles! Guide your snake to consume words that match your target. Watch out for world boundaries and enemy bots!")}
                 </p>
                 <button 
                   onClick={initGame}
                   className="group relative bg-accent hover:bg-emerald-400 text-slate-950 px-12 py-5 rounded-2xl font-black text-xl transition-all active:scale-95 shadow-[0_0_30px_rgba(88,230,217,0.4)] flex items-center gap-3 mx-auto"
                 >
-                  START SLITHERING 
+                  {ui("Start slithering")}
                   <ChevronRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>
@@ -1035,19 +1035,19 @@ export default function VocabSlither() {
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center"
             >
                 <div className="bg-slate-900/90 border border-slate-700/50 p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6">
-                    <h3 className="text-6xl font-black text-white tracking-widest uppercase">Paused</h3>
-                    <p className="text-slate-400">Press <b>ESC</b> to resume</p>
+                    <h3 className="text-6xl font-black text-white tracking-widest uppercase">{ui("Paused")}</h3>
+                    <p className="text-slate-400">{ui("Press ESC to resume")}</p>
                     <button 
                         onClick={() => setIsPaused(false)}
                         className="bg-[var(--accent)] text-[var(--accent-text)] px-10 py-4 rounded-2xl font-black text-lg hover:bg-[var(--accent-hover)] transition-colors shadow-xl active:scale-95 flex items-center gap-2"
                     >
-                        RESUME GAME
+                        {ui("Resume game")}
                     </button>
                     <button 
                         onClick={() => { setGameState('idle'); setIsPaused(false); }}
                         className="text-slate-500 hover:text-white transition-colors text-sm font-medium"
                     >
-                        Quit to Menu
+                        {ui("Quit to Menu")}
                     </button>
                 </div>
             </motion.div>
@@ -1060,16 +1060,16 @@ export default function VocabSlither() {
               className="absolute inset-0 bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
             >
               <div className="p-4 bg-rose-500/10 rounded-3xl border border-rose-500/20 mb-8">
-                <h3 className="text-7xl font-black text-rose-500 mb-2 uppercase tracking-tighter">CRASHED</h3>
+                <h3 className="text-7xl font-black text-rose-500 mb-2 uppercase tracking-tighter">{ui("Crashed")}</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-12 mb-16">
                 <div className="text-center">
-                  <p className="text-slate-500 uppercase text-xs font-black tracking-[0.2em] mb-2">Final Score</p>
+                  <p className="text-slate-500 uppercase text-xs font-black tracking-[0.2em] mb-2">{ui("Final Score")}</p>
                   <p className="text-6xl font-black text-white tabular-nums">{score}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-slate-500 uppercase text-xs font-black tracking-[0.2em] mb-2">High Score</p>
+                  <p className="text-slate-500 uppercase text-xs font-black tracking-[0.2em] mb-2">{ui("High Score")}</p>
                   <div className="flex items-center justify-center gap-3">
                     <Trophy className="h-8 w-8 text-amber-500" />
                     <p className="text-6xl font-black text-white tabular-nums">{highScore}</p>
@@ -1081,7 +1081,7 @@ export default function VocabSlither() {
                 onClick={initGame}
                 className="bg-white hover:bg-slate-100 text-slate-950 px-12 py-5 rounded-2xl font-black text-xl transition-all active:scale-95 flex items-center gap-3 shadow-2xl"
               >
-                <RotateCcw className="h-6 w-6" /> TRY AGAIN
+                <RotateCcw className="h-6 w-6" /> {ui("Try again")}
               </button>
             </motion.div>
           )}
@@ -1095,11 +1095,9 @@ export default function VocabSlither() {
                 <Info className="h-6 w-6" />
             </div>
             <div>
-                <p className="text-lg font-black text-white mb-1">How to play</p>
+                <p className="text-lg font-black text-white mb-1">{ui("How to play")}</p>
                 <p className="text-sm text-slate-400 leading-relaxed">
-                    Move your mouse to steer. <b>Hold click or Space</b> to boost speed (costs score). 
-                    Eat words matching the <b>Target Article</b> to grow. 
-                    <b>Avoid hitting Bots!</b> If a bot hits your body, you get bonus points.
+                    {ui("Move your mouse to steer. Hold click or Space to boost speed (costs score). Eat words matching the Target Article to grow. Avoid hitting Bots! If a bot hits your body, you get bonus points.")}
                 </p>
             </div>
         </div>

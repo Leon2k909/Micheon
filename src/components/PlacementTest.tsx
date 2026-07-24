@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { allPartBlueprints } from "@/lib/data";
 import { normalize } from "@/lib/api";
+import { learningEnglish } from "@/lib/direction";
+import { ui } from "@/lib/i18n";
 
 const QUESTIONS = [
   { part: "part1", de: "Haus", en: "House", level: "A1" },
@@ -29,10 +31,13 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
 
   const current = QUESTIONS[index];
   const progress = ((index + 1) / QUESTIONS.length) * 100;
+  const reverse = learningEnglish();
+  const prompt = reverse ? current.de : current.en;
+  const target = reverse ? current.en : current.de;
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const isCorrect = normalize(input) === normalize(current.de);
+    const isCorrect = normalize(input) === normalize(target);
     setAnswers([...answers, isCorrect]);
     setInput("");
 
@@ -65,19 +70,19 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Starting point</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950">Recommended module</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{ui("Starting point")}</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950">{ui("Recommended module")}</h2>
             </div>
           </div>
 
           <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-            <p className="text-sm font-semibold text-teal-800">{blueprint.label} · {blueprint.level}</p>
-            <p className="mt-2 text-xl font-semibold text-zinc-950">{blueprint.theme}</p>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">{blueprint.description}</p>
+            <p className="text-sm font-semibold text-teal-800">{ui(blueprint.label)} · {blueprint.level}</p>
+            <p className="mt-2 text-xl font-semibold text-zinc-950">{ui(blueprint.theme)}</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-600">{ui(blueprint.description)}</p>
           </div>
 
           <div className="mt-5 flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3">
-            <span className="text-sm text-zinc-600">Vocabulary check</span>
+            <span className="text-sm text-zinc-600">{ui("Vocabulary check")}</span>
             <span className="text-sm font-semibold text-zinc-950">{accuracy}%</span>
           </div>
 
@@ -85,7 +90,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
             className="mt-6 h-12 w-full rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800"
             onClick={() => onComplete(partKey)}
           >
-            Continue
+            {ui("Continue")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -98,8 +103,8 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       <div className="rounded-2xl border border-zinc-200 bg-white p-7 text-zinc-950 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Starting point check</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">Translate to German</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{ui("Starting point check")}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{ui(reverse ? "Translate to English" : "Translate to German")}</h2>
           </div>
           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-teal-700">
             <Languages className="h-5 w-5" />
@@ -108,15 +113,15 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
 
         <div className="mt-6">
           <div className="mb-2 flex justify-between text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            <span>Question {index + 1} of {QUESTIONS.length}</span>
+            <span>{ui("Question")} {index + 1} {ui("of")} {QUESTIONS.length}</span>
             <span>{current.level}</span>
           </div>
           <Progress value={progress} variant="teal" className="h-1.5" />
         </div>
 
         <div className="mt-7 rounded-xl border border-zinc-200 bg-zinc-50 p-7 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">English prompt</p>
-          <p className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950">{current.en}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{ui(reverse ? "German prompt" : "English prompt")}</p>
+          <p className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950">{prompt}</p>
         </div>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -124,7 +129,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
             autoFocus
             className="h-12 rounded-lg border-zinc-300 bg-white px-4 text-base font-semibold text-zinc-950 shadow-none placeholder:text-zinc-400 focus-visible:border-teal-700 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal-700/10"
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Type the German word"
+            placeholder={ui(reverse ? "Type the English word" : "Type the German word")}
             value={input}
           />
           <Button
@@ -132,7 +137,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
             disabled={!input.trim()}
             type="submit"
           >
-            Check answer
+            {ui("Check answer")}
           </Button>
         </form>
       </div>

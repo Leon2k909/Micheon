@@ -2,6 +2,7 @@ import React, { useId, useEffect } from "react";
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { VOCAB_MILESTONES } from "@/lib/data";
 import { effectsReduced } from "@/lib/effects";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 const VOCAB_TARGET = 16000;
 
@@ -72,7 +73,7 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
         <span className="text-xl font-black tracking-tight text-[var(--text-1)]">
           <motion.span>{pctText}</motion.span>%
         </span>
-        <span className="text-[10px] font-semibold text-[var(--text-3)]">mastered</span>
+        <span className="text-[10px] font-semibold text-[var(--text-3)]">{ui("mastered")}</span>
       </div>
     </div>
   );
@@ -92,7 +93,7 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
     <div className="card p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-[var(--text-1)]">Vocabulary mastery</p>
+          <p className="text-sm font-black text-[var(--text-1)]">{ui("Vocabulary mastery")}</p>
           <p className="mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
             {mastered.toLocaleString()}
             <span className="text-base font-bold text-[var(--text-3)]"> / {VOCAB_TARGET.toLocaleString()}</span>
@@ -103,7 +104,7 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
             <div className="mt-1.5 flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: currentMilestone.color }} />
               <span className="text-xs font-medium" style={{ color: currentMilestone.color }}>
-                {currentMilestone.label}
+                {ui(currentMilestone.label)}
               </span>
               <span className="text-xs text-[var(--text-3)]">({currentMilestone.level})</span>
             </div>
@@ -112,9 +113,20 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
           {/* Next milestone */}
           {nextMilestone && (
             <p className="mt-1 text-xs text-[var(--text-3)]">
-              <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} words</span> to{" "}
-              <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
-              {" "} {nextMilestone.detail}
+              {uiIsGerman() ? (
+                <>
+                  <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} Wörter</span>
+                  {" bis "}
+                  <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
+                  {" · "}{ui(nextMilestone.detail)}
+                </>
+              ) : (
+                <>
+                  <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} words</span> to{" "}
+                  <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
+                  {" "}{nextMilestone.detail}
+                </>
+              )}
             </p>
           )}
         </div>
@@ -150,8 +162,8 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
           })}
         </div>
         <div className="mt-1.5 flex justify-between text-[10px] text-[var(--text-3)]">
-          <span>{mastered.toLocaleString()} learned</span>
-          <span>{(VOCAB_TARGET - mastered).toLocaleString()} remaining</span>
+          <span>{mastered.toLocaleString()} {ui("learned")}</span>
+          <span>{(VOCAB_TARGET - mastered).toLocaleString()} {ui("remaining")}</span>
         </div>
       </div>
 
@@ -175,7 +187,7 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
                 className="text-[11px] font-semibold leading-tight"
                 style={{ color: reached || isNext ? m.color : "var(--text-3)" }}
               >
-                {m.label}
+                {ui(m.label)}
               </p>
               <p className="mt-0.5 text-[9px] text-[var(--text-3)]">{m.level}</p>
               <p className="mt-0.5 text-[9px] text-[var(--text-3)]">

@@ -10,6 +10,7 @@ import {
   effectiveColor,
   type CustomTheme,
 } from "@/lib/customTheme";
+import { ui } from "@/lib/i18n";
 
 /**
  * Full appearance control: every core colour and the hero gradient are live
@@ -50,9 +51,9 @@ export function AppearanceEditor() {
             <Paintbrush className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">Appearance</h2>
+            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Appearance")}</h2>
             <p className="mt-0.5 text-sm font-semibold text-[var(--text-3)]">
-              Make it yours — every colour applies instantly and stays saved.
+              {ui("Make it yours — every colour applies instantly and stays saved.")}
             </p>
           </div>
         </div>
@@ -63,7 +64,7 @@ export function AppearanceEditor() {
           type="button"
         >
           <RotateCcw className="h-3.5 w-3.5" />
-          Reset to default
+          {ui("Reset to default")}
         </button>
       </div>
 
@@ -73,13 +74,13 @@ export function AppearanceEditor() {
             key={slot.cssVar}
             className="flex cursor-pointer items-center justify-between gap-3 rounded-[18px] bg-[var(--surface-2)] px-4 py-3"
           >
-            <span className="text-sm font-bold text-[var(--text-1)]">{slot.label}</span>
+            <span className="text-sm font-bold text-[var(--text-1)]">{ui(slot.label)}</span>
             <input
               type="color"
               value={effectiveColor(slot.cssVar, overrides)}
               onChange={(e) => change(slot.cssVar, e.target.value)}
               className="h-8 w-12 shrink-0 cursor-pointer rounded-md border border-[var(--border)] bg-transparent p-0.5"
-              aria-label={`${slot.label} colour`}
+              aria-label={`${ui(slot.label)} ${ui("colour")}`}
             />
           </label>
         ))}
@@ -87,7 +88,7 @@ export function AppearanceEditor() {
 
       <div className="mt-4 rounded-[18px] bg-[var(--surface-2)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-[var(--text-1)]">Hero gradient</p>
+          <p className="text-sm font-bold text-[var(--text-1)]">{ui("Hero gradient")}</p>
           <div className="h-6 w-40 rounded-full" style={{ background: gradPreview }} />
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -96,13 +97,13 @@ export function AppearanceEditor() {
               key={slot.key}
               className="flex cursor-pointer items-center justify-between gap-3 rounded-[14px] bg-[var(--surface)] px-4 py-2.5"
             >
-              <span className="text-xs font-bold text-[var(--text-2)]">{slot.label}</span>
+              <span className="text-xs font-bold text-[var(--text-2)]">{ui(slot.label)}</span>
               <input
                 type="color"
                 value={overrides[slot.key] || slot.fallback}
                 onChange={(e) => change(slot.key, e.target.value)}
                 className="h-7 w-11 shrink-0 cursor-pointer rounded-md border border-[var(--border)] bg-transparent p-0.5"
-                aria-label={`${slot.label} colour`}
+                aria-label={`${ui(slot.label)} ${ui("colour")}`}
               />
             </label>
           ))}

@@ -22,6 +22,9 @@ applyCustomTheme();
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
 if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");
+if (new URLSearchParams(window.location.search).get("pet-overlay") === "1") {
+  document.documentElement.classList.add("is-pet-overlay");
+}
 
 const container = document.getElementById("root");
 if (container) {

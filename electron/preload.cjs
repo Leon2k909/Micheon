@@ -24,4 +24,21 @@ contextBridge.exposeInMainWorld("germDesktop", {
     return () => ipcRenderer.removeListener("update:downloaded", handler);
   },
   installUpdate: () => ipcRenderer.send("update:install-now"),
+  setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
+  movePetOverlayBy: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:move-by", deltaX, deltaY),
+  sendPetOverlaySpeech: (payload) => {
+    const durationMs = Number(payload?.options?.durationMs);
+    ipcRenderer.send("pet-overlay:speak", {
+      text: typeof payload?.text === "string" ? payload.text : "",
+      options: {
+        durationMs: Number.isFinite(durationMs) ? durationMs : undefined,
+        mood: typeof payload?.options?.mood === "string" ? payload.options.mood : undefined,
+      },
+    });
+  },
+  onPetOverlaySpeech: (cb) => {
+    const handler = (_e, payload) => cb(payload);
+    ipcRenderer.on("pet-overlay:speech", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:speech", handler);
+  },
 });

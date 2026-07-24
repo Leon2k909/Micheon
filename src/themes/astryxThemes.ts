@@ -11,8 +11,8 @@ export const micheonButterTheme = defineTheme({
   name: "micheon-butter",
   extends: butterTheme,
   tokens: {
-    "--color-accent": ["#225BFF", "#FDEE8C"],
-    "--color-accent-muted": ["#225BFF33", "#FDEE8C2E"],
+    "--color-accent": ["#225BFF", "#7FA3FF"],
+    "--color-accent-muted": ["#225BFF33", "#29416F"],
     "--color-neutral": ["#1D1C110F", "#FFFFFF14"],
 
     "--color-background-surface": ["#FFFFFF", "#1B1D27"],
@@ -29,10 +29,10 @@ export const micheonButterTheme = defineTheme({
     "--color-text-primary": ["#1D1C11", "#F7F7FB"],
     "--color-text-secondary": ["#605F52", "#D2D4DF"],
     "--color-text-disabled": ["#ADAC9E", "#737889"],
-    "--color-text-accent": ["#225BFF", "#FDEE8C"],
-    "--color-on-accent": ["#FFFFFF", "#1D1C11"],
+    "--color-text-accent": ["#225BFF", "#A9C0FF"],
+    "--color-on-accent": ["#FFFFFF", "#111827"],
 
-    "--color-icon-accent": ["#225BFF", "#FDEE8C"],
+    "--color-icon-accent": ["#225BFF", "#A9C0FF"],
     "--color-icon-primary": ["#1D1C11", "#F7F7FB"],
     "--color-icon-secondary": ["#605F52", "#A7ABBA"],
     "--color-icon-disabled": ["#ADAC9E", "#636777"],

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES } from "@/lib/courseRegistry";
+import { ui } from "@/lib/i18n";
 
 export function CourseSwitcher({
   open,
@@ -39,14 +40,14 @@ export function CourseSwitcher({
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="text-sm font-black text-[var(--text-1)]">{name}</span>
+            <span className="text-sm font-black text-[var(--text-1)]">{ui(name)}</span>
             {builtIn && (
               <span className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                Main
+                {ui("Built-in")}
               </span>
             )}
           </span>
-          <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">{tagline}</span>
+          <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(tagline)}</span>
         </span>
         {active ? (
           <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />
@@ -77,12 +78,12 @@ export function CourseSwitcher({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">Switch course</h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">Pick a language or a programming track.</p>
+                <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Switch course")}</h2>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language or a programming track.")}</p>
               </div>
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={ui("Close")}
                 onClick={onClose}
                 className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-3)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
               >
@@ -90,12 +91,12 @@ export function CourseSwitcher({
               </button>
             </div>
 
-            <p className="mt-5 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">Languages</p>
+            <p className="mt-5 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Languages")}</p>
             <div className="mt-2 grid gap-2">
               {languages.map((c) => <Card key={c.id} {...c} />)}
             </div>
 
-            <p className="mt-5 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">Programming</p>
+            <p className="mt-5 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Programming")}</p>
             <div className="mt-2 grid gap-2">
               {programming.map((c) => <Card key={c.id} {...c} />)}
             </div>

@@ -9,10 +9,32 @@ import { MicheonLogo } from "./components/MicheonLogo";
 import { UpdateBanner } from "./components/UpdateBanner";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
 import { CodexPetProvider } from "./components/codexPets/CodexPetProvider";
+import { isElectronApp } from "./lib/platform";
+import { DIRECTION_CHANGE_EVENT } from "./lib/direction";
 
 export default function App() {
+  const isPetOverlay = new URLSearchParams(window.location.search).get("pet-overlay") === "1";
+  if (isPetOverlay) {
+    return (
+      <CodexPetProvider>
+        <CodexPetLayer />
+      </CodexPetProvider>
+    );
+  }
+
+  return <MicheonApp />;
+}
+
+function MicheonApp() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
+  const [, setDirectionVersion] = useState(0);
+
+  useEffect(() => {
+    const refreshLanguage = () => setDirectionVersion((version) => version + 1);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, refreshLanguage);
+    return () => window.removeEventListener(DIRECTION_CHANGE_EVENT, refreshLanguage);
+  }, []);
 
   // Hydrate the shared desktop/web progress store before creating any default profile.
   useEffect(() => {
@@ -67,7 +89,7 @@ export default function App() {
           ) : (
             <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
           )}
-          <CodexPetLayer />
+          {!isElectronApp() && <CodexPetLayer />}
         </CodexPetProvider>
       )}
     </>

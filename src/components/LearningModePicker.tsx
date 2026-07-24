@@ -1,6 +1,7 @@
 import { GraduationCap, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LearningMode } from "@/lib/learningMode";
+import { ui } from "@/lib/i18n";
 
 const OPTIONS: Array<{
   value: LearningMode;
@@ -34,15 +35,15 @@ export function LearningModePicker({
   return (
     <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-black text-[var(--text-1)]">Learning style</p>
+        <p className="text-sm font-black text-[var(--text-1)]">{ui("Learning style")}</p>
         <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-          {value === "conversation" ? "Default" : "Full forms"}
+          {ui(value === "conversation" ? "Default" : "Full forms")}
         </span>
       </div>
-      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{selected.note}</p>
+      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(selected.note)}</p>
 
       <div
-        aria-label="Learning style"
+        aria-label={ui("Learning style")}
         className="mt-3 grid grid-cols-2 gap-2 rounded-[14px] bg-[var(--surface-2)] p-1.5"
         role="radiogroup"
       >
@@ -64,7 +65,7 @@ export function LearningModePicker({
               type="button"
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span>{option.label}</span>
+              <span>{ui(option.label)}</span>
             </button>
           );
         })}

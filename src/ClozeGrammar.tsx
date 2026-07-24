@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle2, XCircle, ChevronRight, Lightbulb, BookOpen } from "lucide-react";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 // ── Grammar tips data ─────────────────────────────────────────────────────────
 export const GRAMMAR_TIPS = [
@@ -160,6 +161,166 @@ export const GRAMMAR_TIPS = [
   },
 ];
 
+const ENGLISH_GRAMMAR_TIPS = [
+  {
+    id: "articles",
+    title: "Artikel: a, an und the",
+    level: "A1",
+    summary: "A und an stehen bei einer nicht näher bestimmten Sache. The bezeichnet etwas Bestimmtes oder bereits Bekanntes.",
+    rules: [
+      "a vor einem Konsonantenlaut: a room, a university",
+      "an vor einem Vokallaut: an apple, an hour",
+      "the für etwas Bestimmtes: the room we booked",
+      "Kein Artikel bei allgemeinen Pluralen: Dogs are friendly.",
+    ],
+    tip: "Entscheidend ist der Laut, nicht der erste Buchstabe: an hour, aber a university.",
+    examples: [
+      { de: "I need a room.", en: "Ich brauche ein Zimmer." },
+      { de: "The room is ready.", en: "Das Zimmer ist fertig." },
+      { de: "She has an idea.", en: "Sie hat eine Idee." },
+    ],
+  },
+  {
+    id: "verb_position",
+    title: "Grundwortstellung",
+    level: "A1",
+    summary: "In einfachen englischen Aussagesätzen steht meist Subjekt, Verb, Objekt.",
+    rules: [
+      "Subjekt zuerst: I speak English.",
+      "Dann das Verb: She works today.",
+      "Ort steht meist vor Zeit: We meet at the café tomorrow.",
+      "Adverbien wie usually stehen vor dem Hauptverb, aber nach be.",
+    ],
+    tip: "Beginne mit Subjekt + Verb. Das hält auch längere Sätze verständlich.",
+    examples: [
+      { de: "I drink coffee every morning.", en: "Ich trinke jeden Morgen Kaffee." },
+      { de: "She is usually early.", en: "Sie ist normalerweise früh da." },
+    ],
+  },
+  {
+    id: "sein_haben",
+    title: "be und have",
+    level: "A1",
+    summary: "Be bedeutet sein, have bedeutet haben. Beide Verben sind sehr häufig und unregelmäßig.",
+    rules: [
+      "I am / I have",
+      "you are / you have",
+      "he, she, it is / has",
+      "we, they are / have",
+    ],
+    tip: "Lerne die Kurzformen gleich mit: I'm, you're, he's, we've und they've.",
+    examples: [
+      { de: "I'm tired.", en: "Ich bin müde." },
+      { de: "She has time.", en: "Sie hat Zeit." },
+    ],
+  },
+  {
+    id: "negation",
+    title: "Verneinung",
+    level: "A1",
+    summary: "Bei be setzt du not direkt dahinter. Bei den meisten anderen Verben verwendest du do not oder does not.",
+    rules: [
+      "be: I am not tired. / She isn't here.",
+      "andere Verben: I don't know.",
+      "he, she, it: He doesn't work here.",
+      "Nach don't und doesn't steht die Grundform: doesn't like, nicht doesn't likes.",
+    ],
+    tip: "Im Gespräch sind don't, doesn't, isn't und aren't die normalen Formen.",
+    examples: [
+      { de: "I don't understand.", en: "Ich verstehe nicht." },
+      { de: "He isn't at home.", en: "Er ist nicht zu Hause." },
+    ],
+  },
+  {
+    id: "modal_verbs",
+    title: "Modalverben",
+    level: "A2",
+    summary: "Can, must, should, may und might stehen vor der Grundform des nächsten Verbs.",
+    rules: [
+      "can + Grundform: I can help.",
+      "must + Grundform: You must leave.",
+      "should + Grundform: We should call.",
+      "Kein to und kein -s nach einem Modalverb.",
+    ],
+    tip: "Auch bei he und she bleibt das Modalverb unverändert: she can, he must.",
+    examples: [
+      { de: "Can you help me?", en: "Kannst du mir helfen?" },
+      { de: "We should go now.", en: "Wir sollten jetzt gehen." },
+    ],
+  },
+  {
+    id: "accusative",
+    title: "Simple Present",
+    level: "A2",
+    summary: "Das Simple Present beschreibt Gewohnheiten, Fakten und regelmäßige Abläufe.",
+    rules: [
+      "I, you, we, they: Grundform — I work.",
+      "he, she, it: meist -s — She works.",
+      "Endungen auf -ch, -sh, -s, -x: -es — He watches.",
+      "Fragen und Verneinungen verwenden do oder does.",
+    ],
+    tip: "Das -s gehört nur in positiven Aussagen zu he, she und it.",
+    examples: [
+      { de: "She works from home.", en: "Sie arbeitet von zu Hause." },
+      { de: "They play football on Sundays.", en: "Sie spielen sonntags Fußball." },
+    ],
+  },
+  {
+    id: "separable_verbs",
+    title: "Fragen mit do und does",
+    level: "A2",
+    summary: "Bei den meisten Fragen im Simple Present steht do oder does vor dem Subjekt.",
+    rules: [
+      "Do you live here?",
+      "Does she speak English?",
+      "Nach does steht die Grundform: Does he work?",
+      "Bei be brauchst du kein do: Are you ready?",
+    ],
+    tip: "Does trägt bereits das -s. Deshalb heißt es Does she like, nicht Does she likes.",
+    examples: [
+      { de: "Do you have a room free?", en: "Haben Sie ein Zimmer frei?" },
+      { de: "Does he work here?", en: "Arbeitet er hier?" },
+    ],
+  },
+  {
+    id: "spoken_reductions",
+    title: "Natürliches gesprochenes Englisch",
+    level: "A1",
+    summary: "Im Gespräch werden häufig Kurzformen verwendet. Sie sind normales Englisch und keine nachlässige Aussprache.",
+    rules: [
+      "I am → I'm, you are → you're, we are → we're",
+      "do not → don't, does not → doesn't",
+      "I will → I'll, we will → we'll",
+      "want to und going to klingen oft wie wanna und gonna, werden aber standardmäßig ausgeschrieben.",
+    ],
+    tip: "Lerne die vollständige und die gesprochene Form zusammen. So erkennst du beide sofort.",
+    examples: [
+      { de: "I'm ready.", en: "Ich bin bereit." },
+      { de: "I don't know.", en: "Ich weiß es nicht." },
+      { de: "We'll see.", en: "Wir werden sehen." },
+    ],
+  },
+];
+
+const ENGLISH_CLOZE_EXERCISES = [
+  { id: "en1", sentence: "I need ___ room.", answer: "a", hint: "Unbestimmter Artikel vor einem Konsonantenlaut", tip_id: "articles" },
+  { id: "en2", sentence: "She has ___ idea.", answer: "an", hint: "Unbestimmter Artikel vor einem Vokallaut", tip_id: "articles" },
+  { id: "en3", sentence: "___ room is ready.", answer: "The", hint: "Bestimmter Artikel", tip_id: "articles" },
+  { id: "en4", sentence: "I ___ tired.", answer: "am", hint: "be mit I", tip_id: "sein_haben" },
+  { id: "en5", sentence: "She ___ time.", answer: "has", hint: "have mit she", tip_id: "sein_haben" },
+  { id: "en6", sentence: "We ___ English every day.", answer: "practise", hint: "Simple Present mit we", tip_id: "verb_position" },
+  { id: "en7", sentence: "He ___ from home.", answer: "works", hint: "Simple Present mit he", tip_id: "accusative" },
+  { id: "en8", sentence: "I ___ understand.", answer: "don't", hint: "Verneinung im Simple Present", tip_id: "negation" },
+  { id: "en9", sentence: "She ___ live here.", answer: "doesn't", hint: "Verneinung mit she", tip_id: "negation" },
+  { id: "en10", sentence: "Can you ___ me?", answer: "help", hint: "Grundform nach can", tip_id: "modal_verbs" },
+  { id: "en11", sentence: "We should ___ now.", answer: "go", hint: "Grundform nach should", tip_id: "modal_verbs" },
+  { id: "en12", sentence: "___ you have a room free?", answer: "Do", hint: "Frage mit you", tip_id: "separable_verbs" },
+  { id: "en13", sentence: "___ she work here?", answer: "Does", hint: "Frage mit she", tip_id: "separable_verbs" },
+  { id: "en14", sentence: "I ___ ready.", answer: "am", hint: "be mit I", tip_id: "sein_haben" },
+  { id: "en15", sentence: "They ___ football on Sundays.", answer: "play", hint: "Simple Present mit they", tip_id: "accusative" },
+  { id: "en16", sentence: "He ___ not at home.", answer: "is", hint: "Verneinung mit be", tip_id: "negation" },
+];
+
 // ── Cloze exercises ───────────────────────────────────────────────────────────
 // Build cloze from a sentence by blanking one key word
 function buildCloze(sentence, blankWord) {
@@ -206,8 +367,10 @@ export function ClozeTab() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
 
-  const ex = CLOZE_EXERCISES[index % CLOZE_EXERCISES.length];
-  const tip = GRAMMAR_TIPS.find(t => t.id === ex.tip_id);
+  const exercises = uiIsGerman() ? ENGLISH_CLOZE_EXERCISES : CLOZE_EXERCISES;
+  const tips = uiIsGerman() ? ENGLISH_GRAMMAR_TIPS : GRAMMAR_TIPS;
+  const ex = exercises[index % exercises.length];
+  const tip = tips.find(t => t.id === ex.tip_id);
   const correct = normalize(input) === normalize(ex.answer);
 
   useEffect(() => { inputRef.current?.focus(); setShowTip(false); }, [index]);
@@ -245,7 +408,7 @@ export function ClozeTab() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-bold text-[var(--text-3)]">{index + 1} / {CLOZE_EXERCISES.length} · Score: {score}</div>
+        <div className="text-sm font-bold text-[var(--text-3)]">{index + 1} / {exercises.length} · {ui("Score")}: {score}</div>
         <Badge variant="outline" className="border-[var(--border)] font-black text-[var(--text-2)]">{tip?.level ?? "A1"}</Badge>
       </div>
 
@@ -267,32 +430,32 @@ export function ClozeTab() {
           value={input}
           onChange={handleChange}
           onKeyDown={e => { if (e.key === "Enter") { if (checked && correct) { next(); } else check(); } }}
-          placeholder="Fill in the blank…"
+          placeholder={ui("Fill in the blank…")}
           className="h-12 rounded-2xl border-zinc-200 bg-white text-center text-base font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[var(--accent)]"
           disabled={checked && !correct}
         />
 
         {!checked && (
-          <Button className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800 disabled:opacity-40" onClick={check} disabled={!input.trim()}>Check</Button>
+          <Button className="continue-glow h-12 w-full rounded-2xl bg-zinc-950 text-sm font-black text-white hover:bg-zinc-800 disabled:opacity-40" onClick={check} disabled={!input.trim()}>{ui("Check")}</Button>
         )}
 
         {checked && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             className={`rounded-2xl p-3 text-sm font-bold text-center ${correct ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"}`}>
             {correct
-              ? <span className="flex items-center gap-2 justify-center font-medium"><CheckCircle2 className="h-4 w-4" /> Correct!</span>
-              : <span className="font-medium"><XCircle className="h-4 w-4 inline mr-1" />Answer: <strong>{ex.answer}</strong></span>
+              ? <span className="flex items-center gap-2 justify-center font-medium"><CheckCircle2 className="h-4 w-4" /> {ui("Correct!")}</span>
+              : <span className="font-medium"><XCircle className="h-4 w-4 inline mr-1" />{ui("Answer:")} <strong>{ex.answer}</strong></span>
             }
           </motion.div>
         )}
 
         <div className="flex gap-3 justify-center flex-wrap">
           <Button variant="outline" size="sm" className="rounded-2xl gap-1 border-zinc-200 bg-white font-bold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950" onClick={() => setShowTip(v => !v)}>
-            <Lightbulb className="h-3 w-3" /> Grammar tip
+            <Lightbulb className="h-3 w-3" /> {ui("Grammar tip")}
           </Button>
           {checked && (
             <Button size="sm" className="rounded-2xl gap-1 bg-zinc-950 font-black text-white hover:bg-zinc-800" onClick={next}>
-              Next <ChevronRight className="h-3 w-3" />
+              {ui("Next")} <ChevronRight className="h-3 w-3" />
             </Button>
           )}
         </div>
@@ -314,14 +477,15 @@ export function ClozeTab() {
 
 // ── GrammarTab component ──────────────────────────────────────────────────────
 export function GrammarTab() {
-  const [selected, setSelected] = useState(GRAMMAR_TIPS[0].id);
-  const tip = GRAMMAR_TIPS.find(t => t.id === selected);
+  const tips = uiIsGerman() ? ENGLISH_GRAMMAR_TIPS : GRAMMAR_TIPS;
+  const [selected, setSelected] = useState(tips[0].id);
+  const tip = tips.find(t => t.id === selected);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
       {/* Sidebar */}
       <div className="space-y-2">
-        {GRAMMAR_TIPS.map(t => (
+        {tips.map(t => (
           <button key={t.id} onClick={() => setSelected(t.id)}
             className={`w-full text-left rounded-2xl border px-4 py-3 text-sm transition
               ${selected === t.id ? "bg-[var(--accent)] text-white border-transparent" : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"}`}>
@@ -355,12 +519,12 @@ export function GrammarTab() {
             </div>
 
             <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-sm">
-              <span className="font-black text-amber-600">💡 Tip: </span>
+              <span className="font-black text-amber-600">💡 {ui("Tip")}: </span>
               <span className="font-semibold text-amber-700">{tip.tip}</span>
             </div>
 
             <div className="space-y-2">
-              <div className="text-sm font-black text-zinc-700">Examples</div>
+              <div className="text-sm font-black text-zinc-700">{ui("Examples")}</div>
               {tip.examples.map((ex, i) => (
                 <div key={i} className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
                   <div className="font-black text-zinc-950">{ex.de}</div>

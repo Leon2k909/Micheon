@@ -4,6 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Trophy, Volume2, 
 import { speakGerman } from "@/lib/tts";
 import { allPartBlueprints, entryFallbacks } from "@/lib/data";
 import { recordWordMastery } from "@/lib/mastery";
+import { ui } from "@/lib/i18n";
 
 // ── Build word bank from all part blueprints + entryFallbacks + extended list ──
 const EXTENDED_WORDS: { de: string; en: string }[] = [
@@ -608,9 +609,9 @@ export default function SnakeGame() {
   return (
     <div className="space-y-5" ref={containerRef}>
       <div>
-        <h2 className="text-xl font-semibold text-[var(--text-1)]">Word Snake</h2>
+        <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Word Snake")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          {sentenceMode ? "Eat the word-blocks in order to build the German sentence." : "Eat the letters in order to spell the German word."}
+          {ui(sentenceMode ? "Eat the word-blocks in order to build the German sentence." : "Eat the letters in order to spell the German word.")}
         </p>
       </div>
 
@@ -627,7 +628,7 @@ export default function SnakeGame() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold flex items-center gap-2">
                 <Settings className="w-4 h-4 text-accent" />
-                Game Settings
+                {ui("Game Settings")}
               </h3>
               <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-white/5 rounded-lg">
                 <X className="w-4 h-4" />
@@ -637,8 +638,8 @@ export default function SnakeGame() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                    onClick={() => setShowArticle(!showArticle)}>
                 <div>
-                  <p className="text-sm font-semibold">Include Articles</p>
-                  <p className="text-xs text-[var(--text-3)]">E.g. "Der Apfel" instead of "Apfel"</p>
+                  <p className="text-sm font-semibold">{ui("Include Articles")}</p>
+                  <p className="text-xs text-[var(--text-3)]">{ui('E.g. "Der Apfel" instead of "Apfel"')}</p>
                 </div>
                 <div className={`w-12 h-6 rounded-full transition-colors relative ${showArticle ? 'bg-accent' : 'bg-slate-700'}`}>
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${showArticle ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -648,8 +649,8 @@ export default function SnakeGame() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                    onClick={() => setClassicMode(!classicMode)}>
                 <div>
-                  <p className="text-sm font-semibold">Classic Mode</p>
-                  <p className="text-xs text-[var(--text-3)]">No decoy letters. Just 1 tile on board.</p>
+                  <p className="text-sm font-semibold">{ui("Classic Mode")}</p>
+                  <p className="text-xs text-[var(--text-3)]">{ui("No decoy letters. Just 1 tile on board.")}</p>
                 </div>
                 <div className={`w-12 h-6 rounded-full transition-colors relative ${classicMode ? 'bg-accent' : 'bg-slate-700'}`}>
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${classicMode ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -659,8 +660,8 @@ export default function SnakeGame() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                    onClick={() => setIsInfinite(!isInfinite)}>
                 <div>
-                  <p className="text-sm font-semibold">Infinite Mode</p>
-                  <p className="text-xs text-[var(--text-3)]">Words load automatically one after another.</p>
+                  <p className="text-sm font-semibold">{ui("Infinite Mode")}</p>
+                  <p className="text-xs text-[var(--text-3)]">{ui("Words load automatically one after another.")}</p>
                 </div>
                 <div className={`w-12 h-6 rounded-full transition-colors relative ${isInfinite ? 'bg-accent' : 'bg-slate-700'}`}>
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${isInfinite ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -670,8 +671,8 @@ export default function SnakeGame() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                    onClick={() => setGridExpansion(!gridExpansion)}>
                 <div>
-                  <p className="text-sm font-semibold">Grid Expansion</p>
-                  <p className="text-xs text-[var(--text-3)]">Grid grows every 3 words — more room to breathe.</p>
+                  <p className="text-sm font-semibold">{ui("Grid Expansion")}</p>
+                  <p className="text-xs text-[var(--text-3)]">{ui("Grid grows every 3 words — more room to breathe.")}</p>
                 </div>
                 <div className={`w-12 h-6 rounded-full transition-colors relative ${gridExpansion ? 'bg-accent' : 'bg-slate-700'}`}>
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${gridExpansion ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -681,8 +682,8 @@ export default function SnakeGame() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                    onClick={() => setSentenceMode(!sentenceMode)}>
                 <div>
-                  <p className="text-sm font-semibold">Sentence Mode</p>
-                  <p className="text-xs text-[var(--text-3)]">Eat word-blocks to build a full German sentence.</p>
+                  <p className="text-sm font-semibold">{ui("Sentence Mode")}</p>
+                  <p className="text-xs text-[var(--text-3)]">{ui("Eat word-blocks to build a full German sentence.")}</p>
                 </div>
                 <div className={`w-12 h-6 rounded-full transition-colors relative ${sentenceMode ? 'bg-accent' : 'bg-slate-700'}`}>
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${sentenceMode ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -691,7 +692,7 @@ export default function SnakeGame() {
 
               <div className="p-3 rounded-xl bg-white/5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">Grid Size</p>
+                  <p className="text-sm font-semibold">{ui("Grid Size")}</p>
                   <p className="text-xs font-mono" style={{ color: "var(--accent)" }}>{COLS}×{ROWS}</p>
                 </div>
                 <input
@@ -702,7 +703,7 @@ export default function SnakeGame() {
                   style={{ accentColor: "var(--accent)" }}
                 />
                 <div className="flex justify-between text-[10px] text-[var(--text-3)]">
-                  <span>Small</span><span>Default</span><span>Large</span>
+                  <span>{ui("Small")}</span><span>{ui("Default")}</span><span>{ui("Large")}</span>
                 </div>
               </div>
             </div>
@@ -710,7 +711,7 @@ export default function SnakeGame() {
               onClick={() => { setShowSettings(false); newGame(); }}
               className="w-full mt-4 py-2 bg-[var(--accent)] text-[var(--accent-text)] font-bold rounded-xl text-sm hover:brightness-110 transition-all active:scale-95 shadow-[0_0_20px_rgba(88,230,217,0.2)]"
             >
-              Apply & Restart
+              {ui("Apply & Restart")}
             </button>
           </motion.div>
         )}
@@ -727,14 +728,14 @@ export default function SnakeGame() {
         <button 
           onClick={toggleFullscreen}
           className="absolute top-2 right-12 p-2 opacity-50 hover:opacity-100 transition-opacity hover:bg-white/5 rounded-xl z-20"
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          title={ui(isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen")}
         >
           {isFullscreen ? <Minimize className="w-4 h-4 text-[var(--text-3)]" /> : <Maximize className="w-4 h-4 text-[var(--text-3)]" />}
         </button>
         <div>
           {sentenceMode ? (
             <>
-              <p className="text-xs text-[var(--text-3)]">Build this sentence</p>
+              <p className="text-xs text-[var(--text-3)]">{ui("Build this sentence")}</p>
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                 {sentenceEntry.words.map((w, i) => (
                   <span
@@ -757,7 +758,7 @@ export default function SnakeGame() {
             </>
           ) : (
             <>
-              <p className="text-xs text-[var(--text-3)]">Spell this word</p>
+              <p className="text-xs text-[var(--text-3)]">{ui("Spell this word")}</p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 {word.split("").map((ch, i) => (
                   <span
@@ -775,18 +776,18 @@ export default function SnakeGame() {
                 ))}
               </div>
               <p className="mt-1.5 text-xs text-[var(--text-3)]">
-                English: <span className="font-medium text-[var(--text-2)]">{translation}</span>
+                {ui("English:")} <span className="font-medium text-[var(--text-2)]">{translation}</span>
               </p>
             </>
           )}
         </div>
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Score</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Score")}</p>
             <p className="text-2xl font-bold text-[var(--text-1)]">{score}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-[var(--text-3)]">Best</p>
+            <p className="text-xs text-[var(--text-3)]">{ui("Best")}</p>
             <div className="flex items-center gap-1">
               <Trophy className="h-3.5 w-3.5 text-amber-400" />
               <p className="text-2xl font-bold text-[var(--text-1)]">{highScore}</p>
@@ -794,7 +795,7 @@ export default function SnakeGame() {
           </div>
           {gridExpansion && expansionLevel > 0 && (
             <div className="text-center">
-              <p className="text-xs text-[var(--text-3)]">Grid</p>
+              <p className="text-xs text-[var(--text-3)]">{ui("Grid")}</p>
               <p className="text-sm font-bold text-[var(--accent)]">{COLS}×{ROWS}</p>
             </div>
           )}
@@ -919,13 +920,13 @@ export default function SnakeGame() {
                 style={{ background: "rgba(10, 10, 10, 0.75)", backdropFilter: "blur(4px)" }}
               >
                 <div className="card p-8 border-white/10 flex flex-col items-center gap-6 shadow-2xl">
-                    <h3 className="text-4xl font-black text-white tracking-widest uppercase">Paused</h3>
-                    <p className="text-slate-400">Press <b>ESC</b> to resume</p>
+                    <h3 className="text-4xl font-black text-white tracking-widest uppercase">{ui("Paused")}</h3>
+                    <p className="text-slate-400">{ui("Press ESC to resume")}</p>
                     <button 
                         onClick={() => setIsPaused(false)}
                         className="accent-btn px-10 py-3 text-lg"
                     >
-                        Resume Game
+                        {ui("Resume Game")}
                     </button>
                 </div>
               </motion.div>
@@ -941,18 +942,18 @@ export default function SnakeGame() {
               >
                 {phase === "idle" && (
                   <>
-                    <p className="text-lg font-semibold text-[var(--text-1)]">Word Snake</p>
+                    <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Word Snake")}</p>
                     <p className="max-w-xs text-center text-sm text-[var(--text-3)]">
-                      {sentenceMode
+                      {ui(sentenceMode
                         ? "Eat the glowing word-blocks in order to build the German sentence. Wrong word = game over."
-                        : "Eat the glowing letters in order to spell the German word. Wrong letter = game over."}
+                        : "Eat the glowing letters in order to spell the German word. Wrong letter = game over.")}
                     </p>
                     <button
                       className="accent-btn px-6 py-2.5 text-sm"
                       onClick={newGame}
                       type="button"
                     >
-                      Start game
+                      {ui("Start game")}
                     </button>
                   </>
                 )}
@@ -969,7 +970,7 @@ export default function SnakeGame() {
                     <div className="flex items-center gap-3">
                       <p className="text-2xl font-bold text-[var(--text-1)]">{word}</p>
                       <button
-                        aria-label="Hear pronunciation"
+                        aria-label={ui("Hear pronunciation")}
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)] transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)] active:scale-95"
                         onClick={() => speakGerman(word.toLowerCase())}
                         type="button"
@@ -978,21 +979,21 @@ export default function SnakeGame() {
                       </button>
                     </div>
                     <p className="text-sm text-[var(--text-3)]">{translation}</p>
-                    <p className="text-xs text-[var(--text-3)]">+{score} points</p>
+                    <p className="text-xs text-[var(--text-3)]">+{score} {ui("points")}</p>
                     <button
                       className="accent-btn flex items-center gap-2 px-6 py-2.5 text-sm"
                       onClick={newGame}
                       type="button"
                     >
-                      <RotateCcw className="h-4 w-4" /> Next word
+                      <RotateCcw className="h-4 w-4" /> {ui("Next word")}
                     </button>
                   </>
                 )}
                 {phase === "wrong" && (
                   <>
-                    <p className="text-lg font-semibold text-rose-400">Wrong letter!</p>
+                    <p className="text-lg font-semibold text-rose-400">{ui("Wrong letter!")}</p>
                     <p className="text-sm text-[var(--text-3)]">
-                      You needed <span className="font-bold text-[var(--accent)]">{word[nextIdx]}</span>
+                      {ui("You needed")} <span className="font-bold text-[var(--accent)]">{word[nextIdx]}</span>
                     </p>
                     <p className="text-xs text-[var(--text-3)]">
                       {word} = {translation}
@@ -1002,7 +1003,7 @@ export default function SnakeGame() {
                       onClick={newGame}
                       type="button"
                     >
-                      <RotateCcw className="h-4 w-4" /> Try again
+                      <RotateCcw className="h-4 w-4" /> {ui("Try again")}
                     </button>
                   </>
                 )}
@@ -1036,8 +1037,7 @@ export default function SnakeGame() {
           ))}
         </div>
         <p className="text-xs text-[var(--text-3)]">
-          Arrow keys or WASD to move · Eat the{" "}
-          <span className="font-semibold text-[var(--accent)]">highlighted</span> letter next
+          {ui("Arrow keys or WASD to move · Eat the highlighted letter next")}
         </p>
       </div>
     </div>

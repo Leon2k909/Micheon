@@ -30,6 +30,7 @@ import {
 
 import { isBulkPartKey } from "@/lib/contentBank";
 import type { Part } from "@/lib/types";
+import { ui, uiIsGerman, uiLocale, uiOr } from "@/lib/i18n";
 
 type ProgressStats = {
   totalXp: number;
@@ -63,7 +64,7 @@ function PageHeading({
   endContent?: React.ReactNode;
   title: string;
 }) {
-  const date = new Intl.DateTimeFormat("en-GB", {
+  const date = new Intl.DateTimeFormat(uiLocale(), {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -105,17 +106,19 @@ export function AstryxDashboardView({
   return (
     <VStack gap={6}>
       <PageHeading
-        description="Pick up where you stopped, then reinforce the German that needs another pass."
+        description={ui(uiIsGerman()
+          ? "Pick up where you stopped, then reinforce the English that needs another pass."
+          : "Pick up where you stopped, then reinforce the German that needs another pass.")}
         endContent={
           <HStack gap={2} vAlign="center" wrap="wrap">
             <Badge label={currentPart?.level ?? "A1-A2"} variant="purple" />
             <Badge
-              label={`${progressStats.streak} day streak`}
+              label={`${progressStats.streak} ${ui("day streak")}`}
               variant={progressStats.streak ? "green" : "neutral"}
             />
           </HStack>
         }
-        title="Your German today"
+        title={ui(uiIsGerman() ? "Your English today" : "Your German today")}
       />
 
       <Grid columns={{ minWidth: 300, repeat: "fit", max: 2 }} gap={4}>
@@ -124,50 +127,51 @@ export function AstryxDashboardView({
             <HStack gap={3} hAlign="between" vAlign="center" wrap="wrap">
               <HStack gap={2} vAlign="center">
                 <Icon color="inherit" icon={Play} size="sm" />
-                <Text type="label">Continue learning</Text>
+                <Text type="label">{ui("Continue learning")}</Text>
               </HStack>
               <Badge label="+40 XP" variant="purple" />
             </HStack>
 
             <VStack gap={2}>
               <Text type="supporting">
-                {currentPart?.level ?? "A1"} / {currentPart?.theme ?? "German foundations"}
+                {currentPart?.level ?? "A1"} / {uiOr(currentPart?.theme ?? (uiIsGerman() ? "English foundations" : "German foundations"), "Konversationsmodul")}
               </Text>
-              <Heading level={1}>{currentPart?.theme ?? "Everyday German"}</Heading>
+              <Heading level={1}>{uiOr(currentPart?.theme ?? (uiIsGerman() ? "Everyday English" : "Everyday German"), "Konversationsmodul")}</Heading>
               <Text color="secondary" type="large">
-                {currentPart?.focus ??
+                {uiOr(currentPart?.focus ??
                   currentPart?.description ??
-                  "Build practical phrases for useful everyday conversations."}
+                  "Build practical phrases for useful everyday conversations.",
+                  "Praktische Sätze für natürliche Alltagsgespräche.")}
               </Text>
             </VStack>
 
             <ProgressBar
-              formatValueLabel={() => `${progress}% complete`}
+              formatValueLabel={() => `${progress}% ${ui("complete")}`}
               hasValueLabel
-              label="Course progress"
+              label={ui("Course progress")}
               max={100}
               value={progress}
             />
 
             <HStack gap={2} wrap="wrap">
-              <Token color="default" label="Meaning" />
-              <Token color="default" label="Listening" />
-              <Token color="default" label="Speaking" />
-              <Token color="default" label={`${Math.max(6, currentPart?.vocab.length ?? 8)} words`} />
+              <Token color="default" label={ui("Meaning")} />
+              <Token color="default" label={ui("Listening")} />
+              <Token color="default" label={ui("Speaking")} />
+              <Token color="default" label={`${Math.max(6, currentPart?.vocab.length ?? 8)} ${ui("words")}`} />
             </HStack>
 
             <HStack gap={3} vAlign="center" wrap="wrap">
               <Button
                 endContent={<Icon color="inherit" icon={ArrowRight} size="sm" />}
-                label="Continue lesson"
+                label={ui("Continue lesson")}
                 onClick={() => onOpenLesson("")}
                 size="lg"
                 variant="primary"
               />
               <Text type="supporting">
                 {progressStats.sessionsCompleted
-                  ? `${progressStats.sessionsCompleted} sessions completed`
-                  : "Ready when you are"}
+                  ? `${progressStats.sessionsCompleted} ${ui("sessions completed")}`
+                  : ui("Ready when you are")}
               </Text>
             </HStack>
           </VStack>
@@ -177,21 +181,21 @@ export function AstryxDashboardView({
           <VStack gap={5}>
             <HStack gap={3} hAlign="between" vAlign="center">
               <VStack gap={1}>
-                <Text type="supporting">Daily goal</Text>
+                <Text type="supporting">{ui("Daily goal")}</Text>
                 <Heading level={2}>
                   {xpIntoGoal} of {dailyXpGoal >= 60 ? 60 : dailyXpGoal} XP
                 </Heading>
               </VStack>
               <Badge
-                label={progressStats.sessionsCompleted ? "On track" : "Start today"}
+                label={ui(progressStats.sessionsCompleted ? "On track" : "Start today")}
                 variant={progressStats.sessionsCompleted ? "green" : "yellow"}
               />
             </HStack>
 
             <ProgressBar
-              formatValueLabel={() => `${Math.max(0, 60 - xpIntoGoal)} XP to go`}
+              formatValueLabel={() => `${Math.max(0, 60 - xpIntoGoal)} ${ui("XP to go")}`}
               hasValueLabel
-              label="Daily XP goal"
+              label={ui("Daily XP goal")}
               max={60}
               value={xpIntoGoal}
               variant="warning"
@@ -199,9 +203,9 @@ export function AstryxDashboardView({
 
             <List density="compact" hasDividers>
               <ListItem
-                description={`${progressStats.sessionsCompleted} completed`}
+                description={`${progressStats.sessionsCompleted} ${ui("completed")}`}
                 endContent={<Badge label="+40 XP" variant="purple" />}
-                label="Complete one lesson"
+                label={ui("Complete one lesson")}
                 startContent={
                   <Icon
                     color={progressStats.sessionsCompleted ? "success" : "accent"}
@@ -210,15 +214,15 @@ export function AstryxDashboardView({
                 }
               />
               <ListItem
-                description={`${wordsTracked.toLocaleString()} words tracked`}
+                description={`${wordsTracked.toLocaleString()} ${ui("Words tracked").toLowerCase()}`}
                 endContent={<Badge label="+15 XP" variant="green" />}
-                label="Review five words"
+                label={ui("Review five words")}
                 startContent={<Icon color={wordsTracked >= 5 ? "success" : "accent"} icon={RotateCcw} />}
               />
               <ListItem
-                description="Available in your next lesson"
+                description={ui("Available in your next lesson")}
                 endContent={<Badge label="+5 XP" variant="yellow" />}
-                label="Speak one answer"
+                label={ui("Speak one answer")}
                 startContent={<Icon icon={Mic2} />}
               />
             </List>
@@ -226,8 +230,8 @@ export function AstryxDashboardView({
             <HStack gap={3} vAlign="center">
               <Icon color="warning" icon={Flame} />
               <VStack gap={0}>
-                <Text type="label">{progressStats.streak} day learning streak</Text>
-                <Text type="supporting">One focused lesson keeps it moving</Text>
+                <Text type="label">{progressStats.streak} {ui("day learning streak")}</Text>
+                <Text type="supporting">{ui("One focused lesson keeps it moving")}</Text>
               </VStack>
             </HStack>
           </VStack>
@@ -238,17 +242,17 @@ export function AstryxDashboardView({
         <VStack gap={5}>
           <HStack gap={4} hAlign="between" vAlign="center" wrap="wrap">
             <VStack gap={1}>
-              <Text type="supporting">A1-A2 German</Text>
-              <Heading level={2}>Your learning path</Heading>
+              <Text type="supporting">{ui(uiIsGerman() ? "A1-A2 English" : "A1-A2 German")}</Text>
+              <Heading level={2}>{ui("Your learning path")}</Heading>
               <Text color="secondary" type="body">
-                Each module reuses language from the one before it.
+                {ui("Each module reuses language from the one before it.")}
               </Text>
             </VStack>
             <HStack gap={2} vAlign="center">
-              <Badge label={`${progress}% complete`} variant="purple" />
+              <Badge label={`${progress}% ${ui("complete")}`} variant="purple" />
               <Button
                 endContent={<Icon icon={ArrowRight} size="sm" />}
-                label="View all lessons"
+                label={ui("View all lessons")}
                 onClick={() => setActiveTab("learn")}
                 variant="ghost"
               />
@@ -256,9 +260,9 @@ export function AstryxDashboardView({
           </HStack>
 
           <ProgressBar
-            formatValueLabel={() => `Module ${activeIndex + 1} of ${coreParts.length}`}
+            formatValueLabel={() => `${ui("Module")} ${activeIndex + 1} ${ui("of")} ${coreParts.length}`}
             hasValueLabel
-            label="German course progress"
+            label={ui(uiIsGerman() ? "English course progress" : "German course progress")}
             max={100}
             value={progress}
           />
@@ -268,16 +272,16 @@ export function AstryxDashboardView({
               const isCurrent = id === lessonId;
               return (
                 <ListItem
-                  description={part.focus || part.description}
+                  description={uiOr(part.focus || part.description, "Praktische Sätze für natürliche Alltagsgespräche.")}
                   endContent={
                     <Badge
-                      label={isCurrent ? "Continue" : index === 1 ? "Up next" : `Module ${activeIndex + index + 1}`}
+                      label={isCurrent ? ui("Continue") : index === 1 ? ui("Up next") : `${ui("Module")} ${activeIndex + index + 1}`}
                       variant={isCurrent ? "purple" : index === 1 ? "blue" : "neutral"}
                     />
                   }
                   isSelected={isCurrent}
                   key={id}
-                  label={part.theme}
+                  label={uiOr(part.theme, "Konversationsmodul")}
                   onClick={() => onOpenLesson(id)}
                   startContent={
                     <Icon
@@ -299,16 +303,16 @@ export function AstryxDashboardView({
               <Icon color="accent" icon={Headphones} />
               <VStack gap={0}>
                 <Heading level={3}>
-                  {progressStats.totalReviews.toLocaleString()} reviews completed
+                  {progressStats.totalReviews.toLocaleString()} {ui("reviews completed")}
                 </Heading>
                 <Text type="supporting">
-                  Revisit due words or start a short listening pass.
+                  {ui("Revisit due words or start a short listening pass.")}
                 </Text>
               </VStack>
             </HStack>
             <Button
               endContent={<Icon icon={ArrowRight} size="sm" />}
-              label="Start quick review"
+              label={ui("Start quick review")}
               onClick={() => onOpenLesson("")}
               variant="secondary"
             />
@@ -318,15 +322,15 @@ export function AstryxDashboardView({
             <HStack gap={3} vAlign="center">
               <Icon color="warning" icon={Trophy} />
               <VStack gap={0}>
-                <Heading level={3}>{gameMasteryCount.toLocaleString()} game items mastered</Heading>
+                <Heading level={3}>{gameMasteryCount.toLocaleString()} {ui("game items mastered")}</Heading>
                 <Text type="supporting">
-                  Train spelling, verbs, and fast recognition in the games library.
+                  {ui("Train spelling, verbs, and fast recognition in the games library.")}
                 </Text>
               </VStack>
             </HStack>
             <Button
               endContent={<Icon icon={Gamepad2} size="sm" />}
-              label="Open games"
+              label={ui("Open games")}
               onClick={() => setActiveTab("games")}
               variant="ghost"
             />

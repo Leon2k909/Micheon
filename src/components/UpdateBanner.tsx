@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, X } from "lucide-react";
+import { ui, uiIsGerman } from "@/lib/i18n";
 
 // Desktop bridge (electron/preload.cjs). Undefined on the website.
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
@@ -36,15 +37,16 @@ export function UpdateBanner() {
             <RefreshCw className="h-[18px] w-[18px]" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-[var(--text-1)]">Update ready</p>
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Update ready")}</p>
             <p className="mt-1 text-xs font-semibold leading-relaxed text-[var(--text-3)]">
-              Micheon {version} is downloaded. Restart to update now — or it'll apply automatically the next
-              time you close the app.
+              {uiIsGerman()
+                ? `Micheon ${version} wurde heruntergeladen. Starte die App jetzt neu oder installiere das Update automatisch beim nächsten Schließen.`
+                : `Micheon ${version} is downloaded. Restart to update now — or it'll apply automatically the next time you close the app.`}
             </p>
           </div>
           <button
             onClick={() => setDismissed(true)}
-            aria-label="Dismiss"
+            aria-label={ui("Dismiss")}
             className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
           >
             <X className="h-4 w-4" />
@@ -56,7 +58,7 @@ export function UpdateBanner() {
           style={{ background: "var(--feature-gradient)" }}
         >
           <RefreshCw className="h-4 w-4" />
-          Restart &amp; update
+          {ui("Restart & update")}
         </button>
       </div>
     </div>

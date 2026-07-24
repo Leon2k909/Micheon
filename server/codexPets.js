@@ -2,10 +2,12 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_FRAMES = 256;
 const MAX_FPS = 60;
+const BUNDLED_PETS_ROOT = fileURLToPath(new URL("./bundled-pets", import.meta.url));
 
 const BUILTIN_PETS = [
   ["codex", "Codex"],
@@ -48,6 +50,11 @@ const ANIMATION_ALIASES = {
 function getCodexHome() {
   const configured = process.env.CODEX_HOME?.trim();
   return configured ? path.resolve(configured) : path.join(os.homedir(), ".codex");
+}
+
+function getMicheonHome() {
+  const configured = process.env.MICHEON_HOME?.trim();
+  return configured ? path.resolve(configured) : path.join(os.homedir(), ".micheon");
 }
 
 function getSelectedCodexPetKey(codexHome) {
@@ -213,11 +220,25 @@ function loadBuiltInPets(codexHome) {
 
 export function listCodexPets() {
   const codexHome = getCodexHome();
+  const micheonCustom = loadManifestPets(
+    path.join(getMicheonHome(), "pets"),
+    "pet.json",
+    "micheon-custom"
+  );
   const custom = loadManifestPets(path.join(codexHome, "pets"), "pet.json", "custom");
   const legacy = loadManifestPets(path.join(codexHome, "avatars"), "avatar.json", "legacy");
   const builtIn = loadBuiltInPets(codexHome);
+  const codexPets = [...custom, ...legacy, ...builtIn];
+  const micheonIds = new Set(micheonCustom.map((pet) => pet.id));
+  const external = [
+    ...micheonCustom,
+    ...codexPets.filter((pet) => !micheonIds.has(pet.id)),
+  ];
+  const externalIds = new Set(external.map((pet) => pet.id));
+  const bundled = loadManifestPets(BUNDLED_PETS_ROOT, "pet.json", "micheon")
+    .filter((pet) => !externalIds.has(pet.id));
 
-  return [...custom, ...legacy, ...builtIn].sort((a, b) =>
+  return [...external, ...bundled].sort((a, b) =>
     a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
   );
 }
@@ -226,7 +247,7 @@ export function getCodexPetCatalog() {
   const codexHome = getCodexHome();
   return {
     pets: listCodexPets().map(publicPet),
-    source: "codex-home",
+    source: "micheon-and-codex",
     selectedPetKey: getSelectedCodexPetKey(codexHome),
   };
 }
