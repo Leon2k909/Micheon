@@ -1,11 +1,10 @@
-# Builds the desktop artifacts for every version tag / published release and
+# Builds the Windows desktop artifacts for every versioned main push and
 # attaches them to that release.
 #
 # Windows is built here rather than on the dev machine because local antivirus
 # real-time scanning holds the freshly extracted Electron binaries, making
 # electron-builder's win-unpacked.tmp -> win-unpacked rename fail (EPERM/EBUSY).
-# CI runners have no such interference. Linux can't be cross-built from Windows
-# at all (native modules), so CI owns both platforms.
+# CI runners have no such interference.
 #
 # NOTE: .blockmap files are deliberately NOT uploaded. electron-updater uses
 # them for differential downloads, which stall on this app's installer — the
@@ -66,21 +65,13 @@ jobs:
   build:
     needs: prepare-release
     if: needs.prepare-release.outputs.should_build == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            platform: win
-          - os: ubuntu-latest
-            platform: linux
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -89,13 +80,12 @@ jobs:
       - name: Build UI
         run: npm run build
 
-      - name: Package ${{ matrix.platform }}
-        run: npx electron-builder --${{ matrix.platform }} --publish never
+      - name: Package Windows
+        run: npx electron-builder --win --publish never
         env:
           NODE_OPTIONS: --max-old-space-size=4096
 
       - name: Normalise Windows artifact name
-        if: matrix.platform == 'win'
         shell: bash
         run: |
           # latest.yml refers to the hyphenated name; electron-builder writes
@@ -109,24 +99,10 @@ jobs:
           ls -la *.exe latest.yml
 
       - name: Attach Windows artifacts
-        if: matrix.platform == 'win'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           gh release upload "$TAG" release/*.exe release/latest.yml \
-            --clobber --repo "$GITHUB_REPOSITORY"
-
-      - name: Attach Linux artifacts
-        if: matrix.platform == 'linux'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.prepare-release.outputs.tag }}
-        run: |
-          gh release upload "$TAG" \
-            release/*.AppImage \
-            release/*.deb \
-            release/latest-linux.yml \
             --clobber --repo "$GITHUB_REPOSITORY"

@@ -211,7 +211,7 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 // The recognition rounds follow the first exposure: learners identify a whole
 // spoken phrase, then identify one missing word from audio-only choices.
 // Type and Translate each run twice to build memory through production.
-const PHASES = ["Read", "ListenPick", "MissingWord", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
+const PHASES = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
 
 function spokenWord(token: string): string {
@@ -289,6 +289,45 @@ function buildOrderTokens(sentence: string): OrderToken[] {
   return shuffled;
 }
 
+function cleanTranslationToken(token: string): string {
+  return String(token ?? "").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}'’-]+$/gu, "");
+}
+
+function buildTranslationChoices(answer: string, pool: string[] = [], distractorLimit = 3): OrderToken[] {
+  const answerTokens = String(answer ?? "").trim().split(/\s+/).filter(Boolean).map((text, answerIndex) => ({
+    id: `answer-${answerIndex}-${text}`,
+    text,
+    answerIndex,
+  }));
+  const answerKey = choiceKey(primaryAnswer(answer));
+  const seen = new Set(
+    answerTokens
+      .map((token) => choiceKey(cleanTranslationToken(token.text)))
+      .filter(Boolean)
+  );
+
+  const distractors = pool
+    .filter((candidate) => choiceKey(primaryAnswer(candidate)) !== answerKey)
+    .flatMap((candidate) => primaryAnswer(candidate).trim().split(/\s+/))
+    .map(cleanTranslationToken)
+    .filter((word) => {
+      const key = choiceKey(word);
+      if (word.length < 2 || !key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => choiceHash(`${answer}|decoy|${a}`) - choiceHash(`${answer}|decoy|${b}`))
+    .slice(0, distractorLimit)
+    .map((text, index) => ({
+      id: `decoy-${index}-${text}`,
+      text,
+      answerIndex: -1,
+    }));
+
+  return [...answerTokens, ...distractors]
+    .sort((a, b) => choiceHash(`${answer}|position|${a.id}`) - choiceHash(`${answer}|position|${b.id}`));
+}
+
 function moveOrderToken(tokens: OrderToken[], from: number, to: number): OrderToken[] {
   if (from === to || from < 0 || to < 0 || from >= tokens.length || to >= tokens.length) return tokens;
   const next = [...tokens];
@@ -355,7 +394,7 @@ function buildMissingWordChoices(answer: string, pool: string[], limit = 3): str
 // French) and uses English only as the shown meaning, so the English-typing
 // "Translate" step is replaced by the French step. "Memory" is a final recall
 // phase where no sentence is shown — the learner types both from memory.
-const BILINGUAL_PHASES: Phase[] = ["Read", "ListenPick", "MissingWord", "Speak", "Type", "French", "Memory"];
+const BILINGUAL_PHASES: Phase[] = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Speak", "Type", "French", "Memory"];
 
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French. The second-round steps
@@ -377,6 +416,8 @@ function renderKeyWord(sentence: string, lookup?: string) {
 
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
+  if (p === "MeaningPick") return "Meaning";
+  if (p === "MeaningSelect") return "Select";
   if (p === "ListenPick") return "Pick it";
   if (p === "MissingWord") return "Missing word";
   if (p === "TypeAgain") return "Type 2";
@@ -391,6 +432,8 @@ function phaseLabel(p: Phase, withFrench: boolean) {
 function phaseHeading(p: Phase, withFrench: boolean): string {
   switch (p) {
     case "Read": return "Read & listen";
+    case "MeaningPick": return "Pick the meaning";
+    case "MeaningSelect": return "Select the correct meaning";
     case "ListenPick": return "What did you hear?";
     case "MissingWord": return "Listen for the missing word";
     case "Speak": return "Say it out loud";
@@ -839,9 +882,10 @@ function LangBlock({ label, text, active, onHear, speechState, onKnown, onStrugg
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeItem, onAnswer }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onAnswer }: {
   item: any;
   listeningChoicePool: string[];
+  translationChoicePool: string[];
   onNext: () => void;
   onSkip?: () => void;
   onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
@@ -875,6 +919,10 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   const [gapInput, setGapInput] = useState("");
   const [gapChecked, setGapChecked] = useState(false);
   const gapInputRef = useRef<HTMLInputElement>(null);
+  const [meaningChoice, setMeaningChoice] = useState<string | null>(null);
+  const [meaningChecked, setMeaningChecked] = useState(false);
+  const [meaningSelectChoice, setMeaningSelectChoice] = useState<string | null>(null);
+  const [meaningSelectChecked, setMeaningSelectChecked] = useState(false);
   const [listeningChoice, setListeningChoice] = useState<string | null>(null);
   const [listeningChecked, setListeningChecked] = useState(false);
   const [missingWordChoice, setMissingWordChoice] = useState<string | null>(null);
@@ -948,6 +996,11 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     () => buildListeningChoices(item.de, listeningChoicePool),
     [item.de, listeningChoicePool]
   );
+  const meaningChoices = useMemo(
+    () => buildListeningChoices(item.de, listeningChoicePool, 3),
+    [item.de, listeningChoicePool]
+  );
+  const meaningCorrect = meaningChoice !== null && choiceKey(meaningChoice) === choiceKey(item.de);
   const listeningCorrect = listeningChoice !== null && choiceKey(listeningChoice) === choiceKey(item.de);
   const missingWord = useMemo(() => computeListeningGap(item.de), [item.de]);
   const missingWordChoices = useMemo(
@@ -977,7 +1030,22 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
   // the answer is German — each direction gets its own synonym/coach matcher.
   const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
-  const translationTokens = useMemo(() => buildOrderTokens(shownEnglish), [shownEnglish]);
+  const meaningSelectPool = useMemo(
+    () => translationChoicePool.map((value) => primaryAnswer(
+      learnEn ? value : formatEnglishText(value, englishVariant)
+    )),
+    [translationChoicePool, learnEn, englishVariant]
+  );
+  const meaningSelectChoices = useMemo(
+    () => buildListeningChoices(shownEnglish, meaningSelectPool, 3),
+    [shownEnglish, meaningSelectPool]
+  );
+  const meaningSelectCorrect = meaningSelectChoice !== null
+    && choiceKey(meaningSelectChoice) === choiceKey(shownEnglish);
+  const translationTokens = useMemo(
+    () => buildTranslationChoices(shownEnglish, translationChoicePool),
+    [shownEnglish, translationChoicePool]
+  );
   const translationAnswer = translationMode === "bank"
     ? translationPicked.map((token) => token.text).join(" ")
     : enInput;
@@ -1115,6 +1183,14 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
   // clear it when the round begins — otherwise it shows the previous answer as
   // already-correct.
   useEffect(() => {
+    if (phase === "MeaningPick") {
+      setMeaningChoice(null);
+      setMeaningChecked(false);
+    }
+    if (phase === "MeaningSelect") {
+      setMeaningSelectChoice(null);
+      setMeaningSelectChecked(false);
+    }
     if (phase === "ListenPick") {
       setListeningChoice(null);
       setListeningChecked(false);
@@ -1147,6 +1223,63 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     }
     if (phase === "SpeakAll") { setSayInput(""); setSayChecked(false); }
   }, [phase, item.de]);
+
+  useEffect(() => {
+    if (phase !== "MeaningPick") return;
+    const handleChoiceKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || meaningChecked) return;
+      if (event.key === "Enter" && meaningChoice) {
+        event.preventDefault();
+        const ok = choiceKey(meaningChoice) === choiceKey(item.de);
+        setMeaningChecked(true);
+        reactToAnswer(ok);
+        if (ok) {
+          tts(item.de, 0.88, targetLang);
+          window.setTimeout(advanceOrFinish, 900);
+        }
+        return;
+      }
+      const optionIndex = Number(event.key) - 1;
+      const option = meaningChoices[optionIndex];
+      if (!option) return;
+      event.preventDefault();
+      setMeaningChoice(option);
+    };
+    window.addEventListener("keydown", handleChoiceKey);
+    return () => window.removeEventListener("keydown", handleChoiceKey);
+  }, [phase, meaningChecked, meaningChoice, meaningChoices, item.de, targetLang]);
+
+  useEffect(() => {
+    if (phase !== "MeaningSelect") return;
+    const handleChoiceKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "Enter") {
+        if (meaningSelectChecked && meaningSelectCorrect) {
+          event.preventDefault();
+          advanceOrFinish();
+        } else if (!meaningSelectChecked && meaningSelectChoice) {
+          event.preventDefault();
+          setMeaningSelectChecked(true);
+          reactToAnswer(meaningSelectCorrect);
+        }
+        return;
+      }
+      if (meaningSelectChecked) return;
+      const optionIndex = Number(event.key) - 1;
+      const option = meaningSelectChoices[optionIndex];
+      if (!option) return;
+      event.preventDefault();
+      setMeaningSelectChoice(option);
+    };
+    window.addEventListener("keydown", handleChoiceKey);
+    return () => window.removeEventListener("keydown", handleChoiceKey);
+  }, [
+    phase,
+    meaningSelectChecked,
+    meaningSelectChoice,
+    meaningSelectChoices,
+    meaningSelectCorrect,
+  ]);
 
   useEffect(() => {
     if (phase !== "ListenPick") return;
@@ -1248,6 +1381,37 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     setTranslationPicked((picked) => picked.filter((_, pickedIndex) => pickedIndex !== index));
   };
 
+  const selectMeaningAnswer = (choice: string) => {
+    if (meaningChecked) return;
+    setMeaningChoice(choice);
+  };
+
+  const checkMeaningAnswer = () => {
+    if (!meaningChoice || meaningChecked) return;
+    setMeaningChecked(true);
+    reactToAnswer(meaningCorrect);
+    if (meaningCorrect) {
+      tts(item.de, 0.88, targetLang);
+      window.setTimeout(advanceOrFinish, 900);
+    }
+  };
+
+  const retryMeaning = () => {
+    setMeaningChoice(null);
+    setMeaningChecked(false);
+  };
+
+  const checkMeaningSelect = () => {
+    if (!meaningSelectChoice || meaningSelectChecked) return;
+    setMeaningSelectChecked(true);
+    reactToAnswer(meaningSelectCorrect);
+  };
+
+  const retryMeaningSelect = () => {
+    setMeaningSelectChoice(null);
+    setMeaningSelectChecked(false);
+  };
+
   const chooseListeningAnswer = (choice: string) => {
     if (listeningChecked) return;
     setListeningChoice(choice);
@@ -1289,7 +1453,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
     if (!gapInput.trim() || gapChecked) return;
     setGapChecked(true);
     reactToAnswer(gapResult.ok);
-    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }  // → stage 8 (word order)
+    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
   };
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
@@ -1413,7 +1577,9 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
         <div className="fs-heading">
           <div>
             <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
-            <h1 className="fs-h1">{ui(phaseHeading(phase, hasFr))}</h1>
+            <h1 className="fs-h1">
+              {ui(phase === "Translate" ? `Write this in ${meaningLabel}` : phaseHeading(phase, hasFr))}
+            </h1>
             <p className="fs-sub">
               {hasFr ? "Read, listen, choose, say, then type it in German and French." : ui("Read, listen, choose, say, type, then translate.")}
             </p>
@@ -1441,7 +1607,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
                 </button>
               </>
             )}
-            {phase !== "ListenPick" && phase !== "MissingWord" && (
+            {phase !== "MeaningPick" && phase !== "ListenPick" && phase !== "MissingWord" && (
               <button
                 className={cn("fs-listen", ttsOn && "is-speaking")}
                 onClick={() => tts(item.de, 0.82, targetLang)}
@@ -1458,7 +1624,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
         </div>
 
         {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
-        {phase !== "ListenPick" && phase !== "MissingWord" && (
+        {phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && (
           <UsageChips
             de={learnEn ? item.en : item.de}
             use={item.use}
@@ -1474,7 +1640,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
             aus?" leaves you knowing the grammar and still not knowing when to
             open your mouth. Hidden during Translate for the same reason the
             usage note is: it can give the answer away. */}
-        {item.when && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && (
+        {item.when && phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
             <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
@@ -1503,7 +1669,30 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
           </div>
         )}
 
-        {phase === "ListenPick" ? (
+        {phase === "MeaningPick" ? (
+          <div className="fs-meaning-prompt">
+            <span className="fs-meaning-new">
+              <Target aria-hidden="true" className="h-4 w-4" />
+              {ui(item.de.trim().split(/\s+/).length > 1 ? "New phrase" : "New word")}
+            </span>
+            <p>
+              {uiIsGerman()
+                ? `Welcher Ausdruck bedeutet "${shownEnglish}"?`
+                : `Which one means "${shownEnglish}"?`}
+            </p>
+            <small>{ui(`Choose the correct ${targetLabel} answer.`)}</small>
+          </div>
+        ) : phase === "MeaningSelect" ? (
+          <div className="fs-board fs-meaning-select-board">
+            <div className="fs-board-top">
+              <span>{ui(targetLabel)}</span>
+              <small>{ui("Select its meaning below")}</small>
+            </div>
+            <div className="fs-line">
+              <TappableSentence text={item.de} lang={targetLang} />
+            </div>
+          </div>
+        ) : phase === "ListenPick" ? (
           <button
             type="button"
             className={cn("fs-listening-prompt", ttsOn && "is-speaking")}
@@ -1635,6 +1824,231 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
               {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
+          </motion.div>
+        )}
+
+        {/* PICK THE MEANING phase */}
+        {phase === "MeaningPick" && (
+          <motion.div
+            key="meaning-pick"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-4"
+          >
+            <div className="fs-meaning-choices" role="radiogroup" aria-label={ui("Meaning choices")}>
+              {meaningChoices.map((choice, choiceIndex) => {
+                const isSelected = meaningChoice === choice;
+                const isAnswer = choiceKey(choice) === choiceKey(item.de);
+                return (
+                  <button
+                    key={`${choice}-${choiceIndex}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    disabled={meaningChecked}
+                    onClick={() => selectMeaningAnswer(choice)}
+                    className={cn(
+                      "fs-meaning-choice",
+                      isSelected && "is-selected",
+                      meaningChecked && isAnswer && "is-correct",
+                      meaningChecked && isSelected && !isAnswer && "is-wrong"
+                    )}
+                  >
+                    <span className="fs-meaning-choice-top">
+                      <span>{ui(targetLabel)}</span>
+                      <kbd>{choiceIndex + 1}</kbd>
+                    </span>
+                    <strong>{choice}</strong>
+                    <span className="fs-meaning-choice-state" aria-hidden="true">
+                      {meaningChecked && isAnswer
+                        ? <CheckCircle2 className="h-5 w-5" />
+                        : meaningChecked && isSelected
+                          ? <X className="h-5 w-5" />
+                          : <span />}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence>
+              {meaningChecked && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={cn("fs-result", meaningCorrect ? "is-good" : "is-bad")}
+                >
+                  <strong>{ui(meaningCorrect ? "That's it!" : "Not quite")}</strong>
+                  <span>
+                    {meaningCorrect
+                      ? ui("You matched the meaning.")
+                      : <>{ui("Answer:")} <strong>{item.de}</strong></>}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {meaningChecked && !meaningCorrect ? (
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  onClick={retryMeaning}
+                  variant="outline"
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {ui("Try again")}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={advance}
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                >
+                  {ui("Skip")}
+                </Button>
+              </div>
+            ) : (
+              <div className="fs-meaning-actions">
+                <button type="button" onClick={advance} className="fs-meaning-skip">
+                  {ui("Skip")}
+                </button>
+                <button
+                  type="button"
+                  onClick={checkMeaningAnswer}
+                  disabled={!meaningChoice || meaningChecked}
+                  className="fs-check fs-meaning-check"
+                >
+                  <span className="fs-check-label">{ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            <div className="fs-hint">
+              <kbd>1-3</kbd> {ui("Choose an answer, then press Enter.")}
+            </div>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
+              {ui("← Back")}
+            </button>
+          </motion.div>
+        )}
+
+        {/* SELECT THE CORRECT MEANING phase */}
+        {phase === "MeaningSelect" && (
+          <motion.div
+            key="meaning-select"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-4"
+          >
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui("Choose the correct meaning, then check your answer.")}
+            </p>
+            <div className="fs-meaning-select-list" role="radiogroup" aria-label={ui("Meaning choices")}>
+              {meaningSelectChoices.map((choice, choiceIndex) => {
+                const isSelected = meaningSelectChoice === choice;
+                const isAnswer = choiceKey(choice) === choiceKey(shownEnglish);
+                return (
+                  <button
+                    key={`${choice}-${choiceIndex}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    disabled={meaningSelectChecked}
+                    onClick={() => setMeaningSelectChoice(choice)}
+                    className={cn(
+                      "fs-meaning-select-choice",
+                      isSelected && "is-selected",
+                      meaningSelectChecked && isAnswer && "is-correct",
+                      meaningSelectChecked && isSelected && !isAnswer && "is-wrong"
+                    )}
+                  >
+                    <kbd>{choiceIndex + 1}</kbd>
+                    <strong>{choice}</strong>
+                    <span className="fs-meaning-select-state" aria-hidden="true">
+                      {meaningSelectChecked && isAnswer
+                        ? <CheckCircle2 className="h-5 w-5" />
+                        : meaningSelectChecked && isSelected
+                          ? <X className="h-5 w-5" />
+                          : <span />}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence>
+              {meaningSelectChecked && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={cn("fs-result", meaningSelectCorrect ? "is-good" : "is-bad")}
+                  aria-live="polite"
+                >
+                  <strong>{ui(meaningSelectCorrect ? "Excellent!" : "Not quite")}</strong>
+                  <span>
+                    {meaningSelectCorrect
+                      ? ui("You selected the correct meaning.")
+                      : <>{ui("Answer:")} <strong>{shownEnglish}</strong></>}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {meaningSelectChecked && meaningSelectCorrect ? (
+              <button
+                type="button"
+                onClick={advanceOrFinish}
+                className="fs-check fs-meaning-select-continue"
+              >
+                <span className="fs-check-label">{ui("Continue")}</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : meaningSelectChecked ? (
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  onClick={retryMeaningSelect}
+                  variant="outline"
+                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {ui("Try again")}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={advance}
+                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                >
+                  {ui("Skip")}
+                </Button>
+              </div>
+            ) : (
+              <div className="fs-meaning-actions">
+                <button type="button" onClick={advance} className="fs-meaning-skip">
+                  {ui("Skip")}
+                </button>
+                <button
+                  type="button"
+                  onClick={checkMeaningSelect}
+                  disabled={!meaningSelectChoice}
+                  aria-label={ui("Check answer")}
+                  className="fs-check fs-meaning-check fs-meaning-select-check"
+                >
+                  <span className="fs-check-label">{ui("Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            <div className="fs-hint">
+              <kbd>1-3</kbd> {ui("Choose an answer, then press Enter.")}
+            </div>
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
+              {ui("← Back")}
+            </button>
           </motion.div>
         )}
 
@@ -1878,7 +2292,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
           </motion.div>
         )}
 
-        {/* WRITE IT phase (stage 10): read the English, TYPE the whole German from memory */}
+        {/* WRITE IT: read the meaning, then type the whole target sentence from memory. */}
         {phase === "SpeakAll" && (
           <motion.div key="speakall" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
@@ -2046,7 +2460,7 @@ function SentenceExercise({ item, listeningChoicePool, onNext, onSkip, onGradeIt
             <p className="text-center text-sm font-semibold text-zinc-500">
               {ui(phase === "TranslateAgain"
                 ? "Recall the translation. Use the word bank if you need support."
-                : "Build the translation with the words below, or type it yourself.")}
+                : "Choose only the words you need, or type the translation yourself.")}
             </p>
 
             <div className="fs-translation-toolbar">
@@ -3476,6 +3890,12 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       .map((candidate: any) => String(candidate.item.de)),
     [steps]
   );
+  const translationChoicePool = useMemo(
+    () => safeSteps
+      .filter((candidate: any) => candidate?.type === "sentence" && candidate.item?.en)
+      .map((candidate: any) => String(candidate.item.en)),
+    [steps]
+  );
   const inPreview = previewActive && previewCards.length > 0;
   const inMatching = matchingActive && previewCards.length > 1;
   const inIntro = inPreview || inMatching;
@@ -3645,7 +4065,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
+                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}

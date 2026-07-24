@@ -1431,6 +1431,154 @@ html[data-theme-preset="butter-purple"] .card {
 .fs-line.is-good { color: #8fe8c2; }
 .fs-line.is-bad { color: #ff9cb0; }
 
+/* Meaning recognition: a visual multiple-choice step before audio recall. */
+.fs-meaning-prompt {
+  min-height: 128px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  border: 1px solid rgba(177,139,255,0.24); border-radius: 22px; padding: 22px 26px;
+  background:
+    radial-gradient(circle at 9% 18%, rgba(139,76,255,0.16), transparent 29%),
+    linear-gradient(145deg, rgba(139,76,255,0.075), rgba(17,18,25,0.95));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 0 #0a0b10, 0 22px 42px rgba(0,0,0,0.23);
+}
+.fs-meaning-new {
+  display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
+  color: #cba8ff; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase;
+}
+.fs-meaning-prompt > p {
+  margin: 0; color: var(--fs-text); font-size: clamp(23px, 2.6vw, 34px);
+  font-weight: 860; line-height: 1.14; letter-spacing: -0.035em; overflow-wrap: anywhere;
+}
+.fs-meaning-prompt > small { color: var(--fs-muted); font-size: 12px; font-weight: 650; }
+.fs-meaning-choices {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+}
+.guided-session .fs-meaning-choice {
+  position: relative; min-width: 0; min-height: 154px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
+  border: 1px solid var(--fs-line-strong); border-radius: 18px; padding: 15px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.018));
+  color: var(--fs-text-2); text-align: left; cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 6px 0 rgba(7,8,12,0.78);
+  transition: transform 0.17s ease, border-color 0.17s ease, background 0.17s ease, box-shadow 0.17s ease;
+}
+.guided-session .fs-meaning-choice:hover:not(:disabled) {
+  transform: translateY(-3px); border-color: rgba(177,139,255,0.5); color: #fff;
+  background: rgba(139,76,255,0.085);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 9px 0 rgba(39,18,78,0.72);
+}
+.guided-session .fs-meaning-choice:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 0 rgba(39,18,78,0.72);
+}
+.guided-session .fs-meaning-choice:disabled { cursor: default; }
+.fs-meaning-choice-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fs-meaning-choice-top > span {
+  color: #bda8ed; font-size: 10px; font-weight: 850; letter-spacing: 0.11em; text-transform: uppercase;
+}
+.fs-meaning-choice-top kbd {
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border: 1px solid var(--fs-line-strong); border-radius: 9px;
+  background: rgba(255,255,255,0.025); color: var(--fs-muted); font-size: 11px; font-weight: 900;
+}
+.guided-session .fs-meaning-choice > strong {
+  flex: 1; display: flex; align-items: center; min-width: 0;
+  color: inherit; font-size: clamp(17px, 1.65vw, 22px); font-weight: 820;
+  line-height: 1.22; letter-spacing: -0.02em; overflow-wrap: anywhere;
+}
+.fs-meaning-choice-state { min-height: 22px; display: flex; align-items: center; justify-content: flex-end; }
+.guided-session .fs-meaning-choice.is-selected {
+  border-color: rgba(177,139,255,0.74); background: rgba(139,76,255,0.14); color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(177,139,255,0.15), 0 7px 0 rgba(59,23,111,0.94), 0 16px 28px rgba(66,25,132,0.18);
+}
+.guided-session .fs-meaning-choice.is-selected .fs-meaning-choice-top kbd {
+  border-color: rgba(202,181,255,0.5); background: rgba(139,76,255,0.25); color: #fff;
+}
+.guided-session .fs-meaning-choice.is-correct {
+  border-color: rgba(105,225,173,0.56); background: rgba(105,225,173,0.1); color: #98edc8;
+  box-shadow: inset 0 0 0 1px rgba(105,225,173,0.1), 0 6px 0 rgba(16,94,69,0.82);
+}
+.guided-session .fs-meaning-choice.is-wrong {
+  border-color: rgba(255,140,160,0.52); background: rgba(255,140,160,0.09); color: #ff9cb0;
+  box-shadow: inset 0 0 0 1px rgba(255,140,160,0.08), 0 6px 0 rgba(110,35,53,0.82);
+}
+.fs-meaning-actions {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding-top: 3px;
+}
+.guided-session .fs-meaning-skip {
+  min-width: 116px; height: 50px; border: 1px solid var(--fs-line-strong);
+  border-radius: 15px; background: rgba(255,255,255,0.02); color: var(--fs-muted);
+  font-size: 13px; font-weight: 850; cursor: pointer;
+  transition: transform 0.17s ease, border-color 0.17s ease, color 0.17s ease, background 0.17s ease;
+}
+.guided-session .fs-meaning-skip:hover {
+  transform: translateY(-2px); border-color: rgba(177,139,255,0.38); color: var(--fs-text);
+  background: rgba(139,76,255,0.06);
+}
+.guided-session .fs-check.fs-meaning-check { min-width: 148px; margin-left: auto; }
+
+/* Reverse recognition: target phrase first, compact meaning choices underneath. */
+.fs-meaning-select-board {
+  min-height: 154px;
+  background:
+    radial-gradient(circle at 50% 120%, rgba(139,76,255,0.12), transparent 44%),
+    linear-gradient(145deg, rgba(255,255,255,0.025), rgba(17,18,25,0.97));
+}
+.fs-meaning-select-list {
+  width: min(100%, 760px); margin: 0 auto;
+  display: grid; gap: 10px;
+}
+.guided-session .fs-meaning-select-choice {
+  min-height: 62px; display: grid; grid-template-columns: 36px minmax(0, 1fr) 24px;
+  align-items: center; gap: 14px;
+  border: 1px solid var(--fs-line-strong); border-radius: 14px; padding: 10px 16px;
+  background: rgba(255,255,255,0.025); color: var(--fs-text-2); text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 0 rgba(7,8,12,0.78);
+  cursor: pointer;
+  transition: transform 0.17s ease, border-color 0.17s ease, background 0.17s ease, box-shadow 0.17s ease;
+}
+.guided-session .fs-meaning-select-choice:hover:not(:disabled) {
+  transform: translateY(-2px); border-color: rgba(177,139,255,0.48);
+  background: rgba(139,76,255,0.075); color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 6px 0 rgba(39,18,78,0.68);
+}
+.guided-session .fs-meaning-select-choice:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 0 rgba(39,18,78,0.68);
+}
+.guided-session .fs-meaning-select-choice:disabled { cursor: default; }
+.fs-meaning-select-choice kbd {
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border: 1px solid var(--fs-line-strong); border-radius: 9px;
+  background: rgba(255,255,255,0.025); color: var(--fs-muted);
+  font-size: 12px; font-weight: 900;
+}
+.guided-session .fs-meaning-select-choice strong {
+  min-width: 0; color: inherit; font-size: 16px; font-weight: 780;
+  line-height: 1.3; overflow-wrap: anywhere;
+}
+.fs-meaning-select-state {
+  width: 24px; min-height: 24px; display: grid; place-items: center;
+}
+.guided-session .fs-meaning-select-choice.is-selected {
+  border-color: rgba(177,139,255,0.72); background: rgba(139,76,255,0.13); color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(177,139,255,0.14), 0 5px 0 rgba(59,23,111,0.9);
+}
+.guided-session .fs-meaning-select-choice.is-selected kbd {
+  border-color: rgba(202,181,255,0.5); background: rgba(139,76,255,0.25); color: #fff;
+}
+.guided-session .fs-meaning-select-choice.is-correct {
+  border-color: rgba(105,225,173,0.58); background: rgba(105,225,173,0.1); color: #98edc8;
+  box-shadow: inset 0 0 0 1px rgba(105,225,173,0.1), 0 4px 0 rgba(16,94,69,0.82);
+}
+.guided-session .fs-meaning-select-choice.is-wrong {
+  border-color: rgba(255,140,160,0.54); background: rgba(255,140,160,0.09); color: #ff9cb0;
+  box-shadow: inset 0 0 0 1px rgba(255,140,160,0.08), 0 4px 0 rgba(110,35,53,0.82);
+}
+.guided-session .fs-check.fs-meaning-select-continue {
+  min-width: 210px; margin-left: auto;
+}
+
 /* ── listen and pick ── */
 .guided-session .fs-listening-prompt {
   width: 100%; min-height: 132px; display: grid;
@@ -1688,6 +1836,27 @@ html[data-theme-preset="butter-purple"] .card {
   }
   .fs-listening-disc { width: 52px; height: 52px; border-radius: 16px; }
   .fs-listening-wave { display: none; }
+  .fs-meaning-prompt { min-height: 112px; padding: 18px; }
+  .fs-meaning-choices { grid-template-columns: 1fr; }
+  .guided-session .fs-meaning-choice {
+    min-height: 82px; display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 9px 14px; padding: 13px 14px;
+  }
+  .fs-meaning-choice-top { grid-column: 1 / -1; }
+  .guided-session .fs-meaning-choice > strong { min-height: 0; }
+  .fs-meaning-select-board { min-height: 126px; }
+  .guided-session .fs-meaning-select-choice {
+    min-height: 58px; grid-template-columns: 32px minmax(0, 1fr) 22px; gap: 11px; padding: 9px 12px;
+  }
+  .fs-meaning-select-choice kbd { width: 30px; height: 30px; }
+  .guided-session .fs-check.fs-meaning-select-continue {
+    width: 100%; min-width: 0; margin-left: 0;
+  }
+  .guided-session .fs-check.fs-meaning-select-continue .fs-check-label { display: inline; }
+  .fs-meaning-choice-state { min-height: 20px; }
+  .fs-meaning-actions { align-items: stretch; }
+  .guided-session .fs-meaning-skip,
+  .guided-session .fs-check.fs-meaning-check { min-width: 0; flex: 1; }
   .fs-listening-choices { grid-template-columns: 1fr; }
 }
 
