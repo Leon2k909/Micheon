@@ -25,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { loadGradeStore, setItemStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
-import { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "@/lib/germanTextMatch";
+import { matchEnglishPhrase, matchGermanSentence } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
@@ -540,10 +540,35 @@ function answerLanguageFor(direction: TestDirection, index: number): AnswerLangu
   return index % 2 === 0 ? courseLanguage : courseLanguage === "de" ? "en" : "de";
 }
 
+function vocabularyAlternatives(value: string, item: TestItem) {
+  if (item.kind !== "vocabulary") return [value.trim()].filter(Boolean);
+  return value
+    .split(/\s+\/\s+|,\s*/)
+    .map((alternative) => alternative.trim())
+    .filter(Boolean);
+}
+
+function formatTestMeaning(value: string, item: TestItem) {
+  const alternatives = vocabularyAlternatives(value, item);
+  return alternatives.join(uiIsGerman() ? " ODER " : " OR ");
+}
+
+function matchTestAnswer(input: string, target: string, language: AnswerLanguage, item: TestItem) {
+  const alternatives = vocabularyAlternatives(target, item);
+  const matches = alternatives.map((alternative) =>
+    language === "de"
+      ? matchGermanSentence(input, alternative)
+      : matchEnglishPhrase(input, alternative)
+  );
+  return matches.find((match) => match.ok)
+    ?? matches.find((match) => match.phrasingNote)
+    ?? matches[0];
+}
+
 function getQuestionCopy(question: TestQuestion) {
   const answerIsGerman = question.answerLanguage === "de";
   return {
-    source: answerIsGerman ? primaryAnswer(question.item.en) : question.item.de,
+    source: formatTestMeaning(answerIsGerman ? question.item.en : question.item.de, question.item),
     sourceLanguage: answerIsGerman ? "en" : "de",
     target: answerIsGerman ? question.item.de : question.item.en,
     targetLabel: answerIsGerman ? "German" : "English",
@@ -619,7 +644,8 @@ export function TestsView({
   apiParts: Record<string, Part>;
   profile: UserProfile;
 }) {
-  const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, profile]);
+  const [gradeRevision, setGradeRevision] = useState(0);
+  const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, gradeRevision, profile]);
   const [presetId, setPresetId] = useState<TestPresetId>("easy-vocabulary");
   const [testLength, setTestLength] = useState<(typeof TEST_LENGTHS)[number]>(10);
   const [direction, setDirection] = useState<TestDirection>("course");
@@ -633,11 +659,14 @@ export function TestsView({
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
   const selectedPool = useMemo(
-    () => bank.filter(selectedPreset.filter),
+    () => bank.filter((item) => (item.status !== "known" || item.due) && selectedPreset.filter(item)),
     [bank, selectedPreset]
   );
   const presetCounts = useMemo(
-    () => Object.fromEntries(PRESETS.map((preset) => [preset.id, bank.filter(preset.filter).length])),
+    () => Object.fromEntries(PRESETS.map((preset) => [
+      preset.id,
+      bank.filter((item) => (item.status !== "known" || item.due) && preset.filter(item)).length,
+    ])),
     [bank]
   ) as Record<TestPresetId, number>;
   const currentQuestion = questions[questionIndex];
@@ -677,9 +706,7 @@ export function TestsView({
     const copy = getQuestionCopy(currentQuestion);
     const match = skipped
       ? { ok: false, spellingNote: false }
-      : currentQuestion.answerLanguage === "de"
-        ? matchGermanSentence(answer, copy.target)
-        : matchEnglishPhrase(answer, copy.target);
+      : matchTestAnswer(answer, copy.target, currentQuestion.answerLanguage, currentQuestion.item);
     const result: TestResult = {
       question: currentQuestion,
       answer,
@@ -705,9 +732,12 @@ export function TestsView({
 
   useEffect(() => {
     if (!currentQuestion || !currentCopy || feedback || !answer.trim()) return;
-    const answerMatch = currentQuestion.answerLanguage === "de"
-      ? matchGermanSentence(answer, currentCopy.target)
-      : matchEnglishPhrase(answer, currentCopy.target);
+    const answerMatch = matchTestAnswer(
+      answer,
+      currentCopy.target,
+      currentQuestion.answerLanguage,
+      currentQuestion.item
+    );
     if (answerMatch.ok && !answerMatch.spellingNote) gradeAnswer();
     // Grade against the current question only when the learner edits the answer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -723,6 +753,7 @@ export function TestsView({
   const markTrackedStatus = (item: TestItem, status: Extract<ItemStatus, "known" | "struggle">) => {
     setItemStatus(item.id, status, profile, item.aliases);
     setTrackedStatuses((current) => ({ ...current, [item.id]: status }));
+    setGradeRevision((revision) => revision + 1);
   };
 
   const markKnownAndAdvance = () => {
@@ -802,7 +833,9 @@ export function TestsView({
                     <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
                       <p className="font-bold text-[var(--text-2)]">{copy.source}</p>
                       <ArrowRight className="hidden h-4 w-4 text-[var(--text-3)] sm:block" />
-                      <p className="font-black text-[var(--text-1)] sm:text-right">{primaryAnswer(copy.target)}</p>
+                      <p className="font-black text-[var(--text-1)] sm:text-right">
+                        {formatTestMeaning(copy.target, result.question.item)}
+                      </p>
                       <div className="flex gap-2">
                         <button
                           aria-pressed={trackedStatus === "known"}
@@ -1056,7 +1089,10 @@ export function TestsView({
                     </p>
                     {!feedback.correct && (
                       <p className="mt-1 text-sm font-semibold text-[var(--text-2)]">
-                        {ui("Accepted answer")}: <strong className="font-black">{primaryAnswer(currentCopy.target)}</strong>
+                        {ui("Accepted answer")}:{" "}
+                        <strong className="font-black">
+                          {formatTestMeaning(currentCopy.target, currentQuestion.item)}
+                        </strong>
                       </p>
                     )}
                   </div>
