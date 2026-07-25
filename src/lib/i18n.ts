@@ -909,7 +909,7 @@ const DE: Record<string, string> = {
   "Flying & the airport": "Fliegen und Flughafen",
   "Job applications & the Zeugnis code": "Bewerbungen und Zeugnissprache",
   "German holidays: Weihnachtsmarkt to Karneval": "Deutsche Feste: Weihnachtsmarkt bis Karneval",
-  "Very German things: Pfand, Muelltrennung & Sauna": "Typisch deutsch: Pfand, Mülltrennung und Sauna",
+  "Very German things: Pfand, Mülltrennung & Sauna": "Typisch deutsch: Pfand, Mülltrennung und Sauna",
   "Daily home talk: couples, flatmates & feelings": "Alltag zu Hause: Paare, Mitbewohner und Gefühle",
   "People, opinions & reactions": "Menschen, Meinungen und Reaktionen",
   "Small talk that turns into a real conversation": "Vom Small Talk zum echten Gespräch",

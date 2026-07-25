@@ -93,7 +93,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-medical-bureaucracy",
   "cb-post-packages",
   "cb-german-rules",
-  "part67",           // Very German things: Pfand, Muelltrennung & Sauna
+  "part67",           // Very German things: Pfand, Mülltrennung & Sauna
   "cb-finance-insurance",
   "cb-work",
   "cb-salary-negotiations",

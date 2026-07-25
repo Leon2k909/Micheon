@@ -66,6 +66,16 @@ const ENGLISH_PET_TIPS = [
   "English tip: in the present simple, he, she, and it usually add -s to the verb.",
   "English tip: adjectives normally come before the noun and do not change for gender.",
   "English tip: use “a” before a consonant sound and “an” before a vowel sound.",
+  // Die Kurzformen, die man täglich braucht — die Grammatik-Karten erklären sie
+  // ausführlich, der Pet erinnert im Vorbeigehen daran.
+  "English tip: after “didn't” the verb goes back to its base form — “I didn't go”, never “I didn't went”.",
+  "English tip: “cannot” is written as one word, and its short form is “can't”.",
+  "English tip: “will not” shortens to “won't”, not “willn't”. It is the one irregular contraction.",
+  "English tip: “es gibt” is “there is” for one thing and “there are” for several — never “it gives”.",
+  "English tip: in the past it is “there was” for one and “there were” for several.",
+  "English tip: English uses only one negative word — “I didn't see anything”, not “I didn't see nothing”.",
+  "English tip: “should not” becomes “shouldn't”, and the same pattern gives wouldn't, couldn't and mustn't.",
+  "English tip: “haven't” and “hasn't” go with the perfect — “I haven't seen it yet”.",
 ];
 
 type PetPosition = {

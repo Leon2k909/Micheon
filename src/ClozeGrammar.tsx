@@ -300,6 +300,52 @@ const ENGLISH_GRAMMAR_TIPS = [
       { de: "We'll see.", en: "Wir werden sehen." },
     ],
   },
+  // Die Verneinungs-Karte oben deckt nur das Simple Present ab (don't, doesn't).
+  // Im Alltag hört man aber vor allem didn't, can't, won't und shouldn't —
+  // deshalb hier das ganze System auf einen Blick.
+  {
+    id: "negation_all",
+    title: "Verneinung: didn't, can't, won't",
+    level: "A1",
+    summary: "Verneint wird immer am ersten Hilfsverb, nie am Hauptverb. Welches Hilfsverb du brauchst, hängt von der Zeit ab — das Hauptverb bleibt danach in der Grundform.",
+    rules: [
+      "Vergangenheit: did not → didn't. Danach die GRUNDFORM: I didn't go, nicht I didn't went.",
+      "können: cannot → can't. Ein Wort im Englischen, nicht can not.",
+      "Zukunft: will not → won't. Unregelmäßig geschrieben — nicht willn't.",
+      "Rat: should not → shouldn't. Ebenso wouldn't, couldn't, mustn't.",
+      "be in der Vergangenheit: was not → wasn't, were not → weren't.",
+      "Perfekt: have not → haven't, has not → hasn't. I haven't seen it.",
+      "Nur EIN Verneinungswort pro Satz: I didn't see anything, nicht I didn't see nothing.",
+    ],
+    tip: "Merke dir die Grundregel: sobald ein Hilfsverb da ist (did, can, will, should, have), hängt das n't daran — und das Hauptverb bleibt unverändert.",
+    examples: [
+      { de: "I didn't see her yesterday.", en: "Ich habe sie gestern nicht gesehen." },
+      { de: "I can't come tomorrow.", en: "Ich kann morgen nicht kommen." },
+      { de: "He won't be there.", en: "Er wird nicht da sein." },
+      { de: "You shouldn't worry.", en: "Du solltest dir keine Sorgen machen." },
+    ],
+  },
+  {
+    id: "there_is_are",
+    title: "there is und there are",
+    level: "A1",
+    summary: "Für „es gibt“ sagt man im Englischen there is oder there are — nach der Zahl dessen, was folgt. Wichtig: es heißt nie „it gives“.",
+    rules: [
+      "Einzahl: there is a problem. Kurzform im Gespräch: there's.",
+      "Mehrzahl: there are two rooms. Kurzform there're ist selten — sprich es aus.",
+      "Nicht zählbar behandelt man wie Einzahl: there is milk in the fridge.",
+      "Vergangenheit: there was a party. / There were many people.",
+      "Verneint: there isn't any bread. / There aren't any seats.",
+      "Frage: Is there a bank near here? / Are there any questions?",
+      "Das there ist nur ein Platzhalter, kein Ort. „Dort ist es“ heißt it is there.",
+    ],
+    tip: "Deutsches „es gibt“ ist immer gleich, Englisch nicht: entscheide zuerst, ob das, was danach kommt, Einzahl oder Mehrzahl ist.",
+    examples: [
+      { de: "There is a supermarket on the corner.", en: "An der Ecke gibt es einen Supermarkt." },
+      { de: "There are a lot of people here.", en: "Hier sind viele Leute." },
+      { de: "There wasn't any coffee left.", en: "Es war kein Kaffee mehr da." },
+    ],
+  },
 ];
 
 const ENGLISH_CLOZE_EXERCISES = [
@@ -319,6 +365,18 @@ const ENGLISH_CLOZE_EXERCISES = [
   { id: "en14", sentence: "I ___ ready.", answer: "am", hint: "be mit I", tip_id: "sein_haben" },
   { id: "en15", sentence: "They ___ football on Sundays.", answer: "play", hint: "Simple Present mit they", tip_id: "accusative" },
   { id: "en16", sentence: "He ___ not at home.", answer: "is", hint: "Verneinung mit be", tip_id: "negation" },
+  // Verneinung außerhalb des Simple Present, und there is/are.
+  { id: "en17", sentence: "I ___ go to work yesterday.", answer: "didn't", hint: "Verneinung in der Vergangenheit", tip_id: "negation_all" },
+  { id: "en18", sentence: "She ___ come to the party last night.", answer: "didn't", hint: "did not + Grundform", tip_id: "negation_all" },
+  { id: "en19", sentence: "I ___ help you today, sorry.", answer: "can't", hint: "cannot als Kurzform", tip_id: "negation_all" },
+  { id: "en20", sentence: "He ___ be home before eight.", answer: "won't", hint: "will not als Kurzform", tip_id: "negation_all" },
+  { id: "en21", sentence: "You ___ worry about it.", answer: "shouldn't", hint: "should not als Kurzform", tip_id: "negation_all" },
+  { id: "en22", sentence: "I ___ seen that film yet.", answer: "haven't", hint: "have not im Perfekt", tip_id: "negation_all" },
+  { id: "en23", sentence: "We ___ at home when you called.", answer: "weren't", hint: "were not als Kurzform", tip_id: "negation_all" },
+  { id: "en24", sentence: "___ is a problem with my room.", answer: "There", hint: "es gibt, Einzahl", tip_id: "there_is_are" },
+  { id: "en25", sentence: "There ___ two beds in the room.", answer: "are", hint: "es gibt, Mehrzahl", tip_id: "there_is_are" },
+  { id: "en26", sentence: "There ___ a lot of people at the station.", answer: "were", hint: "es gab, Mehrzahl in der Vergangenheit", tip_id: "there_is_are" },
+  { id: "en27", sentence: "___ there a bank near here?", answer: "Is", hint: "Frage mit there is", tip_id: "there_is_are" },
 ];
 
 // ── Cloze exercises ───────────────────────────────────────────────────────────
