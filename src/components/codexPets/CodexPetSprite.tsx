@@ -199,7 +199,7 @@ export function CodexPetSprite({
   const frame = frames[Math.min(frameIndex, frames.length - 1)] ?? 0;
   const column = frame % pet.frame.columns;
   const row = Math.floor(frame / pet.frame.columns);
-  const height = Math.round(size * (pet.frame.height / pet.frame.width));
+  const height = size * (pet.frame.height / pet.frame.width);
   const spritesheetUrl = useMemo(() => {
     if (loadRetry === 0) return pet.spritesheetUrl;
     const separator = pet.spritesheetUrl.includes("?") ? "&" : "?";
@@ -232,21 +232,18 @@ export function CodexPetSprite({
       height,
       backgroundImage: `url("${spritesheetUrl}")`,
       backgroundRepeat: "no-repeat",
-      backgroundSize: `${pet.frame.columns * 100}% ${pet.frame.rows * 100}%`,
-      backgroundPosition: `${
-        pet.frame.columns > 1 ? (column / (pet.frame.columns - 1)) * 100 : 0
-      }% ${
-        pet.frame.rows > 1 ? (row / (pet.frame.rows - 1)) * 100 : 0
-      }%`,
+      // Scale from the atlas's intrinsic aspect ratio and use exact cell-sized
+      // offsets. This clips one 192x208 frame even if an old catalog reports a
+      // v2 8x11 atlas as the legacy nine-row format.
+      backgroundSize: `${pet.frame.columns * size}px auto`,
+      backgroundPosition: `${-column * size}px ${-row * height}px`,
       contain: "strict",
       imageRendering: "auto",
-      willChange: "background-position",
     }),
     [
       column,
       height,
       pet.frame.columns,
-      pet.frame.rows,
       row,
       size,
       spritesheetUrl,

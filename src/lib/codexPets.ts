@@ -14,6 +14,7 @@ export type CodexPet = {
   displayName: string;
   description: string;
   source: "custom" | "legacy" | "builtin" | "micheon" | "micheon-custom";
+  spriteVersionNumber?: 1 | 2;
   frame: {
     width: number;
     height: number;

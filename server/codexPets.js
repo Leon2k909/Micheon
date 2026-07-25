@@ -27,6 +27,8 @@ const DEFAULT_FRAME = {
   rows: 9,
 };
 
+const V2_FRAME_ROWS = 11;
+
 const DEFAULT_ANIMATIONS = {
   idle: { frames: [0, 1, 2, 3, 4, 5], fps: 3, loop: true },
   "running-right": { frames: [8, 9, 10, 11, 12, 13, 14, 15], fps: 10, loop: true },
@@ -95,12 +97,21 @@ function positiveInteger(value, fallback, maximum = Number.MAX_SAFE_INTEGER) {
   return Math.min(number, maximum);
 }
 
-function normaliseFrame(frame) {
+function normaliseSpriteVersion(value) {
+  return Number(value) === 2 ? 2 : 1;
+}
+
+function normaliseFrame(frame, spriteVersionNumber = 1) {
   return {
     width: positiveInteger(frame?.width, DEFAULT_FRAME.width, 4096),
     height: positiveInteger(frame?.height, DEFAULT_FRAME.height, 4096),
     columns: positiveInteger(frame?.columns, DEFAULT_FRAME.columns, 32),
-    rows: positiveInteger(frame?.rows, DEFAULT_FRAME.rows, 32),
+    // Codex v2 pets are always 8x11 atlases. Older manifests commonly omit
+    // `frame`, so defaulting every pet to nine rows makes CSS sprite renderers
+    // compress the last two rows into the first nine and expose the next pose.
+    rows: spriteVersionNumber === 2
+      ? V2_FRAME_ROWS
+      : positiveInteger(frame?.rows, DEFAULT_FRAME.rows, 32),
   };
 }
 
@@ -162,6 +173,7 @@ function publicPet(pet) {
     displayName: pet.displayName,
     description: pet.description,
     source: pet.source,
+    spriteVersionNumber: pet.spriteVersionNumber,
     frame: pet.frame,
     animations: pet.animations,
     spritesheetUrl: `/api/codex-pets/${encodeURIComponent(pet.source)}/${encodeURIComponent(pet.id)}/spritesheet?v=${fileVersion(pet.spritesheetPath)}`,
@@ -183,6 +195,8 @@ function loadManifestPets(root, manifestName, source) {
       );
       if (!spritesheetPath || !isImageFile(spritesheetPath)) return [];
 
+      const spriteVersionNumber = normaliseSpriteVersion(manifest.spriteVersionNumber);
+
       return [{
         id,
         displayName: typeof manifest.displayName === "string" && manifest.displayName.trim()
@@ -190,7 +204,8 @@ function loadManifestPets(root, manifestName, source) {
           : id,
         description: typeof manifest.description === "string" ? manifest.description.trim() : "",
         source,
-        frame: normaliseFrame(manifest.frame),
+        spriteVersionNumber,
+        frame: normaliseFrame(manifest.frame, spriteVersionNumber),
         animations: normaliseAnimations(manifest.animations),
         spritesheetPath,
       }];
@@ -211,6 +226,7 @@ function loadBuiltInPets(codexHome) {
       displayName,
       description: "Built-in Codex pet",
       source: "builtin",
+      spriteVersionNumber: 1,
       frame: { ...DEFAULT_FRAME },
       animations: normaliseAnimations(),
       spritesheetPath: path.join(root, compatible.name),

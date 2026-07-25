@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import GermanLearningLab from "./german_learning_lab";
+import React, { lazy, Suspense, useState, useEffect } from "react";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
@@ -11,6 +10,12 @@ import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
 import { CodexPetProvider } from "./components/codexPets/CodexPetProvider";
 import { isElectronApp } from "./lib/platform";
 import { DIRECTION_CHANGE_EVENT } from "./lib/direction";
+
+// The desktop pet has its own lightweight render path. Loading the complete
+// lesson application eagerly made that transparent overlay parse and retain the
+// largest bundle even though it never rendered it, doubling a major chunk of
+// the app's startup and memory cost whenever the mascot was visible.
+const GermanLearningLab = lazy(() => import("./german_learning_lab"));
 
 export default function App() {
   const isPetOverlay = new URLSearchParams(window.location.search).get("pet-overlay") === "1";
@@ -97,7 +102,15 @@ function MicheonApp() {
       ) : (
         <CodexPetProvider>
           {user ? (
-            <GermanLearningLab />
+            <Suspense
+              fallback={(
+                <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[var(--bg)] text-[var(--text-1)]">
+                  <MicheonLogo theme={getTheme()} height={150} className="animate-pulse" />
+                </div>
+              )}
+            >
+              <GermanLearningLab />
+            </Suspense>
           ) : (
             <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
           )}

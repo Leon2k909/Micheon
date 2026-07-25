@@ -27,13 +27,27 @@ contextBridge.exposeInMainWorld("germDesktop", {
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
   setPetOverlayInteractive: (interactive) => ipcRenderer.send("pet-overlay:set-interactive", Boolean(interactive)),
   petOverlayHitRegionsSupported: process.platform === "win32" || process.platform === "linux",
-  setPetOverlayHitRegions: (regions) => ipcRenderer.send("pet-overlay:set-hit-regions", regions),
+  getPetOverlayGeometry: () => ipcRenderer.sendSync("pet-overlay:get-geometry"),
+  onPetOverlayGeometry: (cb) => {
+    const handler = (_event, geometry) => cb(geometry);
+    ipcRenderer.on("pet-overlay:geometry", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:geometry", handler);
+  },
+  setPetOverlayHitRegions: (regions, origin) => ipcRenderer.send(
+    "pet-overlay:set-hit-regions",
+    { origin, regions }
+  ),
   beginPetOverlayDrag: () => ipcRenderer.sendSync("pet-overlay:begin-drag"),
   endPetOverlayDrag: () => ipcRenderer.send("pet-overlay:end-drag"),
   onPetOverlayDragCursor: (cb) => {
     const handler = (_event, point) => cb(point);
     ipcRenderer.on("pet-overlay:drag-cursor", handler);
     return () => ipcRenderer.removeListener("pet-overlay:drag-cursor", handler);
+  },
+  onPetOverlayDragEnd: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on("pet-overlay:drag-ended", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:drag-ended", handler);
   },
   // Fires when the overlay window is shown. Until the renderer reports its hit
   // regions the window has no shape and stays completely click-through, so a

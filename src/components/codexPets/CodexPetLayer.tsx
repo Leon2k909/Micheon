@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
@@ -45,6 +46,32 @@ const isDesktopPetOverlay = typeof window !== "undefined"
 const PET_POSITION_STORAGE_KEY = isDesktopPetOverlay
   ? DESKTOP_PET_POSITION_KEY
   : PET_POSITION_KEY;
+
+type PetOverlayGeometry = {
+  height: number;
+  originX: number;
+  originY: number;
+  viewportHeight: number;
+  viewportWidth: number;
+  width: number;
+};
+
+function readPetOverlayGeometry(value: any = desktop?.getPetOverlayGeometry?.()): PetOverlayGeometry {
+  const fallbackWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
+  const fallbackHeight = typeof window === "undefined" ? 720 : window.innerHeight;
+  return {
+    height: Number.isFinite(Number(value?.height)) ? Number(value.height) : fallbackHeight,
+    originX: Number.isFinite(Number(value?.originX)) ? Number(value.originX) : 0,
+    originY: Number.isFinite(Number(value?.originY)) ? Number(value.originY) : 0,
+    viewportHeight: Number.isFinite(Number(value?.viewportHeight))
+      ? Number(value.viewportHeight)
+      : fallbackHeight,
+    viewportWidth: Number.isFinite(Number(value?.viewportWidth))
+      ? Number(value.viewportWidth)
+      : fallbackWidth,
+    width: Number.isFinite(Number(value?.width)) ? Number(value.width) : fallbackWidth,
+  };
+}
 
 const PET_GREETINGS = [
   "Ready when you are.",
@@ -98,11 +125,16 @@ type DragState = {
   startX: number;
   startY: number;
   unsubscribeCursor?: () => void;
+  unsubscribeEnd?: () => void;
   /** Removes the window-level end-of-drag listeners the overlay drag installs. */
   cleanupGlobal?: () => void;
 };
 
 function viewportSize() {
+  if (isDesktopPetOverlay) {
+    const geometry = readPetOverlayGeometry();
+    return { height: geometry.viewportHeight, width: geometry.viewportWidth };
+  }
   return {
     height: typeof window === "undefined" ? 720 : window.innerHeight,
     width: typeof window === "undefined" ? 1280 : window.innerWidth,
@@ -257,6 +289,8 @@ export function CodexPetLayer() {
     () => storedPosition(petGroupWidth, petHeight, PET_POSITION_STORAGE_KEY)
   );
   const [viewport, setViewport] = useState(viewportSize);
+  const [overlayGeometry, setOverlayGeometry] = useState(readPetOverlayGeometry);
+  const overlayGeometryRef = useRef(overlayGeometry);
   const dragState = useRef<DragState | null>(null);
   const resetTimer = useRef<number | null>(null);
   const greetedPet = useRef("");
@@ -271,6 +305,39 @@ export function CodexPetLayer() {
 
   positionRef.current = position;
   speechRef.current = speech;
+
+  // Pair each measured DOM layout with the native-window origin that produced
+  // it. Updating this ref in the IPC callback could combine a newly announced
+  // origin with rectangles from the previous React commit and briefly send the
+  // compact window to the wrong place.
+  useLayoutEffect(() => {
+    overlayGeometryRef.current = overlayGeometry;
+    hitRegionSyncRef.current?.();
+  }, [overlayGeometry]);
+
+  useEffect(() => {
+    if (!isDesktopPetOverlay || !desktop?.onPetOverlayGeometry) return undefined;
+    const updateGeometry = (value: any) => {
+      const next = readPetOverlayGeometry(value);
+      setOverlayGeometry((current) => (
+        current.height === next.height
+        && current.originX === next.originX
+        && current.originY === next.originY
+        && current.viewportHeight === next.viewportHeight
+        && current.viewportWidth === next.viewportWidth
+        && current.width === next.width
+          ? current
+          : next
+      ));
+      setViewport((current) => (
+        current.height === next.viewportHeight && current.width === next.viewportWidth
+          ? current
+          : { height: next.viewportHeight, width: next.viewportWidth }
+      ));
+    };
+    updateGeometry(desktop.getPetOverlayGeometry?.());
+    return desktop.onPetOverlayGeometry(updateGeometry);
+  }, []);
 
   const updatePetVisibleBounds = useCallback((
     key: string,
@@ -288,6 +355,7 @@ export function CodexPetLayer() {
       return { ...current, [key]: bounds };
     });
   }, []);
+  const requestHitRegionSync = useCallback(() => hitRegionSyncRef.current?.(), []);
 
   useEffect(() => {
     if (!isDesktopPetOverlay || !desktop?.setPetOverlayInteractive) return undefined;
@@ -344,10 +412,18 @@ export function CodexPetLayer() {
         .map((element) => element.getBoundingClientRect())
         .filter((rect) => rect.width > 0 && rect.height > 0)
         .map((rect) => {
-          const x = Math.max(0, Math.floor(rect.left - padding));
-          const y = Math.max(0, Math.floor(rect.top - padding));
-          const right = Math.min(window.innerWidth, Math.ceil(rect.right + padding));
-          const bottom = Math.min(window.innerHeight, Math.ceil(rect.bottom + padding));
+          const x = isDesktopPetOverlay
+            ? Math.floor(rect.left - padding)
+            : Math.max(0, Math.floor(rect.left - padding));
+          const y = isDesktopPetOverlay
+            ? Math.floor(rect.top - padding)
+            : Math.max(0, Math.floor(rect.top - padding));
+          const right = isDesktopPetOverlay
+            ? Math.ceil(rect.right + padding)
+            : Math.min(window.innerWidth, Math.ceil(rect.right + padding));
+          const bottom = isDesktopPetOverlay
+            ? Math.ceil(rect.bottom + padding)
+            : Math.min(window.innerHeight, Math.ceil(rect.bottom + padding));
           return { height: bottom - y, width: right - x, x, y };
         })
         .filter((region) => region.width > 0 && region.height > 0)
@@ -359,7 +435,8 @@ export function CodexPetLayer() {
       if (serialized === lastRegions) return;
       lastRegions = serialized;
       deliveredOnce = true;
-      desktop.setPetOverlayHitRegions(regions);
+      const geometry = overlayGeometryRef.current;
+      desktop.setPetOverlayHitRegions(regions, { x: geometry.originX, y: geometry.originY });
     };
     const scheduleHitRegionSync = () => {
       if (animationFrame || fallbackTimer) return;
@@ -624,6 +701,7 @@ export function CodexPetLayer() {
 
   useEffect(() => () => {
     dragState.current?.unsubscribeCursor?.();
+    dragState.current?.unsubscribeEnd?.();
     dragState.current?.cleanupGlobal?.();
     dragState.current = null;
     if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
@@ -652,16 +730,17 @@ export function CodexPetLayer() {
   };
 
   /** Tear down whatever drag is active, however we learned it ended. */
-  const finishActiveDrag = () => {
+  const finishActiveDrag = (notifyMain = true) => {
     const drag = dragState.current;
     if (!drag) return;
     suppressClick.current = drag.moved;
     drag.unsubscribeCursor?.();
+    drag.unsubscribeEnd?.();
     drag.cleanupGlobal?.();
     dragState.current = null;
     setDragging(false);
     savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
-    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+    if (isDesktopPetOverlay && notifyMain) desktop?.endPetOverlayDrag?.();
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -699,6 +778,11 @@ export function CodexPetLayer() {
         moveDragFromPointer(activeDrag, pointerX, pointerY);
       });
     }
+    if (isDesktopPetOverlay && desktop?.onPetOverlayDragEnd) {
+      drag.unsubscribeEnd = desktop.onPetOverlayDragEnd(() => {
+        if (dragState.current === drag) finishActiveDrag(false);
+      });
+    }
     if (isDesktopPetOverlay) {
       // Without capture the button may never see the pointerup, so the end of
       // the drag has independent signals: any pointerup in the window, or a
@@ -707,7 +791,6 @@ export function CodexPetLayer() {
       const onWindowPointerUp = () => finishActiveDrag();
       const onWindowPointerMove = (moveEvent: PointerEvent) => {
         if (moveEvent.buttons === 0) finishActiveDrag();
-        else if (dragState.current === drag) moveDragFromPointer(drag, moveEvent.clientX, moveEvent.clientY);
       };
       window.addEventListener("pointerup", onWindowPointerUp, true);
       window.addEventListener("pointercancel", onWindowPointerUp, true);
@@ -722,6 +805,10 @@ export function CodexPetLayer() {
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    // Overlay movement uses virtual-desktop coordinates supplied by Electron's
+    // native cursor poll. DOM client coordinates are local to the compact
+    // BrowserWindow and mixing the two coordinate spaces makes the pet jump.
+    if (isDesktopPetOverlay) return;
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
@@ -826,35 +913,52 @@ export function CodexPetLayer() {
     ),
     Math.max(PET_MARGIN, viewport.width - PET_MENU_WIDTH - PET_MARGIN)
   );
+  // A movable history panel can be far from the mascot. Keeping both in one
+  // transparent native window would stretch that surface across the distance
+  // between them and recreate the compositor cost of the old full-screen
+  // overlay. On desktop the panel temporarily takes over the compact overlay;
+  // closing it restores the pet at its unchanged saved position.
+  const showPetChrome = !isDesktopPetOverlay || !historyOpen;
 
   return (
     <>
+      <div
+        className="pointer-events-none fixed inset-0 z-[700] overflow-visible"
+      >
+      <div
+        className="pointer-events-none absolute overflow-visible"
+        style={{
+          height: viewport.height,
+          left: isDesktopPetOverlay ? -overlayGeometry.originX : 0,
+          top: isDesktopPetOverlay ? -overlayGeometry.originY : 0,
+          width: viewport.width,
+        }}
+      >
       {historyOpen && (
         <CodexPetHistoryPanel
           history={history}
           onAnswer={answerQuestion}
           onClose={() => setHistoryOpen(false)}
           onDismiss={dismissMessage}
+          onGeometryChange={requestHitRegionSync}
+          viewportHeight={viewport.height}
+          viewportWidth={viewport.width}
         />
       )}
-      <div
-        className="pointer-events-none fixed z-[700]"
-        style={{ height: petHeight, left: position.x, top: position.y, width: petGroupWidth }}
-      >
       <AnimatePresence>
-        {menuOpen && (
+        {showPetChrome && menuOpen && (
           <>
             {!isDesktopPetOverlay && (
               <button
                 aria-label={ui("Close pet menu")}
-                className="pointer-events-auto fixed inset-0 cursor-default bg-transparent"
+                className="pointer-events-auto absolute inset-0 cursor-default bg-transparent"
                 onClick={() => setMenuOpen(false)}
                 type="button"
               />
             )}
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="pointer-events-auto fixed z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
+              className="pointer-events-auto absolute z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
               data-pet-interactive="true"
@@ -956,13 +1060,13 @@ export function CodexPetLayer() {
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
-        {speech && !messagesMuted && (
+        {showPetChrome && speech && !messagesMuted && (
           <motion.div
             key={speech.id}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-atomic="true"
             aria-live="polite"
-            className="pointer-events-auto fixed z-10 flex w-[min(15rem,calc(100vw-2rem))] flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
+            className="pointer-events-auto absolute z-10 flex w-[min(15rem,calc(100vw-2rem))] flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             data-pet-interactive="true"
@@ -1033,7 +1137,12 @@ export function CodexPetLayer() {
           </motion.div>
         )}
       </AnimatePresence>
-      <button
+      {showPetChrome && (
+        <div
+          className="pointer-events-none absolute"
+          style={{ height: petHeight, left: position.x, top: position.y, width: petGroupWidth }}
+        >
+        <button
         aria-label={`Talk to ${selectedPet.displayName}`}
         className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing scale-[1.04]" : "cursor-grab hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
@@ -1060,7 +1169,10 @@ export function CodexPetLayer() {
             size={petWidth}
           />
         ))}
-      </button>
+        </button>
+        </div>
+      )}
+      </div>
       </div>
     </>
   );

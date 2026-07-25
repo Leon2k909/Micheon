@@ -26,11 +26,15 @@ type PanelPosition = {
 };
 
 type DragState = {
+  element: HTMLElement;
+  native: boolean;
   originX: number;
   originY: number;
   pointerId: number;
   startX: number;
   startY: number;
+  unsubscribeCursor?: () => void;
+  unsubscribeEnd?: () => void;
 };
 
 type HistoryContextMenu = {
@@ -67,8 +71,7 @@ function clampPanelPosition(position: PanelPosition, viewport = viewportSize()) 
   };
 }
 
-function initialPanelPosition() {
-  const viewport = viewportSize();
+function initialPanelPosition(viewport = viewportSize()) {
   const size = panelSize(viewport);
   try {
     const stored = JSON.parse(localStorage.getItem(HISTORY_POSITION_KEY) ?? "");
@@ -120,15 +123,25 @@ export function CodexPetHistoryPanel({
   onAnswer,
   onClose,
   onDismiss,
+  onGeometryChange,
+  viewportHeight,
+  viewportWidth,
 }: {
   history: CodexPetSpeech[];
   onAnswer: (messageId: string, answer: CodexPetAnswer, announce?: boolean) => void;
   onClose: () => void;
   onDismiss: (messageId: string) => void;
+  onGeometryChange?: () => void;
+  viewportHeight?: number;
+  viewportWidth?: number;
 }) {
+  const requestedViewport = {
+    height: Number.isFinite(viewportHeight) ? Number(viewportHeight) : viewportSize().height,
+    width: Number.isFinite(viewportWidth) ? Number(viewportWidth) : viewportSize().width,
+  };
   const messages = [...history].reverse();
-  const [position, setPosition] = useState(initialPanelPosition);
-  const [viewport, setViewport] = useState(viewportSize);
+  const [position, setPosition] = useState(() => initialPanelPosition(requestedViewport));
+  const [viewport, setViewport] = useState(requestedViewport);
   const [contextMenu, setContextMenu] = useState<HistoryContextMenu | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const dragState = useRef<DragState | null>(null);
@@ -144,7 +157,9 @@ export function CodexPetHistoryPanel({
 
   useEffect(() => {
     const handleResize = () => {
-      const nextViewport = viewportSize();
+      const nextViewport = Number.isFinite(viewportHeight) && Number.isFinite(viewportWidth)
+        ? { height: Number(viewportHeight), width: Number(viewportWidth) }
+        : viewportSize();
       const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
       positionRef.current = nextPosition;
       setViewport(nextViewport);
@@ -176,39 +191,97 @@ export function CodexPetHistoryPanel({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [contextMenu, onClose]);
+  }, [contextMenu, onClose, viewportHeight, viewportWidth]);
 
-  const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.button !== 0 || (event.target as Element).closest("button")) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    dragState.current = {
-      originX: positionRef.current.x,
-      originY: positionRef.current.y,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-    };
-  };
+  useEffect(() => {
+    if (!Number.isFinite(viewportHeight) || !Number.isFinite(viewportWidth)) return;
+    const nextViewport = { height: Number(viewportHeight), width: Number(viewportWidth) };
+    const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
+    positionRef.current = nextPosition;
+    setViewport(nextViewport);
+    setPosition(nextPosition);
+  }, [viewportHeight, viewportWidth]);
 
-  const movePanel = (event: ReactPointerEvent<HTMLElement>) => {
+  useEffect(() => {
+    onGeometryChange?.();
+  }, [onGeometryChange, position.x, position.y, size.height, size.width]);
+
+  useEffect(() => () => {
     const drag = dragState.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
+    drag?.unsubscribeCursor?.();
+    drag?.unsubscribeEnd?.();
+    if (drag?.native) desktop?.endPetOverlayDrag?.();
+    dragState.current = null;
+  }, []);
+
+  const movePanelFromPoint = (drag: DragState, pointerX: number, pointerY: number) => {
     const next = clampPanelPosition({
-      x: drag.originX + event.clientX - drag.startX,
-      y: drag.originY + event.clientY - drag.startY,
+      x: drag.originX + pointerX - drag.startX,
+      y: drag.originY + pointerY - drag.startY,
     }, viewport);
     positionRef.current = next;
     setPosition(next);
   };
 
+  const finishActivePanelDrag = (notifyMain = true) => {
+    const drag = dragState.current;
+    if (!drag) return;
+    try {
+      if (drag.element.hasPointerCapture(drag.pointerId)) {
+        drag.element.releasePointerCapture(drag.pointerId);
+      }
+    } catch {
+      // The compact native window may have moved while capture was active.
+    }
+    drag.unsubscribeCursor?.();
+    drag.unsubscribeEnd?.();
+    if (drag.native && notifyMain) desktop?.endPetOverlayDrag?.();
+    dragState.current = null;
+    savePanelPosition(positionRef.current);
+  };
+
+  const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || (event.target as Element).closest("button")) return;
+    const nativeDrag = desktop?.beginPetOverlayDrag?.();
+    if (nativeDrag === false || nativeDrag?.started === false) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const native = nativeDrag?.started === true;
+    const drag: DragState = {
+      element: event.currentTarget,
+      native,
+      originX: positionRef.current.x,
+      originY: positionRef.current.y,
+      pointerId: event.pointerId,
+      startX: native && Number.isFinite(nativeDrag?.x) ? nativeDrag.x : event.screenX,
+      startY: native && Number.isFinite(nativeDrag?.y) ? nativeDrag.y : event.screenY,
+    };
+    dragState.current = drag;
+    if (native && desktop?.onPetOverlayDragCursor) {
+      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: { x?: number; y?: number }) => {
+        const activeDrag = dragState.current;
+        const pointerX = Number(point?.x);
+        const pointerY = Number(point?.y);
+        if (activeDrag !== drag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
+        movePanelFromPoint(drag, pointerX, pointerY);
+      });
+    }
+    if (native && desktop?.onPetOverlayDragEnd) {
+      drag.unsubscribeEnd = desktop.onPetOverlayDragEnd(() => {
+        if (dragState.current === drag) finishActivePanelDrag(false);
+      });
+    }
+  };
+
+  const movePanel = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.native) movePanelFromPoint(drag, event.screenX, event.screenY);
+  };
+
   const finishDrag = (event: ReactPointerEvent<HTMLElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    dragState.current = null;
-    savePanelPosition(positionRef.current);
+    finishActivePanelDrag();
   };
 
   const openContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
@@ -218,10 +291,17 @@ export function CodexPetHistoryPanel({
       .closest<HTMLElement>("[data-message-text]")
       ?.dataset.messageText
       ?.trim() ?? "";
+    const panelRect = event.currentTarget.getBoundingClientRect();
     setContextMenu({
       copyValue: selectedText || messageText,
-      x: Math.max(PANEL_MARGIN, Math.min(event.clientX, viewport.width - 196)),
-      y: Math.max(PANEL_MARGIN, Math.min(event.clientY, viewport.height - 116)),
+      x: Math.max(PANEL_MARGIN, Math.min(
+        event.clientX - panelRect.left,
+        size.width - 196 - PANEL_MARGIN
+      )),
+      y: Math.max(PANEL_MARGIN, Math.min(
+        event.clientY - panelRect.top,
+        size.height - 116 - PANEL_MARGIN
+      )),
     });
   };
 
@@ -234,7 +314,7 @@ export function CodexPetHistoryPanel({
     <section
       aria-label={ui("Pet message history")}
       aria-modal="false"
-      className="pointer-events-auto fixed z-[760] flex select-text flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-1)] shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+      className="pointer-events-auto absolute z-[760] flex select-text flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-1)] shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
       onContextMenu={openContextMenu}
       role="dialog"
       style={{
@@ -354,7 +434,7 @@ export function CodexPetHistoryPanel({
 
       {contextMenu && (
         <div
-          className="fixed z-[790] w-48 select-none rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-1.5 text-xs font-bold text-[var(--text-1)] shadow-[0_14px_38px_rgba(0,0,0,0.32)]"
+          className="absolute z-[790] w-48 select-none rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-1.5 text-xs font-bold text-[var(--text-1)] shadow-[0_14px_38px_rgba(0,0,0,0.32)]"
           data-pet-interactive="true"
           onContextMenu={(event) => event.preventDefault()}
           onPointerDown={(event) => event.stopPropagation()}
