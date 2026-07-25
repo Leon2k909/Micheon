@@ -17,6 +17,7 @@ import {
   storeCodexPetKey,
   type CodexPet,
 } from "@/lib/codexPets";
+import { getCodexPetMessagesMuted } from "@/lib/codexPetMessages";
 import { setItemStatus } from "@/lib/activity";
 import {
   getAuthUser,
@@ -156,6 +157,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const speak = useCallback((text: string, options: CodexPetSpeechOptions = {}) => {
+    if (getCodexPetMessagesMuted()) return;
     const messageText = text.trim();
     if (!messageText) return;
     const message: CodexPetSpeech = {
@@ -223,6 +225,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     }) => {
       const message = payload?.message;
       if (!message || typeof message.id !== "string" || typeof message.text !== "string") return;
+      if (getCodexPetMessagesMuted()) return;
       upsertHistory(message);
       showSpeech(message, payload.options?.durationMs);
     });

@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "spriteVersionNumber": 2,
+  "upgradeMode": "preserved-existing-standard-atlas",
+  "run_dir": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run",
+  "spritesheet": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\final\\spritesheet-extended.webp",
+  "validation": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\final\\validation-extended.json",
+  "chroma_despill": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\chroma-despill-extended.json",
+  "contact_sheet": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\contact-sheet-extended.png",
+  "direction_sheet": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\look-directions.png",
+  "direction_semantics": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\direction-semantics.json",
+  "blind_direction_validation": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\direction-blind-validation.json",
+  "continuity": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\look-continuity.json",
+  "review": "C:\\Users\\leon2\\Desktop\\germ\\michelle-v2-run\\qa\\review.json",
+  "package": "C:\\Users\\leon2\\.codex\\pets\\michelle"
+}

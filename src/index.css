@@ -1505,6 +1505,7 @@ html[data-theme-preset="butter-purple"] .card {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   padding-top: 3px;
 }
+.fs-meaning-actions-centered { justify-content: center; }
 .guided-session .fs-meaning-skip {
   min-width: 116px; height: 50px; border: 1px solid var(--fs-line-strong);
   border-radius: 15px; background: rgba(255,255,255,0.02); color: var(--fs-muted);
@@ -1575,8 +1576,9 @@ html[data-theme-preset="butter-purple"] .card {
   border-color: rgba(255,140,160,0.54); background: rgba(255,140,160,0.09); color: #ff9cb0;
   box-shadow: inset 0 0 0 1px rgba(255,140,160,0.08), 0 4px 0 rgba(110,35,53,0.82);
 }
+.fs-meaning-select-result { margin-top: 20px !important; }
 .guided-session .fs-check.fs-meaning-select-continue {
-  min-width: 210px; margin-left: auto;
+  min-width: 210px; margin: 0 auto;
 }
 
 /* ── listen and pick ── */

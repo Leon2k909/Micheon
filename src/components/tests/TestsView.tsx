@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -426,6 +426,23 @@ export function TestsView({
     setAnswer("");
     setFeedback(null);
   };
+
+  useEffect(() => {
+    if (!currentQuestion || !currentCopy || feedback || !answer.trim()) return;
+    const answerMatch = currentQuestion.answerLanguage === "de"
+      ? matchGermanSentence(answer, currentCopy.target)
+      : matchEnglishPhrase(answer, currentCopy.target);
+    if (answerMatch.ok && !answerMatch.spellingNote) gradeAnswer();
+    // Grade against the current question only when the learner edits the answer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answer]);
+
+  useEffect(() => {
+    if (!feedback?.correct) return;
+    const timer = window.setTimeout(nextQuestion, 900);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedback]);
 
   const markKnown = (item: TestItem, continueTest = false) => {
     setItemStatus(item.id, "known", profile, item.aliases);

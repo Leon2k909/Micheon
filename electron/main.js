@@ -28,6 +28,12 @@ let mainWindow = null;
 let petWindow = null;
 let serverStarted = false;
 let savePetBoundsTimer = null;
+let petContentBounds = {
+  height: 104,
+  width: 96,
+  x: PET_OVERLAY_WIDTH - 96 - 24,
+  y: PET_OVERLAY_HEIGHT - 104 - 20,
+};
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port again.
@@ -53,16 +59,22 @@ function petBoundsFile() {
 }
 
 function clampPetPosition(x, y) {
-  const display = screen.getDisplayNearestPoint({ x, y });
+  const petCenter = {
+    x: Math.round(x + petContentBounds.x + petContentBounds.width / 2),
+    y: Math.round(y + petContentBounds.y + petContentBounds.height / 2),
+  };
+  const display = screen.getDisplayNearestPoint(petCenter);
   const workArea = display.workArea;
   return {
     x: Math.round(Math.min(
-      Math.max(x, workArea.x),
-      workArea.x + workArea.width - PET_OVERLAY_WIDTH
+      Math.max(x, workArea.x + PET_OVERLAY_MARGIN - petContentBounds.x),
+      workArea.x + workArea.width - PET_OVERLAY_MARGIN
+        - petContentBounds.x - petContentBounds.width
     )),
     y: Math.round(Math.min(
-      Math.max(y, workArea.y),
-      workArea.y + workArea.height - PET_OVERLAY_HEIGHT
+      Math.max(y, workArea.y + PET_OVERLAY_MARGIN - petContentBounds.y),
+      workArea.y + workArea.height - PET_OVERLAY_MARGIN
+        - petContentBounds.y - petContentBounds.height
     )),
   };
 }
@@ -273,6 +285,34 @@ ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
   );
   petWindow.setPosition(next.x, next.y);
   schedulePetBoundsSave();
+});
+
+ipcMain.on("pet-overlay:set-content-bounds", (event, bounds) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  const next = {
+    height: Number(bounds?.height),
+    width: Number(bounds?.width),
+    x: Number(bounds?.x),
+    y: Number(bounds?.y),
+  };
+  if (
+    !Number.isFinite(next.x)
+    || !Number.isFinite(next.y)
+    || !Number.isFinite(next.width)
+    || !Number.isFinite(next.height)
+    || next.width < 32
+    || next.height < 32
+    || next.width > PET_OVERLAY_WIDTH
+    || next.height > PET_OVERLAY_HEIGHT
+  ) return;
+
+  petContentBounds = next;
+  const [x, y] = petWindow.getPosition();
+  const clamped = clampPetPosition(x, y);
+  if (clamped.x !== x || clamped.y !== y) {
+    petWindow.setPosition(clamped.x, clamped.y);
+    schedulePetBoundsSave();
+  }
 });
 
 ipcMain.on("pet-overlay:speak", (event, payload) => {

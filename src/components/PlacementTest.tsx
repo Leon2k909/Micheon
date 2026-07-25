@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Languages } from "lucide-react";
 
@@ -35,9 +35,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const prompt = reverse ? current.de : current.en;
   const target = reverse ? current.en : current.de;
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const isCorrect = normalize(input) === normalize(target);
+  const recordAnswer = (isCorrect: boolean) => {
     setAnswers([...answers, isCorrect]);
     setInput("");
 
@@ -47,6 +45,17 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       setShowResult(true);
     }
   };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    recordAnswer(normalize(input) === normalize(target));
+  };
+
+  useEffect(() => {
+    if (input.trim() && normalize(input) === normalize(target)) recordAnswer(true);
+    // The answer transition intentionally owns the current question snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
 
   const calculatePlacement = () => {
     const correctCount = answers.filter(Boolean).length;

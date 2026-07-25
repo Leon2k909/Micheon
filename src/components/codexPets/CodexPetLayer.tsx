@@ -6,22 +6,30 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, History, X } from "lucide-react";
+import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+import {
+  CODEX_PET_MESSAGES_MUTED_EVENT,
+  CODEX_PET_MESSAGES_MUTED_KEY,
+  getCodexPetMessagesMuted,
+  setCodexPetMessagesMuted,
+} from "@/lib/codexPetMessages";
 import { ui } from "@/lib/i18n";
 
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
 const PET_SIZE_KEY = "gl-codex-pet-size-v1";
 const PET_MARGIN = 8;
-const PET_SIZE_PRESETS = {
-  small: 72,
-  medium: 96,
-  large: 128,
-} as const;
+const PET_SIZE_MIN = 64;
+const PET_SIZE_MAX = 192;
+const PET_SIZE_STEP = 4;
+const PET_SIZE_DEFAULT = 96;
 const PET_HEIGHT_RATIO = 104 / 96;
+const PET_MENU_WIDTH = 224;
+const PET_MENU_ESTIMATED_HEIGHT = 280;
+const PET_BUBBLE_WIDTH = 240;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const isDesktopPetOverlay = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
@@ -45,8 +53,6 @@ type PetPosition = {
   y: number;
 };
 
-type PetSize = keyof typeof PET_SIZE_PRESETS;
-
 type DragState = {
   lastScreenX: number;
   lastScreenY: number;
@@ -65,8 +71,12 @@ function viewportSize() {
   };
 }
 
-function petDimensions(size: PetSize) {
-  const width = PET_SIZE_PRESETS[size];
+function clampPetSize(size: number) {
+  return Math.min(PET_SIZE_MAX, Math.max(PET_SIZE_MIN, size));
+}
+
+function petDimensions(size: number) {
+  const width = clampPetSize(size);
   return { height: Math.round(width * PET_HEIGHT_RATIO), width };
 }
 
@@ -112,10 +122,15 @@ function savePosition(position: PetPosition) {
   localStorage.setItem(PET_POSITION_KEY, JSON.stringify(position));
 }
 
-function storedPetSize(): PetSize {
-  if (typeof window === "undefined") return "medium";
+function storedPetSize() {
+  if (typeof window === "undefined") return PET_SIZE_DEFAULT;
   const stored = localStorage.getItem(PET_SIZE_KEY);
-  return stored === "small" || stored === "large" ? stored : "medium";
+  if (stored === "small") return 72;
+  if (stored === "medium") return PET_SIZE_DEFAULT;
+  if (stored === "large") return 128;
+  if (stored === null) return PET_SIZE_DEFAULT;
+  const parsed = Number(stored);
+  return Number.isFinite(parsed) ? clampPetSize(parsed) : PET_SIZE_DEFAULT;
 }
 
 export function CodexPetLayer() {
@@ -133,7 +148,8 @@ export function CodexPetLayer() {
   const [dragging, setDragging] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [petSize, setPetSize] = useState<PetSize>(storedPetSize);
+  const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
+  const [petSize, setPetSize] = useState(storedPetSize);
   const { height: petHeight, width: petWidth } = petDimensions(petSize);
   const [playbackKey, setPlaybackKey] = useState(0);
   const [position, setPosition] = useState<PetPosition>(
@@ -153,6 +169,33 @@ export function CodexPetLayer() {
 
   positionRef.current = position;
   speechRef.current = speech;
+
+  useEffect(() => {
+    const syncMutedState = () => {
+      const muted = getCodexPetMessagesMuted();
+      setMessagesMuted(muted);
+      if (muted) clearSpeech();
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === CODEX_PET_MESSAGES_MUTED_KEY) syncMutedState();
+    };
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(CODEX_PET_MESSAGES_MUTED_EVENT, syncMutedState);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(CODEX_PET_MESSAGES_MUTED_EVENT, syncMutedState);
+    };
+  }, [clearSpeech]);
+
+  useEffect(() => {
+    if (!isDesktopPetOverlay || !desktop?.setPetOverlayContentBounds) return;
+    desktop.setPetOverlayContentBounds({
+      height: petHeight,
+      width: petWidth,
+      x: position.x,
+      y: position.y,
+    });
+  }, [petHeight, petWidth, position.x, position.y]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -178,7 +221,7 @@ export function CodexPetLayer() {
   }, [petHeight, petWidth]);
 
   useEffect(() => {
-    if (!selectedPet || !speech) return;
+    if (!selectedPet || !speech || messagesMuted) return;
     if (resetTimer.current) window.clearTimeout(resetTimer.current);
 
     const preferredAnimation = speech.mood === "encourage"
@@ -189,10 +232,10 @@ export function CodexPetLayer() {
     setAnimation(selectedPet.animations[preferredAnimation] ? preferredAnimation : "idle");
     setPlaybackKey((value) => value + 1);
     resetTimer.current = window.setTimeout(() => setAnimation("idle"), 1100);
-  }, [selectedPet, speech]);
+  }, [messagesMuted, selectedPet, speech]);
 
   useEffect(() => {
-    if (!selectedPet) return;
+    if (!selectedPet || messagesMuted) return;
     const key = `${selectedPet.source}:${selectedPet.id}`;
     if (greetedPet.current === key) return;
     greetedPet.current = key;
@@ -203,7 +246,7 @@ export function CodexPetLayer() {
       });
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [selectedPet, speak]);
+  }, [messagesMuted, selectedPet, speak]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -215,7 +258,7 @@ export function CodexPetLayer() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!selectedPet) return;
+    if (!selectedPet || messagesMuted) return;
     let tipTimer = 0;
 
     const scheduleTip = (delay: number) => {
@@ -232,7 +275,7 @@ export function CodexPetLayer() {
 
     scheduleTip(45000);
     return () => window.clearTimeout(tipTimer);
-  }, [selectedPet, speak]);
+  }, [messagesMuted, selectedPet, speak]);
 
   if (!selectedPet) return null;
 
@@ -307,7 +350,8 @@ export function CodexPetLayer() {
     setHistoryOpen(true);
   };
 
-  const applyPetSize = (nextSize: PetSize) => {
+  const applyPetSize = (requestedSize: number) => {
+    const nextSize = clampPetSize(requestedSize);
     const nextDimensions = petDimensions(nextSize);
     const nextPosition = clampPosition(
       positionRef.current,
@@ -316,11 +360,10 @@ export function CodexPetLayer() {
       nextDimensions.width,
       nextDimensions.height
     );
-    localStorage.setItem(PET_SIZE_KEY, nextSize);
+    localStorage.setItem(PET_SIZE_KEY, String(nextSize));
     positionRef.current = nextPosition;
     setPetSize(nextSize);
     setPosition(nextPosition);
-    setMenuOpen(false);
     if (!isDesktopPetOverlay) savePosition(nextPosition);
   };
 
@@ -333,18 +376,41 @@ export function CodexPetLayer() {
 
   const bubbleBelow = position.y < petHeight + 16;
   const bubbleOnRight = position.x < viewport.width / 2;
-  const bubbleVerticalClass = bubbleBelow
-    ? "top-[calc(100%+0.5rem)]"
-    : "bottom-[calc(100%+0.5rem)]";
-  const bubbleHorizontalClass = bubbleOnRight ? "left-0" : "right-0";
   const tailVerticalClass = bubbleBelow
     ? "-top-2 border-l border-t"
     : "-bottom-2 border-b border-r";
   const tailHorizontalClass = bubbleOnRight ? "left-5" : "right-5";
-  const menuVerticalClass = bubbleBelow
-    ? "top-[calc(100%+0.5rem)]"
-    : "bottom-[calc(100%+0.5rem)]";
-  const menuHorizontalClass = bubbleOnRight ? "left-0" : "right-0";
+  const bubbleLeft = Math.min(
+    Math.max(
+      PET_MARGIN,
+      bubbleOnRight ? position.x : position.x + petWidth - PET_BUBBLE_WIDTH
+    ),
+    Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
+  );
+  const bubbleEstimatedHeight = speech?.question ? 176 : 96;
+  const preferredBubbleTop = bubbleBelow
+    ? position.y + petHeight + PET_MARGIN
+    : position.y - bubbleEstimatedHeight - PET_MARGIN;
+  const bubbleTop = Math.min(
+    Math.max(PET_MARGIN, preferredBubbleTop),
+    Math.max(PET_MARGIN, viewport.height - 112 - PET_MARGIN)
+  );
+  const bubbleWasClamped = Math.abs(bubbleTop - preferredBubbleTop) > 1;
+  const bubbleMaxHeight = Math.max(112, viewport.height - bubbleTop - PET_MARGIN);
+  const preferredMenuTop = bubbleBelow
+    ? position.y + petHeight + PET_MARGIN
+    : position.y - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN;
+  const menuTop = Math.min(
+    Math.max(PET_MARGIN, preferredMenuTop),
+    Math.max(PET_MARGIN, viewport.height - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN)
+  );
+  const menuLeft = Math.min(
+    Math.max(
+      PET_MARGIN,
+      bubbleOnRight ? position.x : position.x + petWidth - PET_MENU_WIDTH
+    ),
+    Math.max(PET_MARGIN, viewport.width - PET_MENU_WIDTH - PET_MARGIN)
+  );
 
   return (
     <>
@@ -371,12 +437,17 @@ export function CodexPetLayer() {
             />
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className={`pointer-events-auto absolute ${menuVerticalClass} ${menuHorizontalClass} z-10 w-56 rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]`}
+              className="pointer-events-auto fixed z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
               onContextMenu={(event) => event.preventDefault()}
               onPointerDown={(event) => event.stopPropagation()}
               role="menu"
+              style={{
+                left: menuLeft,
+                maxHeight: viewport.height - menuTop - PET_MARGIN,
+                top: menuTop,
+              }}
               transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
@@ -393,29 +464,50 @@ export function CodexPetLayer() {
                   <X aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
-              <div
-                aria-label={ui("Pet size")}
-                className="grid grid-cols-3 gap-1.5 rounded-lg bg-[var(--surface-2)] p-1.5"
-                role="group"
-              >
-                {(Object.keys(PET_SIZE_PRESETS) as PetSize[]).map((size) => (
-                  <button
-                    aria-checked={petSize === size}
-                    className={`flex h-8 min-w-0 items-center justify-center rounded-md px-1 text-xs font-bold capitalize transition-colors ${
-                      petSize === size
-                        ? "bg-[var(--surface)] text-[var(--text-1)] shadow-[inset_0_0_0_1px_var(--border-2),0_1px_2px_rgb(0_0_0_/_0.16)]"
-                        : "text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
-                    }`}
-                    key={size}
-                    onClick={() => applyPetSize(size)}
-                    role="menuitemradio"
-                    type="button"
+              <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold">
+                  <span className="text-[var(--text-2)]">{ui("Size")}</span>
+                  <output
+                    className="tabular-nums text-[var(--text-1)]"
+                    htmlFor="codex-pet-size"
                   >
-                    {ui(size[0].toUpperCase() + size.slice(1))}
-                  </button>
-                ))}
+                    {petSize}px
+                  </output>
+                </div>
+                <input
+                  aria-label={ui("Pet size")}
+                  className="h-5 w-full cursor-pointer accent-[var(--accent)]"
+                  id="codex-pet-size"
+                  max={PET_SIZE_MAX}
+                  min={PET_SIZE_MIN}
+                  onChange={(event) => applyPetSize(Number(event.currentTarget.value))}
+                  step={PET_SIZE_STEP}
+                  type="range"
+                  value={petSize}
+                />
+                <div
+                  aria-hidden="true"
+                  className="mt-1 flex justify-between text-[10px] font-bold text-[var(--text-3)]"
+                >
+                  <span>{ui("Small")}</span>
+                  <span>{ui("Large")}</span>
+                </div>
               </div>
               <div className="my-2 h-px bg-[var(--border-1)]" />
+              <button
+                aria-checked={messagesMuted}
+                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                onClick={() => setCodexPetMessagesMuted(!messagesMuted)}
+                role="menuitemcheckbox"
+                type="button"
+              >
+                {messagesMuted ? (
+                  <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                ) : (
+                  <MessageSquareOff aria-hidden="true" className="h-4 w-4" />
+                )}
+                {ui(messagesMuted ? "Show messages & questions" : "Mute messages & questions")}
+              </button>
               <button
                 className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                 onClick={() => {
@@ -446,25 +538,30 @@ export function CodexPetLayer() {
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
-        {speech && (
+        {speech && !messagesMuted && (
           <motion.div
             key={speech.id}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-atomic="true"
             aria-live="polite"
-            className={`pointer-events-auto absolute ${bubbleVerticalClass} ${bubbleHorizontalClass} w-max max-w-[min(15rem,calc(100vw-2rem))] rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]`}
+            className="pointer-events-auto fixed z-10 flex w-max max-w-[min(15rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             onPointerDown={(event) => event.stopPropagation()}
             role={speech.question ? "group" : "status"}
+            style={{
+              left: bubbleLeft,
+              maxHeight: bubbleMaxHeight,
+              top: bubbleTop,
+            }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex items-start gap-2">
-              <p className="min-w-0 flex-1">{speech.text}</p>
+            <div className="flex min-h-0 flex-1 items-start gap-2">
+              <p className="min-w-0 flex-1 overflow-y-auto pr-1">{speech.text}</p>
               <div className="flex shrink-0 items-center gap-0.5">
                 <button
                   aria-label={ui("Open message history")}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                   onClick={() => {
                     clearSpeech();
                     setHistoryOpen(true);
@@ -476,17 +573,17 @@ export function CodexPetLayer() {
                 </button>
                 <button
                   aria-label={ui("Dismiss speech")}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--text-1)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--surface)]"
                   onClick={clearSpeech}
                   title={ui("Dismiss speech")}
                   type="button"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
             {speech.question && (
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
                 {(["yes", "no"] as const).map((answer) => {
                   const selected = speech.answer === answer;
                   return (
@@ -510,10 +607,12 @@ export function CodexPetLayer() {
                 })}
               </div>
             )}
-            <span
-              aria-hidden="true"
-              className={`absolute ${tailVerticalClass} ${tailHorizontalClass} h-4 w-4 rotate-45 border-[var(--border-2)] bg-[var(--surface)]`}
-            />
+            {!bubbleWasClamped && (
+              <span
+                aria-hidden="true"
+                className={`absolute ${tailVerticalClass} ${tailHorizontalClass} h-4 w-4 rotate-45 border-[var(--border-2)] bg-[var(--surface)]`}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

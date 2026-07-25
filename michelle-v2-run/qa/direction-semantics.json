@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "reviewed_by": "independent-final-visual-qa-worker",
+  "directions": [
+    {"direction":"000","verdict":"pass","expected":"up","observed":"up","reason":"Pupils and chin clearly point upward."},
+    {"direction":"022.5","verdict":"pass","expected":"up-right","observed":"up-right","reason":"Nose and pupils shift screen-right while the gaze remains visibly raised."},
+    {"direction":"045","verdict":"pass","expected":"up-right","observed":"up-right","reason":"Clear screen-right head turn with raised pupils."},
+    {"direction":"067.5","verdict":"warning","expected":"up-right","observed":"up-right with subtle vertical cue","reason":"Horizontal screen-right cue is clear; the upward cue is subtle but confirmed by the labeled ordered loop."},
+    {"direction":"090","verdict":"pass","expected":"right","observed":"right","reason":"Nose tip and pupils are unmistakably screen-right of head center."},
+    {"direction":"112.5","verdict":"warning","expected":"down-right","observed":"down-right with subtle vertical cue","reason":"Horizontal screen-right cue is clear; the downward cue is subtle but confirmed by the labeled ordered loop."},
+    {"direction":"135","verdict":"pass","expected":"down-right","observed":"down-right","reason":"Clear screen-right head turn with lowered gaze."},
+    {"direction":"157.5","verdict":"pass","expected":"down-right","observed":"down-right","reason":"Subtle screen-right cue combines with clearly lowered pupils and chin."},
+    {"direction":"180","verdict":"pass","expected":"down","observed":"down","reason":"Frontal head has lowered chin and pupils clearly below center."},
+    {"direction":"202.5","verdict":"pass","expected":"down-left","observed":"down-left","reason":"Subtle screen-left cue combines with a clearly lowered gaze."},
+    {"direction":"225","verdict":"pass","expected":"down-left","observed":"down-left","reason":"Clear screen-left head turn with lowered gaze."},
+    {"direction":"247.5","verdict":"pass","expected":"down-left","observed":"down-left","reason":"Strong screen-left turn combines with visible downward pitch."},
+    {"direction":"270","verdict":"pass","expected":"left","observed":"left","reason":"Nose tip and pupils are unmistakably screen-left of head center."},
+    {"direction":"292.5","verdict":"pass","expected":"up-left","observed":"up-left","reason":"Strong screen-left turn combines with visible upward gaze."},
+    {"direction":"315","verdict":"pass","expected":"up-left","observed":"up-left","reason":"Clear screen-left head turn with raised pupils and chin."},
+    {"direction":"337.5","verdict":"pass","expected":"up-left","observed":"up-left","reason":"Subtle screen-left cue combines with clearly raised pupils and chin."}
+  ],
+  "review_warnings": [
+    "Blind vertical ambiguity at 067.5 and 112.5 is accepted as an intermediate warning because labeled normal-size loop review confirms the intended quadrants.",
+    "Continuity metric outliers at 067.5->090, 247.5->270, and 337.5->000 are accepted because visual review found no snap, scale pop, identity change, or registration jump."
+  ]
+}

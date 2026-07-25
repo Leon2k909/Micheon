@@ -929,6 +929,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [missingWordChecked, setMissingWordChecked] = useState(false);
   const [orderTokens, setOrderTokens] = useState<OrderToken[]>(() => buildOrderTokens(item.de));
   const [orderChecked, setOrderChecked] = useState(false);
+  const [orderTouched, setOrderTouched] = useState(false);
   const [orderSelected, setOrderSelected] = useState<number | null>(null);
   const draggedOrderIndex = useRef<number | null>(null);
 
@@ -1133,6 +1134,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       const m = match(transcript, item.de);
       setSpeechPhraseMatch(m);
       reactToAnswer(m.ok);
+      if (m.ok) window.setTimeout(advance, 900);
     };
     const onErr = (e: unknown) => {
       if (ac.signal.aborted) return;
@@ -1218,6 +1220,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "Order") {
       setOrderTokens(buildOrderTokens(item.de));
       setOrderChecked(false);
+      setOrderTouched(false);
       setOrderSelected(null);
       draggedOrderIndex.current = null;
     }
@@ -1244,6 +1247,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       if (!option) return;
       event.preventDefault();
       setMeaningChoice(option);
+      setMeaningChecked(true);
+      const ok = choiceKey(option) === choiceKey(item.de);
+      reactToAnswer(ok);
+      if (ok) {
+        tts(item.de, 0.88, targetLang);
+        window.setTimeout(advanceOrFinish, 900);
+      }
     };
     window.addEventListener("keydown", handleChoiceKey);
     return () => window.removeEventListener("keydown", handleChoiceKey);
@@ -1253,15 +1263,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase !== "MeaningSelect") return;
     const handleChoiceKey = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
-      if (event.key === "Enter") {
-        if (meaningSelectChecked && meaningSelectCorrect) {
-          event.preventDefault();
-          advanceOrFinish();
-        } else if (!meaningSelectChecked && meaningSelectChoice) {
-          event.preventDefault();
-          setMeaningSelectChecked(true);
-          reactToAnswer(meaningSelectCorrect);
-        }
+      if (event.key === "Enter" && meaningSelectChecked && meaningSelectCorrect) {
+        event.preventDefault();
+        advanceOrFinish();
         return;
       }
       if (meaningSelectChecked) return;
@@ -1269,7 +1273,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       const option = meaningSelectChoices[optionIndex];
       if (!option) return;
       event.preventDefault();
+      const ok = choiceKey(option) === choiceKey(shownEnglish);
       setMeaningSelectChoice(option);
+      setMeaningSelectChecked(true);
+      reactToAnswer(ok);
+      if (ok) window.setTimeout(advanceOrFinish, 900);
     };
     window.addEventListener("keydown", handleChoiceKey);
     return () => window.removeEventListener("keydown", handleChoiceKey);
@@ -1314,6 +1322,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
   useEffect(() => {
+    if (
+      (phase === "Translate" || phase === "TranslateAgain")
+      && !enChecked
+      && translationAnswer.trim()
+      && enResult.ok
+      && !enResult.spellingNote
+    ) {
+      checkEnAnswer();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [translationAnswer]);
+  useEffect(() => {
     if (phase === "Gap" && !gapChecked && gapInput.trim() && gapResult.ok) checkGap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gapInput]);
@@ -1321,6 +1341,30 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "SpeakAll" && !sayChecked && sayInput.trim() && sayResult.ok && !sayResult.spellingNote) checkSay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sayInput]);
+  useEffect(() => {
+    if (phase === "Order" && orderTouched && !orderChecked && orderIsCorrect) checkOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderTokens, orderTouched]);
+  useEffect(() => {
+    if (phase === "French" && !frChecked && frInput.trim() && frResult.ok && !frResult.spellingNote) checkFrAnswer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frInput]);
+  useEffect(() => {
+    if (
+      phase === "Memory"
+      && !memDeChecked
+      && !memFrChecked
+      && memDeInput.trim()
+      && memFrInput.trim()
+      && memDeResult.ok
+      && memFrResult.ok
+      && !memDeResult.spellingNote
+      && !memFrResult.spellingNote
+    ) {
+      checkMemory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memDeInput, memFrInput]);
 
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
@@ -1383,14 +1427,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const selectMeaningAnswer = (choice: string) => {
     if (meaningChecked) return;
+    const ok = choiceKey(choice) === choiceKey(item.de);
     setMeaningChoice(choice);
-  };
-
-  const checkMeaningAnswer = () => {
-    if (!meaningChoice || meaningChecked) return;
     setMeaningChecked(true);
-    reactToAnswer(meaningCorrect);
-    if (meaningCorrect) {
+    reactToAnswer(ok);
+    if (ok) {
       tts(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
@@ -1401,10 +1442,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMeaningChecked(false);
   };
 
-  const checkMeaningSelect = () => {
-    if (!meaningSelectChoice || meaningSelectChecked) return;
+  const chooseMeaningSelectAnswer = (choice: string) => {
+    if (meaningSelectChecked) return;
+    const ok = choiceKey(choice) === choiceKey(shownEnglish);
+    setMeaningSelectChoice(choice);
     setMeaningSelectChecked(true);
-    reactToAnswer(meaningSelectCorrect);
+    reactToAnswer(ok);
+    if (ok) window.setTimeout(advanceOrFinish, 900);
   };
 
   const retryMeaningSelect = () => {
@@ -1429,15 +1473,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const selectMissingWord = (choice: string) => {
     if (missingWordChecked) return;
+    const ok = choiceKey(choice) === choiceKey(missingWord.answer);
     setMissingWordChoice(choice);
-    tts(choice, 0.78, targetLang);
-  };
-
-  const checkMissingWord = () => {
-    if (!missingWordChoice || missingWordChecked) return;
-    const ok = choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
     setMissingWordChecked(true);
     reactToAnswer(ok);
+    tts(choice, 0.78, targetLang);
     if (ok) {
       tts(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
@@ -1460,6 +1500,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const reorderToken = (from: number, to: number) => {
     setOrderTokens((tokens) => moveOrderToken(tokens, from, to));
     setOrderChecked(false);
+    setOrderTouched(true);
     setOrderSelected(null);
   };
 
@@ -1484,6 +1525,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const retryOrder = () => {
     setOrderTokens(buildOrderTokens(item.de));
     setOrderChecked(false);
+    setOrderTouched(false);
     setOrderSelected(null);
   };
 
@@ -1882,7 +1924,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
 
-            {meaningChecked && !meaningCorrect ? (
+            {meaningChecked && meaningCorrect ? null : meaningChecked ? (
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -1902,23 +1944,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </Button>
               </div>
             ) : (
-              <div className="fs-meaning-actions">
+              <div className="fs-meaning-actions fs-meaning-actions-centered">
                 <button type="button" onClick={advance} className="fs-meaning-skip">
                   {ui("Skip")}
-                </button>
-                <button
-                  type="button"
-                  onClick={checkMeaningAnswer}
-                  disabled={!meaningChoice || meaningChecked}
-                  className="fs-check fs-meaning-check"
-                >
-                  <span className="fs-check-label">{ui("Check")}</span>
-                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             )}
             <div className="fs-hint">
-              <kbd>1-3</kbd> {ui("Choose an answer, then press Enter.")}
+              <kbd>1-3</kbd> {ui("Choose an answer.")}
             </div>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
               {ui("← Back")}
@@ -1936,7 +1969,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             className="space-y-4"
           >
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {ui("Choose the correct meaning, then check your answer.")}
+              {ui("Choose the correct meaning.")}
             </p>
             <div className="fs-meaning-select-list" role="radiogroup" aria-label={ui("Meaning choices")}>
               {meaningSelectChoices.map((choice, choiceIndex) => {
@@ -1949,7 +1982,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     role="radio"
                     aria-checked={isSelected}
                     disabled={meaningSelectChecked}
-                    onClick={() => setMeaningSelectChoice(choice)}
+                    onClick={() => chooseMeaningSelectAnswer(choice)}
                     className={cn(
                       "fs-meaning-select-choice",
                       isSelected && "is-selected",
@@ -1977,7 +2010,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={cn("fs-result", meaningSelectCorrect ? "is-good" : "is-bad")}
+                  className={cn("fs-result fs-meaning-select-result", meaningSelectCorrect ? "is-good" : "is-bad")}
                   aria-live="polite"
                 >
                   <strong>{ui(meaningSelectCorrect ? "Excellent!" : "Not quite")}</strong>
@@ -1990,16 +2023,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
 
-            {meaningSelectChecked && meaningSelectCorrect ? (
-              <button
-                type="button"
-                onClick={advanceOrFinish}
-                className="fs-check fs-meaning-select-continue"
-              >
-                <span className="fs-check-label">{ui("Continue")}</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            ) : meaningSelectChecked ? (
+            {meaningSelectChecked && meaningSelectCorrect ? null : meaningSelectChecked ? (
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -2019,24 +2043,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </Button>
               </div>
             ) : (
-              <div className="fs-meaning-actions">
+              <div className="fs-meaning-actions fs-meaning-actions-centered">
                 <button type="button" onClick={advance} className="fs-meaning-skip">
                   {ui("Skip")}
-                </button>
-                <button
-                  type="button"
-                  onClick={checkMeaningSelect}
-                  disabled={!meaningSelectChoice}
-                  aria-label={ui("Check answer")}
-                  className="fs-check fs-meaning-check fs-meaning-select-check"
-                >
-                  <span className="fs-check-label">{ui("Check")}</span>
-                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             )}
             <div className="fs-hint">
-              <kbd>1-3</kbd> {ui("Choose an answer, then press Enter.")}
+              <kbd>1-3</kbd> {ui("Choose an answer.")}
             </div>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
               {ui("← Back")}
@@ -2180,18 +2194,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
 
-            {!missingWordChecked && (
-              <button
-                type="button"
-                className="fs-check fs-missing-check"
-                onClick={checkMissingWord}
-                disabled={!missingWordChoice}
-                aria-label={ui("Check missing word")}
-              >
-                <span className="fs-check-label">{ui("Check")}</span>
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            )}
             {!missingWordCorrect && missingWordChecked && (
               <Button
                 type="button"
@@ -2992,6 +2994,11 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
     setGrade(null);
   };
 
+  useEffect(() => {
+    if (!checked && input.trim() && result.ok && !result.spellingNote) checkLine();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
+
   const lineGradeId = line?.id ?? `dialogue-${dialogue?.title ?? "line"}-${lineIdx}-${line?.de ?? ""}`;
   const markKnown = () => {
     setGrade("know");
@@ -3195,7 +3202,9 @@ function RegisterCheck({ question, onAnswer, onNext }: any) {
   const choose = (i: number) => {
     if (answered) return;
     setPicked(i);
-    onAnswer?.(question.id, i === question.answer);
+    const isCorrect = i === question.answer;
+    onAnswer?.(question.id, isCorrect);
+    if (isCorrect) window.setTimeout(onNext, 1200);
   };
 
   return (
@@ -3242,9 +3251,11 @@ function RegisterCheck({ question, onAnswer, onNext }: any) {
             {correct ? ui("That's it.") : ui("Worth knowing:")}
           </p>
           <p className="text-sm leading-relaxed text-zinc-600">{question.explain}</p>
-          <Button onClick={onNext} className="h-12 w-full rounded-lg text-sm font-semibold">
-            {ui("Got it")} <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          {!correct && (
+            <Button onClick={onNext} className="h-12 w-full rounded-lg text-sm font-semibold">
+              {ui("Got it")} <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </motion.div>
       )}
     </div>
@@ -3862,6 +3873,7 @@ function SessionMatchingPairs({
 
 export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak } = useCodexPets();
+  const reduceMotion = useReducedMotion() || effectsReduced();
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -4082,14 +4094,26 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         {praise && (
           <motion.div
             key={praise.id}
-            initial={{ opacity: 0, y: 10, scale: 0.6 }}
-            animate={{ opacity: 1, y: -44, scale: 1 }}
-            exit={{ opacity: 0, y: -70 }}
-            transition={{ duration: 1.3, ease: "easeOut" }}
-            className="pointer-events-none absolute left-1/2 top-1/3 z-40 inline-flex -translate-x-1/2 items-center gap-2 text-3xl font-black text-[var(--accent)] drop-shadow-[0_2px_10px_rgba(120,52,247,0.4)]"
+            initial={reduceMotion
+              ? { opacity: 0, x: "-50%" }
+              : { opacity: 0, x: "-50%", scale: 0.94 }}
+            animate={{ opacity: 1, x: "-50%", scale: 1 }}
+            exit={reduceMotion
+              ? { opacity: 0, x: "-50%" }
+              : { opacity: 0, x: "-50%", scale: 0.98 }}
+            transition={reduceMotion
+              ? { duration: 0.12 }
+              : { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+            className="pointer-events-none absolute left-1/2 top-[22%] z-40 inline-flex min-w-[190px] items-center gap-3 rounded-[14px] border border-[var(--accent)]/40 bg-[var(--surface)] px-4 py-3 text-[var(--text-1)] shadow-[0_18px_48px_var(--shadow)]"
+            role="status"
           >
-            <Flame className="h-7 w-7 fill-current" strokeWidth={2.5} />
-            {praise.text}
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-[var(--accent)] text-white shadow-[0_6px_18px_var(--shadow)]">
+              <Flame className="h-5 w-5 fill-current" strokeWidth={2.5} />
+            </span>
+            <span className="flex flex-col">
+              <span className="text-[10px] font-black uppercase text-[var(--accent)]">{ui("Combo")}</span>
+              <strong className="text-lg font-black leading-tight">{praise.text}</strong>
+            </span>
           </motion.div>
         )}
       </AnimatePresence>

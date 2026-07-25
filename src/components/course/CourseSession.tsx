@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Code2, RotateCcw, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -168,6 +168,11 @@ function CodeStepView({
     if (result.ok) setTimeout(onPass, 700);
   };
 
+  useEffect(() => {
+    if (value.trim() && !checked && result.ok) handleCheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, result.ok]);
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-3xl space-y-4">
       <div className="flex items-center gap-3 rounded-2xl bg-[var(--surface-2)] px-4 py-3">
@@ -247,7 +252,7 @@ function CodeStepView({
               <button type="button" onClick={() => { onChange(""); setChecked(false); }} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-sm font-black text-[var(--text-2)] hover:bg-[var(--surface-2)]">
                 <RotateCcw className="h-4 w-4" /> Clear
               </button>
-              <button type="button" onClick={() => onChange(target)} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)]">
+              <button type="button" onClick={() => { setChecked(false); onChange(target); }} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)]">
                 Fill answer
               </button>
               <button type="button" onClick={onPass} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-2)] hover:bg-[var(--surface-3)]">
@@ -290,6 +295,11 @@ function QuizStepView({ q, options, explanation, onNext }: { q: string; options:
   const [picked, setPicked] = useState<number | null>(null);
   const answered = picked !== null;
   const correctIdx = options.findIndex((o) => o.correct);
+  const chooseOption = (index: number) => {
+    if (answered) return;
+    setPicked(index);
+    if (options[index]?.correct) window.setTimeout(onNext, 900);
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-3xl space-y-4">
@@ -304,7 +314,7 @@ function QuizStepView({ q, options, explanation, onNext }: { q: string; options:
                 key={i}
                 type="button"
                 disabled={answered}
-                onClick={() => setPicked(i)}
+                onClick={() => chooseOption(i)}
                 className={cn(
                   "rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors",
                   showCorrect ? "border-[var(--success-border,#2d6b4f)] bg-[var(--success-bg)] text-[var(--success-text)]"
@@ -323,7 +333,7 @@ function QuizStepView({ q, options, explanation, onNext }: { q: string; options:
           </div>
         )}
       </div>
-      {answered && (
+      {answered && !options[picked]?.correct && (
         <button type="button" onClick={onNext} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
           Continue <ArrowRight className="h-4 w-4" />
         </button>

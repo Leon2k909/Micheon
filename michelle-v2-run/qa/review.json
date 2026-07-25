@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "upgrade_mode": "preserved-existing-standard-atlas",
+  "source_validation": "qa/validation-existing.json",
+  "contact_sheet": "qa/contact-sheet.png",
+  "errors": [],
+  "warnings": [],
+  "note": "The existing v1 8x9 atlas passed deterministic validation without errors or warnings; its nine standard animation rows were preserved exactly and visually reviewed on the contact sheet."
+}

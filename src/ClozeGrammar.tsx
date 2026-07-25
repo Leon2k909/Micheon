@@ -414,7 +414,7 @@ export function ClozeTab() {
           {ui("Which German word completes this sentence?")}
         </div>
         <div className="mt-0.5 text-sm font-medium text-[var(--text-2)]">
-          {ui("Type the missing German word, then check your answer.")}
+          {ui("Type the missing German word. A correct answer is accepted automatically.")}
         </div>
       </div>
 
@@ -472,7 +472,7 @@ export function ClozeTab() {
           <Button variant="outline" size="sm" className="rounded-2xl gap-1 border-zinc-200 bg-white font-bold text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950" onClick={() => setShowTip(v => !v)}>
             <Lightbulb className="h-3 w-3" /> {ui("Grammar tip")}
           </Button>
-          {checked && (
+          {checked && !correct && (
             <Button size="sm" className="rounded-2xl gap-1 bg-zinc-950 font-black text-white hover:bg-zinc-800" onClick={next}>
               {ui("Next")} <ChevronRight className="h-3 w-3" />
             </Button>

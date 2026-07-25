@@ -36,6 +36,15 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function normalizeQuizAnswer(value: string): string {
+  return value
+    .normalize("NFC")
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildGrid(
   cols: number,
   rows: number,
@@ -242,16 +251,21 @@ export default function VocabMinesweeper() {
 
   const submitAnswer = () => {
     if (!quizCell || quizResult) return;
-    const normalizeAnswer = (value: string) => value
-      .normalize("NFC")
-      .toLocaleLowerCase()
-      .replace(/[^\p{L}\p{N}\s]/gu, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    const userAns = normalizeAnswer(answer);
-    const correct = normalizeAnswer(quizCell.vocab.target) === userAns;
+    const userAns = normalizeQuizAnswer(answer);
+    const correct = normalizeQuizAnswer(quizCell.vocab.target) === userAns;
     handleQuizResult(correct);
   };
+
+  useEffect(() => {
+    if (
+      quizCell
+      && !quizResult
+      && answer.trim()
+      && normalizeQuizAnswer(answer) === normalizeQuizAnswer(quizCell.vocab.target)
+    ) {
+      handleQuizResult(true);
+    }
+  }, [answer, handleQuizResult, quizCell, quizResult]);
 
   const handleCellClick = (idx: number) => {
     if (phase !== "playing" || quizCell) return;
