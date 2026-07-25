@@ -471,6 +471,14 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
   try {
     petOverlayDragging = true;
     petOverlayDragStartRegions = [...petOverlayHitRegions];
+    // Apply the enlarged drag region NOW, synchronously, before this call
+    // returns to the renderer. The pointer has not been established over the
+    // new shape yet, so nothing can be disturbed by the change — whereas the
+    // old flow reshaped one frame INTO the drag, under an active pointer,
+    // which is the kind of SetWindowRgn-mid-gesture that can end it. It also
+    // means the renderer's first region resend computes the same inflated
+    // union and is skipped as identical rather than reshaping again.
+    flushPetOverlayDragShape();
     const point = startPetOverlayCursorTracking();
     event.returnValue = {
       started: true,
@@ -481,6 +489,10 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
     petOverlayDragging = false;
     petOverlayDragStartRegions = [];
     stopPetOverlayCursorTracking();
+    // The collar may already be applied; a failed drag must not leave it
+    // behind as an oversized invisible hit area.
+    petOverlayShapeSignature = null;
+    restorePetOverlayShape();
     console.error("[pet] unable to begin drag:", error?.message ?? error);
     event.returnValue = { reason: "native-drag-failed", started: false };
   }

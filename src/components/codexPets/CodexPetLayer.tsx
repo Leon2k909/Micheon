@@ -98,6 +98,8 @@ type DragState = {
   startX: number;
   startY: number;
   unsubscribeCursor?: () => void;
+  /** Removes the window-level end-of-drag listeners the overlay drag installs. */
+  cleanupGlobal?: () => void;
 };
 
 function viewportSize() {
@@ -622,6 +624,7 @@ export function CodexPetLayer() {
 
   useEffect(() => () => {
     dragState.current?.unsubscribeCursor?.();
+    dragState.current?.cleanupGlobal?.();
     dragState.current = null;
     if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
   }, []);
@@ -648,15 +651,35 @@ export function CodexPetLayer() {
     movePet({ x: drag.originX + deltaX, y: drag.originY + deltaY });
   };
 
+  /** Tear down whatever drag is active, however we learned it ended. */
+  const finishActiveDrag = () => {
+    const drag = dragState.current;
+    if (!drag) return;
+    suppressClick.current = drag.moved;
+    drag.unsubscribeCursor?.();
+    drag.cleanupGlobal?.();
+    dragState.current = null;
+    setDragging(false);
+    savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
+    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
     const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
     if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
-      return;
+    // Pointer capture is only used for the in-page pet. The overlay drag is
+    // driven by the main process's native cursor poll, and the drag itself
+    // keeps rewriting the window's native shape (SetWindowRgn) — which can make
+    // Windows drop an active capture. Tying the overlay drag's life to capture
+    // meant a reshape one frame into the drag ended it immediately: the pet
+    // stuck after a few pixels, i.e. "can't move the pet".
+    if (!isDesktopPetOverlay) {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        return;
+      }
     }
     const drag: DragState = {
       moved: false,
@@ -676,6 +699,25 @@ export function CodexPetLayer() {
         moveDragFromPointer(activeDrag, pointerX, pointerY);
       });
     }
+    if (isDesktopPetOverlay) {
+      // Without capture the button may never see the pointerup, so the end of
+      // the drag has independent signals: any pointerup in the window, or a
+      // pointermove reporting no buttons held — the recovery for a release
+      // that happened while the cursor was outside the window's shaped area.
+      const onWindowPointerUp = () => finishActiveDrag();
+      const onWindowPointerMove = (moveEvent: PointerEvent) => {
+        if (moveEvent.buttons === 0) finishActiveDrag();
+        else if (dragState.current === drag) moveDragFromPointer(drag, moveEvent.clientX, moveEvent.clientY);
+      };
+      window.addEventListener("pointerup", onWindowPointerUp, true);
+      window.addEventListener("pointercancel", onWindowPointerUp, true);
+      window.addEventListener("pointermove", onWindowPointerMove, true);
+      drag.cleanupGlobal = () => {
+        window.removeEventListener("pointerup", onWindowPointerUp, true);
+        window.removeEventListener("pointercancel", onWindowPointerUp, true);
+        window.removeEventListener("pointermove", onWindowPointerMove, true);
+      };
+    }
     setDragging(true);
   };
 
@@ -689,15 +731,21 @@ export function CodexPetLayer() {
   const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    suppressClick.current = drag.moved;
-    drag.unsubscribeCursor?.();
-    dragState.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    setDragging(false);
-    savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
-    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+    finishActiveDrag();
+  };
+
+  /**
+   * The reshapes the overlay drag performs can revoke pointer capture on
+   * Windows, so for the overlay a lost capture is routine noise (nothing is
+   * captured there any more anyway) — only the in-page pet treats it as the
+   * end of its drag.
+   */
+  const handleLostCapture = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (isDesktopPetOverlay) return;
+    finishDrag(event);
   };
 
   const handleClick = () => {
@@ -992,7 +1040,7 @@ export function CodexPetLayer() {
         data-pet-interactive="true"
         onClick={handleClick}
         onContextMenu={showContextMenu}
-        onLostPointerCapture={finishDrag}
+        onLostPointerCapture={handleLostCapture}
         onPointerCancel={finishDrag}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
