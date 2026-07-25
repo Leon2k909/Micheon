@@ -2,11 +2,14 @@ import { EyeOff, RefreshCw } from "lucide-react";
 
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
 import { codexPetKey } from "@/lib/codexPets";
+import type { CodexPetCoachingKind, CodexPetFrequency } from "@/lib/codexPetCoaching";
 import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
 export function CodexPetPicker() {
+  const { frequencies, setFrequency } = useCodexPetCoaching();
   const {
     error,
     isLoading,
@@ -94,11 +97,82 @@ export function CodexPetPicker() {
         })}
       </div>
 
+      <div className="mt-4 rounded-[18px] bg-[var(--surface)] p-3">
+        <p className="text-xs font-black uppercase tracking-wide text-[var(--text-2)]">
+          {ui("Pet coaching")}
+        </p>
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+          {ui("Choose how often your pet checks your memory and shares language tips.")}
+        </p>
+        <div className="mt-3 space-y-3">
+          <FrequencyControl
+            description={ui("Checks words and phrases you've already learned.")}
+            kind="questions"
+            label={ui("Review questions")}
+            onChange={setFrequency}
+            value={frequencies.questions}
+          />
+          <FrequencyControl
+            description={ui("Shares useful grammar, word-order, and vocabulary tips.")}
+            kind="tips"
+            label={ui("Language tips")}
+            onChange={setFrequency}
+            value={frequencies.tips}
+          />
+        </div>
+      </div>
+
       {!isLoading && pets.length === 0 && (
         <p className="mt-3 text-xs font-semibold text-[var(--text-3)]">
           {error ? ui(error) : ui("No mascot pets are available.")}
         </p>
       )}
     </section>
+  );
+}
+
+const FREQUENCY_OPTIONS: Array<{ label: string; value: CodexPetFrequency }> = [
+  { label: "Off", value: "off" },
+  { label: "Low", value: "low" },
+  { label: "Normal", value: "normal" },
+  { label: "High", value: "high" },
+];
+
+function FrequencyControl({
+  description,
+  kind,
+  label,
+  onChange,
+  value,
+}: {
+  description: string;
+  kind: CodexPetCoachingKind;
+  label: string;
+  onChange: (kind: CodexPetCoachingKind, frequency: CodexPetFrequency) => void;
+  value: CodexPetFrequency;
+}) {
+  return (
+    <fieldset>
+      <legend className="text-xs font-black text-[var(--text-1)]">{label}</legend>
+      <p className="mt-0.5 text-[11px] font-semibold leading-4 text-[var(--text-3)]">{description}</p>
+      <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-[var(--surface-2)] p-1">
+        {FREQUENCY_OPTIONS.map((option) => (
+          <button
+            aria-pressed={value === option.value}
+            className={cn(
+              "min-h-8 rounded-lg px-1 text-[11px] font-black transition-colors",
+              value === option.value
+                ? "bg-[var(--accent)] text-white"
+                : "text-[var(--text-3)] hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
+            )}
+            key={option.value}
+            onClick={() => onChange(kind, option.value)}
+            type="button"
+          >
+            {ui(option.label)}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }

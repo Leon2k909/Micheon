@@ -37,9 +37,11 @@ import { CourseLessonsView } from "@/components/course/CourseLessonsView";
 import { CourseDashboardView } from "@/components/course/CourseDashboardView";
 import { CourseSession } from "@/components/course/CourseSession";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
 import { getActiveCourseId, setActiveCourseId, loadCourseProgress, saveCourseProgress } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { ui, uiIsGerman } from "@/lib/i18n";
+import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
@@ -109,10 +111,12 @@ export default function GermanLearningLab() {
   const themePreferences = useAppThemePreferences();
   const {
     history: petHistory,
+    selectedKey: selectedPetKey,
     selectedPet,
     speak: petSpeak,
     speech: petSpeech,
   } = useCodexPets();
+  const { frequencies: petCoachingFrequencies } = useCodexPetCoaching();
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
@@ -141,6 +145,7 @@ export default function GermanLearningLab() {
   const petSpeechRef = React.useRef(petSpeech);
   const petHistoryRef = React.useRef(petHistory);
   const petQuizIndex = React.useRef(0);
+  const petQuizItemsRef = React.useRef<ReturnType<typeof buildCatalog>>([]);
   petSpeechRef.current = petSpeech;
   petHistoryRef.current = petHistory;
 
@@ -178,6 +183,9 @@ export default function GermanLearningLab() {
     },
     [apiParts, gradeRevision, user]
   );
+  petQuizItemsRef.current = petQuizItems;
+  const petQuizAvailable = petQuizItems.length > 0;
+  const petEnabled = Boolean(selectedPet && selectedPetKey !== "off");
 
   useEffect(() => {
     const scopedGradeKey = getScopedKey(COMPLETED_KEY, user);
@@ -194,21 +202,30 @@ export default function GermanLearningLab() {
   }, [user]);
 
   useEffect(() => {
-    if (!selectedPet || showGuidedSession || showPlacementTest || petQuizItems.length === 0) {
+    const cadence = getCodexPetCadence("questions", petCoachingFrequencies.questions);
+    if (!petEnabled || showGuidedSession || showPlacementTest || !petQuizAvailable || !cadence) {
       return undefined;
     }
 
     let questionTimer: number | undefined;
+    let active = true;
     const learnsEnglish = learningEnglish();
-    petQuizIndex.current = 0;
 
     const scheduleQuestion = (delayMs: number) => {
+      if (!active) return;
       questionTimer = window.setTimeout(askQuestion, delayMs);
     };
 
     const askQuestion = () => {
+      if (!active) return;
       if (petSpeechRef.current) {
         scheduleQuestion(15000);
+        return;
+      }
+
+      const quizItems = petQuizItemsRef.current;
+      if (quizItems.length === 0) {
+        scheduleQuestion(cadence.intervalMs);
         return;
       }
 
@@ -220,10 +237,10 @@ export default function GermanLearningLab() {
           )
           .map((message) => message.question!.itemId)
       );
-      let item: (typeof petQuizItems)[number] | undefined;
-      for (let offset = 0; offset < petQuizItems.length; offset += 1) {
-        const index = (petQuizIndex.current + offset) % petQuizItems.length;
-        const candidate = petQuizItems[index];
+      let item: (typeof quizItems)[number] | undefined;
+      for (let offset = 0; offset < quizItems.length; offset += 1) {
+        const index = (petQuizIndex.current + offset) % quizItems.length;
+        const candidate = quizItems[index];
         if (!recentlyAsked.has(candidate.id)) {
           item = candidate;
           petQuizIndex.current = index + 1;
@@ -231,7 +248,7 @@ export default function GermanLearningLab() {
         }
       }
       if (!item) {
-        scheduleQuestion(60000);
+        scheduleQuestion(cadence.intervalMs);
         return;
       }
 
@@ -249,14 +266,22 @@ export default function GermanLearningLab() {
           itemId: item.id,
         },
       });
-      scheduleQuestion(120000);
+      scheduleQuestion(cadence.intervalMs);
     };
 
-    scheduleQuestion(30000);
+    scheduleQuestion(cadence.initialDelayMs);
     return () => {
+      active = false;
       if (questionTimer) window.clearTimeout(questionTimer);
     };
-  }, [petQuizItems, petSpeak, selectedPet, showGuidedSession, showPlacementTest]);
+  }, [
+    petCoachingFrequencies.questions,
+    petEnabled,
+    petQuizAvailable,
+    petSpeak,
+    showGuidedSession,
+    showPlacementTest,
+  ]);
 
   useEffect(() => {
     const handleUpdate = () => {

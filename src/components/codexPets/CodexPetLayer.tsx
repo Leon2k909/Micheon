@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
+import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
 import {
   CodexPetSprite,
   type CodexPetVisibleBounds,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/codexPetMessages";
 import { learningEnglish } from "@/lib/direction";
 import { ui } from "@/lib/i18n";
+import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
 const DESKTOP_PET_POSITION_KEY = "gl-codex-pet-desktop-position-v2";
@@ -249,11 +251,14 @@ export function CodexPetLayer() {
     history,
     pets,
     selectPet,
+    selectedKey,
     selectedPet,
     speak,
     speech,
     visibleKeys,
   } = useCodexPets();
+  const { frequencies: petCoachingFrequencies } = useCodexPetCoaching();
+  const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const visiblePets = selectedPet
     ? [
         selectedPet,
@@ -697,25 +702,32 @@ export function CodexPetLayer() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!selectedPet || messagesMuted) return;
+    const cadence = getCodexPetCadence("tips", petCoachingFrequencies.tips);
+    if (!petEnabled || messagesMuted || !cadence) return;
     let tipTimer = 0;
+    let active = true;
     const languageTips = learningEnglish() ? ENGLISH_PET_TIPS : GERMAN_PET_TIPS;
 
     const scheduleTip = (delay: number) => {
+      if (!active) return;
       tipTimer = window.setTimeout(() => {
+        if (!active) return;
         if (document.visibilityState === "visible" && !speechRef.current && !dragState.current) {
           speak(ui(languageTips[tipIndex.current++ % languageTips.length]), {
             durationMs: 4800,
             mood: "greeting",
           });
         }
-        scheduleTip(60000);
+        scheduleTip(cadence.intervalMs);
       }, delay);
     };
 
-    scheduleTip(45000);
-    return () => window.clearTimeout(tipTimer);
-  }, [messagesMuted, selectedPet, speak]);
+    scheduleTip(cadence.initialDelayMs);
+    return () => {
+      active = false;
+      window.clearTimeout(tipTimer);
+    };
+  }, [messagesMuted, petCoachingFrequencies.tips, petEnabled, speak]);
 
   useEffect(() => () => {
     if (dragState.current?.cursorFrame !== undefined) {
