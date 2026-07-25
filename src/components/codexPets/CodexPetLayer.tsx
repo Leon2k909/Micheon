@@ -250,6 +250,8 @@ export function CodexPetLayer() {
   const greetedPet = useRef("");
   const greetingIndex = useRef(0);
   const overlayInteractive = useRef<boolean | null>(null);
+  /** Set by the hit-region effect so state changes can request a re-sync. */
+  const hitRegionSyncRef = useRef<(() => void) | null>(null);
   const positionRef = useRef(position);
   const speechRef = useRef(speech);
   const suppressClick = useRef(false);
@@ -342,20 +344,37 @@ export function CodexPetLayer() {
     };
     const observer = new MutationObserver(scheduleHitRegionSync);
 
+    // Watch only for elements appearing and disappearing (menus, dialogs, the
+    // speech bubble). Attributes are deliberately NOT observed: the sprite
+    // animates by rewriting its inline style.backgroundPosition on every frame,
+    // so an attribute observer here fired at the animation frame rate and made
+    // each frame pay for a querySelectorAll, a forced layout via
+    // getBoundingClientRect, a JSON.stringify and — whenever the pet was moving —
+    // a native setShape call on the overlay window. That is what made the pet
+    // lag the whole app and made drags stutter.
+    //
+    // Everything that genuinely changes the interactive geometry is React state,
+    // so the effect below re-syncs from that instead.
     observer.observe(document.body, {
-      attributeFilter: ["class", "style"],
-      attributes: true,
+      attributes: false,
       childList: true,
       subtree: true,
     });
     window.addEventListener("resize", scheduleHitRegionSync);
     scheduleHitRegionSync();
+    hitRegionSyncRef.current = scheduleHitRegionSync;
     return () => {
+      hitRegionSyncRef.current = null;
       observer.disconnect();
       window.removeEventListener("resize", scheduleHitRegionSync);
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
     };
   }, []);
+
+  // The geometry that matters changes with these, not with sprite frames.
+  useEffect(() => {
+    hitRegionSyncRef.current?.();
+  }, [position, petSize, visiblePets.length, menuOpen, historyOpen, dragging, speech]);
 
   useEffect(() => {
     const syncMutedState = () => {

@@ -16,12 +16,16 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    // "Bundler" matches how Vite actually resolves. The old "Node" (node10)
+    // setting has been REMOVED in TS 6, not merely deprecated, so it aborted
+    // the whole run — see the note on ignoreDeprecations above.
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
+    // No baseUrl: it has been removed too. Path mappings without one resolve
+    // relative to this file, which is what the "./src/*" below already assumed.
     "paths": {
       "@/*": ["./src/*"]
     }

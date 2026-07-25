@@ -27,6 +27,10 @@ let petOverlayDragging = false;
 let petOverlayDragTimer = null;
 let petOverlayDragStartRegions = [];
 let petOverlayHitRegions = [];
+/** Geometry of the shape currently applied, so identical updates are skipped. */
+let petOverlayShapeSignature = null;
+let petOverlayDragShapeTimer = null;
+let petOverlayDragShapeAt = 0;
 let serverStarted = false;
 
 // Only allow one instance — a second launch focuses the existing window instead
@@ -78,6 +82,9 @@ function syncPetOverlayBounds() {
     || current.height !== next.height
   ) {
     petWindow.setBounds(next, false);
+    // Resizing the window can drop the native region, so never let the
+    // skip-identical check above suppress the re-apply.
+    petOverlayShapeSignature = null;
     if (petOverlayDragging) applyPetOverlayDragShape();
     else restorePetOverlayShape();
   }
@@ -85,12 +92,20 @@ function syncPetOverlayBounds() {
 
 function applyPetOverlayShape(regions, preserveOnFailure = false) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return false;
+  // setShape is a native SetWindowRgn on Windows and is far too expensive to
+  // call at frame rate. Skipping an identical shape costs one string compare
+  // and removes nearly all of the calls, because a moving pet re-sends the same
+  // geometry whenever it settles.
+  const signature = JSON.stringify(regions);
+  if (signature === petOverlayShapeSignature) return true;
   try {
     petWindow.setShape(regions);
+    petOverlayShapeSignature = signature;
     petOverlayUsesShape = true;
     petWindow.setIgnoreMouseEvents(false);
     return true;
   } catch (error) {
+    petOverlayShapeSignature = null;
     if (!preserveOnFailure) {
       petOverlayUsesShape = false;
       petWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -100,8 +115,59 @@ function applyPetOverlayShape(regions, preserveOnFailure = false) {
   }
 }
 
+// While dragging, the pet moves with the native cursor poll rather than with
+// DOM pointer events, so the native region only has to stay under the cursor
+// well enough for the final mouse-up to land on the pet. Re-shaping on every
+// 16ms tick meant up to 60 SetWindowRgn calls a second on top of everything
+// else the drag was doing; coalescing to ~40ms keeps the region close enough
+// (regions carry 18px of padding) and leaves the main process responsive.
+const PET_DRAG_SHAPE_INTERVAL_MS = 40;
+
 function applyPetOverlayDragShape() {
-  const regions = [...petOverlayDragStartRegions, ...petOverlayHitRegions];
+  if (petOverlayDragShapeTimer) return;
+  const elapsed = Date.now() - petOverlayDragShapeAt;
+  if (elapsed >= PET_DRAG_SHAPE_INTERVAL_MS) {
+    flushPetOverlayDragShape();
+    return;
+  }
+  // Always schedule the trailing apply, so the region ends the drag matching
+  // where the pet actually stopped rather than one tick behind it.
+  petOverlayDragShapeTimer = setTimeout(
+    flushPetOverlayDragShape,
+    PET_DRAG_SHAPE_INTERVAL_MS - elapsed
+  );
+  petOverlayDragShapeTimer.unref?.();
+}
+
+// Grown around the pet only while dragging. The shape is what decides whether
+// the overlay receives mouse input at all, so if the cursor gets ahead of it the
+// window stops seeing events — including the mouse-up that ends the drag. The
+// pet then stays welded to the cursor and the next click does nothing, which is
+// what "can't move them sometimes" looks like from the outside. A wide collar
+// costs nothing (those pixels are transparent) and makes the cursor escaping
+// between two shape updates effectively impossible.
+const PET_DRAG_HIT_MARGIN = 220;
+
+function inflateRegion(region, margin, bounds) {
+  const x = Math.max(0, region.x - margin);
+  const y = Math.max(0, region.y - margin);
+  const right = Math.min(bounds.width, region.x + region.width + margin);
+  const bottom = Math.min(bounds.height, region.y + region.height + margin);
+  if (right <= x || bottom <= y) return null;
+  return { x, y, width: right - x, height: bottom - y };
+}
+
+function flushPetOverlayDragShape() {
+  if (petOverlayDragShapeTimer) {
+    clearTimeout(petOverlayDragShapeTimer);
+    petOverlayDragShapeTimer = null;
+  }
+  if (!petOverlayDragging || !petWindow || petWindow.isDestroyed()) return;
+  petOverlayDragShapeAt = Date.now();
+  const bounds = petWindow.getBounds();
+  const regions = [...petOverlayDragStartRegions, ...petOverlayHitRegions]
+    .map((region) => inflateRegion(region, PET_DRAG_HIT_MARGIN, bounds))
+    .filter(Boolean);
   if (regions.length > 0) applyPetOverlayShape(regions, true);
 }
 
@@ -145,9 +211,17 @@ function startPetOverlayCursorTracking() {
 
 function finishPetOverlayDrag() {
   stopPetOverlayCursorTracking();
+  if (petOverlayDragShapeTimer) {
+    clearTimeout(petOverlayDragShapeTimer);
+    petOverlayDragShapeTimer = null;
+  }
   if (!petOverlayDragging) return;
   petOverlayDragging = false;
   petOverlayDragStartRegions = [];
+  // The drag shape was the union of where the pet started and where it is now.
+  // Collapsing back to just the pet is a real change, so it must not be skipped
+  // by the identical-geometry check if the pet happened to end where it began.
+  petOverlayShapeSignature = null;
   restorePetOverlayShape();
 }
 
@@ -192,6 +266,7 @@ function createPetOverlayWindow() {
     petOverlayDragging = false;
     petOverlayDragStartRegions = [];
     petOverlayHitRegions = [];
+    petOverlayShapeSignature = null;
   });
   petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   return petWindow;

@@ -389,11 +389,22 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     [pets, selectedKey]
   );
 
+  // Re-show the overlay only when the user's choice actually changes.
+  //
+  // This used to fire on every [isLoading, selectedPet] change. refresh() runs
+  // on every window focus and rebuilds the pet list, so selectedPet became a new
+  // object identity each time and the effect re-asserted "visible" — which
+  // un-hid a pet the user had just closed from the overlay's own menu, as soon
+  // as they clicked back on the main window. Comparing the key means a re-fetch
+  // that resolves to the same pet no longer counts as a change.
+  const pushedOverlayVisible = useRef<boolean | null>(null);
   useEffect(() => {
-    if (desktop && !isDesktopPetOverlay && !isLoading) {
-      desktop.setPetOverlayVisible(Boolean(selectedPet));
-    }
-  }, [isLoading, selectedPet]);
+    if (!desktop || isDesktopPetOverlay || isLoading) return;
+    const shouldShow = Boolean(selectedPet);
+    if (pushedOverlayVisible.current === shouldShow) return;
+    pushedOverlayVisible.current = shouldShow;
+    desktop.setPetOverlayVisible(shouldShow);
+  }, [isLoading, selectedKey, Boolean(selectedPet)]);
 
   const value = useMemo<CodexPetContextValue>(
     () => ({
