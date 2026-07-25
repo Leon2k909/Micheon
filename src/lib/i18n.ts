@@ -806,6 +806,7 @@ const DE: Record<string, string> = {
   "Permanent": "Dauerhaft",
   "Deselect all": "Alle abwählen",
   "Select all": "Alle auswählen",
+  "Copy": "Kopieren",
   "shown": "angezeigten",
   "Search German or English…": "Deutsch oder Englisch durchsuchen…",
   "selected": "ausgewählt",

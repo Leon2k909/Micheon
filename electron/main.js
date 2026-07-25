@@ -242,6 +242,13 @@ ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
   petWindow.setIgnoreMouseEvents(!interactive, { forward: true });
 });
 
+ipcMain.on("pet-overlay:set-keyboard-interactive", (event, interactive) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  const enabled = Boolean(interactive);
+  petWindow.setFocusable(enabled);
+  if (enabled) petWindow.focus();
+});
+
 ipcMain.on("pet-overlay:wheel", (event, deltaX, deltaY) => {
   if (!eventCameFrom(event, petWindow) || !mainWindow || mainWindow.isDestroyed()) return;
   const dx = Number(deltaX);

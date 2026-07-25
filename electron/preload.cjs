@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld("germDesktop", {
   installUpdate: () => ipcRenderer.send("update:install-now"),
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
   setPetOverlayInteractive: (interactive) => ipcRenderer.send("pet-overlay:set-interactive", Boolean(interactive)),
+  setPetOverlayKeyboardInteractive: (interactive) =>
+    ipcRenderer.send("pet-overlay:set-keyboard-interactive", Boolean(interactive)),
   relayPetOverlayWheel: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:wheel", deltaX, deltaY),
   onPetOverlayWheel: (cb) => {
     const handler = (_e, deltaX, deltaY) => cb(deltaX, deltaY);

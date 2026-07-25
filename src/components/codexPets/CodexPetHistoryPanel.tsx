@@ -1,4 +1,11 @@
-import { Check, Clock3, MessageCircle, X } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { Check, Clock3, Copy, MessageCircle, TextSelect, X } from "lucide-react";
 
 import type {
   CodexPetAnswer,
@@ -6,6 +13,107 @@ import type {
 } from "@/components/codexPets/CodexPetProvider";
 import { cn } from "@/lib/utils";
 import { ui, uiLocale } from "@/lib/i18n";
+
+const HISTORY_POSITION_KEY = "gl-codex-pet-history-position-v1";
+const PANEL_MARGIN = 8;
+const PANEL_MAX_HEIGHT = 560;
+const PANEL_MAX_WIDTH = 620;
+const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
+
+type PanelPosition = {
+  x: number;
+  y: number;
+};
+
+type DragState = {
+  originX: number;
+  originY: number;
+  pointerId: number;
+  startX: number;
+  startY: number;
+};
+
+type HistoryContextMenu = {
+  copyValue: string;
+  x: number;
+  y: number;
+};
+
+function viewportSize() {
+  return {
+    height: typeof window === "undefined" ? 720 : window.innerHeight,
+    width: typeof window === "undefined" ? 1280 : window.innerWidth,
+  };
+}
+
+function panelSize(viewport = viewportSize()) {
+  return {
+    height: Math.min(PANEL_MAX_HEIGHT, Math.max(240, viewport.height - PANEL_MARGIN * 2)),
+    width: Math.min(PANEL_MAX_WIDTH, Math.max(280, viewport.width - PANEL_MARGIN * 2)),
+  };
+}
+
+function clampPanelPosition(position: PanelPosition, viewport = viewportSize()) {
+  const size = panelSize(viewport);
+  return {
+    x: Math.min(
+      Math.max(PANEL_MARGIN, position.x),
+      Math.max(PANEL_MARGIN, viewport.width - size.width - PANEL_MARGIN)
+    ),
+    y: Math.min(
+      Math.max(PANEL_MARGIN, position.y),
+      Math.max(PANEL_MARGIN, viewport.height - size.height - PANEL_MARGIN)
+    ),
+  };
+}
+
+function initialPanelPosition() {
+  const viewport = viewportSize();
+  const size = panelSize(viewport);
+  try {
+    const stored = JSON.parse(localStorage.getItem(HISTORY_POSITION_KEY) ?? "");
+    if (Number.isFinite(stored?.x) && Number.isFinite(stored?.y)) {
+      return clampPanelPosition(stored, viewport);
+    }
+  } catch {
+    // Invalid stored coordinates fall back to the centre of the screen.
+  }
+  return clampPanelPosition({
+    x: Math.round((viewport.width - size.width) / 2),
+    y: Math.round((viewport.height - size.height) / 2),
+  }, viewport);
+}
+
+function savePanelPosition(position: PanelPosition) {
+  localStorage.setItem(HISTORY_POSITION_KEY, JSON.stringify(position));
+}
+
+async function writeClipboard(text: string) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    // Use the legacy copy command when clipboard permissions are unavailable.
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+
+function selectContents(element: HTMLElement | null) {
+  if (!element) return;
+  const selection = window.getSelection();
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
 
 export function CodexPetHistoryPanel({
   history,
@@ -19,15 +127,131 @@ export function CodexPetHistoryPanel({
   onDismiss: (messageId: string) => void;
 }) {
   const messages = [...history].reverse();
+  const [position, setPosition] = useState(initialPanelPosition);
+  const [viewport, setViewport] = useState(viewportSize);
+  const [contextMenu, setContextMenu] = useState<HistoryContextMenu | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const dragState = useRef<DragState | null>(null);
+  const positionRef = useRef(position);
+  positionRef.current = position;
+  const size = panelSize(viewport);
+
+  useEffect(() => {
+    if (!desktop?.setPetOverlayKeyboardInteractive) return undefined;
+    desktop.setPetOverlayKeyboardInteractive(true);
+    return () => desktop.setPetOverlayKeyboardInteractive(false);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const nextViewport = viewportSize();
+      const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
+      positionRef.current = nextPosition;
+      setViewport(nextViewport);
+      setPosition(nextPosition);
+      savePanelPosition(nextPosition);
+      setContextMenu(null);
+    };
+    const handlePointerDown = () => setContextMenu(null);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey)
+        && event.key.toLowerCase() === "a"
+        && !(event.target as Element | null)?.closest("input, textarea")
+      ) {
+        event.preventDefault();
+        selectContents(contentRef.current);
+        setContextMenu(null);
+        return;
+      }
+      if (event.key !== "Escape") return;
+      if (contextMenu) setContextMenu(null);
+      else onClose();
+    };
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [contextMenu, onClose]);
+
+  const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || (event.target as Element).closest("button")) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragState.current = {
+      originX: positionRef.current.x,
+      originY: positionRef.current.y,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  };
+
+  const movePanel = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const next = clampPanelPosition({
+      x: drag.originX + event.clientX - drag.startX,
+      y: drag.originY + event.clientY - drag.startY,
+    }, viewport);
+    positionRef.current = next;
+    setPosition(next);
+  };
+
+  const finishDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragState.current = null;
+    savePanelPosition(positionRef.current);
+  };
+
+  const openContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    const selectedText = window.getSelection()?.toString().trim() ?? "";
+    const messageText = (event.target as Element)
+      .closest<HTMLElement>("[data-message-text]")
+      ?.dataset.messageText
+      ?.trim() ?? "";
+    setContextMenu({
+      copyValue: selectedText || messageText,
+      x: Math.max(PANEL_MARGIN, Math.min(event.clientX, viewport.width - 196)),
+      y: Math.max(PANEL_MARGIN, Math.min(event.clientY, viewport.height - 116)),
+    });
+  };
+
+  const selectAllMessages = () => {
+    selectContents(contentRef.current);
+    setContextMenu(null);
+  };
 
   return (
     <section
       aria-label={ui("Pet message history")}
-      aria-modal="true"
-      className="pointer-events-auto fixed inset-2 z-[760] flex flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-1)] shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+      aria-modal="false"
+      className="pointer-events-auto fixed z-[760] flex select-text flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-1)] shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+      onContextMenu={openContextMenu}
       role="dialog"
+      style={{
+        height: size.height,
+        left: position.x,
+        top: position.y,
+        width: size.width,
+      }}
     >
-      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+      <header
+        className="flex shrink-0 cursor-move touch-none select-none items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3"
+        onPointerCancel={finishDrag}
+        onPointerDown={startDrag}
+        onPointerMove={movePanel}
+        onPointerUp={finishDrag}
+        title={ui("Drag")}
+      >
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-dim)] text-[var(--accent)]">
             <MessageCircle className="h-4 w-4" />
@@ -49,7 +273,7 @@ export function CodexPetHistoryPanel({
         </button>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3" ref={contentRef}>
         {messages.length > 0 ? (
           <div className="grid gap-2.5">
             {messages.map((message) => (
@@ -60,6 +284,7 @@ export function CodexPetHistoryPanel({
                     ? "border-[var(--accent)]/25 bg-[var(--accent-dim)]/55"
                     : "border-[var(--border)] bg-[var(--surface-2)]"
                 )}
+                data-message-text={message.text}
                 key={message.id}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -126,6 +351,42 @@ export function CodexPetHistoryPanel({
           </div>
         )}
       </div>
+
+      {contextMenu && (
+        <div
+          className="fixed z-[790] w-48 select-none rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-1.5 text-xs font-bold text-[var(--text-1)] shadow-[0_14px_38px_rgba(0,0,0,0.32)]"
+          data-pet-interactive="true"
+          onContextMenu={(event) => event.preventDefault()}
+          onPointerDown={(event) => event.stopPropagation()}
+          role="menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
+          <button
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-left transition-colors hover:bg-[var(--surface-2)] disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!contextMenu.copyValue}
+            onClick={() => {
+              void writeClipboard(contextMenu.copyValue);
+              setContextMenu(null);
+            }}
+            role="menuitem"
+            type="button"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            {ui("Copy")}
+            <span className="ml-auto text-[10px] text-[var(--text-3)]">Ctrl+C</span>
+          </button>
+          <button
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-left transition-colors hover:bg-[var(--surface-2)]"
+            onClick={selectAllMessages}
+            role="menuitem"
+            type="button"
+          >
+            <TextSelect className="h-3.5 w-3.5" />
+            {ui("Select all")}
+            <span className="ml-auto text-[10px] text-[var(--text-3)]">Ctrl+A</span>
+          </button>
+        </div>
+      )}
     </section>
   );
 }
