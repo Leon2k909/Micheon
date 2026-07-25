@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronRight,
   ClipboardCheck,
+  FileText,
   Flame,
   Headphones,
   Languages,
@@ -36,6 +37,8 @@ type TestPresetId =
   | "hard-vocabulary"
   | "everyday-phrases"
   | "hard-phrases"
+  | "everyday-paragraphs"
+  | "advanced-paragraphs"
   | "mixed"
   | "weak-spots";
 
@@ -47,7 +50,7 @@ type TestItem = {
   aliases?: string[];
   de: string;
   en: string;
-  kind: "vocabulary" | "phrase";
+  kind: "vocabulary" | "phrase" | "paragraph";
   level: string;
   topic: string;
   hard: boolean;
@@ -80,6 +83,249 @@ type TestPreset = {
 };
 
 const TEST_LENGTHS = [10, 20, 30] as const;
+
+const PARAGRAPH_TEST_ITEMS = [
+  {
+    id: "test-paragraph-easy-morning",
+    de: "Ich stehe normalerweise um sieben Uhr auf und mache mir eine Tasse Tee. Danach dusche ich, ziehe mich an und prüfe meinen Kalender, bevor ich mit der Arbeit beginne.",
+    en: "I usually get up at seven and make myself a cup of tea. Afterwards, I shower, get dressed, and check my calendar before I start work.",
+    level: "A2-B1",
+    topic: "Daily routine",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-weekend",
+    de: "Am Wochenende besuchen wir oft meine Eltern. Wenn das Wetter schön ist, essen wir im Garten und gehen später mit dem Hund spazieren.",
+    en: "At the weekend, we often visit my parents. If the weather is nice, we eat in the garden and later take the dog for a walk.",
+    level: "A2-B1",
+    topic: "Family and weekends",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-train",
+    de: "Mein Zug hatte heute Morgen zwanzig Minuten Verspätung. Ich schrieb meiner Kollegin eine Nachricht, damit sie wusste, dass ich etwas später ankommen würde.",
+    en: "My train was twenty minutes late this morning. I sent my colleague a message so that she knew I would arrive a little later.",
+    level: "B1",
+    topic: "Travel and work",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-cooking",
+    de: "Gestern Abend haben wir zusammen das Abendessen gekocht. Ich habe das Gemüse geschnitten, während Michelle die Soße vorbereitet hat.",
+    en: "Last night, we cooked dinner together. I chopped the vegetables while Michelle prepared the sauce.",
+    level: "A2-B1",
+    topic: "Cooking together",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-new-city",
+    de: "Als ich zum ersten Mal in die Stadt zog, kannte ich niemanden. Nach ein paar Wochen trat ich einem Sportverein bei und fand schnell neue Freunde.",
+    en: "When I first moved to the city, I did not know anyone. After a few weeks, I joined a sports club and quickly made new friends.",
+    level: "B1",
+    topic: "Moving and friendship",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-shopping",
+    de: "Wir wollten im Supermarkt nur Brot und Milch kaufen. Am Ende nahmen wir jedoch auch Obst, Kaffee und etwas für das Abendessen mit.",
+    en: "We only meant to buy bread and milk at the supermarket. However, we ended up getting fruit, coffee, and something for dinner as well.",
+    level: "B1",
+    topic: "Shopping",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-learning",
+    de: "Sie übt jeden Tag ein wenig Englisch, auch wenn sie beschäftigt ist. Diese kurzen Einheiten helfen ihr, neue Wörter zu behalten und selbstbewusster zu sprechen.",
+    en: "She practises a little English every day, even when she is busy. These short sessions help her remember new words and speak more confidently.",
+    level: "B1",
+    topic: "Learning habits",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-holiday",
+    de: "Für unseren nächsten Urlaub möchten wir ans Meer fahren. Wir suchen ein ruhiges Hotel, das nicht zu weit vom Strand entfernt ist.",
+    en: "For our next holiday, we would like to go to the seaside. We are looking for a quiet hotel that is not too far from the beach.",
+    level: "A2-B1",
+    topic: "Holiday plans",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-rain",
+    de: "Es regnete den ganzen Nachmittag, deshalb blieben wir zu Hause. Wir sahen einen Film, bestellten Pizza und machten es uns im Wohnzimmer gemütlich.",
+    en: "It rained all afternoon, so we stayed at home. We watched a film, ordered pizza, and made ourselves comfortable in the living room.",
+    level: "A2-B1",
+    topic: "Weather and home",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-phone",
+    de: "Ich konnte mein Handy heute Morgen nicht finden. Schließlich entdeckte ich es unter einem Kissen auf dem Sofa, wo ich es gestern Abend liegen gelassen hatte.",
+    en: "I could not find my phone this morning. Eventually, I discovered it under a cushion on the sofa, where I had left it last night.",
+    level: "B1",
+    topic: "Everyday problems",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-meeting",
+    de: "Die Besprechung begann pünktlich und dauerte etwa eine Stunde. Jeder teilte seine Ideen mit, und am Ende einigten wir uns auf einen einfachen Plan.",
+    en: "The meeting started on time and lasted for about an hour. Everyone shared their ideas, and in the end we agreed on a simple plan.",
+    level: "B1",
+    topic: "Work and meetings",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-neighbour",
+    de: "Unsere neue Nachbarin ist letzte Woche eingezogen. Wir brachten ihr einen Kuchen und unterhielten uns eine Weile an der Haustür.",
+    en: "Our new neighbour moved in last week. We took her a cake and chatted for a while at the front door.",
+    level: "A2-B1",
+    topic: "Neighbours",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-exercise",
+    de: "Ich wollte fitter werden, aber ich hatte keine Lust auf ein Fitnessstudio. Stattdessen begann ich, jeden Abend dreißig Minuten zu laufen.",
+    en: "I wanted to get fitter, but I did not fancy joining a gym. Instead, I started walking for thirty minutes every evening.",
+    level: "B1",
+    topic: "Health and exercise",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-book",
+    de: "Das Buch war am Anfang etwas langsam, aber bald wurde die Geschichte spannend. Ich las die letzten fünfzig Seiten an einem Abend.",
+    en: "The book was a little slow at first, but the story soon became exciting. I read the final fifty pages in one evening.",
+    level: "B1",
+    topic: "Books and opinions",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-easy-restaurant",
+    de: "Das Restaurant war voll, als wir ankamen, also mussten wir kurz warten. Das Essen war die Wartezeit wert, und der Service war sehr freundlich.",
+    en: "The restaurant was full when we arrived, so we had to wait for a short while. The food was worth the wait, and the service was very friendly.",
+    level: "B1",
+    topic: "Eating out",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-advanced-project",
+    de: "Das Team unterschätzte zunächst den Umfang des Projekts. Infolgedessen geriet der Zeitplan unter Druck; dennoch lieferten wir die wichtigsten Funktionen pünktlich und überarbeiteten die übrigen anschließend.",
+    en: "The team initially underestimated the scope of the project. Consequently, the schedule came under pressure; nevertheless, we delivered the essential features on time and subsequently revised the remainder.",
+    level: "C1",
+    topic: "Projects and consequences",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-policy",
+    de: "Die neue Richtlinie sollte die Abläufe vereinfachen, wohingegen die vorherige Version unnötige Genehmigungsschritte verlangte. Darüber hinaus gibt sie den Mitarbeitenden mehr Eigenverantwortung und verringert dadurch Verzögerungen.",
+    en: "The new policy is intended to streamline operations, whereas the previous version required unnecessary approval stages. Moreover, it gives employees greater autonomy, thereby reducing delays.",
+    level: "C1",
+    topic: "Policy and contrast",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-research",
+    de: "Die ersten Ergebnisse schienen die ursprüngliche Theorie zu bestätigen. Bei genauerer Betrachtung war die Stichprobe jedoch zu klein; folglich müssen weitere Daten erhoben werden, bevor eine verlässliche Schlussfolgerung möglich ist.",
+    en: "The initial findings appeared to support the original theory. Upon closer examination, however, the sample was too small; consequently, further data must be collected before a reliable conclusion can be drawn.",
+    level: "C1",
+    topic: "Research and evidence",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-negotiation",
+    de: "Beide Parteien waren grundsätzlich zu einem Kompromiss bereit, obwohl ihre Prioritäten deutlich voneinander abwichen. Letztlich wurde eine Vereinbarung erzielt, sofern bestimmte Schutzmaßnahmen unverändert blieben.",
+    en: "Both parties were broadly willing to compromise, although their priorities differed considerably. Ultimately, an agreement was reached, provided that certain safeguards remained unchanged.",
+    level: "C1",
+    topic: "Negotiation",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-investment",
+    de: "Die Investition versprach kurzfristig nur bescheidene Renditen. Langfristig dürfte sie jedoch die Betriebskosten erheblich senken und somit die anfänglichen Ausgaben rechtfertigen.",
+    en: "The investment promised only modest returns in the short term. In the long run, however, it was expected to reduce operating costs substantially, thereby justifying the initial expenditure.",
+    level: "C1",
+    topic: "Finance and investment",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-climate",
+    de: "Einzelne Maßnahmen mögen unbedeutend erscheinen, wenn man sie isoliert betrachtet. Zusammengenommen können sie jedoch den Energieverbrauch deutlich verringern; daher sollten Haushalte und Unternehmen gleichermaßen dazu ermutigt werden.",
+    en: "Individual measures may appear insignificant when considered in isolation. Collectively, however, they can reduce energy consumption considerably; hence, households and businesses alike should be encouraged to adopt them.",
+    level: "C1",
+    topic: "Climate and collective action",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-leadership",
+    de: "Die Leiterin räumte ein, dass die Entscheidung unpopulär sein würde. Nichtsdestotrotz argumentierte sie, dass Untätigkeit größere Risiken mit sich brächte und die Organisation andernfalls ihre Glaubwürdigkeit verlieren könnte.",
+    en: "The director acknowledged that the decision would be unpopular. Nonetheless, she argued that inaction would entail greater risks and that the organisation might otherwise lose its credibility.",
+    level: "C1",
+    topic: "Leadership and risk",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-technology",
+    de: "Die Software automatisiert Aufgaben, die zuvor manuell erledigt wurden. Dadurch können sich die Mitarbeitenden auf komplexere Probleme konzentrieren; gleichzeitig muss das Unternehmen gewährleisten, dass die Ergebnisse sorgfältig überprüft werden.",
+    en: "The software automates tasks that were previously completed manually. Consequently, employees can focus on more complex problems; meanwhile, the company must ensure that the results are reviewed carefully.",
+    level: "C1",
+    topic: "Technology and responsibility",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-education",
+    de: "Prüfungen können Wissen effizient messen, erfassen jedoch nicht immer Kreativität oder Urteilsvermögen. Umgekehrt fördern offene Aufgaben eigenständiges Denken, allerdings auf Kosten einer objektiveren Bewertung.",
+    en: "Examinations can measure knowledge efficiently, yet they do not always capture creativity or judgement. Conversely, open-ended assignments encourage independent thought, albeit at the cost of more objective assessment.",
+    level: "C1",
+    topic: "Education and assessment",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-reputation",
+    de: "Das Unternehmen reagierte rasch auf die Beschwerde und veröffentlichte anschließend eine ausführliche Erklärung. Im Rückblick verhinderte diese Transparenz vermutlich, dass ein kleiner Fehler zu einer dauerhaften Rufschädigung führte.",
+    en: "The company responded promptly to the complaint and subsequently issued a detailed explanation. In retrospect, that transparency probably prevented a minor error from causing lasting reputational damage.",
+    level: "C1",
+    topic: "Reputation and response",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-healthcare",
+    de: "Das neue System soll die Wartezeiten verkürzen, indem dringende Fälle früher erkannt werden. Sofern es konsequent angewendet wird, könnte es die Versorgung verbessern, ohne zusätzliches Personal zu erfordern.",
+    en: "The new system aims to shorten waiting times by identifying urgent cases earlier. Provided that it is applied consistently, it could improve care without requiring additional staff.",
+    level: "C1",
+    topic: "Healthcare systems",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-culture",
+    de: "Die beiden Abteilungen verfolgten zwar dasselbe Ziel, arbeiteten jedoch nach völlig unterschiedlichen Prinzipien. Soweit eine Zusammenarbeit möglich war, beruhte sie auf klaren Zuständigkeiten und gegenseitigem Respekt.",
+    en: "The two departments pursued the same objective, yet operated according to entirely different principles. Insofar as collaboration was possible, it depended on clear responsibilities and mutual respect.",
+    level: "C1",
+    topic: "Organisational culture",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-contract",
+    de: "Ungeachtet der mündlichen Zusicherungen blieben mehrere Vertragsbedingungen unklar. Dementsprechend bat die Rechtsabteilung um eine schriftliche Präzisierung, bevor weitere Verpflichtungen eingegangen wurden.",
+    en: "Notwithstanding the verbal assurances, several contractual terms remained ambiguous. Accordingly, the legal team requested written clarification before any further commitments were made.",
+    level: "C1",
+    topic: "Contracts and clarity",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-strategy",
+    de: "Das Unternehmen wird künftig kleinere, gezieltere Märkte priorisieren. Anschließend soll die Strategie anhand messbarer Ergebnisse bewertet und gegebenenfalls angepasst werden.",
+    en: "Henceforth, the company will prioritise smaller, more targeted markets. Thereafter, the strategy will be evaluated against measurable outcomes and adjusted where necessary.",
+    level: "C1",
+    topic: "Strategy and evaluation",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-advanced-media",
+    de: "Der Artikel präsentierte eine überzeugende Erzählung, ließ jedoch mehrere widersprüchliche Belege aus. Darüber hinaus unterschied er nicht ausreichend zwischen bestätigten Tatsachen und plausiblen Vermutungen.",
+    en: "The article presented a compelling narrative, yet omitted several contradictory pieces of evidence. Furthermore, it failed to distinguish adequately between verified facts and plausible speculation.",
+    level: "C1",
+    topic: "Media and critical thinking",
+    hard: true,
+  },
+] as const;
 
 const PRESETS: TestPreset[] = [
   {
@@ -119,9 +365,27 @@ const PRESETS: TestPreset[] = [
     filter: (item) => item.kind === "phrase" && item.hard,
   },
   {
+    id: "everyday-paragraphs",
+    title: "Everyday paragraphs",
+    description: "Connected A2-B1 ideas for fluent, natural English.",
+    eyebrow: "Paragraphs",
+    icon: FileText,
+    tone: "green",
+    filter: (item) => item.kind === "paragraph" && !item.hard,
+  },
+  {
+    id: "advanced-paragraphs",
+    title: "Advanced paragraphs",
+    description: "C1 passages with precise connectors, nuance, and formal vocabulary.",
+    eyebrow: "Paragraphs",
+    icon: Brain,
+    tone: "accent",
+    filter: (item) => item.kind === "paragraph" && item.hard,
+  },
+  {
     id: "mixed",
     title: "Mixed challenge",
-    description: "Vocabulary and phrases from across your full course.",
+    description: "Vocabulary, phrases, and paragraphs from across your full course.",
     eyebrow: "All topics",
     icon: Shuffle,
     tone: "ink",
@@ -243,6 +507,17 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
       hard: isHardLevel(item.level ?? "") || wordCount >= 8,
       status: statusForId(grades, item.id, item.aliases),
       due: isDue(item, grades),
+    });
+  }
+
+  for (const paragraph of PARAGRAPH_TEST_ITEMS) {
+    const status = statusForId(grades, paragraph.id);
+    const dueAt = grades[paragraph.id]?.dueAt;
+    add({
+      ...paragraph,
+      kind: "paragraph",
+      status,
+      due: dueAt ? Date.parse(dueAt) <= Date.now() : false,
     });
   }
 
@@ -394,6 +669,7 @@ export function TestsView({
     setResults([]);
     setFinished(false);
     setTrackedStatuses({});
+    window.requestAnimationFrame(() => window.scrollTo({ behavior: "auto", top: 0 }));
   };
 
   const gradeAnswer = (skipped = false) => {
@@ -575,6 +851,7 @@ export function TestsView({
   if (currentQuestion && currentCopy) {
     const progress = Math.round(((questionIndex + (feedback ? 1 : 0)) / questions.length) * 100);
     const trackedStatus = trackedStatuses[currentQuestion.item.id] ?? currentQuestion.item.status;
+    const isParagraph = currentQuestion.item.kind === "paragraph";
     return (
       <div className="mx-auto max-w-[1060px]" data-testid="test-runner">
         <div className="mb-5 flex items-center justify-between gap-4">
@@ -627,7 +904,12 @@ export function TestsView({
                 <p className="text-[11px] font-black uppercase text-[var(--text-3)]">
                   {ui("Translate into")} {ui(currentCopy.targetLabel)}
                 </p>
-                <h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-[var(--text-1)] sm:text-4xl">
+                <h1 className={cn(
+                  "mt-4 font-black tracking-tight text-[var(--text-1)]",
+                  isParagraph
+                    ? "max-w-[72ch] text-lg leading-relaxed sm:text-xl"
+                    : "text-2xl leading-tight sm:text-4xl"
+                )}>
                   {currentCopy.source}
                 </h1>
                 <p className="mt-4 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
@@ -687,27 +969,46 @@ export function TestsView({
               <span className="mb-2 block text-xs font-black uppercase text-[var(--text-3)]">
                 {ui("Your answer")}
               </span>
-              <input
-                autoFocus
-                className={cn(
-                  "h-16 w-full rounded-[18px] border-2 bg-[var(--surface)] px-5 text-lg font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
-                  feedback
-                    ? feedback.correct
-                      ? "border-emerald-500"
-                      : "border-rose-500"
-                    : "border-[var(--border-2)] focus:border-[var(--accent)]"
-                )}
-                data-testid="test-answer"
-                disabled={Boolean(feedback)}
-                onChange={(event) => setAnswer(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter") return;
-                  if (feedback) nextQuestion();
-                  else if (answer.trim()) gradeAnswer();
-                }}
-                placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
-                value={answer}
-              />
+              {isParagraph ? (
+                <textarea
+                  autoFocus
+                  className={cn(
+                    "min-h-40 w-full resize-y rounded-[18px] border-2 bg-[var(--surface)] px-5 py-4 text-base font-bold leading-7 text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
+                    feedback
+                      ? feedback.correct
+                        ? "border-emerald-500"
+                        : "border-rose-500"
+                      : "border-[var(--border-2)] focus:border-[var(--accent)]"
+                  )}
+                  data-testid="test-answer"
+                  disabled={Boolean(feedback)}
+                  onChange={(event) => setAnswer(event.target.value)}
+                  placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
+                  value={answer}
+                />
+              ) : (
+                <input
+                  autoFocus
+                  className={cn(
+                    "h-16 w-full rounded-[18px] border-2 bg-[var(--surface)] px-5 text-lg font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
+                    feedback
+                      ? feedback.correct
+                        ? "border-emerald-500"
+                        : "border-rose-500"
+                      : "border-[var(--border-2)] focus:border-[var(--accent)]"
+                  )}
+                  data-testid="test-answer"
+                  disabled={Boolean(feedback)}
+                  onChange={(event) => setAnswer(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") return;
+                    if (feedback) nextQuestion();
+                    else if (answer.trim()) gradeAnswer();
+                  }}
+                  placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
+                  value={answer}
+                />
+              )}
             </label>
 
             {feedback && (
@@ -803,7 +1104,7 @@ export function TestsView({
               </p>
             </div>
           </div>
-          <div className="grid w-full grid-cols-3 divide-x divide-[var(--border)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] lg:w-auto">
+          <div className="grid w-full grid-cols-2 divide-x divide-y divide-[var(--border)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] sm:grid-cols-4 sm:divide-y-0 lg:w-auto">
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
               <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "vocabulary").length.toLocaleString()}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Words")}</p>
@@ -811,6 +1112,10 @@ export function TestsView({
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
               <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "phrase").length.toLocaleString()}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Phrases")}</p>
+            </div>
+            <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
+              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "paragraph").length.toLocaleString()}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Paragraphs")}</p>
             </div>
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
               <p className="text-lg font-black text-[var(--text-1)]">{presetCounts["weak-spots"].toLocaleString()}</p>
