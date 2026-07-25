@@ -725,6 +725,25 @@ export function TestsView({
     setTrackedStatuses((current) => ({ ...current, [item.id]: status }));
   };
 
+  const markKnownAndAdvance = () => {
+    if (!currentQuestion) return;
+    markTrackedStatus(currentQuestion.item, "known");
+
+    // "Know it" is an explicit opt-out from testing this item, not a wrong
+    // answer or a scored skip. If feedback was already shown, remove that
+    // current result before advancing so the score remains fair.
+    if (feedback) {
+      setResults((current) => current.slice(0, -1));
+    }
+    setAnswer("");
+    setFeedback(null);
+    if (questionIndex >= questions.length - 1) {
+      setFinished(true);
+    } else {
+      setQuestionIndex((index) => index + 1);
+    }
+  };
+
   const hearPrompt = () => {
     if (!currentCopy) return;
     void tts(
@@ -942,7 +961,7 @@ export function TestsView({
                       : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-400"
                   )}
                   data-testid="test-mark-known"
-                  onClick={() => markTrackedStatus(currentQuestion.item, "known")}
+                  onClick={markKnownAndAdvance}
                   type="button"
                 >
                   <CheckCircle2 className="h-4 w-4" />
