@@ -2,7 +2,7 @@
 
 **A fully offline desktop app for learning German — premium neural voices, spaced repetition, and lessons that actually understand what you type.**
 
-**Made with love by Leon and Michelle.**
+**Made with love ❤️ by Leon and Michelle.**
 
 Micheon is a native-feeling desktop language tutor that runs entirely on your machine. There's no subscription, no login server, no cloud calls for content, and no usage limits. You download it once, and everything — thousands of sentences, dialogues, grammar drills, and natural-sounding speech — works on a plane, on the train, or with the Wi-Fi off.
 
@@ -152,4 +152,4 @@ Locally, `npm run electron:dist` produces a build under `release/` for testing. 
 
 ---
 
-*Micheon — learn German properly, on your own machine. Made with love by Leon and Michelle.*
+*Micheon — learn German properly, on your own machine. Made with love ❤️ by Leon and Michelle.*

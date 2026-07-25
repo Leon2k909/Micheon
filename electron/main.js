@@ -282,6 +282,18 @@ function setPetOverlayVisible(visible) {
   syncPetOverlayBounds();
   overlay.setAlwaysOnTop(true, "floating");
   overlay.showInactive();
+  // A hidden window runs no animation frames, so a hit-region sync scheduled
+  // while hidden never completed and the overlay came back with no shape —
+  // fully click-through, which looks exactly like the pet failing to appear.
+  // Ask the renderer for fresh geometry every time the overlay is shown, and
+  // drop the cached signature so the answer is definitely re-applied.
+  petOverlayShapeSignature = null;
+  const requestResync = () => {
+    if (!petWindow || petWindow.isDestroyed()) return;
+    petWindow.webContents.send("pet-overlay:resync");
+  };
+  if (overlay.webContents.isLoading()) overlay.webContents.once("did-finish-load", requestResync);
+  else requestResync();
 }
 
 function eventCameFrom(event, window) {

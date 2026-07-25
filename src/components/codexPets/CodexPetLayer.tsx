@@ -312,9 +312,17 @@ export function CodexPetLayer() {
     ) return undefined;
 
     let animationFrame = 0;
+    let fallbackTimer = 0;
+    let retryTimer = 0;
     let lastRegions = "";
+    // Until this is true the overlay window has NO shape, which on Windows
+    // means it is entirely click-through: the pet is there but nothing can
+    // touch it. Reaching that state once is what actually matters, so the sync
+    // keeps retrying until it does.
+    let deliveredOnce = false;
     const syncHitRegions = () => {
       animationFrame = 0;
+      if (fallbackTimer) { window.clearTimeout(fallbackTimer); fallbackTimer = 0; }
       const padding = 18;
       const regions = Array.from(
         document.querySelectorAll<HTMLElement>(
@@ -332,15 +340,52 @@ export function CodexPetLayer() {
         })
         .filter((region) => region.width > 0 && region.height > 0)
         .sort((left, right) => left.y - right.y || left.x - right.x);
+      // Nothing measurable yet — the pet has not rendered, or its sprite has
+      // not loaded. Keep the retry running rather than giving up silently.
       if (regions.length === 0) return;
       const serialized = JSON.stringify(regions);
       if (serialized === lastRegions) return;
       lastRegions = serialized;
+      deliveredOnce = true;
       desktop.setPetOverlayHitRegions(regions);
     };
     const scheduleHitRegionSync = () => {
-      if (animationFrame) return;
+      if (animationFrame || fallbackTimer) return;
       animationFrame = window.requestAnimationFrame(syncHitRegions);
+      // requestAnimationFrame never fires while the overlay window is hidden,
+      // so a sync scheduled just before a hide would otherwise be stranded and
+      // block every later one via the animationFrame guard.
+      fallbackTimer = window.setTimeout(() => {
+        if (animationFrame) { window.cancelAnimationFrame(animationFrame); animationFrame = 0; }
+        fallbackTimer = 0;
+        syncHitRegions();
+      }, 120);
+    };
+    // Poll until the first successful delivery. This is the only thing standing
+    // between "pet enabled" and "pet actually usable", so it retries rather than
+    // failing silently — but it gives up after ~10s so a deliberately disabled
+    // pet does not leave a timer running forever. Showing the overlay restarts it.
+    let retriesLeft = 0;
+    const startRetry = () => {
+      retriesLeft = 40;
+      if (retryTimer) return;
+      retryTimer = window.setInterval(() => {
+        if (deliveredOnce || retriesLeft-- <= 0) {
+          window.clearInterval(retryTimer);
+          retryTimer = 0;
+          return;
+        }
+        lastRegions = "";
+        scheduleHitRegionSync();
+      }, 250);
+    };
+    const resync = () => {
+      // A fresh show may land on identical geometry, which the de-dupe would
+      // drop — but the window's shape was reset, so it must be sent again.
+      lastRegions = "";
+      deliveredOnce = false;
+      scheduleHitRegionSync();
+      startRetry();
     };
     const observer = new MutationObserver(scheduleHitRegionSync);
 
@@ -361,13 +406,32 @@ export function CodexPetLayer() {
       subtree: true,
     });
     window.addEventListener("resize", scheduleHitRegionSync);
+    // The main process fires this every time the overlay window is shown.
+    const stopResyncListener = desktop?.onPetOverlayResync?.(resync);
+    // Belt and braces for a show that arrives without the IPC (an older main
+    // process, or the window being restored by the compositor).
+    const onVisible = () => {
+      if (document.visibilityState === "visible") resync();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     scheduleHitRegionSync();
-    hitRegionSyncRef.current = scheduleHitRegionSync;
+    startRetry();
+    // Ordinary geometry changes just sync. But if nothing has ever reached the
+    // main process — the case where a pet has only now appeared — restart the
+    // retry, because that first delivery is what makes the overlay clickable.
+    hitRegionSyncRef.current = () => {
+      scheduleHitRegionSync();
+      if (!deliveredOnce) startRetry();
+    };
     return () => {
       hitRegionSyncRef.current = null;
       observer.disconnect();
+      stopResyncListener?.();
+      document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("resize", scheduleHitRegionSync);
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      if (retryTimer) window.clearInterval(retryTimer);
     };
   }, []);
 

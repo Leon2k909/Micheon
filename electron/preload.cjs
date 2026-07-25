@@ -35,6 +35,15 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("pet-overlay:drag-cursor", handler);
     return () => ipcRenderer.removeListener("pet-overlay:drag-cursor", handler);
   },
+  // Fires when the overlay window is shown. Until the renderer reports its hit
+  // regions the window has no shape and stays completely click-through, so a
+  // show that lands before the pet has rendered would otherwise leave a pet
+  // that cannot be clicked or dragged at all.
+  onPetOverlayResync: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on("pet-overlay:resync", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:resync", handler);
+  },
   setPetOverlayKeyboardInteractive: (interactive) =>
     ipcRenderer.send("pet-overlay:set-keyboard-interactive", Boolean(interactive)),
   relayPetOverlayWheel: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:wheel", deltaX, deltaY),
