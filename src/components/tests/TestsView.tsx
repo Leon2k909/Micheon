@@ -560,9 +560,22 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
       ? matchGermanSentence(input, alternative)
       : matchEnglishPhrase(input, alternative)
   );
-  return matches.find((match) => match.ok)
-    ?? matches.find((match) => match.phrasingNote)
-    ?? matches[0];
+  const accepted = matches.find((match) => match.ok);
+  if (accepted) return accepted;
+
+  // A standalone vocabulary answer starts its own field, so an initial
+  // capital is natural even when the dictionary form is an adjective:
+  // "Sauer" must be accepted for "sauer". Sentence exercises still use the
+  // strict matcher directly and continue teaching German noun capitalisation.
+  if (
+    language === "de"
+    && item.kind === "vocabulary"
+    && matches.some((match) => match.capitalizationError)
+  ) {
+    return { ok: true, spellingNote: false };
+  }
+
+  return matches.find((match) => match.phrasingNote) ?? matches[0];
 }
 
 function getQuestionCopy(question: TestQuestion) {
