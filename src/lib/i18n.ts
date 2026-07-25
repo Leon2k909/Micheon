@@ -395,6 +395,9 @@ const DE: Record<string, string> = {
   // ── Desktop update banner ──
   "Update ready": "Update bereit",
   "Restart & update": "Neu starten & aktualisieren",
+  "Restart now": "Jetzt neu starten",
+  "Restarting…": "Wird neu gestartet…",
+  "Later": "Später",
 
   // ── Profile and preferences ──
   "Manage your name, theme, and words learned outside Micheon.": "Verwalte deinen Namen, dein Design und Wörter, die du außerhalb von Micheon gelernt hast.",

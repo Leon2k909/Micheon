@@ -860,3 +860,130 @@ export function matchEnglishPhrase(
   }
   return { ok: false, spellingNote: false };
 }
+
+// ── Paragraph grading ────────────────────────────────────────────────────────
+
+/**
+ * Words that carry no meaning of their own. Dropping them is what lets
+ * "On the weekend, we often visit my parents" match "At the weekend we often
+ * visit my parents": the difference is entirely function words.
+ */
+const PARAGRAPH_STOPWORDS = new Set([
+  "a", "an", "the", "and", "or", "but", "so", "then", "also", "too",
+  "is", "are", "was", "were", "be", "been", "being", "am",
+  "do", "does", "did", "have", "has", "had",
+  "to", "of", "in", "on", "at", "by", "for", "with", "from", "as", "into", "about",
+  "it", "its", "this", "that", "these", "those", "there", "here",
+  "i", "you", "he", "she", "we", "they", "me", "him", "her", "us", "them",
+  "my", "your", "his", "our", "their",
+  "very", "just", "some", "any", "not", "no",
+  "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer",
+  "und", "oder", "aber", "auch", "noch", "schon", "sehr", "nicht", "kein",
+  "ich", "du", "er", "sie", "es", "wir", "ihr", "mich", "mir", "dich", "dir",
+  "zu", "zum", "zur", "in", "im", "an", "am", "auf", "mit", "von", "vom", "bei", "für",
+  "ist", "sind", "war", "waren", "sein", "haben", "hat", "hatte",
+]);
+
+/** Crude but effective stemmer: strips the endings that differ between two
+ * correct translations ("practises"/"practices", "chopped"/"chopping"). */
+function paragraphStem(word: string) {
+  let w = word;
+  if (w.length > 5) w = w.replace(/(ing|ed|es|s)$/, "");
+  // British/American spelling differences that survive the -s/-ed strip.
+  w = w.replace(/ise$/, "ize").replace(/isation$/, "ization").replace(/our$/, "or");
+  return w;
+}
+
+function paragraphContentWords(text: string) {
+  return new Set(
+    String(text ?? "")
+      .toLocaleLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((w) => !PARAGRAPH_STOPWORDS.has(w))
+      .map(paragraphStem)
+      .filter((w) => w.length > 2)
+  );
+}
+
+/**
+ * How many negations a text carries. Contractions are expanded first so
+ * "didn't" and "did not" count the same, and "cannot" counts once.
+ */
+function countNegations(text: string) {
+  const t = String(text ?? "")
+    .toLocaleLowerCase()
+    .replace(/[’'`´]/g, "")
+    .replace(/\bcannot\b/g, "can not")
+    .replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could|must|wo|ca)nt\b/g, "$1 not");
+  const matches = t.match(
+    /\b(not|never|no|none|nobody|nothing|neither|nor|without|nicht|kein|keine|keinen|keinem|keiner|nie|niemals|niemand|nichts|ohne|weder)\b/g
+  );
+  return matches ? matches.length : 0;
+}
+
+export type ParagraphMatch = {
+  ok: boolean;
+  spellingNote: boolean;
+  phrasingNote?: boolean;
+  /** 0-1 share of the reference's meaning-carrying words that were covered. */
+  coverage: number;
+  /** Content words from the reference the answer never mentioned. */
+  missing: string[];
+};
+
+/**
+ * Grade a whole-paragraph translation.
+ *
+ * A paragraph has many correct translations, so grading it by whole-string
+ * comparison — which is what this used to do, reusing the single-sentence
+ * matcher — rejected most correct answers. Measured against the app's own
+ * reading passages, only 29% of legitimate paraphrases were accepted:
+ * "On the weekend, we often visit my parents" and "I cut up the vegetables"
+ * were both marked wrong.
+ *
+ * So a paragraph is graded on whether the MEANING arrived: what share of the
+ * reference's content words (stemmed, function words dropped) the answer
+ * covers. An exact match still short-circuits to the strict matcher, so a
+ * word-perfect answer is never downgraded.
+ */
+export function matchParagraphAnswer(
+  input: string,
+  target: string,
+  language: "de" | "en" = "en"
+): ParagraphMatch {
+  const strict = language === "de"
+    ? matchGermanSentence(input, target)
+    : matchEnglishPhrase(input, target);
+  if (strict.ok) return { ...strict, coverage: 1, missing: [] };
+
+  const want = paragraphContentWords(target);
+  const got = paragraphContentWords(input);
+  if (want.size === 0) return { ok: false, spellingNote: false, coverage: 0, missing: [] };
+
+  // Counting content words cannot see meaning that lives in a function word.
+  // "I never get up at seven" shares almost every word with "I usually get up
+  // at seven" and means the opposite, so negation is compared separately —
+  // otherwise a flipped sentence sails through at 93% coverage.
+  if (countNegations(input) !== countNegations(target)) {
+    return { ok: false, spellingNote: false, coverage: 0, missing: [...want].filter((w) => !got.has(w)) };
+  }
+
+  const missing = [...want].filter((w) => !got.has(w));
+  const coverage = (want.size - missing.length) / want.size;
+
+  // An answer that is far too short cannot have carried the meaning, even if
+  // every word it does contain happens to appear in the reference.
+  const lengthRatio = got.size / want.size;
+  if (lengthRatio < 0.5) {
+    return { ok: false, spellingNote: false, coverage, missing };
+  }
+
+  // 70% of the content words is a genuine translation with different wording.
+  // Below that, enough is missing that it is worth showing the model answer.
+  if (coverage >= 0.7) {
+    return { ok: true, spellingNote: false, phrasingNote: coverage < 0.9, coverage, missing };
+  }
+  return { ok: false, spellingNote: false, coverage, missing };
+}

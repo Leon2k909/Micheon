@@ -25,22 +25,26 @@ import {
 import { cn } from "@/lib/utils";
 import { loadGradeStore, setItemStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
-import { matchEnglishPhrase, matchGermanSentence } from "@/lib/germanTextMatch";
+import { matchEnglishPhrase, matchGermanSentence, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
 
+// One test per kind, taken at whichever difficulty you choose, rather than a
+// separate card for the easy and hard half of each.
 type TestPresetId =
-  | "easy-vocabulary"
-  | "hard-vocabulary"
-  | "everyday-phrases"
-  | "hard-phrases"
-  | "everyday-paragraphs"
-  | "advanced-paragraphs"
+  | "vocabulary"
+  | "phrases"
+  | "paragraphs"
   | "mixed"
-  | "weak-spots";
+  | "weak-spots"
+  | "exam-listening"
+  | "exam-marathon"
+  | "exam-gauntlet";
+
+type Difficulty = "easy" | "medium" | "hard" | "expert";
 
 type TestDirection = "course" | "reverse" | "mixed";
 type AnswerLanguage = "de" | "en";
@@ -53,7 +57,9 @@ type TestItem = {
   kind: "vocabulary" | "phrase" | "paragraph";
   level: string;
   topic: string;
+  /** Kept as the coarse split some presets still want. */
   hard: boolean;
+  difficulty: Difficulty;
   status: ItemStatus;
   due: boolean;
 };
@@ -80,9 +86,26 @@ type TestPreset = {
   icon: typeof Sprout;
   tone: "accent" | "yellow" | "green" | "orange" | "ink" | "rose";
   filter: (item: TestItem) => boolean;
+  /** False for presets that pick their own items, e.g. weak spots. */
+  gradable?: boolean;
+  /** Exams run at a fixed length and cannot be shortened. */
+  fixedLength?: number;
+  /** Exams force a direction so they stay comparable between attempts. */
+  fixedDirection?: TestDirection;
+  /** Marks the harder, longer formats for learners who want a real challenge. */
+  exam?: boolean;
+  /** Percentage needed to pass, for exam formats. */
+  passMark?: number;
 };
 
 const TEST_LENGTHS = [10, 20, 30] as const;
+
+const DIFFICULTIES: { id: Difficulty; label: string; blurb: string }[] = [
+  { id: "easy", label: "Easy", blurb: "A1-A2 basics, short and high frequency." },
+  { id: "medium", label: "Medium", blurb: "A2-B1, longer words and fuller sentences." },
+  { id: "hard", label: "Hard", blurb: "B1-B2, precision and word order matter." },
+  { id: "expert", label: "Expert", blurb: "B2-C1, nuance, connectors and long compounds." },
+];
 
 const PARAGRAPH_TEST_ITEMS = [
   {
@@ -329,76 +352,97 @@ const PARAGRAPH_TEST_ITEMS = [
 
 const PRESETS: TestPreset[] = [
   {
-    id: "easy-vocabulary",
-    title: "Easy vocabulary",
-    description: "Common A1-A2 words for fast, confident recall.",
-    eyebrow: "Vocabulary",
+    id: "vocabulary",
+    title: "Vocabulary",
+    description: "Single words, from everyday basics up to long compounds.",
+    eyebrow: "Words",
     icon: Sprout,
     tone: "green",
-    filter: (item) => item.kind === "vocabulary" && !item.hard,
+    filter: (item) => item.kind === "vocabulary",
+    gradable: true,
   },
   {
-    id: "hard-vocabulary",
-    title: "Hard vocabulary",
-    description: "Longer and higher-level words that need more precision.",
-    eyebrow: "Vocabulary",
-    icon: Brain,
-    tone: "accent",
-    filter: (item) => item.kind === "vocabulary" && item.hard,
-  },
-  {
-    id: "everyday-phrases",
-    title: "Everyday phrases",
-    description: "Short, useful lines for natural daily conversation.",
-    eyebrow: "Phrases",
+    id: "phrases",
+    title: "Phrases",
+    description: "Whole sentences, where word order and case have to be right.",
+    eyebrow: "Sentences",
     icon: MessageCircle,
     tone: "yellow",
-    filter: (item) => item.kind === "phrase" && !item.hard,
+    filter: (item) => item.kind === "phrase",
+    gradable: true,
   },
   {
-    id: "hard-phrases",
-    title: "Hard phrases",
-    description: "Longer B1+ sentences, expressions, and word order.",
-    eyebrow: "Phrases",
-    icon: Flame,
-    tone: "orange",
-    filter: (item) => item.kind === "phrase" && item.hard,
-  },
-  {
-    id: "everyday-paragraphs",
-    title: "Everyday paragraphs",
-    description: "Connected A2-B1 ideas for fluent, natural English.",
-    eyebrow: "Paragraphs",
+    id: "paragraphs",
+    title: "Paragraphs",
+    description: "Connected ideas across several sentences.",
+    eyebrow: "Longer texts",
     icon: FileText,
-    tone: "green",
-    filter: (item) => item.kind === "paragraph" && !item.hard,
-  },
-  {
-    id: "advanced-paragraphs",
-    title: "Advanced paragraphs",
-    description: "C1 passages with precise connectors, nuance, and formal vocabulary.",
-    eyebrow: "Paragraphs",
-    icon: Brain,
-    tone: "accent",
-    filter: (item) => item.kind === "paragraph" && item.hard,
+    tone: "orange",
+    filter: (item) => item.kind === "paragraph",
+    gradable: true,
   },
   {
     id: "mixed",
-    title: "Mixed challenge",
-    description: "Vocabulary, phrases, and paragraphs from across your full course.",
-    eyebrow: "All topics",
+    title: "Mixed practice",
+    description: "Words, sentences and paragraphs from across your whole course.",
+    eyebrow: "Everything",
     icon: Shuffle,
     tone: "ink",
     filter: () => true,
+    gradable: true,
   },
   {
     id: "weak-spots",
     title: "Weak spots",
-    description: "Items you marked difficult or that are due for review.",
+    description: "Only what you marked difficult or that is due for review.",
     eyebrow: "Personal review",
     icon: AlertTriangle,
     tone: "rose",
     filter: (item) => item.status === "struggle" || item.due,
+  },
+  // ── Exams ────────────────────────────────────────────────────────────────
+  // Longer, fixed formats for learners who are past daily practice and want
+  // something that actually tests them. Fixed length and direction so a score
+  // means the same thing every time you sit one.
+  {
+    id: "exam-listening",
+    title: "Listening exam",
+    description: "40 questions you hear before you read. Trains the ear, not the eye.",
+    eyebrow: "Exam",
+    icon: Headphones,
+    tone: "accent",
+    filter: (item) => item.kind !== "paragraph",
+    gradable: true,
+    exam: true,
+    fixedLength: 40,
+    fixedDirection: "course",
+    passMark: 70,
+  },
+  {
+    id: "exam-marathon",
+    title: "Marathon exam",
+    description: "60 questions in both directions, across every level you have met.",
+    eyebrow: "Exam",
+    icon: Flame,
+    tone: "orange",
+    filter: () => true,
+    exam: true,
+    fixedLength: 60,
+    fixedDirection: "mixed",
+    passMark: 75,
+  },
+  {
+    id: "exam-gauntlet",
+    title: "The gauntlet",
+    description: "50 of the hardest items you have seen, German to English and back.",
+    eyebrow: "Exam",
+    icon: Brain,
+    tone: "accent",
+    filter: (item) => item.difficulty === "hard" || item.difficulty === "expert",
+    exam: true,
+    fixedLength: 50,
+    fixedDirection: "mixed",
+    passMark: 80,
   },
 ];
 
@@ -435,6 +479,24 @@ function normalizeKey(value: string) {
 
 function isHardLevel(level: string) {
   return /(?:B1|B2|C1|C2)/i.test(level);
+}
+
+/**
+ * Four difficulty bands, so one Vocabulary test can be taken at the level you
+ * want instead of being split into a separate card per level.
+ *
+ * CEFR leads, because it is what the content is actually tagged with. Length is
+ * a tie-breaker within a level: a fifteen-letter compound or a ten-word sentence
+ * is genuinely harder to produce than a short one at the same level, and the old
+ * boolean already used that signal.
+ */
+function difficultyFor(level: string, length: number, longThreshold: number): Difficulty {
+  const cefr = /C[12]/i.test(level) ? 4 : /B2/i.test(level) ? 3 : /B1/i.test(level) ? 2 : 1;
+  const stretched = length >= longThreshold;
+  if (cefr >= 4) return "expert";
+  if (cefr === 3) return stretched ? "expert" : "hard";
+  if (cefr === 2) return stretched ? "hard" : "medium";
+  return stretched ? "medium" : "easy";
 }
 
 function isDue(item: CatalogItem, grades: ReturnType<typeof loadGradeStore>) {
@@ -477,7 +539,8 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
       const id = source?.id ?? `${partKey}-test-vocab-${index}`;
       const aliases = source?.aliases ?? [];
       const status = statusForId(grades, id, aliases);
-      const longWord = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length >= 13;
+      const letters = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length;
+      const longWord = letters >= 13;
       add({
         id,
         aliases,
@@ -487,6 +550,7 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
         level,
         topic,
         hard: isHardLevel(level) || longWord,
+        difficulty: difficultyFor(level, letters, 13),
         status,
         due: source ? isDue(source, grades) : false,
       });
@@ -505,6 +569,7 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
       level: item.level ?? "",
       topic: item.partLabel,
       hard: isHardLevel(item.level ?? "") || wordCount >= 8,
+      difficulty: difficultyFor(item.level ?? "", wordCount, 8),
       status: statusForId(grades, item.id, item.aliases),
       due: isDue(item, grades),
     });
@@ -516,6 +581,9 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     add({
       ...paragraph,
       kind: "paragraph",
+      // Paragraphs carry an explicit level, and every one of them is long, so
+      // the word-count tie-breaker would push them all to the top band.
+      difficulty: difficultyFor(paragraph.level, 0, Number.POSITIVE_INFINITY),
       status,
       due: dueAt ? Date.parse(dueAt) <= Date.now() : false,
     });
@@ -554,6 +622,9 @@ function formatTestMeaning(value: string, item: TestItem) {
 }
 
 function matchTestAnswer(input: string, target: string, language: AnswerLanguage, item: TestItem) {
+  // A paragraph has many correct translations, so comparing the whole string
+  // against one reference rejected most good answers. Grade it on meaning.
+  if (item.kind === "paragraph") return matchParagraphAnswer(input, target, language);
   const alternatives = vocabularyAlternatives(target, item);
   const matches = alternatives.map((alternative) =>
     language === "de"
@@ -659,9 +730,11 @@ export function TestsView({
 }) {
   const [gradeRevision, setGradeRevision] = useState(0);
   const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, gradeRevision, profile]);
-  const [presetId, setPresetId] = useState<TestPresetId>("easy-vocabulary");
+  const [presetId, setPresetId] = useState<TestPresetId>("vocabulary");
   const [testLength, setTestLength] = useState<(typeof TEST_LENGTHS)[number]>(10);
   const [direction, setDirection] = useState<TestDirection>("course");
+  // "all" keeps the old behaviour of drawing from every level at once.
+  const [difficulty, setDifficulty] = useState<Difficulty | "all">("all");
   const [questions, setQuestions] = useState<TestQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -672,10 +745,28 @@ export function TestsView({
   const answerInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
+  // Difficulty only narrows presets that are graded by level. Weak spots and the
+  // exams choose their own items on purpose, so a band would fight them.
+  const difficultyApplies = Boolean(selectedPreset.gradable) && !selectedPreset.exam;
+  const activeDifficulty = difficultyApplies ? difficulty : "all";
   const selectedPool = useMemo(
-    () => bank.filter((item) => (item.status !== "known" || item.due) && selectedPreset.filter(item)),
-    [bank, selectedPreset]
+    () => bank.filter((item) =>
+      (item.status !== "known" || item.due)
+      && selectedPreset.filter(item)
+      && (activeDifficulty === "all" || item.difficulty === activeDifficulty)),
+    [bank, selectedPreset, activeDifficulty]
   );
+  // How many items each band would give for the current preset, so a band that
+  // would leave you with nothing can say so before you start.
+  const difficultyCounts = useMemo(() => {
+    const base = bank.filter((item) => (item.status !== "known" || item.due) && selectedPreset.filter(item));
+    return {
+      all: base.length,
+      ...Object.fromEntries(DIFFICULTIES.map((d) => [d.id, base.filter((i) => i.difficulty === d.id).length])),
+    } as Record<Difficulty | "all", number>;
+  }, [bank, selectedPreset]);
+  const effectiveLength = selectedPreset.fixedLength ?? testLength;
+  const effectiveDirection = selectedPreset.fixedDirection ?? direction;
   const presetCounts = useMemo(
     () => Object.fromEntries(PRESETS.map((preset) => [
       preset.id,
@@ -710,11 +801,17 @@ export function TestsView({
   };
 
   const startTest = () => {
-    const picked = shuffled(selectedPool).slice(0, Math.min(testLength, selectedPool.length));
+    // The gauntlet is meant to hurt: take the hardest items first rather than a
+    // random sample, so it is not quietly diluted by whatever shuffled in.
+    const pool = selectedPreset.id === "exam-gauntlet"
+      ? [...selectedPool].sort((a, b) =>
+          (b.difficulty === "expert" ? 1 : 0) - (a.difficulty === "expert" ? 1 : 0))
+      : shuffled(selectedPool);
+    const picked = pool.slice(0, Math.min(effectiveLength, pool.length));
     setQuestions(
       picked.map((item, index) => ({
         item,
-        answerLanguage: answerLanguageFor(direction, index),
+        answerLanguage: answerLanguageFor(effectiveDirection, index),
       }))
     );
     setQuestionIndex(0);
@@ -1240,59 +1337,107 @@ export function TestsView({
             </div>
           </div>
 
+          {/* One test per kind now, so the level is a choice rather than a
+              separate card. Hidden for weak spots and the exams, which pick
+              their own items. */}
+          {difficultyApplies && (
+            <div className="mt-6">
+              <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Difficulty")}</p>
+              <div className="mt-2 grid gap-1.5">
+                {([{ id: "all" as const, label: "Every level", blurb: "Draw from all levels at once." }, ...DIFFICULTIES])
+                  .map((band) => {
+                    const count = difficultyCounts[band.id] ?? 0;
+                    const empty = count === 0;
+                    return (
+                      <button
+                        aria-pressed={difficulty === band.id}
+                        className={cn(
+                          "flex min-h-11 items-center justify-between gap-3 rounded-[14px] border px-3.5 py-2 text-left transition-colors",
+                          difficulty === band.id
+                            ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                            : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)]",
+                          empty && "opacity-45"
+                        )}
+                        disabled={empty}
+                        key={band.id}
+                        onClick={() => setDifficulty(band.id)}
+                        title={ui(band.blurb)}
+                        type="button"
+                      >
+                        <span className="text-sm font-black">{ui(band.label)}</span>
+                        <span className="text-xs font-bold tabular-nums opacity-70">{count.toLocaleString()}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           <div className="mt-6">
             <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Number of questions")}</p>
-            <div className="mt-2 grid grid-cols-3 gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">
-              {TEST_LENGTHS.map((length) => (
-                <button
-                  aria-pressed={testLength === length}
-                  className={cn(
-                    "h-10 rounded-[12px] text-sm font-black transition-colors",
-                    testLength === length
-                      ? "bg-[var(--surface)] text-[var(--text-1)] shadow-sm"
-                      : "text-[var(--text-3)] hover:text-[var(--text-1)]"
-                  )}
-                  key={length}
-                  onClick={() => setTestLength(length)}
-                  type="button"
-                >
-                  {length}
-                </button>
-              ))}
-            </div>
+            {selectedPreset.fixedLength ? (
+              <p className="mt-2 rounded-[14px] bg-[var(--surface-2)] px-3.5 py-3 text-sm font-bold text-[var(--text-2)]">
+                {ui("This exam is a fixed")} {selectedPreset.fixedLength} {ui("questions, so scores stay comparable.")}
+              </p>
+            ) : (
+              <div className="mt-2 grid grid-cols-3 gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">
+                {TEST_LENGTHS.map((length) => (
+                  <button
+                    aria-pressed={testLength === length}
+                    className={cn(
+                      "h-10 rounded-[12px] text-sm font-black transition-colors",
+                      testLength === length
+                        ? "bg-[var(--surface)] text-[var(--text-1)] shadow-sm"
+                        : "text-[var(--text-3)] hover:text-[var(--text-1)]"
+                    )}
+                    key={length}
+                    onClick={() => setTestLength(length)}
+                    type="button"
+                  >
+                    {length}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-5">
             <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Translation direction")}</p>
-            <div className="mt-2 grid gap-2">
-              {(["course", "reverse", "mixed"] as TestDirection[]).map((option) => (
-                <button
-                  aria-pressed={direction === option}
-                  className={cn(
-                    "flex min-h-11 items-center justify-between gap-3 rounded-[14px] border px-3.5 text-left text-sm font-black transition-colors",
-                    direction === option
-                      ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
-                      : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)]"
-                  )}
-                  key={option}
-                  onClick={() => setDirection(option)}
-                  type="button"
-                >
-                  <span className="flex items-center gap-2">
-                    {option === "mixed" ? <Shuffle className="h-4 w-4" /> : <Languages className="h-4 w-4" />}
-                    {directionLabel(option)}
-                  </span>
-                  {direction === option && <Check className="h-4 w-4" />}
-                </button>
-              ))}
-            </div>
+            {selectedPreset.fixedDirection ? (
+              <p className="mt-2 rounded-[14px] bg-[var(--surface-2)] px-3.5 py-3 text-sm font-bold text-[var(--text-2)]">
+                {directionLabel(selectedPreset.fixedDirection)} — {ui("fixed for this exam.")}
+              </p>
+            ) : (
+              <div className="mt-2 grid gap-2">
+                {(["course", "reverse", "mixed"] as TestDirection[]).map((option) => (
+                  <button
+                    aria-pressed={direction === option}
+                    className={cn(
+                      "flex min-h-11 items-center justify-between gap-3 rounded-[14px] border px-3.5 text-left text-sm font-black transition-colors",
+                      direction === option
+                        ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                        : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)]"
+                    )}
+                    key={option}
+                    onClick={() => setDirection(option)}
+                    type="button"
+                  >
+                    <span className="flex items-center gap-2">
+                      {option === "mixed" ? <Shuffle className="h-4 w-4" /> : <Languages className="h-4 w-4" />}
+                      {directionLabel(option)}
+                    </span>
+                    {direction === option && <Check className="h-4 w-4" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-6 rounded-[16px] bg-[var(--surface-2)] p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-bold text-[var(--text-3)]">{ui("Questions")}</span>
               <strong className="text-sm font-black text-[var(--text-1)]">
-                {Math.min(testLength, selectedPool.length)}
+                {Math.min(effectiveLength, selectedPool.length)}
               </strong>
             </div>
             <div className="mt-2 flex items-center justify-between gap-3">

@@ -1,66 +1,111 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpCircle } from "lucide-react";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
 // Desktop bridge (electron/preload.cjs). Undefined on the website.
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 
 /**
- * Floating "update ready" banner, Discord-style. Appears once an update has
- * finished downloading in the background. The button restarts and applies it
- * immediately; if ignored, the update installs automatically next time the app
- * is closed (that reassurance stays in the copy).
+ * "Update ready" toast, shown once an update has finished downloading in the
+ * background.
+ *
+ * Restraint is the point here. An earlier version stacked the brand gradient
+ * three times — a top bar, an icon tile and the button — and repeated the same
+ * refresh icon in the tile and the button, which reads as decoration rather
+ * than as a piece of the product. The accent now appears once, on the primary
+ * action, which is also the only thing in the toast the user has to decide
+ * about. Everything else is surface, border and text.
  */
 export function UpdateBanner() {
   const [version, setVersion] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     if (!desktop?.onUpdateDownloaded) return;
     return desktop.onUpdateDownloaded((v: string) => {
-      setVersion(v || "a new version");
+      setVersion(v || "");
       setDismissed(false);
+      setInstalling(false);
     });
   }, []);
 
-  if (!version || dismissed) return null;
+  const open = Boolean(version) && !dismissed;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[2000] w-[330px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_60px_var(--shadow)]">
-      <div className="h-1 w-full" style={{ background: "var(--feature-gradient)" }} />
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white"
-            style={{ background: "var(--feature-gradient)" }}
-          >
-            <RefreshCw className="h-[18px] w-[18px]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-[var(--text-1)]">{ui("Update ready")}</p>
-            <p className="mt-1 text-xs font-semibold leading-relaxed text-[var(--text-3)]">
-              {uiIsGerman()
-                ? `Micheon ${version} wurde heruntergeladen. Starte die App jetzt neu oder installiere das Update automatisch beim nächsten Schließen.`
-                : `Micheon ${version} is downloaded. Restart to update now — or it'll apply automatically the next time you close the app.`}
-            </p>
-          </div>
-          <button
-            onClick={() => setDismissed(true)}
-            aria-label={ui("Dismiss")}
-            className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <button
-          onClick={() => desktop?.installUpdate?.()}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90"
-          style={{ background: "var(--feature-gradient)" }}
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          // Conveys arrival, nothing more: a short rise from below the corner
+          // it appears in. Reduced motion gets the same toast without travel.
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          aria-live="polite"
+          className={[
+            "fixed bottom-5 right-5 z-[2000] w-[336px] max-w-[calc(100vw-2.5rem)]",
+            "motion-reduce:transition-none",
+            "rounded-2xl border border-[var(--border)] bg-[var(--surface)]",
+            "p-4 shadow-[0_18px_44px_var(--shadow)]",
+          ].join(" ")}
+          role="status"
         >
-          <RefreshCw className="h-4 w-4" />
-          {ui("Restart & update")}
-        </button>
-      </div>
-    </div>
+          <div className="flex items-baseline gap-2">
+            <ArrowUpCircle
+              aria-hidden="true"
+              className="h-[15px] w-[15px] shrink-0 translate-y-[2px] text-[var(--accent)]"
+            />
+            <h2 className="text-sm font-black leading-none text-[var(--text-1)]">
+              {ui("Update ready")}
+            </h2>
+            {version && (
+              <span className="ml-auto text-xs font-bold tabular-nums text-[var(--text-3)]">
+                {version}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-2 text-xs font-semibold leading-relaxed text-[var(--text-2)]">
+            {uiIsGerman()
+              ? "Neu starten, um es jetzt zu installieren. Sonst passiert es automatisch, wenn du die App schließt."
+              : "Restart to install it now. Otherwise it happens on its own when you close the app."}
+          </p>
+
+          <div className="mt-3.5 flex items-center gap-2">
+            <button
+              className={[
+                "h-9 flex-1 rounded-xl bg-[var(--accent)] text-sm font-black text-[var(--accent-text)]",
+                "transition-colors duration-150",
+                "hover:bg-[var(--accent-hover)]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]",
+                "active:brightness-95 disabled:opacity-70",
+              ].join(" ")}
+              disabled={installing}
+              onClick={() => {
+                setInstalling(true);
+                desktop?.installUpdate?.();
+              }}
+              type="button"
+            >
+              {installing ? ui("Restarting…") : ui("Restart now")}
+            </button>
+            <button
+              className={[
+                "h-9 rounded-xl px-3.5 text-sm font-bold text-[var(--text-3)]",
+                "transition-colors duration-150",
+                "hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]",
+              ].join(" ")}
+              onClick={() => setDismissed(true)}
+              type="button"
+            >
+              {ui("Later")}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
