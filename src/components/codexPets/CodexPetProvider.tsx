@@ -143,6 +143,10 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   const speechId = useRef(0);
   const speechTimer = useRef<number | null>(null);
   const historyRef = useRef(history);
+  const catalogRefreshInFlight = useRef<Promise<void> | null>(null);
+  const catalogRefreshRef = useRef<() => Promise<void>>(async () => {});
+  const catalogRetryTimer = useRef<number | null>(null);
+  const catalogRetryRounds = useRef(0);
   historyRef.current = history;
 
   const clearSpeech = useCallback(() => {
@@ -303,48 +307,98 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback((): Promise<void> => {
+    if (catalogRefreshInFlight.current) return catalogRefreshInFlight.current;
     setIsLoading(true);
-    try {
-      const catalog = await fetchCodexPetCatalog();
-      setPets(catalog.pets);
-      setError(null);
+    const request = (async () => {
+      try {
+        const catalog = await fetchCodexPetCatalog();
+        setPets(catalog.pets);
+        setError(null);
+        catalogRetryRounds.current = 0;
+        if (catalogRetryTimer.current !== null) {
+          window.clearTimeout(catalogRetryTimer.current);
+          catalogRetryTimer.current = null;
+        }
 
-      const availableKeys = new Set(catalog.pets.map(codexPetKey));
-      const stored = getStoredCodexPetKey();
-      const next = stored === "off"
-        ? "off"
-        : stored && availableKeys.has(stored)
-          ? stored
-          : catalog.selectedPetKey && availableKeys.has(catalog.selectedPetKey)
-            ? catalog.selectedPetKey
-            : catalog.pets[0]
-              ? codexPetKey(catalog.pets[0])
-              : "off";
+        const availableKeys = new Set(catalog.pets.map(codexPetKey));
+        const stored = getStoredCodexPetKey();
+        const next = stored === "off"
+          ? "off"
+          : stored && availableKeys.has(stored)
+            ? stored
+            : catalog.selectedPetKey && availableKeys.has(catalog.selectedPetKey)
+              ? catalog.selectedPetKey
+              : catalog.pets[0]
+                ? codexPetKey(catalog.pets[0])
+                : "off";
 
-      setSelectedKey(next);
-      if (stored !== next) storeCodexPetKey(next);
+        setSelectedKey(next);
+        if (stored !== next) storeCodexPetKey(next);
 
-      const storedVisible = getStoredVisiblePetKeys().filter((key) => availableKeys.has(key));
-      const nextVisible = next === "off"
-        ? []
-        : storedVisible.length
-          ? storedVisible
-          : [next];
-      setVisibleKeys(nextVisible);
-      storeVisiblePetKeys(nextVisible);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to read mascot pets");
-    } finally {
-      setIsLoading(false);
-    }
+        const storedVisible = getStoredVisiblePetKeys().filter((key) => availableKeys.has(key));
+        const nextVisible = next === "off"
+          ? []
+          : storedVisible.length
+            ? storedVisible
+            : [next];
+        setVisibleKeys(nextVisible);
+        storeVisiblePetKeys(nextVisible);
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Unable to read mascot pets");
+        // The desktop overlay cannot receive normal window focus, so its old
+        // focus-only refresh path made an initial catalog failure permanent.
+        // Keep a small bounded recovery loop. Electron can report a transparent
+        // overlay document as hidden during navigation even when its native
+        // window is meant to be shown, so that browser flag is not reliable.
+        if (
+          isDesktopPetOverlay
+          && catalogRetryTimer.current === null
+          && catalogRetryRounds.current < 4
+        ) {
+          const delay = Math.min(12000, 1500 * 2 ** catalogRetryRounds.current);
+          catalogRetryRounds.current += 1;
+          catalogRetryTimer.current = window.setTimeout(() => {
+            catalogRetryTimer.current = null;
+            void catalogRefreshRef.current();
+          }, delay);
+        }
+      } finally {
+        if (catalogRefreshInFlight.current === request) catalogRefreshInFlight.current = null;
+        setIsLoading(false);
+      }
+    })();
+    catalogRefreshInFlight.current = request;
+    return request;
   }, []);
+  catalogRefreshRef.current = refresh;
 
   useEffect(() => {
     void refresh();
     const handleFocus = () => void refresh();
+    const handleVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      catalogRetryRounds.current = 0;
+      void refresh();
+    };
     window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      if (catalogRetryTimer.current !== null) {
+        window.clearTimeout(catalogRetryTimer.current);
+        catalogRetryTimer.current = null;
+      }
+    };
+  }, [refresh]);
+
+  useEffect(() => {
+    if (!isDesktopPetOverlay || !desktop?.onPetOverlayResync) return undefined;
+    return desktop.onPetOverlayResync(() => {
+      catalogRetryRounds.current = 0;
+      void refresh();
+    });
   }, [refresh]);
 
   useEffect(() => {

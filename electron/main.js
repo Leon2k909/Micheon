@@ -225,6 +225,48 @@ function finishPetOverlayDrag() {
   restorePetOverlayShape();
 }
 
+// The overlay used to be a single-shot load: one failed loadURL (server busy,
+// transient socket error) was swallowed by a .catch and the overlay stayed a
+// blank transparent window for the entire session — enabling a pet visibly did
+// nothing. The load now retries with backoff while the overlay exists, and
+// showing the overlay again resets the budget.
+let petOverlayLoaded = false;
+let petOverlayLoadAttempts = 0;
+let petOverlayLoadTimer = null;
+
+function clearPetOverlayLoadTimer() {
+  if (petOverlayLoadTimer) clearTimeout(petOverlayLoadTimer);
+  petOverlayLoadTimer = null;
+}
+
+function resetPetOverlayLoadState() {
+  clearPetOverlayLoadTimer();
+  petOverlayLoaded = false;
+  petOverlayLoadAttempts = 0;
+}
+
+function loadPetOverlay() {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  if (petWindow.webContents.isLoading()) return;
+  void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
+    console.error("[pet] unable to load overlay:", error?.message ?? error);
+    schedulePetOverlayLoadRetry();
+  });
+}
+
+function schedulePetOverlayLoadRetry() {
+  if (petOverlayLoadTimer || !petWindow || petWindow.isDestroyed()) return;
+  if (!petWindow.isVisible()) return;
+  if (petOverlayLoadAttempts >= 5) return;
+  const delay = Math.min(15000, 1000 * 2 ** petOverlayLoadAttempts);
+  petOverlayLoadAttempts += 1;
+  petOverlayLoadTimer = setTimeout(() => {
+    petOverlayLoadTimer = null;
+    loadPetOverlay();
+  }, delay);
+  petOverlayLoadTimer.unref?.();
+}
+
 function createPetOverlayWindow() {
   if (petWindow && !petWindow.isDestroyed()) return petWindow;
   const desktopBounds = virtualDesktopBounds();
@@ -256,11 +298,34 @@ function createPetOverlayWindow() {
   petWindow.setAlwaysOnTop(true, "floating");
   petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   petWindow.setIgnoreMouseEvents(true, { forward: true });
-  void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
-    console.error("[pet] unable to load overlay:", error?.message ?? error);
+
+  petWindow.webContents.on("did-finish-load", () => {
+    if (!petWindow || petWindow.isDestroyed()) return;
+    clearPetOverlayLoadTimer();
+    petOverlayLoaded = true;
+    petOverlayLoadAttempts = 0;
+    if (petWindow.isVisible()) petWindow.webContents.send("pet-overlay:resync");
   });
+  petWindow.webContents.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, _validatedURL, isMainFrame) => {
+      // Chromium reports ERR_ABORTED when a newer navigation replaces an older
+      // one. It is not a failed overlay and must not consume the retry budget.
+      if (!isMainFrame || errorCode === -3) return;
+      petOverlayLoaded = false;
+      console.error(`[pet] overlay load failed (${errorCode}):`, errorDescription);
+      schedulePetOverlayLoadRetry();
+    }
+  );
+  petWindow.webContents.on("render-process-gone", (_event, details) => {
+    petOverlayLoaded = false;
+    console.error("[pet] overlay renderer exited:", details?.reason ?? "unknown");
+    schedulePetOverlayLoadRetry();
+  });
+  loadPetOverlay();
   petWindow.on("closed", () => {
     stopPetOverlayCursorTracking();
+    resetPetOverlayLoadState();
     petWindow = null;
     petOverlayUsesShape = false;
     petOverlayDragging = false;
@@ -275,10 +340,19 @@ function createPetOverlayWindow() {
 function setPetOverlayVisible(visible) {
   if (!visible) {
     finishPetOverlayDrag();
+    clearPetOverlayLoadTimer();
     petWindow?.hide();
     return;
   }
   const overlay = createPetOverlayWindow();
+  // A show is an explicit recovery request. If initial navigation or the
+  // renderer failed previously, give it a fresh bounded retry budget instead
+  // of repeatedly showing the same blank transparent window.
+  if (!petOverlayLoaded) {
+    clearPetOverlayLoadTimer();
+    petOverlayLoadAttempts = 0;
+    loadPetOverlay();
+  }
   syncPetOverlayBounds();
   overlay.setAlwaysOnTop(true, "floating");
   overlay.showInactive();
@@ -292,8 +366,9 @@ function setPetOverlayVisible(visible) {
     if (!petWindow || petWindow.isDestroyed()) return;
     petWindow.webContents.send("pet-overlay:resync");
   };
-  if (overlay.webContents.isLoading()) overlay.webContents.once("did-finish-load", requestResync);
-  else requestResync();
+  // The permanent did-finish-load listener sends this after recovery. Sending
+  // here as well is only needed for an already healthy renderer.
+  if (petOverlayLoaded && !overlay.webContents.isLoading()) requestResync();
 }
 
 function eventCameFrom(event, window) {

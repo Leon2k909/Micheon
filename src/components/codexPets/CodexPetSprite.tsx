@@ -47,6 +47,11 @@ function loadSpritesheet(url: string) {
     image.src = url;
   });
   imageCache.set(url, promise);
+  void promise.catch(() => {
+    // A rejected promise must not poison this URL for the renderer's entire
+    // lifetime. The next bounded sprite retry should perform a real request.
+    if (imageCache.get(url) === promise) imageCache.delete(url);
+  });
   return promise;
 }
 
@@ -117,6 +122,9 @@ function loadVisibleBounds(pet: CodexPet) {
     };
   });
   visibleBoundsCache.set(cacheKey, promise);
+  void promise.catch(() => {
+    if (visibleBoundsCache.get(cacheKey) === promise) visibleBoundsCache.delete(cacheKey);
+  });
   return promise;
 }
 
@@ -204,6 +212,7 @@ export function CodexPetSprite({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const visibleBoundsCallback = useRef(onVisibleBounds);
   const [canvasFailed, setCanvasFailed] = useState(false);
+  const [loadRetry, setLoadRetry] = useState(0);
   const requestedAnimation = pet.animations[animation] ? animation : "idle";
   const [activeAnimation, setActiveAnimation] = useState(requestedAnimation);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -232,7 +241,7 @@ export function CodexPetSprite({
     return () => {
       cancelled = true;
     };
-  }, [pet]);
+  }, [loadRetry, pet]);
 
   useEffect(() => {
     if (frames.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -285,7 +294,17 @@ export function CodexPetSprite({
 
   useEffect(() => {
     setCanvasFailed(false);
-  }, [pet.spritesheetUrl]);
+    setLoadRetry(0);
+  }, [pet]);
+
+  useEffect(() => {
+    if (!canvasFailed || loadRetry >= 6) return undefined;
+    const timer = window.setTimeout(() => {
+      setLoadRetry((current) => current + 1);
+      setCanvasFailed(false);
+    }, Math.min(10000, 500 * 2 ** loadRetry));
+    return () => window.clearTimeout(timer);
+  }, [canvasFailed, loadRetry]);
 
   useEffect(() => {
     let cancelled = false;
@@ -346,6 +365,7 @@ export function CodexPetSprite({
     column,
     canvasFailed,
     frame,
+    loadRetry,
     pet.frame.columns,
     pet.frame.height,
     pet.frame.width,

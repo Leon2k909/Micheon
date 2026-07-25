@@ -44,11 +44,54 @@ export function storeCodexPetKey(key: string) {
   syncLocalStorageItem(CODEX_PET_PREFERENCE_KEY, key);
 }
 
-export async function fetchCodexPetCatalog(signal?: AbortSignal): Promise<CodexPetCatalog> {
-  const response = await fetch("/api/codex-pets", {
-    cache: "no-store",
-    signal,
+const PET_CATALOG_ATTEMPTS = 3;
+const PET_CATALOG_TIMEOUT_MS = 4000;
+
+function waitForRetry(delayMs: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, delayMs);
+    const onAbort = () => {
+      window.clearTimeout(timer);
+      reject(signal?.reason ?? new DOMException("Aborted", "AbortError"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
-  if (!response.ok) throw new Error(`Codex pet catalog returned ${response.status}`);
-  return response.json() as Promise<CodexPetCatalog>;
+}
+
+export async function fetchCodexPetCatalog(signal?: AbortSignal): Promise<CodexPetCatalog> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < PET_CATALOG_ATTEMPTS; attempt += 1) {
+    const attemptController = new AbortController();
+    const handleAbort = () => attemptController.abort(signal?.reason);
+    signal?.addEventListener("abort", handleAbort, { once: true });
+    const timeout = window.setTimeout(
+      () => attemptController.abort(new DOMException("Mascot catalog timed out", "TimeoutError")),
+      PET_CATALOG_TIMEOUT_MS
+    );
+    try {
+      const response = await fetch("/api/codex-pets", {
+        cache: "no-store",
+        signal: attemptController.signal,
+      });
+      if (!response.ok) throw new Error(`Codex pet catalog returned ${response.status}`);
+      return await response.json() as CodexPetCatalog;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      lastError = error;
+    } finally {
+      window.clearTimeout(timeout);
+      signal?.removeEventListener("abort", handleAbort);
+    }
+    if (attempt + 1 < PET_CATALOG_ATTEMPTS) {
+      await waitForRetry(250 * 2 ** attempt, signal);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Unable to read mascot pets");
 }
