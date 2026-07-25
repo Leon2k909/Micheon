@@ -25,23 +25,13 @@ contextBridge.exposeInMainWorld("germDesktop", {
   },
   installUpdate: () => ipcRenderer.send("update:install-now"),
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
-  movePetOverlayBy: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:move-by", deltaX, deltaY),
   setPetOverlayInteractive: (interactive) => ipcRenderer.send("pet-overlay:set-interactive", Boolean(interactive)),
-  beginPetOverlayDrag: () => ipcRenderer.send("pet-overlay:drag-start"),
-  movePetOverlayWithCursor: () => ipcRenderer.send("pet-overlay:drag-move"),
-  endPetOverlayDrag: () => ipcRenderer.send("pet-overlay:drag-end"),
   relayPetOverlayWheel: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:wheel", deltaX, deltaY),
   onPetOverlayWheel: (cb) => {
     const handler = (_e, deltaX, deltaY) => cb(deltaX, deltaY);
     ipcRenderer.on("pet-overlay:wheel", handler);
     return () => ipcRenderer.removeListener("pet-overlay:wheel", handler);
   },
-  setPetOverlayContentBounds: (bounds) => ipcRenderer.send("pet-overlay:set-content-bounds", {
-    height: Number(bounds?.height),
-    width: Number(bounds?.width),
-    x: Number(bounds?.x),
-    y: Number(bounds?.y),
-  }),
   sendPetOverlaySpeech: (payload) => {
     const durationMs = Number(payload?.options?.durationMs);
     const message = payload?.message;

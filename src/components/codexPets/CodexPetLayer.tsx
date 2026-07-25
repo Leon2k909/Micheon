@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -10,9 +11,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
-import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
+import {
+  CodexPetSprite,
+  type CodexPetVisibleBounds,
+} from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
-import { codexPetKey } from "@/lib/codexPets";
+import { codexPetKey, type CodexPet } from "@/lib/codexPets";
 import {
   CODEX_PET_MESSAGES_MUTED_EVENT,
   CODEX_PET_MESSAGES_MUTED_KEY,
@@ -23,6 +27,7 @@ import { learningEnglish } from "@/lib/direction";
 import { ui } from "@/lib/i18n";
 
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
+const DESKTOP_PET_POSITION_KEY = "gl-codex-pet-desktop-position-v2";
 const PET_SIZE_KEY = "gl-codex-pet-size-v1";
 const PET_MARGIN = 8;
 const PET_SIZE_MIN = 64;
@@ -37,6 +42,9 @@ const PET_BUBBLE_WIDTH = 240;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const isDesktopPetOverlay = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
+const PET_POSITION_STORAGE_KEY = isDesktopPetOverlay
+  ? DESKTOP_PET_POSITION_KEY
+  : PET_POSITION_KEY;
 
 const PET_GREETINGS = [
   "Ready when you are.",
@@ -65,9 +73,14 @@ type PetPosition = {
   y: number;
 };
 
+type PetBounds = {
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+};
+
 type DragState = {
-  lastScreenX: number;
-  lastScreenY: number;
   moved: boolean;
   originX: number;
   originY: number;
@@ -97,12 +110,47 @@ function clampPosition(
   width: number,
   height: number,
   petWidth: number,
-  petHeight: number
+  petHeight: number,
+  visibleBounds: PetBounds = { bottom: petHeight, left: 0, right: petWidth, top: 0 }
 ): PetPosition {
+  const minX = PET_MARGIN - visibleBounds.left;
+  const maxX = width - PET_MARGIN - visibleBounds.right;
+  const minY = PET_MARGIN - visibleBounds.top;
+  const maxY = height - PET_MARGIN - visibleBounds.bottom;
   return {
-    x: Math.min(Math.max(PET_MARGIN, position.x), Math.max(PET_MARGIN, width - petWidth - PET_MARGIN)),
-    y: Math.min(Math.max(PET_MARGIN, position.y), Math.max(PET_MARGIN, height - petHeight - PET_MARGIN)),
+    x: Math.min(Math.max(minX, position.x), Math.max(minX, maxX)),
+    y: Math.min(Math.max(minY, position.y), Math.max(minY, maxY)),
   };
+}
+
+function visiblePetGroupBounds(
+  pets: CodexPet[],
+  petWidth: number,
+  petHeight: number,
+  visibleBoundsByPet: Record<string, CodexPetVisibleBounds>
+): PetBounds {
+  if (!pets.length) return { bottom: petHeight, left: 0, right: petWidth, top: 0 };
+
+  return pets.reduce<PetBounds>((group, pet, index) => {
+    const bounds = visibleBoundsByPet[codexPetKey(pet)]
+      ?? { bottom: 1, left: 0, right: 1, top: 0 };
+    const spriteHeight = Math.round(
+      petWidth * (pet.frame.height / Math.max(1, pet.frame.width))
+    );
+    const offsetX = index * (petWidth + PET_GROUP_GAP);
+    const offsetY = petHeight - spriteHeight;
+    return {
+      bottom: Math.max(group.bottom, offsetY + bounds.bottom * spriteHeight),
+      left: Math.min(group.left, offsetX + bounds.left * petWidth),
+      right: Math.max(group.right, offsetX + bounds.right * petWidth),
+      top: Math.min(group.top, offsetY + bounds.top * spriteHeight),
+    };
+  }, {
+    bottom: 0,
+    left: Number.POSITIVE_INFINITY,
+    right: 0,
+    top: Number.POSITIVE_INFINITY,
+  });
 }
 
 function defaultPosition(petWidth: number, petHeight: number) {
@@ -116,10 +164,10 @@ function defaultPosition(petWidth: number, petHeight: number) {
   );
 }
 
-function storedPosition(petWidth: number, petHeight: number) {
+function storedPosition(petWidth: number, petHeight: number, storageKey = PET_POSITION_KEY) {
   if (typeof window === "undefined") return defaultPosition(petWidth, petHeight);
   try {
-    const parsed = JSON.parse(localStorage.getItem(PET_POSITION_KEY) ?? "");
+    const parsed = JSON.parse(localStorage.getItem(storageKey) ?? "");
     if (Number.isFinite(parsed?.x) && Number.isFinite(parsed?.y)) {
       const viewport = viewportSize();
       return clampPosition(parsed, viewport.width, viewport.height, petWidth, petHeight);
@@ -130,8 +178,8 @@ function storedPosition(petWidth: number, petHeight: number) {
   return defaultPosition(petWidth, petHeight);
 }
 
-function savePosition(position: PetPosition) {
-  localStorage.setItem(PET_POSITION_KEY, JSON.stringify(position));
+function savePosition(position: PetPosition, storageKey = PET_POSITION_KEY) {
+  localStorage.setItem(storageKey, JSON.stringify(position));
 }
 
 function storedPetSize() {
@@ -182,11 +230,18 @@ export function CodexPetLayer() {
   const { height: petHeight, width: petWidth } = petDimensions(petSize, petHeightRatio);
   const petGroupWidth = petWidth * Math.max(1, visiblePets.length)
     + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
+  const [visibleBoundsByPet, setVisibleBoundsByPet] = useState<
+    Record<string, CodexPetVisibleBounds>
+  >({});
+  const petGroupVisibleBounds = visiblePetGroupBounds(
+    visiblePets,
+    petWidth,
+    petHeight,
+    visibleBoundsByPet
+  );
   const [playbackKey, setPlaybackKey] = useState(0);
   const [position, setPosition] = useState<PetPosition>(
-    () => isDesktopPetOverlay
-      ? defaultPosition(petGroupWidth, petHeight)
-      : storedPosition(petGroupWidth, petHeight)
+    () => storedPosition(petGroupWidth, petHeight, PET_POSITION_STORAGE_KEY)
   );
   const [viewport, setViewport] = useState(viewportSize);
   const dragState = useRef<DragState | null>(null);
@@ -201,6 +256,23 @@ export function CodexPetLayer() {
 
   positionRef.current = position;
   speechRef.current = speech;
+
+  const updatePetVisibleBounds = useCallback((
+    key: string,
+    bounds: CodexPetVisibleBounds
+  ) => {
+    setVisibleBoundsByPet((current) => {
+      const prior = current[key];
+      if (
+        prior
+        && prior.bottom === bounds.bottom
+        && prior.left === bounds.left
+        && prior.right === bounds.right
+        && prior.top === bounds.top
+      ) return current;
+      return { ...current, [key]: bounds };
+    });
+  }, []);
 
   useEffect(() => {
     if (!isDesktopPetOverlay || !desktop?.setPetOverlayInteractive) return undefined;
@@ -244,40 +316,6 @@ export function CodexPetLayer() {
   }, [clearSpeech]);
 
   useEffect(() => {
-    if (!isDesktopPetOverlay || !desktop?.setPetOverlayContentBounds) return;
-    const speechHeight = speech?.question ? 216 : 112;
-    const speechLeft = Math.min(
-      Math.max(
-        PET_MARGIN,
-        position.x < viewport.width / 2
-          ? position.x
-          : position.x + petGroupWidth - PET_BUBBLE_WIDTH
-      ),
-      Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
-    );
-    const speechTop = Math.max(PET_MARGIN, position.y - speechHeight - PET_MARGIN);
-    const contentLeft = speech && !messagesMuted ? Math.min(position.x, speechLeft) : position.x;
-    const contentTop = speech && !messagesMuted ? Math.min(position.y, speechTop) : position.y;
-    const contentRight = speech && !messagesMuted
-      ? Math.max(position.x + petGroupWidth, speechLeft + PET_BUBBLE_WIDTH)
-      : position.x + petGroupWidth;
-    desktop.setPetOverlayContentBounds({
-      height: position.y + petHeight - contentTop,
-      width: contentRight - contentLeft,
-      x: contentLeft,
-      y: contentTop,
-    });
-  }, [
-    messagesMuted,
-    petGroupWidth,
-    petHeight,
-    position.x,
-    position.y,
-    speech,
-    viewport.width,
-  ]);
-
-  useEffect(() => {
     const handleResize = () => {
       const nextViewport = viewportSize();
       const nextPosition = clampPosition(
@@ -285,12 +323,13 @@ export function CodexPetLayer() {
         nextViewport.width,
         nextViewport.height,
         petGroupWidth,
-        petHeight
+        petHeight,
+        petGroupVisibleBounds
       );
       positionRef.current = nextPosition;
       setViewport(nextViewport);
       setPosition(nextPosition);
-      if (!isDesktopPetOverlay) savePosition(nextPosition);
+      savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
     };
 
     window.addEventListener("resize", handleResize);
@@ -298,7 +337,14 @@ export function CodexPetLayer() {
       if (resetTimer.current) window.clearTimeout(resetTimer.current);
       window.removeEventListener("resize", handleResize);
     };
-  }, [petGroupWidth, petHeight]);
+  }, [
+    petGroupVisibleBounds.bottom,
+    petGroupVisibleBounds.left,
+    petGroupVisibleBounds.right,
+    petGroupVisibleBounds.top,
+    petGroupWidth,
+    petHeight,
+  ]);
 
   useEffect(() => {
     const nextPosition = clampPosition(
@@ -306,7 +352,8 @@ export function CodexPetLayer() {
       viewport.width,
       viewport.height,
       petGroupWidth,
-      petHeight
+      petHeight,
+      petGroupVisibleBounds
     );
     if (
       nextPosition.x === positionRef.current.x
@@ -314,8 +361,17 @@ export function CodexPetLayer() {
     ) return;
     positionRef.current = nextPosition;
     setPosition(nextPosition);
-    if (!isDesktopPetOverlay) savePosition(nextPosition);
-  }, [petGroupWidth, petHeight, viewport.height, viewport.width]);
+    savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
+  }, [
+    petGroupVisibleBounds.bottom,
+    petGroupVisibleBounds.left,
+    petGroupVisibleBounds.right,
+    petGroupVisibleBounds.top,
+    petGroupWidth,
+    petHeight,
+    viewport.height,
+    viewport.width,
+  ]);
 
   useEffect(() => {
     if (!selectedPet || !speech || messagesMuted) return;
@@ -332,22 +388,31 @@ export function CodexPetLayer() {
   }, [messagesMuted, selectedPet, speech]);
 
   useEffect(() => {
-    if (!speech || messagesMuted || isDesktopPetOverlay) return;
+    if (!speech || messagesMuted) return;
     const requiredTopSpace = (speech.question ? 216 : 112) + PET_MARGIN * 2;
-    if (positionRef.current.y >= requiredTopSpace) return;
+    if (positionRef.current.y + petGroupVisibleBounds.top >= requiredTopSpace) return;
     const next = clampPosition(
-      { x: positionRef.current.x, y: requiredTopSpace },
+      {
+        x: positionRef.current.x,
+        y: requiredTopSpace - petGroupVisibleBounds.top,
+      },
       viewport.width,
       viewport.height,
-      petWidth,
-      petHeight
+      petGroupWidth,
+      petHeight,
+      petGroupVisibleBounds
     );
     positionRef.current = next;
     setPosition(next);
+    savePosition(next, PET_POSITION_STORAGE_KEY);
   }, [
     messagesMuted,
+    petGroupVisibleBounds.bottom,
+    petGroupVisibleBounds.left,
+    petGroupVisibleBounds.right,
+    petGroupVisibleBounds.top,
+    petGroupWidth,
     petHeight,
-    petWidth,
     position.y,
     speech,
     viewport.height,
@@ -406,7 +471,8 @@ export function CodexPetLayer() {
       viewport.width,
       viewport.height,
       petGroupWidth,
-      petHeight
+      petHeight,
+      petGroupVisibleBounds
     );
     positionRef.current = next;
     setPosition(next);
@@ -416,8 +482,6 @@ export function CodexPetLayer() {
     if (event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     dragState.current = {
-      lastScreenX: event.screenX,
-      lastScreenY: event.screenY,
       moved: false,
       originX: positionRef.current.x,
       originY: positionRef.current.y,
@@ -426,27 +490,11 @@ export function CodexPetLayer() {
       startY: event.clientY,
     };
     setDragging(true);
-    if (isDesktopPetOverlay && desktop?.beginPetOverlayDrag) {
-      desktop.beginPetOverlayDrag();
-    }
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-
-    if (isDesktopPetOverlay && desktop?.movePetOverlayBy) {
-      const screenDeltaX = event.screenX - drag.lastScreenX;
-      const screenDeltaY = event.screenY - drag.lastScreenY;
-      if (Math.abs(screenDeltaX) > 0 || Math.abs(screenDeltaY) > 0) {
-        drag.moved = true;
-        drag.lastScreenX = event.screenX;
-        drag.lastScreenY = event.screenY;
-        if (desktop?.movePetOverlayWithCursor) desktop.movePetOverlayWithCursor();
-        else desktop.movePetOverlayBy(screenDeltaX, screenDeltaY);
-      }
-      return;
-    }
 
     const deltaX = event.clientX - drag.startX;
     const deltaY = event.clientY - drag.startY;
@@ -463,10 +511,7 @@ export function CodexPetLayer() {
     suppressClick.current = drag.moved;
     dragState.current = null;
     setDragging(false);
-    if (isDesktopPetOverlay && desktop?.endPetOverlayDrag) {
-      desktop.endPetOverlayDrag();
-    }
-    if (!isDesktopPetOverlay) savePosition(positionRef.current);
+    savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
   };
 
   const handleClick = () => {
@@ -483,18 +528,25 @@ export function CodexPetLayer() {
     const nextDimensions = petDimensions(nextSize, petHeightRatio);
     const nextGroupWidth = nextDimensions.width * Math.max(1, visiblePets.length)
       + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
+    const nextVisibleBounds = visiblePetGroupBounds(
+      visiblePets,
+      nextDimensions.width,
+      nextDimensions.height,
+      visibleBoundsByPet
+    );
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
       viewport.height,
       nextGroupWidth,
-      nextDimensions.height
+      nextDimensions.height,
+      nextVisibleBounds
     );
     localStorage.setItem(PET_SIZE_KEY, String(nextSize));
     positionRef.current = nextPosition;
     setPetSize(nextSize);
     setPosition(nextPosition);
-    if (!isDesktopPetOverlay) savePosition(nextPosition);
+    savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
   };
 
   const showContextMenu = (event: ReactMouseEvent<HTMLButtonElement>) => {
@@ -510,21 +562,25 @@ export function CodexPetLayer() {
     desktop.relayPetOverlayWheel(event.deltaX, event.deltaY);
   };
 
-  const bubbleOnRight = position.x < viewport.width / 2;
+  const petVisualLeft = position.x + petGroupVisibleBounds.left;
+  const petVisualRight = position.x + petGroupVisibleBounds.right;
+  const petVisualTop = position.y + petGroupVisibleBounds.top;
+  const petVisualBottom = position.y + petGroupVisibleBounds.bottom;
+  const bubbleOnRight = (petVisualLeft + petVisualRight) / 2 < viewport.width / 2;
   const tailHorizontalClass = bubbleOnRight ? "left-5" : "right-5";
   const bubbleLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? position.x : position.x + petGroupWidth - PET_BUBBLE_WIDTH
+      bubbleOnRight ? petVisualLeft : petVisualRight - PET_BUBBLE_WIDTH
     ),
     Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
   );
-  const bubbleMaxHeight = Math.max(112, position.y - PET_MARGIN * 2);
-  const bubbleBottom = viewport.height - position.y + PET_MARGIN;
-  const menuBelow = position.y < PET_MENU_ESTIMATED_HEIGHT + PET_MARGIN * 2;
+  const bubbleMaxHeight = Math.max(112, petVisualTop - PET_MARGIN * 2);
+  const bubbleBottom = viewport.height - petVisualTop + PET_MARGIN;
+  const menuBelow = petVisualTop < PET_MENU_ESTIMATED_HEIGHT + PET_MARGIN * 2;
   const preferredMenuTop = menuBelow
-    ? position.y + petHeight + PET_MARGIN
-    : position.y - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN;
+    ? petVisualBottom + PET_MARGIN
+    : petVisualTop - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN;
   const menuTop = Math.min(
     Math.max(PET_MARGIN, preferredMenuTop),
     Math.max(PET_MARGIN, viewport.height - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN)
@@ -532,7 +588,7 @@ export function CodexPetLayer() {
   const menuLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? position.x : position.x + petGroupWidth - PET_MENU_WIDTH
+      bubbleOnRight ? petVisualLeft : petVisualRight - PET_MENU_WIDTH
     ),
     Math.max(PET_MARGIN, viewport.width - PET_MENU_WIDTH - PET_MARGIN)
   );
@@ -763,6 +819,7 @@ export function CodexPetLayer() {
             animation={index === 0 ? animation : "idle"}
             className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
             key={codexPetKey(pet)}
+            onVisibleBounds={(bounds) => updatePetVisibleBounds(codexPetKey(pet), bounds)}
             pet={pet}
             playbackKey={index === 0 ? playbackKey : 0}
             size={petWidth}

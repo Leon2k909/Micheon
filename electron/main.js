@@ -7,7 +7,6 @@
 // work here because the server runs locally inside the app.
 
 import { app, BrowserWindow, shell, ipcMain, screen } from "electron";
-import fs from "node:fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
@@ -20,21 +19,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Local port for the embedded server. Deliberately uncommon so it won't collide
 // with the dev server (3001) or other tooling on the user's machine.
 const PORT = process.env.GERM_PORT || 41730;
-const PET_OVERLAY_WIDTH = 640;
-const PET_OVERLAY_HEIGHT = 500;
-const PET_OVERLAY_MARGIN = 16;
 
 let mainWindow = null;
 let petWindow = null;
-let petDragState = null;
 let serverStarted = false;
-let savePetBoundsTimer = null;
-let petContentBounds = {
-  height: 104,
-  width: 96,
-  x: PET_OVERLAY_WIDTH - 96 - 24,
-  y: PET_OVERLAY_HEIGHT - 104 - 20,
-};
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port again.
@@ -55,74 +43,45 @@ async function ensureServer() {
   serverStarted = true;
 }
 
-function petBoundsFile() {
-  return path.join(app.getPath("userData"), "pet-overlay-bounds.json");
-}
-
-function clampPetPosition(x, y) {
-  const petCenter = {
-    x: Math.round(x + petContentBounds.x + petContentBounds.width / 2),
-    y: Math.round(y + petContentBounds.y + petContentBounds.height / 2),
-  };
-  const display = screen.getDisplayNearestPoint(petCenter);
-  // The mascot is a desktop overlay, so it should be allowed to use the
-  // full monitor bounds rather than stopping at the taskbar/work area.
-  const screenBounds = display.bounds;
+function virtualDesktopBounds() {
+  // Keep one click-through renderer across the complete virtual desktop. Moving
+  // a small native window left Windows to clamp its transparent outer box on
+  // some scaled laptop displays, long before the visible mascot reached an edge.
+  const displays = screen.getAllDisplays();
+  const left = Math.min(...displays.map((display) => display.bounds.x));
+  const top = Math.min(...displays.map((display) => display.bounds.y));
+  const right = Math.max(...displays.map((display) => display.bounds.x + display.bounds.width));
+  const bottom = Math.max(...displays.map((display) => display.bounds.y + display.bounds.height));
   return {
-    x: Math.round(Math.min(
-      Math.max(x, screenBounds.x + PET_OVERLAY_MARGIN - petContentBounds.x),
-      screenBounds.x + screenBounds.width - PET_OVERLAY_MARGIN
-        - petContentBounds.x - petContentBounds.width
-    )),
-    y: Math.round(Math.min(
-      Math.max(y, screenBounds.y + PET_OVERLAY_MARGIN - petContentBounds.y),
-      screenBounds.y + screenBounds.height - PET_OVERLAY_MARGIN
-        - petContentBounds.y - petContentBounds.height
-    )),
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
   };
 }
 
-function initialPetPosition() {
-  try {
-    const saved = JSON.parse(fs.readFileSync(petBoundsFile(), "utf8"));
-    if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y)) {
-      return clampPetPosition(saved.x, saved.y);
-    }
-  } catch {
-    // First launch or an invalid bounds file falls back to the primary display.
-  }
-
-  const screenBounds = screen.getPrimaryDisplay().bounds;
-  return {
-    x: screenBounds.x + screenBounds.width - PET_OVERLAY_WIDTH - PET_OVERLAY_MARGIN,
-    y: screenBounds.y + screenBounds.height - PET_OVERLAY_HEIGHT - PET_OVERLAY_MARGIN,
-  };
-}
-
-function savePetBounds() {
+function syncPetOverlayBounds() {
+  // Display bounds are expressed in Electron DIP coordinates, so this also
+  // follows Windows display scaling and mixed-resolution monitor changes.
   if (!petWindow || petWindow.isDestroyed()) return;
-  const { x, y } = petWindow.getBounds();
-  try {
-    fs.writeFileSync(petBoundsFile(), JSON.stringify({ x, y }));
-  } catch (error) {
-    console.error("[pet] unable to save overlay bounds:", error?.message ?? error);
+  const next = virtualDesktopBounds();
+  const current = petWindow.getBounds();
+  if (
+    current.x !== next.x
+    || current.y !== next.y
+    || current.width !== next.width
+    || current.height !== next.height
+  ) {
+    petWindow.setBounds(next, false);
   }
-}
-
-function schedulePetBoundsSave() {
-  if (savePetBoundsTimer) clearTimeout(savePetBoundsTimer);
-  savePetBoundsTimer = setTimeout(savePetBounds, 180);
 }
 
 function createPetOverlayWindow() {
   if (petWindow && !petWindow.isDestroyed()) return petWindow;
-  const position = initialPetPosition();
+  const desktopBounds = virtualDesktopBounds();
 
   petWindow = new BrowserWindow({
-    width: PET_OVERLAY_WIDTH,
-    height: PET_OVERLAY_HEIGHT,
-    x: position.x,
-    y: position.y,
+    ...desktopBounds,
     show: false,
     frame: false,
     transparent: true,
@@ -130,6 +89,7 @@ function createPetOverlayWindow() {
     alwaysOnTop: true,
     focusable: false,
     hasShadow: false,
+    movable: false,
     resizable: false,
     maximizable: false,
     minimizable: false,
@@ -150,9 +110,7 @@ function createPetOverlayWindow() {
   void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
     console.error("[pet] unable to load overlay:", error?.message ?? error);
   });
-  petWindow.on("move", schedulePetBoundsSave);
   petWindow.on("closed", () => {
-    petDragState = null;
     petWindow = null;
   });
   petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -165,6 +123,7 @@ function setPetOverlayVisible(visible) {
     return;
   }
   const overlay = createPetOverlayWindow();
+  syncPetOverlayBounds();
   overlay.setAlwaysOnTop(true, "floating");
   overlay.showInactive();
 }
@@ -278,52 +237,9 @@ ipcMain.on("pet-overlay:set-visible", (event, visible) => {
   setPetOverlayVisible(Boolean(visible));
 });
 
-ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
-  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
-  const dx = Number(deltaX);
-  const dy = Number(deltaY);
-  if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
-  const [x, y] = petWindow.getPosition();
-  const next = clampPetPosition(
-    x + Math.max(-160, Math.min(160, dx)),
-    y + Math.max(-160, Math.min(160, dy))
-  );
-  petWindow.setPosition(next.x, next.y);
-  schedulePetBoundsSave();
-});
-
 ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
   if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
   petWindow.setIgnoreMouseEvents(!interactive, { forward: true });
-});
-
-ipcMain.on("pet-overlay:drag-start", (event) => {
-  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
-  const cursor = screen.getCursorScreenPoint();
-  const [windowX, windowY] = petWindow.getPosition();
-  petDragState = { cursorX: cursor.x, cursorY: cursor.y, windowX, windowY };
-  petWindow.setIgnoreMouseEvents(false);
-});
-
-ipcMain.on("pet-overlay:drag-move", (event) => {
-  if (
-    !eventCameFrom(event, petWindow)
-    || !petWindow
-    || petWindow.isDestroyed()
-    || !petDragState
-  ) return;
-  const cursor = screen.getCursorScreenPoint();
-  const next = clampPetPosition(
-    petDragState.windowX + cursor.x - petDragState.cursorX,
-    petDragState.windowY + cursor.y - petDragState.cursorY
-  );
-  petWindow.setPosition(next.x, next.y);
-});
-
-ipcMain.on("pet-overlay:drag-end", (event) => {
-  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
-  petDragState = null;
-  schedulePetBoundsSave();
 });
 
 ipcMain.on("pet-overlay:wheel", (event, deltaX, deltaY) => {
@@ -336,34 +252,6 @@ ipcMain.on("pet-overlay:wheel", (event, deltaX, deltaY) => {
     Math.max(-1600, Math.min(1600, dx)),
     Math.max(-1600, Math.min(1600, dy))
   );
-});
-
-ipcMain.on("pet-overlay:set-content-bounds", (event, bounds) => {
-  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
-  const next = {
-    height: Number(bounds?.height),
-    width: Number(bounds?.width),
-    x: Number(bounds?.x),
-    y: Number(bounds?.y),
-  };
-  if (
-    !Number.isFinite(next.x)
-    || !Number.isFinite(next.y)
-    || !Number.isFinite(next.width)
-    || !Number.isFinite(next.height)
-    || next.width < 32
-    || next.height < 32
-    || next.width > PET_OVERLAY_WIDTH
-    || next.height > PET_OVERLAY_HEIGHT
-  ) return;
-
-  petContentBounds = next;
-  const [x, y] = petWindow.getPosition();
-  const clamped = clampPetPosition(x, y);
-  if (clamped.x !== x || clamped.y !== y) {
-    petWindow.setPosition(clamped.x, clamped.y);
-    schedulePetBoundsSave();
-  }
 });
 
 ipcMain.on("pet-overlay:speak", (event, payload) => {
@@ -401,6 +289,9 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
 
 app.whenReady().then(async () => {
   await createWindow();
+  screen.on("display-added", syncPetOverlayBounds);
+  screen.on("display-removed", syncPetOverlayBounds);
+  screen.on("display-metrics-changed", syncPetOverlayBounds);
   setupAutoUpdate();
 });
 
