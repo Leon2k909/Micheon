@@ -19,20 +19,6 @@ export type CodexPetVisibleBounds = {
 };
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
-// Each entry is a full ImageData for one animation frame — width * height * 4
-// bytes — so this is not a cheap map to let grow without limit across every pet
-// the user tries. Oldest entries are evicted once it gets large.
-const FRAME_CACHE_LIMIT = 240;
-const frameCache = new Map<string, ImageData>();
-
-function cacheFrame(key: string, value: ImageData) {
-  if (frameCache.size >= FRAME_CACHE_LIMIT) {
-    // Map iterates in insertion order, so the first key is the oldest.
-    const oldest = frameCache.keys().next();
-    if (!oldest.done) frameCache.delete(oldest.value);
-  }
-  frameCache.set(key, value);
-}
 const visibleBoundsCache = new Map<string, Promise<CodexPetVisibleBounds>>();
 
 function loadSpritesheet(url: string) {
@@ -55,17 +41,20 @@ function loadSpritesheet(url: string) {
   return promise;
 }
 
-function loadVisibleBounds(pet: CodexPet) {
+function loadVisibleBounds(pet: CodexPet, spritesheetUrl = pet.spritesheetUrl) {
   const frameCount = pet.frame.columns * pet.frame.rows;
+  // Bounds are used only to let the pet reach the physical screen edges. The
+  // idle row represents its normal silhouette, so reading that row is enough
+  // and avoids decoding/scanning every animation frame during app startup.
+  const idleFrames = pet.animations.idle?.frames ?? [];
   const frames = [...new Set(
-    Object.values(pet.animations)
-      .flatMap((definition) => definition.frames)
+    idleFrames
       .filter((frame) => frame >= 0 && frame < frameCount)
   )];
   if (!frames.length) frames.push(0);
 
   const cacheKey = [
-    pet.spritesheetUrl,
+    spritesheetUrl,
     pet.frame.width,
     pet.frame.height,
     pet.frame.columns,
@@ -75,7 +64,7 @@ function loadVisibleBounds(pet: CodexPet) {
   const cached = visibleBoundsCache.get(cacheKey);
   if (cached) return cached;
 
-  const promise = loadSpritesheet(pet.spritesheetUrl).then((image) => {
+  const promise = loadSpritesheet(spritesheetUrl).then((image) => {
     const canvas = document.createElement("canvas");
     canvas.width = pet.frame.width;
     canvas.height = pet.frame.height;
@@ -128,79 +117,6 @@ function loadVisibleBounds(pet: CodexPet) {
   return promise;
 }
 
-type AlphaComponent = {
-  maxY: number;
-  minY: number;
-  pixels: number[];
-};
-
-/**
- * Custom pet generators occasionally leave a detached floor shadow or a small
- * duplicate fragment under a frame. Remove only lower fragments that are tiny
- * relative to the character body; effects beside and above the mascot remain.
- */
-function removeDetachedLowerFragments(imageData: ImageData) {
-  const { data, width, height } = imageData;
-  const pixelCount = width * height;
-  const visited = new Uint8Array(pixelCount);
-  const queue = new Int32Array(pixelCount);
-  const components: AlphaComponent[] = [];
-
-  for (let start = 0; start < pixelCount; start += 1) {
-    if (visited[start] || data[start * 4 + 3] < 12) continue;
-
-    let head = 0;
-    let tail = 0;
-    let minY = height;
-    let maxY = 0;
-    const pixels: number[] = [];
-    visited[start] = 1;
-    queue[tail++] = start;
-
-    while (head < tail) {
-      const index = queue[head++];
-      const x = index % width;
-      const y = Math.floor(index / width);
-      pixels.push(index);
-      minY = Math.min(minY, y);
-      maxY = Math.max(maxY, y);
-
-      for (let yOffset = -1; yOffset <= 1; yOffset += 1) {
-        for (let xOffset = -1; xOffset <= 1; xOffset += 1) {
-          if (xOffset === 0 && yOffset === 0) continue;
-          const nextX = x + xOffset;
-          const nextY = y + yOffset;
-          if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) continue;
-          const next = nextY * width + nextX;
-          if (visited[next] || data[next * 4 + 3] < 12) continue;
-          visited[next] = 1;
-          queue[tail++] = next;
-        }
-      }
-    }
-
-    components.push({ maxY, minY, pixels });
-  }
-
-  const body = components.reduce<AlphaComponent | null>(
-    (largest, component) => !largest || component.pixels.length > largest.pixels.length ? component : largest,
-    null
-  );
-  if (!body || body.pixels.length < 32) return imageData;
-
-  for (const component of components) {
-    if (component === body) continue;
-    const isSmall = component.pixels.length < body.pixels.length * 0.18;
-    const isBelowBody = component.minY > body.maxY - Math.max(2, Math.round(height * 0.025));
-    if (!isSmall || !isBelowBody) continue;
-    for (const pixel of component.pixels) {
-      data[pixel * 4 + 3] = 0;
-    }
-  }
-
-  return imageData;
-}
-
 export function CodexPetSprite({
   animation = "idle",
   className = "",
@@ -209,9 +125,7 @@ export function CodexPetSprite({
   playbackKey = 0,
   size = 96,
 }: CodexPetSpriteProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const visibleBoundsCallback = useRef(onVisibleBounds);
-  const [canvasFailed, setCanvasFailed] = useState(false);
   const [loadRetry, setLoadRetry] = useState(0);
   const requestedAnimation = pet.animations[animation] ? animation : "idle";
   const [activeAnimation, setActiveAnimation] = useState(requestedAnimation);
@@ -260,14 +174,9 @@ export function CodexPetSprite({
       });
     };
 
-    // Only animate while the window is actually on screen.
-    //
-    // The desktop overlay is created with backgroundThrottling disabled, which
-    // means Chromium does NOT slow this timer down when the window is hidden or
-    // covered. Without this check every pet kept redrawing its spritesheet at
-    // full frame rate for as long as the app was running — including while the
-    // pet was switched off and its window hidden — which is real, permanent CPU
-    // and GPU load for something nobody can see.
+    // Pause immediately when Electron hides the overlay. Chromium's normal
+    // background throttling is also enabled in the main process as a second
+    // guard, so an invisible mascot cannot keep waking the renderer.
     const start = () => {
       if (interval) return;
       interval = window.setInterval(tick, 1000 / Math.max(1, definition.fps || 1));
@@ -291,93 +200,37 @@ export function CodexPetSprite({
   const column = frame % pet.frame.columns;
   const row = Math.floor(frame / pet.frame.columns);
   const height = Math.round(size * (pet.frame.height / pet.frame.width));
+  const spritesheetUrl = useMemo(() => {
+    if (loadRetry === 0) return pet.spritesheetUrl;
+    const separator = pet.spritesheetUrl.includes("?") ? "&" : "?";
+    return `${pet.spritesheetUrl}${separator}petRetry=${loadRetry}`;
+  }, [loadRetry, pet.spritesheetUrl]);
 
   useEffect(() => {
-    setCanvasFailed(false);
     setLoadRetry(0);
-  }, [pet]);
-
-  useEffect(() => {
-    if (!canvasFailed || loadRetry >= 6) return undefined;
-    const timer = window.setTimeout(() => {
-      setLoadRetry((current) => current + 1);
-      setCanvasFailed(false);
-    }, Math.min(10000, 500 * 2 ** loadRetry));
-    return () => window.clearTimeout(timer);
-  }, [canvasFailed, loadRetry]);
+  }, [pet.spritesheetUrl]);
 
   useEffect(() => {
     let cancelled = false;
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
-
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) {
-      setCanvasFailed(true);
-      return undefined;
-    }
-
-    const cacheKey = [
-      pet.spritesheetUrl,
-      pet.frame.width,
-      pet.frame.height,
-      pet.frame.columns,
-      frame,
-    ].join(":");
-
-    const paint = async () => {
-      try {
-        let imageData = frameCache.get(cacheKey);
-        if (!imageData) {
-          const image = await loadSpritesheet(pet.spritesheetUrl);
-          if (cancelled) return;
-          context.clearRect(0, 0, pet.frame.width, pet.frame.height);
-          context.drawImage(
-            image,
-            column * pet.frame.width,
-            row * pet.frame.height,
-            pet.frame.width,
-            pet.frame.height,
-            0,
-            0,
-            pet.frame.width,
-            pet.frame.height
-          );
-          imageData = removeDetachedLowerFragments(
-            context.getImageData(0, 0, pet.frame.width, pet.frame.height)
-          );
-          cacheFrame(cacheKey, imageData);
-        }
-        if (cancelled) return;
-        context.clearRect(0, 0, pet.frame.width, pet.frame.height);
-        context.putImageData(imageData, 0, 0);
-        setCanvasFailed(false);
-      } catch {
-        if (!cancelled) setCanvasFailed(true);
-      }
-    };
-
-    void paint();
+    let timer = 0;
+    void loadSpritesheet(spritesheetUrl).catch(() => {
+      if (cancelled || loadRetry >= 6) return;
+      timer = window.setTimeout(
+        () => setLoadRetry((current) => current + 1),
+        Math.min(10000, 500 * 2 ** loadRetry)
+      );
+    });
     return () => {
       cancelled = true;
+      if (timer) window.clearTimeout(timer);
     };
-  }, [
-    column,
-    canvasFailed,
-    frame,
-    loadRetry,
-    pet.frame.columns,
-    pet.frame.height,
-    pet.frame.width,
-    pet.spritesheetUrl,
-    row,
-  ]);
+  }, [loadRetry, spritesheetUrl]);
 
   const style = useMemo<CSSProperties>(
     () => ({
       width: size,
       height,
-      backgroundImage: `url("${pet.spritesheetUrl}")`,
+      backgroundImage: `url("${spritesheetUrl}")`,
       backgroundRepeat: "no-repeat",
       backgroundSize: `${pet.frame.columns * 100}% ${pet.frame.rows * 100}%`,
       backgroundPosition: `${
@@ -385,34 +238,26 @@ export function CodexPetSprite({
       }% ${
         pet.frame.rows > 1 ? (row / (pet.frame.rows - 1)) * 100 : 0
       }%`,
+      contain: "strict",
+      imageRendering: "auto",
+      willChange: "background-position",
     }),
     [
       column,
       height,
       pet.frame.columns,
       pet.frame.rows,
-      pet.spritesheetUrl,
       row,
       size,
+      spritesheetUrl,
     ]
   );
 
   return (
-    canvasFailed ? (
-      <span
-        aria-hidden="true"
-        className={`block shrink-0 bg-transparent ${className}`}
-        style={style}
-      />
-    ) : (
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className={`block shrink-0 bg-transparent ${className}`}
-        height={pet.frame.height}
-        style={{ height, width: size }}
-        width={pet.frame.width}
-      />
-    )
+    <span
+      aria-hidden="true"
+      className={`block shrink-0 bg-transparent ${className}`}
+      style={style}
+    />
   );
 }

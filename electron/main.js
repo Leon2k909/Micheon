@@ -290,7 +290,12 @@ function createPetOverlayWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      backgroundThrottling: false,
+      // The overlay used to opt out of Chromium's background throttling. That
+      // kept sprite timers and transparent-surface composition running at full
+      // speed even after the mascot window was hidden, which could make the
+      // entire desktop stutter. Visible pets animate normally with the default
+      // throttling; hidden pets now become genuinely idle.
+      backgroundThrottling: true,
       preload: path.join(__dirname, "preload.cjs"),
     },
   });
