@@ -22,7 +22,10 @@ on:
 
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: false
+  # Auto-update only needs the newest version. If an older Windows build is
+  # stuck or still queued, let the latest version replace it instead of
+  # blocking every subsequent release behind stale work.
+  cancel-in-progress: true
 
 permissions:
   contents: write
