@@ -925,12 +925,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [meaningSelectChecked, setMeaningSelectChecked] = useState(false);
   const [listeningChoice, setListeningChoice] = useState<string | null>(null);
   const [listeningChecked, setListeningChecked] = useState(false);
+  const [missingWordPreview, setMissingWordPreview] = useState<string | null>(null);
   const [missingWordChoice, setMissingWordChoice] = useState<string | null>(null);
   const [missingWordChecked, setMissingWordChecked] = useState(false);
   const [orderTokens, setOrderTokens] = useState<OrderToken[]>(() => buildOrderTokens(item.de));
   const [orderChecked, setOrderChecked] = useState(false);
   const [orderTouched, setOrderTouched] = useState(false);
   const [orderSelected, setOrderSelected] = useState<number | null>(null);
+  const [orderDragging, setOrderDragging] = useState<number | null>(null);
   const draggedOrderIndex = useRef<number | null>(null);
 
   // Final "Write it" stage: type the whole target sentence from its meaning.
@@ -1477,11 +1479,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMissingWordChoice(choice);
     setMissingWordChecked(true);
     reactToAnswer(ok);
-    tts(choice, 0.78, targetLang);
     if (ok) {
       tts(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
+  };
+
+  const previewMissingWord = (choice: string) => {
+    setMissingWordPreview(choice);
+    tts(choice, 0.78, targetLang);
   };
 
   const retryMissingWord = () => {
@@ -2147,31 +2153,45 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 const isSelected = missingWordChoice === choice;
                 const isAnswer = choiceKey(choice) === choiceKey(missingWord.answer);
                 return (
-                  <button
+                  <div
                     key={`${choice}-${choiceIndex}`}
-                    type="button"
-                    aria-label={`${ui("Play option")} ${choiceIndex + 1}`}
-                    aria-pressed={isSelected}
-                    disabled={missingWordChecked}
-                    onClick={() => selectMissingWord(choice)}
                     className={cn(
                       "fs-missing-audio-option",
                       isSelected && "is-selected",
-                      ttsOn && isSelected && "is-speaking",
+                      ttsOn && missingWordPreview === choice && "is-speaking",
                       missingWordChecked && isAnswer && "is-correct",
                       missingWordChecked && isSelected && !isAnswer && "is-wrong"
                     )}
                   >
                     <span className="fs-missing-option-number">{choiceIndex + 1}</span>
-                    <Volume2 className="fs-missing-volume h-5 w-5" />
+                    <button
+                      aria-label={`${ui("Play option")} ${choiceIndex + 1}`}
+                      className="fs-missing-play"
+                      onClick={() => previewMissingWord(choice)}
+                      type="button"
+                    >
+                      <Volume2 className="h-5 w-5" />
+                    </button>
                     <span className="fs-missing-wave" aria-hidden>
                       {[13, 24, 38, 19, 32, 16, 29, 21, 35].map((height, index) => (
                         <i key={`${height}-${index}`} style={{ height: height + ((choiceIndex + index) % 3) * 2 }} />
                       ))}
                     </span>
-                    {missingWordChecked && isAnswer && <CheckCircle2 className="h-5 w-5" />}
-                    {missingWordChecked && isSelected && !isAnswer && <X className="h-5 w-5" />}
-                  </button>
+                    <button
+                      aria-label={`${ui("Choose answer")} ${choiceIndex + 1}`}
+                      aria-pressed={isSelected}
+                      className="fs-missing-choose"
+                      disabled={missingWordChecked}
+                      onClick={() => selectMissingWord(choice)}
+                      type="button"
+                    >
+                      {missingWordChecked && isAnswer
+                        ? <CheckCircle2 className="h-5 w-5" />
+                        : missingWordChecked && isSelected
+                          ? <X className="h-5 w-5" />
+                          : ui("Choose")}
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -2271,17 +2291,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 Speech recognition is not available here (no microphone access) - practice aloud, then continue when ready.
               </p>
             )}
-            <div className="flex gap-3">
-              <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={() => tts(item.de, 0.75, targetLang)}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50">
-                <Volume2 className="h-5 w-5" />
-              </motion.button>
-              <Button type="button" onClick={advance}
-                className="continue-glow h-14 flex-1 rounded-2xl lesson-cta text-sm font-black">
-                {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            <Button type="button" onClick={advance}
+              className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
+              {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}
@@ -2707,16 +2720,32 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className={cn(
                       "fs-order-token",
                       orderSelected === tokenIndex && "is-selected",
+                      orderDragging === tokenIndex && "is-dragging",
                       orderChecked && orderIsCorrect && "is-correct"
                     )}
                     onClick={() => selectOrderToken(tokenIndex)}
+                    onPointerDown={() => setOrderDragging(tokenIndex)}
+                    onPointerCancel={() => setOrderDragging(null)}
+                    onPointerUp={() => {
+                      if (draggedOrderIndex.current === null) setOrderDragging(null);
+                    }}
                     onDragStart={(event) => {
                       draggedOrderIndex.current = tokenIndex;
+                      setOrderDragging(tokenIndex);
                       event.dataTransfer.effectAllowed = "move";
                       event.dataTransfer.setData("text/plain", String(tokenIndex));
                     }}
                     onDragEnd={() => {
                       draggedOrderIndex.current = null;
+                      setOrderDragging(null);
+                    }}
+                    onDragEnter={(event) => {
+                      event.preventDefault();
+                      const from = draggedOrderIndex.current;
+                      if (from === null || from === tokenIndex) return;
+                      reorderToken(from, tokenIndex);
+                      draggedOrderIndex.current = tokenIndex;
+                      setOrderDragging(tokenIndex);
                     }}
                     onDragOver={(event) => {
                       event.preventDefault();
@@ -2727,6 +2756,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       const from = draggedOrderIndex.current ?? Number(event.dataTransfer.getData("text/plain"));
                       if (Number.isInteger(from)) reorderToken(from, tokenIndex);
                       draggedOrderIndex.current = null;
+                      setOrderDragging(null);
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "ArrowLeft" && tokenIndex > 0) {
