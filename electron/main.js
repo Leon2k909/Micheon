@@ -22,6 +22,7 @@ const PORT = process.env.GERM_PORT || 41730;
 
 let mainWindow = null;
 let petWindow = null;
+let petOverlayUsesShape = false;
 let serverStarted = false;
 
 // Only allow one instance — a second launch focuses the existing window instead
@@ -112,6 +113,7 @@ function createPetOverlayWindow() {
   });
   petWindow.on("closed", () => {
     petWindow = null;
+    petOverlayUsesShape = false;
   });
   petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   return petWindow;
@@ -239,7 +241,54 @@ ipcMain.on("pet-overlay:set-visible", (event, visible) => {
 
 ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
   if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  // Windows-shaped overlays own input only over the mascot UI and therefore do
+  // not need the fragile mousemove-driven click-through toggle.
+  if (petOverlayUsesShape) return;
   petWindow.setIgnoreMouseEvents(!interactive, { forward: true });
+});
+
+ipcMain.on("pet-overlay:set-hit-regions", (event, regions) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  if (process.platform !== "win32" && process.platform !== "linux") return;
+  if (!Array.isArray(regions) || regions.length === 0) return;
+
+  const overlayBounds = petWindow.getBounds();
+  const safeRegions = regions
+    .slice(0, 32)
+    .map((region) => {
+      const rawX = Number(region?.x);
+      const rawY = Number(region?.y);
+      const rawWidth = Number(region?.width);
+      const rawHeight = Number(region?.height);
+      if (
+        !Number.isFinite(rawX)
+        || !Number.isFinite(rawY)
+        || !Number.isFinite(rawWidth)
+        || !Number.isFinite(rawHeight)
+      ) return null;
+
+      const x = Math.max(0, Math.floor(rawX));
+      const y = Math.max(0, Math.floor(rawY));
+      const right = Math.min(overlayBounds.width, Math.ceil(rawX + rawWidth));
+      const bottom = Math.min(overlayBounds.height, Math.ceil(rawY + rawHeight));
+      if (right <= x || bottom <= y) return null;
+      return { x, y, width: right - x, height: bottom - y };
+    })
+    .filter(Boolean);
+
+  if (safeRegions.length === 0) return;
+  try {
+    // Pixels outside these rectangles are neither drawn nor interactive. That
+    // makes the desktop genuinely click-through without depending on a hover
+    // event arriving before the user's initial mouse-down on the mascot.
+    petWindow.setShape(safeRegions);
+    petOverlayUsesShape = true;
+    petWindow.setIgnoreMouseEvents(false);
+  } catch (error) {
+    petOverlayUsesShape = false;
+    petWindow.setIgnoreMouseEvents(true, { forward: true });
+    console.error("[pet] unable to shape overlay:", error?.message ?? error);
+  }
 });
 
 ipcMain.on("pet-overlay:set-keyboard-interactive", (event, interactive) => {

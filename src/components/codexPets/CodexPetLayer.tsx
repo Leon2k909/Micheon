@@ -276,6 +276,9 @@ export function CodexPetLayer() {
 
   useEffect(() => {
     if (!isDesktopPetOverlay || !desktop?.setPetOverlayInteractive) return undefined;
+    if (desktop?.petOverlayHitRegionsSupported && desktop?.setPetOverlayHitRegions) {
+      return undefined;
+    }
 
     const updateHitTest = (event: globalThis.MouseEvent) => {
       if (dragState.current) return;
@@ -295,6 +298,61 @@ export function CodexPetLayer() {
       window.removeEventListener("mousemove", updateHitTest, true);
       overlayInteractive.current = null;
       desktop.setPetOverlayInteractive(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      !isDesktopPetOverlay
+      || !desktop?.petOverlayHitRegionsSupported
+      || !desktop?.setPetOverlayHitRegions
+    ) return undefined;
+
+    let animationFrame = 0;
+    let lastRegions = "";
+    const syncHitRegions = () => {
+      animationFrame = 0;
+      const padding = 18;
+      const regions = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '[data-pet-interactive="true"], [role="dialog"]'
+        )
+      )
+        .map((element) => element.getBoundingClientRect())
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => {
+          const x = Math.max(0, Math.floor(rect.left - padding));
+          const y = Math.max(0, Math.floor(rect.top - padding));
+          const right = Math.min(window.innerWidth, Math.ceil(rect.right + padding));
+          const bottom = Math.min(window.innerHeight, Math.ceil(rect.bottom + padding));
+          return { height: bottom - y, width: right - x, x, y };
+        })
+        .filter((region) => region.width > 0 && region.height > 0)
+        .sort((left, right) => left.y - right.y || left.x - right.x);
+      if (regions.length === 0) return;
+      const serialized = JSON.stringify(regions);
+      if (serialized === lastRegions) return;
+      lastRegions = serialized;
+      desktop.setPetOverlayHitRegions(regions);
+    };
+    const scheduleHitRegionSync = () => {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(syncHitRegions);
+    };
+    const observer = new MutationObserver(scheduleHitRegionSync);
+
+    observer.observe(document.body, {
+      attributeFilter: ["class", "style"],
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+    window.addEventListener("resize", scheduleHitRegionSync);
+    scheduleHitRegionSync();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", scheduleHitRegionSync);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
     };
   }, []);
 
