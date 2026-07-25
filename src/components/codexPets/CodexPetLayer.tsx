@@ -184,6 +184,7 @@ export function CodexPetLayer() {
   const resetTimer = useRef<number | null>(null);
   const greetedPet = useRef("");
   const greetingIndex = useRef(0);
+  const overlayInteractive = useRef<boolean | null>(null);
   const positionRef = useRef(position);
   const speechRef = useRef(speech);
   const suppressClick = useRef(false);
@@ -191,6 +192,30 @@ export function CodexPetLayer() {
 
   positionRef.current = position;
   speechRef.current = speech;
+
+  useEffect(() => {
+    if (!isDesktopPetOverlay || !desktop?.setPetOverlayInteractive) return undefined;
+
+    const updateHitTest = (event: globalThis.MouseEvent) => {
+      if (dragState.current) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const interactive = Boolean(
+        target?.closest('[data-pet-interactive="true"], [role="dialog"]')
+      );
+      if (overlayInteractive.current === interactive) return;
+      overlayInteractive.current = interactive;
+      desktop.setPetOverlayInteractive(interactive);
+    };
+
+    overlayInteractive.current = false;
+    desktop.setPetOverlayInteractive(false);
+    window.addEventListener("mousemove", updateHitTest, true);
+    return () => {
+      window.removeEventListener("mousemove", updateHitTest, true);
+      overlayInteractive.current = null;
+      desktop.setPetOverlayInteractive(false);
+    };
+  }, []);
 
   useEffect(() => {
     const syncMutedState = () => {
@@ -391,6 +416,9 @@ export function CodexPetLayer() {
       startY: event.clientY,
     };
     setDragging(true);
+    if (isDesktopPetOverlay && desktop?.beginPetOverlayDrag) {
+      desktop.beginPetOverlayDrag();
+    }
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -404,7 +432,8 @@ export function CodexPetLayer() {
         drag.moved = true;
         drag.lastScreenX = event.screenX;
         drag.lastScreenY = event.screenY;
-        desktop.movePetOverlayBy(screenDeltaX, screenDeltaY);
+        if (desktop?.movePetOverlayWithCursor) desktop.movePetOverlayWithCursor();
+        else desktop.movePetOverlayBy(screenDeltaX, screenDeltaY);
       }
       return;
     }
@@ -424,6 +453,9 @@ export function CodexPetLayer() {
     suppressClick.current = drag.moved;
     dragState.current = null;
     setDragging(false);
+    if (isDesktopPetOverlay && desktop?.endPetOverlayDrag) {
+      desktop.endPetOverlayDrag();
+    }
     if (!isDesktopPetOverlay) savePosition(positionRef.current);
   };
 
@@ -512,17 +544,20 @@ export function CodexPetLayer() {
       <AnimatePresence>
         {menuOpen && (
           <>
-            <button
-              aria-label={ui("Close pet menu")}
-              className="pointer-events-auto fixed inset-0 cursor-default bg-transparent"
-              onClick={() => setMenuOpen(false)}
-              type="button"
-            />
+            {!isDesktopPetOverlay && (
+              <button
+                aria-label={ui("Close pet menu")}
+                className="pointer-events-auto fixed inset-0 cursor-default bg-transparent"
+                onClick={() => setMenuOpen(false)}
+                type="button"
+              />
+            )}
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
               className="pointer-events-auto fixed z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
+              data-pet-interactive="true"
               onContextMenu={(event) => event.preventDefault()}
               onPointerDown={(event) => event.stopPropagation()}
               role="menu"
@@ -630,6 +665,7 @@ export function CodexPetLayer() {
             className="pointer-events-auto fixed z-10 flex w-[min(15rem,calc(100vw-2rem))] flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
+            data-pet-interactive="true"
             onPointerDown={(event) => event.stopPropagation()}
             role={speech.question ? "group" : "status"}
             style={{
@@ -701,6 +737,7 @@ export function CodexPetLayer() {
         aria-label={`Talk to ${selectedPet.displayName}`}
         className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing scale-[1.04]" : "cursor-grab hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
+        data-pet-interactive="true"
         onClick={handleClick}
         onContextMenu={showContextMenu}
         onPointerCancel={finishDrag}

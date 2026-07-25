@@ -26,6 +26,7 @@ const PET_OVERLAY_MARGIN = 16;
 
 let mainWindow = null;
 let petWindow = null;
+let petDragState = null;
 let serverStarted = false;
 let savePetBoundsTimer = null;
 let petContentBounds = {
@@ -145,11 +146,13 @@ function createPetOverlayWindow() {
 
   petWindow.setAlwaysOnTop(true, "floating");
   petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  petWindow.setIgnoreMouseEvents(true, { forward: true });
   void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
     console.error("[pet] unable to load overlay:", error?.message ?? error);
   });
   petWindow.on("move", schedulePetBoundsSave);
   petWindow.on("closed", () => {
+    petDragState = null;
     petWindow = null;
   });
   petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -286,6 +289,40 @@ ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
     y + Math.max(-160, Math.min(160, dy))
   );
   petWindow.setPosition(next.x, next.y);
+  schedulePetBoundsSave();
+});
+
+ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  petWindow.setIgnoreMouseEvents(!interactive, { forward: true });
+});
+
+ipcMain.on("pet-overlay:drag-start", (event) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  const cursor = screen.getCursorScreenPoint();
+  const [windowX, windowY] = petWindow.getPosition();
+  petDragState = { cursorX: cursor.x, cursorY: cursor.y, windowX, windowY };
+  petWindow.setIgnoreMouseEvents(false);
+});
+
+ipcMain.on("pet-overlay:drag-move", (event) => {
+  if (
+    !eventCameFrom(event, petWindow)
+    || !petWindow
+    || petWindow.isDestroyed()
+    || !petDragState
+  ) return;
+  const cursor = screen.getCursorScreenPoint();
+  const next = clampPetPosition(
+    petDragState.windowX + cursor.x - petDragState.cursorX,
+    petDragState.windowY + cursor.y - petDragState.cursorY
+  );
+  petWindow.setPosition(next.x, next.y);
+});
+
+ipcMain.on("pet-overlay:drag-end", (event) => {
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  petDragState = null;
   schedulePetBoundsSave();
 });
 
