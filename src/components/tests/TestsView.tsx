@@ -354,7 +354,7 @@ export function TestsView({
   const [feedback, setFeedback] = useState<TestResult | null>(null);
   const [results, setResults] = useState<TestResult[]>([]);
   const [finished, setFinished] = useState(false);
-  const [knownResultIds, setKnownResultIds] = useState<Set<string>>(() => new Set());
+  const [trackedStatuses, setTrackedStatuses] = useState<Record<string, ItemStatus>>({});
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
   const selectedPool = useMemo(
@@ -377,7 +377,7 @@ export function TestsView({
     setFeedback(null);
     setResults([]);
     setFinished(false);
-    setKnownResultIds(new Set());
+    setTrackedStatuses({});
   };
 
   const startTest = () => {
@@ -393,7 +393,7 @@ export function TestsView({
     setFeedback(null);
     setResults([]);
     setFinished(false);
-    setKnownResultIds(new Set());
+    setTrackedStatuses({});
   };
 
   const gradeAnswer = (skipped = false) => {
@@ -444,14 +444,9 @@ export function TestsView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedback]);
 
-  const markKnown = (item: TestItem, continueTest = false) => {
-    setItemStatus(item.id, "known", profile, item.aliases);
-    setKnownResultIds((current) => {
-      const next = new Set(current);
-      next.add(item.id);
-      return next;
-    });
-    if (continueTest) nextQuestion();
+  const markTrackedStatus = (item: TestItem, status: Extract<ItemStatus, "known" | "struggle">) => {
+    setItemStatus(item.id, status, profile, item.aliases);
+    setTrackedStatuses((current) => ({ ...current, [item.id]: status }));
   };
 
   const hearPrompt = () => {
@@ -507,21 +502,41 @@ export function TestsView({
               <div className="mt-4 divide-y divide-[var(--border)] rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)] px-4">
                 {missed.slice(0, 8).map((result, index) => {
                   const copy = getQuestionCopy(result.question);
-                  const markedKnown = knownResultIds.has(result.question.item.id);
+                  const trackedStatus = trackedStatuses[result.question.item.id] ?? result.question.item.status;
                   return (
                     <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
                       <p className="font-bold text-[var(--text-2)]">{copy.source}</p>
                       <ArrowRight className="hidden h-4 w-4 text-[var(--text-3)] sm:block" />
                       <p className="font-black text-[var(--text-1)] sm:text-right">{primaryAnswer(copy.target)}</p>
-                      <button
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-black text-emerald-600 transition-colors hover:bg-emerald-500/15 disabled:cursor-default disabled:opacity-65 dark:text-emerald-400"
-                        disabled={markedKnown}
-                        onClick={() => markKnown(result.question.item)}
-                        type="button"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        {ui(markedKnown ? "Known" : "Know it")}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          aria-pressed={trackedStatus === "known"}
+                          className={cn(
+                            "inline-flex h-9 items-center justify-center gap-2 rounded-[12px] border px-3 text-xs font-black transition-colors",
+                            trackedStatus === "known"
+                              ? "border-emerald-500 bg-emerald-500 text-white"
+                              : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-400"
+                          )}
+                          onClick={() => markTrackedStatus(result.question.item, "known")}
+                          type="button"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          {ui("Know it")}
+                        </button>
+                        <button
+                          aria-pressed={trackedStatus === "struggle"}
+                          className={cn(
+                            "inline-flex h-9 items-center justify-center rounded-[12px] border px-3 text-xs font-black transition-colors",
+                            trackedStatus === "struggle"
+                              ? "border-rose-500 bg-rose-500 text-white"
+                              : "border-rose-500/30 bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 dark:text-rose-400"
+                          )}
+                          onClick={() => markTrackedStatus(result.question.item, "struggle")}
+                          type="button"
+                        >
+                          {ui("Struggle")}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -559,6 +574,7 @@ export function TestsView({
 
   if (currentQuestion && currentCopy) {
     const progress = Math.round(((questionIndex + (feedback ? 1 : 0)) / questions.length) * 100);
+    const trackedStatus = trackedStatuses[currentQuestion.item.id] ?? currentQuestion.item.status;
     return (
       <div className="mx-auto max-w-[1060px]" data-testid="test-runner">
         <div className="mb-5 flex items-center justify-between gap-4">
@@ -625,6 +641,46 @@ export function TestsView({
               >
                 <Headphones className="h-5 w-5" />
               </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <div>
+                <p className="text-xs font-black text-[var(--text-1)]">{ui("Review tracker")}</p>
+                <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">
+                  {ui("Choose how soon this should appear in Continue Learning.")}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  aria-pressed={trackedStatus === "known"}
+                  className={cn(
+                    "inline-flex h-10 items-center justify-center gap-2 rounded-[13px] border px-4 text-xs font-black transition-all active:scale-[0.98]",
+                    trackedStatus === "known"
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-400"
+                  )}
+                  data-testid="test-mark-known"
+                  onClick={() => markTrackedStatus(currentQuestion.item, "known")}
+                  type="button"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {ui("Know it")}
+                </button>
+                <button
+                  aria-pressed={trackedStatus === "struggle"}
+                  className={cn(
+                    "inline-flex h-10 items-center justify-center rounded-[13px] border px-4 text-xs font-black transition-all active:scale-[0.98]",
+                    trackedStatus === "struggle"
+                      ? "border-rose-500 bg-rose-500 text-white"
+                      : "border-rose-500/30 bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 dark:text-rose-400"
+                  )}
+                  data-testid="test-mark-struggle"
+                  onClick={() => markTrackedStatus(currentQuestion.item, "struggle")}
+                  type="button"
+                >
+                  {ui("Struggle")}
+                </button>
+              </div>
             </div>
 
             <label className="mt-6 block">
@@ -711,14 +767,6 @@ export function TestsView({
                 </>
               ) : (
                 <div className="ml-auto flex flex-wrap justify-end gap-3">
-                  <button
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 px-5 text-sm font-black text-emerald-600 transition-colors hover:bg-emerald-500/15 dark:text-emerald-400"
-                    onClick={() => markKnown(currentQuestion.item, true)}
-                    type="button"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    {ui("Know it")}
-                  </button>
                   <button
                     className="inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-[16px] bg-[var(--ink)] px-6 text-sm font-black text-[var(--ink-text)] transition-transform active:scale-[0.98]"
                     data-testid="next-test-question"

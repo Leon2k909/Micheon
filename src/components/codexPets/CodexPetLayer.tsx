@@ -556,8 +556,8 @@ export function CodexPetLayer() {
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex min-h-0 flex-1 items-start gap-2">
-              <p className="min-w-0 flex-1 overflow-y-auto pr-1">{speech.text}</p>
+            <div className="flex min-h-0 flex-auto items-start gap-2">
+              <p className="min-w-0 flex-1 overflow-y-auto break-words pr-1">{speech.text}</p>
               <div className="flex shrink-0 items-center gap-0.5">
                 <button
                   aria-label={ui("Open message history")}
