@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -669,6 +669,7 @@ export function TestsView({
   const [results, setResults] = useState<TestResult[]>([]);
   const [finished, setFinished] = useState(false);
   const [trackedStatuses, setTrackedStatuses] = useState<Record<string, ItemStatus>>({});
+  const answerInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
   const selectedPool = useMemo(
@@ -686,6 +687,17 @@ export function TestsView({
   const currentCopy = currentQuestion ? getQuestionCopy(currentQuestion) : null;
   const correctCount = results.filter((result) => result.correct).length;
   const scorePercent = results.length ? Math.round((correctCount / results.length) * 100) : 0;
+
+  useEffect(() => {
+    if (!currentQuestion || feedback || finished) return undefined;
+    const timer = window.setTimeout(() => {
+      const input = answerInputRef.current;
+      if (!input || input.disabled) return;
+      input.focus({ preventScroll: true });
+      input.setSelectionRange(input.value.length, input.value.length);
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [currentQuestion, feedback, finished]);
 
   const resetTest = () => {
     setQuestions([]);
@@ -1037,6 +1049,7 @@ export function TestsView({
               {isParagraph ? (
                 <textarea
                   autoFocus
+                  ref={answerInputRef}
                   className={cn(
                     "min-h-40 w-full resize-y rounded-[18px] border-2 bg-[var(--surface)] px-5 py-4 text-base font-bold leading-7 text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
                     feedback
@@ -1054,6 +1067,7 @@ export function TestsView({
               ) : (
                 <input
                   autoFocus
+                  ref={answerInputRef}
                   className={cn(
                     "h-16 w-full rounded-[18px] border-2 bg-[var(--surface)] px-5 text-lg font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
                     feedback
