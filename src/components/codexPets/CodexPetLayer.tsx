@@ -118,9 +118,12 @@ type PetBounds = {
 };
 
 type DragState = {
+  cursorFrame?: number;
+  lastDomPointerAt?: number;
   moved: boolean;
   originX: number;
   originY: number;
+  pendingPointer?: { x: number; y: number };
   pointerId: number;
   startX: number;
   startY: number;
@@ -292,6 +295,9 @@ export function CodexPetLayer() {
   const [overlayGeometry, setOverlayGeometry] = useState(readPetOverlayGeometry);
   const overlayGeometryRef = useRef(overlayGeometry);
   const dragState = useRef<DragState | null>(null);
+  const menuMotionRef = useRef<HTMLDivElement | null>(null);
+  const petMotionRef = useRef<HTMLDivElement | null>(null);
+  const speechMotionRef = useRef<HTMLDivElement | null>(null);
   const resetTimer = useRef<number | null>(null);
   const greetedPet = useRef("");
   const greetingIndex = useRef(0);
@@ -303,8 +309,15 @@ export function CodexPetLayer() {
   const suppressClick = useRef(false);
   const tipIndex = useRef(0);
 
-  positionRef.current = position;
   speechRef.current = speech;
+
+  useLayoutEffect(() => {
+    if (dragState.current) return;
+    positionRef.current = position;
+    menuMotionRef.current?.style.removeProperty("translate");
+    petMotionRef.current?.style.removeProperty("translate");
+    speechMotionRef.current?.style.removeProperty("translate");
+  }, [dragging, position]);
 
   // Pair each measured DOM layout with the native-window origin that produced
   // it. Updating this ref in the IPC callback could combine a newly announced
@@ -553,6 +566,7 @@ export function CodexPetLayer() {
 
   useEffect(() => {
     const handleResize = () => {
+      if (dragState.current) return;
       const nextViewport = viewportSize();
       const nextPosition = clampPosition(
         positionRef.current,
@@ -569,6 +583,7 @@ export function CodexPetLayer() {
     };
 
     window.addEventListener("resize", handleResize);
+    handleResize();
     return () => {
       if (resetTimer.current) window.clearTimeout(resetTimer.current);
       window.removeEventListener("resize", handleResize);
@@ -580,9 +595,11 @@ export function CodexPetLayer() {
     petGroupVisibleBounds.top,
     petGroupWidth,
     petHeight,
+    dragging,
   ]);
 
   useEffect(() => {
+    if (dragState.current) return;
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
@@ -605,6 +622,7 @@ export function CodexPetLayer() {
     petGroupVisibleBounds.top,
     petGroupWidth,
     petHeight,
+    dragging,
     viewport.height,
     viewport.width,
   ]);
@@ -700,6 +718,9 @@ export function CodexPetLayer() {
   }, [messagesMuted, selectedPet, speak]);
 
   useEffect(() => () => {
+    if (dragState.current?.cursorFrame !== undefined) {
+      window.cancelAnimationFrame(dragState.current.cursorFrame);
+    }
     dragState.current?.unsubscribeCursor?.();
     dragState.current?.unsubscribeEnd?.();
     dragState.current?.cleanupGlobal?.();
@@ -709,7 +730,7 @@ export function CodexPetLayer() {
 
   if (!selectedPet) return null;
 
-  const movePet = (nextPosition: PetPosition) => {
+  const movePetDuringDrag = (drag: DragState, nextPosition: PetPosition) => {
     const next = clampPosition(
       nextPosition,
       viewport.width,
@@ -718,64 +739,115 @@ export function CodexPetLayer() {
       petHeight,
       petGroupVisibleBounds
     );
+    if (next.x === positionRef.current.x && next.y === positionRef.current.y) return;
     positionRef.current = next;
-    setPosition(next);
+    const deltaX = next.x - drag.originX;
+    const deltaY = next.y - drag.originY;
+    for (const element of [
+      menuMotionRef.current,
+      petMotionRef.current,
+      speechMotionRef.current,
+    ]) {
+      if (element) element.style.translate = `${deltaX}px ${deltaY}px`;
+    }
+    requestHitRegionSync();
   };
 
   const moveDragFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
     const deltaX = pointerX - drag.startX;
     const deltaY = pointerY - drag.startY;
     if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) drag.moved = true;
-    movePet({ x: drag.originX + deltaX, y: drag.originY + deltaY });
+    movePetDuringDrag(drag, { x: drag.originX + deltaX, y: drag.originY + deltaY });
+  };
+
+  const flushDragPointer = (drag: DragState) => {
+    if (drag.cursorFrame !== undefined) {
+      window.cancelAnimationFrame(drag.cursorFrame);
+      drag.cursorFrame = undefined;
+    }
+    const pending = drag.pendingPointer;
+    drag.pendingPointer = undefined;
+    if (pending) moveDragFromPointer(drag, pending.x, pending.y);
+  };
+
+  const scheduleDragFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    drag.pendingPointer = { x: pointerX, y: pointerY };
+    if (drag.cursorFrame !== undefined) return;
+    drag.cursorFrame = window.requestAnimationFrame(() => {
+      drag.cursorFrame = undefined;
+      if (dragState.current !== drag) return;
+      const pending = drag.pendingPointer;
+      drag.pendingPointer = undefined;
+      if (pending) moveDragFromPointer(drag, pending.x, pending.y);
+    });
+  };
+
+  const scheduleDomDragFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    drag.lastDomPointerAt = performance.now();
+    scheduleDragFromPointer(drag, pointerX, pointerY);
   };
 
   /** Tear down whatever drag is active, however we learned it ended. */
   const finishActiveDrag = (notifyMain = true) => {
     const drag = dragState.current;
     if (!drag) return;
+    flushDragPointer(drag);
     suppressClick.current = drag.moved;
     drag.unsubscribeCursor?.();
     drag.unsubscribeEnd?.();
     drag.cleanupGlobal?.();
     dragState.current = null;
+    setPosition({ ...positionRef.current });
     setDragging(false);
     savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
-    if (isDesktopPetOverlay && notifyMain) desktop?.endPetOverlayDrag?.();
+    requestHitRegionSync();
+    if (isDesktopPetOverlay && notifyMain) {
+      // Let the final translated rectangles reach main before it restores the
+      // compact native hit shape for the released pet.
+      window.requestAnimationFrame(() => {
+        if (!dragState.current) desktop?.endPetOverlayDrag?.();
+      });
+    }
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || dragState.current) return;
     const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
     if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
-    // Pointer capture is only used for the in-page pet. The overlay drag is
-    // driven by the main process's native cursor poll, and the drag itself
-    // keeps rewriting the window's native shape (SetWindowRgn) — which can make
-    // Windows drop an active capture. Tying the overlay drag's life to capture
-    // meant a reshape one frame into the drag ended it immediately: the pet
-    // stuck after a few pixels, i.e. "can't move the pet".
-    if (!isDesktopPetOverlay) {
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch {
-        return;
-      }
+    // The native drag shape is expanded before capture and then stays stable.
+    // DOM movement is the low-latency path; native polling remains a fallback
+    // if Windows drops capture while the compact window recentres.
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      if (!isDesktopPetOverlay) return;
     }
+    const usesScreenCoordinates = isDesktopPetOverlay;
     const drag: DragState = {
+      lastDomPointerAt: performance.now(),
       moved: false,
       originX: positionRef.current.x,
       originY: positionRef.current.y,
       pointerId: event.pointerId,
-      startX: Number.isFinite(nativeDrag?.x) ? nativeDrag.x : event.clientX,
-      startY: Number.isFinite(nativeDrag?.y) ? nativeDrag.y : event.clientY,
+      startX: usesScreenCoordinates && Number.isFinite(nativeDrag?.screenX)
+        ? nativeDrag.screenX
+        : usesScreenCoordinates ? event.screenX : event.clientX,
+      startY: usesScreenCoordinates && Number.isFinite(nativeDrag?.screenY)
+        ? nativeDrag.screenY
+        : usesScreenCoordinates ? event.screenY : event.clientY,
     };
     dragState.current = drag;
     if (isDesktopPetOverlay && desktop?.onPetOverlayDragCursor) {
-      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: { x?: number; y?: number }) => {
+      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: {
+        screenX?: number;
+        screenY?: number;
+      }) => {
         const activeDrag = dragState.current;
-        const pointerX = Number(point?.x);
-        const pointerY = Number(point?.y);
+        const pointerX = Number(point?.screenX);
+        const pointerY = Number(point?.screenY);
         if (!activeDrag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
-        moveDragFromPointer(activeDrag, pointerX, pointerY);
+        if (performance.now() - (activeDrag.lastDomPointerAt ?? 0) < 48) return;
+        scheduleDragFromPointer(activeDrag, pointerX, pointerY);
       });
     }
     if (isDesktopPetOverlay && desktop?.onPetOverlayDragEnd) {
@@ -788,9 +860,15 @@ export function CodexPetLayer() {
       // the drag has independent signals: any pointerup in the window, or a
       // pointermove reporting no buttons held — the recovery for a release
       // that happened while the cursor was outside the window's shaped area.
-      const onWindowPointerUp = () => finishActiveDrag();
+      const onWindowPointerUp = (upEvent: PointerEvent) => {
+        if (upEvent.pointerId === drag.pointerId) finishActiveDrag();
+      };
       const onWindowPointerMove = (moveEvent: PointerEvent) => {
-        if (moveEvent.buttons === 0) finishActiveDrag();
+        if (moveEvent.pointerId !== drag.pointerId) return;
+        if ((moveEvent.buttons & 1) === 0) finishActiveDrag();
+        else if (dragState.current === drag) {
+          scheduleDomDragFromPointer(drag, moveEvent.screenX, moveEvent.screenY);
+        }
       };
       window.addEventListener("pointerup", onWindowPointerUp, true);
       window.addEventListener("pointercancel", onWindowPointerUp, true);
@@ -805,14 +883,13 @@ export function CodexPetLayer() {
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    // Overlay movement uses virtual-desktop coordinates supplied by Electron's
-    // native cursor poll. DOM client coordinates are local to the compact
-    // BrowserWindow and mixing the two coordinate spaces makes the pet jump.
-    if (isDesktopPetOverlay) return;
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-
-    moveDragFromPointer(drag, event.clientX, event.clientY);
+    scheduleDomDragFromPointer(
+      drag,
+      isDesktopPetOverlay ? event.screenX : event.clientX,
+      isDesktopPetOverlay ? event.screenY : event.clientY
+    );
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -825,10 +902,8 @@ export function CodexPetLayer() {
   };
 
   /**
-   * The reshapes the overlay drag performs can revoke pointer capture on
-   * Windows, so for the overlay a lost capture is routine noise (nothing is
-   * captured there any more anyway) — only the in-page pet treats it as the
-   * end of its drag.
+   * The desktop overlay keeps native polling alive if Windows revokes capture;
+   * the in-page pet has no native fallback and therefore ends its drag.
    */
   const handleLostCapture = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (isDesktopPetOverlay) return;
@@ -959,16 +1034,19 @@ export function CodexPetLayer() {
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
               className="pointer-events-auto absolute z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
+              data-pet-motion-part="menu"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
               data-pet-interactive="true"
               onContextMenu={(event) => event.preventDefault()}
               onPointerDown={(event) => event.stopPropagation()}
+              ref={menuMotionRef}
               role="menu"
               style={{
                 left: menuLeft,
                 maxHeight: viewport.height - menuTop - PET_MARGIN,
                 top: menuTop,
+                willChange: dragging ? "translate" : undefined,
               }}
               transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -1070,12 +1148,15 @@ export function CodexPetLayer() {
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             data-pet-interactive="true"
+            data-pet-motion-part="speech"
             onPointerDown={(event) => event.stopPropagation()}
+            ref={speechMotionRef}
             role={speech.question ? "group" : "status"}
             style={{
               bottom: bubbleBottom,
               left: bubbleLeft,
               maxHeight: bubbleMaxHeight,
+              willChange: dragging ? "translate" : undefined,
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
@@ -1140,11 +1221,19 @@ export function CodexPetLayer() {
       {showPetChrome && (
         <div
           className="pointer-events-none absolute"
-          style={{ height: petHeight, left: position.x, top: position.y, width: petGroupWidth }}
+          data-pet-motion-layer="true"
+          ref={petMotionRef}
+          style={{
+            height: petHeight,
+            left: position.x,
+            top: position.y,
+            width: petGroupWidth,
+            willChange: dragging ? "translate" : undefined,
+          }}
         >
         <button
         aria-label={`Talk to ${selectedPet.displayName}`}
-        className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing scale-[1.04]" : "cursor-grab hover:scale-[1.04] active:scale-95"}`}
+        className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
         data-pet-interactive="true"
         onClick={handleClick}

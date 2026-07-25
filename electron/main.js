@@ -24,6 +24,7 @@ let mainWindow = null;
 let petWindow = null;
 let petOverlayUsesShape = false;
 let petOverlayDragging = false;
+let petOverlayDragDesktopBounds = null;
 let petOverlayDragTimer = null;
 let petOverlayDragWatchdog = null;
 let petOverlayHitRegions = [];
@@ -40,6 +41,7 @@ const PET_OVERLAY_WINDOW_MARGIN = 128;
 const PET_OVERLAY_RECENTER_INSET = 48;
 const PET_OVERLAY_INITIAL_WIDTH = 480;
 const PET_OVERLAY_INITIAL_HEIGHT = 560;
+const PET_OVERLAY_CURSOR_INTERVAL_MS = 16;
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port or create another overlay.
@@ -95,7 +97,7 @@ function initialPetOverlayBounds() {
 }
 
 function currentPetOverlayGeometry() {
-  const desktopBounds = virtualDesktopBounds();
+  const desktopBounds = petOverlayDragDesktopBounds ?? virtualDesktopBounds();
   const windowBounds = petWindow && !petWindow.isDestroyed()
     ? petWindow.getBounds()
     : initialPetOverlayBounds();
@@ -120,6 +122,10 @@ function publishPetOverlayGeometry(force = false) {
 
 function syncPetOverlayBounds() {
   if (!petWindow || petWindow.isDestroyed()) return;
+  // A monitor being added, removed, or repositioned changes the virtual
+  // desktop origin. End the current gesture before applying that new
+  // coordinate space so cursor samples never mix two desktop geometries.
+  if (petOverlayDragging) finishPetOverlayDrag();
   const desktopBounds = virtualDesktopBounds();
   const current = petWindow.getBounds();
   const width = Math.min(current.width, desktopBounds.width);
@@ -189,17 +195,20 @@ function applyPetOverlayDragShape() {
   applyPetOverlayShape([{ x: 0, y: 0, width: bounds.width, height: bounds.height }], true);
 }
 
-function compactPetOverlayToRegions(regions, rendererOrigin = {}) {
+function compactPetOverlayToRegions(
+  regions,
+  rendererOrigin = {},
+  desktopBounds = virtualDesktopBounds()
+) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return [];
 
-  const desktopBounds = virtualDesktopBounds();
-  const currentGeometry = currentPetOverlayGeometry();
+  const currentBounds = petWindow.getBounds();
   const originX = Number.isFinite(Number(rendererOrigin?.x))
     ? Number(rendererOrigin.x)
-    : currentGeometry.originX;
+    : currentBounds.x - desktopBounds.x;
   const originY = Number.isFinite(Number(rendererOrigin?.y))
     ? Number(rendererOrigin.y)
-    : currentGeometry.originY;
+    : currentBounds.y - desktopBounds.y;
 
   // Renderer rectangles are local to the compact native window. Rebase them
   // through the origin that produced that render so even an in-flight geometry
@@ -235,7 +244,6 @@ function compactPetOverlayToRegions(regions, rendererOrigin = {}) {
   );
   if (desiredRight <= desiredLeft || desiredBottom <= desiredTop) return [];
 
-  const currentBounds = petWindow.getBounds();
   const desiredBounds = {
     x: desiredLeft,
     y: desiredTop,
@@ -296,7 +304,7 @@ function compactPetOverlayToRegions(regions, rendererOrigin = {}) {
     })
     .filter(Boolean);
 
-  publishPetOverlayGeometry(moved || resized);
+  if (moved || resized) publishPetOverlayGeometry();
   return localRegions;
 }
 
@@ -312,8 +320,10 @@ function stopPetOverlayCursorTracking() {
 function petOverlayCursorPoint() {
   if (!petWindow || petWindow.isDestroyed()) return null;
   const cursor = screen.getCursorScreenPoint();
-  const bounds = virtualDesktopBounds();
+  const bounds = petOverlayDragDesktopBounds ?? virtualDesktopBounds();
   return {
+    screenX: cursor.x,
+    screenY: cursor.y,
     x: cursor.x - bounds.x,
     y: cursor.y - bounds.y,
   };
@@ -333,7 +343,7 @@ function startPetOverlayCursorTracking() {
     petWindow.webContents.send("pet-overlay:drag-cursor", point);
   };
   sendCursor();
-  petOverlayDragTimer = setInterval(sendCursor, 24);
+  petOverlayDragTimer = setInterval(sendCursor, PET_OVERLAY_CURSOR_INTERVAL_MS);
   petOverlayDragTimer.unref?.();
   return previousPoint;
 }
@@ -344,6 +354,7 @@ function finishPetOverlayDrag() {
   petOverlayDragWatchdog = null;
   if (!petOverlayDragging) return;
   petOverlayDragging = false;
+  petOverlayDragDesktopBounds = null;
   // Collapse the enlarged drag collar back to the normal interactive regions.
   // This must not be skipped even if the mascot ended where it began.
   petOverlayShapeSignature = null;
@@ -482,6 +493,7 @@ function createPetOverlayWindow() {
     petWindow = null;
     petOverlayUsesShape = false;
     petOverlayDragging = false;
+    petOverlayDragDesktopBounds = null;
     petOverlayHitRegions = [];
     petOverlayShapeSignature = null;
     petOverlayGeometrySignature = null;
@@ -667,7 +679,7 @@ ipcMain.on("pet-overlay:set-hit-regions", (event, payload) => {
   const rendererOrigin = Array.isArray(payload) ? undefined : payload?.origin;
   if (!Array.isArray(regions) || regions.length === 0) return;
 
-  const desktopBounds = virtualDesktopBounds();
+  const desktopBounds = petOverlayDragDesktopBounds ?? virtualDesktopBounds();
   const maximumCoordinate = Math.max(desktopBounds.width, desktopBounds.height) * 2;
   const rawRegions = regions
     .slice(0, 32)
@@ -695,7 +707,7 @@ ipcMain.on("pet-overlay:set-hit-regions", (event, payload) => {
     .filter(Boolean);
 
   if (rawRegions.length === 0) return;
-  const safeRegions = compactPetOverlayToRegions(rawRegions, rendererOrigin);
+  const safeRegions = compactPetOverlayToRegions(rawRegions, rendererOrigin, desktopBounds);
   if (safeRegions.length === 0) return;
   petOverlayHitRegions = safeRegions;
   // Pixels outside these rectangles are neither drawn nor interactive. During
@@ -716,6 +728,7 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
   // Keep an enlarged local region alive, poll the native cursor, and move the
   // compact window with the mascot during the drag.
   try {
+    petOverlayDragDesktopBounds = virtualDesktopBounds();
     petOverlayDragging = true;
     // Apply the full compact-window drag region NOW, synchronously, before this call
     // returns to the renderer. The pointer has not been established over the
@@ -728,12 +741,15 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
     const point = startPetOverlayCursorTracking();
     startPetOverlayDragWatchdog();
     event.returnValue = {
+      screenX: point?.screenX,
+      screenY: point?.screenY,
       started: true,
       x: point?.x,
       y: point?.y,
     };
   } catch (error) {
     petOverlayDragging = false;
+    petOverlayDragDesktopBounds = null;
     stopPetOverlayCursorTracking();
     // The collar may already be applied; a failed drag must not leave it
     // behind as an oversized invisible hit area.

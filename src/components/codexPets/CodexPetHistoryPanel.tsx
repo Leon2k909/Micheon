@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
@@ -26,10 +27,14 @@ type PanelPosition = {
 };
 
 type DragState = {
+  cleanupGlobal?: () => void;
+  cursorFrame?: number;
   element: HTMLElement;
+  lastDomPointerAt?: number;
   native: boolean;
   originX: number;
   originY: number;
+  pendingPointer?: { x: number; y: number };
   pointerId: number;
   startX: number;
   startY: number;
@@ -143,11 +148,18 @@ export function CodexPetHistoryPanel({
   const [position, setPosition] = useState(() => initialPanelPosition(requestedViewport));
   const [viewport, setViewport] = useState(requestedViewport);
   const [contextMenu, setContextMenu] = useState<HistoryContextMenu | null>(null);
+  const [dragging, setDragging] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const dragState = useRef<DragState | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
   const positionRef = useRef(position);
-  positionRef.current = position;
   const size = panelSize(viewport);
+
+  useLayoutEffect(() => {
+    if (dragState.current) return;
+    positionRef.current = position;
+    panelRef.current?.style.removeProperty("transform");
+  }, [dragging, position]);
 
   useEffect(() => {
     if (!desktop?.setPetOverlayKeyboardInteractive) return undefined;
@@ -157,6 +169,7 @@ export function CodexPetHistoryPanel({
 
   useEffect(() => {
     const handleResize = () => {
+      if (dragState.current) return;
       const nextViewport = Number.isFinite(viewportHeight) && Number.isFinite(viewportWidth)
         ? { height: Number(viewportHeight), width: Number(viewportWidth) }
         : viewportSize();
@@ -194,38 +207,65 @@ export function CodexPetHistoryPanel({
   }, [contextMenu, onClose, viewportHeight, viewportWidth]);
 
   useEffect(() => {
-    if (!Number.isFinite(viewportHeight) || !Number.isFinite(viewportWidth)) return;
-    const nextViewport = { height: Number(viewportHeight), width: Number(viewportWidth) };
+    if (dragState.current) return;
+    const nextViewport = Number.isFinite(viewportHeight) && Number.isFinite(viewportWidth)
+      ? { height: Number(viewportHeight), width: Number(viewportWidth) }
+      : viewportSize();
     const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
     positionRef.current = nextPosition;
     setViewport(nextViewport);
     setPosition(nextPosition);
-  }, [viewportHeight, viewportWidth]);
+    savePanelPosition(nextPosition);
+  }, [dragging, viewportHeight, viewportWidth]);
 
   useEffect(() => {
     onGeometryChange?.();
   }, [onGeometryChange, position.x, position.y, size.height, size.width]);
-
-  useEffect(() => () => {
-    const drag = dragState.current;
-    drag?.unsubscribeCursor?.();
-    drag?.unsubscribeEnd?.();
-    if (drag?.native) desktop?.endPetOverlayDrag?.();
-    dragState.current = null;
-  }, []);
 
   const movePanelFromPoint = (drag: DragState, pointerX: number, pointerY: number) => {
     const next = clampPanelPosition({
       x: drag.originX + pointerX - drag.startX,
       y: drag.originY + pointerY - drag.startY,
     }, viewport);
+    if (next.x === positionRef.current.x && next.y === positionRef.current.y) return;
     positionRef.current = next;
-    setPosition(next);
+    if (panelRef.current) {
+      panelRef.current.style.transform = `translate3d(${next.x - drag.originX}px, ${next.y - drag.originY}px, 0)`;
+    }
+    onGeometryChange?.();
+  };
+
+  const flushPanelPointer = (drag: DragState) => {
+    if (drag.cursorFrame !== undefined) {
+      window.cancelAnimationFrame(drag.cursorFrame);
+      drag.cursorFrame = undefined;
+    }
+    const pending = drag.pendingPointer;
+    drag.pendingPointer = undefined;
+    if (pending) movePanelFromPoint(drag, pending.x, pending.y);
+  };
+
+  const schedulePanelFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    drag.pendingPointer = { x: pointerX, y: pointerY };
+    if (drag.cursorFrame !== undefined) return;
+    drag.cursorFrame = window.requestAnimationFrame(() => {
+      drag.cursorFrame = undefined;
+      if (dragState.current !== drag) return;
+      const pending = drag.pendingPointer;
+      drag.pendingPointer = undefined;
+      if (pending) movePanelFromPoint(drag, pending.x, pending.y);
+    });
+  };
+
+  const scheduleDomPanelFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    drag.lastDomPointerAt = performance.now();
+    schedulePanelFromPointer(drag, pointerX, pointerY);
   };
 
   const finishActivePanelDrag = (notifyMain = true) => {
     const drag = dragState.current;
     if (!drag) return;
+    flushPanelPointer(drag);
     try {
       if (drag.element.hasPointerCapture(drag.pointerId)) {
         drag.element.releasePointerCapture(drag.pointerId);
@@ -235,34 +275,71 @@ export function CodexPetHistoryPanel({
     }
     drag.unsubscribeCursor?.();
     drag.unsubscribeEnd?.();
-    if (drag.native && notifyMain) desktop?.endPetOverlayDrag?.();
+    drag.cleanupGlobal?.();
     dragState.current = null;
+    setPosition({ ...positionRef.current });
+    setDragging(false);
     savePanelPosition(positionRef.current);
+    onGeometryChange?.();
+    if (drag.native && notifyMain) {
+      // The geometry request above queues the final transformed measurement.
+      // Restore the compact native shape after that measurement, not before it.
+      window.requestAnimationFrame(() => {
+        if (!dragState.current) desktop?.endPetOverlayDrag?.();
+      });
+    }
   };
 
+  useEffect(() => () => {
+    const drag = dragState.current;
+    if (!drag) return;
+    flushPanelPointer(drag);
+    drag.unsubscribeCursor?.();
+    drag.unsubscribeEnd?.();
+    drag.cleanupGlobal?.();
+    savePanelPosition(positionRef.current);
+    if (drag.native) desktop?.endPetOverlayDrag?.();
+    dragState.current = null;
+  }, []);
+
   const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.button !== 0 || (event.target as Element).closest("button")) return;
+    if (
+      event.button !== 0
+      || dragState.current
+      || (event.target as Element).closest("button")
+    ) return;
     const nativeDrag = desktop?.beginPetOverlayDrag?.();
     if (nativeDrag === false || nativeDrag?.started === false) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
     const native = nativeDrag?.started === true;
+    if (!native) {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        return;
+      }
+    }
     const drag: DragState = {
       element: event.currentTarget,
+      lastDomPointerAt: performance.now(),
       native,
       originX: positionRef.current.x,
       originY: positionRef.current.y,
       pointerId: event.pointerId,
-      startX: native && Number.isFinite(nativeDrag?.x) ? nativeDrag.x : event.screenX,
-      startY: native && Number.isFinite(nativeDrag?.y) ? nativeDrag.y : event.screenY,
+      startX: native && Number.isFinite(nativeDrag?.screenX) ? nativeDrag.screenX : event.screenX,
+      startY: native && Number.isFinite(nativeDrag?.screenY) ? nativeDrag.screenY : event.screenY,
     };
     dragState.current = drag;
     if (native && desktop?.onPetOverlayDragCursor) {
-      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: { x?: number; y?: number }) => {
+      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: {
+        screenX?: number;
+        screenY?: number;
+      }) => {
         const activeDrag = dragState.current;
-        const pointerX = Number(point?.x);
-        const pointerY = Number(point?.y);
+        const pointerX = Number(point?.screenX);
+        const pointerY = Number(point?.screenY);
         if (activeDrag !== drag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
-        movePanelFromPoint(drag, pointerX, pointerY);
+        if (performance.now() - (drag.lastDomPointerAt ?? 0) < 48) return;
+        schedulePanelFromPointer(drag, pointerX, pointerY);
       });
     }
     if (native && desktop?.onPetOverlayDragEnd) {
@@ -270,17 +347,44 @@ export function CodexPetHistoryPanel({
         if (dragState.current === drag) finishActivePanelDrag(false);
       });
     }
+    if (native) {
+      const onWindowPointerUp = (upEvent: PointerEvent) => {
+        if (upEvent.pointerId === drag.pointerId) finishActivePanelDrag();
+      };
+      const onWindowPointerMove = (moveEvent: PointerEvent) => {
+        if (moveEvent.pointerId !== drag.pointerId) return;
+        if ((moveEvent.buttons & 1) === 0) finishActivePanelDrag();
+        else if (dragState.current === drag) {
+          scheduleDomPanelFromPointer(drag, moveEvent.screenX, moveEvent.screenY);
+        }
+      };
+      window.addEventListener("pointerup", onWindowPointerUp, true);
+      window.addEventListener("pointercancel", onWindowPointerUp, true);
+      window.addEventListener("pointermove", onWindowPointerMove, true);
+      drag.cleanupGlobal = () => {
+        window.removeEventListener("pointerup", onWindowPointerUp, true);
+        window.removeEventListener("pointercancel", onWindowPointerUp, true);
+        window.removeEventListener("pointermove", onWindowPointerMove, true);
+      };
+    }
+    setDragging(true);
   };
 
   const movePanel = (event: ReactPointerEvent<HTMLElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    if (!drag.native) movePanelFromPoint(drag, event.screenX, event.screenY);
+    scheduleDomPanelFromPointer(drag, event.screenX, event.screenY);
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    finishActivePanelDrag();
+  };
+
+  const handleLostPointerCapture = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragState.current;
+    if (!drag || drag.native || drag.pointerId !== event.pointerId) return;
     finishActivePanelDrag();
   };
 
@@ -315,17 +419,21 @@ export function CodexPetHistoryPanel({
       aria-label={ui("Pet message history")}
       aria-modal="false"
       className="pointer-events-auto absolute z-[760] flex select-text flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-1)] shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+      data-pet-history-panel="true"
       onContextMenu={openContextMenu}
+      ref={panelRef}
       role="dialog"
       style={{
         height: size.height,
         left: position.x,
         top: position.y,
+        willChange: dragging ? "transform" : undefined,
         width: size.width,
       }}
     >
       <header
         className="flex shrink-0 cursor-move touch-none select-none items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3"
+        onLostPointerCapture={handleLostPointerCapture}
         onPointerCancel={finishDrag}
         onPointerDown={startDrag}
         onPointerMove={movePanel}
