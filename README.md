@@ -2,6 +2,8 @@
 
 **A fully offline desktop app for learning German — premium neural voices, spaced repetition, and lessons that actually understand what you type.**
 
+**Made with love by Leon and Michelle.**
+
 Micheon is a native-feeling desktop language tutor that runs entirely on your machine. There's no subscription, no login server, no cloud calls for content, and no usage limits. You download it once, and everything — thousands of sentences, dialogues, grammar drills, and natural-sounding speech — works on a plane, on the train, or with the Wi-Fi off.
 
 > Repo folder: `germ` · Product name: **Micheon** · Platforms: Windows and Linux desktop (Electron)
@@ -31,6 +33,7 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 | **Premium voice** | Every sentence can be read aloud in a natural Microsoft neural voice (via `edge-tts`), generated locally. A waveform reacts while it speaks. |
 | **Smart answer matching** | Say it your way. The checker forgives typos, contractions, British/American spelling, articles, word-order-preserving paraphrases, and a large library of synonyms — while still rejecting genuinely wrong answers, wrong tense, and reversed meaning. |
 | **Spaced review** | Items you've seen come back on a memory-strength schedule so they stick for the long term. |
+| **Desktop learning pets** | Animated companions live on your desktop and actively help you remember. They ask whether you still recall learned words and phrases, bring struggling material back sooner, give useful language-specific grammar tips, and run a recall checkpoint after each lesson before new material is introduced. Pets can be moved, resized, muted, or hidden whenever you want. |
 | **Vocabulary games** | Eight arcade-style games (Snake, Whack-a-Mole, Falling Letters, Verb Shooter, Minesweeper, and more) that drill vocab without feeling like study. |
 | **Grammar drills** | Cloze (fill-in-the-blank) exercises and grammar notes for the patterns behind the sentences. |
 | **Fluency meter & gamification** | Track known-word count toward a fluency estimate, earn XP, keep a daily streak, level up, and unlock milestones. |
@@ -78,9 +81,10 @@ npm run electron
 
 1. **Pick up where you left off.** The dashboard's *Continue learning* card drops you into the next lesson.
 2. **Work through a lesson.** You'll see the German sentence and its meaning. Depending on the step you'll type the answer, translate it, fill a gap, or say it aloud. Tap **Hear it** any time to hear a native voice. Get a typed answer right and it moves on automatically.
-3. **Do your reviews.** Older items resurface on schedule — keeping up with them is what turns short-term recall into fluency.
-4. **Play a game or two.** When you want a break that's still practice, the Games tab drills your current vocabulary.
-5. **Make it yours.** In *Profile settings → Appearance*, recolour anything and tune the gradient; in *Preferences*, toggle light/dark and switch learning direction.
+3. **Check what you remember with your pet.** At the end of a lesson, your desktop companion asks you to recall each item before revealing the answer. Anything you mark **Not yet** is reviewed again before Micheon introduces fresh material.
+4. **Do your scheduled reviews.** Your pet also checks learned words and phrases between lessons. Confident answers move further along the spaced-repetition schedule; forgotten items return sooner.
+5. **Play a game or two.** When you want a break that's still practice, the Games tab drills your current vocabulary.
+6. **Make it yours.** In *Profile settings → Appearance*, recolour anything and tune the gradient; in *Preferences*, toggle light/dark, adjust your desktop pet, and switch learning direction.
 
 ---
 
@@ -93,6 +97,7 @@ Micheon is deliberately simple and self-contained:
 - **Answer matching** — `src/lib/germanTextMatch.ts` runs a tiered comparison: exact → contractions → articles-ignored → synonym/paraphrase canonicalisation → compound-spacing → typo tolerance → meaning-reduced ordered match. It's tuned to accept how real people phrase things while still failing wrong answers.
 - **Speech** — `server/index.js` is a small Express server that turns text into Microsoft neural-voice audio with `edge-tts-universal`, served locally (default port `41730`). Speech recognition for the "speak it" steps runs on-device.
 - **Desktop shell** — `electron/main.js` wraps the UI, hosts the TTS server, provides the custom title bar, and handles automatic updates via `electron-updater`.
+- **Desktop pets** — `src/components/codexPets/` renders animated companions, proactive recall questions, lesson memory checks, message history, and language-focused tips. Pet answers update the same spaced-repetition records used by lessons and Continue Learning.
 - **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Appearance overrides and preferences sync the same way.
 
 ### Project layout
@@ -147,4 +152,4 @@ Locally, `npm run electron:dist` produces a build under `release/` for testing. 
 
 ---
 
-*Micheon — learn German properly, on your own machine.*
+*Micheon — learn German properly, on your own machine. Made with love by Leon and Michelle.*
