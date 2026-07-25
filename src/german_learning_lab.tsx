@@ -22,7 +22,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildCatalog, buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
-import { recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
+import { isDueForReview, recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
@@ -149,9 +149,29 @@ export default function GermanLearningLab() {
         const en = item.en?.trim() ?? "";
         return de.length >= 2 && en.length >= 2 && de.length <= 64 && en.length <= 64;
       });
-      const seen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) === "struggle");
-      const unseen = eligible.filter((item) => statusForId(grades, item.id, item.aliases) === "new");
-      return [...seen, ...unseen].slice(0, 1200);
+      const recordFor = (item: (typeof eligible)[number]) =>
+        [item.id, ...(item.aliases ?? [])]
+          .map((id) => grades[id])
+          .find(Boolean);
+      const priority = (item: (typeof eligible)[number]) => {
+        const record = recordFor(item);
+        if (record?.lastGrade === "struggle") return 0;
+        if (isDueForReview(record)) return 1;
+        return 2;
+      };
+
+      // The mascot is a memory coach, not a source of surprise curriculum:
+      // revisit only material the learner has already encountered.
+      return eligible
+        .filter((item) => statusForId(grades, item.id, item.aliases) !== "new")
+        .sort((a, b) => {
+          const priorityDifference = priority(a) - priority(b);
+          if (priorityDifference !== 0) return priorityDifference;
+          const aUpdated = Date.parse(recordFor(a)?.updatedAt ?? "") || 0;
+          const bUpdated = Date.parse(recordFor(b)?.updatedAt ?? "") || 0;
+          return aUpdated - bUpdated;
+        })
+        .slice(0, 1200);
     },
     [apiParts, gradeRevision, user]
   );
@@ -177,6 +197,7 @@ export default function GermanLearningLab() {
 
     let questionTimer: number | undefined;
     const learnsEnglish = learningEnglish();
+    petQuizIndex.current = 0;
 
     const scheduleQuestion = (delayMs: number) => {
       questionTimer = window.setTimeout(askQuestion, delayMs);
@@ -188,13 +209,13 @@ export default function GermanLearningLab() {
         return;
       }
 
-      const index = (petQuizIndex.current * 37) % petQuizItems.length;
+      const index = petQuizIndex.current % petQuizItems.length;
       const item = petQuizItems[index];
       petQuizIndex.current += 1;
 
       const question = learnsEnglish
-        ? `Weißt du, wie man „${item.de}“ auf Englisch sagt?`
-        : `Do you know how to say “${item.en}” in German?`;
+        ? `Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?`
+        : `Do you remember how to say “${item.en}” in German?`;
       petSpeak(question, {
         durationMs: 20000,
         mood: "greeting",
