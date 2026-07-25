@@ -158,8 +158,11 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
 
   const speak = useCallback((text: string, options: CodexPetSpeechOptions = {}) => {
     if (getCodexPetMessagesMuted()) return;
-    const messageText = text.trim();
-    if (!messageText) return;
+    const rawText = text.trim();
+    if (!rawText) return;
+    const messageText = selectedKey.endsWith(":leon")
+      ? `Hello darling. ${rawText}`
+      : rawText;
     const message: CodexPetSpeech = {
       createdAt: Date.now(),
       id: `${Date.now()}-${++speechId.current}`,
@@ -172,7 +175,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (desktop && !isDesktopPetOverlay) {
       desktop.sendPetOverlaySpeech({ message, options: { durationMs: options.durationMs } });
     }
-  }, [showSpeech, upsertHistory]);
+  }, [selectedKey, showSpeech, upsertHistory]);
 
   const answerQuestion = useCallback((
     messageId: string,

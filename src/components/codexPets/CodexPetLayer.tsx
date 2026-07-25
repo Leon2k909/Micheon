@@ -75,9 +75,9 @@ function clampPetSize(size: number) {
   return Math.min(PET_SIZE_MAX, Math.max(PET_SIZE_MIN, size));
 }
 
-function petDimensions(size: number) {
+function petDimensions(size: number, heightRatio = PET_HEIGHT_RATIO) {
   const width = clampPetSize(size);
-  return { height: Math.round(width * PET_HEIGHT_RATIO), width };
+  return { height: Math.round(width * heightRatio), width };
 }
 
 function clampPosition(
@@ -150,7 +150,10 @@ export function CodexPetLayer() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
   const [petSize, setPetSize] = useState(storedPetSize);
-  const { height: petHeight, width: petWidth } = petDimensions(petSize);
+  const petHeightRatio = selectedPet?.frame.width
+    ? selectedPet.frame.height / selectedPet.frame.width
+    : PET_HEIGHT_RATIO;
+  const { height: petHeight, width: petWidth } = petDimensions(petSize, petHeightRatio);
   const [playbackKey, setPlaybackKey] = useState(0);
   const [position, setPosition] = useState<PetPosition>(
     () => isDesktopPetOverlay
@@ -219,6 +222,23 @@ export function CodexPetLayer() {
       window.removeEventListener("resize", handleResize);
     };
   }, [petHeight, petWidth]);
+
+  useEffect(() => {
+    const nextPosition = clampPosition(
+      positionRef.current,
+      viewport.width,
+      viewport.height,
+      petWidth,
+      petHeight
+    );
+    if (
+      nextPosition.x === positionRef.current.x
+      && nextPosition.y === positionRef.current.y
+    ) return;
+    positionRef.current = nextPosition;
+    setPosition(nextPosition);
+    if (!isDesktopPetOverlay) savePosition(nextPosition);
+  }, [petHeight, petWidth, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!selectedPet || !speech || messagesMuted) return;
@@ -352,7 +372,7 @@ export function CodexPetLayer() {
 
   const applyPetSize = (requestedSize: number) => {
     const nextSize = clampPetSize(requestedSize);
-    const nextDimensions = petDimensions(nextSize);
+    const nextDimensions = petDimensions(nextSize, petHeightRatio);
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
