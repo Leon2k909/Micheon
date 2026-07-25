@@ -21,7 +21,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // with the dev server (3001) or other tooling on the user's machine.
 const PORT = process.env.GERM_PORT || 41730;
 const PET_OVERLAY_WIDTH = 640;
-const PET_OVERLAY_HEIGHT = 360;
+const PET_OVERLAY_HEIGHT = 500;
 const PET_OVERLAY_MARGIN = 16;
 
 let mainWindow = null;
@@ -287,6 +287,18 @@ ipcMain.on("pet-overlay:move-by", (event, deltaX, deltaY) => {
   );
   petWindow.setPosition(next.x, next.y);
   schedulePetBoundsSave();
+});
+
+ipcMain.on("pet-overlay:wheel", (event, deltaX, deltaY) => {
+  if (!eventCameFrom(event, petWindow) || !mainWindow || mainWindow.isDestroyed()) return;
+  const dx = Number(deltaX);
+  const dy = Number(deltaY);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+  mainWindow.webContents.send(
+    "pet-overlay:wheel",
+    Math.max(-1600, Math.min(1600, dx)),
+    Math.max(-1600, Math.min(1600, dy))
+  );
 });
 
 ipcMain.on("pet-overlay:set-content-bounds", (event, bounds) => {

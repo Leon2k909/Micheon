@@ -4,6 +4,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react";
@@ -210,13 +211,37 @@ export function CodexPetLayer() {
 
   useEffect(() => {
     if (!isDesktopPetOverlay || !desktop?.setPetOverlayContentBounds) return;
+    const speechHeight = speech?.question ? 216 : 112;
+    const speechLeft = Math.min(
+      Math.max(
+        PET_MARGIN,
+        position.x < viewport.width / 2
+          ? position.x
+          : position.x + petGroupWidth - PET_BUBBLE_WIDTH
+      ),
+      Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
+    );
+    const speechTop = Math.max(PET_MARGIN, position.y - speechHeight - PET_MARGIN);
+    const contentLeft = speech && !messagesMuted ? Math.min(position.x, speechLeft) : position.x;
+    const contentTop = speech && !messagesMuted ? Math.min(position.y, speechTop) : position.y;
+    const contentRight = speech && !messagesMuted
+      ? Math.max(position.x + petGroupWidth, speechLeft + PET_BUBBLE_WIDTH)
+      : position.x + petGroupWidth;
     desktop.setPetOverlayContentBounds({
-      height: petHeight,
-      width: petGroupWidth,
-      x: position.x,
-      y: position.y,
+      height: position.y + petHeight - contentTop,
+      width: contentRight - contentLeft,
+      x: contentLeft,
+      y: contentTop,
     });
-  }, [petGroupWidth, petHeight, position.x, position.y]);
+  }, [
+    messagesMuted,
+    petGroupWidth,
+    petHeight,
+    position.x,
+    position.y,
+    speech,
+    viewport.width,
+  ]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -271,6 +296,29 @@ export function CodexPetLayer() {
     setPlaybackKey((value) => value + 1);
     resetTimer.current = window.setTimeout(() => setAnimation("idle"), 1100);
   }, [messagesMuted, selectedPet, speech]);
+
+  useEffect(() => {
+    if (!speech || messagesMuted || isDesktopPetOverlay) return;
+    const requiredTopSpace = (speech.question ? 216 : 112) + PET_MARGIN * 2;
+    if (positionRef.current.y >= requiredTopSpace) return;
+    const next = clampPosition(
+      { x: positionRef.current.x, y: requiredTopSpace },
+      viewport.width,
+      viewport.height,
+      petWidth,
+      petHeight
+    );
+    positionRef.current = next;
+    setPosition(next);
+  }, [
+    messagesMuted,
+    petHeight,
+    petWidth,
+    position.y,
+    speech,
+    viewport.height,
+    viewport.width,
+  ]);
 
   useEffect(() => {
     if (!selectedPet || messagesMuted) return;
@@ -414,11 +462,13 @@ export function CodexPetLayer() {
     setMenuOpen((open) => !open);
   };
 
-  const bubbleBelow = position.y < petHeight + 16;
+  const relayOverlayWheel = (event: ReactWheelEvent<HTMLButtonElement>) => {
+    if (!isDesktopPetOverlay || !desktop?.relayPetOverlayWheel) return;
+    event.preventDefault();
+    desktop.relayPetOverlayWheel(event.deltaX, event.deltaY);
+  };
+
   const bubbleOnRight = position.x < viewport.width / 2;
-  const tailVerticalClass = bubbleBelow
-    ? "-top-2 border-l border-t"
-    : "-bottom-2 border-b border-r";
   const tailHorizontalClass = bubbleOnRight ? "left-5" : "right-5";
   const bubbleLeft = Math.min(
     Math.max(
@@ -427,17 +477,10 @@ export function CodexPetLayer() {
     ),
     Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
   );
-  const bubbleEstimatedHeight = speech?.question ? 176 : 96;
-  const preferredBubbleTop = bubbleBelow
-    ? position.y + petHeight + PET_MARGIN
-    : position.y - bubbleEstimatedHeight - PET_MARGIN;
-  const bubbleTop = Math.min(
-    Math.max(PET_MARGIN, preferredBubbleTop),
-    Math.max(PET_MARGIN, viewport.height - 112 - PET_MARGIN)
-  );
-  const bubbleWasClamped = Math.abs(bubbleTop - preferredBubbleTop) > 1;
-  const bubbleMaxHeight = Math.max(112, viewport.height - bubbleTop - PET_MARGIN);
-  const preferredMenuTop = bubbleBelow
+  const bubbleMaxHeight = Math.max(112, position.y - PET_MARGIN * 2);
+  const bubbleBottom = viewport.height - position.y + PET_MARGIN;
+  const menuBelow = position.y < PET_MENU_ESTIMATED_HEIGHT + PET_MARGIN * 2;
+  const preferredMenuTop = menuBelow
     ? position.y + petHeight + PET_MARGIN
     : position.y - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN;
   const menuTop = Math.min(
@@ -584,15 +627,15 @@ export function CodexPetLayer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-atomic="true"
             aria-live="polite"
-            className="pointer-events-auto fixed z-10 flex w-max max-w-[min(15rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
+            className="pointer-events-auto fixed z-10 flex w-[min(15rem,calc(100vw-2rem))] flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             onPointerDown={(event) => event.stopPropagation()}
             role={speech.question ? "group" : "status"}
             style={{
+              bottom: bubbleBottom,
               left: bubbleLeft,
               maxHeight: bubbleMaxHeight,
-              top: bubbleTop,
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
@@ -647,12 +690,10 @@ export function CodexPetLayer() {
                 })}
               </div>
             )}
-            {!bubbleWasClamped && (
-              <span
-                aria-hidden="true"
-                className={`absolute ${tailVerticalClass} ${tailHorizontalClass} h-4 w-4 rotate-45 border-[var(--border-2)] bg-[var(--surface)]`}
-              />
-            )}
+            <span
+              aria-hidden="true"
+              className={`absolute -bottom-2 ${tailHorizontalClass} h-4 w-4 rotate-45 border-b border-r border-[var(--border-2)] bg-[var(--surface)]`}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -666,6 +707,7 @@ export function CodexPetLayer() {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
+        onWheel={relayOverlayWheel}
         title={`${ui("Drag")} the pet group ${ui("to move. Click for messages or right-click for options.")}`}
         type="button"
       >

@@ -26,6 +26,12 @@ contextBridge.exposeInMainWorld("germDesktop", {
   installUpdate: () => ipcRenderer.send("update:install-now"),
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
   movePetOverlayBy: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:move-by", deltaX, deltaY),
+  relayPetOverlayWheel: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:wheel", deltaX, deltaY),
+  onPetOverlayWheel: (cb) => {
+    const handler = (_e, deltaX, deltaY) => cb(deltaX, deltaY);
+    ipcRenderer.on("pet-overlay:wheel", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:wheel", handler);
+  },
   setPetOverlayContentBounds: (bounds) => ipcRenderer.send("pet-overlay:set-content-bounds", {
     height: Number(bounds?.height),
     width: Number(bounds?.width),

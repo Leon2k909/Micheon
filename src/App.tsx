@@ -36,6 +36,18 @@ function MicheonApp() {
     return () => window.removeEventListener(DIRECTION_CHANGE_EVENT, refreshLanguage);
   }, []);
 
+  useEffect(() => {
+    const desktop = (window as any).germDesktop;
+    if (!desktop?.onPetOverlayWheel) return undefined;
+    return desktop.onPetOverlayWheel((deltaX: number, deltaY: number) => {
+      window.scrollBy({
+        behavior: "auto",
+        left: Number.isFinite(deltaX) ? deltaX : 0,
+        top: Number.isFinite(deltaY) ? deltaY : 0,
+      });
+    });
+  }, []);
+
   // Hydrate the shared desktop/web progress store before creating any default profile.
   useEffect(() => {
     let cancelled = false;
