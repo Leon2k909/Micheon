@@ -521,6 +521,10 @@ export function CodexPetLayer() {
     return () => window.clearTimeout(tipTimer);
   }, [messagesMuted, selectedPet, speak]);
 
+  useEffect(() => () => {
+    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+  }, []);
+
   if (!selectedPet) return null;
 
   const movePet = (nextPosition: PetPosition) => {
@@ -538,7 +542,13 @@ export function CodexPetLayer() {
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    if (isDesktopPetOverlay && desktop?.beginPetOverlayDrag?.() === false) return;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+      return;
+    }
     dragState.current = {
       moved: false,
       originX: positionRef.current.x,
@@ -563,13 +573,14 @@ export function CodexPetLayer() {
   const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    suppressClick.current = drag.moved;
+    dragState.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    suppressClick.current = drag.moved;
-    dragState.current = null;
     setDragging(false);
     savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
+    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
   };
 
   const handleClick = () => {
@@ -864,6 +875,7 @@ export function CodexPetLayer() {
         data-pet-interactive="true"
         onClick={handleClick}
         onContextMenu={showContextMenu}
+        onLostPointerCapture={finishDrag}
         onPointerCancel={finishDrag}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

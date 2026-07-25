@@ -24,6 +24,7 @@ applyCustomTheme();
 if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");
 if (new URLSearchParams(window.location.search).get("pet-overlay") === "1") {
   document.documentElement.classList.add("is-pet-overlay");
+  document.title = "Micheon mascot";
 }
 
 const container = document.getElementById("root");

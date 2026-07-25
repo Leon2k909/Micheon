@@ -381,6 +381,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       storeVisiblePetKeys(next);
       return next;
     });
+    if (selectedKey !== "off") desktop?.setPetOverlayVisible(true);
   }, [selectedKey]);
 
   const selectedPet = useMemo(
@@ -389,7 +390,9 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (desktop && !isLoading) desktop.setPetOverlayVisible(Boolean(selectedPet));
+    if (desktop && !isDesktopPetOverlay && !isLoading) {
+      desktop.setPetOverlayVisible(Boolean(selectedPet));
+    }
   }, [isLoading, selectedPet]);
 
   const value = useMemo<CodexPetContextValue>(
