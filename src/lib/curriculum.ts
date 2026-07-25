@@ -85,6 +85,10 @@ export const CURRICULUM_ORDER: string[] = [
   "part91",          // Weekends & free time
   "part92",          // Music, films & books
   "part93",          // Venting & getting it off your chest
+  "part94",
+  "part95",
+  "part96",
+  "part98",
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",

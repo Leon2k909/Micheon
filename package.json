@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.0.69",
+  "version": "1.0.70",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
