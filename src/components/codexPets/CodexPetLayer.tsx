@@ -87,6 +87,7 @@ type DragState = {
   pointerId: number;
   startX: number;
   startY: number;
+  unsubscribeCursor?: () => void;
 };
 
 function viewportSize() {
@@ -522,6 +523,8 @@ export function CodexPetLayer() {
   }, [messagesMuted, selectedPet, speak]);
 
   useEffect(() => () => {
+    dragState.current?.unsubscribeCursor?.();
+    dragState.current = null;
     if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
   }, []);
 
@@ -540,23 +543,41 @@ export function CodexPetLayer() {
     setPosition(next);
   };
 
+  const moveDragFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    const deltaX = pointerX - drag.startX;
+    const deltaY = pointerY - drag.startY;
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) drag.moved = true;
+    movePet({ x: drag.originX + deltaX, y: drag.originY + deltaY });
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
-    if (isDesktopPetOverlay && desktop?.beginPetOverlayDrag?.() === false) return;
+    const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
+    if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
       if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
       return;
     }
-    dragState.current = {
+    const drag: DragState = {
       moved: false,
       originX: positionRef.current.x,
       originY: positionRef.current.y,
       pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
+      startX: Number.isFinite(nativeDrag?.x) ? nativeDrag.x : event.clientX,
+      startY: Number.isFinite(nativeDrag?.y) ? nativeDrag.y : event.clientY,
     };
+    dragState.current = drag;
+    if (isDesktopPetOverlay && desktop?.onPetOverlayDragCursor) {
+      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: { x?: number; y?: number }) => {
+        const activeDrag = dragState.current;
+        const pointerX = Number(point?.x);
+        const pointerY = Number(point?.y);
+        if (!activeDrag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
+        moveDragFromPointer(activeDrag, pointerX, pointerY);
+      });
+    }
     setDragging(true);
   };
 
@@ -564,16 +585,14 @@ export function CodexPetLayer() {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
-    const deltaX = event.clientX - drag.startX;
-    const deltaY = event.clientY - drag.startY;
-    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) drag.moved = true;
-    movePet({ x: drag.originX + deltaX, y: drag.originY + deltaY });
+    moveDragFromPointer(drag, event.clientX, event.clientY);
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     suppressClick.current = drag.moved;
+    drag.unsubscribeCursor?.();
     dragState.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);

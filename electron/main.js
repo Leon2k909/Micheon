@@ -24,6 +24,8 @@ let mainWindow = null;
 let petWindow = null;
 let petOverlayUsesShape = false;
 let petOverlayDragging = false;
+let petOverlayDragTimer = null;
+let petOverlayDragStartRegions = [];
 let petOverlayHitRegions = [];
 let serverStarted = false;
 
@@ -76,18 +78,12 @@ function syncPetOverlayBounds() {
     || current.height !== next.height
   ) {
     petWindow.setBounds(next, false);
-    if (petOverlayDragging) applyPetOverlayShape(fullPetOverlayRegion());
+    if (petOverlayDragging) applyPetOverlayDragShape();
     else restorePetOverlayShape();
   }
 }
 
-function fullPetOverlayRegion() {
-  if (!petWindow || petWindow.isDestroyed()) return [];
-  const { width, height } = petWindow.getBounds();
-  return [{ x: 0, y: 0, width, height }];
-}
-
-function applyPetOverlayShape(regions) {
+function applyPetOverlayShape(regions, preserveOnFailure = false) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return false;
   try {
     petWindow.setShape(regions);
@@ -95,20 +91,63 @@ function applyPetOverlayShape(regions) {
     petWindow.setIgnoreMouseEvents(false);
     return true;
   } catch (error) {
-    petOverlayUsesShape = false;
-    petWindow.setIgnoreMouseEvents(true, { forward: true });
+    if (!preserveOnFailure) {
+      petOverlayUsesShape = false;
+      petWindow.setIgnoreMouseEvents(true, { forward: true });
+    }
     console.error("[pet] unable to shape overlay:", error?.message ?? error);
     return false;
   }
+}
+
+function applyPetOverlayDragShape() {
+  const regions = [...petOverlayDragStartRegions, ...petOverlayHitRegions];
+  if (regions.length > 0) applyPetOverlayShape(regions, true);
 }
 
 function restorePetOverlayShape() {
   if (petOverlayHitRegions.length > 0) applyPetOverlayShape(petOverlayHitRegions);
 }
 
+function stopPetOverlayCursorTracking() {
+  if (petOverlayDragTimer) clearInterval(petOverlayDragTimer);
+  petOverlayDragTimer = null;
+}
+
+function petOverlayCursorPoint() {
+  if (!petWindow || petWindow.isDestroyed()) return null;
+  const cursor = screen.getCursorScreenPoint();
+  const bounds = petWindow.getBounds();
+  return {
+    x: cursor.x - bounds.x,
+    y: cursor.y - bounds.y,
+  };
+}
+
+function startPetOverlayCursorTracking() {
+  stopPetOverlayCursorTracking();
+  let previousPoint = null;
+  const sendCursor = () => {
+    if (!petOverlayDragging || !petWindow || petWindow.isDestroyed()) {
+      stopPetOverlayCursorTracking();
+      return;
+    }
+    const point = petOverlayCursorPoint();
+    if (!point || (previousPoint?.x === point.x && previousPoint?.y === point.y)) return;
+    previousPoint = point;
+    petWindow.webContents.send("pet-overlay:drag-cursor", point);
+  };
+  sendCursor();
+  petOverlayDragTimer = setInterval(sendCursor, 16);
+  petOverlayDragTimer.unref?.();
+  return previousPoint;
+}
+
 function finishPetOverlayDrag() {
+  stopPetOverlayCursorTracking();
   if (!petOverlayDragging) return;
   petOverlayDragging = false;
+  petOverlayDragStartRegions = [];
   restorePetOverlayShape();
 }
 
@@ -147,9 +186,11 @@ function createPetOverlayWindow() {
     console.error("[pet] unable to load overlay:", error?.message ?? error);
   });
   petWindow.on("closed", () => {
+    stopPetOverlayCursorTracking();
     petWindow = null;
     petOverlayUsesShape = false;
     petOverlayDragging = false;
+    petOverlayDragStartRegions = [];
     petOverlayHitRegions = [];
   });
   petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -317,22 +358,40 @@ ipcMain.on("pet-overlay:set-hit-regions", (event, regions) => {
   if (safeRegions.length === 0) return;
   petOverlayHitRegions = safeRegions;
   // Pixels outside these rectangles are neither drawn nor interactive. While
-  // dragging, keep the temporary desktop-wide input shape until pointer-up so
-  // Windows cannot drop the pointer when it leaves the mascot's old location.
-  if (!petOverlayDragging) applyPetOverlayShape(safeRegions);
+  // dragging, retain the starting region alongside the moving region so the
+  // native hit area follows the mascot without requiring a desktop-sized shape.
+  if (petOverlayDragging) applyPetOverlayDragShape();
+  else applyPetOverlayShape(safeRegions);
 });
 
 ipcMain.on("pet-overlay:begin-drag", (event) => {
-  event.returnValue = false;
-  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
-  if (process.platform !== "win32" && process.platform !== "linux") {
-    event.returnValue = true;
+  if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) {
+    event.returnValue = { reason: "untrusted-sender", started: false };
     return;
   }
-  // This synchronous reply ensures the native input region expands before the
-  // renderer starts pointer capture and before the first mouse-move can arrive.
-  petOverlayDragging = applyPetOverlayShape(fullPetOverlayRegion());
-  event.returnValue = petOverlayDragging;
+  if (process.platform !== "win32" && process.platform !== "linux") {
+    event.returnValue = { started: true };
+    return;
+  }
+  // A desktop-sized Windows region is rejected on some systems. Keep the
+  // current small region alive, poll the native cursor, and let renderer shape
+  // updates move the interactive region with the mascot during the drag.
+  try {
+    petOverlayDragging = true;
+    petOverlayDragStartRegions = [...petOverlayHitRegions];
+    const point = startPetOverlayCursorTracking();
+    event.returnValue = {
+      started: true,
+      x: point?.x,
+      y: point?.y,
+    };
+  } catch (error) {
+    petOverlayDragging = false;
+    petOverlayDragStartRegions = [];
+    stopPetOverlayCursorTracking();
+    console.error("[pet] unable to begin drag:", error?.message ?? error);
+    event.returnValue = { reason: "native-drag-failed", started: false };
+  }
 });
 
 ipcMain.on("pet-overlay:end-drag", (event) => {

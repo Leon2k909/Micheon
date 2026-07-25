@@ -30,6 +30,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
   setPetOverlayHitRegions: (regions) => ipcRenderer.send("pet-overlay:set-hit-regions", regions),
   beginPetOverlayDrag: () => ipcRenderer.sendSync("pet-overlay:begin-drag"),
   endPetOverlayDrag: () => ipcRenderer.send("pet-overlay:end-drag"),
+  onPetOverlayDragCursor: (cb) => {
+    const handler = (_event, point) => cb(point);
+    ipcRenderer.on("pet-overlay:drag-cursor", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:drag-cursor", handler);
+  },
   setPetOverlayKeyboardInteractive: (interactive) =>
     ipcRenderer.send("pet-overlay:set-keyboard-interactive", Boolean(interactive)),
   relayPetOverlayWheel: (deltaX, deltaY) => ipcRenderer.send("pet-overlay:wheel", deltaX, deltaY),
