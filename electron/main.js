@@ -327,7 +327,12 @@ async function createWindow() {
   });
 
   await mainWindow.loadURL(`http://localhost:${PORT}`);
-  createPetOverlayWindow();
+  // The overlay is NOT created here. It is a second renderer process holding a
+  // second copy of the app bundle, behind a transparent window the size of the
+  // whole virtual desktop, and it used to be built at startup whether or not
+  // the user had a pet switched on. It is now created the first time a pet is
+  // actually shown (setPetOverlayVisible), so someone who never turns one on
+  // never pays for it.
 
   // Tell the renderer when the window is maximized/restored so the title bar's
   // maximize button can show the correct icon.

@@ -375,10 +375,14 @@ export function CodexPetLayer() {
     // between "pet enabled" and "pet actually usable", so it retries rather than
     // failing silently — but it gives up after ~10s so a deliberately disabled
     // pet does not leave a timer running forever. Showing the overlay restarts it.
-    let retriesLeft = 0;
+    // The budget deliberately lives OUTSIDE startRetry and is only refilled by
+    // an actual window show. Refilling it on every call — or even just letting a
+    // fresh call restart a poller that had run itself down — meant the ordinary
+    // geometry sync, which fires on every position change and so ~60 times a
+    // second during a drag, could keep this polling forever.
+    let retriesLeft = 40;
     const startRetry = () => {
-      retriesLeft = 40;
-      if (retryTimer) return;
+      if (retryTimer || retriesLeft <= 0) return;
       retryTimer = window.setInterval(() => {
         if (deliveredOnce || retriesLeft-- <= 0) {
           window.clearInterval(retryTimer);
@@ -394,6 +398,7 @@ export function CodexPetLayer() {
       // drop — but the window's shape was reset, so it must be sent again.
       lastRegions = "";
       deliveredOnce = false;
+      retriesLeft = 40;   // a real show is the only thing that earns a fresh budget
       scheduleHitRegionSync();
       startRetry();
     };

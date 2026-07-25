@@ -19,7 +19,20 @@ export type CodexPetVisibleBounds = {
 };
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
+// Each entry is a full ImageData for one animation frame — width * height * 4
+// bytes — so this is not a cheap map to let grow without limit across every pet
+// the user tries. Oldest entries are evicted once it gets large.
+const FRAME_CACHE_LIMIT = 240;
 const frameCache = new Map<string, ImageData>();
+
+function cacheFrame(key: string, value: ImageData) {
+  if (frameCache.size >= FRAME_CACHE_LIMIT) {
+    // Map iterates in insertion order, so the first key is the oldest.
+    const oldest = frameCache.keys().next();
+    if (!oldest.done) frameCache.delete(oldest.value);
+  }
+  frameCache.set(key, value);
+}
 const visibleBoundsCache = new Map<string, Promise<CodexPetVisibleBounds>>();
 
 function loadSpritesheet(url: string) {
@@ -224,7 +237,8 @@ export function CodexPetSprite({
   useEffect(() => {
     if (frames.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const interval = window.setInterval(() => {
+    let interval = 0;
+    const tick = () => {
       setFrameIndex((current) => {
         if (current + 1 < frames.length) return current + 1;
         if (definition.loop) return 0;
@@ -235,9 +249,33 @@ export function CodexPetSprite({
         setActiveAnimation(fallback);
         return 0;
       });
-    }, 1000 / Math.max(1, definition.fps || 1));
+    };
 
-    return () => window.clearInterval(interval);
+    // Only animate while the window is actually on screen.
+    //
+    // The desktop overlay is created with backgroundThrottling disabled, which
+    // means Chromium does NOT slow this timer down when the window is hidden or
+    // covered. Without this check every pet kept redrawing its spritesheet at
+    // full frame rate for as long as the app was running — including while the
+    // pet was switched off and its window hidden — which is real, permanent CPU
+    // and GPU load for something nobody can see.
+    const start = () => {
+      if (interval) return;
+      interval = window.setInterval(tick, 1000 / Math.max(1, definition.fps || 1));
+    };
+    const stop = () => {
+      if (!interval) return;
+      window.clearInterval(interval);
+      interval = 0;
+    };
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      stop();
+    };
   }, [activeAnimation, definition.fallback, definition.fps, definition.loop, frames.length, pet.animations]);
 
   const frame = frames[Math.min(frameIndex, frames.length - 1)] ?? 0;
@@ -289,7 +327,7 @@ export function CodexPetSprite({
           imageData = removeDetachedLowerFragments(
             context.getImageData(0, 0, pet.frame.width, pet.frame.height)
           );
-          frameCache.set(cacheKey, imageData);
+          cacheFrame(cacheKey, imageData);
         }
         if (cancelled) return;
         context.clearRect(0, 0, pet.frame.width, pet.frame.height);
