@@ -11,6 +11,7 @@ import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+import { codexPetKey } from "@/lib/codexPets";
 import {
   CODEX_PET_MESSAGES_MUTED_EVENT,
   CODEX_PET_MESSAGES_MUTED_KEY,
@@ -27,6 +28,7 @@ const PET_SIZE_MAX = 192;
 const PET_SIZE_STEP = 4;
 const PET_SIZE_DEFAULT = 96;
 const PET_HEIGHT_RATIO = 104 / 96;
+const PET_GROUP_GAP = 8;
 const PET_MENU_WIDTH = 224;
 const PET_MENU_ESTIMATED_HEIGHT = 280;
 const PET_BUBBLE_WIDTH = 240;
@@ -139,26 +141,42 @@ export function CodexPetLayer() {
     clearSpeech,
     dismissMessage,
     history,
+    pets,
     selectPet,
     selectedPet,
     speak,
     speech,
+    visibleKeys,
   } = useCodexPets();
+  const visiblePets = selectedPet
+    ? [
+        selectedPet,
+        ...pets.filter((pet) => {
+          const key = codexPetKey(pet);
+          return key !== codexPetKey(selectedPet) && visibleKeys.includes(key);
+        }),
+      ]
+    : [];
   const [animation, setAnimation] = useState("idle");
   const [dragging, setDragging] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
   const [petSize, setPetSize] = useState(storedPetSize);
-  const petHeightRatio = selectedPet?.frame.width
-    ? selectedPet.frame.height / selectedPet.frame.width
+  const petHeightRatio = visiblePets.length
+    ? Math.max(
+        ...visiblePets.map((pet) => pet.frame.height / Math.max(1, pet.frame.width)),
+        PET_HEIGHT_RATIO
+      )
     : PET_HEIGHT_RATIO;
   const { height: petHeight, width: petWidth } = petDimensions(petSize, petHeightRatio);
+  const petGroupWidth = petWidth * Math.max(1, visiblePets.length)
+    + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
   const [playbackKey, setPlaybackKey] = useState(0);
   const [position, setPosition] = useState<PetPosition>(
     () => isDesktopPetOverlay
-      ? defaultPosition(petWidth, petHeight)
-      : storedPosition(petWidth, petHeight)
+      ? defaultPosition(petGroupWidth, petHeight)
+      : storedPosition(petGroupWidth, petHeight)
   );
   const [viewport, setViewport] = useState(viewportSize);
   const dragState = useRef<DragState | null>(null);
@@ -194,11 +212,11 @@ export function CodexPetLayer() {
     if (!isDesktopPetOverlay || !desktop?.setPetOverlayContentBounds) return;
     desktop.setPetOverlayContentBounds({
       height: petHeight,
-      width: petWidth,
+      width: petGroupWidth,
       x: position.x,
       y: position.y,
     });
-  }, [petHeight, petWidth, position.x, position.y]);
+  }, [petGroupWidth, petHeight, position.x, position.y]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -207,7 +225,7 @@ export function CodexPetLayer() {
         positionRef.current,
         nextViewport.width,
         nextViewport.height,
-        petWidth,
+        petGroupWidth,
         petHeight
       );
       positionRef.current = nextPosition;
@@ -221,14 +239,14 @@ export function CodexPetLayer() {
       if (resetTimer.current) window.clearTimeout(resetTimer.current);
       window.removeEventListener("resize", handleResize);
     };
-  }, [petHeight, petWidth]);
+  }, [petGroupWidth, petHeight]);
 
   useEffect(() => {
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
       viewport.height,
-      petWidth,
+      petGroupWidth,
       petHeight
     );
     if (
@@ -238,7 +256,7 @@ export function CodexPetLayer() {
     positionRef.current = nextPosition;
     setPosition(nextPosition);
     if (!isDesktopPetOverlay) savePosition(nextPosition);
-  }, [petHeight, petWidth, viewport.height, viewport.width]);
+  }, [petGroupWidth, petHeight, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!selectedPet || !speech || messagesMuted) return;
@@ -304,7 +322,7 @@ export function CodexPetLayer() {
       nextPosition,
       viewport.width,
       viewport.height,
-      petWidth,
+      petGroupWidth,
       petHeight
     );
     positionRef.current = next;
@@ -373,11 +391,13 @@ export function CodexPetLayer() {
   const applyPetSize = (requestedSize: number) => {
     const nextSize = clampPetSize(requestedSize);
     const nextDimensions = petDimensions(nextSize, petHeightRatio);
+    const nextGroupWidth = nextDimensions.width * Math.max(1, visiblePets.length)
+      + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
       viewport.height,
-      nextDimensions.width,
+      nextGroupWidth,
       nextDimensions.height
     );
     localStorage.setItem(PET_SIZE_KEY, String(nextSize));
@@ -403,7 +423,7 @@ export function CodexPetLayer() {
   const bubbleLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? position.x : position.x + petWidth - PET_BUBBLE_WIDTH
+      bubbleOnRight ? position.x : position.x + petGroupWidth - PET_BUBBLE_WIDTH
     ),
     Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
   );
@@ -427,7 +447,7 @@ export function CodexPetLayer() {
   const menuLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? position.x : position.x + petWidth - PET_MENU_WIDTH
+      bubbleOnRight ? position.x : position.x + petGroupWidth - PET_MENU_WIDTH
     ),
     Math.max(PET_MARGIN, viewport.width - PET_MENU_WIDTH - PET_MARGIN)
   );
@@ -444,7 +464,7 @@ export function CodexPetLayer() {
       )}
       <div
         className="pointer-events-none fixed z-[700]"
-        style={{ height: petHeight, left: position.x, top: position.y, width: petWidth }}
+        style={{ height: petHeight, left: position.x, top: position.y, width: petGroupWidth }}
       >
       <AnimatePresence>
         {menuOpen && (
@@ -638,7 +658,7 @@ export function CodexPetLayer() {
       </AnimatePresence>
       <button
         aria-label={`Talk to ${selectedPet.displayName}`}
-        className={`pointer-events-auto block touch-none select-none rounded-full outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing scale-[1.04]" : "cursor-grab hover:scale-[1.04] active:scale-95"}`}
+        className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing scale-[1.04]" : "cursor-grab hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
         onClick={handleClick}
         onContextMenu={showContextMenu}
@@ -646,16 +666,19 @@ export function CodexPetLayer() {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
-        title={`${ui("Drag")} ${selectedPet.displayName} ${ui("to move. Click for messages or right-click for options.")}`}
+        title={`${ui("Drag")} the pet group ${ui("to move. Click for messages or right-click for options.")}`}
         type="button"
       >
-        <CodexPetSprite
-          animation={animation}
-          className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
-          pet={selectedPet}
-          playbackKey={playbackKey}
-          size={petWidth}
-        />
+        {visiblePets.map((pet, index) => (
+          <CodexPetSprite
+            animation={index === 0 ? animation : "idle"}
+            className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
+            key={codexPetKey(pet)}
+            pet={pet}
+            playbackKey={index === 0 ? playbackKey : 0}
+            size={petWidth}
+          />
+        ))}
       </button>
       </div>
     </>

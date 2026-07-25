@@ -24,6 +24,7 @@ import {
   getScopedKey,
   loadScopedJson,
   saveScopedJson,
+  syncLocalStorageItem,
 } from "@/lib/profileStorage";
 import { uiIsGerman } from "@/lib/i18n";
 
@@ -31,6 +32,7 @@ const desktop = typeof window !== "undefined" ? (window as any).germDesktop : un
 const isDesktopPetOverlay = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
 const PET_HISTORY_KEY = "pet-message-history-v1";
+const PET_VISIBLE_KEYS_KEY = "gl-codex-pet-visible-v1";
 const MAX_PET_HISTORY = 200;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
@@ -73,6 +75,8 @@ type CodexPetContextValue = {
   selectedKey: string;
   selectedPet: CodexPet | null;
   selectPet: (key: string) => void;
+  togglePetVisibility: (key: string) => void;
+  visibleKeys: string[];
   speak: (text: string, options?: CodexPetSpeechOptions) => void;
   speech: CodexPetSpeech | null;
 };
@@ -92,9 +96,26 @@ function savePetHistory(history: CodexPetSpeech[]) {
   saveScopedJson(PET_HISTORY_KEY, history.slice(-MAX_PET_HISTORY), getAuthUser());
 }
 
+function getStoredVisiblePetKeys() {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(PET_VISIBLE_KEYS_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function storeVisiblePetKeys(keys: string[]) {
+  const next = [...new Set(keys)];
+  localStorage.setItem(PET_VISIBLE_KEYS_KEY, JSON.stringify(next));
+  syncLocalStorageItem(PET_VISIBLE_KEYS_KEY, JSON.stringify(next));
+}
+
 export function CodexPetProvider({ children }: { children: ReactNode }) {
   const [pets, setPets] = useState<CodexPet[]>([]);
   const [selectedKey, setSelectedKey] = useState(() => getStoredCodexPetKey() ?? "");
+  const [visibleKeys, setVisibleKeys] = useState<string[]>(getStoredVisiblePetKeys);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [speech, setSpeech] = useState<CodexPetSpeech | null>(null);
@@ -276,6 +297,15 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
 
       setSelectedKey(next);
       if (stored !== next) storeCodexPetKey(next);
+
+      const storedVisible = getStoredVisiblePetKeys().filter((key) => availableKeys.has(key));
+      const nextVisible = next === "off"
+        ? []
+        : storedVisible.length
+          ? storedVisible
+          : [next];
+      setVisibleKeys(nextVisible);
+      storeVisiblePetKeys(nextVisible);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to read mascot pets");
     } finally {
@@ -295,6 +325,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       if (event.key === CODEX_PET_PREFERENCE_KEY && event.newValue) {
         setSelectedKey(event.newValue);
       }
+      if (event.key === PET_VISIBLE_KEYS_KEY) setVisibleKeys(getStoredVisiblePetKeys());
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
@@ -303,9 +334,27 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   const selectPet = useCallback((key: string) => {
     setSelectedKey(key);
     storeCodexPetKey(key);
+    if (key !== "off") {
+      setVisibleKeys((current) => {
+        const next = current.includes(key) ? current : [...current, key];
+        storeVisiblePetKeys(next);
+        return next;
+      });
+    }
     desktop?.setPetOverlayVisible(key !== "off");
     if (key === "off") clearSpeech();
   }, [clearSpeech]);
+
+  const togglePetVisibility = useCallback((key: string) => {
+    if (key === selectedKey) return;
+    setVisibleKeys((current) => {
+      const next = current.includes(key)
+        ? current.filter((entry) => entry !== key)
+        : [...current, key];
+      storeVisiblePetKeys(next);
+      return next;
+    });
+  }, [selectedKey]);
 
   const selectedPet = useMemo(
     () => pets.find((pet) => codexPetKey(pet) === selectedKey) ?? null,
@@ -329,10 +378,12 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       selectedKey,
       selectedPet,
       selectPet,
+      togglePetVisibility,
+      visibleKeys,
       speak,
       speech,
     }),
-    [answerQuestion, clearSpeech, dismissMessage, error, history, isLoading, pets, refresh, selectedKey, selectedPet, selectPet, speak, speech]
+    [answerQuestion, clearSpeech, dismissMessage, error, history, isLoading, pets, refresh, selectedKey, selectedPet, selectPet, speak, speech, togglePetVisibility, visibleKeys]
   );
 
   return <CodexPetContext.Provider value={value}>{children}</CodexPetContext.Provider>;

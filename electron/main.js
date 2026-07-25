@@ -20,8 +20,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Local port for the embedded server. Deliberately uncommon so it won't collide
 // with the dev server (3001) or other tooling on the user's machine.
 const PORT = process.env.GERM_PORT || 41730;
-const PET_OVERLAY_WIDTH = 360;
-const PET_OVERLAY_HEIGHT = 320;
+const PET_OVERLAY_WIDTH = 640;
+const PET_OVERLAY_HEIGHT = 360;
 const PET_OVERLAY_MARGIN = 16;
 
 let mainWindow = null;
