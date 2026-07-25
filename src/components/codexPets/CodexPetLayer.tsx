@@ -19,6 +19,7 @@ import {
   getCodexPetMessagesMuted,
   setCodexPetMessagesMuted,
 } from "@/lib/codexPetMessages";
+import { learningEnglish } from "@/lib/direction";
 import { ui } from "@/lib/i18n";
 
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
@@ -43,12 +44,20 @@ const PET_GREETINGS = [
   "Los geht's! Let's go.",
 ];
 
-const PET_TIPS = [
-  "Tip: say each answer aloud before you check it.",
-  "Short daily practice beats one long weekly session.",
-  "If recall feels slow, mark the phrase as struggling.",
-  "Listen once without reading to train your ear.",
-  "Try using today's phrase in a sentence about your life.",
+const GERMAN_PET_TIPS = [
+  "German tip: learn every noun with der, die, or das — the article is part of the word.",
+  "German tip: in a main clause, the conjugated verb stays in position two.",
+  "German tip: after weil or dass, the conjugated verb moves to the end.",
+  "German tip: all German nouns begin with a capital letter, even in the middle of a sentence.",
+  "German tip: separable prefixes move to the end in a main clause — ich stehe um sieben auf.",
+];
+
+const ENGLISH_PET_TIPS = [
+  "English tip: a normal statement usually follows subject–verb–object order.",
+  "English tip: after can, must, should, or will, use the base verb without “to”.",
+  "English tip: in the present simple, he, she, and it usually add -s to the verb.",
+  "English tip: adjectives normally come before the noun and do not change for gender.",
+  "English tip: use “a” before a consonant sound and “an” before a vowel sound.",
 ];
 
 type PetPosition = {
@@ -371,11 +380,12 @@ export function CodexPetLayer() {
   useEffect(() => {
     if (!selectedPet || messagesMuted) return;
     let tipTimer = 0;
+    const languageTips = learningEnglish() ? ENGLISH_PET_TIPS : GERMAN_PET_TIPS;
 
     const scheduleTip = (delay: number) => {
       tipTimer = window.setTimeout(() => {
         if (document.visibilityState === "visible" && !speechRef.current && !dragState.current) {
-          speak(ui(PET_TIPS[tipIndex.current++ % PET_TIPS.length]), {
+          speak(ui(languageTips[tipIndex.current++ % languageTips.length]), {
             durationMs: 4800,
             mood: "greeting",
           });
