@@ -3533,6 +3533,109 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
   return cards;
 }
 
+function LessonMemoryCheck({
+  cards,
+  onComplete,
+  onGrade,
+  petSpeak,
+}: {
+  cards: SessionPreviewCard[];
+  onComplete: () => void;
+  onGrade: (itemId: string, grade: "know" | "struggle") => void;
+  petSpeak: (text: string, options?: any) => void;
+}) {
+  const [position, setPosition] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const learnsEnglish = learningEnglish();
+  const card = cards[position];
+  const source = card ? (learnsEnglish ? card.german : card.english) : "";
+  const answer = card ? (learnsEnglish ? card.english : card.german) : "";
+
+  useEffect(() => {
+    if (!card) return;
+    petSpeak(
+      `Before we learn anything new, do you still remember how to say “${source}”?`,
+      { durationMs: 9000, mood: "greeting" }
+    );
+  }, [card, petSpeak, source]);
+
+  if (!card) {
+    return <CompleteScreen onNext={onComplete} />;
+  }
+
+  const respond = (grade: "know" | "struggle") => {
+    onGrade(card.id, grade);
+    if (position >= cards.length - 1) {
+      petSpeak(
+        grade === "know"
+          ? "Great — you remembered the lesson. You’re ready to move on."
+          : "Good call. We’ll practise that again before adding anything new.",
+        { durationMs: 5200, mood: grade === "know" ? "success" : "encourage" }
+      );
+      onComplete();
+      return;
+    }
+    setPosition((current) => current + 1);
+    setRevealed(false);
+  };
+
+  return (
+    <div className="w-full max-w-2xl space-y-6 py-7 text-center">
+      <div>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+          {ui("Memory check")} · {position + 1} {ui("of")} {cards.length}
+        </p>
+        <h2 className="mt-3 text-3xl font-black text-[var(--text-1)]">
+          {ui("Do you still remember this?")}
+        </h2>
+        <p className="mt-2 text-sm font-semibold text-[var(--text-3)]">
+          {ui("Recall it first, then reveal the answer honestly.")}
+        </p>
+      </div>
+
+      <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-7">
+        <p className="text-sm font-black uppercase tracking-wider text-[var(--text-3)]">
+          {ui(learnsEnglish ? "Say it in English" : "Say it in German")}
+        </p>
+        <p className="mt-4 text-2xl font-black leading-snug text-[var(--text-1)]">{source}</p>
+        {revealed && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 rounded-[18px] bg-[var(--surface)] p-5"
+          >
+            <p className="text-xs font-black uppercase text-[var(--text-3)]">{ui("Answer")}</p>
+            <p className="mt-2 text-xl font-black text-[var(--accent)]">{answer}</p>
+          </motion.div>
+        )}
+      </div>
+
+      {!revealed ? (
+        <button type="button" className="fs-preview-next mx-auto" onClick={() => setRevealed(true)}>
+          {ui("Reveal answer")} <ChevronRight className="h-4 w-4" />
+        </button>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            className="h-14 rounded-[16px] border border-rose-500/30 bg-rose-500/10 px-5 font-black text-rose-600 dark:text-rose-400"
+            onClick={() => respond("struggle")}
+          >
+            {ui("Not yet — review it")}
+          </button>
+          <button
+            type="button"
+            className="h-14 rounded-[16px] bg-emerald-500 px-5 font-black text-white"
+            onClick={() => respond("know")}
+          >
+            {ui("Yes, I remembered")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SessionFlashcardPreview({
   cards,
   index,
@@ -3901,7 +4004,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onMemoryGrade, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak } = useCodexPets();
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [index, setIndex] = useState(0);
@@ -3909,6 +4012,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [previewIndex, setPreviewIndex] = useState(0);
   const [matchingActive, setMatchingActive] = useState(false);
   const [matchingProgress, setMatchingProgress] = useState(0);
+  const [memoryCheckComplete, setMemoryCheckComplete] = useState(false);
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
   const comboRef = useRef(0);
@@ -4022,9 +4126,9 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   useEffect(() => {
     if (kind !== "complete" || announcedComplete.current) return;
     announcedComplete.current = true;
-    petSpeak("Lesson complete. Well done!", {
-      durationMs: 5000,
-      mood: "celebrate",
+    petSpeak("Lesson complete. Let’s check what you remember before moving on.", {
+      durationMs: 6000,
+      mood: "encourage",
     });
   }, [kind, petSpeak]);
 
@@ -4102,7 +4206,20 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
-                    {kind === "complete"  && <div className="fs-card-body flex flex-col items-center"><CompleteScreen onNext={onComplete} /></div>}
+                    {kind === "complete"  && (
+                      <div className="fs-card-body flex flex-col items-center">
+                        {memoryCheckComplete || previewCards.length === 0 ? (
+                          <CompleteScreen onNext={onComplete} />
+                        ) : (
+                          <LessonMemoryCheck
+                            cards={previewCards}
+                            onComplete={() => setMemoryCheckComplete(true)}
+                            onGrade={onMemoryGrade ?? onGradeItem}
+                            petSpeak={petSpeak}
+                          />
+                        )}
+                      </div>
+                    )}
                     {!["sentence","dialogue","complete","register"].includes(kind) && (
                       <div className="fs-card-body py-12 text-center space-y-4">
                         <div className="text-4xl font-semibold tracking-tight text-zinc-950">{step.item?.de ?? ""}</div>

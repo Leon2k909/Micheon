@@ -317,6 +317,19 @@ export default function GermanLearningLab() {
     } catch {}
   };
 
+  // The end-of-lesson memory check is a genuine delayed recall, so a "yes"
+  // climbs one normal SRS rung. A "not yet" resets the item and makes it block
+  // fresh material until it has been practised again.
+  const markMemoryGrade = (itemId: string, grade: "know" | "struggle") => {
+    try {
+      const existing = loadCompleted();
+      saveReviewGrades({
+        ...existing,
+        [itemId]: grade === "know" ? recordSuccess(existing[itemId]) : recordStruggle(),
+      });
+    } catch {}
+  };
+
   const replaceKnownPreviewItem = (itemId: string) => {
     markGrade(itemId, "know");
     setSessionSteps((current) => {
@@ -408,6 +421,45 @@ export default function GermanLearningLab() {
     // has fresh content. The most common German is always served first.
     const reviewState = loadCompleted();
     const explicit = partId && apiParts[partId] ? partId : null;
+
+    // A learner who said "not yet" at the pet's memory check gets those weak
+    // items first. Do not mix in fresh curriculum until every struggle has
+    // been recalled and moved back onto the spaced-repetition ladder.
+    const requiredReviews: any[] = [];
+    const requiredIds = new Set<string>();
+    for (const [reviewPartId, reviewPart] of Object.entries(apiParts)) {
+      const reviewSteps = buildSession(
+        { ...reviewPart, partKey: reviewPartId },
+        [],
+        reviewState,
+        0
+      );
+      for (const reviewStep of reviewSteps) {
+        const itemId = reviewStep?.type === "sentence" ? reviewStep.item?.id : null;
+        if (
+          itemId
+          && !requiredIds.has(itemId)
+          && reviewState[itemId]?.lastGrade === "struggle"
+        ) {
+          requiredIds.add(itemId);
+          requiredReviews.push(reviewStep);
+        }
+      }
+    }
+    if (requiredReviews.length > 0) {
+      let steps = [...requiredReviews.slice(0, 6), { type: "complete" }];
+      if (learningEnglish()) steps = steps.map(swapStepForEnglish);
+      const reviewPartId = requiredReviews[0]?.item?.id
+        ? Object.keys(apiParts).find((key) => String(requiredReviews[0].item.id).startsWith(`${key}-`))
+        : undefined;
+      const id = reviewPartId ?? explicit ?? activePart;
+      setActivePart(id);
+      saveScopedJson("active-part", id, user);
+      setSessionSteps(withRegisterCheck(steps, user));
+      sessionStartRef.current = Date.now();
+      setShowGuidedSession(true);
+      return;
+    }
 
     if (!explicit) {
       const keys = Object.keys(apiParts);
@@ -593,6 +645,7 @@ export default function GermanLearningLab() {
         setTimeout(() => startSession(), 260);
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
+      onMemoryGrade={(itemId: string, grade: "know" | "struggle") => markMemoryGrade(itemId, grade)}
       onPreviewKnown={replaceKnownPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.

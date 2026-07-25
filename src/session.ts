@@ -162,7 +162,12 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // days) — so it takes longer and longer to come back as you master it.
   const freshSentences = pickFresh(
     shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
-      .sort((a, b) => frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup)),
+      .sort((a, b) => {
+        const aStruggling = findRecord(reviewState, a.item?.id)?.lastGrade === "struggle";
+        const bStruggling = findRecord(reviewState, b.item?.id)?.lastGrade === "struggle";
+        if (aStruggling !== bStruggling) return aStruggling ? -1 : 1;
+        return frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup);
+      }),
     NEW_PER_LESSON
   );
   const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
