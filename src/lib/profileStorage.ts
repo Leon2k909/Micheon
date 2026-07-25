@@ -93,13 +93,35 @@ export function findProfileByEmail(email: string): UserProfile | null {
   return readKnownProfiles()[slugify(email)] || null;
 }
 
+// JSON.parse hands back a brand-new object every call, so calling getAuthUser()
+// during render gave `user` a different identity on every pass. Components list
+// it as a hook dependency, which meant those memos never actually memoised —
+// the dashboard was rebuilding the whole course catalogue (~6ms of blocking
+// work over 2,800 phrases) on EVERY render, which is what made the app stutter
+// and then freeze under any hover that re-rendered.
+//
+// Caching on the raw string keeps identity stable while the stored profile is
+// unchanged, and still returns a fresh object the moment it really changes.
+let authUserRaw: string | null = null;
+let authUserValue: UserProfile | null = null;
+
 export function getAuthUser(): UserProfile | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(AUTH_USER_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    if (!raw) {
+      authUserRaw = null;
+      authUserValue = null;
+      return null;
+    }
+    if (raw !== authUserRaw) {
+      authUserValue = JSON.parse(raw);
+      authUserRaw = raw;
+    }
+    return authUserValue;
   } catch {
+    authUserRaw = null;
+    authUserValue = null;
     return null;
   }
 }
