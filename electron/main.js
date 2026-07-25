@@ -64,16 +64,18 @@ function clampPetPosition(x, y) {
     y: Math.round(y + petContentBounds.y + petContentBounds.height / 2),
   };
   const display = screen.getDisplayNearestPoint(petCenter);
-  const workArea = display.workArea;
+  // The mascot is a desktop overlay, so it should be allowed to use the
+  // full monitor bounds rather than stopping at the taskbar/work area.
+  const screenBounds = display.bounds;
   return {
     x: Math.round(Math.min(
-      Math.max(x, workArea.x + PET_OVERLAY_MARGIN - petContentBounds.x),
-      workArea.x + workArea.width - PET_OVERLAY_MARGIN
+      Math.max(x, screenBounds.x + PET_OVERLAY_MARGIN - petContentBounds.x),
+      screenBounds.x + screenBounds.width - PET_OVERLAY_MARGIN
         - petContentBounds.x - petContentBounds.width
     )),
     y: Math.round(Math.min(
-      Math.max(y, workArea.y + PET_OVERLAY_MARGIN - petContentBounds.y),
-      workArea.y + workArea.height - PET_OVERLAY_MARGIN
+      Math.max(y, screenBounds.y + PET_OVERLAY_MARGIN - petContentBounds.y),
+      screenBounds.y + screenBounds.height - PET_OVERLAY_MARGIN
         - petContentBounds.y - petContentBounds.height
     )),
   };
@@ -89,10 +91,10 @@ function initialPetPosition() {
     // First launch or an invalid bounds file falls back to the primary display.
   }
 
-  const workArea = screen.getPrimaryDisplay().workArea;
+  const screenBounds = screen.getPrimaryDisplay().bounds;
   return {
-    x: workArea.x + workArea.width - PET_OVERLAY_WIDTH - PET_OVERLAY_MARGIN,
-    y: workArea.y + workArea.height - PET_OVERLAY_HEIGHT - PET_OVERLAY_MARGIN,
+    x: screenBounds.x + screenBounds.width - PET_OVERLAY_WIDTH - PET_OVERLAY_MARGIN,
+    y: screenBounds.y + screenBounds.height - PET_OVERLAY_HEIGHT - PET_OVERLAY_MARGIN,
   };
 }
 
