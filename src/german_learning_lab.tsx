@@ -108,6 +108,7 @@ export default function GermanLearningLab() {
   const user = getAuthUser()!;
   const themePreferences = useAppThemePreferences();
   const {
+    history: petHistory,
     selectedPet,
     speak: petSpeak,
     speech: petSpeech,
@@ -138,8 +139,10 @@ export default function GermanLearningLab() {
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
   const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);
+  const petHistoryRef = React.useRef(petHistory);
   const petQuizIndex = React.useRef(0);
   petSpeechRef.current = petSpeech;
+  petHistoryRef.current = petHistory;
 
   const petQuizItems = React.useMemo(
     () => {
@@ -209,9 +212,28 @@ export default function GermanLearningLab() {
         return;
       }
 
-      const index = petQuizIndex.current % petQuizItems.length;
-      const item = petQuizItems[index];
-      petQuizIndex.current += 1;
+      const recentlyAsked = new Set(
+        petHistoryRef.current
+          .filter((message) =>
+            message.question?.itemId
+            && Date.now() - message.createdAt < 30 * 60 * 1000
+          )
+          .map((message) => message.question!.itemId)
+      );
+      let item: (typeof petQuizItems)[number] | undefined;
+      for (let offset = 0; offset < petQuizItems.length; offset += 1) {
+        const index = (petQuizIndex.current + offset) % petQuizItems.length;
+        const candidate = petQuizItems[index];
+        if (!recentlyAsked.has(candidate.id)) {
+          item = candidate;
+          petQuizIndex.current = index + 1;
+          break;
+        }
+      }
+      if (!item) {
+        scheduleQuestion(60000);
+        return;
+      }
 
       const question = learnsEnglish
         ? `Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?`

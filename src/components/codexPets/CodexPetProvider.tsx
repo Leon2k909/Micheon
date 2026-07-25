@@ -34,6 +34,7 @@ const isDesktopPetOverlay = typeof window !== "undefined"
 const PET_HISTORY_KEY = "pet-message-history-v1";
 const PET_VISIBLE_KEYS_KEY = "gl-codex-pet-visible-v1";
 const MAX_PET_HISTORY = 200;
+const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
 
@@ -83,12 +84,31 @@ type CodexPetContextValue = {
 
 const CodexPetContext = createContext<CodexPetContextValue | null>(null);
 
+function messageSemanticKey(entry: CodexPetSpeech) {
+  return entry.question?.itemId
+    ? `question:${entry.question.itemId}:${entry.question.answerLanguage}`
+    : `message:${entry.text.trim().toLocaleLowerCase()}`;
+}
+
+function dedupePetHistory(entries: CodexPetSpeech[]) {
+  const deduped: CodexPetSpeech[] = [];
+  for (const entry of entries) {
+    const priorIndex = deduped.findLastIndex((prior) =>
+      messageSemanticKey(prior) === messageSemanticKey(entry)
+      && Math.abs(entry.createdAt - prior.createdAt) <= PET_DUPLICATE_WINDOW_MS
+    );
+    if (priorIndex === -1) deduped.push(entry);
+    else deduped[priorIndex] = entry;
+  }
+  return deduped;
+}
+
 function loadPetHistory() {
   const stored = loadScopedJson<CodexPetSpeech[]>(PET_HISTORY_KEY, [], getAuthUser());
   return Array.isArray(stored)
-    ? stored
+    ? dedupePetHistory(stored
         .filter((entry) => entry && typeof entry.id === "string" && typeof entry.text === "string")
-        .slice(-MAX_PET_HISTORY)
+        .slice(-MAX_PET_HISTORY))
     : [];
 }
 
@@ -149,9 +169,16 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   const upsertHistory = useCallback((entry: CodexPetSpeech) => {
     setHistory((current) => {
       const existingIndex = current.findIndex((item) => item.id === entry.id);
-      const next = existingIndex === -1
+      const semanticDuplicateIndex = existingIndex === -1
+        ? current.findLastIndex((item) =>
+            messageSemanticKey(item) === messageSemanticKey(entry)
+            && Math.abs(entry.createdAt - item.createdAt) <= PET_DUPLICATE_WINDOW_MS
+          )
+        : -1;
+      const replaceIndex = existingIndex === -1 ? semanticDuplicateIndex : existingIndex;
+      const next = replaceIndex === -1
         ? [...current, entry]
-        : current.map((item, index) => index === existingIndex ? { ...item, ...entry } : item);
+        : current.map((item, index) => index === replaceIndex ? { ...item, ...entry } : item);
       const limited = next.slice(-MAX_PET_HISTORY);
       savePetHistory(limited);
       historyRef.current = limited;
