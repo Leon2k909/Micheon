@@ -49,7 +49,9 @@ type TestPresetId =
   | "exam-production"
   | "exam-c1"
   | "exam-longform"
-  | "exam-precision";
+  | "exam-precision"
+  | "exam-foundation"
+  | "exam-intermediate";
 
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 
@@ -355,6 +357,166 @@ const PARAGRAPH_TEST_ITEMS = [
     topic: "Media and critical thinking",
     hard: true,
   },
+  {
+    id: "test-paragraph-basic-cafe",
+    de: "Ich gehe fast jeden Morgen in dasselbe Café. Ich nehme einen Kaffee und ein Brötchen und lese ein bisschen Zeitung.",
+    en: "I go to the same café almost every morning. I have a coffee and a roll and read the paper a bit.",
+    level: "A1-A2",
+    topic: "Morning routine",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-family",
+    de: "Meine Familie ist nicht sehr groß. Ich habe eine Schwester und einen Bruder, und wir wohnen alle in derselben Stadt.",
+    en: "My family isn't very big. I have a sister and a brother, and we all live in the same city.",
+    level: "A1-A2",
+    topic: "Family",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-weather",
+    de: "Heute ist es kalt und es regnet. Ich bleibe lieber zu Hause und trinke einen Tee.",
+    en: "It's cold today and it's raining. I'd rather stay at home and have a tea.",
+    level: "A1-A2",
+    topic: "Weather",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-shopping",
+    de: "Am Samstag gehe ich einkaufen. Ich brauche Brot, Milch, Eier und ein bisschen Obst.",
+    en: "On Saturday I go shopping. I need bread, milk, eggs and some fruit.",
+    level: "A1-A2",
+    topic: "Shopping",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-work",
+    de: "Ich arbeite von neun bis fünf. Mittags mache ich eine Pause und gehe kurz spazieren.",
+    en: "I work from nine to five. At lunchtime I take a break and go for a short walk.",
+    level: "A1-A2",
+    topic: "Work day",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-hobby",
+    de: "In meiner Freizeit spiele ich gern Fußball. Am Mittwoch trainieren wir immer zusammen.",
+    en: "In my free time I like playing football. On Wednesdays we always train together.",
+    level: "A1-A2",
+    topic: "Hobbies",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-flat",
+    de: "Meine Wohnung ist klein, aber sehr hell. Sie hat zwei Zimmer, eine Küche und ein Bad.",
+    en: "My flat is small but very bright. It has two rooms, a kitchen and a bathroom.",
+    level: "A1-A2",
+    topic: "Home",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-travel",
+    de: "Im Sommer fahre ich gern ans Meer. Der Zug dauert vier Stunden, aber das ist mir egal.",
+    en: "In summer I like going to the seaside. The train takes four hours, but I don't mind.",
+    level: "A1-A2",
+    topic: "Travel",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-friend",
+    de: "Mein Freund heißt Tom. Wir kennen uns seit der Schule und sehen uns fast jede Woche.",
+    en: "My friend is called Tom. We've known each other since school and see each other almost every week.",
+    level: "A1-A2",
+    topic: "Friends",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-basic-evening",
+    de: "Abends koche ich etwas Einfaches. Danach sehe ich fern oder rufe meine Mutter an.",
+    en: "In the evening I cook something simple. After that I watch TV or ring my mum.",
+    level: "A1-A2",
+    topic: "Evenings",
+    hard: false,
+  },
+  {
+    id: "test-paragraph-upper-commute",
+    de: "Seit ich näher am Büro wohne, fahre ich mit dem Rad zur Arbeit. Das spart mir jeden Tag fast eine Stunde, und ich komme deutlich wacher an, als wenn ich in der überfüllten Bahn stehe.",
+    en: "Since I moved closer to the office I cycle to work. It saves me almost an hour a day, and I arrive far more awake than when I'm standing on a packed train.",
+    level: "B2",
+    topic: "Commuting",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-worklife",
+    de: "Mein Arbeitgeber lässt uns weitgehend selbst entscheiden, wann wir im Büro sind. Das klingt bequem, verlangt aber deutlich mehr Disziplin, als die meisten am Anfang erwarten.",
+    en: "My employer largely lets us decide for ourselves when we're in the office. That sounds convenient, but it demands considerably more discipline than most people expect at first.",
+    level: "B2",
+    topic: "Working life",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-rent",
+    de: "Die Mieten sind in den letzten Jahren so stark gestiegen, dass viele junge Leute gar nicht mehr in die Innenstadt ziehen können. Wer eine bezahlbare Wohnung findet, gibt sie so schnell nicht wieder auf.",
+    en: "Rents have risen so sharply in recent years that many young people can no longer move into the city centre at all. Anyone who finds an affordable flat doesn't give it up again in a hurry.",
+    level: "B2",
+    topic: "Housing",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-learning",
+    de: "Eine Sprache lernt man nicht dadurch, dass man Vokabeln auswendig lernt, sondern dadurch, dass man sie benutzt, auch wenn man dabei ständig Fehler macht.",
+    en: "You don't learn a language by memorising vocabulary, but by using it, even if you're constantly making mistakes while you do.",
+    level: "B2",
+    topic: "Learning",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-news",
+    de: "Ich lese morgens bewusst nur kurz die Nachrichten. Sonst beschäftigt mich den ganzen Tag etwas, worauf ich ohnehin keinen Einfluss habe.",
+    en: "I deliberately only skim the news in the mornings. Otherwise I spend the whole day preoccupied with something I have no influence over anyway.",
+    level: "B2",
+    topic: "News and media",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-health",
+    de: "Nach der Operation musste ich mehrere Wochen kürzertreten. Anfangs fiel mir das schwer, inzwischen bin ich ganz froh, dass mich jemand dazu gezwungen hat.",
+    en: "After the operation I had to take things easy for several weeks. At first I found that hard; by now I'm quite glad somebody forced me into it.",
+    level: "B2",
+    topic: "Health",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-money",
+    de: "Wir legen jeden Monat einen festen Betrag zur Seite, bevor wir überhaupt anfangen, Geld auszugeben. Anders hätten wir vermutlich nie etwas gespart.",
+    en: "We put a fixed amount aside every month before we even start spending anything. Otherwise we'd probably never have saved a thing.",
+    level: "B2",
+    topic: "Money",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-argument",
+    de: "Wir streiten uns selten, aber wenn, dann geht es fast nie um das, worüber wir gerade reden. Meistens steckt etwas dahinter, das schon länger nicht angesprochen wurde.",
+    en: "We rarely argue, but when we do it's almost never about what we're actually talking about. Usually there's something behind it that hasn't been raised for a while.",
+    level: "B2",
+    topic: "Relationships",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-city",
+    de: "Die Stadt hat sich in den letzten zehn Jahren enorm verändert. Manches ist besser geworden, anderes vermisse ich, auch wenn ich nicht behaupten würde, dass früher alles schöner war.",
+    en: "The city has changed enormously over the last ten years. Some things have got better, others I miss, even if I wouldn't claim everything used to be nicer.",
+    level: "B2",
+    topic: "City life",
+    hard: true,
+  },
+  {
+    id: "test-paragraph-upper-plans",
+    de: "Wir hatten eigentlich vor, im Herbst umzuziehen, aber inzwischen spricht einiges dafür, noch ein Jahr zu warten und in Ruhe zu suchen.",
+    en: "We were actually planning to move in the autumn, but by now there's quite a lot to be said for waiting another year and looking without rushing.",
+    level: "B2",
+    topic: "Plans",
+    hard: true,
+  },
 ] as const;
 
 const PRESETS: TestPreset[] = [
@@ -450,6 +612,36 @@ const PRESETS: TestPreset[] = [
     fixedLength: 50,
     fixedDirection: "mixed",
     passMark: 80,
+  },
+  // ── An exam at every level ───────────────────────────────────────────────
+  // The advanced exams below are only reachable if you are already strong. A
+  // learner still on the basics deserves something to sit too, or "exam" just
+  // means "the part of the app that isn't for me".
+  {
+    id: "exam-foundation",
+    title: "Foundation exam",
+    description: "30 everyday items at A1-A2. The first exam worth sitting.",
+    eyebrow: "Exam",
+    icon: Sprout,
+    tone: "green",
+    filter: (item) => item.difficulty === "easy",
+    exam: true,
+    fixedLength: 30,
+    fixedDirection: "course",
+    passMark: 70,
+  },
+  {
+    id: "exam-intermediate",
+    title: "Intermediate exam",
+    description: "40 B1-level items in both directions, once the basics are solid.",
+    eyebrow: "Exam",
+    icon: MessageCircle,
+    tone: "yellow",
+    filter: (item) => item.difficulty === "medium",
+    exam: true,
+    fixedLength: 40,
+    fixedDirection: "mixed",
+    passMark: 72,
   },
   // ── For learners who are already good ────────────────────────────────────
   // The exams above test breadth. These test the things that actually separate
