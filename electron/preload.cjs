@@ -81,6 +81,9 @@ contextBridge.exposeInMainWorld("germDesktop", {
                 ? question.aliases.filter((value) => typeof value === "string").slice(0, 12)
                 : [],
               answerLanguage: question.answerLanguage === "en" ? "en" : "de",
+              // Without this the overlay's copy loses the flag and treats the
+              // confirmation as a fresh question, asking it again forever.
+              confirm: question.confirm === true,
               de: typeof question.de === "string" ? question.de.slice(0, 180) : "",
               en: typeof question.en === "string" ? question.en.slice(0, 180) : "",
               itemId: question.itemId.slice(0, 180),

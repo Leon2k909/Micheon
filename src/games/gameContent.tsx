@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { englishVoiceLang } from "@/lib/englishVariant";
 
 import {
   DIRECTION_CHANGE_EVENT,
@@ -104,7 +105,7 @@ function buildGameEntries(
       letters,
       target,
       targetLanguage: learnsEnglish ? "en" : "de",
-      targetLocale: learnsEnglish ? "en-US" : "de-DE",
+      targetLocale: learnsEnglish ? englishVoiceLang() : "de-DE",
     });
   }
 

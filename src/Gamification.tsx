@@ -45,7 +45,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
   ctx.drawImage(img, 0, 0, w, h);
   return canvas.toDataURL("image/jpeg", 0.85);
 }
-import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
+import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import {
   getTheme,
   getThemePreset,
@@ -619,7 +619,7 @@ export default function GamificationPanel({
                   onChange={(event) => updateLanguageSelection(event.target.value)}
                   value={LANGUAGE_SELECT_VALUE}
                 >
-                  <option value="auto">{ui("Auto-detect (English)")}</option>
+                  <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
                   <option value="british">{ui("British English")}</option>
                   <option value="american">{ui("American English")}</option>
                   <option value="german">Deutsch</option>
@@ -818,7 +818,7 @@ export default function GamificationPanel({
                 onChange={(event) => updateLanguageSelection(event.target.value)}
                 value={LANGUAGE_SELECT_VALUE}
               >
-                <option value="auto">{ui("Auto-detect (English)")}</option>
+                <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
                 <option value="british">{ui("British English")}</option>
                 <option value="american">{ui("American English")}</option>
                 <option value="german">Deutsch</option>

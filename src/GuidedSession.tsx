@@ -1070,7 +1070,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // swapped the fields, so item.de IS the English target — we just need the right
   // TTS/speech language and labels.
   const learnEn = useMemo(() => learningEnglish(), []);
-  const targetLang = learnEn ? "en-US" : "de-DE";
+  // A German speaker learning English hears this on every stage, so it has to
+  // honour their British/American choice — it was pinned to American, which
+  // made the setting look broken to anyone who picked British.
+  const targetLang = learnEn
+    ? (resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US")
+    : "de-DE";
   const targetLabel = learnEn ? "English" : "German";
   const meaningLabel = learnEn ? "German" : "English";
   // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
@@ -3581,7 +3586,12 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
   const isLast = lineIdx >= lines.length - 1;
   const result = useMemo(() => (learningEnglish() ? matchEnglish : matchGermanSentence)(input, line?.de ?? ""), [input, line]);
   const learnEn = useMemo(() => learningEnglish(), []);
-  const targetLang = learnEn ? "en-US" : "de-DE";
+  // A German speaker learning English hears this on every stage, so it has to
+  // honour their British/American choice — it was pinned to American, which
+  // made the setting look broken to anyone who picked British.
+  const targetLang = learnEn
+    ? (resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US")
+    : "de-DE";
   const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);
 
   useEffect(() => { if (line?.de) tts(line.de, 0.88, targetLang); }, [lineIdx]);
@@ -4234,6 +4244,23 @@ function SessionFlashcardPreview({
   const isLast = index === cards.length - 1;
   const englishVoice = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
 
+  // One way in for every bit of speech on this screen. tts() already no-ops
+  // when muted and stops whatever was playing, so rapid taps don't stack.
+  const speak = (text: string, lang: string) => {
+    if (!text) return;
+    void tts(text, 0.82, lang).catch(() => {
+      /* a missing voice must never break the card */
+    });
+  };
+
+  // Say the German as soon as a card appears. Reading a phrase without ever
+  // hearing it is how you end up able to write German you cannot say.
+  useEffect(() => {
+    if (!card?.german) return;
+    const timer = window.setTimeout(() => speak(card.german, "de-DE"), 180);
+    return () => window.clearTimeout(timer);
+  }, [card?.id, card?.german]);
+
   const previous = () => onIndexChange(Math.max(0, index - 1));
   const next = () => {
     if (isLast) onStart();
@@ -4310,14 +4337,29 @@ function SessionFlashcardPreview({
           </div>
 
           <div className="fs-flashcard-language">
-            <div>
+            {/* The sentence itself is clickable, not just the speaker icon —
+                reaching for a small button to hear a word you are looking at
+                is friction nobody needs. */}
+            <div
+              onClick={() => speak(card.german, "de-DE")}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  speak(card.german, "de-DE");
+                }
+              }}
+              role="button"
+              style={{ cursor: "pointer" }}
+              tabIndex={0}
+              title={ui("Tap to hear it")}
+            >
               <span>{ui("German")}</span>
               <strong lang="de">{card.german}</strong>
             </div>
             <button
               type="button"
               aria-label={`${ui("Hear it")}: ${card.german}`}
-              onClick={() => tts(card.german, 0.82, "de-DE")}
+              onClick={() => speak(card.german, "de-DE")}
             >
               <Volume2 className="h-5 w-5" />
             </button>
@@ -4328,14 +4370,26 @@ function SessionFlashcardPreview({
           </div>
 
           <div className="fs-flashcard-language">
-            <div>
+            <div
+              onClick={() => speak(card.english, englishVoice)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  speak(card.english, englishVoice);
+                }
+              }}
+              role="button"
+              style={{ cursor: "pointer" }}
+              tabIndex={0}
+              title={ui("Tap to hear it")}
+            >
               <span>{ui("English")}</span>
               <strong lang="en">{card.english}</strong>
             </div>
             <button
               type="button"
               aria-label={`${ui("Hear it")}: ${card.english}`}
-              onClick={() => tts(card.english, 0.82, englishVoice)}
+              onClick={() => speak(card.english, englishVoice)}
             >
               <Volume2 className="h-5 w-5" />
             </button>
@@ -4464,14 +4518,29 @@ function SessionMatchingPairs({
     }, 650);
   };
 
+  // Every card you touch says itself out loud, in its own language — matching
+  // was silent, so the one screen where you meet both sides of a phrase gave
+  // you no idea how either of them sounds. tts() already no-ops when muted and
+  // cancels whatever was playing, so tapping down a column doesn't stack up.
+  const speakCard = (text: string, language: string) => {
+    if (!text) return;
+    void tts(text, 0.95, language === "German" ? "de-DE" : "en-US").catch(() => {
+      /* a missing voice must never block the match itself */
+    });
+  };
+
   const selectSource = (matchId: string) => {
     if (resolving || matchedIds.has(matchId)) return;
+    const item = items.find((candidate) => candidate.matchId === matchId);
+    if (item) speakCard(sourceText(item), sourceLanguage);
     setSourceId(matchId);
     if (targetId) checkPair(matchId, targetId);
   };
 
   const selectTarget = (matchId: string) => {
     if (resolving || matchedIds.has(matchId)) return;
+    const item = items.find((candidate) => candidate.matchId === matchId);
+    if (item) speakCard(targetText(item), targetLanguage);
     setTargetId(matchId);
     if (sourceId) checkPair(sourceId, matchId);
   };

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2 } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
+import { englishVoiceLang } from "@/lib/englishVariant";
 import { useGameContent } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
@@ -225,7 +226,7 @@ export default function VerbShooter() {
           try { localStorage.setItem("verbshooter-hs", String(newScore)); } catch {}
         }
         setTimeout(() => {
-          if (learnsEnglish) void tts(`${verb.pronoun} ${verb.correct}`, 0.9, "en-US");
+          if (learnsEnglish) void tts(`${verb.pronoun} ${verb.correct}`, 0.9, englishVoiceLang());
           else speakGerman(`${verb.pronoun} ${verb.correct}`);
         }, 200);
         recordWordMastery(`${verb.infinitive}:${verb.pronoun}`);

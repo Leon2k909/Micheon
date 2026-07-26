@@ -45,6 +45,13 @@ export type CodexPetQuestion = {
   de: string;
   en: string;
   itemId: string;
+  /**
+   * True for the follow-up that shows the answer and asks whether you really
+   * had it. Saying "yes" to the first question is a guess about your own
+   * memory made before seeing anything — this is the one that decides the
+   * grade.
+   */
+  confirm?: boolean;
 };
 
 export type CodexPetAnswer = "yes" | "no";
@@ -244,29 +251,58 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     const entry = historyRef.current.find((message) => message.id === messageId);
     if (!entry?.question) return;
 
+    const question = entry.question;
+    const target = question.answerLanguage === "de" ? question.de : question.en;
+
     const nextEntry: CodexPetSpeech = {
       ...entry,
       answer,
       answeredAt: Date.now(),
     };
-    setItemStatus(
-      entry.question.itemId,
-      answer === "yes" ? "known" : "struggle",
-      getAuthUser(),
-      entry.question.aliases
-    );
     upsertHistory(nextEntry);
     setSpeech((current) => current?.id === messageId ? nextEntry : current);
 
+    // Saying "yes" to "do you know this?" is a guess about your own memory,
+    // made before seeing the answer — and an easy one to get wrong when you are
+    // only fairly sure. So the first yes reveals the answer and asks again;
+    // only that second answer sets the grade. Saying "no" needs no check: you
+    // have already told it you don't know, and it shows you the answer anyway.
+    if (answer === "yes" && !question.confirm) {
+      window.setTimeout(() => {
+        speak(
+          uiIsGerman()
+            ? `Es heißt „${target}“ — hattest du es wirklich?`
+            : `It's “${target}” — did you have it?`,
+          {
+            durationMs: 30000,
+            mood: "greeting",
+            question: { ...question, confirm: true },
+            voiceLang: uiIsGerman() ? "de-DE" : "en-US",
+          }
+        );
+      }, 180);
+      return;
+    }
+
+    setItemStatus(
+      question.itemId,
+      answer === "yes" ? "known" : "struggle",
+      getAuthUser(),
+      question.aliases
+    );
+
     if (!announce) return;
-    const target = entry.question.answerLanguage === "de" ? entry.question.de : entry.question.en;
     const response = answer === "yes"
       ? uiIsGerman()
         ? `Erledigt — „${target}“ ist jetzt als bekannt markiert.`
         : `Done — “${target}” is now marked as known.`
-      : uiIsGerman()
-        ? `Kein Problem — die Antwort ist „${target}“. Ich behalte sie in deiner Wiederholung.`
-        : `No problem — the answer is “${target}”. I’ll keep it in your review.`;
+      : question.confirm
+        ? uiIsGerman()
+          ? `Kein Problem — „${target}“ kommt bald wieder.`
+          : `No problem — “${target}” will come round again soon.`
+        : uiIsGerman()
+          ? `Kein Problem — die Antwort ist „${target}“. Ich behalte sie in deiner Wiederholung.`
+          : `No problem — the answer is “${target}”. I’ll keep it in your review.`;
     window.setTimeout(() => {
       speak(response, {
         durationMs: 5600,

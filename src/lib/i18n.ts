@@ -427,6 +427,8 @@ const DE: Record<string, string> = {
   "Save & exit": "Speichern & schließen",
 
   // ── Desktop update banner ──
+  "Tap to hear it": "Antippen zum Anhören",
+
   // ── Lessons search and filters ──
   "Search lessons, topics or a German word…": "Lektionen, Themen oder ein deutsches Wort suchen…",
   "Clear search": "Suche löschen",
@@ -515,6 +517,7 @@ const DE: Record<string, string> = {
   "Language": "Sprache",
   "Learning English as a German speaker — German is shown as the meaning.": "Du lernst Englisch mit deutscher Ausgangssprache — Deutsch wird als Bedeutung angezeigt.",
   "Auto-detect (English)": "Automatisch erkennen (Englisch)",
+  "Auto-detect": "Automatisch erkennen",
   "British English": "Britisches Englisch",
   "American English": "Amerikanisches Englisch",
   "External word count": "Externe Wortanzahl",
