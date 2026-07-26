@@ -6,6 +6,7 @@ import {
   MAX_GREETING,
   MAX_GREETING_LINES,
   getPetGreeting,
+  resetPetGreeting,
   setPetGreeting,
 } from "@/lib/petGreetings";
 
@@ -122,9 +123,12 @@ export function PetGreetingEditor({
           <button
             className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--surface)] px-2.5 text-[11px] font-black text-[var(--text-2)] hover:text-[var(--text-1)]"
             onClick={() => {
-              setPrefix("");
-              setLines([""]);
-              setPetGreeting(petKey, {});
+              // Forget the overrides rather than saving blanks, so a pet with a
+              // built-in catchphrase gets it back instead of falling silent.
+              resetPetGreeting(petKey);
+              const restored = getPetGreeting(petKey);
+              setPrefix(restored.prefix ?? "");
+              setLines(restored.lines?.length ? restored.lines : [""]);
             }}
             type="button"
           >
