@@ -5,6 +5,8 @@ import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
+import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
+import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
@@ -13,6 +15,30 @@ import { targetLangTag } from "@/lib/direction";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
+
+type SortKey =
+  | "common"
+  | "rare"
+  | "easiest"
+  | "hardest"
+  | "shortest"
+  | "longest"
+  | "alpha"
+  | "recent";
+
+/** Easiest to hardest, so a band can be compared as a number. */
+const BAND_ORDER: AbilityBand[] = ["easy", "medium", "hard", "expert"];
+
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: "common", label: "Most common first" },
+  { key: "rare", label: "Rarest first" },
+  { key: "easiest", label: "Easiest first" },
+  { key: "hardest", label: "Hardest first" },
+  { key: "shortest", label: "Shortest first" },
+  { key: "longest", label: "Longest first" },
+  { key: "alpha", label: "A to Z" },
+  { key: "recent", label: "Recently practised" },
+];
 const PAGE_SIZE = 40;
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -235,6 +261,7 @@ export function VocabTracker({
 }) {
   const [grades, setGrades] = useState<GradeStore>(() => loadGradeStore(user));
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [sort, setSort] = useState<SortKey>("common");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -248,6 +275,8 @@ export function VocabTracker({
   }, [user]);
 
   const catalog = useMemo(() => buildCatalog(apiParts), [apiParts]);
+  // Scans every phrase, so it is built once per pack list rather than per sort.
+  const corpusIndex = useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
 
   const counts = useMemo(() => {
     let known = 0;
@@ -278,9 +307,31 @@ export function VocabTracker({
         item.partLabel.toLowerCase().includes(q)
       );
     });
-    // Common words first; unranked items (sentences, slang) keep catalog order after.
-    return matches.sort((a, b) => frequencyRank(a.lookup) - frequencyRank(b.lookup));
-  }, [catalog, grades, filter, query]);
+    // The curated frequency list only reaches a fraction of what is taught, so
+    // "most common" leans on the corpus-backed score, which covers 99% of it.
+    // Everything is sorted with a stable tie-break on the German text, or items
+    // that score identically would shuffle between renders.
+    const commonality = (item: CatalogItem) => sentenceCommonality(item.de, corpusIndex);
+    const difficulty = (item: CatalogItem) =>
+      BAND_ORDER.indexOf(itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length));
+    const practisedAt = (item: CatalogItem) =>
+      Date.parse(recordFor(grades, item.id, item.aliases)?.updatedAt ?? "") || 0;
+    const byText = (a: CatalogItem, b: CatalogItem) => a.de.localeCompare(b.de, "de");
+
+    const compare: Record<SortKey, (a: CatalogItem, b: CatalogItem) => number> = {
+      common: (a, b) => commonality(a) - commonality(b) || byText(a, b),
+      rare: (a, b) => commonality(b) - commonality(a) || byText(a, b),
+      easiest: (a, b) => difficulty(a) - difficulty(b) || commonality(a) - commonality(b) || byText(a, b),
+      hardest: (a, b) => difficulty(b) - difficulty(a) || commonality(a) - commonality(b) || byText(a, b),
+      shortest: (a, b) => a.de.length - b.de.length || byText(a, b),
+      longest: (a, b) => b.de.length - a.de.length || byText(a, b),
+      alpha: byText,
+      // Never practised sorts last here rather than first, so this reads as a
+      // history rather than as a list of everything you have not touched.
+      recent: (a, b) => practisedAt(b) - practisedAt(a) || byText(a, b),
+    };
+    return matches.sort(compare[sort]);
+  }, [catalog, corpusIndex, grades, filter, query, sort]);
 
   const visible = filtered.slice(0, limit);
 
@@ -435,7 +486,19 @@ export function VocabTracker({
             {ui(f.label)}
           </button>
         ))}
-        <div className="relative ml-auto min-w-[180px] flex-1 sm:max-w-xs">
+        <label className="ml-auto flex items-center gap-2">
+          <span className="text-xs font-black text-[var(--text-3)]">{ui("Sort")}</span>
+          <select
+            className="h-10 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-2 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setSort(event.target.value as SortKey); resetList(); }}
+            value={sort}
+          >
+            {SORTS.map((option) => (
+              <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
+        <div className="relative min-w-[180px] flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
           <input
             value={query}

@@ -437,6 +437,15 @@ const DE: Record<string, string> = {
   "The language you're learning": "Der Sprache, die du lernst",
   "Your own language": "Deiner eigenen Sprache",
   "Click or press space to flip": "Klicken oder Leertaste zum Umdrehen",
+  "Sort": "Sortieren",
+  "Most common first": "Häufigste zuerst",
+  "Rarest first": "Seltenste zuerst",
+  "Easiest first": "Einfachste zuerst",
+  "Hardest first": "Schwerste zuerst",
+  "Shortest first": "Kürzeste zuerst",
+  "Longest first": "Längste zuerst",
+  "A to Z": "A bis Z",
+  "Recently practised": "Zuletzt geübt",
   "Tap to hear it": "Antippen zum Anhören",
 
   // ── Lessons search and filters ──
@@ -459,6 +468,9 @@ const DE: Record<string, string> = {
   "lessons": "Lektionen",
 
   // ── Multiple desktop mascots ──
+  "Let this one do the talking": "Diesen sprechen lassen",
+  "Hide this pet": "Dieses Tier ausblenden",
+  "This is your talking pet.": "Das ist dein sprechendes Tier.",
   "Move pets separately": "Tiere einzeln bewegen",
   "Keep pets together": "Tiere zusammen halten",
   "to move it on its own.": "um es einzeln zu bewegen.",

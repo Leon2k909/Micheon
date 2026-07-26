@@ -9,7 +9,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, History, Link2, MessageSquare, MessageSquareOff, Unlink2, Volume2, VolumeX, X } from "lucide-react";
+import { Check, EyeOff, History, Link2, MessageSquare, MessageSquareOff, Unlink2, Volume2, VolumeX, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -268,6 +268,7 @@ export function CodexPetLayer() {
     history,
     pets,
     selectPet,
+    togglePetVisibility,
     selectedKey,
     selectedPet,
     speak,
@@ -295,6 +296,14 @@ export function CodexPetLayer() {
   const [dragging, setDragging] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  /** Which pet the open menu acts on. null = the talking pet. */
+  const [menuPetKey, setMenuPetKey] = useState<string | null>(null);
+  const menuPet = menuPetKey
+    ? allVisiblePets.find((pet) => codexPetKey(pet) === menuPetKey) ?? null
+    : selectedPet;
+  const menuPetIsSpeaker = Boolean(
+    menuPet && selectedPet && codexPetKey(menuPet) === codexPetKey(selectedPet)
+  );
   const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
   const [petVoiceEnabled, setPetVoiceEnabled] = useState(getCodexPetVoiceEnabled);
   const [petSize, setPetSize] = useState(storedPetSize);
@@ -1130,11 +1139,17 @@ export function CodexPetLayer() {
     savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
   };
 
-  const showContextMenu = (event: ReactMouseEvent<HTMLButtonElement>) => {
+  // Right-clicking a pet opens the menu for THAT pet. Without the key the menu
+  // always acted on the talking pet, so with several out there was no way to
+  // hide or promote the one you actually clicked.
+  const showContextMenu = (event: ReactMouseEvent<HTMLButtonElement>, petKey?: string) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!menuOpen) clearSpeech();
-    setMenuOpen((open) => !open);
+    const target = petKey ?? null;
+    const reopeningSame = menuOpen && menuPetKey === target;
+    if (!reopeningSame) clearSpeech();
+    setMenuPetKey(target);
+    setMenuOpen(reopeningSame ? false : true);
   };
 
   const relayOverlayWheel = (event: ReactWheelEvent<HTMLButtonElement>) => {
@@ -1278,6 +1293,51 @@ export function CodexPetLayer() {
                   <span>{ui("Large")}</span>
                 </div>
               </div>
+              {/* Actions for the pet that was actually right-clicked. Only one
+                  pet speaks at a time, so "let this one talk" IS the speaker
+                  switch — and hiding acts on this pet rather than the group. */}
+              {menuPet && (
+                <>
+                  <div className="my-2 h-px bg-[var(--border-1)]" />
+                  <p className="px-2.5 pb-1 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                    {menuPet.displayName}
+                  </p>
+                  {!menuPetIsSpeaker && (
+                    <button
+                      className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        selectPet(codexPetKey(menuPet));
+                      }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                      {ui("Let this one do the talking")}
+                    </button>
+                  )}
+                  {menuPetIsSpeaker && (
+                    <p className="px-2.5 pb-2 text-xs font-semibold text-[var(--text-3)]">
+                      {ui("This is your talking pet.")}
+                    </p>
+                  )}
+                  <button
+                    className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      // The speaker cannot simply be hidden — that would leave
+                      // nobody talking — so hiding it turns the mascot off.
+                      if (menuPetIsSpeaker) selectPet("off");
+                      else togglePetVisibility(codexPetKey(menuPet));
+                    }}
+                    role="menuitem"
+                    type="button"
+                  >
+                    <EyeOff aria-hidden="true" className="h-4 w-4" />
+                    {ui("Hide this pet")}
+                  </button>
+                </>
+              )}
               <div className="my-2 h-px bg-[var(--border-1)]" />
               <button
                 aria-checked={messagesMuted}
@@ -1507,7 +1567,7 @@ export function CodexPetLayer() {
               className={`pointer-events-auto flex items-end touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
               data-pet-interactive="true"
               draggable={false}
-              onContextMenu={showContextMenu}
+              onContextMenu={(event) => showContextMenu(event, key)}
               onLostPointerCapture={handleLostCapture}
               onPointerCancel={finishDrag}
               onPointerDown={(event) => handlePointerDown(event, key)}
