@@ -156,12 +156,15 @@ html[data-theme-preset="butter-purple"] body {
  */
 html[data-theme-preset="lingo"] {
   color-scheme: light;
-  --bg: #f5f5f7;
+  /* The mockup's page is WHITE, with #F5F5F7 used for the filled cards inside
+     it. Making the page grey and the cards white — the usual arrangement, and
+     what the first version of this theme did — inverts the whole look. */
+  --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f5f5f7;
-  --surface-3: #e9e9ed;
-  --border: #e5e5ea;
-  --border-2: #d4d4d9;
+  --surface-3: #ebebef;
+  --border: rgba(0, 0, 0, 0.05);
+  --border-2: rgba(0, 0, 0, 0.1);
   --text-1: #1c1c1e;
   --text-2: #6e6e73;
   --text-3: #a1a1a6;
@@ -179,9 +182,58 @@ html[data-theme-preset="lingo"] {
   --success-text: #2e7d00;
   --info-bg: #e3f0ff;
   --info-text: #007aff;
-  --shadow: rgba(28, 28, 30, 0.06);
-  --shadow-strong: rgba(28, 28, 30, 0.12);
-  --feature-gradient: linear-gradient(135deg, #58cc02 0%, #46a302 54%, #2e7d00 100%);
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-strong: rgba(0, 0, 0, 0.12);
+  --feature-gradient: linear-gradient(135deg, #58cc02 0%, #46a302 100%);
+}
+
+/**
+ * The rest of the look, which the colours alone do not carry.
+ *
+ * A first pass swapped only the palette and the card radius, and it did not
+ * read as the mockup at all. What actually makes that design recognisable is
+ * the typography and the shapes: a system font, semibold rather than black
+ * weight, hairline borders, wide soft shadows and fully round buttons. Those
+ * are theme-level decisions, so they belong here rather than in components.
+ */
+html[data-theme-preset="lingo"] body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Micheon sets font-black almost everywhere, which is most of why the two
+   designs feel different at a glance. The mockup's heaviest weight is bold, and
+   its labels are medium. Dialling the utility classes back is the single change
+   that does most of the work. */
+html[data-theme-preset="lingo"] .font-black { font-weight: 700; }
+html[data-theme-preset="lingo"] .font-bold { font-weight: 600; }
+html[data-theme-preset="lingo"] .font-semibold { font-weight: 500; }
+
+/* Cards: 24px corners, a hairline rather than a border, and a soft wide shadow
+   instead of a hard one. */
+html[data-theme-preset="lingo"] .card {
+  border-radius: 24px;
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Buttons and inputs are pills or near-pills throughout the mockup. Anything
+   already round stays round; the rest is softened rather than squared. */
+html[data-theme-preset="lingo"] button:not([class*="rounded-full"]):not([class*="rounded-lg"]) {
+  border-radius: 14px;
+}
+html[data-theme-preset="lingo"] input:not([type="range"]):not([type="checkbox"]),
+html[data-theme-preset="lingo"] select,
+html[data-theme-preset="lingo"] textarea {
+  border-radius: 14px;
+}
+
+/* The green sits on white in the mockup and carries a coloured glow rather than
+   a grey one, which is what stops it looking flat. */
+html[data-theme-preset="lingo"] .btn-accent,
+html[data-theme-preset="lingo"] button.bg-\[var\(--accent\)\] {
+  box-shadow: 0 6px 16px rgba(88, 204, 2, 0.25);
 }
 
 /* The mockup was light-only. Dark has to exist anyway, or choosing this theme
@@ -216,10 +268,10 @@ html[data-theme-preset="lingo"][data-theme="dark"] {
   --feature-gradient: linear-gradient(135deg, #58cc02 0%, #46a302 54%, #1f3a17 100%);
 }
 
-/* The one structural borrowing: the mockup's corners are markedly rounder than
-   Micheon's, which is most of why it reads as a different app. */
-html[data-theme-preset="lingo"] .card {
-  border-radius: 24px;
+/* Dark keeps the shapes and the typography above; only the colours change. */
+html[data-theme-preset="lingo"][data-theme="dark"] .card {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
