@@ -184,20 +184,63 @@ function syncPetOverlayBounds() {
       if (petOverlayDragging) applyPetOverlayDragShape();
       else restorePetOverlayShape();
     }
+  } else {
+    // Same bounds, but this fires on display-metrics changes — and a scale
+    // change turns the SAME DIP regions into a different physical region. The
+    // scale is in the shape signature, so this is a string compare when
+    // nothing changed and a proper re-apply when the DPI did.
+    if (!petOverlayDragging) restorePetOverlayShape();
   }
   publishPetOverlayGeometry(true);
 }
 
+/**
+ * Convert DIP rectangles to the physical pixels SetWindowRgn works in.
+ *
+ * Everything upstream — element rects, window bounds, the drag collar — is in
+ * DIP, and setShape is a raw SetWindowRgn on Windows, which takes PHYSICAL
+ * window pixels. At 100% scale the two are identical, which is why every
+ * machine this was developed on looked fine. At 225% every region came out
+ * 2.25x too small, anchored top-left: the sprite and its menu were drawn only
+ * where the undersized region happened to overlap them (arbitrary-looking
+ * clipping), most of the pet was click-through, and pressing it applied the
+ * full-window drag collar — which in physical pixels covered only the top-left
+ * corner of the screen, so a pet kept at the bottom-right vanished on press.
+ *
+ * Floor the origin and ceil the far edge so a region can only ever GROW by a
+ * fraction of a pixel — a region one pixel too small reintroduces a hairline
+ * of clipped sprite, while one too big costs an invisible sliver of hit area.
+ * Adjacent rects stay gapless: ceil(k) of one edge equals floor(k) of the next.
+ */
+function toPhysicalRegions(regions, scale) {
+  if (!Number.isFinite(scale) || scale === 1) return regions;
+  return regions.map((region) => {
+    const left = Math.floor(region.x * scale);
+    const top = Math.floor(region.y * scale);
+    return {
+      x: left,
+      y: top,
+      width: Math.ceil((region.x + region.width) * scale) - left,
+      height: Math.ceil((region.y + region.height) * scale) - top,
+    };
+  });
+}
+
 function applyPetOverlayShape(regions, preserveOnFailure = false) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return false;
+  // The window has one effective DPI at a time; the display it mostly sits on
+  // is the one whose scale applies. Mixed-DPI monitor pairs follow the window.
+  const scale = screen.getDisplayMatching(petWindow.getBounds())?.scaleFactor || 1;
   // setShape is a native SetWindowRgn on Windows and is far too expensive to
   // call at frame rate. Skipping an identical shape costs one string compare
   // and removes nearly all of the calls, because a moving pet re-sends the same
-  // geometry whenever it settles.
-  const signature = JSON.stringify(regions);
+  // geometry whenever it settles. The scale is part of the signature: the same
+  // DIP regions on a rescaled display are a DIFFERENT physical region, and
+  // deduping them away would repeat this whole bug on monitor changes.
+  const signature = `${scale}|${JSON.stringify(regions)}`;
   if (signature === petOverlayShapeSignature) return true;
   try {
-    petWindow.setShape(regions);
+    petWindow.setShape(toPhysicalRegions(regions, scale));
     petOverlayShapeSignature = signature;
     petOverlayUsesShape = true;
     petWindow.setIgnoreMouseEvents(false);
