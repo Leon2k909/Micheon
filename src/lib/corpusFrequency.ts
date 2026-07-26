@@ -40,7 +40,26 @@ function words(text: string): string[] {
 }
 
 /** Build the index once from the whole course. */
+/**
+ * Built once per parts map and shared, like the catalogue.
+ *
+ * This only reads `phrases[].de`, which no setting changes, so the parts map's
+ * identity is the whole key — no mode to fold in.
+ */
+const corpusCache = new WeakMap<object, CorpusIndex>();
+
 export function buildCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] }>): CorpusIndex {
+  const cacheable = Boolean(parts) && typeof parts === "object";
+  if (cacheable) {
+    const cached = corpusCache.get(parts);
+    if (cached) return cached;
+  }
+  const built = computeCorpusIndex(parts);
+  if (cacheable) corpusCache.set(parts, built);
+  return built;
+}
+
+function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] }>): CorpusIndex {
   const spread = new Map<string, number>();
   const count = new Map<string, number>();
   const keys = Object.keys(parts);

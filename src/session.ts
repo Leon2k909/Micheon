@@ -379,10 +379,36 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   return out;
 }
 
+/**
+ * One catalogue per parts map, shared by everyone who asks for it.
+ *
+ * Four separate places build this from the same object — the word tracker, the
+ * tests bank, the games deck and the mascot's quiz pool — and each was walking
+ * all 8,000 items again. The parts map is built once and then never mutated, so
+ * its identity is a safe key; a WeakMap means it is collected with the map
+ * rather than pinning the whole course in memory.
+ *
+ * The array is returned as-is rather than copied. Callers already treat it as
+ * read-only (they filter and map, which allocate their own arrays), and copying
+ * 8,000 items on every call would give back most of what the cache saves.
+ */
+const catalogCache = new WeakMap<object, { mode: string; items: CatalogItem[] }>();
+
 export function buildCatalog(apiParts: Record<string, any>): CatalogItem[] {
+  // The learning mode is part of the answer, not just of the input: it decides
+  // whether a phrase is taught in its short spoken form or its full one. Keying
+  // on the parts map alone would keep serving the old wording after the setting
+  // changed, which is a far worse bug than the one being fixed.
+  const mode = String(getLearningMode());
+  const cacheable = Boolean(apiParts) && typeof apiParts === "object";
+  if (cacheable) {
+    const cached = catalogCache.get(apiParts);
+    if (cached && cached.mode === mode) return cached.items;
+  }
   const out: CatalogItem[] = [];
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
     out.push(...buildPartCatalog({ ...part, partKey }, partKey));
   }
+  if (cacheable) catalogCache.set(apiParts, { mode, items: out });
   return out;
 }

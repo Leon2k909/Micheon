@@ -166,29 +166,34 @@ export default function GermanLearningLab() {
         const en = item.en?.trim() ?? "";
         return de.length >= 2 && en.length >= 2 && de.length <= 64 && en.length <= 64;
       });
-      const recordFor = (item: (typeof eligible)[number]) =>
-        [item.id, ...(item.aliases ?? [])]
-          .map((id) => grades[id])
-          .find(Boolean);
-      const priority = (item: (typeof eligible)[number]) => {
-        const record = recordFor(item);
-        if (record?.lastGrade === "struggle") return 0;
-        if (isDueForReview(record)) return 1;
-        return 2;
+      const recordFor = (item: (typeof eligible)[number]) => {
+        // A loop rather than map().find(): this runs per item in a list of
+        // thousands, and map allocates an array every time it is called.
+        for (const id of [item.id, ...(item.aliases ?? [])]) {
+          const record = grades[id];
+          if (record) return record;
+        }
+        return undefined;
       };
 
       // The mascot is a memory coach, not a source of surprise curriculum:
       // revisit only material the learner has already encountered.
-      return eligible
+      //
+      // Priority and date are worked out ONCE PER ITEM. The comparator used to
+      // call recordFor up to four times per comparison, and this whole list is
+      // rebuilt after every graded item in a lesson.
+      const keyed = eligible
         .filter((item) => statusForId(grades, item.id, item.aliases) !== "new")
-        .sort((a, b) => {
-          const priorityDifference = priority(a) - priority(b);
-          if (priorityDifference !== 0) return priorityDifference;
-          const aUpdated = Date.parse(recordFor(a)?.updatedAt ?? "") || 0;
-          const bUpdated = Date.parse(recordFor(b)?.updatedAt ?? "") || 0;
-          return aUpdated - bUpdated;
-        })
-        .slice(0, 1200);
+        .map((item) => {
+          const record = recordFor(item);
+          return {
+            item,
+            priority: record?.lastGrade === "struggle" ? 0 : isDueForReview(record) ? 1 : 2,
+            updatedAt: Date.parse(record?.updatedAt ?? "") || 0,
+          };
+        });
+      keyed.sort((a, b) => a.priority - b.priority || a.updatedAt - b.updatedAt);
+      return keyed.slice(0, 1200).map((entry) => entry.item);
     },
     [apiParts, gradeRevision, user]
   );
