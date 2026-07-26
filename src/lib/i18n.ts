@@ -427,6 +427,16 @@ const DE: Record<string, string> = {
   "Save & exit": "Speichern & schließen",
 
   // ── Desktop update banner ──
+  "Flashcards": "Lernkarten",
+  "How today's phrases are shown before sentence practice.": "Wie die heutigen Sätze vor dem Satztraining gezeigt werden.",
+  "Both languages": "Beide Sprachen",
+  "German and English together — quick to skim before practice.": "Deutsch und Englisch zusammen — schnell zu überfliegen vor dem Üben.",
+  "Flip card": "Karte umdrehen",
+  "See one side and turn it over. Click the card, or press space.": "Eine Seite sehen und umdrehen. Klicke die Karte oder drücke die Leertaste.",
+  "Start each card on": "Jede Karte beginnt mit",
+  "The language you're learning": "Der Sprache, die du lernst",
+  "Your own language": "Deiner eigenen Sprache",
+  "Click or press space to flip": "Klicken oder Leertaste zum Umdrehen",
   "Tap to hear it": "Antippen zum Anhören",
 
   // ── Lessons search and filters ──

@@ -14,6 +14,15 @@ import {
   primaryAnswer,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import {
+  FLASHCARD_FACE_KEY,
+  FLASHCARD_MODE_EVENT,
+  FLASHCARD_MODE_KEY,
+  getFlashcardFace,
+  getFlashcardMode,
+  type FlashcardFace,
+  type FlashcardMode,
+} from "@/lib/flashcardMode";
 import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
@@ -4227,6 +4236,55 @@ function LessonMemoryCheck({
   );
 }
 
+/**
+ * The two faces of a flip card, turning on the Y axis.
+ *
+ * Both faces are always in the DOM and hidden by backface-visibility rather
+ * than swapped on a timer — that is what makes the turn continuous instead of
+ * a fade with a gap in the middle. The back is laid over the front absolutely
+ * so the card keeps one height and nothing jumps as it turns.
+ */
+function FlipFace({ back, flipped, front, onFlip }: {
+  back: React.ReactNode;
+  flipped: boolean;
+  front: React.ReactNode;
+  onFlip: () => void;
+}) {
+  const reduceMotion = useReducedMotion() || effectsReduced();
+  return (
+    <div
+      aria-live="polite"
+      className="fs-flashcard-flip"
+      onClick={onFlip}
+      role="button"
+      style={{ cursor: "pointer", perspective: 1400 }}
+      tabIndex={0}
+      title={ui("Click or press space to flip")}
+    >
+      <motion.div
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        initial={false}
+        style={{ position: "relative", transformStyle: "preserve-3d" }}
+        transition={reduceMotion
+          ? { duration: 0 }
+          : { duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div style={{ backfaceVisibility: "hidden" }}>{front}</div>
+        <div
+          style={{
+            backfaceVisibility: "hidden",
+            inset: 0,
+            position: "absolute",
+            transform: "rotateY(180deg)",
+          }}
+        >
+          {back}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function SessionFlashcardPreview({
   cards,
   index,
@@ -4253,13 +4311,82 @@ function SessionFlashcardPreview({
     });
   };
 
-  // Say the German as soon as a card appears. Reading a phrase without ever
-  // hearing it is how you end up able to write German you cannot say.
+  const [mode, setMode] = useState<FlashcardMode>(getFlashcardMode);
+  const [face, setFace] = useState<FlashcardFace>(getFlashcardFace);
+  const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    const sync = () => {
+      setMode(getFlashcardMode());
+      setFace(getFlashcardFace());
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === FLASHCARD_MODE_KEY || event.key === FLASHCARD_FACE_KEY) sync();
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(FLASHCARD_MODE_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(FLASHCARD_MODE_EVENT, sync);
+    };
+  }, []);
+
+  // A new card always starts face down. Carrying the flip over would show the
+  // answer to a phrase you have not been asked about yet.
+  useEffect(() => { setFlipped(false); }, [card?.id, mode, face]);
+
+  const toggleFlip = () => setFlipped((current) => !current);
+
+  // In "both" mode the German is spoken on sight. On a flip card that would
+  // give the answer away before the learner has tried, so it only speaks the
+  // side actually facing them.
   useEffect(() => {
     if (!card?.german) return;
+    const showingGerman = mode !== "flip"
+      ? true
+      : face === "target" ? !flipped : flipped;
+    if (!showingGerman) return;
     const timer = window.setTimeout(() => speak(card.german, "de-DE"), 180);
     return () => window.clearTimeout(timer);
-  }, [card?.id, card?.german]);
+  }, [card?.id, card?.german, mode, face, flipped]);
+
+  // One row builder per language, shared by both modes so the clickable text,
+  // the speaker button and the labels can never drift apart between them.
+  const languageRow = (label: string, text: string, lang: string, htmlLang: string) => (
+    <div className="fs-flashcard-language">
+      {/* The sentence itself is clickable, not just the speaker icon —
+          reaching for a small button to hear a word you are looking at is
+          friction nobody needs. */}
+      <div
+        onClick={(event) => { event.stopPropagation(); speak(text, lang); }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.stopPropagation();
+            speak(text, lang);
+          }
+        }}
+        role="button"
+        style={{ cursor: "pointer" }}
+        tabIndex={0}
+        title={ui("Tap to hear it")}
+      >
+        <span>{ui(label)}</span>
+        <strong lang={htmlLang}>{text}</strong>
+      </div>
+      <button
+        type="button"
+        aria-label={`${ui("Hear it")}: ${text}`}
+        onClick={(event) => { event.stopPropagation(); speak(text, lang); }}
+      >
+        <Volume2 className="h-5 w-5" />
+      </button>
+    </div>
+  );
+  const germanRow = () => languageRow("German", card.german, "de-DE", "de");
+  const englishRow = () => languageRow("English", card.english, englishVoice, "en");
+  const frontSide = face === "target" ? germanRow() : englishRow();
+  const backSide = face === "target" ? englishRow() : germanRow();
 
   const previous = () => onIndexChange(Math.max(0, index - 1));
   const next = () => {
@@ -4273,6 +4400,13 @@ function SessionFlashcardPreview({
         event.preventDefault();
         previous();
       }
+      // Space turns the card over. Checked before Enter/ArrowRight so it can
+      // never double as "next" and skip the card you were about to answer.
+      if (event.key === " " && mode === "flip") {
+        event.preventDefault();
+        toggleFlip();
+        return;
+      }
       if (event.key === "ArrowRight" || event.key === "Enter") {
         event.preventDefault();
         next();
@@ -4280,7 +4414,7 @@ function SessionFlashcardPreview({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [index, isLast]);
+  }, [index, isLast, mode, flipped]);
 
   return (
     <div className="fs-card-body fs-preview">
@@ -4336,66 +4470,28 @@ function SessionFlashcardPreview({
             </button>
           </div>
 
-          <div className="fs-flashcard-language">
-            {/* The sentence itself is clickable, not just the speaker icon —
-                reaching for a small button to hear a word you are looking at
-                is friction nobody needs. */}
-            <div
-              onClick={() => speak(card.german, "de-DE")}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  speak(card.german, "de-DE");
-                }
-              }}
-              role="button"
-              style={{ cursor: "pointer" }}
-              tabIndex={0}
-              title={ui("Tap to hear it")}
-            >
-              <span>{ui("German")}</span>
-              <strong lang="de">{card.german}</strong>
-            </div>
-            <button
-              type="button"
-              aria-label={`${ui("Hear it")}: ${card.german}`}
-              onClick={() => speak(card.german, "de-DE")}
-            >
-              <Volume2 className="h-5 w-5" />
-            </button>
-          </div>
+          {mode === "flip" ? (
+            <FlipFace
+              back={backSide}
+              flipped={flipped}
+              front={frontSide}
+              onFlip={toggleFlip}
+            />
+          ) : (
+            <>
+              {germanRow()}
+              <div className="fs-flashcard-divider" aria-hidden>
+                <span>{ui("means")}</span>
+              </div>
+              {englishRow()}
+            </>
+          )}
 
-          <div className="fs-flashcard-divider" aria-hidden>
-            <span>{ui("means")}</span>
-          </div>
-
-          <div className="fs-flashcard-language">
-            <div
-              onClick={() => speak(card.english, englishVoice)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  speak(card.english, englishVoice);
-                }
-              }}
-              role="button"
-              style={{ cursor: "pointer" }}
-              tabIndex={0}
-              title={ui("Tap to hear it")}
-            >
-              <span>{ui("English")}</span>
-              <strong lang="en">{card.english}</strong>
-            </div>
-            <button
-              type="button"
-              aria-label={`${ui("Hear it")}: ${card.english}`}
-              onClick={() => speak(card.english, englishVoice)}
-            >
-              <Volume2 className="h-5 w-5" />
-            </button>
-          </div>
-
-          {card.use && <p className="fs-flashcard-note">{card.use}</p>}
+          {/* The usage note explains the answer, so on a flip card it waits
+              until the card has actually been turned over. */}
+          {card.use && (mode !== "flip" || flipped) && (
+            <p className="fs-flashcard-note">{card.use}</p>
+          )}
         </motion.div>
       </AnimatePresence>
 

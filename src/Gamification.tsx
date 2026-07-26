@@ -65,6 +65,8 @@ import { AppearanceEditor } from "@/components/AppearanceEditor";
 import { ThemePresetPicker } from "@/components/ThemePresetPicker";
 import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
 import { LearningModePicker } from "@/components/LearningModePicker";
+import { FlashcardModePicker } from "@/components/FlashcardModePicker";
+import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
@@ -313,6 +315,8 @@ export default function GamificationPanel({
   const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
+  const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
+  const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -599,6 +603,12 @@ export default function GamificationPanel({
               )}
 
               <LearningModePicker value={learningMode} onChange={updateLearningMode} />
+              <FlashcardModePicker
+                face={flashcardFace}
+                mode={flashcardMode}
+                onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
+                onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
+              />
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -798,6 +808,12 @@ export default function GamificationPanel({
             </button>
 
             <LearningModePicker value={learningMode} onChange={updateLearningMode} />
+            <FlashcardModePicker
+              face={flashcardFace}
+              mode={flashcardMode}
+              onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
+              onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
+            />
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
