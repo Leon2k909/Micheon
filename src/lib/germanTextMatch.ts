@@ -320,7 +320,12 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bthank you\b/g, "thanks")
     .replace(/\bper\b/g, "for")          // "per night" == "for the night" (articles drop in the same tier)
     .replace(/\bcould\b/g, "can")        // polite request forms are interchangeable for comprehension
-    .replace(/\bmay (i|we)\b/g, "can $1") // "May I speak to..." == "Can I speak to..."
+    // German Konjunktiv "könnte" is equally "could" or "might" in English, and
+    // "may" too. A learner translating "es könnte regnen" as "it could rain"
+    // was being failed against an answer key that happened to say "might".
+    .replace(/\bmight\b/g, "can")
+    // "may" as a modal too — but not the month, so date contexts are excluded.
+    .replace(/(?<!\b(?:in|of|until|till|since|from|by|during|early|late|mid) )\bmay\b/g, "can")
     .replace(/\bshall\b/g, "should")     // "Shall we meet?" == "Should we meet?"
     .replace(/\b(alright|all right)\b/g, "ok")   // "alright" == "all right" == "okay" ("okay" already folds to "ok")
     // whose/who's homophone: the app tests GERMAN comprehension — an English
@@ -333,6 +338,25 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bhas (\w+) got\b/g, "$1 have")              // "has she got" -> "she have"
     .replace(/\b(\w+) (?:has|have|is) got\b/g, "$1 have")  // "she has/is got" (is = 's expansion) -> "she have"
     .replace(/\bhas\b/g, "have")                          // person-neutral for comparison only
+    // German Perfekt ("Ich hab gesagt") is routinely rendered as either English
+    // simple past or present perfect — "I said" and "I have said" are both
+    // correct translations, so the auxiliary is dropped before a past
+    // participle. Restricted to an explicit participle list plus regular -ed,
+    // so ordinary "have" as a main verb ("I have a car") is untouched.
+    // The adverb group matters: "I have ONLY said" must fold to "only said",
+    // not lose the word or fail to match because have and said aren't adjacent.
+    .replace(
+      /\bhave ((?:just |already |only |never |always |ever |still |also |now )*)(been|said|done|gone|seen|made|taken|got|gotten|given|told|come|written|eaten|drunk|driven|spoken|brought|bought|thought|found|left|met|paid|put|read|run|sat|slept|stood|understood|won|lost|forgotten|heard|held|kept|known|learnt|learned|meant|sent|shown|spent|woken|worn|\w+ed)\b/g,
+      "$1$2"
+    )
+    // English drops the complementiser "that" freely: "I said it might rain" is
+    // the same sentence as "I said THAT it might rain". Only removed directly
+    // after a reporting verb, so the demonstrative ("I don't want that") stays.
+    // An object can sit between the verb and the complementiser: "told ME that".
+    .replace(
+      /\b(said|say|says|told|tell|tells|think|thought|know|knew|believe|believed|hope|hoped|mean|meant|heard|hear|see|saw|feel|felt|guess|guessed|suppose|reckon|wonder|wondered|noticed|notice|realised|realized|promise|promised|agree|agreed|admit|admitted|explained|explain|mentioned|mention|assume|assumed)( me| him| her| us| them| you| everyone)? that\b/g,
+      "$1$2"
+    )
     // ── Vetted similar-phrase folds (adversarially checked against data.ts) ──
     .replace(/\btonight\b/g, "this evening")
     .replace(/\b(on|over) the weekend\b/g, "at the weekend")
