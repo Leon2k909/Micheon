@@ -914,7 +914,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [enInput, setEnInput] = useState("");
   const [enChecked, setEnChecked] = useState(false);
   const [enAttempts, setEnAttempts] = useState(0);
-  const [translationMode, setTranslationMode] = useState<"bank" | "type">("bank");
+  const [translationMode, setTranslationMode] = useState<"bank" | "type">("type");
   const [translationPicked, setTranslationPicked] = useState<OrderToken[]>([]);
   const [gapInput, setGapInput] = useState("");
   const [gapChecked, setGapChecked] = useState(false);
@@ -1209,7 +1209,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setEnChecked(false);
       setEnAttempts(0);
       setTranslationPicked([]);
-      setTranslationMode("bank");
+      setTranslationMode("type");
     }
     if (phase === "TranslateAgain") {
       setEnInput("");
@@ -2467,21 +2467,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <p className="text-center text-sm font-semibold text-zinc-500">
               {ui(phase === "TranslateAgain"
                 ? "Recall the translation. Use the word bank if you need support."
-                : "Choose only the words you need, or type the translation yourself.")}
+                : "Type the translation. Use the word bank if you need support.")}
             </p>
 
             <div className="fs-translation-toolbar">
               <div className="fs-translation-modes" role="group" aria-label={ui("Answer mode")}>
-                <button
-                  type="button"
-                  className={cn(translationMode === "bank" && "is-active")}
-                  aria-pressed={translationMode === "bank"}
-                  onClick={() => chooseTranslationMode("bank")}
-                  disabled={enChecked && enResult.ok}
-                >
-                  <MousePointerClick aria-hidden="true" className="h-4 w-4" />
-                  {ui("Word bank")}
-                </button>
                 <button
                   type="button"
                   className={cn(translationMode === "type" && "is-active")}
@@ -2491,6 +2481,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 >
                   <Keyboard aria-hidden="true" className="h-4 w-4" />
                   {ui("Type")}
+                </button>
+                <button
+                  type="button"
+                  className={cn(translationMode === "bank" && "is-active")}
+                  aria-pressed={translationMode === "bank"}
+                  onClick={() => chooseTranslationMode("bank")}
+                  disabled={enChecked && enResult.ok}
+                >
+                  <MousePointerClick aria-hidden="true" className="h-4 w-4" />
+                  {ui("Word bank")}
                 </button>
               </div>
               {translationMode === "bank" && translationPicked.length > 0 && !enChecked && (

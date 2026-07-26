@@ -174,7 +174,7 @@ const DE: Record<string, string> = {
   "Shuffle again": "Neu mischen",
   "Write this in English": "Schreibe das auf Englisch",
   "Write this in German": "Schreibe das auf Deutsch",
-  "Choose only the words you need, or type the translation yourself.": "Wähle nur die benötigten Wörter aus oder tippe die Übersetzung selbst.",
+  "Type the translation. Use the word bank if you need support.": "Tippe die Übersetzung. Nutze die Wortbank, wenn du Hilfe brauchst.",
   "Build the translation with the words below, or type it yourself.": "Baue die Übersetzung mit den Wörtern unten oder tippe sie selbst.",
   "Recall the translation. Use the word bank if you need support.": "Rufe die Übersetzung ab. Nutze die Wortbank, wenn du Hilfe brauchst.",
   "Answer mode": "Antwortmodus",
