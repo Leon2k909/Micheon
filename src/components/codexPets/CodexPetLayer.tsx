@@ -19,6 +19,7 @@ import {
 } from "@/components/codexPets/CodexPetSprite";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { codexPetKey, type CodexPet } from "@/lib/codexPets";
+import { PET_NAMES_EVENT, PET_NAMES_KEY, petDisplayName } from "@/lib/petNames";
 import {
   CODEX_PET_MESSAGES_MUTED_EVENT,
   CODEX_PET_MESSAGES_MUTED_KEY,
@@ -298,6 +299,23 @@ export function CodexPetLayer() {
   const [menuOpen, setMenuOpen] = useState(false);
   /** Which pet the open menu acts on. null = the talking pet. */
   const [menuPetKey, setMenuPetKey] = useState<string | null>(null);
+  // Renames live on this side rather than in the pet's own manifest, which
+  // is shared by everyone who installs it.
+  const [nameRevision, setNameRevision] = useState(0);
+  const petName = (pet: CodexPet) => petDisplayName(codexPetKey(pet), pet.displayName);
+  useEffect(() => {
+    const sync = () => setNameRevision((value) => value + 1);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === PET_NAMES_KEY) sync();
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(PET_NAMES_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(PET_NAMES_EVENT, sync);
+    };
+  }, []);
+  void nameRevision;   // read so the re-render is not optimised away
   const menuPet = menuPetKey
     ? allVisiblePets.find((pet) => codexPetKey(pet) === menuPetKey) ?? null
     : selectedPet;
@@ -1300,7 +1318,7 @@ export function CodexPetLayer() {
                 <>
                   <div className="my-2 h-px bg-[var(--border-1)]" />
                   <p className="px-2.5 pb-1 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                    {menuPet.displayName}
+                    {petName(menuPet)}
                   </p>
                   {!menuPetIsSpeaker && (
                     <button
@@ -1510,7 +1528,7 @@ export function CodexPetLayer() {
           }}
         >
         <button
-        aria-label={`Talk to ${selectedPet.displayName}`}
+        aria-label={`Talk to ${petName(selectedPet)}`}
         className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
         data-pet-interactive="true"
@@ -1563,7 +1581,7 @@ export function CodexPetLayer() {
             }}
           >
             <button
-              aria-label={`${ui("Move")} ${pet.displayName}`}
+              aria-label={`${ui("Move")} ${petName(pet)}`}
               className={`pointer-events-auto flex items-end touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
               data-pet-interactive="true"
               draggable={false}
@@ -1573,7 +1591,7 @@ export function CodexPetLayer() {
               onPointerDown={(event) => handlePointerDown(event, key)}
               onPointerMove={handlePointerMove}
               onPointerUp={finishDrag}
-              title={`${ui("Drag")} ${pet.displayName} ${ui("to move it on its own.")}`}
+              title={`${ui("Drag")} ${petName(pet)} ${ui("to move it on its own.")}`}
               type="button"
             >
               <CodexPetSprite

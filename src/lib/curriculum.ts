@@ -85,6 +85,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part91",          // Weekends & free time
   "part92",          // Music, films & books
   "part93",          // Venting & getting it off your chest
+  "part99",
   "part94",
   "part95",
   "part96",

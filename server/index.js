@@ -18,6 +18,7 @@ import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
 import { getCodexPetCatalog, resolveCodexPetSpritesheet } from "./codexPets.js";
+import { fetchGalleryPage, installGalleryPet, installedGalleryIds, removeGalleryPet } from "./petGallery.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -147,6 +148,35 @@ app.post("/api/storage", (req, res) => {
 app.get("/api/codex-pets", (_req, res) => {
   res.set("Cache-Control", "no-store");
   res.json(getCodexPetCatalog());
+});
+
+// Browse and install pets from codex-pets.net. Routed through the server so
+// the page never makes cross-origin requests and an install is one audited
+// step rather than a download the renderer unpacks itself.
+app.get("/api/pet-gallery", async (req, res) => {
+  try {
+    const page = await fetchGalleryPage({ page: req.query.page, search: req.query.search });
+    res.set("Cache-Control", "no-store");
+    res.json({ ...page, installed: installedGalleryIds() });
+  } catch (error) {
+    res.status(502).json({ error: String(error?.message ?? error) });
+  }
+});
+
+app.post("/api/pet-gallery/:id/install", async (req, res) => {
+  try {
+    res.json(await installGalleryPet(req.params.id));
+  } catch (error) {
+    res.status(400).json({ error: String(error?.message ?? error) });
+  }
+});
+
+app.delete("/api/pet-gallery/:id", (req, res) => {
+  try {
+    res.json(removeGalleryPet(req.params.id));
+  } catch (error) {
+    res.status(400).json({ error: String(error?.message ?? error) });
+  }
 });
 
 app.get("/api/codex-pets/:source/:id/spritesheet", (req, res) => {

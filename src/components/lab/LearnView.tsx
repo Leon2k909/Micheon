@@ -5,19 +5,20 @@ import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
-import { bandForLevel, type AbilityBand } from "@/lib/ability";
+import { cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 
-type LevelFilter = "all" | AbilityBand;
+type LevelFilter = "all" | CefrTier;
 type KindFilter = "all" | "core" | "wordbank";
 type ProgressFilter = "all" | "unstarted" | "started" | "done";
 
 const LEVEL_FILTERS: { id: LevelFilter; label: string }[] = [
   { id: "all", label: "All levels" },
-  { id: "easy", label: "A1-A2" },
-  { id: "medium", label: "B1" },
-  { id: "hard", label: "B2" },
-  { id: "expert", label: "C1" },
+  { id: "a", label: "A1-A2" },
+  { id: "b1", label: "B1" },
+  { id: "b2", label: "B2" },
+  { id: "c1", label: "C1" },
+  { id: "c2", label: "C2" },
 ];
 
 const KIND_FILTERS: { id: KindFilter; label: string }[] = [
@@ -101,7 +102,7 @@ export function LearnView({
   const visible = useMemo(() => parts.filter(([key, part]) => {
     if (kindFilter === "core" && isBulkPartKey(key)) return false;
     if (kindFilter === "wordbank" && !isBulkPartKey(key)) return false;
-    if (levelFilter !== "all" && bandForLevel(part.level) !== levelFilter) return false;
+    if (levelFilter !== "all" && cefrTier(part.level) !== levelFilter) return false;
 
     if (progressFilter !== "all") {
       const progress = progressByPart.get(key) ?? { done: 0, total: 0 };

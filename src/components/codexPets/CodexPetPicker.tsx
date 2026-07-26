@@ -1,6 +1,9 @@
-import { EyeOff, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { EyeOff, Pencil, RefreshCw } from "lucide-react";
 
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
+import { PetGallery } from "@/components/codexPets/PetGallery";
+import { MAX_PET_NAME, petDisplayName, setPetName } from "@/lib/petNames";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
 import { codexPetKey } from "@/lib/codexPets";
@@ -10,6 +13,9 @@ import { ui } from "@/lib/i18n";
 
 export function CodexPetPicker() {
   const { frequencies, setFrequency } = useCodexPetCoaching();
+  // Which pet is mid-rename, and the text being typed for it.
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
   const {
     error,
     isLoading,
@@ -81,8 +87,35 @@ export function CodexPetPicker() {
                 type="button"
               >
                 <CodexPetSprite animation="idle" pet={pet} size={54} />
-                <span className="mt-1 line-clamp-1 max-w-full text-xs font-black">{pet.displayName}</span>
+                <span className="mt-1 line-clamp-1 max-w-full text-xs font-black">
+                  {petDisplayName(key, pet.displayName)}
+                </span>
               </button>
+              {renaming === key ? (
+                <input
+                  autoFocus
+                  className="mx-1 mb-1 h-7 rounded-md border border-[var(--accent)] bg-[var(--surface-2)] px-2 text-[11px] font-bold text-[var(--text-1)] outline-none"
+                  maxLength={MAX_PET_NAME}
+                  onBlur={() => { setPetName(key, draftName); setRenaming(null); }}
+                  onChange={(event) => setDraftName(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") { setPetName(key, draftName); setRenaming(null); }
+                    if (event.key === "Escape") setRenaming(null);
+                  }}
+                  placeholder={pet.displayName}
+                  value={draftName}
+                />
+              ) : (
+                <button
+                  className="mx-1 mb-1 inline-flex h-6 items-center justify-center gap-1 rounded-md text-[10px] font-black text-[var(--text-3)] transition-colors hover:text-[var(--accent)]"
+                  onClick={() => { setRenaming(key); setDraftName(petDisplayName(key, "")); }}
+                  title={ui("Rename this pet")}
+                  type="button"
+                >
+                  <Pencil className="h-3 w-3" />
+                  {ui("Rename")}
+                </button>
+              )}
               <label className="flex h-7 items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 <input
                   checked={visible}
@@ -127,6 +160,8 @@ export function CodexPetPicker() {
           {error ? ui(error) : ui("No mascot pets are available.")}
         </p>
       )}
+      <PetGallery onInstalled={() => void refresh()} />
+
     </section>
   );
 }

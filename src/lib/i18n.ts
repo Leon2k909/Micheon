@@ -446,6 +446,18 @@ const DE: Record<string, string> = {
   "Longest first": "Längste zuerst",
   "A to Z": "A bis Z",
   "Recently practised": "Zuletzt geübt",
+  "Rename": "Umbenennen",
+  "Rename this pet": "Dieses Tier umbenennen",
+  "Get more pets": "Mehr Tiere holen",
+  "Installed": "Installiert",
+  "Installing…": "Wird installiert…",
+  "Add": "Hinzufügen",
+  "Search pets…": "Tiere suchen…",
+  "pets shared on codex-pets.net": "Tiere auf codex-pets.net geteilt",
+  "Browse pets shared on codex-pets.net": "Tiere durchstöbern, die auf codex-pets.net geteilt werden",
+  "No pets found.": "Keine Tiere gefunden.",
+  "Refresh": "Aktualisieren",
+  "Back": "Zurück",
   "Tap to hear it": "Antippen zum Anhören",
 
   // ── Lessons search and filters ──
