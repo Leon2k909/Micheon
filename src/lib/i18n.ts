@@ -458,6 +458,18 @@ const DE: Record<string, string> = {
   "No pets found.": "Keine Tiere gefunden.",
   "Refresh": "Aktualisieren",
   "Back": "Zurück",
+  "Greeting": "Begrüßung",
+  "Catchphrase": "Spruch",
+  "Hellos": "Begrüßungen",
+  "Add a hello": "Begrüßung hinzufügen",
+  "Back to default": "Zurück zum Standard",
+  "Change what this pet says": "Ändern, was dieses Tier sagt",
+  "What": "Was",
+  "says": "sagt",
+  "e.g. Hello darling.": "z. B. Hallo Schatz.",
+  "e.g. Ready when you are.": "z. B. Wann immer du bereit bist.",
+  "Said in front of everything this pet says. Leave empty for none.": "Wird vor allem gesagt, was dieses Tier sagt. Leer lassen für keinen.",
+  "Used when this pet first appears. Empty means the app's own greetings.": "Wird verwendet, wenn dieses Tier erscheint. Leer bedeutet die Standardbegrüßungen.",
   "Tap to hear it": "Antippen zum Anhören",
 
   // ── Lessons search and filters ──

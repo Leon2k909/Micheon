@@ -18,6 +18,7 @@ import {
   type CodexPet,
 } from "@/lib/codexPets";
 import { getCodexPetMessagesMuted } from "@/lib/codexPetMessages";
+import { withPetPrefix } from "@/lib/petGreetings";
 import { setItemStatus } from "@/lib/activity";
 import {
   getAuthUser,
@@ -222,9 +223,10 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (getCodexPetMessagesMuted()) return;
     const rawText = text.trim();
     if (!rawText) return;
-    const messageText = selectedKey.endsWith(":leon")
-      ? `Hello darling. ${rawText}`
-      : rawText;
+    // Was a hardcoded check for one pet's key, which prefixed everything it
+    // said with "Hello darling." Every pet now gets that same dial, set by the
+    // learner rather than by a code change.
+    const messageText = withPetPrefix(selectedKey, rawText);
     const message: CodexPetSpeech = {
       createdAt: Date.now(),
       id: `${Date.now()}-${++speechId.current}`,

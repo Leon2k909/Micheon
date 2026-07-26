@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { EyeOff, Pencil, RefreshCw } from "lucide-react";
+import { EyeOff, MessageSquare, Pencil, RefreshCw } from "lucide-react";
 
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { PetGallery } from "@/components/codexPets/PetGallery";
+import { PetGreetingEditor } from "@/components/codexPets/PetGreetingEditor";
 import { MAX_PET_NAME, petDisplayName, setPetName } from "@/lib/petNames";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -16,6 +17,8 @@ export function CodexPetPicker() {
   // Which pet is mid-rename, and the text being typed for it.
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  /** Which pet's greetings are open for editing. */
+  const [greetingFor, setGreetingFor] = useState<string | null>(null);
   const {
     error,
     isLoading,
@@ -116,6 +119,15 @@ export function CodexPetPicker() {
                   {ui("Rename")}
                 </button>
               )}
+              <button
+                className="mx-1 mb-1 inline-flex h-6 items-center justify-center gap-1 rounded-md text-[10px] font-black text-[var(--text-3)] transition-colors hover:text-[var(--accent)]"
+                onClick={() => setGreetingFor(greetingFor === key ? null : key)}
+                title={ui("Change what this pet says")}
+                type="button"
+              >
+                <MessageSquare className="h-3 w-3" />
+                {ui("Greeting")}
+              </button>
               <label className="flex h-7 items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 <input
                   checked={visible}
@@ -129,6 +141,17 @@ export function CodexPetPicker() {
           );
         })}
       </div>
+
+      {greetingFor && (
+        <PetGreetingEditor
+          onClose={() => setGreetingFor(null)}
+          petKey={greetingFor}
+          petName={petDisplayName(
+            greetingFor,
+            pets.find((pet) => codexPetKey(pet) === greetingFor)?.displayName ?? ""
+          )}
+        />
+      )}
 
       <div className="mt-4 rounded-[18px] bg-[var(--surface)] p-3">
         <p className="text-xs font-black uppercase tracking-wide text-[var(--text-2)]">

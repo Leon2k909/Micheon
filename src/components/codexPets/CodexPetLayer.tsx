@@ -20,6 +20,7 @@ import {
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { codexPetKey, type CodexPet } from "@/lib/codexPets";
 import { PET_NAMES_EVENT, PET_NAMES_KEY, petDisplayName } from "@/lib/petNames";
+import { petGreetingLines } from "@/lib/petGreetings";
 import {
   CODEX_PET_MESSAGES_MUTED_EVENT,
   CODEX_PET_MESSAGES_MUTED_KEY,
@@ -842,10 +843,14 @@ export function CodexPetLayer() {
     if (greetedPet.current === key) return;
     greetedPet.current = key;
     const timer = window.setTimeout(() => {
-      speak(ui(PET_GREETINGS[greetingIndex.current++ % PET_GREETINGS.length]), {
-        durationMs: 3000,
-        mood: "greeting",
-      });
+      // A pet's own hellos replace the stock ones entirely. Custom lines are
+      // sent verbatim — ui() would look them up as translation keys and a
+      // learner's own words are not in the table.
+      const custom = petGreetingLines(key);
+      const line = custom
+        ? custom[greetingIndex.current++ % custom.length]
+        : ui(PET_GREETINGS[greetingIndex.current++ % PET_GREETINGS.length]);
+      speak(line, { durationMs: 3000, mood: "greeting" });
     }, 650);
     return () => window.clearTimeout(timer);
   }, [messagesMuted, selectedPet, speak]);
