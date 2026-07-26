@@ -497,6 +497,8 @@ const DE: Record<string, string> = {
   "Set a frequency to Custom to use your own gaps.": "Stelle eine Häufigkeit auf Eigene, um eigene Abstände zu nutzen.",
   "Choose Custom above to set your own gaps between messages.": "Wähle oben Eigene, um eigene Abstände zwischen Nachrichten festzulegen.",
   "Tap to hear it": "Antippen zum Anhören",
+  "The talking pet is always shown. Pick another pet to speak first.": "Das sprechende Tier wird immer angezeigt. Wähle zuerst ein anderes Tier zum Sprechen.",
+  "Show this pet on the desktop": "Dieses Tier auf dem Desktop anzeigen",
 
   // ── Update status ──
   "Updates": "Updates",

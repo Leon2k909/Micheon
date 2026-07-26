@@ -129,7 +129,20 @@ export function CodexPetPicker() {
                 <MessageSquare className="h-3 w-3" />
                 {ui("Greeting")}
               </button>
-              <label className="flex h-7 items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {/* The talking pet cannot be hidden — there would be nothing left
+                  to speak. That rule is fine; silently disabling the box was
+                  not. Without a reason on it, the only way to discover why it
+                  will not click is to select a different pet and find that it
+                  suddenly works, which reads as a broken control. */}
+              <label
+                className={cn(
+                  "flex h-7 items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide",
+                  selected ? "cursor-not-allowed text-[var(--text-3)] opacity-60" : "cursor-pointer text-[var(--text-3)]"
+                )}
+                title={selected
+                  ? ui("The talking pet is always shown. Pick another pet to speak first.")
+                  : ui("Show this pet on the desktop")}
+              >
                 <input
                   checked={visible}
                   disabled={selected}

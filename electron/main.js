@@ -63,12 +63,39 @@ async function ensureServer() {
   serverStarted = true;
 }
 
+/**
+ * The whole desktop, in the points the renderer lays out in.
+ *
+ * This used to read display.bounds alone. On a display with a scale factor set,
+ * bounds and workArea come back in DIFFERENT units — measured on this machine:
+ *
+ *   scale 1.00   bounds 1920x1080   workArea 1920x1032    agree
+ *   scale 2.25   bounds  379x 213   workArea  854x 459    bounds ~2.25x small
+ *
+ * A 3440x1440 panel at 225% is 1529x640 points; bounds reported a fraction of
+ * that, so the mascot was clamped into a small corner of the screen, its window
+ * was sized from the same wrong figure — which is what clipped the sprite and
+ * its menu — and dragging compared a real cursor position against a shrunken
+ * coordinate space, which is what made it jump.
+ *
+ * Taking the union of both rectangles is self-correcting. Normally workArea is
+ * the smaller of the two (it excludes the taskbar) and bounds decides the
+ * answer, which is what lets the pet sit over the taskbar. When bounds comes
+ * back wrong, workArea supplies the real extent instead. Neither can make the
+ * desktop smaller than it is.
+ */
 function virtualDesktopBounds() {
-  const displays = screen.getAllDisplays();
-  const left = Math.min(...displays.map((display) => display.bounds.x));
-  const top = Math.min(...displays.map((display) => display.bounds.y));
-  const right = Math.max(...displays.map((display) => display.bounds.x + display.bounds.width));
-  const bottom = Math.max(...displays.map((display) => display.bounds.y + display.bounds.height));
+  const rects = [];
+  for (const display of screen.getAllDisplays()) {
+    if (display?.bounds?.width > 0 && display?.bounds?.height > 0) rects.push(display.bounds);
+    if (display?.workArea?.width > 0 && display?.workArea?.height > 0) rects.push(display.workArea);
+  }
+  if (rects.length === 0) return { x: 0, y: 0, width: 1280, height: 720 };
+
+  const left = Math.min(...rects.map((rect) => rect.x));
+  const top = Math.min(...rects.map((rect) => rect.y));
+  const right = Math.max(...rects.map((rect) => rect.x + rect.width));
+  const bottom = Math.max(...rects.map((rect) => rect.y + rect.height));
   return {
     x: left,
     y: top,
