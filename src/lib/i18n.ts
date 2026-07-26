@@ -470,6 +470,17 @@ const DE: Record<string, string> = {
   "e.g. Ready when you are.": "z. B. Wann immer du bereit bist.",
   "Said in front of everything this pet says. Leave empty for none.": "Wird vor allem gesagt, was dieses Tier sagt. Leer lassen für keinen.",
   "Used when this pet first appears. Empty means the app's own greetings.": "Wird verwendet, wenn dieses Tier erscheint. Leer bedeutet die Standardbegrüßungen.",
+  "Timing": "Zeitverhalten",
+  "A remark stays for": "Eine Bemerkung bleibt",
+  "A question stays for": "Eine Frage bleibt",
+  "seconds": "Sekunden",
+  "Custom": "Eigene",
+  "First question after": "Erste Frage nach",
+  "Then a question every": "Dann eine Frage alle",
+  "First tip after": "Erster Tipp nach",
+  "Then a tip every": "Dann ein Tipp alle",
+  "Set a frequency to Custom to use your own gaps.": "Stelle eine Häufigkeit auf Eigene, um eigene Abstände zu nutzen.",
+  "Choose Custom above to set your own gaps between messages.": "Wähle oben Eigene, um eigene Abstände zwischen Nachrichten festzulegen.",
   "Tap to hear it": "Antippen zum Anhören",
 
   // ── Lessons search and filters ──

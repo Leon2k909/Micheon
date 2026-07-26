@@ -4,6 +4,7 @@ import { EyeOff, MessageSquare, Pencil, RefreshCw } from "lucide-react";
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { PetGallery } from "@/components/codexPets/PetGallery";
 import { PetGreetingEditor } from "@/components/codexPets/PetGreetingEditor";
+import { PetTimingEditor } from "@/components/codexPets/PetTimingEditor";
 import { MAX_PET_NAME, petDisplayName, setPetName } from "@/lib/petNames";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -176,6 +177,9 @@ export function CodexPetPicker() {
             value={frequencies.tips}
           />
         </div>
+        <PetTimingEditor
+          customCadence={frequencies.questions === "custom" || frequencies.tips === "custom"}
+        />
       </div>
 
       {!isLoading && pets.length === 0 && (
@@ -194,6 +198,7 @@ const FREQUENCY_OPTIONS: Array<{ label: string; value: CodexPetFrequency }> = [
   { label: "Low", value: "low" },
   { label: "Normal", value: "normal" },
   { label: "High", value: "high" },
+  { label: "Custom", value: "custom" },
 ];
 
 function FrequencyControl({

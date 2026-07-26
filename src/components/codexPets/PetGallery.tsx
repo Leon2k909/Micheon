@@ -139,12 +139,16 @@ export function PetGallery({ onInstalled }: { onInstalled: () => void }) {
               className="flex gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-2.5"
               key={pet.id}
             >
-              {pet.previewUrl ? (
+              {/* The poster is a single 192x208 frame. "preview" is the whole
+                  animation strip — 7008x104 for a typical pet — which fits a
+                  square box as an unreadable hairline, so it is only a
+                  last resort. */}
+              {pet.posterUrl || pet.previewUrl ? (
                 <img
                   alt=""
-                  className="h-14 w-14 shrink-0 rounded-lg object-contain"
+                  className="h-14 w-14 shrink-0 rounded-lg bg-[var(--surface-3)] object-contain"
                   loading="lazy"
-                  src={pet.previewUrl}
+                  src={pet.posterUrl || pet.previewUrl}
                 />
               ) : (
                 <div className="h-14 w-14 shrink-0 rounded-lg bg-[var(--surface-3)]" />

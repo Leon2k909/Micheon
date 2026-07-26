@@ -19,6 +19,7 @@ import {
 } from "@/lib/codexPets";
 import { getCodexPetMessagesMuted } from "@/lib/codexPetMessages";
 import { withPetPrefix } from "@/lib/petGreetings";
+import { getCodexPetTimings } from "@/lib/codexPetCoaching";
 import { setItemStatus } from "@/lib/activity";
 import {
   getAuthUser,
@@ -170,10 +171,17 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
 
   const showSpeech = useCallback((message: CodexPetSpeech, durationMs?: number) => {
     if (speechTimer.current !== null) window.clearTimeout(speechTimer.current);
-    const visibleDuration = Math.min(
-      message.question ? 30000 : 7000,
-      Math.max(1600, durationMs ?? (message.question ? 18000 : 3200))
-    );
+    // How long it stays up is a setting now. A caller asking for a specific
+    // duration still wins — the confirmation follow-up needs its 30 seconds
+    // however brisk the learner likes their remarks.
+    const timings = getCodexPetTimings();
+    const preferred = message.question
+      ? timings.questionSeconds * 1000
+      : timings.messageSeconds * 1000;
+    const ceiling = message.question
+      ? Math.max(30000, preferred)
+      : Math.max(7000, preferred);
+    const visibleDuration = Math.min(ceiling, Math.max(1000, durationMs ?? preferred));
     setSpeech(message);
     speechTimer.current = window.setTimeout(() => {
       setSpeech((current) => current?.id === message.id ? null : current);
