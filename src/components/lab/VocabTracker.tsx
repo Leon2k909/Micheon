@@ -312,26 +312,41 @@ export function VocabTracker({
     // "most common" leans on the corpus-backed score, which covers 99% of it.
     // Everything is sorted with a stable tie-break on the German text, or items
     // that score identically would shuffle between renders.
-    const commonality = (item: CatalogItem) => sentenceCommonality(item.de, corpusIndex);
-    const difficulty = (item: CatalogItem) =>
-      BAND_ORDER.indexOf(itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length));
-    const practisedAt = (item: CatalogItem) =>
-      Date.parse(recordFor(grades, item.id, item.aliases)?.updatedAt ?? "") || 0;
-    const byText = (a: CatalogItem, b: CatalogItem) => a.de.localeCompare(b.de, "de");
+    //
+    // Every one of these values is worked out ONCE PER ITEM, up front, and the
+    // comparator then only reads numbers. It used to compute them inside the
+    // comparator, which sounds equivalent and is not: sorting 8,000 items enters
+    // the comparator about 93,000 times, so a value that costs a tokenise and a
+    // corpus lookup was paid roughly 23 times per item instead of once. Opening
+    // this tab took 2.3 seconds, and a second of that was this sort.
+    const collator = new Intl.Collator("de");
+    const keyed = matches.map((item) => ({
+      item,
+      commonality: sentenceCommonality(item.de, corpusIndex),
+      difficulty: BAND_ORDER.indexOf(
+        itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length)
+      ),
+      practisedAt: Date.parse(recordFor(grades, item.id, item.aliases)?.updatedAt ?? "") || 0,
+      length: item.de.length,
+      de: item.de,
+    }));
+    type Keyed = (typeof keyed)[number];
+    const byText = (a: Keyed, b: Keyed) => collator.compare(a.de, b.de);
 
-    const compare: Record<SortKey, (a: CatalogItem, b: CatalogItem) => number> = {
-      common: (a, b) => commonality(a) - commonality(b) || byText(a, b),
-      rare: (a, b) => commonality(b) - commonality(a) || byText(a, b),
-      easiest: (a, b) => difficulty(a) - difficulty(b) || commonality(a) - commonality(b) || byText(a, b),
-      hardest: (a, b) => difficulty(b) - difficulty(a) || commonality(a) - commonality(b) || byText(a, b),
-      shortest: (a, b) => a.de.length - b.de.length || byText(a, b),
-      longest: (a, b) => b.de.length - a.de.length || byText(a, b),
+    const compare: Record<SortKey, (a: Keyed, b: Keyed) => number> = {
+      common: (a, b) => a.commonality - b.commonality || byText(a, b),
+      rare: (a, b) => b.commonality - a.commonality || byText(a, b),
+      easiest: (a, b) => a.difficulty - b.difficulty || a.commonality - b.commonality || byText(a, b),
+      hardest: (a, b) => b.difficulty - a.difficulty || a.commonality - b.commonality || byText(a, b),
+      shortest: (a, b) => a.length - b.length || byText(a, b),
+      longest: (a, b) => b.length - a.length || byText(a, b),
       alpha: byText,
       // Never practised sorts last here rather than first, so this reads as a
       // history rather than as a list of everything you have not touched.
-      recent: (a, b) => practisedAt(b) - practisedAt(a) || byText(a, b),
+      recent: (a, b) => b.practisedAt - a.practisedAt || byText(a, b),
     };
-    return matches.sort(compare[sort]);
+    keyed.sort(compare[sort]);
+    return keyed.map((entry) => entry.item);
   }, [catalog, corpusIndex, grades, filter, query, sort]);
 
   const visible = filtered.slice(0, limit);
