@@ -862,7 +862,7 @@ export default function GermanLearningLab() {
       ["Word Snake", "Spell German words by steering through letters."],
       ["Falling Letters", "Catch the correct letters before they leave the screen."],
       ["Letter Tap", "Tap the right letter quickly to train visual recall."],
-      ["Verb Shooter", "Choose the correct conjugation before time runs out."],
+      ["Verb Shooter", "Choose the right form of the verb before time runs out."],
       ["Vocab Minesweeper", "Translate carefully and avoid wrong picks."],
       ["Vocab Slither", "Match target words while keeping the run alive."],
     ].map(([title, subtitle]) => ({

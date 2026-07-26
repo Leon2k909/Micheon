@@ -97,29 +97,29 @@ const PET_GREETINGS = [
 ];
 
 const GERMAN_PET_TIPS = [
-  "German tip: learn every noun with der, die, or das — the article is part of the word.",
-  "German tip: in a main clause, the conjugated verb stays in position two.",
-  "German tip: after weil or dass, the conjugated verb moves to the end.",
-  "German tip: all German nouns begin with a capital letter, even in the middle of a sentence.",
-  "German tip: separable prefixes move to the end in a main clause — ich stehe um sieben auf.",
+  "German tip: when a word uses der, die, or das, learn them together — say “der Tisch”, not just “Tisch”.",
+  "German tip: in a normal German sentence, the verb comes second — “Heute gehe ich nach Hause.”",
+  "German tip: after weil or dass, put the verb at the end — “weil ich müde bin”.",
+  "German tip: German words for people, places, things, or ideas always start with a capital letter.",
+  "German tip: some verbs split in two — “aufstehen” becomes “Ich stehe um sieben auf.”",
 ];
 
 const ENGLISH_PET_TIPS = [
-  "English tip: a normal statement usually follows subject–verb–object order.",
-  "English tip: after can, must, should, or will, use the base verb without “to”.",
-  "English tip: in the present simple, he, she, and it usually add -s to the verb.",
-  "English tip: adjectives normally come before the noun and do not change for gender.",
-  "English tip: use “a” before a consonant sound and “an” before a vowel sound.",
+  "English tip: normal sentences usually put who or what first, then the action, then the rest — “I read the book.”",
+  "English tip: after can, must, should, or will, use the verb without “to” — “can go”, not “can to go”.",
+  "English tip: for habits or facts, verbs with he, she, or it usually end in -s — “she works”, “he knows”.",
+  "English tip: describing words normally come before the thing — “a red car”. They stay the same — “a nice man”, “a nice woman”.",
+  "English tip: choose “a” or “an” by sound, not spelling — “a university”, but “an hour”.",
   // Die Kurzformen, die man täglich braucht — die Grammatik-Karten erklären sie
   // ausführlich, der Pet erinnert im Vorbeigehen daran.
-  "English tip: after “didn't” the verb goes back to its base form — “I didn't go”, never “I didn't went”.",
-  "English tip: “cannot” is written as one word, and its short form is “can't”.",
-  "English tip: “will not” shortens to “won't”, not “willn't”. It is the one irregular contraction.",
-  "English tip: “es gibt” is “there is” for one thing and “there are” for several — never “it gives”.",
-  "English tip: in the past it is “there was” for one and “there were” for several.",
-  "English tip: English uses only one negative word — “I didn't see anything”, not “I didn't see nothing”.",
-  "English tip: “should not” becomes “shouldn't”, and the same pattern gives wouldn't, couldn't and mustn't.",
-  "English tip: “haven't” and “hasn't” go with the perfect — “I haven't seen it yet”.",
+  "English tip: after “didn't”, use go, see, or do — not went, saw, or did: “I didn't go.”",
+  "English tip: “cannot” is one word. Its short form is “can't”.",
+  "English tip: “will not” becomes “won't”, never “willn't”.",
+  "English tip: German “es gibt” becomes “there is” for one thing and “there are” for several — never “it gives”.",
+  "English tip: when talking about the past, use “there was” for one thing and “there were” for several.",
+  "English tip: do not use two negatives together — “I didn't see anything”, not “I didn't see nothing”.",
+  "English tip: “should not” becomes “shouldn't”. The same shortening gives “wouldn't”, “couldn't”, and “mustn't”.",
+  "English tip: use “haven't” with I, you, we, or they, and “hasn't” with he, she, or it — “I haven't seen it yet”.",
 ];
 
 type PetPosition = {

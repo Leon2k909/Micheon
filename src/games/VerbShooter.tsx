@@ -272,7 +272,7 @@ export default function VerbShooter() {
       <div>
         <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Verb Shooter")}</h2>
         <p className="mt-0.5 text-sm text-[var(--text-3)]">
-          {ui("Shoot the correct conjugation before it reaches you.")}
+          {ui("Shoot the right form of the verb before it reaches you.")}
         </p>
       </div>
 
@@ -384,7 +384,7 @@ export default function VerbShooter() {
                   <>
                     <p className="text-lg font-semibold text-[var(--text-1)]">{ui("Verb Shooter")}</p>
                     <p className="max-w-xs text-center text-sm text-[var(--text-3)]">
-                      {ui("Move with ← → and shoot with Space. Hit the correct conjugation. Wrong answer = game over.")}
+                      {ui("Move with ← → and shoot with Space. Hit the right form of the verb. Wrong answer = game over.")}
                     </p>
                     <button className="accent-btn px-6 py-2.5 text-sm" onClick={newGame} type="button">{ui("Start game")}</button>
                   </>
@@ -430,7 +430,7 @@ export default function VerbShooter() {
         </div>
 
         <p className="text-xs text-[var(--text-3)]">
-          {ui("← → to move · Space to shoot · Hit the correct conjugation")}
+          {ui("← → to move · Space to shoot · Hit the right form of the verb")}
         </p>
       </div>
     </div>

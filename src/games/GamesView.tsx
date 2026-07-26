@@ -49,7 +49,7 @@ const GAMES = [
   {
     id: "verbs",
     title: "Verb Shooter",
-    description: "Choose the correct conjugation before time runs out.",
+    description: "Choose the right form of the verb before time runs out.",
     icon: Gamepad2,
     component: VerbShooter,
   },

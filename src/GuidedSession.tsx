@@ -4017,7 +4017,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
           <textarea
             value={struggling}
             onChange={e => setStruggling(e.target.value)}
-            placeholder={ui("e.g. Wochenende, separable verbs, der/die/das...")}
+            placeholder={ui("e.g. Wochenende, verbs that split in two, der/die/das...")}
             rows={2}
             className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
           />
