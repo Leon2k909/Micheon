@@ -460,6 +460,51 @@ export default function GermanLearningLab() {
     } catch {}
   };
 
+  /**
+   * Start a lesson on an explicit list of items — the words a learner marked
+   * as "I don't know this" while taking a test.
+   *
+   * These are deliberately NOT filtered by what the learner already knows, the
+   * way a normal lesson is: they asked for these specifically, so a "known"
+   * grade from weeks ago should not quietly drop them from the lesson they just
+   * requested. Hence the empty review state.
+   */
+  const startFocusSession = (items: { de: string; en: string; id?: string }[]) => {
+    if (!items.length) return;
+    // buildSession caps a lesson at NEW_PER_LESSON (3) fresh phrases, which is
+    // right for pacing the curriculum and wrong here: the learner named these
+    // words, so silently teaching three of ten would be a lie. Build in chunks
+    // of three and stitch the blocks together, dropping every block's trailing
+    // "complete" step except the last so it still reads as one lesson.
+    const CHUNK = 3;
+    const steps: any[] = [];
+    for (let i = 0; i < items.length; i += CHUNK) {
+      const slice = items.slice(i, i + CHUNK);
+      const block = buildSession(
+        {
+          partKey: "focus",
+          label: ui("Your words"),
+          level: "",
+          theme: ui("Words you marked in a test"),
+          vocab: [],
+          phrases: slice.map((item) => ({ de: item.de, en: item.en })),
+          dialogues: [],
+        },
+        [],
+        {},
+        0
+      );
+      steps.push(...block.filter((step: any) => step?.type !== "complete"));
+    }
+    if (!steps.length) return;
+    steps.push({ type: "complete" });
+    const directed = learningEnglish() ? steps.map(swapStepForEnglish) : steps;
+    setSessionSteps(withRegisterCheck(directed, user));
+    sessionStartRef.current = Date.now();
+    setShowGuidedSession(true);
+    openTab("learn");
+  };
+
   const startSession = (partId?: string) => {
     // Explicit pack picks are respected. Continue Learning passes no id and
     // gets the curriculum treatment: due reviews from ANY pack first (most
@@ -834,7 +879,7 @@ export default function GermanLearningLab() {
       gameMasteryCount={gameMasteryCount}
     />
   ) : activeTab === "tests" ? (
-    <TestsView apiParts={apiParts} profile={user} />
+    <TestsView apiParts={apiParts} onLearnItems={startFocusSession} profile={user} />
   ) : (
     courseHasReader && activeCourse ? (
       <CourseDashboardView

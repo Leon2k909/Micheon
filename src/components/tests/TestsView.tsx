@@ -11,9 +11,11 @@ import {
   ClipboardCheck,
   FileText,
   Flame,
+  GraduationCap,
   Headphones,
   Languages,
   MessageCircle,
+  PenLine,
   RotateCcw,
   Shuffle,
   Sparkles,
@@ -31,6 +33,7 @@ import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
+import { MarkableText, normalizeMarkWord } from "@/components/tests/MarkableText";
 
 // One test per kind, taken at whichever difficulty you choose, rather than a
 // separate card for the easy and hard half of each.
@@ -42,7 +45,11 @@ type TestPresetId =
   | "weak-spots"
   | "exam-listening"
   | "exam-marathon"
-  | "exam-gauntlet";
+  | "exam-gauntlet"
+  | "exam-production"
+  | "exam-c1"
+  | "exam-longform"
+  | "exam-precision";
 
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 
@@ -444,6 +451,67 @@ const PRESETS: TestPreset[] = [
     fixedDirection: "mixed",
     passMark: 80,
   },
+  // ── For learners who are already good ────────────────────────────────────
+  // The exams above test breadth. These test the things that actually separate
+  // a confident intermediate from someone who sounds fluent: producing the
+  // language rather than recognising it, holding a long sentence together, and
+  // handling the top band with no easy items to pad the score.
+  {
+    id: "exam-production",
+    title: "Production exam",
+    description: "60 questions, every one answered in the language you're learning. No recognition to hide behind.",
+    eyebrow: "Advanced",
+    icon: PenLine,
+    tone: "orange",
+    filter: () => true,
+    exam: true,
+    fixedLength: 60,
+    // "course" answers in the target language — the hard direction. Recognising
+    // a phrase is a much lower bar than having to produce it from nothing.
+    fixedDirection: "course",
+    passMark: 75,
+  },
+  {
+    id: "exam-c1",
+    title: "C1 exam",
+    description: "40 expert-level items only. Nothing easy is mixed in to soften the score.",
+    eyebrow: "Advanced",
+    icon: Sparkles,
+    tone: "accent",
+    filter: (item) => item.difficulty === "expert",
+    exam: true,
+    fixedLength: 40,
+    fixedDirection: "mixed",
+    passMark: 80,
+  },
+  {
+    id: "exam-longform",
+    title: "Long-form exam",
+    description: "10 full paragraphs to translate. Tests whether you can hold a whole text together.",
+    eyebrow: "Advanced",
+    icon: FileText,
+    tone: "ink",
+    filter: (item) => item.kind === "paragraph",
+    exam: true,
+    // Paragraphs are minutes each, not seconds — ten is already a long sitting.
+    fixedLength: 10,
+    fixedDirection: "mixed",
+    passMark: 70,
+  },
+  {
+    id: "exam-precision",
+    title: "Precision exam",
+    description: "45 hard sentences produced from scratch, where word order and case have to be right.",
+    eyebrow: "Advanced",
+    icon: Flame,
+    tone: "orange",
+    filter: (item) =>
+      item.kind === "phrase" && (item.difficulty === "hard" || item.difficulty === "expert"),
+    exam: true,
+    fixedLength: 45,
+    fixedDirection: "course",
+    passMark: 80,
+  },
 ];
 
 const toneClasses: Record<TestPreset["tone"], { icon: string; chip: string }> = {
@@ -724,9 +792,12 @@ function PresetCard({
 export function TestsView({
   apiParts,
   profile,
+  onLearnItems,
 }: {
   apiParts: Record<string, Part>;
   profile: UserProfile;
+  /** Starts a guided lesson built from the words the learner marked. */
+  onLearnItems?: (items: { de: string; en: string; id?: string }[]) => void;
 }) {
   const [gradeRevision, setGradeRevision] = useState(0);
   const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, gradeRevision, profile]);
@@ -742,6 +813,11 @@ export function TestsView({
   const [results, setResults] = useState<TestResult[]>([]);
   const [finished, setFinished] = useState(false);
   const [trackedStatuses, setTrackedStatuses] = useState<Record<string, ItemStatus>>({});
+  // Words the learner clicked to say "I don't know this", keyed by the
+  // normalised word so the same word marked in two sentences counts once.
+  // The item it was marked in is kept as the fallback for anything the
+  // vocabulary lookup cannot resolve.
+  const [markedWords, setMarkedWords] = useState<Record<string, { word: string; item: TestItem }>>({});
   const answerInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
@@ -790,6 +866,79 @@ export function TestsView({
     return () => window.clearTimeout(timer);
   }, [currentQuestion, feedback, finished]);
 
+  const markedKeys = useMemo(() => new Set(Object.keys(markedWords)), [markedWords]);
+  const markedCount = markedKeys.size;
+
+  const toggleMarkedWord = (word: string, item: TestItem) => {
+    const key = normalizeMarkWord(word);
+    if (!key) return;
+    setMarkedWords((current) => {
+      if (current[key]) {
+        const { [key]: _removed, ...rest } = current;
+        return rest;
+      }
+      return { ...current, [key]: { word, item } };
+    });
+  };
+
+  /**
+   * Turn marked words into things worth teaching.
+   *
+   * A marked word is a request, not a lesson: "aufgestellt" on its own teaches
+   * nothing. So each word is resolved against the course itself — preferring a
+   * vocabulary entry for that exact word, then any phrase short enough to still
+   * be about that word — and only falling back to the sentence it was marked in
+   * when the course has nothing better. That fallback matters: it is what makes
+   * marking a word in a paragraph still produce something teachable.
+   */
+  const buildLessonFromMarks = () => {
+    const catalog = buildCatalog(apiParts);
+    const vocabByWord = new Map<string, CatalogItem>();
+    const phraseByWord = new Map<string, CatalogItem>();
+    for (const entry of catalog) {
+      const isVocab = entry.kind === "vocab";
+      const head = normalizeMarkWord(entry.lookup ?? entry.de);
+      if (isVocab && head && !vocabByWord.has(head)) vocabByWord.set(head, entry);
+      if (!isVocab) {
+        const words = normalizeKey(entry.de).split(" ").filter(Boolean);
+        // Only short phrases stand in for a single word; in a long sentence the
+        // marked word is incidental rather than the point.
+        if (words.length > 6) continue;
+        for (const word of words) {
+          const key = normalizeMarkWord(word);
+          if (key && !phraseByWord.has(key)) phraseByWord.set(key, entry);
+        }
+      }
+    }
+
+    const out: { de: string; en: string; id?: string }[] = [];
+    const seen = new Set<string>();
+    const push = (de: string, en: string, id?: string) => {
+      const key = normalizeKey(de);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      out.push({ de, en, id });
+    };
+
+    for (const [key, { item }] of Object.entries(markedWords)) {
+      const match = vocabByWord.get(key) ?? phraseByWord.get(key);
+      if (match) push(match.de, match.en, match.id);
+      else push(item.de, item.en, item.id);
+    }
+    return out;
+  };
+
+  const learnMarkedWords = () => {
+    const items = buildLessonFromMarks();
+    if (!items.length) return;
+    // Also record them as struggles, so they keep coming back through normal
+    // review even after this one lesson.
+    for (const { item } of Object.values(markedWords)) {
+      setItemStatus(item.id, "struggle", profile, item.aliases);
+    }
+    onLearnItems?.(items);
+  };
+
   const resetTest = () => {
     setQuestions([]);
     setQuestionIndex(0);
@@ -798,6 +947,7 @@ export function TestsView({
     setResults([]);
     setFinished(false);
     setTrackedStatuses({});
+    setMarkedWords({});
   };
 
   const startTest = () => {
@@ -919,8 +1069,21 @@ export function TestsView({
                 {ui("Test complete")}
               </span>
               <h1 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-1)] sm:text-4xl">
-                {scorePercent >= 80 ? ui("Strong result") : scorePercent >= 60 ? ui("Good progress") : ui("Keep practising")}
+                {selectedPreset.passMark !== undefined
+                  ? scorePercent >= selectedPreset.passMark
+                    ? ui("Passed")
+                    : ui("Not passed this time")
+                  : scorePercent >= 80
+                    ? ui("Strong result")
+                    : scorePercent >= 60
+                      ? ui("Good progress")
+                      : ui("Keep practising")}
               </h1>
+              {selectedPreset.passMark !== undefined && (
+                <p className="mt-2 text-sm font-black text-[var(--text-2)]">
+                  {ui("Pass mark")}: {selectedPreset.passMark}% — {ui("you scored")} {scorePercent}%
+                </p>
+              )}
               <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-[var(--text-3)]">
                 {ui("Review the answers you missed, then try the same level again or build a different test.")}
               </p>
@@ -953,10 +1116,20 @@ export function TestsView({
                   const trackedStatus = trackedStatuses[result.question.item.id] ?? result.question.item.status;
                   return (
                     <div className="grid gap-2 py-4 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-center sm:gap-4" key={`${result.question.item.id}-${index}`}>
-                      <p className="font-bold text-[var(--text-2)]">{copy.source}</p>
+                      <p className="font-bold text-[var(--text-2)]">
+                        <MarkableText
+                          marked={markedKeys}
+                          onToggleWord={(word) => toggleMarkedWord(word, result.question.item)}
+                          text={copy.source}
+                        />
+                      </p>
                       <ArrowRight className="hidden h-4 w-4 text-[var(--text-3)] sm:block" />
                       <p className="font-black text-[var(--text-1)] sm:text-right">
-                        {formatTestMeaning(copy.target, result.question.item)}
+                        <MarkableText
+                          marked={markedKeys}
+                          onToggleWord={(word) => toggleMarkedWord(word, result.question.item)}
+                          text={formatTestMeaning(copy.target, result.question.item)}
+                        />
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -996,6 +1169,52 @@ export function TestsView({
             <div className="mt-8 flex items-center gap-3 rounded-[20px] bg-emerald-500/10 p-5 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-6 w-6" />
               <p className="font-black">{ui("Perfect score — every answer was correct.")}</p>
+            </div>
+          )}
+
+          {/* The learner's own list, gathered by clicking words during the test.
+              This is the only thing on this screen that they chose rather than
+              the score choosing for them, so it leads. */}
+          {markedCount > 0 && (
+            <div className="mt-8 rounded-[20px] border border-amber-500/30 bg-amber-400/10 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-black text-[var(--text-1)]">
+                    {markedCount} {ui(markedCount === 1 ? "word you marked" : "words you marked")}
+                  </h2>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
+                    {ui("Start a lesson on exactly these, and they'll come back in your reviews.")}
+                  </p>
+                </div>
+                <button
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] bg-[var(--accent)] px-5 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]"
+                  data-testid="learn-marked"
+                  onClick={learnMarkedWords}
+                  type="button"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  {ui("Continue learning")}
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {Object.entries(markedWords).map(([key, { word }]) => (
+                  <button
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--text-2)] hover:text-[var(--text-1)]"
+                    key={key}
+                    onClick={() =>
+                      setMarkedWords((current) => {
+                        const { [key]: _removed, ...rest } = current;
+                        return rest;
+                      })
+                    }
+                    title={ui("Remove from the list")}
+                    type="button"
+                  >
+                    {word}
+                    <X className="h-3 w-3 opacity-60" />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -1084,9 +1303,18 @@ export function TestsView({
                     ? "max-w-[72ch] text-lg leading-relaxed sm:text-xl"
                     : "text-2xl leading-tight sm:text-4xl"
                 )}>
-                  {currentCopy.source}
+                  <MarkableText
+                    marked={markedKeys}
+                    onToggleWord={(word) => toggleMarkedWord(word, currentQuestion.item)}
+                    text={currentCopy.source}
+                  />
                 </h1>
-                <p className="mt-4 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
+                <p className="mt-3 text-[11px] font-bold text-[var(--text-3)]">
+                  {markedCount > 0
+                    ? `${markedCount} ${ui(markedCount === 1 ? "word marked to learn" : "words marked to learn")}`
+                    : ui("Click any word you don't know — you can learn them all at the end.")}
+                </p>
+                <p className="mt-3 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
               </div>
               <button
                 aria-label={ui("Hear prompt")}
@@ -1378,6 +1606,9 @@ export function TestsView({
             {selectedPreset.fixedLength ? (
               <p className="mt-2 rounded-[14px] bg-[var(--surface-2)] px-3.5 py-3 text-sm font-bold text-[var(--text-2)]">
                 {ui("This exam is a fixed")} {selectedPreset.fixedLength} {ui("questions, so scores stay comparable.")}
+                {selectedPreset.passMark !== undefined && (
+                  <> {ui("Pass mark")}: <strong className="text-[var(--text-1)]">{selectedPreset.passMark}%</strong>.</>
+                )}
               </p>
             ) : (
               <div className="mt-2 grid grid-cols-3 gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">

@@ -393,6 +393,29 @@ const DE: Record<string, string> = {
   "Save & exit": "Speichern & schließen",
 
   // ── Desktop update banner ──
+  // ── Test setup ──
+  "Difficulty": "Schwierigkeit",
+  "This exam is a fixed": "Diese Prüfung hat feste",
+  "questions, so scores stay comparable.": "Fragen, damit die Ergebnisse vergleichbar bleiben.",
+  "fixed for this exam.": "für diese Prüfung festgelegt.",
+
+  // ── Marking words in a test to learn them afterwards ──
+  "Click any word you don't know — you can learn them all at the end.":
+    "Klick auf jedes Wort, das du nicht kennst — am Ende kannst du sie alle lernen.",
+  "word marked to learn": "Wort zum Lernen markiert",
+  "words marked to learn": "Wörter zum Lernen markiert",
+  "word you marked": "Wort, das du markiert hast",
+  "words you marked": "Wörter, die du markiert hast",
+  "Start a lesson on exactly these, and they'll come back in your reviews.":
+    "Starte eine Lektion genau dazu — und sie kommen in deinen Wiederholungen zurück.",
+  "Remove from the list": "Von der Liste entfernen",
+  "Your words": "Deine Wörter",
+  "Words you marked in a test": "Wörter, die du im Test markiert hast",
+  "Pass mark": "Bestehensgrenze",
+  "you scored": "du hast erreicht",
+  "Passed": "Bestanden",
+  "Not passed this time": "Diesmal nicht bestanden",
+
   "Update ready": "Update bereit",
   "Restart & update": "Neu starten & aktualisieren",
   "Restart now": "Jetzt neu starten",
