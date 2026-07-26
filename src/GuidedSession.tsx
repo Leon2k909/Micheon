@@ -218,6 +218,17 @@ type Phase = typeof PHASES[number] | "French" | "Memory";
 
 const CLOSED_BOOK_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBoth"];
 
+/**
+ * The short route for a phrase the learner already recalls reliably.
+ *
+ * Drilling something through fourteen stages when it has been recalled
+ * correctly three times running is just tax on someone who knows it. A strong
+ * item goes straight to the closed-book checks; getting one wrong drops it back
+ * onto the full route, because the run of successes evidently didn't mean what
+ * it looked like.
+ */
+const MASTERED_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBoth"];
+
 function isClosedBookPhase(phase: Phase): boolean {
   return CLOSED_BOOK_PHASES.includes(phase);
 }
@@ -507,15 +518,22 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
 
 // Prototype-style stage route: numbered squares with labels on a progress
 // line. Clicking a stage jumps to it (same behaviour the dots had).
-function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase }: {
+function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase, phases }: {
   current: Phase;
   withFrench?: boolean;
   targetLabel?: string;
   meaningLabel?: string;
   locked?: boolean;
   onClickPhase?: (p: Phase) => void;
+  /** Overrides the default route, for a phrase taking the short mastered path. */
+  phases?: Phase[];
 }) {
-  const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
+  // The bar must show the route actually being run. A phrase on the short
+  // mastered route would otherwise display fourteen stages and complete after
+  // three, which reads as the lesson breaking rather than as a shortcut earned.
+  const allPhases: Phase[] = phases
+    ? [...phases]
+    : withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   const n = allPhases.length;
   const activeStageRef = useRef<HTMLButtonElement>(null);
@@ -937,7 +955,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     else if (gentle) shakeControls.start({ scale: [1, 1.02, 1], transition: { duration: 0.3 } });
     else shakeControls.start({ x: [0, -9, 9, -7, 7, -3, 0], transition: { duration: 0.42 } });
   };
-  const [phase, setPhase] = useState<Phase>("Read");
+  // A phrase the learner already recalls reliably starts on the closed-book
+  // checks instead of the full route. Failing one of them sets this, which puts
+  // the full route back — the short route is a reward for remembering, not a
+  // permanent downgrade of how carefully the phrase is taught.
+  const [recallFailed, setRecallFailed] = useState(false);
+  const masteredRoute = item?.mastery === "strong" && !recallFailed;
+  const [phase, setPhase] = useState<Phase>(
+    item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"
+  );
+  /** The stages this phrase actually runs through. */
+  const phaseRoute = (): Phase[] => {
+    if (masteredRoute) return [...MASTERED_PHASES];
+    return hasFr ? BILINGUAL_PHASES : [...PHASES];
+  };
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
   useEffect(() => {
@@ -1247,7 +1278,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const advance = () => {
-    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
+    const order: Phase[] = phaseRoute();
     const next = order[order.indexOf(phase) + 1];
     if (next) setPhase(next);
   };
@@ -1255,7 +1286,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // Advance to the next phase, or finish the exercise if this was the last one.
   // Used by the typing steps so the second Translate round ends the exercise.
   const advanceOrFinish = () => {
-    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
+    const order: Phase[] = phaseRoute();
     const next = order[order.indexOf(phase) + 1];
     if (next) setPhase(next); else finishOrFrench();
   };
@@ -1416,7 +1447,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const goBack = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
-    const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
+    const order: Phase[] = phaseRoute();
     const prev = order[order.indexOf(phase) - 1];
     if (prev) setPhase(prev);
   };
@@ -1527,6 +1558,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const finishOrFrench = () => { if (hasFr) setPhase("French"); else onNext(); };
 
   const noteRecallStruggle = () => {
+    // Failing a closed-book check on the short route means the run of correct
+    // recalls that earned it didn't hold. Put the full route back and start it
+    // from the beginning, so the phrase is retaught rather than just retried.
+    if (masteredRoute) {
+      setRecallFailed(true);
+      setPhase("Read");
+    }
     if (grade === "struggle") return;
     setGrade("struggle");
     if (item?.id) onGradeItem?.(item.id, "struggle");
@@ -1838,6 +1876,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       {/* Stage route (full-bleed inside the card) */}
       <StageRoute
         current={phase}
+        phases={phaseRoute()}
         withFrench={hasFr}
         targetLabel={targetLabel}
         meaningLabel={meaningLabel}

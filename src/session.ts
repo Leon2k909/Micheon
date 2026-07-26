@@ -73,6 +73,22 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // mistaken for the everyday thing to say.
   const tierNote = packMeta(partKey).note;
 
+  /**
+   * How well this phrase is already known, so a lesson can stop drilling
+   * something the learner has recalled correctly several times running.
+   *
+   * "strong" needs BOTH a real run of successes and a spacing interval that
+   * only comes from surviving earlier reviews — one lucky "Know it" click
+   * cannot reach it, and a struggle resets the run to zero (see recordSuccess).
+   */
+  const masteryOf = (rec: any): "new" | "learning" | "strong" => {
+    if (!rec || rec.lastGrade !== "know") return rec ? "learning" : "new";
+    const successes = Number(rec.successes) || 0;
+    const interval = Number(rec.intervalDays) || 0;
+    if (successes >= 3 && interval >= 10) return "strong";
+    return "learning";
+  };
+
   const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
@@ -88,10 +104,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group } });
+    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
