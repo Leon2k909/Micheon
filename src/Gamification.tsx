@@ -91,6 +91,21 @@ const LEVELS: Level[] = [
   { level: 6, label: "Dedicated", xpRequired: 1800 },
   { level: 7, label: "Relentless", xpRequired: 2800 },
   { level: 8, label: "Unstoppable", xpRequired: 4200 },
+  // Level 8 used to be the ceiling, which meant the most committed learners hit
+  // the top and then had nothing left to climb. The ladder now runs to 20, with
+  // the gaps widening so late levels stay meaningful rather than trickling past.
+  { level: 9, label: "Fluent in the making", xpRequired: 6000 },
+  { level: 10, label: "Conversational", xpRequired: 8200 },
+  { level: 11, label: "Holding your own", xpRequired: 11000 },
+  { level: 12, label: "Comfortable", xpRequired: 14500 },
+  { level: 13, label: "Quick on your feet", xpRequired: 18500 },
+  { level: 14, label: "Thinking in German", xpRequired: 23000 },
+  { level: 15, label: "Hard to catch out", xpRequired: 28000 },
+  { level: 16, label: "At home in the language", xpRequired: 34000 },
+  { level: 17, label: "Reading between the lines", xpRequired: 41000 },
+  { level: 18, label: "Rarely surprised", xpRequired: 49000 },
+  { level: 19, label: "Near-native", xpRequired: 58000 },
+  { level: 20, label: "Muttersprachler-Niveau", xpRequired: 70000 },
 ];
 
 const MILESTONES = [

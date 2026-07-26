@@ -24,7 +24,7 @@ import { getLevelInfo } from "@/Gamification";
 const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { id: "learn", icon: BookOpen, label: "Lessons" },
-  { id: "games", icon: Gamepad2, label: "Practice" },
+  { id: "games", icon: Gamepad2, label: "Games" },
   { id: "tests", icon: ClipboardCheck, label: "Tests" },
   { id: "grammar", icon: GraduationCap, label: "Grammar" },
 ];

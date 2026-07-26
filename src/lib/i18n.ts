@@ -393,6 +393,11 @@ const DE: Record<string, string> = {
   "Save & exit": "Speichern & schließen",
 
   // ── Desktop update banner ──
+  // ── Multiple desktop mascots ──
+  "Move pets separately": "Tiere einzeln bewegen",
+  "Keep pets together": "Tiere zusammen halten",
+  "to move it on its own.": "um es einzeln zu bewegen.",
+
   // ── Test setup ──
   "Difficulty": "Schwierigkeit",
   "This exam is a fixed": "Diese Prüfung hat feste",

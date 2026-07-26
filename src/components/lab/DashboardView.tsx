@@ -319,7 +319,7 @@ export function DashboardView({
               {ui("All lessons")}
             </button>
             <button className="ghost-btn h-11 px-4 text-xs" onClick={() => setActiveTab("games")} type="button">
-              {ui("Practice")}
+              {ui("Games")}
             </button>
           </div>
         </div>

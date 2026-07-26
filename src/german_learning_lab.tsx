@@ -29,6 +29,7 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
+import { computeAbility, packAffinity } from "@/lib/ability";
 import { COMPLETED_KEY, loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
@@ -557,9 +558,30 @@ export default function GermanLearningLab() {
       const keys = Object.keys(apiParts);
       const globalReviews: any[] = [];
       const seenDe = new Set<string>();
+
+      // Which pack to take fresh content from is the one place the app can
+      // respond to how good someone actually is. A learner who keeps marking
+      // things known has their harder packs brought forward.
+      //
+      // This is a REORDERING, never a filter. Every pack stays in the list, so
+      // the easier ones are still waiting once the harder ones run dry — being
+      // good at German cannot let you skip part of it, it only changes what you
+      // meet first. Ties keep curriculum order, so nothing shuffles at random.
+      const ability = computeAbility(reviewState as any);
+      const orderedKeys = keys
+        .map((pId, index) => ({ pId, index }))
+        .sort((a, b) => {
+          const byFit = packAffinity(ability.band, apiParts[a.pId]?.level)
+            - packAffinity(ability.band, apiParts[b.pId]?.level);
+          return byFit !== 0 ? byFit : a.index - b.index;
+        })
+        .map((entry) => entry.pId);
+
       let freshId: string | undefined;
       let freshSteps: any[] = [];
 
+      // Reviews are gathered from every pack regardless of order, so a due item
+      // is never delayed by the difficulty preference.
       for (const pId of keys) {
         const p = apiParts[pId];
         if (!p) continue;
@@ -570,12 +592,16 @@ export default function GermanLearningLab() {
             globalReviews.push(st);
           }
         }
-        if (!freshId) {
-          const fresh = s.filter(
-            (st: any) => (st.type === "sentence" && !st.review) || st.type === "dialogue"
-          );
-          if (fresh.length) { freshId = pId; freshSteps = fresh; }
-        }
+      }
+
+      for (const pId of orderedKeys) {
+        const p = apiParts[pId];
+        if (!p) continue;
+        const s = buildSession({ ...p, partKey: pId }, [], reviewState, 0);
+        const fresh = s.filter(
+          (st: any) => (st.type === "sentence" && !st.review) || st.type === "dialogue"
+        );
+        if (fresh.length) { freshId = pId; freshSteps = fresh; break; }
       }
 
       // 3 new (from the first pack with fresh content) + 3 old due reviews
@@ -817,7 +843,7 @@ export default function GermanLearningLab() {
       id: `practice-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
       title,
       subtitle,
-      group: ui("Practice"),
+      group: ui("Games"),
       actionLabel: ui("Open"),
       onSelect: () => openTab("games"),
     })),

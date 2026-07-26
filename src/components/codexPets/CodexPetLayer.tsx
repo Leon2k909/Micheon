@@ -9,7 +9,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, History, MessageSquare, MessageSquareOff, X } from "lucide-react";
+import { Check, History, Link2, MessageSquare, MessageSquareOff, Unlink2, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -25,6 +25,14 @@ import {
   getCodexPetMessagesMuted,
   setCodexPetMessagesMuted,
 } from "@/lib/codexPetMessages";
+import {
+  PET_LAYOUT_EVENT,
+  PET_LAYOUT_KEY,
+  getPetLayoutMode,
+  petPositionKey,
+  setPetLayoutMode,
+  type PetLayoutMode,
+} from "@/lib/petLayout";
 import { learningEnglish } from "@/lib/direction";
 import { ui } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
@@ -120,6 +128,8 @@ type PetBounds = {
 };
 
 type DragState = {
+  /** Set when this drag moves a single companion rather than the whole group. */
+  companionKey?: string;
   cursorFrame?: number;
   lastDomPointerAt?: number;
   moved: boolean;
@@ -259,7 +269,8 @@ export function CodexPetLayer() {
   } = useCodexPets();
   const { frequencies: petCoachingFrequencies } = useCodexPetCoaching();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
-  const visiblePets = selectedPet
+  const [layoutMode, setLayoutMode] = useState<PetLayoutMode>(getPetLayoutMode);
+  const allVisiblePets = selectedPet
     ? [
         selectedPet,
         ...pets.filter((pet) => {
@@ -268,6 +279,11 @@ export function CodexPetLayer() {
         }),
       ]
     : [];
+  // Apart: the talking pet keeps the group slot (it owns the speech bubble and
+  // the menu) and every other pet becomes its own draggable thing. Together:
+  // one row, exactly as before.
+  const companionPets = layoutMode === "apart" ? allVisiblePets.slice(1) : [];
+  const visiblePets = layoutMode === "apart" ? allVisiblePets.slice(0, 1) : allVisiblePets;
   const [animation, setAnimation] = useState("idle");
   const [dragging, setDragging] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -313,8 +329,65 @@ export function CodexPetLayer() {
   const speechRef = useRef(speech);
   const suppressClick = useRef(false);
   const tipIndex = useRef(0);
+  /** Where each companion sits when the pets are arranged apart. */
+  const [companionPositions, setCompanionPositions] = useState<Record<string, PetPosition>>({});
+  const companionPositionsRef = useRef(companionPositions);
+  const companionElements = useRef<Record<string, HTMLDivElement | null>>({});
 
   speechRef.current = speech;
+  companionPositionsRef.current = companionPositions;
+
+  // The layout choice is made in one window and has to reach the other, so
+  // both the cross-window storage event and the same-window custom event are
+  // observed — a storage event never fires in the window that wrote it.
+  useEffect(() => {
+    const sync = () => setLayoutMode(getPetLayoutMode());
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === PET_LAYOUT_KEY) sync();
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(PET_LAYOUT_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(PET_LAYOUT_EVENT, sync);
+    };
+  }, []);
+
+  // Give every companion a stored place, and a sensible first one: stepped out
+  // from the group rather than stacked on top of it, so switching to "apart"
+  // visibly separates them instead of looking like nothing happened.
+  useEffect(() => {
+    if (layoutMode !== "apart" || !companionPets.length) return;
+    setCompanionPositions((current) => {
+      let changed = false;
+      const next = { ...current };
+      companionPets.forEach((pet, index) => {
+        const key = codexPetKey(pet);
+        if (next[key]) return;
+        const stored = storedPosition(
+          petWidth,
+          petHeight,
+          petPositionKey(PET_POSITION_STORAGE_KEY, key)
+        );
+        const hasStored = typeof window !== "undefined"
+          && window.localStorage.getItem(petPositionKey(PET_POSITION_STORAGE_KEY, key)) !== null;
+        next[key] = hasStored
+          ? stored
+          : clampPosition(
+              {
+                x: positionRef.current.x - (index + 1) * (petWidth + PET_GROUP_GAP * 4),
+                y: positionRef.current.y,
+              },
+              viewport.width,
+              viewport.height,
+              petWidth,
+              petHeight
+            );
+        changed = true;
+      });
+      return changed ? next : current;
+    });
+  }, [layoutMode, companionPets.map((pet) => codexPetKey(pet)).join("|"), petWidth, petHeight]);
 
   useLayoutEffect(() => {
     if (dragState.current) return;
@@ -322,7 +395,12 @@ export function CodexPetLayer() {
     menuMotionRef.current?.style.removeProperty("translate");
     petMotionRef.current?.style.removeProperty("translate");
     speechMotionRef.current?.style.removeProperty("translate");
-  }, [dragging, position]);
+    // Companions move by translate during a drag and by left/top once it ends.
+    // Leaving the translate behind would add the drag distance a second time.
+    for (const element of Object.values(companionElements.current)) {
+      element?.style.removeProperty("translate");
+    }
+  }, [companionPositions, dragging, position]);
 
   // Pair each measured DOM layout with the native-window origin that produced
   // it. Updating this ref in the IPC callback could combine a newly announced
@@ -550,7 +628,10 @@ export function CodexPetLayer() {
   // The geometry that matters changes with these, not with sprite frames.
   useEffect(() => {
     hitRegionSyncRef.current?.();
-  }, [position, petSize, visiblePets.length, menuOpen, historyOpen, dragging, speech]);
+    // Companions are separate hit regions, so their arrangement changing has to
+    // re-sync the native shape too or a moved pet stops being clickable.
+  }, [position, petSize, visiblePets.length, menuOpen, historyOpen, dragging, speech,
+      layoutMode, companionPositions]);
 
   useEffect(() => {
     const syncMutedState = () => {
@@ -743,6 +824,29 @@ export function CodexPetLayer() {
   if (!selectedPet) return null;
 
   const movePetDuringDrag = (drag: DragState, nextPosition: PetPosition) => {
+    // A companion moves alone and is exactly one pet wide, so it clamps against
+    // its own box rather than the group's — otherwise a single pet would be
+    // fenced in by the width of pets it is no longer attached to.
+    if (drag.companionKey) {
+      const key = drag.companionKey;
+      const current = companionPositionsRef.current[key];
+      if (!current) return;
+      const next = clampPosition(
+        nextPosition,
+        viewport.width,
+        viewport.height,
+        petWidth,
+        petHeight
+      );
+      if (next.x === current.x && next.y === current.y) return;
+      companionPositionsRef.current = { ...companionPositionsRef.current, [key]: next };
+      const element = companionElements.current[key];
+      if (element) {
+        element.style.translate = `${next.x - drag.originX}px ${next.y - drag.originY}px`;
+      }
+      requestHitRegionSync();
+      return;
+    }
     const next = clampPosition(
       nextPosition,
       viewport.width,
@@ -809,9 +913,18 @@ export function CodexPetLayer() {
     drag.unsubscribeEnd?.();
     drag.cleanupGlobal?.();
     dragState.current = null;
-    setPosition({ ...positionRef.current });
+    if (drag.companionKey) {
+      const key = drag.companionKey;
+      const next = companionPositionsRef.current[key];
+      if (next) {
+        setCompanionPositions((current) => ({ ...current, [key]: next }));
+        savePosition(next, petPositionKey(PET_POSITION_STORAGE_KEY, key));
+      }
+    } else {
+      setPosition({ ...positionRef.current });
+      savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
+    }
     setDragging(false);
-    savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
     requestHitRegionSync();
     if (isDesktopPetOverlay && notifyMain) {
       // Let the final translated rectangles reach main before it restores the
@@ -822,8 +935,14 @@ export function CodexPetLayer() {
     }
   };
 
-  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const handlePointerDown = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    companionKey?: string
+  ) => {
     if (event.button !== 0 || dragState.current) return;
+    // A companion that has not been given a place yet cannot be dragged; its
+    // position effect runs first, so this only guards the very first frame.
+    if (companionKey && !companionPositionsRef.current[companionKey]) return;
     const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
     if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
     // The native drag shape is expanded before capture and then stays stable.
@@ -835,11 +954,15 @@ export function CodexPetLayer() {
       if (!isDesktopPetOverlay) return;
     }
     const usesScreenCoordinates = isDesktopPetOverlay;
+    const origin = companionKey
+      ? companionPositionsRef.current[companionKey]
+      : positionRef.current;
     const drag: DragState = {
+      companionKey,
       lastDomPointerAt: performance.now(),
       moved: false,
-      originX: positionRef.current.x,
-      originY: positionRef.current.y,
+      originX: origin.x,
+      originY: origin.y,
       pointerId: event.pointerId,
       startX: usesScreenCoordinates && Number.isFinite(nativeDrag?.screenX)
         ? nativeDrag.screenX
@@ -1133,6 +1256,25 @@ export function CodexPetLayer() {
                 <History aria-hidden="true" className="h-4 w-4" />
                 {ui("Message history")}
               </button>
+              {/* Only worth offering once there is more than one pet on screen. */}
+              {allVisiblePets.length > 1 && (
+                <button
+                  className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    const next = layoutMode === "apart" ? "together" : "apart";
+                    setLayoutMode(next);
+                    setPetLayoutMode(next);
+                  }}
+                  role="menuitem"
+                  type="button"
+                >
+                  {layoutMode === "apart"
+                    ? <Link2 aria-hidden="true" className="h-4 w-4" />
+                    : <Unlink2 aria-hidden="true" className="h-4 w-4" />}
+                  {ui(layoutMode === "apart" ? "Keep pets together" : "Move pets separately")}
+                </button>
+              )}
               <button
                 className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                 onClick={() => {
@@ -1273,6 +1415,55 @@ export function CodexPetLayer() {
         </button>
         </div>
       )}
+
+      {/* Companions, when the pets are arranged apart. Each one is its own
+          positioned element with its own hit region, so the overlay's native
+          shape picks them up without any extra plumbing. They do not carry the
+          speech bubble or the menu — only the talking pet does — so a click
+          here opens the same menu rather than a second, emptier one. */}
+      {showPetChrome && layoutMode === "apart" && companionPets.map((pet) => {
+        const key = codexPetKey(pet);
+        const spot = companionPositions[key];
+        if (!spot) return null;
+        return (
+          <div
+            className="pointer-events-none absolute"
+            key={key}
+            ref={(element) => { companionElements.current[key] = element; }}
+            style={{
+              height: petHeight,
+              left: spot.x,
+              top: spot.y,
+              width: petWidth,
+              willChange: dragging ? "translate" : undefined,
+            }}
+          >
+            <button
+              aria-label={`${ui("Move")} ${pet.displayName}`}
+              className={`pointer-events-auto flex items-end touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
+              data-pet-interactive="true"
+              draggable={false}
+              onContextMenu={showContextMenu}
+              onLostPointerCapture={handleLostCapture}
+              onPointerCancel={finishDrag}
+              onPointerDown={(event) => handlePointerDown(event, key)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={finishDrag}
+              title={`${ui("Drag")} ${pet.displayName} ${ui("to move it on its own.")}`}
+              type="button"
+            >
+              <CodexPetSprite
+                animation="idle"
+                className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
+                onVisibleBounds={(bounds) => updatePetVisibleBounds(key, bounds)}
+                pet={pet}
+                playbackKey={0}
+                size={petWidth}
+              />
+            </button>
+          </div>
+        );
+      })}
       </div>
       </div>
     </>

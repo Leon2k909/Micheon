@@ -210,9 +210,17 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 // Section
 // The recognition rounds follow the first exposure: learners identify a whole
 // spoken phrase, then identify one missing word from audio-only choices.
-// Type and Translate each run twice to build memory through production.
-const PHASES = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll"] as const;
+// Type and Translate each run twice to build memory through production. The
+// final three rounds are deliberately closed-book: rehearsal ends at SpeakAll,
+// then the learner has to retrieve the target, meaning, and finally both.
+const PHASES = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Speak", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "SpeakAll", "RecallTarget", "RecallMeaning", "RecallBoth"] as const;
 type Phase = typeof PHASES[number] | "French" | "Memory";
+
+const CLOSED_BOOK_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBoth"];
+
+function isClosedBookPhase(phase: Phase): boolean {
+  return CLOSED_BOOK_PHASES.includes(phase);
+}
 
 function spokenWord(token: string): string {
   return String(token ?? "").replace(/[^a-zA-ZäöüßÄÖÜéèêàâçîôûœÉÈÊÀÂÇÎÔÛŒ'’'-]/g, "");
@@ -414,7 +422,7 @@ function renderKeyWord(sentence: string, lookup?: string) {
   );
 }
 
-function phaseLabel(p: Phase, withFrench: boolean) {
+function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English") {
   if (withFrench && p === "Type") return "German";
   if (p === "MeaningPick") return "Meaning";
   if (p === "MeaningSelect") return "Select";
@@ -425,11 +433,14 @@ function phaseLabel(p: Phase, withFrench: boolean) {
   if (p === "Gap") return "Fill in";
   if (p === "Order") return "Word order";
   if (p === "SpeakAll") return "Write it";
+  if (p === "RecallTarget") return targetLabel === "German" ? "Recall DE" : "Recall EN";
+  if (p === "RecallMeaning") return meaningLabel === "German" ? "Recall DE" : "Recall EN";
+  if (p === "RecallBoth") return "Recall both";
   return p;
 }
 
 // Big stage title for the lesson heading ("Build the sentence" style).
-function phaseHeading(p: Phase, withFrench: boolean): string {
+function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English"): string {
   switch (p) {
     case "Read": return "Read & listen";
     case "MeaningPick": return "Pick the meaning";
@@ -444,6 +455,9 @@ function phaseHeading(p: Phase, withFrench: boolean): string {
     case "Gap": return "Fill the blank";
     case "Order": return "Build the sentence";
     case "SpeakAll": return "Build from memory";
+    case "RecallTarget": return `Recall the ${targetLabel}`;
+    case "RecallMeaning": return `Recall the ${meaningLabel}`;
+    case "RecallBoth": return "Recall both sentences";
     case "French": return "Type the French";
     case "Memory": return "Recall both languages";
     default: return "Sentence practice";
@@ -493,9 +507,11 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
 
 // Prototype-style stage route: numbered squares with labels on a progress
 // line. Clicking a stage jumps to it (same behaviour the dots had).
-function StageRoute({ current, withFrench = false, onClickPhase }: {
+function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", onClickPhase }: {
   current: Phase;
   withFrench?: boolean;
+  targetLabel?: string;
+  meaningLabel?: string;
   onClickPhase?: (p: Phase) => void;
 }) {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
@@ -509,28 +525,35 @@ function StageRoute({ current, withFrench = false, onClickPhase }: {
       <div className="fs-stagemeta">
         <div>
           <span>{ui("Stage")} {idx + 1} {ui("of")} {n}</span>
-          <strong>{ui(phaseLabel(current, withFrench))}</strong>
+          <strong>{ui(phaseLabel(current, withFrench, targetLabel, meaningLabel))}</strong>
         </div>
         <span className="fs-stagehint">{ui("Jump to any stage")}</span>
       </div>
-      <div className="fs-stagetrack" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
-        <div className="fs-stageline" style={{ left: `${half}%`, right: `${half}%` }} aria-hidden>
-          <i style={{ width: `${fillPct}%` }} />
+      <div className="fs-stagetrack-scroll">
+        <div className={cn("fs-stagetrack", n > 13 && "has-many-stages")} style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
+          <div className="fs-stageline" style={{ left: `${half}%`, right: `${half}%` }} aria-hidden>
+            <i style={{ width: `${fillPct}%` }} />
+          </div>
+          {allPhases.map((p, i) => (
+            <button
+              key={p}
+              type="button"
+              title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
+              aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
+              aria-current={i === idx ? "step" : undefined}
+              onClick={() => onClickPhase?.(p)}
+              className={cn(
+                "fs-stagebtn",
+                isClosedBookPhase(p) && "is-recall",
+                p === "RecallTarget" && "is-recall-start",
+                i === idx ? "is-active" : i < idx && "is-done"
+              )}
+            >
+              <span>{i + 1}</span>
+              <small>{ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}</small>
+            </button>
+          ))}
         </div>
-        {allPhases.map((p, i) => (
-          <button
-            key={p}
-            type="button"
-            title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
-            aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench))}`}
-            aria-current={i === idx ? "step" : undefined}
-            onClick={() => onClickPhase?.(p)}
-            className={cn("fs-stagebtn", i === idx ? "is-active" : i < idx && "is-done")}
-          >
-            <span>{i + 1}</span>
-            <small>{ui(phaseLabel(p, withFrench))}</small>
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -695,9 +718,13 @@ function buildRecallHint(answer: string): string {
 function RecallHelp({
   answer,
   hint,
+  label,
+  onHelp,
 }: {
   answer: string;
   hint?: string;
+  label?: string;
+  onHelp?: () => void;
 }) {
   const [level, setLevel] = useState<0 | 1 | 2>(0);
   const shownText = level === 2 ? primaryAnswer(answer) : (hint ?? buildRecallHint(answer));
@@ -707,12 +734,15 @@ function RecallHelp({
       <div className="fs-recall-help-row">
         <span className="fs-recall-help-label">
           <Lightbulb aria-hidden="true" className="h-4 w-4" />
-          {ui("Need help?")}
+          {label && <>{ui(label)} <span aria-hidden="true">·</span></>} {ui("Need help?")}
         </span>
         <button
           type="button"
           className="fs-recall-help-action"
-          onClick={() => setLevel(level === 0 ? 1 : level === 1 ? 2 : 1)}
+          onClick={() => {
+            if (level < 2) onHelp?.();
+            setLevel(level === 0 ? 1 : level === 1 ? 2 : 1);
+          }}
           aria-expanded={level > 0}
         >
           {level === 0 ? (
