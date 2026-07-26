@@ -10,6 +10,7 @@
 
 import { AUDIO_MUTE_EVENT, isAudioMuted } from "@/lib/audioMute";
 import { firstSpokenAlternative } from "@/lib/spokenText";
+import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
 type SeqItem = { text: string; rate?: number; lang: string };
 
@@ -59,6 +60,15 @@ if (typeof window !== "undefined") {
       stopTts();
     }
   });
+
+  // Changing voice makes every clip already generated the wrong one. They are
+  // keyed by voice so they would never be served again — revoking them hands
+  // the memory back instead of holding a whole lesson's audio for nothing.
+  window.addEventListener(TTS_VOICE_EVENT, () => {
+    for (const url of urlCache.values()) URL.revokeObjectURL(url);
+    urlCache.clear();
+    stopTts();
+  });
 }
 
 function speakFallback(text: string, rate: number, lang: string): Promise<void> {
@@ -75,10 +85,14 @@ function speakFallback(text: string, rate: number, lang: string): Promise<void> 
 }
 
 async function getAudioUrl(text: string, rate: number, lang: string): Promise<string> {
-  const key = `${lang}|${rate}|${text}`;
+  // The chosen voice is part of the cache key, or switching voice would keep
+  // replaying the old one for every sentence already heard.
+  const voice = voiceForLang(lang);
+  const key = `${lang}|${voice}|${rate}|${text}`;
   const cached = urlCache.get(key);
   if (cached) return cached;
-  const qs = `text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}&rate=${rate}`;
+  const qs = `text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}&rate=${rate}`
+    + (voice ? `&voice=${encodeURIComponent(voice)}` : "");
   const resp = await fetch(`/api/tts?${qs}`);
   if (!resp.ok) throw new Error(`tts http ${resp.status}`);
   const blob = await resp.blob();

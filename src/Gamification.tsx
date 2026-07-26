@@ -62,6 +62,7 @@ import { getVoiceModel, setVoiceModel, VOICE_MODELS, type VoiceModelChoice } fro
 import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { AppearanceEditor } from "@/components/AppearanceEditor";
+import { VoicePicker } from "@/components/VoicePicker";
 import { ThemePresetPicker } from "@/components/ThemePresetPicker";
 import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
 import { LearningModePicker } from "@/components/LearningModePicker";
@@ -634,6 +635,11 @@ export default function GamificationPanel({
                   <option value="american">{ui("American English")}</option>
                   <option value="german">Deutsch</option>
                 </select>
+                {/* Sits with the accent setting: one picks how English is
+                    written and which accent is spoken, the other picks who
+                    speaks it. Separating them into two cards read as two
+                    unrelated things. */}
+                <VoicePicker />
               </div>
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">

@@ -498,6 +498,36 @@ const DE: Record<string, string> = {
   "Choose Custom above to set your own gaps between messages.": "Wähle oben Eigene, um eigene Abstände zwischen Nachrichten festzulegen.",
   "Tap to hear it": "Antippen zum Anhören",
 
+  // ── Which voice reads each language ──
+  "German voice": "Deutsche Stimme",
+  "English voice": "Englische Stimme",
+  "French voice": "Französische Stimme",
+  "App default": "App-Standard",
+  "Hear this voice": "Diese Stimme anhören",
+  "Voices load when the app's audio service is running.":
+    "Stimmen werden geladen, wenn der Audiodienst der App läuft.",
+  "The accent above decides how English is written and which accent is spoken; this decides who speaks it.":
+    "Der Akzent oben bestimmt Schreibweise und Aussprache des Englischen; hier wählst du, wer spricht.",
+  "German — female": "Deutsch — weiblich",
+  "German — male": "Deutsch — männlich",
+  "German — female, multilingual": "Deutsch — weiblich, mehrsprachig",
+  "Austrian German — female": "Österreichisches Deutsch — weiblich",
+  "Austrian German — male": "Österreichisches Deutsch — männlich",
+  "Swiss German — female": "Schweizerdeutsch — weiblich",
+  "Swiss German — male": "Schweizerdeutsch — männlich",
+  "British — female": "Britisch — weiblich",
+  "British — male": "Britisch — männlich",
+  "British — younger female": "Britisch — jüngere Frau",
+  "Irish — female": "Irisch — weiblich",
+  "Irish — male": "Irisch — männlich",
+  "Australian — female": "Australisch — weiblich",
+  "Australian — male": "Australisch — männlich",
+  "American — female": "Amerikanisch — weiblich",
+  "American — male": "Amerikanisch — männlich",
+  "French — female": "Französisch — weiblich",
+  "French — male": "Französisch — männlich",
+  "French — female, multilingual": "Französisch — weiblich, mehrsprachig",
+
   // ── Your own words and phrases ──
   "Add your own words": "Eigene Wörter hinzufügen",
   "Your own words and phrases": "Deine eigenen Wörter und Sätze",
