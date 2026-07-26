@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star, Check, Minus, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CustomContentEditor } from "@/components/lab/CustomContentEditor";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
@@ -458,6 +459,8 @@ export function VocabTracker({
           </div>
         </div>
       </div>
+
+      <CustomContentEditor />
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <SelectBox

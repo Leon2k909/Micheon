@@ -18,6 +18,7 @@ import GrammarTabContent from "@/lab/GrammarTabContent";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
 import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
+import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
@@ -317,7 +318,19 @@ export default function GermanLearningLab() {
     // Tatoeba packs are the FINAL tier: real native-written sentences as
     // extra practice, unlocked only after the curated curriculum, each item
     // labelled ("Real-world sentence — extra practice").
-    setApiParts(orderParts({ ...resolved, ...buildBundledParts(), ...buildTatoebaParts() }));
+    // The learner's own words go in last so they are packs like any other:
+    // lessons, tracker, search and tests all read this one map, so nothing
+    // downstream needs to know where a phrase came from.
+    const rebuild = () =>
+      setApiParts(orderParts({
+        ...resolved,
+        ...buildBundledParts(),
+        ...buildTatoebaParts(),
+        ...buildCustomParts(),
+      }));
+    rebuild();
+    window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+    return () => window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
   }, []);
 
   useEffect(() => {
@@ -610,6 +623,7 @@ export default function GermanLearningLab() {
               ability: ability.band,
               commonality: sentenceCommonality(text, corpusIndex),
               difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
+              own: isCustomPartKey(pId),
             }),
             step: st,
           });

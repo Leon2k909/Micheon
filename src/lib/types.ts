@@ -48,6 +48,9 @@ export interface Phrase {
    *  and is therefore what we teach. Shown as a footnote and accepted as an
    *  answer, so a learner who met the long form in a book is not marked wrong. */
   long?: string;
+  /** Stable id, for phrases whose position in the pack can change — i.e. the
+   *  learner's own. Bundled phrases omit it and stay keyed by index. */
+  id?: string;
 }
 
 export interface Blueprint {

@@ -131,7 +131,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     addSentence(
       lessonPhrase.de,
       lessonPhrase.en,
-      `${partKey}-phrase-${i}`,
+      // Bundled phrases have no id and stay index-keyed. Learner-added ones
+      // carry their own, because deleting one from the middle of a custom pack
+      // would otherwise shift every id after it onto the wrong word, handing
+      // them somebody else's grade history.
+      ph.id ?? `${partKey}-phrase-${i}`,
       [],
       lessonPhrase.fr,
       lessonPhrase.use,
@@ -345,7 +349,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   phrases.forEach((ph, i) => {
     if (!hasSentenceShape(ph.de)) return;
     const catalogPhrase = phraseForLearningMode(ph, learningMode);
-    push(catalogPhrase.de, catalogPhrase.en, `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use, {
+    push(catalogPhrase.de, catalogPhrase.en, ph.id ?? `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use, {
       fr: catalogPhrase.fr,
       short: catalogPhrase.short,
       when: catalogPhrase.when,

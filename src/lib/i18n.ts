@@ -483,6 +483,28 @@ const DE: Record<string, string> = {
   "Choose Custom above to set your own gaps between messages.": "Wähle oben Eigene, um eigene Abstände zwischen Nachrichten festzulegen.",
   "Tap to hear it": "Antippen zum Anhören",
 
+  // ── Your own words and phrases ──
+  "Add your own words": "Eigene Wörter hinzufügen",
+  "Your own words and phrases": "Deine eigenen Wörter und Sätze",
+  "Anything you add here is taught like the rest of the course — it shows up in Continue learning, lessons and tests.":
+    "Alles, was du hier hinzufügst, wird wie der übrige Kurs geübt — es erscheint beim Weiterlernen, in Lektionen und in Tests.",
+  "Pack": "Paket",
+  "New pack": "Neues Paket",
+  "New pack name": "Name des neuen Pakets",
+  "Rename pack": "Paket umbenennen",
+  "Delete pack": "Paket löschen",
+  "How hard this pack is, so it is served at the right time.":
+    "Wie schwer dieses Paket ist, damit es zum richtigen Zeitpunkt drankommt.",
+  "Note (optional)": "Notiz (optional)",
+  "Upload a whole list": "Ganze Liste hochladen",
+  "Hide bulk upload": "Massenupload ausblenden",
+  "One per line: German, then English. Separate them with a tab, a comma, = or a dash.":
+    "Eins pro Zeile: erst Deutsch, dann Englisch. Getrennt durch Tab, Komma, = oder Bindestrich.",
+  "Import": "Importieren",
+  "ready": "bereit",
+  "unreadable": "unlesbar",
+  "That is as many as a pack holds.": "Mehr passt nicht in ein Paket.",
+
   // ── Lessons search and filters ──
   "Search lessons, topics or a German word…": "Lektionen, Themen oder ein deutsches Wort suchen…",
   "Clear search": "Suche löschen",

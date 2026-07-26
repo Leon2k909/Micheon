@@ -147,18 +147,32 @@ export function itemDifficulty(level: string | undefined, wordCount: number): Ab
  * pool by being learned, so the easy material remains waiting however good you
  * get.
  */
+/**
+ * Head start for material the learner added themselves.
+ *
+ * Their own words are usually names, local things and in-jokes — exactly the
+ * vocabulary a frequency corpus scores as rare, which would bury it at the very
+ * back of a 3,000-item ranking and never bring it up. Someone who typed a
+ * phrase in has already said they want it. Big enough to clear the long tail,
+ * small enough that the true everyday basics still come first.
+ */
+export const OWN_MATERIAL_BONUS = 0.35;
+
 export function itemPriority(input: {
   /** From sentenceCommonality — roughly 300 (everyday) to 5000 (rare). */
   commonality: number;
   difficulty: AbilityBand;
   ability: AbilityBand;
+  /** The learner added this one themselves. */
+  own?: boolean;
 }): number {
   const commonality = Math.min(1, Math.max(0, (input.commonality - 300) / 4700));
   // bandDistance carries the same rule the pack-level scorer used: overshooting
   // costs more than undershooting, because a beginner handed a C1 sentence is
   // stuck while a strong learner handed an easy one merely breezes it.
   const misfit = Math.min(1, bandDistance(input.ability, input.difficulty) / 6);
-  return commonality * 0.65 + misfit * 0.35;
+  const base = commonality * 0.65 + misfit * 0.35;
+  return input.own ? base - OWN_MATERIAL_BONUS : base;
 }
 
 /** Short, honest description of what the app is doing, for the UI. */
