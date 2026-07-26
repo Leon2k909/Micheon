@@ -100,6 +100,47 @@ export function packAffinity(ability: AbilityBand, level: string | undefined): n
   return gap >= 0 ? gap * 2 : -gap;
 }
 
+/**
+ * What to teach next: one number per pack, lowest served first.
+ *
+ * Three things decide it, in this order of weight:
+ *
+ *   commonality (60%) — what native speakers actually say, so the everyday
+ *     language comes first whoever you are. This dominates on purpose.
+ *   difficulty fit (30%) — nudges a strong learner toward material that will
+ *     stretch them, and keeps a beginner off C1 text.
+ *   what you already know (10%) — a pack you have started outranks one you
+ *     have not, so half-finished topics get closed out.
+ *
+ * It is a RANKING over every pack that still has unseen content, never a
+ * filter. Once the harder packs run out of fresh material they stop being
+ * candidates, and what remains is the easier ones — so finishing the hard
+ * material cannot let you skip the easy material, it only changes the order
+ * you meet it in.
+ */
+export function lessonPriority(input: {
+  /** From packCommonality — roughly 300 (everyday) to 5000 (rare). */
+  commonality: number;
+  level: string | undefined;
+  ability: AbilityBand;
+  /** Items in the pack already marked known. */
+  known: number;
+  /** Items in the pack in total. */
+  total: number;
+}): number {
+  const commonality = Math.min(1, Math.max(0, (input.commonality - 300) / 4700));
+
+  // packAffinity returns 0 for a perfect fit and up to ~6 for a bad one.
+  const misfit = Math.min(1, packAffinity(input.ability, input.level) / 6);
+
+  // Started-but-unfinished sorts ahead of untouched; finished sorts last of all
+  // (it will have no fresh content anyway, this is just belt and braces).
+  const progress = input.total > 0 ? input.known / input.total : 0;
+  const stickiness = progress > 0 && progress < 1 ? 0 : progress >= 1 ? 1 : 0.5;
+
+  return commonality * 0.6 + misfit * 0.3 + stickiness * 0.1;
+}
+
 /** Short, honest description of what the app is doing, for the UI. */
 export function abilityLabel(ability: Ability): string {
   if (ability.provisional) return "Still learning what suits you";

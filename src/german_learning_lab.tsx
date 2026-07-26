@@ -29,7 +29,8 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
-import { computeAbility, packAffinity } from "@/lib/ability";
+import { computeAbility, lessonPriority } from "@/lib/ability";
+import { buildCorpusIndex, packCommonality } from "@/lib/corpusFrequency";
 import { COMPLETED_KEY, loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
@@ -141,6 +142,9 @@ export default function GermanLearningLab() {
     streak:            getStreak(user),
     externalWords:     loadScopedJson("externalWords", user.externalWordsLearned ?? 0, user) as number,
   }));
+  // Scans every phrase in the course, so it is built once per pack list rather
+  // than on every Continue learning press.
+  const corpusIndex = React.useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
   const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);
@@ -559,22 +563,43 @@ export default function GermanLearningLab() {
       const globalReviews: any[] = [];
       const seenDe = new Set<string>();
 
-      // Which pack to take fresh content from is the one place the app can
-      // respond to how good someone actually is. A learner who keeps marking
-      // things known has their harder packs brought forward.
+      // Which pack to take fresh content from is scored, not just ordered:
+      // how common its language is (the biggest factor, so everyday German
+      // comes first whoever you are), how well its difficulty fits you, and
+      // whether you have already started it.
       //
-      // This is a REORDERING, never a filter. Every pack stays in the list, so
-      // the easier ones are still waiting once the harder ones run dry — being
-      // good at German cannot let you skip part of it, it only changes what you
-      // meet first. Ties keep curriculum order, so nothing shuffles at random.
+      // It is a RANKING over every pack with unseen content, never a filter.
+      // Once the harder packs have no fresh material left they drop out as
+      // candidates and the easier ones are what remain — so being good at
+      // German changes the order you meet it in and nothing else. Ties keep
+      // curriculum order so nothing shuffles at random.
       const ability = computeAbility(reviewState as any);
+      const grades = loadGradeStore(user);
+      const knownInPart = (pId: string, part: Part) => {
+        const phrases = part.phrases ?? [];
+        let known = 0;
+        phrases.forEach((_p, index) => {
+          if (statusForId(grades, `${pId}-phrase-${index}`) === "known") known += 1;
+        });
+        return { known, total: phrases.length };
+      };
       const orderedKeys = keys
-        .map((pId, index) => ({ pId, index }))
-        .sort((a, b) => {
-          const byFit = packAffinity(ability.band, apiParts[a.pId]?.level)
-            - packAffinity(ability.band, apiParts[b.pId]?.level);
-          return byFit !== 0 ? byFit : a.index - b.index;
+        .map((pId, index) => {
+          const part = apiParts[pId];
+          const progress = part ? knownInPart(pId, part) : { known: 0, total: 0 };
+          return {
+            pId,
+            index,
+            score: lessonPriority({
+              ability: ability.band,
+              commonality: packCommonality(part, corpusIndex),
+              known: progress.known,
+              level: part?.level,
+              total: progress.total,
+            }),
+          };
         })
+        .sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index))
         .map((entry) => entry.pId);
 
       let freshId: string | undefined;
