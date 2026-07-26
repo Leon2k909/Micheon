@@ -29,8 +29,11 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { getMasteredCount } from "@/lib/mastery";
-import { computeAbility, lessonPriority } from "@/lib/ability";
-import { buildCorpusIndex, packCommonality } from "@/lib/corpusFrequency";
+import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
+import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
+
+/** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
+const NEW_PER_LESSON_TARGET = 3;
 import { COMPLETED_KEY, loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
@@ -564,45 +567,16 @@ export default function GermanLearningLab() {
       const globalReviews: any[] = [];
       const seenDe = new Set<string>();
 
-      // Which pack to take fresh content from is scored, not just ordered:
-      // how common its language is (the biggest factor, so everyday German
-      // comes first whoever you are), how well its difficulty fits you, and
-      // whether you have already started it.
+      // Every unseen SENTENCE is scored, not the pack it lives in. A pack is a
+      // mixed bag — the restaurant pack holds both "Noch einen Kaffee?" and
+      // "Könnten wir auch Leitungswasser bekommen?" — so ranking packs meant a
+      // strong learner got a hard pack and still met its easy sentences, while
+      // a hard sentence inside an easy pack was never brought forward.
       //
-      // It is a RANKING over every pack with unseen content, never a filter.
-      // Once the harder packs have no fresh material left they drop out as
-      // candidates and the easier ones are what remain — so being good at
-      // German changes the order you meet it in and nothing else. Ties keep
-      // curriculum order so nothing shuffles at random.
+      // Still a RANKING over everything unseen, never a filter: items leave the
+      // pool only by being learned, so the easy material is still waiting
+      // however good you get. Ties keep curriculum order.
       const ability = computeAbility(reviewState as any);
-      const grades = loadGradeStore(user);
-      const knownInPart = (pId: string, part: Part) => {
-        const phrases = part.phrases ?? [];
-        let known = 0;
-        phrases.forEach((_p, index) => {
-          if (statusForId(grades, `${pId}-phrase-${index}`) === "known") known += 1;
-        });
-        return { known, total: phrases.length };
-      };
-      const orderedKeys = keys
-        .map((pId, index) => {
-          const part = apiParts[pId];
-          const progress = part ? knownInPart(pId, part) : { known: 0, total: 0 };
-          return {
-            pId,
-            index,
-            score: lessonPriority({
-              ability: ability.band,
-              commonality: packCommonality(part, corpusIndex),
-              known: progress.known,
-              level: part?.level,
-              total: progress.total,
-            }),
-          };
-        })
-        .sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index))
-        .map((entry) => entry.pId);
-
       let freshId: string | undefined;
       let freshSteps: any[] = [];
 
@@ -620,17 +594,48 @@ export default function GermanLearningLab() {
         }
       }
 
-      for (const pId of orderedKeys) {
+      // Score every unseen sentence in the course, then take the best few.
+      const candidates: { pId: string; index: number; score: number; step: any }[] = [];
+      keys.forEach((pId, packIndex) => {
         const p = apiParts[pId];
-        if (!p) continue;
+        if (!p) return;
         const s = buildSession({ ...p, partKey: pId }, [], reviewState, 0);
-        const fresh = s.filter(
-          (st: any) => (st.type === "sentence" && !st.review) || st.type === "dialogue"
-        );
-        if (fresh.length) { freshId = pId; freshSteps = fresh; break; }
+        s.forEach((st: any, stepIndex: number) => {
+          if (st.type !== "sentence" || st.review) return;
+          const text = String(st.item?.de ?? "");
+          candidates.push({
+            pId,
+            index: packIndex * 1000 + stepIndex,
+            score: itemPriority({
+              ability: ability.band,
+              commonality: sentenceCommonality(text, corpusIndex),
+              difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
+            }),
+            step: st,
+          });
+        });
+      });
+      candidates.sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index));
+
+      if (candidates.length) {
+        const lead = candidates[0];
+        freshId = lead.pId;
+        // The lead sentence is the best-scoring one anywhere. The rest of the
+        // lesson prefers its pack-mates so a lesson still reads as being about
+        // something, rather than three unrelated sentences from three topics.
+        const sameTopic = candidates.filter((c) => c.pId === lead.pId);
+        const chosen = [...sameTopic, ...candidates.filter((c) => c.pId !== lead.pId)]
+          .slice(0, NEW_PER_LESSON_TARGET);
+        const dialogues = buildSession(
+          { ...apiParts[lead.pId], partKey: lead.pId },
+          [],
+          reviewState,
+          0
+        ).filter((st: any) => st.type === "dialogue");
+        freshSteps = [...chosen.map((c) => c.step), ...dialogues];
       }
 
-      // 3 new (from the first pack with fresh content) + 3 old due reviews
+      // 3 new (the best-scoring unseen sentences) + 3 old due reviews
       // (mostly recent, one older — see pickReviews). New first, then old.
       const reviews = pickReviews(globalReviews, OLD_PER_LESSON);
       const reviewDe = new Set(reviews.map((r: any) => r.item.de));

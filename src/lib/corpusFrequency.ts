@@ -129,15 +129,3 @@ export function sentenceCommonality(sentence: string, index: CorpusIndex | null)
   const mean = ranks.reduce((a, b) => a + b, 0) / ranks.length;
   return Math.round(mean * 0.6 + worst * 0.4);
 }
-
-/** Average commonality of a pack's phrases. Lower = teach sooner. */
-export function packCommonality(
-  part: { phrases?: { de?: string }[] } | undefined,
-  index: CorpusIndex | null
-): number {
-  const phrases = part?.phrases ?? [];
-  if (!phrases.length) return 3000;
-  const sample = phrases.slice(0, 40);   // enough to characterise a pack
-  const total = sample.reduce((sum, p) => sum + sentenceCommonality(p?.de ?? "", index), 0);
-  return Math.round(total / sample.length);
-}

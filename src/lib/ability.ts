@@ -4,10 +4,14 @@ import type { GradeStore } from "@/lib/activity";
  * A personal read on how strong a learner is, used to decide what "Continue
  * learning" reaches for first.
  *
- * The important constraint: this only ever changes the ORDER in which packs are
- * served, never which packs exist. A strong learner gets the harder material
- * sooner; the easier packs stay in the queue and are served once the harder ones
+ * The important constraint: this only ever changes the ORDER in which material
+ * is served, never what exists. A strong learner meets the harder sentences
+ * sooner; the easier ones stay in the queue and are served once the harder ones
  * run out. Nothing in the language can be skipped by being good at it.
+ *
+ * Scoring is per SENTENCE, not per pack — 73 of the 97 packs contain more than
+ * one difficulty, so ranking whole packs meant a hard sentence inside an easy
+ * pack could never be brought forward.
  */
 
 export type AbilityBand = "easy" | "medium" | "hard" | "expert";
@@ -94,51 +98,67 @@ export function bandForLevel(level: string | undefined): AbilityBand {
  * which merely feels quick.
  */
 export function packAffinity(ability: AbilityBand, level: string | undefined): number {
-  const want = BAND_ORDER.indexOf(ability);
-  const has = BAND_ORDER.indexOf(bandForLevel(level));
-  const gap = has - want;
-  return gap >= 0 ? gap * 2 : -gap;
+  return bandDistance(ability, bandForLevel(level));
 }
 
 /**
- * What to teach next: one number per pack, lowest served first.
+ * How badly one difficulty band suits a learner at another. 0 is a perfect fit.
  *
- * Three things decide it, in this order of weight:
- *
- *   commonality (60%) — what native speakers actually say, so the everyday
- *     language comes first whoever you are. This dominates on purpose.
- *   difficulty fit (30%) — nudges a strong learner toward material that will
- *     stretch them, and keeps a beginner off C1 text.
- *   what you already know (10%) — a pack you have started outranks one you
- *     have not, so half-finished topics get closed out.
- *
- * It is a RANKING over every pack that still has unseen content, never a
- * filter. Once the harder packs run out of fresh material they stop being
- * candidates, and what remains is the easier ones — so finishing the hard
- * material cannot let you skip the easy material, it only changes the order
- * you meet it in.
+ * Asymmetric on purpose: material above the learner costs double what material
+ * below them costs, because being out of your depth stops you dead and being
+ * under-stretched only wastes a little time.
  */
-export function lessonPriority(input: {
-  /** From packCommonality — roughly 300 (everyday) to 5000 (rare). */
+export function bandDistance(ability: AbilityBand, item: AbilityBand): number {
+  const gap = BAND_ORDER.indexOf(item) - BAND_ORDER.indexOf(ability);
+  return gap >= 0 ? gap * 2 : -gap;
+}
+
+
+/**
+ * The difficulty of one sentence, rather than of the pack it happens to sit in.
+ *
+ * A pack is a mixed bag: the restaurant pack holds both "Noch einen Kaffee?" and
+ * "Könnten wir auch Leitungswasser bekommen?". Scoring only at pack level meant
+ * a strong learner got a hard PACK and still met its easy sentences, while a
+ * genuinely hard sentence sitting in an easy pack was never brought forward.
+ *
+ * CEFR is the frame, length the tie-breaker within it — a long sentence really
+ * is harder to produce than a short one at the same level.
+ */
+export function itemDifficulty(level: string | undefined, wordCount: number): AbilityBand {
+  const cefr = /C[12]/i.test(String(level ?? "")) ? 4
+    : /B2/i.test(String(level ?? "")) ? 3
+      : /B1/i.test(String(level ?? "")) ? 2 : 1;
+  const long = wordCount >= 8;
+  if (cefr >= 4) return "expert";
+  if (cefr === 3) return long ? "expert" : "hard";
+  if (cefr === 2) return long ? "hard" : "medium";
+  return long ? "medium" : "easy";
+}
+
+/**
+ * What to teach next, scored per SENTENCE. Lowest is served first.
+ *
+ * Same three ingredients as before and the same weighting — commonality leads,
+ * difficulty tilts, familiarity nudges — but applied to the individual item, so
+ * a hard sentence is prioritised for a strong learner wherever it lives.
+ *
+ * Still a ranking over everything unseen, never a filter: items only leave the
+ * pool by being learned, so the easy material remains waiting however good you
+ * get.
+ */
+export function itemPriority(input: {
+  /** From sentenceCommonality — roughly 300 (everyday) to 5000 (rare). */
   commonality: number;
-  level: string | undefined;
+  difficulty: AbilityBand;
   ability: AbilityBand;
-  /** Items in the pack already marked known. */
-  known: number;
-  /** Items in the pack in total. */
-  total: number;
 }): number {
   const commonality = Math.min(1, Math.max(0, (input.commonality - 300) / 4700));
-
-  // packAffinity returns 0 for a perfect fit and up to ~6 for a bad one.
-  const misfit = Math.min(1, packAffinity(input.ability, input.level) / 6);
-
-  // Started-but-unfinished sorts ahead of untouched; finished sorts last of all
-  // (it will have no fresh content anyway, this is just belt and braces).
-  const progress = input.total > 0 ? input.known / input.total : 0;
-  const stickiness = progress > 0 && progress < 1 ? 0 : progress >= 1 ? 1 : 0.5;
-
-  return commonality * 0.6 + misfit * 0.3 + stickiness * 0.1;
+  // bandDistance carries the same rule the pack-level scorer used: overshooting
+  // costs more than undershooting, because a beginner handed a C1 sentence is
+  // stuck while a strong learner handed an easy one merely breezes it.
+  const misfit = Math.min(1, bandDistance(input.ability, input.difficulty) / 6);
+  return commonality * 0.65 + misfit * 0.35;
 }
 
 /** Short, honest description of what the app is doing, for the UI. */
