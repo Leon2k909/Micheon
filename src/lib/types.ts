@@ -28,6 +28,12 @@ export interface Phrase {
   /** Shorter colloquial form people actually say out loud, for longer phrases
    *  (e.g. "Ich weiß es nicht" → "Weiß nicht"). Omitted when already short. */
   short?: string;
+  /** English for `short`, and ONLY what the short form actually says.
+   *  "Zu teuer." means "Too expensive." — not "I don't want to buy that, it's
+   *  too expensive", which is the full sentence's meaning. Without this the
+   *  short form is not taught at all, because pairing it with the long
+   *  sentence's English would define it as something it does not say. */
+  shortEn?: string;
   /** The SITUATION that triggers this phrase, for sentences whose moment isn't
    *  obvious from the words. `use` explains the language ("ausfallen: fällt
    *  klein aus = runs small"); `when` explains when you'd open your mouth

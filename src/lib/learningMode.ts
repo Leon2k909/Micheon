@@ -6,7 +6,10 @@ export type LearningMode = "conversation" | "exam";
 
 type PhraseForm = {
   de: string;
+  en?: string;
   short?: string;
+  /** English for the short form. Without it the short form cannot be taught. */
+  shortEn?: string;
   long?: string;
 };
 
@@ -37,6 +40,7 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   const original = phrase.de.trim();
   const spoken = phrase.short?.trim() || original;
   const standard = phrase.long?.trim() || original;
+  const spokenEn = phrase.shortEn?.trim();
 
   if (mode === "exam") {
     return {
@@ -47,9 +51,23 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
     };
   }
 
+  // Swapping the German for its short form while leaving the English describing
+  // the full sentence produces a card that lies: "Zu teuer." shown as meaning
+  // "I don't want to buy that, it's too expensive." The learner is then asked to
+  // produce one from the other, and graded against a sentence that isn't on
+  // screen. So the short form is only taught when it has an English of its own.
+  //
+  // Without one, the full pair is taught and `short` is left in place, which the
+  // usage chip already surfaces as what people actually say — the hint stays,
+  // the mismatched definition goes.
+  if (spoken === original || !spokenEn) {
+    return { ...phrase, long: undefined };
+  }
+
   return {
     ...phrase,
     de: spoken,
+    en: spokenEn,
     short: undefined,
     long: standard !== spoken ? standard : undefined,
   };
