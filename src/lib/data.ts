@@ -6072,7 +6072,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich wünsche dir gute Besserung.", en: "I hope you get better soon.", use: "The fuller, warmer version of \"Gute Besserung!\" — worth having when a bare exclamation would sound too brisk. \"wünschen\" takes a dative person and an accusative thing." },
       { de: "Pass gut auf dich auf, ja?", en: "Look after yourself, alright?", use: "The 'ja?' on the end turns an instruction into affection. 'aufpassen auf' + accusative, and the verb splits around it." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Booking with the surgery", lines: [
+        { speaker: "A", de: "Praxis Dr. Weber, guten Tag.", en: "Dr Weber's surgery, hello." },
+        { speaker: "B", de: "Guten Tag, ich hätte gern einen Termin.", en: "Hello, I'd like an appointment." },
+        { speaker: "A", de: "Waren Sie schon einmal bei uns?", en: "Have you been to us before?" },
+        { speaker: "B", de: "Nein, ich bin neu hier.", en: "No, I'm new here." },
+        { speaker: "A", de: "Geht Donnerstag um halb zehn?", en: "Does Thursday at half nine work?" },
+        { speaker: "B", de: "Ja, das passt gut. Vielen Dank.", en: "Yes, that suits me. Thank you." },
+      ]},
+    ],
   },
   part107: {
     label: "Part 107", level: "B1", theme: "Work, colleagues and the day job",
@@ -6099,7 +6108,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Meine Tätigkeit hat sich stark verändert.", en: "My role has changed a lot.", use: "'Tätigkeit' is what you actually do, as opposed to 'Stelle', the post you hold." },
       { de: "Kannst du das bitte an die Kollegen weiterleiten?", en: "Could you forward that to the team, please?", use: "'weiterleiten' — to forward. The button in every German email client." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Monday morning at work", lines: [
+        { speaker: "A", de: "Na, wie war dein Wochenende?", en: "So, how was your weekend?" },
+        { speaker: "B", de: "Ganz ruhig, zum Glück. Und deins?", en: "Nice and quiet, thankfully. And yours?" },
+        { speaker: "A", de: "Auch gut. Hast du kurz Zeit?", en: "Good too. Have you got a minute?" },
+        { speaker: "B", de: "Klar, worum geht es?", en: "Of course, what's it about?" },
+        { speaker: "A", de: "Wir haben einen neuen Auftrag bekommen.", en: "We've landed a new order." },
+        { speaker: "B", de: "Oh, das besprechen wir am besten gleich.", en: "Oh, we're best talking that through right away." },
+      ]},
+    ],
   },
   part108: {
     label: "Part 108", level: "A2-B1", theme: "Getting around and finding your way",
@@ -6126,7 +6144,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Wir treffen uns direkt am Ausgang.", en: "Let's meet right by the exit.", use: "'am Ausgang' with dative for the meeting point. 'Ausgang' out, 'Eingang' in." },
       { de: "Nimm lieber die Bahn, das geht schneller.", en: "Take the train instead, it's quicker.", use: "'lieber' — rather, preferably. 'das geht schneller' rather than 'ist schneller' when you mean the journey." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Asking the way", lines: [
+        { speaker: "A", de: "Entschuldigung, wie komme ich zum Bahnhof?", en: "Excuse me, how do I get to the station?" },
+        { speaker: "B", de: "Immer geradeaus, dann an der Ampel rechts.", en: "Straight on, then right at the lights." },
+        { speaker: "A", de: "Ist das weit von hier?", en: "Is it far from here?" },
+        { speaker: "B", de: "Zu Fuß sind das etwa zehn Minuten.", en: "It's about ten minutes on foot." },
+        { speaker: "A", de: "Super, vielen Dank!", en: "Great, thank you!" },
+        { speaker: "B", de: "Gern. Sie können es nicht verfehlen.", en: "You're welcome. You can't miss it." },
+      ]},
+    ],
   },
   part109: {
     label: "Part 109", level: "A2-B1", theme: "Shopping, ordering and whether it's worth it",
@@ -6153,7 +6180,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Die Lieferung dauert etwa drei Tage.", en: "Delivery takes about three days.", use: "'dauern' — to take time. Never 'nehmen' for duration." },
       { de: "Ich schicke es einfach zurück.", en: "I'll just send it back.", use: "'zurückschicken' separable. 'einfach' here means 'just' in the sense of 'simply'." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "At the till", lines: [
+        { speaker: "A", de: "Haben Sie das auch eine Nummer größer?", en: "Do you have this a size bigger?" },
+        { speaker: "B", de: "Ich schaue mal kurz nach.", en: "I'll just have a look." },
+        { speaker: "A", de: "Danke. Und kann ich es sonst umtauschen?", en: "Thanks. And can I exchange it otherwise?" },
+        { speaker: "B", de: "Ja, innerhalb von vierzehn Tagen.", en: "Yes, within fourteen days." },
+        { speaker: "A", de: "Dann nehme ich es.", en: "I'll take it then." },
+        { speaker: "B", de: "Sehr gern. Zahlen Sie bar oder mit Karte?", en: "Certainly. Are you paying cash or by card?" },
+      ]},
+    ],
   },
   part110: {
     label: "Part 110", level: "B1", theme: "Saying what you think and reacting to people",
@@ -6234,7 +6270,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Er hat ein Kind aus erster Ehe.", en: "He has a child from his first marriage.", use: "'aus erster Ehe' with no article — a fixed phrase you will hear constantly." },
       { de: "Wir kommen alle gut miteinander aus.", en: "We all get on well with each other.", use: "'miteinander auskommen' — to get on together. Separable, and warm without being gushing." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Meeting the family", lines: [
+        { speaker: "A", de: "Das ist mein Sohn, Jonas.", en: "This is my son, Jonas." },
+        { speaker: "B", de: "Hallo Jonas! Wie alt bist du?", en: "Hello Jonas! How old are you?" },
+        { speaker: "A", de: "Er ist sechs. Und das ist meine Tochter.", en: "He's six. And this is my daughter." },
+        { speaker: "B", de: "Sie kommt ganz nach dir.", en: "She takes after you completely." },
+        { speaker: "A", de: "Das sagen alle.", en: "Everyone says that." },
+        { speaker: "B", de: "Ihr seid also zu viert?", en: "So there are four of you?" },
+      ]},
+    ],
   },
   part113: {
     label: "Part 113", level: "A2-B1", theme: "Weather, seasons and being outdoors",
@@ -6399,7 +6444,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Kann ich Ihnen die Tür aufhalten?", en: "Can I hold the door for you?", use: "'aufhalten' — to hold open. Dative person, accusative thing." },
       { de: "Danke, das ist lieb, aber es geht schon.", en: "Thanks, that's kind, but I'm alright.", use: "'es geht schon' — I'm managing. The polite way to turn down help without a fuss." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "At the optician's", lines: [
+        { speaker: "A", de: "Ich brauche eine neue Brille.", en: "I need new glasses." },
+        { speaker: "B", de: "Wann war Ihr letzter Sehtest?", en: "When was your last eye test?" },
+        { speaker: "A", de: "Das ist bestimmt drei Jahre her.", en: "That must be three years ago." },
+        { speaker: "B", de: "Dann machen wir am besten einen neuen.", en: "Then we're best doing a new one." },
+        { speaker: "A", de: "Geht das heute noch?", en: "Is that possible today?" },
+        { speaker: "B", de: "Ja, nehmen Sie sich ruhig Zeit.", en: "Yes, take your time." },
+      ]},
+    ],
   },
   part119: {
     label: "Part 119", level: "A2", theme: "Housework and keeping the place liveable",
@@ -6427,7 +6481,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Lass das ruhig stehen, ich mache das.", en: "Just leave that, I'll do it.", use: "'ruhig' again as 'go ahead and'. 'stehen lassen' — to leave something where it is." },
       { de: "Können wir das morgen machen?", en: "Can we do that tomorrow?", use: "The most useful sentence in this entire pack." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Dividing up the jobs", lines: [
+        { speaker: "A", de: "Machst du das Bad oder mache ich das?", en: "Are you doing the bathroom or am I?" },
+        { speaker: "B", de: "Ich räume erst mal auf.", en: "I'll tidy up first." },
+        { speaker: "A", de: "Gut, dann sauge ich kurz durch.", en: "Right, I'll give it a quick hoover then." },
+        { speaker: "B", de: "Der Müll muss auch noch runter.", en: "The rubbish needs taking down too." },
+        { speaker: "A", de: "Das mache ich gleich, versprochen.", en: "I'll do that in a minute, promise." },
+        { speaker: "B", de: "Dann sind wir in einer Stunde fertig.", en: "Then we'll be finished in an hour." },
+      ]},
+    ],
   },
   part120: {
     label: "Part 120", level: "A2-B1", theme: "Post, parcels and packing things up",
@@ -6455,7 +6518,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Der Nachbar hat es angenommen.", en: "The neighbour took it in.", use: "'annehmen' — to accept or take delivery. Extremely common, and the reason for the note in your letterbox." },
       { de: "Bitte nicht knicken.", en: "Do not bend.", use: "'knicken' — to crease or fold. The other phrase printed on envelopes." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "At the parcel counter", lines: [
+        { speaker: "A", de: "Ich möchte das als Päckchen schicken.", en: "I'd like to send this as a small parcel." },
+        { speaker: "B", de: "Ist etwas Zerbrechliches drin?", en: "Is there anything breakable inside?" },
+        { speaker: "A", de: "Ja, Vorsicht, das ist aus Glas.", en: "Yes, careful, it's glass." },
+        { speaker: "B", de: "Dann kleben wir einen Hinweis drauf.", en: "Then we'll put a label on it." },
+        { speaker: "A", de: "Wie lange dauert der Versand?", en: "How long does shipping take?" },
+        { speaker: "B", de: "Etwa drei Tage, je nach Ziel.", en: "About three days, depending on the destination." },
+      ]},
+    ],
   },
   part121: {
     label: "Part 121", level: "B1", theme: "Running a small business and getting seen",
@@ -6834,7 +6906,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Reden wir morgen weiter?", en: "Shall we carry on tomorrow?", use: "'weiterreden' split around the sentence. Ends a conversation without ending the subject." },
       { de: "Danke, dass du es angesprochen hast.", en: "Thanks for bringing it up.", use: "'ansprechen' — to raise a subject. Thanking someone for it is disarming and rare." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Clearing the air", lines: [
+        { speaker: "A", de: "Hast du kurz Zeit? Ich wollte etwas klarstellen.", en: "Have you got a minute? I wanted to set something straight." },
+        { speaker: "B", de: "Klar, setz dich.", en: "Of course, sit down." },
+        { speaker: "A", de: "Ich gebe zu, das war mein Fehler.", en: "I admit that was my fault." },
+        { speaker: "B", de: "Danke, dass du es ansprichst.", en: "Thanks for bringing it up." },
+        { speaker: "A", de: "So war das nicht gemeint.", en: "That isn't how it was meant." },
+        { speaker: "B", de: "Schon gut. Für mich ist das erledigt.", en: "It's fine. As far as I'm concerned that's settled." },
+      ]},
+    ],
   },
   part135: {
     label: "Part 135", level: "A2-B1", theme: "When the computer plays up",
@@ -6862,7 +6943,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Keine Ahnung, was das war.", en: "No idea what that was.", use: "'keine Ahnung' — no idea. The honest end to most computer problems." },
       { de: "Schick mir mal einen Screenshot.", en: "Send me a screenshot.", use: "'Screenshot' is used as-is. 'mal' keeps the request light." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Talking someone through it", lines: [
+        { speaker: "A", de: "Bei mir funktioniert nichts mehr.", en: "Nothing works on mine any more." },
+        { speaker: "B", de: "Hast du es mal neu gestartet?", en: "Have you tried restarting it?" },
+        { speaker: "A", de: "Ja, zweimal. Es lädt und lädt.", en: "Yes, twice. It just keeps loading." },
+        { speaker: "B", de: "Kommt eine Fehlermeldung?", en: "Is there an error message?" },
+        { speaker: "A", de: "Moment, ich schicke dir einen Screenshot.", en: "Hang on, I'll send you a screenshot." },
+        { speaker: "B", de: "Perfekt, dann schaue ich mal drauf.", en: "Perfect, I'll have a look then." },
+      ]},
+    ],
   },
   part136: {
     label: "Part 136", level: "A2-B1", theme: "Du or Sie, and German manners",
@@ -6889,7 +6979,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Danke für die Einladung.", en: "Thanks for the invitation.", use: "Said on arrival, not just on leaving. Germans expect it at the door." },
       { de: "Ich melde mich, sobald ich zu Hause bin.", en: "I'll message when I'm home.", use: "'sobald' sends the verb to the end. Saying it is ordinary politeness in Germany." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "Crossing over to du", lines: [
+        { speaker: "A", de: "Wir arbeiten jetzt schon ein Jahr zusammen.", en: "We've been working together a year now." },
+        { speaker: "B", de: "Stimmt, das ist verrückt.", en: "True, that's mad." },
+        { speaker: "A", de: "Können wir uns nicht duzen?", en: "Shouldn't we use du?" },
+        { speaker: "B", de: "Sehr gern. Ich bin die Anna.", en: "Gladly. I'm Anna." },
+        { speaker: "A", de: "Freut mich, Anna. Ich bin Tom.", en: "Nice to meet you, Anna. I'm Tom." },
+        { speaker: "B", de: "Auf uns dann. Prost!", en: "To us, then. Cheers!" },
+      ]},
+    ],
   },
   part137: {
     label: "Part 137", level: "A1-A2", theme: "The body, head to toe",
@@ -6970,7 +7069,16 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Wir sind endlich angekommen.", en: "We've finally arrived.", use: "'ankommen' both literally and in the sense of feeling settled." },
       { de: "Kommt doch mal vorbei!", en: "Do come round sometime!", use: "'vorbeikommen' separable, with 'doch mal' making it a warm open invitation rather than a plan." },
     ],
-    dialogues: [],
+    dialogues: [
+      { title: "A viewing", lines: [
+        { speaker: "A", de: "Schön, dass Sie da sind. Kommen Sie rein.", en: "Good to see you. Do come in." },
+        { speaker: "B", de: "Danke. Wie viele Quadratmeter hat die Wohnung?", en: "Thanks. How many square metres is the flat?" },
+        { speaker: "A", de: "Zweiundsechzig, zwei Zimmer, Küche, Bad.", en: "Sixty-two, two rooms, kitchen, bathroom." },
+        { speaker: "B", de: "Ist eine Einbauküche drin?", en: "Is there a fitted kitchen?" },
+        { speaker: "A", de: "Ja, die bleibt drin.", en: "Yes, that stays." },
+        { speaker: "B", de: "Und ab wann wäre sie frei?", en: "And when would it be available from?" },
+      ]},
+    ],
   },
   part140: {
     label: "Part 140", level: "A2-B1", theme: "Trains, the coast and getting away",
