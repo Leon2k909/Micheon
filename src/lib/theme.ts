@@ -63,6 +63,26 @@ function emitThemePreferences() {
   );
 }
 
+/**
+ * Follow a theme change made in ANOTHER window.
+ *
+ * The desktop pet lives in its own BrowserWindow, running the same app. It read
+ * the theme once at boot and never again, so changing theme in the main window
+ * left the speech bubble painted in the old one — most visibly when the two
+ * themes disagree about what a surface is, which is exactly what a new preset
+ * does. localStorage is shared between the windows and fires a storage event in
+ * the ones that did not write it, which is the same mechanism the pet's own
+ * settings already use.
+ */
+export function watchStoredThemePreferences(): () => void {
+  if (typeof window === "undefined") return () => {};
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === KEY || event.key === PRESET_KEY) applyStoredThemePreferences();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => window.removeEventListener("storage", onStorage);
+}
+
 /** Repaint and announce the stored pair after shared-profile hydration. */
 export function applyStoredThemePreferences() {
   const theme = getTheme();

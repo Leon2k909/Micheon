@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState, useEffect } from "react";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
-import { applyStoredThemePreferences, getTheme } from "./lib/theme";
+import { applyStoredThemePreferences, getTheme, watchStoredThemePreferences } from "./lib/theme";
 import { applyCustomTheme } from "./lib/customTheme";
 import { MicheonLogo } from "./components/MicheonLogo";
 import { UpdateBanner } from "./components/UpdateBanner";
@@ -52,6 +52,11 @@ function MicheonApp() {
       });
     });
   }, []);
+
+  // The pet overlay is a second window running this same app. Without this it
+  // reads the theme once at boot and then keeps painting in it forever, so the
+  // speech bubble ends up in a different theme from the app that owns it.
+  useEffect(() => watchStoredThemePreferences(), []);
 
   // Hydrate the shared desktop/web progress store before creating any default profile.
   useEffect(() => {
