@@ -507,19 +507,24 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
 
 // Prototype-style stage route: numbered squares with labels on a progress
 // line. Clicking a stage jumps to it (same behaviour the dots had).
-function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", onClickPhase }: {
+function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase }: {
   current: Phase;
   withFrench?: boolean;
   targetLabel?: string;
   meaningLabel?: string;
+  locked?: boolean;
   onClickPhase?: (p: Phase) => void;
 }) {
   const allPhases: Phase[] = withFrench ? BILINGUAL_PHASES : [...PHASES];
   const idx = allPhases.indexOf(current);
   const n = allPhases.length;
+  const activeStageRef = useRef<HTMLButtonElement>(null);
   const half = 100 / (n * 2); // center of first/last column, in %
   // Fill runs from the first stage's center to the current stage's center.
   const fillPct = n > 1 ? (Math.max(idx, 0) / (n - 1)) * 100 : 0;
+  useEffect(() => {
+    activeStageRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [current]);
   return (
     <div className="fs-stagebar">
       <div className="fs-stagemeta">
@@ -537,11 +542,13 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
           {allPhases.map((p, i) => (
             <button
               key={p}
+              ref={i === idx ? activeStageRef : undefined}
               type="button"
               title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
               aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
               aria-current={i === idx ? "step" : undefined}
               onClick={() => onClickPhase?.(p)}
+              disabled={locked}
               className={cn(
                 "fs-stagebtn",
                 isClosedBookPhase(p) && "is-recall",
@@ -969,6 +976,22 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [sayInput, setSayInput] = useState("");
   const [sayChecked, setSayChecked] = useState(false);
   const sayRef = useRef<HTMLInputElement>(null);
+  const [recallTargetInput, setRecallTargetInput] = useState("");
+  const [recallTargetChecked, setRecallTargetChecked] = useState(false);
+  const recallTargetRef = useRef<HTMLInputElement>(null);
+  const [recallMeaningInput, setRecallMeaningInput] = useState("");
+  const [recallMeaningChecked, setRecallMeaningChecked] = useState(false);
+  const recallMeaningRef = useRef<HTMLInputElement>(null);
+  const [recallBothTargetInput, setRecallBothTargetInput] = useState("");
+  const [recallBothMeaningInput, setRecallBothMeaningInput] = useState("");
+  const [recallBothChecked, setRecallBothChecked] = useState(false);
+  const recallBothTargetRef = useRef<HTMLInputElement>(null);
+  const recallBothMeaningRef = useRef<HTMLInputElement>(null);
+  const [recallTransitionPending, setRecallTransitionPending] = useState(false);
+  const recallTransitionPendingRef = useRef(false);
+  const recallCompletionScheduledRef = useRef(false);
+  const recallCompletionTimerRef = useRef<number | null>(null);
+  const recallAdvanceTokenRef = useRef(0);
   const [frInput, setFrInput] = useState("");
   const [frChecked, setFrChecked] = useState(false);
   const [frAttempts, setFrAttempts] = useState(0);
@@ -996,6 +1019,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useStickyFocus(enInputRef, (phase === "Translate" || phase === "TranslateAgain") && translationMode === "type");
   useStickyFocus(gapInputRef, phase === "Gap");
   useStickyFocus(sayRef, phase === "SpeakAll");
+  useStickyFocus(recallTargetRef, phase === "RecallTarget");
+  useStickyFocus(recallMeaningRef, phase === "RecallMeaning");
   useStickyFocus(frInputRef, phase === "French");
   // Speech recognition has two backends:
   //  - Website: the browser's webkitSpeechRecognition (instant, no download).
@@ -1060,6 +1085,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
+  const recallTargetResult = useMemo(
+    () => matchEither(recallTargetInput),
+    [recallTargetInput, matchEither]
+  );
+  const recallBothTargetResult = useMemo(
+    () => matchEither(recallBothTargetInput),
+    [recallBothTargetInput, matchEither]
+  );
   // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
   // the answer is German — each direction gets its own synonym/coach matcher.
   const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
@@ -1086,6 +1119,17 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     () => (learnEn ? matchGermanSentence : matchEnglish)(translationAnswer, displayEnglish),
     [translationAnswer, displayEnglish, learnEn]
   );
+  const recallMeaningResult = useMemo(
+    () => (learnEn ? matchGermanSentence : matchEnglish)(recallMeaningInput, displayEnglish),
+    [recallMeaningInput, displayEnglish, learnEn]
+  );
+  const recallBothMeaningResult = useMemo(
+    () => (learnEn ? matchGermanSentence : matchEnglish)(recallBothMeaningInput, displayEnglish),
+    [recallBothMeaningInput, displayEnglish, learnEn]
+  );
+  const meaningLang = learnEn
+    ? "de-DE"
+    : resolveEnglishVariant(englishVariant) === "american" ? "en-US" : "en-GB";
   // Gap stage: the typed answer just needs to contain each missing word
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
@@ -1146,6 +1190,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     }
     if (phase === "Gap")       setTimeout(() => gapInputRef.current?.focus(), 100);
     if (phase === "SpeakAll")  setTimeout(() => sayRef.current?.focus(), 100);
+    if (phase === "RecallTarget") setTimeout(() => recallTargetRef.current?.focus(), 100);
+    if (phase === "RecallMeaning") setTimeout(() => recallMeaningRef.current?.focus(), 100);
+    if (phase === "RecallBoth") setTimeout(() => recallBothTargetRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
     if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
   }, [phase, translationMode]);
@@ -1217,6 +1264,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // clear it when the round begins — otherwise it shows the previous answer as
   // already-correct.
   useEffect(() => {
+    recallAdvanceTokenRef.current += 1;
+    if (recallCompletionTimerRef.current !== null) {
+      window.clearTimeout(recallCompletionTimerRef.current);
+      recallCompletionTimerRef.current = null;
+    }
+    recallTransitionPendingRef.current = false;
+    setRecallTransitionPending(false);
+    recallCompletionScheduledRef.current = false;
     if (phase === "MeaningPick") {
       setMeaningChoice(null);
       setMeaningChecked(false);
@@ -1257,7 +1312,27 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       draggedOrderIndex.current = null;
     }
     if (phase === "SpeakAll") { setSayInput(""); setSayChecked(false); }
+    if (phase === "RecallTarget") {
+      setRecallTargetInput("");
+      setRecallTargetChecked(false);
+    }
+    if (phase === "RecallMeaning") {
+      setRecallMeaningInput("");
+      setRecallMeaningChecked(false);
+    }
+    if (phase === "RecallBoth") {
+      setRecallBothTargetInput("");
+      setRecallBothMeaningInput("");
+      setRecallBothChecked(false);
+    }
   }, [phase, item.de]);
+
+  useEffect(() => () => {
+    recallAdvanceTokenRef.current += 1;
+    if (recallCompletionTimerRef.current !== null) {
+      window.clearTimeout(recallCompletionTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (phase !== "MeaningPick") return;
@@ -1340,12 +1415,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   }, [phase, listeningChecked, listeningChoices, item.de]);
 
   const goBack = () => {
+    if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
     const order: Phase[] = hasFr ? BILINGUAL_PHASES : [...PHASES];
     const prev = order[order.indexOf(phase) - 1];
     if (prev) setPhase(prev);
   };
 
-  const goToPhase = (p: Phase) => setPhase(p);
+  const goToPhase = (p: Phase) => {
+    if (!recallTransitionPendingRef.current && !recallCompletionScheduledRef.current) setPhase(p);
+  };
 
   // Auto-advance: once the typed answer is strictly correct (no lenient/typo
   // pass), confirm it automatically — no Check press needed.
@@ -1373,6 +1451,39 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "SpeakAll" && !sayChecked && sayInput.trim() && sayResult.ok && !sayResult.spellingNote) checkSay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sayInput]);
+  useEffect(() => {
+    if (
+      phase === "RecallTarget"
+      && !recallTargetChecked
+      && recallTargetInput.trim()
+      && recallTargetResult.ok
+      && !recallTargetResult.spellingNote
+    ) checkRecallTarget();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recallTargetInput]);
+  useEffect(() => {
+    if (
+      phase === "RecallMeaning"
+      && !recallMeaningChecked
+      && recallMeaningInput.trim()
+      && recallMeaningResult.ok
+      && !recallMeaningResult.spellingNote
+    ) checkRecallMeaning();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recallMeaningInput]);
+  useEffect(() => {
+    if (
+      phase === "RecallBoth"
+      && !recallBothChecked
+      && recallBothTargetInput.trim()
+      && recallBothMeaningInput.trim()
+      && recallBothTargetResult.ok
+      && recallBothMeaningResult.ok
+      && !recallBothTargetResult.spellingNote
+      && !recallBothMeaningResult.spellingNote
+    ) checkRecallBoth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recallBothTargetInput, recallBothMeaningInput]);
   useEffect(() => {
     if (phase === "Order" && orderTouched && !orderChecked && orderIsCorrect) checkOrder();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1414,6 +1525,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   // After the English translation: go to the French phase if active, else finish.
   const finishOrFrench = () => { if (hasFr) setPhase("French"); else onNext(); };
+
+  const noteRecallStruggle = () => {
+    if (grade === "struggle") return;
+    setGrade("struggle");
+    if (item?.id) onGradeItem?.(item.id, "struggle");
+  };
 
   const checkEnAnswer = () => {
     if (!translationAnswer.trim() || enChecked) return;
@@ -1571,15 +1688,84 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     reactToAnswer(sayResult.ok, !!sayResult.phrasingNote);
     if (sayResult.ok) {
       tts(item.de, 0.88, targetLang);
-      setTimeout(onNext, 900); // correct → finish; the item can level up
-    } else if (item?.id) {
-      // Failed the final written recall: mark a struggle so the lesson-completion
-      // pass does NOT level it up — it stays in practice and keeps coming back.
-      setGrade("struggle");
-      onGradeItem?.(item.id, "struggle");
+      setTimeout(advanceOrFinish, 900);
     }
   };
   const retrySay = () => { setSayInput(""); setSayChecked(false); setTimeout(() => sayRef.current?.focus(), 50); };
+
+  const checkRecallTarget = () => {
+    if (!recallTargetInput.trim() || recallTargetChecked) return;
+    setRecallTargetChecked(true);
+    reactToAnswer(recallTargetResult.ok, !!recallTargetResult.phrasingNote);
+    if (recallTargetResult.ok) {
+      recallTransitionPendingRef.current = true;
+      setRecallTransitionPending(true);
+      const advanceToken = ++recallAdvanceTokenRef.current;
+      void tts(item.de, 0.88, targetLang).finally(() => {
+        if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
+      });
+    } else {
+      noteRecallStruggle();
+    }
+  };
+  const retryRecallTarget = () => {
+    setRecallTargetInput("");
+    setRecallTargetChecked(false);
+    setTimeout(() => recallTargetRef.current?.focus(), 50);
+  };
+
+  const checkRecallMeaning = () => {
+    if (!recallMeaningInput.trim() || recallMeaningChecked) return;
+    setRecallMeaningChecked(true);
+    reactToAnswer(recallMeaningResult.ok, !!recallMeaningResult.phrasingNote);
+    if (recallMeaningResult.ok) {
+      recallTransitionPendingRef.current = true;
+      setRecallTransitionPending(true);
+      const advanceToken = ++recallAdvanceTokenRef.current;
+      void tts(shownEnglish, 0.88, meaningLang).finally(() => {
+        if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
+      });
+    } else {
+      noteRecallStruggle();
+    }
+  };
+  const retryRecallMeaning = () => {
+    setRecallMeaningInput("");
+    setRecallMeaningChecked(false);
+    setTimeout(() => recallMeaningRef.current?.focus(), 50);
+  };
+
+  const checkRecallBoth = () => {
+    if (
+      !recallBothTargetInput.trim()
+      || !recallBothMeaningInput.trim()
+      || recallBothChecked
+      || recallCompletionScheduledRef.current
+    ) return;
+    setRecallBothChecked(true);
+    const bothOk = recallBothTargetResult.ok && recallBothMeaningResult.ok;
+    reactToAnswer(bothOk);
+    if (bothOk) {
+      recallCompletionScheduledRef.current = true;
+      recallCompletionTimerRef.current = window.setTimeout(() => {
+        recallCompletionTimerRef.current = null;
+        if (recallCompletionScheduledRef.current) onNext();
+      }, 700);
+    } else {
+      noteRecallStruggle();
+    }
+  };
+  const retryRecallBoth = () => {
+    if (recallCompletionTimerRef.current !== null) {
+      window.clearTimeout(recallCompletionTimerRef.current);
+      recallCompletionTimerRef.current = null;
+    }
+    setRecallBothTargetInput("");
+    setRecallBothMeaningInput("");
+    setRecallBothChecked(false);
+    recallCompletionScheduledRef.current = false;
+    setTimeout(() => recallBothTargetRef.current?.focus(), 50);
+  };
 
   const checkFrAnswer = () => {
     if (!frInput.trim() || frChecked) return;
@@ -1611,11 +1797,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const markKnown = () => {
+    if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
     setGrade("know");
     if (item?.id) onGradeItem?.(item.id, "know");
     onNext();
   };
   const markStruggle = () => {
+    if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
     setGrade("struggle");
     if (item?.id) onGradeItem?.(item.id, "struggle");
   };
@@ -1648,7 +1836,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
       {/* Stage route (full-bleed inside the card) */}
-      <StageRoute current={phase} withFrench={hasFr} onClickPhase={goToPhase} />
+      <StageRoute
+        current={phase}
+        withFrench={hasFr}
+        targetLabel={targetLabel}
+        meaningLabel={meaningLabel}
+        locked={recallTransitionPending || recallCompletionScheduledRef.current}
+        onClickPhase={goToPhase}
+      />
 
       <div className="fs-card-body space-y-4">
         {/* Heading: eyebrow + stage title + Hear it / grade pills */}
@@ -1656,10 +1851,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <div>
             <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
             <h1 className="fs-h1">
-              {ui(phase === "Translate" ? `Write this in ${meaningLabel}` : phaseHeading(phase, hasFr))}
+              {ui(phase === "Translate" ? `Write this in ${meaningLabel}` : phaseHeading(phase, hasFr, targetLabel, meaningLabel))}
             </h1>
             <p className="fs-sub">
-              {hasFr ? "Read, listen, choose, say, then type it in German and French." : ui("Read, listen, choose, say, type, then translate.")}
+              {phase === "RecallTarget"
+                ? ui("Use the meaning cue to recall the full target sentence.")
+                : phase === "RecallMeaning"
+                  ? ui("Use the target sentence to recall its full meaning.")
+                  : phase === "RecallBoth"
+                    ? ui("No answers are shown now. Type both sentences from memory.")
+                    : hasFr
+                      ? "Read, listen, choose, say, then type it in German and French."
+                      : ui("Read, listen, choose, say, type, then translate.")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -1667,6 +1870,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
               className="grade-btn grade-btn-known"
               onClick={markKnown}
+              disabled={recallTransitionPending || recallCompletionScheduledRef.current}
               type="button"
             >
               {ui("Know it")}
@@ -1676,12 +1880,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
               className="grade-btn grade-btn-struggle"
               onClick={markStruggle}
+              disabled={recallTransitionPending || recallCompletionScheduledRef.current}
               type="button"
             >
               {ui("Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
-            {phase !== "MeaningPick" && phase !== "ListenPick" && phase !== "MissingWord" && (
+            {phase !== "MeaningPick"
+              && phase !== "ListenPick"
+              && phase !== "MissingWord"
+              && phase !== "RecallTarget"
+              && phase !== "RecallBoth"
+              && (
               <button
                 className={cn("fs-listen", ttsOn && "is-speaking")}
                 onClick={() => tts(item.de, 0.82, targetLang)}
@@ -1698,7 +1908,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         </div>
 
         {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
-        {phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && (
+        {phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && !isClosedBookPhase(phase) && (
           <UsageChips
             de={learnEn ? item.en : item.de}
             use={item.use}
@@ -1714,7 +1924,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             aus?" leaves you knowing the grammar and still not knowing when to
             open your mouth. Hidden during Translate for the same reason the
             usage note is: it can give the answer away. */}
-        {item.when && phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && (
+        {item.when && phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && !isClosedBookPhase(phase) && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
             <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
@@ -1802,6 +2012,30 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <p>{shownEnglish}</p>
             </div>
           </>
+        ) : phase === "RecallTarget" ? (
+          <div className="fs-board fs-recall-board">
+            <div className="fs-board-top">
+              <span>{ui(meaningLabel)}</span>
+              <small>{ui("Meaning cue — recall the hidden sentence")}</small>
+            </div>
+            <div className="fs-line">{shownEnglish}</div>
+          </div>
+        ) : phase === "RecallMeaning" ? (
+          <div className="fs-board fs-recall-board">
+            <div className="fs-board-top">
+              <span>{ui(targetLabel)}</span>
+              <small>{ui("Sentence cue — recall the hidden meaning")}</small>
+            </div>
+            <div className="fs-line">
+              <TappableSentence text={item.de} lang={targetLang} />
+            </div>
+          </div>
+        ) : phase === "RecallBoth" ? (
+          <div className="fs-closed-recall-cue">
+            <span><EyeOff aria-hidden="true" className="h-4 w-4" /> {ui("Closed-book recall")}</span>
+            <strong>{ui("Recall the phrase you just practised in both languages.")}</strong>
+            <small>{ui("Neither answer is shown unless you choose Hint or Show answer.")}</small>
+          </div>
         ) : hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
@@ -2350,12 +2584,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   autoFocus
                   value={sayInput}
                   onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
-                  onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? onNext() : checkSay())}
+                  onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? advanceOrFinish() : checkSay())}
                   disabled={sayChecked && sayResult.ok}
                 />
                 <MicButton lang={targetLang} onText={t => { setSayInput(t); if (sayChecked) setSayChecked(false); }} inputRef={sayRef} />
-                <button type="button" className="fs-check" onClick={sayChecked && sayResult.ok ? onNext : checkSay}>
-                  <span className="fs-check-label">{sayChecked && sayResult.ok ? ui("Done") : ui("Check")}</span>
+                <button type="button" className="fs-check" onClick={sayChecked && sayResult.ok ? advanceOrFinish : checkSay}>
+                  <span className="fs-check-label">{sayChecked && sayResult.ok ? ui("Next") : ui("Check")}</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
@@ -2389,7 +2623,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onSkip ?? onNext}
+                <Button onClick={advanceOrFinish}
                   className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
                   {ui("Skip")}
                 </Button>
@@ -2398,6 +2632,284 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
+          </motion.div>
+        )}
+
+        {/* CLOSED-BOOK 1: retrieve the target sentence from its meaning. */}
+        {phase === "RecallTarget" && (
+          <motion.div key="recall-target" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui(`Type the ${targetLabel} sentence from memory. The answer stays hidden unless you ask for help.`)}
+            </p>
+            <motion.div animate={shakeControls}>
+              <div className={cn(
+                "fs-panel",
+                recallTargetChecked && recallTargetResult.ok && "is-good",
+                recallTargetChecked && !recallTargetResult.ok && "is-bad"
+              )}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <strong>{ui(`Type in ${targetLabel}`)}</strong>
+                </div>
+                <Input
+                  ref={recallTargetRef}
+                  className="fs-input"
+                  aria-label={ui(`Recall the ${targetLabel} sentence`)}
+                  placeholder={ui(`Type the ${targetLabel} sentence...`)}
+                  autoFocus
+                  value={recallTargetInput}
+                  onChange={(event) => {
+                    setRecallTargetInput(event.target.value);
+                    if (recallTargetChecked) setRecallTargetChecked(false);
+                  }}
+                  onKeyDown={(event) => event.key === "Enter" && checkRecallTarget()}
+                  disabled={recallTargetChecked && recallTargetResult.ok}
+                />
+                <MicButton
+                  lang={targetLang}
+                  onText={(text) => {
+                    setRecallTargetInput(text);
+                    if (recallTargetChecked) setRecallTargetChecked(false);
+                  }}
+                  inputRef={recallTargetRef}
+                />
+                <button
+                  type="button"
+                  className="fs-check"
+                  onClick={checkRecallTarget}
+                  disabled={recallTargetChecked && recallTargetResult.ok}
+                >
+                  <span className="fs-check-label">{ui(recallTargetChecked && recallTargetResult.ok ? "Next" : "Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallTargetRef.current, character, setRecallTargetInput)} /></div>}
+            {!(recallTargetChecked && recallTargetResult.ok) && (
+              <RecallHelp
+                key={`${item.id}-recall-target`}
+                answer={item.de}
+                label={targetLabel}
+                onHelp={noteRecallStruggle}
+              />
+            )}
+            {recallTargetChecked && (
+              <div className={cn("fs-result", recallTargetResult.ok ? "is-good" : "is-bad")} role="status">
+                <strong>{ui(recallTargetResult.ok ? "Recalled correctly" : "Not quite")}</strong>
+                <span>{ui(recallTargetResult.ok ? "The next recall round is ready." : "Try again or use Hint. The answer will stay hidden until you ask for it.")}</span>
+              </div>
+            )}
+            {recallTargetChecked && !recallTargetResult.ok ? (
+              <Button onClick={retryRecallTarget} variant="outline"
+                className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
+              </Button>
+            ) : (
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
+            )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
+          </motion.div>
+        )}
+
+        {/* CLOSED-BOOK 2: retrieve the meaning from the target sentence. */}
+        {phase === "RecallMeaning" && (
+          <motion.div key="recall-meaning" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui(`Type the ${meaningLabel} meaning from memory. The answer stays hidden unless you ask for help.`)}
+            </p>
+            <motion.div animate={shakeControls}>
+              <div className={cn(
+                "fs-panel",
+                recallMeaningChecked && recallMeaningResult.ok && "is-good",
+                recallMeaningChecked && !recallMeaningResult.ok && "is-bad"
+              )}>
+                <div className="fs-prompt">
+                  <span>{learnEn ? "DE" : "EN"}</span>
+                  <strong>{ui(`Type in ${meaningLabel}`)}</strong>
+                </div>
+                <Input
+                  ref={recallMeaningRef}
+                  className="fs-input"
+                  aria-label={ui(`Recall the ${meaningLabel} meaning`)}
+                  placeholder={ui(`Type the ${meaningLabel} meaning...`)}
+                  autoFocus
+                  value={recallMeaningInput}
+                  onChange={(event) => {
+                    setRecallMeaningInput(event.target.value);
+                    if (recallMeaningChecked) setRecallMeaningChecked(false);
+                  }}
+                  onKeyDown={(event) => event.key === "Enter" && checkRecallMeaning()}
+                  disabled={recallMeaningChecked && recallMeaningResult.ok}
+                />
+                <MicButton
+                  lang={meaningLang}
+                  onText={(text) => {
+                    setRecallMeaningInput(text);
+                    if (recallMeaningChecked) setRecallMeaningChecked(false);
+                  }}
+                  inputRef={recallMeaningRef}
+                />
+                <button
+                  type="button"
+                  className="fs-check"
+                  onClick={checkRecallMeaning}
+                  disabled={recallMeaningChecked && recallMeaningResult.ok}
+                >
+                  <span className="fs-check-label">{ui(recallMeaningChecked && recallMeaningResult.ok ? "Next" : "Check")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+            {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallMeaningRef.current, character, setRecallMeaningInput)} /></div>}
+            {!(recallMeaningChecked && recallMeaningResult.ok) && (
+              <RecallHelp
+                key={`${item.id}-recall-meaning`}
+                answer={displayEnglish}
+                label={meaningLabel}
+                onHelp={noteRecallStruggle}
+              />
+            )}
+            {recallMeaningChecked && (
+              <div className={cn("fs-result", recallMeaningResult.ok ? "is-good" : "is-bad")} role="status">
+                <strong>{ui(recallMeaningResult.ok ? "Recalled correctly" : "Not quite")}</strong>
+                <span>{ui(recallMeaningResult.ok ? "One final recall round remains." : "Try again or use Hint. The answer will stay hidden until you ask for it.")}</span>
+              </div>
+            )}
+            {recallMeaningChecked && !recallMeaningResult.ok ? (
+              <Button onClick={retryRecallMeaning} variant="outline"
+                className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
+              </Button>
+            ) : (
+              <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
+            )}
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
+          </motion.div>
+        )}
+
+        {/* CLOSED-BOOK 3: retrieve both sides without either sentence shown. */}
+        {phase === "RecallBoth" && (
+          <motion.div key="recall-both" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {ui("Type both versions of the phrase. Use Hint only if you genuinely cannot retrieve one.")}
+            </p>
+            <div className="fs-recall-pair">
+              <div className="space-y-2">
+                <span className="fs-recall-language">{ui(targetLabel)}</span>
+                <div className={cn(
+                  "fs-panel",
+                  recallBothChecked && recallBothTargetResult.ok && "is-good",
+                  recallBothChecked && !recallBothTargetResult.ok && "is-bad"
+                )}>
+                  <div className="fs-prompt"><span>{learnEn ? "EN" : "DE"}</span><strong>{ui(`Type in ${targetLabel}`)}</strong></div>
+                  <Input
+                    ref={recallBothTargetRef}
+                    className="fs-input"
+                    aria-label={ui(`Recall the ${targetLabel} sentence`)}
+                    placeholder={ui(`Type the ${targetLabel} sentence...`)}
+                    value={recallBothTargetInput}
+                    onChange={(event) => {
+                      setRecallBothTargetInput(event.target.value);
+                      if (recallBothChecked) setRecallBothChecked(false);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") recallBothMeaningRef.current?.focus();
+                    }}
+                    disabled={recallCompletionScheduledRef.current}
+                  />
+                  <MicButton lang={targetLang} onText={(text) => {
+                    setRecallBothTargetInput(text);
+                    if (recallBothChecked) setRecallBothChecked(false);
+                  }} inputRef={recallBothTargetRef} />
+                </div>
+                {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothTargetRef.current, character, setRecallBothTargetInput)} /></div>}
+                {!(recallBothChecked && recallBothTargetResult.ok) && (
+                  <RecallHelp
+                    key={`${item.id}-recall-both-target`}
+                    answer={item.de}
+                    label={targetLabel}
+                    onHelp={noteRecallStruggle}
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <span className="fs-recall-language">{ui(meaningLabel)}</span>
+                <div className={cn(
+                  "fs-panel",
+                  recallBothChecked && recallBothMeaningResult.ok && "is-good",
+                  recallBothChecked && !recallBothMeaningResult.ok && "is-bad"
+                )}>
+                  <div className="fs-prompt"><span>{learnEn ? "DE" : "EN"}</span><strong>{ui(`Type in ${meaningLabel}`)}</strong></div>
+                  <Input
+                    ref={recallBothMeaningRef}
+                    className="fs-input"
+                    aria-label={ui(`Recall the ${meaningLabel} meaning`)}
+                    placeholder={ui(`Type the ${meaningLabel} meaning...`)}
+                    value={recallBothMeaningInput}
+                    onChange={(event) => {
+                      setRecallBothMeaningInput(event.target.value);
+                      if (recallBothChecked) setRecallBothChecked(false);
+                    }}
+                    onKeyDown={(event) => event.key === "Enter" && checkRecallBoth()}
+                    disabled={recallCompletionScheduledRef.current}
+                  />
+                  <MicButton lang={meaningLang} onText={(text) => {
+                    setRecallBothMeaningInput(text);
+                    if (recallBothChecked) setRecallBothChecked(false);
+                  }} inputRef={recallBothMeaningRef} />
+                </div>
+                {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} /></div>}
+                {!(recallBothChecked && recallBothMeaningResult.ok) && (
+                  <RecallHelp
+                    key={`${item.id}-recall-both-meaning`}
+                    answer={displayEnglish}
+                    label={meaningLabel}
+                    onHelp={noteRecallStruggle}
+                  />
+                )}
+              </div>
+            </div>
+
+            {recallBothChecked && (
+              <div className={cn(
+                "fs-result",
+                recallBothTargetResult.ok && recallBothMeaningResult.ok ? "is-good" : "is-bad"
+              )} role="status">
+                <strong>{ui(recallBothTargetResult.ok && recallBothMeaningResult.ok ? "Both sentences are correct." : "Not quite")}</strong>
+                <span>
+                  {ui(targetLabel)}: {ui(recallBothTargetResult.ok ? "Correct" : "Try again")}
+                  <span aria-hidden="true"> · </span>
+                  {ui(meaningLabel)}: {ui(recallBothMeaningResult.ok ? "Correct" : "Try again")}
+                </span>
+              </div>
+            )}
+
+            {recallBothChecked && !(recallBothTargetResult.ok && recallBothMeaningResult.ok) ? (
+              <Button onClick={retryRecallBoth} variant="outline"
+                className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
+              </Button>
+            ) : (
+              <Button
+                onClick={checkRecallBoth}
+                disabled={recallCompletionScheduledRef.current}
+                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black"
+              >
+                {ui(recallCompletionScheduledRef.current ? "Done" : "Check both")} <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            )}
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={recallCompletionScheduledRef.current}
+              className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)] disabled:cursor-default disabled:opacity-50"
+            >
+              {ui("← Back")}
+            </button>
           </motion.div>
         )}
 
