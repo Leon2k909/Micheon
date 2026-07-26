@@ -63,6 +63,7 @@ import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { AppearanceEditor } from "@/components/AppearanceEditor";
 import { VoicePicker } from "@/components/VoicePicker";
+import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { ThemePresetPicker } from "@/components/ThemePresetPicker";
 import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
 import { LearningModePicker } from "@/components/LearningModePicker";
@@ -641,6 +642,11 @@ export default function GamificationPanel({
                     unrelated things. */}
                 <VoicePicker />
               </div>
+
+              {/* Sits with the language settings rather than hidden away: the
+                  commonest question about an app that updates silently is
+                  whether it is updating at all. */}
+              <UpdateStatusCard />
 
               <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                 <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>

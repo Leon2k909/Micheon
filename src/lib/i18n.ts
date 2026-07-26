@@ -498,6 +498,17 @@ const DE: Record<string, string> = {
   "Choose Custom above to set your own gaps between messages.": "Wähle oben Eigene, um eigene Abstände zwischen Nachrichten festzulegen.",
   "Tap to hear it": "Antippen zum Anhören",
 
+  // ── Update status ──
+  "Updates": "Updates",
+  "Check for updates": "Nach Updates suchen",
+  "Checking…": "Wird gesucht…",
+  "Downloading the update…": "Update wird heruntergeladen…",
+  "Update ready — it installs when you close the app.": "Update bereit — es wird installiert, wenn du die App schließt.",
+  "You're on the latest version.": "Du hast die neueste Version.",
+  "Couldn't reach the update service. It'll try again shortly.": "Der Update-Dienst war nicht erreichbar. Es wird gleich erneut versucht.",
+  "Updates only apply to the installed app.": "Updates gelten nur für die installierte App.",
+  "Checks on start and every fifteen minutes.": "Prüft beim Start und alle fünfzehn Minuten.",
+
   // ── Which voice reads each language ──
   "German voice": "Deutsche Stimme",
   "English voice": "Englische Stimme",

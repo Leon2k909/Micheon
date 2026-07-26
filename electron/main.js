@@ -646,6 +646,24 @@ async function createWindow() {
 // is published, it downloads it in the background and installs it silently the
 // next time the app quits — so the user never re-downloads or reinstalls by
 // hand. Only runs in the packaged app; a dev run has no update feed.
+/**
+ * What the updater last did, so the renderer can be told at any point.
+ *
+ * The "update downloaded" toast used to be the only signal, and it fires once.
+ * Miss it — because the download finished before you opened the window, or you
+ * dismissed it, or you restarted — and there is no way left to find out that an
+ * update is sitting there waiting, or that the app checked at all. Keeping the
+ * last result means the answer is always available on request.
+ */
+let updateStatus = { state: "idle", version: null, checkedAt: null };
+
+function setUpdateStatus(state, version) {
+  updateStatus = { state, version: version ?? updateStatus.version, checkedAt: Date.now() };
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+    mainWindow.webContents.send("update:status", updateStatus);
+  }
+}
+
 function setupAutoUpdate() {
   if (!app.isPackaged) return;
   autoUpdater.autoDownload = true;
@@ -657,21 +675,60 @@ function setupAutoUpdate() {
   // a single resumable request and just work.
   autoUpdater.disableDifferentialDownload = true;
 
-  autoUpdater.on("error", (err) => console.error("[updater] error:", err?.message ?? err));
-  autoUpdater.on("checking-for-update", () => console.log("[updater] checking for updates…"));
-  autoUpdater.on("update-available", (info) => console.log("[updater] update available:", info.version));
-  autoUpdater.on("update-not-available", () => console.log("[updater] already up to date"));
+  autoUpdater.on("error", (err) => {
+    console.error("[updater] error:", err?.message ?? err);
+    setUpdateStatus("error");
+  });
+  autoUpdater.on("checking-for-update", () => {
+    console.log("[updater] checking for updates…");
+    setUpdateStatus("checking");
+  });
+  autoUpdater.on("update-available", (info) => {
+    console.log("[updater] update available:", info.version);
+    setUpdateStatus("downloading", info.version);
+  });
+  autoUpdater.on("update-not-available", () => {
+    console.log("[updater] already up to date");
+    setUpdateStatus("current");
+  });
   autoUpdater.on("download-progress", (p) => console.log(`[updater] downloading ${Math.round(p.percent)}%`));
   autoUpdater.on("update-downloaded", (info) => {
     console.log("[updater] update downloaded:", info.version, "— will install on quit");
+    setUpdateStatus("ready", info.version);
     // Let the app show a subtle "Update ready, restart to apply" hint if it wants.
     mainWindow?.webContents.send("update:downloaded", info.version);
   });
 
   autoUpdater.checkForUpdatesAndNotify().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
-  // Re-check periodically for long-running sessions.
-  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 60 * 60 * 1000);
+  // Re-check periodically for long-running sessions. Fifteen minutes rather than
+  // an hour: the app is left open for hours at a time, and waiting up to a full
+  // hour to even notice a release is what makes it look as though nothing is
+  // happening. The check is one small request against the releases feed.
+  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 15 * 60 * 1000);
 }
+
+/** The renderer asking directly — "check now", and what happened last time. */
+ipcMain.handle("update:get-status", () => ({
+  ...updateStatus,
+  currentVersion: app.getVersion(),
+  supported: app.isPackaged,
+}));
+
+ipcMain.handle("update:check-now", async () => {
+  if (!app.isPackaged) {
+    return { state: "unsupported", currentVersion: app.getVersion(), supported: false };
+  }
+  try {
+    // An update already downloaded stays "ready": checking again would report
+    // "current" against the feed and hide the restart the learner still needs.
+    if (updateStatus.state !== "ready") setUpdateStatus("checking");
+    await autoUpdater.checkForUpdates();
+  } catch (error) {
+    console.error("[updater] manual check failed:", error?.message ?? error);
+    setUpdateStatus("error");
+  }
+  return { ...updateStatus, currentVersion: app.getVersion(), supported: true };
+});
 
 // Renderer can ask to apply the downloaded update immediately (restart + install).
 ipcMain.on("update:install-now", () => {

@@ -24,6 +24,16 @@ contextBridge.exposeInMainWorld("germDesktop", {
     return () => ipcRenderer.removeListener("update:downloaded", handler);
   },
   installUpdate: () => ipcRenderer.send("update:install-now"),
+  // Ask outright rather than waiting to be told. The download can finish before
+  // the window is even open, and then the one-shot toast above has nothing left
+  // to announce.
+  getUpdateStatus: () => ipcRenderer.invoke("update:get-status"),
+  checkForUpdateNow: () => ipcRenderer.invoke("update:check-now"),
+  onUpdateStatus: (cb) => {
+    const handler = (_e, status) => cb(status);
+    ipcRenderer.on("update:status", handler);
+    return () => ipcRenderer.removeListener("update:status", handler);
+  },
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
   setPetOverlayInteractive: (interactive) => ipcRenderer.send("pet-overlay:set-interactive", Boolean(interactive)),
   petOverlayHitRegionsSupported: process.platform === "win32" || process.platform === "linux",
