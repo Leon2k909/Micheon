@@ -33,6 +33,13 @@ const OPTIONS: PresetOption[] = [
     system: "Astryx",
     colors: ["#e2e1eb", "#ffffff", "#7834f7", "#1d9dcc"],
   },
+  {
+    id: "lingo",
+    label: "Lingo",
+    description: "Bright greens, soft greys and very round corners.",
+    system: "Original",
+    colors: ["#f5f5f7", "#ffffff", "#58cc02", "#ffc800"],
+  },
 ];
 
 export function ThemePresetPicker({

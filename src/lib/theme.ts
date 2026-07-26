@@ -6,7 +6,10 @@ const PRESET_KEY = "gl-theme-preset";
 export const THEME_PREFERENCES_EVENT = "micheon:theme-preferences";
 
 export type Theme = "dark" | "light";
-export type ThemePreset = "default" | "butter" | "butter-purple";
+export type ThemePreset = "default" | "butter" | "butter-purple" | "lingo";
+
+/** Every preset the app knows. Anything else stored falls back to "default". */
+const PRESETS: ThemePreset[] = ["default", "butter", "butter-purple", "lingo"];
 
 export type ThemePreferences = {
   theme: Theme;
@@ -22,7 +25,10 @@ export function getTheme(): Theme {
 export function getThemePreset(): ThemePreset {
   if (typeof window === "undefined") return "default";
   const stored = localStorage.getItem(PRESET_KEY);
-  return stored === "butter" || stored === "butter-purple" ? stored : "default";
+  // Checked against the list rather than a chain of comparisons, so adding a
+  // preset cannot be half-done: the old form silently ignored any new name and
+  // sent the learner back to the default on every reload.
+  return PRESETS.includes(stored as ThemePreset) ? (stored as ThemePreset) : "default";
 }
 
 /**

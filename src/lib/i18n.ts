@@ -625,6 +625,9 @@ const DE: Record<string, string> = {
   "The original focused learning interface.": "Die ursprüngliche, fokussierte Lernoberfläche.",
   "Warm surfaces with Butter's blue accent.": "Warme Flächen mit dem blauen Butter-Akzent.",
   "Astryx structure with Micheon purple and cyan.": "Astryx-Struktur mit Micheon-Lila und Cyan.",
+  "Lingo": "Lingo",
+  "Bright greens, soft greys and very round corners.":
+    "Kräftige Grüntöne, weiche Grautöne und sehr runde Ecken.",
   "Choosing a preset clears manual colour overrides so the selected design is shown accurately.": "Ein Design setzt manuelle Farbanpassungen zurück, damit es korrekt dargestellt wird.",
   "Dark mode": "Dunkler Modus",
   "Light mode": "Heller Modus",

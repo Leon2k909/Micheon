@@ -140,6 +140,88 @@ html[data-theme-preset="butter-purple"] body {
   font-family: var(--font-family-body);
 }
 
+/**
+ * Lingo
+ *
+ * Lifted from Language-app-UI-design.tsx, a static mockup at the repo root that
+ * nothing imported. Only its LOOK is taken — the greens, the near-black text,
+ * the soft grey surfaces and the very round corners. It is a theme rather than
+ * a screen, so every existing feature keeps working underneath it; the mockup
+ * itself had no lessons, no tracker and no settings, and hardcoded a streak of
+ * 12 and 342 gems.
+ *
+ * Every variable :root defines is redefined here. Leaving one out does not fail
+ * loudly — it silently falls back to the purple default and the theme looks
+ * half-applied, which is the failure mode worth guarding against.
+ */
+html[data-theme-preset="lingo"] {
+  color-scheme: light;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --surface-3: #e9e9ed;
+  --border: #e5e5ea;
+  --border-2: #d4d4d9;
+  --text-1: #1c1c1e;
+  --text-2: #6e6e73;
+  --text-3: #a1a1a6;
+  --accent: #58cc02;
+  --accent-dim: #e8f8dc;
+  --accent-text: #ffffff;
+  --accent-hover: #46a302;
+  --mint: #58cc02;
+  --yellow: #ffc800;
+  --orange: #ff9600;
+  --scrollbar: #d4d4d9;
+  --ink: #1c1c1e;
+  --ink-text: #ffffff;
+  --success-bg: #e8f8dc;
+  --success-text: #2e7d00;
+  --info-bg: #e3f0ff;
+  --info-text: #007aff;
+  --shadow: rgba(28, 28, 30, 0.06);
+  --shadow-strong: rgba(28, 28, 30, 0.12);
+  --feature-gradient: linear-gradient(135deg, #58cc02 0%, #46a302 54%, #2e7d00 100%);
+}
+
+/* The mockup was light-only. Dark has to exist anyway, or choosing this theme
+   would quietly take the dark mode toggle away from anyone using it. */
+html[data-theme-preset="lingo"][data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131f24;
+  --surface: #1b2b32;
+  --surface-2: #223840;
+  --surface-3: #2b444e;
+  --border: #2b444e;
+  --border-2: #3a5a66;
+  --text-1: #f7f9f8;
+  --text-2: #b6c3c7;
+  --text-3: #8199a1;
+  --accent: #58cc02;
+  --accent-dim: #1f3a17;
+  --accent-text: #0d1a06;
+  --accent-hover: #6fe016;
+  --mint: #58cc02;
+  --yellow: #ffc800;
+  --orange: #ff9600;
+  --scrollbar: #3a5a66;
+  --ink: #f7f9f8;
+  --ink-text: #131f24;
+  --success-bg: #1f3a17;
+  --success-text: #8ee65a;
+  --info-bg: #123049;
+  --info-text: #5ab0ff;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-strong: rgba(0, 0, 0, 0.45);
+  --feature-gradient: linear-gradient(135deg, #58cc02 0%, #46a302 54%, #1f3a17 100%);
+}
+
+/* The one structural borrowing: the mockup's corners are markedly rounder than
+   Micheon's, which is most of why it reads as a different app. */
+html[data-theme-preset="lingo"] .card {
+  border-radius: 24px;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
