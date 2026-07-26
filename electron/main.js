@@ -186,6 +186,30 @@ function applyPetOverlayShape(regions, preserveOnFailure = false) {
   }
 }
 
+/**
+ * Grow the overlay to the whole virtual desktop for a drag.
+ *
+ * Published synchronously so the renderer knows the new origin before the first
+ * cursor sample arrives — otherwise the first move of every drag is drawn
+ * against the old origin and the mascot jumps.
+ */
+function expandPetOverlayForDrag() {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  const desktopBounds = petOverlayDragDesktopBounds ?? virtualDesktopBounds();
+  const current = petWindow.getBounds();
+  if (
+    current.x === desktopBounds.x
+    && current.y === desktopBounds.y
+    && current.width === desktopBounds.width
+    && current.height === desktopBounds.height
+  ) return;
+  // Resizing drops the Windows window region, so the shape must be re-applied
+  // rather than skipped as identical.
+  petOverlayShapeSignature = null;
+  petWindow.setBounds(desktopBounds, false);
+  publishPetOverlayGeometry(true);
+}
+
 function applyPetOverlayDragShape() {
   if (!petOverlayDragging || !petWindow || petWindow.isDestroyed()) return;
   const bounds = petWindow.getBounds();
@@ -201,6 +225,13 @@ function compactPetOverlayToRegions(
   desktopBounds = virtualDesktopBounds()
 ) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return [];
+
+  // Never move the native window mid-drag. The window origin is what the
+  // renderer positions its content against, so every move shifted the ground
+  // under a mascot that was being dragged across it — which is what the stutter
+  // was. The drag already widened the window to the whole desktop, so there is
+  // nothing to follow; it recompacts when the drag ends.
+  if (petOverlayDragging) return [];
 
   const currentBounds = petWindow.getBounds();
   const originX = Number.isFinite(Number(rendererOrigin?.x))
@@ -355,12 +386,19 @@ function finishPetOverlayDrag() {
   if (!petOverlayDragging) return;
   petOverlayDragging = false;
   petOverlayDragDesktopBounds = null;
-  // Collapse the enlarged drag collar back to the normal interactive regions.
-  // This must not be skipped even if the mascot ended where it began.
+  // The stored regions are local to the window as it was BEFORE the drag
+  // widened it, so re-applying them now would shape the wrong part of a
+  // desktop-sized window and the mascot would simply stop being drawn. Drop
+  // them and hold the full-window shape — everything stays visible — until the
+  // renderer delivers regions measured against the window as it is now.
+  petOverlayHitRegions = [];
   petOverlayShapeSignature = null;
-  restorePetOverlayShape();
   if (petWindow && !petWindow.isDestroyed() && !petWindow.webContents.isDestroyed()) {
     petWindow.webContents.send("pet-overlay:drag-ended");
+    // Ask for those regions rather than waiting to be told: until they arrive
+    // the overlay covers the desktop and swallows clicks meant for what is
+    // behind it.
+    petWindow.webContents.send("pet-overlay:resync");
   }
 }
 
@@ -730,6 +768,12 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
   try {
     petOverlayDragDesktopBounds = virtualDesktopBounds();
     petOverlayDragging = true;
+    // Take the whole desktop for the duration of the gesture. The compact
+    // window had to chase the cursor to stay under the mascot, and every one of
+    // those moves changed the coordinate origin the renderer draws against. It
+    // also fenced the pet: it could not be dragged past the window's own edge
+    // before that window had caught up. One resize here, one at the end.
+    expandPetOverlayForDrag();
     // Apply the full compact-window drag region NOW, synchronously, before this call
     // returns to the renderer. The pointer has not been established over the
     // new shape yet, so nothing can be disturbed by the change — whereas the

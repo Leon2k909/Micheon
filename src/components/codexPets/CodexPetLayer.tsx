@@ -174,6 +174,16 @@ function petDimensions(size: number, heightRatio = PET_HEIGHT_RATIO) {
   return { height: Math.round(width * heightRatio), width };
 }
 
+/**
+ * Where a pet may sit.
+ *
+ * It used to have to fit entirely on screen with an 8px gap, which fenced it
+ * off the taskbar and short of the bottom-right corner — the two places people
+ * actually want a desktop mascot. It may now hang off any edge as long as this
+ * much of it is still showing, which is what every other desktop pet does.
+ */
+const PET_EDGE_KEEP_RATIO = 0.45;
+
 function clampPosition(
   position: PetPosition,
   width: number,
@@ -182,10 +192,18 @@ function clampPosition(
   petHeight: number,
   visibleBounds: PetBounds = { bottom: petHeight, left: 0, right: petWidth, top: 0 }
 ): PetPosition {
-  const minX = PET_MARGIN - visibleBounds.left;
-  const maxX = width - PET_MARGIN - visibleBounds.right;
-  const minY = PET_MARGIN - visibleBounds.top;
-  const maxY = height - PET_MARGIN - visibleBounds.bottom;
+  // Measured on the pet's visible pixels, not its frame: sprite frames carry
+  // transparent padding, and clamping on the frame stopped a pet well short of
+  // an edge it looked nowhere near.
+  const visibleWidth = Math.max(1, visibleBounds.right - visibleBounds.left);
+  const visibleHeight = Math.max(1, visibleBounds.bottom - visibleBounds.top);
+  const keepX = Math.max(8, Math.round(visibleWidth * PET_EDGE_KEEP_RATIO));
+  const keepY = Math.max(8, Math.round(visibleHeight * PET_EDGE_KEEP_RATIO));
+
+  const minX = keepX - visibleBounds.right;
+  const maxX = width - keepX - visibleBounds.left;
+  const minY = keepY - visibleBounds.bottom;
+  const maxY = height - keepY - visibleBounds.top;
   return {
     x: Math.min(Math.max(minX, position.x), Math.max(minX, maxX)),
     y: Math.min(Math.max(minY, position.y), Math.max(minY, maxY)),
@@ -344,6 +362,14 @@ export function CodexPetLayer() {
     petHeight,
     visibleBoundsByPet
   );
+  // What the menu and the speech bubble ACTUALLY measure, not what the layout
+  // guessed. The guesses were made against English on a normal screen; German
+  // wraps every line, and a 3440x1440 display at 225% scale is only 640 points
+  // tall, so a menu "about 328 tall" was over half the screen and ran off the
+  // bottom. Positioning from the real size is the only thing that holds for
+  // both languages at any scale.
+  const [menuSize, setMenuSize] = useState({ height: PET_MENU_ESTIMATED_HEIGHT, width: PET_MENU_WIDTH });
+  const [bubbleSize, setBubbleSize] = useState({ height: 112, width: PET_BUBBLE_WIDTH });
   const [playbackKey, setPlaybackKey] = useState(0);
   const [position, setPosition] = useState<PetPosition>(
     () => storedPosition(petGroupWidth, petHeight, PET_POSITION_STORAGE_KEY)
@@ -728,6 +754,30 @@ export function CodexPetLayer() {
     });
   }, [messagesMuted, petVoiceEnabled, speech?.id, speech?.text, speech?.voiceLang]);
 
+  // Measured while it is open, and again whenever its contents change — a
+  // question adds answer buttons, and a long message wraps.
+  useEffect(() => {
+    const targets: [HTMLDivElement | null, (size: { height: number; width: number }) => void][] = [
+      [menuMotionRef.current, setMenuSize],
+      [speechMotionRef.current, setBubbleSize],
+    ];
+    const observers = targets.map(([element, apply]) => {
+      if (!element || typeof ResizeObserver === "undefined") return null;
+      const observer = new ResizeObserver(() => {
+        // offsetWidth/Height, not the client rect: the open animation scales the
+        // element, and a rect measured mid-animation reads several per cent
+        // small — which is exactly how a menu ends up positioned to overflow.
+        const next = { height: element.offsetHeight, width: element.offsetWidth };
+        if (next.height > 0 && next.width > 0) {
+          apply((current) => (current.height === next.height && current.width === next.width ? current : next));
+        }
+      });
+      observer.observe(element);
+      return observer;
+    });
+    return () => observers.forEach((observer) => observer?.disconnect());
+  }, [menuOpen, speech?.id, historyOpen]);
+
   useEffect(() => {
     const handleResize = () => {
       if (dragState.current) return;
@@ -913,12 +963,24 @@ export function CodexPetLayer() {
       const key = drag.companionKey;
       const current = companionPositionsRef.current[key];
       if (!current) return;
+      // Its own visible pixels, like the lead pet. Clamping a companion on its
+      // whole frame fenced it further from the edge than the pet beside it, for
+      // no reason a person could see.
+      const companionBounds = visibleBoundsByPet[key];
       const next = clampPosition(
         nextPosition,
         viewport.width,
         viewport.height,
         petWidth,
-        petHeight
+        petHeight,
+        companionBounds
+          ? {
+            bottom: companionBounds.bottom * petHeight,
+            left: companionBounds.left * petWidth,
+            right: companionBounds.right * petWidth,
+            top: companionBounds.top * petHeight,
+          }
+          : undefined
       );
       if (next.x === current.x && next.y === current.y) return;
       companionPositionsRef.current = { ...companionPositionsRef.current, [key]: next };
@@ -1187,29 +1249,46 @@ export function CodexPetLayer() {
   const petVisualBottom = position.y + petGroupVisibleBounds.bottom;
   const bubbleOnRight = (petVisualLeft + petVisualRight) / 2 < viewport.width / 2;
   const tailHorizontalClass = bubbleOnRight ? "left-5" : "right-5";
+  // Never wider than the screen it has to fit on. On a 225%-scaled display the
+  // usable width in points is less than half the panel's pixels, so a bubble
+  // sized by a constant could be wider than the whole desktop.
+  const bubbleWidth = Math.min(PET_BUBBLE_WIDTH, Math.max(160, viewport.width - PET_MARGIN * 2));
   const bubbleLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? petVisualLeft : petVisualRight - PET_BUBBLE_WIDTH
+      bubbleOnRight ? petVisualLeft : petVisualRight - bubbleWidth
     ),
-    Math.max(PET_MARGIN, viewport.width - PET_BUBBLE_WIDTH - PET_MARGIN)
+    Math.max(PET_MARGIN, viewport.width - bubbleWidth - PET_MARGIN)
   );
-  const bubbleMaxHeight = Math.max(112, petVisualTop - PET_MARGIN * 2);
-  const bubbleBottom = viewport.height - petVisualTop + PET_MARGIN;
-  const menuBelow = petVisualTop < PET_MENU_ESTIMATED_HEIGHT + PET_MARGIN * 2;
+  // Whichever is smaller: the gap above the pet, or the screen itself. The
+  // second term is what was missing — on a short desktop a bubble could be told
+  // it had more room than the display has.
+  const bubbleMaxHeight = Math.max(
+    112,
+    Math.min(petVisualTop - PET_MARGIN * 2, viewport.height - PET_MARGIN * 2)
+  );
+  // Sat on the pet's head if there is no room above it, rather than being
+  // pushed off the top of the screen.
+  const bubbleBottom = Math.min(
+    viewport.height - petVisualTop + PET_MARGIN,
+    Math.max(PET_MARGIN, viewport.height - bubbleSize.height - PET_MARGIN)
+  );
+  const menuHeight = Math.min(menuSize.height, Math.max(120, viewport.height - PET_MARGIN * 2));
+  const menuWidth = Math.min(menuSize.width, Math.max(160, viewport.width - PET_MARGIN * 2));
+  const menuBelow = petVisualTop < menuHeight + PET_MARGIN * 2;
   const preferredMenuTop = menuBelow
     ? petVisualBottom + PET_MARGIN
-    : petVisualTop - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN;
+    : petVisualTop - menuHeight - PET_MARGIN;
   const menuTop = Math.min(
     Math.max(PET_MARGIN, preferredMenuTop),
-    Math.max(PET_MARGIN, viewport.height - PET_MENU_ESTIMATED_HEIGHT - PET_MARGIN)
+    Math.max(PET_MARGIN, viewport.height - menuHeight - PET_MARGIN)
   );
   const menuLeft = Math.min(
     Math.max(
       PET_MARGIN,
-      bubbleOnRight ? petVisualLeft : petVisualRight - PET_MENU_WIDTH
+      bubbleOnRight ? petVisualLeft : petVisualRight - menuWidth
     ),
-    Math.max(PET_MARGIN, viewport.width - PET_MENU_WIDTH - PET_MARGIN)
+    Math.max(PET_MARGIN, viewport.width - menuWidth - PET_MARGIN)
   );
   // A movable history panel can be far from the mascot. Keeping both in one
   // transparent native window would stretch that surface across the distance
@@ -1267,7 +1346,10 @@ export function CodexPetLayer() {
               role="menu"
               style={{
                 left: menuLeft,
-                maxHeight: viewport.height - menuTop - PET_MARGIN,
+                // Against the screen, not against wherever the menu was put:
+                // the old form could hand it a height taller than the display.
+                maxHeight: Math.max(120, viewport.height - menuTop - PET_MARGIN),
+                maxWidth: menuWidth,
                 top: menuTop,
                 willChange: dragging ? "translate" : undefined,
               }}
@@ -1445,7 +1527,10 @@ export function CodexPetLayer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-atomic="true"
             aria-live="polite"
-            className="pointer-events-auto absolute z-10 flex w-[min(15rem,calc(100vw-2rem))] flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
+            // Width comes from the style below, against the DESKTOP size. A vw
+            // unit here measured the compact overlay window instead, which is
+            // only as wide as the pet plus its margin.
+            className="pointer-events-auto absolute z-10 flex flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             data-pet-interactive="true"
@@ -1457,6 +1542,7 @@ export function CodexPetLayer() {
               bottom: bubbleBottom,
               left: bubbleLeft,
               maxHeight: bubbleMaxHeight,
+              width: bubbleWidth,
               willChange: dragging ? "translate" : undefined,
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
