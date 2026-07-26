@@ -37,6 +37,7 @@ const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
+export type CodexPetVoiceLanguage = "de-DE" | "en-US";
 
 export type CodexPetQuestion = {
   aliases?: string[];
@@ -56,12 +57,14 @@ export type CodexPetSpeech = {
   mood: CodexPetSpeechMood;
   question?: CodexPetQuestion;
   text: string;
+  voiceLang?: CodexPetVoiceLanguage;
 };
 
 type CodexPetSpeechOptions = {
   durationMs?: number;
   mood?: CodexPetSpeechMood;
   question?: CodexPetQuestion;
+  voiceLang?: CodexPetVoiceLanguage;
 };
 
 type CodexPetContextValue = {
@@ -221,6 +224,10 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       mood: options.mood ?? "greeting",
       question: options.question,
       text: messageText,
+      voiceLang: options.voiceLang
+        ?? (options.question
+          ? options.question.answerLanguage === "en" ? "de-DE" : "en-US"
+          : uiIsGerman() ? "de-DE" : "en-US"),
     };
     upsertHistory(message);
     showSpeech(message, options.durationMs);
@@ -264,6 +271,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       speak(response, {
         durationMs: 5600,
         mood: answer === "yes" ? "success" : "encourage",
+        voiceLang: uiIsGerman() ? "de-DE" : "en-US",
       });
     }, 180);
   }, [speak, upsertHistory]);

@@ -87,6 +87,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
             }
           : undefined,
         text: typeof message?.text === "string" ? message.text.slice(0, 240) : "",
+        voiceLang: message?.voiceLang === "de-DE"
+          ? "de-DE"
+          : message?.voiceLang === "en-US"
+            ? "en-US"
+            : undefined,
       },
       options: {
         durationMs: Number.isFinite(durationMs) ? durationMs : undefined,

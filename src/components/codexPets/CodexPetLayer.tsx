@@ -9,7 +9,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, History, Link2, MessageSquare, MessageSquareOff, Unlink2, X } from "lucide-react";
+import { Check, History, Link2, MessageSquare, MessageSquareOff, Unlink2, Volume2, VolumeX, X } from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -26,6 +26,12 @@ import {
   setCodexPetMessagesMuted,
 } from "@/lib/codexPetMessages";
 import {
+  CODEX_PET_VOICE_ENABLED_EVENT,
+  CODEX_PET_VOICE_ENABLED_KEY,
+  getCodexPetVoiceEnabled,
+  setCodexPetVoiceEnabled,
+} from "@/lib/codexPetVoice";
+import {
   PET_LAYOUT_EVENT,
   PET_LAYOUT_KEY,
   getPetLayoutMode,
@@ -34,8 +40,9 @@ import {
   type PetLayoutMode,
 } from "@/lib/petLayout";
 import { learningEnglish } from "@/lib/direction";
-import { ui } from "@/lib/i18n";
+import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
+import { stopTts, tts } from "@/lib/voice";
 
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
 const DESKTOP_PET_POSITION_KEY = "gl-codex-pet-desktop-position-v2";
@@ -48,7 +55,7 @@ const PET_SIZE_DEFAULT = 96;
 const PET_HEIGHT_RATIO = 104 / 96;
 const PET_GROUP_GAP = 8;
 const PET_MENU_WIDTH = 224;
-const PET_MENU_ESTIMATED_HEIGHT = 280;
+const PET_MENU_ESTIMATED_HEIGHT = 328;
 const PET_BUBBLE_WIDTH = 240;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const isDesktopPetOverlay = typeof window !== "undefined"
@@ -289,6 +296,7 @@ export function CodexPetLayer() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
+  const [petVoiceEnabled, setPetVoiceEnabled] = useState(getCodexPetVoiceEnabled);
   const [petSize, setPetSize] = useState(storedPetSize);
   const petHeightRatio = visiblePets.length
     ? Math.max(
@@ -327,6 +335,8 @@ export function CodexPetLayer() {
   const hitRegionSyncRef = useRef<(() => void) | null>(null);
   const positionRef = useRef(position);
   const speechRef = useRef(speech);
+  const activePetTtsId = useRef("");
+  const spokenSpeechId = useRef("");
   const suppressClick = useRef(false);
   const tipIndex = useRef(0);
   /** Where each companion sits when the pets are arranged apart. */
@@ -649,6 +659,46 @@ export function CodexPetLayer() {
       window.removeEventListener(CODEX_PET_MESSAGES_MUTED_EVENT, syncMutedState);
     };
   }, [clearSpeech]);
+
+  useEffect(() => {
+    const syncVoiceState = () => setPetVoiceEnabled(getCodexPetVoiceEnabled());
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === CODEX_PET_VOICE_ENABLED_KEY) syncVoiceState();
+    };
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(CODEX_PET_VOICE_ENABLED_EVENT, syncVoiceState);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(CODEX_PET_VOICE_ENABLED_EVENT, syncVoiceState);
+    };
+  }, []);
+
+  // The Layer is the only pet renderer in each environment: the website owns
+  // it directly and Electron owns it in the lightweight overlay window. That
+  // makes this the one safe playback point without doubling every message.
+  // Keep the id guard across StrictMode's effect replay and do not return a TTS
+  // cleanup here, because the immediate development cleanup would silence the
+  // first utterance and the guard would then suppress its retry.
+  useEffect(() => {
+    if (!petVoiceEnabled || messagesMuted || !speech) {
+      spokenSpeechId.current = "";
+      if (activePetTtsId.current) {
+        activePetTtsId.current = "";
+        stopTts();
+      }
+      return;
+    }
+    if (spokenSpeechId.current === speech.id) return;
+    spokenSpeechId.current = speech.id;
+    activePetTtsId.current = speech.id;
+    void tts(
+      speech.text,
+      0.9,
+      speech.voiceLang ?? (uiIsGerman() ? "de-DE" : "en-US")
+    ).finally(() => {
+      if (activePetTtsId.current === speech.id) activePetTtsId.current = "";
+    });
+  }, [messagesMuted, petVoiceEnabled, speech?.id, speech?.text, speech?.voiceLang]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -1242,6 +1292,20 @@ export function CodexPetLayer() {
                   <MessageSquareOff aria-hidden="true" className="h-4 w-4" />
                 )}
                 {ui(messagesMuted ? "Show messages & questions" : "Mute messages & questions")}
+              </button>
+              <button
+                aria-checked={petVoiceEnabled}
+                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                onClick={() => setCodexPetVoiceEnabled(!petVoiceEnabled)}
+                role="menuitemcheckbox"
+                type="button"
+              >
+                {petVoiceEnabled ? (
+                  <VolumeX aria-hidden="true" className="h-4 w-4" />
+                ) : (
+                  <Volume2 aria-hidden="true" className="h-4 w-4" />
+                )}
+                {ui(petVoiceEnabled ? "Mute pet voice" : "Turn on pet voice")}
               </button>
               <button
                 className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"

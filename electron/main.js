@@ -810,6 +810,11 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
           }
         : undefined,
       text,
+      voiceLang: message.voiceLang === "de-DE"
+        ? "de-DE"
+        : message.voiceLang === "en-US"
+          ? "en-US"
+          : undefined,
     },
     options: {
       durationMs: Number.isFinite(durationMs) ? durationMs : undefined,

@@ -263,6 +263,7 @@ export default function GermanLearningLab() {
       petSpeak(question, {
         durationMs: 20000,
         mood: "greeting",
+        voiceLang: learnsEnglish ? "de-DE" : "en-US",
         question: {
           aliases: item.aliases,
           answerLanguage: learnsEnglish ? "en" : "de",

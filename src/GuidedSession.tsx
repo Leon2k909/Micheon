@@ -4097,7 +4097,7 @@ function LessonMemoryCheck({
     if (!card) return;
     petSpeak(
       `Before we learn anything new, do you still remember how to say “${source}”?`,
-      { durationMs: 9000, mood: "greeting" }
+      { durationMs: 9000, mood: "greeting", voiceLang: "en-US" }
     );
   }, [card, petSpeak, source]);
 
@@ -4112,7 +4112,7 @@ function LessonMemoryCheck({
         grade === "know"
           ? "Great — you remembered the lesson. You’re ready to move on."
           : "Good call. We’ll practise that again before adding anything new.",
-        { durationMs: 5200, mood: grade === "know" ? "success" : "encourage" }
+        { durationMs: 5200, mood: grade === "know" ? "success" : "encourage", voiceLang: "en-US" }
       );
       onComplete();
       return;
@@ -4593,11 +4593,13 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         petSpeak(`${n} correct in a row! Excellent work.`, {
           durationMs: 3800,
           mood: "celebrate",
+          voiceLang: "en-US",
         });
       } else {
         const messages = ["Well done!", "Sehr gut! Very good.", "Nice work!", "You got it."];
         petSpeak(messages[correctPraiseIndex.current++ % messages.length], {
           mood: "success",
+          voiceLang: "en-US",
         });
       }
     } else {
@@ -4609,9 +4611,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         "Keep going. Check the hint.",
         "No problem. You can get the next one.",
       ];
-      petSpeak(messages[retryPraiseIndex.current++ % messages.length], {
-        durationMs: 3400,
-        mood: "encourage",
+        petSpeak(messages[retryPraiseIndex.current++ % messages.length], {
+          durationMs: 3400,
+          mood: "encourage",
+          voiceLang: "en-US",
       });
     }
   };
@@ -4648,6 +4651,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     petSpeak("No problem. Let's try the next one.", {
       durationMs: 2800,
       mood: "encourage",
+      voiceLang: "en-US",
     });
     leaveStep(true);
   };
@@ -4671,6 +4675,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     petSpeak("Lesson complete. Let’s check what you remember before moving on.", {
       durationMs: 6000,
       mood: "encourage",
+      voiceLang: "en-US",
     });
   }, [kind, petSpeak]);
 

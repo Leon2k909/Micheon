@@ -25,6 +25,7 @@ function emitSpeaking(on: boolean) {
 }
 
 let currentAudio: HTMLAudioElement | null = null;
+let currentAudioResolve: (() => void) | null = null;
 // Monotonic token: every new top-level play call bumps this so any in-flight
 // playback or fetch from a previous call knows to bail (mirrors speechSynthesis.cancel).
 let playSeq = 0;
@@ -38,17 +39,24 @@ function hardStop() {
     currentAudio.pause();
     currentAudio = null;
   }
+  currentAudioResolve?.();
+  currentAudioResolve = null;
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
+}
+
+/** Cancel the active TTS request/playback, including a fetch that has not resolved yet. */
+export function stopTts(): void {
+  playSeq += 1;
+  hardStop();
 }
 
 // Muting mid-playback cuts the current voice off immediately.
 if (typeof window !== "undefined") {
   window.addEventListener(AUDIO_MUTE_EVENT, () => {
     if (isAudioMuted()) {
-      playSeq += 1; // invalidate in-flight sequences
-      hardStop();
+      stopTts();
     }
   });
 }
@@ -83,11 +91,17 @@ function playUrl(url: string, token: number): Promise<void> {
   return new Promise((resolve) => {
     if (token !== playSeq) return resolve();
     const audio = new Audio(url);
+    const finish = () => {
+      if (currentAudio === audio) currentAudio = null;
+      if (currentAudioResolve === finish) currentAudioResolve = null;
+      resolve();
+    };
     currentAudio = audio;
+    currentAudioResolve = finish;
     audio.onplaying = () => { if (token === playSeq) emitSpeaking(true); };
-    audio.onended = () => resolve();
-    audio.onerror = () => resolve();
-    audio.play().catch(() => resolve());
+    audio.onended = finish;
+    audio.onerror = finish;
+    audio.play().catch(finish);
   });
 }
 

@@ -548,6 +548,8 @@ const DE: Record<string, string> = {
   "Close pet": "Maskottchen schließen",
   "Mute messages & questions": "Nachrichten und Fragen stummschalten",
   "Show messages & questions": "Nachrichten und Fragen anzeigen",
+  "Turn on pet voice": "Maskottchen-Stimme einschalten",
+  "Mute pet voice": "Maskottchen-Stimme stummschalten",
   "Close pet menu": "Maskottchen-Menü schließen",
   "Message history": "Nachrichtenverlauf",
   "Open message history": "Nachrichtenverlauf öffnen",
