@@ -546,12 +546,44 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
   const idx = allPhases.indexOf(current);
   const n = allPhases.length;
   const activeStageRef = useRef<HTMLButtonElement>(null);
+  const shortcutMenuRef = useRef<HTMLDivElement>(null);
+  const shortcutTriggerRef = useRef<HTMLButtonElement>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const half = 100 / (n * 2); // center of first/last column, in %
   // Fill runs from the first stage's center to the current stage's center.
   const fillPct = n > 1 ? (Math.max(idx, 0) / (n - 1)) * 100 : 0;
   useEffect(() => {
     activeStageRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [current]);
+  useEffect(() => {
+    if (!shortcutsOpen) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (!shortcutMenuRef.current?.contains(event.target as Node)) setShortcutsOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setShortcutsOpen(false);
+      window.requestAnimationFrame(() => shortcutTriggerRef.current?.focus());
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [shortcutsOpen]);
+
+  const shortcutForStage = (stageIndex: number) => {
+    if (stageIndex < 9) {
+      return { label: `Ctrl+${stageIndex + 1}`, aria: `Control+${stageIndex + 1}` };
+    }
+    if (stageIndex === 9) return { label: "Ctrl+0", aria: "Control+0" };
+    return {
+      label: `Ctrl+Shift+${stageIndex - 9}`,
+      aria: `Control+Shift+${stageIndex - 9}`,
+    };
+  };
+
   return (
     <div className="fs-stagebar">
       <div className="fs-stagemeta">
@@ -559,34 +591,118 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
           <span>{ui("Stage")} {idx + 1} {ui("of")} {n}</span>
           <strong>{ui(phaseLabel(current, withFrench, targetLabel, meaningLabel))}</strong>
         </div>
-        <span className="fs-stagehint">{ui("Jump to any stage")}</span>
+        <div className="fs-stage-tools" ref={shortcutMenuRef}>
+          <button
+            ref={shortcutTriggerRef}
+            type="button"
+            className="fs-shortcut-trigger"
+            aria-expanded={shortcutsOpen}
+            aria-controls="lesson-keyboard-shortcuts"
+            aria-label={ui("Keyboard shortcuts")}
+            title={ui("Keyboard shortcuts")}
+            onClick={() => setShortcutsOpen((open) => !open)}
+          >
+            <Keyboard aria-hidden="true" />
+            <span className="fs-shortcut-trigger-keys"><kbd>←</kbd><kbd>→</kbd></span>
+            <span className="fs-shortcut-trigger-label">{ui("Move stages")}</span>
+          </button>
+          {shortcutsOpen && (
+            <div
+              id="lesson-keyboard-shortcuts"
+              className="fs-shortcut-panel"
+              role="region"
+              aria-label={ui("Keyboard shortcuts")}
+            >
+              <div className="fs-shortcut-head">
+                <div>
+                  <Keyboard aria-hidden="true" />
+                  <strong>{ui("Keyboard shortcuts")}</strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShortcutsOpen(false);
+                    window.requestAnimationFrame(() => shortcutTriggerRef.current?.focus());
+                  }}
+                  aria-label={ui("Close")}
+                >
+                  <X aria-hidden="true" />
+                </button>
+              </div>
+              <div className="fs-shortcut-list">
+                <div className="fs-shortcut-row">
+                  <span><kbd>←</kbd><kbd>→</kbd></span>
+                  <strong>{ui("Previous / next stage (when not typing)")}</strong>
+                </div>
+                <div className="fs-shortcut-row">
+                  <span><kbd>Ctrl</kbd><kbd>{n <= 9 ? `1–${n}` : "1–9"}</kbd></span>
+                  <strong>{ui("Jump directly to a stage")}</strong>
+                </div>
+                {n >= 10 && (
+                  <div className="fs-shortcut-row">
+                    <span><kbd>Ctrl</kbd><kbd>0</kbd></span>
+                    <strong>{ui("Jump to stage 10")}</strong>
+                  </div>
+                )}
+                {n > 10 && (
+                  <div className="fs-shortcut-row">
+                    <span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>{`1–${n - 10}`}</kbd></span>
+                    <strong>{ui("Jump to stages 11–16")}</strong>
+                  </div>
+                )}
+                <div className="fs-shortcut-row">
+                  <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span>
+                  <strong>{ui("Choose an answer")}</strong>
+                </div>
+                <div className="fs-shortcut-row">
+                  <span><kbd>Enter</kbd></span>
+                  <strong>{ui("Check / continue")}</strong>
+                </div>
+                <div className="fs-shortcut-row">
+                  <span><kbd>Alt</kbd><kbd>K</kbd></span>
+                  <strong>{ui("Know it")}</strong>
+                </div>
+                <div className="fs-shortcut-row">
+                  <span><kbd>Alt</kbd><kbd>S</kbd></span>
+                  <strong>{ui("Struggle")}</strong>
+                </div>
+              </div>
+              <p>{ui("Stage numbers use Ctrl so Windows Alt-codes keep working. Arrow keys never take over an answer box.")}</p>
+            </div>
+          )}
+        </div>
       </div>
       <div className="fs-stagetrack-scroll">
         <div className={cn("fs-stagetrack", n > 13 && "has-many-stages")} style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
           <div className="fs-stageline" style={{ left: `${half}%`, right: `${half}%` }} aria-hidden>
             <i style={{ width: `${fillPct}%` }} />
           </div>
-          {allPhases.map((p, i) => (
-            <button
-              key={p}
-              ref={i === idx ? activeStageRef : undefined}
-              type="button"
-              title={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
-              aria-label={`${ui("Stage")} ${i + 1}: ${ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}`}
-              aria-current={i === idx ? "step" : undefined}
-              onClick={() => onClickPhase?.(p)}
-              disabled={locked}
-              className={cn(
-                "fs-stagebtn",
-                isClosedBookPhase(p) && "is-recall",
-                p === "RecallTarget" && "is-recall-start",
-                i === idx ? "is-active" : i < idx && "is-done"
-              )}
-            >
-              <span>{i + 1}</span>
-              <small>{ui(phaseLabel(p, withFrench, targetLabel, meaningLabel))}</small>
-            </button>
-          ))}
+          {allPhases.map((p, i) => {
+            const stageShortcut = shortcutForStage(i);
+            const stageName = ui(phaseLabel(p, withFrench, targetLabel, meaningLabel));
+            return (
+              <button
+                key={p}
+                ref={i === idx ? activeStageRef : undefined}
+                type="button"
+                title={`${ui("Stage")} ${i + 1}: ${stageName} · ${stageShortcut.label}`}
+                aria-label={`${ui("Stage")} ${i + 1}: ${stageName}. ${stageShortcut.label}`}
+                aria-keyshortcuts={stageShortcut.aria}
+                aria-current={i === idx ? "step" : undefined}
+                onClick={() => onClickPhase?.(p)}
+                disabled={locked}
+                className={cn(
+                  "fs-stagebtn",
+                  isClosedBookPhase(p) && "is-recall",
+                  p === "RecallTarget" && "is-recall-start",
+                  i === idx ? "is-active" : i < idx && "is-done"
+                )}
+              >
+                <span>{i + 1}</span>
+                <small>{stageName}</small>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -725,6 +841,24 @@ function useStickyFocus(ref: React.RefObject<HTMLInputElement | null>, active: b
       document.removeEventListener("keyup", onKeyUp);
     };
   }, [ref, active]);
+}
+
+function isTextEntryTarget(target: EventTarget | null): boolean {
+  const element = target instanceof HTMLElement ? target : null;
+  if (!element) return false;
+  return Boolean(
+    element.isContentEditable
+    || element.closest("input, textarea, select, [contenteditable='true'], [role='textbox']")
+  );
+}
+
+function directStageShortcutIndex(event: KeyboardEvent): number | null {
+  if (!event.ctrlKey || event.altKey || event.metaKey) return null;
+  const match = /^(?:Digit|Numpad)([0-9])$/.exec(event.code);
+  if (!match) return null;
+  const digit = Number(match[1]);
+  if (event.shiftKey) return digit >= 1 && digit <= 6 ? digit + 9 : null;
+  return digit === 0 ? 9 : digit - 1;
 }
 
 function buildRecallHint(answer: string): string {
@@ -970,6 +1104,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [phase, setPhase] = useState<Phase>(
     item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"
   );
+  const currentPhaseRef = useRef<Phase>(phase);
+  useEffect(() => { currentPhaseRef.current = phase; }, [phase]);
   /** The stages this phrase actually runs through. */
   const phaseRoute = (): Phase[] => {
     if (masteredRoute) return [...MASTERED_PHASES];
@@ -1289,17 +1425,27 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const advance = () => {
+    // Ignore a delayed auto-advance if the learner manually jumped elsewhere
+    // during the success animation.
+    if (currentPhaseRef.current !== phase) return;
     const order: Phase[] = phaseRoute();
     const next = order[order.indexOf(phase) + 1];
-    if (next) setPhase(next);
+    if (next) {
+      currentPhaseRef.current = next;
+      setPhase(next);
+    }
   };
 
   // Advance to the next phase, or finish the exercise if this was the last one.
   // Used by the typing steps so the second Translate round ends the exercise.
   const advanceOrFinish = () => {
+    if (currentPhaseRef.current !== phase) return;
     const order: Phase[] = phaseRoute();
     const next = order[order.indexOf(phase) + 1];
-    if (next) setPhase(next); else finishOrFrench();
+    if (next) {
+      currentPhaseRef.current = next;
+      setPhase(next);
+    } else finishOrFrench();
   };
 
   // The second Type / Translate rounds reuse the first round's input state, so
@@ -1456,16 +1602,88 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     return () => window.removeEventListener("keydown", handleChoiceKey);
   }, [phase, listeningChecked, listeningChoices, item.de]);
 
+  useEffect(() => {
+    if (phase !== "MissingWord") return;
+    const handleChoiceKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || missingWordChecked) return;
+      const option = missingWordChoices[Number(event.key) - 1];
+      if (!option) return;
+      event.preventDefault();
+      const ok = choiceKey(option) === choiceKey(missingWord.answer);
+      setMissingWordChoice(option);
+      setMissingWordChecked(true);
+      reactToAnswer(ok);
+      if (ok) {
+        tts(item.de, 0.88, targetLang);
+        window.setTimeout(advanceOrFinish, 900);
+      }
+    };
+    window.addEventListener("keydown", handleChoiceKey);
+    return () => window.removeEventListener("keydown", handleChoiceKey);
+  }, [phase, missingWordChecked, missingWordChoices, missingWord.answer, item.de, targetLang]);
+
   const goBack = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
     const order: Phase[] = phaseRoute();
     const prev = order[order.indexOf(phase) - 1];
-    if (prev) setPhase(prev);
+    if (prev) {
+      currentPhaseRef.current = prev;
+      setPhase(prev);
+    }
   };
 
   const goToPhase = (p: Phase) => {
-    if (!recallTransitionPendingRef.current && !recallCompletionScheduledRef.current) setPhase(p);
+    if (!recallTransitionPendingRef.current && !recallCompletionScheduledRef.current) {
+      currentPhaseRef.current = p;
+      setPhase(p);
+    }
   };
+
+  useEffect(() => {
+    const handleStageShortcut = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented
+        || event.repeat
+        || event.isComposing
+        || recallTransitionPendingRef.current
+        || recallCompletionScheduledRef.current
+      ) return;
+
+      const route = phaseRoute();
+      const directIndex = directStageShortcutIndex(event);
+      if (directIndex !== null) {
+        const destination = route[directIndex];
+        if (!destination) return;
+        event.preventDefault();
+        event.stopPropagation();
+        goToPhase(destination);
+        return;
+      }
+
+      if (
+        event.altKey
+        || event.ctrlKey
+        || event.metaKey
+        || event.shiftKey
+        || phase === "Order"
+        || isTextEntryTarget(event.target)
+      ) return;
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+      const currentIndex = route.indexOf(phase);
+      const offset = event.key === "ArrowLeft" ? -1 : 1;
+      const destination = route[currentIndex + offset];
+      if (!destination) return;
+      event.preventDefault();
+      event.stopPropagation();
+      goToPhase(destination);
+    };
+
+    window.addEventListener("keydown", handleStageShortcut);
+    return () => window.removeEventListener("keydown", handleStageShortcut);
+    // phaseRoute intentionally derives from these two route inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, masteredRoute, hasFr]);
 
   // Auto-advance: once the typed answer is strictly correct (no lenient/typo
   // pass), confirm it automatically — no Check press needed.

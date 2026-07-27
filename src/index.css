@@ -1013,7 +1013,67 @@ a { color: inherit; text-decoration: none; }
 .fs-stagemeta > div { display: flex; align-items: baseline; gap: 11px; }
 .fs-stagemeta span { color: var(--fs-muted); font-size: 11px; font-weight: 820; letter-spacing: 0.1em; text-transform: uppercase; }
 .fs-stagemeta strong { color: var(--fs-text); font-size: 15px; letter-spacing: -0.01em; }
-.fs-stagemeta .fs-stagehint { color: var(--fs-muted-2); font-size: 10px; }
+.fs-stagemeta .fs-stage-tools { position: relative; display: flex; align-items: center; gap: 0; }
+.guided-session .fs-shortcut-trigger {
+  min-height: 34px; display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(177,139,255,0.22); border-radius: 11px; padding: 5px 9px;
+  background: rgba(139,76,255,0.07); color: var(--fs-text-2); cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.045);
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+.guided-session .fs-shortcut-trigger:hover,
+.guided-session .fs-shortcut-trigger[aria-expanded="true"] {
+  border-color: rgba(177,139,255,0.4); background: rgba(139,76,255,0.13); color: var(--fs-text);
+}
+.guided-session .fs-shortcut-trigger:active { transform: translateY(1px); }
+.guided-session .fs-shortcut-trigger > svg { width: 15px; height: 15px; color: #b58aff; }
+.fs-stagemeta .fs-shortcut-trigger-keys { display: inline-flex; align-items: center; gap: 3px; }
+.fs-stagemeta .fs-shortcut-trigger-keys kbd,
+.fs-shortcut-row kbd {
+  min-width: 23px; height: 22px; display: inline-grid; place-items: center;
+  border: 1px solid rgba(255,255,255,0.13); border-radius: 6px; padding: 0 5px;
+  background: rgba(255,255,255,0.045); color: #d9d3e5;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.3); font: 750 10px/1 system-ui, sans-serif;
+  letter-spacing: 0; text-transform: none;
+}
+.fs-stagemeta .fs-shortcut-trigger-label {
+  color: var(--fs-muted); font-size: 10px; font-weight: 760; letter-spacing: 0; text-transform: none;
+}
+.fs-shortcut-panel {
+  position: absolute; z-index: 60; top: calc(100% + 10px); right: 0;
+  width: min(390px, calc(100vw - 36px)); max-height: calc(100vh - 130px); overflow-x: hidden; overflow-y: auto;
+  border: 1px solid rgba(177,139,255,0.28); border-radius: 16px; padding: 13px;
+  background: #1b1c26; color: var(--fs-text);
+  box-shadow: 0 22px 55px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.055);
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(177,139,255,0.32) transparent;
+}
+.fs-stagemeta .fs-shortcut-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 1px 10px; border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.fs-stagemeta .fs-shortcut-head > div { display: flex; align-items: center; gap: 8px; }
+.fs-shortcut-head > div > svg { width: 16px; height: 16px; color: #b58aff; }
+.fs-stagemeta .fs-shortcut-head strong { color: var(--fs-text); font-size: 13px; }
+.guided-session .fs-shortcut-head > button {
+  width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 8px;
+  background: transparent; color: var(--fs-muted); cursor: pointer;
+}
+.guided-session .fs-shortcut-head > button:hover { background: rgba(255,255,255,0.06); color: var(--fs-text); }
+.fs-shortcut-head > button svg { width: 15px; height: 15px; }
+.fs-shortcut-list { display: grid; gap: 2px; padding: 9px 0 7px; }
+.fs-stagemeta .fs-shortcut-row {
+  min-height: 34px; display: grid; grid-template-columns: minmax(122px, auto) 1fr; align-items: center; gap: 12px;
+  border-radius: 9px; padding: 5px 7px;
+}
+.fs-stagemeta .fs-shortcut-row:nth-child(odd) { background: rgba(255,255,255,0.024); }
+.fs-stagemeta .fs-shortcut-row > span { display: flex; align-items: center; gap: 4px; }
+.fs-stagemeta .fs-shortcut-row > strong {
+  color: var(--fs-text-2); font-size: 11px; font-weight: 680; letter-spacing: 0; line-height: 1.25;
+}
+.fs-stagemeta .fs-shortcut-panel > p {
+  margin: 0; border-top: 1px solid rgba(255,255,255,0.07); padding: 10px 5px 1px;
+  color: var(--fs-muted-2); font-size: 10px; font-weight: 620; line-height: 1.45;
+}
 .fs-stagetrack-scroll {
   overflow-x: auto; overflow-y: hidden; padding: 3px 0 5px;
   scrollbar-width: thin; scrollbar-color: rgba(168,120,255,0.28) transparent;
@@ -1816,6 +1876,12 @@ a { color: inherit; text-decoration: none; }
   .fs-match-progress > div:first-child { align-items: flex-start; }
   .fs-match-progress span { max-width: 48%; }
   .fs-stagebar { padding: 14px 12px 15px; }
+  .fs-stagemeta { align-items: center; gap: 10px; }
+  .fs-stagemeta > div:first-child { min-width: 0; }
+  .fs-stagemeta > div:first-child strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fs-stagemeta .fs-shortcut-trigger-label { display: none; }
+  .guided-session .fs-shortcut-trigger { gap: 6px; padding-inline: 7px; }
+  .fs-shortcut-panel { right: -1px; width: min(365px, calc(100vw - 24px)); }
   .fs-stagetrack.has-many-stages { min-width: 672px; }
   .guided-session .fs-stagebtn > span { width: 36px; height: 36px; border-radius: 11px; font-size: 12px; }
   .guided-session .fs-stagebtn small { display: none; }
@@ -1870,6 +1936,11 @@ a { color: inherit; text-decoration: none; }
   .guided-session .fs-meaning-skip,
   .guided-session .fs-check.fs-meaning-check { min-width: 0; flex: 1; }
   .fs-listening-choices { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 430px) {
+  .fs-stagemeta .fs-shortcut-row { grid-template-columns: 112px 1fr; gap: 8px; padding-inline: 4px; }
+  .fs-shortcut-panel { padding: 11px; }
 }
 
 /* Umlaut keys moved OUT of the answer panel — calm centered row underneath. */
