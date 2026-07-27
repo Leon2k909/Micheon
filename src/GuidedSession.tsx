@@ -4470,7 +4470,7 @@ function LessonMemoryCheck({
       petSpeak(
         grade === "know"
           ? "Great — you remembered the lesson. You’re ready to move on."
-          : "Good call. We’ll practise that again before adding anything new.",
+          : "Good call. We’ll keep that in your next reviews while you learn new phrases too.",
         { durationMs: 5200, mood: grade === "know" ? "success" : "encourage", voiceLang: "en-US" }
       );
       onComplete();

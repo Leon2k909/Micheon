@@ -104,10 +104,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, aliases, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
+    queue.push({ type: EX.SENTENCE, item: { id, aliases, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -277,6 +277,55 @@ export function pickReviews(due: any[], n: number): any[] {
   if (older) picks.push(older);
   for (const r of weakestFirst) { if (picks.length >= n) break; if (!has(r)) picks.push(r); }  // backfill
   return picks.slice(0, n);
+}
+
+/**
+ * Build Continue Learning's review and fresh halves without letting a weak
+ * backlog consume the whole lesson. Explicit struggles own the first review
+ * slots, ordinary due reviews backfill the rest, and genuinely new phrases
+ * are selected independently. Presentation text is deduped across both halves
+ * so aliases or duplicate curriculum entries cannot steal one of the 3 + 3
+ * slots.
+ */
+export function selectContinueLearningMix(
+  rankedFresh: any[],
+  struggling: any[],
+  due: any[],
+  freshLimit = NEW_PER_LESSON,
+  reviewLimit = OLD_PER_LESSON
+): { fresh: any[]; reviews: any[] } {
+  const presentationKey = (step: any) => {
+    const text = String(step?.item?.de ?? "")
+      .normalize("NFKC")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLocaleLowerCase("de-DE");
+    return text || `id:${String(step?.item?.id ?? "")}`;
+  };
+
+  const takeUnique = (steps: any[], limit: number, blocked = new Set<string>()) => {
+    if (limit <= 0) return [];
+    const picked: any[] = [];
+    const seen = new Set(blocked);
+    for (const step of steps) {
+      const key = presentationKey(step);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      picked.push(step);
+      if (picked.length >= limit) break;
+    }
+    return picked;
+  };
+
+  const priorityReviews = takeUnique(struggling, reviewLimit);
+  const selectedReviewKeys = new Set(priorityReviews.map(presentationKey));
+  const duePool = takeUnique(due, due.length, selectedReviewKeys);
+  const dueReviews = pickReviews(duePool, Math.max(0, reviewLimit - priorityReviews.length));
+  const reviews = [...priorityReviews, ...dueReviews];
+  const reviewKeys = new Set(reviews.map(presentationKey));
+  const fresh = takeUnique(rankedFresh, freshLimit, reviewKeys);
+
+  return { fresh, reviews };
 }
 
 // ── Catalog of every learnable item (for the word/sentence tracker) ──

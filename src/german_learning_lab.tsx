@@ -19,7 +19,7 @@ import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/c
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildCatalog, buildSession, pickReviews, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import {
@@ -145,6 +145,7 @@ export default function GermanLearningLab() {
   // Scans every phrase in the course, so it is built once per pack list rather
   // than on every Continue learning press.
   const corpusIndex = React.useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
+  const catalog = React.useMemo(() => buildCatalog(apiParts), [apiParts]);
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
   const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);
@@ -157,7 +158,7 @@ export default function GermanLearningLab() {
   const petQuizItems = React.useMemo(
     () => {
       const grades = loadGradeStore(user);
-      const eligible = buildCatalog(apiParts).filter((item) => {
+      const eligible = catalog.filter((item) => {
         const de = item.de?.trim() ?? "";
         const en = item.en?.trim() ?? "";
         return de.length >= 2 && en.length >= 2 && de.length <= 64 && en.length <= 64;
@@ -191,7 +192,7 @@ export default function GermanLearningLab() {
       keyed.sort((a, b) => a.priority - b.priority || a.updatedAt - b.updatedAt);
       return keyed.slice(0, 1200).map((entry) => entry.item);
     },
-    [apiParts, gradeRevision, user]
+    [catalog, gradeRevision, user]
   );
   petQuizItemsRef.current = petQuizItems;
   const petQuizAvailable = petQuizItems.length > 0;
@@ -390,8 +391,8 @@ export default function GermanLearningLab() {
   };
 
   // The end-of-lesson memory check is a genuine delayed recall, so a "yes"
-  // climbs one normal SRS rung. A "not yet" resets the item and makes it block
-  // fresh material until it has been practised again.
+  // climbs one normal SRS rung. A "not yet" resets the item and gives it first
+  // priority in the review half of the next mixed lesson.
   const markMemoryGrade = (itemId: string, grade: "know" | "struggle") => {
     try {
       const existing = loadCompleted();
@@ -416,7 +417,7 @@ export default function GermanLearningLab() {
           .map((step) => String(step.item.id))
       );
       const grades = loadGradeStore(user);
-      const candidates = buildCatalog(apiParts).filter(
+      const candidates = catalog.filter(
         (item) => !usedIds.has(item.id) && statusForId(grades, item.id, item.aliases) === "new"
       );
       const replacement =
@@ -557,44 +558,11 @@ export default function GermanLearningLab() {
       return packSteps;
     };
 
-    // A learner who said "not yet" at the pet's memory check gets those weak
-    // items first. Do not mix in fresh curriculum until every struggle has
-    // been recalled and moved back onto the spaced-repetition ladder.
-    const requiredReviews: any[] = [];
-    const requiredIds = new Set<string>();
-    for (const reviewPartId of Object.keys(apiParts)) {
-      const reviewSteps = sessionForPack(reviewPartId);
-      for (const reviewStep of reviewSteps) {
-        const itemId = reviewStep?.type === "sentence" ? reviewStep.item?.id : null;
-        if (
-          itemId
-          && !requiredIds.has(itemId)
-          && reviewState[itemId]?.lastGrade === "struggle"
-        ) {
-          requiredIds.add(itemId);
-          requiredReviews.push(reviewStep);
-        }
-      }
-    }
-    if (requiredReviews.length > 0) {
-      let steps = [...requiredReviews.slice(0, 6), { type: "complete" }];
-      if (learningEnglish()) steps = steps.map(swapStepForEnglish);
-      const reviewPartId = requiredReviews[0]?.item?.id
-        ? Object.keys(apiParts).find((key) => String(requiredReviews[0].item.id).startsWith(`${key}-`))
-        : undefined;
-      const id = reviewPartId ?? explicit ?? activePart;
-      setActivePart(id);
-      saveScopedJson("active-part", id, user);
-      setSessionSteps(withRegisterCheck(steps, user));
-      sessionStartRef.current = Date.now();
-      setShowGuidedSession(true);
-      return;
-    }
-
     if (!explicit) {
       const keys = Object.keys(apiParts);
+      const requiredReviews: any[] = [];
       const globalReviews: any[] = [];
-      const seenDe = new Set<string>();
+      const reviewPartByStep = new Map<any, string>();
 
       // Every unseen SENTENCE is scored, not the pack it lives in. A pack is a
       // mixed bag — the restaurant pack holds both "Noch einen Kaffee?" and
@@ -606,72 +574,104 @@ export default function GermanLearningLab() {
       // pool only by being learned, so the easy material is still waiting
       // however good you get. Ties keep curriculum order.
       const ability = computeAbility(reviewState as any);
-      let freshId: string | undefined;
-      let freshSteps: any[] = [];
-
       // Reviews are gathered from every pack regardless of order, so a due item
-      // is never delayed by the difficulty preference.
+      // is never delayed by the difficulty preference. A phrase marked
+      // "struggle" is a priority review, not a new phrase; it may use a legacy
+      // alias in saved progress, so classify through statusForId.
       for (const pId of keys) {
         const p = apiParts[pId];
         if (!p) continue;
         const s = sessionForPack(pId);
         for (const st of s) {
-          if (st.type === "sentence" && st.review && !seenDe.has(st.item.de)) {
-            seenDe.add(st.item.de);
+          if (st.type !== "sentence" || !st.item?.id) continue;
+          const status = statusForId(reviewState, st.item.id, st.item.aliases);
+          if (status === "struggle") {
+            const priorityReview = { ...st, review: true, reviewReason: "struggle", interval: 0 };
+            requiredReviews.push(priorityReview);
+            reviewPartByStep.set(priorityReview, pId);
+          } else if (st.review) {
             globalReviews.push(st);
+            reviewPartByStep.set(st, pId);
           }
         }
       }
 
       // Score every unseen sentence in the course, then take the best few.
       const candidates: { pId: string; index: number; score: number; step: any }[] = [];
-      keys.forEach((pId, packIndex) => {
+      catalog.forEach((item, index) => {
+        if (statusForId(reviewState, item.id, item.aliases) !== "new") return;
+        const pId = item.partKey;
         const p = apiParts[pId];
         if (!p) return;
-        const s = sessionForPack(pId);
-        s.forEach((st: any, stepIndex: number) => {
-          if (st.type !== "sentence" || st.review) return;
-          const text = String(st.item?.de ?? "");
-          candidates.push({
-            pId,
-            index: packIndex * 1000 + stepIndex,
-            score: itemPriority({
-              ability: ability.band,
-              commonality: sentenceCommonality(text, corpusIndex),
-              difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
-              own: isCustomPartKey(pId),
-            }),
-            step: st,
-          });
+        const text = String(item.de ?? "");
+        candidates.push({
+          pId,
+          index,
+          score: itemPriority({
+            ability: ability.band,
+            commonality: sentenceCommonality(text, corpusIndex),
+            difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
+            own: isCustomPartKey(pId),
+          }),
+          step: {
+            type: "sentence",
+            item: {
+              id: item.id,
+              aliases: item.aliases,
+              de: item.de,
+              en: item.en,
+              fr: item.fr,
+              use: item.use,
+              lookup: item.lookup,
+              tierNote: item.tierNote,
+              short: item.short,
+              when: item.when,
+              say: item.say,
+              long: item.long,
+              group: item.group,
+              mastery: "new",
+            },
+          },
         });
       });
       candidates.sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index));
 
-      if (candidates.length) {
-        const lead = candidates[0];
-        freshId = lead.pId;
-        // The lead sentence is the best-scoring one anywhere. The rest of the
-        // lesson prefers its pack-mates so a lesson still reads as being about
-        // something, rather than three unrelated sentences from three topics.
-        const sameTopic = candidates.filter((c) => c.pId === lead.pId);
-        const chosen = [...sameTopic, ...candidates.filter((c) => c.pId !== lead.pId)]
-          .slice(0, NEW_PER_LESSON_TARGET);
-        const dialogues = sessionForPack(lead.pId)
-          .filter((st: any) => st.type === "dialogue");
-        freshSteps = [...chosen.map((c) => c.step), ...dialogues];
-      }
-
-      // 3 new (the best-scoring unseen sentences) + 3 old due reviews
-      // (mostly recent, one older — see pickReviews). New first, then old.
-      const reviews = pickReviews(globalReviews, OLD_PER_LESSON);
-      const reviewDe = new Set(reviews.map((r: any) => r.item.de));
-      const fresh = freshSteps.filter(
-        (st: any) => st.type !== "sentence" || !reviewDe.has(st.item.de)
+      // The lead sentence is the best-scoring one anywhere. The rest of the
+      // fresh half prefers its pack-mates so the lesson still feels coherent,
+      // then scans the remaining ranked pool to backfill duplicate/colliding
+      // wording instead of silently returning fewer than 3 new phrases.
+      const lead = candidates[0];
+      const rankedCandidates = lead
+        ? [
+            ...candidates.filter((candidate) => candidate.pId === lead.pId),
+            ...candidates.filter((candidate) => candidate.pId !== lead.pId),
+          ]
+        : [];
+      const { fresh, reviews } = selectContinueLearningMix(
+        rankedCandidates.map((candidate) => candidate.step),
+        requiredReviews,
+        globalReviews,
+        NEW_PER_LESSON_TARGET,
+        OLD_PER_LESSON
       );
+      const firstFresh = fresh[0];
+      const freshId = rankedCandidates.find((candidate) => candidate.step === firstFresh)?.pId;
+      const servedFreshDe = new Set(
+        fresh.map((step: any) => String(step.item?.de ?? "").trim().toLocaleLowerCase("de-DE"))
+      );
+      const dialogues = freshId
+        ? sessionForPack(freshId).filter(
+            (step: any) => step.type === "dialogue"
+              && (step.dialogue?.lines ?? []).some(
+                (line: any) => servedFreshDe.has(String(line?.de ?? "").trim().toLocaleLowerCase("de-DE"))
+              )
+          )
+        : [];
+      const freshSteps = [...fresh, ...dialogues];
 
-      if (reviews.length > 0 || fresh.length > 0) {
-        const id = freshId ?? keys[0];
-        let steps = [...fresh, ...reviews, { type: "complete" }];
+      if (reviews.length > 0 || freshSteps.length > 0) {
+        const id = freshId ?? reviewPartByStep.get(reviews[0]) ?? keys[0];
+        let steps = [...freshSteps, ...reviews, { type: "complete" }];
         if (learningEnglish()) steps = steps.map(swapStepForEnglish);
         setActivePart(id);
         saveScopedJson("active-part", id, user);
