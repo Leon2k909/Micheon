@@ -1144,8 +1144,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [orderChecked, setOrderChecked] = useState(false);
   const [orderTouched, setOrderTouched] = useState(false);
   const [orderSelected, setOrderSelected] = useState<number | null>(null);
-  const [orderDragging, setOrderDragging] = useState<number | null>(null);
-  const draggedOrderIndex = useRef<number | null>(null);
+  const [orderDragging, setOrderDragging] = useState<string | null>(null);
+  const [orderDropTarget, setOrderDropTarget] = useState<string | null>(null);
+  const draggedOrderTokenId = useRef<string | null>(null);
+  const suppressOrderClickRef = useRef(false);
   const orderAdvanceTimerRef = useRef<number | null>(null);
 
   // Final "Write it" stage: type the whole target sentence from its meaning.
@@ -1506,7 +1508,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setOrderTouched(false);
       setOrderSelected(null);
       setOrderDragging(null);
-      draggedOrderIndex.current = null;
+      setOrderDropTarget(null);
+      draggedOrderTokenId.current = null;
+      suppressOrderClickRef.current = false;
     }
     if (phase === "SpeakAll") { setSayInput(""); setSayChecked(false); }
     if (phase === "RecallTarget") {
@@ -1763,7 +1767,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       && !orderChecked
       && orderIsCorrect
       && orderDragging === null
-      && draggedOrderIndex.current === null
+      && draggedOrderTokenId.current === null
     ) {
       checkOrder();
     }
@@ -1950,6 +1954,22 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setOrderSelected(null);
   };
 
+  const reorderTokenById = (fromId: string, toId: string) => {
+    if (!fromId || fromId === toId || orderLocked) return;
+    if (orderAdvanceTimerRef.current !== null) {
+      window.clearTimeout(orderAdvanceTimerRef.current);
+      orderAdvanceTimerRef.current = null;
+    }
+    setOrderTokens((tokens) => {
+      const from = tokens.findIndex((token) => token.id === fromId);
+      const to = tokens.findIndex((token) => token.id === toId);
+      return moveOrderToken(tokens, from, to);
+    });
+    setOrderChecked(false);
+    setOrderTouched(true);
+    setOrderSelected(null);
+  };
+
   const selectOrderToken = (index: number) => {
     if (orderSelected === null) {
       setOrderSelected(index);
@@ -1959,7 +1979,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const checkOrder = () => {
-    if (orderChecked || orderDragging !== null || draggedOrderIndex.current !== null) return;
+    if (orderChecked || orderDragging !== null || draggedOrderTokenId.current !== null) return;
     setOrderChecked(true);
     // A just-dropped word should stay planted. The green tokens and feedback
     // confirm success without scaling the entire drag surface under the cursor.
@@ -1986,7 +2006,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setOrderTouched(false);
     setOrderSelected(null);
     setOrderDragging(null);
-    draggedOrderIndex.current = null;
+    setOrderDropTarget(null);
+    draggedOrderTokenId.current = null;
+    suppressOrderClickRef.current = false;
   };
 
   const checkSay = () => {
@@ -2714,8 +2736,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             key="missing-word"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="space-y-4"
+            exit={{ opacity: 0, transition: { duration: 0 } }}
+            className="fs-missing-phase space-y-4"
           >
             <p className="fs-missing-instruction">
               {ui("Listen to each option and choose the word that completes the sentence.")}
@@ -2774,7 +2796,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={cn("fs-result", missingWordCorrect ? "is-good" : "is-bad")}
+                  className={cn("fs-missing-result fs-result", missingWordCorrect ? "is-good" : "is-bad")}
                 >
                   <strong>{ui(missingWordCorrect ? "That's it!" : "Not quite")}</strong>
                   <span>
@@ -3571,53 +3593,62 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className={cn(
                       "fs-order-token",
                       orderSelected === tokenIndex && "is-selected",
-                      orderDragging === tokenIndex && "is-dragging",
+                      orderDragging === token.id && "is-dragging",
+                      orderDropTarget === token.id && orderDragging !== token.id && "is-drop-target",
                       orderChecked && orderIsCorrect && "is-correct"
                     )}
                     onClick={() => {
+                      if (suppressOrderClickRef.current) {
+                        suppressOrderClickRef.current = false;
+                        return;
+                      }
                       if (!orderLocked) selectOrderToken(tokenIndex);
-                    }}
-                    onPointerDown={() => {
-                      if (!orderLocked) setOrderDragging(tokenIndex);
-                    }}
-                    onPointerCancel={() => setOrderDragging(null)}
-                    onPointerUp={() => {
-                      if (draggedOrderIndex.current === null) setOrderDragging(null);
                     }}
                     onDragStart={(event) => {
                       if (orderLocked) {
                         event.preventDefault();
                         return;
                       }
-                      draggedOrderIndex.current = tokenIndex;
-                      setOrderDragging(tokenIndex);
+                      suppressOrderClickRef.current = true;
+                      draggedOrderTokenId.current = token.id;
+                      setOrderDragging(token.id);
+                      setOrderDropTarget(null);
                       event.dataTransfer.effectAllowed = "move";
-                      event.dataTransfer.setData("text/plain", String(tokenIndex));
+                      event.dataTransfer.setData("text/plain", token.id);
                     }}
                     onDragEnd={() => {
-                      draggedOrderIndex.current = null;
+                      draggedOrderTokenId.current = null;
                       setOrderDragging(null);
+                      setOrderDropTarget(null);
+                      window.setTimeout(() => {
+                        suppressOrderClickRef.current = false;
+                      }, 0);
                     }}
                     onDragEnter={(event) => {
                       event.preventDefault();
                       if (orderLocked) return;
-                      const from = draggedOrderIndex.current;
-                      if (from === null || from === tokenIndex) return;
-                      reorderToken(from, tokenIndex);
-                      draggedOrderIndex.current = tokenIndex;
-                      setOrderDragging(tokenIndex);
+                      const fromId = draggedOrderTokenId.current;
+                      if (!fromId || fromId === token.id) {
+                        setOrderDropTarget(null);
+                        return;
+                      }
+                      setOrderDropTarget(token.id);
                     }}
                     onDragOver={(event) => {
                       event.preventDefault();
                       event.dataTransfer.dropEffect = "move";
+                      if (draggedOrderTokenId.current && draggedOrderTokenId.current !== token.id) {
+                        setOrderDropTarget(token.id);
+                      }
                     }}
                     onDrop={(event) => {
                       event.preventDefault();
                       if (orderLocked) return;
-                      const from = draggedOrderIndex.current ?? Number(event.dataTransfer.getData("text/plain"));
-                      if (Number.isInteger(from)) reorderToken(from, tokenIndex);
-                      draggedOrderIndex.current = null;
+                      const fromId = draggedOrderTokenId.current || event.dataTransfer.getData("text/plain");
+                      reorderTokenById(fromId, token.id);
+                      draggedOrderTokenId.current = null;
                       setOrderDragging(null);
+                      setOrderDropTarget(null);
                     }}
                     onKeyDown={(event) => {
                       if (orderLocked) return;
