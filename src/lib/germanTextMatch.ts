@@ -140,6 +140,8 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   [/\b(hi|hey)\b/g, "hallo"],
   [/\bsorry\b/g, "entschuldigung"],       // Sorry is everyday German
   [/\bentschuldige\b/g, "entschuldigung"],
+  [/\bpapa\b/g, "vater"],
+  [/\bmama\b/g, "mutter"],
   // Cross-gender noun pairs fold WITH their article so each side stays
   // grammatical German ("das Klo" == "die Toilette", never "das Toilette").
   [/\bdas klo\b/g, "die toilette"],
@@ -521,7 +523,7 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bfancy\b/g, "like")
     .replace(/\bwould like\b/g, "want")
     .replace(/\bdad\b/g, "father")
-    .replace(/\b(mom|mum)\b/g, "mother")
+    .replace(/\b(mom|mum|mam)\b/g, "mother")
     .replace(/\bfolks\b/g, "parents")
     .replace(/\bbro\b/g, "brother")
     .replace(/\b(kid|baby)\b/g, "child")

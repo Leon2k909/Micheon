@@ -5051,7 +5051,8 @@ function SessionMatchingPairs({
 }
 
 export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onMemoryGrade, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
-  const { speak: petSpeak } = useCodexPets();
+  const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
+  const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
@@ -5317,7 +5318,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
 
       {/* Milestone praise pop */}
       <AnimatePresence>
-        {praise && (
+        {praise && !petEnabled && (
           <motion.div
             key={praise.id}
             initial={reduceMotion

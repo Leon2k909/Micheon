@@ -426,6 +426,12 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Sei bitte freundlich zu deiner Schwester.", en: "Please be nice to your sister. / Be friendly to your sister, please.", use: "freundlich zu + dative: zu deiner Schwester. Sei is the du-command form of sein.", fr: "Sois gentil avec ta sœur, s'il te plaît." },
       { de: "Wer ist das auf dem Foto?", en: "Who's that in the photo? / Who is that in the picture?", use: "German says auf dem Foto (on the photo) where English says 'in'. auf + dative for a fixed position: auf dem Bild, auf der Karte.", fr: "C'est qui sur la photo ?" },
       { de: "Ich kenne hier niemanden.", en: "I don't know anyone here. / I don't know a soul here.", use: "niemand adds -en after kennen (accusative). The opposite: Ich kenne hier viele Leute.", fr: "Je ne connais personne ici." , say: "sounds like: ish KEN-uh heer NEE-man-d'n — ie is 'ee', the opposite of ei; niemand is 'nee-mant', not 'nye-mand'" },
+      { de: "Mein Vater schläft gerade.", en: "My dad is sleeping right now. / My father is asleep at the moment.", use: "German has no separate 'is sleeping' form: 'schläft' plus 'gerade' makes the ongoing meaning clear." },
+      { de: "Meine Mutter schläft gerade.", en: "My mum is sleeping right now. / My mam is asleep at the moment.", use: "It is 'mein Vater' but 'meine Mutter': Mutter is feminine, so the possessive gets -e." },
+      { de: "Sei bitte leise, mein Vater schläft.", en: "Please be quiet, my dad is asleep. / Be quiet, my father is sleeping.", use: "'sei' is the du-command form of 'sein'. In the second main clause, 'schläft' stays in the second position." },
+      { de: "Meine Mutter ist gerade eingeschlafen.", en: "My mum has just fallen asleep. / My mam has just dropped off.", use: "'einschlafen' means to fall asleep and takes 'sein' in the perfect: 'ist eingeschlafen', never 'hat eingeschlafen'." },
+      { de: "Mein Vater fühlt sich heute nicht so gut.", en: "My dad isn't feeling very well today. / My father doesn't feel very well today.", use: "'sich fühlen' is reflexive: 'er fühlt sich'. 'nicht so gut' is a natural, gentle way to say someone feels unwell." },
+      { de: "Meiner Mutter geht es heute nicht gut.", en: "My mum isn't feeling well today. / My mam isn't well today.", use: "With 'jemandem geht es ...', the person is dative: 'meiner Mutter', not 'meine Mutter'." },
     ],
   },
   part8: {
