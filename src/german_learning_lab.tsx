@@ -542,19 +542,32 @@ export default function GermanLearningLab() {
     // has fresh content. The most common German is always served first.
     const reviewState = loadCompleted();
     const explicit = partId && apiParts[partId] ? partId : null;
+    // `buildSession` scans, filters, shuffles and sorts a whole pack. Continue
+    // Learning consults the same packs several times while selecting struggles,
+    // due reviews, fresh sentences and dialogues, so keep one result per pack
+    // for this invocation only. A new call gets a new cache and fresh progress.
+    const packSessions = new Map<string, any[]>();
+    const sessionForPack = (packId: string) => {
+      if (packSessions.has(packId)) return packSessions.get(packId)!;
+      const pack = apiParts[packId];
+      if (!pack) return [];
+      const packSteps = buildSession(
+        { ...pack, partKey: packId },
+        [],
+        reviewState,
+        0
+      );
+      packSessions.set(packId, packSteps);
+      return packSteps;
+    };
 
     // A learner who said "not yet" at the pet's memory check gets those weak
     // items first. Do not mix in fresh curriculum until every struggle has
     // been recalled and moved back onto the spaced-repetition ladder.
     const requiredReviews: any[] = [];
     const requiredIds = new Set<string>();
-    for (const [reviewPartId, reviewPart] of Object.entries(apiParts)) {
-      const reviewSteps = buildSession(
-        { ...reviewPart, partKey: reviewPartId },
-        [],
-        reviewState,
-        0
-      );
+    for (const reviewPartId of Object.keys(apiParts)) {
+      const reviewSteps = sessionForPack(reviewPartId);
       for (const reviewStep of reviewSteps) {
         const itemId = reviewStep?.type === "sentence" ? reviewStep.item?.id : null;
         if (
@@ -605,7 +618,7 @@ export default function GermanLearningLab() {
       for (const pId of keys) {
         const p = apiParts[pId];
         if (!p) continue;
-        const s = buildSession({ ...p, partKey: pId }, [], reviewState, 0);
+        const s = sessionForPack(pId);
         for (const st of s) {
           if (st.type === "sentence" && st.review && !seenDe.has(st.item.de)) {
             seenDe.add(st.item.de);
@@ -619,7 +632,7 @@ export default function GermanLearningLab() {
       keys.forEach((pId, packIndex) => {
         const p = apiParts[pId];
         if (!p) return;
-        const s = buildSession({ ...p, partKey: pId }, [], reviewState, 0);
+        const s = sessionForPack(pId);
         s.forEach((st: any, stepIndex: number) => {
           if (st.type !== "sentence" || st.review) return;
           const text = String(st.item?.de ?? "");
@@ -647,12 +660,8 @@ export default function GermanLearningLab() {
         const sameTopic = candidates.filter((c) => c.pId === lead.pId);
         const chosen = [...sameTopic, ...candidates.filter((c) => c.pId !== lead.pId)]
           .slice(0, NEW_PER_LESSON_TARGET);
-        const dialogues = buildSession(
-          { ...apiParts[lead.pId], partKey: lead.pId },
-          [],
-          reviewState,
-          0
-        ).filter((st: any) => st.type === "dialogue");
+        const dialogues = sessionForPack(lead.pId)
+          .filter((st: any) => st.type === "dialogue");
         freshSteps = [...chosen.map((c) => c.step), ...dialogues];
       }
 
@@ -688,7 +697,7 @@ export default function GermanLearningLab() {
       id: `${id}-${i}`, de: item.de, en: item.en, tip: item.tip,
       example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
     }));
-    let steps = buildSession(partWithKey, items, reviewState, 0);
+    let steps = sessionForPack(id);
     // German speaker learning English: show the same content the other way round
     // (English is the target you type/hear; German is the meaning). IDs are left
     // untouched so progress tracking stays consistent in either direction.
@@ -708,12 +717,7 @@ export default function GermanLearningLab() {
         if (pId === id) continue; // already checked above
         const p = apiParts[pId];
         if (!p) continue;
-        const pWithKey = { ...p, partKey: pId };
-        const pItems = p.vocab.map((item, index) => ({
-          id: `${pId}-${index}`, de: item.de, en: item.en, tip: item.tip,
-          example: item.example, exampleFr: item.exampleFr, kind: "vocab", lookup: item.lookup,
-        }));
-        const pSteps = buildSession(pWithKey, pItems, reviewState, 0);
+        const pSteps = sessionForPack(pId);
         if (pSteps.some(s => s.type === "sentence" || s.type === "dialogue")) {
           nextIdWithContent = pId;
           break;

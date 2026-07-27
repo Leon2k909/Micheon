@@ -26,22 +26,85 @@ function emitSpeaking(on: boolean) {
 }
 
 let currentAudio: HTMLAudioElement | null = null;
+let currentAudioUrl: string | null = null;
 let currentAudioResolve: (() => void) | null = null;
+let currentFetchController: AbortController | null = null;
 // Monotonic token: every new top-level play call bumps this so any in-flight
 // playback or fetch from a previous call knows to bail (mirrors speechSynthesis.cancel).
 let playSeq = 0;
 
-// Cache object URLs by text+lang+rate so repeated sentences play instantly.
-const urlCache = new Map<string, string>();
+type CachedAudioUrl = { bytes: number; url: string };
+
+// Cache object URLs by text+lang+rate so repeated sentences play instantly,
+// but cap both count and bytes. A long session can encounter hundreds of
+// unique phrases, and Blob URLs keep their backing MP3 alive until explicitly
+// revoked.
+const URL_CACHE_MAX_ENTRIES = 64;
+const URL_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+const urlCache = new Map<string, CachedAudioUrl>();
+let urlCacheBytes = 0;
+
+function trimUrlCache() {
+  while (
+    urlCache.size > 1
+    && (urlCache.size > URL_CACHE_MAX_ENTRIES || urlCacheBytes > URL_CACHE_MAX_BYTES)
+  ) {
+    let evicted = false;
+    for (const [key, entry] of urlCache) {
+      // Never revoke the URL currently being played. Once playback ends the
+      // trim runs again and can reclaim it if it is now the oldest entry.
+      if (entry.url === currentAudioUrl) continue;
+      urlCache.delete(key);
+      urlCacheBytes -= entry.bytes;
+      URL.revokeObjectURL(entry.url);
+      evicted = true;
+      break;
+    }
+    if (!evicted) break;
+  }
+}
+
+function cachedAudioUrl(key: string) {
+  const entry = urlCache.get(key);
+  if (!entry) return null;
+  // Map insertion order gives us a tiny LRU without another data structure.
+  urlCache.delete(key);
+  urlCache.set(key, entry);
+  return entry.url;
+}
+
+function cacheAudioBlob(key: string, blob: Blob) {
+  const previous = urlCache.get(key);
+  if (previous) {
+    urlCache.delete(key);
+    urlCacheBytes -= previous.bytes;
+    URL.revokeObjectURL(previous.url);
+  }
+  const entry = { bytes: blob.size, url: URL.createObjectURL(blob) };
+  urlCache.set(key, entry);
+  urlCacheBytes += entry.bytes;
+  trimUrlCache();
+  return entry.url;
+}
+
+function clearUrlCache() {
+  for (const entry of urlCache.values()) URL.revokeObjectURL(entry.url);
+  urlCache.clear();
+  urlCacheBytes = 0;
+}
 
 function hardStop() {
   emitSpeaking(false);
+  currentFetchController?.abort();
+  currentFetchController = null;
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
+  currentAudioUrl = null;
   currentAudioResolve?.();
   currentAudioResolve = null;
+  trimUrlCache();
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
@@ -65,9 +128,13 @@ if (typeof window !== "undefined") {
   // keyed by voice so they would never be served again — revoking them hands
   // the memory back instead of holding a whole lesson's audio for nothing.
   window.addEventListener(TTS_VOICE_EVENT, () => {
-    for (const url of urlCache.values()) URL.revokeObjectURL(url);
-    urlCache.clear();
     stopTts();
+    clearUrlCache();
+  });
+
+  window.addEventListener("pagehide", () => {
+    stopTts();
+    clearUrlCache();
   });
 }
 
@@ -84,21 +151,25 @@ function speakFallback(text: string, rate: number, lang: string): Promise<void> 
   });
 }
 
-async function getAudioUrl(text: string, rate: number, lang: string): Promise<string> {
+async function getAudioUrl(
+  text: string,
+  rate: number,
+  lang: string,
+  signal?: AbortSignal
+): Promise<string> {
   // The chosen voice is part of the cache key, or switching voice would keep
   // replaying the old one for every sentence already heard.
   const voice = voiceForLang(lang);
   const key = `${lang}|${voice}|${rate}|${text}`;
-  const cached = urlCache.get(key);
+  const cached = cachedAudioUrl(key);
   if (cached) return cached;
   const qs = `text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}&rate=${rate}`
     + (voice ? `&voice=${encodeURIComponent(voice)}` : "");
-  const resp = await fetch(`/api/tts?${qs}`);
+  const resp = await fetch(`/api/tts?${qs}`, { signal });
   if (!resp.ok) throw new Error(`tts http ${resp.status}`);
   const blob = await resp.blob();
-  const url = URL.createObjectURL(blob);
-  urlCache.set(key, url);
-  return url;
+  if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+  return cacheAudioBlob(key, blob);
 }
 
 function playUrl(url: string, token: number): Promise<void> {
@@ -106,11 +177,16 @@ function playUrl(url: string, token: number): Promise<void> {
     if (token !== playSeq) return resolve();
     const audio = new Audio(url);
     const finish = () => {
-      if (currentAudio === audio) currentAudio = null;
+      if (currentAudio === audio) {
+        currentAudio = null;
+        currentAudioUrl = null;
+        trimUrlCache();
+      }
       if (currentAudioResolve === finish) currentAudioResolve = null;
       resolve();
     };
     currentAudio = audio;
+    currentAudioUrl = url;
     currentAudioResolve = finish;
     audio.onplaying = () => { if (token === playSeq) emitSpeaking(true); };
     audio.onended = finish;
@@ -119,13 +195,13 @@ function playUrl(url: string, token: number): Promise<void> {
   });
 }
 
-async function playOne(item: SeqItem, token: number): Promise<void> {
+async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Promise<void> {
   const { lang } = item;
   const text = firstSpokenAlternative(item.text);
   const rate = item.rate ?? DEFAULT_RATE;
   if (!text) return;
   try {
-    const url = await getAudioUrl(text, rate, lang);
+    const url = await getAudioUrl(text, rate, lang, signal);
     if (token !== playSeq) return;
     await playUrl(url, token);
   } catch {
@@ -139,8 +215,13 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
   if (isAudioMuted()) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
-  return playOne({ text, rate, lang }, token).finally(() => {
-    if (token === playSeq) emitSpeaking(false);
+  const fetchController = new AbortController();
+  currentFetchController = fetchController;
+  return playOne({ text, rate, lang }, token, fetchController.signal).finally(() => {
+    if (token === playSeq) {
+      currentFetchController = null;
+      emitSpeaking(false);
+    }
   });
 }
 
@@ -149,13 +230,18 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
   if (isAudioMuted()) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
+  const fetchController = new AbortController();
+  currentFetchController = fetchController;
   return (async () => {
     for (const item of items) {
       if (token !== playSeq) break;
-      await playOne(item, token);
+      await playOne(item, token, fetchController.signal);
     }
   })().finally(() => {
-    if (token === playSeq) emitSpeaking(false);
+    if (token === playSeq) {
+      currentFetchController = null;
+      emitSpeaking(false);
+    }
   });
 }
 

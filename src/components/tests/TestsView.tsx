@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { loadGradeStore, setItemStatus, statusForId, type ItemStatus } from "@/lib/activity";
+import { loadGradeStore, setItemStatus, setItemsStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
 import { matchEnglishPhrase, matchGermanSentence, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
@@ -1245,9 +1245,14 @@ export function TestsView({
     if (!items.length) return;
     // Also record them as struggles, so they keep coming back through normal
     // review even after this one lesson.
-    for (const { item } of Object.values(markedWords)) {
-      setItemStatus(item.id, "struggle", profile, item.aliases);
-    }
+    setItemsStatus(
+      Object.values(markedWords).map(({ item }) => ({
+        id: item.id,
+        aliases: item.aliases,
+      })),
+      "struggle",
+      profile
+    );
     onLearnItems?.(items);
   };
 

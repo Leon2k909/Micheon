@@ -8,6 +8,9 @@ const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_FRAMES = 256;
 const MAX_FPS = 60;
 const BUNDLED_PETS_ROOT = fileURLToPath(new URL("./bundled-pets", import.meta.url));
+const PET_LIST_CACHE_MS = 5000;
+let cachedPetList = null;
+let cachedPetListUntil = 0;
 
 const BUILTIN_PETS = [
   ["codex", "Codex"],
@@ -234,7 +237,10 @@ function loadBuiltInPets(codexHome) {
   });
 }
 
-export function listCodexPets() {
+export function listCodexPets({ fresh = false } = {}) {
+  if (!fresh && cachedPetList && Date.now() < cachedPetListUntil) {
+    return cachedPetList;
+  }
   const codexHome = getCodexHome();
   const micheonCustom = loadManifestPets(
     path.join(getMicheonHome(), "pets"),
@@ -254,15 +260,17 @@ export function listCodexPets() {
   const bundled = loadManifestPets(BUNDLED_PETS_ROOT, "pet.json", "micheon")
     .filter((pet) => !externalIds.has(pet.id));
 
-  return [...external, ...bundled].sort((a, b) =>
+  cachedPetList = [...external, ...bundled].sort((a, b) =>
     a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
   );
+  cachedPetListUntil = Date.now() + PET_LIST_CACHE_MS;
+  return cachedPetList;
 }
 
-export function getCodexPetCatalog() {
+export function getCodexPetCatalog({ fresh = false } = {}) {
   const codexHome = getCodexHome();
   return {
-    pets: listCodexPets().map(publicPet),
+    pets: listCodexPets({ fresh }).map(publicPet),
     source: "micheon-and-codex",
     selectedPetKey: getSelectedCodexPetKey(codexHome),
   };

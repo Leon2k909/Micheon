@@ -63,7 +63,9 @@ After that, updates are automatic; they never re-download by hand.
   packaged app only).
 - `package.json` → `build.publish` — points electron-updater at the GitHub repo.
 - `build.files` bundles `electron/`, `server/`, `dist/`, and `package.json`;
-  production `node_modules` (Express, edge-tts, classic-level) are included and
-  the native `classic-level` module is rebuilt for packaging automatically.
+  only the server/runtime dependencies (Express, edge-tts, and
+  electron-updater) are included. Renderer libraries are already compiled into
+  `dist/`, so keeping them as development dependencies avoids shipping a second
+  copy in every installer.
 - Progress is saved to `%APPDATA%/germ/shared-progress.json` (writable), not
   inside the app, so it survives updates.

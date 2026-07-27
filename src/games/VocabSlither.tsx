@@ -103,7 +103,59 @@ const generateCategories = () => {
     return categories;
 };
 
-let CATEGORIES = generateCategories();
+const CATEGORIES = generateCategories();
+
+// The optional community dictionary augments the built-in seeds once per
+// renderer. This used to live in a component effect, so reopening the game
+// downloaded and parsed the whole file again, then appended another ~2,000
+// words to this module-level array. A Set keeps duplicate checks constant-time,
+// and the hard cap makes the amount of retained game data predictable.
+const REMOTE_DICTIONARY_URL =
+  "https://raw.githubusercontent.com/hathibelagal/German-English-JSON-Dictionary/master/german_english.json";
+const REMOTE_DICTIONARY_MAX_ADDITIONS = 2000;
+const categoryWordMembership = new Map(
+  CATEGORIES.map((category) => [
+    category.target,
+    new Set(category.words.map((word) => word.de.toLocaleLowerCase("de-DE"))),
+  ])
+);
+let remoteDictionaryLoad: Promise<number> | null = null;
+
+function loadRemoteDictionaryOnce(): Promise<number> {
+  if (remoteDictionaryLoad) return remoteDictionaryLoad;
+
+  remoteDictionaryLoad = (async () => {
+    const response = await fetch(REMOTE_DICTIONARY_URL);
+    if (!response.ok) return 0;
+    const dictionary = await response.json();
+    if (!dictionary || typeof dictionary !== "object") return 0;
+
+    let added = 0;
+    for (const [de, en] of Object.entries(dictionary)) {
+      if (added >= REMOTE_DICTIONARY_MAX_ADDITIONS) break;
+      if (!/^[A-Z][a-zäöüß-]+$/.test(de)) continue;
+
+      const article = guessArticle(de);
+      const category = CATEGORIES.find((candidate) => candidate.target === article);
+      const membership = article ? categoryWordMembership.get(article) : undefined;
+      const key = de.toLocaleLowerCase("de-DE");
+      if (!category || !membership || membership.has(key)) continue;
+
+      membership.add(key);
+      category.words.push({ de, en: String(en) });
+      added += 1;
+    }
+    console.log(`VocabSlither: loaded ${added} dictionary-backed items.`);
+    return added;
+  })().catch((error) => {
+    // Keep the one-shot promise settled so remounting the game does not hammer
+    // a service that is unavailable. The bundled vocabulary remains complete.
+    console.warn("VocabSlither catalog failed", error);
+    return 0;
+  });
+
+  return remoteDictionaryLoad;
+}
 
 interface Point {
   x: number;
@@ -595,9 +647,9 @@ export default function VocabSlither() {
 
   const update = (timestamp: number) => {
     if (gameState !== 'playing' || isPaused) {
-       if (isPaused) draw(); // Still draw if paused
-       requestRef.current = requestAnimationFrame(update);
-       return;
+      // The last canvas frame already is the paused view. Never keep a 60 FPS
+      // loop alive just to repaint an unchanged board.
+      return;
     }
 
     const snake = snakeRef.current;
@@ -963,40 +1015,11 @@ export default function VocabSlither() {
     };
   }, [gameState]);
 
-  // Load thousands once on mount
+  // Optionally augment the built-in catalogue once per renderer. The loader is
+  // module-level, deduplicated, and capped, so reopening this game is free.
   useEffect(() => {
     if (learnsEnglish) return;
-    const loadThousands = async () => {
-        try {
-            // Using a high-quality community dictionary with Key=German, Value=English
-            const response = await fetch("https://raw.githubusercontent.com/hathibelagal/German-English-JSON-Dictionary/master/german_english.json");
-            if (!response.ok) return;
-            const dictionary = await response.json();
-            
-            const entries = Object.entries(dictionary);
-            // We'll take a large slice (approx 2000 nouns) to keep performance high
-            let count = 0;
-            for (const [de, en] of entries) {
-                if (count > 2000) break;
-                
-                // Only take single words that look like nouns (Capitalized)
-                if (/^[A-Z][a-zäöüß-]+$/.test(de)) {
-                    const article = guessArticle(de);
-                    if (article) {
-                        const cat = CATEGORIES.find(c => c.target === article);
-                        if (cat && !cat.words.some(existing => existing.de === de)) {
-                            cat.words.push({ de, en: String(en) });
-                            count++;
-                        }
-                    }
-                }
-            }
-            console.log(`VocabSlither: Mass-loaded ${count} dictionary-backed items.`);
-        } catch (e) {
-            console.warn("Catalog failed", e);
-        }
-    };
-    loadThousands();
+    void loadRemoteDictionaryOnce();
   }, [learnsEnglish]);
 
   // Sync state to ref for physics loop
@@ -1005,9 +1028,12 @@ export default function VocabSlither() {
   }, [isBoosting]);
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' && !isPaused) {
       lastFrameRef.current = 0;
       requestRef.current = requestAnimationFrame(update);
+    } else if (gameState === 'playing') {
+      // Paint the paused state once; update() deliberately does not reschedule.
+      draw();
     }
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);

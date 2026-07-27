@@ -90,7 +90,7 @@ export function CodexPetPicker() {
                 onClick={() => selectPet(key)}
                 type="button"
               >
-                <CodexPetSprite animation="idle" pet={pet} size={54} />
+                <CodexPetSprite animated={selected} animation="idle" pet={pet} size={54} />
                 <span className="mt-1 line-clamp-1 max-w-full text-xs font-black">
                   {petDisplayName(key, pet.displayName)}
                 </span>

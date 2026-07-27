@@ -5,7 +5,7 @@
 //
 // It exists because the browser's webkitSpeechRecognition can't reach Google's
 // servers from Electron. The whole module is lazy — the heavy ML library is only
-// imported the first time the mic is used (or preloaded), so it never bloats the
+// imported the first time the mic is used, so it never bloats the
 // website bundle.
 //
 // Design notes (learned the hard way):
@@ -95,14 +95,6 @@ function getAsr(onProgress?: (p: number) => void): Promise<any> {
     onProgress(lastProgress);
   }
   return asrPromise;
-}
-
-/**
- * Warm the model in the background so the first real mic tap is instant.
- * Safe to call repeatedly; failures are swallowed and simply retried later.
- */
-export function preloadWhisper(): void {
-  getAsr().catch(() => { /* retried on demand */ });
 }
 
 export function isWhisperSupported(): boolean {

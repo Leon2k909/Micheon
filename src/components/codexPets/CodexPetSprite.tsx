@@ -4,6 +4,7 @@ import type { CodexPet } from "@/lib/codexPets";
 
 type CodexPetSpriteProps = {
   animation?: string;
+  animated?: boolean;
   className?: string;
   onVisibleBounds?: (bounds: CodexPetVisibleBounds) => void;
   pet: CodexPet;
@@ -20,6 +21,7 @@ export type CodexPetVisibleBounds = {
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 const visibleBoundsCache = new Map<string, Promise<CodexPetVisibleBounds>>();
+const MAX_VISIBLE_BOUNDS_CACHE = 64;
 
 function loadSpritesheet(url: string) {
   const cached = imageCache.get(url);
@@ -33,11 +35,13 @@ function loadSpritesheet(url: string) {
     image.src = url;
   });
   imageCache.set(url, promise);
-  void promise.catch(() => {
-    // A rejected promise must not poison this URL for the renderer's entire
-    // lifetime. The next bounded sprite retry should perform a real request.
+  const release = () => {
+    // This Map only deduplicates concurrent loads. Keeping a successful Image
+    // here forever pins every decoded pet atlas in memory; Chromium's resource
+    // cache already handles later requests without that permanent JS reference.
     if (imageCache.get(url) === promise) imageCache.delete(url);
-  });
+  };
+  void promise.then(release, release);
   return promise;
 }
 
@@ -62,7 +66,11 @@ function loadVisibleBounds(pet: CodexPet, spritesheetUrl = pet.spritesheetUrl) {
     frames.join(","),
   ].join(":");
   const cached = visibleBoundsCache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    visibleBoundsCache.delete(cacheKey);
+    visibleBoundsCache.set(cacheKey, cached);
+    return cached;
+  }
 
   const promise = loadSpritesheet(spritesheetUrl).then((image) => {
     const canvas = document.createElement("canvas");
@@ -111,6 +119,11 @@ function loadVisibleBounds(pet: CodexPet, spritesheetUrl = pet.spritesheetUrl) {
     };
   });
   visibleBoundsCache.set(cacheKey, promise);
+  while (visibleBoundsCache.size > MAX_VISIBLE_BOUNDS_CACHE) {
+    const oldest = visibleBoundsCache.keys().next().value;
+    if (oldest === undefined) break;
+    visibleBoundsCache.delete(oldest);
+  }
   void promise.catch(() => {
     if (visibleBoundsCache.get(cacheKey) === promise) visibleBoundsCache.delete(cacheKey);
   });
@@ -119,6 +132,7 @@ function loadVisibleBounds(pet: CodexPet, spritesheetUrl = pet.spritesheetUrl) {
 
 export function CodexPetSprite({
   animation = "idle",
+  animated = true,
   className = "",
   onVisibleBounds,
   pet,
@@ -134,14 +148,18 @@ export function CodexPetSprite({
   useEffect(() => {
     setActiveAnimation(requestedAnimation);
     setFrameIndex(0);
-  }, [requestedAnimation, playbackKey, pet.id, pet.source]);
+  }, [animated, requestedAnimation, playbackKey, pet.id, pet.source]);
 
   const definition = pet.animations[activeAnimation] ?? pet.animations.idle;
   const frames = definition?.frames?.length ? definition.frames : [0];
 
   visibleBoundsCallback.current = onVisibleBounds;
+  const measuresVisibleBounds = onVisibleBounds != null;
 
   useEffect(() => {
+    // Thumbnail sprites never consume visible bounds. Avoid decoding each atlas
+    // to canvas and scanning thousands of pixels just because Preferences is open.
+    if (!measuresVisibleBounds) return;
     let cancelled = false;
     void loadVisibleBounds(pet)
       .then((bounds) => {
@@ -155,10 +173,10 @@ export function CodexPetSprite({
     return () => {
       cancelled = true;
     };
-  }, [loadRetry, pet]);
+  }, [loadRetry, measuresVisibleBounds, pet]);
 
   useEffect(() => {
-    if (frames.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!animated || frames.length <= 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let interval = 0;
     const tick = () => {
@@ -194,7 +212,7 @@ export function CodexPetSprite({
       document.removeEventListener("visibilitychange", onVisibility);
       stop();
     };
-  }, [activeAnimation, definition.fallback, definition.fps, definition.loop, frames.length, pet.animations]);
+  }, [activeAnimation, animated, definition.fallback, definition.fps, definition.loop, frames.length, pet.animations]);
 
   const frame = frames[Math.min(frameIndex, frames.length - 1)] ?? 0;
   const column = frame % pet.frame.columns;

@@ -118,10 +118,16 @@ function ratePercent(rate) {
 }
 
 // Bounded in-memory cache so repeated sentences (very common in a lesson) are
-// instant and we don't re-hit Microsoft for the same text. Oldest entries are
-// evicted once we pass the cap.
-const CACHE_MAX = 500;
+// instant and we don't re-hit Microsoft for the same text. Count alone was not
+// enough because clips vary greatly in size, so cap bytes as well.
+const CACHE_MAX_ENTRIES = 128;
+const CACHE_MAX_BYTES = 32 * 1024 * 1024;
 const cache = new Map(); // key -> Buffer
+let cacheBytes = 0;
+const pendingSynthesis = new Map();
+const synthesisQueue = [];
+const MAX_CONCURRENT_SYNTHESES = 2;
+let activeSyntheses = 0;
 
 function cacheGet(key) {
   const buf = cache.get(key);
@@ -132,8 +138,59 @@ function cacheGet(key) {
   return buf;
 }
 function cacheSet(key, buf) {
+  const existing = cache.get(key);
+  if (existing) {
+    cache.delete(key);
+    cacheBytes -= existing.byteLength;
+  }
   cache.set(key, buf);
-  while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+  cacheBytes += buf.byteLength;
+  while (
+    cache.size > 1
+    && (cache.size > CACHE_MAX_ENTRIES || cacheBytes > CACHE_MAX_BYTES)
+  ) {
+    const oldestKey = cache.keys().next().value;
+    const oldest = cache.get(oldestKey);
+    cache.delete(oldestKey);
+    cacheBytes -= oldest?.byteLength ?? 0;
+  }
+}
+
+function withSynthesisSlot(task) {
+  return new Promise((resolve, reject) => {
+    const run = async () => {
+      activeSyntheses += 1;
+      try {
+        resolve(await task());
+      } catch (error) {
+        reject(error);
+      } finally {
+        activeSyntheses -= 1;
+        synthesisQueue.shift()?.();
+      }
+    };
+    if (activeSyntheses < MAX_CONCURRENT_SYNTHESES) void run();
+    else synthesisQueue.push(run);
+  });
+}
+
+function synthesizeOnce(key, text, voice, rate) {
+  const pending = pendingSynthesis.get(key);
+  if (pending) return pending;
+
+  const promise = withSynthesisSlot(async () => {
+    const tts = new EdgeTTS(text, voice, { rate, volume: "+0%", pitch: "+0Hz" });
+    const result = await tts.synthesize();
+    const buf = Buffer.from(await result.audio.arrayBuffer());
+    cacheSet(key, buf);
+    return buf;
+  });
+  pendingSynthesis.set(key, promise);
+  const release = () => {
+    if (pendingSynthesis.get(key) === promise) pendingSynthesis.delete(key);
+  };
+  void promise.then(release, release);
+  return promise;
 }
 
 const app = express();
@@ -142,8 +199,14 @@ app.use(express.json({ limit: "1mb" }));
 const appdataDir = path.join(process.env.APPDATA || os.homedir(), "germ");
 const appdataFile = path.join(appdataDir, "shared-progress.json");
 const workspaceFile = path.resolve(__dirname, "../shared-progress.json");
+// The packaged server lives inside app.asar, which is immutable. Trying to
+// mirror progress there failed and logged on every POST; the AppData copy is the
+// intended production store. Keep the workspace mirror only for local dev.
+const workspaceStorageEnabled = !/[\\/]app\.asar[\\/]/i.test(__dirname);
+let sharedStorageCache = null;
 
 function readSharedStorage() {
+  if (sharedStorageCache) return sharedStorageCache;
   let appdataData = { items: {} };
   let workspaceData = { items: {} };
 
@@ -155,12 +218,14 @@ function readSharedStorage() {
     console.error("Error reading AppData storage:", e);
   }
 
-  try {
-    if (fs.existsSync(workspaceFile)) {
-      workspaceData = JSON.parse(fs.readFileSync(workspaceFile, "utf8"));
+  if (workspaceStorageEnabled) {
+    try {
+      if (fs.existsSync(workspaceFile)) {
+        workspaceData = JSON.parse(fs.readFileSync(workspaceFile, "utf8"));
+      }
+    } catch (e) {
+      console.error("Error reading workspace storage:", e);
     }
-  } catch (e) {
-    console.error("Error reading workspace storage:", e);
   }
 
   const mergedItems = { ...(appdataData.items || {}), ...(workspaceData.items || {}) };
@@ -176,13 +241,15 @@ function readSharedStorage() {
     mergedUpdatedAt = workspaceData.updatedAt;
   }
 
-  return {
+  sharedStorageCache = {
     items: mergedItems,
     updatedAt: mergedUpdatedAt
   };
+  return sharedStorageCache;
 }
 
 function writeSharedStorage(next) {
+  sharedStorageCache = next;
   const raw = JSON.stringify(next, null, 2);
 
   try {
@@ -192,10 +259,12 @@ function writeSharedStorage(next) {
     console.error("Failed to write to AppData storage:", e);
   }
 
-  try {
-    fs.writeFileSync(workspaceFile, raw);
-  } catch (e) {
-    console.error("Failed to write to workspace storage:", e);
+  if (workspaceStorageEnabled) {
+    try {
+      fs.writeFileSync(workspaceFile, raw);
+    } catch (e) {
+      console.error("Failed to write to workspace storage:", e);
+    }
   }
 }
 
@@ -223,7 +292,10 @@ app.post("/api/storage", (req, res) => {
 
 app.get("/api/codex-pets", (_req, res) => {
   res.set("Cache-Control", "no-store");
-  res.json(getCodexPetCatalog());
+  // One explicit refresh scans manifests once; the spritesheet requests that
+  // immediately follow reuse that result instead of repeating the same disk
+  // walk for every thumbnail.
+  res.json(getCodexPetCatalog({ fresh: true }));
 });
 
 // Browse and install pets from codex-pets.net. Routed through the server so
@@ -292,18 +364,15 @@ app.get("/api/tts", async (req, res) => {
   const cached = cacheGet(key);
   if (cached) {
     res.set("Content-Type", "audio/mpeg");
-    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    res.set("Cache-Control", "private, no-store");
     res.set("X-TTS-Cache", "hit");
     return res.send(cached);
   }
 
   try {
-    const tts = new EdgeTTS(text, voice, { rate, volume: "+0%", pitch: "+0Hz" });
-    const result = await tts.synthesize();
-    const buf = Buffer.from(await result.audio.arrayBuffer());
-    cacheSet(key, buf);
+    const buf = await synthesizeOnce(key, text, voice, rate);
     res.set("Content-Type", "audio/mpeg");
-    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    res.set("Cache-Control", "private, no-store");
     res.set("X-TTS-Cache", "miss");
     return res.send(buf);
   } catch (err) {
@@ -321,7 +390,13 @@ app.get("/api/tts/voices", (_req, res) => {
   });
 });
 
-app.get("/api/health", (_req, res) => res.json({ ok: true, cached: cache.size }));
+app.get("/api/health", (_req, res) => res.json({
+  ok: true,
+  cached: cache.size,
+  cachedBytes: cacheBytes,
+  queuedSyntheses: synthesisQueue.length,
+  synthesizing: activeSyntheses,
+}));
 
 // In production, serve the built front-end and let the SPA handle routing.
 const dist = path.resolve(__dirname, "../dist");

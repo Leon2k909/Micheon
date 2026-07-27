@@ -738,12 +738,11 @@ function setupAutoUpdate() {
   if (!app.isPackaged) return;
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
-  // Always full-download the installer. Differential (block-map) downloads diff
-  // against the currently-installed build; across a big change (e.g. the
-  // Learn German -> Micheon rename) that diff is huge and, over GitHub's
-  // repo-rename redirect, its many range requests can stall. Full downloads are
-  // a single resumable request and just work.
-  autoUpdater.disableDifferentialDownload = true;
+  // Releases now use one stable repo/name, so block-map updates can transfer
+  // only changed blocks instead of downloading the whole installer every time.
+  // The old v1.2.11 updater still full-downloads this transition release; this
+  // setting takes effect for the much smaller updates after it is installed.
+  autoUpdater.disableDifferentialDownload = false;
 
   autoUpdater.on("error", (err) => {
     console.error("[updater] error:", err?.message ?? err);
@@ -774,7 +773,13 @@ function setupAutoUpdate() {
   // an hour: the app is left open for hours at a time, and waiting up to a full
   // hour to even notice a release is what makes it look as though nothing is
   // happening. The check is one small request against the releases feed.
-  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 15 * 60 * 1000);
+  const updateTimer = setInterval(() => {
+    // Do not keep polling/downloading metadata after an update is already being
+    // handled. The next app launch installs it and starts a fresh schedule.
+    if (["checking", "downloading", "ready"].includes(updateStatus.state)) return;
+    autoUpdater.checkForUpdates().catch(() => {});
+  }, 15 * 60 * 1000);
+  updateTimer.unref?.();
 }
 
 /** The renderer asking directly — "check now", and what happened last time. */

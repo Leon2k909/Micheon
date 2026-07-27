@@ -130,18 +130,64 @@ function shouldSyncKey(key: string) {
   return SHARED_SYNC_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
+const SHARED_SYNC_DELAY_MS = 100;
+let pendingSharedItems: Record<string, string | null> = {};
+let sharedSyncTimer: ReturnType<typeof setTimeout> | null = null;
+let sharedSyncInFlight = false;
+let sharedSyncRetryDelay = 1000;
+
+function scheduleSharedSync(delayMs = SHARED_SYNC_DELAY_MS) {
+  if (sharedSyncTimer || sharedSyncInFlight) return;
+  sharedSyncTimer = setTimeout(() => void flushSharedItems(), delayMs);
+}
+
+async function flushSharedItems(keepalive = false) {
+  if (sharedSyncTimer) {
+    clearTimeout(sharedSyncTimer);
+    sharedSyncTimer = null;
+  }
+  if (sharedSyncInFlight) return;
+  const items = pendingSharedItems;
+  pendingSharedItems = {};
+  if (Object.keys(items).length === 0) return;
+
+  sharedSyncInFlight = true;
+  let retry = false;
+  try {
+    const response = await fetch("/api/storage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+      keepalive,
+    });
+    if (!response.ok) throw new Error(`storage sync http ${response.status}`);
+    sharedSyncRetryDelay = 1000;
+  } catch {
+    // Newer pending values win when a failed batch is returned to the queue.
+    pendingSharedItems = { ...items, ...pendingSharedItems };
+    retry = true;
+  } finally {
+    sharedSyncInFlight = false;
+    if (Object.keys(pendingSharedItems).length > 0) {
+      if (retry) sharedSyncRetryDelay = Math.min(30000, sharedSyncRetryDelay * 2);
+      scheduleSharedSync(retry ? sharedSyncRetryDelay : SHARED_SYNC_DELAY_MS);
+    }
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", () => void flushSharedItems(true));
+}
+
 function syncSharedItems(items: Record<string, string | null>) {
   if (typeof window === "undefined") return;
   const filtered = Object.fromEntries(Object.entries(items).filter(([key]) => shouldSyncKey(key)));
   if (Object.keys(filtered).length === 0) return;
-
-  fetch("/api/storage", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items: filtered }),
-  }).catch(() => {
-    // The app still works offline from localStorage; sync resumes when the local server is reachable.
-  });
+  // Local storage is already durable at this point. Coalesce the mirror writes
+  // so completing one lesson does not cause a read/parse/write cycle for every
+  // grade, streak, activity, and statistic updated in the same moment.
+  Object.assign(pendingSharedItems, filtered);
+  scheduleSharedSync();
 }
 
 export function syncLocalStorageItem(key: string, value: string | null) {

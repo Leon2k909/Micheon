@@ -39,7 +39,7 @@ import {
   listenGermanOnce,
   speechRecognitionUserHint,
 } from "@/lib/speechRecognition";
-import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce, preloadWhisper } from "@/lib/whisperRecognition";
+import { isWhisperSupported, isWhisperReady, listenWhisper, listenWhisperOnce } from "@/lib/whisperRecognition";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -613,9 +613,6 @@ function MicButton({ lang, onText, inputRef }: {
   // Google's speech service, so it uses the bundled offline Whisper model;
   // the website uses the browser's SpeechRecognition.
   const useWhisper = useMemo(() => isElectronApp() && isWhisperSupported(), []);
-  // Warm the model as soon as the answer box exists, so the first tap is
-  // instant instead of a silent multi-minute download at the worst moment.
-  useEffect(() => { if (useWhisper) preloadWhisper(); }, [useWhisper]);
   useEffect(() => () => abortRef.current?.abort(), []);
   if (!useWhisper && !isSpeechRecognitionSupported()) return null;
 
