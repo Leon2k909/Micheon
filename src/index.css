@@ -1596,6 +1596,21 @@ a { color: inherit; text-decoration: none; }
 .fs-closed-recall-cue small { color: var(--fs-muted); font-size: 12px; font-weight: 650; }
 .fs-recall-board .fs-line { font-size: clamp(24px, 3.2vw, 38px); }
 .fs-recall-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fs-recall-pair-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Only the German input needs the umlaut keys, but both columns reserve their
+   row so the paired Need help controls always begin on the same baseline. */
+.fs-recall-char-slot {
+  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.fs-recall-char-slot .fs-charsrow { width: 100%; }
 .fs-recall-language {
   display: block; padding-left: 4px; color: var(--fs-muted-2);
   font-size: 10px; font-weight: 850; letter-spacing: 0.12em; text-transform: uppercase;
@@ -2050,6 +2065,8 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 960px) {
   .fs-recall-pair { grid-template-columns: 1fr; }
+  .fs-recall-char-slot { min-height: 0; }
+  .fs-recall-char-slot:empty { display: none; }
 }
 
 @media (max-width: 860px) {

@@ -3124,7 +3124,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {ui("Type both versions of the phrase. Use Hint only if you genuinely cannot retrieve one.")}
             </p>
             <div className="fs-recall-pair">
-              <div className="space-y-2">
+              <div className="fs-recall-pair-column">
                 <span className="fs-recall-language">{ui(targetLabel)}</span>
                 <div className={cn(
                   "fs-panel",
@@ -3152,7 +3152,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     if (recallBothChecked) setRecallBothChecked(false);
                   }} inputRef={recallBothTargetRef} />
                 </div>
-                {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothTargetRef.current, character, setRecallBothTargetInput)} /></div>}
+                <div className="fs-recall-char-slot">
+                  {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothTargetRef.current, character, setRecallBothTargetInput)} /></div>}
+                </div>
                 {!(recallBothChecked && recallBothTargetResult.ok) && (
                   <RecallHelp
                     key={`${item.id}-recall-both-target`}
@@ -3163,7 +3165,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="fs-recall-pair-column">
                 <span className="fs-recall-language">{ui(meaningLabel)}</span>
                 <div className={cn(
                   "fs-panel",
@@ -3189,7 +3191,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     if (recallBothChecked) setRecallBothChecked(false);
                   }} inputRef={recallBothMeaningRef} />
                 </div>
-                {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} /></div>}
+                <div className="fs-recall-char-slot">
+                  {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} /></div>}
+                </div>
                 {!(recallBothChecked && recallBothMeaningResult.ok) && (
                   <RecallHelp
                     key={`${item.id}-recall-both-meaning`}
