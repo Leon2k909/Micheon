@@ -29,6 +29,7 @@ import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
 import { getMasterAudioVolume } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
+import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
@@ -2318,11 +2319,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <strong>{ui("Listen carefully")}</strong>
               <small>{ui("Tap to hear the phrase again")}</small>
             </span>
-            <span className="fs-listening-wave" aria-hidden>
-              {[14, 25, 38, 21, 32, 18, 28].map((height, index) => (
-                <i key={`${height}-${index}`} style={{ height }} />
-              ))}
-            </span>
+            <TtsWaveform active={ttsOn} bars={7} className="fs-listening-wave" />
           </button>
         ) : phase === "MissingWord" ? (
           <>
@@ -2766,11 +2763,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     >
                       <Volume2 className="h-5 w-5" />
                     </button>
-                    <span className="fs-missing-wave" aria-hidden>
-                      {[13, 24, 38, 19, 32, 16, 29, 21, 35].map((height, index) => (
-                        <i key={`${height}-${index}`} style={{ height: height + ((choiceIndex + index) % 3) * 2 }} />
-                      ))}
-                    </span>
+                    <TtsWaveform
+                      active={ttsOn && missingWordPreview === choice}
+                      bars={9}
+                      className="fs-missing-wave"
+                    />
                     <button
                       aria-label={`${ui("Choose answer")} ${choiceIndex + 1}`}
                       aria-pressed={isSelected}

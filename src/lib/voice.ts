@@ -9,6 +9,7 @@
 // goes fully silent — it just won't be the premium voice.
 
 import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume } from "@/lib/audioMute";
+import { smoothSpeechLevel, speechLevelFromPcm } from "@/lib/audioLevel";
 import { firstSpokenAlternative } from "@/lib/spokenText";
 import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
@@ -25,6 +26,18 @@ function emitSpeaking(on: boolean) {
   }
 }
 
+/** Real audio energy from the premium MP3 path. Browser speechSynthesis cannot
+ * expose PCM, so it deliberately reports available=false rather than faking it. */
+export const TTS_AUDIO_LEVEL_EVENT = "tts-audio-level";
+export type TtsAudioLevelDetail = { level: number; available: boolean };
+function emitAudioLevel(level: number, available: boolean) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent<TtsAudioLevelDetail>(TTS_AUDIO_LEVEL_EVENT, {
+      detail: { level, available },
+    }));
+  }
+}
+
 let currentAudio: HTMLAudioElement | null = null;
 let currentAudioUrl: string | null = null;
 let currentAudioResolve: (() => void) | null = null;
@@ -32,6 +45,10 @@ let currentUtterance: SpeechSynthesisUtterance | null = null;
 let currentUtteranceResolve: (() => void) | null = null;
 let currentPlaybackLang: string | null = null;
 let currentFetchController: AbortController | null = null;
+let sharedAudioContext: AudioContext | null = null;
+let currentAudioSource: MediaElementAudioSourceNode | null = null;
+let currentAudioAnalyser: AnalyserNode | null = null;
+let currentAudioLevelFrame: number | null = null;
 // Monotonic token: every new top-level play call bumps this so any in-flight
 // playback or fetch from a previous call knows to bail (mirrors speechSynthesis.cancel).
 let playSeq = 0;
@@ -96,7 +113,99 @@ function clearUrlCache() {
   urlCacheBytes = 0;
 }
 
+function getSharedAudioContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const AudioContextClass = window.AudioContext
+    ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return null;
+  try {
+    sharedAudioContext ??= new AudioContextClass();
+    return sharedAudioContext;
+  } catch {
+    return null;
+  }
+}
+
+function stopAudioAnalysis(reset = true) {
+  if (currentAudioLevelFrame !== null && typeof window !== "undefined") {
+    window.cancelAnimationFrame(currentAudioLevelFrame);
+  }
+  currentAudioLevelFrame = null;
+  try { currentAudioSource?.disconnect(); } catch { /* already disconnected */ }
+  try { currentAudioAnalyser?.disconnect(); } catch { /* already disconnected */ }
+  currentAudioSource = null;
+  currentAudioAnalyser = null;
+  if (reset) emitAudioLevel(0, false);
+}
+
+async function attachAudioAnalysis(audio: HTMLAudioElement, token: number) {
+  const context = getSharedAudioContext();
+  if (!context) return null;
+  if (context.state === "suspended") {
+    try { await context.resume(); } catch { return null; }
+  }
+  // Never reroute an audible media element into a context that autoplay policy
+  // left suspended: direct HTMLAudio playback is more important than the meter.
+  if (context.state !== "running" || token !== playSeq || currentAudio !== audio) return null;
+
+  let source: MediaElementAudioSourceNode | null = null;
+  try {
+    source = context.createMediaElementSource(audio);
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.55;
+    source.connect(analyser);
+    analyser.connect(context.destination);
+    currentAudioSource = source;
+    currentAudioAnalyser = analyser;
+    return analyser;
+  } catch {
+    // If creating the source succeeded but the analyser graph did not, keep the
+    // clip audible through a direct connection and report no measured levels.
+    if (source) {
+      try {
+        source.disconnect();
+        source.connect(context.destination);
+        currentAudioSource = source;
+      } catch { /* audio.play() will use its normal fallback where possible */ }
+    }
+    emitAudioLevel(0, false);
+    return null;
+  }
+}
+
+function startAudioAnalysis(
+  audio: HTMLAudioElement,
+  analyser: AnalyserNode,
+  token: number
+) {
+  const samples = new Uint8Array(analyser.fftSize);
+  let smoothedLevel = 0;
+  let lastSampleAt = 0;
+
+  const sample = (now: number) => {
+    if (
+      token !== playSeq
+      || currentAudio !== audio
+      || currentAudioAnalyser !== analyser
+    ) return;
+
+    currentAudioLevelFrame = window.requestAnimationFrame(sample);
+    if (now - lastSampleAt < 40) return;
+    lastSampleAt = now;
+    analyser.getByteTimeDomainData(samples);
+    smoothedLevel = smoothSpeechLevel(smoothedLevel, speechLevelFromPcm(samples));
+    emitAudioLevel(smoothedLevel, true);
+  };
+
+  if (currentAudioLevelFrame !== null) {
+    window.cancelAnimationFrame(currentAudioLevelFrame);
+  }
+  currentAudioLevelFrame = window.requestAnimationFrame(sample);
+}
+
 function stopCurrentMedia() {
+  stopAudioAnalysis();
   emitSpeaking(false);
   if (currentAudio) {
     currentAudio.pause();
@@ -157,6 +266,9 @@ if (typeof window !== "undefined") {
   window.addEventListener("pagehide", () => {
     stopTts();
     clearUrlCache();
+    const context = sharedAudioContext;
+    sharedAudioContext = null;
+    if (context && context.state !== "closed") void context.close().catch(() => {});
   });
 }
 
@@ -180,7 +292,10 @@ function speakFallback(text: string, rate: number, lang: string): Promise<void> 
     currentUtterance = u;
     currentUtteranceResolve = finish;
     currentPlaybackLang = lang;
-    u.onstart = () => emitSpeaking(true);
+    u.onstart = () => {
+      emitAudioLevel(0, false);
+      emitSpeaking(true);
+    };
     u.onend = finish;
     u.onerror = finish;
     window.speechSynthesis.speak(u);
@@ -215,8 +330,12 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
     if (volume <= 0) return resolve();
     const audio = new Audio(url);
     audio.volume = volume;
+    let finished = false;
     const finish = () => {
+      if (finished) return;
+      finished = true;
       if (currentAudio === audio) {
+        stopAudioAnalysis();
         currentAudio = null;
         currentAudioUrl = null;
         currentPlaybackLang = null;
@@ -229,10 +348,22 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
     currentAudioUrl = url;
     currentAudioResolve = finish;
     currentPlaybackLang = lang;
-    audio.onplaying = () => { if (token === playSeq) emitSpeaking(true); };
     audio.onended = finish;
     audio.onerror = finish;
-    audio.play().catch(finish);
+    void (async () => {
+      const analyser = await attachAudioAnalysis(audio, token);
+      if (token !== playSeq || currentAudio !== audio) return finish();
+      audio.onplaying = () => {
+        if (token !== playSeq || currentAudio !== audio) return;
+        emitSpeaking(true);
+        if (analyser && currentAudioAnalyser === analyser) {
+          startAudioAnalysis(audio, analyser, token);
+        } else {
+          emitAudioLevel(0, false);
+        }
+      };
+      audio.play().catch(finish);
+    })();
   });
 }
 
@@ -261,6 +392,7 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
   return playOne({ text, rate, lang }, token, fetchController.signal).finally(() => {
     if (token === playSeq) {
       currentFetchController = null;
+      emitAudioLevel(0, false);
       emitSpeaking(false);
     }
   });
@@ -281,6 +413,7 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
   })().finally(() => {
     if (token === playSeq) {
       currentFetchController = null;
+      emitAudioLevel(0, false);
       emitSpeaking(false);
     }
   });
