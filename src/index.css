@@ -120,6 +120,139 @@ html.is-pet-overlay {
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 
+/* Shared top-bar audio mixer. It is rendered into document.body and uses a
+   fixed, viewport-clamped position so lesson headers and nav bars cannot crop
+   it. */
+.audio-mixer-panel {
+  position: fixed;
+  z-index: 10050;
+  width: min(320px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  color: var(--text-1);
+  box-shadow: 0 24px 70px var(--shadow-strong), 0 4px 18px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(22px);
+  -webkit-app-region: no-drag;
+  animation: audioMixerIn 140ms ease-out;
+}
+@keyframes audioMixerIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.audio-mixer-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 2px 2px 11px;
+}
+.audio-mixer-heading-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.audio-mixer-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+.audio-mixer-heading p {
+  margin: 3px 0 0;
+  color: var(--text-3);
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.audio-mixer-row {
+  padding: 10px;
+  border-radius: 14px;
+  transition: background-color 140ms ease;
+}
+.audio-mixer-row:hover,
+.audio-mixer-row:focus-within { background: var(--surface-2); }
+.audio-mixer-rowhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+.audio-mixer-rowhead strong {
+  color: var(--text-3);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.audio-mixer-controls {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+.audio-mixer-mute {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--text-2);
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+.audio-mixer-mute:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+.audio-mixer-mute.is-muted { border-color: color-mix(in srgb, #f43f5e 35%, var(--border)); background: color-mix(in srgb, #f43f5e 10%, var(--surface)); color: #f43f5e; }
+.audio-mixer-mute:focus-visible,
+.audio-mixer-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.audio-mixer-range {
+  width: 100%;
+  height: 5px;
+  margin: 0;
+  appearance: none;
+  border-radius: 999px;
+  background: var(--surface-3);
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.audio-mixer-range::-webkit-slider-thumb {
+  width: 17px;
+  height: 17px;
+  appearance: none;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 1px 5px var(--shadow-strong);
+}
+.audio-mixer-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 1px 5px var(--shadow-strong);
+}
+.audio-mixer-divider { height: 1px; margin: 3px 10px; background: var(--border); }
+.audio-mixer-footnote {
+  margin: 7px 10px 2px;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+@media (prefers-reduced-motion: reduce) {
+  .audio-mixer-panel { animation: none; }
+}
+
 /* ── Electron desktop title bar ────────────────────────────────────────────
    --app-h is the height app screens should fill. On the website it's the full
    viewport; in the desktop build we subtract the custom title bar so nothing

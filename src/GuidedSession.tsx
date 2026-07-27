@@ -27,7 +27,7 @@ import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
-import { isAudioMuted } from "@/lib/audioMute";
+import { getMasterAudioVolume } from "@/lib/audioMute";
 import { MuteButton } from "@/components/MuteButton";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
@@ -63,7 +63,8 @@ function getAudioCtx(): AudioContext | null {
   } catch { return null; }
 }
 function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", gain = 0.05) {
-  if (isAudioMuted()) return;
+  const masterVolume = getMasterAudioVolume();
+  if (masterVolume <= 0) return;
   const ctx = getAudioCtx();
   if (!ctx) return;
   try {
@@ -76,7 +77,7 @@ function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", ga
       osc.frequency.value = f;
       const start = now + i * dur * 0.85;
       g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(gain, start + 0.012);
+      g.gain.linearRampToValueAtTime(gain * masterVolume, start + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
       osc.connect(g); g.connect(ctx.destination);
       osc.start(start); osc.stop(start + dur);

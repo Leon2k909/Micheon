@@ -662,6 +662,12 @@ export function TopNav({
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[var(--yellow)]" />
                   )}
                 </button>
+                <MuteButton
+                  className="col-span-2 h-12 w-full gap-2 rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                  iconClassName="h-4 w-4"
+                  label={ui("Audio settings")}
+                  settingsOnly
+                />
               </div>
               {NAV.map((item) => {
                 const active = item.id === activeTab;

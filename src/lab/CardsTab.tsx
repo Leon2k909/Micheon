@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Volume2, Sparkles, BookOpen } from "lucide-react";
+import { getTtsAudioVolume } from "@/lib/audioMute";
 
 interface CardsTabProps {
   currentCard: any;
@@ -126,7 +127,13 @@ export function CardsTab({
                   <Button 
                     variant="outline" 
                     className="w-full h-14 rounded-2xl border-white/5 bg-white/5 text-xs font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white hover:border-none transition-all shadow-lg hover:shadow-blue-600/20" 
-                    onClick={() => new Audio(dictionaryEntry.audioUrl).play()}
+                    onClick={() => {
+                      const volume = getTtsAudioVolume("de-DE");
+                      if (volume <= 0) return;
+                      const audio = new Audio(dictionaryEntry.audioUrl);
+                      audio.volume = volume;
+                      void audio.play().catch(() => {});
+                    }}
                   >
                     <Volume2 className="mr-2 h-4 w-4" /> PLAY AUDIO
                   </Button>

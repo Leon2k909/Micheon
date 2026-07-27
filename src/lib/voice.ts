@@ -8,7 +8,7 @@
 // blocked), we fall back to the browser's built-in speechSynthesis so audio never
 // goes fully silent — it just won't be the premium voice.
 
-import { AUDIO_MUTE_EVENT, isAudioMuted } from "@/lib/audioMute";
+import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume } from "@/lib/audioMute";
 import { firstSpokenAlternative } from "@/lib/spokenText";
 import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
@@ -28,6 +28,9 @@ function emitSpeaking(on: boolean) {
 let currentAudio: HTMLAudioElement | null = null;
 let currentAudioUrl: string | null = null;
 let currentAudioResolve: (() => void) | null = null;
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+let currentUtteranceResolve: (() => void) | null = null;
+let currentPlaybackLang: string | null = null;
 let currentFetchController: AbortController | null = null;
 // Monotonic token: every new top-level play call bumps this so any in-flight
 // playback or fetch from a previous call knows to bail (mirrors speechSynthesis.cancel).
@@ -93,10 +96,8 @@ function clearUrlCache() {
   urlCacheBytes = 0;
 }
 
-function hardStop() {
+function stopCurrentMedia() {
   emitSpeaking(false);
-  currentFetchController?.abort();
-  currentFetchController = null;
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
@@ -104,7 +105,22 @@ function hardStop() {
   currentAudioUrl = null;
   currentAudioResolve?.();
   currentAudioResolve = null;
+  if (currentUtterance) {
+    currentUtterance = null;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }
+  currentUtteranceResolve?.();
+  currentUtteranceResolve = null;
+  currentPlaybackLang = null;
   trimUrlCache();
+}
+
+function hardStop() {
+  currentFetchController?.abort();
+  currentFetchController = null;
+  stopCurrentMedia();
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
@@ -116,12 +132,18 @@ export function stopTts(): void {
   hardStop();
 }
 
-// Muting mid-playback cuts the current voice off immediately.
+// Settings apply live. Muting the language currently speaking cuts only that
+// item off, allowing a mixed-language sequence to continue with its next item.
 if (typeof window !== "undefined") {
-  window.addEventListener(AUDIO_MUTE_EVENT, () => {
-    if (isAudioMuted()) {
-      stopTts();
+  window.addEventListener(AUDIO_SETTINGS_EVENT, () => {
+    if (!currentPlaybackLang) return;
+    const volume = getTtsAudioVolume(currentPlaybackLang);
+    if (volume <= 0) {
+      stopCurrentMedia();
+      return;
     }
+    if (currentAudio) currentAudio.volume = volume;
+    if (currentUtterance) currentUtterance.volume = volume;
   });
 
   // Changing voice makes every clip already generated the wrong one. They are
@@ -141,12 +163,26 @@ if (typeof window !== "undefined") {
 function speakFallback(text: string, rate: number, lang: string): Promise<void> {
   return new Promise((resolve) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return resolve();
+    const volume = getTtsAudioVolume(lang);
+    if (volume <= 0) return resolve();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
     u.rate = rate;
+    u.volume = volume;
+    const finish = () => {
+      if (currentUtterance === u) {
+        currentUtterance = null;
+        currentUtteranceResolve = null;
+        currentPlaybackLang = null;
+      }
+      resolve();
+    };
+    currentUtterance = u;
+    currentUtteranceResolve = finish;
+    currentPlaybackLang = lang;
     u.onstart = () => emitSpeaking(true);
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
+    u.onend = finish;
+    u.onerror = finish;
     window.speechSynthesis.speak(u);
   });
 }
@@ -172,14 +208,18 @@ async function getAudioUrl(
   return cacheAudioBlob(key, blob);
 }
 
-function playUrl(url: string, token: number): Promise<void> {
+function playUrl(url: string, token: number, lang: string): Promise<void> {
   return new Promise((resolve) => {
     if (token !== playSeq) return resolve();
+    const volume = getTtsAudioVolume(lang);
+    if (volume <= 0) return resolve();
     const audio = new Audio(url);
+    audio.volume = volume;
     const finish = () => {
       if (currentAudio === audio) {
         currentAudio = null;
         currentAudioUrl = null;
+        currentPlaybackLang = null;
         trimUrlCache();
       }
       if (currentAudioResolve === finish) currentAudioResolve = null;
@@ -188,6 +228,7 @@ function playUrl(url: string, token: number): Promise<void> {
     currentAudio = audio;
     currentAudioUrl = url;
     currentAudioResolve = finish;
+    currentPlaybackLang = lang;
     audio.onplaying = () => { if (token === playSeq) emitSpeaking(true); };
     audio.onended = finish;
     audio.onerror = finish;
@@ -199,20 +240,20 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
   const { lang } = item;
   const text = firstSpokenAlternative(item.text);
   const rate = item.rate ?? DEFAULT_RATE;
-  if (!text) return;
+  if (!text || getTtsAudioVolume(lang) <= 0) return;
   try {
     const url = await getAudioUrl(text, rate, lang, signal);
-    if (token !== playSeq) return;
-    await playUrl(url, token);
+    if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
+    await playUrl(url, token, lang);
   } catch {
-    if (token !== playSeq) return;
+    if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
     await speakFallback(text, rate, lang);
   }
 }
 
 /** Speak a single phrase. Interrupts whatever is currently playing. No-op while muted. */
 export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<void> {
-  if (isAudioMuted()) return Promise.resolve();
+  if (getTtsAudioVolume(lang) <= 0) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
   const fetchController = new AbortController();
@@ -227,7 +268,7 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
 
 /** Speak several phrases back-to-back (e.g. German then French on the Listen step). No-op while muted. */
 export function ttsSequence(items: SeqItem[]): Promise<void> {
-  if (isAudioMuted()) return Promise.resolve();
+  if (!items.some((item) => getTtsAudioVolume(item.lang) > 0)) return Promise.resolve();
   hardStop();
   const token = ++playSeq;
   const fetchController = new AbortController();
