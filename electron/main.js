@@ -518,9 +518,50 @@ function resetPetOverlayLoadState() {
   petOverlayLoadAttempts = 0;
 }
 
+/**
+ * Keep the overlay's CSS pixel exactly one DIP.
+ *
+ * Every rectangle the renderer measures with getBoundingClientRect is in CSS
+ * pixels, and every rectangle this file hands to setBounds/setShape is in DIP.
+ * The two are only the same unit while the page zoom is 1. At any other zoom
+ * the renderer reports a plane that is 1/zoom the size it actually paints, so
+ * the compact window is positioned and sized against numbers Chromium never
+ * used — which shows up as the mascot's shape being offset from the mascot and
+ * a straight-edged slice missing from the speech bubble.
+ *
+ * Chromium's zoom is per-origin and persisted (per_host_zoom_levels in the
+ * Preferences file), so a single accidental Ctrl+scroll or Ctrl+minus in the
+ * main window used to break the mascot permanently, on every later launch,
+ * with nothing in the UI to suggest why. Recorded on one machine as
+ * localhost:-1.5 — zoom 1.2^-1.5 = 0.76, so a 420 DIP window laid itself out
+ * as 552 CSS px and everything native was ~31% out. A trackpad pinch is the
+ * easy way in: unlike the menu's fixed steps it produces fractional levels.
+ *
+ * Because the level is per-origin and the overlay shares its origin with the
+ * main window, pinning it back to 0 normalises both — the app does not offer
+ * zoom as a feature anywhere, and a mascot whose geometry is a native contract
+ * cannot be the thing that honours an accidental pinch. Clearing it here is
+ * also what repairs an install that has already stored a bad level.
+ */
+function pinPetOverlayZoom(contents) {
+  if (!contents || contents.isDestroyed()) return;
+  try {
+    // setZoomLevel, not setZoomFactor: level 0 is the exact identity, while a
+    // factor round-trips through the same 1.2^level curve and can land a hair
+    // off 1.
+    if (contents.getZoomLevel() !== 0) contents.setZoomLevel(0);
+  } catch (error) {
+    console.error("[pet] unable to pin overlay zoom:", error?.message ?? error);
+  }
+}
+
 function loadPetOverlay() {
   if (!petWindow || petWindow.isDestroyed()) return;
   if (petWindow.webContents.isLoading()) return;
+  // Deliberately the same origin as the main window. Giving the overlay its own
+  // hostname would hand it a private zoom bucket, but it would also hand it a
+  // private localStorage — the overlay reads the pet's size and selection from
+  // there — so the mascot would come back default-sized with the wrong pets.
   void petWindow.loadURL(`http://localhost:${PORT}/?pet-overlay=1`).catch((error) => {
     console.error("[pet] unable to load overlay:", error?.message ?? error);
     schedulePetOverlayLoadRetry();
@@ -586,11 +627,22 @@ function createPetOverlayWindow() {
     if (petWindow === overlay) publishPetOverlayGeometry();
   });
 
+  // At navigation commit, so the document's very first layout already uses the
+  // same unit the native window is sized in. Waiting for did-finish-load would
+  // let one wrongly-scaled frame be measured and shaped.
+  overlay.webContents.on("did-navigate", () => pinPetOverlayZoom(overlay.webContents));
+  // Nothing should be able to zoom a click-through mascot, but the level is
+  // restored from the persisted per-origin store on load and can be changed by
+  // a stray accelerator, so treat any change as something to undo rather than
+  // trusting that it cannot happen.
+  overlay.webContents.on("zoom-changed", () => pinPetOverlayZoom(overlay.webContents));
+
   overlay.webContents.on("did-finish-load", () => {
     if (petWindow !== overlay || overlay.isDestroyed()) return;
     clearPetOverlayLoadTimer();
     petOverlayLoaded = true;
     petOverlayLoadAttempts = 0;
+    pinPetOverlayZoom(overlay.webContents);
     publishPetOverlayGeometry(true);
     if (overlay.isVisible()) overlay.webContents.send("pet-overlay:resync");
   });
@@ -882,6 +934,12 @@ ipcMain.on("pet-overlay:geometry-applied", (event, revision) => {
 ipcMain.on("pet-overlay:set-hit-regions", (event, payload) => {
   if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
   if (process.platform !== "win32" && process.platform !== "linux") return;
+  // Zooming the MAIN window re-zooms this one too — same origin — but silently:
+  // the level arrives through Chromium's per-origin zoom map, so no
+  // zoom-changed fires here to undo it. Every zoom does force a relayout and
+  // therefore a fresh measurement, which makes this the one path that sees it.
+  // The check is a number comparison, so paying it per sync costs nothing.
+  pinPetOverlayZoom(petWindow.webContents);
   const regions = Array.isArray(payload) ? payload : payload?.regions;
   const rendererOrigin = Array.isArray(payload) ? undefined : payload?.origin;
   if (!Array.isArray(regions) || regions.length === 0) return;
