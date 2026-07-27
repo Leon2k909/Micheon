@@ -371,6 +371,14 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bdepart(s)?\b/g, "leave$1")
     .replace(/\bfill(s|ed|ing)? (in|out) \b/g, "fill$1 in ")
     .replace(/\b(cash register|cash desk)\b/g, "checkout")
+    // A shop "till" is a checkout, but temporal "till Monday" means "until
+    // Monday". Only fold till as the noun when a determiner or ordinal makes
+    // that grammatical role unambiguous; the remaining temporal token is
+    // handled below.
+    .replace(
+      /\b((?:a|an|the|another|this|that|each|every|first|second|third|next|nearest)\s+)till(s?)\b/g,
+      "$1checkout$2"
+    )
     .replace(/\bcarry[- ]on (luggage|baggage|bag|bags)\b/g, "hand luggage")
     .replace(/\bon sale\b/g, "on offer")
     .replace(/\bbattery is (almost |nearly )?(flat|empty)\b/g, "battery is $1dead")
@@ -442,7 +450,7 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bwhat are you called\b/g, "what is your name")
     .replace(/\binsane\b/g, "crazy")
     .replace(/\bstunning\b/g, "beautiful")
-    .replace(/\btill?\b/g, "until")
+    .replace(/\btil{1,2}\b/g, "until")
     .replace(/\b(everything|everyone|everybody|nothing)'?s\b/g, "$1 is")
     .replace(/\bmatch\b/g, "game")
     .replace(/\bnil\b/g, "zero")

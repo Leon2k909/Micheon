@@ -568,7 +568,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Ich spendiere eine Runde.", en: "I'll buy a round. / This round is on me.", use: "Everyday slang (spendieren = to treat)" },
       { de: "Gehen wir heute Abend feiern?", en: "Are we going out partying tonight? / Shall we go out tonight?", use: "Common plans opener" },
       { de: "Der Club ist echt cool.", en: "The club is really cool.", use: "Casual opinion" },
-      { de: "Die Schlange vor dem Club ist echt lang.", en: "The queue outside the club is really long. / The line is really long.", use: "At the door" },
+      { de: "Die Schlange vor dem Club ist echt lang.", en: "The queue outside the club is really long. / The line outside the club is really long. / The line is really long.", use: "At the door" },
       { de: "Ich bin müde, ich gehe nach Hause.", en: "I'm tired, I'm going home.", use: "Leaving (correct spelling 'gehe')" },
     ],
   },

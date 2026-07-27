@@ -1087,6 +1087,9 @@ const DE: Record<string, string> = {
 
   // ── Curriculum labels shown as interface metadata ──
   "Starter basics": "Erste Grundlagen",
+  "Typing ä, Ä, ö, Ö, ü, Ü and ß on Windows": "Ä, ä, Ö, ö, Ü, ü und ß unter Windows tippen",
+  "Learn every Windows numpad code for German letters, then practise the characters in real words and sentences. Includes laptop and no-numpad options.": "Lerne alle Windows-Ziffernblockcodes für deutsche Buchstaben und übe die Zeichen anschließend in echten Wörtern und Sätzen. Mit Optionen für Laptops ohne Ziffernblock.",
+  "Num Lock on; hold the left Alt key, enter all four digits on the numeric keypad, then release Alt. The number row above the letters will not work. No numpad? Use Micheon's character buttons, or add US-International or UK Extended in Windows.": "Num Lock einschalten, die linke Alt-Taste gedrückt halten, alle vier Ziffern auf dem Ziffernblock eingeben und Alt loslassen. Die Zahlenreihe über den Buchstaben funktioniert dafür nicht. Kein Ziffernblock? Nutze Micheons Sonderzeichentasten oder füge unter Windows das Tastaturlayout US-International bzw. UK Extended hinzu.",
   "Travel and daily tasks": "Reisen und Alltag",
   "Home and routine": "Zuhause und Tagesablauf",
   "Plans and conversation": "Pläne und Gespräche",

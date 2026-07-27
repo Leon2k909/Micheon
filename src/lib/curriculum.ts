@@ -24,6 +24,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-introductions",
   "part1",            // Starter basics
   "part57",           // Talking about learning German (& other skills)
+  "part141",          // Typing German characters on an English Windows keyboard
   "cb-conversation-repair",
   "cb-reactions",
   "cb-shortreplies",
