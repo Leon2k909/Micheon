@@ -35,7 +35,7 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 const NEW_PER_LESSON_TARGET = 3;
-import { COMPLETED_KEY, loadGradeStore, recordActivitySession, statusForId } from "@/lib/activity";
+import { COMPLETED_KEY, loadGradeStore, recordActivitySession, saveGradeStore, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
@@ -375,7 +375,9 @@ export default function GermanLearningLab() {
   };
 
   const saveReviewGrades = (grades: Record<string, { lastGrade: string; updatedAt?: string }>) => {
-    saveScopedJson(COMPLETED_KEY, grades, user);
+    // Besides persistence, this emits grades-updated so the proactive pet's
+    // review pool sees newly encountered items without waiting for a reload.
+    saveGradeStore(grades, user);
   };
 
   // Explicit skip button ("Know it") — a declaration of prior knowledge, not

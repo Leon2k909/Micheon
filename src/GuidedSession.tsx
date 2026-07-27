@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -4759,6 +4759,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [matchingActive, setMatchingActive] = useState(false);
   const [matchingProgress, setMatchingProgress] = useState(0);
   const [memoryCheckComplete, setMemoryCheckComplete] = useState(false);
+  const [knownItemIds, setKnownItemIds] = useState<Set<string>>(() => new Set());
   const [combo, setCombo] = useState(0);
   const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
   const comboRef = useRef(0);
@@ -4768,6 +4769,31 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const announcedComplete = useRef(false);
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
+  const rememberKnownItem = useCallback((itemId: string) => {
+    if (!itemId) return;
+    setKnownItemIds((current) => {
+      if (current.has(itemId)) return current;
+      const next = new Set(current);
+      next.add(itemId);
+      return next;
+    });
+  }, []);
+  const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
+    if (grade === "know") rememberKnownItem(itemId);
+    onGradeItem?.(itemId, grade);
+  }, [onGradeItem, rememberKnownItem]);
+  const markPreviewItemKnown = useCallback((itemId: string) => {
+    rememberKnownItem(itemId);
+    if (onPreviewKnown) onPreviewKnown(itemId);
+    else onGradeItem?.(itemId, "know");
+  }, [onGradeItem, onPreviewKnown, rememberKnownItem]);
+  // "Know it" is an opt-out from this lesson's immediate recheck, not from
+  // spaced repetition. The parent still records the grade, so the desktop pet
+  // can revisit the phrase later when it is useful to confirm the memory.
+  const memoryCheckCards = useMemo(
+    () => previewCards.filter((card) => !knownItemIds.has(card.id)),
+    [knownItemIds, previewCards]
+  );
   const listeningChoicePool = useMemo(
     () => safeSteps
       .filter((candidate: any) => candidate?.type === "sentence" && candidate.item?.de)
@@ -4876,12 +4902,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   useEffect(() => {
     if (kind !== "complete" || announcedComplete.current) return;
     announcedComplete.current = true;
-    petSpeak("Lesson complete. Let’s check what you remember before moving on.", {
+    petSpeak(memoryCheckCards.length > 0
+      ? "Lesson complete. Let’s check what you remember before moving on."
+      : "Lesson complete. Great work — you’re ready to move on.", {
       durationMs: 6000,
       mood: "encourage",
       voiceLang: "en-US",
     });
-  }, [kind, petSpeak]);
+  }, [kind, memoryCheckCards.length, petSpeak]);
 
   const registerRegisterAnswer = (questionId: string, ok: boolean) => {
     registerAnswer(ok);
@@ -4939,7 +4967,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     cards={previewCards}
                     index={previewIndex}
                     onIndexChange={setPreviewIndex}
-                    onKnown={onPreviewKnown ?? ((itemId: string) => onGradeItem?.(itemId, "know"))}
+                    onKnown={markPreviewItemKnown}
                     onStart={() => {
                       setPreviewActive(false);
                       setMatchingActive(previewCards.length > 1);
@@ -4954,16 +4982,16 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={onGradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={onGradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={gradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">
-                        {memoryCheckComplete || previewCards.length === 0 ? (
+                        {memoryCheckComplete || memoryCheckCards.length === 0 ? (
                           <CompleteScreen onNext={onComplete} />
                         ) : (
                           <LessonMemoryCheck
-                            cards={previewCards}
+                            cards={memoryCheckCards}
                             onComplete={() => setMemoryCheckComplete(true)}
                             onGrade={onMemoryGrade ?? onGradeItem}
                             petSpeak={petSpeak}
