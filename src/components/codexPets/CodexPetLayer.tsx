@@ -146,8 +146,10 @@ type DragState = {
   originY: number;
   pendingPointer?: { x: number; y: number };
   pointerId: number;
-  startX: number;
-  startY: number;
+  /** Null until the first movement sample when begin-drag returned no cursor
+   *  reading — initialised lazily so start and samples share one space. */
+  startX: number | null;
+  startY: number | null;
   unsubscribeCursor?: () => void;
   unsubscribeEnd?: () => void;
   /** Removes the window-level end-of-drag listeners the overlay drag installs. */
@@ -1014,6 +1016,14 @@ export function CodexPetLayer() {
   };
 
   const moveDragFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
+    // First sample with no recorded start: this sample IS the start. The pet
+    // stays put (zero delta) instead of leaping by the difference between two
+    // unrelated coordinate spaces.
+    if (drag.startX === null || drag.startY === null) {
+      drag.startX = pointerX;
+      drag.startY = pointerY;
+      return;
+    }
     const deltaX = pointerX - drag.startX;
     const deltaY = pointerY - drag.startY;
     if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) drag.moved = true;
@@ -1089,15 +1099,20 @@ export function CodexPetLayer() {
     if (companionKey && !companionPositionsRef.current[companionKey]) return;
     const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
     if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
-    // The native drag shape is expanded before capture and then stays stable.
-    // DOM movement is the low-latency path; native polling remains a fallback
-    // if Windows drops capture while the compact window recentres.
+    // On the desktop overlay, movement comes from ONE source: the main
+    // process's cursor poll. It used to mix that with DOM screenX/screenY as a
+    // low-latency primary — but renderer screen coordinates and Electron's
+    // screen API are not guaranteed to agree at display scales other than 100%.
+    // Where they disagree by the scale factor, each DOM sample overshoots the
+    // cursor and the next poll sample yanks the pet back: the "glitchy,
+    // teleporting" drag on a 225% screen. One space, one ruler. The poll runs
+    // every 16ms, so nothing perceptible is lost. DOM events keep exactly one
+    // job here: noticing the button was released.
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
       if (!isDesktopPetOverlay) return;
     }
-    const usesScreenCoordinates = isDesktopPetOverlay;
     const origin = companionKey
       ? companionPositionsRef.current[companionKey]
       : positionRef.current;
@@ -1108,12 +1123,16 @@ export function CodexPetLayer() {
       originX: origin.x,
       originY: origin.y,
       pointerId: event.pointerId,
-      startX: usesScreenCoordinates && Number.isFinite(nativeDrag?.screenX)
-        ? nativeDrag.screenX
-        : usesScreenCoordinates ? event.screenX : event.clientX,
-      startY: usesScreenCoordinates && Number.isFinite(nativeDrag?.screenY)
-        ? nativeDrag.screenY
-        : usesScreenCoordinates ? event.screenY : event.clientY,
+      // The start point must be in the SAME space as the movement samples. The
+      // begin-drag reply carries the poll's own reading; if it is missing, the
+      // start is initialised lazily from the first sample (a zero delta) rather
+      // than borrowed from a DOM event that may be on a different ruler.
+      startX: isDesktopPetOverlay
+        ? (Number.isFinite(nativeDrag?.screenX) ? nativeDrag.screenX : null)
+        : event.clientX,
+      startY: isDesktopPetOverlay
+        ? (Number.isFinite(nativeDrag?.screenY) ? nativeDrag.screenY : null)
+        : event.clientY,
     };
     dragState.current = drag;
     if (isDesktopPetOverlay && desktop?.onPetOverlayDragCursor) {
@@ -1125,7 +1144,8 @@ export function CodexPetLayer() {
         const pointerX = Number(point?.screenX);
         const pointerY = Number(point?.screenY);
         if (!activeDrag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
-        if (performance.now() - (activeDrag.lastDomPointerAt ?? 0) < 48) return;
+        // No DOM-freshness gate any more: the poll is the only movement source,
+        // so suppressing it in favour of DOM samples would suppress movement.
         scheduleDragFromPointer(activeDrag, pointerX, pointerY);
       });
     }
@@ -1144,10 +1164,10 @@ export function CodexPetLayer() {
       };
       const onWindowPointerMove = (moveEvent: PointerEvent) => {
         if (moveEvent.pointerId !== drag.pointerId) return;
+        // End-of-drag detection only. Feeding moveEvent.screenX into the drag
+        // here is what mixed coordinate spaces on scaled displays — movement
+        // belongs to the cursor poll alone.
         if ((moveEvent.buttons & 1) === 0) finishActiveDrag();
-        else if (dragState.current === drag) {
-          scheduleDomDragFromPointer(drag, moveEvent.screenX, moveEvent.screenY);
-        }
       };
       window.addEventListener("pointerup", onWindowPointerUp, true);
       window.addEventListener("pointercancel", onWindowPointerUp, true);
@@ -1164,11 +1184,11 @@ export function CodexPetLayer() {
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    scheduleDomDragFromPointer(
-      drag,
-      isDesktopPetOverlay ? event.screenX : event.clientX,
-      isDesktopPetOverlay ? event.screenY : event.clientY
-    );
+    // Desktop overlay: movement is the cursor poll's job (same-space samples).
+    // The in-page pet has no poll and keeps the DOM path, whose clientX shares
+    // the page's own coordinate space by definition.
+    if (isDesktopPetOverlay) return;
+    scheduleDomDragFromPointer(drag, event.clientX, event.clientY);
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
