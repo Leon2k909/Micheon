@@ -35,6 +35,14 @@ const SHARED_SYNC_PREFIXES = [
   "german-lab-h5p",
 ];
 
+// These belonged to the retired alternate-theme/custom-colour system. Keep
+// the keys explicit during migration so an older shared profile cannot restore
+// Butter, Lingo, Astryx, or inline colour overrides after the app updates.
+const DEPRECATED_SHARED_KEYS = new Set([
+  "gl-theme-preset",
+  "gl-custom-theme",
+]);
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -196,6 +204,13 @@ export function syncLocalStorageItem(key: string, value: string | null) {
 
 export async function hydrateLocalStorageFromSharedStorage() {
   if (typeof window === "undefined") return false;
+  const deprecatedDeletes: Record<string, null> = {};
+  for (const key of DEPRECATED_SHARED_KEYS) {
+    if (window.localStorage.getItem(key) !== null) {
+      window.localStorage.removeItem(key);
+      deprecatedDeletes[key] = null;
+    }
+  }
   try {
     const response = await fetch("/api/storage", { cache: "no-store" });
     if (!response.ok) return false;
@@ -207,6 +222,12 @@ export async function hydrateLocalStorageFromSharedStorage() {
     let masteryChanged = false;
 
     for (const [key, value] of Object.entries(items)) {
+      if (DEPRECATED_SHARED_KEYS.has(key)) {
+        window.localStorage.removeItem(key);
+        deprecatedDeletes[key] = null;
+        changed = true;
+        continue;
+      }
       if (typeof key !== "string" || typeof value !== "string" || !shouldSyncKey(key)) continue;
       if (window.localStorage.getItem(key) !== value) {
         window.localStorage.setItem(key, value);
@@ -221,6 +242,10 @@ export async function hydrateLocalStorageFromSharedStorage() {
           masteryChanged = true;
         }
       }
+    }
+
+    if (Object.keys(deprecatedDeletes).length > 0) {
+      syncSharedItems(deprecatedDeletes);
     }
 
     if (changed) {
@@ -242,6 +267,9 @@ export async function hydrateLocalStorageFromSharedStorage() {
 
     return changed;
   } catch {
+    if (Object.keys(deprecatedDeletes).length > 0) {
+      syncSharedItems(deprecatedDeletes);
+    }
     return false;
   }
 }

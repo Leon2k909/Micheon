@@ -43,6 +43,8 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("pet-overlay:geometry", handler);
     return () => ipcRenderer.removeListener("pet-overlay:geometry", handler);
   },
+  acknowledgePetOverlayGeometry: (revision) =>
+    ipcRenderer.send("pet-overlay:geometry-applied", Number(revision)),
   setPetOverlayHitRegions: (regions, origin) => ipcRenderer.send(
     "pet-overlay:set-hit-regions",
     { origin, regions }

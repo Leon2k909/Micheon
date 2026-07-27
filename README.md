@@ -37,7 +37,7 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 | **Vocabulary games** | Eight arcade-style games (Snake, Whack-a-Mole, Falling Letters, Verb Shooter, Minesweeper, and more) that drill vocab without feeling like study. |
 | **Grammar drills** | Cloze (fill-in-the-blank) exercises and grammar notes for the patterns behind the sentences. |
 | **Fluency meter & gamification** | Track known-word count toward a fluency estimate, earn XP, keep a daily streak, level up, and unlock milestones. |
-| **Appearance editor** | Full control of the look: background, cards, accent, text and progress-bar colours, plus a three-stop hero gradient — all live, saved, and synced to your account on this machine. |
+| **Micheon appearance** | One focused Micheon interface with a saved light/dark mode, keeping the app visually consistent and lightweight. |
 | **Learning direction** | Switch between *learn German* and *learn English*; the interface, prompts, and lesson make-up follow the language you pick. |
 | **Multiple courses** | German is the flagship; the course registry also carries Spanish and French tracks and a bonus C# course, selectable from the course switcher. |
 | **Local accounts** | Per-machine profiles keep each person's progress separate and sync across browser/app restarts — no account server involved. |
@@ -98,7 +98,7 @@ Micheon is deliberately simple and self-contained:
 - **Speech** — `server/index.js` is a small Express server that turns text into Microsoft neural-voice audio with `edge-tts-universal`, served locally (default port `41730`). Speech recognition for the "speak it" steps runs on-device.
 - **Desktop shell** — `electron/main.js` wraps the UI, hosts the TTS server, provides the custom title bar, and handles automatic updates via `electron-updater`.
 - **Desktop pets** — `src/components/codexPets/` renders animated companions, proactive recall questions, lesson memory checks, message history, and language-focused tips. Pet answers update the same spaced-repetition records used by lessons and Continue Learning.
-- **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Appearance overrides and preferences sync the same way.
+- **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Preferences, including Micheon's light/dark mode, sync the same way.
 
 ### Project layout
 
@@ -106,15 +106,14 @@ Micheon is deliberately simple and self-contained:
 src/
   german_learning_lab.tsx   Main app shell & tab routing
   GuidedSession.tsx         The lesson-taking experience
-  Gamification.tsx          Profile, stats, milestones, Appearance editor
-  components/               UI (TopNav, dashboard, lab views, editors)
+  Gamification.tsx          Profile, stats, milestones, preferences
+  components/               UI (TopNav, dashboard, lab views)
   games/                    The eight vocabulary games
   lib/
     data.ts                 Authored lesson content
     curriculum.ts           Curriculum ordering
     germanTextMatch.ts      Smart answer checker
     voice.ts / tts.ts       Text-to-speech client
-    customTheme.ts          Appearance override engine
     direction.ts / i18n.ts  Learning direction & interface language
     ...
 server/index.js             Local Express TTS server (edge-tts)

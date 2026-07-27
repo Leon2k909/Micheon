@@ -70,6 +70,7 @@ type PetOverlayGeometry = {
   height: number;
   originX: number;
   originY: number;
+  revision: number;
   viewportHeight: number;
   viewportWidth: number;
   width: number;
@@ -82,6 +83,7 @@ function readPetOverlayGeometry(value: any = desktop?.getPetOverlayGeometry?.())
     height: Number.isFinite(Number(value?.height)) ? Number(value.height) : fallbackHeight,
     originX: Number.isFinite(Number(value?.originX)) ? Number(value.originX) : 0,
     originY: Number.isFinite(Number(value?.originY)) ? Number(value.originY) : 0,
+    revision: Number.isInteger(Number(value?.revision)) ? Number(value.revision) : 0,
     viewportHeight: Number.isFinite(Number(value?.viewportHeight))
       ? Number(value.viewportHeight)
       : fallbackHeight,
@@ -176,16 +178,6 @@ function petDimensions(size: number, heightRatio = PET_HEIGHT_RATIO) {
   return { height: Math.round(width * heightRatio), width };
 }
 
-/**
- * Where a pet may sit.
- *
- * It used to have to fit entirely on screen with an 8px gap, which fenced it
- * off the taskbar and short of the bottom-right corner — the two places people
- * actually want a desktop mascot. It may now hang off any edge as long as this
- * much of it is still showing, which is what every other desktop pet does.
- */
-const PET_EDGE_KEEP_RATIO = 0.45;
-
 function clampPosition(
   position: PetPosition,
   width: number,
@@ -197,15 +189,13 @@ function clampPosition(
   // Measured on the pet's visible pixels, not its frame: sprite frames carry
   // transparent padding, and clamping on the frame stopped a pet well short of
   // an edge it looked nowhere near.
-  const visibleWidth = Math.max(1, visibleBounds.right - visibleBounds.left);
-  const visibleHeight = Math.max(1, visibleBounds.bottom - visibleBounds.top);
-  const keepX = Math.max(8, Math.round(visibleWidth * PET_EDGE_KEEP_RATIO));
-  const keepY = Math.max(8, Math.round(visibleHeight * PET_EDGE_KEEP_RATIO));
-
-  const minX = keepX - visibleBounds.right;
-  const maxX = width - keepX - visibleBounds.left;
-  const minY = keepY - visibleBounds.bottom;
-  const maxY = height - keepY - visibleBounds.top;
+  // Clamp the visible artwork, not the transparent sprite frame. The artwork
+  // can touch every screen edge, but no visible pixels are deliberately left
+  // outside the desktop where they become cut off or impossible to grab.
+  const minX = -visibleBounds.left;
+  const maxX = width - visibleBounds.right;
+  const minY = -visibleBounds.top;
+  const maxY = height - visibleBounds.bottom;
   return {
     x: Math.min(Math.max(minX, position.x), Math.max(minX, maxX)),
     y: Math.min(Math.max(minY, position.y), Math.max(minY, maxY)),
@@ -379,6 +369,8 @@ export function CodexPetLayer() {
   const [viewport, setViewport] = useState(viewportSize);
   const [overlayGeometry, setOverlayGeometry] = useState(readPetOverlayGeometry);
   const overlayGeometryRef = useRef(overlayGeometry);
+  const overlayGeometryAckFrame = useRef<number | null>(null);
+  const desktopPlaneRef = useRef<HTMLDivElement | null>(null);
   const dragState = useRef<DragState | null>(null);
   const menuMotionRef = useRef<HTMLDivElement | null>(null);
   const petMotionRef = useRef<HTMLDivElement | null>(null);
@@ -468,38 +460,56 @@ export function CodexPetLayer() {
     }
   }, [companionPositions, dragging, position]);
 
+  const updateOverlayGeometry = useCallback((value: any) => {
+    const next = readPetOverlayGeometry(value);
+    setOverlayGeometry((current) => (
+      current.height === next.height
+      && current.originX === next.originX
+      && current.originY === next.originY
+      && current.revision === next.revision
+      && current.viewportHeight === next.viewportHeight
+      && current.viewportWidth === next.viewportWidth
+      && current.width === next.width
+        ? current
+        : next
+    ));
+    setViewport((current) => (
+      current.height === next.viewportHeight && current.width === next.viewportWidth
+        ? current
+        : { height: next.viewportHeight, width: next.viewportWidth }
+    ));
+  }, []);
+
   // Pair each measured DOM layout with the native-window origin that produced
-  // it. Updating this ref in the IPC callback could combine a newly announced
-  // origin with rectangles from the previous React commit and briefly send the
-  // compact window to the wrong place.
+  // it. Main keeps the native window transparent during an origin transition;
+  // acknowledge only after React has committed the new plane and a paint frame
+  // has passed, so no stale-origin pet can flash at the desktop's left edge.
   useLayoutEffect(() => {
     overlayGeometryRef.current = overlayGeometry;
     hitRegionSyncRef.current?.();
+    if (!isDesktopPetOverlay || overlayGeometry.revision <= 0) return undefined;
+    if (overlayGeometryAckFrame.current !== null) {
+      window.cancelAnimationFrame(overlayGeometryAckFrame.current);
+    }
+    overlayGeometryAckFrame.current = window.requestAnimationFrame(() => {
+      overlayGeometryAckFrame.current = window.requestAnimationFrame(() => {
+        overlayGeometryAckFrame.current = null;
+        desktop?.acknowledgePetOverlayGeometry?.(overlayGeometry.revision);
+      });
+    });
+    return () => {
+      if (overlayGeometryAckFrame.current !== null) {
+        window.cancelAnimationFrame(overlayGeometryAckFrame.current);
+        overlayGeometryAckFrame.current = null;
+      }
+    };
   }, [overlayGeometry]);
 
   useEffect(() => {
     if (!isDesktopPetOverlay || !desktop?.onPetOverlayGeometry) return undefined;
-    const updateGeometry = (value: any) => {
-      const next = readPetOverlayGeometry(value);
-      setOverlayGeometry((current) => (
-        current.height === next.height
-        && current.originX === next.originX
-        && current.originY === next.originY
-        && current.viewportHeight === next.viewportHeight
-        && current.viewportWidth === next.viewportWidth
-        && current.width === next.width
-          ? current
-          : next
-      ));
-      setViewport((current) => (
-        current.height === next.viewportHeight && current.width === next.viewportWidth
-          ? current
-          : { height: next.viewportHeight, width: next.viewportWidth }
-      ));
-    };
-    updateGeometry(desktop.getPetOverlayGeometry?.());
-    return desktop.onPetOverlayGeometry(updateGeometry);
-  }, []);
+    updateOverlayGeometry(desktop.getPetOverlayGeometry?.());
+    return desktop.onPetOverlayGeometry(updateOverlayGeometry);
+  }, [updateOverlayGeometry]);
 
   const updatePetVisibleBounds = useCallback((
     key: string,
@@ -565,6 +575,10 @@ export function CodexPetLayer() {
     const syncHitRegions = () => {
       animationFrame = 0;
       if (fallbackTimer) { window.clearTimeout(fallbackTimer); fallbackTimer = 0; }
+      // Main uses one stable full-window collar while dragging. Measuring and
+      // sending a shape on every translated frame only creates IPC/style work;
+      // the final release explicitly requests one fresh compact measurement.
+      if (dragState.current) return;
       const padding = 18;
       const regions = Array.from(
         document.querySelectorAll<HTMLElement>(
@@ -1097,8 +1111,25 @@ export function CodexPetLayer() {
     // A companion that has not been given a place yet cannot be dragged; its
     // position effect runs first, so this only guards the very first frame.
     if (companionKey && !companionPositionsRef.current[companionKey]) return;
+    // Establish capture before main moves/resizes the native overlay. Doing it
+    // afterward lets the bounds transition revoke the initiating gesture.
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      if (!isDesktopPetOverlay) return;
+    }
     const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
-    if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) return;
+    if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) {
+      try {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      } catch {
+        // The overlay may already have rejected the native transition.
+      }
+      return;
+    }
+    if (nativeDrag?.geometry) updateOverlayGeometry(nativeDrag.geometry);
     // On the desktop overlay, movement comes from ONE source: the main
     // process's cursor poll. It used to mix that with DOM screenX/screenY as a
     // low-latency primary — but renderer screen coordinates and Electron's
@@ -1108,11 +1139,6 @@ export function CodexPetLayer() {
     // teleporting" drag on a 225% screen. One space, one ruler. The poll runs
     // every 16ms, so nothing perceptible is lost. DOM events keep exactly one
     // job here: noticing the button was released.
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      if (!isDesktopPetOverlay) return;
-    }
     const origin = companionKey
       ? companionPositionsRef.current[companionKey]
       : positionRef.current;
@@ -1323,6 +1349,7 @@ export function CodexPetLayer() {
         className="pointer-events-none fixed inset-0 z-[700] overflow-visible"
       >
       <div
+        ref={desktopPlaneRef}
         className="pointer-events-none absolute overflow-visible"
         style={{
           height: viewport.height,

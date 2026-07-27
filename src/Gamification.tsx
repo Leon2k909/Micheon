@@ -48,11 +48,8 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import {
   getTheme,
-  getThemePreset,
   setTheme as persistTheme,
-  setThemePreset as persistThemePreset,
   type Theme,
-  type ThemePreset,
 } from "@/lib/theme";
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
@@ -61,10 +58,8 @@ import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getVoiceModel, setVoiceModel, VOICE_MODELS, type VoiceModelChoice } from "@/lib/voiceModel";
 import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
-import { AppearanceEditor } from "@/components/AppearanceEditor";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
-import { ThemePresetPicker } from "@/components/ThemePresetPicker";
 import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
@@ -72,7 +67,6 @@ import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode,
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
-import { resetCustomTheme } from "@/lib/customTheme";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
@@ -311,7 +305,6 @@ export default function GamificationPanel({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [theme, setTheme] = useState<Theme>(getTheme);
-  const [themePreset, setThemePreset] = useState<ThemePreset>(getThemePreset);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
@@ -363,13 +356,6 @@ export default function GamificationPanel({
     const next: Theme = theme === "dark" ? "light" : "dark";
     persistTheme(next); // paint + persist locally + sync to shared store
     setTheme(next); // update local React state
-  };
-
-  const chooseThemePreset = (next: ThemePreset) => {
-    if (next === themePreset) return;
-    persistThemePreset(next);
-    resetCustomTheme();
-    setThemePreset(next);
   };
 
   const toggleEffects = () => {
@@ -530,9 +516,6 @@ export default function GamificationPanel({
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
               <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Learning, appearance, and progress settings.")}</p>
-              <div className="mt-5">
-                <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
-              </div>
               <button
                 aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
                 className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
@@ -718,8 +701,6 @@ export default function GamificationPanel({
           </div>
         </section>
 
-        <AppearanceEditor />
-
         <VocabTracker apiParts={apiParts} user={user} />
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
@@ -805,7 +786,6 @@ export default function GamificationPanel({
           </div>
 
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-            <ThemePresetPicker value={themePreset} onChange={chooseThemePreset} />
             <button
               aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
               className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"

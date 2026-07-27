@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -55,9 +55,6 @@
     "express": "^5.2.1"
   },
   "devDependencies": {
-    "@astryxdesign/core": "^0.1.8",
-    "@astryxdesign/theme-butter": "^0.1.8",
-    "@astryxdesign/theme-neutral": "^0.1.8",
     "@eslint/js": "^10.0.1",
     "@huggingface/transformers": "^4.2.0",
     "@radix-ui/react-progress": "^1.1.14",

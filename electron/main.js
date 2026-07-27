@@ -31,6 +31,9 @@ let petOverlayHitRegions = [];
 /** Geometry of the shape currently applied, so identical updates are skipped. */
 let petOverlayShapeSignature = null;
 let petOverlayGeometrySignature = null;
+let petOverlayGeometryRevision = 0;
+let petOverlayPendingGeometryRevision = 0;
+let petOverlayGeometryTransitionTimer = null;
 let serverStarted = false;
 
 // Keep the transparent compositor surface close to the mascot instead of the
@@ -132,10 +135,55 @@ function currentPetOverlayGeometry() {
     height: windowBounds.height,
     originX: windowBounds.x - desktopBounds.x,
     originY: windowBounds.y - desktopBounds.y,
+    revision: petOverlayGeometryRevision,
     viewportHeight: desktopBounds.height,
     viewportWidth: desktopBounds.width,
     width: windowBounds.width,
   };
+}
+
+function clearPetOverlayGeometryTransitionTimer() {
+  if (petOverlayGeometryTransitionTimer) clearTimeout(petOverlayGeometryTransitionTimer);
+  petOverlayGeometryTransitionTimer = null;
+}
+
+function finishPetOverlayGeometryTransition(revision = petOverlayPendingGeometryRevision) {
+  if (!revision || revision !== petOverlayPendingGeometryRevision) return;
+  petOverlayPendingGeometryRevision = 0;
+  clearPetOverlayGeometryTransitionTimer();
+  if (!petWindow || petWindow.isDestroyed()) return;
+  try {
+    petWindow.setOpacity(1);
+  } catch {
+    // The window can be destroyed between the acknowledgement and this call.
+  }
+}
+
+/**
+ * Hide a native bounds change until the renderer has rebased its desktop plane.
+ * Moving the transparent BrowserWindow changes its origin immediately, while
+ * the renderer learns that origin over IPC. Without this handshake Chromium
+ * can show one stale frame at the left edge or clip the compacted pet/panel.
+ */
+function beginPetOverlayGeometryTransition() {
+  if (!petWindow || petWindow.isDestroyed() || !petWindow.isVisible()) return 0;
+  petOverlayGeometryRevision += 1;
+  petOverlayPendingGeometryRevision = petOverlayGeometryRevision;
+  clearPetOverlayGeometryTransitionTimer();
+  try {
+    petWindow.setOpacity(0);
+  } catch {
+    petOverlayPendingGeometryRevision = 0;
+    return 0;
+  }
+  // Never strand the mascot invisible if the renderer crashes or is suspended.
+  const revision = petOverlayPendingGeometryRevision;
+  petOverlayGeometryTransitionTimer = setTimeout(
+    () => finishPetOverlayGeometryTransition(revision),
+    500
+  );
+  petOverlayGeometryTransitionTimer.unref?.();
+  return revision;
 }
 
 function publishPetOverlayGeometry(force = false) {
@@ -176,6 +224,7 @@ function syncPetOverlayBounds() {
     || current.height !== next.height
   ) {
     const resized = current.width !== next.width || current.height !== next.height;
+    beginPetOverlayGeometryTransition();
     petWindow.setBounds(next, false);
     if (resized) {
       // Resizing the window can drop the native region, so never let the
@@ -184,63 +233,26 @@ function syncPetOverlayBounds() {
       if (petOverlayDragging) applyPetOverlayDragShape();
       else restorePetOverlayShape();
     }
-  } else {
-    // Same bounds, but this fires on display-metrics changes — and a scale
-    // change turns the SAME DIP regions into a different physical region. The
-    // scale is in the shape signature, so this is a string compare when
-    // nothing changed and a proper re-apply when the DPI did.
-    if (!petOverlayDragging) restorePetOverlayShape();
-  }
+  } else if (!petOverlayDragging) restorePetOverlayShape();
   publishPetOverlayGeometry(true);
 }
 
 /**
- * Convert DIP rectangles to the physical pixels SetWindowRgn works in.
- *
- * Everything upstream — element rects, window bounds, the drag collar — is in
- * DIP, and setShape is a raw SetWindowRgn on Windows, which takes PHYSICAL
- * window pixels. At 100% scale the two are identical, which is why every
- * machine this was developed on looked fine. At 225% every region came out
- * 2.25x too small, anchored top-left: the sprite and its menu were drawn only
- * where the undersized region happened to overlap them (arbitrary-looking
- * clipping), most of the pet was click-through, and pressing it applied the
- * full-window drag collar — which in physical pixels covered only the top-left
- * corner of the screen, so a pet kept at the bottom-right vanished on press.
- *
- * Floor the origin and ceil the far edge so a region can only ever GROW by a
- * fraction of a pixel — a region one pixel too small reintroduces a hairline
- * of clipped sprite, while one too big costs an invisible sliver of hit area.
- * Adjacent rects stay gapless: ceil(k) of one edge equals floor(k) of the next.
+ * Apply renderer rectangles without scaling them first. BrowserWindow bounds,
+ * DOM rectangles, and setShape input are all DIP; Chromium performs the one
+ * required DIP-to-device-pixel conversion for the target HWND internally.
  */
-function toPhysicalRegions(regions, scale) {
-  if (!Number.isFinite(scale) || scale === 1) return regions;
-  return regions.map((region) => {
-    const left = Math.floor(region.x * scale);
-    const top = Math.floor(region.y * scale);
-    return {
-      x: left,
-      y: top,
-      width: Math.ceil((region.x + region.width) * scale) - left,
-      height: Math.ceil((region.y + region.height) * scale) - top,
-    };
-  });
-}
-
 function applyPetOverlayShape(regions, preserveOnFailure = false) {
   if (!petWindow || petWindow.isDestroyed() || regions.length === 0) return false;
-  // The window has one effective DPI at a time; the display it mostly sits on
-  // is the one whose scale applies. Mixed-DPI monitor pairs follow the window.
-  const scale = screen.getDisplayMatching(petWindow.getBounds())?.scaleFactor || 1;
   // setShape is a native SetWindowRgn on Windows and is far too expensive to
   // call at frame rate. Skipping an identical shape costs one string compare
   // and removes nearly all of the calls, because a moving pet re-sends the same
-  // geometry whenever it settles. The scale is part of the signature: the same
-  // DIP regions on a rescaled display are a DIFFERENT physical region, and
-  // deduping them away would repeat this whole bug on monitor changes.
-  const signature = `${scale}|${JSON.stringify(regions)}`;
+  // geometry whenever it settles. Resizes explicitly clear this signature
+  // because Windows can discard the native region while changing the surface.
+  const signature = JSON.stringify(regions);
   if (signature === petOverlayShapeSignature) return true;
   try {
-    petWindow.setShape(toPhysicalRegions(regions, scale));
+    petWindow.setShape(regions);
     petOverlayShapeSignature = signature;
     petOverlayUsesShape = true;
     petWindow.setIgnoreMouseEvents(false);
@@ -275,6 +287,7 @@ function expandPetOverlayForDrag() {
   ) return;
   // Resizing drops the Windows window region, so the shape must be re-applied
   // rather than skipped as identical.
+  beginPetOverlayGeometryTransition();
   petOverlayShapeSignature = null;
   petWindow.setBounds(desktopBounds, false);
   publishPetOverlayGeometry(true);
@@ -384,6 +397,7 @@ function compactPetOverlayToRegions(
   const resized = currentBounds.width !== nextBounds.width || currentBounds.height !== nextBounds.height;
   if (moved || resized) {
     // Moving preserves a Windows window region. Resizing can drop it.
+    beginPetOverlayGeometryTransition();
     if (resized) petOverlayShapeSignature = null;
     petWindow.setBounds(nextBounds, false);
   }
@@ -528,9 +542,11 @@ function schedulePetOverlayLoadRetry() {
 
 function createPetOverlayWindow() {
   if (petWindow && !petWindow.isDestroyed()) return petWindow;
+  clearPetOverlayGeometryTransitionTimer();
+  petOverlayPendingGeometryRevision = 0;
   const initialBounds = initialPetOverlayBounds();
 
-  petWindow = new BrowserWindow({
+  const overlay = new BrowserWindow({
     ...initialBounds,
     show: false,
     frame: false,
@@ -559,41 +575,50 @@ function createPetOverlayWindow() {
     },
   });
 
-  petWindow.setAlwaysOnTop(true, "floating");
-  petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  petWindow.setIgnoreMouseEvents(true, { forward: true });
-  petWindow.on("move", () => publishPetOverlayGeometry());
-  petWindow.on("resize", () => publishPetOverlayGeometry());
+  petWindow = overlay;
+  overlay.setAlwaysOnTop(true, "floating");
+  overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  overlay.setIgnoreMouseEvents(true, { forward: true });
+  overlay.on("move", () => {
+    if (petWindow === overlay) publishPetOverlayGeometry();
+  });
+  overlay.on("resize", () => {
+    if (petWindow === overlay) publishPetOverlayGeometry();
+  });
 
-  petWindow.webContents.on("did-finish-load", () => {
-    if (!petWindow || petWindow.isDestroyed()) return;
+  overlay.webContents.on("did-finish-load", () => {
+    if (petWindow !== overlay || overlay.isDestroyed()) return;
     clearPetOverlayLoadTimer();
     petOverlayLoaded = true;
     petOverlayLoadAttempts = 0;
     publishPetOverlayGeometry(true);
-    if (petWindow.isVisible()) petWindow.webContents.send("pet-overlay:resync");
+    if (overlay.isVisible()) overlay.webContents.send("pet-overlay:resync");
   });
-  petWindow.webContents.on(
+  overlay.webContents.on(
     "did-fail-load",
     (_event, errorCode, errorDescription, _validatedURL, isMainFrame) => {
       // Chromium reports ERR_ABORTED when a newer navigation replaces an older
       // one. It is not a failed overlay and must not consume the retry budget.
       if (!isMainFrame || errorCode === -3) return;
+      if (petWindow !== overlay) return;
       finishPetOverlayDrag();
       petOverlayLoaded = false;
       console.error(`[pet] overlay load failed (${errorCode}):`, errorDescription);
       schedulePetOverlayLoadRetry();
     }
   );
-  petWindow.webContents.on("render-process-gone", (_event, details) => {
+  overlay.webContents.on("render-process-gone", (_event, details) => {
+    if (petWindow !== overlay) return;
     finishPetOverlayDrag();
     petOverlayLoaded = false;
     console.error("[pet] overlay renderer exited:", details?.reason ?? "unknown");
     schedulePetOverlayLoadRetry();
   });
   loadPetOverlay();
-  petWindow.on("closed", () => {
+  overlay.on("closed", () => {
+    if (petWindow !== overlay) return;
     clearPetOverlayDestroyTimer();
+    clearPetOverlayGeometryTransitionTimer();
     stopPetOverlayCursorTracking();
     if (petOverlayDragWatchdog) clearTimeout(petOverlayDragWatchdog);
     petOverlayDragWatchdog = null;
@@ -605,14 +630,16 @@ function createPetOverlayWindow() {
     petOverlayHitRegions = [];
     petOverlayShapeSignature = null;
     petOverlayGeometrySignature = null;
+    petOverlayPendingGeometryRevision = 0;
   });
-  petWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-  return petWindow;
+  overlay.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  return overlay;
 }
 
 function setPetOverlayVisible(visible) {
   if (!visible) {
     finishPetOverlayDrag();
+    finishPetOverlayGeometryTransition();
     clearPetOverlayLoadTimer();
     petWindow?.hide();
     clearPetOverlayDestroyTimer();
@@ -627,6 +654,9 @@ function setPetOverlayVisible(visible) {
   }
   clearPetOverlayDestroyTimer();
   const overlay = createPetOverlayWindow();
+  // A prior renderer failure may have hit the transition safety path while the
+  // window was hidden. Every explicit show starts from a visible opacity.
+  if (!petOverlayPendingGeometryRevision) overlay.setOpacity(1);
   // A show is an explicit recovery request. If initial navigation or the
   // renderer failed previously, give it a fresh bounded retry budget instead
   // of repeatedly showing the same blank transparent window.
@@ -842,6 +872,13 @@ ipcMain.on("pet-overlay:get-geometry", (event) => {
   event.returnValue = currentPetOverlayGeometry();
 });
 
+ipcMain.on("pet-overlay:geometry-applied", (event, revision) => {
+  if (!eventCameFrom(event, petWindow)) return;
+  const appliedRevision = Number(revision);
+  if (!Number.isInteger(appliedRevision) || appliedRevision <= 0) return;
+  finishPetOverlayGeometryTransition(appliedRevision);
+});
+
 ipcMain.on("pet-overlay:set-hit-regions", (event, payload) => {
   if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
   if (process.platform !== "win32" && process.platform !== "linux") return;
@@ -917,6 +954,7 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
     const point = startPetOverlayCursorTracking();
     startPetOverlayDragWatchdog();
     event.returnValue = {
+      geometry: currentPetOverlayGeometry(),
       screenX: point?.screenX,
       screenY: point?.screenY,
       started: true,
@@ -927,6 +965,7 @@ ipcMain.on("pet-overlay:begin-drag", (event) => {
     petOverlayDragging = false;
     petOverlayDragDesktopBounds = null;
     stopPetOverlayCursorTracking();
+    finishPetOverlayGeometryTransition();
     // The collar may already be applied; a failed drag must not leave it
     // behind as an oversized invisible hit area.
     petOverlayShapeSignature = null;

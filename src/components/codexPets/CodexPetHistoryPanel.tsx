@@ -30,14 +30,13 @@ type DragState = {
   cleanupGlobal?: () => void;
   cursorFrame?: number;
   element: HTMLElement;
-  lastDomPointerAt?: number;
   native: boolean;
   originX: number;
   originY: number;
   pendingPointer?: { x: number; y: number };
   pointerId: number;
-  startX: number;
-  startY: number;
+  startX: number | null;
+  startY: number | null;
   unsubscribeCursor?: () => void;
   unsubscribeEnd?: () => void;
 };
@@ -57,8 +56,8 @@ function viewportSize() {
 
 function panelSize(viewport = viewportSize()) {
   return {
-    height: Math.min(PANEL_MAX_HEIGHT, Math.max(240, viewport.height - PANEL_MARGIN * 2)),
-    width: Math.min(PANEL_MAX_WIDTH, Math.max(280, viewport.width - PANEL_MARGIN * 2)),
+    height: Math.max(1, Math.min(PANEL_MAX_HEIGHT, viewport.height - PANEL_MARGIN * 2)),
+    width: Math.max(1, Math.min(PANEL_MAX_WIDTH, viewport.width - PANEL_MARGIN * 2)),
   };
 }
 
@@ -223,6 +222,11 @@ export function CodexPetHistoryPanel({
   }, [onGeometryChange, position.x, position.y, size.height, size.width]);
 
   const movePanelFromPoint = (drag: DragState, pointerX: number, pointerY: number) => {
+    if (drag.startX === null || drag.startY === null) {
+      drag.startX = pointerX;
+      drag.startY = pointerY;
+      return;
+    }
     const next = clampPanelPosition({
       x: drag.originX + pointerX - drag.startX,
       y: drag.originY + pointerY - drag.startY,
@@ -232,7 +236,7 @@ export function CodexPetHistoryPanel({
     if (panelRef.current) {
       panelRef.current.style.transform = `translate3d(${next.x - drag.originX}px, ${next.y - drag.originY}px, 0)`;
     }
-    onGeometryChange?.();
+    if (!drag.native) onGeometryChange?.();
   };
 
   const flushPanelPointer = (drag: DragState) => {
@@ -255,11 +259,6 @@ export function CodexPetHistoryPanel({
       drag.pendingPointer = undefined;
       if (pending) movePanelFromPoint(drag, pending.x, pending.y);
     });
-  };
-
-  const scheduleDomPanelFromPointer = (drag: DragState, pointerX: number, pointerY: number) => {
-    drag.lastDomPointerAt = performance.now();
-    schedulePanelFromPointer(drag, pointerX, pointerY);
   };
 
   const finishActivePanelDrag = (notifyMain = true) => {
@@ -308,25 +307,36 @@ export function CodexPetHistoryPanel({
       || dragState.current
       || (event.target as Element).closest("button")
     ) return;
-    const nativeDrag = desktop?.beginPetOverlayDrag?.();
-    if (nativeDrag === false || nativeDrag?.started === false) return;
-    const native = nativeDrag?.started === true;
-    if (!native) {
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch {
-        return;
-      }
+    let captured = false;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      captured = true;
+    } catch {
+      // Native cursor polling can still finish a desktop drag without capture.
     }
+    const nativeDrag = desktop?.beginPetOverlayDrag?.();
+    if (nativeDrag === false || nativeDrag?.started === false) {
+      try {
+        if (captured) event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // The rejected native transition may already have released capture.
+      }
+      return;
+    }
+    const native = nativeDrag?.started === true;
+    if (!native && !captured) return;
     const drag: DragState = {
       element: event.currentTarget,
-      lastDomPointerAt: performance.now(),
       native,
       originX: positionRef.current.x,
       originY: positionRef.current.y,
       pointerId: event.pointerId,
-      startX: native && Number.isFinite(nativeDrag?.screenX) ? nativeDrag.screenX : event.screenX,
-      startY: native && Number.isFinite(nativeDrag?.screenY) ? nativeDrag.screenY : event.screenY,
+      startX: native
+        ? (Number.isFinite(nativeDrag?.screenX) ? nativeDrag.screenX : null)
+        : event.screenX,
+      startY: native
+        ? (Number.isFinite(nativeDrag?.screenY) ? nativeDrag.screenY : null)
+        : event.screenY,
     };
     dragState.current = drag;
     if (native && desktop?.onPetOverlayDragCursor) {
@@ -338,7 +348,6 @@ export function CodexPetHistoryPanel({
         const pointerX = Number(point?.screenX);
         const pointerY = Number(point?.screenY);
         if (activeDrag !== drag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
-        if (performance.now() - (drag.lastDomPointerAt ?? 0) < 48) return;
         schedulePanelFromPointer(drag, pointerX, pointerY);
       });
     }
@@ -354,9 +363,6 @@ export function CodexPetHistoryPanel({
       const onWindowPointerMove = (moveEvent: PointerEvent) => {
         if (moveEvent.pointerId !== drag.pointerId) return;
         if ((moveEvent.buttons & 1) === 0) finishActivePanelDrag();
-        else if (dragState.current === drag) {
-          scheduleDomPanelFromPointer(drag, moveEvent.screenX, moveEvent.screenY);
-        }
       };
       window.addEventListener("pointerup", onWindowPointerUp, true);
       window.addEventListener("pointercancel", onWindowPointerUp, true);
@@ -373,7 +379,7 @@ export function CodexPetHistoryPanel({
   const movePanel = (event: ReactPointerEvent<HTMLElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    scheduleDomPanelFromPointer(drag, event.screenX, event.screenY);
+    if (!drag.native) schedulePanelFromPointer(drag, event.screenX, event.screenY);
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLElement>) => {

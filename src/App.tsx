@@ -3,7 +3,6 @@ import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { getAuthUser, hydrateLocalStorageFromSharedStorage, recordKnownProfile, UserProfile } from "./lib/profileStorage";
 import { applyStoredThemePreferences, getTheme, watchStoredThemePreferences } from "./lib/theme";
-import { applyCustomTheme } from "./lib/customTheme";
 import { MicheonLogo } from "./components/MicheonLogo";
 import { UpdateBanner } from "./components/UpdateBanner";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
@@ -67,8 +66,6 @@ function MicheonApp() {
       // Hydration may have pulled a synced theme; repaint so the DOM matches
       // the stored preference and dark mode survives restarts.
       applyStoredThemePreferences();
-      // Hydration may have pulled synced appearance overrides; repaint them too.
-      applyCustomTheme();
       // No hardcoded default: a device with no signed-in profile shows the
       // sign-in screen, so each person creates their own account. A device that
       // already has a profile (synced via the local shared store) stays signed
