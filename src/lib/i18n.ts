@@ -520,6 +520,9 @@ const DE: Record<string, string> = {
   "Tap to hear it": "Antippen zum Anhören",
   "The talking pet is always shown. Pick another pet to speak first.": "Das sprechende Tier wird immer angezeigt. Wähle zuerst ein anderes Tier zum Sprechen.",
   "Show this pet on the desktop": "Dieses Tier auf dem Desktop anzeigen",
+  "Hide this pet from the desktop": "Dieses Tier vom Desktop ausblenden",
+  "Already the talking pet": "Spricht bereits",
+  "Make this the talking pet — it will be shown too": "Dieses Tier zum sprechenden Tier machen — es wird auch angezeigt",
 
   // ── Update status ──
   "Updates": "Updates",

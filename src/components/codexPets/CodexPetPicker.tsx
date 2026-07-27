@@ -87,7 +87,13 @@ export function CodexPetPicker() {
                 aria-label={`${ui("Make")} ${pet.displayName} ${ui("the talking pet")}`}
                 aria-pressed={selected}
                 className="flex min-h-[76px] flex-1 flex-col items-center justify-end px-2 pb-1 pt-1 hover:bg-[var(--surface-2)]"
+                // The image is the other way to switch a pet on: selectPet
+                // makes it visible as well as making it the speaker, so either
+                // control turns the pet on and neither is a dead end.
                 onClick={() => selectPet(key)}
+                title={selected
+                  ? ui("Already the talking pet")
+                  : ui("Make this the talking pet — it will be shown too")}
                 type="button"
               >
                 <CodexPetSprite animated={selected} animation="idle" pet={pet} size={54} />
@@ -129,23 +135,17 @@ export function CodexPetPicker() {
                 <MessageSquare className="h-3 w-3" />
                 {ui("Greeting")}
               </button>
-              {/* The talking pet cannot be hidden — there would be nothing left
-                  to speak. That rule is fine; silently disabling the box was
-                  not. Without a reason on it, the only way to discover why it
-                  will not click is to select a different pet and find that it
-                  suddenly works, which reads as a broken control. */}
+              {/* Live for every pet, including the one currently speaking.
+                  Hiding the speaker hands the role on rather than being
+                  refused — see togglePetVisibility. */}
               <label
-                className={cn(
-                  "flex h-7 items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide",
-                  selected ? "cursor-not-allowed text-[var(--text-3)] opacity-60" : "cursor-pointer text-[var(--text-3)]"
-                )}
-                title={selected
-                  ? ui("The talking pet is always shown. Pick another pet to speak first.")
+                className="flex h-7 cursor-pointer items-center justify-center gap-1 border-t border-[var(--border)] text-[10px] font-black uppercase tracking-wide text-[var(--text-3)] transition-colors hover:text-[var(--accent)]"
+                title={visible
+                  ? ui("Hide this pet from the desktop")
                   : ui("Show this pet on the desktop")}
               >
                 <input
                   checked={visible}
-                  disabled={selected}
                   onChange={() => togglePetVisibility(key)}
                   type="checkbox"
                 />

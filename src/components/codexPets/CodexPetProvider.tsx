@@ -480,17 +480,48 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (key === "off") clearSpeech();
   }, [clearSpeech]);
 
+  /**
+   * Show or hide one pet.
+   *
+   * This used to refuse outright when the pet was the talking one, because
+   * hiding it would leave nothing to speak. True, but the refusal was silent:
+   * the tickbox simply would not move, and the only way to discover why was to
+   * pick a different pet and find it suddenly worked. Both the image and the
+   * tickbox are now live for every pet, and the awkward case is handled rather
+   * than forbidden — hiding the speaker hands the role to another visible pet,
+   * or turns the mascot off if that was the last one.
+   */
   const togglePetVisibility = useCallback((key: string) => {
-    if (key === selectedKey) return;
-    setVisibleKeys((current) => {
-      const next = current.includes(key)
-        ? current.filter((entry) => entry !== key)
-        : [...current, key];
-      storeVisiblePetKeys(next);
-      return next;
-    });
-    if (selectedKey !== "off") desktop?.setPetOverlayVisible(true);
-  }, [selectedKey]);
+    const hiding = visibleKeys.includes(key);
+    const next = hiding
+      ? visibleKeys.filter((entry) => entry !== key)
+      : [...visibleKeys, key];
+    setVisibleKeys(next);
+    storeVisiblePetKeys(next);
+
+    if (!hiding) {
+      // Turning one on while the mascot is off entirely: this pet takes the
+      // speaking role, so a single click does what it looks like it does
+      // instead of ticking a box that changes nothing on screen.
+      if (selectedKey === "off") {
+        setSelectedKey(key);
+        storeCodexPetKey(key);
+      }
+      desktop?.setPetOverlayVisible(true);
+      return;
+    }
+
+    if (key === selectedKey) {
+      const heir = next[0] ?? "off";
+      setSelectedKey(heir);
+      storeCodexPetKey(heir);
+      desktop?.setPetOverlayVisible(heir !== "off");
+      if (heir === "off") clearSpeech();
+      return;
+    }
+
+    desktop?.setPetOverlayVisible(selectedKey !== "off");
+  }, [clearSpeech, selectedKey, visibleKeys]);
 
   const selectedPet = useMemo(
     () => pets.find((pet) => codexPetKey(pet) === selectedKey) ?? null,
