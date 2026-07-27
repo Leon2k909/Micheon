@@ -108,7 +108,14 @@ export function ListeningTab({
             </div>
 
             <div className="flex gap-4">
-              <Button className="flex-1 h-14 rounded-2xl bg-blue-600 text-lg font-bold shadow-lg shadow-blue-200" onClick={nextListening}>{listeningChecked ? "Next dictation" : "Skip"}</Button>
+              <Button
+                className={listeningChecked
+                  ? "flex-1 h-14 rounded-2xl bg-blue-600 text-lg font-bold shadow-lg shadow-blue-200"
+                  : "app-skip-button flex-1 h-14 rounded-2xl text-lg font-bold"}
+                onClick={nextListening}
+              >
+                {listeningChecked ? "Next dictation" : "Skip"}
+              </Button>
               <Button variant="outline" className="h-14 rounded-2xl px-6 text-slate-500 font-bold" onClick={() => playGerman(currentListeningItem.front)}><RotateCcw className="h-5 w-5 mr-0" /></Button>
             </div>
           </div>

@@ -255,7 +255,7 @@ function CodeStepView({
               <button type="button" onClick={() => { setChecked(false); onChange(target); }} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)]">
                 Fill answer
               </button>
-              <button type="button" onClick={onPass} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-2)] hover:bg-[var(--surface-3)]">
+              <button type="button" onClick={onPass} className="app-skip-button inline-flex h-12 flex-1 items-center justify-center rounded-2xl text-sm font-black">
                 Skip
               </button>
             </>

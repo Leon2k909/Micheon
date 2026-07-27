@@ -608,6 +608,54 @@ a { color: inherit; text-decoration: none; }
   color: rgb(255 255 255 / 0.84);
 }
 
+/* One unmistakable treatment for every action that explicitly skips work.
+   Sizing stays with each screen; this class owns only the shared yellow theme. */
+.app-skip-button {
+  border: 1px solid #ffe987 !important;
+  background: var(--yellow, #ffd233) !important;
+  color: #261e04 !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    0 5px 0 #a77b00,
+    0 12px 20px rgb(0 0 0 / 0.2) !important;
+  transition: transform 170ms ease, box-shadow 170ms ease, background 170ms ease !important;
+}
+
+.app-skip-button:hover,
+.app-skip-button:focus-visible {
+  border-color: #fff0a6 !important;
+  background: #ffdd69 !important;
+  color: #261e04 !important;
+  transform: translateY(-2px) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.84),
+    0 7px 0 #a77b00,
+    0 15px 24px rgb(0 0 0 / 0.22) !important;
+}
+
+.app-skip-button:focus-visible {
+  outline: 3px solid rgb(255 210 51 / 0.28);
+  outline-offset: 3px;
+}
+
+.app-skip-button:active {
+  transform: translateY(3px) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.78),
+    0 2px 0 #a77b00,
+    0 7px 12px rgb(0 0 0 / 0.18) !important;
+}
+
+.app-skip-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none !important;
+}
+
+.skip-step-btn.app-skip-button {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 3px 0 #a77b00 !important;
+}
+
 .grade-btn {
   display: inline-flex;
   height: 36px;
@@ -1710,7 +1758,7 @@ a { color: inherit; text-decoration: none; }
     linear-gradient(145deg, rgba(255,255,255,0.025), rgba(17,18,25,0.97));
 }
 .fs-meaning-select-list {
-  width: min(100%, 760px); margin: 0 auto;
+  width: min(100%, 760px); margin-inline: auto;
   display: grid; gap: 10px;
 }
 .guided-session .fs-meaning-select-choice {

@@ -2535,14 +2535,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <Button
                   type="button"
                   onClick={advance}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black"
                 >
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <div className="fs-meaning-actions fs-meaning-actions-centered">
-                <button type="button" onClick={advance} className="fs-meaning-skip">
+                <button type="button" onClick={advance} className="fs-meaning-skip app-skip-button">
                   {ui("Skip")}
                 </button>
               </div>
@@ -2634,14 +2634,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <Button
                   type="button"
                   onClick={advance}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black"
                 >
                   {ui("Skip")}
                 </Button>
               </div>
             ) : (
               <div className="fs-meaning-actions fs-meaning-actions-centered">
-                <button type="button" onClick={advance} className="fs-meaning-skip">
+                <button type="button" onClick={advance} className="fs-meaning-skip app-skip-button">
                   {ui("Skip")}
                 </button>
               </div>
@@ -2951,7 +2951,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={advanceOrFinish}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -3318,7 +3318,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onSkip ?? onNext}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -3482,7 +3482,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onSkip ?? onNext}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -3554,7 +3554,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={advanceOrFinish}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -3690,7 +3690,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     <RotateCcw className="mr-2 h-4 w-4" /> {ui("Shuffle again")}
                   </Button>
                   <Button onClick={advanceOrFinish}
-                    className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                    className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                     {ui("Skip")}
                   </Button>
                 </div>
@@ -3757,7 +3757,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onSkip ?? onNext}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -3859,7 +3859,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
                 <Button onClick={onSkip ?? onNext}
-                  className="h-14 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                  className="app-skip-button h-14 flex-1 rounded-2xl font-black">
                   {ui("Skip")}
                 </Button>
               </div>
@@ -4380,7 +4380,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 
         <div className="flex gap-3">
           <Button onClick={onDone} variant="ghost"
-            className="h-12 flex-1 rounded-lg border border-zinc-200 bg-white text-xs font-semibold uppercase text-zinc-500 hover:bg-zinc-50">
+            className="app-skip-button h-12 flex-1 rounded-lg text-xs font-semibold uppercase">
             {ui("Skip")}
           </Button>
           <Button onClick={save} disabled={saved}
@@ -5238,7 +5238,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {import.meta.env.DEV && !inIntro && (
-            <Button variant="ghost" onClick={skipStep} className="skip-step-btn">
+            <Button variant="ghost" onClick={skipStep} className="skip-step-btn app-skip-button">
               <span>{ui("Skip")}</span>
               <kbd>Alt →</kbd>
             </Button>

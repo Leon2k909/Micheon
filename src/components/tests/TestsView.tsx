@@ -1773,7 +1773,7 @@ export function TestsView({
               {!feedback ? (
                 <>
                   <button
-                    className="h-12 rounded-[16px] px-4 text-sm font-black text-[var(--text-3)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    className="app-skip-button h-12 rounded-[16px] px-5 text-sm font-black"
                     onClick={() => gradeAnswer(true)}
                     type="button"
                   >
