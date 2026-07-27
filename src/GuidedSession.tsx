@@ -1088,8 +1088,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   onAnswer?: (correct: boolean) => void;
 }) {
   const shakeControls = useAnimationControls();
-  const reactToAnswer = (ok: boolean, gentle = false) => {
+  const reactToAnswer = (ok: boolean, gentle = false, animate = true) => {
     onAnswer?.(ok);
+    if (!animate) return;
     if (ok) shakeControls.start({ scale: [1, 1.05, 1], transition: { duration: 0.32 } });
     // A coached near-miss ("people would understand you") gets a soft pulse,
     // not the hard error shake — it's a teaching moment, not a slap.
@@ -1145,6 +1146,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [orderSelected, setOrderSelected] = useState<number | null>(null);
   const [orderDragging, setOrderDragging] = useState<number | null>(null);
   const draggedOrderIndex = useRef<number | null>(null);
+  const orderAdvanceTimerRef = useRef<number | null>(null);
 
   // Final "Write it" stage: type the whole target sentence from its meaning.
   const [sayInput, setSayInput] = useState("");
@@ -1324,6 +1326,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     () => orderTokens.length > 0 && orderTokens.every((token, index) => token.answerIndex === index),
     [orderTokens]
   );
+  const orderLocked = orderChecked && orderIsCorrect;
   // French companion: tested as an extra phase when enabled and the item has French
   // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
@@ -1453,6 +1456,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // clear it when the round begins — otherwise it shows the previous answer as
   // already-correct.
   useEffect(() => {
+    if (orderAdvanceTimerRef.current !== null) {
+      window.clearTimeout(orderAdvanceTimerRef.current);
+      orderAdvanceTimerRef.current = null;
+    }
     recallAdvanceTokenRef.current += 1;
     if (recallCompletionTimerRef.current !== null) {
       window.clearTimeout(recallCompletionTimerRef.current);
@@ -1498,6 +1505,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setOrderChecked(false);
       setOrderTouched(false);
       setOrderSelected(null);
+      setOrderDragging(null);
       draggedOrderIndex.current = null;
     }
     if (phase === "SpeakAll") { setSayInput(""); setSayChecked(false); }
@@ -1520,6 +1528,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     recallAdvanceTokenRef.current += 1;
     if (recallCompletionTimerRef.current !== null) {
       window.clearTimeout(recallCompletionTimerRef.current);
+    }
+    if (orderAdvanceTimerRef.current !== null) {
+      window.clearTimeout(orderAdvanceTimerRef.current);
     }
   }, []);
 
@@ -1746,9 +1757,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recallBothTargetInput, recallBothMeaningInput]);
   useEffect(() => {
-    if (phase === "Order" && orderTouched && !orderChecked && orderIsCorrect) checkOrder();
+    if (
+      phase === "Order"
+      && orderTouched
+      && !orderChecked
+      && orderIsCorrect
+      && orderDragging === null
+      && draggedOrderIndex.current === null
+    ) {
+      checkOrder();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderTokens, orderTouched]);
+  }, [orderTokens, orderTouched, orderDragging]);
   useEffect(() => {
     if (phase === "French" && !frChecked && frInput.trim() && frResult.ok && !frResult.spellingNote) checkFrAnswer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1919,6 +1939,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
   const reorderToken = (from: number, to: number) => {
+    if (from === to || orderLocked) return;
+    if (orderAdvanceTimerRef.current !== null) {
+      window.clearTimeout(orderAdvanceTimerRef.current);
+      orderAdvanceTimerRef.current = null;
+    }
     setOrderTokens((tokens) => moveOrderToken(tokens, from, to));
     setOrderChecked(false);
     setOrderTouched(true);
@@ -1934,20 +1959,34 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const checkOrder = () => {
-    if (orderChecked) return;
+    if (orderChecked || orderDragging !== null || draggedOrderIndex.current !== null) return;
     setOrderChecked(true);
-    reactToAnswer(orderIsCorrect);
+    // A just-dropped word should stay planted. The green tokens and feedback
+    // confirm success without scaling the entire drag surface under the cursor.
+    reactToAnswer(orderIsCorrect, false, !orderIsCorrect);
     if (orderIsCorrect) {
       tts(item.de, 0.88, targetLang);
-      setTimeout(advanceOrFinish, 900);
+      if (orderAdvanceTimerRef.current !== null) {
+        window.clearTimeout(orderAdvanceTimerRef.current);
+      }
+      orderAdvanceTimerRef.current = window.setTimeout(() => {
+        orderAdvanceTimerRef.current = null;
+        advanceOrFinish();
+      }, 1050);
     }
   };
 
   const retryOrder = () => {
+    if (orderAdvanceTimerRef.current !== null) {
+      window.clearTimeout(orderAdvanceTimerRef.current);
+      orderAdvanceTimerRef.current = null;
+    }
     setOrderTokens(buildOrderTokens(item.de));
     setOrderChecked(false);
     setOrderTouched(false);
     setOrderSelected(null);
+    setOrderDragging(null);
+    draggedOrderIndex.current = null;
   };
 
   const checkSay = () => {
@@ -3525,7 +3564,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <button
                     key={token.id}
                     type="button"
-                    draggable
+                    draggable={!orderLocked}
+                    aria-disabled={orderLocked}
                     aria-pressed={orderSelected === tokenIndex}
                     aria-label={`${token.text}, ${ui("position")} ${tokenIndex + 1}`}
                     className={cn(
@@ -3534,13 +3574,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       orderDragging === tokenIndex && "is-dragging",
                       orderChecked && orderIsCorrect && "is-correct"
                     )}
-                    onClick={() => selectOrderToken(tokenIndex)}
-                    onPointerDown={() => setOrderDragging(tokenIndex)}
+                    onClick={() => {
+                      if (!orderLocked) selectOrderToken(tokenIndex);
+                    }}
+                    onPointerDown={() => {
+                      if (!orderLocked) setOrderDragging(tokenIndex);
+                    }}
                     onPointerCancel={() => setOrderDragging(null)}
                     onPointerUp={() => {
                       if (draggedOrderIndex.current === null) setOrderDragging(null);
                     }}
                     onDragStart={(event) => {
+                      if (orderLocked) {
+                        event.preventDefault();
+                        return;
+                      }
                       draggedOrderIndex.current = tokenIndex;
                       setOrderDragging(tokenIndex);
                       event.dataTransfer.effectAllowed = "move";
@@ -3552,6 +3600,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     }}
                     onDragEnter={(event) => {
                       event.preventDefault();
+                      if (orderLocked) return;
                       const from = draggedOrderIndex.current;
                       if (from === null || from === tokenIndex) return;
                       reorderToken(from, tokenIndex);
@@ -3564,12 +3613,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     }}
                     onDrop={(event) => {
                       event.preventDefault();
+                      if (orderLocked) return;
                       const from = draggedOrderIndex.current ?? Number(event.dataTransfer.getData("text/plain"));
                       if (Number.isInteger(from)) reorderToken(from, tokenIndex);
                       draggedOrderIndex.current = null;
                       setOrderDragging(null);
                     }}
                     onKeyDown={(event) => {
+                      if (orderLocked) return;
                       if (event.key === "ArrowLeft" && tokenIndex > 0) {
                         event.preventDefault();
                         reorderToken(tokenIndex, tokenIndex - 1);
@@ -3587,34 +3638,36 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
               <p className="fs-order-help">{ui("Drag, click two words, or use the arrow keys to reorder.")}</p>
             </motion.div>
-            {!orderIsCorrect && (
-              <RecallHelp key={`${item.id}-order`} answer={item.de} />
-            )}
+            <div className="fs-order-feedback">
+              {!orderChecked && (
+                <RecallHelp key={`${item.id}-order`} answer={item.de} />
+              )}
 
-            {orderChecked && (
-              <div className={cn("fs-result", orderIsCorrect ? "is-good" : "is-bad")} role="status">
-                <strong>{ui(orderIsCorrect ? "Correct word order" : "Not quite")}</strong>
-                <span>{ui(orderIsCorrect ? "The sentence is ready to write from memory." : "Rearrange the words and check again.")}</span>
-              </div>
-            )}
+              {orderChecked && (
+                <div className={cn("fs-result", orderIsCorrect ? "is-good" : "is-bad")} role="status">
+                  <strong>{ui(orderIsCorrect ? "Correct word order" : "Not quite")}</strong>
+                  <span>{ui(orderIsCorrect ? "The sentence is ready to write from memory." : "Rearrange the words and check again.")}</span>
+                </div>
+              )}
 
-            {!orderChecked ? (
-              <Button onClick={checkOrder}
-                className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-                {ui("Check word order")} <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            ) : !orderIsCorrect ? (
-              <div className="flex gap-3">
-                <Button onClick={retryOrder} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
-                  <RotateCcw className="mr-2 h-4 w-4" /> {ui("Shuffle again")}
+              {!orderChecked ? (
+                <Button onClick={checkOrder}
+                  className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
+                  {ui("Check word order")} <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button onClick={advanceOrFinish}
-                  className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
-                  {ui("Skip")}
-                </Button>
-              </div>
-            ) : null}
+              ) : !orderIsCorrect ? (
+                <div className="flex gap-3">
+                  <Button onClick={retryOrder} variant="outline"
+                    className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                    <RotateCcw className="mr-2 h-4 w-4" /> {ui("Shuffle again")}
+                  </Button>
+                  <Button onClick={advanceOrFinish}
+                    className="h-12 flex-1 rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200">
+                    {ui("Skip")}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">{ui("← Back")}</button>
           </motion.div>
         )}

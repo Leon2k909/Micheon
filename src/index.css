@@ -1248,6 +1248,12 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--fs-line); border-radius: 22px; padding: 24px;
   background: rgba(10,11,17,0.38); box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
 }
+.fs-order-feedback {
+  display: flex;
+  min-height: 120px;
+  flex-direction: column;
+  gap: 16px;
+}
 .fs-order-list { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .guided-session .fs-order-token {
   min-height: 46px; display: inline-flex; align-items: center; gap: 7px;
