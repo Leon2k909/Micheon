@@ -103,6 +103,33 @@ if (phrase) {
   }
 }
 
+const treatmentCostGerman = "Was kostet das, und was zahlt die Kasse?";
+const treatmentCostPhrase = findPhrase(allPartBlueprints, treatmentCostGerman);
+check("the treatment-cost phrase still exists", Boolean(treatmentCostPhrase));
+
+if (treatmentCostPhrase) {
+  check(
+    "the displayed treatment-cost answer uses natural English",
+    primaryAnswer(treatmentCostPhrase.en) === "How much does it cost, and what does my insurance cover?",
+    `found ${JSON.stringify(primaryAnswer(treatmentCostPhrase.en))}`
+  );
+
+  for (const answer of [
+    "How much does it cost, and what does my insurance cover?",
+    "What does it cost, and what does my insurance cover?",
+  ]) {
+    check(
+      `equivalent treatment-cost answer is accepted: ${answer}`,
+      matchEnglishPhrase(answer, treatmentCostPhrase.en).ok
+    );
+  }
+
+  check(
+    "an answer that omits the insurance clause stays rejected",
+    !matchEnglishPhrase("How much does it cost?", treatmentCostPhrase.en).ok
+  );
+}
+
 const bundledParts = buildBundledParts();
 const restaurantPart = buildApiPartFromResolved(allPartBlueprints.part76, {});
 const restaurantPhrases = restaurantPart.phrases ?? [];
