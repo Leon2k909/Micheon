@@ -170,7 +170,11 @@ export const CURRICULUM_ORDER: string[] = [
   "part29",           // Swearing & insults (strong language)
   "part13",           // Gaming & FPS callouts
   "part19",           // Loadouts & gunsmith talk
+  "part147",          // RPG & survival weapons, armour and durability
   "part42",           // Gaming: classes, settings & lobbies
+  "part148",          // Abilities, cooldowns, buffs and skill trees
+  "part146",          // Caves, dungeons and underground exploration
+  "part149",          // Adding friends, parties and cross-play
   "part45",           // Online gaming culture: cheaters, Steam & Discord
   "cb-fighting-styles",
   "cb-tics-tourettes",
@@ -202,6 +206,10 @@ const TIER3_NOTES: Record<string, string> = {
   "cb-people-subcultures": "Social types & subcultures",
   part13: "Gamer talk",
   part19: "Gamer talk",
+  part146: "Gamer talk",
+  part147: "Gamer talk",
+  part148: "Gamer talk",
+  part149: "Gamer talk",
   part42: "Gamer talk",
   part45: "Gamer talk",
   "cb-fighting-styles": "Combat & fighting styles",
