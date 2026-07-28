@@ -71,6 +71,10 @@ const expected = {
     theme: "At the drugstore: toiletries, laundry and photos",
     fixture: "Gibt es das auch als Reisegröße?",
   },
+  part157: {
+    theme: "Talking to your pets",
+    fixture: "Komm, wir gehen Gassi.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -103,7 +107,7 @@ for (const [partKey, expectation] of Object.entries(expected)) {
 }
 
 const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
-check("new authored phrases are unique across all six packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
+check("new authored phrases are unique across all seven packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
 
 const existingGerman = new Set();
 for (const [partKey, pack] of Object.entries(allPartBlueprints)) {
@@ -124,9 +128,9 @@ check(
   duplicate && `${duplicate.partKey}: ${duplicate.de}`
 );
 
-check("the release adds at least 172 authored phrases", newPhrases.length >= 172, `found ${newPhrases.length}`);
-check("the release adds at least 93 vocabulary seeds", totalSeeds >= 93, `found ${totalSeeds}`);
-check("the release adds at least fourteen dialogues", totalDialogues >= 14, `found ${totalDialogues}`);
+check("the release adds at least 220 authored phrases", newPhrases.length >= 220, `found ${newPhrases.length}`);
+check("the release adds at least 113 vocabulary seeds", totalSeeds >= 113, `found ${totalSeeds}`);
+check("the release adds at least seventeen dialogues", totalDialogues >= 17, `found ${totalDialogues}`);
 check("storytelling follows conversational practice", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("part70") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -135,6 +139,21 @@ check("tabletop language is labelled as specialist game talk", packMeta("part153
 check("the drugstore pack follows clothes shopping", CURRICULUM_ORDER.indexOf("part156") === CURRICULUM_ORDER.indexOf("part63") + 1);
 check("the bakery pack follows grocery shopping", CURRICULUM_ORDER.indexOf("part155") === CURRICULUM_ORDER.indexOf("cb-grocery") + 1);
 check("both new everyday-shopping packs are tier one", packMeta("part155").tier === 1 && packMeta("part156").tier === 1);
+check("pet-directed speech follows the existing pets and animals pack", CURRICULUM_ORDER.indexOf("part157") === CURRICULUM_ORDER.indexOf("part86") + 1);
+check("pet-directed speech stays in the common situational tier", packMeta("part157").tier === 2);
+
+const petPhrases = new Set((allPartBlueprints.part157?.phrases ?? []).map((phrase) => phrase.de));
+const petCoverage = {
+  commands: ["Sitz!", "Platz!", "Gib Pfötchen!", "Bei Fuß!"],
+  walking: ["Komm, wir gehen Gassi.", "Musst du mal raus?", "Nicht auf die Straße!"],
+  feeding: ["Willst du ein Leckerli?", "Das darfst du nicht fressen.", "Trink erst mal was."],
+  affection: ["Braver Junge!", "Braves Mädchen!", "Fein gemacht!"],
+  care: ["Zeig mal deine Pfote.", "Nicht lecken!", "Du musst jetzt deine Medizin nehmen."],
+  vet: ["Wir fahren jetzt zum Tierarzt.", "Das piekst nur ganz kurz.", "Den Trichter musst du noch anlassen."],
+};
+for (const [area, fixtures] of Object.entries(petCoverage)) {
+  check(`pet-directed pack covers ${area}`, fixtures.every((phrase) => petPhrases.has(phrase)));
+}
 
 if (failures) {
   console.error(`\n${failures} expansion-pack regression${failures === 1 ? "" : "s"}`);

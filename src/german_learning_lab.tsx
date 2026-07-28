@@ -32,7 +32,7 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 const NEW_PER_LESSON_TARGET = 3;
-import { COMPLETED_KEY, gradeEntryForId, loadGradeStore, recordActivitySession, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
+import { COMPLETED_KEY, gradeEntryForId, loadGradeStore, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
@@ -48,6 +48,8 @@ import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
 import { swapStepForEnglish } from "@/lib/learningDirectionStep";
 import { useLearningMode } from "@/lib/learningMode";
+import { countKnownVocab } from "@/lib/fluency";
+import { ActiveStudyTimer, recordCompletedLearningSession } from "@/lib/learningTime";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
@@ -104,6 +106,9 @@ export default function GermanLearningLab() {
   const [showGuidedSession, setShowGuidedSession] = useState(false);
   const [sessionSteps, setSessionSteps] = useState<any[]>([]);
   const sessionStartRef = React.useRef<number | null>(null);
+  const activeStudyTimerRef = React.useRef<ActiveStudyTimer | null>(null);
+  const sessionKnownBeforeRef = React.useRef<number | null>(null);
+  const sessionLessonIdRef = React.useRef<string | undefined>(undefined);
   const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
@@ -130,6 +135,11 @@ export default function GermanLearningLab() {
   const petQuizItemsRef = React.useRef<ReturnType<typeof buildCatalog>>([]);
   petSpeechRef.current = petSpeech;
   petHistoryRef.current = petHistory;
+
+  useEffect(() => () => {
+    activeStudyTimerRef.current?.dispose();
+    activeStudyTimerRef.current = null;
+  }, []);
 
   const petQuizItems = React.useMemo(
     () => {
@@ -475,6 +485,16 @@ export default function GermanLearningLab() {
     } catch {}
   };
 
+  const beginLessonTiming = (lessonId?: string) => {
+    activeStudyTimerRef.current?.dispose();
+    activeStudyTimerRef.current = new ActiveStudyTimer().start();
+    sessionKnownBeforeRef.current = countKnownVocab(user, progressStats.externalWords);
+    sessionLessonIdRef.current = lessonId;
+    // Keep the epoch timestamp as well: markCompleted uses it to prevent one
+    // exercise from advancing the same memory record twice in a lesson.
+    sessionStartRef.current = Date.now();
+  };
+
   /**
    * Start a lesson on an explicit list of items — the words a learner marked
    * as "I don't know this" while taking a test.
@@ -515,7 +535,7 @@ export default function GermanLearningLab() {
     steps.push({ type: "complete" });
     const directed = learningEnglish() ? steps.map(swapStepForEnglish) : steps;
     setSessionSteps(withRegisterCheck(directed, user));
-    sessionStartRef.current = Date.now();
+    beginLessonTiming("focus");
     setShowGuidedSession(true);
     openTab("learn");
   };
@@ -725,7 +745,7 @@ export default function GermanLearningLab() {
         setActivePart(id);
         saveScopedJson("active-part", id, user);
         setSessionSteps(withRegisterCheck(steps, user));
-        sessionStartRef.current = Date.now();
+        beginLessonTiming(id);
         setShowGuidedSession(true);
         return;
       }
@@ -787,25 +807,31 @@ export default function GermanLearningLab() {
       saveScopedJson("active-part", id, user);
       setSessionSteps(withRegisterCheck(steps, user));
     }
-    sessionStartRef.current = Date.now();
+    beginLessonTiming(id);
     setShowGuidedSession(true);
   };
 
-  const logActivity = (stepsForCount: any[]) => {
+  const logActivity = (stepsForCount: any[], completed = false) => {
     const startedAt = sessionStartRef.current;
     sessionStartRef.current = null;
+    const timer = activeStudyTimerRef.current;
+    activeStudyTimerRef.current = null;
+    const activeMs = timer?.stop() ?? (startedAt ? Date.now() - startedAt : 0);
+    const progressBefore = sessionKnownBeforeRef.current;
+    const lessonId = sessionLessonIdRef.current;
+    sessionKnownBeforeRef.current = null;
+    sessionLessonIdRef.current = undefined;
     if (!startedAt) return;
-    const durationSec = (Date.now() - startedAt) / 1000;
-    if (durationSec < 2) return;
-    recordActivitySession(
-      {
-        ts: Date.now(),
-        durationSec,
-        sentences: stepsForCount.filter((s) => s.type === "sentence").length,
-        dialogues: stepsForCount.filter((s) => s.type === "dialogue").length,
-      },
-      user
-    );
+    if (!completed || progressBefore === null || activeMs < 1_000) return;
+
+    recordCompletedLearningSession({
+      activeMs,
+      progressBefore,
+      progressAfter: countKnownVocab(user, progressStats.externalWords),
+      lessonId,
+      sentences: stepsForCount.filter((s) => s.type === "sentence").length,
+      dialogues: stepsForCount.filter((s) => s.type === "dialogue").length,
+    }, user);
   };
 
   const handleSelectCourse = (courseId: string) => {
@@ -852,7 +878,7 @@ export default function GermanLearningLab() {
           () => {
             // onAdvance already persisted every completed, non-skipped exercise.
             // A bulk replay here would turn skipped items into successful recalls.
-            logActivity(sessionSteps);
+            logActivity(sessionSteps, true);
             const xp = sessionSteps.length * 15;
             updateStats({
               totalXp: progressStats.totalXp + xp,

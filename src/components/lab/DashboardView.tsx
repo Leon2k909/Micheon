@@ -98,7 +98,7 @@ function ProgressCard({
       </div>
 
       <div className="mt-4">
-        <FluencyMeter vocab={vocab} compact />
+        <FluencyMeter vocab={vocab} compact showStudyTimeEstimate />
       </div>
     </section>
   );

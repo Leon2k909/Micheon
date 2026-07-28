@@ -86,6 +86,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part84",          // Sport & exercise
   "part85",          // Money between friends
   "part86",          // Pets & animals
+  "part157",         // Talking directly to pets: commands, affection and care
   "part87",          // Clothes & getting ready
   "part88",          // Kids & parenting
   "part89",          // Learning & studying

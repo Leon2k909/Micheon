@@ -9,6 +9,16 @@ export type ActivitySession = {
   durationSec: number; // real time spent in the session
   sentences: number;
   dialogues: number;
+  /**
+   * Newer lesson records use an interaction/focus-aware clock. Legacy records
+   * deliberately omit this flag so they cannot skew pace estimates.
+   */
+  activeTimed?: boolean;
+  timingVersion?: 1;
+  progressBefore?: number;
+  progressAfter?: number;
+  progressGained?: number;
+  lessonId?: string;
 };
 
 export type GradeRecord = {

@@ -1,5 +1,43 @@
+import { useEffect, useMemo, useState } from "react";
+import { Clock3 } from "lucide-react";
 import { getFluency, FLUENCY_STAGES } from "@/lib/fluency";
 import { ui, uiIsGerman } from "@/lib/i18n";
+import { estimateFluencyHours, loadLearningTimeStats } from "@/lib/learningTime";
+
+function CompactStudyTimeEstimate({ remainingUnits }: { remainingUnits: number }) {
+  const [revision, setRevision] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setRevision((value) => value + 1);
+    window.addEventListener("activity-updated", refresh);
+    return () => window.removeEventListener("activity-updated", refresh);
+  }, []);
+
+  const estimate = useMemo(
+    () => estimateFluencyHours(remainingUnits, loadLearningTimeStats()),
+    [remainingUnits, revision]
+  );
+  const explanation = estimate.confidence === "baseline"
+    ? ui("Starting estimate — complete a timed lesson to personalise it.")
+    : estimate.confidence === "personalized"
+      ? ui("Based on your active lesson pace.")
+      : ui("Learning your pace from timed lessons.");
+
+  return (
+    <div
+      className="mt-1 inline-flex max-w-[220px] items-start justify-end gap-1.5 text-right"
+      title={explanation}
+    >
+      <Clock3 className="mt-0.5 h-3 w-3 shrink-0 text-[var(--accent)]" />
+      <div>
+        <p className="text-[11px] font-black leading-4 text-[var(--text-2)]">
+          ≈ {estimate.hoursRemaining.toLocaleString()} {ui("study hours left")}
+        </p>
+        <p className="text-[9px] font-semibold leading-3 text-[var(--text-3)]">{explanation}</p>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Honest "how far to fluency" meter. `vocab` = distinct items the learner
@@ -7,15 +45,26 @@ import { ui, uiIsGerman } from "@/lib/i18n";
  * left to the next stage, and overall progress toward real fluency — never a
  * fake "100%" from a practice counter.
  */
-export function FluencyMeter({ vocab, compact }: { vocab: number; compact?: boolean }) {
+export function FluencyMeter({
+  vocab,
+  compact,
+  showStudyTimeEstimate = false,
+}: {
+  vocab: number;
+  compact?: boolean;
+  showStudyTimeEstimate?: boolean;
+}) {
   const f = getFluency(vocab);
 
   if (compact) {
     return (
       <div className="rounded-[18px] bg-[var(--surface-2)] p-3.5">
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-start justify-between gap-3">
           <p className="text-sm font-black text-[var(--text-1)]">{ui(f.cur.label)}</p>
-          <p className="text-xs font-black text-[var(--text-3)]">{f.overallPct}% {ui("to fluent")}</p>
+          <div className="shrink-0 text-right">
+            <p className="text-xs font-black text-[var(--text-3)]">{f.overallPct}% {ui("to fluent")}</p>
+            {showStudyTimeEstimate && f.next && <CompactStudyTimeEstimate remainingUnits={f.toFluent} />}
+          </div>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--surface)]">
           <div className="h-full rounded-full" style={{ width: `${Math.max(4, f.overallPct)}%`, background: "var(--feature-gradient)" }} />
