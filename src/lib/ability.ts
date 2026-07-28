@@ -165,6 +165,8 @@ export function itemPriority(input: {
   ability: AbilityBand;
   /** The learner added this one themselves. */
   own?: boolean;
+  /** Authored offset for unseen material only: negative sooner, positive later. */
+  lessonPriority?: number;
 }): number {
   const commonality = Math.min(1, Math.max(0, (input.commonality - 300) / 4700));
   // bandDistance carries the same rule the pack-level scorer used: overshooting
@@ -172,7 +174,10 @@ export function itemPriority(input: {
   // stuck while a strong learner handed an easy one merely breezes it.
   const misfit = Math.min(1, bandDistance(input.ability, input.difficulty) / 6);
   const base = commonality * 0.65 + misfit * 0.35;
-  return input.own ? base - OWN_MATERIAL_BONUS : base;
+  const authored = Number.isFinite(input.lessonPriority)
+    ? Math.max(-1, Math.min(1, Number(input.lessonPriority)))
+    : 0;
+  return (input.own ? base - OWN_MATERIAL_BONUS : base) + authored;
 }
 
 /** Short, honest description of what the app is doing, for the UI. */

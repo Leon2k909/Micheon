@@ -410,6 +410,7 @@ export type CatalogItem = {
   say?: string;
   long?: string;
   group?: string;
+  lessonPriority?: number;
   tierNote?: string;
 };
 
@@ -436,7 +437,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     lookup?: string,
     aliases: string[] = [],
     use?: string,
-    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "when" | "say" | "long" | "group">> = {}
+    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "when" | "say" | "long" | "group" | "lessonPriority">> = {}
   ) => {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
@@ -468,6 +469,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
       say: catalogPhrase.say,
       long: catalogPhrase.long,
       group: catalogPhrase.group,
+      lessonPriority: catalogPhrase.lessonPriority,
     });
   });
 

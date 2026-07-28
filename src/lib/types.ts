@@ -51,6 +51,10 @@ export interface Phrase {
   /** Stable id, for phrases whose position in the pack can change — i.e. the
    *  learner's own. Bundled phrases omit it and stay keyed by index. */
   id?: string;
+  /** Signed offset used only when ranking unseen Continue Learning material.
+   *  Negative introduces a core phrase sooner; positive holds a useful but
+   *  less essential variant back. Reviews and explicit lessons ignore it. */
+  lessonPriority?: number;
 }
 
 export interface Blueprint {

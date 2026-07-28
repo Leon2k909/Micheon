@@ -80,8 +80,8 @@ export function LearnView({
     for (const [key, part] of parts) {
       const phrases = part.phrases ?? [];
       let done = 0;
-      phrases.forEach((_phrase, index) => {
-        if (statusForId(grades, `${key}-phrase-${index}`) === "known") done += 1;
+      phrases.forEach((phrase, index) => {
+        if (statusForId(grades, phrase.id ?? `${key}-phrase-${index}`) === "known") done += 1;
       });
       out.set(key, { done, total: phrases.length });
     }

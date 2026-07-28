@@ -691,6 +691,7 @@ export default function GermanLearningLab() {
             commonality: sentenceCommonality(text, corpusIndex),
             difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
             own: isCustomPartKey(pId),
+            lessonPriority: item.lessonPriority,
           }),
           step: {
             type: "sentence",

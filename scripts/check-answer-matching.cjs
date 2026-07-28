@@ -7,7 +7,12 @@ const result = esbuild.buildSync({
   stdin: {
     contents: `
       export { allPartBlueprints } from "./src/lib/data.ts";
-      export { matchEnglishPhrase, primaryAnswer } from "./src/lib/germanTextMatch.ts";
+      export { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "./src/lib/germanTextMatch.ts";
+      export { buildBundledParts } from "./src/lib/contentBank.ts";
+      export { buildApiPartFromResolved } from "./src/lib/api.ts";
+      export { buildPartCatalog } from "./src/session.ts";
+      export { buildCorpusIndex, sentenceCommonality } from "./src/lib/corpusFrequency.ts";
+      export { itemDifficulty, itemPriority } from "./src/lib/ability.ts";
     `,
     resolveDir: root,
     sourcefile: "answer-matching-check-entry.ts",
@@ -26,7 +31,19 @@ compiled.filename = path.join(root, ".answer-matching-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
-const { allPartBlueprints, matchEnglishPhrase, primaryAnswer } = compiled.exports;
+const {
+  allPartBlueprints,
+  buildApiPartFromResolved,
+  buildBundledParts,
+  buildCorpusIndex,
+  buildPartCatalog,
+  itemDifficulty,
+  itemPriority,
+  matchEnglishPhrase,
+  matchGermanSentence,
+  primaryAnswer,
+  sentenceCommonality,
+} = compiled.exports;
 
 function findPhrase(value, german) {
   if (!value || typeof value !== "object") return undefined;
@@ -86,9 +103,89 @@ if (phrase) {
   }
 }
 
+const bundledParts = buildBundledParts();
+const restaurantPart = buildApiPartFromResolved(allPartBlueprints.part76, {});
+const restaurantPhrases = restaurantPart.phrases ?? [];
+const standardTable = "Haben Sie noch einen Tisch frei?";
+const conciseTable = "Ist noch ein Tisch frei?";
+const colloquialTable = "Haben Sie noch was frei?";
+const conciseTableIndex = restaurantPhrases.findIndex((item) => item.de === conciseTable);
+const colloquialTableIndex = restaurantPhrases.findIndex((item) => item.de === colloquialTable);
+const standardTablePhrase = bundledParts["cb-food"]?.phrases.find((item) => item.de === standardTable);
+
+check("the explicit table question is in the early core food pack", Boolean(standardTablePhrase));
+check(
+  "the explicit table question has a stable id",
+  standardTablePhrase?.id === "cb-food-table-availability"
+);
+check(
+  "the old colloquial phrase keeps its original index and saved-progress id",
+  colloquialTableIndex === 0
+);
+check(
+  "the concise alternative is appended without shifting old restaurant ids",
+  conciseTableIndex === restaurantPhrases.length - 1
+);
+check(
+  "the learner-facing default explains einen without grammar jargon",
+  standardTablePhrase?.use.includes("der Tisch → einen Tisch")
+    && standardTablePhrase?.use.includes("not 'ein Tisch'")
+);
+check(
+  "the incorrect nominative form is not shipped as a German phrase",
+  !JSON.stringify(allPartBlueprints).includes("Haben Sie noch ein Tisch frei?")
+);
+check(
+  "the correct einen form passes German grading",
+  matchGermanSentence(standardTable, standardTable).ok
+);
+check(
+  "the incorrect ein form remains rejected",
+  !matchGermanSentence("Haben Sie noch ein Tisch frei?", standardTable).ok
+);
+const lowerNoun = matchGermanSentence("Haben Sie noch einen tisch frei?", standardTable);
+check(
+  "a lowercase German noun is reported as a capitalization error",
+  !lowerNoun.ok && lowerNoun.capitalizationError === true
+);
+const lowerFormalYou = matchGermanSentence("Haben sie noch einen Tisch frei?", standardTable);
+check(
+  "lowercase formal Sie is reported as a capitalization error",
+  !lowerFormalYou.ok && lowerFormalYou.capitalizationError === true
+);
+
+const catalogParts = { ...allPartBlueprints, ...bundledParts, part76: restaurantPart };
+const corpusIndex = buildCorpusIndex(catalogParts);
+const standardCatalog = buildPartCatalog(bundledParts["cb-food"], "cb-food")
+  .find((item) => item.de === standardTable);
+const conciseCatalog = buildPartCatalog(restaurantPart, "part76")
+  .find((item) => item.de === conciseTable);
+const colloquialCatalog = buildPartCatalog(restaurantPart, "part76")
+  .find((item) => item.de === colloquialTable);
+
+function freshScore(item, ability) {
+  return itemPriority({
+    ability,
+    commonality: sentenceCommonality(item.de, corpusIndex),
+    difficulty: itemDifficulty(item.level, item.de.trim().split(/\s+/).length),
+    lessonPriority: item.lessonPriority,
+  });
+}
+
+for (const ability of ["easy", "medium", "hard", "expert"]) {
+  const standardScore = freshScore(standardCatalog, ability);
+  const conciseScore = freshScore(conciseCatalog, ability);
+  const colloquialScore = freshScore(colloquialCatalog, ability);
+  check(
+    `actual ${ability} Continue Learning ranking teaches explicit then concise then colloquial`,
+    standardScore < conciseScore && conciseScore < colloquialScore,
+    `${standardScore.toFixed(4)} / ${conciseScore.toFixed(4)} / ${colloquialScore.toFixed(4)}`
+  );
+}
+
 if (failures) {
   console.error(`\n${failures} answer-matching regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
 }
 
-console.log("\nValid English variants pass without weakening subject, polarity, number, or tense");
+console.log("\nAnswer variants and learner-first curriculum ordering are guarded");

@@ -228,6 +228,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Zusammen oder getrennt?", en: "Together or separately?", use: "You'll be asked this" },
       { de: "Getrennt, bitte.", en: "Separately, please.", use: "Splitting the bill" },
       { de: "Das hat gut geschmeckt, danke.", en: "That was delicious, thank you. / That tasted good, thanks.", use: "Leaving happy" },
+      { id: "cb-food-table-availability", de: "Haben Sie noch einen Tisch frei?", en: "Have you got a table free? / Do you have a table available?", use: "The clear standard walk-in question, and the version to learn first. After 'haben', masculine 'der' words change: der Tisch → einen Tisch. That is why it is 'einen Tisch' here, not 'ein Tisch'. Use Sie with restaurant staff.", fr: "Avez-vous encore une table de libre ?", short: "Noch einen Tisch frei?", lessonPriority: -0.15 },
     ],
   },
   {
