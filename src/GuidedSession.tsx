@@ -10,8 +10,10 @@ import {
   matchGermanPhrase as match,
   matchGermanSentence,
   matchEnglishPhrase as matchEnglish,
+  matchingVisibleKeys,
   normalizeGermanLenient,
   primaryAnswer,
+  takeMatchingSafe,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
@@ -4418,9 +4420,10 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
     const englishSource = String(learnEn ? step.item.de : step.item.en).trim();
     const english = formatEnglishText(englishSource, englishVariant);
     if (!german || !english) continue;
-    const key = `${german.toLocaleLowerCase("de-DE")}\u0000${english.toLocaleLowerCase("en-GB")}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const keys = matchingVisibleKeys(german, english);
+    if (keys.length !== 2 || keys.some((key) => seen.has(key))) continue;
+    keys.forEach((key) => seen.add(key));
+    const key = keys.join("\u0000");
     cards.push({
       id: String(step.item.id ?? key),
       german,
@@ -4819,7 +4822,12 @@ type MatchDirection = "en-de" | "de-en";
 type MatchingItem = SessionPreviewCard & { matchId: string };
 
 function buildMatchingItems(cards: SessionPreviewCard[]): MatchingItem[] {
-  return cards.map((card, index) => ({
+  const safeCards = takeMatchingSafe(
+    cards,
+    cards.length,
+    (card) => ({ german: card.german, english: card.english })
+  );
+  return safeCards.map((card, index) => ({
     ...card,
     matchId: `${card.id}-${index}`,
     german: primaryAnswer(card.german),

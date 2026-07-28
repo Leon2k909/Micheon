@@ -4,6 +4,7 @@ import { isDueForReview, overdueBy } from "@/lib/memoryStrength";
 import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { getLearningMode, phraseForLearningMode } from "@/lib/learningMode";
+import { matchingVisibleKeys, takeMatchingSafe } from "@/lib/germanTextMatch";
 
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
@@ -180,6 +181,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // lessons: it returns tomorrow as an "old" review, and the spaced-repetition
   // ladder pushes it further out each time you recall it (1, 3, 10, 30, 180
   // days) — so it takes longer and longer to come back as you master it.
+  // Reviews win a visible-answer collision because their schedule is
+  // time-sensitive. Fresh selection then scans farther down the pack to fill
+  // its slots without producing an impossible Quick Match round.
+  const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
+  const reviewKeys = reviews.flatMap(matchingKeysForStep);
   const freshSentences = pickFresh(
     shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
       .sort((a, b) => {
@@ -188,7 +194,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
         if (aStruggling !== bStruggling) return aStruggling ? -1 : 1;
         return frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup);
       }),
-    NEW_PER_LESSON
+    NEW_PER_LESSON,
+    reviewKeys
   );
   const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
 
@@ -210,9 +217,6 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     if (lastIdx === -1) newBlock.push(d);
     else newBlock.splice(lastIdx + 1, 0, d);
   }
-
-  // ── Old phrases: up to 3 due reviews — mostly recent, plus one older ──
-  const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
 
   // 3 new, then 3 old.
   const ordered = [...newBlock, ...reviews];
@@ -251,15 +255,24 @@ export function isReinforcementEligible(record: any, now = Date.now()): boolean 
  * in that set where possible. This teaches contrasts such as Bis gleich / Bis
  * später / Bis bald together instead of scattering them across the course.
  */
-export function pickFresh(fresh: any[], n: number): any[] {
-  if (fresh.length <= n) return fresh;
+const matchingPairForStep = (step: any) => ({
+  german: String(step?.item?.de ?? ""),
+  english: String(step?.item?.en ?? ""),
+});
+
+const matchingKeysForStep = (step: any) => {
+  const pair = matchingPairForStep(step);
+  return matchingVisibleKeys(pair.german, pair.english);
+};
+
+export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string> = []): any[] {
   const first = fresh[0];
   const group = first?.item?.group;
-  if (!group) return fresh.slice(0, n);
+  if (!group) return takeMatchingSafe(fresh, n, matchingPairForStep, blockedKeys);
 
   const related = fresh.filter((step) => step.item?.group === group);
   const others = fresh.filter((step) => step.item?.group !== group);
-  return [...related, ...others].slice(0, n);
+  return takeMatchingSafe([...related, ...others], n, matchingPairForStep, blockedKeys);
 }
 
 /**
@@ -267,40 +280,38 @@ export function pickFresh(fresh: any[], n: number): any[] {
  * spacing interval — usually phrases learned a day or two ago) for most of the
  * slots, and reserves one slot for a more-mastered OLDER phrase, so a lesson's
  * "old" half is mostly recent with an occasional long-tail review. Deduped by
- * German text; ties broken by most-overdue.
+ * both visible matching columns; ties are broken by most-overdue.
  */
 export function pickReviews(
   due: any[],
   n: number,
-  presentationKey: (step: any) => string = (step) => String(step?.item?.de ?? "")
+  blockedKeys: Iterable<string> = []
 ): any[] {
-  if (due.length <= n) return due;
   const weakestFirst = [...due].sort((a, b) => (a.interval ?? 1) - (b.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0));
+  const uniqueWeakest = takeMatchingSafe(
+    weakestFirst,
+    weakestFirst.length,
+    matchingPairForStep,
+    blockedKeys
+  );
+  if (uniqueWeakest.length <= n) return uniqueWeakest;
   
-  const firstGroup = weakestFirst[0]?.item?.group;
+  const firstGroup = uniqueWeakest[0]?.item?.group;
   if (firstGroup) {
-    const groupMatches = weakestFirst.filter((r) => r.item?.group === firstGroup);
+    const groupMatches = uniqueWeakest.filter((r) => r.item?.group === firstGroup);
     if (groupMatches.length > 1) {
-      const picks: any[] = [];
-      for (const r of groupMatches) {
-        if (picks.length >= n) break;
-        picks.push(r);
-      }
-      for (const r of weakestFirst) {
-        if (picks.length >= n) break;
-        if (!picks.some((p) => presentationKey(p) === presentationKey(r))) picks.push(r);
-      }
-      return picks.slice(0, n);
+      const rest = uniqueWeakest.filter((r) => r.item?.group !== firstGroup);
+      return [...groupMatches, ...rest].slice(0, n);
     }
   }
 
-  const picks: any[] = weakestFirst.slice(0, Math.max(0, n - 1));   // n-1 most-recent/weakest
-  const has = (r: any) => picks.some((p) => presentationKey(p) === presentationKey(r));
-  const older = [...due]
+  const picks: any[] = uniqueWeakest.slice(0, Math.max(0, n - 1));   // n-1 most-recent/weakest
+  const has = (r: any) => picks.includes(r);
+  const older = [...uniqueWeakest]
     .sort((a, b) => (b.interval ?? 1) - (a.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0))
     .find((r) => !has(r));                                          // one most-mastered, not already picked
   if (older) picks.push(older);
-  for (const r of weakestFirst) { if (picks.length >= n) break; if (!has(r)) picks.push(r); }  // backfill
+  for (const r of uniqueWeakest) { if (picks.length >= n) break; if (!has(r)) picks.push(r); }  // backfill
   return picks.slice(0, n);
 }
 
@@ -320,9 +331,8 @@ export function rankReinforcementCandidates<T extends { successes: number; lastP
  * backlog consume the whole lesson. Explicit struggles own the first review
  * slots, ordinary due reviews come next, and weak recently learned phrases
  * backfill any remaining familiar slots. Genuinely new phrases are selected
- * independently. Presentation text is deduped across both halves in the
- * current target language so aliases or translated duplicates cannot steal
- * one of the 3 + 3 slots.
+ * independently. Visible primary answers are deduped across BOTH languages,
+ * because Quick Match can be flipped in either direction.
  */
 export function selectContinueLearningMix(
   rankedFresh: any[],
@@ -331,71 +341,53 @@ export function selectContinueLearningMix(
   freshLimit = NEW_PER_LESSON,
   reviewLimit = OLD_PER_LESSON,
   reinforcement: any[] = [],
-  targetField: "de" | "en" = "de"
+  _targetField: "de" | "en" = "de"
 ): { fresh: any[]; reviews: any[] } {
-  const presentationKey = (step: any) => {
-    const text = String(step?.item?.[targetField] ?? "")
-      .normalize("NFKC")
-      .trim()
-      .replace(/\s+/g, " ")
-      .toLocaleLowerCase("de-DE");
-    return text || `id:${String(step?.item?.id ?? "")}`;
-  };
-
   const takeUnique = (steps: any[], limit: number, blocked = new Set<string>()) => {
-    if (limit <= 0) return [];
-    const picked: any[] = [];
-    const seen = new Set(blocked);
-    for (const step of steps) {
-      const key = presentationKey(step);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      picked.push(step);
-      if (picked.length >= limit) break;
-    }
-    return picked;
+    return takeMatchingSafe(steps, limit, matchingPairForStep, blocked);
   };
 
   const priorityReviews = takeUnique(struggling, reviewLimit);
-  const selectedReviewKeys = new Set(priorityReviews.map(presentationKey));
+  const selectedReviewKeys = new Set(priorityReviews.flatMap(matchingKeysForStep));
   const duePool = takeUnique(due, due.length, selectedReviewKeys);
   const dueReviews = pickReviews(
     duePool,
     Math.max(0, reviewLimit - priorityReviews.length),
-    presentationKey
+    selectedReviewKeys
   );
   const scheduledReviews = [...priorityReviews, ...dueReviews];
-  const scheduledReviewKeys = new Set(scheduledReviews.map(presentationKey));
+  const scheduledReviewKeys = new Set(scheduledReviews.flatMap(matchingKeysForStep));
   const reinforcementReviews = takeUnique(
     reinforcement,
     Math.max(0, reviewLimit - scheduledReviews.length),
     scheduledReviewKeys
   );
   const reviews = [...scheduledReviews, ...reinforcementReviews];
-  const reviewKeys = new Set(reviews.map(presentationKey));
+  const reviewKeys = new Set(reviews.flatMap(matchingKeysForStep));
   const fresh = takeUnique(rankedFresh, freshLimit, reviewKeys);
 
   return { fresh, reviews };
 }
 
 /**
- * Replace a preview card without introducing target text already visible in
- * another card. Candidates remain curriculum-ranked; the active pack wins
- * when it has a safe replacement, then the global list backfills it.
+ * Replace a preview card without introducing German or English text already
+ * visible in another card. Candidates remain curriculum-ranked; the active
+ * pack wins when it has a safe replacement, then the global list backfills it.
  */
 export function pickPreviewReplacement(
   candidates: any[],
-  blockedTargetTexts: Iterable<string>,
-  targetField: "de" | "en" = "de",
+  blockedPairs: Iterable<{ de: string; en: string }>,
   preferredPart?: string
 ) {
-  const normalise = (value: any) => String(value ?? "")
-    .normalize("NFKC")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLocaleLowerCase(targetField === "de" ? "de-DE" : "en-GB");
-  const blocked = new Set(Array.from(blockedTargetTexts, normalise));
-  const available = candidates.filter((item) => !blocked.has(normalise(item?.[targetField])));
+  const blocked = new Set(
+    Array.from(blockedPairs).flatMap((pair) => matchingVisibleKeys(pair.de, pair.en))
+  );
+  const available = takeMatchingSafe(
+    candidates,
+    candidates.length,
+    (item) => ({ german: String(item?.de ?? ""), english: String(item?.en ?? "") }),
+    blocked
+  );
   return available.find((item) => item.partKey === preferredPart) ?? available[0];
 }
 

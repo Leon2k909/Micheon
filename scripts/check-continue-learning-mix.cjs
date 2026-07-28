@@ -159,8 +159,8 @@ const sameGermanDue = selectContinueLearningMix(
   [
     step("same-de-1", "Das geht.", "That works.", { review: true, interval: 1 }),
     step("same-de-2", "Das geht.", "That's possible.", { review: true, interval: 3 }),
-    step("same-de-3", "Das geht.", "That is okay.", { review: true, interval: 10 }),
-    step("same-de-4", "Das geht.", "That can be done.", { review: true, interval: 30 }),
+    step("unique-de-3", "Das klappt.", "That is okay.", { review: true, interval: 10 }),
+    step("unique-de-4", "Das ist möglich.", "That can be done.", { review: true, interval: 30 }),
   ],
   3,
   3,
@@ -168,8 +168,10 @@ const sameGermanDue = selectContinueLearningMix(
   "en"
 );
 check(
-  "due selection uses the English target all the way through",
+  "due selection stays unambiguous in either matching direction",
   sameGermanDue.reviews.length === 3
+    && sameGermanDue.reviews.filter((item) => item.item.de === "Das geht.").length === 1
+    && new Set(sameGermanDue.reviews.map((item) => item.item.de)).size === 3
     && new Set(sameGermanDue.reviews.map((item) => item.item.en)).size === 3
 );
 
@@ -197,8 +199,10 @@ const replacement = pickPreviewReplacement(
     { id: "colliding-replacement", partKey: "part1", de: "Wie geht's?", en: "How are you?" },
     { id: "safe-replacement", partKey: "part1", de: "Was ist neu?", en: "What's new?" },
   ],
-  ["How are you?", "Known target."],
-  "en",
+  [
+    { de: "Wie läuft es?", en: "How are you?" },
+    { de: "Bekannter Satz.", en: "Known target." },
+  ],
   "part1"
 );
 check(
@@ -218,8 +222,10 @@ check(
     && labSource.includes("onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}")
 );
 check(
-  "the target-language dedupe follows the learner direction",
-  labSource.includes('learningEnglish() ? "en" : "de"')
+  "preview replacement blocks both named language columns after direction swaps",
+  labSource.includes("const blockedPairs = current")
+    && labSource.includes("learnsEnglish ? step.item?.en : step.item?.de")
+    && labSource.includes("learnsEnglish ? step.item?.de : step.item?.en")
 );
 
 if (failures) {

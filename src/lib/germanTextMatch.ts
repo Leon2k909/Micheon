@@ -9,6 +9,59 @@ export function primaryAnswer(s: string): string {
   return String(s ?? "").split(" / ")[0].trim();
 }
 
+export type MatchingPair = { german: string; english: string };
+
+/**
+ * The matching screen shows only primaryAnswer(), so its collision key must do
+ * the same. English spelling variants are folded as well: changing the user's
+ * British/American preference must never turn two hidden ids into identical
+ * visible buttons.
+ */
+export function matchingVisibleKey(text: string, language: "de" | "en"): string {
+  const visible = primaryAnswer(text);
+  const spellingNormalised = language === "en"
+    ? normalizeEnglishSpelling(visible)
+    : visible;
+  return spellingNormalised
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase(language === "de" ? "de-DE" : "en-GB");
+}
+
+/** Namespaced keys for the two columns in a matching round. */
+export function matchingVisibleKeys(german: string, english: string): string[] {
+  const de = matchingVisibleKey(german, "de");
+  const en = matchingVisibleKey(english, "en");
+  return de && en ? [`de:${de}`, `en:${en}`] : [];
+}
+
+/**
+ * Pick a one-to-one matching set, scanning later candidates to fill slots
+ * skipped because either their visible German OR English is ambiguous.
+ */
+export function takeMatchingSafe<T>(
+  candidates: T[],
+  limit: number,
+  pairOf: (candidate: T) => MatchingPair,
+  blockedKeys: Iterable<string> = []
+): T[] {
+  if (limit <= 0) return [];
+  const picked: T[] = [];
+  const used = new Set(blockedKeys);
+
+  for (const candidate of candidates) {
+    const pair = pairOf(candidate);
+    const keys = matchingVisibleKeys(pair.german, pair.english);
+    if (keys.length !== 2 || keys.some((key) => used.has(key))) continue;
+    keys.forEach((key) => used.add(key));
+    picked.push(candidate);
+    if (picked.length >= limit) break;
+  }
+
+  return picked;
+}
+
 /** Normalize German learner input for comparison (typing or speech transcript). */
 
 export function normalizeGermanInput(t: string) {

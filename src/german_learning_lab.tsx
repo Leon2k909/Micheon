@@ -416,20 +416,23 @@ export default function GermanLearningLab() {
           .filter((step) => step?.type === "sentence" && step.item?.id)
           .map((step) => String(step.item.id))
       );
-      // Session steps are already direction-swapped, so item.de is always the
-      // visible target. Exclude the card being replaced and block everything
-      // still on screen before searching the original-language catalogue.
-      const blockedTargetTexts = current
+      // Session steps may already be direction-swapped. Convert them back to
+      // named language pairs and block both columns: Quick Match can be flipped
+      // after the replacement is made.
+      const learnsEnglish = learningEnglish();
+      const blockedPairs = current
         .filter((step, index) => index !== replaceAt && step?.type === "sentence")
-        .map((step) => String(step.item?.de ?? ""));
+        .map((step) => ({
+          de: String((learnsEnglish ? step.item?.en : step.item?.de) ?? ""),
+          en: String((learnsEnglish ? step.item?.de : step.item?.en) ?? ""),
+        }));
       const grades = loadGradeStore(user);
       const candidates = catalog.filter(
         (item) => !usedIds.has(item.id) && statusForId(grades, item.id, item.aliases) === "new"
       );
       const replacement = pickPreviewReplacement(
         candidates,
-        blockedTargetTexts,
-        learningEnglish() ? "en" : "de",
+        blockedPairs,
         activePart
       );
 
