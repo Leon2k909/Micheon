@@ -218,6 +218,16 @@ const petProviderSource = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
   "utf8"
 );
+const petQuestionSchedulerStart = labSource.indexOf(
+  'const cadence = getCodexPetCadence("questions", petCoachingFrequencies.questions)'
+);
+const petQuestionSchedulerEnd = labSource.indexOf(
+  "const handleUpdate = () =>",
+  petQuestionSchedulerStart
+);
+const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestionSchedulerEnd > petQuestionSchedulerStart
+  ? labSource.slice(petQuestionSchedulerStart, petQuestionSchedulerEnd)
+  : "";
 check(
   "the app marks optional practice separately from successful scheduled recall",
   labSource.includes("if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);")
@@ -266,6 +276,22 @@ check(
     && labSource.includes('Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?')
     && petProviderSource.includes("setItemStatus(")
     && petProviderSource.includes('answer === "yes" ? "known" : "struggle"')
+);
+check(
+  "proactive recall questions continue while a guided lesson is open",
+  Boolean(petQuestionSchedulerSource)
+    && !petQuestionSchedulerSource.includes("showGuidedSession")
+    && petQuestionSchedulerSource.includes("showPlacementTest")
+    && petQuestionSchedulerSource.includes("petSpeechRef.current")
+);
+check(
+  "lesson-time questions keep cadence, speech backoff, and per-item deduplication",
+  petQuestionSchedulerSource.includes("scheduleQuestion(cadence.initialDelayMs)")
+    && petQuestionSchedulerSource.includes("scheduleQuestion(cadence.intervalMs)")
+    && petQuestionSchedulerSource.includes("scheduleQuestion(15000)")
+    && petQuestionSchedulerSource.includes("Date.now() - message.createdAt < 30 * 60 * 1000")
+    && petQuestionSchedulerSource.includes("!recentlyAsked.has(candidate.id)")
+    && petQuestionSchedulerSource.includes("if (!item) {")
 );
 
 if (failures) {

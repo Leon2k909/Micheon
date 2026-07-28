@@ -188,7 +188,7 @@ export default function GermanLearningLab() {
 
   useEffect(() => {
     const cadence = getCodexPetCadence("questions", petCoachingFrequencies.questions);
-    if (!petEnabled || showGuidedSession || showPlacementTest || !petQuizAvailable || !cadence) {
+    if (!petEnabled || showPlacementTest || !petQuizAvailable || !cadence) {
       return undefined;
     }
 
@@ -265,7 +265,6 @@ export default function GermanLearningLab() {
     petEnabled,
     petQuizAvailable,
     petSpeak,
-    showGuidedSession,
     showPlacementTest,
   ]);
 
