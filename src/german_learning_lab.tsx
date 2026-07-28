@@ -368,19 +368,6 @@ export default function GermanLearningLab() {
     } catch {}
   };
 
-  // The end-of-lesson memory check is a genuine delayed recall, so a "yes"
-  // climbs one normal SRS rung. A "not yet" resets the item and gives it first
-  // priority in the review half of the next mixed lesson.
-  const markMemoryGrade = (itemId: string, grade: "know" | "struggle") => {
-    try {
-      const existing = loadCompleted();
-      saveReviewGrades({
-        ...existing,
-        [itemId]: grade === "know" ? recordSuccess(existing[itemId]) : recordStruggle(),
-      });
-    } catch {}
-  };
-
   const replaceKnownPreviewItem = (itemId: string) => {
     markGrade(itemId, "know");
     setSessionSteps((current) => {
@@ -880,7 +867,6 @@ export default function GermanLearningLab() {
         );
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
-      onMemoryGrade={(itemId: string, grade: "know" | "struggle") => markMemoryGrade(itemId, grade)}
       onPreviewKnown={replaceKnownPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.

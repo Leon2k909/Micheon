@@ -213,6 +213,11 @@ check(
 );
 
 const labSource = fs.readFileSync(path.join(root, "src/german_learning_lab.tsx"), "utf8");
+const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
+const petProviderSource = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
+  "utf8"
+);
 check(
   "the app marks optional practice separately from successful scheduled recall",
   labSource.includes("if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);")
@@ -245,6 +250,22 @@ check(
   "automatic continuation reuses the global mixed-session selector",
   labSource.includes("() => window.setTimeout(() => startSession(), 260)")
     && !labSource.includes("window.setTimeout(() => startSession(activePart)")
+);
+check(
+  "lesson completion goes straight to its success screen without an in-lesson memory check",
+  !guidedSource.includes("LessonMemoryCheck")
+    && !guidedSource.includes("onMemoryGrade")
+    && !labSource.includes("markMemoryGrade")
+    && !labSource.includes("onMemoryGrade")
+    && guidedSource.includes('<CompleteScreen onNext={onComplete} />')
+);
+check(
+  "the proactive desktop pet remains responsible for later memory questions",
+  labSource.includes('getCodexPetCadence("questions", petCoachingFrequencies.questions)')
+    && labSource.includes('Do you remember how to say “${item.en}” in German?')
+    && labSource.includes('Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?')
+    && petProviderSource.includes("setItemStatus(")
+    && petProviderSource.includes('answer === "yes" ? "known" : "struggle"')
 );
 
 if (failures) {
