@@ -35,6 +35,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-food",
   "part49",           // Cooking at home & food culture
   "part5",            // Food and cafe
+  "part142",          // Takeaway, food delivery and missing orders
   "cb-diet-allergies",
   "cb-shopping",
   "part63",           // Clothes shopping & returns
@@ -44,6 +45,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-directions",
   "part6",            // Directions and movement
   "part3",            // Home and routine
+  "part144",          // Putting things somewhere: stellen/stehen and legen/liegen
   "cb-routine",
   "part7",            // People and family
   "cb-family",
@@ -64,6 +66,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part69",          // People, opinions & reactions
   "part70",          // Keeping a conversation going
   "part71",          // Opinions, agreeing & disagreeing
+  "part145",          // Linking ideas: cause, contrast and consequence
   "part72",          // Making & changing plans
   "part73",          // Everyday work life
   "part74",          // Phone calls & voice notes
@@ -95,6 +98,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-gardening-plants",
   "cb-apartment-repairs",
   "cb-amt",
+  "part143",          // Visas, residence permits and the Ausländerbehörde
   "part51",           // Getting help: hotlines, bank & repairs
   "cb-medical-bureaucracy",
   "cb-post-packages",
