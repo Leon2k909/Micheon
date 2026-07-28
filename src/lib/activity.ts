@@ -18,6 +18,9 @@ export type GradeRecord = {
   successes?: number;
   intervalDays?: number;
   dueAt?: string;
+  permanent?: boolean;
+  /** most recent optional practice rep that did not alter the review date */
+  reinforcedAt?: string;
 };
 export type GradeStore = Record<string, GradeRecord>;
 
@@ -92,6 +95,28 @@ export function saveGradeStore(store: GradeStore, profile: UserProfile | null = 
 
 export type ItemStatus = "known" | "struggle" | "new";
 
+/** Find the stored grade and the canonical-or-legacy key that currently owns it. */
+export function gradeEntryForId(store: GradeStore, id: string, aliases: string[] = []) {
+  for (const key of [id, ...aliases]) {
+    const record = store?.[key];
+    if (record?.lastGrade) return { key, record };
+  }
+  return undefined;
+}
+
+/** Replace any legacy alias record with one canonical grade entry. */
+export function setCanonicalGradeRecord(
+  store: GradeStore,
+  id: string,
+  aliases: string[] = [],
+  record: GradeRecord
+) {
+  for (const alias of aliases) {
+    if (alias !== id) delete store[alias];
+  }
+  store[id] = record;
+}
+
 export function statusForId(store: GradeStore, id: string, aliases: string[] = []): ItemStatus {
   for (const key of [id, ...aliases]) {
     const grade = store?.[key]?.lastGrade;
@@ -109,19 +134,16 @@ export function setItemStatus(
   aliases: string[] = []
 ) {
   const store = loadGradeStore(profile);
-  // Clear any alias entries so the canonical id is the single source of truth.
-  for (const alias of aliases) {
-    if (alias !== id) delete store[alias];
-  }
   if (status === "new") {
     delete store[id];
+    for (const alias of aliases) delete store[alias];
   } else if (status === "known") {
     // Same declaration as the lesson's "Know it" skip button — jumps most
     // of the way up the ladder rather than climbing one rung. See
     // recordDeclaredKnown in memoryStrength.ts.
-    store[id] = recordDeclaredKnown(store[id]);
+    setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(gradeEntryForId(store, id, aliases)?.record));
   } else {
-    store[id] = recordStruggle();
+    setCanonicalGradeRecord(store, id, aliases, recordStruggle());
   }
   saveGradeStore(store, profile);
   return store;
@@ -139,15 +161,13 @@ export function setItemsStatus(
 ) {
   const store = loadGradeStore(profile);
   for (const { id, aliases = [] } of items) {
-    for (const alias of aliases) {
-      if (alias !== id) delete store[alias];
-    }
     if (status === "new") {
       delete store[id];
+      for (const alias of aliases) delete store[alias];
     } else if (status === "known") {
-      store[id] = recordDeclaredKnown(store[id]);
+      setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(gradeEntryForId(store, id, aliases)?.record));
     } else {
-      store[id] = recordStruggle();
+      setCanonicalGradeRecord(store, id, aliases, recordStruggle());
     }
   }
   saveGradeStore(store, profile);

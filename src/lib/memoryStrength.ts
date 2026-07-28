@@ -17,6 +17,8 @@ export type GradeRecord = {
   dueAt?: string;
   /** never schedule a review again — the tier above Mastered */
   permanent?: boolean;
+  /** last extra practice rep; does not move the spaced-review ladder */
+  reinforcedAt?: string;
 };
 
 /**
@@ -91,6 +93,19 @@ export function recordStruggle(now = Date.now()): GradeRecord {
     updatedAt: new Date(now).toISOString(),
     successes: 0,
     intervalDays: 0,
+  };
+}
+
+/**
+ * Remember that a weak phrase received an extra same-day practice rep without
+ * pretending its scheduled recall happened early. Keeping this timestamp
+ * separate from `updatedAt` lets Continue Learning rotate its familiar half
+ * while leaving successes, interval and due date untouched.
+ */
+export function recordReinforcement(prior: GradeRecord, now = Date.now()): GradeRecord {
+  return {
+    ...prior,
+    reinforcedAt: new Date(now).toISOString(),
   };
 }
 

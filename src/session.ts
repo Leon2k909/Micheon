@@ -226,6 +226,27 @@ const NEW_PER_LESSON = 3;
 export const OLD_PER_LESSON = 3;
 
 /**
+ * A newly learned phrase may return in the familiar half before tomorrow's
+ * formal review, but only while it is still on the first two ladder rungs.
+ * Items explicitly declared known start near the top of the ladder, so this
+ * deliberately honours "Know it" and leaves those items alone until due.
+ */
+export function isReinforcementEligible(record: any, now = Date.now()): boolean {
+  if (!record || record.lastGrade !== "know" || record.permanent || isDueForReview(record, now)) return false;
+  // Old installs stored only { lastGrade, updatedAt }. There is no evidence
+  // that those items were explicitly skipped, so let them occupy the familiar
+  // half and rotate without changing their inferred review schedule.
+  if (record.successes == null && record.intervalDays == null) return true;
+  const successes = Number(record.successes);
+  const intervalDays = Number(record.intervalDays);
+  return Number.isFinite(successes)
+    && Number.isFinite(intervalDays)
+    && successes > 0
+    && successes <= 2
+    && intervalDays <= 3;
+}
+
+/**
  * When a selected phrase belongs to a related set, keep the rest of the lesson
  * in that set where possible. This teaches contrasts such as Bis gleich / Bis
  * später / Bis bald together instead of scattering them across the course.
@@ -248,7 +269,11 @@ export function pickFresh(fresh: any[], n: number): any[] {
  * "old" half is mostly recent with an occasional long-tail review. Deduped by
  * German text; ties broken by most-overdue.
  */
-export function pickReviews(due: any[], n: number): any[] {
+export function pickReviews(
+  due: any[],
+  n: number,
+  presentationKey: (step: any) => string = (step) => String(step?.item?.de ?? "")
+): any[] {
   if (due.length <= n) return due;
   const weakestFirst = [...due].sort((a, b) => (a.interval ?? 1) - (b.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0));
   
@@ -263,14 +288,14 @@ export function pickReviews(due: any[], n: number): any[] {
       }
       for (const r of weakestFirst) {
         if (picks.length >= n) break;
-        if (!picks.some((p) => p.item?.de === r.item?.de)) picks.push(r);
+        if (!picks.some((p) => presentationKey(p) === presentationKey(r))) picks.push(r);
       }
       return picks.slice(0, n);
     }
   }
 
   const picks: any[] = weakestFirst.slice(0, Math.max(0, n - 1));   // n-1 most-recent/weakest
-  const has = (r: any) => picks.some((p) => p.item?.de === r.item?.de);
+  const has = (r: any) => picks.some((p) => presentationKey(p) === presentationKey(r));
   const older = [...due]
     .sort((a, b) => (b.interval ?? 1) - (a.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0))
     .find((r) => !has(r));                                          // one most-mastered, not already picked
@@ -279,23 +304,37 @@ export function pickReviews(due: any[], n: number): any[] {
   return picks.slice(0, n);
 }
 
+/** Weakest first, then whichever phrase has gone longest without an optional rep. */
+export function rankReinforcementCandidates<T extends { successes: number; lastPractised: number; index: number }>(
+  candidates: T[]
+): T[] {
+  return [...candidates].sort((a, b) =>
+    a.successes - b.successes
+    || a.lastPractised - b.lastPractised
+    || a.index - b.index
+  );
+}
+
 /**
  * Build Continue Learning's review and fresh halves without letting a weak
  * backlog consume the whole lesson. Explicit struggles own the first review
- * slots, ordinary due reviews backfill the rest, and genuinely new phrases
- * are selected independently. Presentation text is deduped across both halves
- * so aliases or duplicate curriculum entries cannot steal one of the 3 + 3
- * slots.
+ * slots, ordinary due reviews come next, and weak recently learned phrases
+ * backfill any remaining familiar slots. Genuinely new phrases are selected
+ * independently. Presentation text is deduped across both halves in the
+ * current target language so aliases or translated duplicates cannot steal
+ * one of the 3 + 3 slots.
  */
 export function selectContinueLearningMix(
   rankedFresh: any[],
   struggling: any[],
   due: any[],
   freshLimit = NEW_PER_LESSON,
-  reviewLimit = OLD_PER_LESSON
+  reviewLimit = OLD_PER_LESSON,
+  reinforcement: any[] = [],
+  targetField: "de" | "en" = "de"
 ): { fresh: any[]; reviews: any[] } {
   const presentationKey = (step: any) => {
-    const text = String(step?.item?.de ?? "")
+    const text = String(step?.item?.[targetField] ?? "")
       .normalize("NFKC")
       .trim()
       .replace(/\s+/g, " ")
@@ -320,12 +359,44 @@ export function selectContinueLearningMix(
   const priorityReviews = takeUnique(struggling, reviewLimit);
   const selectedReviewKeys = new Set(priorityReviews.map(presentationKey));
   const duePool = takeUnique(due, due.length, selectedReviewKeys);
-  const dueReviews = pickReviews(duePool, Math.max(0, reviewLimit - priorityReviews.length));
-  const reviews = [...priorityReviews, ...dueReviews];
+  const dueReviews = pickReviews(
+    duePool,
+    Math.max(0, reviewLimit - priorityReviews.length),
+    presentationKey
+  );
+  const scheduledReviews = [...priorityReviews, ...dueReviews];
+  const scheduledReviewKeys = new Set(scheduledReviews.map(presentationKey));
+  const reinforcementReviews = takeUnique(
+    reinforcement,
+    Math.max(0, reviewLimit - scheduledReviews.length),
+    scheduledReviewKeys
+  );
+  const reviews = [...scheduledReviews, ...reinforcementReviews];
   const reviewKeys = new Set(reviews.map(presentationKey));
   const fresh = takeUnique(rankedFresh, freshLimit, reviewKeys);
 
   return { fresh, reviews };
+}
+
+/**
+ * Replace a preview card without introducing target text already visible in
+ * another card. Candidates remain curriculum-ranked; the active pack wins
+ * when it has a safe replacement, then the global list backfills it.
+ */
+export function pickPreviewReplacement(
+  candidates: any[],
+  blockedTargetTexts: Iterable<string>,
+  targetField: "de" | "en" = "de",
+  preferredPart?: string
+) {
+  const normalise = (value: any) => String(value ?? "")
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase(targetField === "de" ? "de-DE" : "en-GB");
+  const blocked = new Set(Array.from(blockedTargetTexts, normalise));
+  const available = candidates.filter((item) => !blocked.has(normalise(item?.[targetField])));
+  return available.find((item) => item.partKey === preferredPart) ?? available[0];
 }
 
 // ── Catalog of every learnable item (for the word/sentence tracker) ──

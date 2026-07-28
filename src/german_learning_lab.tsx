@@ -19,8 +19,8 @@ import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/c
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildCatalog, buildSession, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
-import { isDueForReview, recordSuccess, recordStruggle, recordDeclaredKnown } from "@/lib/memoryStrength";
+import { buildCatalog, buildSession, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, type GradeRecord } from "@/lib/memoryStrength";
 import { learningEnglish } from "@/lib/direction";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
@@ -32,7 +32,7 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 const NEW_PER_LESSON_TARGET = 3;
-import { COMPLETED_KEY, loadGradeStore, recordActivitySession, saveGradeStore, statusForId } from "@/lib/activity";
+import { COMPLETED_KEY, gradeEntryForId, loadGradeStore, recordActivitySession, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
@@ -363,7 +363,7 @@ export default function GermanLearningLab() {
 
   const COMPLETED_KEY = "session-completed";
 
-  const loadCompleted = (): Record<string, { lastGrade: string; updatedAt?: string }> => {
+  const loadCompleted = (): Record<string, GradeRecord> => {
     try {
       const raw = loadScopedJson<any>(COMPLETED_KEY, {}, user) ?? {};
       if (Array.isArray(raw)) return Object.fromEntries(raw.map((id: string) => [id, { lastGrade: "know" }]));
@@ -371,7 +371,7 @@ export default function GermanLearningLab() {
     } catch { return {}; }
   };
 
-  const saveReviewGrades = (grades: Record<string, { lastGrade: string; updatedAt?: string }>) => {
+  const saveReviewGrades = (grades: Record<string, GradeRecord>) => {
     // Besides persistence, this emits grades-updated so the proactive pet's
     // review pool sees newly encountered items without waiting for a reload.
     saveGradeStore(grades, user);
@@ -416,13 +416,22 @@ export default function GermanLearningLab() {
           .filter((step) => step?.type === "sentence" && step.item?.id)
           .map((step) => String(step.item.id))
       );
+      // Session steps are already direction-swapped, so item.de is always the
+      // visible target. Exclude the card being replaced and block everything
+      // still on screen before searching the original-language catalogue.
+      const blockedTargetTexts = current
+        .filter((step, index) => index !== replaceAt && step?.type === "sentence")
+        .map((step) => String(step.item?.de ?? ""));
       const grades = loadGradeStore(user);
       const candidates = catalog.filter(
         (item) => !usedIds.has(item.id) && statusForId(grades, item.id, item.aliases) === "new"
       );
-      const replacement =
-        candidates.find((item) => item.partKey === activePart) ??
-        candidates[0];
+      const replacement = pickPreviewReplacement(
+        candidates,
+        blockedTargetTexts,
+        learningEnglish() ? "en" : "de",
+        activePart
+      );
 
       if (!replacement) return current;
 
@@ -460,26 +469,36 @@ export default function GermanLearningLab() {
       // One climb per item per session: rechecks and dialogue lines repeat the
       // same id in the step list, and completion is a single recall event.
       const counted = new Set<string>();
-      const markKnown = (id: string) => {
+      const markReinforced = (id: string, aliases: string[] = []) => {
         if (!id || counted.has(id)) return;
         counted.add(id);
-        const prior = next[id];
-        // Items are saved as each step is left and once more when the lesson
-        // closes. "Know it" also writes immediately. Keep all three paths from
-        // advancing the same memory record more than once in one session.
+        const prior = gradeEntryForId(next, id, aliases)?.record;
+        if (!prior?.lastGrade) return;
+        const reinforcedAt = prior.reinforcedAt ? Date.parse(prior.reinforcedAt) : 0;
+        if (Number.isFinite(reinforcedAt) && reinforcedAt >= sessionStart) return;
+        setCanonicalGradeRecord(next, id, aliases, recordReinforcement(prior));
+      };
+      const markKnown = (id: string, aliases: string[] = []) => {
+        if (!id || counted.has(id)) return;
+        counted.add(id);
+        const prior = gradeEntryForId(next, id, aliases)?.record;
+        // Items are saved as each step is left. "Know it" also writes
+        // immediately, so keep both paths from advancing the same memory
+        // record more than once in one session.
         const updatedAt = prior?.updatedAt ? Date.parse(prior.updatedAt) : 0;
         if (Number.isFinite(updatedAt) && updatedAt >= sessionStart) return;
         // One rung up the memory ladder; the item comes back for review when due.
-        next[id] = recordSuccess(prior);
+        setCanonicalGradeRecord(next, id, aliases, recordSuccess(prior));
       };
       stepsToMark.forEach((s) => {
         if (s.type === "sentence" && s.item?.id) {
-          markKnown(s.item.id);
+          if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);
+          else markKnown(s.item.id, s.item.aliases);
         } else if (s.type === "dialogue" && Array.isArray(s.dialogue?.lines)) {
           // Completing a conversation means every line was practised — persist
           // each line, otherwise the same dialogue rebuilds every session and
           // the learner loops on it instead of advancing to new content.
-          s.dialogue.lines.forEach((line: any) => { if (line?.id) markKnown(line.id); });
+          s.dialogue.lines.forEach((line: any) => { if (line?.id) markKnown(line.id, line.aliases); });
         }
       });
       saveReviewGrades(next);
@@ -562,6 +581,7 @@ export default function GermanLearningLab() {
       const keys = Object.keys(apiParts);
       const requiredReviews: any[] = [];
       const globalReviews: any[] = [];
+      const reinforcementReviews: any[] = [];
       const reviewPartByStep = new Map<any, string>();
 
       // Every unseen SENTENCE is scored, not the pack it lives in. A pack is a
@@ -595,6 +615,62 @@ export default function GermanLearningLab() {
           }
         }
       }
+
+      // A normal successful first encounter is scheduled for tomorrow, but
+      // Continue Learning should still contain a familiar half today. Pull
+      // only the first two (weak) ladder rungs into optional reinforcement;
+      // declared-known and permanent items stay away until their real review.
+      // `reinforcedAt` rotates this pool without changing its due date.
+      const reinforcementCandidates: {
+        pId: string;
+        index: number;
+        successes: number;
+        lastPractised: number;
+        step: any;
+      }[] = [];
+      catalog.forEach((item, index) => {
+        const record = [item.id, ...(item.aliases ?? [])]
+          .map((id) => reviewState[id])
+          .find((candidate) => candidate?.lastGrade);
+        if (!isReinforcementEligible(record)) return;
+        const pId = item.partKey;
+        if (!apiParts[pId]) return;
+        const lastPractisedRaw = record?.reinforcedAt ?? record?.updatedAt;
+        const parsedLastPractised = lastPractisedRaw ? Date.parse(lastPractisedRaw) : 0;
+        reinforcementCandidates.push({
+          pId,
+          index,
+          successes: Number(record?.successes) || 0,
+          lastPractised: Number.isFinite(parsedLastPractised) ? parsedLastPractised : 0,
+          step: {
+            type: "sentence",
+            review: true,
+            reviewReason: "reinforcement",
+            reinforcement: true,
+            interval: Number(record?.intervalDays) || 1,
+            item: {
+              id: item.id,
+              aliases: item.aliases,
+              de: item.de,
+              en: item.en,
+              fr: item.fr,
+              use: item.use,
+              lookup: item.lookup,
+              tierNote: item.tierNote,
+              short: item.short,
+              when: item.when,
+              say: item.say,
+              long: item.long,
+              group: item.group,
+              mastery: "learning",
+            },
+          },
+        });
+      });
+      rankReinforcementCandidates(reinforcementCandidates).forEach(({ pId, step }) => {
+        reinforcementReviews.push(step);
+        reviewPartByStep.set(step, pId);
+      });
 
       // Score every unseen sentence in the course, then take the best few.
       const candidates: { pId: string; index: number; score: number; step: any }[] = [];
@@ -652,7 +728,9 @@ export default function GermanLearningLab() {
         requiredReviews,
         globalReviews,
         NEW_PER_LESSON_TARGET,
-        OLD_PER_LESSON
+        OLD_PER_LESSON,
+        reinforcementReviews,
+        learningEnglish() ? "en" : "de"
       );
       const firstFresh = fresh[0];
       const freshId = rankedCandidates.find((candidate) => candidate.step === firstFresh)?.pId;
@@ -792,15 +870,15 @@ export default function GermanLearningLab() {
   if (showGuidedSession) return (
     <GuidedSession
       onCancel={(completedUpTo?: number) => {
-        if (completedUpTo && completedUpTo > 0) {
-          markCompleted(sessionSteps.slice(0, completedUpTo));
-        }
+        // Each non-skipped step is persisted as it is left. Replaying the
+        // whole prefix here would accidentally grade any skipped steps.
         logActivity(sessionSteps.slice(0, completedUpTo && completedUpTo > 0 ? completedUpTo : 0));
         setShowGuidedSession(false);
       }}
       onComplete={() => {
         setShowGuidedSession(false);
-        markCompleted(sessionSteps);
+        // onAdvance already persisted every completed, non-skipped exercise.
+        // A bulk replay here would turn skipped items into successful recalls.
         logActivity(sessionSteps);
         const xp = sessionSteps.length * 15;
         updateStats({
