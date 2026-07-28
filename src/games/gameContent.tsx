@@ -17,6 +17,7 @@ import {
 } from "@/lib/direction";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
+import { useLearningMode } from "@/lib/learningMode";
 
 const FALLBACK_ITEMS: CatalogItem[] = [
   {
@@ -120,6 +121,7 @@ export function GameContentProvider({
   children: ReactNode;
 }) {
   const [learningDirection, setLearningDirection] = useState(getLearningDirection);
+  const learningMode = useLearningMode();
 
   useEffect(() => {
     const updateDirection = (event: Event) => {
@@ -132,7 +134,7 @@ export function GameContentProvider({
 
   const entries = useMemo(
     () => buildGameEntries(apiParts, learningDirection),
-    [apiParts, learningDirection]
+    [apiParts, learningDirection, learningMode]
   );
   const value = useMemo(
     () => ({ entries, learningDirection }),

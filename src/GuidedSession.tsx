@@ -16,6 +16,7 @@ import {
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
 import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import { matchLearningModeGermanAnswer } from "@/lib/learningMode";
 import {
   FLASHCARD_FACE_KEY,
   FLASHCARD_MODE_EVENT,
@@ -107,7 +108,7 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string }) {
+function UsageChips({ de, use, lookup, tierNote, hideUse, short, long }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; long?: string }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
   const syn = synonymNote(lookup);
@@ -128,7 +129,11 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string;
   // Short colloquial form (e.g. "Weiß nicht" for "Ich weiß es nicht"). Hidden
   // during Translate — it's an alternative German phrasing and would give it away.
   const showShort = Boolean(short && !hideUse && short.trim().toLowerCase() !== de.trim().toLowerCase());
-  if (!register && !freq && !syn && !tierNote && !showShort && (!use || (hideUse && !isWarning && !isSlang))) return null;
+  // In Conversation mode the target itself is the short form. Keep the fuller
+  // standard version visible in the same place where Exam mode shows the spoken
+  // alternative, so the relationship between the two forms is unmistakable.
+  const showLong = Boolean(long && !hideUse && long.trim().toLowerCase() !== de.trim().toLowerCase());
+  if (!register && !freq && !syn && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Niche/casual pack note — uncommon German is always labelled */}
@@ -185,6 +190,14 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short }: { de: string;
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
           {ui("People say")}: “{short}”
+        </span>
+      )}
+      {showLong && (
+        <span
+          title={ui("Complete standard form")}
+          className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
+        >
+          {ui("Full version")}: “{long}”
         </span>
       )}
     </div>
@@ -2248,6 +2261,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             lookup={item.lookup}
             tierNote={item.tierNote}
             short={learnEn ? undefined : item.short}
+            long={learnEn || phase === "Read" ? undefined : item.long}
             hideUse={phase === "Translate" || phase === "TranslateAgain"}
           />
         )}
@@ -3896,8 +3910,13 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
   const inputRef = useRef<HTMLInputElement>(null);
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
-  const result = useMemo(() => (learningEnglish() ? matchEnglish : matchGermanSentence)(input, line?.de ?? ""), [input, line]);
   const learnEn = useMemo(() => learningEnglish(), []);
+  const result = useMemo(
+    () => learnEn
+      ? matchEnglish(input, line?.de ?? "")
+      : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
+    [input, learnEn, line]
+  );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.

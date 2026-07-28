@@ -14,6 +14,7 @@ import { tts } from "@/lib/voice";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
+import { useLearningMode } from "@/lib/learningMode";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
@@ -267,6 +268,7 @@ export function VocabTracker({
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const learningMode = useLearningMode();
   const listRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -276,7 +278,7 @@ export function VocabTracker({
     return () => window.removeEventListener("grades-updated", onUpdate);
   }, [user]);
 
-  const catalog = useMemo(() => buildCatalog(apiParts), [apiParts]);
+  const catalog = useMemo(() => buildCatalog(apiParts), [apiParts, learningMode]);
   // Search every catalogue field without rebuilding 8,000+ normalized strings
   // on each keystroke. Keeping this cache local avoids adding tracker-only text
   // to the shared catalog used by games, tests, and the desktop mascot.

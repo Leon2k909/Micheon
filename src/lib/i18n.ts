@@ -88,6 +88,8 @@ const DE: Record<string, string> = {
   "Match every pair to continue.": "Ordne alle Paare zu, um fortzufahren.",
   "Ready for sentence practice.": "Bereit für das Satztraining.",
   "Written in full": "Vollständig geschrieben",
+  "Full version": "Vollständige Form",
+  "Complete standard form": "Vollständige Standardform",
   "How it's really said": "So wird es wirklich gesprochen",
   "Not everyday neutral German — use in the right company": "Kein neutrales Alltagsdeutsch — nur im passenden Umfeld verwenden",
   "du · casual — friends & family": "du · locker — Freunde und Familie",

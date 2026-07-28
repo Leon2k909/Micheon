@@ -47,6 +47,7 @@ import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
 import { swapStepForEnglish } from "@/lib/learningDirectionStep";
+import { useLearningMode } from "@/lib/learningMode";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
@@ -109,6 +110,7 @@ export default function GermanLearningLab() {
   const [courseSessionLesson, setCourseSessionLesson] = useState<string | undefined>(undefined);
   const [activeCourseId, setActiveCourse] = useState<string>(() => getActiveCourseId(user));
   const [apiParts, setApiParts] = useState<Record<string, Part>>({});
+  const learningMode = useLearningMode();
   const [progressStats, setProgressStats] = useState<ProgressStats>(() => ({
     totalXp:           loadScopedJson("totalXp", 0, user) as number,
     sessionsCompleted: loadScopedJson("sessionsCompleted", 0, user) as number,
@@ -119,7 +121,7 @@ export default function GermanLearningLab() {
   // Scans every phrase in the course, so it is built once per pack list rather
   // than on every Continue learning press.
   const corpusIndex = React.useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
-  const catalog = React.useMemo(() => buildCatalog(apiParts), [apiParts]);
+  const catalog = React.useMemo(() => buildCatalog(apiParts), [apiParts, learningMode]);
   const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
   const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);

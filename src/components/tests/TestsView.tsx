@@ -27,13 +27,14 @@ import {
 import { cn } from "@/lib/utils";
 import { loadGradeStore, setItemStatus, setItemsStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
-import { matchEnglishPhrase, matchGermanSentence, matchParagraphAnswer } from "@/lib/germanTextMatch";
+import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { MarkableText, normalizeMarkWord } from "@/components/tests/MarkableText";
+import { matchLearningModeGermanAnswer, useLearningMode } from "@/lib/learningMode";
 
 // One test per kind, taken at whichever difficulty you choose, rather than a
 // separate card for the easy and hard half of each.
@@ -62,6 +63,8 @@ type TestItem = {
   id: string;
   aliases?: string[];
   de: string;
+  /** Paired full German form retained only when Conversation mode teaches the casual target. */
+  long?: string;
   en: string;
   kind: "vocabulary" | "phrase" | "paragraph";
   level: string;
@@ -944,6 +947,7 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
       id: item.id,
       aliases: item.aliases,
       de: item.de,
+      long: item.long,
       en: item.en,
       kind: "phrase",
       level: item.level ?? "",
@@ -1008,7 +1012,7 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
   const alternatives = vocabularyAlternatives(target, item);
   const matches = alternatives.map((alternative) =>
     language === "de"
-      ? matchGermanSentence(input, alternative)
+      ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
       : matchEnglishPhrase(input, alternative)
   );
   const accepted = matches.find((match) => match.ok);
@@ -1112,7 +1116,11 @@ export function TestsView({
   onLearnItems?: (items: { de: string; en: string; id?: string }[]) => void;
 }) {
   const [gradeRevision, setGradeRevision] = useState(0);
-  const bank = useMemo(() => buildTestBank(apiParts, profile), [apiParts, gradeRevision, profile]);
+  const learningMode = useLearningMode();
+  const bank = useMemo(
+    () => buildTestBank(apiParts, profile),
+    [apiParts, gradeRevision, learningMode, profile]
+  );
   const [presetId, setPresetId] = useState<TestPresetId>("vocabulary");
   const [testLength, setTestLength] = useState<(typeof TEST_LENGTHS)[number]>(10);
   const [direction, setDirection] = useState<TestDirection>("course");
