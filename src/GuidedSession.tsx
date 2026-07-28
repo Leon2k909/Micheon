@@ -11,10 +11,10 @@ import {
   matchGermanSentence,
   matchEnglishPhrase as matchEnglish,
   matchingVisibleKeys,
-  normalizeGermanLenient,
   primaryAnswer,
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
+import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
 import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { matchLearningModeGermanAnswer } from "@/lib/learningMode";
 import {
@@ -259,10 +259,6 @@ function isClosedBookPhase(phase: Phase): boolean {
   return CLOSED_BOOK_PHASES.includes(phase);
 }
 
-function spokenWord(token: string): string {
-  return String(token ?? "").replace(/[^a-zA-ZäöüßÄÖÜéèêàâçîôûœÉÈÊÀÂÇÎÔÛŒ'’'-]/g, "");
-}
-
 type MissingWordPrompt = {
   answer: string;
   display: string;
@@ -283,28 +279,6 @@ function computeListeningGap(sentence: string): MissingWordPrompt {
     answer: selected.answer,
     display: tokens.map((token, index) => (index === selected.index ? "____" : token)).join(" "),
   };
-}
-
-/**
- * Blank out 1-2 content words from a sentence for the spoken gap-fill stage.
- * Picks the longest word (most meaningful), plus a second long word for
- * sentences of 6+ words. Returns the display string with "____" for blanks
- * and the list of missing words (bare, no punctuation) to say.
- */
-function computeGap(de: string): { display: string; words: string[] } {
-  const tokens = String(de ?? "").trim().split(/\s+/).filter(Boolean);
-  const bare = (w: string) => w.replace(/[^a-zA-Zäöüßäöü]/gi, "");
-  // rank candidate indices by bare-letter length (skip 1-2 letter words like articles)
-  const ranked = tokens
-    .map((w, i) => ({ i, len: bare(w).length }))
-    .filter((x) => x.len >= 3)
-    .sort((a, b) => b.len - a.len);
-  const howMany = tokens.length >= 6 ? 2 : 1;
-  const blanks = new Set(ranked.slice(0, howMany).map((x) => x.i));
-  if (blanks.size === 0 && tokens.length) blanks.add(0); // fallback: at least one blank
-  const words = tokens.filter((_, i) => blanks.has(i)).map(bare);
-  const display = tokens.map((w, i) => (blanks.has(i) ? "____" : w)).join(" ");
-  return { display, words };
 }
 
 type OrderToken = {
@@ -1333,12 +1307,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
   const gapResult = useMemo(() => {
-    const typed = normalizeGermanLenient(gapInput);
-    const ok = gap.words.length > 0 && gap.words.every((w) => {
-      const nw = normalizeGermanLenient(w);
-      return nw.length > 0 && typed.includes(nw);
-    });
-    return { ok };
+    return { ok: matchesGapInput(gapInput, gap.words) };
   }, [gapInput, gap.words]);
   const orderIsCorrect = useMemo(
     () => orderTokens.length > 0 && orderTokens.every((token, index) => token.answerIndex === index),
