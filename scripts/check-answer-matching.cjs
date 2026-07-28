@@ -130,6 +130,31 @@ if (treatmentCostPhrase) {
   );
 }
 
+const settingOffPhrase = findPhrase(allPartBlueprints, "Ich fahre gleich los.");
+check("the setting-off phrase still exists", Boolean(settingOffPhrase));
+check(
+  "the spoken setting-off form keeps the near-future meaning",
+  settingOffPhrase?.short === "Ich fahr gleich los.",
+  `found ${JSON.stringify(settingOffPhrase?.short)}`
+);
+
+for (const [german, spoken] of [
+  ["Ich kann heute Nacht die Finger nicht von dir lassen.", "Ich kann heut Nacht die Finger nicht von dir lassen."],
+  ["Ich geh mal kurz runter, bin gleich wieder da.", "Ich geh kurz runter, bin gleich wieder da."],
+  ["Fang schon mal an, ich komm gleich nach.", "Fang schon mal an, bin gleich da."],
+  ["Ich bin bis Freitag krankgeschrieben, die AU schick ich euch gleich.", "Bin bis Freitag krankgeschrieben, die AU schick ich gleich."],
+  ["Ich hab hier kaum Empfang, kann ich dich gleich zurückrufen?", "Hab kaum Empfang — kann ich dich gleich zurückrufen?"],
+  ["Das war ich, sorry — ich wisch das gleich weg.", "Das war ich, sorry — wisch ich gleich weg."],
+]) {
+  const phraseWithSpokenForm = findPhrase(allPartBlueprints, german);
+  check(`the spoken form keeps the full meaning: ${german}`, Boolean(phraseWithSpokenForm));
+  check(
+    `the spoken form preserves every promise or time detail: ${german}`,
+    phraseWithSpokenForm?.short === spoken,
+    `found ${JSON.stringify(phraseWithSpokenForm?.short)}`
+  );
+}
+
 const bundledParts = buildBundledParts();
 const restaurantPart = buildApiPartFromResolved(allPartBlueprints.part76, {});
 const restaurantPhrases = restaurantPart.phrases ?? [];
