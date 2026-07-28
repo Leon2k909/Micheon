@@ -20,15 +20,71 @@ interface RawSentence {
   level: string;
 }
 
+// Corpus translations are useful raw material, but learner-facing copy must
+// be natural and preserve the speaker. Keep confident, reviewed corrections
+// here instead of teaching a technically possible but confusing construction
+// or silently changing German "ich" into English "you/we".
+const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Kann ich essen?": {
+    de: "Kann ich das essen?",
+    en: "Can I eat this? / Can I eat?",
+  },
+  "Ich glaube nicht, dass es gut für dich ist, ihn zu sehen.": {
+    en: "I don't think it's good for you to see him. / I don't think seeing him is good for you.",
+  },
+  "Habe ich dir versprochen, dass ich das tun würde?": {
+    en: "Did I promise you I'd do that? / Did I promise that I would do that?",
+  },
+  "Ich weiß, dass ich ohne Sie nicht leben kann.": {
+    en: "I know I can't live without you.",
+  },
+  "Ich weiß, dass ich ohne dich nicht leben kann.": {
+    en: "I know I can't live without you.",
+  },
+  "Ich weiß, dass ich ohne euch nicht leben kann.": {
+    en: "I know I can't live without you.",
+  },
+  "Ich wollte nicht, dass das passiert.": {
+    en: "I didn't want that to happen.",
+  },
+  "Wenn Sie nicht zu mir kommen, komme ich zu Ihnen.": {
+    en: "If you don't come to me, I'll come to you.",
+  },
+  "Wenn ihr nicht zu mir kommt, komme ich zu euch.": {
+    en: "If you don't come to me, I'll come to you.",
+  },
+  "Wenn du nicht zu mir kommst, komme ich zu dir.": {
+    en: "If you don't come to me, I'll come to you.",
+  },
+  "Von wem haben Sie es, dass Sie das nicht müssen?": {
+    en: "Who told you that you didn't need to do that?",
+  },
+  "Ich will das nicht so machen.": {
+    en: "I don't want to do it that way.",
+  },
+  "Ich glaube, dass es wahr ist.": {
+    en: "I believe that's true.",
+  },
+  "Ich weiß, dass dir das wichtig ist.": {
+    en: "I know that's important to you.",
+  },
+  "Werden wir das nicht tun?": {
+    en: "Aren't we going to do that?",
+  },
+  "Das ist nicht, was ich hören wollte.": {
+    en: "That's not what I wanted to hear. / This isn't what I wanted to hear.",
+  },
+  "Wir sind uns nicht ganz sicher, was es ist.": {
+    en: "We're not exactly sure what it is.",
+  },
+  "Sie sollen wissen, dass ich das nicht tun werde.": {
+    en: "You should know that I won't do that.",
+  },
+};
+
 const tatoebaSentences = (tatoebaRaw as RawSentence[]).map(s => {
-  if (s.de === "Kann ich essen?") {
-    return {
-      ...s,
-      de: "Kann ich das essen?",
-      en: "Can I eat this? / Can I eat?"
-    };
-  }
-  return s;
+  const correction = TATOEBA_CORRECTIONS[s.de];
+  return correction ? { ...s, ...correction } : s;
 });
 
 const TATOEBA_PREFIX = "tatoeba";
