@@ -7,6 +7,7 @@ import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
 import { cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
+import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 
 type LevelFilter = "all" | CefrTier;
 type KindFilter = "all" | "core" | "wordbank";
@@ -34,19 +35,9 @@ const PROGRESS_FILTERS: { id: ProgressFilter; label: string }[] = [
   { id: "done", label: "Finished" },
 ];
 
-function normalize(value: string) {
-  return String(value ?? "")
-    .toLocaleLowerCase("de-DE")
-    // Fold umlauts so "uben" finds "üben" and "Fruhstuck" finds "Frühstück".
-    .replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").replace(/ß/g, "ss")
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 /** Everything about a pack a search should be able to reach. */
 function searchCorpus(key: string, part: Part) {
-  return normalize([
+  return buildCatalogSearchText([
     key,
     part.label,
     part.level,
@@ -57,7 +48,7 @@ function searchCorpus(key: string, part: Part) {
     // "Apotheke", not for the pack title they have never seen.
     ...(part.phrases ?? []).flatMap((phrase) => [phrase.de, phrase.en]),
     ...(part.vocab ?? []).flatMap((word) => [word.de, word.en]),
-  ].filter(Boolean).join(" "));
+  ].filter(Boolean));
 }
 
 export function LearnView({
@@ -97,7 +88,7 @@ export function LearnView({
     return out;
   }, [apiParts]);
 
-  const terms = useMemo(() => normalize(query).split(" ").filter(Boolean), [query]);
+  const terms = useMemo(() => normalizeCatalogSearchText(query).split(" ").filter(Boolean), [query]);
 
   const visible = useMemo(() => parts.filter(([key, part]) => {
     if (kindFilter === "core" && isBulkPartKey(key)) return false;

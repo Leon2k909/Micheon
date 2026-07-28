@@ -13,6 +13,7 @@ import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
+import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
@@ -276,6 +277,13 @@ export function VocabTracker({
   }, [user]);
 
   const catalog = useMemo(() => buildCatalog(apiParts), [apiParts]);
+  // Search every catalogue field without rebuilding 8,000+ normalized strings
+  // on each keystroke. Keeping this cache local avoids adding tracker-only text
+  // to the shared catalog used by games, tests, and the desktop mascot.
+  const searchIndex = useMemo(
+    () => new Map(catalog.map((item) => [item, buildCatalogSearchText(item)])),
+    [catalog]
+  );
   // Scans every phrase, so it is built once per pack list rather than per sort.
   const corpusIndex = useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
 
@@ -297,16 +305,12 @@ export function VocabTracker({
   }, [catalog, grades]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizeCatalogSearchText(query);
     const matches = catalog.filter((item) => {
       const status = statusForId(grades, item.id, item.aliases);
       if (filter !== "all" && status !== filter) return false;
       if (!q) return true;
-      return (
-        item.de.toLowerCase().includes(q) ||
-        item.en.toLowerCase().includes(q) ||
-        item.partLabel.toLowerCase().includes(q)
-      );
+      return catalogItemMatchesQuery(item, q, searchIndex.get(item));
     });
     // The curated frequency list only reaches a fraction of what is taught, so
     // "most common" leans on the corpus-backed score, which covers 99% of it.
@@ -347,7 +351,7 @@ export function VocabTracker({
     };
     keyed.sort(compare[sort]);
     return keyed.map((entry) => entry.item);
-  }, [catalog, corpusIndex, grades, filter, query, sort]);
+  }, [catalog, corpusIndex, grades, filter, query, searchIndex, sort]);
 
   const visible = filtered.slice(0, limit);
 

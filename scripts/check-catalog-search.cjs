@@ -1,0 +1,165 @@
+const fs = require("fs");
+const path = require("path");
+const Module = require("module");
+const esbuild = require("esbuild");
+
+const root = path.resolve(__dirname, "..");
+const result = esbuild.buildSync({
+  stdin: {
+    contents: `
+      export {
+        normalizeCatalogSearchText,
+        buildCatalogSearchText,
+        catalogItemMatchesQuery,
+      } from "./src/lib/catalogSearch.ts";
+      export { allPartBlueprints } from "./src/lib/data.ts";
+      export { buildApiPartFromResolved } from "./src/lib/api.ts";
+      export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";
+      export { buildCatalog } from "./src/session.ts";
+    `,
+    resolveDir: root,
+    sourcefile: "catalog-search-check-entry.ts",
+  },
+  alias: { "@": path.join(root, "src") },
+  bundle: true,
+  format: "cjs",
+  platform: "node",
+  target: "node20",
+  write: false,
+  logLevel: "silent",
+});
+
+const compiled = new Module("catalog-search-check", module);
+compiled.filename = path.join(root, ".catalog-search-check.cjs");
+compiled.paths = Module._nodeModulePaths(root);
+compiled._compile(result.outputFiles[0].text, compiled.filename);
+
+const {
+  normalizeCatalogSearchText,
+  buildCatalogSearchText,
+  catalogItemMatchesQuery,
+  allPartBlueprints,
+  buildApiPartFromResolved,
+  buildBundledParts,
+  buildTatoebaParts,
+  buildCatalog,
+} = compiled.exports;
+
+const resolvedBlueprints = Object.fromEntries(
+  Object.entries(allPartBlueprints).map(([partKey, blueprint]) => [
+    partKey,
+    buildApiPartFromResolved(blueprint, {}),
+  ])
+);
+const fullCatalog = buildCatalog({
+  ...resolvedBlueprints,
+  ...buildBundledParts(),
+  ...buildTatoebaParts(),
+});
+
+let failures = 0;
+function check(name, condition, detail = "") {
+  if (condition) {
+    console.log(`ok   ${name}`);
+    return;
+  }
+  failures += 1;
+  console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
+}
+
+const reportedGerman = "Ich glaube nicht, dass es gut für dich ist, ihn zu sehen.";
+const reported = fullCatalog.find((item) => item.de === reportedGerman);
+
+check(
+  "the corrected sentence is present in the full shipped catalog",
+  Boolean(reported),
+  `catalog contains ${fullCatalog.length.toLocaleString("en-GB")} items`
+);
+
+if (reported) {
+  check(
+    "the catalog search text contains the corrected natural English",
+    normalizeCatalogSearchText(buildCatalogSearchText(reported)).includes(
+      "i dont think its good for you to see him"
+    ),
+    reported.en
+  );
+
+  const matchingQueries = [
+    "i dont think",
+    "I don't think it's good for you to see him.",
+    "I don’t think it’s good for you to see him!",
+    "dont think—its good for you, to see him",
+  ];
+  for (const query of matchingQueries) {
+    check(
+      `punctuation/apostrophe-insensitive search finds: ${query}`,
+      catalogItemMatchesQuery(reported, query)
+    );
+  }
+
+  check(
+    "an unrelated sentence does not match the corrected item",
+    !catalogItemMatchesQuery(reported, "the cave entrance is behind the waterfall")
+  );
+}
+
+const sharpSItem = fullCatalog.find((item) => item.de === "Ich weiß, dass ich ohne dich nicht leben kann.");
+check("the ß regression fixture is present", Boolean(sharpSItem));
+if (sharpSItem) {
+  check(
+    "ss keyboard input finds German ß",
+    catalogItemMatchesQuery(sharpSItem, "ich weiss dass ich ohne dich nicht leben kann")
+  );
+}
+
+const umlautItem = fullCatalog.find((item) => item.de === "Ich wünschte, ich könnte das so gut wie du.");
+check("the umlaut regression fixture is present", Boolean(umlautItem));
+if (umlautItem) {
+  check(
+    "plain-keyboard input finds German umlauts",
+    catalogItemMatchesQuery(umlautItem, "ich wunschte ich konnte das so gut wie du")
+  );
+  check(
+    "ae/oe/ue keyboard input finds German umlauts",
+    catalogItemMatchesQuery(umlautItem, "ich wuenschte ich koennte das so gut wie du")
+  );
+}
+
+if (reported) {
+  const apostropheFreeMatches = fullCatalog.filter((item) =>
+    catalogItemMatchesQuery(item, "i dont think its good for you to see him")
+  );
+  check(
+    "filtering the full catalog returns the corrected item",
+    apostropheFreeMatches.some((item) => item.id === reported.id),
+    `matched ${apostropheFreeMatches.length} item(s)`
+  );
+}
+
+const trackerSource = fs.readFileSync(
+  path.join(root, "src/components/lab/VocabTracker.tsx"),
+  "utf8"
+);
+check(
+  "the tracker filters the full catalog through the guarded search path",
+  trackerSource.includes("catalogItemMatchesQuery(item, q, searchIndex.get(item))")
+    && trackerSource.includes("new Map(catalog.map((item) => [item, buildCatalogSearchText(item)]))")
+);
+
+const learnViewSource = fs.readFileSync(
+  path.join(root, "src/components/lab/LearnView.tsx"),
+  "utf8"
+);
+check(
+  "lesson-library search uses the same punctuation-tolerant normalizer",
+  learnViewSource.includes("buildCatalogSearchText([")
+    && learnViewSource.includes("normalizeCatalogSearchText(query)")
+);
+
+if (failures) {
+  console.error(`\n${failures} catalog-search regression${failures === 1 ? "" : "s"}`);
+  process.exit(1);
+}
+
+console.log(`\nCatalog search passed against ${fullCatalog.length.toLocaleString("en-GB")} shipped items`);
