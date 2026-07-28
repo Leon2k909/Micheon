@@ -145,6 +145,68 @@ function keepCase(replacement: string) {
       : replacement;
 }
 
+type GermanCaseNormalizer = (value: string) => string;
+
+// These words are lowercase in ordinary German and are capitalised here only
+// because they open a sentence. Nouns and the formal Sie/Ihr forms are
+// deliberately absent: their capital letters carry real information and must
+// still be taught. This lets a meaning-perfect answer such as
+// "ich verstehe das nicht. ich auch nicht" pass without weakening noun checks.
+const LOWERCASEABLE_SENTENCE_OPENERS = new Set([
+  "ich", "du", "er", "es", "wir", "man",
+  "wer", "wen", "wem", "wessen", "was", "wann", "warum", "wie", "wo", "woher", "wohin",
+  // Frequent dialogue openers that are only uppercase because they begin the
+  // utterance. Keeping this list explicit avoids accidentally forgiving real
+  // nouns or the formal pronouns Sie/Ihr.
+  "das", "ist", "weiß", "nicht", "nichts", "ja", "nein", "doch", "aber", "und", "oder",
+  "bitte", "danke", "hallo",
+]);
+
+function targetSentenceStarts(target: string, normalize: GermanCaseNormalizer) {
+  const starts = new Set<number>();
+  let wordOffset = 0;
+  // A spaced dash commonly separates two quoted speakers. Splitting it here
+  // also covers authored dialogue where the quotation marks themselves are
+  // optional learner formatting.
+  for (const segment of String(target ?? "").split(/(?:[.!?…]+|(?:\s+[–—]\s+))/u)) {
+    const words = normalize(segment).split(" ").filter(Boolean);
+    if (!words.length) continue;
+    starts.add(wordOffset);
+    wordOffset += words.length;
+  }
+  return { starts, wordCount: wordOffset };
+}
+
+function differsOnlyByOptionalSentenceStartCase(
+  input: string,
+  target: string,
+  normalize: GermanCaseNormalizer
+) {
+  const inputWords = normalize(input).split(" ").filter(Boolean);
+  const targetWords = normalize(target).split(" ").filter(Boolean);
+  const sentenceStarts = targetSentenceStarts(target, normalize);
+  if (
+    inputWords.length !== targetWords.length ||
+    sentenceStarts.wordCount !== targetWords.length
+  ) return false;
+
+  let sawDifference = false;
+  for (let index = 0; index < targetWords.length; index += 1) {
+    const inputWord = inputWords[index];
+    const targetWord = targetWords[index];
+    if (inputWord === targetWord) continue;
+
+    const targetLower = targetWord.toLocaleLowerCase("de-DE");
+    if (
+      !sentenceStarts.starts.has(index) ||
+      !LOWERCASEABLE_SENTENCE_OPENERS.has(targetLower) ||
+      inputWord !== targetLower
+    ) return false;
+    sawDifference = true;
+  }
+  return sawDifference;
+}
+
 export function matchGermanPhrase(input: string, target: string): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
   const normInputCS = normalizeGermanInputCaseSensitive(input);
   const normTargetCS = normalizeGermanInputCaseSensitive(target);
@@ -166,7 +228,17 @@ export function matchGermanPhrase(input: string, target: string): { ok: boolean;
   const lenientInputCI = normalizeGermanLenient(input);
   const lenientTargetCI = normalizeGermanLenient(target);
 
-  if (normInputCI === normTargetCI || lenientInputCI === lenientTargetCI) {
+  if (normInputCI === normTargetCI) {
+    if (differsOnlyByOptionalSentenceStartCase(input, target, normalizeGermanInputCaseSensitive)) {
+      return { ok: true, spellingNote: false };
+    }
+    return { ok: false, spellingNote: false, capitalizationError: true };
+  }
+
+  if (lenientInputCI === lenientTargetCI) {
+    if (differsOnlyByOptionalSentenceStartCase(input, target, normalizeGermanLenientCaseSensitive)) {
+      return { ok: true, spellingNote: true };
+    }
     return { ok: false, spellingNote: false, capitalizationError: true };
   }
 

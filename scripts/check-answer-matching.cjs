@@ -7,6 +7,7 @@ const result = esbuild.buildSync({
   stdin: {
     contents: `
       export { allPartBlueprints } from "./src/lib/data.ts";
+      export { default as tatoebaRaw } from "./src/lib/tatoeba.de-en.json";
       export { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "./src/lib/germanTextMatch.ts";
       export { buildBundledParts } from "./src/lib/contentBank.ts";
       export { buildApiPartFromResolved } from "./src/lib/api.ts";
@@ -43,6 +44,7 @@ const {
   matchGermanSentence,
   primaryAnswer,
   sentenceCommonality,
+  tatoebaRaw,
 } = compiled.exports;
 
 function findPhrase(value, german) {
@@ -204,6 +206,36 @@ const lowerFormalYou = matchGermanSentence("Haben sie noch einen Tisch frei?", s
 check(
   "lowercase formal Sie is reported as a capitalization error",
   !lowerFormalYou.ok && lowerFormalYou.capitalizationError === true
+);
+
+const quotedDialogue = "„Ich verstehe das nicht.“ – „Ich auch nicht.“";
+check(
+  "the reported quoted dialogue still exists",
+  tatoebaRaw.some((item) => item.de === quotedDialogue)
+);
+check(
+  "dialogue formatting and lowercase sentence-opening ich are accepted",
+  matchGermanSentence("ich verstehe das nicht. ich auch nicht", quotedDialogue).ok
+);
+const dialogueFormattingCases = [
+  ["„Ich kann nicht schlafen.“ – „Ich auch nicht.“", "ich kann nicht schlafen ich auch nicht"],
+  ["Das ist nicht Französisch. Es ist Englisch.", "das ist nicht Französisch es ist Englisch"],
+  ["„Ist das normal?“ – „Weiß ich nicht.“", "ist das normal weiß ich nicht"],
+  ["„Was war das?“ — „Nichts.“", "was war das nichts"],
+];
+for (const [target, input] of dialogueFormattingCases) {
+  check(`the shipped dialogue exists: ${target}`, tatoebaRaw.some((item) => item.de === target));
+  check(`optional dialogue formatting passes: ${input}`, matchGermanSentence(input, target).ok);
+}
+const lowercaseOpeningNoun = matchGermanSentence("tisch sieben ist frei.", "Tisch sieben ist frei.");
+check(
+  "a sentence-opening lowercase noun still reports a capitalization error",
+  !lowercaseOpeningNoun.ok && lowercaseOpeningNoun.capitalizationError === true
+);
+const lowercaseOpeningFormalYou = matchGermanSentence("sie haben recht.", "Sie haben recht.");
+check(
+  "sentence-opening formal Sie still reports a capitalization error",
+  !lowercaseOpeningFormalYou.ok && lowercaseOpeningFormalYou.capitalizationError === true
 );
 
 const catalogParts = { ...allPartBlueprints, ...bundledParts, part76: restaurantPart };
