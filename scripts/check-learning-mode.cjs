@@ -9,6 +9,7 @@ const result = esbuild.buildSync({
     contents: `
       export { allPartBlueprints } from "./src/lib/data.ts";
       export { curatedTopics } from "./src/lib/phrasebank.ts";
+      export { buildTatoebaParts } from "./src/lib/contentBank.ts";
       export {
         matchLearningModeGermanAnswer,
         phraseForLearningMode,
@@ -33,6 +34,7 @@ compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
   allPartBlueprints,
+  buildTatoebaParts,
   curatedTopics,
   matchLearningModeGermanAnswer,
   phraseForLearningMode,
@@ -55,9 +57,13 @@ function phrasesFromPart(part) {
   ];
 }
 
+const tatoebaParts = buildTatoebaParts(5_000);
+const tatoebaPhrases = Object.values(tatoebaParts).flatMap(phrasesFromPart);
+const defaultTatoebaParts = buildTatoebaParts();
 const authoredPhrases = [
   ...Object.values(allPartBlueprints).flatMap(phrasesFromPart),
   ...curatedTopics.flatMap((topic) => topic?.phrases ?? []),
+  ...tatoebaPhrases,
 ];
 
 function acceptsSelectedPhrase(selected, answer) {
@@ -118,6 +124,97 @@ if (reportedPhrase) {
     !acceptsSelectedPhrase(exam, spoken)
   );
 }
+
+const reportedTatoebaPhrase = tatoebaPhrases.find((phrase) =>
+  phrase?.en === "That's not what I said."
+);
+
+check("the reported real-world sentence still exists", Boolean(reportedTatoebaPhrase));
+check(
+  "the corrected real-world sentence keeps its stable source position",
+  defaultTatoebaParts["tatoeba-b1-1"]?.phrases?.[6]?.en === "That's not what I said."
+);
+if (reportedTatoebaPhrase) {
+  const conversation = phraseForLearningMode(reportedTatoebaPhrase, "conversation");
+  const exam = phraseForLearningMode(reportedTatoebaPhrase, "exam");
+  const spoken = "Das hab ich nicht gesagt.";
+  const standard = "Das ist nicht das, was ich gesagt habe.";
+
+  check(
+    "Conversation mode teaches the natural spoken correction",
+    conversation.de === spoken,
+    `found ${JSON.stringify(conversation.de)}`
+  );
+  check(
+    "the natural spoken correction keeps an honest English meaning",
+    conversation.en === "That's not what I said. / I didn't say that.",
+    `found ${JSON.stringify(conversation.en)}`
+  );
+  check(
+    "the corrected real-world sentence keeps its complete form visible",
+    conversation.long === standard,
+    `found ${JSON.stringify(conversation.long)}`
+  );
+  check(
+    "Exam mode teaches the complete das-was construction",
+    exam.de === standard,
+    `found ${JSON.stringify(exam.de)}`
+  );
+  check(
+    "Exam mode shows but does not explicitly grade against the casual alternative",
+    exam.short === spoken && !acceptsSelectedPhrase(exam, spoken)
+  );
+  check(
+    "Conversation grading accepts both versions of the corrected sentence",
+    acceptsSelectedPhrase(conversation, spoken)
+      && acceptsSelectedPhrase(conversation, standard)
+  );
+}
+
+check(
+  "the reported translated-sounding German is absent from built lessons",
+  !tatoebaPhrases.some((phrase) => phrase?.de === "Das ist nicht, was ich sagte.")
+);
+check(
+  "the second missing-das corpus sentence is corrected",
+  tatoebaPhrases.some((phrase) =>
+    phrase?.de === "Das stimmt nicht. Das ist nicht das, was ich gesagt habe."
+  )
+  && !tatoebaPhrases.some((phrase) =>
+    phrase?.de === "Das stimmt nicht. Das ist nicht, was ich gesagt habe."
+  )
+);
+
+const translatedCalques = [
+  "Das ist nicht, was ich denke.",
+  "Das ist nicht, was ich gesehen habe.",
+  "Das ist nicht, was ich dachte.",
+  "Das ist nicht, was ich gehört habe.",
+  "Das ist nicht, was ich tun werde.",
+  "Das ist nicht, was er gesagt hat.",
+  "Das ist nicht, was ich sehen will.",
+  "Das ist nicht, was ich meinte.",
+  "Das ist nicht, was ich suche.",
+  "Das ist nicht, was wir tun müssen.",
+  "Das ist nicht, was ich hören wollte.",
+  "Das ist nicht, was ich bestellt habe.",
+  "Das ist nicht, was ich suchte.",
+  "Ist das nicht, was ich gesagt habe?",
+  "Ist das nicht, was du willst?",
+  "Ist das nicht, was sie wollen?",
+  "Das ist nicht, warum ich hier bin.",
+  "Es ist nicht, wie du denkst.",
+  "Das ist nicht, wie wir denken.",
+  "Das ist, wie ich es erfahren habe.",
+  "Das ist, wo ich sein möchte.",
+  "Das ist genau, was ich meine.",
+];
+const builtGerman = new Set(tatoebaPhrases.map((phrase) => phrase?.de));
+check(
+  "reviewed English-like corpus constructions are absent from built lessons",
+  translatedCalques.every((phrase) => !builtGerman.has(phrase)),
+  translatedCalques.filter((phrase) => builtGerman.has(phrase)).slice(0, 5).join("; ")
+);
 
 const completeVariants = authoredPhrases.filter((phrase) =>
   phrase?.de?.trim()

@@ -19,6 +19,9 @@ interface RawSentence {
   de: string;
   en: string;
   level: string;
+  short?: string;
+  shortEn?: string;
+  use?: string;
 }
 
 // Corpus translations are useful raw material, but learner-facing copy must
@@ -26,6 +29,101 @@ interface RawSentence {
 // here instead of teaching a technically possible but confusing construction
 // or silently changing German "ich" into English "you/we".
 const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Das ist nicht, was ich sagte.": {
+    de: "Das ist nicht das, was ich gesagt habe.",
+    en: "That's not what I said.",
+    short: "Das hab ich nicht gesagt.",
+    shortEn: "That's not what I said. / I didn't say that.",
+    use: "In everyday conversation, Germans normally say 'Das hab ich nicht gesagt.' The complete form uses 'das, was' and 'gesagt habe'.",
+  },
+  "Das stimmt nicht. Das ist nicht, was ich gesagt habe.": {
+    de: "Das stimmt nicht. Das ist nicht das, was ich gesagt habe.",
+    en: "You're wrong. That isn't what I said.",
+    short: "Das stimmt nicht. Das hab ich nicht gesagt.",
+    shortEn: "That's not true. I didn't say that.",
+    use: "In everyday conversation, the direct 'Das hab ich nicht gesagt' sounds more natural. The complete version needs 'das, was'.",
+  },
+  "Das ist nicht, was ich denke.": {
+    de: "Das ist nicht das, was ich denke.",
+    short: "So denke ich nicht.",
+    shortEn: "That's not how I see it. / That's not what I think.",
+  },
+  "Das ist nicht, was ich gesehen habe.": {
+    de: "Das ist nicht das, was ich gesehen habe.",
+  },
+  "Das ist nicht, was ich dachte.": {
+    de: "Das ist nicht das, was ich gedacht habe.",
+    short: "Das hab ich nicht gedacht.",
+    shortEn: "That's not what I thought. / I didn't think that.",
+  },
+  "Das ist nicht, was ich gehört habe.": {
+    de: "Das ist nicht das, was ich gehört habe.",
+  },
+  "Das ist nicht, was ich tun werde.": {
+    de: "Das ist nicht das, was ich tun werde.",
+    short: "Das werde ich nicht tun.",
+    shortEn: "That's not what I'm going to do. / I won't do that.",
+  },
+  "Das ist nicht, was er gesagt hat.": {
+    de: "Das ist nicht das, was er gesagt hat.",
+    short: "Das hat er nicht gesagt.",
+    shortEn: "That's not what he said. / He didn't say that.",
+  },
+  "Das ist nicht, was ich sehen will.": {
+    de: "Das ist nicht das, was ich sehen will.",
+  },
+  "Das ist nicht, was ich meinte.": {
+    de: "Das ist nicht das, was ich gemeint habe.",
+    short: "So hab ich das nicht gemeint.",
+    shortEn: "That's not what I meant. / That's not how I meant it.",
+  },
+  "Das ist nicht, was ich suche.": {
+    de: "Das ist nicht das, was ich suche.",
+    short: "Das suche ich nicht.",
+    shortEn: "That's not what I'm looking for. / I'm not looking for that.",
+  },
+  "Das ist nicht, was wir tun müssen.": {
+    de: "Das ist nicht das, was wir tun müssen.",
+  },
+  "Das ist nicht, was ich bestellt habe.": {
+    de: "Das ist nicht das, was ich bestellt habe.",
+    short: "Das hab ich nicht bestellt.",
+    shortEn: "This is not what I ordered. / I didn't order this.",
+  },
+  "Das ist nicht, was ich suchte.": {
+    de: "Das ist nicht das, wonach ich gesucht habe.",
+  },
+  "Ist das nicht, was ich gesagt habe?": {
+    de: "Ist das nicht das, was ich gesagt habe?",
+    short: "Hab ich das nicht gesagt?",
+    shortEn: "Isn't that what I said? / Didn't I say that?",
+  },
+  "Ist das nicht, was du willst?": {
+    de: "Ist das nicht das, was du willst?",
+  },
+  "Ist das nicht, was sie wollen?": {
+    de: "Ist das nicht das, was sie wollen?",
+  },
+  "Das ist nicht, warum ich hier bin.": {
+    de: "Das ist nicht der Grund, warum ich hier bin.",
+  },
+  "Es ist nicht, wie du denkst.": {
+    de: "Es ist nicht so, wie du denkst.",
+  },
+  "Das ist nicht, wie wir denken.": {
+    de: "So denken wir nicht.",
+  },
+  "Das ist, wie ich es erfahren habe.": {
+    de: "Daher weiß ich das.",
+  },
+  "Das ist, wo ich sein möchte.": {
+    de: "Da möchte ich sein.",
+  },
+  "Das ist genau, was ich meine.": {
+    de: "Das ist genau das, was ich meine.",
+    short: "Genau das meine ich.",
+    shortEn: "That's exactly what I mean.",
+  },
   "Kann ich essen?": {
     de: "Kann ich das essen?",
     en: "Can I eat this? / Can I eat?",
@@ -73,6 +171,7 @@ const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
     en: "Aren't we going to do that?",
   },
   "Das ist nicht, was ich hören wollte.": {
+    de: "Das ist nicht das, was ich hören wollte.",
     en: "That's not what I wanted to hear. / This isn't what I wanted to hear.",
   },
   "Wir sind uns nicht ganz sicher, was es ist.": {
@@ -226,7 +325,9 @@ export function buildTatoebaParts(perPack = 50): Record<string, Part> {
       const phrases: Phrase[] = chunk.map((s) => ({
         de: s.de,
         en: s.en,
-        use: determineUse(s.de),
+        use: s.use || determineUse(s.de),
+        short: s.short,
+        shortEn: s.shortEn,
       }));
       const key = `${TATOEBA_PREFIX}-${level.toLowerCase()}-${packNo}`;
       out[key] = buildPartFromPhrases(

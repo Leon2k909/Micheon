@@ -108,8 +108,13 @@ const expectedCorrections = new Map([
   ["Ich glaube, dass es wahr ist.", "I believe that's true."],
   ["Ich weiß, dass dir das wichtig ist.", "I know that's important to you."],
   ["Werden wir das nicht tun?", "Aren't we going to do that?"],
+  ["Das ist nicht das, was ich gesagt habe.", "That's not what I said."],
   [
-    "Das ist nicht, was ich hören wollte.",
+    "Das stimmt nicht. Das ist nicht das, was ich gesagt habe.",
+    "You're wrong. That isn't what I said.",
+  ],
+  [
+    "Das ist nicht das, was ich hören wollte.",
     "That's not what I wanted to hear. / This isn't what I wanted to hear.",
   ],
   ["Wir sind uns nicht ganz sicher, was es ist.", "We're not exactly sure what it is."],
