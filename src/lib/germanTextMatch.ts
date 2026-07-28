@@ -319,6 +319,10 @@ const CONTRACTIONS: [RegExp, string][] = [
   [/\b(you|he|she|it|they)ll\b/gi, "$1 will"], // youll, hell... (avoiding 'well' conflict)
   [/\b(\w+)[’'`´]d\b/gi, "$1 would"],
   [/\b(you|he|she|we|they)d\b/gi, "$1 would"],   // youd, hed... (avoiding 'id' conflict)
+  // A noun phrase can contract "is" too. Keep this deliberately narrow:
+  // generic word+'s expansion would mistake possessives ("John's coat") for
+  // verbs, while this authored answer specifically uses "one more's coming".
+  [/\bone more[’'`´]s\b/gi, "one more is"],
   [/\b(it|that|there|here|what|who|where|when|why|how|he|she)[’'`´]?s\b/gi, "$1 is"], // it's/its, that's/thats...
 ];
 
