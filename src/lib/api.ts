@@ -512,5 +512,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     label: blueprint.label, level: blueprint.level, theme: blueprint.theme,
     description: blueprint.description, focus: blueprint.focus,
     vocab, articleQuestions, translationQuestions, dialogues, phrases,
+    learningDirections: blueprint.learningDirections,
+    coachingLanguage: blueprint.coachingLanguage,
   };
 }

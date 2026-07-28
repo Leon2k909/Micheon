@@ -2,6 +2,7 @@ import { Part, Phrase, TranslationQuestion } from "./types";
 import { curatedTopics } from "./phrasebank";
 import { normalize } from "./api";
 import tatoebaRaw from "./tatoeba.de-en.json";
+import { getLearningDirection, type LearningDirection } from "./direction";
 
 /**
  * Bundled, always-available content.
@@ -106,6 +107,8 @@ interface PartMeta {
   theme: string;
   description: string;
   focus: string;
+  learningDirections?: LearningDirection[];
+  coachingLanguage?: "de" | "en" | "both";
 }
 
 function buildPartFromPhrases(meta: PartMeta, phrases: Phrase[]): Part {
@@ -130,13 +133,16 @@ function buildPartFromPhrases(meta: PartMeta, phrases: Phrase[]): Part {
     // No synthetic dialogues: these are standalone sentences, not real exchanges.
     dialogues: [],
     phrases: usable,
+    learningDirections: meta.learningDirections,
+    coachingLanguage: meta.coachingLanguage,
   };
 }
 
 /** Curated phrasebank → themed lesson parts (keys like "cb-greetings"). */
-export function buildCuratedParts(): Record<string, Part> {
+export function buildCuratedParts(direction: LearningDirection = getLearningDirection()): Record<string, Part> {
   const out: Record<string, Part> = {};
   for (const topic of curatedTopics) {
+    if (topic.learningDirections && !topic.learningDirections.includes(direction)) continue;
     out[topic.id] = buildPartFromPhrases(
       {
         label: topic.label,
@@ -144,6 +150,8 @@ export function buildCuratedParts(): Record<string, Part> {
         theme: topic.theme,
         description: topic.description,
         focus: topic.focus,
+        learningDirections: topic.learningDirections,
+        coachingLanguage: topic.coachingLanguage,
       },
       topic.phrases
     );
@@ -241,13 +249,27 @@ export function buildTatoebaParts(perPack = 50): Record<string, Part> {
  * Everything bundled, in display order: curated lessons first.
  * Blueprint parts are merged before these by the caller.
  */
-export function buildBundledParts(): Record<string, Part> {
-  return buildCuratedParts();
+export function buildBundledParts(direction: LearningDirection = getLearningDirection()): Record<string, Part> {
+  return buildCuratedParts(direction);
+}
+
+/** Keep direction-specific packs out of every downstream surface in one pass. */
+export function filterPartsForLearningDirection<T extends Part>(
+  parts: Record<string, T>,
+  direction: LearningDirection = getLearningDirection()
+): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(parts).filter(([, part]) =>
+      !part.learningDirections || part.learningDirections.includes(direction)
+    )
+  );
 }
 
 /** Flat pool of every bundled sentence (curated only) for games / review. */
-export function getAllBundledSentences(): Phrase[] {
-  return curatedTopics.flatMap((t) => t.phrases);
+export function getAllBundledSentences(direction: LearningDirection = getLearningDirection()): Phrase[] {
+  return curatedTopics
+    .filter((topic) => !topic.learningDirections || topic.learningDirections.includes(direction))
+    .flatMap((topic) => topic.phrases);
 }
 
 /** Count of bundled sentences, for stats/labels. */

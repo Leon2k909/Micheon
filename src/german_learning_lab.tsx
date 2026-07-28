@@ -14,14 +14,14 @@ import ClozeTabContent from "@/lab/ClozeTabContent";
 import GrammarTabContent from "@/lab/GrammarTabContent";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
-import { buildBundledParts, buildTatoebaParts } from "@/lib/contentBank";
+import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
 import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildCatalog, buildSession, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, type GradeRecord } from "@/lib/memoryStrength";
-import { learningEnglish } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
   type Register, type RegisterState,
@@ -45,39 +45,13 @@ import { getActiveCourseId, setActiveCourseId, loadCourseProgress, saveCoursePro
 import { getCourse } from "@/lib/courseRegistry";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
+import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
+import { swapStepForEnglish } from "@/lib/learningDirectionStep";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
   totalReviews: number; streak: number; externalWords: number;
 };
-
-// Flip a built session step's display fields (de<->en) so the English text becomes
-// the thing you read/hear/type and the German becomes the meaning. Used when the
-// learner is a German speaker studying English. IDs and everything else are kept.
-function swapStepForEnglish(step: any): any {
-  if (step?.type === "sentence" && step.item) {
-    // These fields explain German register, pronunciation, short forms, or
-    // usage. After the swap the learner is practising the English line, so
-    // keeping them would show irrelevant German-specific coaching.
-    const item = { ...step.item };
-    for (const key of ["say", "long", "short", "use", "when", "tierNote"]) delete item[key];
-    return { ...step, item: { ...item, de: step.item.en, en: step.item.de } };
-  }
-  if (step?.type === "dialogue" && Array.isArray(step.dialogue?.lines)) {
-    return {
-      ...step,
-      dialogue: {
-        ...step.dialogue,
-        lines: step.dialogue.lines.map((line: any) => {
-          const rest = { ...line };
-          for (const key of ["say", "long", "short", "use", "when", "tierNote"]) delete rest[key];
-          return { ...rest, de: line.en, en: line.de };
-        }),
-      },
-    };
-  }
-  return step;
-}
 
 const REGISTER_KEY = "register-checks";
 
@@ -324,15 +298,19 @@ export default function GermanLearningLab() {
     // lessons, tracker, search and tests all read this one map, so nothing
     // downstream needs to know where a phrase came from.
     const rebuild = () =>
-      setApiParts(orderParts({
+      setApiParts(orderParts(filterPartsForLearningDirection({
         ...resolved,
         ...buildBundledParts(),
         ...buildTatoebaParts(),
         ...buildCustomParts(),
-      }));
+      })));
     rebuild();
     window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-    return () => window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    return () => {
+      window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    };
   }, []);
 
   useEffect(() => {
@@ -454,6 +432,7 @@ export default function GermanLearningLab() {
           long: replacement.long,
           group: replacement.group,
           tierNote: replacement.tierNote,
+          coachingLanguage: replacement.coachingLanguage,
         },
       };
       if (learningEnglish()) replacementStep = swapStepForEnglish(replacementStep);
@@ -881,20 +860,24 @@ export default function GermanLearningLab() {
       }}
       onComplete={() => {
         setShowGuidedSession(false);
-        // onAdvance already persisted every completed, non-skipped exercise.
-        // A bulk replay here would turn skipped items into successful recalls.
-        logActivity(sessionSteps);
-        const xp = sessionSteps.length * 15;
-        updateStats({
-          totalXp: progressStats.totalXp + xp,
-          sessionsCompleted: progressStats.sessionsCompleted + 1,
-          totalReviews: progressStats.totalReviews + Math.floor(sessionSteps.length / 2),
-          streak: recordStreakDay(user),
-        });
-        // Roll straight into the next lesson — no "Continue learning" press.
-        // Deferred so markCompleted's state lands first, otherwise the next
-        // session would be built from stale review data and repeat itself.
-        setTimeout(() => startSession(), 260);
+        finishLessonAndQueueNext(
+          () => {
+            // onAdvance already persisted every completed, non-skipped exercise.
+            // A bulk replay here would turn skipped items into successful recalls.
+            logActivity(sessionSteps);
+            const xp = sessionSteps.length * 15;
+            updateStats({
+              totalXp: progressStats.totalXp + xp,
+              sessionsCompleted: progressStats.sessionsCompleted + 1,
+              totalReviews: progressStats.totalReviews + Math.floor(sessionSteps.length / 2),
+              streak: recordStreakDay(user),
+            });
+          },
+          // Always use the global Continue Learning selector (no part id), so
+          // the next lesson keeps the same review/new mix. The short unmount
+          // gap resets GuidedSession's internal stage state cleanly.
+          () => window.setTimeout(() => startSession(), 260)
+        );
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
       onMemoryGrade={(itemId: string, grade: "know" | "struggle") => markMemoryGrade(itemId, grade)}

@@ -73,6 +73,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // Niche/casual packs label every item so uncommon German is never
   // mistaken for the everyday thing to say.
   const tierNote = packMeta(partKey).note;
+  const coachingLanguage = part.coachingLanguage;
 
   /**
    * How well this phrase is already known, so a lesson can stop drilling
@@ -105,10 +106,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, aliases, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage, short, when, say, long, group, mastery: masteryOf(rec) } });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, aliases, de, en, fr, use, lookup, tierNote, short, when, say, long, group, mastery: masteryOf(rec) } });
+    queue.push({ type: EX.SENTENCE, item: { id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage, short, when, say, long, group, mastery: masteryOf(rec) } });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -164,7 +165,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       });
     if (usable.length >= 2) {
       // First show the full dialogue for context
-      queue.push({ type: EX.DIALOGUE, dialogue: { ...d, lines: usable } });
+      queue.push({ type: EX.DIALOGUE, dialogue: { ...d, coachingLanguage, lines: usable } });
       // Then drill each line as a sentence exercise
       usable.forEach((line: any) => {
         addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use, undefined, line.short, line.when, line.say, line.long, line.group);
@@ -412,6 +413,7 @@ export type CatalogItem = {
   group?: string;
   lessonPriority?: number;
   tierNote?: string;
+  coachingLanguage?: "de" | "en" | "both";
 };
 
 /**
@@ -442,7 +444,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
     seen.add(key);
-    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use, tierNote, ...coaching });
+    out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use, tierNote, coachingLanguage: part?.coachingLanguage, ...coaching });
   };
 
   // Hand-written examples only — mirrors buildSession, so the tracker

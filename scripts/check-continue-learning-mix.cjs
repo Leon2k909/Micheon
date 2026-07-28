@@ -20,6 +20,7 @@ const result = esbuild.buildSync({
         recordSuccess,
       } from "./src/lib/memoryStrength.ts";
       export { gradeEntryForId, setCanonicalGradeRecord } from "./src/lib/activity.ts";
+      export { finishLessonAndQueueNext } from "./src/lib/lessonFlow.ts";
     `,
     resolveDir: root,
     sourcefile: "continue-learning-check-entry.ts",
@@ -49,6 +50,7 @@ const {
   rankReinforcementCandidates,
   selectContinueLearningMix,
   setCanonicalGradeRecord,
+  finishLessonAndQueueNext,
 } = compiled.exports;
 
 let failures = 0;
@@ -226,6 +228,23 @@ check(
   labSource.includes("const blockedPairs = current")
     && labSource.includes("learnsEnglish ? step.item?.en : step.item?.de")
     && labSource.includes("learnsEnglish ? step.item?.de : step.item?.en")
+);
+
+let queuedAfterStorageFailure = 0;
+let completionErrors = 0;
+finishLessonAndQueueNext(
+  () => { throw new Error("simulated full local storage"); },
+  () => { queuedAfterStorageFailure += 1; },
+  () => { completionErrors += 1; }
+);
+check(
+  "a lesson still queues its successor when completion persistence throws",
+  queuedAfterStorageFailure === 1 && completionErrors === 1
+);
+check(
+  "automatic continuation reuses the global mixed-session selector",
+  labSource.includes("() => window.setTimeout(() => startSession(), 260)")
+    && !labSource.includes("window.setTimeout(() => startSession(activePart)")
 );
 
 if (failures) {

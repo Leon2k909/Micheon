@@ -66,6 +66,8 @@ export interface Blueprint {
   seeds: VocabSeed[];
   dialogues: Dialogue[];
   phrases: Phrase[];
+  learningDirections?: Array<"learn-de" | "learn-en">;
+  coachingLanguage?: "de" | "en" | "both";
 }
 
 export interface VocabItem {
@@ -106,6 +108,10 @@ export interface Part {
   translationQuestions: TranslationQuestion[];
   dialogues: Dialogue[];
   phrases: Phrase[];
+  /** Restrict a specialist pack to the direction it was written for. */
+  learningDirections?: Array<"learn-de" | "learn-en">;
+  /** Preserve target-language coaching when a lesson is direction-swapped. */
+  coachingLanguage?: "de" | "en" | "both";
 }
 
 export interface ReviewStats {

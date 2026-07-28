@@ -15,6 +15,8 @@ export interface CuratedTopic {
   description: string;
   focus: string;
   phrases: Phrase[];
+  learningDirections?: Array<"learn-de" | "learn-en">;
+  coachingLanguage?: "de" | "en" | "both";
 }
 
 export const curatedTopics: CuratedTopic[] = [
@@ -1586,6 +1588,158 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Ich habe mir ein Hochbeet für Gemüse gekauft.", en: "I bought myself a raised bed for vegetables.", use: "Hochbeet = raised bed — hugely popular on German balconies and in Kleingärten", fr: "Je me suis acheté un potager surélevé pour les légumes." },
       { de: "Wir schneiden am Wochenende die Hecke.", en: "We're trimming the hedge this weekend.", use: "Hecke schneiden = trim the hedge. Legal note: heavy cutting/removal of hedges is banned 1 March–30 Sept (§39 BNatSchG, nesting-bird protection); only light shaping cuts are allowed then", fr: "On taille la haie ce week-end." },
       { de: "Diese Pflanze ist winterhart und kann draußen bleiben.", en: "This plant is hardy and can stay outside.", use: "winterhart = frost-hardy — key word on plant labels; French gardening term is 'rustique'", fr: "Cette plante est rustique et peut rester dehors." },
+    ],
+  },
+  {
+    id: "cb-geordie",
+    label: "Geordie essentials: Newcastle English",
+    level: "A2-B1",
+    theme: "Geordie essentials: Newcastle English",
+    description: "Understand the Newcastle and Tyneside English people actually use in greetings, plans, reactions, and everyday chat.",
+    focus: "Recognise the most useful regional forms while keeping Standard English as an accepted answer.",
+    learningDirections: ["learn-en"],
+    coachingLanguage: "en",
+    phrases: [
+      {
+        id: "cb-geordie-alreet",
+        de: "Na, alles klar?",
+        en: "Alreet? / Alright? / Hello!",
+        use: "In Newcastle meist eine lockere Begrüßung, keine ernste Frage nach der Gesundheit. Standardenglisch: ‘Alright?’ oder ‘Hello’. Regional und informell.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-aye",
+        de: "Ja.",
+        en: "Aye. / Yes.",
+        use: "Aye bedeutet ‘yes’. Es ist im Nordosten sehr häufig, kommt aber auch in anderen Teilen Großbritanniens vor.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-howay",
+        de: "Komm schon!",
+        en: "Howay, man! / Come on! / Hurry up!",
+        use: "Howay kann ermutigen, Ungeduld zeigen oder ‘Beeil dich’ bedeuten. Die Newcastle-Schreibweise ist Howay; Haway wird eher mit Sunderland verbunden. ‘man’ kann hier zu jeder Person gesagt werden.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-wey-aye",
+        de: "Aber klar!",
+        en: "Wey aye, man! / Whey aye, man! / Way aye, man! / Yes, of course!",
+        use: "Eine deutliche, begeisterte Zustimmung: ‘Ja, natürlich!’ Die Schreibweise schwankt, weil Dialekt vor allem gesprochen wird.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-divvent",
+        de: "Mach das nicht.",
+        en: "Divvent dee that. / Divvint dee that. / Divent dee that. / Divint dee that. / Divn't dee that. / Divnt dee that. / Don't do that.",
+        use: "Divvent ist die hier gelernte Newcastle-Schreibweise für ‘don’t’; dee bedeutet ‘do’. Andere Schreibweisen werden akzeptiert. In formellem Englisch: ‘Don’t do that.’",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-divvina",
+        de: "Ich weiß es nicht.",
+        en: "I divvina. / I divvent kna. / I divn't know. / I don't know.",
+        use: "I divvina bedeutet ‘I don’t know’. Du musst Dialekt nie erzwingen: Die standardenglische Antwort wird ebenfalls akzeptiert.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-gannin-hyem",
+        de: "Gehst du schon nach Hause?",
+        en: "Are ye gannin hyem already? / Are ye gannin yem already? / Are ye ganning home already? / Are you going home already?",
+        use: "gannin = going, hyem/yem = home und ye = you. Gannin ist die gelernte Form; ganning wird als Schreibvariante akzeptiert.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-gannin-oot",
+        de: "Gehst du heute Abend aus?",
+        en: "Are ye gannin oot the neet? / Are ye ganning out tonight? / Are you going out tonight?",
+        use: "oot = out und the neet = tonight. Das ist deutlich regional; im Standardenglisch sagst du ‘Are you going out tonight?’",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-uptee-the-neet",
+        de: "Was machst du heute Abend?",
+        en: "What ye uptee the neet? / What are you up to tonight? / What are you doing tonight?",
+        use: "uptee = up to und the neet = tonight. Eine lockere Frage nach den Abendplänen.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-canny-good",
+        de: "Das war ziemlich gut.",
+        en: "That was canny good. / That was pretty good.",
+        use: "Canny kann im Nordosten ‘gut/nett’ bedeuten oder ein Adjektiv verstärken. Hier bedeutet es ‘ziemlich’.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-gan-canny",
+        de: "Mach langsam.",
+        en: "Gan canny. / Take it easy. / Be careful.",
+        use: "Gan canny heißt je nach Situation ‘Mach langsam’, ‘Pass auf’ oder ‘Lass es ruhig angehen’.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-clamming",
+        de: "Ich habe Riesenhunger.",
+        en: "I'm clamming. / I'm clammin. / I'm really hungry. / I'm starving.",
+        use: "Clamming/clammin bedeutet, dass du sehr hungrig bist. Locker und regional.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-giz-a-deek",
+        de: "Kann ich mal schauen?",
+        en: "Giz a deek. / Can I have a look? / Let me have a look.",
+        use: "giz = give us/give me und deek = look. ‘us’ kann im Geordie ‘me’ bedeuten.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-scran",
+        de: "Lass uns etwas zu essen holen.",
+        en: "Let's get some scran. / Let's get some food.",
+        use: "Scran bedeutet Essen. Das Wort hört man auch außerhalb von Newcastle, ist aber im Nordosten sehr geläufig.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-nowt",
+        de: "Es ist nichts mehr übrig.",
+        en: "There's nowt left. / There's nothing left.",
+        use: "nowt = nothing. Ein verbreitetes nordenglisches Wort, nicht ausschließlich Geordie.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-bairn",
+        de: "Das Kind schläft.",
+        en: "The bairn's asleep. / The child is asleep. / The baby's asleep.",
+        use: "bairn = Kind oder Baby. Das Wort wird auch in anderen Teilen Nordenglands und Schottlands verwendet.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-pet",
+        de: "Alles klar, meine Liebe?",
+        en: "Alreet, pet? / Are you alright, pet? / Are you alright, love?",
+        use: "pet ist hier eine freundliche Anrede, kein Haustier. Sie kann zu Frauen und Männern gesagt werden, wirkt aber regional und vertraut.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-toon",
+        de: "Wir fahren in die Stadt.",
+        en: "We're gannin to the Toon. / We're going into town. / We're going to Newcastle.",
+        use: "the Toon kann das Stadtzentrum von Newcastle meinen; im Fußballzusammenhang kann Toon auch Newcastle United bedeuten.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-hoy-us",
+        de: "Wirf mir mal einen Stift rüber.",
+        en: "Hoy us a pen, will ye? / Throw me a pen, will you? / Pass me a pen, will you?",
+        use: "hoy = werfen und us = mir. Nicht wörtlich als ‘uns’ übersetzen.",
+        lessonPriority: 1,
+      },
+      {
+        id: "cb-geordie-haddaway",
+        de: "Du machst wohl Witze!",
+        en: "Haddaway, man! / You must be joking! / No way!",
+        use: "Haddaway drückt Unglauben aus. Es bedeutet hier nicht einfach ‘Geh weg’.",
+        lessonPriority: 1,
+      },
     ],
   },
 ];

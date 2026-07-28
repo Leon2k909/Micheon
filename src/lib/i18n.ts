@@ -5,6 +5,10 @@ import { learningEnglish } from "@/lib/direction";
 // key; anything not in the table falls through unchanged, so missing strings
 // degrade gracefully instead of breaking.
 const DE: Record<string, string> = {
+  "Geordie essentials: Newcastle English": "Geordie-Grundlagen: Englisch aus Newcastle",
+  "Understand the Newcastle and Tyneside English people actually use in greetings, plans, reactions, and everyday chat.": "Verstehe das Englisch aus Newcastle und Tyneside, das man bei Begrüßungen, Plänen, Reaktionen und im Alltag wirklich hört.",
+  "Recognise the most useful regional forms while keeping Standard English as an accepted answer.": "Erkenne die wichtigsten regionalen Formen; Standardenglisch bleibt immer eine richtige Antwort.",
+  "Geordie / Newcastle English — regional and informal": "Geordie / Englisch aus Newcastle — regional und informell",
   // ── Lesson screen ──
   "Sentence practice": "Satztraining",
   "Read, hear, say, type, then translate.": "Lesen, hören, sprechen, tippen, dann übersetzen.",

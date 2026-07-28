@@ -165,6 +165,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-modal-particles",
   "cb-denglish",
   "part16",           // Regional greetings & expressions
+  "cb-geordie",       // Newcastle English for German speakers learning English
   "part17",           // Banter & friendly trash talk
   "cb-people-subcultures",
   "part31",           // Jokes, banter & humour
@@ -203,6 +204,7 @@ const TIER3_NOTES: Record<string, string> = {
   "cb-modal-particles": "Modal particles — conversational fillers",
   "cb-denglish": "Denglish — very casual",
   part16: "Regional — not used everywhere",
+  "cb-geordie": "Geordie / Newcastle English — regional and informal",
   part17: "Banter — close friends only",
   "cb-people-subcultures": "Social types & subcultures",
   part13: "Gamer talk",

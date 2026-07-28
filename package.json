@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.35",
+  "version": "1.2.36",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -18,7 +18,8 @@
     "check:continue-learning": "node scripts/check-continue-learning-mix.cjs",
     "check:matching-pairs": "node scripts/check-matching-pairs.cjs",
     "check:ability-pack": "node scripts/check-ability-pack.cjs",
-    "build": "npm run check:german-orthography && npm run check:english-content && npm run check:answer-matching && npm run check:catalog-search && npm run check:pet-interactions && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && vite build",
+    "check:geordie-pack": "node scripts/check-geordie-pack.cjs",
+    "build": "npm run check:german-orthography && npm run check:english-content && npm run check:answer-matching && npm run check:catalog-search && npm run check:pet-interactions && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && vite build",
     "start": "node server/index.js",
     "electron": "npm run build && electron .",
     "electron:run": "electron .",
