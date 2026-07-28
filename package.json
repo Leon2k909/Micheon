@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.28",
+  "version": "1.2.29",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -11,7 +11,8 @@
     "dev:web": "vite",
     "server": "node server/index.js",
     "check:german-orthography": "node scripts/check-german-orthography.cjs",
-    "build": "npm run check:german-orthography && vite build",
+    "check:pet-interactions": "node scripts/check-pet-interactions.cjs",
+    "build": "npm run check:german-orthography && npm run check:pet-interactions && vite build",
     "start": "node server/index.js",
     "electron": "npm run build && electron .",
     "electron:run": "electron .",

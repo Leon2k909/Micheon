@@ -7446,6 +7446,14 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich finde den Rückweg nicht mehr.", en: "I can't find the way back anymore.", use: "'nicht mehr' means no longer; accusative 'den Rückweg' is the route back to the entrance or team." },
       { de: "Warte, ich baue eine Brücke über die Lava.", en: "Wait, I'll build a bridge over the lava.", use: "Movement across something takes accusative after 'über': 'über die Lava'." },
       { de: "Lass uns die Höhle vollständig erkunden.", en: "Let's explore the entire cave.", use: "'erkunden' means systematically exploring a place, stronger than simply looking around." },
+      { de: "Der Gang wird immer enger.", en: "The passage is getting narrower.", use: "'immer' with a comparative such as 'enger' describes something becoming progressively narrower." },
+      { de: "Hier zieht es; irgendwo muss ein Ausgang sein.", en: "There's a draught here; there must be an exit somewhere.", use: "'Es zieht' is the natural phrase for feeling a draught; 'muss' expresses a strong assumption here." },
+      { de: "Leuchte mal in die Ecke; da glitzert etwas.", en: "Shine your light into the corner; something's glinting there.", use: "'mal' makes the command sound casual; use 'in die Ecke' when directing light into it." },
+      { de: "Die Decke sieht brüchig aus; bleib nicht darunter stehen.", en: "The ceiling looks unstable; don't stand underneath it.", use: "'aussehen' splits into 'sieht ... aus'; 'darunter' means underneath it." },
+      { de: "Wir können durch den Spalt kriechen.", en: "We can crawl through the gap.", use: "Say 'durch den Spalt'; masculine 'der Spalt' means a narrow gap or opening." },
+      { de: "Der Wasserstand steigt; wir müssen hier raus.", en: "The water level is rising; we need to get out of here.", use: "'hier raus' is the natural spoken form of the more formal 'hier hinaus'." },
+      { de: "Ich habe den Mechanismus für die Tür gefunden.", en: "I found the mechanism for the door.", use: "'der Mechanismus' is useful for switches, puzzles and hidden-door controls." },
+      { de: "Hinter dem Wasserfall ist ein versteckter Raum.", en: "There's a hidden room behind the waterfall.", use: "A fixed location uses dative 'hinter dem Wasserfall'; 'versteckt' means hidden." },
     ],
     dialogues: [
       { title: "Choosing a passage", lines: [
@@ -7508,6 +7516,14 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Kann ich die alte Waffe zerlegen?", en: "Can I dismantle the old weapon?", use: "'zerlegen' is the common UI verb for breaking gear into crafting materials." },
       { de: "Zum Schmieden fehlt mir noch Eisen.", en: "I still need iron for forging.", use: "'zum' contracts 'zu dem'; with 'fehlen', the person lacking it is dative 'mir'." },
       { de: "Die Waffe skaliert mit Stärke.", en: "The weapon scales with strength.", use: "German gaming uses loan verb 'skalieren'; the governing stat follows dative 'mit'." },
+      { de: "Die neue Rüstung hat bessere Werte, wiegt aber deutlich mehr.", en: "The new armour has better stats, but weighs considerably more.", use: "German menus often call stats 'Werte'; players also use the English loan 'Stats'." },
+      { de: "Für den Boss brauche ich eine Waffe mit größerer Reichweite.", en: "I need a weapon with greater range for the boss.", use: "After 'mit', feminine 'die Reichweite' becomes dative 'mit größerer Reichweite'." },
+      { de: "Der Ring gibt mir zwanzig Prozent Feuerwiderstand.", en: "The ring gives me twenty percent fire resistance.", use: "In 'jemandem etwas geben', dative 'mir' identifies who receives the bonus." },
+      { de: "Der Gegenstand ist an meinen Charakter gebunden.", en: "The item is bound to my character.", use: "'an einen Charakter gebunden' is standard UI language for gear that cannot be transferred." },
+      { de: "Die lila Items sind seltener als die blauen.", en: "The purple items are rarer than the blue ones.", use: "Colour word 'lila' normally stays unchanged; comparisons use 'seltener als'." },
+      { de: "Das Set gewährt einen Bonus, sobald du drei Teile trägst.", en: "The set grants a bonus once you equip three pieces.", use: "After 'sobald', the action moves to the end: 'drei Teile trägst'." },
+      { de: "Ich habe aus Versehen die falsche Waffe verkauft.", en: "I accidentally sold the wrong weapon.", use: "'aus Versehen' is the fixed everyday phrase for doing something accidentally." },
+      { de: "Die Waffe hat einen freien Sockel für einen Edelstein.", en: "The weapon has an empty socket for a gem.", use: "'der Sockel' is a gear socket; after 'für', say accusative 'einen Edelstein'." },
     ],
     dialogues: [
       { title: "Choosing a weapon", lines: [
@@ -7568,6 +7584,14 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Wenn mein Mana leer ist, kann ich nicht zaubern.", en: "When my mana is empty, I can't cast spells.", use: "After 'wenn', 'ist' moves to the end; the main clause then begins with 'kann'." },
       { de: "Die Kombo setzt den Cooldown zurück.", en: "The combo resets the cooldown.", use: "'zurücksetzen' is separable in a main clause: 'setzt ... zurück'." },
       { de: "Dieser Skill skaliert mit Intelligenz.", en: "This skill scales with intelligence.", use: "The governing attribute takes dative after 'mit'; German gamers use loan verb 'skalieren'." },
+      { de: "Ich habe nur noch eine Aufladung übrig.", en: "I only have one charge left.", use: "'nur noch ... übrig' means that only the stated amount remains." },
+      { de: "Der Boss kanalisiert gerade einen Zauber; unterbrich ihn!", en: "The boss is channeling a spell; interrupt him!", use: "'kanalisieren' is common MMO language; accusative 'ihn' refers back to the boss." },
+      { de: "Benutz den Skill erst, wenn die Adds spawnen.", en: "Don't use the skill until the adds spawn.", use: "'erst, wenn' means not until; German players use 'Adds' for additional enemies." },
+      { de: "Außerhalb der Reichweite kann ich dich nicht heilen.", en: "I can't heal you while you're out of range.", use: "'außerhalb der Reichweite' is the standard out-of-range callout." },
+      { de: "Der Schild hält nur, solange ich die Taste gedrückt halte.", en: "The shield only stays up while I hold the button down.", use: "'solange' means for as long as; 'gedrückt halten' means to hold a button down." },
+      { de: "Ich brauche noch einen Punkt, um die passive Fähigkeit freizuschalten.", en: "I need one more point to unlock the passive ability.", use: "The 'um ... zu' construction explains the purpose of needing the point." },
+      { de: "Während ich den Zauber wirke, darf ich mich nicht bewegen.", en: "I can't move while I'm casting the spell.", use: "'einen Zauber wirken' is the standard translated-game phrase for casting a spell." },
+      { de: "Die Fähigkeit wurde im letzten Patch abgeschwächt.", en: "The ability was weakened in the last patch.", use: "Menus use 'abgeschwächt'; players commonly use the loan 'generft' for the same change." },
     ],
     dialogues: [
       { title: "Waiting for an ultimate", lines: [
@@ -7629,6 +7653,14 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Lehn die Anfrage ab, wenn du den Namen nicht kennst.", en: "Decline the request if you don't recognise the name.", use: "Informal imperative of separable 'ablehnen' is 'Lehn ... ab'; after 'wenn', 'kennst' goes to the end." },
       { de: "Ich sehe dich nicht mehr in meiner Freundesliste.", en: "I can't see you in my friends list anymore.", use: "'nicht mehr' means no longer; static location after 'in' takes dative 'in meiner Freundesliste'." },
       { de: "Schick mir den Einladungslink.", en: "Send me the invite link.", use: "German compounds invitation plus link: masculine 'der Einladungslink', accusative 'den'." },
+      { de: "Du wirst bei mir als offline angezeigt.", en: "You're showing as offline for me.", use: "'als offline angezeigt' describes the status shown by the game on someone's screen." },
+      { de: "Stell die Lobby bitte auf „Nur Freunde“.", en: "Set the lobby to ‘Friends Only’, please.", use: "Use 'auf ... stellen' when changing a setting to a new value." },
+      { de: "Ich kann deiner Sitzung über dein Profil nicht beitreten.", en: "I can't join your session through your profile.", use: "'beitreten' takes the dative, so say 'deiner Sitzung', not 'deine Sitzung'." },
+      { de: "Die Einladung ist abgelaufen; schick bitte eine neue.", en: "The invitation has expired; please send another one.", use: "Invitations and links 'laufen ab'; once expired, they 'sind abgelaufen'." },
+      { de: "Wir müssen uns im Spiel adden, nicht nur auf der Konsole.", en: "We need to add each other in the game, not just on the console.", use: "Players say 'adden'; formal menus normally use 'hinzufügen'." },
+      { de: "Ohne Crossplay können wir nicht zusammenspielen.", en: "Without cross-play, we can't play together.", use: "The full infinitive is written as one word here: 'zusammenspielen'." },
+      { de: "Prüf, ob wir dieselbe Spielversion haben.", en: "Check whether we have the same game version.", use: "'dieselbe' means exactly the same one; after 'ob', 'haben' moves to the end." },
+      { de: "Bei mir ist „Beitreten“ ausgegraut.", en: "‘Join’ is greyed out for me.", use: "'ausgegraut' is the standard word for a disabled menu option." },
     ],
     dialogues: [
       { title: "Sending a friend request", lines: [

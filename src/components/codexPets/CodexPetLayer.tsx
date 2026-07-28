@@ -59,6 +59,11 @@ const PET_GROUP_GAP = 8;
 const PET_MENU_WIDTH = 224;
 const PET_MENU_ESTIMATED_HEIGHT = 328;
 const PET_BUBBLE_WIDTH = 240;
+// A click opens history, but only after the browser has had time to tell us it
+// was actually the first half of a double-click. Opening immediately unmounts
+// the desktop pet (the history panel temporarily owns the compact overlay), so
+// the second click used to land on empty space and make the pet look closed.
+const PET_SINGLE_CLICK_DELAY_MS = 400;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const isDesktopPetOverlay = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
@@ -386,6 +391,7 @@ export function CodexPetLayer() {
   const activePetTtsId = useRef("");
   const spokenSpeechId = useRef("");
   const suppressClick = useRef(false);
+  const pendingPetClick = useRef<number | null>(null);
   const tipIndex = useRef(0);
   /** Where each companion sits when the pets are arranged apart. */
   const [companionPositions, setCompanionPositions] = useState<Record<string, PetPosition>>({});
@@ -394,6 +400,18 @@ export function CodexPetLayer() {
 
   speechRef.current = speech;
   companionPositionsRef.current = companionPositions;
+
+  const cancelPendingPetClick = useCallback(() => {
+    if (pendingPetClick.current === null) return;
+    window.clearTimeout(pendingPetClick.current);
+    pendingPetClick.current = null;
+  }, []);
+
+  // A preference change during the short click gate must not leave history
+  // queued to open the next time this (or another) pet becomes visible.
+  useEffect(() => {
+    cancelPendingPetClick();
+  }, [cancelPendingPetClick, selectedKey]);
 
   // The layout choice is made in one window and has to reach the other, so
   // both the cross-window storage event and the same-window custom event are
@@ -959,6 +977,7 @@ export function CodexPetLayer() {
   }, [messagesMuted, petCoachingFrequencies.tips, petEnabled, speak]);
 
   useEffect(() => () => {
+    cancelPendingPetClick();
     if (dragState.current?.cursorFrame !== undefined) {
       window.cancelAnimationFrame(dragState.current.cursorFrame);
     }
@@ -967,7 +986,7 @@ export function CodexPetLayer() {
     dragState.current?.cleanupGlobal?.();
     dragState.current = null;
     if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
-  }, []);
+  }, [cancelPendingPetClick]);
 
   if (!selectedPet) return null;
 
@@ -1107,7 +1126,21 @@ export function CodexPetLayer() {
     event: ReactPointerEvent<HTMLButtonElement>,
     companionKey?: string
   ) => {
-    if (event.button !== 0 || dragState.current) return;
+    if (dragState.current) return;
+    // Any new press cancels the pending single-click action. A genuine second
+    // click should leave the mascot where it is, not open history halfway
+    // through the gesture and remove the button from under the pointer.
+    const repeatedPress = pendingPetClick.current !== null;
+    cancelPendingPetClick();
+    // Right-press also cancels the pending history action, then continues via
+    // onContextMenu. Otherwise a held right-click can let the timer unmount the
+    // pet before its menu event arrives.
+    if (event.button !== 0) return;
+    // PointerEvent.detail is zero for pointerdown, so the pending timer—not
+    // click count—is the reliable sign that a second press followed the first.
+    // Stop before pointer capture/native resizing to avoid a needless overlay
+    // expand-and-contract flash on the second half of a double-click.
+    if (repeatedPress) return;
     // A companion that has not been given a place yet cannot be dragged; its
     // position effect runs first, so this only guards the very first frame.
     if (companionKey && !companionPositionsRef.current[companionKey]) return;
@@ -1235,13 +1268,21 @@ export function CodexPetLayer() {
     finishDrag(event);
   };
 
-  const handleClick = () => {
+  const handleClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
     }
-    clearSpeech();
-    setHistoryOpen(true);
+    if (event.detail > 1) {
+      cancelPendingPetClick();
+      return;
+    }
+    cancelPendingPetClick();
+    pendingPetClick.current = window.setTimeout(() => {
+      pendingPetClick.current = null;
+      clearSpeech();
+      setHistoryOpen(true);
+    }, PET_SINGLE_CLICK_DELAY_MS);
   };
 
   const applyPetSize = (requestedSize: number) => {
@@ -1276,6 +1317,7 @@ export function CodexPetLayer() {
   const showContextMenu = (event: ReactMouseEvent<HTMLButtonElement>, petKey?: string) => {
     event.preventDefault();
     event.stopPropagation();
+    cancelPendingPetClick();
     const target = petKey ?? null;
     const reopeningSame = menuOpen && menuPetKey === target;
     if (!reopeningSame) clearSpeech();
