@@ -40,7 +40,9 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-diet-allergies",
   "cb-shopping",
   "part63",           // Clothes shopping & returns
+  "part156",          // Drugstore: toiletries, laundry products and photos
   "cb-grocery",
+  "part155",          // Bakery, deli counter and weekly market
   "cb-money",
   "cb-money-woes",
   "cb-directions",
@@ -66,6 +68,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part68",          // Daily home talk: couples, flatmates & feelings
   "part69",          // People, opinions & reactions
   "part70",          // Keeping a conversation going
+  "part152",         // Telling a story clearly: sequence, turning points and outcomes
   "part71",          // Opinions, agreeing & disagreeing
   "part145",          // Linking ideas: cause, contrast and consequence
   "part72",          // Making & changing plans
@@ -98,6 +101,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-housing",
   "cb-gardening-plants",
   "cb-apartment-repairs",
+  "part154",         // DIY tools and fixing things at home
   "cb-amt",
   "part143",          // Visas, residence permits and the Ausländerbehörde
   "part51",           // Getting help: hotlines, bank & repairs
@@ -117,6 +121,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part43",           // Computers & tech (Windows, Linux & gadgets)
   "part50",           // Streaming & making videos
   "part56",           // Making games & coding
+  "part151",          // Online safety, scams and account recovery
   "cb-internet-support",
   "cb-hotel",
   "cb-opinions",
@@ -177,6 +182,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part148",          // Abilities, cooldowns, buffs and skill trees
   "part146",          // Caves, dungeons and underground exploration
   "part149",          // Adding friends, parties and cross-play
+  "part153",          // Board games, tabletop RPGs and taking turns
   "part45",           // Online gaming culture: cheaters, Steam & Discord
   "cb-fighting-styles",
   "cb-tics-tourettes",
@@ -213,6 +219,7 @@ const TIER3_NOTES: Record<string, string> = {
   part147: "Gamer talk",
   part148: "Gamer talk",
   part149: "Gamer talk",
+  part153: "Tabletop and board-game talk",
   part42: "Gamer talk",
   part45: "Gamer talk",
   "cb-fighting-styles": "Combat & fighting styles",
