@@ -75,6 +75,14 @@ const expected = {
     theme: "Talking to your pets",
     fixture: "Komm, wir gehen Gassi.",
   },
+  part158: {
+    theme: "Everyday spoken German: the little phrases people actually use",
+    fixture: "Sag mal, hast du kurz Zeit?",
+  },
+  part159: {
+    theme: "Everyday practical gaps: getting normal things sorted",
+    fixture: "Bleibt es bei heute Abend?",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -107,7 +115,7 @@ for (const [partKey, expectation] of Object.entries(expected)) {
 }
 
 const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
-check("new authored phrases are unique across all seven packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
+check("new authored phrases are unique across all nine packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
 
 const existingGerman = new Set();
 for (const [partKey, pack] of Object.entries(allPartBlueprints)) {
@@ -128,9 +136,9 @@ check(
   duplicate && `${duplicate.partKey}: ${duplicate.de}`
 );
 
-check("the release adds at least 220 authored phrases", newPhrases.length >= 220, `found ${newPhrases.length}`);
-check("the release adds at least 113 vocabulary seeds", totalSeeds >= 113, `found ${totalSeeds}`);
-check("the release adds at least seventeen dialogues", totalDialogues >= 17, `found ${totalDialogues}`);
+check("the nine expansion packs contain at least 348 authored phrases", newPhrases.length >= 348, `found ${newPhrases.length}`);
+check("the nine expansion packs contain at least 156 vocabulary seeds", totalSeeds >= 156, `found ${totalSeeds}`);
+check("the nine expansion packs contain at least twenty-nine dialogues", totalDialogues >= 29, `found ${totalDialogues}`);
 check("storytelling follows conversational practice", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("part70") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -141,6 +149,10 @@ check("the bakery pack follows grocery shopping", CURRICULUM_ORDER.indexOf("part
 check("both new everyday-shopping packs are tier one", packMeta("part155").tier === 1 && packMeta("part156").tier === 1);
 check("pet-directed speech follows the existing pets and animals pack", CURRICULUM_ORDER.indexOf("part157") === CURRICULUM_ORDER.indexOf("part86") + 1);
 check("pet-directed speech stays in the common situational tier", packMeta("part157").tier === 2);
+check("spoken-glue practice follows the short-replies pack", CURRICULUM_ORDER.indexOf("part158") === CURRICULUM_ORDER.indexOf("cb-shortreplies") + 1);
+check("spoken-glue practice is introduced in tier one", packMeta("part158").tier === 1);
+check("practical-gap practice follows home and daily errands", CURRICULUM_ORDER.indexOf("part159") === CURRICULUM_ORDER.indexOf("part9") + 1);
+check("practical-gap practice stays in the common situational tier", packMeta("part159").tier === 2);
 
 const petPhrases = new Set((allPartBlueprints.part157?.phrases ?? []).map((phrase) => phrase.de));
 const petCoverage = {
@@ -153,6 +165,34 @@ const petCoverage = {
 };
 for (const [area, fixtures] of Object.entries(petCoverage)) {
   check(`pet-directed pack covers ${area}`, fixtures.every((phrase) => petPhrases.has(phrase)));
+}
+
+const spokenPhrases = new Set((allPartBlueprints.part158?.phrases ?? []).map((phrase) => phrase.de));
+const spokenCoverage = {
+  reactions: ["Na ja.", "Tja.", "Eben.", "Nicht schlecht."],
+  agreement: ["Find ich auch.", "Seh ich auch so.", "Seh ich anders.", "Da hast du schon recht."],
+  particles: ["Komm doch rein.", "Dann machen wir das eben so.", "Was ist eigentlich los?"],
+  timing: ["Ich bin gleich so weit.", "Ich bin noch unterwegs.", "Ich komme erst später."],
+  messages: ["Bin in zehn Minuten da.", "Sag Bescheid, wenn du da bist.", "Komm gut nach Hause."],
+  repair: ["Das habe ich nicht mitbekommen.", "Du hast mich falsch verstanden.", "Das ist nicht das, was ich gesagt habe."],
+};
+for (const [area, fixtures] of Object.entries(spokenCoverage)) {
+  check(`spoken-glue pack covers ${area}`, fixtures.every((phrase) => spokenPhrases.has(phrase)));
+}
+
+const practicalPhrases = new Set((allPartBlueprints.part159?.phrases ?? []).map((phrase) => phrase.de));
+const practicalCoverage = {
+  home: ["Hast du den Herd ausgemacht?", "Kannst du die Tür abschließen?", "Das Wasser läuft nicht ab."],
+  appointments: ["Könnten Sie mich auf die Warteliste setzen?", "Ich muss meinen Termin leider absagen."],
+  transport: ["Ist der Anschluss noch zu schaffen?", "Muss ich die Fahrkarte noch entwerten?"],
+  shopping: ["Das wurde mir zweimal berechnet.", "Am Regal war aber ein anderer Preis angegeben."],
+  health: ["Ich bekomme schlecht Luft.", "Meine Beschwerden sind schlimmer geworden."],
+  work: ["Bis wann brauchst du das?", "Ich habe keinen Zugriff auf die Datei."],
+  plans: ["Bleibt es bei heute Abend?", "Kann ich noch jemanden mitbringen?"],
+  phone: ["Ich kann dich kaum hören.", "Du bist noch stummgeschaltet."],
+};
+for (const [area, fixtures] of Object.entries(practicalCoverage)) {
+  check(`practical-gap pack covers ${area}`, fixtures.every((phrase) => practicalPhrases.has(phrase)));
 }
 
 if (failures) {

@@ -29,6 +29,7 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-conversation-repair",
   "cb-reactions",
   "cb-shortreplies",
+  "part158",         // Everyday spoken glue: reactions, timing and keeping in touch
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
@@ -65,6 +66,7 @@ export const CURRICULUM_ORDER: string[] = [
   // ── Tier 2 · common, situational ────────────────────────────
   "part8",            // Core verbs
   "part9",            // Home and daily errands
+  "part159",          // Everyday practical gaps: normal problems and arrangements
   "part68",          // Daily home talk: couples, flatmates & feelings
   "part69",          // People, opinions & reactions
   "part70",          // Keeping a conversation going
