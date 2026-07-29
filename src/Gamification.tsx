@@ -16,7 +16,6 @@ import {
   LogOut,
   Zap,
   Languages,
-  Mic2,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -55,8 +54,6 @@ import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
-import { getVoiceModel, setVoiceModel, VOICE_MODELS, type VoiceModelChoice } from "@/lib/voiceModel";
-import { isElectronApp } from "@/lib/platform";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
@@ -307,7 +304,6 @@ export default function GamificationPanel({
   const [theme, setTheme] = useState<Theme>(getTheme);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
-  const [voiceModel, setVoiceModelState] = useState<VoiceModelChoice>(getVoiceModel);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
   const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
@@ -362,12 +358,6 @@ export default function GamificationPanel({
     const next: Effects = effects === "lite" ? "full" : "lite";
     applyEffects(next);
     setEffects(next);
-  };
-
-  const toggleVoiceModel = () => {
-    const next: VoiceModelChoice = voiceModel === "accurate" ? "balanced" : "accurate";
-    setVoiceModel(next);
-    setVoiceModelState(next);
   };
 
   const toggleCompanion = () => {
@@ -441,7 +431,7 @@ export default function GamificationPanel({
         </section>
 
         <section className="card overflow-hidden">
-          <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
+          <div className="grid items-start gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Account details")}</h2>
               <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Your photo, display name, and login email.")}</p>
@@ -511,83 +501,82 @@ export default function GamificationPanel({
                 )}
                 <span className="text-[11px] font-semibold text-[var(--text-3)]">{ui("Square images look best — stored on this device.")}</span>
               </div>
-            </div>
 
-            <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Learning, appearance, and progress settings.")}</p>
-              <button
-                aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
-                className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
-                onClick={toggleTheme}
-                type="button"
-              >
-                <span className="flex items-center gap-2">
-                  {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                  {ui(theme === "dark" ? "Dark mode" : "Light mode")}
-                </span>
-                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
-              </button>
-
-              <button
-                aria-pressed={effects === "lite"}
-                aria-label={ui("Toggle reduced effects")}
-                className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                onClick={toggleEffects}
-                type="button"
-              >
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                    <Zap className="h-4 w-4" /> {ui("Reduce effects")}
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    {ui("Turns off glows and continuous animations to save battery on slower devices.")}
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                    effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
-                  )}
-                >
-                  {ui(effects === "lite" ? "On" : "Off")}
-                </span>
-              </button>
-
-              {/* Dictation accuracy — desktop app only, where speech runs on the
-                  bundled offline model. Both options are more accurate than the
-                  old default; this trades download size and speed for noise
-                  robustness. */}
-              <CodexPetPicker />
-
-              {isElectronApp() && (
+              <div className="mt-5 border-t border-[var(--border)] pt-5">
+                <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Appearance")}</h3>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                  {ui("Theme, effects, and mascot settings.")}
+                </p>
                 <button
-                  aria-pressed={voiceModel === "accurate"}
-                  aria-label={ui("Toggle higher-accuracy dictation model")}
+                  aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
+                  className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
+                  onClick={toggleTheme}
+                  type="button"
+                >
+                  <span className="flex items-center gap-2">
+                    {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                    {ui(theme === "dark" ? "Dark mode" : "Light mode")}
+                  </span>
+                  <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
+                </button>
+
+                <button
+                  aria-pressed={effects === "lite"}
+                  aria-label={ui("Toggle reduced effects")}
                   className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                  onClick={toggleVoiceModel}
+                  onClick={toggleEffects}
                   type="button"
                 >
                   <span className="min-w-0">
                     <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                      <Mic2 className="h-4 w-4" /> {ui("Dictation accuracy")}
+                      <Zap className="h-4 w-4" /> {ui("Reduce effects")}
                     </span>
                     <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {VOICE_MODELS[voiceModel].note}
+                      {ui("Turns off glows and continuous animations to save battery on slower devices.")}
                     </span>
                   </span>
                   <span
                     className={cn(
                       "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                      voiceModel === "accurate" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                      effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
                     )}
                   >
-                    {VOICE_MODELS[voiceModel].label}
+                    {ui(effects === "lite" ? "On" : "Off")}
                   </span>
                 </button>
-              )}
+
+              </div>
+
+              {/* Account-adjacent status and progress controls balance this
+                  column without hiding them among the learning-mode choices. */}
+              <UpdateStatusCard />
+
+              <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+                <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                  {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
+                </p>
+                <input
+                  className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                  min="0"
+                  onChange={(event) => {
+                    const valueString = event.target.value;
+                    setExternalInput(valueString);
+                    onUpdateStats?.({ externalWords: parseInt(valueString, 10) || 0 });
+                  }}
+                  placeholder="0"
+                  type="number"
+                  value={externalInput}
+                />
+              </div>
 
               <LearningModePicker value={learningMode} onChange={updateLearningMode} />
+            </div>
+
+            <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Flashcard and language settings.")}</p>
+
               <FlashcardModePicker
                 face={flashcardFace}
                 mode={flashcardMode}
@@ -626,29 +615,10 @@ export default function GamificationPanel({
                 <VoicePicker />
               </div>
 
-              {/* Sits with the language settings rather than hidden away: the
-                  commonest question about an app that updates silently is
-                  whether it is updating at all. */}
-              <UpdateStatusCard />
+            </div>
 
-              <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-                <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
-                </p>
-                <input
-                  className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                  min="0"
-                  onChange={(event) => {
-                    const valueString = event.target.value;
-                    setExternalInput(valueString);
-                    onUpdateStats?.({ externalWords: parseInt(valueString, 10) || 0 });
-                  }}
-                  placeholder="0"
-                  type="number"
-                  value={externalInput}
-                />
-              </div>
+            <div className="rounded-[24px] bg-[var(--surface-2)] p-5 lg:col-span-2">
+              <CodexPetPicker className="mt-0 border-t-0 pt-0" />
             </div>
           </div>
         </section>

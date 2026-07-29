@@ -138,7 +138,7 @@ function CurrentCourseCard({
         <div className="course-feature-panel rounded-[18px] p-4">
           <p className="course-feature-label text-[11px] font-bold">{ui("Current focus")}</p>
           <p className="course-feature-title mt-2 line-clamp-2 text-sm font-black leading-5">
-            {uiOr(currentPart?.focus ?? "Listen, speak, type, translate", "Hören, sprechen, tippen und übersetzen").replace(/\.$/, "")}
+            {uiOr(currentPart?.focus ?? "Listen, choose, type, translate", "Hören, auswählen, tippen und übersetzen").replace(/\.$/, "")}
           </p>
         </div>
         <div className="course-feature-panel rounded-[18px] p-4">
@@ -182,7 +182,7 @@ function ScheduleCard({
   const [id, part] = item;
   const times = ["10:30 - 12:00", "13:00 - 14:00", "16:00 - 17:00"];
   const styles = [
-    { icon: MessageCircle, label: "Speak", accent: "bg-[var(--accent)]", soft: "bg-[var(--accent-dim)] text-[var(--accent)]" },
+    { icon: MessageCircle, label: "Practice", accent: "bg-[var(--accent)]", soft: "bg-[var(--accent-dim)] text-[var(--accent)]" },
     { icon: Headphones, label: "Listen", accent: "bg-[var(--mint)]", soft: "bg-[var(--success-bg)] text-[var(--success-text)]" },
     { icon: BookOpen, label: "Review", accent: "bg-[var(--orange)]", soft: "bg-[var(--info-bg)] text-[var(--info-text)]" },
   ];

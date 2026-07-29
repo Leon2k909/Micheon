@@ -8,6 +8,8 @@ const result = esbuild.buildSync({
     contents: `
       export { buildBundledParts, filterPartsForLearningDirection } from "./src/lib/contentBank.ts";
       export { CURRICULUM_ORDER, packMeta } from "./src/lib/curriculum.ts";
+      export { itemDifficulty, itemPriority } from "./src/lib/ability.ts";
+      export { buildCorpusIndex, sentenceCommonality } from "./src/lib/corpusFrequency.ts";
       export { matchingVisibleKey, matchEnglishPhrase, matchGermanPhrase, primaryAnswer } from "./src/lib/germanTextMatch.ts";
       export { buildPartCatalog } from "./src/session.ts";
       export { swapStepForEnglish } from "./src/lib/learningDirectionStep.ts";
@@ -30,15 +32,19 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
+  buildCorpusIndex,
   buildBundledParts,
   buildPartCatalog,
   CURRICULUM_ORDER,
   filterPartsForLearningDirection,
+  itemDifficulty,
+  itemPriority,
   matchingVisibleKey,
   matchEnglishPhrase,
   matchGermanPhrase,
   packMeta,
   primaryAnswer,
+  sentenceCommonality,
   swapStepForEnglish,
 } = compiled.exports;
 
@@ -58,6 +64,8 @@ const learnEnglishParts = buildBundledParts("learn-en");
 const germanPack = learnGermanParts[packKey];
 const englishPack = learnEnglishParts[packKey];
 const pack = germanPack;
+const repairPackKey = "cb-conversation-repair";
+const repairPack = learnGermanParts[repairPackKey];
 
 check("the conversation-bridges pack is available when learning German", Boolean(germanPack));
 check("the conversation-bridges pack is available when learning English", Boolean(englishPack));
@@ -76,6 +84,55 @@ check(
     && CURRICULUM_ORDER.indexOf("part152") === packIndex + 1
 );
 check("conversation bridges stay in the common situational tier", packMeta(packKey).tier === 2);
+check(
+  "the everyday conversation-repair pack is taught before nuanced bridges",
+  CURRICULUM_ORDER.indexOf(repairPackKey) >= 0
+    && CURRICULUM_ORDER.indexOf(repairPackKey) < packIndex
+    && packMeta(repairPackKey).tier === 1
+);
+
+if (repairPack && pack) {
+  const thinkingPhrase = (repairPack.phrases ?? []).find(
+    (phrase) => phrase.de === "Lass mich kurz überlegen."
+  );
+  const finishThought = (pack.phrases ?? []).find(
+    (phrase) => phrase.id === "cb-conversation-bridges-finish-thought"
+  );
+  check(
+    "conversation mode teaches the everyday form of let me think",
+    thinkingPhrase?.short === "Lass mich mal überlegen."
+      && thinkingPhrase?.shortEn === "Let me think."
+      && thinkingPhrase?.lessonPriority === -0.25
+  );
+  check(
+    "finish my thought is explained as a different turn-taking expression",
+    finishThought?.en === "Let me just finish my thought."
+      && /does not mean 'Let me think'/i.test(finishThought?.use ?? "")
+      && finishThought?.lessonPriority == null
+  );
+
+  const thinkingCatalog = buildPartCatalog(repairPack, repairPackKey).find(
+    (item) => item.long === "Lass mich kurz überlegen." && item.en === "Let me think."
+  );
+  const finishCatalog = buildPartCatalog(pack, packKey).find(
+    (item) => item.id === "cb-conversation-bridges-finish-thought"
+  );
+  const corpusIndex = buildCorpusIndex(learnGermanParts);
+  const priorityFor = (item, sourcePack, ability) => itemPriority({
+    ability,
+    commonality: sentenceCommonality(item.de, corpusIndex),
+    difficulty: itemDifficulty(sourcePack.level, item.de.trim().split(/\s+/).length),
+    lessonPriority: item.lessonPriority,
+  });
+  check(
+    "let me think outranks finish my thought for every learner ability",
+    Boolean(thinkingCatalog && finishCatalog)
+      && ["easy", "medium", "hard", "expert"].every(
+        (ability) => priorityFor(thinkingCatalog, repairPack, ability)
+          < priorityFor(finishCatalog, pack, ability)
+      )
+  );
+}
 
 if (pack) {
   const phrases = pack.phrases ?? [];

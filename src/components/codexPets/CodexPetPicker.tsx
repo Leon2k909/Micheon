@@ -13,7 +13,7 @@ import type { CodexPetCoachingKind, CodexPetFrequency } from "@/lib/codexPetCoac
 import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
-export function CodexPetPicker() {
+export function CodexPetPicker({ className }: { className?: string } = {}) {
   const { frequencies, setFrequency } = useCodexPetCoaching();
   // Which pet is mid-rename, and the text being typed for it.
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function CodexPetPicker() {
   } = useCodexPets();
 
   return (
-    <section className="mt-5 border-t border-[var(--border)] pt-5">
+    <section className={cn("mt-5 border-t border-[var(--border)] pt-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Desktop mascot")}</h3>

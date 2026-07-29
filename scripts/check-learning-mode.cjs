@@ -450,9 +450,40 @@ check(
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
 const guidedStyles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsView.tsx"), "utf8");
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const packageLockSource = fs.readFileSync(path.join(root, "package-lock.json"), "utf8");
 const dialogueStart = guidedSource.indexOf("function DialogueExercise(");
 const dialogueEnd = guidedSource.indexOf("// ── Main ──", dialogueStart);
 const dialogueSource = guidedSource.slice(dialogueStart, dialogueEnd > dialogueStart ? dialogueEnd : undefined);
+
+function phaseNames(constantName) {
+  const body = guidedSource.match(new RegExp(`const ${constantName}[^=]*= \\[(.*?)\\]`, "s"))?.[1] ?? "";
+  return [...body.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+}
+
+const fullLessonPhases = phaseNames("PHASES");
+const bilingualLessonPhases = phaseNames("BILINGUAL_PHASES");
+
+check(
+  "guided lesson routes omit the temporarily disabled speaking stage",
+  !fullLessonPhases.includes("Speak")
+    && !bilingualLessonPhases.includes("Speak")
+    && fullLessonPhases.includes("WriteFromMemory")
+    && !guidedSource.includes('phase === "Speak"')
+);
+check(
+  "desktop lessons cannot trigger a speech-model download",
+  guidedSource.includes("if (isElectronApp() || !isSpeechRecognitionSupported()) return null;")
+    && !guidedSource.includes("whisperRecognition")
+);
+check(
+  "the offline recognition runtime and model selectors are absent from the app",
+  !packageJson.dependencies?.["@huggingface/transformers"]
+    && !packageJson.devDependencies?.["@huggingface/transformers"]
+    && !packageLockSource.includes('node_modules/@huggingface/transformers')
+    && !fs.existsSync(path.join(root, "src/lib/whisperRecognition.ts"))
+    && !fs.existsSync(path.join(root, "src/lib/voiceModel.ts"))
+);
 
 check(
   "DialogueExercise uses the production learning-mode matcher",

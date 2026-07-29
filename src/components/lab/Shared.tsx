@@ -1,6 +1,6 @@
 ﻿import React, { useId } from "react";
 import { motion } from "framer-motion";
-import { Headphones, MessageSquare, Mic2, Repeat } from "lucide-react";
+import { BookOpen, Headphones, MessageSquare, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const DAILY_GOAL = 50;
@@ -87,7 +87,7 @@ export function DailyGoalChip({ completed }: { completed: number }) {
 }
 
 const QUICK_ACTIONS = [
-  { id: "speak",  label: "Speak",      caption: "Shadow phrases",  icon: Mic2 },
+  { id: "practice", label: "Practice", caption: "Useful phrases", icon: BookOpen },
   { id: "ai",     label: "AI Chat",    caption: "Conversation",    icon: MessageSquare },
   { id: "srs",    label: "Review",     caption: "Spaced recall",   icon: Repeat },
   { id: "listen", label: "Listen",     caption: "Train your ear",  icon: Headphones },

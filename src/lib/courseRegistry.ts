@@ -8,7 +8,7 @@ export const COURSES: Course[] = [
     id: "german",
     kind: "language",
     name: "German",
-    tagline: "Read, listen, speak, type and translate real German.",
+    tagline: "Read, listen, type and translate real German.",
     icon: "🇩🇪",
     available: true,
     builtIn: true,

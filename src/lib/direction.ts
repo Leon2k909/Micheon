@@ -23,7 +23,7 @@ export function learningEnglish(): boolean {
   return getLearningDirection() === "learn-en";
 }
 
-/** BCP-47 tag of the language being learned — used for TTS voice + speech recognition. */
+/** BCP-47 tag of the language being learned — used for lesson audio. */
 export function targetLangTag(): string {
   return getLearningDirection() === "learn-en" ? "en-US" : "de-DE";
 }

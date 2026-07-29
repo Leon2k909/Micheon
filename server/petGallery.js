@@ -18,6 +18,7 @@ const GALLERY_ORIGIN = "https://codex-pets.net";
 const MAX_BUNDLE_BYTES = 24 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 24 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 30000;
+const MAX_GALLERY_PAGE = 200;
 
 function getMicheonHome() {
   const configured = process.env.MICHEON_HOME?.trim();
@@ -48,8 +49,10 @@ async function fetchWithTimeout(url, init = {}) {
 /** One page of the public gallery, trimmed to what the picker actually shows. */
 export async function fetchGalleryPage({ page = 1, search = "" } = {}) {
   const url = new URL("/api/pets", GALLERY_ORIGIN);
-  url.searchParams.set("page", String(Math.max(1, Math.min(200, Number(page) || 1))));
-  if (search) url.searchParams.set("search", String(search).slice(0, 80));
+  url.searchParams.set("page", String(Math.max(1, Math.min(MAX_GALLERY_PAGE, Number(page) || 1))));
+  // codex-pets.net names its catalogue query `q`; Micheon's local endpoint
+  // keeps the clearer `search` parameter and translates it here.
+  if (search) url.searchParams.set("q", String(search).slice(0, 80));
 
   const response = await fetchWithTimeout(url, { headers: { accept: "application/json" } });
   if (!response.ok) throw new Error(`gallery returned ${response.status}`);
@@ -58,7 +61,10 @@ export async function fetchGalleryPage({ page = 1, search = "" } = {}) {
 
   return {
     page: Number(payload?.page) || 1,
-    totalPages: Number(payload?.totalPages) || 1,
+    // Keep the advertised end in step with the request cap. Otherwise a future
+    // gallery with more than 200 pages would leave infinite scroll requesting
+    // page 200 forever while the server continued to report a later end.
+    totalPages: Math.max(1, Math.min(MAX_GALLERY_PAGE, Number(payload?.totalPages) || 1)),
     total: Number(payload?.total) || pets.length,
     pets: pets
       .filter((pet) => safePetId(pet?.id) && !pet?.ownerShadowbanned)

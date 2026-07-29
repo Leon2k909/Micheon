@@ -12,7 +12,7 @@ import {
 } from "@/lib/adaptivePractice";
 
 export const EX = {
-  SENTENCE: "sentence",   // read + listen + speak + type a full sentence
+  SENTENCE: "sentence",   // read + listen + choose + type a full sentence
   DIALOGUE: "dialogue",   // line-by-line conversation practice
   COMPLETE: "complete",
 };

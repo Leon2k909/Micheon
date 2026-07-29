@@ -133,8 +133,8 @@ export function LearnView({
             <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Lessons")}</h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">
               {ui(uiIsGerman()
-                ? "Work through practical English in short blocks: read, listen, speak, type, and translate."
-                : "Work through practical German in short blocks: read, listen, speak, type, and translate.")}
+                ? "Work through practical English in short blocks: read, listen, choose, type, and translate."
+                : "Work through practical German in short blocks: read, listen, choose, type, and translate.")}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2">

@@ -2193,8 +2193,11 @@ a { color: inherit; text-decoration: none; }
   .fs-shortcut-panel { padding: 11px; }
 }
 
-/* Umlaut keys moved OUT of the answer panel — calm centered row underneath. */
-.fs-panel { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+/* Umlaut keys moved OUT of the answer panel — calm centered row underneath.
+   Desktop has no dictation model, so it uses three tracks; the browser adds a
+   fourth only when its native dictation button is actually rendered. */
+.fs-panel { grid-template-columns: auto minmax(0, 1fr) auto; }
+.fs-panel:has(.fs-mic) { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 .fs-charsrow { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 10px; }
 .guided-session .fs-charsrow button {
   width: 34px; height: 34px; border: 1px solid var(--fs-line); border-radius: 10px;
@@ -2203,37 +2206,13 @@ a { color: inherit; text-decoration: none; }
 }
 .guided-session .fs-charsrow button:hover { transform: translateY(-2px); border-color: rgba(255,210,63,0.3); background: rgba(255,210,63,0.065); color: #ffe470; }
 
-/* ── Dictation status: visible, not hidden in a tooltip ──
-   A silent multi-minute model download is indistinguishable from a broken
-   button, so the panel says what it is doing and proves it can hear you. */
+/* ── Browser dictation status: visible, not hidden in a tooltip ── */
 .guided-session .fs-mic { position: relative; overflow: visible; }
-.guided-session .fs-mic.is-loading {
-  border-color: rgba(168, 120, 255, 0.55);
-  background: rgba(139, 76, 255, 0.12);
-  color: #c6b2f8;
-  animation: fsMicThink 1.4s ease-in-out infinite;
-}
-@keyframes fsMicThink { 0%,100% { opacity: 0.65; } 50% { opacity: 1; } }
-/* live input level bar under the mic icon */
-.guided-session .fs-mic-level {
-  position: absolute; left: 50%; bottom: 4px; width: 16px; height: 3px;
-  margin-left: -8px; border-radius: 999px; background: #ff9cb0;
-  transform-origin: center bottom; transition: transform 0.08s linear;
-}
 .fs-mic-status {
   grid-column: 1 / -1;
   display: inline-flex; align-items: center; gap: 8px;
   margin: 6px 4px 0; padding: 0 6px;
   color: var(--fs-muted); font-size: 12px; font-weight: 700; white-space: nowrap;
-}
-.fs-mic-bar {
-  display: inline-block; width: 84px; height: 4px; overflow: hidden;
-  border-radius: 999px; background: rgba(255, 255, 255, 0.1);
-}
-.fs-mic-bar i {
-  display: block; height: 100%; border-radius: inherit;
-  background: linear-gradient(90deg, #a66bff, #7c3aed);
-  transition: width 0.25s ease;
 }
 
 /* ── "When you'd say it" ──

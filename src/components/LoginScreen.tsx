@@ -21,7 +21,7 @@ interface LoginScreenProps {
 
 const essentials = [
   "A daily German lesson that starts immediately.",
-  "Practice for reading, listening, speaking, typing, and translation.",
+  "Practice for reading, listening, typing, and translation.",
   "Progress saved locally on this device.",
 ];
 

@@ -18,7 +18,7 @@ const OPTIONS: Array<{
   {
     value: "exam",
     label: "Exam practice",
-    note: "Practise complete standard forms for formal writing, listening, speaking, and test answers.",
+    note: "Practise complete standard forms for formal writing, careful listening, and test answers.",
     icon: GraduationCap,
   },
 ];
