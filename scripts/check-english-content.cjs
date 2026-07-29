@@ -1,5 +1,6 @@
 const path = require("path");
 const Module = require("module");
+const fs = require("fs");
 const esbuild = require("esbuild");
 
 const root = path.resolve(__dirname, "..");
@@ -90,6 +91,27 @@ for (const [label, pattern] of definiteErrorPatterns) {
   const hit = learnerEnglish.find((entry) => pattern.test(entry.text));
   check(`no learner sentence contains ${label}`, !hit, hit && `${hit.location}: ${hit.text}`);
 }
+
+const plainLanguageFiles = [
+  "src/lib/data.ts",
+  "src/lib/expansionPacks.ts",
+  "src/lib/phrasebank.ts",
+  "src/lib/loanwordPairs.json",
+];
+const unexplainedGrammarJargon = plainLanguageFiles
+  .flatMap((relativePath) => {
+    const source = fs.readFileSync(path.join(root, relativePath), "utf8");
+    return source.split(/\r?\n/).map((text, index) => ({
+      text,
+      location: `${relativePath}:${index + 1}`,
+    }));
+  })
+  .find((entry) => /\b(?:reflexive|conjugated)\b/i.test(entry.text));
+check(
+  "learner tips explain German patterns without unexplained grammar jargon",
+  !unexplainedGrammarJargon,
+  unexplainedGrammarJargon && `${unexplainedGrammarJargon.location}: ${unexplainedGrammarJargon.text.trim()}`
+);
 
 const tatoebaPhrases = Object.values(tatoebaParts).flatMap((part) => part.phrases ?? []);
 const translatedByGerman = new Map(tatoebaPhrases.map((phrase) => [phrase.de, phrase.en]));

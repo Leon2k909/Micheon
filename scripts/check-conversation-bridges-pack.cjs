@@ -144,6 +144,46 @@ if (pack) {
   );
 
   const byId = new Map(phrases.map((phrase) => [phrase.id, phrase]));
+  const grammarJargon = /\b(?:accusative|dative|genitive|nominative|reflexive|conjugat(?:e|ed|ion)|infinitive|participle|subordinate|relative clause|modal verb|imperative|predicate)\b/i;
+  const jargonIssues = phrases.filter((phrase) => grammarJargon.test(phrase.use ?? ""));
+  check(
+    "conversation-bridge guidance explains usage without grammar jargon",
+    jargonIssues.length === 0,
+    jargonIssues.map((phrase) => `${phrase.id}: ${phrase.use}`).slice(0, 5).join("; ")
+  );
+
+  const agreeOnThat = byId.get("cb-conversation-bridges-agree-on-that");
+  const agreeOnThatUse = agreeOnThat?.use ?? "";
+  const hasConcreteAgreementTip = /means 'to agree on something'/i.test(agreeOnThatUse)
+    && /'darauf'/i.test(agreeOnThatUse)
+    && /both (?:people|sides).*accept/i.test(agreeOnThatUse)
+    && !grammarJargon.test(agreeOnThatUse);
+  check(
+    "the agreement bridge has a concrete plain-language usage tip",
+    agreeOnThat?.de === "Darauf können wir uns einigen."
+      && agreeOnThat?.en === "We can agree on that."
+      && hasConcreteAgreementTip,
+    `found ${JSON.stringify(agreeOnThatUse)}`
+  );
+
+  const catalogAgreeOnThat = catalog.find((item) => item.id === agreeOnThat?.id);
+  check(
+    "the built catalogue preserves the agreement bridge's plain-language tip",
+    catalogAgreeOnThat?.use === agreeOnThatUse && hasConcreteAgreementTip
+  );
+
+  const swappedAgreeOnThat = swapStepForEnglish({
+    type: "sentence",
+    item: { ...agreeOnThat, coachingLanguage: pack.coachingLanguage },
+  });
+  check(
+    "the agreement tip survives the English-learning direction swap",
+    swappedAgreeOnThat?.item?.de === agreeOnThat?.en
+      && swappedAgreeOnThat?.item?.en === agreeOnThat?.de
+      && swappedAgreeOnThat?.item?.use === agreeOnThatUse
+      && hasConcreteAgreementTip
+  );
+
   const asFarAs = byId.get("cb-conversation-bridges-as-far-as-i-know");
   const notMyPoint = byId.get("cb-conversation-bridges-not-my-point");
   check(
