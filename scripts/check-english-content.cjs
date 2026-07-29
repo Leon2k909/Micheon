@@ -27,7 +27,13 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const { allPartBlueprints, buildBundledParts, buildTatoebaParts } = compiled.exports;
-const bundledParts = buildBundledParts();
+// Scan the union of both directions. Direction-specific packs (for example
+// English spelling for German speakers) do not exist in the default learn-de
+// bundle and would otherwise escape this content audit entirely.
+const bundledParts = {
+  ...buildBundledParts("learn-de"),
+  ...buildBundledParts("learn-en"),
+};
 const tatoebaParts = buildTatoebaParts(5_000);
 
 const englishKeys = new Set(["en", "shortEn", "fallbackEn", "exampleEn"]);

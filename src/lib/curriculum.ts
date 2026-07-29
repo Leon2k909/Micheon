@@ -27,6 +27,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part57",           // Talking about learning German (& other skills)
   "part141",          // Typing German characters on an English Windows keyboard
   "cb-conversation-repair",
+  "cb-english-confusables", // Core contractions and confusing spellings for German speakers learning English
   "cb-reactions",
   "cb-shortreplies",
   "part158",         // Everyday spoken glue: reactions, timing and keeping in touch
