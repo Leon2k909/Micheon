@@ -93,7 +93,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     ],
     phrases: [
       { de: "Ich gehe heute in die Stadt.", en: "I'm going into town today. / I am going to the city today.", use: "Straightforward present tense that reuses three of Part 1's own seed words at once (gehen, heute, die Stadt). Key point: \"in die Stadt\" is accusative because it's movement towards — \"in der Stadt\" (dative) would mean you're already there.", fr: "Je vais en ville aujourd'hui.", short: "Ich geh heute in die Stadt.", shortEn: "I'm going into town today. / I am going to the city today." , say: "sounds like: ish GAY-uh HOY-tuh in dee SHTAT — heute is 'hoy-tuh' (eu = oy), and Stadt starts 'sht'" },
-      { de: "Ich versteh nicht.",           en: "I do not understand.",    use: "Useful when confused",    fr: "Je ne comprends pas." , say: "sounds like: ish fer-SHTAY nish — the v is an f, the st is 'sht', and out loud it's 'versteh', not 'verstehe'" , long: "Ich verstehe nicht." },
+      { de: "Ich versteh nicht.",           en: "I don't understand. / I do not understand.",    use: "Useful when confused",    fr: "Je ne comprends pas." , say: "sounds like: ish fer-SHTAY nish — the v is an f, the st is 'sht', and out loud it's 'versteh', not 'verstehe'" , long: "Ich verstehe nicht." },
       { de: "Können Sie das wiederholen?",  en: "Can you repeat that?",    use: "Helpful in conversation", fr: "Pouvez-vous répéter ?" },
       { de: "Ich weiß nicht.", en: "I don't know. / I do not know.", use: "Core survival phrase, any register — the natural partner to Part 1's \"Ich verstehe nicht.\" Watch the irregular form: ich weiß, du weißt, er weiß (never \"ich weiße\").", fr: "Je ne sais pas.", short: "Weiß nicht." , say: "sounds like: ish VICE nisht — weiß rhymes with 'ice'; careful speech keeps the t, but in everyday German most people just say 'nich'" },
       { de: "Ich bin neu hier.", en: "I'm new here. / I'm new around here.", use: "sein plus a bare adjective — no article, no ending. Same shape as Ich bin müde, Ich bin fertig, Ich bin zufrieden.", fr: "Je suis nouveau ici." , say: "sounds like: ish bin NOY heer — eu is the 'oy' of boy, and the ch of ich is a soft hiss, not a k" },
@@ -144,7 +144,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
         { speaker: "A", de: "Entschuldigung, wo ist der Bahnhof?", en: "Excuse me, where is the station?", fr: "Excusez-moi, où est la gare ?" },
         { speaker: "B", de: "Geradeaus und dann links.",            en: "Straight ahead and then left.",    fr: "Tout droit et puis à gauche." },
         { speaker: "A", de: "Danke schön.",                        en: "Thank you very much.",             fr: "Merci beaucoup." },
-        { speaker: "B", de: "Gern geschehen.",                      en: "You are welcome.",                 fr: "Je vous en prie." },
+        { speaker: "B", de: "Gern geschehen.",                      en: "You're welcome.",                 fr: "Je vous en prie." },
       ]},
       { title: "In a Shop", lines: [
         { speaker: "A", de: "Kann ich Ihnen helfen?",               en: "Can I help you?",                  fr: "Puis-je vous aider ?" },
@@ -206,7 +206,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     phrases: [
       { de: "Ich bin heute beschäftigt.", en: "I am busy today.",         use: "Daily routine",          fr: "Je suis occupé aujourd'hui.", when: "When a friend suggests meeting up tonight and you want to decline without explaining." , say: "sounds like: ish bin HOY-tuh buh-SHEF-tisht — sch is 'sh', and the -igt ending is a soft '-icht' hiss, never '-ikt'" },
       { de: "Ich muss arbeiten.",          en: "I have to work.",          use: "Useful for plans",       fr: "Je dois travailler." },
-      { de: "Ich mach Frühstück.",      en: "I am making breakfast.",   use: "Home routine",           fr: "Je prépare le petit-déjeuner." , say: "sounds like: ish mach FRÜ-shtük — the -st- inside Frühstück is 'sht'; for ü, say 'ee' with your lips rounded" , long: "Ich mache Frühstück." },
+      { de: "Ich mach Frühstück.",      en: "I'm making breakfast. / I am making breakfast.",   use: "Home routine",           fr: "Je prépare le petit-déjeuner." , say: "sounds like: ish mach FRÜ-shtük — the -st- inside Frühstück is 'sht'; for ü, say 'ee' with your lips rounded" , long: "Ich mache Frühstück." },
       { de: "Ich gehe jetzt nach Hause.",  en: "I am going home now.",     use: "Common everyday phrase", fr: "Je rentre à la maison maintenant." },
       { de: "Wann musst du morgens aufstehen?", en: "What time do you have to get up in the mornings? / When do you have to be up?", use: "After a modal verb ('musst') the second verb stays whole and goes to the end — so here 'aufstehen' does not split.", fr: "Tu dois te lever à quelle heure le matin ?" , say: "sounds like: van MOOST doo MOR-g'ns OWF-shtay-uhn — the h in aufstehen is silent and most people clip the ending to 'shtayn'; at normal speed 'musst du' also runs together into MOOS-tuh ('musste'), the same way kannst du becomes kannste" },
       { de: "Warum bist du so früh wach?", en: "Why are you awake so early? / How come you're up so early?", use: "'wach sein' = to be awake (a state); 'aufwachen' = to wake up (the moment). Beginners mix these two up constantly.", fr: "Pourquoi tu es réveillé si tôt ?" },
@@ -260,9 +260,9 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     ],
     phrases: [
       { de: "Hast du später Zeit?",         en: "Do you have time later?",    use: "Making plans",        fr: "As-tu le temps plus tard ?" , say: "sounds like: hast doo SHPAY-tuh TSITE — später starts 'shp' and its -er is an 'uh', Zeit rhymes with kite; careful speech says 'hast du', in everyday German it runs together as 'HAS-tuh'" },
-      { de: "Das ist eine gute Idee.",        en: "That is a good idea.",       use: "Reacting positively", fr: "C'est une bonne idée." , say: "sounds like: das ist EYE-nuh GOO-tuh ee-DAY — Idee is stressed on the end: 'ee-DAY'" },
+      { de: "Das ist eine gute Idee.",        en: "That's a good idea. / That is a good idea.",       use: "Reacting positively", fr: "C'est une bonne idée." , say: "sounds like: das ist EYE-nuh GOO-tuh ee-DAY — Idee is stressed on the end: 'ee-DAY'" },
       { de: "Ich bin nächste Woche frei.",   en: "I am free next week.",       use: "Scheduling",          fr: "Je suis libre la semaine prochaine." , say: "sounds like: ish bin NEX-tuh VOCH-uh fry — Woche has the throaty ch, and frei rhymes with 'my'" },
-      { de: "Lass uns anfangen.",             en: "Let us start. / Let's start. / Let's begin.", use: "Casual, to one person (du) — group: Lasst uns anfangen; formal: Fangen wir an", fr: "Commençons.", when: "Everyone has arrived and is still chatting, and you are the one starting the meeting." },
+      { de: "Lass uns anfangen.",             en: "Let's start. / Let's begin. / Let us start.", use: "Casual, to one person (du) — group: Lasst uns anfangen; formal: Fangen wir an", fr: "Commençons.", when: "Everyone has arrived and is still chatting, and you are the one starting the meeting." },
       { de: "Am Wochenende fahren wir ans Meer.", en: "We're going to the seaside at the weekend. / We're driving to the coast this weekend.", use: "'ans' is short for 'an das'. Movement towards something takes the accusative: ans Meer fahren.", fr: "Ce week-end, on va à la mer." },
       { de: "Ich habe eine Idee.", en: "I've got an idea. / I have an idea.", fr: "J'ai une idée.", short: "Ich hab eine Idee.", shortEn: "I've got an idea. / I have an idea." },
       { de: "Ich finde die Idee gut.", en: "I like that idea. / I think that's a good idea.", use: "'etwas gut finden' is the everyday way to say you like an idea or a plan — much more common than 'mögen' here.", fr: "Je trouve que c'est une bonne idée." },
@@ -356,7 +356,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       ]},
     ],
     phrases: [
-      { de: "Ich geh links.",         en: "I am going left.",             use: "Direction phrase",       fr: "Je vais à gauche.", when: "At a corner where you and the person you walked with are heading different ways." , long: "Ich gehe nach links." },
+      { de: "Ich geh links.",         en: "I'm going left. / I am going left.",             use: "Direction phrase",       fr: "Je vais à gauche.", when: "At a corner where you and the person you walked with are heading different ways." , long: "Ich gehe nach links." },
       { de: "Der Zug ist schnell.",         en: "The train is fast.",           use: "Transport description",  fr: "Le train est rapide.", when: "Small talk with the passenger beside you as the train picks up speed." , say: "sounds like: dair TSOOK ist shnell — Zug starts 'ts' and ends in a k sound" },
       { de: "Es ist die zweite Straße links.", en: "It's the second street on the left. / Second turning on the left.", use: "Counting streets is how directions are actually given: die erste / zweite / dritte Straße links (or rechts).", fr: "C'est la deuxième rue à gauche.", short: "Zweite Straße links.", shortEn: "Second street on the left." },
       { de: "Nehmen Sie die erste Straße rechts.", en: "Take the first street on the right. / Take the first right.", use: "SIE form to a stranger. A German command puts the verb first: Nehmen Sie …", fr: "Prenez la première rue à droite.", short: "Erste Straße rechts.", shortEn: "First street on the right." },

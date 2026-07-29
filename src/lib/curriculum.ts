@@ -71,6 +71,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part68",          // Daily home talk: couples, flatmates & feelings
   "part69",          // People, opinions & reactions
   "part70",          // Keeping a conversation going
+  "cb-conversation-bridges", // Clarifying, rephrasing, turn-taking and nuanced spoken replies
   "part152",         // Telling a story clearly: sequence, turning points and outcomes
   "part71",          // Opinions, agreeing & disagreeing
   "part145",          // Linking ideas: cause, contrast and consequence

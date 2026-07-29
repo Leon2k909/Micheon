@@ -139,7 +139,7 @@ check(
 check("the nine expansion packs contain at least 348 authored phrases", newPhrases.length >= 348, `found ${newPhrases.length}`);
 check("the nine expansion packs contain at least 156 vocabulary seeds", totalSeeds >= 156, `found ${totalSeeds}`);
 check("the nine expansion packs contain at least twenty-nine dialogues", totalDialogues >= 29, `found ${totalDialogues}`);
-check("storytelling follows conversational practice", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("part70") + 1);
+check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
 check("tabletop language follows the social-gaming packs", CURRICULUM_ORDER.indexOf("part153") === CURRICULUM_ORDER.indexOf("part149") + 1);
