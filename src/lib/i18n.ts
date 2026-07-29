@@ -732,6 +732,7 @@ const DE: Record<string, string> = {
   "Open message history": "Nachrichtenverlauf öffnen",
   "Pet message history": "Nachrichtenverlauf des Maskottchens",
   "Pet messages": "Maskottchen-Nachrichten",
+  "Drag this header to detach and place it anywhere.": "Ziehe diese Leiste, um das Fenster zu lösen und frei zu platzieren.",
   "You can change answers to earlier questions.": "Du kannst Antworten auf frühere Fragen jederzeit ändern.",
   "Close history": "Verlauf schließen",
   "Dismiss message": "Nachricht entfernen",

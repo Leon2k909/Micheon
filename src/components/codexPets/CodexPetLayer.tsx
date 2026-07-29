@@ -411,6 +411,18 @@ export function CodexPetLayer() {
     pendingPetClick.current = null;
   }, []);
 
+  const currentPetHistoryAnchor = useCallback(() => ({
+    height: Math.max(1, petGroupVisibleBounds.bottom - petGroupVisibleBounds.top),
+    width: Math.max(1, petGroupVisibleBounds.right - petGroupVisibleBounds.left),
+    x: positionRef.current.x + petGroupVisibleBounds.left,
+    y: positionRef.current.y + petGroupVisibleBounds.top,
+  }), [
+    petGroupVisibleBounds.bottom,
+    petGroupVisibleBounds.left,
+    petGroupVisibleBounds.right,
+    petGroupVisibleBounds.top,
+  ]);
+
   const openHistory = useCallback(() => {
     if (isDesktopPetOverlay) {
       // History owns a second compact native surface. Never render it inside
@@ -418,12 +430,20 @@ export function CodexPetLayer() {
       // transparent compositor surface between two distant pieces of UI. Keep
       // the current bubble too: clearing it would reshape this native window
       // and make the mascot appear to blink out while history is opening.
-      desktop?.openPetHistory?.();
+      desktop?.openPetHistory?.(currentPetHistoryAnchor());
       return;
     }
     clearSpeech();
     setHistoryOpen(true);
-  }, [clearSpeech]);
+  }, [clearSpeech, currentPetHistoryAnchor]);
+
+  // Position changes are committed only when a drag finishes, so this is one
+  // cheap IPC update per drop (or resize/clamp), never one native-window move
+  // per cursor frame. Main ignores it after the history panel is detached.
+  useEffect(() => {
+    if (!isDesktopPetOverlay) return;
+    desktop?.setPetHistoryAnchor?.(currentPetHistoryAnchor());
+  }, [currentPetHistoryAnchor, position.x, position.y]);
 
   // A preference change during the short click gate must not leave history
   // queued to open the next time this (or another) pet becomes visible.

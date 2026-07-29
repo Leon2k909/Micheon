@@ -50,8 +50,14 @@ const openHistoryStart = layer.indexOf("const openHistory = useCallback(");
 const openHistoryEnd = layer.indexOf("// A preference change", openHistoryStart);
 const openHistory = layer.slice(openHistoryStart, openHistoryEnd);
 const createHistoryStart = main.indexOf("function createPetHistoryWindow()");
-const createHistoryEnd = main.indexOf("function openPetHistoryWindow()", createHistoryStart);
+const createHistoryEnd = main.indexOf("function openPetHistoryWindow(", createHistoryStart);
 const createHistoryWindow = main.slice(createHistoryStart, createHistoryEnd);
+const openNativeHistoryStart = main.indexOf("function openPetHistoryWindow(");
+const openNativeHistoryEnd = main.indexOf("function closePetHistoryWindow()", openNativeHistoryStart);
+const openNativeHistory = main.slice(openNativeHistoryStart, openNativeHistoryEnd);
+const syncAttachedHistoryStart = main.indexOf("function syncAttachedPetHistoryBounds()");
+const syncAttachedHistoryEnd = main.indexOf("function syncPetHistoryBounds()", syncAttachedHistoryStart);
+const syncAttachedHistory = main.slice(syncAttachedHistoryStart, syncAttachedHistoryEnd);
 
 check("pet pointer handler exists", pointerStart >= 0 && pointerEnd > pointerStart);
 check("pet click handler exists", clickStart >= 0 && clickEnd > clickStart);
@@ -115,8 +121,8 @@ check(
 check(
   "desktop history opens through its independent native bridge",
   openHistory.includes("if (isDesktopPetOverlay)")
-    && openHistory.includes("desktop?.openPetHistory?.();")
-    && openHistory.indexOf("desktop?.openPetHistory?.();") < openHistory.indexOf("setHistoryOpen(true);")
+    && openHistory.includes("desktop?.openPetHistory?.(currentPetHistoryAnchor());")
+    && openHistory.indexOf("desktop?.openPetHistory?.(currentPetHistoryAnchor());") < openHistory.indexOf("setHistoryOpen(true);")
 );
 check(
   "web history stays in-page while desktop history never mounts in the mascot renderer",
@@ -132,12 +138,21 @@ check(
 check(
   "desktop history opens before any speech clear can reshape or flash the mascot window",
   openHistory.indexOf("if (isDesktopPetOverlay)") >= 0
-    && openHistory.indexOf("desktop?.openPetHistory?.();") < openHistory.indexOf("clearSpeech();")
+    && openHistory.indexOf("desktop?.openPetHistory?.(currentPetHistoryAnchor());") < openHistory.indexOf("clearSpeech();")
 );
 check(
   "preload exposes separate history open and close IPC",
-  preload.includes('openPetHistory: () => ipcRenderer.send("pet-history:open")')
+  preload.includes('openPetHistory: (mascotBounds) => ipcRenderer.send("pet-history:open", mascotBounds)')
     && preload.includes('closePetHistory: () => ipcRenderer.send("pet-history:close")')
+    && preload.includes('ipcRenderer.send("pet-overlay:set-history-anchor", mascotBounds)')
+);
+check(
+  "history anchors to the visible mascot without cursor-frame IPC",
+  layer.includes("const currentPetHistoryAnchor = useCallback(() => ({")
+    && layer.includes("x: positionRef.current.x + petGroupVisibleBounds.left")
+    && layer.includes("y: positionRef.current.y + petGroupVisibleBounds.top")
+    && layer.includes("desktop?.setPetHistoryAnchor?.(currentPetHistoryAnchor());")
+    && layer.includes("Position changes are committed only when a drag finishes")
 );
 check(
   "main process creates a dedicated compact history window",
@@ -156,8 +171,24 @@ check(
 );
 check(
   "history IPC validates the sender before opening or closing",
-  /ipcMain\.on\("pet-history:open"[\s\S]*?eventCameFrom\(event, petWindow\)[\s\S]*?openPetHistoryWindow\(\)/.test(main)
+  /ipcMain\.on\("pet-history:open"[\s\S]*?eventCameFrom\(event, petWindow\)[\s\S]*?openPetHistoryWindow\(mascotBounds\)/.test(main)
     && /ipcMain\.on\("pet-history:close"[\s\S]*?eventCameFrom\(event, petHistoryWindow\)[\s\S]*?closePetHistoryWindow\(\)/.test(main)
+    && /ipcMain\.on\("pet-overlay:set-history-anchor"[\s\S]*?eventCameFrom\(event, petWindow\)/.test(main)
+);
+check(
+  "each history open reattaches beside the mascot instead of reusing a detached position",
+  main.includes("let petHistoryAttached = false;")
+    && openNativeHistory.includes("petHistoryAttached = true;")
+    && openNativeHistory.includes("initialPetHistoryBounds({ attached: true })")
+);
+check(
+  "an interactive native panel drag detaches history for the rest of the open session",
+  createHistoryWindow.includes('historyWindow.on("will-move", () => {')
+    && createHistoryWindow.includes("petHistoryAttached = false;")
+    && createHistoryWindow.includes("!petHistoryProgrammaticMove")
+    && createHistoryWindow.includes('historyWindow.on("move", () => {')
+    && createHistoryWindow.includes("rememberPetHistoryBounds(historyWindow)")
+    && syncAttachedHistory.includes("!petHistoryAttached")
 );
 check(
   "history has a lightweight application route",
@@ -211,4 +242,4 @@ if (failures) {
   process.exit(1);
 }
 
-console.log("\npet click, double-click and independent compact-history behaviour is guarded");
+console.log("\npet click, double-click and attachable compact-history behaviour is guarded");

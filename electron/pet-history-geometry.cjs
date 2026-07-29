@@ -102,10 +102,13 @@ function fitCandidate(area, direction, requested, mascot) {
 
 /**
  * Place the history beside the mascot without moving or covering the mascot.
- * A stored position wins only while it remains visible and non-overlapping.
- * Otherwise the panel may shrink to the largest usable region around the pet.
+ * A detached panel may reuse a visible, non-overlapping stored position. An
+ * attached panel deliberately ignores that stored position so opening history
+ * always reconnects it to the mascot. The panel may shrink to the largest
+ * usable region around the pet on compact displays.
  */
 function placePetHistoryBounds({
+  attached = false,
   gap = DEFAULT_GAP,
   height = DEFAULT_HISTORY_HEIGHT,
   margin = DEFAULT_MARGIN,
@@ -123,14 +126,15 @@ function placePetHistoryBounds({
     width: 1,
     height: 1,
   });
-  const requested = normalizeRect(storedBounds, {
+  const reusableStoredBounds = attached ? undefined : storedBounds;
+  const requested = normalizeRect(reusableStoredBounds, {
     x: mascot.x - width - gap,
     y: mascot.y + mascot.height - height,
     width,
     height,
   });
-  const clampedStored = storedBounds
-    ? clampHistoryBounds(storedBounds, workArea, { height, margin, width })
+  const clampedStored = reusableStoredBounds
+    ? clampHistoryBounds(reusableStoredBounds, workArea, { height, margin, width })
     : null;
   if (clampedStored && !rectanglesOverlap(clampedStored, mascot, gap)) {
     return clampedStored;

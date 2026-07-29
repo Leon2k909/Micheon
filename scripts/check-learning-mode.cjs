@@ -448,6 +448,7 @@ check(
 );
 
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
+const guidedStyles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsView.tsx"), "utf8");
 const dialogueStart = guidedSource.indexOf("function DialogueExercise(");
 const dialogueEnd = guidedSource.indexOf("// ── Main ──", dialogueStart);
@@ -466,6 +467,27 @@ check(
 check(
   "production grading never adds the Exam-only short hint as an answer",
   !String(matchLearningModeGermanAnswer).includes("phrase.short")
+);
+
+const shortcutHintRule = guidedStyles.match(/\.fs-hint kbd\s*\{([^}]*)\}/)?.[1] ?? "";
+check(
+  "multi-key lesson hints grow around their text instead of touching the border",
+  /width:\s*auto/.test(shortcutHintRule)
+    && /min-width:\s*22px/.test(shortcutHintRule)
+    && /padding:\s*0 6px/.test(shortcutHintRule)
+    && /white-space:\s*nowrap/.test(shortcutHintRule)
+);
+
+const missingWordPhaseRule = guidedStyles.match(/\.fs-missing-phase\s*\{([^}]*)\}/)?.[1] ?? "";
+const missingWordResultRule = guidedStyles.match(/\.fs-missing-result\s*\{([^}]*)\}/)?.[1] ?? "";
+check(
+  "missing-word options and feedback use one explicit non-overlapping layout flow",
+  guidedSource.includes('className="fs-missing-phase"')
+    && /display:\s*grid/.test(missingWordPhaseRule)
+    && /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(missingWordPhaseRule)
+    && /gap:\s*16px/.test(missingWordPhaseRule)
+    && /position:\s*relative/.test(missingWordResultRule)
+    && /width:\s*100%/.test(missingWordResultRule)
 );
 
 if (failures) {

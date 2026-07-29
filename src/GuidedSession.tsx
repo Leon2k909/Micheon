@@ -2720,7 +2720,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, transition: { duration: 0 } }}
-            className="fs-missing-phase space-y-4"
+            className="fs-missing-phase"
           >
             <p className="fs-missing-instruction">
               {ui("Listen to each option and choose the word that completes the sentence.")}
@@ -2780,6 +2780,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={cn("fs-missing-result fs-result", missingWordCorrect ? "is-good" : "is-bad")}
+                  aria-live="polite"
+                  role="status"
                 >
                   <strong>{ui(missingWordCorrect ? "That's it!" : "Not quite")}</strong>
                   <span>

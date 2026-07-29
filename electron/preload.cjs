@@ -35,8 +35,10 @@ contextBridge.exposeInMainWorld("germDesktop", {
     return () => ipcRenderer.removeListener("update:status", handler);
   },
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
-  openPetHistory: () => ipcRenderer.send("pet-history:open"),
+  openPetHistory: (mascotBounds) => ipcRenderer.send("pet-history:open", mascotBounds),
   closePetHistory: () => ipcRenderer.send("pet-history:close"),
+  setPetHistoryAnchor: (mascotBounds) =>
+    ipcRenderer.send("pet-overlay:set-history-anchor", mascotBounds),
   setPetOverlayInteractive: (interactive) => ipcRenderer.send("pet-overlay:set-interactive", Boolean(interactive)),
   petOverlayHitRegionsSupported: process.platform === "win32" || process.platform === "linux",
   getPetOverlayGeometry: () => ipcRenderer.sendSync("pet-overlay:get-geometry"),

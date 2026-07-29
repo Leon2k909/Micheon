@@ -26,6 +26,10 @@ let mainWindow = null;
 let petWindow = null;
 let petHistoryWindow = null;
 let petHistoryBounds = null;
+let petHistoryAnchorBounds = null;
+let petHistoryAttached = false;
+let petHistoryProgrammaticMove = false;
+let petHistoryProgrammaticMoveRevision = 0;
 let petHistoryDestroyTimer = null;
 let petHistoryShouldBeVisible = false;
 let petOverlayUsesShape = false;
@@ -719,17 +723,49 @@ function clampPetHistoryBounds(bounds) {
   });
 }
 
-function initialPetHistoryBounds() {
-  const mascot = petWindow && !petWindow.isDestroyed()
-    ? petWindow.getBounds()
-    : screen.getPrimaryDisplay().workArea;
-  const reference = petHistoryBounds && Number.isFinite(petHistoryBounds.x)
+function normalizePetHistoryAnchorBounds(bounds) {
+  const desktop = virtualDesktopBounds();
+  const rawX = Number(bounds?.x);
+  const rawY = Number(bounds?.y);
+  const rawWidth = Number(bounds?.width);
+  const rawHeight = Number(bounds?.height);
+  if (
+    !Number.isFinite(rawX)
+    || !Number.isFinite(rawY)
+    || !Number.isFinite(rawWidth)
+    || !Number.isFinite(rawHeight)
+    || rawWidth <= 0
+    || rawHeight <= 0
+  ) return null;
+  const width = Math.min(desktop.width, Math.max(1, Math.round(rawWidth)));
+  const height = Math.min(desktop.height, Math.max(1, Math.round(rawHeight)));
+  return {
+    x: Math.min(
+      Math.max(desktop.x, Math.round(desktop.x + rawX)),
+      desktop.x + desktop.width - width
+    ),
+    y: Math.min(
+      Math.max(desktop.y, Math.round(desktop.y + rawY)),
+      desktop.y + desktop.height - height
+    ),
+    width,
+    height,
+  };
+}
+
+function initialPetHistoryBounds({ attached = petHistoryAttached } = {}) {
+  const mascot = petHistoryAnchorBounds
+    ?? (petWindow && !petWindow.isDestroyed()
+      ? petWindow.getBounds()
+      : screen.getPrimaryDisplay().workArea);
+  const reference = !attached && petHistoryBounds && Number.isFinite(petHistoryBounds.x)
     && Number.isFinite(petHistoryBounds.y)
     ? petHistoryBounds
     : mascot;
   const workArea = screen.getDisplayMatching(reference)?.workArea
     ?? screen.getPrimaryDisplay().workArea;
   return placePetHistoryBounds({
+    attached,
     height: PET_HISTORY_WINDOW_HEIGHT,
     margin: PET_HISTORY_WINDOW_MARGIN,
     mascotBounds: mascot,
@@ -744,7 +780,46 @@ function rememberPetHistoryBounds(historyWindow = petHistoryWindow) {
   petHistoryBounds = clampPetHistoryBounds(historyWindow.getBounds());
 }
 
+function setPetHistoryBounds(historyWindow, bounds) {
+  const revision = ++petHistoryProgrammaticMoveRevision;
+  petHistoryProgrammaticMove = true;
+  try {
+    historyWindow.setBounds(bounds, false);
+  } finally {
+    // Some window managers report a programmatic setBounds through will-move.
+    // Keep the guard through this native event turn, then let a real header
+    // drag detach normally.
+    setImmediate(() => {
+      if (revision === petHistoryProgrammaticMoveRevision) {
+        petHistoryProgrammaticMove = false;
+      }
+    });
+  }
+}
+
+function syncAttachedPetHistoryBounds() {
+  if (
+    !petHistoryAttached
+    || !petHistoryShouldBeVisible
+    || !petHistoryWindow
+    || petHistoryWindow.isDestroyed()
+  ) return false;
+  const current = petHistoryWindow.getBounds();
+  const next = initialPetHistoryBounds({ attached: true });
+  petHistoryBounds = next;
+  if (
+    current.x !== next.x
+    || current.y !== next.y
+    || current.width !== next.width
+    || current.height !== next.height
+  ) {
+    setPetHistoryBounds(petHistoryWindow, next);
+  }
+  return true;
+}
+
 function syncPetHistoryBounds() {
+  if (syncAttachedPetHistoryBounds()) return;
   if (petHistoryWindow && !petHistoryWindow.isDestroyed()) {
     const current = petHistoryWindow.getBounds();
     const next = clampPetHistoryBounds(current);
@@ -755,7 +830,7 @@ function syncPetHistoryBounds() {
       || current.width !== next.width
       || current.height !== next.height
     ) {
-      petHistoryWindow.setBounds(next, false);
+      setPetHistoryBounds(petHistoryWindow, next);
     }
     return;
   }
@@ -792,6 +867,18 @@ function createPetHistoryWindow() {
   petHistoryWindow = historyWindow;
   historyWindow.setAlwaysOnTop(true, "floating");
   historyWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // `will-move` is emitted for an interactive OS drag (not our setBounds
+  // calls on Windows). The first real drag therefore detaches the panel, and
+  // every later move in this open session preserves the user's chosen place.
+  historyWindow.on("will-move", () => {
+    if (
+      petHistoryWindow === historyWindow
+      && petHistoryShouldBeVisible
+      && !petHistoryProgrammaticMove
+    ) {
+      petHistoryAttached = false;
+    }
+  });
   historyWindow.on("move", () => {
     if (petHistoryWindow === historyWindow) rememberPetHistoryBounds(historyWindow);
   });
@@ -806,6 +893,8 @@ function createPetHistoryWindow() {
     if (petHistoryWindow !== historyWindow) return;
     clearPetHistoryDestroyTimer();
     petHistoryShouldBeVisible = false;
+    petHistoryAttached = false;
+    petHistoryProgrammaticMove = false;
     petHistoryWindow = null;
   });
   void historyWindow.loadURL(`http://localhost:${PORT}/?pet-history=1`).catch((error) => {
@@ -814,7 +903,13 @@ function createPetHistoryWindow() {
   return historyWindow;
 }
 
-function openPetHistoryWindow() {
+function openPetHistoryWindow(anchorBounds) {
+  const nextAnchor = normalizePetHistoryAnchorBounds(anchorBounds);
+  if (nextAnchor) petHistoryAnchorBounds = nextAnchor;
+  // Every click starts connected to the mascot. A prior detached position is
+  // retained while that panel is open, but it must not make a later open look
+  // like an unrelated floating window.
+  petHistoryAttached = true;
   petHistoryShouldBeVisible = true;
   clearPetHistoryDestroyTimer();
   const historyWindow = createPetHistoryWindow();
@@ -824,12 +919,11 @@ function openPetHistoryWindow() {
       || petHistoryWindow !== historyWindow
       || historyWindow.isDestroyed()
     ) return;
-    // A saved panel position remains useful until the mascot is moved beneath
-    // it. Re-run collision-aware placement on every open so history can never
-    // cover the pet, including on compact laptop work areas.
-    const next = initialPetHistoryBounds();
+    // Use the visible sprite bounds supplied by the overlay, rather than the
+    // larger transparent compositor surface around it.
+    const next = initialPetHistoryBounds({ attached: true });
     petHistoryBounds = next;
-    historyWindow.setBounds(next, false);
+    setPetHistoryBounds(historyWindow, next);
     historyWindow.setAlwaysOnTop(true, "floating");
     historyWindow.show();
     historyWindow.focus();
@@ -1085,15 +1179,23 @@ ipcMain.on("pet-overlay:set-visible", (event, visible) => {
   setPetOverlayVisible(Boolean(visible));
 });
 
-ipcMain.on("pet-history:open", (event) => {
+ipcMain.on("pet-history:open", (event, mascotBounds) => {
   const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
   if (!trustedSender) return;
-  openPetHistoryWindow();
+  openPetHistoryWindow(mascotBounds);
 });
 
 ipcMain.on("pet-history:close", (event) => {
   if (!eventCameFrom(event, petHistoryWindow)) return;
   closePetHistoryWindow();
+});
+
+ipcMain.on("pet-overlay:set-history-anchor", (event, mascotBounds) => {
+  if (!eventCameFrom(event, petWindow)) return;
+  const next = normalizePetHistoryAnchorBounds(mascotBounds);
+  if (!next) return;
+  petHistoryAnchorBounds = next;
+  syncAttachedPetHistoryBounds();
 });
 
 ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {

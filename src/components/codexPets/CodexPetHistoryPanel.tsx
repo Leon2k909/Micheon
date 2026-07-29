@@ -466,7 +466,9 @@ export function CodexPetHistoryPanel({
           <div>
             <h2 className="text-sm font-black">{ui("Pet messages")}</h2>
             <p className="text-[11px] font-semibold text-[var(--text-3)]">
-              {ui("You can change answers to earlier questions.")}
+              {ui(nativeWindow
+                ? "Drag this header to detach and place it anywhere."
+                : "You can change answers to earlier questions.")}
             </p>
           </div>
         </div>
