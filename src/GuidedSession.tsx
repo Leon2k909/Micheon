@@ -15,6 +15,7 @@ import {
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
 import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
+import type { AnswerPerformance } from "@/lib/adaptivePractice";
 import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { matchLearningModeGermanAnswer } from "@/lib/learningMode";
 import {
@@ -4960,6 +4961,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const correctPraiseIndex = useRef(0);
   const retryPraiseIndex = useRef(0);
   const announcedComplete = useRef(false);
+  // Stage answers are collected in memory and flushed once when the sentence
+  // is left. Persisting every check would write localStorage (and wake every
+  // grades-updated listener) many times during one 16-stage route.
+  const answerPerformanceRef = useRef(new Map<string, AnswerPerformance>());
   const safeSteps = Array.isArray(steps) && steps.length > 0 ? steps : [{ type: "complete" }];
   const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
   const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
@@ -4985,7 +4990,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const inMatching = matchingActive && previewCards.length > 1;
   const inIntro = inPreview || inMatching;
 
-  const registerAnswer = (ok: boolean) => {
+  const registerAnswer = (ok: boolean, itemId?: string) => {
+    if (itemId) {
+      const current = answerPerformanceRef.current.get(itemId) ?? { attempts: 0, mistakes: 0 };
+      answerPerformanceRef.current.set(itemId, {
+        attempts: current.attempts + 1,
+        mistakes: current.mistakes + (ok ? 0 : 1),
+      });
+    }
     if (ok) {
       const n = comboRef.current + 1;
       comboRef.current = n;
@@ -5045,12 +5057,24 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   // exactly as it was.
   const leaveStep = (skipped: boolean) => {
     const current = safeSteps[index];
-    if (current) onAdvance?.(current, skipped);
+    const itemId = current?.type === "sentence" ? current.item?.id : undefined;
+    const performance = itemId ? answerPerformanceRef.current.get(itemId) : undefined;
+    if (current) onAdvance?.(current, skipped, performance);
+    if (itemId) answerPerformanceRef.current.delete(itemId);
     if (index < safeSteps.length - 1) setIndex(i => i + 1); else onComplete();
   };
   const next = () => leaveStep(false);
 
-  const handleCancel = () => onCancel(index);
+  const handleCancel = () => {
+    const current = safeSteps[index];
+    const itemId = current?.type === "sentence" ? current.item?.id : undefined;
+    const performance = itemId ? answerPerformanceRef.current.get(itemId) : undefined;
+    // Closing the lesson is not a successful recall, but genuine wrong attempts
+    // made before closing still belong to this sentence's difficulty history.
+    if (current) onAdvance?.(current, true, performance);
+    if (itemId) answerPerformanceRef.current.delete(itemId);
+    onCancel(index);
+  };
   const skipStep = () => {
     if (inIntro) return;
     petSpeak("No problem. Let's try the next one.", {
@@ -5155,7 +5179,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onNext={next} onSkip={skipStep} onAnswer={registerAnswer} />}
+                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={gradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (

@@ -31,8 +31,14 @@ import {
 import { uiIsGerman } from "@/lib/i18n";
 
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
+const desktopSurface = typeof window !== "undefined"
+  ? new URLSearchParams(window.location.search)
+  : null;
 const isDesktopPetOverlay = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
+  && desktopSurface?.get("pet-overlay") === "1";
+const isDesktopPetHistory = typeof window !== "undefined"
+  && desktopSurface?.get("pet-history") === "1";
+const isDesktopPetSurface = isDesktopPetOverlay || isDesktopPetHistory;
 const PET_HISTORY_KEY = "pet-message-history-v1";
 const PET_VISIBLE_KEYS_KEY = "gl-codex-pet-visible-v1";
 const MAX_PET_HISTORY = 200;
@@ -248,6 +254,9 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     };
     upsertHistory(message);
     showSpeech(message, options.durationMs);
+    // The history renderer may still announce an explicitly requested answer
+    // through the mascot. Only the mascot renderer itself suppresses forwarding
+    // to avoid echoing a message back to its own native window.
     if (desktop && !isDesktopPetOverlay) {
       desktop.sendPetOverlaySpeech({ message, options: { durationMs: options.durationMs } });
     }
@@ -428,6 +437,13 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   catalogRefreshRef.current = refresh;
 
   useEffect(() => {
+    // The history surface only needs the shared message store. Avoid loading
+    // and reloading the full pet catalogue whenever that small window opens or
+    // regains focus.
+    if (isDesktopPetHistory) {
+      setIsLoading(false);
+      return undefined;
+    }
     void refresh();
     const handleFocus = () => void refresh();
     const handleVisibility = () => {
@@ -538,7 +554,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   // that resolves to the same pet no longer counts as a change.
   const pushedOverlayVisible = useRef<boolean | null>(null);
   useEffect(() => {
-    if (!desktop || isDesktopPetOverlay || isLoading) return;
+    if (!desktop || isDesktopPetSurface || isLoading) return;
     const shouldShow = Boolean(selectedPet);
     if (pushedOverlayVisible.current === shouldShow) return;
     pushedOverlayVisible.current = shouldShow;

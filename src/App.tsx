@@ -6,6 +6,7 @@ import { applyStoredThemePreferences, getTheme, watchStoredThemePreferences } fr
 import { MicheonLogo } from "./components/MicheonLogo";
 import { UpdateBanner } from "./components/UpdateBanner";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
+import { CodexPetHistoryWindow } from "./components/codexPets/CodexPetHistoryWindow";
 import { CodexPetProvider } from "./components/codexPets/CodexPetProvider";
 import { isElectronApp } from "./lib/platform";
 import { DIRECTION_CHANGE_EVENT } from "./lib/direction";
@@ -17,11 +18,20 @@ import { DIRECTION_CHANGE_EVENT } from "./lib/direction";
 const GermanLearningLab = lazy(() => import("./german_learning_lab"));
 
 export default function App() {
-  const isPetOverlay = new URLSearchParams(window.location.search).get("pet-overlay") === "1";
+  const search = new URLSearchParams(window.location.search);
+  const isPetOverlay = search.get("pet-overlay") === "1";
+  const isPetHistory = search.get("pet-history") === "1";
   if (isPetOverlay) {
     return (
       <CodexPetProvider>
         <CodexPetLayer />
+      </CodexPetProvider>
+    );
+  }
+  if (isPetHistory) {
+    return (
+      <CodexPetProvider>
+        <CodexPetHistoryWindow />
       </CodexPetProvider>
     );
   }

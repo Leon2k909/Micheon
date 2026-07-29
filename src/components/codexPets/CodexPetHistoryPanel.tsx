@@ -124,6 +124,7 @@ function selectContents(element: HTMLElement | null) {
 
 export function CodexPetHistoryPanel({
   history,
+  nativeWindow = false,
   onAnswer,
   onClose,
   onDismiss,
@@ -132,6 +133,7 @@ export function CodexPetHistoryPanel({
   viewportWidth,
 }: {
   history: CodexPetSpeech[];
+  nativeWindow?: boolean;
   onAnswer: (messageId: string, answer: CodexPetAnswer, announce?: boolean) => void;
   onClose: () => void;
   onDismiss: (messageId: string) => void;
@@ -144,7 +146,9 @@ export function CodexPetHistoryPanel({
     width: Number.isFinite(viewportWidth) ? Number(viewportWidth) : viewportSize().width,
   };
   const messages = [...history].reverse();
-  const [position, setPosition] = useState(() => initialPanelPosition(requestedViewport));
+  const [position, setPosition] = useState(() => nativeWindow
+    ? { x: PANEL_MARGIN, y: PANEL_MARGIN }
+    : initialPanelPosition(requestedViewport));
   const [viewport, setViewport] = useState(requestedViewport);
   const [contextMenu, setContextMenu] = useState<HistoryContextMenu | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -161,10 +165,11 @@ export function CodexPetHistoryPanel({
   }, [dragging, position]);
 
   useEffect(() => {
+    if (nativeWindow) return undefined;
     if (!desktop?.setPetOverlayKeyboardInteractive) return undefined;
     desktop.setPetOverlayKeyboardInteractive(true);
     return () => desktop.setPetOverlayKeyboardInteractive(false);
-  }, []);
+  }, [nativeWindow]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -172,11 +177,13 @@ export function CodexPetHistoryPanel({
       const nextViewport = Number.isFinite(viewportHeight) && Number.isFinite(viewportWidth)
         ? { height: Number(viewportHeight), width: Number(viewportWidth) }
         : viewportSize();
-      const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
+      const nextPosition = nativeWindow
+        ? { x: PANEL_MARGIN, y: PANEL_MARGIN }
+        : clampPanelPosition(positionRef.current, nextViewport);
       positionRef.current = nextPosition;
       setViewport(nextViewport);
       setPosition(nextPosition);
-      savePanelPosition(nextPosition);
+      if (!nativeWindow) savePanelPosition(nextPosition);
       setContextMenu(null);
     };
     const handlePointerDown = () => setContextMenu(null);
@@ -203,23 +210,26 @@ export function CodexPetHistoryPanel({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [contextMenu, onClose, viewportHeight, viewportWidth]);
+  }, [contextMenu, nativeWindow, onClose, viewportHeight, viewportWidth]);
 
   useEffect(() => {
     if (dragState.current) return;
     const nextViewport = Number.isFinite(viewportHeight) && Number.isFinite(viewportWidth)
       ? { height: Number(viewportHeight), width: Number(viewportWidth) }
       : viewportSize();
-    const nextPosition = clampPanelPosition(positionRef.current, nextViewport);
+    const nextPosition = nativeWindow
+      ? { x: PANEL_MARGIN, y: PANEL_MARGIN }
+      : clampPanelPosition(positionRef.current, nextViewport);
     positionRef.current = nextPosition;
     setViewport(nextViewport);
     setPosition(nextPosition);
-    savePanelPosition(nextPosition);
-  }, [dragging, viewportHeight, viewportWidth]);
+    if (!nativeWindow) savePanelPosition(nextPosition);
+  }, [dragging, nativeWindow, viewportHeight, viewportWidth]);
 
   useEffect(() => {
+    if (nativeWindow) return;
     onGeometryChange?.();
-  }, [onGeometryChange, position.x, position.y, size.height, size.width]);
+  }, [nativeWindow, onGeometryChange, position.x, position.y, size.height, size.width]);
 
   const movePanelFromPoint = (drag: DragState, pointerX: number, pointerY: number) => {
     if (drag.startX === null || drag.startY === null) {
@@ -438,12 +448,15 @@ export function CodexPetHistoryPanel({
       }}
     >
       <header
-        className="flex shrink-0 cursor-move touch-none select-none items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3"
-        onLostPointerCapture={handleLostPointerCapture}
-        onPointerCancel={finishDrag}
-        onPointerDown={startDrag}
-        onPointerMove={movePanel}
-        onPointerUp={finishDrag}
+        className={cn(
+          "flex shrink-0 cursor-move touch-none select-none items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3",
+          nativeWindow && "pet-history-window-drag"
+        )}
+        onLostPointerCapture={nativeWindow ? undefined : handleLostPointerCapture}
+        onPointerCancel={nativeWindow ? undefined : finishDrag}
+        onPointerDown={nativeWindow ? undefined : startDrag}
+        onPointerMove={nativeWindow ? undefined : movePanel}
+        onPointerUp={nativeWindow ? undefined : finishDrag}
         title={ui("Drag")}
       >
         <div className="flex items-center gap-3">
@@ -459,7 +472,7 @@ export function CodexPetHistoryPanel({
         </div>
         <button
           aria-label={ui("Close history")}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+          className="pet-history-window-no-drag flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
           onClick={onClose}
           type="button"
         >

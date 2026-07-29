@@ -3,7 +3,7 @@ import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star, Check, Minu
 import { cn } from "@/lib/utils";
 import { CustomContentEditor } from "@/components/lab/CustomContentEditor";
 import { buildCatalog, type CatalogItem } from "@/session";
-import { loadGradeStore, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
+import { loadGradeStore, progressEntryForId, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
@@ -407,8 +407,9 @@ export function VocabTracker({
   // success at a time, so the learner can correct the tracker on the spot.
   const applyStrength = (item: CatalogItem, level: number) => {
     const store = loadGradeStore(user);
+    const prior = progressEntryForId(store, item.id, item.aliases)?.record;
     for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
-    const rec = setStrengthLevel(level);
+    const rec = setStrengthLevel(level, Date.now(), prior);
     if (rec) store[item.id] = rec; else delete store[item.id];
     saveGradeStore(store, user);
     setGrades({ ...store });
@@ -417,8 +418,9 @@ export function VocabTracker({
   // Above Mastered: mark a word so easy it should never be reviewed again.
   const applyPermanent = (item: CatalogItem) => {
     const store = loadGradeStore(user);
+    const prior = progressEntryForId(store, item.id, item.aliases)?.record;
     for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
-    store[item.id] = recordPermanent();
+    store[item.id] = recordPermanent(Date.now(), prior);
     saveGradeStore(store, user);
     setGrades({ ...store });
   };
@@ -436,8 +438,9 @@ export function VocabTracker({
     if (targets.length === 0) return;
     const store = loadGradeStore(user);
     for (const item of targets) {
+      const prior = progressEntryForId(store, item.id, item.aliases)?.record;
       for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
-      store[item.id] = recordPermanent();
+      store[item.id] = recordPermanent(Date.now(), prior);
     }
     saveGradeStore(store, user);
     setGrades({ ...store });

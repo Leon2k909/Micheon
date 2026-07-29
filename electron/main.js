@@ -11,8 +11,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
 import { startServer } from "../server/index.js";
+import petHistoryGeometry from "./pet-history-geometry.cjs";
 
 const { autoUpdater } = electronUpdater;
+const { clampHistoryBounds, placePetHistoryBounds } = petHistoryGeometry;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +24,10 @@ const PORT = process.env.GERM_PORT || 41730;
 
 let mainWindow = null;
 let petWindow = null;
+let petHistoryWindow = null;
+let petHistoryBounds = null;
+let petHistoryDestroyTimer = null;
+let petHistoryShouldBeVisible = false;
 let petOverlayUsesShape = false;
 let petOverlayDragging = false;
 let petOverlayDragDesktopBounds = null;
@@ -45,6 +51,13 @@ const PET_OVERLAY_RECENTER_INSET = 48;
 const PET_OVERLAY_INITIAL_WIDTH = 480;
 const PET_OVERLAY_INITIAL_HEIGHT = 560;
 const PET_OVERLAY_CURSOR_INTERVAL_MS = 16;
+// The history is its own deliberately small compositor surface. Its React
+// panel is 620x560 with eight pixels of transparent breathing room per side.
+// Never merge these bounds with the mascot overlay: the empty union between a
+// moved panel and pet was the source of the former desktop-wide GPU cost.
+const PET_HISTORY_WINDOW_WIDTH = 636;
+const PET_HISTORY_WINDOW_HEIGHT = 576;
+const PET_HISTORY_WINDOW_MARGIN = 8;
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port or create another overlay.
@@ -688,8 +701,170 @@ function createPetOverlayWindow() {
   return overlay;
 }
 
+function clearPetHistoryDestroyTimer() {
+  if (petHistoryDestroyTimer) clearTimeout(petHistoryDestroyTimer);
+  petHistoryDestroyTimer = null;
+}
+
+function clampPetHistoryBounds(bounds) {
+  const primaryWorkArea = screen.getPrimaryDisplay().workArea;
+  const reference = bounds && Number.isFinite(bounds.x) && Number.isFinite(bounds.y)
+    ? bounds
+    : primaryWorkArea;
+  const workArea = screen.getDisplayMatching(reference)?.workArea ?? primaryWorkArea;
+  return clampHistoryBounds(bounds, workArea, {
+    height: PET_HISTORY_WINDOW_HEIGHT,
+    margin: PET_HISTORY_WINDOW_MARGIN,
+    width: PET_HISTORY_WINDOW_WIDTH,
+  });
+}
+
+function initialPetHistoryBounds() {
+  const mascot = petWindow && !petWindow.isDestroyed()
+    ? petWindow.getBounds()
+    : screen.getPrimaryDisplay().workArea;
+  const reference = petHistoryBounds && Number.isFinite(petHistoryBounds.x)
+    && Number.isFinite(petHistoryBounds.y)
+    ? petHistoryBounds
+    : mascot;
+  const workArea = screen.getDisplayMatching(reference)?.workArea
+    ?? screen.getPrimaryDisplay().workArea;
+  return placePetHistoryBounds({
+    height: PET_HISTORY_WINDOW_HEIGHT,
+    margin: PET_HISTORY_WINDOW_MARGIN,
+    mascotBounds: mascot,
+    storedBounds: petHistoryBounds,
+    width: PET_HISTORY_WINDOW_WIDTH,
+    workArea,
+  });
+}
+
+function rememberPetHistoryBounds(historyWindow = petHistoryWindow) {
+  if (!historyWindow || historyWindow.isDestroyed()) return;
+  petHistoryBounds = clampPetHistoryBounds(historyWindow.getBounds());
+}
+
+function syncPetHistoryBounds() {
+  if (petHistoryWindow && !petHistoryWindow.isDestroyed()) {
+    const current = petHistoryWindow.getBounds();
+    const next = clampPetHistoryBounds(current);
+    petHistoryBounds = next;
+    if (
+      current.x !== next.x
+      || current.y !== next.y
+      || current.width !== next.width
+      || current.height !== next.height
+    ) {
+      petHistoryWindow.setBounds(next, false);
+    }
+    return;
+  }
+  if (petHistoryBounds) petHistoryBounds = clampPetHistoryBounds(petHistoryBounds);
+}
+
+function createPetHistoryWindow() {
+  if (petHistoryWindow && !petHistoryWindow.isDestroyed()) return petHistoryWindow;
+  const initialBounds = initialPetHistoryBounds();
+  const historyWindow = new BrowserWindow({
+    ...initialBounds,
+    show: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: "#00000000",
+    alwaysOnTop: true,
+    focusable: true,
+    hasShadow: false,
+    movable: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    title: "Micheon pet messages",
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      backgroundThrottling: true,
+      preload: path.join(__dirname, "preload.cjs"),
+    },
+  });
+
+  petHistoryWindow = historyWindow;
+  historyWindow.setAlwaysOnTop(true, "floating");
+  historyWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  historyWindow.on("move", () => {
+    if (petHistoryWindow === historyWindow) rememberPetHistoryBounds(historyWindow);
+  });
+  historyWindow.webContents.on("did-navigate", () => pinPetOverlayZoom(historyWindow.webContents));
+  historyWindow.webContents.on("zoom-changed", () => pinPetOverlayZoom(historyWindow.webContents));
+  historyWindow.webContents.on("did-finish-load", () => {
+    if (petHistoryWindow !== historyWindow || historyWindow.isDestroyed()) return;
+    pinPetOverlayZoom(historyWindow.webContents);
+  });
+  historyWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  historyWindow.on("closed", () => {
+    if (petHistoryWindow !== historyWindow) return;
+    clearPetHistoryDestroyTimer();
+    petHistoryShouldBeVisible = false;
+    petHistoryWindow = null;
+  });
+  void historyWindow.loadURL(`http://localhost:${PORT}/?pet-history=1`).catch((error) => {
+    console.error("[pet] unable to load message history:", error?.message ?? error);
+  });
+  return historyWindow;
+}
+
+function openPetHistoryWindow() {
+  petHistoryShouldBeVisible = true;
+  clearPetHistoryDestroyTimer();
+  const historyWindow = createPetHistoryWindow();
+  const reveal = () => {
+    if (
+      !petHistoryShouldBeVisible
+      || petHistoryWindow !== historyWindow
+      || historyWindow.isDestroyed()
+    ) return;
+    // A saved panel position remains useful until the mascot is moved beneath
+    // it. Re-run collision-aware placement on every open so history can never
+    // cover the pet, including on compact laptop work areas.
+    const next = initialPetHistoryBounds();
+    petHistoryBounds = next;
+    historyWindow.setBounds(next, false);
+    historyWindow.setAlwaysOnTop(true, "floating");
+    historyWindow.show();
+    historyWindow.focus();
+  };
+  if (historyWindow.webContents.isLoading()) historyWindow.once("ready-to-show", reveal);
+  else reveal();
+}
+
+function closePetHistoryWindow() {
+  petHistoryShouldBeVisible = false;
+  if (!petHistoryWindow || petHistoryWindow.isDestroyed()) return;
+  rememberPetHistoryBounds();
+  petHistoryWindow.hide();
+  clearPetHistoryDestroyTimer();
+  petHistoryDestroyTimer = setTimeout(() => {
+    petHistoryDestroyTimer = null;
+    if (
+      petHistoryWindow
+      && !petHistoryWindow.isDestroyed()
+      && !petHistoryWindow.isVisible()
+    ) {
+      petHistoryWindow.destroy();
+    }
+  }, 1000);
+  petHistoryDestroyTimer.unref?.();
+}
+
+function syncPetDesktopSurfaces() {
+  syncPetOverlayBounds();
+  syncPetHistoryBounds();
+}
+
 function setPetOverlayVisible(visible) {
   if (!visible) {
+    closePetHistoryWindow();
     finishPetOverlayDrag();
     finishPetOverlayGeometryTransition();
     clearPetOverlayLoadTimer();
@@ -789,6 +964,8 @@ async function createWindow() {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+    clearPetHistoryDestroyTimer();
+    if (petHistoryWindow && !petHistoryWindow.isDestroyed()) petHistoryWindow.destroy();
     if (petWindow && !petWindow.isDestroyed()) petWindow.destroy();
   });
 }
@@ -906,6 +1083,17 @@ ipcMain.on("pet-overlay:set-visible", (event, visible) => {
   const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
   if (!trustedSender) return;
   setPetOverlayVisible(Boolean(visible));
+});
+
+ipcMain.on("pet-history:open", (event) => {
+  const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
+  if (!trustedSender) return;
+  openPetHistoryWindow();
+});
+
+ipcMain.on("pet-history:close", (event) => {
+  if (!eventCameFrom(event, petHistoryWindow)) return;
+  closePetHistoryWindow();
 });
 
 ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
@@ -1058,7 +1246,9 @@ ipcMain.on("pet-overlay:wheel", (event, deltaX, deltaY) => {
 });
 
 ipcMain.on("pet-overlay:speak", (event, payload) => {
-  if (!eventCameFrom(event, mainWindow) || !petWindow || petWindow.isDestroyed()) return;
+  const trustedSender = eventCameFrom(event, mainWindow)
+    || eventCameFrom(event, petHistoryWindow);
+  if (!trustedSender || !petWindow || petWindow.isDestroyed()) return;
   const message = payload?.message;
   if (!message || typeof message.id !== "string" || typeof message.text !== "string") return;
   const text = message.text.trim().slice(0, 240);
@@ -1077,6 +1267,7 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
               ? question.aliases.filter((value) => typeof value === "string").slice(0, 12)
               : [],
             answerLanguage: question.answerLanguage === "en" ? "en" : "de",
+            confirm: question.confirm === true,
             de: typeof question.de === "string" ? question.de.slice(0, 180) : "",
             en: typeof question.en === "string" ? question.en.slice(0, 180) : "",
             itemId: question.itemId.slice(0, 180),
@@ -1098,9 +1289,9 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
 if (hasSingleInstanceLock) {
   app.whenReady().then(async () => {
     await createWindow();
-    screen.on("display-added", syncPetOverlayBounds);
-    screen.on("display-removed", syncPetOverlayBounds);
-    screen.on("display-metrics-changed", syncPetOverlayBounds);
+    screen.on("display-added", syncPetDesktopSurfaces);
+    screen.on("display-removed", syncPetDesktopSurfaces);
+    screen.on("display-metrics-changed", syncPetDesktopSurfaces);
     setupAutoUpdate();
   });
 }

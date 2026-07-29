@@ -16,6 +16,10 @@ if (new URLSearchParams(window.location.search).get("pet-overlay") === "1") {
   document.documentElement.classList.add("is-pet-overlay");
   document.title = "Micheon mascot";
 }
+if (new URLSearchParams(window.location.search).get("pet-history") === "1") {
+  document.documentElement.classList.add("is-pet-history");
+  document.title = "Micheon pet messages";
+}
 
 const container = document.getElementById("root");
 if (container) {

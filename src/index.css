@@ -104,7 +104,10 @@ html, body {
 
 html.is-pet-overlay,
 html.is-pet-overlay body,
-html.is-pet-overlay #root {
+html.is-pet-overlay #root,
+html.is-pet-history,
+html.is-pet-history body,
+html.is-pet-history #root {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -115,6 +118,23 @@ html.is-pet-overlay #root {
 html.is-pet-overlay {
   --titlebar-h: 0px;
   --app-h: 100dvh;
+}
+
+html.is-pet-history {
+  --titlebar-h: 0px;
+  --app-h: 100dvh;
+}
+
+/* The history renderer owns a small frameless native window. Only its header
+   moves that window; the body remains selectable and every control remains
+   clickable/copyable. */
+.pet-history-window-drag {
+  -webkit-app-region: drag;
+}
+
+.pet-history-window-drag button,
+.pet-history-window-no-drag {
+  -webkit-app-region: no-drag;
 }
 
 button, input, textarea, select { font: inherit; }

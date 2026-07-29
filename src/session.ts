@@ -5,6 +5,11 @@ import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { getLearningMode, phraseForLearningMode } from "@/lib/learningMode";
 import { matchingVisibleKeys, takeMatchingSafe } from "@/lib/germanTextMatch";
+import {
+  adaptiveRepeatPriority,
+  isAdaptiveReinforcementEligible,
+  isAttemptedPracticeEligible,
+} from "@/lib/adaptivePractice";
 
 export const EX = {
   SENTENCE: "sentence",   // read + listen + speak + type a full sentence
@@ -101,15 +106,54 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     // slip back in on the next session.
     usedSentences.add(key);
     const rec = findRecord(reviewState, id, aliases);
+    const progressRecord = findProgressRecord(reviewState, id, aliases);
+    const item = {
+      id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage,
+      short, when, say, long, group, level: part.level, mastery: masteryOf(progressRecord),
+    };
+    if (isAttemptedPracticeEligible(progressRecord)) {
+      // Reaching and answering a sentence makes it familiar, even when the
+      // learner skips before earning a grade. Bring it back quickly without
+      // spending one of the lesson's three genuinely new slots.
+      queue.push({
+        type: EX.SENTENCE,
+        review: true,
+        reviewReason: "attempted",
+        optionalPractice: true,
+        repeatPriority: adaptiveRepeatPriority(progressRecord, item),
+        interval: 0,
+        item,
+      });
+      return;
+    }
+    if (rec?.lastGrade === "struggle") {
+      queue.push({ type: EX.SENTENCE, review: true, reviewReason: "struggle", interval: 0, item });
+      return;
+    }
     if (rec?.lastGrade === "know") {
-      if (!isDueForReview(rec)) return;                 // still remembered — skip
+      if (!isDueForReview(rec)) {
+        if (!isAdaptiveReinforcementEligible(rec, item)) return;
+        // Difficult sentences and phrases with repeated wrong attempts can use
+        // a familiar slot before their formal SRS date. This is optional
+        // reinforcement only: it never moves the mastery due date.
+        queue.push({
+          type: EX.SENTENCE,
+          review: true,
+          reviewReason: "adaptive",
+          reinforcement: true,
+          repeatPriority: adaptiveRepeatPriority(rec, item),
+          interval: rec.intervalDays ?? 1,
+          item,
+        });
+        return;
+      }
       // interval = how many days it's currently spaced by (1 = learned ~a day
       // ago and weakest; larger = higher mastery). The review picker uses it to
       // favour recent phrases and mix in one older one.
-      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item: { id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage, short, when, say, long, group, mastery: masteryOf(rec) } });
+      queue.push({ type: EX.SENTENCE, review: true, overdue: overdueBy(rec), interval: rec.intervalDays ?? 1, item });
       return;                                            // due — back in as a review
     }
-    queue.push({ type: EX.SENTENCE, item: { id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage, short, when, say, long, group, mastery: masteryOf(rec) } });
+    queue.push({ type: EX.SENTENCE, item });
   };
 
   // ── Vocab words ──────────────────────────────────────────────
@@ -161,20 +205,44 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       .filter((line: any, li: number) => {
         if (!hasSentenceShape(line.de)) return false;
         const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line?.de ?? ""}`;
-        return !isKnownItem(reviewState, line.id, [legacyDialogueId]);
+        if (!isKnownItem(reviewState, line.id, [legacyDialogueId])) return true;
+        const rec = findRecord(reviewState, line.id, [legacyDialogueId]);
+        return isAdaptiveReinforcementEligible(rec, { ...line, level: part.level });
       });
-    if (usable.length >= 2) {
+    const newDialogueLines = usable.filter((line: any) => {
+      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line?.de ?? ""}`;
+      const progressRecord = findProgressRecord(reviewState, line.id, [legacyDialogueId]);
+      // Dialogue capstones only contain genuinely unseen lines. Attempted,
+      // struggling and adaptive-known lines still receive their individual
+      // sentence drill, but completing a fresh dialogue must not accidentally
+      // promote their spaced-review grade.
+      return !progressRecord?.lastGrade && !isAttemptedPracticeEligible(progressRecord);
+    });
+    if (newDialogueLines.length >= 2) {
       // First show the full dialogue for context
-      queue.push({ type: EX.DIALOGUE, dialogue: { ...d, coachingLanguage, lines: usable } });
-      // Then drill each line as a sentence exercise
-      usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use, undefined, line.short, line.when, line.say, line.long, line.group);
-      });
-    } else {
-      usable.forEach((line: any) => {
-        addSentence(line.de, line.en, line.id, [`${partKey}-dlg-${di}-${line.originalIndex}`], line.fr, line.use, undefined, line.short, line.when, line.say, line.long, line.group);
-      });
+      // A difficult known line may return as an individual adaptive review,
+      // but it must not be smuggled into a fresh-dialogue capstone: completing
+      // that dialogue would otherwise advance its formal SRS schedule.
+      queue.push({ type: EX.DIALOGUE, dialogue: { ...d, coachingLanguage, lines: newDialogueLines } });
     }
+    // Then drill each new or adaptively selected line as a sentence exercise.
+    usable.forEach((line: any) => {
+      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line?.de ?? ""}`;
+      addSentence(
+        line.de,
+        line.en,
+        line.id,
+        [`${partKey}-dlg-${di}-${line.originalIndex}`, legacyDialogueId],
+        line.fr,
+        line.use,
+        undefined,
+        line.short,
+        line.when,
+        line.say,
+        line.long,
+        line.group
+      );
+    });
   });
 
   // ── New phrases: 3 per lesson, most common first, no in-lesson repeat ──
@@ -190,9 +258,6 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const freshSentences = pickFresh(
     shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
       .sort((a, b) => {
-        const aStruggling = findRecord(reviewState, a.item?.id)?.lastGrade === "struggle";
-        const bStruggling = findRecord(reviewState, b.item?.id)?.lastGrade === "struggle";
-        if (aStruggling !== bStruggling) return aStruggling ? -1 : 1;
         return frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup);
       }),
     NEW_PER_LESSON,
@@ -251,6 +316,12 @@ export function isReinforcementEligible(record: any, now = Date.now()): boolean 
     && intervalDays <= 3;
 }
 
+function findProgressRecord(reviewState: any, itemId: string, aliases: string[] = []) {
+  const ids = [itemId, ...aliases];
+  const graded = ids.map((id) => reviewState?.[id]).find((rec) => rec?.lastGrade);
+  return graded ?? ids.map((id) => reviewState?.[id]).find((rec) => rec && typeof rec === "object");
+}
+
 /**
  * When a selected phrase belongs to a related set, keep the rest of the lesson
  * in that set where possible. This teaches contrasts such as Bis gleich / Bis
@@ -288,13 +359,24 @@ export function pickReviews(
   n: number,
   blockedKeys: Iterable<string> = []
 ): any[] {
-  const weakestFirst = [...due].sort((a, b) => (a.interval ?? 1) - (b.interval ?? 1) || (b.overdue ?? 0) - (a.overdue ?? 0));
-  const uniqueWeakest = takeMatchingSafe(
+  const isOptionalFamiliar = (step: any) => Boolean(
+    step?.reinforcement || step?.optionalPractice || step?.reviewReason === "attempted"
+  );
+  const weakestFirst = [...due].sort((a, b) =>
+    Number(isOptionalFamiliar(a)) - Number(isOptionalFamiliar(b))
+    || (a.interval ?? 1) - (b.interval ?? 1)
+    || (b.repeatPriority ?? 0) - (a.repeatPriority ?? 0)
+    || (b.overdue ?? 0) - (a.overdue ?? 0)
+  );
+  const uniquePool = takeMatchingSafe(
     weakestFirst,
     weakestFirst.length,
     matchingPairForStep,
     blockedKeys
   );
+  // Optional adaptive/attempted reps never displace formal due reviews.
+  const formalReviews = uniquePool.filter((step) => !isOptionalFamiliar(step));
+  const uniqueWeakest = formalReviews.length >= n ? formalReviews : uniquePool;
   if (uniqueWeakest.length <= n) return uniqueWeakest;
   
   const firstGroup = uniqueWeakest[0]?.item?.group;
@@ -316,13 +398,15 @@ export function pickReviews(
   return picks.slice(0, n);
 }
 
-/** Weakest first, then whichever phrase has gone longest without an optional rep. */
-export function rankReinforcementCandidates<T extends { successes: number; lastPractised: number; index: number }>(
+/** Urgent attempts first; within each kind, rotate the least-recently seen. */
+export function rankReinforcementCandidates<T extends { successes: number; lastPractised: number; index: number; practiceUrgency?: number; repeatPriority?: number }>(
   candidates: T[]
 ): T[] {
   return [...candidates].sort((a, b) =>
-    a.successes - b.successes
+    (b.practiceUrgency ?? 0) - (a.practiceUrgency ?? 0)
     || a.lastPractised - b.lastPractised
+    || (b.repeatPriority ?? 0) - (a.repeatPriority ?? 0)
+    || a.successes - b.successes
     || a.index - b.index
   );
 }

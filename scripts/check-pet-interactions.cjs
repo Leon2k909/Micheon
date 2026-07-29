@@ -6,6 +6,21 @@ const layer = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetLayer.tsx"),
   "utf8"
 );
+const panel = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetHistoryPanel.tsx"),
+  "utf8"
+);
+const historyWindow = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetHistoryWindow.tsx"),
+  "utf8"
+);
+const provider = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
+  "utf8"
+);
+const app = fs.readFileSync(path.join(root, "src/App.tsx"), "utf8");
+const main = fs.readFileSync(path.join(root, "electron/main.js"), "utf8");
+const preload = fs.readFileSync(path.join(root, "electron/preload.cjs"), "utf8");
 
 let failures = 0;
 function check(name, condition) {
@@ -20,9 +35,23 @@ function check(name, condition) {
 const pointerStart = layer.indexOf("const handlePointerDown = (");
 const pointerEnd = layer.indexOf("const handlePointerMove =", pointerStart);
 const pointerHandler = layer.slice(pointerStart, pointerEnd);
+const pointerMoveEnd = layer.indexOf("const finishDrag =", pointerEnd);
+const pointerMoveHandler = layer.slice(pointerEnd, pointerMoveEnd);
+const nativeDragStart = layer.indexOf("const startNativeDrag = (");
+const nativeDragEnd = layer.indexOf("const handlePointerDown = (", nativeDragStart);
+const nativeDragHandler = layer.slice(nativeDragStart, nativeDragEnd);
+const finishActiveStart = layer.indexOf("const finishActiveDrag = (");
+const finishActiveEnd = layer.indexOf("const startNativeDrag = (", finishActiveStart);
+const finishActiveHandler = layer.slice(finishActiveStart, finishActiveEnd);
 const clickStart = layer.indexOf("const handleClick = (");
 const clickEnd = layer.indexOf("const applyPetSize =", clickStart);
 const clickHandler = layer.slice(clickStart, clickEnd);
+const openHistoryStart = layer.indexOf("const openHistory = useCallback(");
+const openHistoryEnd = layer.indexOf("// A preference change", openHistoryStart);
+const openHistory = layer.slice(openHistoryStart, openHistoryEnd);
+const createHistoryStart = main.indexOf("function createPetHistoryWindow()");
+const createHistoryEnd = main.indexOf("function openPetHistoryWindow()", createHistoryStart);
+const createHistoryWindow = main.slice(createHistoryStart, createHistoryEnd);
 
 check("pet pointer handler exists", pointerStart >= 0 && pointerEnd > pointerStart);
 check("pet click handler exists", clickStart >= 0 && clickEnd > clickStart);
@@ -43,25 +72,134 @@ check(
 );
 check(
   "a repeated press does not begin a native drag",
-  pointerHandler.indexOf("if (repeatedPress) return;") >= 0
-    && pointerHandler.indexOf("if (repeatedPress) return;")
-      < pointerHandler.indexOf("beginPetOverlayDrag")
+  pointerHandler.includes("if (repeatedPress) return;")
+    && !pointerHandler.includes("beginPetOverlayDrag")
+);
+check(
+  "an ordinary press does not begin native drag or hide the pet",
+  pointerHandler.includes("nativeStarted: false")
+    && pointerHandler.includes("pressClientX: event.clientX")
+    && !pointerHandler.includes("beginPetOverlayDrag")
+);
+check(
+  "native drag begins only after desktop pointer movement crosses the threshold",
+  pointerMoveHandler.includes("if (drag.nativeStarted) return;")
+    && pointerMoveHandler.includes("Math.abs(deltaX) <= 3")
+    && pointerMoveHandler.includes("Math.abs(deltaY) <= 3")
+    && pointerMoveHandler.indexOf("Math.abs(deltaY) <= 3")
+      < pointerMoveHandler.indexOf("startNativeDrag(drag)")
+    && nativeDragHandler.includes("desktop?.beginPetOverlayDrag?.()")
+);
+check(
+  "a pending click never asks main to restore a drag transition that did not start",
+  finishActiveHandler.includes("if (isDesktopPetOverlay && !drag.nativeStarted)")
+    && finishActiveHandler.includes("isDesktopPetOverlay && drag.nativeStarted && notifyMain")
+);
+check(
+  "a new pending click cannot strand the previous native drag surface",
+  finishActiveHandler.includes("if (!dragState.current?.nativeStarted) desktop?.endPetOverlayDrag?.();")
+    && !finishActiveHandler.includes("if (!dragState.current) desktop?.endPetOverlayDrag?.();")
 );
 check(
   "a repeated click cancels history instead of opening it",
   /if \(event\.detail > 1\) \{[\s\S]*?cancelPendingPetClick\(\);[\s\S]*?return;[\s\S]*?\}/.test(clickHandler)
 );
 check(
-  "a single click waits before swapping the desktop overlay to history",
-  /pendingPetClick\.current = window\.setTimeout\([\s\S]*?setHistoryOpen\(true\);[\s\S]*?PET_SINGLE_CLICK_DELAY_MS/.test(clickHandler)
+  "a single click waits before opening history",
+  /pendingPetClick\.current = window\.setTimeout\([\s\S]*?openHistory\(\);[\s\S]*?PET_SINGLE_CLICK_DELAY_MS/.test(clickHandler)
 );
 check(
   "the delay is long enough to recognise an ordinary double-click",
   Number(layer.match(/PET_SINGLE_CLICK_DELAY_MS = (\d+)/)?.[1]) >= 300
 );
 check(
-  "desktop history still uses the compact overlay instead of spanning the desktop",
-  layer.includes("const showPetChrome = !isDesktopPetOverlay || !historyOpen;")
+  "desktop history opens through its independent native bridge",
+  openHistory.includes("if (isDesktopPetOverlay)")
+    && openHistory.includes("desktop?.openPetHistory?.();")
+    && openHistory.indexOf("desktop?.openPetHistory?.();") < openHistory.indexOf("setHistoryOpen(true);")
+);
+check(
+  "web history stays in-page while desktop history never mounts in the mascot renderer",
+  layer.includes("historyOpen && !isDesktopPetOverlay && (")
+);
+check(
+  "opening history never conditions away the mascot, speech, menu or companions",
+  !layer.includes("showPetChrome")
+    && layer.includes('data-pet-motion-layer="true"')
+    && layer.includes("{speech && !messagesMuted && (")
+    && layer.includes('{layoutMode === "apart" && companionPets.map')
+);
+check(
+  "desktop history opens before any speech clear can reshape or flash the mascot window",
+  openHistory.indexOf("if (isDesktopPetOverlay)") >= 0
+    && openHistory.indexOf("desktop?.openPetHistory?.();") < openHistory.indexOf("clearSpeech();")
+);
+check(
+  "preload exposes separate history open and close IPC",
+  preload.includes('openPetHistory: () => ipcRenderer.send("pet-history:open")')
+    && preload.includes('closePetHistory: () => ipcRenderer.send("pet-history:close")')
+);
+check(
+  "main process creates a dedicated compact history window",
+  createHistoryStart >= 0
+    && createHistoryEnd > createHistoryStart
+    && createHistoryWindow.includes("new BrowserWindow({")
+    && createHistoryWindow.includes("?pet-history=1")
+    && main.includes("const PET_HISTORY_WINDOW_WIDTH = 636;")
+    && main.includes("const PET_HISTORY_WINDOW_HEIGHT = 576;")
+);
+check(
+  "history window cannot recreate the giant transparent union surface",
+  !createHistoryWindow.includes("virtualDesktopBounds")
+    && !createHistoryWindow.includes("setShape")
+    && !createHistoryWindow.includes("setIgnoreMouseEvents")
+);
+check(
+  "history IPC validates the sender before opening or closing",
+  /ipcMain\.on\("pet-history:open"[\s\S]*?eventCameFrom\(event, petWindow\)[\s\S]*?openPetHistoryWindow\(\)/.test(main)
+    && /ipcMain\.on\("pet-history:close"[\s\S]*?eventCameFrom\(event, petHistoryWindow\)[\s\S]*?closePetHistoryWindow\(\)/.test(main)
+);
+check(
+  "history has a lightweight application route",
+  app.includes('search.get("pet-history") === "1"')
+    && app.includes("<CodexPetHistoryWindow />")
+    && historyWindow.includes("<CodexPetHistoryPanel")
+    && historyWindow.includes("nativeWindow")
+);
+check(
+  "native history uses OS header dragging without mascot overlay drag IPC",
+  panel.includes('nativeWindow && "pet-history-window-drag"')
+    && panel.includes("onPointerDown={nativeWindow ? undefined : startDrag}")
+    && panel.includes("if (nativeWindow) return undefined;")
+    && !historyWindow.includes("onGeometryChange")
+    && !historyWindow.includes("setPetOverlayKeyboardInteractive")
+    && !historyWindow.includes("beginPetOverlayDrag")
+);
+check(
+  "native history cannot reshow or hide the mascot during catalog load",
+  provider.includes("const isDesktopPetSurface = isDesktopPetOverlay || isDesktopPetHistory;")
+    && provider.includes("if (!desktop || isDesktopPetSurface || isLoading) return;")
+);
+check(
+  "native history does not refetch the full pet catalogue on every focus",
+  provider.includes("if (isDesktopPetHistory) {")
+    && provider.includes("setIsLoading(false);")
+);
+check(
+  "history-originated speech can still reach the mascot",
+  provider.includes("if (desktop && !isDesktopPetOverlay) {")
+    && provider.includes("desktop.sendPetOverlaySpeech")
+    && /ipcMain\.on\("pet-overlay:speak"[\s\S]*?eventCameFrom\(event, mainWindow\)[\s\S]*?eventCameFrom\(event, petHistoryWindow\)/.test(main)
+);
+check(
+  "relayed confirmation questions keep their grading stage",
+  main.includes("confirm: question.confirm === true,")
+);
+check(
+  "history content remains selectable and copyable",
+  panel.includes("selectContents(contentRef.current)")
+    && panel.includes("await navigator.clipboard.writeText(text)")
+    && panel.includes("onContextMenu={openContextMenu}")
 );
 check(
   "changing the selected pet clears queued history",
@@ -73,4 +211,4 @@ if (failures) {
   process.exit(1);
 }
 
-console.log("\npet click, double-click and compact-history behaviour is guarded");
+console.log("\npet click, double-click and independent compact-history behaviour is guarded");

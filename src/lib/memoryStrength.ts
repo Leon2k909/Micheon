@@ -19,6 +19,14 @@ export type GradeRecord = {
   permanent?: boolean;
   /** last extra practice rep; does not move the spaced-review ladder */
   reinforcedAt?: string;
+  /** answer checks accumulated across completed/abandoned sentence routes */
+  answerAttempts?: number;
+  /** incorrect answer checks accumulated across sentence routes */
+  answerMistakes?: number;
+  /** recent difficulty signal; rises on mistakes and fades through clean reps */
+  difficultyDebt?: number;
+  lastMistakeAt?: string;
+  lastAnswerAt?: string;
 };
 
 /**
@@ -53,6 +61,8 @@ export function recordSuccess(prior: GradeRecord | undefined, now = Date.now()):
   const successes = (prior?.lastGrade === "struggle" ? 0 : normalize(prior).successes) + 1;
   const intervalDays = REVIEW_INTERVALS_DAYS[Math.min(successes - 1, REVIEW_INTERVALS_DAYS.length - 1)];
   return {
+    ...prior,
+    permanent: false,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes,
@@ -78,6 +88,8 @@ export function recordDeclaredKnown(prior: GradeRecord | undefined, now = Date.n
   const successes = priorSuccesses >= nearMastered ? priorSuccesses + 1 : nearMastered;
   const intervalDays = REVIEW_INTERVALS_DAYS[Math.min(successes - 1, REVIEW_INTERVALS_DAYS.length - 1)];
   return {
+    ...prior,
+    permanent: false,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes,
@@ -87,8 +99,12 @@ export function recordDeclaredKnown(prior: GradeRecord | undefined, now = Date.n
 }
 
 /** A struggle: ladder resets — strength is rebuilt from the bottom. */
-export function recordStruggle(now = Date.now()): GradeRecord {
+export function recordStruggle(now = Date.now(), prior?: GradeRecord): GradeRecord {
   return {
+    ...prior,
+    permanent: false,
+    dueAt: undefined,
+    reinforcedAt: undefined,
     lastGrade: "struggle",
     updatedAt: new Date(now).toISOString(),
     successes: 0,
@@ -115,11 +131,13 @@ export function recordReinforcement(prior: GradeRecord, now = Date.now()): Grade
  * "I already know this cold" or "I don't actually remember this" — without
  * replaying it in a lesson first. level 0 clears the item back to New.
  */
-export function setStrengthLevel(level: number, now = Date.now()): GradeRecord | null {
+export function setStrengthLevel(level: number, now = Date.now(), prior?: GradeRecord): GradeRecord | null {
   const clamped = Math.max(0, Math.min(REVIEW_INTERVALS_DAYS.length, Math.round(level)));
   if (clamped === 0) return null; // caller should delete the record entirely
   const intervalDays = REVIEW_INTERVALS_DAYS[clamped - 1];
   return {
+    ...prior,
+    permanent: false,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes: clamped,
@@ -132,8 +150,9 @@ export function setStrengthLevel(level: number, now = Date.now()): GradeRecord |
  * Above Mastered: for words so easy they should never come back at all — a
  * deliberate "I will never forget this" call, distinct from the timed ladder.
  */
-export function recordPermanent(now = Date.now()): GradeRecord {
+export function recordPermanent(now = Date.now(), prior?: GradeRecord): GradeRecord {
   return {
+    ...prior,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes: REVIEW_INTERVALS_DAYS.length + 1,

@@ -8,16 +8,27 @@ const result = esbuild.buildSync({
   stdin: {
     contents: `
       export {
+        buildSession,
         isReinforcementEligible,
         pickPreviewReplacement,
         rankReinforcementCandidates,
         selectContinueLearningMix,
       } from "./src/session.ts";
       export {
+        ADAPTIVE_REPEAT_COOLDOWN_MS,
+        adaptiveRepeatPriority,
+        inherentSentenceDifficulty,
+        isAdaptiveReinforcementEligible,
+        isAttemptedPracticeEligible,
+        recordAnswerPerformance,
+      } from "./src/lib/adaptivePractice.ts";
+      export {
         recordDeclaredKnown,
         recordPermanent,
         recordReinforcement,
+        recordStruggle,
         recordSuccess,
+        setStrengthLevel,
       } from "./src/lib/memoryStrength.ts";
       export { gradeEntryForId, setCanonicalGradeRecord } from "./src/lib/activity.ts";
       export { finishLessonAndQueueNext } from "./src/lib/lessonFlow.ts";
@@ -40,17 +51,26 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
+  buildSession,
   isReinforcementEligible,
+  ADAPTIVE_REPEAT_COOLDOWN_MS,
+  adaptiveRepeatPriority,
   gradeEntryForId,
   pickPreviewReplacement,
   recordDeclaredKnown,
   recordPermanent,
   recordReinforcement,
+  recordStruggle,
   recordSuccess,
   rankReinforcementCandidates,
   selectContinueLearningMix,
   setCanonicalGradeRecord,
   finishLessonAndQueueNext,
+  inherentSentenceDifficulty,
+  isAdaptiveReinforcementEligible,
+  isAttemptedPracticeEligible,
+  recordAnswerPerformance,
+  setStrengthLevel,
 } = compiled.exports;
 
 let failures = 0;
@@ -81,6 +101,27 @@ check("a second-rung phrase can still reinforce", isReinforcementEligible(second
 check("Know it remains hidden until its scheduled review", !isReinforcementEligible(declaredKnown, now + 2_000));
 check("permanent items never become reinforcement", !isReinforcementEligible(permanent, now + 2_000));
 check("due items stay in the scheduled review pool", !isReinforcementEligible(alreadyDue, now));
+
+const permanentWithSchedule = {
+  ...permanent,
+  dueAt: new Date(now + 86_400_000).toISOString(),
+  reinforcedAt: new Date(now).toISOString(),
+};
+const relearnedPermanent = recordSuccess(permanentWithSchedule, now + 1_000);
+const declaredPermanent = recordDeclaredKnown(permanentWithSchedule, now + 1_000);
+const struggledPermanent = recordStruggle(now + 1_000, permanentWithSchedule);
+const manuallyGradedPermanent = setStrengthLevel(2, now + 1_000, permanentWithSchedule);
+check(
+  "every normal grade transition clears a stale Permanent flag",
+  relearnedPermanent.permanent === false
+    && declaredPermanent.permanent === false
+    && struggledPermanent.permanent === false
+    && manuallyGradedPermanent?.permanent === false
+);
+check(
+  "marking a Permanent item as struggle clears its obsolete schedule",
+  !struggledPermanent.dueAt && !struggledPermanent.reinforcedAt
+);
 check(
   "legacy known records can fill the familiar half",
   isReinforcementEligible({ lastGrade: "know", updatedAt: new Date(now).toISOString() }, now + 2_000)
@@ -94,6 +135,137 @@ check(
     && reinforced.intervalDays === firstRecall.intervalDays
     && reinforced.dueAt === firstRecall.dueAt
     && reinforced.updatedAt === firstRecall.updatedAt
+);
+
+const easySentence = { de: "Bis bald.", en: "See you soon.", level: "A1" };
+const hardSentence = {
+  de: "Obwohl die Entscheidung zunächst vernünftig wirkte, wurde sie anschließend wegen der möglichen Konsequenzen zurückgenommen.",
+  en: "Although the decision initially seemed reasonable, it was subsequently withdrawn because of the possible consequences.",
+  level: "B2",
+};
+check(
+  "long advanced B2 sentences carry more inherent practice weight",
+  inherentSentenceDifficulty(hardSentence) > inherentSentenceDifficulty(easySentence)
+    && inherentSentenceDifficulty(hardSentence) >= 0.48
+    && inherentSentenceDifficulty(easySentence) < 0.48
+);
+
+const mistakenPerformance = recordAnswerPerformance(
+  undefined,
+  { attempts: 10, mistakes: 3 },
+  now
+);
+const learnedAfterMistakes = recordSuccess(mistakenPerformance, now + 1_000);
+check(
+  "actual wrong stage answers create durable per-item difficulty history",
+  learnedAfterMistakes.answerAttempts === 10
+    && learnedAfterMistakes.answerMistakes === 3
+    && learnedAfterMistakes.difficultyDebt > 0
+    && learnedAfterMistakes.lastMistakeAt === new Date(now).toISOString()
+);
+check(
+  "repeated mistakes make an easy learned sentence eligible before its mastery due date",
+  Date.parse(learnedAfterMistakes.dueAt) > now + 2_000
+    && isAdaptiveReinforcementEligible(learnedAfterMistakes, easySentence, now + 2_000)
+    && adaptiveRepeatPriority(learnedAfterMistakes, easySentence) > 0.48
+);
+
+const cleanHardPerformance = recordAnswerPerformance(
+  undefined,
+  { attempts: 10, mistakes: 0 },
+  now
+);
+const learnedHardSentence = recordSuccess(cleanHardPerformance, now + 1_000);
+check(
+  "an inherently difficult practised sentence repeats even without a mistake",
+  isAdaptiveReinforcementEligible(learnedHardSentence, hardSentence, now + 2_000)
+);
+check(
+  "Know it alone still respects the mastery schedule",
+  !isAdaptiveReinforcementEligible(recordDeclaredKnown(undefined, now), hardSentence, now + 2_000)
+);
+
+const recentlyRepeated = recordReinforcement(learnedAfterMistakes, now + 3_000);
+check(
+  "adaptive repetition has a cooldown so one item cannot starve the familiar half",
+  !isAdaptiveReinforcementEligible(recentlyRepeated, easySentence, now + 4_000)
+    && isAdaptiveReinforcementEligible(
+      recentlyRepeated,
+      easySentence,
+      now + 3_000 + ADAPTIVE_REPEAT_COOLDOWN_MS + 1
+    )
+);
+check(
+  "a skipped sentence becomes familiar without receiving a mastery grade",
+  !mistakenPerformance.lastGrade
+    && isAttemptedPracticeEligible(mistakenPerformance)
+);
+
+const attemptedMix = buildSession(
+  {
+    partKey: "attempted-mix",
+    label: "Attempted mix",
+    level: "A1",
+    vocab: [],
+    dialogues: [],
+    phrases: [
+      { id: "attempted-item", de: "Das habe ich versucht.", en: "I tried that." },
+      { id: "fresh-a", de: "Das ist ganz neu.", en: "That is completely new." },
+      { id: "fresh-b", de: "Hier ist noch etwas Neues.", en: "Here is something else new." },
+      { id: "fresh-c", de: "Wir lernen weiter.", en: "We keep learning." },
+    ],
+  },
+  [],
+  { "attempted-item": mistakenPerformance },
+  0
+);
+const attemptedMixSentences = attemptedMix.filter((item) => item.type === "sentence");
+const attemptedStep = attemptedMixSentences.find((item) => item.item?.id === "attempted-item");
+check(
+  "an attempted sentence occupies the familiar half and leaves all three fresh slots genuine",
+  attemptedMixSentences.filter((item) => !item.review).length === 3
+    && attemptedStep?.reviewReason === "attempted"
+    && attemptedStep?.optionalPractice === true
+    && attemptedStep?.reinforcement !== true
+);
+
+const attemptedDialogue = buildSession(
+  {
+    partKey: "attempted-dialogue",
+    label: "Attempted dialogue",
+    level: "A1",
+    vocab: [],
+    phrases: [],
+    dialogues: [{
+      title: "A short chat",
+      lines: [
+        { id: "dialogue-attempted", de: "Das habe ich schon versucht.", en: "I already tried that." },
+        { id: "dialogue-new-a", de: "Versuch es noch einmal.", en: "Try it again." },
+        { id: "dialogue-new-b", de: "Diesmal klappt es.", en: "It works this time." },
+      ],
+    }],
+  },
+  [],
+  {
+    "dialogue-A short chat-0-Das habe ich schon versucht.": mistakenPerformance,
+  },
+  0
+);
+const dialogueCapstone = attemptedDialogue.find((item) => item.type === "dialogue");
+check(
+  "attempted lines return as individual practice but never masquerade as a fresh dialogue line",
+  attemptedDialogue.some((item) => item.type === "sentence" && item.item?.id === "dialogue-attempted" && item.reviewReason === "attempted")
+    && dialogueCapstone?.dialogue?.lines?.length === 2
+    && !dialogueCapstone.dialogue.lines.some((line) => line.id === "dialogue-attempted")
+);
+
+const struggledWithHistory = recordStruggle(now + 4_000, learnedAfterMistakes);
+const declaredWithHistory = recordDeclaredKnown(struggledWithHistory, now + 5_000);
+check(
+  "difficulty history survives struggle and known grade transitions",
+  declaredWithHistory.answerAttempts === learnedAfterMistakes.answerAttempts
+    && declaredWithHistory.answerMistakes === learnedAfterMistakes.answerMistakes
+    && declaredWithHistory.difficultyDebt === learnedAfterMistakes.difficultyDebt
 );
 
 const aliasStore = { "legacy-item-id": secondRecall };
@@ -155,6 +327,30 @@ const fullDueMix = selectContinueLearningMix(
 );
 check("scheduled reviews fill their slots before optional reinforcement", fullDueMix.reviews.every((item) => !item.reinforcement));
 
+const attemptedOptional = step("attempted-optional", "Das war schwierig.", "That was difficult.", {
+  review: true,
+  reviewReason: "attempted",
+  optionalPractice: true,
+});
+const fullDueWithAttemptMix = selectContinueLearningMix(
+  fresh,
+  [],
+  [
+    step("formal-due-1", "Formell eins.", "Formal one.", { review: true, interval: 1 }),
+    step("formal-due-2", "Formell zwei.", "Formal two.", { review: true, interval: 3 }),
+    step("formal-due-3", "Formell drei.", "Formal three.", { review: true, interval: 10 }),
+  ],
+  3,
+  3,
+  [attemptedOptional],
+  "en"
+);
+check(
+  "three formal due reviews displace optional attempted practice",
+  fullDueWithAttemptMix.reviews.length === 3
+    && !fullDueWithAttemptMix.reviews.some((item) => item.item.id === "attempted-optional")
+);
+
 const sameGermanDue = selectContinueLearningMix(
   fresh,
   [],
@@ -196,6 +392,37 @@ check(
     && secondRotation[0].id === "rotation-3"
 );
 
+const ageFirst = rankReinforcementCandidates([
+  { id: "older-easier", successes: 2, lastPractised: now, index: 0, repeatPriority: 0.1 },
+  { id: "newer-harder", successes: 1, lastPractised: now + 60_000, index: 1, repeatPriority: 1.5 },
+]);
+check(
+  "familiar practice rotates by age before static difficulty priority",
+  ageFirst[0].id === "older-easier"
+);
+
+const urgencyFirst = rankReinforcementCandidates([
+  { id: "older-ordinary", successes: 1, lastPractised: now, index: 0, practiceUrgency: 0, repeatPriority: 0 },
+  { id: "recent-attempt", successes: 0, lastPractised: now + 60_000, index: 1, practiceUrgency: 2, repeatPriority: 0.5 },
+]);
+check(
+  "a just-failed attempt returns before ordinary familiar filler",
+  urgencyFirst[0].id === "recent-attempt"
+);
+
+const cleanedPerformance = recordAnswerPerformance(
+  learnedAfterMistakes,
+  { attempts: 20, mistakes: 0 },
+  now + 60 * 86_400_000
+);
+check(
+  "old mistakes decay and clean practice lowers adaptive priority",
+  adaptiveRepeatPriority(learnedAfterMistakes, easySentence, now + 1_000)
+    > adaptiveRepeatPriority(learnedAfterMistakes, easySentence, now + 60 * 86_400_000)
+    && adaptiveRepeatPriority(cleanedPerformance, easySentence, now + 60 * 86_400_000)
+      < adaptiveRepeatPriority(learnedAfterMistakes, easySentence, now + 60 * 86_400_000)
+);
+
 const replacement = pickPreviewReplacement(
   [
     { id: "colliding-replacement", partKey: "part1", de: "Wie geht's?", en: "How are you?" },
@@ -231,12 +458,24 @@ const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestion
 check(
   "the app marks optional practice separately from successful scheduled recall",
   labSource.includes("if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);")
-    && labSource.includes("setCanonicalGradeRecord(next, id, aliases, recordReinforcement(prior));")
+    && labSource.includes("setCanonicalGradeRecord(next, id, aliases, recordReinforcement(practised));")
 );
 check(
   "lesson completion does not bulk-grade skipped exercises",
   !/onComplete=\{\(\) => \{[\s\S]*?markCompleted\(sessionSteps\)/.test(labSource)
-    && labSource.includes("onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}")
+    && labSource.includes("if (skipped) markAttempted(step, performance);")
+    && labSource.includes("else markCompleted([step], performance);")
+);
+check(
+  "wrong stage answers are batched and persisted once when the sentence is left",
+  guidedSource.includes("const answerPerformanceRef = useRef(new Map<string, AnswerPerformance>())")
+    && guidedSource.includes("onAdvance?.(current, skipped, performance)")
+    && !guidedSource.includes("recordAnswerPerformance(")
+    && labSource.includes("recordAnswerPerformance(prior, performance)")
+);
+check(
+  "Know it does not discard wrong answers made earlier in the same route",
+  /updatedAt >= sessionStart\) \{[\s\S]*?performance\?\.attempts[\s\S]*?recordAnswerPerformance\(prior, performance\)[\s\S]*?return;/.test(labSource)
 );
 check(
   "preview replacement blocks both named language columns after direction swaps",

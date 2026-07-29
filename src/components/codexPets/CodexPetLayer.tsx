@@ -61,8 +61,8 @@ const PET_MENU_ESTIMATED_HEIGHT = 328;
 const PET_BUBBLE_WIDTH = 240;
 // A click opens history, but only after the browser has had time to tell us it
 // was actually the first half of a double-click. Opening immediately unmounts
-// the desktop pet (the history panel temporarily owns the compact overlay), so
-// the second click used to land on empty space and make the pet look closed.
+// the desktop pet, so the second click must cancel the queued independent
+// history window before it can be mistaken for a completed single click.
 const PET_SINGLE_CLICK_DELAY_MS = 400;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const isDesktopPetOverlay = typeof window !== "undefined"
@@ -149,10 +149,14 @@ type DragState = {
   cursorFrame?: number;
   lastDomPointerAt?: number;
   moved: boolean;
+  /** Desktop drag IPC is deliberately deferred until the pointer moves. */
+  nativeStarted: boolean;
   originX: number;
   originY: number;
   pendingPointer?: { x: number; y: number };
   pointerId: number;
+  pressClientX: number;
+  pressClientY: number;
   /** Null until the first movement sample when begin-drag returned no cursor
    *  reading — initialised lazily so start and samples share one space. */
   startX: number | null;
@@ -406,6 +410,20 @@ export function CodexPetLayer() {
     window.clearTimeout(pendingPetClick.current);
     pendingPetClick.current = null;
   }, []);
+
+  const openHistory = useCallback(() => {
+    if (isDesktopPetOverlay) {
+      // History owns a second compact native surface. Never render it inside
+      // the mascot overlay: doing so either hides the pet or stretches one
+      // transparent compositor surface between two distant pieces of UI. Keep
+      // the current bubble too: clearing it would reshape this native window
+      // and make the mascot appear to blink out while history is opening.
+      desktop?.openPetHistory?.();
+      return;
+    }
+    clearSpeech();
+    setHistoryOpen(true);
+  }, [clearSpeech]);
 
   // A preference change during the short click gate must not leave history
   // queued to open the next time this (or another) pet becomes visible.
@@ -978,14 +996,15 @@ export function CodexPetLayer() {
 
   useEffect(() => () => {
     cancelPendingPetClick();
-    if (dragState.current?.cursorFrame !== undefined) {
-      window.cancelAnimationFrame(dragState.current.cursorFrame);
+    const drag = dragState.current;
+    if (drag?.cursorFrame !== undefined) {
+      window.cancelAnimationFrame(drag.cursorFrame);
     }
-    dragState.current?.unsubscribeCursor?.();
-    dragState.current?.unsubscribeEnd?.();
-    dragState.current?.cleanupGlobal?.();
+    drag?.unsubscribeCursor?.();
+    drag?.unsubscribeEnd?.();
+    drag?.cleanupGlobal?.();
     dragState.current = null;
-    if (isDesktopPetOverlay) desktop?.endPetOverlayDrag?.();
+    if (isDesktopPetOverlay && drag?.nativeStarted) desktop?.endPetOverlayDrag?.();
   }, [cancelPendingPetClick]);
 
   if (!selectedPet) return null;
@@ -1100,6 +1119,14 @@ export function CodexPetLayer() {
     drag.unsubscribeEnd?.();
     drag.cleanupGlobal?.();
     dragState.current = null;
+    // A desktop click creates a pending gesture only. If it never crossed the
+    // movement threshold, no native window transition happened and there is
+    // nothing to save or restore. Leaving this path quiet keeps the mascot
+    // visible while the click opens message history.
+    if (isDesktopPetOverlay && !drag.nativeStarted) {
+      setDragging(false);
+      return;
+    }
     if (drag.companionKey) {
       const key = drag.companionKey;
       const next = companionPositionsRef.current[key];
@@ -1113,13 +1140,51 @@ export function CodexPetLayer() {
     }
     setDragging(false);
     requestHitRegionSync();
-    if (isDesktopPetOverlay && notifyMain) {
+    if (isDesktopPetOverlay && drag.nativeStarted && notifyMain) {
       // Let the final translated rectangles reach main before it restores the
       // compact native hit shape for the released pet.
       window.requestAnimationFrame(() => {
-        if (!dragState.current) desktop?.endPetOverlayDrag?.();
+        // A new pending click must not strand the old desktop-sized drag
+        // surface. Skip restoration only when another native drag genuinely
+        // started before this frame ran.
+        if (!dragState.current?.nativeStarted) desktop?.endPetOverlayDrag?.();
       });
     }
+  };
+
+  const startNativeDrag = (drag: DragState) => {
+    if (!isDesktopPetOverlay || drag.nativeStarted) return true;
+    const nativeDrag = desktop?.beginPetOverlayDrag?.();
+    if (!nativeDrag || nativeDrag === false || nativeDrag.started === false) {
+      finishActiveDrag(false);
+      return false;
+    }
+    drag.nativeStarted = true;
+    if (nativeDrag.geometry) updateOverlayGeometry(nativeDrag.geometry);
+    // From here on, movement comes from one coordinate system: Electron's
+    // native cursor poll. The few DOM pixels that crossed the threshold are
+    // intentionally discarded so mixed-DPI displays cannot make the pet jump.
+    drag.startX = Number.isFinite(nativeDrag.screenX) ? nativeDrag.screenX : null;
+    drag.startY = Number.isFinite(nativeDrag.screenY) ? nativeDrag.screenY : null;
+    if (desktop?.onPetOverlayDragCursor) {
+      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: {
+        screenX?: number;
+        screenY?: number;
+      }) => {
+        const activeDrag = dragState.current;
+        const pointerX = Number(point?.screenX);
+        const pointerY = Number(point?.screenY);
+        if (activeDrag !== drag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
+        scheduleDragFromPointer(activeDrag, pointerX, pointerY);
+      });
+    }
+    if (desktop?.onPetOverlayDragEnd) {
+      drag.unsubscribeEnd = desktop.onPetOverlayDragEnd(() => {
+        if (dragState.current === drag) finishActiveDrag(false);
+      });
+    }
+    setDragging(true);
+    return true;
   };
 
   const handlePointerDown = (
@@ -1144,34 +1209,15 @@ export function CodexPetLayer() {
     // A companion that has not been given a place yet cannot be dragged; its
     // position effect runs first, so this only guards the very first frame.
     if (companionKey && !companionPositionsRef.current[companionKey]) return;
-    // Establish capture before main moves/resizes the native overlay. Doing it
-    // afterward lets the bounds transition revoke the initiating gesture.
+    // Capture the press, but do not resize or fade the native overlay yet. A
+    // click must remain a click; native drag begins only after real movement.
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
       if (!isDesktopPetOverlay) return;
     }
-    const nativeDrag = isDesktopPetOverlay ? desktop?.beginPetOverlayDrag?.() : null;
-    if (isDesktopPetOverlay && (nativeDrag === false || nativeDrag?.started === false)) {
-      try {
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId);
-        }
-      } catch {
-        // The overlay may already have rejected the native transition.
-      }
-      return;
-    }
-    if (nativeDrag?.geometry) updateOverlayGeometry(nativeDrag.geometry);
-    // On the desktop overlay, movement comes from ONE source: the main
-    // process's cursor poll. It used to mix that with DOM screenX/screenY as a
-    // low-latency primary — but renderer screen coordinates and Electron's
-    // screen API are not guaranteed to agree at display scales other than 100%.
-    // Where they disagree by the scale factor, each DOM sample overshoots the
-    // cursor and the next poll sample yanks the pet back: the "glitchy,
-    // teleporting" drag on a 225% screen. One space, one ruler. The poll runs
-    // every 16ms, so nothing perceptible is lost. DOM events keep exactly one
-    // job here: noticing the button was released.
+    // Desktop uses the DOM only to distinguish a click from a drag. Once the
+    // threshold is crossed, native cursor samples own movement end-to-end.
     const origin = companionKey
       ? companionPositionsRef.current[companionKey]
       : positionRef.current;
@@ -1179,40 +1225,16 @@ export function CodexPetLayer() {
       companionKey,
       lastDomPointerAt: performance.now(),
       moved: false,
+      nativeStarted: false,
       originX: origin.x,
       originY: origin.y,
       pointerId: event.pointerId,
-      // The start point must be in the SAME space as the movement samples. The
-      // begin-drag reply carries the poll's own reading; if it is missing, the
-      // start is initialised lazily from the first sample (a zero delta) rather
-      // than borrowed from a DOM event that may be on a different ruler.
-      startX: isDesktopPetOverlay
-        ? (Number.isFinite(nativeDrag?.screenX) ? nativeDrag.screenX : null)
-        : event.clientX,
-      startY: isDesktopPetOverlay
-        ? (Number.isFinite(nativeDrag?.screenY) ? nativeDrag.screenY : null)
-        : event.clientY,
+      pressClientX: event.clientX,
+      pressClientY: event.clientY,
+      startX: isDesktopPetOverlay ? null : event.clientX,
+      startY: isDesktopPetOverlay ? null : event.clientY,
     };
     dragState.current = drag;
-    if (isDesktopPetOverlay && desktop?.onPetOverlayDragCursor) {
-      drag.unsubscribeCursor = desktop.onPetOverlayDragCursor((point: {
-        screenX?: number;
-        screenY?: number;
-      }) => {
-        const activeDrag = dragState.current;
-        const pointerX = Number(point?.screenX);
-        const pointerY = Number(point?.screenY);
-        if (!activeDrag || !Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return;
-        // No DOM-freshness gate any more: the poll is the only movement source,
-        // so suppressing it in favour of DOM samples would suppress movement.
-        scheduleDragFromPointer(activeDrag, pointerX, pointerY);
-      });
-    }
-    if (isDesktopPetOverlay && desktop?.onPetOverlayDragEnd) {
-      drag.unsubscribeEnd = desktop.onPetOverlayDragEnd(() => {
-        if (dragState.current === drag) finishActiveDrag(false);
-      });
-    }
     if (isDesktopPetOverlay) {
       // Without capture the button may never see the pointerup, so the end of
       // the drag has independent signals: any pointerup in the window, or a
@@ -1237,16 +1259,21 @@ export function CodexPetLayer() {
         window.removeEventListener("pointermove", onWindowPointerMove, true);
       };
     }
-    setDragging(true);
+    if (!isDesktopPetOverlay) setDragging(true);
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    // Desktop overlay: movement is the cursor poll's job (same-space samples).
-    // The in-page pet has no poll and keeps the DOM path, whose clientX shares
-    // the page's own coordinate space by definition.
-    if (isDesktopPetOverlay) return;
+    if (isDesktopPetOverlay) {
+      if (drag.nativeStarted) return;
+      const deltaX = event.clientX - drag.pressClientX;
+      const deltaY = event.clientY - drag.pressClientY;
+      if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+      drag.moved = true;
+      startNativeDrag(drag);
+      return;
+    }
     scheduleDomDragFromPointer(drag, event.clientX, event.clientY);
   };
 
@@ -1280,8 +1307,7 @@ export function CodexPetLayer() {
     cancelPendingPetClick();
     pendingPetClick.current = window.setTimeout(() => {
       pendingPetClick.current = null;
-      clearSpeech();
-      setHistoryOpen(true);
+      openHistory();
     }, PET_SINGLE_CLICK_DELAY_MS);
   };
 
@@ -1378,13 +1404,6 @@ export function CodexPetLayer() {
     ),
     Math.max(PET_MARGIN, viewport.width - menuWidth - PET_MARGIN)
   );
-  // A movable history panel can be far from the mascot. Keeping both in one
-  // transparent native window would stretch that surface across the distance
-  // between them and recreate the compositor cost of the old full-screen
-  // overlay. On desktop the panel temporarily takes over the compact overlay;
-  // closing it restores the pet at its unchanged saved position.
-  const showPetChrome = !isDesktopPetOverlay || !historyOpen;
-
   return (
     <>
       <div
@@ -1400,7 +1419,7 @@ export function CodexPetLayer() {
           width: viewport.width,
         }}
       >
-      {historyOpen && (
+      {historyOpen && !isDesktopPetOverlay && (
         <CodexPetHistoryPanel
           history={history}
           onAnswer={answerQuestion}
@@ -1412,7 +1431,7 @@ export function CodexPetLayer() {
         />
       )}
       <AnimatePresence>
-        {showPetChrome && menuOpen && (
+        {menuOpen && (
           <>
             {!isDesktopPetOverlay && (
               <button
@@ -1565,8 +1584,7 @@ export function CodexPetLayer() {
                 className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                 onClick={() => {
                   setMenuOpen(false);
-                  clearSpeech();
-                  setHistoryOpen(true);
+                  openHistory();
                 }}
                 role="menuitem"
                 type="button"
@@ -1610,7 +1628,7 @@ export function CodexPetLayer() {
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
-        {showPetChrome && speech && !messagesMuted && (
+        {speech && !messagesMuted && (
           <motion.div
             key={speech.id}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1642,10 +1660,7 @@ export function CodexPetLayer() {
                 <button
                   aria-label={ui("Open message history")}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                  onClick={() => {
-                    clearSpeech();
-                    setHistoryOpen(true);
-                  }}
+                  onClick={openHistory}
                   title={ui("Message history")}
                   type="button"
                 >
@@ -1694,8 +1709,7 @@ export function CodexPetLayer() {
           </motion.div>
         )}
       </AnimatePresence>
-      {showPetChrome && (
-        <div
+      <div
           className="pointer-events-none absolute"
           data-pet-motion-layer="true"
           ref={petMotionRef}
@@ -1736,14 +1750,13 @@ export function CodexPetLayer() {
         ))}
         </button>
         </div>
-      )}
 
       {/* Companions, when the pets are arranged apart. Each one is its own
           positioned element with its own hit region, so the overlay's native
           shape picks them up without any extra plumbing. They do not carry the
           speech bubble or the menu — only the talking pet does — so a click
           here opens the same menu rather than a second, emptier one. */}
-      {showPetChrome && layoutMode === "apart" && companionPets.map((pet) => {
+      {layoutMode === "apart" && companionPets.map((pet) => {
         const key = codexPetKey(pet);
         const spot = companionPositions[key];
         if (!spot) return null;

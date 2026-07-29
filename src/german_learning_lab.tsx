@@ -32,7 +32,7 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 const NEW_PER_LESSON_TARGET = 3;
-import { COMPLETED_KEY, gradeEntryForId, loadGradeStore, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
+import { COMPLETED_KEY, loadGradeStore, progressEntryForId, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { CourseShell } from "@/components/course/CourseShell";
@@ -50,6 +50,13 @@ import { swapStepForEnglish } from "@/lib/learningDirectionStep";
 import { useLearningMode } from "@/lib/learningMode";
 import { countKnownVocab } from "@/lib/fluency";
 import { ActiveStudyTimer, recordCompletedLearningSession } from "@/lib/learningTime";
+import {
+  adaptiveRepeatPriority,
+  isAdaptiveReinforcementEligible,
+  isAttemptedPracticeEligible,
+  recordAnswerPerformance,
+  type AnswerPerformance,
+} from "@/lib/adaptivePractice";
 
 type ProgressStats = {
   totalXp: number; sessionsCompleted: number;
@@ -372,9 +379,12 @@ export default function GermanLearningLab() {
   const markGrade = (itemId: string, grade: "know" | "struggle") => {
     try {
       const existing = loadCompleted();
+      const prior = progressEntryForId(existing, itemId)?.record;
       saveReviewGrades({
         ...existing,
-        [itemId]: grade === "know" ? recordDeclaredKnown(existing[itemId]) : recordStruggle(),
+        [itemId]: grade === "know"
+          ? recordDeclaredKnown(prior)
+          : recordStruggle(Date.now(), prior),
       });
     } catch {}
   };
@@ -403,9 +413,11 @@ export default function GermanLearningLab() {
           en: String((learnsEnglish ? step.item?.de : step.item?.en) ?? ""),
         }));
       const grades = loadGradeStore(user);
-      const candidates = catalog.filter(
-        (item) => !usedIds.has(item.id) && statusForId(grades, item.id, item.aliases) === "new"
-      );
+      const candidates = catalog.filter((item) => {
+        if (usedIds.has(item.id) || statusForId(grades, item.id, item.aliases) !== "new") return false;
+        const record = progressEntryForId(grades, item.id, item.aliases)?.record;
+        return !isAttemptedPracticeEligible(record);
+      });
       const replacement = pickPreviewReplacement(
         candidates,
         blockedPairs,
@@ -441,7 +453,7 @@ export default function GermanLearningLab() {
     });
   };
 
-  const markCompleted = (stepsToMark: any[]) => {
+  const markCompleted = (stepsToMark: any[], performance?: AnswerPerformance) => {
     try {
       const existing = loadCompleted();
       const next = { ...existing };
@@ -452,23 +464,43 @@ export default function GermanLearningLab() {
       const markReinforced = (id: string, aliases: string[] = []) => {
         if (!id || counted.has(id)) return;
         counted.add(id);
-        const prior = gradeEntryForId(next, id, aliases)?.record;
+        const prior = progressEntryForId(next, id, aliases)?.record;
         if (!prior?.lastGrade) return;
         const reinforcedAt = prior.reinforcedAt ? Date.parse(prior.reinforcedAt) : 0;
-        if (Number.isFinite(reinforcedAt) && reinforcedAt >= sessionStart) return;
-        setCanonicalGradeRecord(next, id, aliases, recordReinforcement(prior));
+        if (Number.isFinite(reinforcedAt) && reinforcedAt >= sessionStart) {
+          if (performance?.attempts) {
+            setCanonicalGradeRecord(next, id, aliases, recordAnswerPerformance(prior, performance));
+          }
+          return;
+        }
+        const practised = recordAnswerPerformance(prior, performance);
+        setCanonicalGradeRecord(next, id, aliases, recordReinforcement(practised));
       };
       const markKnown = (id: string, aliases: string[] = []) => {
         if (!id || counted.has(id)) return;
         counted.add(id);
-        const prior = gradeEntryForId(next, id, aliases)?.record;
+        const prior = progressEntryForId(next, id, aliases)?.record;
         // Items are saved as each step is left. "Know it" also writes
         // immediately, so keep both paths from advancing the same memory
         // record more than once in one session.
         const updatedAt = prior?.updatedAt ? Date.parse(prior.updatedAt) : 0;
-        if (Number.isFinite(updatedAt) && updatedAt >= sessionStart) return;
+        if (Number.isFinite(updatedAt) && updatedAt >= sessionStart) {
+          // "Know it" writes its mastery grade immediately. Still attach any
+          // real stage mistakes gathered before that click; only suppress the
+          // second SRS promotion.
+          if (performance?.attempts) {
+            setCanonicalGradeRecord(
+              next,
+              id,
+              aliases,
+              recordAnswerPerformance(prior, performance)
+            );
+          }
+          return;
+        }
         // One rung up the memory ladder; the item comes back for review when due.
-        setCanonicalGradeRecord(next, id, aliases, recordSuccess(prior));
+        const practised = recordAnswerPerformance(prior, performance);
+        setCanonicalGradeRecord(next, id, aliases, recordSuccess(practised));
       };
       stepsToMark.forEach((s) => {
         if (s.type === "sentence" && s.item?.id) {
@@ -481,6 +513,24 @@ export default function GermanLearningLab() {
           s.dialogue.lines.forEach((line: any) => { if (line?.id) markKnown(line.id, line.aliases); });
         }
       });
+      saveReviewGrades(next);
+    } catch {}
+  };
+
+  /** Persist mistakes from a sentence the learner left via Skip, without
+   * promoting it up the mastery ladder. This is still one write per sentence. */
+  const markAttempted = (step: any, performance?: AnswerPerformance) => {
+    if (step?.type !== "sentence" || !step.item?.id || !performance?.attempts) return;
+    try {
+      const next = loadCompleted();
+      const aliases = step.item.aliases ?? [];
+      const prior = progressEntryForId(next, step.item.id, aliases)?.record;
+      setCanonicalGradeRecord(
+        next,
+        step.item.id,
+        aliases,
+        recordAnswerPerformance(prior, performance)
+      );
       saveReviewGrades(next);
     } catch {}
   };
@@ -599,7 +649,7 @@ export default function GermanLearningLab() {
             const priorityReview = { ...st, review: true, reviewReason: "struggle", interval: 0 };
             requiredReviews.push(priorityReview);
             reviewPartByStep.set(priorityReview, pId);
-          } else if (st.review) {
+          } else if (st.review && !st.reinforcement && st.reviewReason !== "attempted") {
             globalReviews.push(st);
             reviewPartByStep.set(st, pId);
           }
@@ -616,27 +666,38 @@ export default function GermanLearningLab() {
         index: number;
         successes: number;
         lastPractised: number;
+        practiceUrgency?: number;
+        repeatPriority?: number;
         step: any;
       }[] = [];
       catalog.forEach((item, index) => {
-        const record = [item.id, ...(item.aliases ?? [])]
-          .map((id) => reviewState[id])
-          .find((candidate) => candidate?.lastGrade);
-        if (!isReinforcementEligible(record)) return;
+        const record = progressEntryForId(reviewState, item.id, item.aliases)?.record;
+        const ordinaryReinforcement = isReinforcementEligible(record);
+        const adaptiveReinforcement = isAdaptiveReinforcementEligible(record, item);
+        const attemptedPractice = isAttemptedPracticeEligible(record);
+        if (!ordinaryReinforcement && !adaptiveReinforcement && !attemptedPractice) return;
         const pId = item.partKey;
         if (!apiParts[pId]) return;
-        const lastPractisedRaw = record?.reinforcedAt ?? record?.updatedAt;
+        const lastPractisedRaw = record?.reinforcedAt ?? record?.lastAnswerAt ?? record?.updatedAt;
         const parsedLastPractised = lastPractisedRaw ? Date.parse(lastPractisedRaw) : 0;
+        const repeatPriority = adaptiveReinforcement || attemptedPractice
+          ? adaptiveRepeatPriority(record, item)
+          : 0;
+        const practiceUrgency = attemptedPractice ? 2 : adaptiveReinforcement ? 1 : 0;
         reinforcementCandidates.push({
           pId,
           index,
           successes: Number(record?.successes) || 0,
           lastPractised: Number.isFinite(parsedLastPractised) ? parsedLastPractised : 0,
+          practiceUrgency,
+          repeatPriority,
           step: {
             type: "sentence",
             review: true,
-            reviewReason: "reinforcement",
-            reinforcement: true,
+            reviewReason: attemptedPractice ? "attempted" : adaptiveReinforcement ? "adaptive" : "reinforcement",
+            optionalPractice: true,
+            reinforcement: !attemptedPractice,
+            repeatPriority,
             interval: Number(record?.intervalDays) || 1,
             item: {
               id: item.id,
@@ -652,6 +713,7 @@ export default function GermanLearningLab() {
               say: item.say,
               long: item.long,
               group: item.group,
+              level: item.level,
               mastery: "learning",
             },
           },
@@ -666,6 +728,8 @@ export default function GermanLearningLab() {
       const candidates: { pId: string; index: number; score: number; step: any }[] = [];
       catalog.forEach((item, index) => {
         if (statusForId(reviewState, item.id, item.aliases) !== "new") return;
+        const progressRecord = progressEntryForId(reviewState, item.id, item.aliases)?.record;
+        if (isAttemptedPracticeEligible(progressRecord)) return;
         const pId = item.partKey;
         const p = apiParts[pId];
         if (!p) return;
@@ -696,6 +760,7 @@ export default function GermanLearningLab() {
               say: item.say,
               long: item.long,
               group: item.group,
+              level: item.level,
               mastery: "new",
             },
           },
@@ -897,7 +962,10 @@ export default function GermanLearningLab() {
       onPreviewKnown={replaceKnownPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
-      onAdvance={(step: any, skipped?: boolean) => { if (!skipped) markCompleted([step]); }}
+      onAdvance={(step: any, skipped?: boolean, performance?: AnswerPerformance) => {
+        if (skipped) markAttempted(step, performance);
+        else markCompleted([step], performance);
+      }}
       onRegisterAnswer={(id: string, correct: boolean) => {
         const state = (loadScopedJson<RegisterState>(REGISTER_KEY, {}, user) as RegisterState) ?? {};
         saveScopedJson(REGISTER_KEY, recordRegisterAnswer(state, id, correct), user);

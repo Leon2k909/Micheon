@@ -31,6 +31,14 @@ export type GradeRecord = {
   permanent?: boolean;
   /** most recent optional practice rep that did not alter the review date */
   reinforcedAt?: string;
+  /** answer checks accumulated across completed/abandoned sentence routes */
+  answerAttempts?: number;
+  /** incorrect answer checks accumulated across sentence routes */
+  answerMistakes?: number;
+  /** recent difficulty signal; rises on mistakes and fades through clean reps */
+  difficultyDebt?: number;
+  lastMistakeAt?: string;
+  lastAnswerAt?: string;
 };
 export type GradeStore = Record<string, GradeRecord>;
 
@@ -114,6 +122,24 @@ export function gradeEntryForId(store: GradeStore, id: string, aliases: string[]
   return undefined;
 }
 
+/**
+ * Find any progress record, including a sentence that has mistakes recorded but
+ * was skipped before receiving a mastery grade. A graded alias still wins over
+ * an ungraded canonical record so legacy mastery is never hidden.
+ */
+export function progressEntryForId(store: GradeStore, id: string, aliases: string[] = []) {
+  const keys = [id, ...aliases];
+  for (const key of keys) {
+    const record = store?.[key];
+    if (record?.lastGrade) return { key, record };
+  }
+  for (const key of keys) {
+    const record = store?.[key];
+    if (record && typeof record === "object") return { key, record };
+  }
+  return undefined;
+}
+
 /** Replace any legacy alias record with one canonical grade entry. */
 export function setCanonicalGradeRecord(
   store: GradeStore,
@@ -151,9 +177,9 @@ export function setItemStatus(
     // Same declaration as the lesson's "Know it" skip button — jumps most
     // of the way up the ladder rather than climbing one rung. See
     // recordDeclaredKnown in memoryStrength.ts.
-    setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(gradeEntryForId(store, id, aliases)?.record));
+    setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(progressEntryForId(store, id, aliases)?.record));
   } else {
-    setCanonicalGradeRecord(store, id, aliases, recordStruggle());
+    setCanonicalGradeRecord(store, id, aliases, recordStruggle(Date.now(), progressEntryForId(store, id, aliases)?.record));
   }
   saveGradeStore(store, profile);
   return store;
@@ -175,9 +201,9 @@ export function setItemsStatus(
       delete store[id];
       for (const alias of aliases) delete store[alias];
     } else if (status === "known") {
-      setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(gradeEntryForId(store, id, aliases)?.record));
+      setCanonicalGradeRecord(store, id, aliases, recordDeclaredKnown(progressEntryForId(store, id, aliases)?.record));
     } else {
-      setCanonicalGradeRecord(store, id, aliases, recordStruggle());
+      setCanonicalGradeRecord(store, id, aliases, recordStruggle(Date.now(), progressEntryForId(store, id, aliases)?.record));
     }
   }
   saveGradeStore(store, profile);
