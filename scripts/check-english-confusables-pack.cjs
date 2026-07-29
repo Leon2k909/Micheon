@@ -80,7 +80,7 @@ if (pack) {
   const primaryEnglish = pack.phrases.map((phrase) => matchingVisibleKey(phrase.en, "en"));
   const groups = new Set(pack.phrases.map((phrase) => phrase.group));
 
-  check("the pack adds at least forty focused sentences", pack.phrases.length >= 40, `found ${pack.phrases.length}`);
+  check("the pack adds at least fifty focused sentences", pack.phrases.length >= 50, `found ${pack.phrases.length}`);
   check("every sentence has a stable unique id", ids.every(Boolean) && new Set(ids).size === ids.length);
   check("every German prompt is unique inside the pack", new Set(germanPrompts).size === germanPrompts.length);
   check("every primary English answer is unique inside the pack", new Set(primaryEnglish).size === primaryEnglish.length);
@@ -96,6 +96,7 @@ if (pack) {
       "there-their-theyre",
       "its-thats",
       "your-youre-whose-whos",
+      "who-whom",
       "other-common-confusables",
     ].every((group) => groups.has(group))
   );
@@ -108,6 +109,10 @@ if (pack) {
   const directTheyre = byId.get("cb-english-confusables-theyre-bringing-their");
   const directIts = byId.get("cb-english-confusables-its-lost-its-collar");
   const directYoure = byId.get("cb-english-confusables-youre-forgetting-your");
+  const whoCalled = byId.get("cb-english-confusables-who-called");
+  const whoDidYouCall = byId.get("cb-english-confusables-who-did-you-call");
+  const whoCameWith = byId.get("cb-english-confusables-who-came-with");
+  const whoHelpingWhom = byId.get("cb-english-confusables-who-helping-whom");
 
   check("could've is displayed and its full form is accepted", primaryAnswer(couldve?.en) === "I could've helped you if you'd asked." && matchEnglishPhrase("I could have helped you if you had asked", couldve?.en ?? "").ok);
   check("would've is displayed and its full form is accepted", primaryAnswer(wouldve?.en) === "I would've called, but my battery was dead." && matchEnglishPhrase("I would have called, but my battery was dead", wouldve?.en ?? "").ok);
@@ -121,6 +126,14 @@ if (pack) {
   check("you're/your contrast is present", /\byou're\b/i.test(directYoure?.en ?? "") && /\byour\b/i.test(directYoure?.en ?? ""));
   check("a meaning-changing their/they're swap is rejected", !matchEnglishPhrase("Their waiting outside", byId.get("cb-english-confusables-theyre-waiting")?.en ?? "").ok);
   check("a meaning-changing your/you're swap is rejected", !matchEnglishPhrase("Your early", byId.get("cb-english-confusables-youre-early")?.en ?? "").ok);
+  check("the who/whom progression contains ten examples", [...byId.values()].filter((phrase) => phrase.group === "who-whom").length === 10);
+  check("subject questions teach who and reject whom", primaryAnswer(whoCalled?.en) === "Who called you?" && !matchEnglishPhrase("Whom called you?", whoCalled?.en ?? "").ok);
+  check("conversation leads for an object question", primaryAnswer(whoDidYouCall?.en) === "Who did you call?");
+  check("formal object whom remains accepted", matchEnglishPhrase("Whom did you call?", whoDidYouCall?.en ?? "").ok);
+  check("natural final-preposition wording leads", primaryAnswer(whoCameWith?.en) === "Who did you come with?");
+  check("fronted formal preposition remains accepted", matchEnglishPhrase("With whom did you come?", whoCameWith?.en ?? "").ok);
+  check("informal object who and formal whom are both accepted", matchEnglishPhrase("Who is helping who?", whoHelpingWhom?.en ?? "").ok && matchEnglishPhrase("Who is helping whom?", whoHelpingWhom?.en ?? "").ok);
+  check("who/whom register coaching is explicit", [whoDidYouCall, whoCameWith, whoHelpingWhom].every((phrase) => /(?:Alltag|Gespräch|formell)/i.test(phrase?.use ?? "")));
 
   const catalog = buildPartCatalog(pack, packKey);
   check(
