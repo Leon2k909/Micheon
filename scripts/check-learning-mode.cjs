@@ -125,6 +125,111 @@ if (reportedPhrase) {
   );
 }
 
+const reportedDislikePhrase = allPartBlueprints.part69?.phrases?.[1];
+
+check("the reported conversational dislike still exists", Boolean(reportedDislikePhrase));
+check(
+  "the reported conversational dislike keeps its stable Part 69 source position",
+  reportedDislikePhrase?.de === "Ich mag sie einfach nicht besonders."
+    && String(reportedDislikePhrase?.en ?? "").includes("I'm not that keen on her")
+);
+if (reportedDislikePhrase) {
+  const conversation = phraseForLearningMode(reportedDislikePhrase, "conversation");
+  const exam = phraseForLearningMode(reportedDislikePhrase, "exam");
+  const spoken = "Ich mag sie nicht besonders.";
+  const emphatic = "Ich mag sie einfach nicht besonders.";
+
+  check(
+    "Conversation mode teaches the unmarked everyday dislike",
+    conversation.de === spoken,
+    `found ${JSON.stringify(conversation.de)}`
+  );
+  check(
+    "the everyday dislike keeps an honest conversational English meaning",
+    conversation.en === "I'm not that keen on her. / I don't particularly like her.",
+    `found ${JSON.stringify(conversation.en)}`
+  );
+  check(
+    "Conversation mode keeps the more emphatic variant visible",
+    conversation.long === emphatic,
+    `found ${JSON.stringify(conversation.long)}`
+  );
+  check(
+    "Conversation grading accepts both the everyday and emphatic variants",
+    acceptsSelectedPhrase(conversation, spoken)
+      && acceptsSelectedPhrase(conversation, emphatic)
+  );
+  check(
+    "Exam mode preserves the authored emphatic sentence",
+    exam.de === emphatic && exam.short === spoken,
+    `found target ${JSON.stringify(exam.de)} and short ${JSON.stringify(exam.short)}`
+  );
+}
+
+const auditedConversationalPrimaries = [
+  {
+    standard: "Wann öffnet der Supermarkt?",
+    spoken: "Wann macht der Supermarkt auf?",
+    spokenEn: "When does the supermarket open? / What time does the supermarket open?",
+  },
+  {
+    standard: "Meinetwegen.",
+    spoken: "Von mir aus.",
+    spokenEn: "Fine by me. / All right then.",
+  },
+  {
+    standard: "Das ergibt Sinn.",
+    spoken: "Das macht Sinn.",
+    spokenEn: "That makes sense.",
+  },
+  {
+    standard: "Das sieht an dir richtig gut aus.",
+    spoken: "Das steht dir richtig gut.",
+    spokenEn: "That really suits you. / That looks really good on you.",
+  },
+  {
+    standard: "Wo sind die Umkleidekabinen?",
+    spoken: "Wo sind die Umkleiden?",
+    spokenEn: "Where are the changing rooms? / Where are the fitting rooms?",
+  },
+  {
+    standard: "Ich krieg das Regal einfach nicht zusammengebaut.",
+    spoken: "Ich krieg das Regal einfach nicht zusammen.",
+    spokenEn: "I just can't get this shelf together. / I can't get this shelf put together.",
+  },
+  {
+    standard: "Der Laden ist auch am Sonntag geöffnet.",
+    spoken: "Der Laden ist auch sonntags offen.",
+    spokenEn: "The shop is open on Sundays too.",
+  },
+];
+
+for (const expected of auditedConversationalPrimaries) {
+  const phrase = authoredPhrases.find((candidate) => candidate?.de === expected.standard);
+  check(`audited conversational phrase still exists: ${expected.standard}`, Boolean(phrase));
+  if (!phrase) continue;
+
+  const conversation = phraseForLearningMode(phrase, "conversation");
+  const exam = phraseForLearningMode(phrase, "exam");
+  check(
+    `Conversation mode teaches the everyday form: ${expected.spoken}`,
+    conversation.de === expected.spoken && conversation.en === expected.spokenEn,
+    `found ${JSON.stringify(conversation.de)} / ${JSON.stringify(conversation.en)}`
+  );
+  check(
+    `Conversation mode retains and accepts the careful form: ${expected.standard}`,
+    conversation.long === expected.standard
+      && acceptsSelectedPhrase(conversation, expected.spoken)
+      && acceptsSelectedPhrase(conversation, expected.standard),
+    `found long ${JSON.stringify(conversation.long)}`
+  );
+  check(
+    `Exam mode retains the careful target: ${expected.standard}`,
+    exam.de === expected.standard && exam.short === expected.spoken,
+    `found target ${JSON.stringify(exam.de)} and short ${JSON.stringify(exam.short)}`
+  );
+}
+
 const reportedTatoebaPhrase = tatoebaPhrases.find((phrase) =>
   phrase?.en === "That's not what I said."
 );
