@@ -37,6 +37,8 @@ export const CURRICULUM_ORDER: string[] = [
   "part163",         // Talking about experience: ever, never, yet and how long
   "part164",         // Explaining why: reasons, purpose and consequences
   "part165",         // Talking about habits: frequency, routines and changes
+  "part166",         // Everyday things: finding, borrowing, sharing and putting away
+  "part167",         // Identifying people and things: which one, where and what it looks like
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",

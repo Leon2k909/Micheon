@@ -14,6 +14,16 @@ const result = esbuild.buildSync({
         matchLearningModeGermanAnswer,
         phraseForLearningMode,
       } from "./src/lib/learningMode.ts";
+      export {
+        AUDIO_REQUIRED_SENTENCE_PHASES,
+        BILINGUAL_SENTENCE_PHASES,
+        MASTERED_SENTENCE_PHASES,
+        SENTENCE_PHASES,
+        buildSentencePhaseRoute,
+        replacementSentencePhaseWhenMuted,
+      } from "./src/lib/guidedLessonPhases.ts";
+      export { wordOrderTokensMatchSentence } from "./src/lib/wordOrder.ts";
+      export { getSfxAudioVolume } from "./src/lib/audioMute.ts";
     `,
     resolveDir: root,
     sourcefile: "learning-mode-check-entry.ts",
@@ -34,10 +44,18 @@ compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
   allPartBlueprints,
+  AUDIO_REQUIRED_SENTENCE_PHASES,
+  BILINGUAL_SENTENCE_PHASES,
+  buildSentencePhaseRoute,
   buildTatoebaParts,
   curatedTopics,
+  getSfxAudioVolume,
+  MASTERED_SENTENCE_PHASES,
   matchLearningModeGermanAnswer,
   phraseForLearningMode,
+  replacementSentencePhaseWhenMuted,
+  SENTENCE_PHASES,
+  wordOrderTokensMatchSentence,
 } = compiled.exports;
 
 let failures = 0;
@@ -65,6 +83,45 @@ const authoredPhrases = [
   ...curatedTopics.flatMap((topic) => topic?.phrases ?? []),
   ...tatoebaPhrases,
 ];
+
+const reportedRepeatedWordPhrase = authoredPhrases.find(
+  (phrase) => phrase?.de === "Sie müssen nicht mit, wenn Sie nicht wollen."
+);
+check("the reported repeated-word sentence still exists", Boolean(reportedRepeatedWordPhrase));
+check(
+  "the reported sentence has a natural and faithful English meaning",
+  reportedRepeatedWordPhrase?.en === "You don't have to come along if you don't want to.",
+  `found ${JSON.stringify(reportedRepeatedWordPhrase?.en)}`
+);
+check(
+  "the reported sentence explains why both repeated words are required",
+  String(reportedRepeatedWordPhrase?.use ?? "").includes("each appear twice on purpose")
+);
+
+function firstRepeatedVisibleWordPair(sentence) {
+  const words = String(sentence ?? "").trim().split(/\s+/).filter(Boolean);
+  const firstAt = new Map();
+  for (let index = 0; index < words.length; index += 1) {
+    const previous = firstAt.get(words[index]);
+    if (previous !== undefined) return { words, first: previous, second: index };
+    firstAt.set(words[index], index);
+  }
+  return null;
+}
+
+const repeatedWordRows = authoredPhrases
+  .map((phrase) => ({ phrase, pair: firstRepeatedVisibleWordPair(phrase?.de) }))
+  .filter((row) => row.pair);
+const repeatedWordOrderFailures = repeatedWordRows.filter(({ pair }) => {
+  const tokens = pair.words.map((text, index) => ({ id: `${index}-${text}`, text }));
+  [tokens[pair.first], tokens[pair.second]] = [tokens[pair.second], tokens[pair.first]];
+  return !wordOrderTokensMatchSentence(tokens, pair.words.join(" "));
+});
+check(
+  "every catalog sentence with identical visible tiles accepts those tiles in either identity order",
+  repeatedWordRows.length > 0 && repeatedWordOrderFailures.length === 0,
+  repeatedWordOrderFailures.slice(0, 5).map(({ phrase }) => phrase.de).join("; ")
+);
 
 function acceptsSelectedPhrase(selected, answer) {
   return matchLearningModeGermanAnswer(answer, selected).ok;
@@ -530,6 +587,7 @@ check(
 );
 
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
+const muteButtonSource = fs.readFileSync(path.join(root, "src/components/MuteButton.tsx"), "utf8");
 const guidedStyles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsView.tsx"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -543,8 +601,23 @@ function phaseNames(constantName) {
   return [...body.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
 }
 
-const fullLessonPhases = phaseNames("PHASES");
-const bilingualLessonPhases = phaseNames("BILINGUAL_PHASES");
+const fullLessonPhases = [...SENTENCE_PHASES];
+const bilingualLessonPhases = [...BILINGUAL_SENTENCE_PHASES];
+const mutedFullLessonPhases = buildSentencePhaseRoute({
+  mastered: false,
+  bilingual: false,
+  audioMuted: true,
+});
+const mutedBilingualLessonPhases = buildSentencePhaseRoute({
+  mastered: false,
+  bilingual: true,
+  audioMuted: true,
+});
+const mutedMasteredLessonPhases = buildSentencePhaseRoute({
+  mastered: true,
+  bilingual: false,
+  audioMuted: true,
+});
 
 check(
   "guided lesson routes omit the temporarily disabled speaking stage",
@@ -552,6 +625,84 @@ check(
     && !bilingualLessonPhases.includes("Speak")
     && fullLessonPhases.includes("WriteFromMemory")
     && !guidedSource.includes('phase === "Speak"')
+);
+check(
+  "master mute temporarily removes every audio-required sentence stage",
+  AUDIO_REQUIRED_SENTENCE_PHASES.length === 2
+    && AUDIO_REQUIRED_SENTENCE_PHASES.includes("ListenPick")
+    && AUDIO_REQUIRED_SENTENCE_PHASES.includes("MissingWord")
+    && AUDIO_REQUIRED_SENTENCE_PHASES.every((phase) => !mutedFullLessonPhases.includes(phase))
+    && mutedFullLessonPhases.length === fullLessonPhases.length - AUDIO_REQUIRED_SENTENCE_PHASES.length
+    && mutedFullLessonPhases[mutedFullLessonPhases.indexOf("MeaningSelect") + 1] === "Type"
+);
+check(
+  "mute filtering also preserves the useful bilingual and mastered routes",
+  AUDIO_REQUIRED_SENTENCE_PHASES.every((phase) => !mutedBilingualLessonPhases.includes(phase))
+    && mutedBilingualLessonPhases.includes("French")
+    && mutedBilingualLessonPhases.includes("Memory")
+    && JSON.stringify(mutedMasteredLessonPhases) === JSON.stringify(MASTERED_SENTENCE_PHASES)
+);
+check(
+  "muting during either listening check moves safely to the next usable stage",
+  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false }) === "Type"
+    && replacementSentencePhaseWhenMuted("MissingWord", { mastered: false, bilingual: false }) === "Type"
+    && replacementSentencePhaseWhenMuted("Type", { mastered: false, bilingual: false }) === "Type"
+);
+check(
+  "the guided lesson reacts to the shared top-right mute control",
+  guidedSource.includes("window.addEventListener(AUDIO_SETTINGS_EVENT, syncAudioState)")
+    && guidedSource.includes("replacementSentencePhaseWhenMuted(phase")
+    && guidedSource.includes("audioMuted: audioMutedRef.current")
+);
+check(
+  "the audio mixer exposes a separate persistent sound-effects slider",
+  muteButtonSource.includes('label={ui("Sound effects")}')
+    && muteButtonSource.includes('testId="sfx"')
+    && muteButtonSource.includes("setSfxAudioVolume")
+    && muteButtonSource.includes("toggleSfxMuted")
+);
+check(
+  "answer sounds respect both master and sound-effects volume",
+  getSfxAudioVolume({
+    muted: false,
+    masterVolume: 0.5,
+    sfxVolume: 0.4,
+    englishVolume: 1,
+    germanVolume: 1,
+    sfxMuted: false,
+    englishMuted: false,
+    germanMuted: false,
+  }) === 0.2
+    && getSfxAudioVolume({
+      muted: false,
+      masterVolume: 1,
+      sfxVolume: 1,
+      englishVolume: 1,
+      germanVolume: 1,
+      sfxMuted: true,
+      englishMuted: false,
+      germanMuted: false,
+    }) === 0
+    && guidedSource.includes("const sfxVolume = getSfxAudioVolume()")
+    && guidedSource.includes("gain * sfxVolume")
+);
+check(
+  "word-order grading compares visible text instead of hidden duplicate-tile positions",
+  guidedSource.includes("wordOrderTokensMatchSentence(orderTokens, item.de)")
+    && !guidedSource.includes("answerIndex")
+    && wordOrderTokensMatchSentence(
+      [
+        { text: "Sie" },
+        { text: "müssen" },
+        { text: "nicht" },
+        { text: "mit," },
+        { text: "wenn" },
+        { text: "Sie" },
+        { text: "nicht" },
+        { text: "wollen." },
+      ],
+      "Sie müssen nicht mit, wenn Sie nicht wollen."
+    )
 );
 check(
   "desktop lessons cannot trigger a speech-model download",

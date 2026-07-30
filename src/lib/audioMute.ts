@@ -11,8 +11,10 @@ export type TtsAudioLanguage = "english" | "german";
 export interface AudioSettings {
   muted: boolean;
   masterVolume: number;
+  sfxVolume: number;
   englishVolume: number;
   germanVolume: number;
+  sfxMuted: boolean;
   englishMuted: boolean;
   germanMuted: boolean;
 }
@@ -21,8 +23,10 @@ type StoredAudioSettings = Omit<AudioSettings, "muted">;
 
 const DEFAULT_SETTINGS: StoredAudioSettings = {
   masterVolume: 1,
+  sfxVolume: 1,
   englishVolume: 1,
   germanVolume: 1,
+  sfxMuted: false,
   englishMuted: false,
   germanMuted: false,
 };
@@ -42,8 +46,10 @@ function readStoredSettings(): StoredAudioSettings {
     if (!parsed || typeof parsed !== "object") return { ...DEFAULT_SETTINGS };
     return {
       masterVolume: clampVolume(parsed.masterVolume, DEFAULT_SETTINGS.masterVolume),
+      sfxVolume: clampVolume(parsed.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
       englishVolume: clampVolume(parsed.englishVolume, DEFAULT_SETTINGS.englishVolume),
       germanVolume: clampVolume(parsed.germanVolume, DEFAULT_SETTINGS.germanVolume),
+      sfxMuted: parsed.sfxMuted === true,
       englishMuted: parsed.englishMuted === true,
       germanMuted: parsed.germanMuted === true,
     };
@@ -75,6 +81,11 @@ function emitAudioSettingsChanged() {
 /** All persisted app-audio controls, including the legacy global mute flag. */
 export function getAudioSettings(): AudioSettings {
   return { muted: isAudioMuted(), ...readStoredSettings() };
+}
+
+/** The state represented by the app-wide speaker button. */
+export function isMasterAudioSilent(settings: AudioSettings = getAudioSettings()): boolean {
+  return settings.muted || settings.masterVolume <= 0;
 }
 
 /** Global app-audio mute: silences TTS voices and game-feel sounds. */
@@ -114,6 +125,44 @@ export function setMasterAudioVolume(volume: number) {
   // Moving a silent slider up is an explicit request to hear audio again.
   if (nextVolume > 0 && isAudioMuted()) writeMuted(false);
   emitAudioSettingsChanged();
+}
+
+export function isSfxMuted(): boolean {
+  const settings = readStoredSettings();
+  return settings.sfxMuted || settings.sfxVolume <= 0;
+}
+
+export function setSfxMuted(muted: boolean) {
+  const stored = readStoredSettings();
+  writeStoredSettings({
+    ...stored,
+    sfxMuted: muted,
+    sfxVolume: !muted && stored.sfxVolume <= 0 ? 0.8 : stored.sfxVolume,
+  });
+  emitAudioSettingsChanged();
+}
+
+export function toggleSfxMuted(): boolean {
+  const next = !isSfxMuted();
+  setSfxMuted(next);
+  return next;
+}
+
+export function setSfxAudioVolume(volume: number) {
+  const stored = readStoredSettings();
+  const nextVolume = clampVolume(volume);
+  writeStoredSettings({
+    ...stored,
+    sfxVolume: nextVolume,
+    sfxMuted: nextVolume > 0 ? false : stored.sfxMuted,
+  });
+  emitAudioSettingsChanged();
+}
+
+/** Effective answer-sound volume after master and SFX controls. */
+export function getSfxAudioVolume(settings: AudioSettings = getAudioSettings()): number {
+  if (settings.muted || settings.masterVolume <= 0 || settings.sfxMuted) return 0;
+  return settings.masterVolume * settings.sfxVolume;
 }
 
 export function audioLanguageFromTag(lang: string): TtsAudioLanguage | null {

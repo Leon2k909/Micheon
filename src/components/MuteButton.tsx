@@ -12,10 +12,13 @@ import { cn } from "@/lib/utils";
 import {
   AUDIO_SETTINGS_EVENT,
   getAudioSettings,
+  isMasterAudioSilent,
   isTtsLanguageMuted,
   setMasterAudioVolume,
+  setSfxAudioVolume,
   setTtsLanguageVolume,
   toggleAudioMuted,
+  toggleSfxMuted,
   toggleTtsLanguageMuted,
   type AudioSettings,
   type TtsAudioLanguage,
@@ -201,7 +204,8 @@ export function MuteButton({
 
   useEffect(() => () => clearCloseTimer(), [clearCloseTimer]);
 
-  const masterMuted = settings.muted || settings.masterVolume <= 0;
+  const masterMuted = isMasterAudioSilent(settings);
+  const sfxMuted = settings.sfxMuted || settings.sfxVolume <= 0;
   const englishMuted = isTtsLanguageMuted("english");
   const germanMuted = isTtsLanguageMuted("german");
   const triggerTitle = `${ui(masterMuted ? "Unmute audio" : "Mute audio")} · ${ui("Hover or right-click for audio settings.")}`;
@@ -248,6 +252,16 @@ export function MuteButton({
         unmuteLabel={ui("Unmute all audio")}
         value={settings.masterVolume}
       />
+      <VolumeRow
+        label={ui("Sound effects")}
+        muteLabel={ui("Mute sound effects")}
+        muted={sfxMuted}
+        onChange={setSfxAudioVolume}
+        onToggleMuted={toggleSfxMuted}
+        testId="sfx"
+        unmuteLabel={ui("Unmute sound effects")}
+        value={settings.sfxVolume}
+      />
       <div className="audio-mixer-divider" />
       <VolumeRow
         label={ui("English voice")}
@@ -269,7 +283,7 @@ export function MuteButton({
         unmuteLabel={ui("Unmute German voice")}
         value={settings.germanVolume}
       />
-      <p className="audio-mixer-footnote">{ui("English and German voice controls apply to all spoken audio, including lessons, games, and pet speech.")}</p>
+      <p className="audio-mixer-footnote">{ui("Sound effects control correct and incorrect answer sounds. Voice controls apply to all spoken audio, including lessons, games, and pet speech.")}</p>
     </div>,
     document.body
   ) : null;

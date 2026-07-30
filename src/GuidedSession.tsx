@@ -31,7 +31,18 @@ import { effectsReduced } from "@/lib/effects";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
-import { getMasterAudioVolume } from "@/lib/audioMute";
+import {
+  AUDIO_SETTINGS_EVENT,
+  getSfxAudioVolume,
+  isMasterAudioSilent,
+} from "@/lib/audioMute";
+import {
+  buildSentencePhaseRoute,
+  MASTERED_SENTENCE_PHASES as MASTERED_PHASES,
+  replacementSentencePhaseWhenMuted,
+  type SentencePhase as Phase,
+} from "@/lib/guidedLessonPhases";
+import { wordOrderTokensMatchSentence } from "@/lib/wordOrder";
 import { MuteButton } from "@/components/MuteButton";
 import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
@@ -66,8 +77,8 @@ function getAudioCtx(): AudioContext | null {
   } catch { return null; }
 }
 function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", gain = 0.05) {
-  const masterVolume = getMasterAudioVolume();
-  if (masterVolume <= 0) return;
+  const sfxVolume = getSfxAudioVolume();
+  if (sfxVolume <= 0) return;
   const ctx = getAudioCtx();
   if (!ctx) return;
   try {
@@ -80,7 +91,7 @@ function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", ga
       osc.frequency.value = f;
       const start = now + i * dur * 0.85;
       g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(gain * masterVolume, start + 0.012);
+      g.gain.linearRampToValueAtTime(gain * sfxVolume, start + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
       osc.connect(g); g.connect(ctx.destination);
       osc.start(start); osc.stop(start + dur);
@@ -239,10 +250,7 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
 // final three rounds are deliberately closed-book: rehearsal ends at the
 // write-from-memory stage,
 // then the learner has to retrieve the target, meaning, and finally both.
-const PHASES = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Type", "Translate", "TypeAgain", "TranslateAgain", "Gap", "Order", "WriteFromMemory", "RecallTarget", "RecallMeaning", "RecallBoth"] as const;
-type Phase = typeof PHASES[number] | "French" | "Memory";
-
-const CLOSED_BOOK_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBoth"];
+const CLOSED_BOOK_PHASES: readonly Phase[] = MASTERED_PHASES;
 
 /**
  * The short route for a phrase the learner already recalls reliably.
@@ -253,8 +261,6 @@ const CLOSED_BOOK_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBot
  * onto the full route, because the run of successes evidently didn't mean what
  * it looked like.
  */
-const MASTERED_PHASES: Phase[] = ["RecallTarget", "RecallMeaning", "RecallBoth"];
-
 function isClosedBookPhase(phase: Phase): boolean {
   return CLOSED_BOOK_PHASES.includes(phase);
 }
@@ -284,14 +290,12 @@ function computeListeningGap(sentence: string): MissingWordPrompt {
 type OrderToken = {
   id: string;
   text: string;
-  answerIndex: number;
 };
 
 function buildOrderTokens(sentence: string): OrderToken[] {
-  const tokens = String(sentence ?? "").trim().split(/\s+/).filter(Boolean).map((text, answerIndex) => ({
-    id: `${answerIndex}-${text}`,
+  const tokens = String(sentence ?? "").trim().split(/\s+/).filter(Boolean).map((text, index) => ({
+    id: `${index}-${text}`,
     text,
-    answerIndex,
   }));
   if (tokens.length < 2) return tokens;
 
@@ -302,8 +306,13 @@ function buildOrderTokens(sentence: string): OrderToken[] {
     const swapAt = seed % (index + 1);
     [shuffled[index], shuffled[swapAt]] = [shuffled[swapAt], shuffled[index]];
   }
-  if (shuffled.every((token, index) => token.answerIndex === index)) {
-    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  if (wordOrderTokensMatchSentence(shuffled, sentence)) {
+    const visiblyDifferentIndex = shuffled.findIndex(
+      (token, index) => index > 0 && token.text !== shuffled[0].text
+    );
+    if (visiblyDifferentIndex > 0) {
+      [shuffled[0], shuffled[visiblyDifferentIndex]] = [shuffled[visiblyDifferentIndex], shuffled[0]];
+    }
   }
   return shuffled;
 }
@@ -313,10 +322,9 @@ function cleanTranslationToken(token: string): string {
 }
 
 function buildTranslationChoices(answer: string, pool: string[] = [], distractorLimit = 3): OrderToken[] {
-  const answerTokens = String(answer ?? "").trim().split(/\s+/).filter(Boolean).map((text, answerIndex) => ({
-    id: `answer-${answerIndex}-${text}`,
+  const answerTokens = String(answer ?? "").trim().split(/\s+/).filter(Boolean).map((text, index) => ({
+    id: `answer-${index}-${text}`,
     text,
-    answerIndex,
   }));
   const answerKey = choiceKey(primaryAnswer(answer));
   const seen = new Set(
@@ -340,7 +348,6 @@ function buildTranslationChoices(answer: string, pool: string[] = [], distractor
     .map((text, index) => ({
       id: `decoy-${index}-${text}`,
       text,
-      answerIndex: -1,
     }));
 
   return [...answerTokens, ...distractors]
@@ -413,8 +420,6 @@ function buildMissingWordChoices(answer: string, pool: string[], limit = 3): str
 // French) and uses English only as the shown meaning, so the English-typing
 // "Translate" step is replaced by the French step. "Memory" is a final recall
 // phase where no sentence is shown — the learner types both from memory.
-const BILINGUAL_PHASES: Phase[] = ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "MissingWord", "Type", "French", "Memory"];
-
 // "Type" is the German-typing step; label it "German" in bilingual mode so the
 // two language steps read clearly as German / French. The second-round steps
 // get short labels of their own.
@@ -1053,16 +1058,28 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // permanent downgrade of how carefully the phrase is taught.
   const [recallFailed, setRecallFailed] = useState(false);
   const masteredRoute = item?.mastery === "strong" && !recallFailed;
+  const [audioMuted, setAudioMuted] = useState(() => isMasterAudioSilent());
+  const audioMutedRef = useRef(audioMuted);
+  useEffect(() => {
+    const syncAudioState = () => {
+      const muted = isMasterAudioSilent();
+      audioMutedRef.current = muted;
+      setAudioMuted(muted);
+    };
+    window.addEventListener(AUDIO_SETTINGS_EVENT, syncAudioState);
+    return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, syncAudioState);
+  }, []);
   const [phase, setPhase] = useState<Phase>(
     item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"
   );
   const currentPhaseRef = useRef<Phase>(phase);
   useEffect(() => { currentPhaseRef.current = phase; }, [phase]);
   /** The stages this phrase actually runs through. */
-  const phaseRoute = (): Phase[] => {
-    if (masteredRoute) return [...MASTERED_PHASES];
-    return hasFr ? BILINGUAL_PHASES : [...PHASES];
-  };
+  const phaseRoute = (): Phase[] => buildSentencePhaseRoute({
+    mastered: masteredRoute,
+    bilingual: hasFr,
+    audioMuted: audioMutedRef.current,
+  });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
   useEffect(() => {
@@ -1253,8 +1270,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     return { ok: matchesGapInput(gapInput, gap.words) };
   }, [gapInput, gap.words]);
   const orderIsCorrect = useMemo(
-    () => orderTokens.length > 0 && orderTokens.every((token, index) => token.answerIndex === index),
-    [orderTokens]
+    () => wordOrderTokensMatchSentence(orderTokens, item.de),
+    [orderTokens, item.de]
   );
   const orderLocked = orderChecked && orderIsCorrect;
   // French companion: tested as an extra phase when enabled and the item has French
@@ -1265,14 +1282,29 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const memDeResult = useMemo(() => matchEither(memDeInput), [memDeInput, matchEither]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
+  // The master speaker button changes lessons immediately. If it is pressed
+  // during an audio-only check, continue at the next stage that can be done
+  // without sound instead of leaving an invisible or impossible stage active.
+  useEffect(() => {
+    if (!audioMuted) return;
+    const replacement = replacementSentencePhaseWhenMuted(phase, {
+      mastered: masteredRoute,
+      bilingual: hasFr,
+    });
+    if (!replacement || replacement === phase) return;
+    currentPhaseRef.current = replacement;
+    setPhase(replacement);
+  }, [audioMuted, hasFr, masteredRoute, phase]);
+
   // Play lesson audio automatically on first exposure and listening checks.
   // TTS is a no-op while muted, so the global mute still applies.
   useEffect(() => {
+    if (audioMuted) return;
     if (phase !== "Read" && phase !== "ListenPick") return;
     if (phase === "ListenPick") tts(item.de, 0.88, targetLang);
     else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
     else tts(item.de, 0.88, targetLang);
-  }, [phase, item.de, item.fr, hasFr]);
+  }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
 
   // Focus input when entering Type or Translate phase
   useEffect(() => {
@@ -1556,9 +1588,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
     window.addEventListener("keydown", handleStageShortcut);
     return () => window.removeEventListener("keydown", handleStageShortcut);
-    // phaseRoute intentionally derives from these two route inputs.
+    // phaseRoute intentionally derives from these route inputs and the live
+    // audio ref, which is updated synchronously by the mute event.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, masteredRoute, hasFr]);
+  }, [phase, masteredRoute, hasFr, audioMuted]);
 
   // Auto-advance: once the typed answer is strictly correct (no lenient/typo
   // pass), confirm it automatically — no Check press needed.
@@ -2036,7 +2069,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <div>
             <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
             <h1 className="fs-h1">
-              {ui(phase === "Translate" ? `Write this in ${meaningLabel}` : phaseHeading(phase, hasFr, targetLabel, meaningLabel))}
+              {ui(
+                phase === "Translate"
+                  ? `Write this in ${meaningLabel}`
+                  : phase === "Read" && audioMuted
+                    ? "Read the sentence"
+                    : phaseHeading(phase, hasFr, targetLabel, meaningLabel)
+              )}
             </h1>
             <p className="fs-sub">
               {phase === "RecallTarget"
@@ -2046,8 +2085,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   : phase === "RecallBoth"
                     ? ui("No answers are shown now. Type both sentences from memory.")
                     : hasFr
-                      ? "Read, listen, choose, then type it in German and French."
-                      : ui("Read, listen, choose, type, then translate.")}
+                      ? ui(audioMuted
+                        ? "Read, choose, then type it in German and French."
+                        : "Read, listen, choose, then type it in German and French.")
+                      : ui(audioMuted
+                        ? "Read, choose, type, then translate."
+                        : "Read, listen, choose, type, then translate.")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -2301,7 +2344,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <motion.div key="read" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {hasFr ? "Read and listen to the German and French." : ui("Read and listen — it plays automatically.")}
+              {audioMuted
+                ? ui(hasFr
+                  ? "Read the German and French sentences, then continue."
+                  : "Read the sentence, then continue.")
+                : hasFr
+                  ? ui("Read and listen to the German and French.")
+                  : ui("Read and listen — it plays automatically.")}
             </p>
             {/* One Hear-it only — the purple listen button in the heading replays. */}
             <Button onClick={advance}

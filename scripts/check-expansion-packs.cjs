@@ -107,6 +107,14 @@ const expected = {
     theme: "Talking about habits: how often, what is normal and what has changed",
     fixture: "Wie oft machst du das?",
   },
+  part166: {
+    theme: "Everyday things: finding, borrowing, sharing and putting them away",
+    fixture: "Wo kommt das hin?",
+  },
+  part167: {
+    theme: "Identifying people and things: which one, where it is and what it looks like",
+    fixture: "Welchen meinst du?",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -139,7 +147,7 @@ for (const [partKey, expectation] of Object.entries(expected)) {
 }
 
 const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
-check("new authored phrases are unique across all fifteen packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
+check("new authored phrases are unique across all seventeen packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
 
 const existingGerman = new Set();
 for (const [partKey, pack] of Object.entries(allPartBlueprints)) {
@@ -160,9 +168,9 @@ check(
   duplicate && `${duplicate.partKey}: ${duplicate.de}`
 );
 
-check("the fifteen expansion packs contain at least 692 authored phrases", newPhrases.length >= 692, `found ${newPhrases.length}`);
-check("the fifteen expansion packs contain at least 281 vocabulary seeds", totalSeeds >= 281, `found ${totalSeeds}`);
-check("the fifteen expansion packs contain at least fifty-eight dialogues", totalDialogues >= 58, `found ${totalDialogues}`);
+check("the seventeen expansion packs contain at least 792 authored phrases", newPhrases.length >= 792, `found ${newPhrases.length}`);
+check("the seventeen expansion packs contain at least 321 vocabulary seeds", totalSeeds >= 321, `found ${totalSeeds}`);
+check("the seventeen expansion packs contain at least sixty-eight dialogues", totalDialogues >= 68, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -187,6 +195,10 @@ check("reason-and-result practice follows experience practice", CURRICULUM_ORDER
 check("reason-and-result practice is introduced in tier one", packMeta("part164").tier === 1);
 check("habits-and-frequency practice follows reason-and-result practice", CURRICULUM_ORDER.indexOf("part165") === CURRICULUM_ORDER.indexOf("part164") + 1);
 check("habits-and-frequency practice is introduced in tier one", packMeta("part165").tier === 1);
+check("everyday-things practice follows habits-and-frequency practice", CURRICULUM_ORDER.indexOf("part166") === CURRICULUM_ORDER.indexOf("part165") + 1);
+check("everyday-things practice is introduced in tier one", packMeta("part166").tier === 1);
+check("identifying practice follows everyday-things practice", CURRICULUM_ORDER.indexOf("part167") === CURRICULUM_ORDER.indexOf("part166") + 1);
+check("identifying practice is introduced in tier one", packMeta("part167").tier === 1);
 check("practical-gap practice follows home and daily errands", CURRICULUM_ORDER.indexOf("part159") === CURRICULUM_ORDER.indexOf("part9") + 1);
 check("practical-gap practice stays in the common situational tier", packMeta("part159").tier === 2);
 
@@ -306,6 +318,30 @@ const habitsFrequencyCoverage = {
 };
 for (const [area, fixtures] of Object.entries(habitsFrequencyCoverage)) {
   check(`habits-and-frequency pack covers ${area}`, fixtures.every((phrase) => habitsFrequencyPhrases.has(phrase)));
+}
+
+const everydayThingsPhrases = new Set((allPartBlueprints.part166?.phrases ?? []).map((phrase) => phrase.de));
+const everydayThingsCoverage = {
+  finding: ["Wo hab ich das hingelegt?", "Da ist es ja!", "Schau mal in der Schublade nach."],
+  borrowing: ["Kann ich mir das kurz ausleihen?", "Wann brauchst du es zurück?", "Pass bitte gut darauf auf."],
+  supplies: ["Wir haben keine Milch mehr.", "Das müssen wir nachkaufen.", "Lass mir bitte noch etwas übrig."],
+  remembering: ["Vergiss deine Schlüssel nicht.", "Ich hab's zu Hause liegen lassen.", "Hast du an alles gedacht?"],
+  tidying: ["Wo kommt das hin?", "Kann das weg?", "Heb das bitte für mich auf."],
+};
+for (const [area, fixtures] of Object.entries(everydayThingsCoverage)) {
+  check(`everyday-things pack covers ${area}`, fixtures.every((phrase) => everydayThingsPhrases.has(phrase)));
+}
+
+const identifyingPhrases = new Set((allPartBlueprints.part167?.phrases ?? []).map((phrase) => phrase.de));
+const identifyingCoverage = {
+  choosing: ["Welchen meinst du?", "Nein, den anderen.", "Such dir einen aus."],
+  locating: ["Den da links.", "Ganz oben im Regal.", "Kannst du darauf zeigen?"],
+  people: ["Wie sieht er aus?", "Sie trägt eine rote Jacke.", "Du erkennst sie sofort."],
+  features: ["Es ist ungefähr so groß.", "Es ist aus Holz.", "Welche Farbe hat es?"],
+  comparing: ["Das ist nicht ganz dasselbe.", "Woran erkennt man den Unterschied?", "Das sieht in echt anders aus."],
+};
+for (const [area, fixtures] of Object.entries(identifyingCoverage)) {
+  check(`identifying pack covers ${area}`, fixtures.every((phrase) => identifyingPhrases.has(phrase)));
 }
 
 if (failures) {

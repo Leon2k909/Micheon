@@ -29,6 +29,10 @@ interface RawSentence {
 // here instead of teaching a technically possible but confusing construction
 // or silently changing German "ich" into English "you/we".
 const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Sie müssen nicht mit, wenn Sie nicht wollen.": {
+    en: "You don't have to come along if you don't want to.",
+    use: "'Sie' and 'nicht' each appear twice on purpose: the first half says there is no obligation, and the second says 'if you don't want to'. In everyday German, 'mit' can stand for the full verb 'mitkommen' when the activity is already clear.",
+  },
   "Es ist nicht an mir, das zu entscheiden.": {
     de: "Das ist nicht meine Entscheidung.",
     use: "This is the normal direct way to say that the decision belongs to someone else. 'Es ist nicht an mir, das zu entscheiden' is understandable, but it sounds formal and translated rather than conversational.",
