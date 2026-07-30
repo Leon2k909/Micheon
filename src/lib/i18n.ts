@@ -670,6 +670,12 @@ const DE: Record<string, string> = {
   "Restart & update": "Neu starten & aktualisieren",
   "Restart now": "Jetzt neu starten",
   "Restarting…": "Wird neu gestartet…",
+  "Installing your update": "Dein Update wird installiert",
+  "Micheon will close for a moment and reopen automatically.": "Micheon wird kurz geschlossen und öffnet sich danach automatisch wieder.",
+  "Download complete": "Download abgeschlossen",
+  "Restarting Micheon": "Micheon wird neu gestartet",
+  "Preparing restart": "Neustart wird vorbereitet",
+  "Just a moment": "Einen Moment",
   "Later": "Später",
 
   // ── Profile and preferences ──

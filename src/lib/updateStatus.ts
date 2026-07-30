@@ -19,6 +19,13 @@ export interface UpdateStatus {
   bytesPerSecond?: number | null;
 }
 
+export const UPDATE_INSTALL_REQUEST_EVENT = "micheon:update-install-request";
+
+/** Route every restart button through the single branded install takeover. */
+export function requestUpdateInstall(): void {
+  window.dispatchEvent(new Event(UPDATE_INSTALL_REQUEST_EVENT));
+}
+
 export function normaliseUpdatePercent(value: unknown): number {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 0;

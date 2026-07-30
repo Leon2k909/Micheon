@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpCircle, Check, Loader2, RefreshCw, TriangleAlert } from "lucide-react";
 import { ui } from "@/lib/i18n";
-import { normaliseUpdatePercent, type UpdateStatus } from "@/lib/updateStatus";
+import { normaliseUpdatePercent, requestUpdateInstall, type UpdateStatus } from "@/lib/updateStatus";
 
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 
@@ -122,7 +122,7 @@ export function UpdateStatusCard() {
         {ready && (
           <button
             className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-text)] transition-opacity hover:opacity-90"
-            onClick={() => desktop?.installUpdate?.()}
+            onClick={() => requestUpdateInstall()}
             type="button"
           >
             <ArrowUpCircle className="h-3.5 w-3.5" />

@@ -1192,9 +1192,11 @@ ipcMain.handle("update:check-now", async () => {
   return { ...updateStatus, currentVersion: app.getVersion(), supported: true };
 });
 
-// Renderer can ask to apply the downloaded update immediately (restart + install).
+// The renderer owns the visible, branded restart transition. Once it is on
+// screen, run NSIS silently so Windows' generic white/green installer never
+// replaces Micheon's update experience, then reopen the app when it finishes.
 ipcMain.on("update:install-now", () => {
-  autoUpdater.quitAndInstall();
+  autoUpdater.quitAndInstall(true, true);
 });
 
 // Window-control IPC from the custom title bar.

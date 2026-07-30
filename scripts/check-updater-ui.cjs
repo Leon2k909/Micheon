@@ -9,6 +9,7 @@ const main = read("electron/main.js");
 const preload = read("electron/preload.cjs");
 const banner = read("src/components/UpdateBanner.tsx");
 const card = read("src/components/UpdateStatusCard.tsx");
+const updateStatus = read("src/lib/updateStatus.ts");
 
 const result = esbuild.buildSync({
   stdin: {
@@ -62,6 +63,10 @@ check("the themed panel listens for every updater state", banner.includes("deskt
 check("the themed panel includes accessible progress", banner.includes('role="progressbar"') && banner.includes("aria-valuenow={percent}"));
 check("the themed panel includes restart and retry actions", banner.includes('ui("Restart Micheon")') && banner.includes('ui("Try again")'));
 check("account settings mirror download progress", card.includes('role="progressbar"') && card.includes("normaliseUpdatePercent"));
+check("explicit updates keep the generic NSIS window hidden", /autoUpdater\.quitAndInstall\(\s*true\s*,\s*true\s*\)/.test(main));
+check("the branded install takeover owns the visible restart phase", banner.includes('data-testid="update-install-takeover"') && banner.includes('aria-modal="true"') && banner.includes('ui("Installing your update")'));
+check("the custom install screen has indeterminate progress and restart status", banner.includes('role="progressbar"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
+check("all restart buttons route through one install takeover", updateStatus.includes("UPDATE_INSTALL_REQUEST_EVENT") && card.includes("requestUpdateInstall()") && !card.includes("desktop?.installUpdate?.()"));
 
 if (failures) {
   console.error(`\n${failures} updater UI regression${failures === 1 ? "" : "s"}`);

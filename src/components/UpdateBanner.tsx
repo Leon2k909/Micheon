@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CircleCheck, Download, RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowRight, CircleCheck, Download, RefreshCw, TriangleAlert } from "lucide-react";
 import {
   normaliseUpdatePercent,
+  UPDATE_INSTALL_REQUEST_EVENT,
   updatePanelIsUseful,
   updateStatusKey,
   type UpdateState,
   type UpdateStatus,
 } from "@/lib/updateStatus";
 import { ui, uiIsGerman } from "@/lib/i18n";
+import { MicheonLogo } from "@/components/MicheonLogo";
 
 // Desktop bridge (electron/preload.cjs). Undefined on the website.
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
@@ -20,8 +22,8 @@ function developmentPreview(): UpdateStatus | null {
   if (!state || !["downloading", "ready", "error"].includes(state)) return null;
   return {
     state,
-    version: search.get("update-version") || "1.2.62",
-    currentVersion: "1.2.61",
+    version: search.get("update-version") || "1.2.63",
+    currentVersion: "1.2.62",
     checkedAt: Date.now(),
     supported: true,
     percent: state === "ready" ? 100 : Number(search.get("update-percent") || 46),
@@ -53,6 +55,112 @@ function panelTitle(state: UpdateState): string {
   return ui("Update paused");
 }
 
+function UpdateInstallTakeover({
+  reduceMotion,
+  status,
+}: {
+  reduceMotion: boolean;
+  status: UpdateStatus | null;
+}) {
+  return (
+    <motion.div
+      animate={{ opacity: 1 }}
+      aria-labelledby="micheon-install-title"
+      aria-modal="true"
+      className="fixed inset-0 z-[5000] flex items-center justify-center overflow-hidden bg-[#0f1018] p-5 text-[#f7f7fb]"
+      data-testid="update-install-takeover"
+      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      role="dialog"
+      transition={{ duration: reduceMotion ? 0.01 : 0.24 }}
+    >
+      <motion.div
+        animate={reduceMotion ? undefined : { opacity: [0.28, 0.48, 0.28], scale: [0.94, 1.08, 0.94] }}
+        aria-hidden="true"
+        className="absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full bg-[#7834f7]/35 blur-[110px]"
+        transition={{ duration: 4.8, ease: "easeInOut", repeat: Infinity }}
+      />
+      <motion.div
+        animate={reduceMotion ? undefined : { opacity: [0.18, 0.34, 0.18], scale: [1.08, 0.96, 1.08] }}
+        aria-hidden="true"
+        className="absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full bg-[#a177ff]/25 blur-[120px]"
+        transition={{ duration: 5.4, ease: "easeInOut", repeat: Infinity }}
+      />
+
+      <motion.section
+        animate={{ scale: 1, y: 0 }}
+        className="relative w-full max-w-[590px] overflow-hidden rounded-[32px] border border-white/10 bg-[#1b1d27]/95 p-6 shadow-[0_36px_110px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-9"
+        initial={reduceMotion ? undefined : { scale: 0.975, y: 18 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#7834f7] via-[#a177ff] to-[#7834f7]" />
+
+        <div className="flex items-center justify-between gap-4">
+          <MicheonLogo className="max-w-[150px]" height={34} theme="dark" />
+          <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#c6afff]">
+            {ui("Micheon update")}
+          </span>
+        </div>
+
+        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center">
+          <motion.div
+            animate={reduceMotion ? undefined : { rotate: 360 }}
+            aria-hidden="true"
+            className="absolute inset-0 rounded-[30px] border border-[#a177ff]/45 border-t-[#a177ff] shadow-[0_0_38px_rgba(161,119,255,0.22)]"
+            transition={{ duration: 2.4, ease: "linear", repeat: Infinity }}
+          />
+          <div className="flex h-[70px] w-[70px] items-center justify-center rounded-[23px] bg-gradient-to-br from-[#a177ff] to-[#7834f7] shadow-[0_16px_38px_rgba(120,52,247,0.38)]">
+            <Download aria-hidden="true" className="h-7 w-7 text-white" strokeWidth={2.5} />
+          </div>
+        </div>
+
+        <div className="mx-auto mt-7 max-w-[460px] text-center">
+          <h1 className="text-3xl font-black tracking-[-0.035em] text-white sm:text-[34px]" id="micheon-install-title">
+            {ui("Installing your update")}
+          </h1>
+          <p className="mx-auto mt-3 max-w-[420px] text-sm font-semibold leading-6 text-[#b7bac9]">
+            {ui("Micheon will close for a moment and reopen automatically.")}
+          </p>
+
+          {(status?.currentVersion || status?.version) && (
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#252735] px-3 py-2 text-xs font-black tabular-nums text-[#d2d4df]">
+              <span>{status?.currentVersion ? `v${status.currentVersion}` : ui("Current")}</span>
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[#a177ff]" />
+              <span className="text-white">{status?.version ? `v${status.version}` : ui("Update ready")}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.12em] text-[#8f94a8]">
+            <span>{ui("Preparing restart")}</span>
+            <span>{ui("Just a moment")}</span>
+          </div>
+          <div aria-label={ui("Preparing restart")} className="relative h-2.5 overflow-hidden rounded-full bg-[#303344]" role="progressbar">
+            <motion.div
+              animate={reduceMotion ? { x: "180%" } : { x: ["-130%", "330%"] }}
+              className="absolute inset-y-0 left-0 w-[38%] rounded-full bg-gradient-to-r from-[#7834f7] via-[#b799ff] to-[#7834f7] shadow-[0_0_18px_rgba(161,119,255,0.5)]"
+              initial={{ x: "-130%" }}
+              transition={{ duration: reduceMotion ? 0.01 : 1.15, ease: "easeInOut", repeat: reduceMotion ? 0 : Infinity }}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          <div className="flex items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-3.5 py-3 text-xs font-bold text-[#d2d4df]">
+            <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[#7ff0ba]" />
+            {ui("Download complete")}
+          </div>
+          <div className="flex items-center gap-2.5 rounded-2xl border border-[#a177ff]/20 bg-[#a177ff]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
+            <RefreshCw aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin text-[#b799ff] motion-reduce:animate-none" />
+            {ui("Restarting Micheon")}
+          </div>
+        </div>
+      </motion.section>
+    </motion.div>
+  );
+}
+
 /**
  * The complete branded updater surface. Electron still handles the secure
  * download and installation, while this panel owns every learner-facing state.
@@ -63,6 +171,24 @@ export function UpdateBanner() {
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [installing, setInstalling] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const installTimer = useRef<number | null>(null);
+
+  const beginInstall = useCallback(() => {
+    if (installTimer.current !== null) return;
+    setInstalling(true);
+    installTimer.current = window.setTimeout(() => {
+      desktop?.installUpdate?.();
+    }, reduceMotion ? 700 : 1700);
+  }, [reduceMotion]);
+
+  useEffect(() => {
+    const handleInstallRequest = () => beginInstall();
+    window.addEventListener(UPDATE_INSTALL_REQUEST_EVENT, handleInstallRequest);
+    return () => {
+      window.removeEventListener(UPDATE_INSTALL_REQUEST_EVENT, handleInstallRequest);
+      if (installTimer.current !== null) window.clearTimeout(installTimer.current);
+    };
+  }, [beginInstall]);
 
   useEffect(() => {
     if (previewStatus || !desktop?.getUpdateStatus) return undefined;
@@ -113,7 +239,8 @@ export function UpdateBanner() {
       : Download;
 
   return (
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
       {open && status && (
         <motion.section
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -200,10 +327,7 @@ export function UpdateBanner() {
                 <button
                   className="h-10 flex-1 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
                   disabled={installing}
-                  onClick={() => {
-                    setInstalling(true);
-                    desktop?.installUpdate?.();
-                  }}
+                  onClick={beginInstall}
                   type="button"
                 >
                   {installing ? ui("Restarting…") : ui("Restart Micheon")}
@@ -233,6 +357,13 @@ export function UpdateBanner() {
           </div>
         </motion.section>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {installing && (
+          <UpdateInstallTakeover reduceMotion={Boolean(reduceMotion)} status={status} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
