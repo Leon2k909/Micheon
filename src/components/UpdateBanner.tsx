@@ -20,8 +20,8 @@ function developmentPreview(): UpdateStatus | null {
   if (!state || !["downloading", "ready", "error"].includes(state)) return null;
   return {
     state,
-    version: search.get("update-version") || "1.2.61",
-    currentVersion: "1.2.60",
+    version: search.get("update-version") || "1.2.62",
+    currentVersion: "1.2.61",
     checkedAt: Date.now(),
     supported: true,
     percent: state === "ready" ? 100 : Number(search.get("update-percent") || 46),

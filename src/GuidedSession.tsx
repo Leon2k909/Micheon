@@ -37,9 +37,11 @@ import {
   isMasterAudioSilent,
 } from "@/lib/audioMute";
 import {
+  BILINGUAL_SENTENCE_PHASES,
   buildSentencePhaseRoute,
   MASTERED_SENTENCE_PHASES as MASTERED_PHASES,
   replacementSentencePhaseWhenMuted,
+  SENTENCE_PHASES,
   type SentencePhase as Phase,
 } from "@/lib/guidedLessonPhases";
 import { wordOrderTokensMatchSentence } from "@/lib/wordOrder";
@@ -48,6 +50,7 @@ import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
+import { germanWordGloss } from "@/lib/germanWordGloss";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import {
@@ -482,6 +485,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
 // The sentence as tappable words — click any word to hear just that word.
 function TappableSentence({ text, lang }: { text: string; lang: string }) {
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
+  const showEnglishGloss = lang.toLowerCase().startsWith("de");
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const playingTimer = useRef<number | undefined>(undefined);
 
@@ -503,19 +507,25 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
 
   return (
     <>
-      {words.map((w, i) => (
-        <button
-          key={`${w}-${i}`}
-          type="button"
-          className={cn("fs-word", playingIndex === i && "is-playing")}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => playWord(w, i)}
-          aria-label={`${ui("Hear it")}: ${w}`}
-          title={ui("Tap a word to hear it")}
-        >
-          {w}
-        </button>
-      ))}
+      {words.map((w, i) => {
+        const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;
+        return (
+          <button
+            key={`${w}-${i}`}
+            type="button"
+            className={cn("fs-word", playingIndex === i && "is-playing")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => playWord(w, i)}
+            aria-label={hoverGloss
+              ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
+              : `${ui("Hear it")}: ${w}`}
+            data-gloss={hoverGloss ?? undefined}
+            title={hoverGloss ? undefined : ui("Tap a word to hear it")}
+          >
+            {w}
+          </button>
+        );
+      })}
     </>
   );
 }
@@ -537,7 +547,7 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
   // three, which reads as the lesson breaking rather than as a shortcut earned.
   const allPhases: Phase[] = phases
     ? [...phases]
-    : withFrench ? BILINGUAL_PHASES : [...PHASES];
+    : withFrench ? [...BILINGUAL_SENTENCE_PHASES] : [...SENTENCE_PHASES];
   const idx = allPhases.indexOf(current);
   const n = allPhases.length;
   const activeStageRef = useRef<HTMLButtonElement>(null);
@@ -3418,90 +3428,94 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 role="group"
                 aria-label={ui(learnEn ? "English words to arrange" : "German words to arrange")}
               >
-                {orderTokens.map((token, tokenIndex) => (
-                  <button
-                    key={token.id}
-                    type="button"
-                    draggable={!orderLocked}
-                    aria-disabled={orderLocked}
-                    aria-pressed={orderSelected === tokenIndex}
-                    aria-label={`${token.text}, ${ui("position")} ${tokenIndex + 1}`}
-                    className={cn(
-                      "fs-order-token",
-                      orderSelected === tokenIndex && "is-selected",
-                      orderDragging === token.id && "is-dragging",
-                      orderDropTarget === token.id && orderDragging !== token.id && "is-drop-target",
-                      orderChecked && orderIsCorrect && "is-correct"
-                    )}
-                    onClick={() => {
-                      if (suppressOrderClickRef.current) {
-                        suppressOrderClickRef.current = false;
-                        return;
-                      }
-                      if (!orderLocked) selectOrderToken(tokenIndex);
-                    }}
-                    onDragStart={(event) => {
-                      if (orderLocked) {
-                        event.preventDefault();
-                        return;
-                      }
-                      suppressOrderClickRef.current = true;
-                      draggedOrderTokenId.current = token.id;
-                      setOrderDragging(token.id);
-                      setOrderDropTarget(null);
-                      event.dataTransfer.effectAllowed = "move";
-                      event.dataTransfer.setData("text/plain", token.id);
-                    }}
-                    onDragEnd={() => {
-                      draggedOrderTokenId.current = null;
-                      setOrderDragging(null);
-                      setOrderDropTarget(null);
-                      window.setTimeout(() => {
-                        suppressOrderClickRef.current = false;
-                      }, 0);
-                    }}
-                    onDragEnter={(event) => {
-                      event.preventDefault();
-                      if (orderLocked) return;
-                      const fromId = draggedOrderTokenId.current;
-                      if (!fromId || fromId === token.id) {
+                {orderTokens.map((token, tokenIndex) => {
+                  const hoverGloss = learnEn ? null : germanWordGloss(token.text);
+                  return (
+                    <button
+                      key={token.id}
+                      type="button"
+                      draggable={!orderLocked}
+                      aria-disabled={orderLocked}
+                      aria-pressed={orderSelected === tokenIndex}
+                      aria-label={`${token.text}${hoverGloss ? `: ${hoverGloss}` : ""}, ${ui("position")} ${tokenIndex + 1}`}
+                      data-gloss={hoverGloss ?? undefined}
+                      className={cn(
+                        "fs-order-token",
+                        orderSelected === tokenIndex && "is-selected",
+                        orderDragging === token.id && "is-dragging",
+                        orderDropTarget === token.id && orderDragging !== token.id && "is-drop-target",
+                        orderChecked && orderIsCorrect && "is-correct"
+                      )}
+                      onClick={() => {
+                        if (suppressOrderClickRef.current) {
+                          suppressOrderClickRef.current = false;
+                          return;
+                        }
+                        if (!orderLocked) selectOrderToken(tokenIndex);
+                      }}
+                      onDragStart={(event) => {
+                        if (orderLocked) {
+                          event.preventDefault();
+                          return;
+                        }
+                        suppressOrderClickRef.current = true;
+                        draggedOrderTokenId.current = token.id;
+                        setOrderDragging(token.id);
                         setOrderDropTarget(null);
-                        return;
-                      }
-                      setOrderDropTarget(token.id);
-                    }}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      event.dataTransfer.dropEffect = "move";
-                      if (draggedOrderTokenId.current && draggedOrderTokenId.current !== token.id) {
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData("text/plain", token.id);
+                      }}
+                      onDragEnd={() => {
+                        draggedOrderTokenId.current = null;
+                        setOrderDragging(null);
+                        setOrderDropTarget(null);
+                        window.setTimeout(() => {
+                          suppressOrderClickRef.current = false;
+                        }, 0);
+                      }}
+                      onDragEnter={(event) => {
+                        event.preventDefault();
+                        if (orderLocked) return;
+                        const fromId = draggedOrderTokenId.current;
+                        if (!fromId || fromId === token.id) {
+                          setOrderDropTarget(null);
+                          return;
+                        }
                         setOrderDropTarget(token.id);
-                      }
-                    }}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      if (orderLocked) return;
-                      const fromId = draggedOrderTokenId.current || event.dataTransfer.getData("text/plain");
-                      reorderTokenById(fromId, token.id);
-                      draggedOrderTokenId.current = null;
-                      setOrderDragging(null);
-                      setOrderDropTarget(null);
-                    }}
-                    onKeyDown={(event) => {
-                      if (orderLocked) return;
-                      if (event.key === "ArrowLeft" && tokenIndex > 0) {
+                      }}
+                      onDragOver={(event) => {
                         event.preventDefault();
-                        reorderToken(tokenIndex, tokenIndex - 1);
-                      }
-                      if (event.key === "ArrowRight" && tokenIndex < orderTokens.length - 1) {
+                        event.dataTransfer.dropEffect = "move";
+                        if (draggedOrderTokenId.current && draggedOrderTokenId.current !== token.id) {
+                          setOrderDropTarget(token.id);
+                        }
+                      }}
+                      onDrop={(event) => {
                         event.preventDefault();
-                        reorderToken(tokenIndex, tokenIndex + 1);
-                      }
-                    }}
-                  >
-                    <GripVertical aria-hidden="true" className="h-4 w-4" />
-                    <span>{token.text}</span>
-                  </button>
-                ))}
+                        if (orderLocked) return;
+                        const fromId = draggedOrderTokenId.current || event.dataTransfer.getData("text/plain");
+                        reorderTokenById(fromId, token.id);
+                        draggedOrderTokenId.current = null;
+                        setOrderDragging(null);
+                        setOrderDropTarget(null);
+                      }}
+                      onKeyDown={(event) => {
+                        if (orderLocked) return;
+                        if (event.key === "ArrowLeft" && tokenIndex > 0) {
+                          event.preventDefault();
+                          reorderToken(tokenIndex, tokenIndex - 1);
+                        }
+                        if (event.key === "ArrowRight" && tokenIndex < orderTokens.length - 1) {
+                          event.preventDefault();
+                          reorderToken(tokenIndex, tokenIndex + 1);
+                        }
+                      }}
+                    >
+                      <GripVertical aria-hidden="true" className="h-4 w-4" />
+                      <span>{token.text}</span>
+                    </button>
+                  );
+                })}
               </div>
               <p className="fs-order-help">{ui("Drag, click two words, or use the arrow keys to reorder.")}</p>
             </motion.div>

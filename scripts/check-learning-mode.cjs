@@ -24,6 +24,7 @@ const result = esbuild.buildSync({
       } from "./src/lib/guidedLessonPhases.ts";
       export { wordOrderTokensMatchSentence } from "./src/lib/wordOrder.ts";
       export { getSfxAudioVolume } from "./src/lib/audioMute.ts";
+      export { germanWordGloss } from "./src/lib/germanWordGloss.ts";
     `,
     resolveDir: root,
     sourcefile: "learning-mode-check-entry.ts",
@@ -49,6 +50,7 @@ const {
   buildSentencePhaseRoute,
   buildTatoebaParts,
   curatedTopics,
+  germanWordGloss,
   getSfxAudioVolume,
   MASTERED_SENTENCE_PHASES,
   matchLearningModeGermanAnswer,
@@ -703,6 +705,49 @@ check(
       ],
       "Sie müssen nicht mit, wenn Sie nicht wollen."
     )
+);
+check(
+  "German lesson words expose useful offline English hover glosses",
+  germanWordGloss("Was") === "what"
+    && germanWordGloss("nicht,") === "not"
+    && germanWordGloss("glaube")?.includes("believe")
+    && germanWordGloss("brauche")?.includes("need")
+    && germanWordGloss("müssen")?.includes("must")
+    && germanWordGloss("Gedanken") === "thought"
+    && germanWordGloss("unbekanntesfantasiewort") === null
+    && guidedSource.includes("const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;")
+    && guidedSource.includes("const hoverGloss = learnEn ? null : germanWordGloss(token.text);")
+    && guidedSource.includes("data-gloss={hoverGloss ?? undefined}")
+    && guidedStyles.includes("[data-gloss]:is(:hover, :focus-visible)::before")
+);
+const glossaryTokens = authoredPhrases.flatMap((phrase) =>
+  [phrase?.de, phrase?.short, phrase?.long]
+    .filter(Boolean)
+    .flatMap((sentence) => String(sentence).split(/\s+/).filter((token) => /[A-Za-zÄÖÜäöüß]/u.test(token)))
+);
+const missingGlossTokens = glossaryTokens.filter((token) => !germanWordGloss(token));
+const glossaryCoverage = glossaryTokens.length
+  ? 1 - (missingGlossTokens.length / glossaryTokens.length)
+  : 0;
+const missingGlossCounts = missingGlossTokens.reduce((counts, token) => {
+  const key = token.toLocaleLowerCase("de-DE").replace(/^[\s.,!?;:()"'„“]+|[\s.,!?;:()"'„“]+$/gu, "");
+  if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+  return counts;
+}, new Map());
+const frequentMissingGlosses = [...missingGlossCounts.entries()]
+  .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], "de"))
+  .slice(0, 18)
+  .map(([token, count]) => `${token} (${count})`);
+check(
+  "offline hover glosses cover at least 90% of words used in the lesson catalog",
+  glossaryCoverage >= 0.90,
+  `${Math.round(glossaryCoverage * 100)}% covered; frequent gaps: ${frequentMissingGlosses.join(", ")}`
+);
+check(
+  "stage-route fallback uses the shared defined phase lists",
+  guidedSource.includes("[...BILINGUAL_SENTENCE_PHASES]")
+    && guidedSource.includes("[...SENTENCE_PHASES]")
+    && !guidedSource.includes("withFrench ? BILINGUAL_PHASES")
 );
 check(
   "desktop lessons cannot trigger a speech-model download",
