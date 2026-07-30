@@ -3,10 +3,11 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 /**
  * How the lesson preview shows a phrase.
  *
- * "both" puts the German and the English on screen together — quick to skim,
- * and the original behaviour.
  * "flip" shows one side and makes you turn the card over, which is the whole
- * point of a flashcard: you have to try to remember before you are told.
+ * point of a flashcard: you have to try to remember before you are told. It is
+ * the default for new learners and profiles without a saved preference.
+ * "both" puts the German and the English on screen together for learners who
+ * deliberately prefer a quick skim.
  */
 export type FlashcardMode = "both" | "flip";
 
@@ -14,11 +15,13 @@ export const FLASHCARD_MODE_KEY = "gl-flashcard-mode-v1";
 export const FLASHCARD_MODE_EVENT = "flashcard-mode-changed";
 
 export function getFlashcardMode(): FlashcardMode {
-  if (typeof window === "undefined") return "both";
+  if (typeof window === "undefined") return "flip";
   try {
-    return window.localStorage.getItem(FLASHCARD_MODE_KEY) === "flip" ? "flip" : "both";
+    // Keep an explicit existing choice, but make real flashcards the default
+    // when the learner has never touched this setting.
+    return window.localStorage.getItem(FLASHCARD_MODE_KEY) === "both" ? "both" : "flip";
   } catch {
-    return "both";
+    return "flip";
   }
 }
 

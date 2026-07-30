@@ -4308,7 +4308,12 @@ function FlipFace({ back, flipped, front, onFlip }: {
     <div
       aria-live="polite"
       className="fs-flashcard-flip"
-      onClick={onFlip}
+      onKeyDown={(event) => {
+        if (event.key !== " " && event.key !== "Enter") return;
+        event.preventDefault();
+        event.stopPropagation();
+        onFlip();
+      }}
       role="button"
       style={{ cursor: "pointer", perspective: 1400 }}
       tabIndex={0}
@@ -4403,26 +4408,24 @@ function SessionFlashcardPreview({
     return () => window.clearTimeout(timer);
   }, [card?.id, card?.german, mode, face, flipped]);
 
-  // One row builder per language, shared by both modes so the clickable text,
-  // the speaker button and the labels can never drift apart between them.
+  // In the two-language layout the sentence remains a generous speech target.
+  // On a flip card, a sentence click belongs to the card itself; the dedicated
+  // speaker button remains available without accidentally revealing the back.
   const languageRow = (label: string, text: string, lang: string, htmlLang: string) => (
     <div className="fs-flashcard-language">
-      {/* The sentence itself is clickable, not just the speaker icon —
-          reaching for a small button to hear a word you are looking at is
-          friction nobody needs. */}
       <div
-        onClick={(event) => { event.stopPropagation(); speak(text, lang); }}
+        onClick={mode === "both" ? (event) => { event.stopPropagation(); speak(text, lang); } : undefined}
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
+          if (mode === "both" && event.key === "Enter") {
             event.preventDefault();
             event.stopPropagation();
             speak(text, lang);
           }
         }}
-        role="button"
-        style={{ cursor: "pointer" }}
-        tabIndex={0}
-        title={ui("Tap to hear it")}
+        role={mode === "both" ? "button" : undefined}
+        style={{ cursor: mode === "both" ? "pointer" : "inherit" }}
+        tabIndex={mode === "both" ? 0 : undefined}
+        title={mode === "both" ? ui("Tap to hear it") : undefined}
       >
         <span>{ui(label)}</span>
         <strong lang={htmlLang}>{text}</strong>
@@ -4507,7 +4510,9 @@ function SessionFlashcardPreview({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -26 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="fs-flashcard"
+          className={cn("fs-flashcard", mode === "flip" && "is-flippable")}
+          onClick={mode === "flip" ? toggleFlip : undefined}
+          title={mode === "flip" ? ui("Click or press space to flip") : undefined}
         >
           <div className="fs-flashcard-topline">
             <div className="fs-flashcard-badge">
@@ -4516,7 +4521,10 @@ function SessionFlashcardPreview({
             <button
               type="button"
               className="fs-flashcard-known"
-              onClick={() => onKnown(card.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onKnown(card.id);
+              }}
             >
               <CheckCircle2 className="h-4 w-4" />
               {ui("Know it")}

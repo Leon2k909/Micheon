@@ -22,16 +22,16 @@ export function FlashcardModePicker({
 }) {
   const options: { id: FlashcardMode; icon: typeof Layers; label: string; blurb: string }[] = [
     {
-      id: "both",
-      icon: Layers,
-      label: "Both languages",
-      blurb: "German and English together — quick to skim before practice.",
-    },
-    {
       id: "flip",
       icon: RefreshCw,
       label: "Flip card",
       blurb: "See one side and turn it over. Click the card, or press space.",
+    },
+    {
+      id: "both",
+      icon: Layers,
+      label: "Both languages",
+      blurb: "German and English together — quick to skim before practice.",
     },
   ];
 

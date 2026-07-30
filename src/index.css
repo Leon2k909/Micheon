@@ -1068,6 +1068,14 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(145deg, rgba(139,76,255,0.09), rgba(17,18,25,0.82) 46%, rgba(255,255,255,0.018));
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 50px rgba(0,0,0,0.2);
 }
+.fs-flashcard.is-flippable {
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.fs-flashcard.is-flippable:hover {
+  border-color: rgba(184,153,255,0.38);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 20px 50px rgba(0,0,0,0.22), 0 0 0 1px rgba(139,76,255,0.055);
+}
 .fs-flashcard-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
 .fs-flashcard-badge {
   justify-self: start; padding: 5px 9px; border-radius: 999px;

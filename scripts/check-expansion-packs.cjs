@@ -123,6 +123,10 @@ const expected = {
     theme: "Thinking, knowing and remembering: everyday ways to handle information",
     fixture: "Da lag ich wohl falsch.",
   },
+  part170: {
+    theme: "Getting things done together: starting, waiting, finishing and following up",
+    fixture: "Sag mir Bescheid, wenn du fertig bist.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -158,7 +162,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all nineteen packs",
+  "new authored phrases are unique across all twenty packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -182,9 +186,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the nineteen expansion packs contain at least 892 authored phrases", newPhrases.length >= 892, `found ${newPhrases.length}`);
-check("the nineteen expansion packs contain at least 361 vocabulary seeds", totalSeeds >= 361, `found ${totalSeeds}`);
-check("the nineteen expansion packs contain at least seventy-eight dialogues", totalDialogues >= 78, `found ${totalDialogues}`);
+check("the twenty expansion packs contain at least 942 authored phrases", newPhrases.length >= 942, `found ${newPhrases.length}`);
+check("the twenty expansion packs contain at least 381 vocabulary entries", totalSeeds >= 381, `found ${totalSeeds}`);
+check("the twenty expansion packs contain at least eighty-three dialogues", totalDialogues >= 83, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -217,6 +221,8 @@ check("amount-and-sharing practice follows identifying practice", CURRICULUM_ORD
 check("amount-and-sharing practice is introduced in tier one", packMeta("part168").tier === 1);
 check("thinking-and-remembering practice follows amount-and-sharing practice", CURRICULUM_ORDER.indexOf("part169") === CURRICULUM_ORDER.indexOf("part168") + 1);
 check("thinking-and-remembering practice is introduced in tier one", packMeta("part169").tier === 1);
+check("getting-things-done practice follows thinking-and-remembering practice", CURRICULUM_ORDER.indexOf("part170") === CURRICULUM_ORDER.indexOf("part169") + 1);
+check("getting-things-done practice is introduced in tier one", packMeta("part170").tier === 1);
 check("practical-gap practice follows home and daily errands", CURRICULUM_ORDER.indexOf("part159") === CURRICULUM_ORDER.indexOf("part9") + 1);
 check("practical-gap practice stays in the common situational tier", packMeta("part159").tier === 2);
 
@@ -384,6 +390,18 @@ const thinkingRememberingCoverage = {
 };
 for (const [area, fixtures] of Object.entries(thinkingRememberingCoverage)) {
   check(`thinking-and-remembering pack covers ${area}`, fixtures.every((phrase) => thinkingRememberingPhrases.has(phrase)));
+}
+
+const gettingThingsDonePhrases = new Set((allPartBlueprints.part170?.phrases ?? []).map((phrase) => phrase.de));
+const gettingThingsDoneCoverage = {
+  starting: ["Bist du so weit?", "Womit sollen wir anfangen?", "Jetzt kann's losgehen."],
+  waiting: ["Warte bitte einen Moment.", "Du musst dich nicht beeilen.", "Wie lange dauert das noch?"],
+  progress: ["Wie kommst du voran?", "Ich bin fast fertig.", "Hat alles geklappt?"],
+  responsibility: ["Darum kümmere ich mich.", "Kannst du das übernehmen?", "Brauchst du Hilfe dabei?"],
+  followup: ["Wir machen später weiter.", "Wo waren wir?", "Sag mir Bescheid, wenn du fertig bist."],
+};
+for (const [area, fixtures] of Object.entries(gettingThingsDoneCoverage)) {
+  check(`getting-things-done pack covers ${area}`, fixtures.every((phrase) => gettingThingsDonePhrases.has(phrase)));
 }
 
 if (failures) {
