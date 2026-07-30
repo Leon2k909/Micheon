@@ -36,6 +36,31 @@ const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
   "Ich glaube, ich habe alles, was ich brauche.": {
     use: "The comma after 'glaube' is correct. German separates the short lead-in 'Ich glaube' from the complete thought that follows, just as it does after 'Ich denke'.",
   },
+  "Was ich sagen wollte, war, dass ich das nicht tun wollte.": {
+    de: "Ich meinte damit, dass ich das nicht tun wollte.",
+    en: "What I meant was that I didn't want to do that.",
+    use: "'Ich meinte damit, dass ...' states the intended meaning directly and avoids an unnecessarily heavy sentence frame.",
+  },
+  "Was ich sagen wollte, ist, dass Sie das nicht tun sollten.": {
+    de: "Ich wollte damit sagen, dass Sie das nicht tun sollten.",
+    en: "What I meant was that you shouldn't do that.",
+    use: "'Ich wollte damit sagen, dass ...' is the natural formal-address way to clarify what you meant.",
+  },
+  "Was ich sagen wollte, ist, dass du das nicht tun solltest.": {
+    de: "Ich wollte damit sagen, dass du das nicht tun solltest.",
+    en: "What I meant was that you shouldn't do that.",
+    use: "'Ich wollte damit sagen, dass ...' is a natural way to clarify your earlier point.",
+  },
+  "Was ich will, ist, dass Sie zuhören, was ich zu sagen habe.": {
+    de: "Ich will, dass Sie mir zuhören.",
+    en: "I want you to listen to me.",
+    use: "This direct request is natural but firm. 'mir zuhören' means listening to what I am saying.",
+  },
+  "Was ich will, ist, dass du zuhörst, was ich zu sagen habe.": {
+    de: "Ich will, dass du mir zuhörst.",
+    en: "I want you to listen to me.",
+    use: "This direct request is natural but firm. Use a calm tone when the conversation is tense.",
+  },
   "Es ist wie es ist.": {
     de: "So ist es nun mal.",
     en: "That's just the way it is. / That's just how it is.",

@@ -86,6 +86,19 @@ check(
   doubledMark && `${doubledMark.location}: ${doubledMark.text}`
 );
 
+// Constructions such as "Was ich sagen will, ist, dass ..." can be defended
+// grammatically, but the finite verb gets visually trapped between two clause
+// commas and the result is heavier than the direct conversational alternative.
+// Learners should meet "Ich will damit sagen, dass ..." first instead.
+const commaSandwiches = learnerGerman.filter((entry) =>
+  /,\s*(?:ist|sind|war|waren|wäre|wären|heißt|bedeutet|bleibt)\s*,\s*(?:dass|ob|wie|was|wer|wo|wann|warum)\b/iu.test(entry.text)
+);
+check(
+  "learner German avoids clunky comma-sandwich clause frames",
+  commaSandwiches.length === 0,
+  commaSandwiches.map((entry) => `${entry.location}: ${entry.text}`).join(" | ")
+);
+
 const reviewedErrors = [
   "Es ist wie es ist.",
   "Du weißt nicht wie es ist, arm zu sein.",
@@ -95,6 +108,13 @@ const reviewedErrors = [
   "Ich weiß nicht, von was Sie sprechen.",
   "Für was, denkst du, ist das?",
   "Ich verstehe nicht, zu was das gut sein soll.",
+  "Was ich sagen will, ist, dass wir mehr Zeit brauchen.",
+  "Was ich damals nicht wusste, war, dass die Tür schon abgeschlossen war.",
+  "Was ich sagen wollte, war, dass ich das nicht tun wollte.",
+  "Was ich sagen wollte, ist, dass Sie das nicht tun sollten.",
+  "Was ich sagen wollte, ist, dass du das nicht tun solltest.",
+  "Was ich will, ist, dass Sie zuhören, was ich zu sagen habe.",
+  "Was ich will, ist, dass du zuhörst, was ich zu sagen habe.",
 ];
 for (const sentence of reviewedErrors) {
   const hit = learnerGerman.find((entry) => entry.text === sentence);
@@ -119,9 +139,22 @@ const expectedCorrections = [
   "Ich weiß nicht, wovon Sie sprechen.",
   "Was meinst du, wofür ist das?",
   "Ich verstehe nicht, wozu das gut sein soll.",
+  "Ich meinte damit, dass ich das nicht tun wollte.",
+  "Ich wollte damit sagen, dass Sie das nicht tun sollten.",
+  "Ich wollte damit sagen, dass du das nicht tun solltest.",
+  "Ich will, dass Sie mir zuhören.",
+  "Ich will, dass du mir zuhörst.",
 ];
 for (const sentence of expectedCorrections) {
   check(`reviewed correction is shipped: ${sentence}`, byGerman.has(sentence));
+}
+
+const allGerman = new Set(learnerGerman.map((entry) => entry.text));
+for (const sentence of [
+  "Ich will damit sagen, dass wir mehr Zeit brauchen.",
+  "Damals wusste ich noch nicht, dass die Tür schon abgeschlossen war.",
+]) {
+  check(`natural comma-frame replacement is shipped: ${sentence}`, allGerman.has(sentence));
 }
 
 check("the punctuation audit covers thousands of German fields", learnerGerman.length > 10_000, `found ${learnerGerman.length}`);

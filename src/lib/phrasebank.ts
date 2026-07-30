@@ -1738,9 +1738,9 @@ export const curatedTopics: CuratedTopic[] = [
 
       {
         id: "cb-conversation-bridges-trying-to-say",
-        de: "Was ich sagen will, ist, dass wir mehr Zeit brauchen.",
-        en: "What I'm trying to say is that we need more time. / What I am trying to say is that we need more time.",
-        use: "The reusable frame is 'Was ich sagen will, ist, dass ...'. It brings the listener back to your central point.",
+        de: "Ich will damit sagen, dass wir mehr Zeit brauchen.",
+        en: "What I'm saying is that we need more time. / What I mean is that we need more time.",
+        use: "'Ich will damit sagen, dass ...' is a natural way to bring the listener back to your main point. The single comma introduces what you mean.",
         group: "rephrasing-and-scope",
         lessonPriority: -0.2,
       },
