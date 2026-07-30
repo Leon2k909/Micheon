@@ -33,6 +33,75 @@ const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
     en: "You don't have to come along if you don't want to.",
     use: "'Sie' and 'nicht' each appear twice on purpose: the first half says there is no obligation, and the second says 'if you don't want to'. In everyday German, 'mit' can stand for the full verb 'mitkommen' when the activity is already clear.",
   },
+  "Ich glaube, ich habe alles, was ich brauche.": {
+    use: "The comma after 'glaube' is correct. German separates the short lead-in 'Ich glaube' from the complete thought that follows, just as it does after 'Ich denke'.",
+  },
+  "Es ist wie es ist.": {
+    de: "So ist es nun mal.",
+    en: "That's just the way it is. / That's just how it is.",
+    use: "'nun mal' is a very common spoken way to accept that a situation cannot easily be changed.",
+  },
+  "Du weißt nicht wie es ist, arm zu sein.": {
+    de: "Du weißt nicht, wie es ist, arm zu sein.",
+    en: "You don't know what it's like to be poor.",
+    use: "The commas separate the thing someone does not know and the situation being described.",
+  },
+  "Ich verstehe nicht was sie gesagt hat.": {
+    de: "Ich verstehe nicht, was sie gesagt hat.",
+    en: "I can't make out what she said. / I don't understand what she said.",
+    use: "A comma belongs before the full 'what she said' part in German.",
+  },
+  "Wir wissen was zu tun ist.": {
+    de: "Wir wissen, was zu tun ist.",
+    en: "We know what to do.",
+    use: "The comma separates 'we know' from what is known.",
+  },
+  "Es ist wichtiger was du bist als das, was du hast.": {
+    de: "Wer du bist, ist wichtiger als das, was du hast.",
+    en: "Who you are is more important than what you have.",
+    use: "'Wer du bist' is the natural way to talk about who someone is as a person.",
+  },
+  "Sagen Sie „bitte“ .": {
+    de: "Sagen Sie „bitte“.",
+    en: "Say 'please'.",
+  },
+  "Ich verstehe warum.": {
+    de: "Ich verstehe, warum.",
+    use: "A comma separates 'I understand' from the implied reason that follows.",
+  },
+  "Für was ist das?": {
+    de: "Wofür ist das?",
+    use: "'Wofür' is the normal compact way to ask what something is for.",
+  },
+  "Zu was ist es gut?": {
+    de: "Wozu ist das gut?",
+    en: "What is that good for? / What is the point of that?",
+    use: "'Wozu' sounds more natural here than the separated 'zu was'.",
+  },
+  "Für was bin ich hier?": {
+    de: "Wofür bin ich hier?",
+    use: "'Wofür' is the normal neutral form; 'für was' is regional or very casual.",
+  },
+  "Zu was sind die gut?": {
+    de: "Wozu sind die gut?",
+    en: "What are they good for?",
+    use: "Use 'wozu' when asking about the purpose of something.",
+  },
+  "Ich weiß nicht, von was Sie sprechen.": {
+    de: "Ich weiß nicht, wovon Sie sprechen.",
+    en: "I don't know what you're talking about.",
+    use: "'wovon' is the normal compact form for 'what ... about' in this sentence.",
+  },
+  "Für was, denkst du, ist das?": {
+    de: "Was meinst du, wofür ist das?",
+    en: "What do you think this is for?",
+    use: "This is the natural spoken order when asking someone to guess an object's purpose.",
+  },
+  "Ich verstehe nicht, zu was das gut sein soll.": {
+    de: "Ich verstehe nicht, wozu das gut sein soll.",
+    en: "I don't see what good that will do.",
+    use: "'wozu' is the usual form when questioning the point or purpose of something.",
+  },
   "Es ist nicht an mir, das zu entscheiden.": {
     de: "Das ist nicht meine Entscheidung.",
     use: "This is the normal direct way to say that the decision belongs to someone else. 'Es ist nicht an mir, das zu entscheiden' is understandable, but it sounds formal and translated rather than conversational.",

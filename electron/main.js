@@ -1078,10 +1078,33 @@ async function createWindow() {
  * update is sitting there waiting, or that the app checked at all. Keeping the
  * last result means the answer is always available on request.
  */
-let updateStatus = { state: "idle", version: null, checkedAt: null };
+let updateStatus = {
+  state: "idle",
+  version: null,
+  checkedAt: null,
+  percent: null,
+  transferred: null,
+  total: null,
+  bytesPerSecond: null,
+};
 
-function setUpdateStatus(state, version) {
-  updateStatus = { state, version: version ?? updateStatus.version, checkedAt: Date.now() };
+function setUpdateStatus(state, version, details = {}) {
+  const downloading = state === "downloading";
+  const ready = state === "ready";
+  const percent = Number(details.percent);
+  updateStatus = {
+    state,
+    version: version ?? (downloading || ready ? updateStatus.version : null),
+    checkedAt: downloading && updateStatus.checkedAt ? updateStatus.checkedAt : Date.now(),
+    percent: ready
+      ? 100
+      : downloading
+        ? Math.min(100, Math.max(0, Number.isFinite(percent) ? percent : (updateStatus.percent ?? 0)))
+        : null,
+    transferred: downloading ? (Number(details.transferred) || updateStatus.transferred || 0) : null,
+    total: downloading ? (Number(details.total) || updateStatus.total || 0) : null,
+    bytesPerSecond: downloading ? (Number(details.bytesPerSecond) || 0) : null,
+  };
   if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
     mainWindow.webContents.send("update:status", updateStatus);
   }
@@ -1107,13 +1130,21 @@ function setupAutoUpdate() {
   });
   autoUpdater.on("update-available", (info) => {
     console.log("[updater] update available:", info.version);
-    setUpdateStatus("downloading", info.version);
+    setUpdateStatus("downloading", info.version, { percent: 0 });
   });
   autoUpdater.on("update-not-available", () => {
     console.log("[updater] already up to date");
     setUpdateStatus("current");
   });
-  autoUpdater.on("download-progress", (p) => console.log(`[updater] downloading ${Math.round(p.percent)}%`));
+  autoUpdater.on("download-progress", (p) => {
+    console.log(`[updater] downloading ${Math.round(p.percent)}%`);
+    setUpdateStatus("downloading", updateStatus.version, {
+      percent: p.percent,
+      transferred: p.transferred,
+      total: p.total,
+      bytesPerSecond: p.bytesPerSecond,
+    });
+  });
   autoUpdater.on("update-downloaded", (info) => {
     console.log("[updater] update downloaded:", info.version, "— will install on quit");
     setUpdateStatus("ready", info.version);
@@ -1121,7 +1152,10 @@ function setupAutoUpdate() {
     mainWindow?.webContents.send("update:downloaded", info.version);
   });
 
-  autoUpdater.checkForUpdatesAndNotify().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
+  // Micheon owns the complete visible update experience in the renderer. Using
+  // checkForUpdatesAndNotify here would add an OS notification that cannot
+  // follow the app theme and would duplicate the in-app progress panel.
+  autoUpdater.checkForUpdates().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
   // Re-check periodically for long-running sessions. Fifteen minutes rather than
   // an hour: the app is left open for hours at a time, and waiting up to a full
   // hour to even notice a release is what makes it look as though nothing is

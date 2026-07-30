@@ -115,6 +115,14 @@ const expected = {
     theme: "Identifying people and things: which one, where it is and what it looks like",
     fixture: "Welchen meinst du?",
   },
+  part168: {
+    theme: "Everyday amounts: enough, too much, what is left and how to share it",
+    fixture: "Das kommt ungefähr hin.",
+  },
+  part169: {
+    theme: "Thinking, knowing and remembering: everyday ways to handle information",
+    fixture: "Da lag ich wohl falsch.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -147,7 +155,13 @@ for (const [partKey, expectation] of Object.entries(expected)) {
 }
 
 const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
-check("new authored phrases are unique across all seventeen packs", new Set(newPhraseKeys).size === newPhraseKeys.length);
+const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
+const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
+check(
+  "new authored phrases are unique across all nineteen packs",
+  duplicateNewKeys.length === 0,
+  duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
+);
 
 const existingGerman = new Set();
 for (const [partKey, pack] of Object.entries(allPartBlueprints)) {
@@ -161,16 +175,16 @@ for (const pack of Object.values(buildBundledParts())) {
   for (const phrase of pack.phrases ?? []) existingGerman.add(normalise(phrase.de));
 }
 
-const duplicate = newPhrases.find((phrase) => existingGerman.has(normalise(phrase.de)));
+const duplicates = newPhrases.filter((phrase) => existingGerman.has(normalise(phrase.de)));
 check(
   "new authored phrases do not exactly duplicate the existing hand-written catalog",
-  !duplicate,
-  duplicate && `${duplicate.partKey}: ${duplicate.de}`
+  duplicates.length === 0,
+  duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the seventeen expansion packs contain at least 792 authored phrases", newPhrases.length >= 792, `found ${newPhrases.length}`);
-check("the seventeen expansion packs contain at least 321 vocabulary seeds", totalSeeds >= 321, `found ${totalSeeds}`);
-check("the seventeen expansion packs contain at least sixty-eight dialogues", totalDialogues >= 68, `found ${totalDialogues}`);
+check("the nineteen expansion packs contain at least 892 authored phrases", newPhrases.length >= 892, `found ${newPhrases.length}`);
+check("the nineteen expansion packs contain at least 361 vocabulary seeds", totalSeeds >= 361, `found ${totalSeeds}`);
+check("the nineteen expansion packs contain at least seventy-eight dialogues", totalDialogues >= 78, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -199,6 +213,10 @@ check("everyday-things practice follows habits-and-frequency practice", CURRICUL
 check("everyday-things practice is introduced in tier one", packMeta("part166").tier === 1);
 check("identifying practice follows everyday-things practice", CURRICULUM_ORDER.indexOf("part167") === CURRICULUM_ORDER.indexOf("part166") + 1);
 check("identifying practice is introduced in tier one", packMeta("part167").tier === 1);
+check("amount-and-sharing practice follows identifying practice", CURRICULUM_ORDER.indexOf("part168") === CURRICULUM_ORDER.indexOf("part167") + 1);
+check("amount-and-sharing practice is introduced in tier one", packMeta("part168").tier === 1);
+check("thinking-and-remembering practice follows amount-and-sharing practice", CURRICULUM_ORDER.indexOf("part169") === CURRICULUM_ORDER.indexOf("part168") + 1);
+check("thinking-and-remembering practice is introduced in tier one", packMeta("part169").tier === 1);
 check("practical-gap practice follows home and daily errands", CURRICULUM_ORDER.indexOf("part159") === CURRICULUM_ORDER.indexOf("part9") + 1);
 check("practical-gap practice stays in the common situational tier", packMeta("part159").tier === 2);
 
@@ -342,6 +360,30 @@ const identifyingCoverage = {
 };
 for (const [area, fixtures] of Object.entries(identifyingCoverage)) {
   check(`identifying pack covers ${area}`, fixtures.every((phrase) => identifyingPhrases.has(phrase)));
+}
+
+const amountSharingPhrases = new Set((allPartBlueprints.part168?.phrases ?? []).map((phrase) => phrase.de));
+const amountSharingCoverage = {
+  asking: ["Wie viel brauchst du?", "Wie viele brauchen wir?", "Ist noch genug da?"],
+  enough: ["Das reicht völlig.", "Das müsste reichen.", "Nicht so viel, bitte."],
+  remaining: ["Es ist fast nichts mehr da.", "Ist noch etwas übrig?", "Das reicht noch bis morgen."],
+  sharing: ["Wir teilen uns das.", "Lass uns halbe-halbe machen.", "Heb mir bitte etwas auf."],
+  estimating: ["Ungefähr die Hälfte.", "Etwa doppelt so viel.", "Das kommt ungefähr hin."],
+};
+for (const [area, fixtures] of Object.entries(amountSharingCoverage)) {
+  check(`amount-and-sharing pack covers ${area}`, fixtures.every((phrase) => amountSharingPhrases.has(phrase)));
+}
+
+const thinkingRememberingPhrases = new Set((allPartBlueprints.part169?.phrases ?? []).map((phrase) => phrase.de));
+const thinkingRememberingCoverage = {
+  thinking: ["Ich glaube, wir haben genug.", "Da muss ich kurz überlegen.", "Wie würdest du das einschätzen?"],
+  knowing: ["Weißt du, was ich meine?", "Soweit ich weiß, ja.", "Damit kenne ich mich nicht aus."],
+  remembering: ["Ah, jetzt weiß ich es wieder.", "Ich hab's völlig vergessen.", "Kannst du mich später daran erinnern?"],
+  understanding: ["Was genau war unklar?", "Kannst du das einfacher sagen?", "Warte, ich komme gerade nicht mit."],
+  checking: ["Ist das so richtig?", "Da lag ich wohl falsch.", "Das lese ich noch mal nach."],
+};
+for (const [area, fixtures] of Object.entries(thinkingRememberingCoverage)) {
+  check(`thinking-and-remembering pack covers ${area}`, fixtures.every((phrase) => thinkingRememberingPhrases.has(phrase)));
 }
 
 if (failures) {
