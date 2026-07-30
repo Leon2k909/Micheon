@@ -29,6 +29,7 @@ import {
   syncLocalStorageItem,
 } from "@/lib/profileStorage";
 import { uiIsGerman } from "@/lib/i18n";
+import { notePetRecallAnswer, notePetRecallQuestion } from "@/lib/petRecall";
 
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
 const desktopSurface = typeof window !== "undefined"
@@ -53,6 +54,8 @@ export type CodexPetQuestion = {
   de: string;
   en: string;
   itemId: string;
+  /** Sequence of the scheduled memory question, persisted across app restarts. */
+  recallSequence?: number;
   /**
    * True for the follow-up that shows the answer and asks whether you really
    * had it. Saying "yes" to the first question is a guess about your own
@@ -241,15 +244,21 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     // said with "Hello darling." Every pet now gets that same dial, set by the
     // learner rather than by a code change.
     const messageText = withPetPrefix(selectedKey, rawText);
+    const question = options.question && !options.question.confirm
+      ? {
+          ...options.question,
+          recallSequence: notePetRecallQuestion(options.question, getAuthUser()),
+        }
+      : options.question;
     const message: CodexPetSpeech = {
       createdAt: Date.now(),
       id: `${Date.now()}-${++speechId.current}`,
       mood: options.mood ?? "greeting",
-      question: options.question,
+      question,
       text: messageText,
       voiceLang: options.voiceLang
-        ?? (options.question
-          ? options.question.answerLanguage === "en" ? "de-DE" : "en-US"
+        ?? (question
+          ? question.answerLanguage === "en" ? "de-DE" : "en-US"
           : uiIsGerman() ? "de-DE" : "en-US"),
     };
     upsertHistory(message);
@@ -309,19 +318,24 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       getAuthUser(),
       question.aliases
     );
+    const recallOutcome = notePetRecallAnswer(question, answer, getAuthUser());
 
     if (!announce) return;
     const response = answer === "yes"
-      ? uiIsGerman()
-        ? `Erledigt — „${target}“ ist jetzt als bekannt markiert.`
-        : `Done — “${target}” is now marked as known.`
+      ? recallOutcome === "reinforcement"
+        ? uiIsGerman()
+          ? `Gut — „${target}“ sitzt schon besser. Ich frage dich später noch einmal.`
+          : `Nice — “${target}” is getting stronger. I’ll check it again later.`
+        : uiIsGerman()
+          ? `Geschafft — „${target}“ sitzt jetzt.`
+          : `You’ve got it — “${target}” is secure now.`
       : question.confirm
         ? uiIsGerman()
-          ? `Kein Problem — „${target}“ kommt bald wieder.`
-          : `No problem — “${target}” will come round again soon.`
+          ? `Kein Problem — ich frage dich „${target}“ bald wieder.`
+          : `No problem — I’ll ask you “${target}” again soon.`
         : uiIsGerman()
-          ? `Kein Problem — die Antwort ist „${target}“. Ich behalte sie in deiner Wiederholung.`
-          : `No problem — the answer is “${target}”. I’ll keep it in your review.`;
+          ? `Kein Problem — die Antwort ist „${target}“. Ich frage dich das bald wieder.`
+          : `No problem — the answer is “${target}”. I’ll ask you this again soon.`;
     window.setTimeout(() => {
       speak(response, {
         durationMs: 5600,

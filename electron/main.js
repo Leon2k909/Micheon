@@ -1407,6 +1407,10 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
             de: typeof question.de === "string" ? question.de.slice(0, 180) : "",
             en: typeof question.en === "string" ? question.en.slice(0, 180) : "",
             itemId: question.itemId.slice(0, 180),
+            recallSequence: Number.isSafeInteger(Number(question.recallSequence))
+              && Number(question.recallSequence) > 0
+              ? Number(question.recallSequence)
+              : undefined,
           }
         : undefined,
       text,

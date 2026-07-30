@@ -45,6 +45,7 @@ import { getActiveCourseId, setActiveCourseId, loadCourseProgress, saveCoursePro
 import { getCourse } from "@/lib/courseRegistry";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
+import { getPrioritizedPetRecallItem } from "@/lib/petRecall";
 import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
 import { swapStepForEnglish } from "@/lib/learningDirectionStep";
 import { useLearningMode } from "@/lib/learningMode";
@@ -241,14 +242,20 @@ export default function GermanLearningLab() {
           )
           .map((message) => message.question!.itemId)
       );
-      let item: (typeof quizItems)[number] | undefined;
-      for (let offset = 0; offset < quizItems.length; offset += 1) {
-        const index = (petQuizIndex.current + offset) % quizItems.length;
-        const candidate = quizItems[index];
-        if (!recentlyAsked.has(candidate.id)) {
-          item = candidate;
-          petQuizIndex.current = index + 1;
-          break;
+      // A recent miss deliberately overrides the ordinary 30-minute duplicate
+      // guard. It is asked on roughly three out of four opportunities and is
+      // guaranteed after at most two different questions. Once remembered, it
+      // returns in lighter reinforcement checks before leaving the focus queue.
+      let item = getPrioritizedPetRecallItem(quizItems, recentlyAsked, user);
+      if (!item) {
+        for (let offset = 0; offset < quizItems.length; offset += 1) {
+          const index = (petQuizIndex.current + offset) % quizItems.length;
+          const candidate = quizItems[index];
+          if (!recentlyAsked.has(candidate.id)) {
+            item = candidate;
+            petQuizIndex.current = index + 1;
+            break;
+          }
         }
       }
       if (!item) {
@@ -285,6 +292,7 @@ export default function GermanLearningLab() {
     petQuizAvailable,
     petSpeak,
     showPlacementTest,
+    user,
   ]);
 
   useEffect(() => {
