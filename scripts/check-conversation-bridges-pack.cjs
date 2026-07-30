@@ -66,6 +66,9 @@ const englishPack = learnEnglishParts[packKey];
 const pack = germanPack;
 const repairPackKey = "cb-conversation-repair";
 const repairPack = learnGermanParts[repairPackKey];
+const smalltalkPack = learnGermanParts["cb-smalltalk"];
+const plansPack = learnGermanParts["cb-plans"];
+const shortRepliesPack = learnGermanParts["cb-shortreplies"];
 
 check("the conversation-bridges pack is available when learning German", Boolean(germanPack));
 check("the conversation-bridges pack is available when learning English", Boolean(englishPack));
@@ -133,6 +136,57 @@ if (repairPack && pack) {
       )
   );
 }
+
+const conversationalGapFixtures = [
+  [repairPack, "cb-conversation-repair-how-would-you-say-it", "Wie würdest du das sagen?", "How would you say that?"],
+  [repairPack, "cb-conversation-repair-can-you-say-it-like-that", "Kann man das so sagen?", "Can you say it like that?"],
+  [repairPack, "cb-conversation-repair-sound-natural", "Klingt das natürlich?", "Does that sound natural?"],
+  [repairPack, "cb-conversation-repair-do-you-see-what-i-mean", "Verstehst du, was ich meine?", "Do you know what I mean?"],
+  [repairPack, "cb-conversation-repair-all-clear-so-far", "Soweit alles klar?", "All clear so far?"],
+  [smalltalkPack, "cb-smalltalk-what-else-is-new", "Und sonst so?", "What else is new?"],
+  [plansPack, "cb-plans-does-that-work-for-you", "Passt das für dich?", "Does that work for you?"],
+  [plansPack, "cb-plans-lets-do-that", "Machen wir's so.", "Let's do that."],
+  [shortRepliesPack, "cb-shortreplies-more-or-less", "So ungefähr.", "More or less."],
+];
+
+const conversationalGapPhrases = conversationalGapFixtures.map(([sourcePack, id]) =>
+  (sourcePack?.phrases ?? []).find((phrase) => phrase.id === id)
+);
+check(
+  "the conversational gap audit adds every missing high-use phrase",
+  conversationalGapFixtures.every(([sourcePack, id, de, primaryEn]) => {
+    const phrase = (sourcePack?.phrases ?? []).find((candidate) => candidate.id === id);
+    return phrase?.de === de && primaryAnswer(phrase.en) === primaryEn && phrase.use?.trim();
+  })
+);
+check(
+  "the added conversational essentials are introduced early",
+  conversationalGapPhrases.every(
+    (phrase) => phrase && Number.isFinite(phrase.lessonPriority) && phrase.lessonPriority <= -0.05
+  )
+);
+
+const shippedGermanPrompts = [];
+for (const shippedPack of Object.values(learnGermanParts)) {
+  for (const phrase of shippedPack.phrases ?? []) shippedGermanPrompts.push(matchingVisibleKey(phrase.de, "de"));
+  for (const dialogue of shippedPack.dialogues ?? []) {
+    for (const line of dialogue.lines ?? []) shippedGermanPrompts.push(matchingVisibleKey(line.de, "de"));
+  }
+}
+check(
+  "each added conversational prompt appears exactly once in the shipped catalogue",
+  conversationalGapFixtures.every(([, , de]) =>
+    shippedGermanPrompts.filter((prompt) => prompt === matchingVisibleKey(de, "de")).length === 1
+  )
+);
+
+const letKnow = (plansPack?.phrases ?? []).find((phrase) => phrase.de === "Ich sage dir noch Bescheid.");
+check(
+  "conversation mode teaches the common spoken let-you-know form",
+  letKnow?.short === "Ich sag dir Bescheid."
+    && letKnow?.shortEn === "I'll let you know."
+    && letKnow?.lessonPriority === -0.1
+);
 
 if (pack) {
   const phrases = pack.phrases ?? [];

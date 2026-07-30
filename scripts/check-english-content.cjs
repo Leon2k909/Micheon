@@ -60,6 +60,29 @@ collectEnglish(tatoebaParts, "tatoeba");
 
 const definiteErrorPatterns = [
   ["the legacy 'your seeing him' sentence", /I don't think your seeing him is good for you/i],
+  ["a literal German hunger or thirst construction", /\bI (?:have|had) (?:hunger|thirst)\b/i],
+  ["a German Bock phrase presented as English", /\bI (?:have|had) (?:null )?Bock\b/i],
+  ["a literal German service or card label", /\b(?:key service|customer card|tax class|notification card)\b/i],
+  ["a literal price question with 'high'", /\bhow high (?:is|are)\b/i],
+  ["the literal cheaper-item question", /\bdo you have it cheaper\b/i],
+  ["a literal hotel-rate question", /\b(?:what|how much) does the night cost\b|\bwhat is the cost for the night\b|\bhow much is the night\b/i],
+  ["literal five-minute arrival wording", /\bI (?:am coming|will come) in five minutes\b/i],
+  ["a German food or drink label used as an English sentence", /\b(?:I am ordering a Radler|I am drinking a Mass of beer)\b/i],
+  ["a literal relationship or radio-silence construction", /\b(?:I don't have contact with|we have absolute radio silence)\b/i],
+  ["literal nursery-place wording", /\b(?:spot in a daycare|searching for a place in a nursery)\b/i],
+  ["a literal group-arrival sentence", /\b(?:one comes later|waiting on one more)\b/i],
+  ["a literal disagreement or doubt construction", /\b(?:I have to disagree there|I have my doubts there)\b/i],
+  ["a literal personal-description construction", /\b(?:sports ace|active against discrimination)\b/i],
+  ["the false-friend apple shandy", /\bapple shandy\b/i],
+  ["German 'Public Viewing' used as ordinary English", /(?:^|[.!?]\s+|\/\s*)Public viewing\b|\bpub or public viewing\b/i],
+  ["literal job-application wording", /\bapplied for the position as\b/i],
+  ["literal employment-reference wording", /\b(?:worded benevolently|Good would be)\b/i],
+  ["the invented noun 'present-opening'", /\bpresent-opening\b/i],
+  ["literal replacement-bus wording", /\bFrom Kassel on it's\b/i],
+  ["literal phone-battery wording", /\bphone's about to go\b/i],
+  ["literal tracking-number wording", /\btracking number at hand\b/i],
+  ["the isolated non-native 'And I?' alternative", /(?:^|\/\s*)And I\?(?:\s*\/|$)/i],
+  ["the awkward 'This is for sure' alternative", /\bThis is for sure\b/i],
   ["a missing apostrophe in a negative contraction", /\b(?:dont|doesnt|didnt|cant|couldnt|shouldnt|wouldnt|wont|isnt|arent|wasnt|werent|havent|hasnt|hadnt)\b/i],
   ["could/should/would of", /\b(?:could|should|would) of\b/i],
   ["a fused common phrase", /\b(?:alot|everytime|infront|atleast|aswell)\b/i],
@@ -154,6 +177,55 @@ for (const [german, english] of expectedCorrections) {
     `reviewed translation stays natural: ${german}`,
     translatedByGerman.get(german) === english,
     `found ${JSON.stringify(translatedByGerman.get(german))}`
+  );
+}
+
+function phrasesFromPart(part) {
+  return [
+    ...(part?.phrases ?? []),
+    ...(part?.dialogues ?? []).flatMap((dialogue) => dialogue?.lines ?? []),
+  ];
+}
+
+const authoredPhrases = [
+  ...Object.values(allPartBlueprints).flatMap(phrasesFromPart),
+  ...Object.values(bundledParts).flatMap(phrasesFromPart),
+];
+const expectedCommonFirst = new Map([
+  ["Ich heiße Anna.", "I'm Anna."],
+  ["Ich habe Hunger.", "I'm hungry."],
+  ["Ich habe Durst.", "I'm thirsty."],
+  ["Um wie viel Uhr?", "What time?"],
+  ["Ich komme in fünf Minuten.", "I'll be there in five minutes."],
+  ["Was kostet die Nacht?", "How much is it per night?"],
+  ["Ich habe Bock.", "I'm up for it."],
+  ["Ich habe null Bock.", "I really don't feel like it."],
+  ["Haben Sie es günstiger?", "Do you have a cheaper one?"],
+  ["Sie ist eine echte Sportskanone.", "She's really sporty."],
+  ["Wie hoch sind die Kontoführungsgebühren?", "How much are the account fees?"],
+  ["Wir suchen einen Platz in einer Kita.", "We're looking for a nursery place."],
+  ["Wie hoch ist das Porto für diesen Brief?", "How much is postage for this letter?"],
+  ["Ich habe keinen Kontakt mehr zu meinem Vater.", "I'm no longer in contact with my father."],
+  ["Wir haben eine absolute Funkstille.", "We're not speaking at all."],
+  ["Ich trinke heute eine Apfelschorle.", "I'm having an apple spritzer today."],
+  ["Haben Sie die Sendungsnummer zur Hand?", "Do you have the tracking number ready?"],
+  ["Ab Kassel ist Schienenersatzverkehr.", "From Kassel onwards, there's a rail-replacement bus service."],
+  ["Ich hab mich auf die Stelle als Projektmanagerin beworben.", "I applied for the project manager position."],
+  ["Die Bescherung ist bei uns nach dem Essen.", "We open the presents after dinner."],
+  ["Ist hier irgendwo eine Steckdose? Mein Handy macht gleich schlapp.", "Is there a socket anywhere? My phone's about to die."],
+]);
+
+for (const [german, primaryEnglish] of expectedCommonFirst) {
+  const matches = authoredPhrases.filter((phrase) => phrase?.de === german);
+  const wrong = matches.find((phrase) => String(phrase?.en ?? "").split(" / ")[0] !== primaryEnglish);
+  check(
+    `common English comes first for: ${german}`,
+    matches.length > 0 && !wrong,
+    wrong
+      ? `found ${JSON.stringify(wrong.en)}`
+      : matches.length === 0
+        ? "phrase missing"
+        : ""
   );
 }
 

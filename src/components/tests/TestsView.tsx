@@ -17,6 +17,7 @@ import {
   MessageCircle,
   PenLine,
   RotateCcw,
+  Search,
   Shuffle,
   Sparkles,
   Sprout,
@@ -58,6 +59,7 @@ type Difficulty = "easy" | "medium" | "hard" | "expert";
 
 type TestDirection = "course" | "reverse" | "mixed";
 type AnswerLanguage = "de" | "en";
+type TestLibraryFilter = "all" | "practice" | "exam" | "advanced";
 
 type TestItem = {
   id: string;
@@ -111,6 +113,13 @@ type TestPreset = {
 };
 
 const TEST_LENGTHS = [10, 20, 30] as const;
+
+const TEST_LIBRARY_FILTERS: { id: TestLibraryFilter; label: string }[] = [
+  { id: "all", label: "All tests" },
+  { id: "practice", label: "Practice" },
+  { id: "exam", label: "Exams" },
+  { id: "advanced", label: "Advanced" },
+];
 
 const DIFFICULTIES: { id: Difficulty; label: string; blurb: string }[] = [
   { id: "easy", label: "Easy", blurb: "A1-A2 basics, short and high frequency." },
@@ -829,6 +838,19 @@ const PRESETS: TestPreset[] = [
   },
 ];
 
+function testLibraryCategory(preset: TestPreset): Exclude<TestLibraryFilter, "all"> {
+  if (!preset.exam) return "practice";
+  return preset.eyebrow === "Advanced" ? "advanced" : "exam";
+}
+
+function matchesTestSearch(preset: TestPreset, query: string) {
+  const normalized = query.trim().toLocaleLowerCase();
+  if (!normalized) return true;
+  return [preset.title, preset.description, preset.eyebrow]
+    .flatMap((value) => [value, ui(value)])
+    .some((value) => value.toLocaleLowerCase().includes(normalized));
+}
+
 const toneClasses: Record<TestPreset["tone"], { icon: string; chip: string }> = {
   accent: {
     icon: "bg-[var(--accent-dim)] text-[var(--accent)]",
@@ -1122,6 +1144,8 @@ export function TestsView({
     [apiParts, gradeRevision, learningMode, profile]
   );
   const [presetId, setPresetId] = useState<TestPresetId>("vocabulary");
+  const [testSearch, setTestSearch] = useState("");
+  const [libraryFilter, setLibraryFilter] = useState<TestLibraryFilter>("all");
   const [testLength, setTestLength] = useState<(typeof TEST_LENGTHS)[number]>(10);
   const [direction, setDirection] = useState<TestDirection>("course");
   // "all" keeps the old behaviour of drawing from every level at once.
@@ -1141,6 +1165,10 @@ export function TestsView({
   const answerInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const selectedPreset = PRESETS.find((preset) => preset.id === presetId) ?? PRESETS[0];
+  const visiblePresets = PRESETS.filter((preset) =>
+    (libraryFilter === "all" || testLibraryCategory(preset) === libraryFilter)
+      && matchesTestSearch(preset, testSearch)
+  );
   // Difficulty only narrows presets that are graded by level. Weak spots and the
   // exams choose their own items on purpose, so a band would fight them.
   const difficultyApplies = Boolean(selectedPreset.gradable) && !selectedPreset.exam;
@@ -1864,10 +1892,51 @@ export function TestsView({
               <p className="text-xs font-black uppercase text-[var(--accent)]">{ui("Test library")}</p>
               <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--text-1)]">{ui("What do you want to practise?")}</h2>
             </div>
-            <p className="hidden text-sm font-bold text-[var(--text-3)] sm:block">{PRESETS.length} {ui("test types")}</p>
+            <p className="hidden text-sm font-bold text-[var(--text-3)] sm:block">
+              {visiblePresets.length === PRESETS.length
+                ? `${PRESETS.length} ${ui("test types")}`
+                : `${visiblePresets.length} ${ui("of")} ${PRESETS.length} ${ui("test types")}`}
+            </p>
           </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
+              <input
+                aria-label={ui("Search test types")}
+                className="h-12 w-full rounded-[16px] border border-[var(--border)] bg-[var(--surface)] pl-11 pr-4 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+                onChange={(event) => setTestSearch(event.target.value)}
+                placeholder={ui("Search test types…")}
+                type="search"
+                value={testSearch}
+              />
+            </label>
+            <div
+              aria-label={ui("Filter test types")}
+              className="flex flex-wrap gap-2"
+              role="group"
+            >
+              {TEST_LIBRARY_FILTERS.map((filter) => (
+                <button
+                  aria-pressed={libraryFilter === filter.id}
+                  className={cn(
+                    "h-10 rounded-full border px-4 text-xs font-black transition-colors",
+                    libraryFilter === filter.id
+                      ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-2)] hover:border-[var(--border-2)]"
+                  )}
+                  key={filter.id}
+                  onClick={() => setLibraryFilter(filter.id)}
+                  type="button"
+                >
+                  {ui(filter.label)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2">
-            {PRESETS.map((preset) => (
+            {visiblePresets.map((preset) => (
               <PresetCard
                 count={presetCounts[preset.id]}
                 key={preset.id}
@@ -1876,6 +1945,21 @@ export function TestsView({
                 selected={presetId === preset.id}
               />
             ))}
+            {visiblePresets.length === 0 && (
+              <div className="rounded-[22px] border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] p-8 text-center sm:col-span-2 lg:col-span-3 xl:col-span-2">
+                <p className="text-sm font-black text-[var(--text-1)]">{ui("No test types match your search and filters.")}</p>
+                <button
+                  className="ghost-btn mt-4 h-10 px-4 text-xs"
+                  onClick={() => {
+                    setTestSearch("");
+                    setLibraryFilter("all");
+                  }}
+                  type="button"
+                >
+                  {ui("Clear filters")}
+                </button>
+              </div>
+            )}
           </div>
         </section>
 

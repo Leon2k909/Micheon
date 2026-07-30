@@ -79,9 +79,9 @@ if (phrase) {
   );
 
   const accepted = [
-    "we are not all here yet, one comes later",
+    "We are not all here yet; one more person is coming later.",
     "We're not all here yet; one more is coming.",
-    "We are still waiting on one more.",
+    "We are still waiting for one more.",
   ];
   for (const answer of accepted) {
     check(
@@ -91,11 +91,11 @@ if (phrase) {
   }
 
   const rejected = [
-    "We are all here; one comes later.",
-    "They are not all here yet; one comes later.",
-    "We are not all here yet; no one comes later.",
-    "We are not all here yet; two come later.",
-    "We are not all here yet; one came earlier.",
+    "We're all here; no one else is coming.",
+    "They aren't all here yet; one more is coming.",
+    "We're not all here yet; no one else is coming.",
+    "We're not all here yet; two more are coming.",
+    "We're not all here yet; one person left early.",
   ];
   for (const answer of rejected) {
     check(

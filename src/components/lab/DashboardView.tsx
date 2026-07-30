@@ -30,6 +30,10 @@ type ProgressStats = {
   externalWords: number;
 };
 
+// Keep the schedule implementation available for a future return without
+// presenting placeholder times and progress as part of today's dashboard.
+const SHOW_MY_SCHEDULE = false;
+
 function miniPercent(value: number, total: number) {
   if (total <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((value / total) * 100)));
@@ -49,6 +53,9 @@ function ProgressCard({
   const nextLesson = nextLessons[0]?.[1];
   const nextLessonTitle = nextLesson?.theme ?? "German conversation basics";
   const sessionsLabel = progressStats.sessionsCompleted === 1 ? "session" : "sessions";
+  const streakLabel = uiIsGerman()
+    ? `${progressStats.streak} ${progressStats.streak === 1 ? "Tag" : "Tage"} in Folge`
+    : `${progressStats.streak}-day streak`;
 
   return (
     <section className="card flex flex-col justify-between overflow-hidden p-5 sm:p-6">
@@ -60,7 +67,7 @@ function ProgressCard({
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--success-bg)] px-3 py-1 text-[11px] font-black text-[var(--success-text)]">
             <Flame className="h-3.5 w-3.5 flame-anim" />
-            {progressStats.streak} {ui(progressStats.streak === 1 ? "day" : "days")}
+            {streakLabel}
           </span>
         </div>
 
@@ -301,7 +308,8 @@ export function DashboardView({
       />
       <ProgressCard nextLessons={scheduleItems} progressPercent={progressPercent} progressStats={progressStats} />
 
-      <section className="card p-5 sm:p-6 md:col-span-2">
+      {SHOW_MY_SCHEDULE && (
+        <section className="card p-5 sm:p-6 md:col-span-2">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("My schedule")}</h2>
@@ -336,7 +344,8 @@ export function DashboardView({
             />
           ))}
         </div>
-      </section>
+        </section>
+      )}
 
       <section className="grid gap-4 md:col-span-2 md:grid-cols-3">
         {[

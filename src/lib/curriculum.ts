@@ -31,6 +31,12 @@ export const CURRICULUM_ORDER: string[] = [
   "cb-reactions",
   "cb-shortreplies",
   "part158",         // Everyday spoken glue: reactions, timing and keeping in touch
+  "part160",         // Everyday essentials: common replies, check-ins and quick plans
+  "part161",         // Essential conversation skills: choices, turns, repair and boundaries
+  "part162",         // Meeting people: follow-ups, interests and recommendations
+  "part163",         // Talking about experience: ever, never, yet and how long
+  "part164",         // Explaining why: reasons, purpose and consequences
+  "part165",         // Talking about habits: frequency, routines and changes
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",

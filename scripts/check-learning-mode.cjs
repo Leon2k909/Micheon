@@ -291,6 +291,46 @@ check(
 );
 
 const translatedCalques = [
+  "Es ist, was es ist.",
+  "Das ist, was ich mag.",
+  "Das ist, was ich denke.",
+  "Das ist, was ich dachte.",
+  "Das ist, was sie sagte.",
+  "Das ist, was wir machen.",
+  "Das ist, was ich mache.",
+  "Das ist, was ich sage.",
+  "Das ist, was ich tue.",
+  "Das ist, was ich gesagt habe.",
+  "Es ist nicht, was ich dachte.",
+  "Das ist, was ich ihr gesagt habe.",
+  "Das ist, was ich gesehen habe.",
+  "Das ist, was ich gut kann.",
+  "Das ist, was ich gehört habe.",
+  "Das ist, was ich tun möchte.",
+  "Das ist, was ich tun muss.",
+  "Das ist, was ich wirklich will.",
+  "Das ist, was er gesagt hat.",
+  "Du weißt, das ist, was ich will.",
+  "Das ist, was du mir gesagt hast.",
+  "Ich glaube, das ist, was passiert ist.",
+  "Das ist, was ich ihnen sagte.",
+  "Ich denke, das ist, was passiert ist.",
+  "Das ist, was wir gesehen haben.",
+  "Ich glaube, das ist, was Sie suchen.",
+  "Es ist nicht an dir, das zu entscheiden.",
+  "Das ist, was ich verstehen möchte.",
+  "Das ist, was sich so tut.",
+  "Das ist, was ich immer sage.",
+  "Das ist, was ich gerne wissen würde.",
+  "Das ist, was ich gerne mache.",
+  "Glaubst du, dass es das ist, was ich möchte.",
+  "Das ist, was ich dachte, dass du gesagt hast.",
+  "Das ist, was ich dich gebeten habe zu tun.",
+  "Es ist nicht an dem, dass ich dies nicht tun will.",
+  "Ich weiß, dass es nicht das ist, was du wolltest.",
+  "Bist du sicher, dass es das ist, was du willst?",
+  "Denkst du, dass es das ist, was ich hören will?",
+  "Ich weiß nicht, wenn ich fragen kann.",
   "Das ist nicht, was ich denke.",
   "Das ist nicht, was ich gesehen habe.",
   "Das ist nicht, was ich dachte.",
@@ -319,6 +359,48 @@ check(
   "reviewed English-like corpus constructions are absent from built lessons",
   translatedCalques.every((phrase) => !builtGerman.has(phrase)),
   translatedCalques.filter((phrase) => builtGerman.has(phrase)).slice(0, 5).join("; ")
+);
+
+const remainingNaturalnessIssues = tatoebaPhrases.filter((phrase) =>
+  /(?:^|,\s)(?:Das|das|Es|es) ist(?: nicht| genau)?, (?:was|wie|warum|wo)\b/.test(phrase?.de ?? "")
+  || /^Es ist nicht an (?:mir|dir), das zu entscheiden\.$/.test(phrase?.de ?? "")
+  || /^Es ist nicht an dem, dass/.test(phrase?.de ?? "")
+  || /^Ich weiß nicht, wenn ich fragen kann\.$/.test(phrase?.de ?? "")
+);
+check(
+  "the shipped corpus contains no remaining reviewed English-shaped constructions",
+  remainingNaturalnessIssues.length === 0,
+  remainingNaturalnessIssues.slice(0, 5).map((phrase) => phrase.de).join("; ")
+);
+
+const naturalCorpusFixtures = [
+  { standard: "Es ist so, wie es ist.", spoken: "Es ist, wie es ist." },
+  { standard: "Das ist das, was ich denke.", spoken: "Das denke ich." },
+  { standard: "Das ist das, was sie gesagt hat.", spoken: "Das hat sie gesagt." },
+  { standard: "Das ist genau das, was ich wirklich will.", spoken: "Genau das will ich." },
+  { standard: "Das ist genau das, was ich gern wissen würde.", spoken: "Genau das würde ich gern wissen." },
+];
+for (const fixture of naturalCorpusFixtures) {
+  const phrase = tatoebaPhrases.find((item) => item?.de === fixture.standard);
+  const conversation = phrase && phraseForLearningMode(phrase, "conversation");
+  check(
+    `Conversation mode leads with reviewed corpus wording: ${fixture.spoken}`,
+    conversation?.de === fixture.spoken && conversation?.long === fixture.standard,
+    `found ${JSON.stringify(conversation)}`
+  );
+}
+
+const decisionPhrase = tatoebaPhrases.find((phrase) =>
+  phrase?.de === "Das ist nicht meine Entscheidung."
+);
+check(
+  "the reported decision sentence teaches natural conversational German",
+  decisionPhrase?.en === "It isn't my decision.",
+  `found ${JSON.stringify(decisionPhrase)}`
+);
+check(
+  "the translated-sounding decision sentence is absent from built lessons",
+  !builtGerman.has("Es ist nicht an mir, das zu entscheiden.")
 );
 
 const completeVariants = authoredPhrases.filter((phrase) =>

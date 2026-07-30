@@ -5,7 +5,7 @@ import {
   REMOTE_GERMAN_WORD_LIST_URLS, 
   REMOTE_CATALOG_MAX_STORED 
 } from "./data";
-import { Blueprint, Part, VocabItem, Dialogue, Phrase } from "./types";
+import { Blueprint, Part, VocabItem } from "./types";
 
 /** fetch() that always rejects/aborts after `ms`, so a slow host can't hang a load. */
 async function fetchWithTimeout(url: string, ms = 6000, init?: RequestInit) {
@@ -394,52 +394,6 @@ export async function fetchWokabularyWordBank() {
   return results;
 }
 
-export function buildRemoteWordBankParts(items: VocabItem[], wordsPerPart = 50): Record<string, Part> {
-  const unique = Array.from(
-    new Map(items.map((item) => [normalizeLookup(item.lookup || item.de), item])).values()
-  ).filter((item) => item.de && item.en);
-
-  const parts: Record<string, Part> = {};
-  for (let index = 0; index < unique.length; index += wordsPerPart) {
-    const chunk = unique.slice(index, index + wordsPerPart);
-    const partNo = Math.floor(index / wordsPerPart) + 1;
-    const key = `wordbank${partNo}`;
-
-    parts[key] = {
-      label: `Word Bank ${partNo}`,
-      level: partNo <= 5 ? "A1" : partNo <= 10 ? "A2" : "B1",
-      theme: `German word bank ${partNo}`,
-      description: "Remote German-English vocabulary with example sentence drills where available.",
-      focus: "Expand practical conversation vocabulary beyond the built-in starter path.",
-      vocab: chunk,
-      articleQuestions: chunk
-        .filter((item) => /^(der|die|das)\s+/i.test(item.de))
-        .slice(0, 8)
-        .map((item) => {
-          const article = item.de.match(/^(der|die|das)\s+/i)?.[1].toLowerCase() ?? "";
-          return {
-            word: item.de.replace(/^(der|die|das)\s+/i, ""),
-            correct: article,
-            hint: "Remote word bank noun article.",
-          };
-        }),
-      translationQuestions: chunk.slice(0, 8).map((item) => ({
-        prompt: `Translate: "${item.en}"`,
-        answers: [normalize(item.de), normalize(item.lookup)],
-        sample: item.de,
-        explain: "Built from the remote German-English word bank.",
-      })),
-      phrases: chunk
-        .filter((item) => item.example && item.exampleEn)
-        .slice(0, 12)
-        .map((item) => ({ de: item.example, en: item.exampleEn, use: `Practice sentence for ${item.lookup}.` })),
-      dialogues: [],
-    };
-  }
-
-  return parts;
-}
-
 export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: Record<string, any>): Part {
   const vocab: VocabItem[] = blueprint.seeds.map((seed) => {
     const entry = resolvedEntries[seed.lookup] ?? getFallbackEntry(seed.lookup);
@@ -449,9 +403,11 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
       en: learnerGloss,
       tip: seed.tip ?? entry?.pos ?? "word",
       lookup: seed.lookup,
-      example: toGermanDisplayText(entry?.examples?.[0] ?? ""),
-      exampleEn: entry?.exampleTranslations?.[0] ?? "",
-      exampleFr: entry?.exampleTranslationsFr?.[0] ?? "",
+      // Vocabulary lookups may enrich a word's gloss or part of speech, but
+      // they must never inject an unreviewed sentence into a lesson.
+      example: "",
+      exampleEn: "",
+      exampleFr: "",
       pos: entry?.pos ?? "",
       // usage note from the seed ("The word gamers actually say") — shown as
       // a chip in lessons and the tracker.
@@ -462,7 +418,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
   const articleQuestions = blueprint.seeds.filter((seed) => seed.article).slice(0, 6).map((seed) => ({
     word: seed.de.replace(/^(der|die|das)\s+/i, ""),
     correct: seed.article!,
-    hint: "Loaded from generated vocabulary.",
+    hint: "Loaded from hardcoded vocabulary.",
   }));
 
   const translationQuestions = blueprint.seeds.slice(0, 4).map((seed) => {
@@ -472,41 +428,14 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
       prompt: `Translate: "${promptText}"`,
       answers: [normalize(seed.de), normalize(seed.lookup)],
       sample: toGermanDisplayText(seed.de),
-      explain: `Built from dictionary-backed seed data for ${seed.lookup}.`,
+      explain: `Hardcoded vocabulary item: ${seed.lookup}.`,
     };
   });
 
-  const examplePhrases = blueprint.seeds.flatMap((seed) => {
-    const entry = resolvedEntries[seed.lookup] ?? getFallbackEntry(seed.lookup);
-    const examples = Array.isArray(entry?.examples) ? entry.examples : [];
-    const translations = Array.isArray(entry?.exampleTranslations) ? entry.exampleTranslations : [];
-    const frTranslations = Array.isArray(entry?.exampleTranslationsFr) ? entry.exampleTranslationsFr : [];
-    return examples.map((ex: string, i: number) => ({
-      de: toGermanDisplayText(ex),
-      en: translations[i] ?? toLearnerGloss(seed.fallbackEn, entry?.glosses, seed.lookup),
-      use: `Practice sentence for ${seed.lookup}.`,
-      fr: frTranslations[i],
-    }));
-  }).filter((p, i, a) => a.findIndex(t => t.de === p.de) === i).slice(0, 10);
-
-  // Hand-authored phrases are first-class content — the slang, texting,
-  // gaming, and intimacy packs live in blueprint.phrases. They were being
-  // silently dropped, so none of that authored content ever reached lessons.
-  const authoredPhrases = Array.isArray(blueprint.phrases) ? blueprint.phrases : [];
-  const phrases = [...authoredPhrases, ...examplePhrases]
-    .filter((p, i, a) => a.findIndex(t => t.de === p.de) === i);
-
-  // Authored dialogues first, then auto-generated practice rounds built from
-  // the dictionary example sentences.
-  const dialogues: Dialogue[] = Array.isArray(blueprint.dialogues) ? [...blueprint.dialogues] : [];
-  for (let i = 0; i < examplePhrases.length; i += 4) {
-    const chunk = examplePhrases.slice(i, i + 4);
-    if (chunk.length < 2) continue;
-    dialogues.push({
-      title: `${blueprint.theme} · Practice ${Math.floor(i / 4) + 1}`,
-      lines: chunk.map((line, index) => ({ speaker: index % 2 === 0 ? "A" : "B", de: line.de, en: line.en, fr: line.fr })),
-    });
-  }
+  // Sentences and dialogues are reviewed product content. Vocabulary seeds
+  // provide words only; dictionary examples must never become lesson phrases.
+  const phrases = Array.isArray(blueprint.phrases) ? [...blueprint.phrases] : [];
+  const dialogues = Array.isArray(blueprint.dialogues) ? [...blueprint.dialogues] : [];
 
   return {
     label: blueprint.label, level: blueprint.level, theme: blueprint.theme,

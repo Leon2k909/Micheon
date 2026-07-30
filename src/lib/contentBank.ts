@@ -29,6 +29,192 @@ interface RawSentence {
 // here instead of teaching a technically possible but confusing construction
 // or silently changing German "ich" into English "you/we".
 const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Es ist nicht an mir, das zu entscheiden.": {
+    de: "Das ist nicht meine Entscheidung.",
+    use: "This is the normal direct way to say that the decision belongs to someone else. 'Es ist nicht an mir, das zu entscheiden' is understandable, but it sounds formal and translated rather than conversational.",
+  },
+  "Es ist, was es ist.": {
+    de: "Es ist so, wie es ist.",
+    short: "Es ist, wie es ist.",
+    shortEn: "It is what it is.",
+    use: "Everyday German uses 'wie' here. The shorter 'Es ist, wie es ist' is the form people normally say.",
+  },
+  "Das ist, was ich mag.": {
+    de: "Das ist das, was ich mag.",
+    short: "Das mag ich.",
+    shortEn: "I like that. / That's what I like.",
+  },
+  "Das ist, was ich denke.": {
+    de: "Das ist das, was ich denke.",
+    short: "Das denke ich.",
+    shortEn: "That's what I think.",
+  },
+  "Das ist, was ich dachte.": {
+    de: "Das ist das, was ich früher gedacht habe.",
+    short: "Das habe ich früher gedacht.",
+    shortEn: "That's what I used to think.",
+  },
+  "Das ist, was sie sagte.": {
+    de: "Das ist das, was sie gesagt hat.",
+    short: "Das hat sie gesagt.",
+    shortEn: "That's what she said.",
+  },
+  "Das ist, was wir machen.": {
+    de: "Das ist das, was wir machen.",
+    short: "Das machen wir.",
+    shortEn: "That's what we do.",
+  },
+  "Das ist, was ich mache.": {
+    de: "Das ist das, was ich gerade mache.",
+    short: "Das mache ich gerade.",
+    shortEn: "That's what I'm doing. / Here's what I'm doing.",
+  },
+  "Das ist, was ich sage.": {
+    de: "Das ist das, was ich sage.",
+    short: "Das sage ich.",
+    shortEn: "That's what I say.",
+  },
+  "Das ist, was ich tue.": {
+    de: "Das ist das, was ich tue.",
+    short: "Das tue ich.",
+    shortEn: "That's what I do.",
+  },
+  "Das ist, was ich gesagt habe.": {
+    de: "Das ist das, was ich gesagt habe.",
+    short: "Das habe ich gesagt.",
+    shortEn: "That's what I said.",
+  },
+  "Es ist nicht, was ich dachte.": {
+    de: "Es ist nicht so, wie ich dachte.",
+  },
+  "Das ist, was ich ihr gesagt habe.": {
+    de: "Das ist das, was ich ihr gesagt habe.",
+    short: "Das habe ich ihr gesagt.",
+    shortEn: "That's what I told her.",
+  },
+  "Das ist, was ich gesehen habe.": {
+    de: "Das ist das, was ich gesehen habe.",
+    short: "Das habe ich gesehen.",
+    shortEn: "That's what I saw.",
+  },
+  "Das ist, was ich gut kann.": {
+    de: "Das ist das, was ich gut kann.",
+    short: "Das kann ich gut.",
+    shortEn: "That's what I'm good at. / I'm good at that.",
+  },
+  "Das ist, was ich gehört habe.": {
+    de: "Das ist das, was ich gehört habe.",
+    short: "Das habe ich gehört.",
+    shortEn: "That's what I heard.",
+  },
+  "Das ist, was ich tun möchte.": {
+    de: "Das ist das, was ich machen möchte.",
+    short: "Das möchte ich machen.",
+    shortEn: "That's what I want to do. / Here's what I want to do.",
+  },
+  "Das ist, was ich tun muss.": {
+    de: "Das ist das, was ich tun muss.",
+    short: "Das muss ich tun.",
+    shortEn: "That's what I have to do.",
+  },
+  "Das ist, was ich wirklich will.": {
+    de: "Das ist genau das, was ich wirklich will.",
+    short: "Genau das will ich.",
+    shortEn: "That's exactly what I want.",
+  },
+  "Das ist, was er gesagt hat.": {
+    de: "Das ist das, was er gesagt hat.",
+    short: "Das hat er gesagt.",
+    shortEn: "That's what he said.",
+  },
+  "Du weißt, das ist, was ich will.": {
+    de: "Du weißt, dass ich das will.",
+  },
+  "Das ist, was du mir gesagt hast.": {
+    de: "Das ist das, was du mir gesagt hast.",
+    short: "Das hast du mir gesagt.",
+    shortEn: "That's what you told me.",
+  },
+  "Ich glaube, das ist, was passiert ist.": {
+    de: "Ich glaube, genau das ist passiert.",
+  },
+  "Das ist, was ich ihnen sagte.": {
+    de: "Das ist das, was ich ihnen gesagt habe.",
+    short: "Das habe ich ihnen gesagt.",
+    shortEn: "That's what I told them.",
+  },
+  "Ich denke, das ist, was passiert ist.": {
+    de: "Ich denke, genau das ist passiert.",
+  },
+  "Das ist, was wir gesehen haben.": {
+    de: "Das ist das, was wir gesehen haben.",
+    short: "Das haben wir gesehen.",
+    shortEn: "That's what we saw.",
+  },
+  "Ich glaube, das ist, was Sie suchen.": {
+    de: "Ich glaube, das ist das, was Sie suchen.",
+    short: "Ich glaube, das suchen Sie.",
+    shortEn: "I think that's what you're looking for.",
+  },
+  "Es ist nicht an dir, das zu entscheiden.": {
+    de: "Das ist nicht deine Entscheidung.",
+    use: "The direct everyday sentence is 'Das ist nicht deine Entscheidung'. It can sound firm, so tone matters.",
+  },
+  "Das ist, was ich verstehen möchte.": {
+    de: "Das ist genau das, was ich verstehen möchte.",
+    short: "Genau das möchte ich verstehen.",
+    shortEn: "That's exactly what I want to understand.",
+  },
+  "Das ist, was sich so tut.": {
+    de: "So sieht es gerade aus.",
+    en: "That's how things are right now. / That's what's going on.",
+  },
+  "Das ist, was ich immer sage.": {
+    de: "Das ist das, was ich immer sage.",
+    short: "Das sage ich immer.",
+    shortEn: "That's what I always say.",
+  },
+  "Das ist, was ich gerne wissen würde.": {
+    de: "Das ist genau das, was ich gern wissen würde.",
+    short: "Genau das würde ich gern wissen.",
+    shortEn: "That's exactly what I'd like to know.",
+  },
+  "Das ist, was ich gerne mache.": {
+    de: "Das ist das, was ich gern mache.",
+    short: "Das mache ich gern.",
+    shortEn: "That's what I like doing. / I like doing that.",
+  },
+  "Glaubst du, dass es das ist, was ich möchte.": {
+    de: "Glaubst du, dass ich das will?",
+    en: "Do you think that's what I want?",
+  },
+  "Das ist, was ich dachte, dass du gesagt hast.": {
+    de: "Ich dachte, das hättest du gesagt.",
+  },
+  "Das ist, was ich dich gebeten habe zu tun.": {
+    de: "Das ist das, worum ich dich gebeten habe.",
+    en: "That's what I asked you to do.",
+    short: "Darum habe ich dich gebeten.",
+    shortEn: "That's what I asked you to do.",
+  },
+  "Es ist nicht an dem, dass ich dies nicht tun will.": {
+    de: "Es ist nicht so, dass ich das nicht tun will.",
+  },
+  "Ich weiß, dass es nicht das ist, was du wolltest.": {
+    de: "Ich weiß, dass du das nicht wolltest.",
+  },
+  "Bist du sicher, dass es das ist, was du willst?": {
+    de: "Bist du sicher, dass du das willst?",
+  },
+  "Denkst du, dass es das ist, was ich hören will?": {
+    de: "Glaubst du wirklich, dass ich das hören will?",
+    en: "Do you really think that's what I want to hear?",
+  },
+  "Ich weiß nicht, wenn ich fragen kann.": {
+    de: "Ich weiß nicht, wen ich fragen soll.",
+    en: "I don't know who to ask. / I don't know whom to ask.",
+    use: "'wen' is the person you would ask. 'wenn' means if or when, so it does not work in this sentence.",
+  },
   "Das ist nicht, was ich sagte.": {
     de: "Das ist nicht das, was ich gesagt habe.",
     en: "That's not what I said.",
