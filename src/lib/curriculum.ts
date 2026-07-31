@@ -49,6 +49,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part175",         // Sayings Germans actually use
   "part176",         // Tja, Igitt, Juhu — spoken reactions
   "part177",         // WG, Azubi, LKW — spoken abbreviations
+  "part178",         // Beim Friseur
+  "part179",         // Der Umzug
+  "part180",         // Wetter, das Pläne ändert
+  "part181",         // Fitnessstudio und Verein
+  "part182",         // Kochen: einmal durchs Rezept
+  "part183",         // Das Auto im Alltag
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
