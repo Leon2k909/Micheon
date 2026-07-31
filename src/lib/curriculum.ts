@@ -55,6 +55,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part181",         // Fitnessstudio und Verein
   "part182",         // Kochen: einmal durchs Rezept
   "part183",         // Das Auto im Alltag
+  "part184",         // Der Notfall: 112 und Erste Hilfe
+  "part185",         // Beim Zahnarzt
+  "part186",         // Kita und Schule
+  "part187",         // Geld überweisen und Rechnungen
+  "part188",         // Versicherungen im Alltag
+  "part189",         // Amt, Ausweis und Formulare
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
