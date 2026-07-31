@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  BarChart3,
   Bell,
   BookOpen,
   Check,
@@ -7,22 +8,42 @@ import {
   ChevronDown,
   ChevronRight,
   CircleUserRound,
-  Headphones,
+  ClipboardCheck,
+  Gamepad2,
+  GraduationCap,
   Home,
   Languages,
-  LockKeyhole,
+  Menu,
   MessageCircleMore,
   MessageSquareText,
-  Plane,
   Play,
   Search,
   Settings2,
-  Target,
   Trophy,
   UserRound,
   Volume2,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
+
+import GamificationPanel from "@/Gamification";
+import { CourseSwitcher } from "@/components/course/CourseSwitcher";
+import { LearnView as LearningLibraryView } from "@/components/lab/LearnView";
+import { TestsView } from "@/components/tests/TestsView";
+import { GamesView } from "@/games/GamesView";
+import ClozeTabContent from "@/lab/ClozeTabContent";
+import GrammarTabContent from "@/lab/GrammarTabContent";
+import { buildApiPartFromResolved } from "@/lib/api";
+import { orderParts } from "@/lib/curriculum";
+import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
+import { buildCustomParts, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
+import { allPartBlueprints } from "@/lib/data";
+import { DIRECTION_CHANGE_EVENT } from "@/lib/direction";
+import { getMasteredCount } from "@/lib/mastery";
+import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
+import { getStreak } from "@/lib/streak";
+import type { Blueprint, Part } from "@/lib/types";
+import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@/lib/courses";
+import { getCourse } from "@/lib/courseRegistry";
 
 import heroImage from "./assets/micheon-hero-v2.png";
 import backpackReward from "./assets/rewards-v3/backpack.png";
@@ -32,8 +53,16 @@ import starReward from "./assets/rewards-v3/star.png";
 import trophyReward from "./assets/rewards-v3/trophy.png";
 import "./new-ui-prototype.css";
 
-type PrototypeView = "home" | "learn" | "practice" | "progress" | "profile";
+type PrototypeView = "home" | "learn" | "practice" | "games" | "tests" | "grammar" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
+
+type PrototypeStats = {
+  totalXp: number;
+  sessionsCompleted: number;
+  totalReviews: number;
+  streak: number;
+  externalWords: number;
+};
 
 type NavigationItem = {
   id: PrototypeView;
@@ -54,9 +83,27 @@ const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "learn", label: "Learn", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
-  { id: "progress", label: "Progress", icon: Trophy },
-  { id: "profile", label: "Profile", icon: UserRound },
+  { id: "games", label: "Games", icon: Gamepad2 },
+  { id: "tests", label: "Tests", icon: ClipboardCheck },
+  { id: "grammar", label: "Grammar", icon: GraduationCap },
+  { id: "more", label: "More", icon: Menu },
 ];
+
+const MOBILE_NAVIGATION: NavigationItem[] = [
+  { id: "home", label: "Home", icon: Home },
+  { id: "learn", label: "Learn", icon: BookOpen },
+  { id: "practice", label: "Practice", icon: MessageSquareText },
+  { id: "games", label: "Games", icon: Gamepad2 },
+  { id: "more", label: "More", icon: Menu },
+];
+
+const PREVIEW_PROFILE: UserProfile = {
+  id: "micheon-preview",
+  name: "Leon",
+  email: "preview@micheon.app",
+  joinedAt: "2026-01-01T00:00:00.000Z",
+  externalWordsLearned: 0,
+};
 
 const LESSONS = [
   {
@@ -163,7 +210,7 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
       <nav aria-label="Prototype navigation" className="np-side-nav">
         {NAVIGATION.map((item) => {
           const Icon = item.icon;
-          const active = item.id === activeView;
+          const active = item.id === activeView || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
           return (
             <button
               aria-current={active ? "page" : undefined}
@@ -203,17 +250,37 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
   );
 }
 
-function Header({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
+function Header({
+  onNavigate,
+  stats,
+  userName,
+}: {
+  onNavigate: (view: PrototypeView) => void;
+  stats: PrototypeStats;
+  userName: string;
+}) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const firstName = userName.trim().split(/\s+/)[0] || "there";
+  const notifications: Array<{ title: string; body: string; view: PrototypeView }> = [
+    { title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
+    { title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
+  ];
+
+  const openNotification = (view: PrototypeView) => {
+    setNotificationsOpen(false);
+    onNavigate(view);
+  };
+
   return (
     <header className="np-header">
       <div className="np-greeting">
-        <p>Hi, Leon!</p>
+        <p>Hi, {firstName}!</p>
         <span>Ready to learn today?</span>
       </div>
       <div className="np-header-stats">
-        <StatChip kind="flame" label="Day streak" value="7" />
-        <StatChip kind="star" label="This week" value="320 XP" />
+        <StatChip kind="flame" label="Day streak" value={stats.streak.toLocaleString()} />
+        <StatChip kind="star" label="Total XP" value={`${stats.totalXp.toLocaleString()} XP`} />
         <StatChip kind="heart" label="Full hearts" value="5" />
       </div>
       <div className="np-header-actions">
@@ -233,12 +300,46 @@ function Header({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
         <button aria-label="Search" className="np-icon-button np-desktop-search" onClick={() => setSearchOpen((open) => !open)} type="button">
           <Search />
         </button>
-        <button aria-label="Notifications" className="np-icon-button np-notification" type="button">
-          <Bell />
-          <span />
-        </button>
+        <div className="np-notification-wrap">
+          <button
+            aria-expanded={notificationsOpen}
+            aria-label={`${notifications.length} unread notifications`}
+            className="np-icon-button np-notification"
+            onClick={() => setNotificationsOpen((open) => !open)}
+            type="button"
+          >
+            <Bell />
+            <span aria-hidden="true">{notifications.length}</span>
+          </button>
+          <AnimatePresence initial={false}>
+            {notificationsOpen && (
+              <motion.div
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="np-notification-panel"
+                exit={{ opacity: 0, scale: 0.98, y: -5 }}
+                initial={{ opacity: 0, scale: 0.98, y: -8 }}
+                role="dialog"
+                transition={{ duration: 0.16 }}
+              >
+                <div className="np-notification-heading">
+                  <div><strong>Notifications</strong><small>{notifications.length} new</small></div>
+                  <button aria-label="Close notifications" onClick={() => setNotificationsOpen(false)} type="button">Close</button>
+                </div>
+                <div className="np-notification-list">
+                  {notifications.map((notification, index) => (
+                    <button key={notification.title} onClick={() => openNotification(notification.view)} type="button">
+                      <span>{index + 1}</span>
+                      <div><strong>{notification.title}</strong><small>{notification.body}</small></div>
+                      <ChevronRight />
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <button aria-label="Open profile" className="np-profile-button" onClick={() => onNavigate("profile")} type="button">
-          <span>L</span>
+          <span>{firstName[0]?.toUpperCase() ?? "?"}</span>
           <ChevronDown />
         </button>
       </div>
@@ -482,86 +583,118 @@ function HomeView({ onPractice }: { onPractice: () => void }) {
   );
 }
 
-function LearnView({ onPractice }: { onPractice: () => void }) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "everyday" | "travel" | "work">("all");
-  const filteredLessons = useMemo(
-    () => LESSONS.filter((lesson) => {
-      const matchesQuery = `${lesson.title} ${lesson.detail}`.toLowerCase().includes(query.toLowerCase());
-      return matchesQuery && (filter === "all" || lesson.category === filter);
-    }),
-    [filter, query],
+function FeatureLoading() {
+  return (
+    <section aria-label="Loading learning content" className="np-feature-loading">
+      <span />
+      <div><i /><i /><i /></div>
+    </section>
   );
+}
+
+function AccountGate({ onOpenFullApp }: { onOpenFullApp: (tab: string) => void }) {
+  return (
+    <section className="np-page-card np-account-gate">
+      <div className="np-page-intro">
+        <span className="np-page-icon"><CircleUserRound /></span>
+        <div><h1>Sign in to manage your profile</h1><p>Your lessons and games are available in preview mode. Sign in to save account, pet, course, and flashcard changes.</p></div>
+      </div>
+      <button className="np-primary-button" onClick={() => onOpenFullApp("profile")} type="button">
+        Open sign in
+        <ChevronRight />
+      </button>
+    </section>
+  );
+}
+
+function MoreView({
+  onNavigate,
+  onOpenFullApp,
+  onSwitchCourse,
+}: {
+  onNavigate: (view: PrototypeView) => void;
+  onOpenFullApp: (tab: string) => void;
+  onSwitchCourse: () => void;
+}) {
+  const features: Array<{
+    title: string;
+    description: string;
+    icon: ComponentType<{ className?: string }>;
+    tone: string;
+    action: () => void;
+  }> = [
+    { title: "Tests", description: "Search and filter vocabulary, phrase, and level tests.", icon: ClipboardCheck, tone: "mint", action: () => onNavigate("tests") },
+    { title: "Grammar", description: "Practise sentence patterns and fill in missing words.", icon: GraduationCap, tone: "yellow", action: () => onNavigate("grammar") },
+    { title: "Progress", description: "See your streak, achievements, recent lessons, and goals.", icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
+    { title: "Profile and settings", description: "Manage your account, sound, theme, learning mode, and goals.", icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
+    { title: "Courses and packs", description: "Switch courses or browse every hardcoded lesson and phrase pack.", icon: Languages, tone: "blue", action: onSwitchCourse },
+    { title: "Pets and flashcards", description: "Choose pets, adjust coaching, and set how flashcards flip.", icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
+  ];
 
   return (
-    <section className="np-page-card np-learn-view">
+    <section className="np-page-card np-more-view">
       <div className="np-page-intro">
-        <span className="np-page-icon"><BookOpen /></span>
-        <div><h1>Learn what people actually say</h1><p>Start with common sentences, then learn the words inside them.</p></div>
+        <span className="np-page-icon"><Menu /></span>
+        <div><h1>Everything in one place</h1><p>Games, tests, grammar, course packs, pets, flashcards, progress, and account settings now live inside this layout.</p></div>
       </div>
-      <label className="np-page-search">
-        <Search />
-        <input onChange={(event) => setQuery(event.target.value)} placeholder="Search lessons and situations" value={query} />
-      </label>
-      <div aria-label="Lesson filters" className="np-learning-pills">
-        {[
-          ["all", "Common first"],
-          ["everyday", "Everyday life"],
-          ["travel", "Travel"],
-          ["work", "Work"],
-        ].map(([id, label]) => (
-          <button aria-pressed={filter === id} className={filter === id ? "is-active" : ""} key={id} onClick={() => setFilter(id as typeof filter)} type="button">
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="np-curriculum-list">
-        {filteredLessons.map((lesson) => {
-          const locked = lesson.status === "locked";
+      <div className="np-feature-directory">
+        {features.map((feature) => {
+          const Icon = feature.icon;
           return (
-            <button className={`np-curriculum-row${locked ? " is-locked" : ""}`} disabled={locked} key={lesson.number} onClick={onPractice} type="button">
-              <span className={`np-curriculum-icon np-curriculum-icon--${lesson.tone}`}><RewardIcon kind={lesson.reward} /></span>
-              <span className="np-curriculum-copy"><small>Lesson {lesson.number}</small><strong>{lesson.title}</strong><p>{lesson.detail}. 12 phrase-first activities.</p></span>
-              <span className="np-curriculum-action">{locked ? <LockKeyhole /> : <ChevronRight />}</span>
+            <button key={feature.title} onClick={feature.action} type="button">
+              <span className={`np-feature-directory-icon np-feature-directory-icon--${feature.tone}`}><Icon /></span>
+              <span><strong>{feature.title}</strong><small>{feature.description}</small></span>
+              <ChevronRight />
             </button>
           );
         })}
-        {filteredLessons.length === 0 && (
-          <div className="np-empty-state"><Search /><strong>No lesson found</strong><p>Try another phrase or clear the selected filter.</p></div>
-        )}
+      </div>
+      <div className="np-full-app-callout">
+        <div><strong>Need the original dashboard?</strong><p>It stays available while the new home is being finished.</p></div>
+        <button onClick={() => onOpenFullApp("dashboard")} type="button">Open it <ChevronRight /></button>
       </div>
     </section>
   );
 }
 
-function ProfileView() {
-  return (
-    <section className="np-page-card np-profile-view">
-      <div className="np-page-intro">
-        <span className="np-profile-avatar">L</span>
-        <div><h1>Leon</h1><p>Learning German for everyday conversation.</p></div>
-      </div>
-      <div className="np-profile-summary">
-        <div><strong>86</strong><span>Phrases learned</span></div>
-        <div><strong>7 days</strong><span>Current streak</span></div>
-        <div><strong>A2</strong><span>Current level</span></div>
-      </div>
-      <div className="np-settings-list">
-        <button type="button"><span><CircleUserRound /></span><div><strong>Account details</strong><small>Name, email, and profile photo</small></div><ChevronRight /></button>
-        <button type="button"><span><Languages /></span><div><strong>Learning direction</strong><small>English to German</small></div><ChevronRight /></button>
-        <button type="button"><span><Headphones /></span><div><strong>Sound and listening</strong><small>Speech playback and effects</small></div><ChevronRight /></button>
-        <button type="button"><span><Target /></span><div><strong>Daily learning goal</strong><small>One lesson and five phrases</small></div><ChevronRight /></button>
-      </div>
-    </section>
-  );
+function usePrototypeParts() {
+  const [apiParts, setApiParts] = useState<Record<string, Part>>({});
+
+  useEffect(() => {
+    const resolved: Record<string, Part> = {};
+    for (const [key, blueprint] of Object.entries(allPartBlueprints)) {
+      resolved[key] = buildApiPartFromResolved(blueprint as Blueprint, {});
+    }
+
+    const rebuild = () => {
+      setApiParts(orderParts(filterPartsForLearningDirection({
+        ...resolved,
+        ...buildBundledParts(),
+        ...buildTatoebaParts(),
+        ...buildCustomParts(),
+      })));
+    };
+
+    rebuild();
+    window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    return () => {
+      window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    };
+  }, []);
+
+  return apiParts;
 }
 
 function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNavigate: (view: PrototypeView) => void }) {
   return (
     <nav aria-label="Mobile prototype navigation" className="np-mobile-nav">
-      {NAVIGATION.map((item) => {
+      {MOBILE_NAVIGATION.map((item) => {
         const Icon = item.icon;
-        const active = item.id === activeView;
+        const active = item.id === activeView || (
+          item.id === "more" && ["tests", "grammar", "progress", "profile"].includes(activeView)
+        );
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
@@ -573,9 +706,22 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
   );
 }
 
-export default function NewUiPrototype() {
+export default function NewUiPrototype({ profile }: { profile: UserProfile | null }) {
   const [activeView, setActiveView] = useState<PrototypeView>("home");
+  const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
+  const [activeCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
+  const [stats, setStats] = useState<PrototypeStats>(() => ({
+    totalXp: loadScopedJson("totalXp", 0, profile) as number,
+    sessionsCompleted: loadScopedJson("sessionsCompleted", 0, profile) as number,
+    totalReviews: loadScopedJson("totalReviews", 0, profile) as number,
+    streak: getStreak(profile),
+    externalWords: loadScopedJson("externalWords", profile?.externalWordsLearned ?? 0, profile) as number,
+  }));
+  const apiParts = usePrototypeParts();
   const reduceMotion = useReducedMotion();
+  const effectiveProfile = profile ?? PREVIEW_PROFILE;
+  const activeCourseName = getCourse(activeCourseId)?.name ?? "German";
+  const partsReady = Object.keys(apiParts).length > 0;
 
   useEffect(() => {
     const previousTheme = document.documentElement.dataset.theme;
@@ -593,20 +739,79 @@ export default function NewUiPrototype() {
 
   const navigate = (view: PrototypeView) => {
     setActiveView(view);
-    window.scrollTo({ top: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  };
+
+  const openFullApp = (tab: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ui-prototype");
+    url.searchParams.set("tab", tab);
+    window.location.assign(url.toString());
+  };
+
+  const updateStats = (next: Partial<PrototypeStats>) => {
+    setStats((current) => {
+      const updated = { ...current, ...next };
+      Object.entries(next).forEach(([key, value]) => saveScopedJson(key, value, profile));
+      return updated;
+    });
+  };
+
+  const selectCourse = (courseId: string) => {
+    persistActiveCourseId(courseId, profile);
+    setActiveCourseId(courseId);
+    if (courseId !== "german") openFullApp("dashboard");
   };
 
   const mainView = activeView === "home" ? (
     <HomeView onPractice={() => navigate("practice")} />
   ) : activeView === "learn" ? (
-    <LearnView onPractice={() => navigate("practice")} />
+    <div className="np-feature-host">
+      {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}
+    </div>
   ) : activeView === "practice" ? (
     <PracticeCard />
+  ) : activeView === "games" ? (
+    <div className="np-feature-host">
+      {partsReady ? (
+        <GamesView
+          apiParts={apiParts}
+          externalWords={stats.externalWords}
+          gameMasteryCount={getMasteredCount()}
+          totalReviews={stats.totalReviews}
+        />
+      ) : <FeatureLoading />}
+    </div>
+  ) : activeView === "tests" ? (
+    <div className="np-feature-host">
+      {partsReady ? <TestsView apiParts={apiParts} profile={effectiveProfile} /> : <FeatureLoading />}
+    </div>
+  ) : activeView === "grammar" ? (
+    <div className="np-feature-host guided-session np-grammar-view">
+      <ClozeTabContent />
+      <GrammarTabContent />
+    </div>
   ) : activeView === "progress" ? (
     <ProgressPanel standalone />
+  ) : activeView === "profile" ? (
+    profile ? (
+      <div className="np-feature-host">
+        <GamificationPanel
+          activeCourseName={activeCourseName}
+          apiParts={apiParts}
+          onSwitchCourse={() => setCourseSwitcherOpen(true)}
+          onUpdateStats={updateStats}
+          profileOnly
+          stats={stats}
+          user={profile}
+        />
+      </div>
+    ) : <AccountGate onOpenFullApp={openFullApp} />
   ) : (
-    <ProfileView />
+    <MoreView onNavigate={navigate} onOpenFullApp={openFullApp} onSwitchCourse={() => setCourseSwitcherOpen(true)} />
   );
+
+  const showRightRail = activeView === "home" || activeView === "practice";
 
   return (
     <div className="new-ui-prototype">
@@ -614,21 +819,18 @@ export default function NewUiPrototype() {
         <div className="np-shell">
           <Sidebar activeView={activeView} onNavigate={navigate} />
           <div className="np-app-area">
-            <Header onNavigate={navigate} />
-            <div className={`np-content-grid${activeView === "progress" ? " np-content-grid--wide" : ""}`}>
-              <AnimatePresence initial={false} mode="wait">
-                <motion.main
-                  animate={{ opacity: 1, y: 0 }}
-                  className="np-main"
-                  exit={reduceMotion ? undefined : { opacity: 0, y: 7 }}
-                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                  key={activeView}
-                  transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {mainView}
-                </motion.main>
-              </AnimatePresence>
-              {activeView !== "progress" && (
+            <Header onNavigate={navigate} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+            <div className={`np-content-grid${showRightRail ? "" : " np-content-grid--wide"}`}>
+              <motion.main
+                animate={{ opacity: 1, y: 0 }}
+                className="np-main"
+                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                key={activeView}
+                transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {mainView}
+              </motion.main>
+              {showRightRail && (
                 <aside className="np-right-rail">
                   <ProgressPanel />
                 </aside>
@@ -637,6 +839,12 @@ export default function NewUiPrototype() {
           </div>
         </div>
         <MobileNav activeView={activeView} onNavigate={navigate} />
+        <CourseSwitcher
+          activeCourseId={activeCourseId}
+          onClose={() => setCourseSwitcherOpen(false)}
+          onSelect={selectCourse}
+          open={courseSwitcherOpen}
+        />
       </div>
     </div>
   );

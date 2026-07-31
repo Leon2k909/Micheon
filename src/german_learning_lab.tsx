@@ -107,7 +107,12 @@ export default function GermanLearningLab() {
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    return requested && ["dashboard", "learn", "profile", "grammar", "games", "tests"].includes(requested)
+      ? requested
+      : "dashboard";
+  });
   const [showPlacementTest, setShowPlacementTest] = useState<boolean>(
     () => loadScopedJson("german-lab-placement-done", false, user) === false
   );

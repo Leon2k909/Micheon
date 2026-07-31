@@ -38,17 +38,49 @@ export default function App() {
     );
   }
   if (isUiPrototype) {
-    return (
-      <>
-        <TitleBar />
-        <Suspense fallback={<PrototypeSkeleton />}>
-          <NewUiPrototype />
-        </Suspense>
-      </>
-    );
+    return <MicheonPrototype />;
   }
 
   return <MicheonApp />;
+}
+
+function MicheonPrototype() {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function boot() {
+      await hydrateLocalStorageFromSharedStorage();
+      if (cancelled) return;
+      applyStoredThemePreferences();
+      const current = getAuthUser();
+      if (current) recordKnownProfile(current);
+      setUser(current);
+      setReady(true);
+    }
+    boot();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <>
+      <TitleBar />
+      <UpdateBanner />
+      {!ready ? (
+        <PrototypeSkeleton />
+      ) : (
+        <CodexPetProvider>
+          <Suspense fallback={<PrototypeSkeleton />}>
+            <NewUiPrototype profile={user} />
+          </Suspense>
+          {!isElectronApp() && user && <CodexPetLayer />}
+        </CodexPetProvider>
+      )}
+    </>
+  );
 }
 
 function PrototypeSkeleton() {
