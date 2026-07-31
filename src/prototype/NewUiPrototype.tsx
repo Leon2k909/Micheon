@@ -197,7 +197,7 @@ function BrandMark() {
       </span>
       <span>
         <strong>MICHEON</strong>
-        <small>Speak naturally</small>
+        <small>Made with love by Leon &amp; Michelle</small>
       </span>
     </div>
   );

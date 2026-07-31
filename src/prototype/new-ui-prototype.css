@@ -112,8 +112,11 @@
 
 .np-brand small {
   color: var(--np-muted);
-  font-size: 12px;
+  max-width: 18ch;
+  margin-top: 2px;
+  font-size: 10.5px;
   font-weight: 760;
+  line-height: 1.25;
 }
 
 .np-side-nav {
@@ -511,7 +514,7 @@
 
 .np-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 326px;
+  grid-template-columns: minmax(0, 1fr) 348px;
   align-items: start;
   gap: 20px;
   padding: 0 24px 25px;
@@ -533,7 +536,7 @@
 .np-course-hero {
   position: relative;
   isolation: isolate;
-  min-height: 250px;
+  min-height: 280px;
   overflow: hidden;
   border: 1px solid rgba(43, 128, 57, 0.16);
   border-radius: 27px;
@@ -554,8 +557,7 @@
 .np-course-art {
   z-index: 0;
   object-fit: cover;
-  object-position: center 54%;
-  transform: scale(1.01);
+  object-position: center 18%;
 }
 
 .np-course-shade {
@@ -568,7 +570,7 @@
   z-index: 2;
   display: flex;
   width: 59%;
-  min-height: 250px;
+  min-height: 280px;
   flex-direction: column;
   justify-content: center;
   padding: 27px 31px 25px;
@@ -1131,7 +1133,7 @@
 }
 
 .np-progress-title p {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .np-level-card {
@@ -1185,7 +1187,7 @@
 .np-level-copy > small {
   margin-top: 2px;
   color: #4e6f43;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 780;
 }
 
@@ -1199,7 +1201,7 @@
   grid-column: 2;
   margin-top: -8px;
   color: #4a6841;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 850;
   text-align: right;
 }
@@ -1214,12 +1216,12 @@
 .np-progress-stats > div {
   display: grid;
   min-width: 0;
-  min-height: 78px;
-  grid-template-columns: 39px 1fr;
+  min-height: 98px;
+  grid-template-columns: 1fr;
+  place-items: center;
   align-content: center;
-  align-items: center;
-  gap: 0 2px;
-  padding: 7px 5px;
+  gap: 3px;
+  padding: 9px 5px;
   border: 1px solid var(--np-line);
   border-radius: 16px;
   background: #fffdf8;
@@ -1227,24 +1229,22 @@
 }
 
 .np-progress-stats .np-reward-icon {
-  width: 39px;
-  height: 39px;
-  grid-row: 1 / 3;
+  width: 40px;
+  height: 40px;
 }
 
 .np-progress-stats strong {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 950;
   line-height: 1;
 }
 
 .np-progress-stats small {
-  overflow: hidden;
   color: var(--np-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 760;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .np-badges-block,
@@ -1267,7 +1267,7 @@
 
 .np-block-heading button {
   color: var(--np-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .np-badge-list {
@@ -1306,13 +1306,11 @@
 
 .np-badge-list small {
   display: block;
-  overflow: hidden;
   margin-top: 6px;
   color: #514d48;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 820;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .np-goal-card {
@@ -1344,7 +1342,7 @@
 .np-goal-card small {
   margin-top: 3px;
   color: #456683;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 750;
 }
 
@@ -1361,7 +1359,7 @@
 .np-goal-card p {
   margin: 5px 0 0;
   color: #315e83;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 850;
 }
 
@@ -1373,7 +1371,7 @@
 
 .np-completed-row {
   display: grid;
-  min-height: 43px;
+  min-height: 49px;
   grid-template-columns: 31px 1fr auto;
   align-items: center;
   gap: 8px;
@@ -1397,14 +1395,14 @@
 }
 
 .np-completed-row strong {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .np-completed-row small {
   overflow: hidden;
   color: var(--np-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 690;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1412,7 +1410,7 @@
 
 .np-completed-row b {
   color: var(--np-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 850;
 }
 
@@ -2045,7 +2043,7 @@
   }
 
   .np-content-grid {
-    grid-template-columns: minmax(0, 1fr) 302px;
+    grid-template-columns: minmax(0, 1fr) 320px;
     gap: 16px;
     padding-inline: 20px;
   }
@@ -2642,7 +2640,7 @@
   }
 
   .np-badge-list small {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .np-goal-card {
