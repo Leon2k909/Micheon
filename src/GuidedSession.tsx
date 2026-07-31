@@ -60,7 +60,7 @@ import {
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages, Flame, GripVertical, ArrowLeftRight,
+  MessageSquareQuote, RotateCcw, Target, Languages, GripVertical, ArrowLeftRight,
   Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick
 } from "lucide-react";
 
@@ -4825,8 +4825,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [previewIndex, setPreviewIndex] = useState(0);
   const [matchingActive, setMatchingActive] = useState(false);
   const [matchingProgress, setMatchingProgress] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [praise, setPraise] = useState<{ id: number; text: string } | null>(null);
+  const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
   const comboRef = useRef(0);
   const praiseId = useRef(0);
   const correctPraiseIndex = useRef(0);
@@ -4872,11 +4871,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     if (ok) {
       const n = comboRef.current + 1;
       comboRef.current = n;
-      setCombo(n);
       playCorrect();
       if (n === 3 || n === 5 || n === 10 || (n > 10 && n % 5 === 0)) {
         const id = ++praiseId.current;
-        setPraise({ id, text: `${n} in a row!` });
+        setPraise({ count: n, id });
         setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
         petSpeak(`${n} correct in a row! Excellent work.`, {
           durationMs: 3800,
@@ -4892,7 +4890,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       }
     } else {
       comboRef.current = 0;
-      setCombo(0);
       playWrong();
       const messages = [
         "Nearly. Try once more.",
@@ -5081,23 +5078,27 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             key={praise.id}
             initial={reduceMotion
               ? { opacity: 0, x: "-50%" }
-              : { opacity: 0, x: "-50%", scale: 0.94 }}
-            animate={{ opacity: 1, x: "-50%", scale: 1 }}
+              : { opacity: 0, x: "-50%", y: -8 }}
+            animate={{ opacity: 1, x: "-50%", y: 0 }}
             exit={reduceMotion
               ? { opacity: 0, x: "-50%" }
-              : { opacity: 0, x: "-50%", scale: 0.98 }}
+              : { opacity: 0, x: "-50%", y: -4 }}
             transition={reduceMotion
               ? { duration: 0.12 }
               : { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            className="pointer-events-none absolute left-1/2 top-[22%] z-40 inline-flex min-w-[190px] items-center gap-3 rounded-[14px] border border-[var(--accent)]/40 bg-[var(--surface)] px-4 py-3 text-[var(--text-1)] shadow-[0_18px_48px_var(--shadow)]"
+            aria-label={`${praise.count} ${ui("correct in a row")}`}
+            className="pointer-events-none absolute left-1/2 top-[78px] z-40 inline-flex min-w-[176px] items-center gap-2.5 rounded-[12px] border border-white/10 bg-[#1b1c26]/95 px-3 py-2.5 text-[var(--fs-text)] shadow-[0_14px_36px_rgba(0,0,0,0.34)] backdrop-blur-sm"
+            data-testid="lesson-streak-feedback"
             role="status"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-[var(--accent)] text-white shadow-[0_6px_18px_var(--shadow)]">
-              <Flame className="h-5 w-5 fill-current" strokeWidth={2.5} />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-[rgba(139,76,255,0.14)] text-sm font-black tabular-nums text-[#cdb8ff]">
+              {praise.count}
             </span>
             <span className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-[var(--accent)]">{ui("Combo")}</span>
-              <strong className="text-lg font-black leading-tight">{praise.text}</strong>
+              <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#a98aff]">
+                {ui("Correct streak")}
+              </span>
+              <strong className="text-sm font-black leading-tight">{ui("Keep it going")}</strong>
             </span>
           </motion.div>
         )}

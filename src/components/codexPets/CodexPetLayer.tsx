@@ -49,6 +49,7 @@ import { stopTts, tts } from "@/lib/voice";
 const PET_POSITION_KEY = "gl-codex-pet-position-v1";
 const DESKTOP_PET_POSITION_KEY = "gl-codex-pet-desktop-position-v2";
 const PET_SIZE_KEY = "gl-codex-pet-size-v1";
+const PET_SIZES_KEY = "gl-codex-pet-sizes-v2";
 const PET_MARGIN = 8;
 const PET_SIZE_MIN = 64;
 const PET_SIZE_MAX = 192;
@@ -143,6 +144,8 @@ type PetBounds = {
   top: number;
 };
 
+type PetSizeMap = Record<string, number>;
+
 type DragState = {
   /** Set when this drag moves a single companion rather than the whole group. */
   companionKey?: string;
@@ -187,6 +190,23 @@ function petDimensions(size: number, heightRatio = PET_HEIGHT_RATIO) {
   return { height: Math.round(width * heightRatio), width };
 }
 
+function petSizeFor(pet: CodexPet, sizes: PetSizeMap, fallback: number) {
+  const stored = Number(sizes[codexPetKey(pet)]);
+  return Number.isFinite(stored) ? clampPetSize(stored) : fallback;
+}
+
+function petRenderMetrics(pet: CodexPet, size: number) {
+  const width = clampPetSize(size);
+  const spriteHeight = Math.round(
+    width * (pet.frame.height / Math.max(1, pet.frame.width))
+  );
+  return {
+    height: Math.max(spriteHeight, Math.round(width * PET_HEIGHT_RATIO)),
+    spriteHeight,
+    width,
+  };
+}
+
 function clampPosition(
   position: PetPosition,
   width: number,
@@ -211,34 +231,48 @@ function clampPosition(
   };
 }
 
-function visiblePetGroupBounds(
+function petGroupMetrics(
   pets: CodexPet[],
-  petWidth: number,
-  petHeight: number,
+  sizes: PetSizeMap,
+  fallbackSize: number,
   visibleBoundsByPet: Record<string, CodexPetVisibleBounds>
-): PetBounds {
-  if (!pets.length) return { bottom: petHeight, left: 0, right: petWidth, top: 0 };
+): { bounds: PetBounds; height: number; width: number } {
+  if (!pets.length) {
+    const fallback = petDimensions(fallbackSize);
+    return {
+      bounds: { bottom: fallback.height, left: 0, right: fallback.width, top: 0 },
+      height: fallback.height,
+      width: fallback.width,
+    };
+  }
 
-  return pets.reduce<PetBounds>((group, pet, index) => {
+  const metrics = pets.map((pet) => (
+    petRenderMetrics(pet, petSizeFor(pet, sizes, fallbackSize))
+  ));
+  const height = Math.max(...metrics.map((metric) => metric.height));
+  const width = metrics.reduce((total, metric) => total + metric.width, 0)
+    + PET_GROUP_GAP * Math.max(0, pets.length - 1);
+  let offsetX = 0;
+  const bounds = pets.reduce<PetBounds>((group, pet, index) => {
+    const metric = metrics[index];
     const bounds = visibleBoundsByPet[codexPetKey(pet)]
       ?? { bottom: 1, left: 0, right: 1, top: 0 };
-    const spriteHeight = Math.round(
-      petWidth * (pet.frame.height / Math.max(1, pet.frame.width))
-    );
-    const offsetX = index * (petWidth + PET_GROUP_GAP);
-    const offsetY = petHeight - spriteHeight;
-    return {
-      bottom: Math.max(group.bottom, offsetY + bounds.bottom * spriteHeight),
-      left: Math.min(group.left, offsetX + bounds.left * petWidth),
-      right: Math.max(group.right, offsetX + bounds.right * petWidth),
-      top: Math.min(group.top, offsetY + bounds.top * spriteHeight),
+    const offsetY = height - metric.spriteHeight;
+    const next = {
+      bottom: Math.max(group.bottom, offsetY + bounds.bottom * metric.spriteHeight),
+      left: Math.min(group.left, offsetX + bounds.left * metric.width),
+      right: Math.max(group.right, offsetX + bounds.right * metric.width),
+      top: Math.min(group.top, offsetY + bounds.top * metric.spriteHeight),
     };
+    offsetX += metric.width + (index < pets.length - 1 ? PET_GROUP_GAP : 0);
+    return next;
   }, {
     bottom: 0,
     left: Number.POSITIVE_INFINITY,
     right: 0,
     top: Number.POSITIVE_INFINITY,
   });
+  return { bounds, height, width };
 }
 
 function defaultPosition(petWidth: number, petHeight: number) {
@@ -270,7 +304,7 @@ function savePosition(position: PetPosition, storageKey = PET_POSITION_KEY) {
   localStorage.setItem(storageKey, JSON.stringify(position));
 }
 
-function storedPetSize() {
+function storedLegacyPetSize() {
   if (typeof window === "undefined") return PET_SIZE_DEFAULT;
   const stored = localStorage.getItem(PET_SIZE_KEY);
   if (stored === "small") return 72;
@@ -279,6 +313,26 @@ function storedPetSize() {
   if (stored === null) return PET_SIZE_DEFAULT;
   const parsed = Number(stored);
   return Number.isFinite(parsed) ? clampPetSize(parsed) : PET_SIZE_DEFAULT;
+}
+
+function storedPetSizes(): PetSizeMap {
+  if (typeof window === "undefined") return {};
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PET_SIZES_KEY) ?? "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .map(([key, value]) => [key, Number(value)] as const)
+        .filter(([, value]) => Number.isFinite(value))
+        .map(([key, value]) => [key, clampPetSize(value)])
+    );
+  } catch {
+    return {};
+  }
+}
+
+function savePetSizes(sizes: PetSizeMap) {
+  localStorage.setItem(PET_SIZES_KEY, JSON.stringify(sizes));
 }
 
 export function CodexPetLayer() {
@@ -344,25 +398,23 @@ export function CodexPetLayer() {
   );
   const [messagesMuted, setMessagesMuted] = useState(getCodexPetMessagesMuted);
   const [petVoiceEnabled, setPetVoiceEnabled] = useState(getCodexPetVoiceEnabled);
-  const [petSize, setPetSize] = useState(storedPetSize);
-  const petHeightRatio = visiblePets.length
-    ? Math.max(
-        ...visiblePets.map((pet) => pet.frame.height / Math.max(1, pet.frame.width)),
-        PET_HEIGHT_RATIO
-      )
-    : PET_HEIGHT_RATIO;
-  const { height: petHeight, width: petWidth } = petDimensions(petSize, petHeightRatio);
-  const petGroupWidth = petWidth * Math.max(1, visiblePets.length)
-    + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
+  const legacyPetSize = useRef(storedLegacyPetSize()).current;
+  const [petSizes, setPetSizes] = useState<PetSizeMap>(storedPetSizes);
   const [visibleBoundsByPet, setVisibleBoundsByPet] = useState<
     Record<string, CodexPetVisibleBounds>
   >({});
-  const petGroupVisibleBounds = visiblePetGroupBounds(
+  const currentPetGroup = petGroupMetrics(
     visiblePets,
-    petWidth,
-    petHeight,
+    petSizes,
+    legacyPetSize,
     visibleBoundsByPet
   );
+  const petGroupVisibleBounds = currentPetGroup.bounds;
+  const petGroupWidth = currentPetGroup.width;
+  const petHeight = currentPetGroup.height;
+  const menuPetSize = menuPet
+    ? petSizeFor(menuPet, petSizes, legacyPetSize)
+    : legacyPetSize;
   // What the menu and the speech bubble ACTUALLY measure, not what the layout
   // guessed. The guesses were made against English on a normal screen; German
   // wraps every line, and a 3440x1440 display at 225% scale is only 640 points
@@ -474,13 +526,19 @@ export function CodexPetLayer() {
     if (layoutMode !== "apart" || !companionPets.length) return;
     setCompanionPositions((current) => {
       let changed = false;
+      let leftOffset = 0;
       const next = { ...current };
-      companionPets.forEach((pet, index) => {
+      companionPets.forEach((pet) => {
         const key = codexPetKey(pet);
+        const metrics = petRenderMetrics(
+          pet,
+          petSizeFor(pet, petSizes, legacyPetSize)
+        );
+        leftOffset += metrics.width + PET_GROUP_GAP * 4;
         if (next[key]) return;
         const stored = storedPosition(
-          petWidth,
-          petHeight,
+          metrics.width,
+          metrics.height,
           petPositionKey(PET_POSITION_STORAGE_KEY, key)
         );
         const hasStored = typeof window !== "undefined"
@@ -489,19 +547,24 @@ export function CodexPetLayer() {
           ? stored
           : clampPosition(
               {
-                x: positionRef.current.x - (index + 1) * (petWidth + PET_GROUP_GAP * 4),
-                y: positionRef.current.y,
+                x: positionRef.current.x - leftOffset,
+                y: positionRef.current.y + petHeight - metrics.height,
               },
               viewport.width,
               viewport.height,
-              petWidth,
-              petHeight
+              metrics.width,
+              metrics.height
             );
         changed = true;
       });
       return changed ? next : current;
     });
-  }, [layoutMode, companionPets.map((pet) => codexPetKey(pet)).join("|"), petWidth, petHeight]);
+  }, [
+    layoutMode,
+    companionPets.map((pet) => codexPetKey(pet)).join("|"),
+    companionPets.map((pet) => petSizeFor(pet, petSizes, legacyPetSize)).join("|"),
+    petHeight,
+  ]);
 
   useLayoutEffect(() => {
     if (dragState.current) return;
@@ -766,7 +829,7 @@ export function CodexPetLayer() {
     hitRegionSyncRef.current?.();
     // Companions are separate hit regions, so their arrangement changing has to
     // re-sync the native shape too or a moved pet stops being clickable.
-  }, [position, petSize, visiblePets.length, menuOpen, historyOpen, dragging, speech,
+  }, [position, petSizes, visiblePets.length, menuOpen, historyOpen, dragging, speech,
       layoutMode, companionPositions]);
 
   useEffect(() => {
@@ -1036,23 +1099,29 @@ export function CodexPetLayer() {
     if (drag.companionKey) {
       const key = drag.companionKey;
       const current = companionPositionsRef.current[key];
-      if (!current) return;
+      const companionPet = companionPets.find((pet) => codexPetKey(pet) === key);
+      if (!current || !companionPet) return;
+      const metrics = petRenderMetrics(
+        companionPet,
+        petSizeFor(companionPet, petSizes, legacyPetSize)
+      );
       // Its own visible pixels, like the lead pet. Clamping a companion on its
       // whole frame fenced it further from the edge than the pet beside it, for
       // no reason a person could see.
       const companionBounds = visibleBoundsByPet[key];
+      const spriteOffsetY = metrics.height - metrics.spriteHeight;
       const next = clampPosition(
         nextPosition,
         viewport.width,
         viewport.height,
-        petWidth,
-        petHeight,
+        metrics.width,
+        metrics.height,
         companionBounds
           ? {
-            bottom: companionBounds.bottom * petHeight,
-            left: companionBounds.left * petWidth,
-            right: companionBounds.right * petWidth,
-            top: companionBounds.top * petHeight,
+            bottom: spriteOffsetY + companionBounds.bottom * metrics.spriteHeight,
+            left: companionBounds.left * metrics.width,
+            right: companionBounds.right * metrics.width,
+            top: spriteOffsetY + companionBounds.top * metrics.spriteHeight,
           }
           : undefined
       );
@@ -1332,27 +1401,71 @@ export function CodexPetLayer() {
   };
 
   const applyPetSize = (requestedSize: number) => {
+    const targetPet = menuPet ?? selectedPet;
+    const targetKey = codexPetKey(targetPet);
     const nextSize = clampPetSize(requestedSize);
-    const nextDimensions = petDimensions(nextSize, petHeightRatio);
-    const nextGroupWidth = nextDimensions.width * Math.max(1, visiblePets.length)
-      + PET_GROUP_GAP * Math.max(0, visiblePets.length - 1);
-    const nextVisibleBounds = visiblePetGroupBounds(
+    const nextSizes = { ...petSizes, [targetKey]: nextSize };
+    savePetSizes(nextSizes);
+    setPetSizes(nextSizes);
+
+    const resizedCompanion = layoutMode === "apart"
+      && targetKey !== codexPetKey(selectedPet);
+    if (resizedCompanion) {
+      const metrics = petRenderMetrics(targetPet, nextSize);
+      const visibleBounds = visibleBoundsByPet[targetKey];
+      const spriteOffsetY = metrics.height - metrics.spriteHeight;
+      const current = companionPositionsRef.current[targetKey]
+        ?? storedPosition(
+          metrics.width,
+          metrics.height,
+          petPositionKey(PET_POSITION_STORAGE_KEY, targetKey)
+        );
+      const nextPosition = clampPosition(
+        current,
+        viewport.width,
+        viewport.height,
+        metrics.width,
+        metrics.height,
+        visibleBounds
+          ? {
+            bottom: spriteOffsetY + visibleBounds.bottom * metrics.spriteHeight,
+            left: visibleBounds.left * metrics.width,
+            right: visibleBounds.right * metrics.width,
+            top: spriteOffsetY + visibleBounds.top * metrics.spriteHeight,
+          }
+          : undefined
+      );
+      companionPositionsRef.current = {
+        ...companionPositionsRef.current,
+        [targetKey]: nextPosition,
+      };
+      setCompanionPositions((currentPositions) => ({
+        ...currentPositions,
+        [targetKey]: nextPosition,
+      }));
+      savePosition(
+        nextPosition,
+        petPositionKey(PET_POSITION_STORAGE_KEY, targetKey)
+      );
+      requestHitRegionSync();
+      return;
+    }
+
+    const nextGroup = petGroupMetrics(
       visiblePets,
-      nextDimensions.width,
-      nextDimensions.height,
+      nextSizes,
+      legacyPetSize,
       visibleBoundsByPet
     );
     const nextPosition = clampPosition(
       positionRef.current,
       viewport.width,
       viewport.height,
-      nextGroupWidth,
-      nextDimensions.height,
-      nextVisibleBounds
+      nextGroup.width,
+      nextGroup.height,
+      nextGroup.bounds
     );
-    localStorage.setItem(PET_SIZE_KEY, String(nextSize));
     positionRef.current = nextPosition;
-    setPetSize(nextSize);
     setPosition(nextPosition);
     savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
   };
@@ -1499,16 +1612,18 @@ export function CodexPetLayer() {
               </div>
               <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
                 <div className="mb-2 flex items-center justify-between text-xs font-bold">
-                  <span className="text-[var(--text-2)]">{ui("Size")}</span>
+                  <span className="truncate pr-3 text-[var(--text-2)]">
+                    {menuPet ? petName(menuPet) : ui("Size")}
+                  </span>
                   <output
                     className="tabular-nums text-[var(--text-1)]"
                     htmlFor="codex-pet-size"
                   >
-                    {petSize}px
+                    {menuPetSize}px
                   </output>
                 </div>
                 <input
-                  aria-label={ui("Pet size")}
+                  aria-label={`${ui("Pet size")}: ${menuPet ? petName(menuPet) : ui("Size")}`}
                   className="h-5 w-full cursor-pointer accent-[var(--accent)]"
                   id="codex-pet-size"
                   max={PET_SIZE_MAX}
@@ -1516,7 +1631,7 @@ export function CodexPetLayer() {
                   onChange={(event) => applyPetSize(Number(event.currentTarget.value))}
                   step={PET_SIZE_STEP}
                   type="range"
-                  value={petSize}
+                  value={menuPetSize}
                 />
                 <div
                   aria-hidden="true"
@@ -1743,7 +1858,7 @@ export function CodexPetLayer() {
         >
         <button
         aria-label={`Talk to ${petName(selectedPet)}`}
-        className={`pointer-events-auto flex items-end gap-2 touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
+        className={`pointer-events-auto flex h-full w-full items-end gap-2 touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
         draggable={false}
         data-pet-interactive="true"
         onClick={handleClick}
@@ -1765,7 +1880,7 @@ export function CodexPetLayer() {
             onVisibleBounds={(bounds) => updatePetVisibleBounds(codexPetKey(pet), bounds)}
             pet={pet}
             playbackKey={index === 0 ? playbackKey : 0}
-            size={petWidth}
+            size={petSizeFor(pet, petSizes, legacyPetSize)}
           />
         ))}
         </button>
@@ -1779,6 +1894,10 @@ export function CodexPetLayer() {
       {layoutMode === "apart" && companionPets.map((pet) => {
         const key = codexPetKey(pet);
         const spot = companionPositions[key];
+        const metrics = petRenderMetrics(
+          pet,
+          petSizeFor(pet, petSizes, legacyPetSize)
+        );
         if (!spot) return null;
         return (
           <div
@@ -1786,16 +1905,16 @@ export function CodexPetLayer() {
             key={key}
             ref={(element) => { companionElements.current[key] = element; }}
             style={{
-              height: petHeight,
+              height: metrics.height,
               left: spot.x,
               top: spot.y,
-              width: petWidth,
+              width: metrics.width,
               willChange: dragging ? "translate" : undefined,
             }}
           >
             <button
               aria-label={`${ui("Move")} ${petName(pet)}`}
-              className={`pointer-events-auto flex items-end touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
+              className={`pointer-events-auto flex h-full w-full items-end touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent ${dragging ? "cursor-grabbing" : "cursor-grab transition-transform duration-200 hover:scale-[1.04] active:scale-95"}`}
               data-pet-interactive="true"
               draggable={false}
               onContextMenu={(event) => showContextMenu(event, key)}
@@ -1813,7 +1932,7 @@ export function CodexPetLayer() {
                 onVisibleBounds={(bounds) => updatePetVisibleBounds(key, bounds)}
                 pet={pet}
                 playbackKey={0}
-                size={petWidth}
+                size={metrics.width}
               />
             </button>
           </div>

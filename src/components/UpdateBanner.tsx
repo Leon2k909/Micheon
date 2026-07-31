@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CircleCheck, Download, RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowRight, CircleCheck, Download, Power, RefreshCw, TriangleAlert } from "lucide-react";
 import {
   normaliseUpdatePercent,
   UPDATE_INSTALL_REQUEST_EVENT,
@@ -22,8 +22,8 @@ function developmentPreview(): UpdateStatus | null {
   if (!state || !["downloading", "ready", "error"].includes(state)) return null;
   return {
     state,
-    version: search.get("update-version") || "1.2.65",
-    currentVersion: "1.2.64",
+    version: search.get("update-version") || "1.2.66",
+    currentVersion: "1.2.65",
     checkedAt: Date.now(),
     supported: true,
     percent: state === "ready" ? 100 : Number(search.get("update-percent") || 46),
@@ -74,17 +74,13 @@ function UpdateInstallTakeover({
       role="dialog"
       transition={{ duration: reduceMotion ? 0.01 : 0.24 }}
     >
-      <motion.div
-        animate={reduceMotion ? undefined : { opacity: [0.28, 0.48, 0.28], scale: [0.94, 1.08, 0.94] }}
+      <div
         aria-hidden="true"
         className="absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full bg-[#7834f7]/35 blur-[110px]"
-        transition={{ duration: 4.8, ease: "easeInOut", repeat: Infinity }}
       />
-      <motion.div
-        animate={reduceMotion ? undefined : { opacity: [0.18, 0.34, 0.18], scale: [1.08, 0.96, 1.08] }}
+      <div
         aria-hidden="true"
         className="absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full bg-[#a177ff]/25 blur-[120px]"
-        transition={{ duration: 5.4, ease: "easeInOut", repeat: Infinity }}
       />
 
       <motion.section
@@ -102,15 +98,15 @@ function UpdateInstallTakeover({
           </span>
         </div>
 
-        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center">
-          <motion.div
-            animate={reduceMotion ? undefined : { rotate: 360 }}
-            aria-hidden="true"
-            className="absolute inset-0 rounded-[30px] border border-[#a177ff]/45 border-t-[#a177ff] shadow-[0_0_38px_rgba(161,119,255,0.22)]"
-            transition={{ duration: 2.4, ease: "linear", repeat: Infinity }}
+        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px] border border-white/10 bg-[#252735] shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
+          <div aria-hidden="true" className="absolute inset-2 rounded-[23px] bg-gradient-to-br from-[#a177ff]/20 to-[#7834f7]/40" />
+          <img
+            alt=""
+            className="relative h-14 w-14 rounded-[18px] shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
+            src="/icon-64.png"
           />
-          <div className="flex h-[70px] w-[70px] items-center justify-center rounded-[23px] bg-gradient-to-br from-[#a177ff] to-[#7834f7] shadow-[0_16px_38px_rgba(120,52,247,0.38)]">
-            <Download aria-hidden="true" className="h-7 w-7 text-white" strokeWidth={2.5} />
+          <div className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2 border-[#1b1d27] bg-[#6ee7ad] text-[#10231a] shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+            <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
           </div>
         </div>
 
@@ -131,29 +127,35 @@ function UpdateInstallTakeover({
           )}
         </div>
 
-        <div className="mt-8">
+        <div
+          aria-live="polite"
+          className="mt-8 rounded-[18px] border border-white/[0.07] bg-white/[0.035] p-4"
+          data-testid="update-install-steps"
+          role="status"
+        >
           <div className="mb-2 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.12em] text-[#8f94a8]">
             <span>{ui("Preparing restart")}</span>
             <span>{ui("Just a moment")}</span>
           </div>
-          <div aria-label={ui("Preparing restart")} className="relative h-2.5 overflow-hidden rounded-full bg-[#303344]" role="progressbar">
-            <motion.div
-              animate={reduceMotion ? { x: "180%" } : { x: ["-130%", "330%"] }}
-              className="absolute inset-y-0 left-0 w-[38%] rounded-full bg-gradient-to-r from-[#7834f7] via-[#b799ff] to-[#7834f7] shadow-[0_0_18px_rgba(161,119,255,0.5)]"
-              initial={{ x: "-130%" }}
-              transition={{ duration: reduceMotion ? 0.01 : 1.15, ease: "easeInOut", repeat: reduceMotion ? 0 : Infinity }}
+          <div aria-hidden="true" className="grid grid-cols-3 gap-2">
+            <span className="h-2 rounded-full bg-[#6ee7ad]" />
+            <motion.span
+              animate={reduceMotion ? undefined : { opacity: [0.45, 1, 0.45] }}
+              className="h-2 rounded-full bg-[#a177ff] shadow-[0_0_14px_rgba(161,119,255,0.38)]"
+              transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
             />
+            <span className="h-2 rounded-full bg-[#3a3d4d]" />
           </div>
-        </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <div className="flex items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-3.5 py-3 text-xs font-bold text-[#d2d4df]">
-            <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[#7ff0ba]" />
-            {ui("Download complete")}
-          </div>
-          <div className="flex items-center gap-2.5 rounded-2xl border border-[#a177ff]/20 bg-[#a177ff]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
-            <RefreshCw aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin text-[#b799ff] motion-reduce:animate-none" />
-            {ui("Restarting Micheon")}
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="flex items-center gap-2.5 rounded-[13px] border border-white/[0.06] bg-[#22242f] px-3.5 py-3 text-xs font-bold text-[#d2d4df]">
+              <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[#7ff0ba]" />
+              {ui("Download complete")}
+            </div>
+            <div className="flex items-center gap-2.5 rounded-[13px] border border-[#a177ff]/20 bg-[#a177ff]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
+              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[#b799ff]" />
+              {ui("Restarting Micheon")}
+            </div>
           </div>
         </div>
       </motion.section>
@@ -341,7 +343,7 @@ export function UpdateBanner() {
                   onClick={retry}
                   type="button"
                 >
-                  <RefreshCw className={`h-4 w-4 ${retrying ? "animate-spin motion-reduce:animate-none" : ""}`} />
+                  <RefreshCw className={`h-4 w-4 ${retrying ? "animate-pulse motion-reduce:animate-none" : ""}`} />
                   {ui("Try again")}
                 </button>
               )}

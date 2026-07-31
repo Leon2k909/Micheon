@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpCircle, Check, Loader2, RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowUpCircle, Check, Download, RefreshCw, TriangleAlert } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { normaliseUpdatePercent, requestUpdateInstall, type UpdateStatus } from "@/lib/updateStatus";
 
@@ -60,10 +60,11 @@ export function UpdateStatusCard() {
     }
   };
 
-  const Icon = state === "checking" || state === "downloading" || busy ? Loader2
-    : ready ? ArrowUpCircle
-      : state === "error" ? TriangleAlert
-        : Check;
+  const Icon = state === "downloading" ? Download
+    : state === "checking" || busy ? RefreshCw
+      : ready ? ArrowUpCircle
+        : state === "error" ? TriangleAlert
+          : Check;
 
   return (
     <div className="mt-5 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -75,7 +76,7 @@ export function UpdateStatusCard() {
               aria-hidden="true"
               className={[
                 "h-3.5 w-3.5 shrink-0",
-                (state === "checking" || busy) ? "animate-spin motion-reduce:animate-none" : "",
+                (state === "checking" || busy) ? "animate-pulse motion-reduce:animate-none" : "",
                 ready ? "text-[var(--accent)]" : state === "error" ? "text-amber-600" : "",
               ].join(" ")}
             />
@@ -114,7 +115,7 @@ export function UpdateStatusCard() {
           onClick={check}
           type="button"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-spin motion-reduce:animate-none" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-pulse motion-reduce:animate-none" : ""}`} />
           {ui("Check for updates")}
         </button>
 

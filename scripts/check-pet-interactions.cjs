@@ -115,6 +115,26 @@ check(
   /pendingPetClick\.current = window\.setTimeout\([\s\S]*?openHistory\(\);[\s\S]*?PET_SINGLE_CLICK_DELAY_MS/.test(clickHandler)
 );
 check(
+  "pet sizes persist as per-pet overrides with the old global size as fallback",
+  layer.includes('const PET_SIZES_KEY = "gl-codex-pet-sizes-v2";')
+    && layer.includes("const legacyPetSize = useRef(storedLegacyPetSize()).current;")
+    && layer.includes("const [petSizes, setPetSizes] = useState<PetSizeMap>(storedPetSizes);")
+    && layer.includes("localStorage.setItem(PET_SIZES_KEY, JSON.stringify(sizes));")
+);
+check(
+  "the size slider acts on the pet that opened the menu",
+  layer.includes("const targetPet = menuPet ?? selectedPet;")
+    && layer.includes("const nextSizes = { ...petSizes, [targetKey]: nextSize };")
+    && layer.includes("value={menuPetSize}")
+    && layer.includes("{menuPet ? petName(menuPet) : ui(\"Size\")}")
+);
+check(
+  "grouped and separated pets render with their own saved widths",
+  layer.includes("size={petSizeFor(pet, petSizes, legacyPetSize)}")
+    && layer.includes("size={metrics.width}")
+    && layer.includes('const resizedCompanion = layoutMode === "apart"')
+);
+check(
   "the delay is long enough to recognise an ordinary double-click",
   Number(layer.match(/PET_SINGLE_CLICK_DELAY_MS = (\d+)/)?.[1]) >= 300
 );

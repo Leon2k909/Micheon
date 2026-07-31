@@ -42,6 +42,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part168",         // Everyday amounts: enough, too much, what is left and sharing
   "part169",         // Thinking, knowing, remembering, clarifying and checking
   "part170",         // Getting things done: starting, waiting, finishing and following up
+  "part171",         // Keeping conversations moving: updates, reactions and follow-up questions
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",

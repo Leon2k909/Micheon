@@ -127,6 +127,10 @@ const expected = {
     theme: "Getting things done together: starting, waiting, finishing and following up",
     fixture: "Sag mir Bescheid, wenn du fertig bist.",
   },
+  part171: {
+    theme: "Keeping conversations moving: updates, reactions and follow-up questions",
+    fixture: "Ich halte dich auf dem Laufenden.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -162,7 +166,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all twenty packs",
+  "new authored phrases are unique across all twenty-one packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -186,9 +190,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the twenty expansion packs contain at least 942 authored phrases", newPhrases.length >= 942, `found ${newPhrases.length}`);
-check("the twenty expansion packs contain at least 381 vocabulary entries", totalSeeds >= 381, `found ${totalSeeds}`);
-check("the twenty expansion packs contain at least eighty-three dialogues", totalDialogues >= 83, `found ${totalDialogues}`);
+check("the twenty-one expansion packs contain at least 997 authored phrases", newPhrases.length >= 997, `found ${newPhrases.length}`);
+check("the twenty-one expansion packs contain at least 396 vocabulary entries", totalSeeds >= 396, `found ${totalSeeds}`);
+check("the twenty-one expansion packs contain at least eighty-eight dialogues", totalDialogues >= 88, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -223,6 +227,8 @@ check("thinking-and-remembering practice follows amount-and-sharing practice", C
 check("thinking-and-remembering practice is introduced in tier one", packMeta("part169").tier === 1);
 check("getting-things-done practice follows thinking-and-remembering practice", CURRICULUM_ORDER.indexOf("part170") === CURRICULUM_ORDER.indexOf("part169") + 1);
 check("getting-things-done practice is introduced in tier one", packMeta("part170").tier === 1);
+check("conversation-update practice follows getting-things-done practice", CURRICULUM_ORDER.indexOf("part171") === CURRICULUM_ORDER.indexOf("part170") + 1);
+check("conversation-update practice is introduced in tier one", packMeta("part171").tier === 1);
 check("practical-gap practice follows home and daily errands", CURRICULUM_ORDER.indexOf("part159") === CURRICULUM_ORDER.indexOf("part9") + 1);
 check("practical-gap practice stays in the common situational tier", packMeta("part159").tier === 2);
 
@@ -402,6 +408,18 @@ const gettingThingsDoneCoverage = {
 };
 for (const [area, fixtures] of Object.entries(gettingThingsDoneCoverage)) {
   check(`getting-things-done pack covers ${area}`, fixtures.every((phrase) => gettingThingsDonePhrases.has(phrase)));
+}
+
+const conversationUpdatePhrases = new Set((allPartBlueprints.part171?.phrases ?? []).map((phrase) => phrase.de));
+const conversationUpdateCoverage = {
+  asking: ["Na, wie ist es gelaufen?", "Gibt es inzwischen etwas Neues?", "Wie geht es jetzt weiter?"],
+  updates: ["Bei mir ist gerade viel los.", "Ich halte dich auf dem Laufenden.", "Ich sag dir Bescheid, sobald ich mehr weiß."],
+  reactions: ["Echt? Das wusste ich gar nicht.", "Oh nein, das tut mir leid.", "Das ist mir auch schon mal passiert."],
+  followups: ["Und was ist dann passiert?", "Wie kam es denn dazu?", "Wie hast du dich dabei gefühlt?"],
+  nextSteps: ["Warten wir erst mal ab.", "Das bekommen wir schon irgendwie hin.", "Dann schauen wir weiter."],
+};
+for (const [area, fixtures] of Object.entries(conversationUpdateCoverage)) {
+  check(`conversation-update pack covers ${area}`, fixtures.every((phrase) => conversationUpdatePhrases.has(phrase)));
 }
 
 if (failures) {
