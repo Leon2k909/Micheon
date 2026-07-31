@@ -9,10 +9,13 @@ import {
   ChevronRight,
   CircleUserRound,
   ClipboardCheck,
+  Coins,
+  Crown,
   Gamepad2,
   GraduationCap,
   Home,
   Languages,
+  Leaf,
   LockKeyhole,
   Menu,
   MessageCircleMore,
@@ -20,6 +23,7 @@ import {
   Play,
   Search,
   Settings2,
+  ShoppingBag,
   Trophy,
   UserRound,
   Volume2,
@@ -46,7 +50,7 @@ import type { Blueprint, Part } from "@/lib/types";
 import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 
-import heroImage from "./assets/micheon-hero-v2.png";
+import heroImage from "./assets/micheon-hero-v3.png";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.png";
 import backpackReward from "./assets/rewards-v3/backpack.png";
 import flameReward from "./assets/rewards-v3/flame.png";
@@ -55,8 +59,9 @@ import starReward from "./assets/rewards-v3/star.png";
 import trophyReward from "./assets/rewards-v3/trophy.png";
 import "./new-ui-prototype.css";
 
-type PrototypeView = "home" | "learn" | "practice" | "games" | "tests" | "grammar" | "progress" | "profile" | "more";
+type PrototypeView = "home" | "learn" | "practice" | "games" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
+type ShopBadgeId = "leaf" | RewardKind | "crown";
 
 type PrototypeStats = GamificationStats;
 
@@ -84,6 +89,7 @@ const NAVIGATION: NavigationItem[] = [
   { id: "games", label: "Games", icon: Gamepad2 },
   { id: "tests", label: "Tests", icon: ClipboardCheck },
   { id: "grammar", label: "Grammar", icon: GraduationCap },
+  { id: "shop", label: "Shop", icon: ShoppingBag },
   { id: "more", label: "More", icon: Menu },
 ];
 
@@ -142,6 +148,29 @@ const LESSONS = [
   },
 ] as const;
 
+const SHOP_PURCHASES_KEY = "prototypeShopPurchases";
+const SHOP_EQUIPPED_KEY = "prototypeShopEquippedBadge";
+
+const SHOP_ITEMS: ReadonlyArray<{
+  id: ShopBadgeId;
+  name: string;
+  description: string;
+  price: number;
+  tone: string;
+}> = [
+  { id: "leaf", name: "Fresh start pin", description: "A calm green badge for your profile.", price: 60, tone: "mint" },
+  { id: "star", name: "Bright star pin", description: "A cheerful badge for steady progress.", price: 90, tone: "yellow" },
+  { id: "heart", name: "Kind heart pin", description: "A warm badge for patient learners.", price: 110, tone: "rose" },
+  { id: "flame", name: "Streak flame pin", description: "Show that you keep coming back.", price: 140, tone: "orange" },
+  { id: "backpack", name: "Explorer pin", description: "A travel badge for curious learners.", price: 170, tone: "violet" },
+  { id: "trophy", name: "Champion pin", description: "A gold badge for your biggest wins.", price: 220, tone: "blue" },
+  { id: "crown", name: "Conversation crown", description: "The top profile badge in the reward shop.", price: 260, tone: "gold" },
+];
+
+function isShopBadgeId(value: unknown): value is ShopBadgeId {
+  return typeof value === "string" && SHOP_ITEMS.some((item) => item.id === value);
+}
+
 const EXERCISES: Exercise[] = [
   {
     english: "Let me think for a moment.",
@@ -187,14 +216,30 @@ function RewardIcon({ kind, className = "" }: { kind: RewardKind; className?: st
   return <img alt="" aria-hidden="true" className={`np-reward-icon ${className}`.trim()} decoding="async" src={REWARD_IMAGE[kind]} />;
 }
 
+const ACHIEVEMENT_ART_ID: Record<string, string> = {
+  lessons_10: "first_session",
+  reviews_250: "reviews_50",
+  xp_2500: "xp_500",
+  words_1000: "words_200",
+  streak_30: "streak_3",
+  lessons_100: "week",
+};
+
 function AchievementArt({ id }: { id: string }) {
+  const artId = ACHIEVEMENT_ART_ID[id] ?? id;
   return (
     <span
       aria-hidden="true"
-      className={`np-achievement-art np-achievement-art--${id}`}
+      className={`np-achievement-art np-achievement-art--${artId}`}
       style={{ backgroundImage: `url(${achievementAtlas})` }}
     />
   );
+}
+
+function ShopBadgeArt({ id }: { id: ShopBadgeId }) {
+  if (id === "leaf") return <Leaf aria-hidden="true" />;
+  if (id === "crown") return <Crown aria-hidden="true" />;
+  return <RewardIcon kind={id} />;
 }
 
 function BrandMark() {
@@ -259,10 +304,12 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 }
 
 function Header({
+  equippedBadge,
   onNavigate,
   stats,
   userName,
 }: {
+  equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
   stats: PrototypeStats;
   userName: string;
@@ -389,7 +436,10 @@ function Header({
             }}
             type="button"
           >
-            <span>{firstName[0]?.toUpperCase() ?? "?"}</span>
+            <span className="np-profile-avatar-mark">
+              <b>{firstName[0]?.toUpperCase() ?? "?"}</b>
+              {equippedBadge && <i className="np-equipped-badge"><ShopBadgeArt id={equippedBadge} /></i>}
+            </span>
             <ChevronDown />
           </button>
           <AnimatePresence initial={false}>
@@ -404,7 +454,10 @@ function Header({
                 transition={{ duration: 0.16 }}
               >
                 <div className="np-profile-menu-summary">
-                  <span aria-hidden="true">{firstName[0]?.toUpperCase() ?? "?"}</span>
+                  <span aria-hidden="true" className="np-profile-avatar-mark">
+                    <b>{firstName[0]?.toUpperCase() ?? "?"}</b>
+                    {equippedBadge && <i className="np-equipped-badge"><ShopBadgeArt id={equippedBadge} /></i>}
+                  </span>
                   <div>
                     <strong>{firstName}</strong>
                     <small>Learning German</small>
@@ -436,7 +489,7 @@ function Header({
   );
 }
 
-function CourseHero({ stats }: { stats: PrototypeStats }) {
+function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; stats: PrototypeStats }) {
   const { nxt, pct } = getLevelInfo(stats.totalXp);
   const xpTarget = nxt?.xpRequired ?? stats.totalXp;
 
@@ -447,10 +500,11 @@ function CourseHero({ stats }: { stats: PrototypeStats }) {
       <div className="np-course-copy">
         <div className="np-course-meta-row">
           <span className="np-course-kicker">Your active course</span>
-          <span className="np-course-language-chip">
+          <button aria-label="Switch course, currently German" className="np-course-language-chip" onClick={onSwitchCourse} type="button">
             <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
             <strong>German</strong>
-          </span>
+            <ChevronDown />
+          </button>
         </div>
         <div className="np-course-title-row">
           <h1>German for real conversations</h1>
@@ -704,13 +758,21 @@ function ProgressPanel({
   );
 }
 
-function HomeView({ onPractice, stats }: { onPractice: () => void; stats: PrototypeStats }) {
+function HomeView({
+  onPractice,
+  onSwitchCourse,
+  stats,
+}: {
+  onPractice: () => void;
+  onSwitchCourse: () => void;
+  stats: PrototypeStats;
+}) {
   return (
     <div className="np-home-view">
-      <CourseHero stats={stats} />
+      <CourseHero onSwitchCourse={onSwitchCourse} stats={stats} />
       <button className="np-mobile-course-button" onClick={onPractice} type="button">
         <Play />
-        <span><strong>Continue lesson</strong><small>Lesson 12: Everyday phrases</small></span>
+        <span><strong>Continue learning</strong><small>Lesson 12: Everyday phrases</small></span>
         <ChevronRight />
       </button>
       <div className="np-home-practice"><PracticeCard compact /></div>
@@ -743,6 +805,80 @@ function AccountGate({ onOpenFullApp }: { onOpenFullApp: (tab: string) => void }
   );
 }
 
+function ShopView({
+  availableCoins,
+  equippedBadge,
+  onChooseBadge,
+  ownedBadges,
+}: {
+  availableCoins: number;
+  equippedBadge: ShopBadgeId | null;
+  onChooseBadge: (id: ShopBadgeId) => void;
+  ownedBadges: ShopBadgeId[];
+}) {
+  return (
+    <section className="np-shop-view">
+      <div className="np-shop-hero">
+        <div className="np-shop-heading">
+          <span><ShoppingBag /></span>
+          <div>
+            <small>Reward shop</small>
+            <h1>Make your profile yours</h1>
+            <p>Earn coins by learning, then use them on profile pins.</p>
+          </div>
+        </div>
+        <div aria-live="polite" className="np-shop-balance">
+          <Coins />
+          <div><strong>{availableCoins.toLocaleString()}</strong><small>Micheon coins</small></div>
+        </div>
+      </div>
+
+      <div className="np-shop-note">
+        <Coins />
+        <p>You start with 80 welcome coins. More coins come from XP, completed lessons, and reviews. Buying a pin never reduces your XP.</p>
+      </div>
+
+      <div className="np-shop-section-heading">
+        <div><h2>Profile pins</h2><p>Your equipped pin appears on the profile button.</p></div>
+        <span>{ownedBadges.length} of {SHOP_ITEMS.length} owned</span>
+      </div>
+
+      <div className="np-shop-grid">
+        {SHOP_ITEMS.map((item) => {
+          const owned = ownedBadges.includes(item.id);
+          const equipped = equippedBadge === item.id;
+          const shortfall = Math.max(0, item.price - availableCoins);
+          const disabled = equipped || (!owned && shortfall > 0);
+          const buttonLabel = equipped
+            ? "Equipped"
+            : owned
+              ? "Equip"
+              : shortfall > 0
+                ? `Need ${shortfall} more`
+                : "Buy and equip";
+
+          return (
+            <article className={`np-shop-item${owned ? " is-owned" : ""}${equipped ? " is-equipped" : ""}`} key={item.id}>
+              <span className={`np-shop-item-art np-shop-item-art--${item.tone}`}><ShopBadgeArt id={item.id} /></span>
+              <div className="np-shop-item-copy">
+                <small>Profile pin</small>
+                <h3>{item.name}</h3>
+                <p>{item.description}</p>
+              </div>
+              <div className="np-shop-item-footer">
+                <span>{owned ? "Owned" : <><Coins /> {item.price}</>}</span>
+                <button aria-pressed={equipped} disabled={disabled} onClick={() => onChooseBadge(item.id)} type="button">
+                  {buttonLabel}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function MoreView({
   onNavigate,
   onOpenFullApp,
@@ -762,6 +898,7 @@ function MoreView({
     { title: "Tests", description: "Search and filter vocabulary, phrase, and level tests.", icon: ClipboardCheck, tone: "mint", action: () => onNavigate("tests") },
     { title: "Grammar", description: "Practise sentence patterns and fill in missing words.", icon: GraduationCap, tone: "yellow", action: () => onNavigate("grammar") },
     { title: "Progress", description: "See your streak, achievements, recent lessons, and goals.", icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
+    { title: "Reward shop", description: "Earn coins through learning and collect profile pins.", icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") },
     { title: "Profile and settings", description: "Manage your account, sound, theme, learning mode, and goals.", icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
     { title: "Courses and packs", description: "Switch courses or browse every hardcoded lesson and phrase pack.", icon: Languages, tone: "blue", action: onSwitchCourse },
     { title: "Pets and flashcards", description: "Choose pets, adjust coaching, and set how flashcards flip.", icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
@@ -829,7 +966,7 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
       {MOBILE_NAVIGATION.map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView || (
-          item.id === "more" && ["tests", "grammar", "progress", "profile"].includes(activeView)
+          item.id === "more" && ["tests", "grammar", "shop", "progress", "profile"].includes(activeView)
         );
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
@@ -853,11 +990,27 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     streak: getStreak(profile),
     externalWords: loadScopedJson("externalWords", profile?.externalWordsLearned ?? 0, profile) as number,
   }));
+  const [ownedShopBadges, setOwnedShopBadges] = useState<ShopBadgeId[]>(() => {
+    const stored = loadScopedJson<unknown[]>(SHOP_PURCHASES_KEY, [], profile);
+    return Array.isArray(stored) ? stored.filter(isShopBadgeId) : [];
+  });
+  const [equippedShopBadge, setEquippedShopBadge] = useState<ShopBadgeId | null>(() => {
+    const stored = loadScopedJson<unknown>(SHOP_EQUIPPED_KEY, null, profile);
+    return isShopBadgeId(stored) ? stored : null;
+  });
   const apiParts = usePrototypeParts();
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
   const activeCourseName = getCourse(activeCourseId)?.name ?? "German";
   const partsReady = Object.keys(apiParts).length > 0;
+  const earnedShopCoins = 80
+    + Math.floor(stats.totalXp / 100)
+    + (stats.sessionsCompleted * 2)
+    + Math.floor(stats.totalReviews / 20);
+  const spentShopCoins = ownedShopBadges.reduce((total, id) => (
+    total + (SHOP_ITEMS.find((item) => item.id === id)?.price ?? 0)
+  ), 0);
+  const availableShopCoins = Math.max(0, earnedShopCoins - spentShopCoins);
 
   useEffect(() => {
     const previousTheme = document.documentElement.dataset.theme;
@@ -875,7 +1028,12 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
 
   const navigate = (view: PrototypeView) => {
     setActiveView(view);
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
+    scrollToTop();
+    window.requestAnimationFrame(() => {
+      scrollToTop();
+      window.requestAnimationFrame(scrollToTop);
+    });
   };
 
   const openFullApp = (tab: string) => {
@@ -899,8 +1057,23 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     if (courseId !== "german") openFullApp("dashboard");
   };
 
+  const chooseShopBadge = (id: ShopBadgeId) => {
+    const item = SHOP_ITEMS.find((candidate) => candidate.id === id);
+    if (!item) return;
+
+    if (!ownedShopBadges.includes(id)) {
+      if (availableShopCoins < item.price) return;
+      const nextOwned = [...ownedShopBadges, id];
+      setOwnedShopBadges(nextOwned);
+      saveScopedJson(SHOP_PURCHASES_KEY, nextOwned, profile);
+    }
+
+    setEquippedShopBadge(id);
+    saveScopedJson(SHOP_EQUIPPED_KEY, id, profile);
+  };
+
   const mainView = activeView === "home" ? (
-    <HomeView onPractice={() => navigate("practice")} stats={stats} />
+    <HomeView onPractice={() => navigate("practice")} onSwitchCourse={() => setCourseSwitcherOpen(true)} stats={stats} />
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
       {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}
@@ -927,6 +1100,13 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
       <ClozeTabContent />
       <GrammarTabContent />
     </div>
+  ) : activeView === "shop" ? (
+    <ShopView
+      availableCoins={availableShopCoins}
+      equippedBadge={equippedShopBadge}
+      onChooseBadge={chooseShopBadge}
+      ownedBadges={ownedShopBadges}
+    />
   ) : activeView === "progress" ? (
     <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "profile" ? (
@@ -955,7 +1135,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
         <div className="np-shell">
           <Sidebar activeView={activeView} onNavigate={navigate} />
           <div className="np-app-area">
-            <Header onNavigate={navigate} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+            <Header equippedBadge={equippedShopBadge} onNavigate={navigate} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
             <div className={`np-content-grid${showRightRail ? "" : " np-content-grid--wide"}`}>
               <motion.main
                 animate={{ opacity: 1, y: 0 }}
