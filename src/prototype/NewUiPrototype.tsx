@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  Award,
   Bell,
   BookOpen,
   Check,
@@ -8,7 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   CircleUserRound,
-  Flame,
   Headphones,
   Home,
   Languages,
@@ -19,24 +17,19 @@ import {
   Play,
   Search,
   Settings2,
-  Sparkles,
-  Sprout,
-  Star,
   Target,
   Trophy,
   UserRound,
   Volume2,
-  Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType, type CSSProperties } from "react";
 
-import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
-import type { CodexPet } from "@/lib/codexPets";
-import prototypePetAtlas from "../../server/bundled-pets/georgie-boy/spritesheet.webp?url";
-
+import heroImage from "./assets/micheon-hero-v2.png";
+import rewardAtlas from "./assets/reward-atlas-v2.png";
 import "./new-ui-prototype.css";
 
 type PrototypeView = "home" | "learn" | "practice" | "progress" | "profile";
+type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 
 type NavigationItem = {
   id: PrototypeView;
@@ -66,7 +59,7 @@ const LESSONS = [
     number: 12,
     title: "Keep the conversation going",
     detail: "Everyday phrases",
-    icon: MessageCircleMore,
+    reward: "heart",
     tone: "mint",
     status: "current",
     category: "everyday",
@@ -75,7 +68,7 @@ const LESSONS = [
     number: 13,
     title: "Opinions and reactions",
     detail: "Useful sentences",
-    icon: Sparkles,
+    reward: "star",
     tone: "yellow",
     status: "open",
     category: "everyday",
@@ -84,7 +77,7 @@ const LESSONS = [
     number: 14,
     title: "Travel plans and invitations",
     detail: "Common questions",
-    icon: Plane,
+    reward: "backpack",
     tone: "violet",
     status: "open",
     category: "travel",
@@ -93,7 +86,7 @@ const LESSONS = [
     number: 15,
     title: "Sorting out a problem",
     detail: "Natural responses",
-    icon: Settings2,
+    reward: "flame",
     tone: "blue",
     status: "locked",
     category: "work",
@@ -133,18 +126,22 @@ const EXERCISES: Exercise[] = [
   },
 ];
 
-const PROTOTYPE_PET: CodexPet = {
-  id: "georgie-boy",
-  displayName: "Georgie Boy",
-  description: "Micheon learning companion",
-  source: "micheon",
-  spriteVersionNumber: 2,
-  frame: { width: 256, height: 256, columns: 8, rows: 11 },
-  animations: {
-    idle: { frames: [0, 1, 2, 3, 4, 5], fps: 2, loop: true },
-  },
-  spritesheetUrl: prototypePetAtlas,
+const REWARD_POSITION: Record<RewardKind, number> = {
+  heart: 0,
+  flame: 25,
+  star: 50,
+  trophy: 75,
+  backpack: 100,
 };
+
+function RewardIcon({ kind, className = "" }: { kind: RewardKind; className?: string }) {
+  const style = {
+    backgroundImage: `url("${rewardAtlas}")`,
+    backgroundPosition: `${REWARD_POSITION[kind]}% 50%`,
+  } as CSSProperties;
+
+  return <span aria-hidden="true" className={`np-reward-icon ${className}`.trim()} style={style} />;
+}
 
 function BrandMark() {
   return (
@@ -184,24 +181,24 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
       </nav>
 
       <div className="np-sidebar-spacer" />
+      <div className="np-sidebar-mascot" aria-hidden="true">
+        <img alt="" src={heroImage} />
+      </div>
       <div className="np-tip-card">
-        <span className="np-tip-icon"><Star /></span>
-        <strong>Keep it going</strong>
-        <p>One useful phrase is enough to keep today moving.</p>
+        <RewardIcon kind="star" />
+        <div>
+          <strong>Keep it going!</strong>
+          <p>You are doing great.</p>
+        </div>
       </div>
     </aside>
   );
 }
 
-function StatChip({ icon: Icon, value, label, tone }: {
-  icon: ComponentType<{ className?: string }>;
-  value: string;
-  label: string;
-  tone: "orange" | "yellow" | "violet";
-}) {
+function StatChip({ kind, value, label }: { kind: RewardKind; value: string; label: string }) {
   return (
-    <div className={`np-stat-chip np-stat-chip--${tone}`}>
-      <span><Icon /></span>
+    <div className="np-stat-chip">
+      <RewardIcon kind={kind} />
       <div>
         <strong>{value}</strong>
         <small>{label}</small>
@@ -216,18 +213,18 @@ function Header({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
     <header className="np-header">
       <div className="np-greeting">
         <p>Hi, Leon!</p>
-        <span>Ready for a useful phrase?</span>
+        <span>Ready to learn today?</span>
       </div>
       <div className="np-header-stats">
-        <StatChip icon={Flame} label="Day streak" tone="orange" value="7" />
-        <StatChip icon={Star} label="This week" tone="yellow" value="320 XP" />
-        <StatChip icon={MessageCircleMore} label="Phrases learned" tone="violet" value="86" />
+        <StatChip kind="flame" label="Day streak" value="7" />
+        <StatChip kind="star" label="This week" value="320 XP" />
+        <StatChip kind="heart" label="Full hearts" value="5" />
       </div>
       <div className="np-header-actions">
         <AnimatePresence initial={false}>
           {searchOpen && (
             <motion.label
-              animate={{ opacity: 1, width: 210 }}
+              animate={{ opacity: 1, width: 220 }}
               className="np-search"
               exit={{ opacity: 0, width: 0 }}
               initial={{ opacity: 0, width: 0 }}
@@ -253,36 +250,26 @@ function Header({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
   );
 }
 
-function CourseHero({ onContinue }: { onContinue: () => void }) {
+function CourseHero() {
   return (
     <section className="np-course-hero">
+      <img alt="" className="np-course-art" src={heroImage} />
+      <div aria-hidden="true" className="np-course-shade" />
       <div className="np-course-copy">
         <span className="np-course-kicker">Your active course</span>
-        <h1>German for real conversations</h1>
+        <div className="np-course-title-row">
+          <h1>German for real conversations</h1>
+          <span aria-label="German" className="np-language-badge"><i /><i /><i /></span>
+        </div>
         <div className="np-level-line">
           <strong>Level A2</strong>
           <span>Everyday speaker</span>
         </div>
         <div className="np-course-progress-row">
-          <div className="np-progress-track np-progress-track--light">
+          <div className="np-progress-track np-progress-track--hero">
             <span style={{ width: "67%" }} />
           </div>
           <small>1,010 / 1,500 XP</small>
-        </div>
-        <button className="np-primary-button np-course-continue" onClick={onContinue} type="button">
-          <Play />
-          Continue lesson
-          <ChevronRight />
-        </button>
-      </div>
-
-      <div aria-hidden="true" className="np-course-scene">
-        <span className="np-cloud np-cloud-one" />
-        <span className="np-cloud np-cloud-two" />
-        <span className="np-hill np-hill-one" />
-        <span className="np-hill np-hill-two" />
-        <div className="np-hero-pet">
-          <CodexPetSprite animated animation="idle" pet={PROTOTYPE_PET} size={250} />
         </div>
       </div>
     </section>
@@ -304,7 +291,6 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
   const exercise = EXERCISES[exerciseIndex];
   const correct = selected === exercise.correct;
 
-  const choose = (index: number) => setSelected(index);
   const next = () => {
     setExerciseIndex((index) => (index + 1) % EXERCISES.length);
     setSelected(null);
@@ -315,10 +301,10 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
       <div className="np-section-heading">
         <div>
           <h2>Choose the phrase</h2>
-          <p>Pick the German you would actually say in a normal conversation.</p>
+          <p>Pick what people actually say in a normal conversation.</p>
         </div>
         <div className="np-mini-progress">
-          <span>{exerciseIndex + 1} of {EXERCISES.length}</span>
+          <strong>{exerciseIndex + 1} in a row</strong>
           <div><i style={{ width: `${((exerciseIndex + 1) / EXERCISES.length) * 100}%` }} /></div>
         </div>
       </div>
@@ -334,7 +320,7 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
           <small>Everyday conversation</small>
         </div>
 
-        <div className="np-answer-list" aria-label="German answer choices">
+        <div aria-label="German answer choices" className="np-answer-list">
           {exercise.answers.map((answer, index) => {
             const chosen = selected === index;
             const state = chosen ? (index === exercise.correct ? "correct" : "wrong") : "idle";
@@ -343,7 +329,7 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
                 aria-pressed={chosen}
                 className={`np-answer np-answer--${state}`}
                 key={answer.german}
-                onClick={() => choose(index)}
+                onClick={() => setSelected(index)}
                 type="button"
               >
                 <span>{String.fromCharCode(65 + index)}</span>
@@ -361,14 +347,14 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             aria-live="polite"
             className={`np-feedback ${correct ? "is-correct" : "is-wrong"}`}
-            exit={{ opacity: 0, y: 4 }}
-            initial={{ opacity: 0, y: 8 }}
+            exit={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 10 }}
             key={`${exerciseIndex}-${selected}`}
             role="status"
           >
-            <span className="np-feedback-icon">{correct ? <Star /> : <MessageCircleMore />}</span>
+            <RewardIcon kind={correct ? "star" : "heart"} />
             <div>
-              <strong>{correct ? "Exactly right" : "Try another one"}</strong>
+              <strong>{correct ? "Exactly right!" : "Try another one"}</strong>
               <p>{exercise.answers[selected].note}</p>
             </div>
             {correct && (
@@ -395,26 +381,30 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
         <button type="button">View all <ChevronRight /></button>
       </div>
       <div className="np-lesson-list">
-        {LESSONS.slice(0, 3).map((lesson) => {
-          const Icon = lesson.icon;
-          return (
-            <button className={`np-lesson-row np-lesson-row--${lesson.tone}`} key={lesson.number} onClick={onOpenLesson} type="button">
-              <span className="np-lesson-illustration"><Icon /></span>
-              <span className="np-lesson-number">{lesson.number}</span>
-              <span className="np-lesson-copy">
-                <strong>{lesson.title}</strong>
-                <small>{lesson.detail}</small>
-              </span>
-              <ChevronRight className="np-lesson-chevron" />
-            </button>
-          );
-        })}
+        {LESSONS.slice(0, 3).map((lesson) => (
+          <button className={`np-lesson-row np-lesson-row--${lesson.tone}`} key={lesson.number} onClick={onOpenLesson} type="button">
+            <span className="np-lesson-illustration"><RewardIcon kind={lesson.reward} /></span>
+            <span className="np-lesson-number">{lesson.number}</span>
+            <span className="np-lesson-copy">
+              <strong>{lesson.title}</strong>
+              <small>{lesson.detail}</small>
+            </span>
+            <ChevronRight className="np-lesson-chevron" />
+          </button>
+        ))}
       </div>
     </section>
   );
 }
 
 function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
+  const achievements: Array<{ kind: RewardKind; label: string; tone: string }> = [
+    { kind: "star", label: "First steps", tone: "green" },
+    { kind: "heart", label: "Phrase whiz", tone: "blue" },
+    { kind: "backpack", label: "Traveller", tone: "violet" },
+    { kind: "trophy", label: "Streak star", tone: "yellow" },
+  ];
+
   return (
     <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}`}>
       <div className="np-progress-title">
@@ -422,7 +412,7 @@ function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
           <h2>Your progress</h2>
           <p>Keep it up, Leon!</p>
         </div>
-        <span><Trophy /></span>
+        <RewardIcon kind="trophy" />
       </div>
 
       <div className="np-level-card">
@@ -436,18 +426,20 @@ function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
       </div>
 
       <div className="np-progress-stats">
-        <div><MessageCircleMore /><strong>86</strong><small>Phrases</small></div>
-        <div><Flame /><strong>7</strong><small>Day streak</small></div>
-        <div><Zap /><strong>1,010</strong><small>Total XP</small></div>
+        <div><RewardIcon kind="heart" /><strong>5</strong><small>Full hearts</small></div>
+        <div><RewardIcon kind="flame" /><strong>7</strong><small>Day streak</small></div>
+        <div><RewardIcon kind="star" /><strong>320</strong><small>Total XP</small></div>
       </div>
 
       <div className="np-badges-block">
         <div className="np-block-heading"><strong>Achievements</strong><button type="button">View all</button></div>
         <div className="np-badge-list">
-          <div><span className="green"><Sprout /></span><small>First steps</small></div>
-          <div><span className="blue"><MessageSquareText /></span><small>Phrase finder</small></div>
-          <div><span className="violet"><Plane /></span><small>Traveller</small></div>
-          <div><span className="yellow"><Star /></span><small>Streak star</small></div>
+          {achievements.map((achievement) => (
+            <div key={achievement.label}>
+              <span className={achievement.tone}><RewardIcon kind={achievement.kind} /></span>
+              <small>{achievement.label}</small>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -458,7 +450,7 @@ function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
           <div className="np-progress-track"><span style={{ width: "65%" }} /></div>
           <p>13 / 20 phrases</p>
         </div>
-        <span><Target /></span>
+        <RewardIcon kind="backpack" />
       </div>
 
       <div className="np-completed-block">
@@ -482,7 +474,12 @@ function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
 function HomeView({ onPractice }: { onPractice: () => void }) {
   return (
     <div className="np-home-view">
-      <CourseHero onContinue={onPractice} />
+      <CourseHero />
+      <button className="np-mobile-course-button" onClick={onPractice} type="button">
+        <Play />
+        <span><strong>Continue lesson</strong><small>Lesson 12: Everyday phrases</small></span>
+        <ChevronRight />
+      </button>
       <div className="np-home-practice"><PracticeCard compact /></div>
       <LessonPath onOpenLesson={onPractice} />
     </div>
@@ -497,44 +494,38 @@ function LearnView({ onPractice }: { onPractice: () => void }) {
       const matchesQuery = `${lesson.title} ${lesson.detail}`.toLowerCase().includes(query.toLowerCase());
       return matchesQuery && (filter === "all" || lesson.category === filter);
     }),
-    [filter, query]
+    [filter, query],
   );
+
   return (
     <section className="np-page-card np-learn-view">
       <div className="np-page-intro">
         <span className="np-page-icon"><BookOpen /></span>
-        <div><h1>Learn what people actually say</h1><p>Short lessons built around common sentences, then the words inside them.</p></div>
+        <div><h1>Learn what people actually say</h1><p>Start with common sentences, then learn the words inside them.</p></div>
       </div>
       <label className="np-page-search">
         <Search />
         <input onChange={(event) => setQuery(event.target.value)} placeholder="Search lessons and situations" value={query} />
       </label>
-      <div className="np-learning-pills" aria-label="Lesson filters">
+      <div aria-label="Lesson filters" className="np-learning-pills">
         {[
           ["all", "Common first"],
           ["everyday", "Everyday life"],
           ["travel", "Travel"],
           ["work", "Work"],
         ].map(([id, label]) => (
-          <button
-            aria-pressed={filter === id}
-            className={filter === id ? "is-active" : ""}
-            key={id}
-            onClick={() => setFilter(id as typeof filter)}
-            type="button"
-          >
+          <button aria-pressed={filter === id} className={filter === id ? "is-active" : ""} key={id} onClick={() => setFilter(id as typeof filter)} type="button">
             {label}
           </button>
         ))}
       </div>
       <div className="np-curriculum-list">
         {filteredLessons.map((lesson) => {
-          const Icon = lesson.icon;
           const locked = lesson.status === "locked";
           return (
             <button className={`np-curriculum-row${locked ? " is-locked" : ""}`} disabled={locked} key={lesson.number} onClick={onPractice} type="button">
-              <span className={`np-curriculum-icon np-curriculum-icon--${lesson.tone}`}><Icon /></span>
-              <span className="np-curriculum-copy"><small>Lesson {lesson.number}</small><strong>{lesson.title}</strong><p>{lesson.detail}. 12 activities built around phrases.</p></span>
+              <span className={`np-curriculum-icon np-curriculum-icon--${lesson.tone}`}><RewardIcon kind={lesson.reward} /></span>
+              <span className="np-curriculum-copy"><small>Lesson {lesson.number}</small><strong>{lesson.title}</strong><p>{lesson.detail}. 12 phrase-first activities.</p></span>
               <span className="np-curriculum-action">{locked ? <LockKeyhole /> : <ChevronRight />}</span>
             </button>
           );
@@ -628,12 +619,10 @@ export default function NewUiPrototype() {
           <span className="np-window-dot np-window-dot--red" />
           <span className="np-window-dot np-window-dot--yellow" />
           <span className="np-window-dot np-window-dot--green" />
-          <p>Micheon UI concept</p>
         </div>
 
         <div className="np-shell">
           <Sidebar activeView={activeView} onNavigate={navigate} />
-
           <div className="np-app-area">
             <Header onNavigate={navigate} />
             <div className={`np-content-grid${activeView === "progress" ? " np-content-grid--wide" : ""}`}>
@@ -641,10 +630,10 @@ export default function NewUiPrototype() {
                 <motion.main
                   animate={{ opacity: 1, y: 0 }}
                   className="np-main"
-                  exit={reduceMotion ? undefined : { opacity: 0, y: 6 }}
-                  initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: 7 }}
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                   key={activeView}
-                  transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
                 >
                   {mainView}
                 </motion.main>
