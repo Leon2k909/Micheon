@@ -22,10 +22,14 @@ import {
   UserRound,
   Volume2,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ComponentType, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 
 import heroImage from "./assets/micheon-hero-v2.png";
-import rewardAtlas from "./assets/reward-atlas-v2.png";
+import backpackReward from "./assets/rewards-v3/backpack.png";
+import flameReward from "./assets/rewards-v3/flame.png";
+import heartReward from "./assets/rewards-v3/heart.png";
+import starReward from "./assets/rewards-v3/star.png";
+import trophyReward from "./assets/rewards-v3/trophy.png";
 import "./new-ui-prototype.css";
 
 type PrototypeView = "home" | "learn" | "practice" | "progress" | "profile";
@@ -126,21 +130,16 @@ const EXERCISES: Exercise[] = [
   },
 ];
 
-const REWARD_POSITION: Record<RewardKind, number> = {
-  heart: 0,
-  flame: 25,
-  star: 50,
-  trophy: 75,
-  backpack: 100,
+const REWARD_IMAGE: Record<RewardKind, string> = {
+  heart: heartReward,
+  flame: flameReward,
+  star: starReward,
+  trophy: trophyReward,
+  backpack: backpackReward,
 };
 
 function RewardIcon({ kind, className = "" }: { kind: RewardKind; className?: string }) {
-  const style = {
-    backgroundImage: `url("${rewardAtlas}")`,
-    backgroundPosition: `${REWARD_POSITION[kind]}% 50%`,
-  } as CSSProperties;
-
-  return <span aria-hidden="true" className={`np-reward-icon ${className}`.trim()} style={style} />;
+  return <img alt="" aria-hidden="true" className={`np-reward-icon ${className}`.trim()} decoding="async" src={REWARD_IMAGE[kind]} />;
 }
 
 function BrandMark() {
@@ -181,9 +180,6 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
       </nav>
 
       <div className="np-sidebar-spacer" />
-      <div className="np-sidebar-mascot" aria-hidden="true">
-        <img alt="" src={heroImage} />
-      </div>
       <div className="np-tip-card">
         <RewardIcon kind="star" />
         <div>
@@ -615,12 +611,6 @@ export default function NewUiPrototype() {
   return (
     <div className="new-ui-prototype">
       <div className="np-window">
-        <div aria-hidden="true" className="np-window-bar">
-          <span className="np-window-dot np-window-dot--red" />
-          <span className="np-window-dot np-window-dot--yellow" />
-          <span className="np-window-dot np-window-dot--green" />
-        </div>
-
         <div className="np-shell">
           <Sidebar activeView={activeView} onNavigate={navigate} />
           <div className="np-app-area">

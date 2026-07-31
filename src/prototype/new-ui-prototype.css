@@ -17,12 +17,9 @@
   --np-danger: #e45b5b;
   min-height: var(--app-h, 100dvh);
   overflow-x: hidden;
-  padding: 28px;
+  padding: 0;
   color: var(--np-text);
-  background:
-    radial-gradient(circle at 8% 8%, rgba(255, 255, 255, 0.94), transparent 24%),
-    radial-gradient(circle at 92% 90%, rgba(198, 235, 184, 0.78), transparent 28%),
-    var(--np-bg);
+  background: var(--np-shell);
   font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.35;
@@ -50,42 +47,20 @@
 }
 
 .np-window {
-  width: min(1460px, 100%);
-  min-height: calc(var(--app-h, 100dvh) - 56px);
-  margin: 0 auto;
+  width: 100%;
+  min-height: var(--app-h, 100dvh);
+  margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 30px;
+  border: 0;
+  border-radius: 0;
   background: var(--np-shell);
-  box-shadow:
-    0 3px 8px rgba(70, 95, 59, 0.08),
-    0 28px 72px rgba(70, 95, 59, 0.2);
+  box-shadow: none;
 }
-
-.np-window-bar {
-  display: flex;
-  height: 60px;
-  align-items: center;
-  gap: 13px;
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(79, 73, 65, 0.05);
-}
-
-.np-window-dot {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  box-shadow: inset 0 -2px 2px rgba(0, 0, 0, 0.1);
-}
-
-.np-window-dot--red { background: #ff5f58; }
-.np-window-dot--yellow { background: #ffbd2e; }
-.np-window-dot--green { background: #28c840; }
 
 .np-shell {
   display: grid;
   grid-template-columns: 226px minmax(0, 1fr);
-  min-height: calc(var(--app-h, 100dvh) - 118px);
+  min-height: var(--app-h, 100dvh);
 }
 
 .np-sidebar {
@@ -193,34 +168,20 @@
   flex: 1;
 }
 
-.np-sidebar-mascot {
-  height: 158px;
-  margin: 0 -10px -18px;
-  overflow: hidden;
-  border-radius: 28px 28px 0 0;
-}
-
-.np-sidebar-mascot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 73% 56%;
-  transform: scale(1.2);
-}
-
 .np-tip-card {
   display: grid;
-  min-height: 86px;
+  min-height: 84px;
   grid-template-columns: 56px 1fr;
   align-items: center;
-  gap: 9px;
-  padding: 12px 14px 12px 8px;
-  border: 1px solid var(--np-line);
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px 12px 10px;
+  border: 1px solid rgba(79, 189, 81, 0.24);
   border-radius: 19px;
-  background: var(--np-surface);
+  background: linear-gradient(145deg, #f6ffef, #ecf9e3);
   box-shadow:
-    0 3px 0 rgba(96, 83, 68, 0.08),
-    0 12px 22px rgba(97, 84, 67, 0.09);
+    0 3px 0 rgba(51, 145, 62, 0.11),
+    0 10px 20px rgba(58, 131, 64, 0.08);
 }
 
 .np-tip-card .np-reward-icon {
@@ -978,8 +939,7 @@
   width: 63px;
   height: 59px;
   place-items: center;
-  border-radius: 17px;
-  background: rgba(255, 255, 255, 0.42);
+  background: transparent;
 }
 
 .np-lesson-illustration .np-reward-icon {
@@ -1204,9 +1164,10 @@
   height: 55px;
   margin: 0 auto;
   place-items: center;
-  border: 3px solid rgba(255, 255, 255, 0.88);
-  border-radius: 18px;
-  box-shadow: 0 4px 8px rgba(75, 65, 54, 0.12);
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
 }
 
 .np-badge-list .green { background: #dff4c9; }
@@ -1677,10 +1638,11 @@
 }
 
 .np-reward-icon {
-  display: inline-block;
+  display: block;
   flex: 0 0 auto;
-  background-repeat: no-repeat;
-  background-size: 500% auto;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: auto;
 }
 
 .np-mobile-nav {
@@ -1689,11 +1651,11 @@
 
 @media (max-width: 1280px) {
   .new-ui-prototype {
-    padding: 18px;
+    padding: 0;
   }
 
   .np-window {
-    min-height: calc(var(--app-h, 100dvh) - 36px);
+    min-height: var(--app-h, 100dvh);
   }
 
   .np-shell {
@@ -1805,7 +1767,6 @@
     box-shadow: none;
   }
 
-  .np-window-bar,
   .np-sidebar {
     display: none;
   }
