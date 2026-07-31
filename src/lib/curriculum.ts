@@ -43,6 +43,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part169",         // Thinking, knowing, remembering, clarifying and checking
   "part170",         // Getting things done: starting, waiting, finishing and following up
   "part171",         // Keeping conversations moving: updates, reactions and follow-up questions
+  "part172",         // Strom, Gas und die Heizkosten
+  "part173",         // Essen mit Einschränkungen
+  "part174",         // False friends that trap English speakers
+  "part175",         // Sayings Germans actually use
+  "part176",         // Tja, Igitt, Juhu — spoken reactions
+  "part177",         // WG, Azubi, LKW — spoken abbreviations
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
