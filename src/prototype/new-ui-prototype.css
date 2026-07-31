@@ -74,26 +74,28 @@
 .np-brand {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 0 11px 31px;
+  gap: 14px;
+  padding: 0 8px 29px;
 }
 
 .np-brand-icon {
   display: grid;
-  width: 47px;
-  height: 47px;
-  flex: 0 0 47px;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(118, 84, 223, 0.14);
-  border-radius: 15px;
+  border-radius: 18px;
   background: #fff;
-  box-shadow: 0 5px 13px rgba(75, 58, 118, 0.12);
+  box-shadow:
+    0 4px 0 rgba(118, 84, 223, 0.08),
+    0 10px 20px rgba(75, 58, 118, 0.12);
 }
 
 .np-brand-icon img {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
@@ -105,7 +107,7 @@
 
 .np-brand strong {
   color: #242126;
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 950;
   letter-spacing: 0.09em;
 }
@@ -126,11 +128,11 @@
 
 .np-side-nav button {
   display: grid;
-  min-height: 58px;
-  grid-template-columns: 31px 1fr;
+  min-height: 62px;
+  grid-template-columns: 42px 1fr;
   align-items: center;
-  gap: 13px;
-  padding: 0 17px;
+  gap: 12px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 17px;
   color: #716e6a;
@@ -146,6 +148,26 @@
   background: rgba(230, 248, 217, 0.58);
 }
 
+.np-nav-visual {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(86, 78, 69, 0.1);
+  border-radius: 14px;
+  color: #625f5b;
+  background: #f7f3eb;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 3px 0 rgba(94, 82, 68, 0.08);
+  transition: color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.np-side-nav button:hover .np-nav-visual {
+  color: var(--np-green-dark);
+  transform: translateY(-1px);
+}
+
 .np-side-nav button:active {
   transform: translateY(2px);
 }
@@ -159,10 +181,19 @@
     0 9px 18px rgba(58, 131, 64, 0.12);
 }
 
+.np-side-nav button.is-active .np-nav-visual {
+  border-color: rgba(35, 141, 53, 0.26);
+  color: #fff;
+  background: linear-gradient(180deg, #62ce63, #36ad46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 4px 0 rgba(35, 141, 53, 0.24);
+}
+
 .np-nav-icon {
-  width: 27px;
-  height: 27px;
-  stroke-width: 2.8;
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.6;
 }
 
 .np-sidebar-spacer {
@@ -578,18 +609,42 @@
   text-shadow: 0 2px 3px rgba(22, 98, 37, 0.16);
 }
 
+.np-course-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(440px, 100%);
+  margin-bottom: 13px;
+}
+
 .np-course-kicker {
-  margin-bottom: 12px;
   font-size: 12px;
   font-weight: 950;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.np-course-language-chip {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 13px;
+  background: rgba(24, 116, 43, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  text-shadow: none;
+}
+
+.np-course-language-chip > strong {
+  font-weight: 900;
+}
+
 .np-course-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
+  display: block;
 }
 
 .np-course-title-row h1 {
@@ -603,14 +658,13 @@
 
 .np-language-badge {
   display: grid;
-  width: 47px;
-  height: 47px;
-  flex: 0 0 47px;
-  margin-top: 2px;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
   overflow: hidden;
-  border: 5px solid rgba(255, 255, 255, 0.92);
+  border: 3px solid rgba(255, 255, 255, 0.94);
   border-radius: 50%;
-  box-shadow: 0 5px 12px rgba(30, 94, 35, 0.2);
+  box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
 }
 
 .np-language-badge i:nth-child(1) { background: #292725; }
@@ -1122,7 +1176,7 @@
   padding: 0 5px 3px;
 }
 
-.np-progress-title .np-reward-icon {
+.np-progress-title .np-achievement-art {
   width: 91px;
   height: 91px;
   flex: 0 0 91px;
@@ -1228,9 +1282,9 @@
   box-shadow: 0 4px 10px rgba(89, 75, 59, 0.07);
 }
 
-.np-progress-stats .np-reward-icon {
-  width: 40px;
-  height: 40px;
+.np-progress-stats .np-achievement-art {
+  width: 46px;
+  height: 46px;
 }
 
 .np-progress-stats strong {
@@ -1270,47 +1324,145 @@
   font-size: 11px;
 }
 
+.np-achievement-count {
+  color: var(--np-green-dark);
+  font-size: 12px;
+  font-weight: 850;
+}
+
 .np-badge-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 12px;
 }
 
-.np-badge-list > div {
+.np-achievement {
+  display: grid;
   min-width: 0;
-  text-align: center;
+  min-height: 64px;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 5px;
+  border: 1px solid rgba(79, 189, 81, 0.18);
+  border-radius: 14px;
+  background: #f8fff2;
+  text-align: left;
 }
 
-.np-badge-list > div > span {
+.np-achievement-visual {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+}
+
+.np-achievement-visual .np-achievement-art {
+  width: 52px;
+  height: 52px;
+}
+
+.np-achievement-state {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
   display: grid;
-  width: 55px;
-  height: 55px;
-  margin: 0 auto;
+  width: 23px;
+  height: 23px;
   place-items: center;
-  border: 0;
-  border-radius: 0;
-  background: transparent !important;
+  border: 3px solid #fffdfa;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--np-green);
+  box-shadow: 0 3px 7px rgba(44, 115, 52, 0.2);
+}
+
+.np-achievement-state svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+
+.np-achievement.is-locked .np-achievement-art {
+  filter: grayscale(1) saturate(0.3);
+  opacity: 0.38;
+}
+
+.np-achievement.is-locked .np-achievement-state {
+  color: #77716b;
+  background: #ebe6de;
   box-shadow: none;
 }
 
-.np-badge-list .green { background: #dff4c9; }
-.np-badge-list .blue { background: #dcedff; }
-.np-badge-list .violet { background: #e5dcff; }
-.np-badge-list .yellow { background: #fff0bd; }
-
-.np-badge-list .np-reward-icon {
-  width: 50px;
-  height: 50px;
+.np-achievement.is-locked {
+  border-color: rgba(86, 78, 69, 0.08);
+  background: #faf8f3;
 }
 
-.np-badge-list small {
+.np-achievement > small {
   display: block;
-  margin-top: 6px;
+  margin: 0;
   color: #514d48;
   font-size: 11px;
   font-weight: 820;
   line-height: 1.2;
+}
+
+.np-achievement.is-locked > small {
+  color: #88827b;
+}
+
+.np-badge-list--expanded {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.np-badge-list--expanded .np-achievement {
+  display: grid;
+  min-height: 94px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 10px;
+  border: 1px solid var(--np-line);
+  border-radius: 17px;
+  background: #fffdf8;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(89, 75, 59, 0.06);
+}
+
+.np-badge-list--expanded .np-achievement.is-unlocked {
+  border-color: rgba(79, 189, 81, 0.3);
+  background: #f6ffef;
+}
+
+.np-badge-list--expanded .np-achievement-visual {
+  grid-row: 1 / 3;
+  width: 68px;
+  height: 68px;
+  margin: 0;
+}
+
+.np-badge-list--expanded .np-achievement-visual .np-achievement-art {
+  width: 68px;
+  height: 68px;
+}
+
+.np-badge-list--expanded .np-achievement > small {
+  align-self: end;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.np-achievement-detail {
+  align-self: start;
+  color: var(--np-muted);
+  font-size: 11px;
+  font-weight: 760;
 }
 
 .np-goal-card {
@@ -1363,7 +1515,7 @@
   font-weight: 850;
 }
 
-.np-goal-card > .np-reward-icon {
+.np-goal-card > .np-achievement-art {
   width: 89px;
   height: 89px;
   transform: rotate(4deg);
@@ -1766,6 +1918,20 @@
   object-position: center;
   image-rendering: auto;
 }
+
+.np-achievement-art {
+  display: block;
+  flex: 0 0 auto;
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+}
+
+.np-achievement-art--first_session { background-position: 0 0; }
+.np-achievement-art--streak_3 { background-position: 50% 0; }
+.np-achievement-art--reviews_50 { background-position: 100% 0; }
+.np-achievement-art--xp_500 { background-position: 0 100%; }
+.np-achievement-art--words_200 { background-position: 50% 100%; }
+.np-achievement-art--week { background-position: 100% 100%; }
 
 .np-feature-host {
   --bg: transparent;
@@ -2247,25 +2413,26 @@
     display: none;
   }
 
+  .np-course-meta-row {
+    width: auto;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .np-course-language-chip {
+    min-height: 32px;
+    padding: 3px 9px 3px 4px;
+  }
+
   .np-course-title-row {
     display: block;
-    position: relative;
-    padding-right: 50px;
+    padding-right: 0;
   }
 
   .np-course-title-row h1 {
     max-width: none;
     font-size: clamp(28px, 7.2vw, 35px);
     line-height: 1.03;
-  }
-
-  .np-language-badge {
-    position: absolute;
-    top: 2px;
-    right: 0;
-    width: 40px;
-    height: 40px;
-    margin: 0;
   }
 
   .np-level-line {
@@ -2629,17 +2796,17 @@
     padding: 15px 11px;
   }
 
-  .np-badge-list > div > span {
-    width: 61px;
-    height: 61px;
+  .np-achievement-visual,
+  .np-achievement-visual .np-achievement-art {
+    width: 64px;
+    height: 64px;
   }
 
-  .np-badge-list .np-reward-icon {
-    width: 56px;
-    height: 56px;
+  .np-badge-list--expanded {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .np-badge-list small {
+  .np-achievement > small {
     font-size: 11px;
   }
 
@@ -2648,7 +2815,7 @@
     grid-template-columns: 1fr 104px;
   }
 
-  .np-goal-card > .np-reward-icon {
+  .np-goal-card > .np-achievement-art {
     width: 108px;
     height: 108px;
   }
@@ -2712,19 +2879,19 @@
     grid-template-columns: 34px 1fr;
   }
 
-  .np-progress-stats .np-reward-icon {
+  .np-progress-stats .np-achievement-art {
     width: 34px;
     height: 34px;
   }
 
-  .np-badge-list > div > span {
-    width: 54px;
-    height: 54px;
+  .np-achievement-visual,
+  .np-achievement-visual .np-achievement-art {
+    width: 56px;
+    height: 56px;
   }
 
-  .np-badge-list .np-reward-icon {
-    width: 50px;
-    height: 50px;
+  .np-badge-list--expanded {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Home,
   Languages,
+  LockKeyhole,
   Menu,
   MessageCircleMore,
   MessageSquareText,
@@ -25,7 +26,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ComponentType } from "react";
 
-import GamificationPanel from "@/Gamification";
+import GamificationPanel, { getLevelInfo, MILESTONES, type GamificationStats } from "@/Gamification";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { LearnView as LearningLibraryView } from "@/components/lab/LearnView";
 import { TestsView } from "@/components/tests/TestsView";
@@ -46,6 +47,7 @@ import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@
 import { getCourse } from "@/lib/courseRegistry";
 
 import heroImage from "./assets/micheon-hero-v2.png";
+import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.png";
 import backpackReward from "./assets/rewards-v3/backpack.png";
 import flameReward from "./assets/rewards-v3/flame.png";
 import heartReward from "./assets/rewards-v3/heart.png";
@@ -56,13 +58,7 @@ import "./new-ui-prototype.css";
 type PrototypeView = "home" | "learn" | "practice" | "games" | "tests" | "grammar" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 
-type PrototypeStats = {
-  totalXp: number;
-  sessionsCompleted: number;
-  totalReviews: number;
-  streak: number;
-  externalWords: number;
-};
+type PrototypeStats = GamificationStats;
 
 type NavigationItem = {
   id: PrototypeView;
@@ -78,6 +74,8 @@ type Exercise = {
   }>;
   correct: number;
 };
+
+type Milestone = (typeof MILESTONES)[number];
 
 const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
@@ -189,6 +187,16 @@ function RewardIcon({ kind, className = "" }: { kind: RewardKind; className?: st
   return <img alt="" aria-hidden="true" className={`np-reward-icon ${className}`.trim()} decoding="async" src={REWARD_IMAGE[kind]} />;
 }
 
+function AchievementArt({ id }: { id: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`np-achievement-art np-achievement-art--${id}`}
+      style={{ backgroundImage: `url(${achievementAtlas})` }}
+    />
+  );
+}
+
 function BrandMark() {
   return (
     <div className="np-brand">
@@ -219,7 +227,7 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
               onClick={() => onNavigate(item.id)}
               type="button"
             >
-              <Icon className="np-nav-icon" />
+              <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{item.label}</span>
             </button>
           );
@@ -281,7 +289,7 @@ function Header({
       <div className="np-header-stats">
         <StatChip kind="flame" label="Day streak" value={stats.streak.toLocaleString()} />
         <StatChip kind="star" label="Total XP" value={`${stats.totalXp.toLocaleString()} XP`} />
-        <StatChip kind="heart" label="Full hearts" value="5" />
+        <StatChip kind="trophy" label="Lessons done" value={stats.sessionsCompleted.toLocaleString()} />
       </div>
       <div className="np-header-actions">
         <AnimatePresence initial={false}>
@@ -347,16 +355,24 @@ function Header({
   );
 }
 
-function CourseHero() {
+function CourseHero({ stats }: { stats: PrototypeStats }) {
+  const { nxt, pct } = getLevelInfo(stats.totalXp);
+  const xpTarget = nxt?.xpRequired ?? stats.totalXp;
+
   return (
     <section className="np-course-hero">
       <img alt="" className="np-course-art" src={heroImage} />
       <div aria-hidden="true" className="np-course-shade" />
       <div className="np-course-copy">
-        <span className="np-course-kicker">Your active course</span>
+        <div className="np-course-meta-row">
+          <span className="np-course-kicker">Your active course</span>
+          <span className="np-course-language-chip">
+            <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
+            <strong>German</strong>
+          </span>
+        </div>
         <div className="np-course-title-row">
           <h1>German for real conversations</h1>
-          <span aria-label="German" className="np-language-badge"><i /><i /><i /></span>
         </div>
         <div className="np-level-line">
           <strong>Level A2</strong>
@@ -364,9 +380,9 @@ function CourseHero() {
         </div>
         <div className="np-course-progress-row">
           <div className="np-progress-track np-progress-track--hero">
-            <span style={{ width: "67%" }} />
+            <span style={{ width: `${pct}%` }} />
           </div>
-          <small>1,010 / 1,500 XP</small>
+          <small>{stats.totalXp.toLocaleString()} / {xpTarget.toLocaleString()} XP</small>
         </div>
       </div>
     </section>
@@ -494,60 +510,99 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
   );
 }
 
-function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
-  const achievements: Array<{ kind: RewardKind; label: string; tone: string }> = [
-    { kind: "star", label: "First steps", tone: "green" },
-    { kind: "heart", label: "Phrase whiz", tone: "blue" },
-    { kind: "backpack", label: "Traveller", tone: "violet" },
-    { kind: "trophy", label: "Streak star", tone: "yellow" },
-  ];
+function AchievementBadge({ achievement, standalone, stats }: { achievement: Milestone; standalone: boolean; stats: PrototypeStats }) {
+  const unlocked = achievement.check(stats);
+  const progress = Math.min(achievement.current(stats), achievement.target);
+
+  return (
+    <div
+      aria-label={`${achievement.label}. ${unlocked ? "Unlocked" : `${progress} of ${achievement.target} ${achievement.unit}`}. ${achievement.desc}`}
+      className={`np-achievement${unlocked ? " is-unlocked" : " is-locked"}`}
+    >
+      <span className="np-achievement-visual">
+        <AchievementArt id={achievement.id} />
+        <span aria-hidden="true" className="np-achievement-state">{unlocked ? <Check /> : <LockKeyhole />}</span>
+      </span>
+      <small>{achievement.label}</small>
+      {standalone && (
+        <span className="np-achievement-detail">
+          {unlocked ? "Unlocked" : `${progress} / ${achievement.target} ${achievement.unit}`}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ProgressPanel({
+  onViewAllAchievements,
+  standalone = false,
+  stats,
+  userName,
+}: {
+  onViewAllAchievements?: () => void;
+  standalone?: boolean;
+  stats: PrototypeStats;
+  userName: string;
+}) {
+  const firstName = userName.trim().split(/\s+/)[0] || "there";
+  const earnedAchievements = MILESTONES.filter((achievement) => achievement.check(stats)).length;
+  const visibleAchievements = standalone ? MILESTONES : MILESTONES.slice(0, 4);
+  const nextAchievement = MILESTONES.find((achievement) => !achievement.check(stats));
+  const nextProgress = nextAchievement ? Math.min(nextAchievement.current(stats), nextAchievement.target) : 1;
+  const nextTarget = nextAchievement?.target ?? 1;
+  const nextProgressPercent = Math.round((nextProgress / nextTarget) * 100);
+  const { cur, nxt, pct } = getLevelInfo(stats.totalXp);
 
   return (
     <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}`}>
       <div className="np-progress-title">
         <div>
           <h2>Your progress</h2>
-          <p>Keep it up, Leon!</p>
+          <p>{earnedAchievements} of {MILESTONES.length} achievements unlocked, {firstName}.</p>
         </div>
-        <RewardIcon kind="trophy" />
+        <AchievementArt id="week" />
       </div>
 
       <div className="np-level-card">
-        <span className="np-level-badge">A2</span>
+        <span className="np-level-badge">L{cur.level}</span>
         <div className="np-level-copy">
-          <strong>Everyday speaker</strong>
-          <small>Level 4</small>
-          <div className="np-progress-track"><span style={{ width: "67%" }} /></div>
+          <strong>{cur.label}</strong>
+          <small>{nxt ? `${nxt.xpRequired - stats.totalXp} XP to level ${nxt.level}` : "Highest level reached"}</small>
+          <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
         </div>
-        <small>1,010 / 1,500 XP</small>
+        <small>{stats.totalXp.toLocaleString()} total XP</small>
       </div>
 
       <div className="np-progress-stats">
-        <div><RewardIcon kind="heart" /><strong>5</strong><small>Full hearts</small></div>
-        <div><RewardIcon kind="flame" /><strong>7</strong><small>Day streak</small></div>
-        <div><RewardIcon kind="star" /><strong>320</strong><small>Total XP</small></div>
+        <div><AchievementArt id="xp_500" /><strong>{stats.totalXp.toLocaleString()}</strong><small>Total XP</small></div>
+        <div><AchievementArt id="streak_3" /><strong>{stats.streak.toLocaleString()}</strong><small>Day streak</small></div>
+        <div><AchievementArt id="first_session" /><strong>{stats.sessionsCompleted.toLocaleString()}</strong><small>Lessons done</small></div>
       </div>
 
       <div className="np-badges-block">
-        <div className="np-block-heading"><strong>Achievements</strong><button type="button">View all</button></div>
-        <div className="np-badge-list">
-          {achievements.map((achievement) => (
-            <div key={achievement.label}>
-              <span className={achievement.tone}><RewardIcon kind={achievement.kind} /></span>
-              <small>{achievement.label}</small>
-            </div>
+        <div className="np-block-heading">
+          <strong>Achievements</strong>
+          {standalone ? (
+            <span className="np-achievement-count">{earnedAchievements} unlocked</span>
+          ) : (
+            <button onClick={onViewAllAchievements} type="button">View all</button>
+          )}
+        </div>
+        <div className={`np-badge-list${standalone ? " np-badge-list--expanded" : ""}`}>
+          {visibleAchievements.map((achievement) => (
+            <AchievementBadge achievement={achievement} key={achievement.id} standalone={standalone} stats={stats} />
           ))}
         </div>
       </div>
 
       <div className="np-goal-card">
         <div>
-          <strong>This week's goal</strong>
-          <small>Learn 20 useful phrases</small>
-          <div className="np-progress-track"><span style={{ width: "65%" }} /></div>
-          <p>13 / 20 phrases</p>
+          <strong>{nextAchievement ? "Next achievement" : "All achievements unlocked"}</strong>
+          <small>{nextAchievement?.label ?? "You reached every current milestone."}</small>
+          <div className="np-progress-track"><span style={{ width: `${nextAchievement ? nextProgressPercent : 100}%` }} /></div>
+          <p>{nextAchievement ? `${nextProgress} / ${nextTarget} ${nextAchievement.unit}` : "Complete"}</p>
         </div>
-        <RewardIcon kind="backpack" />
+        <AchievementArt id={nextAchievement?.id ?? "week"} />
       </div>
 
       <div className="np-completed-block">
@@ -568,10 +623,10 @@ function ProgressPanel({ standalone = false }: { standalone?: boolean }) {
   );
 }
 
-function HomeView({ onPractice }: { onPractice: () => void }) {
+function HomeView({ onPractice, stats }: { onPractice: () => void; stats: PrototypeStats }) {
   return (
     <div className="np-home-view">
-      <CourseHero />
+      <CourseHero stats={stats} />
       <button className="np-mobile-course-button" onClick={onPractice} type="button">
         <Play />
         <span><strong>Continue lesson</strong><small>Lesson 12: Everyday phrases</small></span>
@@ -764,7 +819,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   };
 
   const mainView = activeView === "home" ? (
-    <HomeView onPractice={() => navigate("practice")} />
+    <HomeView onPractice={() => navigate("practice")} stats={stats} />
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
       {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}
@@ -792,7 +847,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
       <GrammarTabContent />
     </div>
   ) : activeView === "progress" ? (
-    <ProgressPanel standalone />
+    <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "profile" ? (
     profile ? (
       <div className="np-feature-host">
@@ -832,7 +887,11 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
               </motion.main>
               {showRightRail && (
                 <aside className="np-right-rail">
-                  <ProgressPanel />
+                  <ProgressPanel
+                    onViewAllAchievements={() => navigate("progress")}
+                    stats={stats}
+                    userName={profile?.name ?? PREVIEW_PROFILE.name}
+                  />
                 </aside>
               )}
             </div>

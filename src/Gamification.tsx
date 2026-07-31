@@ -67,13 +67,15 @@ import { cn } from "@/lib/utils";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
-type Stats = {
+export type GamificationStats = {
   totalXp: number;
   sessionsCompleted: number;
   totalReviews: number;
   streak: number;
   externalWords: number;
 };
+
+type Stats = GamificationStats;
 
 type Level = { level: number; label: string; xpRequired: number };
 
@@ -103,14 +105,62 @@ const LEVELS: Level[] = [
   { level: 20, label: "Muttersprachler-Niveau", xpRequired: 70000 },
 ];
 
-const MILESTONES = [
-  { id: "first_session", label: "First lesson", desc: "Complete one guided lesson.", check: (s: Stats) => s.sessionsCompleted >= 1 },
-  { id: "streak_3", label: "Three-day streak", desc: "Return for three separate days.", check: (s: Stats) => s.streak >= 3 },
-  { id: "reviews_50", label: "50 review items", desc: "Build recognition through recall.", check: (s: Stats) => s.totalReviews >= 50 },
-  { id: "xp_500", label: "500 XP", desc: "Show steady practice momentum.", check: (s: Stats) => s.totalXp >= 500 },
-  { id: "words_200", label: "200 tracked words", desc: "Combine lessons and word-bank items.", check: (s: Stats) => s.totalReviews + s.externalWords >= 200 },
-  { id: "week", label: "Seven-day rhythm", desc: "Keep a full week of returns.", check: (s: Stats) => s.streak >= 7 },
-];
+export const MILESTONES = [
+  {
+    id: "first_session",
+    label: "First lesson",
+    desc: "Complete one guided lesson.",
+    target: 1,
+    unit: "lesson",
+    current: (s: Stats) => s.sessionsCompleted,
+    check: (s: Stats) => s.sessionsCompleted >= 1,
+  },
+  {
+    id: "streak_3",
+    label: "Three-day streak",
+    desc: "Return for three separate days.",
+    target: 3,
+    unit: "days",
+    current: (s: Stats) => s.streak,
+    check: (s: Stats) => s.streak >= 3,
+  },
+  {
+    id: "reviews_50",
+    label: "50 review items",
+    desc: "Build recognition through recall.",
+    target: 50,
+    unit: "reviews",
+    current: (s: Stats) => s.totalReviews,
+    check: (s: Stats) => s.totalReviews >= 50,
+  },
+  {
+    id: "xp_500",
+    label: "500 XP",
+    desc: "Show steady practice momentum.",
+    target: 500,
+    unit: "XP",
+    current: (s: Stats) => s.totalXp,
+    check: (s: Stats) => s.totalXp >= 500,
+  },
+  {
+    id: "words_200",
+    label: "200 tracked words",
+    desc: "Combine lessons and word-bank items.",
+    target: 200,
+    unit: "words",
+    current: (s: Stats) => s.totalReviews + s.externalWords,
+    check: (s: Stats) => s.totalReviews + s.externalWords >= 200,
+  },
+  {
+    id: "week",
+    label: "Seven-day rhythm",
+    desc: "Keep a full week of returns.",
+    target: 7,
+    unit: "days",
+    current: (s: Stats) => s.streak,
+    check: (s: Stats) => s.streak >= 7,
+  },
+] as const;
 
 export function getLevelInfo(xp: number) {
   let cur = LEVELS[0];
@@ -499,7 +549,7 @@ export default function GamificationPanel({
                     {ui("Remove")}
                   </button>
                 )}
-                <span className="text-[11px] font-semibold text-[var(--text-3)]">{ui("Square images look best — stored on this device.")}</span>
+                <span className="text-[11px] font-semibold text-[var(--text-3)]">{ui("Square images look best. They are stored on this device.")}</span>
               </div>
 
               <div className="mt-5 border-t border-[var(--border)] pt-5">
@@ -590,7 +640,7 @@ export default function GamificationPanel({
                     <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
                     <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                       {direction === "learn-en"
-                        ? ui("Learning English as a German speaker — German is shown as the meaning.")
+                        ? ui("Learning English as a German speaker. German is shown as the meaning.")
                         : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                     </p>
                   </div>
@@ -783,7 +833,7 @@ export default function GamificationPanel({
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                     {direction === "learn-en"
-                      ? ui("Learning English as a German speaker — German is shown as the meaning.")
+                      ? ui("Learning English as a German speaker. German is shown as the meaning.")
                       : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                   </p>
                 </div>
