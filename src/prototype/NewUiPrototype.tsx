@@ -24,7 +24,7 @@ import {
   UserRound,
   Volume2,
 } from "lucide-react";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 
 import GamificationPanel, { getLevelInfo, MILESTONES, type GamificationStats } from "@/Gamification";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
@@ -269,6 +269,8 @@ function Header({
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "there";
   const notifications: Array<{ title: string; body: string; view: PrototypeView }> = [
     { title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
@@ -279,6 +281,31 @@ function Header({
     setNotificationsOpen(false);
     onNavigate(view);
   };
+
+  const openProfileDestination = (view: PrototypeView) => {
+    setProfileOpen(false);
+    onNavigate(view);
+  };
+
+  useEffect(() => {
+    if (!profileOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (event.target instanceof Node && !profileMenuRef.current?.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setProfileOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [profileOpen]);
 
   return (
     <header className="np-header">
@@ -313,7 +340,10 @@ function Header({
             aria-expanded={notificationsOpen}
             aria-label={`${notifications.length} unread notifications`}
             className="np-icon-button np-notification"
-            onClick={() => setNotificationsOpen((open) => !open)}
+            onClick={() => {
+              setProfileOpen(false);
+              setNotificationsOpen((open) => !open);
+            }}
             type="button"
           >
             <Bell />
@@ -346,10 +376,61 @@ function Header({
             )}
           </AnimatePresence>
         </div>
-        <button aria-label="Open profile" className="np-profile-button" onClick={() => onNavigate("profile")} type="button">
-          <span>{firstName[0]?.toUpperCase() ?? "?"}</span>
-          <ChevronDown />
-        </button>
+        <div className="np-profile-wrap" ref={profileMenuRef}>
+          <button
+            aria-controls="prototype-profile-menu"
+            aria-expanded={profileOpen}
+            aria-haspopup="menu"
+            aria-label="Open profile menu"
+            className={`np-profile-button${profileOpen ? " is-open" : ""}`}
+            onClick={() => {
+              setNotificationsOpen(false);
+              setProfileOpen((open) => !open);
+            }}
+            type="button"
+          >
+            <span>{firstName[0]?.toUpperCase() ?? "?"}</span>
+            <ChevronDown />
+          </button>
+          <AnimatePresence initial={false}>
+            {profileOpen && (
+              <motion.div
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="np-profile-menu"
+                exit={{ opacity: 0, scale: 0.98, y: -5 }}
+                id="prototype-profile-menu"
+                initial={{ opacity: 0, scale: 0.98, y: -8 }}
+                role="menu"
+                transition={{ duration: 0.16 }}
+              >
+                <div className="np-profile-menu-summary">
+                  <span aria-hidden="true">{firstName[0]?.toUpperCase() ?? "?"}</span>
+                  <div>
+                    <strong>{firstName}</strong>
+                    <small>Learning German</small>
+                  </div>
+                </div>
+                <div className="np-profile-menu-actions">
+                  <button onClick={() => openProfileDestination("profile")} role="menuitem" type="button">
+                    <span><CircleUserRound /></span>
+                    <div><strong>Profile and settings</strong><small>Account, appearance, and preferences</small></div>
+                    <ChevronRight />
+                  </button>
+                  <button onClick={() => openProfileDestination("progress")} role="menuitem" type="button">
+                    <span><BarChart3 /></span>
+                    <div><strong>Your progress</strong><small>Levels, achievements, and activity</small></div>
+                    <ChevronRight />
+                  </button>
+                  <button onClick={() => openProfileDestination("more")} role="menuitem" type="button">
+                    <span><Menu /></span>
+                    <div><strong>More options</strong><small>Courses and the full Micheon app</small></div>
+                    <ChevronRight />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   );

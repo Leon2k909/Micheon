@@ -29,27 +29,28 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
   const dotCy = useTransform(mv, (v) => size / 2 + r * Math.sin((clamp(v) / 100) * 2 * Math.PI));
 
   return (
-    <div className="relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
+    <div className="mastery-ring relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
       <svg aria-hidden="true" className="absolute inset-0 -rotate-90" height={size} width={size} style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id={id} x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#7834f7" />
-            <stop offset="55%" stopColor="#b06bff" />
-            <stop offset="100%" stopColor="#ffd233" />
+            <stop offset="0%" stopColor="var(--mastery-ring-start, #7834f7)" />
+            <stop offset="55%" stopColor="var(--mastery-ring-middle, #b06bff)" />
+            <stop offset="100%" stopColor="var(--mastery-ring-end, #ffd233)" />
           </linearGradient>
         </defs>
 
         {/* Track */}
-        <circle cx={size / 2} cy={size / 2} fill="none" r={r} stroke="var(--border)" strokeWidth={stroke} strokeOpacity={0.7} />
+        <circle cx={size / 2} cy={size / 2} fill="none" r={r} stroke="var(--mastery-ring-track, var(--border))" strokeWidth={stroke} strokeOpacity={0.7} />
 
         {/* Progress arc */}
         <motion.circle
           cx={size / 2} cy={size / 2} fill="none"
+          className="mastery-ring__arc"
           r={r} stroke={`url(#${id})`}
           strokeDasharray={circ} strokeLinecap="round" strokeWidth={stroke}
           style={{
             strokeDashoffset: dashOffset,
-            filter: "drop-shadow(0 0 5px rgba(255,210,51,0.5)) drop-shadow(0 0 11px rgba(120,52,247,0.4))",
+            filter: "var(--mastery-ring-shadow, drop-shadow(0 0 5px rgba(255,210,51,0.5)) drop-shadow(0 0 11px rgba(120,52,247,0.4)))",
           }}
         />
 
@@ -57,20 +58,20 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
         {value > 0 && (
           <>
             <motion.circle
-              cx={dotCx} cy={dotCy} fill="rgba(255,210,51,0.45)"
+              cx={dotCx} cy={dotCy} fill="var(--mastery-ring-halo, rgba(255,210,51,0.45))"
               animate={reduce ? { r: dotR * 1.6, opacity: 0.4 } : { r: [dotR * 1.1, dotR * 2.8], opacity: [0.55, 0] }}
               transition={reduce ? {} : { duration: 1.8, repeat: Infinity, ease: "easeOut" }}
             />
             <motion.circle
-              cx={dotCx} cy={dotCy} r={dotR} fill="#fff3c4" stroke="#ffd233" strokeWidth={1.5}
-              style={{ filter: "drop-shadow(0 0 6px rgba(255,210,51,0.9))" }}
+              cx={dotCx} cy={dotCy} r={dotR} fill="var(--mastery-ring-tip, #fff3c4)" stroke="var(--mastery-ring-end, #ffd233)" strokeWidth={1.5}
+              style={{ filter: "var(--mastery-tip-shadow, drop-shadow(0 0 6px rgba(255,210,51,0.9)))" }}
             />
           </>
         )}
       </svg>
 
-      <div className="relative flex flex-col items-center">
-        <span className="text-xl font-black tracking-tight text-[var(--text-1)]">
+      <div className="mastery-ring__label relative flex flex-col items-center">
+        <span className="mastery-ring__value text-xl font-black tracking-tight text-[var(--text-1)]">
           <motion.span>{pctText}</motion.span>%
         </span>
         <span className="text-[10px] font-semibold text-[var(--text-3)]">{ui("mastered")}</span>
@@ -90,18 +91,18 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
   const currentMilestone = [...VOCAB_MILESTONES].reverse().find((m) => mastered >= m.value);
 
   return (
-    <div className="card p-5 sm:p-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="card mastery-card p-5 sm:p-6">
+      <div className="mastery-card__header flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-[var(--text-1)]">{ui("Vocabulary mastery")}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
+          <p className="mastery-card__title text-sm font-black text-[var(--text-1)]">{ui("Vocabulary mastery")}</p>
+          <p className="mastery-card__count mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
             {mastered.toLocaleString()}
             <span className="text-base font-bold text-[var(--text-3)]"> / {VOCAB_TARGET.toLocaleString()}</span>
           </p>
 
           {/* Current level badge */}
           {currentMilestone && (
-            <div className="mt-1.5 flex items-center gap-1.5">
+            <div className="mastery-card__current mt-1.5 flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: currentMilestone.color }} />
               <span className="text-xs font-medium" style={{ color: currentMilestone.color }}>
                 {ui(currentMilestone.label)}
@@ -112,19 +113,19 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
 
           {/* Next milestone */}
           {nextMilestone && (
-            <p className="mt-1 text-xs text-[var(--text-3)]">
+            <p className="mastery-card__next mt-1 text-xs text-[var(--text-3)]">
               {uiIsGerman() ? (
                 <>
                   <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} Wörter</span>
                   {" bis "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
-                  {" · "}{ui(nextMilestone.detail)}
+                  {": "}{ui(nextMilestone.detail)}
                 </>
               ) : (
                 <>
                   <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} words</span> to{" "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
-                  {" "}{nextMilestone.detail}
+                  {": "}{nextMilestone.detail}
                 </>
               )}
             </p>
@@ -134,12 +135,12 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
       </div>
 
       {/* Progress bar with milestone ticks */}
-      <div className="mt-4">
-        <div className="relative h-3 w-full overflow-visible rounded-full bg-[var(--surface-2)]">
+      <div className="mastery-progress mt-4">
+        <div className="mastery-progress__track relative h-3 w-full overflow-visible rounded-full bg-[var(--surface-2)]">
           {/* Fill */}
           <motion.div
             animate={{ width: `${vocabPct}%` }}
-            className="absolute inset-y-0 left-0 rounded-full bg-[var(--yellow)]"
+            className="mastery-progress__fill absolute inset-y-0 left-0 rounded-full bg-[var(--yellow)]"
             initial={{ width: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           />
@@ -161,26 +162,26 @@ export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 
             );
           })}
         </div>
-        <div className="mt-1.5 flex justify-between text-[10px] text-[var(--text-3)]">
+        <div className="mastery-progress__legend mt-1.5 flex justify-between text-[10px] text-[var(--text-3)]">
           <span>{mastered.toLocaleString()} {ui("learned")}</span>
           <span>{(VOCAB_TARGET - mastered).toLocaleString()} {ui("remaining")}</span>
         </div>
       </div>
 
       {/* Milestone ladder */}
-      <div className="mt-4 grid grid-cols-4 gap-1.5 sm:grid-cols-7">
+      <div className="mastery-card__ladder mt-4 grid grid-cols-4 gap-1.5 sm:grid-cols-7">
         {VOCAB_MILESTONES.map((m) => {
           const reached = mastered >= m.value;
           const isNext = m === nextMilestone;
           return (
             <div
               key={m.value}
-              className={`rounded-lg border px-2 py-2 text-center transition-all ${
+              className={`mastery-card__milestone rounded-lg border px-2 py-2 text-center transition-all ${
                 reached
-                  ? "border-transparent bg-[var(--surface-2)]"
+                  ? "is-reached border-transparent bg-[var(--surface-2)]"
                   : isNext
-                  ? "border-[var(--border-2)] bg-[var(--surface)]"
-                  : "border-transparent bg-transparent opacity-35"
+                  ? "is-next border-[var(--border-2)] bg-[var(--surface)]"
+                  : "is-locked border-transparent bg-transparent opacity-35"
               }`}
             >
               <p
