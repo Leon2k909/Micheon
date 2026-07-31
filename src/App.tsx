@@ -16,11 +16,13 @@ import { DIRECTION_CHANGE_EVENT } from "./lib/direction";
 // largest bundle even though it never rendered it, doubling a major chunk of
 // the app's startup and memory cost whenever the mascot was visible.
 const GermanLearningLab = lazy(() => import("./german_learning_lab"));
+const NewUiPrototype = lazy(() => import("./prototype/NewUiPrototype"));
 
 export default function App() {
   const search = new URLSearchParams(window.location.search);
   const isPetOverlay = search.get("pet-overlay") === "1";
   const isPetHistory = search.get("pet-history") === "1";
+  const isUiPrototype = search.get("ui-prototype") === "1";
   if (isPetOverlay) {
     return (
       <CodexPetProvider>
@@ -35,8 +37,31 @@ export default function App() {
       </CodexPetProvider>
     );
   }
+  if (isUiPrototype) {
+    return (
+      <>
+        <TitleBar />
+        <Suspense fallback={<PrototypeSkeleton />}>
+          <NewUiPrototype />
+        </Suspense>
+      </>
+    );
+  }
 
   return <MicheonApp />;
+}
+
+function PrototypeSkeleton() {
+  return (
+    <div className="flex min-h-[var(--app-h)] items-center justify-center bg-[#ececf4] p-6">
+      <div className="w-full max-w-sm rounded-[28px] border border-black/5 bg-[#fffdf8] p-6 shadow-[0_24px_70px_rgba(48,38,83,0.12)]">
+        <div className="h-4 w-24 rounded-full bg-[#e5e1ef]" />
+        <div className="mt-5 h-10 w-3/4 rounded-2xl bg-[#ece9f4]" />
+        <div className="mt-3 h-4 w-1/2 rounded-full bg-[#f0edf5]" />
+        <div className="mt-8 h-44 rounded-[22px] bg-[#e7e2f5]" />
+      </div>
+    </div>
+  );
 }
 
 function MicheonApp() {
