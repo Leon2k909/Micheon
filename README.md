@@ -1,12 +1,45 @@
-# Micheon
+<p align="center">
+  <img src="public/icon.png" alt="Micheon logo" width="112" />
+</p>
 
-**A fully offline desktop app for learning German — premium neural voices, spaced repetition, and lessons that actually understand what you type.**
+<h1 align="center">Micheon</h1>
 
-**Made with love ❤️ by Leon and Michelle.**
+<p align="center"><strong>A fully offline desktop app for learning German with premium neural voices, spaced repetition, and lessons that actually understand what you type.</strong></p>
+
+<p align="center"><strong>Made with love ❤️ by Leon and Michelle.</strong></p>
 
 Micheon is a native-feeling desktop language tutor that runs entirely on your machine. There's no subscription, no login server, no cloud calls for content, and no usage limits. You download it once, and everything — thousands of sentences, dialogues, grammar drills, and natural-sounding speech — works on a plane, on the train, or with the Wi-Fi off.
 
 > Repo folder: `germ` · Product name: **Micheon** · Platforms: Windows and Linux desktop (Electron)
+
+---
+
+<p align="center">
+  <img src="docs/screenshots/micheon-home.png" alt="Micheon home dashboard with the active German course, Continue learning, fluency estimate, achievements, and conversational practice" width="100%" />
+</p>
+
+## Micheon in action
+
+The app keeps the next useful lesson obvious while still giving you full access to the curriculum, focused practice, progress tracking, and games.
+
+<p align="center">
+  <img src="docs/screenshots/micheon-guided-lesson.png" alt="Micheon guided lesson preview showing a natural German phrase" width="100%" />
+</p>
+
+<p align="center"><strong>Guided lessons</strong><br />Preview both languages, listen to every phrase, then practise through reading, meaning, typing, translation, word order, and recall.</p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/micheon-lessons.png" alt="Micheon searchable lesson library with level and progress filters" />
+      <br /><strong>Searchable curriculum</strong><br />Browse practical conversation packs, filter by level and progress, and jump directly into the material you need.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/micheon-games.png" alt="Micheon vocabulary games and mastery screen" />
+      <br /><strong>Games and mastery</strong><br />Build recall through short arcade-style games while vocabulary mastery and milestones update alongside your lessons.
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -151,4 +184,4 @@ Locally, `npm run electron:dist` produces a build under `release/` for testing. 
 
 ---
 
-*Micheon — learn German properly, on your own machine. Made with love ❤️ by Leon and Michelle.*
+*Micheon - learn German properly, on your own machine.*
