@@ -128,6 +128,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part254",         // Küchengeräte
   "part255",         // Die Ausbildung
   "part256",         // Wenn es Ärger gibt: Recht im Alltag
+  "part257",         // Smalltalk im Büro
+  "part258",         // Hausversammlung und Mietsachen
+  "part259",         // Pakete und Rücksendungen
+  "part260",         // Schlaf
+  "part261",         // Gesund essen
+  "part262",         // Beileid und Trauer
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",

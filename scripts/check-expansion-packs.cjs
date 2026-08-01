@@ -471,6 +471,30 @@ const expected = {
     theme: "Wenn es Ärger gibt: Widerspruch, Anwalt und die Schlichtungsstelle",
     fixture: "Erst mal ruhig durchlesen — die klingen alle schlimmer, als sie sind.",
   },
+  part257: {
+    theme: "Smalltalk im Büro: Kaffeeküche, Montagsgesicht und Feierabend",
+    fixture: "So, ich mache Feierabend.",
+  },
+  part258: {
+    theme: "Hausversammlung: Hausgeld, Umlage und die Mieterhöhung",
+    fixture: "Wer nicht hingeht, beschwert sich hinterher am lautesten.",
+  },
+  part259: {
+    theme: "Pakete: Packstation, Sendungsverfolgung und der Zettel im Briefkasten",
+    fixture: "Im Briefkasten lag nur die Benachrichtigungskarte.",
+  },
+  part260: {
+    theme: "Schlaf: durchschlafen, der Wecker und die verlorene Stunde",
+    fixture: "Einschlafen geht, aber durchschlafen nicht.",
+  },
+  part261: {
+    theme: "Gesund essen: Portionen, Zucker und der gute Vorsatz",
+    fixture: "Verbieten hilft nichts, in Maßen essen schon.",
+  },
+  part262: {
+    theme: "Beileid und Trauer: die richtigen Worte finden",
+    fixture: "Du musst nichts sagen, ich bin einfach da.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -530,9 +554,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and six expansion packs contain at least 3399 authored phrases", newPhrases.length >= 3399, `found ${newPhrases.length}`);
-check("the one hundred and six expansion packs contain at least 1676 vocabulary entries", totalSeeds >= 1676, `found ${totalSeeds}`);
-check("the one hundred and six expansion packs contain at least 260 dialogues", totalDialogues >= 260, `found ${totalDialogues}`);
+check("the one hundred and twelve expansion packs contain at least 3567 authored phrases", newPhrases.length >= 3567, `found ${newPhrases.length}`);
+check("the one hundred and twelve expansion packs contain at least 1766 vocabulary entries", totalSeeds >= 1766, `found ${totalSeeds}`);
+check("the one hundred and twelve expansion packs contain at least 272 dialogues", totalDialogues >= 272, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
