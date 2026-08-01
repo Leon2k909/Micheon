@@ -116,6 +116,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part241",         // Sternzeichen
   "part242",         // Die Fahrgemeinschaft
   "part243",         // Das Klassentreffen
+  "part245",         // Der Sprachkurs
+  "part246",         // Streaming und Serien
+  "part247",         // Wohnungssuche
+  "part248",         // In der Kneipe
+  "part249",         // Hochzeit feiern
+  "part250",         // Beim Tierarzt
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
