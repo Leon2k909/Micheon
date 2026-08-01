@@ -18,6 +18,7 @@ import {
   Languages,
   Leaf,
   LockKeyhole,
+  Medal,
   Menu,
   MessageCircleMore,
   MessageSquareText,
@@ -25,9 +26,12 @@ import {
   Search,
   Settings2,
   ShoppingBag,
+  Swords,
   Target,
   Trophy,
+  UserPlus,
   UserRound,
+  UsersRound,
   Volume2,
   X,
 } from "lucide-react";
@@ -63,6 +67,7 @@ import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@
 import { getCourse } from "@/lib/courseRegistry";
 import { countKnownVocab, getFluency } from "@/lib/fluency";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
+import { hasLeonSocialPreview } from "@/lib/socialPreview";
 
 import heroImage from "./assets/micheon-hero-v3.png";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.png";
@@ -73,7 +78,7 @@ import starReward from "./assets/rewards-v3/star.png";
 import trophyReward from "./assets/rewards-v3/trophy.png";
 import "./new-ui-prototype.css";
 
-type PrototypeView = "home" | "learn" | "practice" | "games" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
+type PrototypeView = "home" | "learn" | "practice" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -125,6 +130,8 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
   { id: "more", label: "More", icon: Menu },
 ];
 
+const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends", icon: UsersRound };
+
 const PROTOTYPE_SIDEBAR_MIN = 188;
 const PROTOTYPE_SIDEBAR_MAX = 330;
 const PROTOTYPE_SIDEBAR_KEY = "prototype-sidebar-width";
@@ -146,6 +153,13 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   { id: "profile", title: "Profile and settings", subtitle: "Account, appearance, learning direction, and preferences.", keywords: "account dark mode theme settings language" },
   { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
 ];
+
+const LEON_SOCIAL_SEARCH_PAGE = {
+  id: "social" as const,
+  title: "Friends and leaderboard",
+  subtitle: "See friend activity, weekly XP, streaks, and the private friends league preview.",
+  keywords: "friends social leaderboard league add friend invite challenge weekly xp",
+};
 
 const PROTOTYPE_SEARCH_GAMES = [
   ["Word Snake", "Spell German words by steering through letters."],
@@ -238,6 +252,45 @@ const SHOP_ITEMS: ReadonlyArray<{
   { id: "backpack", name: "Explorer pin", description: "A travel badge for curious learners.", price: 170, tone: "violet" },
   { id: "trophy", name: "Champion pin", description: "A gold badge for your biggest wins.", price: 220, tone: "blue" },
   { id: "crown", name: "Conversation crown", description: "The top profile badge in the reward shop.", price: 260, tone: "gold" },
+];
+
+type SocialFriend = {
+  id: string;
+  name: string;
+  initials: string;
+  level: string;
+  status: string;
+  statusKind: "online" | "today" | "recent";
+  streak: number;
+  weeklyXp: number;
+  tone: "rose" | "blue" | "gold" | "violet";
+};
+
+type SocialLeaderboardEntry = {
+  id: string;
+  name: string;
+  initials: string;
+  weeklyXp: number;
+  streak: number;
+  movement: string;
+  tone: SocialFriend["tone"] | "green";
+  current?: boolean;
+};
+
+const SOCIAL_FRIENDS: SocialFriend[] = [
+  { id: "michelle", name: "Michelle", initials: "M", level: "Confident speaker", status: "Learning now", statusKind: "online", streak: 14, weeklyXp: 2_840, tone: "rose" },
+  { id: "jonas", name: "Jonas Weber", initials: "JW", level: "Everyday speaker", status: "Active today", statusKind: "today", streak: 9, weeklyXp: 1_970, tone: "blue" },
+  { id: "sophie", name: "Sophie Klein", initials: "SK", level: "Conversation builder", status: "Active today", statusKind: "today", streak: 6, weeklyXp: 1_420, tone: "gold" },
+  { id: "felix", name: "Felix Braun", initials: "FB", level: "Getting started", status: "Active yesterday", statusKind: "recent", streak: 3, weeklyXp: 870, tone: "violet" },
+];
+
+const SOCIAL_LEADERBOARD: SocialLeaderboardEntry[] = [
+  { id: "michelle", name: "Michelle", initials: "M", weeklyXp: 2_840, streak: 14, movement: "+1", tone: "rose" },
+  { id: "leon", name: "Leon", initials: "L", weeklyXp: 2_315, streak: 7, movement: "+2", tone: "green", current: true },
+  { id: "jonas", name: "Jonas Weber", initials: "JW", weeklyXp: 1_970, streak: 9, movement: "-1", tone: "blue" },
+  { id: "sophie", name: "Sophie Klein", initials: "SK", weeklyXp: 1_420, streak: 6, movement: "Same", tone: "gold" },
+  { id: "felix", name: "Felix Braun", initials: "FB", weeklyXp: 870, streak: 3, movement: "+1", tone: "violet" },
+  { id: "emilia", name: "Emilia Koch", initials: "EK", weeklyXp: 720, streak: 4, movement: "-2", tone: "rose" },
 ];
 
 function isShopBadgeId(value: unknown): value is ShopBadgeId {
@@ -333,14 +386,19 @@ function Sidebar({
   activeView,
   onNavigate,
   onResize,
+  socialPreviewUnlocked,
   width,
 }: {
   activeView: PrototypeView;
   onNavigate: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
+  socialPreviewUnlocked: boolean;
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
+  const navigationItems = socialPreviewUnlocked
+    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM, ...NAVIGATION.slice(4)]
+    : NAVIGATION;
 
   useEffect(() => () => resizeCleanupRef.current?.(), []);
 
@@ -379,7 +437,7 @@ function Sidebar({
     <aside className="np-sidebar">
       <BrandMark />
       <nav aria-label="Prototype navigation" className="np-side-nav">
-        {NAVIGATION.map((item) => {
+        {navigationItems.map((item) => {
           const Icon = item.icon;
           const active = item.id === activeView || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
           return (
@@ -446,13 +504,17 @@ function Header({
   equippedBadge,
   onNavigate,
   searchItems,
+  socialPreviewUnlocked,
   stats,
+  userEmail,
   userName,
 }: {
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
   searchItems: PrototypeSearchItem[];
+  socialPreviewUnlocked: boolean;
   stats: PrototypeStats;
+  userEmail?: string | null;
   userName: string;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -709,7 +771,7 @@ function Header({
                   </span>
                   <div>
                     <strong>{firstName}</strong>
-                    <small>Learning German</small>
+                    <small>{userEmail || "Learning German"}</small>
                   </div>
                 </div>
                 <div className="np-profile-menu-actions">
@@ -718,6 +780,13 @@ function Header({
                     <div><strong>Profile and settings</strong><small>Account, appearance, and preferences</small></div>
                     <ChevronRight />
                   </button>
+                  {socialPreviewUnlocked && (
+                    <button onClick={() => openProfileDestination("social")} role="menuitem" type="button">
+                      <span><UsersRound /></span>
+                      <div><strong>Friends and leaderboard</strong><small>Your private social preview</small></div>
+                      <ChevronRight />
+                    </button>
+                  )}
                   <button onClick={() => openProfileDestination("progress")} role="menuitem" type="button">
                     <span><BarChart3 /></span>
                     <div><strong>Your progress</strong><small>Levels, achievements, and activity</small></div>
@@ -1271,14 +1340,226 @@ function ShopView({
   );
 }
 
+function SocialAvatar({ initials, tone }: { initials: string; tone: SocialLeaderboardEntry["tone"] }) {
+  return <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>{initials}</span>;
+}
+
+function SocialView({ userName }: { userName: string }) {
+  const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
+  const [friendQuery, setFriendQuery] = useState("");
+  const [previewNotice, setPreviewNotice] = useState<string | null>(null);
+  const firstName = userName.trim().split(/\s+/)[0] || "Leon";
+  const friends = useMemo(() => {
+    const query = normalizeCatalogSearchText(friendQuery);
+    if (!query) return SOCIAL_FRIENDS;
+    return SOCIAL_FRIENDS.filter((friend) => normalizeCatalogSearchText([
+      friend.name,
+      friend.level,
+      friend.status,
+    ].join(" ")).includes(query));
+  }, [friendQuery]);
+  const leaderboard = useMemo(() => SOCIAL_LEADERBOARD.map((entry) => (
+    entry.current ? { ...entry, name: firstName } : entry
+  )), [firstName]);
+  const podium = [leaderboard[1], leaderboard[0], leaderboard[2]];
+
+  const showPreviewNotice = (action: string) => {
+    setPreviewNotice(`${action} is a preview in this release. Nothing was sent or changed.`);
+  };
+
+  return (
+    <section className="np-page-card np-social-view">
+      <div className="np-social-hero">
+        <span aria-hidden="true" className="np-social-hero-icon"><UsersRound /></span>
+        <div className="np-social-hero-copy">
+          <span>Leon only</span>
+          <h1>Learn better together</h1>
+          <p>Keep up with friends, compare weekly XP, and turn practice into a friendly routine.</p>
+        </div>
+        <div className="np-social-private-badge">
+          <LockKeyhole aria-hidden="true" />
+          <span><strong>Private preview</strong><small>Visible only on Leon&apos;s account</small></span>
+        </div>
+      </div>
+
+      <div aria-label="Social sections" className="np-social-tabs" role="tablist">
+        <button
+          aria-controls="social-friends-panel"
+          aria-selected={activeSection === "friends"}
+          className={activeSection === "friends" ? "is-active" : ""}
+          onClick={() => setActiveSection("friends")}
+          role="tab"
+          type="button"
+        >
+          <UsersRound aria-hidden="true" />
+          <span><strong>Friends</strong><small>{SOCIAL_FRIENDS.length} learning partners</small></span>
+        </button>
+        <button
+          aria-controls="social-leaderboard-panel"
+          aria-selected={activeSection === "leaderboard"}
+          className={activeSection === "leaderboard" ? "is-active" : ""}
+          onClick={() => setActiveSection("leaderboard")}
+          role="tab"
+          type="button"
+        >
+          <Medal aria-hidden="true" />
+          <span><strong>Leaderboard</strong><small>Friends league this week</small></span>
+        </button>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {previewNotice && (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="np-social-preview-notice"
+            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -6 }}
+            role="status"
+          >
+            <CheckCircle2 aria-hidden="true" />
+            <span><strong>UI preview only</strong><small>{previewNotice}</small></span>
+            <button aria-label="Dismiss preview message" onClick={() => setPreviewNotice(null)} type="button"><X /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {activeSection === "friends" ? (
+        <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
+          <section className="np-social-panel np-friends-panel">
+            <div className="np-social-panel-heading">
+              <div><span>Your circle</span><h2>Friends</h2><p>See who is learning and keep each other moving.</p></div>
+              <button className="np-social-primary-button" onClick={() => showPreviewNotice("Add friend")} type="button"><UserPlus /> Add friend</button>
+            </div>
+            <label className="np-social-search">
+              <Search aria-hidden="true" />
+              <input
+                aria-label="Search friends"
+                onChange={(event) => setFriendQuery(event.target.value)}
+                placeholder="Search your friends"
+                type="search"
+                value={friendQuery}
+              />
+              {friendQuery && <button aria-label="Clear friend search" onClick={() => setFriendQuery("")} type="button"><X /></button>}
+            </label>
+
+            <div className="np-friend-list">
+              {friends.length > 0 ? friends.map((friend) => (
+                <article className="np-friend-row" key={friend.id}>
+                  <SocialAvatar initials={friend.initials} tone={friend.tone} />
+                  <div className="np-friend-identity">
+                    <strong>{friend.name}</strong>
+                    <span className={`np-social-presence np-social-presence--${friend.statusKind}`}><i />{friend.status}</span>
+                    <small>{friend.level}</small>
+                  </div>
+                  <div className="np-friend-stat">
+                    <RewardIcon kind="flame" />
+                    <span><strong>{friend.streak} days</strong><small>Current streak</small></span>
+                  </div>
+                  <div className="np-friend-stat">
+                    <RewardIcon kind="star" />
+                    <span><strong>{friend.weeklyXp.toLocaleString()} XP</strong><small>This week</small></span>
+                  </div>
+                  <button className="np-social-secondary-button" onClick={() => showPreviewNotice(`Message ${friend.name}`)} type="button">
+                    <MessageCircleMore aria-hidden="true" /><span>Message</span>
+                  </button>
+                </article>
+              )) : (
+                <div className="np-social-empty">
+                  <Search aria-hidden="true" />
+                  <strong>No friend matches that search</strong>
+                  <span>Try another name or clear the search.</span>
+                  <button onClick={() => setFriendQuery("")} type="button">Clear search</button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <aside className="np-social-side-stack">
+            <section className="np-social-side-card np-social-side-card--invite">
+              <span className="np-social-side-icon"><UserPlus /></span>
+              <small>Grow your circle</small>
+              <h2>Invite a learning partner</h2>
+              <p>Practising feels easier when someone is learning alongside you.</p>
+              <button onClick={() => showPreviewNotice("Invite friend")} type="button">Preview invite <ChevronRight /></button>
+            </section>
+            <section className="np-social-side-card">
+              <span className="np-social-side-icon np-social-side-icon--blue"><Swords /></span>
+              <small>Friendly challenge</small>
+              <h2>Reach 500 XP together</h2>
+              <p>You and Michelle are 68% of the way to a shared weekly target.</p>
+              <div className="np-social-progress"><span style={{ width: "68%" }} /></div>
+              <button onClick={() => showPreviewNotice("Challenge Michelle")} type="button">Open challenge <ChevronRight /></button>
+            </section>
+          </aside>
+        </div>
+      ) : (
+        <div className="np-social-layout" id="social-leaderboard-panel" role="tabpanel">
+          <section className="np-social-panel np-leaderboard-panel">
+            <div className="np-social-panel-heading">
+              <div><span>Friends league</span><h2>This week</h2><p>XP earned from Monday to Sunday.</p></div>
+              <div className="np-leaderboard-time"><Clock3 /><span><strong>3 days left</strong><small>Resets Monday</small></span></div>
+            </div>
+
+            <div aria-label="Top three friends" className="np-leaderboard-podium">
+              {podium.map((entry) => {
+                const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
+                return (
+                  <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
+                    <span className="np-podium-rank">{rank === 1 ? <Medal aria-label="First place" /> : rank}</span>
+                    <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                    <strong>{entry.name}</strong>
+                    <small>{entry.weeklyXp.toLocaleString()} XP</small>
+                    <i aria-hidden="true" />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="np-leaderboard-list">
+              {leaderboard.map((entry, index) => (
+                <article className={entry.current ? "is-current" : ""} key={entry.id}>
+                  <strong className="np-leaderboard-rank">{index + 1}</strong>
+                  <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                  <span className="np-leaderboard-person"><strong>{entry.name}{entry.current && <small>You</small>}</strong><small>{entry.streak}-day streak</small></span>
+                  <span className="np-leaderboard-xp"><strong>{entry.weeklyXp.toLocaleString()} XP</strong><small>{entry.movement} this week</small></span>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <aside className="np-social-side-stack">
+            <section className="np-social-side-card np-social-side-card--target">
+              <span className="np-social-side-icon"><Target /></span>
+              <small>Your weekly goal</small>
+              <h2>685 XP to go</h2>
+              <p>You have earned 2,315 of your 3,000 XP target.</p>
+              <div className="np-social-progress"><span style={{ width: "77%" }} /></div>
+              <strong className="np-social-target-caption">77% complete</strong>
+            </section>
+            <section className="np-social-side-card">
+              <span className="np-social-side-icon np-social-side-icon--gold"><Trophy /></span>
+              <small>League reward</small>
+              <h2>Finish in the top three</h2>
+              <p>Leon is currently second. A short lesson could close the gap.</p>
+              <button onClick={() => showPreviewNotice("League details")} type="button">How leagues work <ChevronRight /></button>
+            </section>
+          </aside>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function MoreView({
   onNavigate,
   onOpenFullApp,
   onSwitchCourse,
+  socialPreviewUnlocked,
 }: {
   onNavigate: (view: PrototypeView) => void;
   onOpenFullApp: (tab: string) => void;
   onSwitchCourse: () => void;
+  socialPreviewUnlocked: boolean;
 }) {
   const features: Array<{
     title: string;
@@ -1287,6 +1568,13 @@ function MoreView({
     tone: string;
     action: () => void;
   }> = [
+    ...(socialPreviewUnlocked ? [{
+      title: "Friends and leaderboard",
+      description: "See friend activity, weekly XP, streaks, and the private friends league preview.",
+      icon: UsersRound,
+      tone: "mint",
+      action: () => onNavigate("social"),
+    }] : []),
     { title: "Tests", description: "Search and filter vocabulary, phrase, and level tests.", icon: ClipboardCheck, tone: "mint", action: () => onNavigate("tests") },
     { title: "Grammar", description: "Practise sentence patterns and fill in missing words.", icon: GraduationCap, tone: "yellow", action: () => onNavigate("grammar") },
     { title: "Progress", description: "See your streak, achievements, recent lessons, and goals.", icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
@@ -1358,7 +1646,7 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
       {MOBILE_NAVIGATION.map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView || (
-          item.id === "more" && ["tests", "grammar", "shop", "progress", "profile"].includes(activeView)
+          item.id === "more" && ["social", "tests", "grammar", "shop", "progress", "profile"].includes(activeView)
         );
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
@@ -1398,6 +1686,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const apiParts = usePrototypeParts();
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
+  const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);
   const activeCourseName = getCourse(activeCourseId)?.name ?? "German";
   const partsReady = Object.keys(apiParts).length > 0;
   const earnedShopCoins = 80
@@ -1440,6 +1729,10 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     document.documentElement.style.setProperty("--prototype-sidebar-width", `${sidebarWidth}px`);
     return () => document.documentElement.style.removeProperty("--prototype-sidebar-width");
   }, [sidebarWidth]);
+
+  useEffect(() => {
+    if (!socialPreviewUnlocked && activeView === "social") setActiveView("home");
+  }, [activeView, socialPreviewUnlocked]);
 
   const navigate = (view: PrototypeView) => {
     setActiveView(view);
@@ -1517,7 +1810,10 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   };
 
   const searchItems: PrototypeSearchItem[] = [
-    ...PROTOTYPE_SEARCH_PAGES.map((page) => ({
+    ...[
+      ...PROTOTYPE_SEARCH_PAGES,
+      ...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : []),
+    ].map((page) => ({
       id: `page-${page.id}`,
       title: page.title,
       subtitle: page.subtitle,
@@ -1568,6 +1864,8 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
         />
       ) : <FeatureLoading />}
     </div>
+  ) : activeView === "social" && socialPreviewUnlocked ? (
+    <SocialView userName={profile?.name ?? "Leon"} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
       {partsReady ? <TestsView apiParts={apiParts} profile={effectiveProfile} /> : <FeatureLoading />}
@@ -1601,7 +1899,12 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
       </div>
     ) : <AccountGate onOpenFullApp={openFullApp} />
   ) : (
-    <MoreView onNavigate={navigate} onOpenFullApp={openFullApp} onSwitchCourse={() => setCourseSwitcherOpen(true)} />
+    <MoreView
+      onNavigate={navigate}
+      onOpenFullApp={openFullApp}
+      onSwitchCourse={() => setCourseSwitcherOpen(true)}
+      socialPreviewUnlocked={socialPreviewUnlocked}
+    />
   );
 
   const showRightRail = activeView === "home" || activeView === "practice";
@@ -1613,13 +1916,21 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
           className="np-shell"
           style={{ "--np-sidebar-width": `${sidebarWidth}px` } as CSSProperties}
         >
-          <Sidebar activeView={activeView} onNavigate={navigate} onResize={resizeSidebar} width={sidebarWidth} />
+          <Sidebar
+            activeView={activeView}
+            onNavigate={navigate}
+            onResize={resizeSidebar}
+            socialPreviewUnlocked={socialPreviewUnlocked}
+            width={sidebarWidth}
+          />
           <div className="np-app-area">
             <Header
               equippedBadge={equippedShopBadge}
               onNavigate={navigate}
               searchItems={searchItems}
+              socialPreviewUnlocked={socialPreviewUnlocked}
               stats={stats}
+              userEmail={profile?.email}
               userName={profile?.name ?? PREVIEW_PROFILE.name}
             />
             <div className={`np-content-grid${showRightRail ? "" : " np-content-grid--wide"}`}>
