@@ -158,6 +158,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part315",         // Unwetter
   "part316",         // Digitaler Papierkram
   "part317",         // Über Sprachen reden
+  "part318",         // In Rente gehen
+  "part319",         // Kinder und Bildschirme
+  "part320",         // Nachhaltig im Alltag
+  "part321",         // Physiotherapie und Reha
+  "part322",         // Arbeitsrecht
+  "part323",         // Gäste bewirten
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
