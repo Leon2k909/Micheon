@@ -455,71 +455,212 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
    root tokens. This keeps every updater state consistent in either shell. */
 .micheon-update-panel {
   --surface: #fffdf8;
-  --surface-2: #f0f7ea;
-  --surface-3: #dfe8d8;
-  --border: rgba(67, 82, 57, 0.16);
+  --surface-2: #f1f7ec;
+  --surface-3: #dbe8d5;
+  --border: rgba(61, 103, 50, 0.2);
   --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #746f69;
-  --accent: #43b84c;
+  --text-2: #625e58;
+  --text-3: #686e63;
+  --accent: #39aa45;
+  --accent-strong: #1f762d;
   --accent-dim: #e4f7d9;
   --accent-text: #ffffff;
-  --accent-hover: #319f3e;
-  --shadow: rgba(58, 78, 47, 0.18);
+  --shadow: rgba(51, 78, 43, 0.17);
   isolation: isolate;
+  border: 1px solid var(--border);
   color-scheme: light;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(205, 240, 188, 0.72), transparent 43%),
-    linear-gradient(180deg, #fffefb, #fffaf2);
+  background: linear-gradient(145deg, #fffefb 0%, #f8fcf3 100%);
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   box-shadow:
-    inset 0 1px 0 #fff,
-    0 4px 0 rgba(71, 102, 58, 0.12),
-    0 24px 58px var(--shadow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 3px 0 rgba(58, 104, 48, 0.12),
+    0 18px 46px var(--shadow);
 }
 
-.micheon-update-panel::before {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: 2;
-  height: 4px;
-  background: linear-gradient(90deg, #2e9d3c, #65d560 55%, #39ad45);
-  content: "";
-  pointer-events: none;
+.micheon-update-panel__inner {
+  padding: 16px;
+}
+
+.micheon-update-panel__main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
 }
 
 .micheon-update-panel .micheon-update-icon {
-  border: 1px solid rgba(67, 184, 76, 0.18);
-  background: linear-gradient(180deg, #eefae7, #dff3d5);
-  box-shadow: 0 3px 0 rgba(58, 151, 66, 0.14), 0 9px 18px rgba(71, 111, 59, 0.08);
+  border: 1px solid rgba(55, 164, 64, 0.2);
+  color: var(--accent-strong);
+  background: linear-gradient(180deg, #edf9e7, #e1f3d9);
+  box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(56, 137, 54, 0.12);
+}
+
+.micheon-update-panel .micheon-update-icon--error {
+  border-color: rgba(205, 145, 25, 0.25);
+  color: #a96700;
+  background: linear-gradient(180deg, #fff9e8, #fff1c7);
+  box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(173, 119, 14, 0.1);
+}
+
+.micheon-update-panel__copy {
+  min-width: 0;
+}
+
+.micheon-update-panel__meta {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.micheon-update-panel__meta > span:first-child {
+  color: var(--accent-strong);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.micheon-update-version {
+  flex: none;
+  padding: 3px 7px;
+  border: 1px solid rgba(65, 106, 55, 0.14);
+  border-radius: 8px;
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.micheon-update-panel__copy h2 {
+  margin: 1px 0 0;
+  color: var(--text-1);
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+
+.micheon-update-panel__copy p {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 620;
+  line-height: 1.45;
+}
+
+.micheon-update-download {
+  margin-top: 13px;
+  padding: 10px 11px;
+  border: 1px solid rgba(62, 106, 52, 0.13);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.micheon-update-download__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  color: var(--text-3);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.micheon-update-download__label span:last-child {
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.micheon-update-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(54, 88, 46, 0.1);
+  border-radius: 999px;
+  background: var(--surface-3);
+  box-shadow: inset 0 2px 2px rgba(49, 80, 42, 0.1);
+}
+
+.micheon-update-panel .micheon-update-progress {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #69d463, #36a943);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: width 300ms ease;
+}
+
+.micheon-update-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.micheon-update-primary,
+.micheon-update-secondary {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .micheon-update-panel .micheon-update-primary {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: linear-gradient(180deg, #5bd35b, #35ad43);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 0 #238831, 0 9px 17px rgba(42, 137, 53, 0.16);
-  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--accent-text);
+  background: linear-gradient(180deg, #2f8d3a, #23762f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 3px 0 #195b24, 0 8px 16px rgba(32, 109, 44, 0.16);
+  font-weight: 850;
 }
 
 .micheon-update-panel .micheon-update-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #65da63, #39b348);
+  background: linear-gradient(180deg, #379943, #288134);
   transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 5px 0 #238831, 0 12px 20px rgba(42, 137, 53, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 0 #195b24, 0 10px 18px rgba(32, 109, 44, 0.18);
 }
 
 .micheon-update-panel .micheon-update-primary:active:not(:disabled) {
   transform: translateY(2px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 0 #238831, 0 6px 11px rgba(42, 137, 53, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 0 #195b24, 0 5px 10px rgba(32, 109, 44, 0.14);
 }
 
-.micheon-update-panel .micheon-update-progress {
-  background: linear-gradient(90deg, #65d85f, #35ad43);
-  box-shadow: 0 0 12px rgba(53, 173, 67, 0.24);
+.micheon-update-panel .micheon-update-secondary {
+  min-width: 88px;
+  border: 1px solid rgba(66, 91, 58, 0.16);
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 2px 0 rgba(63, 88, 55, 0.09);
+  font-weight: 750;
 }
 
 .micheon-update-panel .micheon-update-secondary:hover {
+  border-color: rgba(48, 130, 51, 0.23);
+  color: var(--accent-strong);
   background: #edf7e7;
-  color: #286f32;
+  transform: translateY(-1px);
+}
+
+.micheon-update-primary:focus-visible,
+.micheon-update-secondary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  outline-offset: 2px;
+}
+
+.micheon-update-primary:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 html[data-theme="dark"] .micheon-update-panel {
@@ -531,14 +672,12 @@ html[data-theme="dark"] .micheon-update-panel {
   --text-2: #c2cec0;
   --text-3: #94a291;
   --accent: #61cf62;
+  --accent-strong: #83df81;
   --accent-dim: rgba(91, 205, 91, 0.14);
-  --accent-hover: #70dc70;
   --shadow: rgba(0, 0, 0, 0.38);
   color-scheme: dark;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(75, 165, 76, 0.2), transparent 45%),
-    linear-gradient(180deg, #1b261d, #151d17);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 0 rgba(0, 0, 0, 0.22), 0 24px 58px var(--shadow);
+  background: linear-gradient(145deg, #1b261d, #151d17);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 3px 0 rgba(0, 0, 0, 0.22), 0 18px 46px var(--shadow);
 }
 
 html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
@@ -547,9 +686,34 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
+html[data-theme="dark"] .micheon-update-panel .micheon-update-icon--error {
+  border-color: rgba(231, 177, 70, 0.2);
+  color: #efbd5b;
+  background: linear-gradient(180deg, #3a3321, #302b1e);
+}
+
+html[data-theme="dark"] .micheon-update-version,
+html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary {
+  border-color: rgba(207, 228, 203, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 2px 0 rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"] .micheon-update-download {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
 html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
   background: #263529;
   color: #d7edd4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .micheon-update-panel .micheon-update-progress,
+  .micheon-update-primary,
+  .micheon-update-secondary {
+    transition: none;
+  }
 }
 
 /* Full-screen install handoff. Keep this in the same tactile cream-and-green

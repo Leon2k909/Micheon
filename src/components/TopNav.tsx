@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import { MuteButton } from "@/components/MuteButton";
-import { getLevelInfo } from "@/Gamification";
+import { getLevelInfo } from "@/lib/gamificationProgress";
 
 const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },

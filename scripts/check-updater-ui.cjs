@@ -70,7 +70,10 @@ check("the branded install takeover owns the visible restart phase", banner.incl
 check("the custom install screen uses calm staged restart feedback", banner.includes('data-testid="update-install-steps"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
 check("development builds expose the complete install takeover for visual QA", banner.includes('get("update-preview") === "installing"') && banner.includes("useState(previewInstalling)"));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
-check("the updater owns the current green Micheon palette", banner.includes("micheon-update-panel") && styles.includes(".micheon-update-panel") && styles.includes("--accent: #43b84c;"));
+check("the compact updater uses the current tactile Micheon surface", banner.includes("micheon-update-panel__main") && banner.includes("micheon-update-actions") && styles.includes("--accent: #39aa45;") && styles.includes("0 3px 0 rgba(58, 104, 48, 0.12)"));
+check("the compact updater has state-aware warning treatment", banner.includes("micheon-update-icon--${status.state}") && styles.includes(".micheon-update-icon--error"));
+check("the updater error copy explains the failed check plainly", banner.includes('ui("Couldn\'t check for updates")') && !banner.includes('ui("Update paused")'));
+check("the compact updater keeps both actions inside the card", styles.includes(".micheon-update-actions") && styles.includes("grid-template-columns: minmax(0, 1fr) auto"));
 check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
 check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));
 check("the install takeover follows the learner's dark-theme setting", styles.includes('html[data-theme="dark"] .micheon-update-takeover') && styles.includes("--install-accent: #65d466;"));

@@ -690,6 +690,7 @@ const DE: Record<string, string> = {
   "Micheon update": "Micheon-Update",
   "Downloading update": "Update wird heruntergeladen",
   "Your update is ready": "Dein Update ist bereit",
+  "Couldn't check for updates": "Updates konnten nicht geprüft werden",
   "Update paused": "Update pausiert",
   "Downloading": "Wird heruntergeladen",
   "Update download progress": "Downloadfortschritt des Updates",

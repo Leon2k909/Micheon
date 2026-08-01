@@ -36,6 +36,8 @@ import {
   X,
 } from "lucide-react";
 import {
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -45,23 +47,12 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-import GamificationPanel, { getLevelInfo, MILESTONES, type GamificationStats } from "@/Gamification";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
-import { LearnView as LearningLibraryView } from "@/components/lab/LearnView";
-import { TestsView } from "@/components/tests/TestsView";
-import { GamesView } from "@/games/GamesView";
-import ClozeTabContent from "@/lab/ClozeTabContent";
-import GrammarTabContent from "@/lab/GrammarTabContent";
-import { buildApiPartFromResolved } from "@/lib/api";
-import { orderParts } from "@/lib/curriculum";
-import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection, isBulkPartKey } from "@/lib/contentBank";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
-import { buildCustomParts, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
-import { allPartBlueprints } from "@/lib/data";
-import { DIRECTION_CHANGE_EVENT } from "@/lib/direction";
 import { getMasteredCount } from "@/lib/mastery";
 import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
 import { getStreak } from "@/lib/streak";
+import { getLevelInfo, MILESTONES, type GamificationStats } from "@/lib/gamificationProgress";
 import type { Blueprint, Part } from "@/lib/types";
 import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
@@ -69,14 +60,21 @@ import { countKnownVocab, getFluency } from "@/lib/fluency";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
 
-import heroImage from "./assets/micheon-hero-v3.png";
-import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.png";
-import backpackReward from "./assets/rewards-v3/backpack.png";
-import flameReward from "./assets/rewards-v3/flame.png";
-import heartReward from "./assets/rewards-v3/heart.png";
-import starReward from "./assets/rewards-v3/star.png";
-import trophyReward from "./assets/rewards-v3/trophy.png";
+import heroImage from "./assets/micheon-hero-v3.webp";
+import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
+import backpackReward from "./assets/rewards-v3/backpack.webp";
+import flameReward from "./assets/rewards-v3/flame.webp";
+import heartReward from "./assets/rewards-v3/heart.webp";
+import starReward from "./assets/rewards-v3/star.webp";
+import trophyReward from "./assets/rewards-v3/trophy.webp";
 import "./new-ui-prototype.css";
+
+const GamificationPanel = lazy(() => import("@/Gamification"));
+const LearningLibraryView = lazy(() => import("@/components/lab/LearnView").then((module) => ({ default: module.LearnView })));
+const TestsView = lazy(() => import("@/components/tests/TestsView").then((module) => ({ default: module.TestsView })));
+const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
+const ClozeTabContent = lazy(() => import("@/lab/ClozeTabContent"));
+const GrammarTabContent = lazy(() => import("@/lab/GrammarTabContent"));
 
 type PrototypeView = "home" | "learn" | "practice" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
@@ -339,7 +337,7 @@ const REWARD_IMAGE: Record<RewardKind, string> = {
 };
 
 function RewardIcon({ kind, className = "" }: { kind: RewardKind; className?: string }) {
-  return <img alt="" aria-hidden="true" className={`np-reward-icon ${className}`.trim()} decoding="async" src={REWARD_IMAGE[kind]} />;
+  return <img alt="" aria-hidden="true" className={`np-reward-icon ${className}`.trim()} decoding="async" height={256} loading="lazy" src={REWARD_IMAGE[kind]} width={256} />;
 }
 
 const ACHIEVEMENT_ART_ID: Record<string, string> = {
@@ -503,6 +501,8 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 function Header({
   equippedBadge,
   onNavigate,
+  onSearchOpen,
+  searchCatalogLoading,
   searchItems,
   socialPreviewUnlocked,
   stats,
@@ -511,6 +511,8 @@ function Header({
 }: {
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
+  onSearchOpen: () => void;
+  searchCatalogLoading: boolean;
   searchItems: PrototypeSearchItem[];
   socialPreviewUnlocked: boolean;
   stats: PrototypeStats;
@@ -620,7 +622,10 @@ function Header({
               setNotificationsOpen(false);
               setProfileOpen(false);
               if (searchOpen) closeSearch();
-              else setSearchOpen(true);
+              else {
+                onSearchOpen();
+                setSearchOpen(true);
+              }
             }}
             type="button"
           >
@@ -667,7 +672,9 @@ function Header({
 
                 <div className="np-search-panel-heading">
                   <strong>{searchQuery ? "Search results" : "Quick links"}</strong>
-                  <small>{filteredSearchItems.length} {filteredSearchItems.length === 1 ? "result" : "results"}</small>
+                  <small>{searchCatalogLoading
+                    ? "Loading lessons…"
+                    : `${filteredSearchItems.length} ${filteredSearchItems.length === 1 ? "result" : "results"}`}</small>
                 </div>
 
                 <div className="np-search-results">
@@ -680,7 +687,12 @@ function Header({
                       </div>
                       <span className="np-search-result-action">{item.actionLabel}<ChevronRight /></span>
                     </button>
-                  )) : (
+                  )) : searchCatalogLoading ? (
+                    <div className="np-search-empty">
+                      <strong>Loading lesson search</strong>
+                      <span>Pages and games are ready now.</span>
+                    </div>
+                  ) : (
                     <div className="np-search-empty">
                       <strong>No matching result</strong>
                       <span>Try a lesson name, topic, German phrase, or game.</span>
@@ -814,7 +826,7 @@ function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; sta
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" src={heroImage} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={724} loading="eager" src={heroImage} width={2172} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
@@ -1625,32 +1637,59 @@ function MoreView({
   );
 }
 
-function usePrototypeParts() {
+function isPrototypeBulkPartKey(key: string) {
+  return key.startsWith("wordbank") || key.startsWith("tatoeba");
+}
+
+function usePrototypeParts(requested: boolean) {
   const [apiParts, setApiParts] = useState<Record<string, Part>>({});
 
   useEffect(() => {
-    const resolved: Record<string, Part> = {};
-    for (const [key, blueprint] of Object.entries(allPartBlueprints)) {
-      resolved[key] = buildApiPartFromResolved(blueprint as Blueprint, {});
-    }
+    if (!requested) return undefined;
 
-    const rebuild = () => {
-      setApiParts(orderParts(filterPartsForLearningDirection({
-        ...resolved,
-        ...buildBundledParts(),
-        ...buildTatoebaParts(),
-        ...buildCustomParts(),
-      })));
+    let active = true;
+    let removeListeners = () => {};
+
+    const load = async () => {
+      const [api, curriculum, contentBank, customContent, data] = await Promise.all([
+        import("@/lib/api"),
+        import("@/lib/curriculum"),
+        import("@/lib/contentBank"),
+        import("@/lib/customContent"),
+        import("@/lib/data"),
+      ]);
+      if (!active) return;
+
+      const resolved: Record<string, Part> = {};
+      for (const [key, blueprint] of Object.entries(data.allPartBlueprints)) {
+        resolved[key] = api.buildApiPartFromResolved(blueprint as Blueprint, {});
+      }
+
+      const rebuild = () => {
+        if (!active) return;
+        setApiParts(curriculum.orderParts(contentBank.filterPartsForLearningDirection({
+          ...resolved,
+          ...contentBank.buildBundledParts(),
+          ...contentBank.buildTatoebaParts(),
+          ...customContent.buildCustomParts(),
+        })));
+      };
+
+      rebuild();
+      window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
+      window.addEventListener("gl-direction-change", rebuild);
+      removeListeners = () => {
+        window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
+        window.removeEventListener("gl-direction-change", rebuild);
+      };
     };
 
-    rebuild();
-    window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-    window.addEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    void load().catch((error) => console.error("[prototype] unable to load lesson catalogue", error));
     return () => {
-      window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-      window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+      active = false;
+      removeListeners();
     };
-  }, []);
+  }, [requested]);
 
   return apiParts;
 }
@@ -1698,7 +1737,8 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     const stored = loadScopedJson<unknown>(SHOP_EQUIPPED_KEY, null, profile);
     return isShopBadgeId(stored) ? stored : null;
   });
-  const apiParts = usePrototypeParts();
+  const [partsRequested, setPartsRequested] = useState(false);
+  const apiParts = usePrototypeParts(partsRequested);
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
   const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);
@@ -1717,7 +1757,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     id,
     title: part.theme || part.label,
     subtitle: `${part.level} · ${part.description || part.focus}`,
-    group: (isBulkPartKey(id) ? "Word bank" : "Lesson") as "Word bank" | "Lesson",
+    group: (isPrototypeBulkPartKey(id) ? "Word bank" : "Lesson") as "Word bank" | "Lesson",
     searchText: buildCatalogSearchText([
       id,
       part.label,
@@ -1750,6 +1790,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   }, [activeView, socialPreviewUnlocked]);
 
   const navigate = (view: PrototypeView) => {
+    if (["learn", "games", "tests", "profile"].includes(view)) setPartsRequested(true);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -1864,31 +1905,43 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     />
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
-      {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}
+      {partsReady ? (
+        <Suspense fallback={<FeatureLoading />}>
+          <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} />
+        </Suspense>
+      ) : <FeatureLoading />}
     </div>
   ) : activeView === "practice" ? (
     <PracticeCard />
   ) : activeView === "games" ? (
     <div className="np-feature-host">
       {partsReady ? (
-        <GamesView
-          apiParts={apiParts}
-          externalWords={stats.externalWords}
-          gameMasteryCount={getMasteredCount()}
-          totalReviews={stats.totalReviews}
-        />
+        <Suspense fallback={<FeatureLoading />}>
+          <GamesView
+            apiParts={apiParts}
+            externalWords={stats.externalWords}
+            gameMasteryCount={getMasteredCount()}
+            totalReviews={stats.totalReviews}
+          />
+        </Suspense>
       ) : <FeatureLoading />}
     </div>
   ) : activeView === "social" && socialPreviewUnlocked ? (
     <SocialView userName={profile?.name ?? "Leon"} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
-      {partsReady ? <TestsView apiParts={apiParts} profile={effectiveProfile} /> : <FeatureLoading />}
+      {partsReady ? (
+        <Suspense fallback={<FeatureLoading />}>
+          <TestsView apiParts={apiParts} profile={effectiveProfile} />
+        </Suspense>
+      ) : <FeatureLoading />}
     </div>
   ) : activeView === "grammar" ? (
     <div className="np-feature-host guided-session np-grammar-view">
-      <ClozeTabContent />
-      <GrammarTabContent />
+      <Suspense fallback={<FeatureLoading />}>
+        <ClozeTabContent />
+        <GrammarTabContent />
+      </Suspense>
     </div>
   ) : activeView === "shop" ? (
     <ShopView
@@ -1902,15 +1955,19 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   ) : activeView === "profile" ? (
     profile ? (
       <div className="np-feature-host">
-        <GamificationPanel
-          activeCourseName={activeCourseName}
-          apiParts={apiParts}
-          onSwitchCourse={() => setCourseSwitcherOpen(true)}
-          onUpdateStats={updateStats}
-          profileOnly
-          stats={stats}
-          user={profile}
-        />
+        {partsReady ? (
+          <Suspense fallback={<FeatureLoading />}>
+            <GamificationPanel
+              activeCourseName={activeCourseName}
+              apiParts={apiParts}
+              onSwitchCourse={() => setCourseSwitcherOpen(true)}
+              onUpdateStats={updateStats}
+              profileOnly
+              stats={stats}
+              user={profile}
+            />
+          </Suspense>
+        ) : <FeatureLoading />}
       </div>
     ) : <AccountGate onOpenFullApp={openFullApp} />
   ) : (
@@ -1942,6 +1999,8 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
             <Header
               equippedBadge={equippedShopBadge}
               onNavigate={navigate}
+              onSearchOpen={() => setPartsRequested(true)}
+              searchCatalogLoading={partsRequested && !partsReady}
               searchItems={searchItems}
               socialPreviewUnlocked={socialPreviewUnlocked}
               stats={stats}

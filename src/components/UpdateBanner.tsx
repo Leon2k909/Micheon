@@ -39,24 +39,24 @@ const previewInstalling = import.meta.env.DEV
 function panelCopy(status: UpdateStatus): string {
   if (status.state === "downloading") {
     return uiIsGerman()
-      ? "Du kannst weiterlernen, während Micheon die neue Version vorbereitet."
-      : "Keep learning while Micheon gets the new version ready.";
+      ? "Lerne weiter, während Micheon die neue Version vorbereitet."
+      : "Keep learning while Micheon prepares the new version.";
   }
   if (status.state === "ready") {
     const version = status.version ? ` v${status.version}` : "";
     return uiIsGerman()
-      ? `Starte Micheon neu, um das Update${version} zu installieren. Sonst wird es beim Schließen der App installiert.`
-      : `Restart Micheon to install update${version}. Otherwise it will install when you close the app.`;
+      ? `Starte Micheon neu, um das Update${version} zu installieren. Du kannst auch weiterlernen.`
+      : `Restart Micheon to install update${version}. You can also keep learning.`;
   }
   return uiIsGerman()
-    ? "Micheon konnte den Update-Dienst nicht erreichen. Es wird später automatisch erneut versucht."
-    : "Micheon couldn't reach the update service. It will try again automatically.";
+    ? "Micheon konnte den Update-Dienst nicht erreichen. Wir versuchen es automatisch erneut."
+    : "Micheon couldn't reach the update service. We'll try again automatically.";
 }
 
 function panelTitle(state: UpdateState): string {
   if (state === "downloading") return ui("Downloading update");
   if (state === "ready") return ui("Your update is ready");
-  return ui("Update paused");
+  return ui("Couldn't check for updates");
 }
 
 function UpdateInstallTakeover({
@@ -252,80 +252,63 @@ export function UpdateBanner() {
       <AnimatePresence>
       {open && status && (
         <motion.section
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          animate={{ opacity: 1, y: 0 }}
           aria-labelledby="micheon-update-title"
           aria-live="polite"
-          className={[
-            "micheon-update-panel",
-            "fixed bottom-5 right-5 z-[2000] w-[388px] max-w-[calc(100vw-2.5rem)] overflow-hidden",
-            "rounded-[22px] border border-[var(--border)] bg-[var(--surface)]",
-            "shadow-[0_22px_58px_var(--shadow)]",
-          ].join(" ")}
+          className={`micheon-update-panel micheon-update-panel--${status.state} fixed bottom-4 right-4 z-[2000] w-[368px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[20px]`}
           data-testid="update-panel"
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.985 }}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.985 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 7 }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
           role="region"
           transition={{ duration: reduceMotion ? 0.01 : 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="p-5">
-            <div className="flex items-start gap-3.5">
+          <div className="micheon-update-panel__inner">
+            <div className="micheon-update-panel__main">
               <div
                 className={[
-                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]",
                   "micheon-update-icon",
-                  status.state === "error"
-                    ? "bg-amber-500/12 text-amber-500"
-                    : "bg-[var(--accent-dim)] text-[var(--accent)]",
+                  `micheon-update-icon--${status.state}`,
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]",
                 ].join(" ")}
               >
                 <Icon
                   aria-hidden="true"
-                  className={status.state === "downloading" ? "h-5 w-5 animate-pulse motion-reduce:animate-none" : "h-5 w-5"}
+                  className="h-5 w-5"
                 />
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
-                      {ui("Micheon update")}
-                    </p>
-                    <h2
-                      className="mt-1 text-[17px] font-black leading-tight text-[var(--text-1)]"
-                      id="micheon-update-title"
-                    >
-                      {panelTitle(status.state)}
-                    </h2>
-                  </div>
+              <div className="micheon-update-panel__copy">
+                <div className="micheon-update-panel__meta">
+                  <span>{ui("Micheon update")}</span>
                   {status.version && (
-                    <span className="shrink-0 rounded-full bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-black tabular-nums text-[var(--text-2)]">
+                    <span className="micheon-update-version">
                       v{status.version}
                     </span>
                   )}
                 </div>
-
-                <p className="mt-2 text-xs font-semibold leading-[1.55] text-[var(--text-2)]">
+                <h2 id="micheon-update-title">{panelTitle(status.state)}</h2>
+                <p>
                   {panelCopy(status)}
                 </p>
               </div>
             </div>
 
             {status.state === "downloading" && (
-              <div className="mt-4" data-testid="update-progress-wrap">
-                <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-black text-[var(--text-3)]">
+              <div className="micheon-update-download" data-testid="update-progress-wrap">
+                <div className="micheon-update-download__label">
                   <span>{ui("Downloading")}</span>
-                  <span className="tabular-nums text-[var(--text-2)]">{percent}%</span>
+                  <span>{percent}%</span>
                 </div>
                 <div
                   aria-label={ui("Update download progress")}
                   aria-valuemax={100}
                   aria-valuemin={0}
                   aria-valuenow={percent}
-                  className="h-2 overflow-hidden rounded-full bg-[var(--surface-3)]"
+                  className="micheon-update-progress-track"
                   role="progressbar"
                 >
                   <div
-                    className="micheon-update-progress h-full rounded-full bg-[var(--accent)] transition-[width] duration-300 motion-reduce:transition-none"
+                    className="micheon-update-progress"
                     data-testid="update-progress-fill"
                     style={{ width: `${percent}%` }}
                   />
@@ -333,10 +316,10 @@ export function UpdateBanner() {
               </div>
             )}
 
-            <div className="mt-4 flex items-center justify-end gap-2">
+            <div className="micheon-update-actions">
               {status.state === "ready" && (
                 <button
-                  className="micheon-update-primary h-10 flex-1 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
+                  className="micheon-update-primary"
                   disabled={installing}
                   onClick={beginInstall}
                   type="button"
@@ -347,7 +330,7 @@ export function UpdateBanner() {
 
               {status.state === "error" && (
                 <button
-                  className="micheon-update-primary inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
+                  className="micheon-update-primary"
                   disabled={retrying}
                   onClick={retry}
                   type="button"
@@ -358,7 +341,7 @@ export function UpdateBanner() {
               )}
 
               <button
-                className="micheon-update-secondary h-10 rounded-xl px-3.5 text-sm font-bold text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px"
+                className="micheon-update-secondary"
                 onClick={() => setDismissedFor(key)}
                 type="button"
               >
