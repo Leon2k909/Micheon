@@ -4816,7 +4816,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ appearance = "focus", steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -4982,7 +4982,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   };
 
   return (
-    <div className="guided-session fs-app app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans">
+    <div className={`guided-session fs-app app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans${appearance === "prototype" ? " prototype-guided-session" : ""}`}>
 
       {/* Topbar: brand · lesson progress · mute/close */}
       <header className="fs-topbar">

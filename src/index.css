@@ -2298,3 +2298,344 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 860px) {
   .fs-say { flex-direction: column; gap: 4px; padding: 9px 12px; }
 }
+
+/* Prototype entry mode ----------------------------------------------------
+   Continue learning from the new dashboard opens the real adaptive guided
+   session, but keeps the warm cream/green visual language of that dashboard.
+   The normal focus-mode lesson remains untouched for every other entry path. */
+.guided-session.fs-app.prototype-guided-session {
+  --fs-bg: #f3f7ea;
+  --fs-surface: #fffdf8;
+  --fs-surface-2: #f4f1e8;
+  --fs-deep: #edf5e5;
+  --fs-line: rgba(67, 82, 57, 0.13);
+  --fs-line-strong: rgba(67, 82, 57, 0.2);
+  --fs-text: #292725;
+  --fs-text-2: #5f5a55;
+  --fs-muted: #7f7972;
+  --fs-muted-2: #938d85;
+  --fs-purple: #43b84c;
+  --fs-grad: linear-gradient(135deg, #62d65e 0%, #43be4e 52%, #2fa63b 100%);
+  --fs-yellow: #ffc538;
+  --fs-yellow-hover: #ffd35f;
+  color-scheme: light;
+  color: var(--fs-text);
+  background:
+    radial-gradient(62% 50% at 83% 0%, rgba(187, 240, 163, 0.54), transparent 72%),
+    radial-gradient(52% 40% at 8% 96%, rgba(255, 221, 134, 0.22), transparent 72%),
+    linear-gradient(180deg, #f8fbf1 0%, #eef6e6 100%);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-topbar {
+  border-bottom-color: rgba(67, 82, 57, 0.1);
+  background: rgba(255, 253, 248, 0.94);
+  box-shadow: 0 12px 32px rgba(75, 91, 59, 0.09);
+  backdrop-filter: blur(18px);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-brand img {
+  width: 42px;
+  height: 42px;
+  border-color: rgba(67, 184, 76, 0.2);
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(42, 137, 53, 0.08), 0 10px 22px rgba(54, 105, 45, 0.12);
+  transform: scale(1.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-progress-track,
+.guided-session.fs-app.prototype-guided-session .fs-match-progress-track {
+  background: #e1e8d9;
+  box-shadow: inset 0 1px 2px rgba(69, 83, 58, 0.11);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-progress-track i,
+.guided-session.fs-app.prototype-guided-session .fs-match-progress-track i,
+.guided-session.fs-app.prototype-guided-session .fs-stageline i {
+  background: linear-gradient(90deg, #65d85f, #35ad43);
+  box-shadow: 0 0 14px rgba(53, 173, 67, 0.2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-iconbtn {
+  border-color: rgba(67, 82, 57, 0.14);
+  background: #fffdf8;
+  color: #6d7466;
+  box-shadow: 0 3px 0 rgba(73, 89, 60, 0.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-iconbtn:hover {
+  border-color: rgba(67, 184, 76, 0.34);
+  background: #edf9e6;
+  color: #278b35;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-card {
+  border-color: rgba(67, 82, 57, 0.13);
+  background: linear-gradient(180deg, rgba(255, 254, 251, 0.99), rgba(251, 249, 242, 0.99));
+  box-shadow: 0 28px 75px rgba(67, 88, 50, 0.16), inset 0 1px 0 #fff;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-count,
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
+.guided-session.fs-app.prototype-guided-session .fs-chip {
+  border-color: rgba(67, 184, 76, 0.22);
+  background: #eaf8df;
+  color: #288d36;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button {
+  background: #e0e5da;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover,
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
+  background: #9cdb8f;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-active {
+  background: #43b84c;
+  box-shadow: 0 0 15px rgba(67, 184, 76, 0.25);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard {
+  border-color: rgba(67, 184, 76, 0.2);
+  background:
+    radial-gradient(60% 80% at 100% 0%, rgba(188, 238, 164, 0.24), transparent 75%),
+    linear-gradient(145deg, #fbfff6, #fffdf8 52%, #f7f3e9);
+  box-shadow: inset 0 1px 0 #fff, 0 17px 42px rgba(77, 95, 62, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard.is-flippable:hover {
+  border-color: rgba(67, 184, 76, 0.42);
+  box-shadow: inset 0 1px 0 #fff, 0 19px 46px rgba(67, 113, 52, 0.14), 0 0 0 2px rgba(67, 184, 76, 0.05);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-known {
+  border-color: rgba(42, 157, 87, 0.28);
+  background: rgba(50, 186, 99, 0.09);
+  color: #23874a;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-known:hover {
+  border-color: rgba(42, 157, 87, 0.5);
+  background: rgba(50, 186, 99, 0.15);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-language button,
+.guided-session.fs-app.prototype-guided-session .fs-listen-icon,
+.guided-session.fs-app.prototype-guided-session .fs-missing-play {
+  border-color: rgba(67, 184, 76, 0.23);
+  background: #eaf8df;
+  color: #278f35;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-language button:hover,
+.guided-session.fs-app.prototype-guided-session .fs-missing-play:hover {
+  border-color: rgba(67, 184, 76, 0.48);
+  background: #ddf4cf;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-divider::before,
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-divider::after {
+  background: rgba(67, 82, 57, 0.12);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-back {
+  border-color: var(--fs-line-strong);
+  background: #f7f4ec;
+  color: var(--fs-text-2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-back:hover:not(:disabled) {
+  border-color: rgba(67, 184, 76, 0.3);
+  background: #edf8e6;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-next {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--fs-grad);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 5px 0 #248831, 0 13px 24px rgba(42, 137, 53, 0.2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-next:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 7px 0 #248831, 0 17px 28px rgba(42, 137, 53, 0.24);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-next:disabled {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 0 #79aa70;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-match-direction,
+  .fs-match-board,
+  .fs-order-panel,
+  .fs-board,
+  .fs-panel,
+  .fs-listen,
+  .fs-meaning-select-board,
+  .fs-translation-bank,
+  .fs-recall-board
+) {
+  border-color: rgba(67, 82, 57, 0.13);
+  background: rgba(247, 246, 238, 0.86);
+  box-shadow: inset 0 1px 0 #fff, 0 12px 30px rgba(74, 89, 61, 0.07);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
+.guided-session.fs-app.prototype-guided-session .fs-match-direction button.is-active {
+  border-color: rgba(67, 184, 76, 0.3);
+  background: #e7f7dc;
+  color: #278e35;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-match-option,
+  .fs-listening-choice,
+  .fs-meaning-choice,
+  .fs-meaning-select-choice,
+  .fs-missing-audio-option,
+  .fs-translation-option,
+  .fs-recall-char-slot
+) {
+  border-color: rgba(67, 82, 57, 0.16);
+  background: #fffdf8;
+  color: var(--fs-text-2);
+  box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(75, 91, 62, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-match-option,
+  .fs-listening-choice,
+  .fs-meaning-choice,
+  .fs-meaning-select-choice,
+  .fs-missing-audio-option,
+  .fs-translation-option
+):hover:not(:disabled) {
+  border-color: rgba(67, 184, 76, 0.42);
+  background: #eff9e8;
+  color: var(--fs-text);
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 rgba(49, 144, 58, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebar {
+  border-bottom-color: rgba(67, 82, 57, 0.1);
+  background: rgba(239, 246, 231, 0.62);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger {
+  border-color: rgba(67, 184, 76, 0.2);
+  background: rgba(67, 184, 76, 0.07);
+  color: var(--fs-text-2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger[aria-expanded="true"] {
+  border-color: rgba(67, 184, 76, 0.4);
+  background: rgba(67, 184, 76, 0.13);
+  color: var(--fs-text);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger > svg,
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-head > div > svg {
+  color: #43a94c;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-panel {
+  border-color: rgba(67, 184, 76, 0.25);
+  background: #fffdf8;
+  color: var(--fs-text);
+  box-shadow: 0 22px 55px rgba(64, 83, 48, 0.18), inset 0 1px 0 #fff;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-row:nth-child(odd) {
+  background: rgba(67, 184, 76, 0.045);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-row kbd,
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger-keys kbd {
+  border-color: rgba(67, 82, 57, 0.16);
+  background: #f1eee6;
+  color: #59564f;
+  box-shadow: 0 2px 0 rgba(77, 88, 67, 0.14);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stageline {
+  background: #dfe6d8;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn > span {
+  border-color: rgba(67, 82, 57, 0.13);
+  background: #fffdf8;
+  color: #777b71;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #d7d9ce, 0 10px 18px rgba(66, 80, 54, 0.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn:hover > span {
+  border-color: rgba(67, 184, 76, 0.3);
+  background: #eff9e8;
+  color: #278d35;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done {
+  color: #288d36;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span {
+  border-color: rgba(67, 184, 76, 0.35);
+  background: var(--fs-grad);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 5px 0 #248831, 0 11px 21px rgba(42, 137, 53, 0.16);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-active {
+  color: #8a6300;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-order-token {
+  border-color: rgba(67, 184, 76, 0.28);
+  background: linear-gradient(180deg, #eff9e8, #e4f4da);
+  color: var(--fs-text);
+  box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(47, 142, 57, 0.22);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-order-token:hover {
+  border-color: rgba(67, 184, 76, 0.5);
+  background: #ddf3d2;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-input {
+  border-color: rgba(67, 82, 57, 0.16);
+  background: #fffdf8;
+  color: var(--fs-text);
+  box-shadow: inset 0 1px 2px rgba(68, 78, 58, 0.06);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-input:focus {
+  border-color: rgba(67, 184, 76, 0.55);
+  box-shadow: 0 0 0 3px rgba(67, 184, 76, 0.12);
+}
+
+.guided-session.fs-app.prototype-guided-session .lesson-cta,
+[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .lesson-cta,
+[data-theme="light"] .guided-session.fs-app.prototype-guided-session .lesson-cta {
+  border-color: rgba(255, 255, 255, 0.48);
+  background: var(--fs-grad);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 5px 0 #248831, 0 13px 26px rgba(42, 137, 53, 0.22);
+}
+
+.guided-session.fs-app.prototype-guided-session .lesson-cta:hover,
+[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .lesson-cta:hover,
+[data-theme="light"] .guided-session.fs-app.prototype-guided-session .lesson-cta:hover {
+  background: linear-gradient(90deg, #6ede68 0%, #4ac756 55%, #35ad43 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 7px 0 #248831, 0 17px 30px rgba(42, 137, 53, 0.25);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-when {
+  border-left-color: rgba(67, 184, 76, 0.55);
+  background: rgba(67, 184, 76, 0.075);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-when-label {
+  color: #338f3d;
+}

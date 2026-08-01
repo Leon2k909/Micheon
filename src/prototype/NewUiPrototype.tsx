@@ -1043,6 +1043,15 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     window.location.assign(url.toString());
   };
 
+  const openGuidedSession = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ui-prototype");
+    url.searchParams.set("tab", "learn");
+    url.searchParams.set("guided", "continue");
+    url.searchParams.set("guided-theme", "prototype");
+    window.location.assign(url.toString());
+  };
+
   const updateStats = (next: Partial<PrototypeStats>) => {
     setStats((current) => {
       const updated = { ...current, ...next };
@@ -1073,7 +1082,7 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   };
 
   const mainView = activeView === "home" ? (
-    <HomeView onPractice={() => navigate("practice")} onSwitchCourse={() => setCourseSwitcherOpen(true)} stats={stats} />
+    <HomeView onPractice={openGuidedSession} onSwitchCourse={() => setCourseSwitcherOpen(true)} stats={stats} />
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
       {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}

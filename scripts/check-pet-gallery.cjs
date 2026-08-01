@@ -6,8 +6,14 @@ const gallery = fs.readFileSync(
   path.join(root, "src/components/codexPets/PetGallery.tsx"),
   "utf8"
 );
+const picker = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetPicker.tsx"),
+  "utf8"
+);
 const gamification = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8");
 const server = fs.readFileSync(path.join(root, "server/petGallery.js"), "utf8");
+const petServer = fs.readFileSync(path.join(root, "server/codexPets.js"), "utf8");
+const serverRoutes = fs.readFileSync(path.join(root, "server/index.js"), "utf8");
 const profileStart = gamification.indexOf("if (profileOnly)");
 const profileEnd = gamification.indexOf("\n  return (", profileStart);
 const profile = gamification.slice(profileStart, profileEnd);
@@ -85,6 +91,25 @@ check(
   "the local search parameter is translated to the upstream q parameter",
   server.includes('if (search) url.searchParams.set("q", String(search).slice(0, 80));')
     && !server.includes('url.searchParams.set("search"')
+);
+check(
+  "user-managed Codex and Micheon pets have an explicit confirmed deletion flow",
+  picker.includes('pet.source === "custom" || pet.source === "micheon-custom"')
+    && picker.includes('method: "DELETE"')
+    && picker.includes('/api/codex-pets/${encodeURIComponent(candidate.source)}')
+    && picker.includes('role="dialog"')
+    && picker.includes('aria-modal="true"')
+    && picker.includes('ui("Delete pet?")')
+    && picker.includes('await refresh()')
+    && picker.includes('setGalleryRevision((revision) => revision + 1)')
+);
+check(
+  "the server removes only a catalogued direct child of a user pets folder",
+  petServer.includes("export function removeUserManagedPet")
+    && petServer.includes('source !== "custom" && source !== "micheon-custom"')
+    && petServer.includes("path.dirname(target) !== root")
+    && petServer.includes("listCodexPets({ fresh: true }).find")
+    && serverRoutes.includes('app.delete("/api/codex-pets/:source/:id"')
 );
 check(
   "profile settings distribute account controls before preferences",

@@ -17,7 +17,7 @@ import os from "os";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
-import { getCodexPetCatalog, resolveCodexPetSpritesheet } from "./codexPets.js";
+import { getCodexPetCatalog, removeUserManagedPet, resolveCodexPetSpritesheet } from "./codexPets.js";
 import { fetchGalleryPage, installGalleryPet, installedGalleryIds, removeGalleryPet } from "./petGallery.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -322,6 +322,14 @@ app.post("/api/pet-gallery/:id/install", async (req, res) => {
 app.delete("/api/pet-gallery/:id", (req, res) => {
   try {
     res.json(removeGalleryPet(req.params.id));
+  } catch (error) {
+    res.status(400).json({ error: String(error?.message ?? error) });
+  }
+});
+
+app.delete("/api/codex-pets/:source/:id", (req, res) => {
+  try {
+    res.json(removeUserManagedPet(req.params.source, req.params.id));
   } catch (error) {
     res.status(400).json({ error: String(error?.message ?? error) });
   }

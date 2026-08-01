@@ -96,6 +96,8 @@ function withRegisterCheck(steps: any[], user: any): any[] {
 
 export default function GermanLearningLab() {
   const user = getAuthUser()!;
+  const guidedRequest = new URLSearchParams(window.location.search).get("guided");
+  const prototypeGuidedTheme = new URLSearchParams(window.location.search).get("guided-theme") === "prototype";
   const {
     history: petHistory,
     selectedKey: selectedPetKey,
@@ -119,6 +121,8 @@ export default function GermanLearningLab() {
   const [showGuidedSession, setShowGuidedSession] = useState(false);
   const [sessionSteps, setSessionSteps] = useState<any[]>([]);
   const sessionStartRef = React.useRef<number | null>(null);
+  const guidedAutoStartedRef = React.useRef(false);
+  const startSessionRef = React.useRef<(partId?: string) => void>(() => {});
   const activeStudyTimerRef = React.useRef<ActiveStudyTimer | null>(null);
   const sessionKnownBeforeRef = React.useRef<number | null>(null);
   const sessionLessonIdRef = React.useRef<string | undefined>(undefined);
@@ -889,6 +893,19 @@ export default function GermanLearningLab() {
     setShowGuidedSession(true);
   };
 
+  startSessionRef.current = startSession;
+  useEffect(() => {
+    if (
+      guidedRequest !== "continue"
+      || guidedAutoStartedRef.current
+      || showPlacementTest
+      || Object.keys(apiParts).length === 0
+    ) return;
+
+    guidedAutoStartedRef.current = true;
+    startSessionRef.current();
+  }, [apiParts, guidedRequest, showPlacementTest]);
+
   const logActivity = (stepsForCount: any[], completed = false) => {
     const startedAt = sessionStartRef.current;
     sessionStartRef.current = null;
@@ -931,6 +948,14 @@ export default function GermanLearningLab() {
     setCourseSessionLesson(undefined);
   };
   const sessionLesson = activeCourse?.lessons?.find((l) => l.id === courseSessionLesson);
+  const returnToPrototypeHome = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("guided");
+    url.searchParams.delete("guided-theme");
+    url.searchParams.delete("tab");
+    url.searchParams.set("ui-prototype", "1");
+    window.location.assign(url.toString());
+  };
 
   if (showPlacementTest) return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50 p-6">
@@ -944,11 +969,13 @@ export default function GermanLearningLab() {
 
   if (showGuidedSession) return (
     <GuidedSession
+      appearance={prototypeGuidedTheme ? "prototype" : "focus"}
       onCancel={(completedUpTo?: number) => {
         // Each non-skipped step is persisted as it is left. Replaying the
         // whole prefix here would accidentally grade any skipped steps.
         logActivity(sessionSteps.slice(0, completedUpTo && completedUpTo > 0 ? completedUpTo : 0));
         setShowGuidedSession(false);
+        if (prototypeGuidedTheme) returnToPrototypeHome();
       }}
       onComplete={() => {
         setShowGuidedSession(false);

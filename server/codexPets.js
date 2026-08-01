@@ -280,3 +280,36 @@ export function resolveCodexPetSpritesheet(source, id) {
   const pet = listCodexPets().find((entry) => entry.source === source && entry.id === id);
   return pet?.spritesheetPath ?? null;
 }
+
+/**
+ * Remove only pets that the learner placed in a writable pets folder.
+ * Bundled, built-in and legacy-avatar sources are deliberately excluded.
+ * Resolve the directory from the scanned catalogue instead of assuming the
+ * manifest id matches its folder name; hand-installed pets do not always do so.
+ */
+export function removeUserManagedPet(rawSource, rawId) {
+  const source = String(rawSource ?? "").trim();
+  const id = String(rawId ?? "").trim();
+  if (source !== "custom" && source !== "micheon-custom") {
+    throw new Error("only pets in a Codex or Micheon pets folder can be deleted");
+  }
+  if (!id || id.length > 128) throw new Error("invalid pet id");
+
+  const root = path.resolve(source === "custom"
+    ? path.join(getCodexHome(), "pets")
+    : path.join(getMicheonHome(), "pets"));
+  const pet = listCodexPets({ fresh: true }).find(
+    (entry) => entry.source === source && entry.id === id
+  );
+  if (!pet) throw new Error("pet not found in that pets folder");
+
+  const target = path.resolve(path.dirname(pet.spritesheetPath));
+  if (path.dirname(target) !== root) {
+    throw new Error("refusing to remove outside the selected pets folder");
+  }
+
+  fs.rmSync(target, { force: false, recursive: true });
+  cachedPetList = null;
+  cachedPetListUntil = 0;
+  return { id, removed: true, source };
+}

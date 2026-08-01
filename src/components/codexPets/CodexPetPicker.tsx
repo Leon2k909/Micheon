@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EyeOff, MessageSquare, Pencil, RefreshCw } from "lucide-react";
+import { AlertTriangle, EyeOff, Loader2, MessageSquare, Pencil, RefreshCw, Trash2 } from "lucide-react";
 
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { PetGallery } from "@/components/codexPets/PetGallery";
@@ -20,6 +20,15 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
   const [draftName, setDraftName] = useState("");
   /** Which pet's greetings are open for editing. */
   const [greetingFor, setGreetingFor] = useState<string | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<{
+    id: string;
+    key: string;
+    name: string;
+    source: "custom" | "micheon-custom";
+  } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [galleryRevision, setGalleryRevision] = useState(0);
   const {
     error,
     isLoading,
@@ -30,6 +39,35 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
     togglePetVisibility,
     visibleKeys,
   } = useCodexPets();
+
+  const deleteDownloadedPet = async () => {
+    const candidate = deleteCandidate;
+    if (!candidate || deletingId) return;
+
+    setDeletingId(candidate.id);
+    setDeleteError(null);
+    try {
+      const response = await fetch(
+        `/api/codex-pets/${encodeURIComponent(candidate.source)}/${encodeURIComponent(candidate.id)}`,
+        { method: "DELETE" }
+      );
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload?.error || `Delete failed (${response.status})`);
+
+      if (renaming === candidate.key) setRenaming(null);
+      if (greetingFor === candidate.key) setGreetingFor(null);
+      setPetName(candidate.key, "");
+      setDeleteCandidate(null);
+      await refresh();
+      // The gallery keeps its own installed-id cache. Remount it after a
+      // successful deletion so the same pet immediately becomes addable again.
+      setGalleryRevision((revision) => revision + 1);
+    } catch (reason) {
+      setDeleteError(reason instanceof Error ? reason.message : ui("Could not delete that pet."));
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <section className={cn("mt-5 border-t border-[var(--border)] pt-5", className)}>
@@ -135,6 +173,26 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
                 <MessageSquare className="h-3 w-3" />
                 {ui("Greeting")}
               </button>
+              {(pet.source === "custom" || pet.source === "micheon-custom") && (
+                <button
+                  aria-label={`${ui("Delete pet")} ${petDisplayName(key, pet.displayName)}`}
+                  className="mx-1 mb-1 inline-flex h-7 items-center justify-center gap-1 rounded-md bg-rose-500/10 text-[10px] font-black text-rose-600 transition-colors hover:bg-rose-500/18 dark:text-rose-400"
+                  onClick={() => {
+                    setDeleteError(null);
+                    setDeleteCandidate({
+                      id: pet.id,
+                      key,
+                      name: petDisplayName(key, pet.displayName),
+                      source: pet.source,
+                    });
+                  }}
+                  title={ui("Delete this user-managed pet")}
+                  type="button"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  {ui("Delete")}
+                </button>
+              )}
               {/* Live for every pet, including the one currently speaking.
                   Hiding the speaker hands the role on rather than being
                   refused — see togglePetVisibility. */}
@@ -200,7 +258,71 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
           {error ? ui(error) : ui("No mascot pets are available.")}
         </p>
       )}
-      <PetGallery onInstalled={() => void refresh()} />
+      <PetGallery key={galleryRevision} onInstalled={() => void refresh()} />
+
+      {deleteCandidate && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !deletingId) setDeleteCandidate(null);
+          }}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deletingId) setDeleteCandidate(null);
+          }}
+        >
+          <section
+            aria-labelledby="delete-pet-title"
+            aria-modal="true"
+            className="w-full max-w-md rounded-[24px] border border-[var(--border)] bg-[var(--surface)] p-5 text-left shadow-2xl"
+            role="dialog"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-500/12 text-rose-600 dark:text-rose-400">
+                <AlertTriangle className="h-5 w-5" />
+              </span>
+              <div>
+                <h4 className="text-base font-black text-[var(--text-1)]" id="delete-pet-title">
+                  {ui("Delete pet?")}
+                </h4>
+                <p className="mt-1 text-sm font-semibold leading-6 text-[var(--text-3)]">
+                  <strong className="text-[var(--text-2)]">{deleteCandidate.name}</strong>{" "}
+                  {ui("will be removed from its pets folder on this device. This cannot be undone.")}
+                </p>
+                <span className="mt-2 inline-flex rounded-full bg-[var(--surface-2)] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                  {ui(deleteCandidate.source === "custom" ? "Codex pets folder" : "Micheon pets folder")}
+                </span>
+              </div>
+            </div>
+
+            {deleteError && (
+              <p className="mt-4 rounded-xl bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400" role="alert">
+                {deleteError}
+              </p>
+            )}
+
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button
+                className="h-11 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-sm font-black text-[var(--text-2)] transition-colors hover:text-[var(--text-1)] disabled:opacity-50"
+                disabled={Boolean(deletingId)}
+                onClick={() => setDeleteCandidate(null)}
+                type="button"
+              >
+                {ui("Cancel")}
+              </button>
+              <button
+                autoFocus
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 text-sm font-black text-white transition-colors hover:bg-rose-500 disabled:cursor-wait disabled:opacity-65"
+                disabled={Boolean(deletingId)}
+                onClick={() => void deleteDownloadedPet()}
+                type="button"
+              >
+                {deletingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {ui(deletingId ? "Deleting…" : "Delete pet")}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
     </section>
   );
