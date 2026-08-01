@@ -5,6 +5,7 @@ const esbuild = require("esbuild");
 
 const root = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
+const normalizedSource = source.replace(/\r\n/g, "\n");
 const styles = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
 
 const result = esbuild.buildSync({
@@ -50,16 +51,16 @@ check("similar and aliased addresses stay locked", [
   undefined,
 ].every((email) => !hasLeonSocialPreview(email)));
 
-check("the current profile email is the single feature gate", source.includes("const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);"));
-check("the Friends sidebar item is inserted only when unlocked", source.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM"));
-check("global search includes social only when unlocked", source.includes("...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : [])"));
-check("the social page renderer also checks the gate", source.includes('activeView === "social" && socialPreviewUnlocked'));
-check("mobile navigation routes Leon through More", source.includes('["social", "tests", "grammar", "shop", "progress", "profile"]'));
-check("the account menu exposes the gated destination", source.includes("{socialPreviewUnlocked && (") && source.includes("Your private social preview"));
+check("the current profile email is the single feature gate", normalizedSource.includes("const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);"));
+check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM"));
+check("global search includes social only when unlocked", normalizedSource.includes("...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : [])"));
+check("the social page renderer also checks the gate", normalizedSource.includes('activeView === "social" && socialPreviewUnlocked'));
+check("mobile navigation routes Leon through More", normalizedSource.includes('["social", "tests", "grammar", "shop", "progress", "profile"]'));
+check("the account menu exposes the gated destination", normalizedSource.includes("{socialPreviewUnlocked && (") && normalizedSource.includes("Your private social preview"));
 
-const socialStart = source.indexOf("function SocialView");
-const socialEnd = source.indexOf("function MoreView", socialStart);
-const socialSource = source.slice(socialStart, socialEnd);
+const socialStart = normalizedSource.indexOf("function SocialView");
+const socialEnd = normalizedSource.indexOf("function MoreView", socialStart);
+const socialSource = normalizedSource.slice(socialStart, socialEnd);
 check("the social presentation contains Friends and Leaderboard sections", socialSource.includes('"friends" | "leaderboard"') && socialSource.includes("Friends league"));
 check("preview actions provide honest feedback", socialSource.includes("UI preview only") && socialSource.includes("Nothing was sent or changed."));
 check("preview actions do not call storage, desktop, or network APIs", !/(fetch\s*\(|axios|saveScopedJson|localStorage|window\.desktop)/.test(socialSource));

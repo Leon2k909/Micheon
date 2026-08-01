@@ -10,6 +10,7 @@ const preload = read("electron/preload.cjs");
 const banner = read("src/components/UpdateBanner.tsx");
 const card = read("src/components/UpdateStatusCard.tsx");
 const updateStatus = read("src/lib/updateStatus.ts");
+const releaseWorkflow = read(".github/workflows/release.yml");
 
 const result = esbuild.buildSync({
   stdin: {
@@ -68,6 +69,7 @@ check("the branded install takeover owns the visible restart phase", banner.incl
 check("the custom install screen uses calm staged restart feedback", banner.includes('data-testid="update-install-steps"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
 check("all restart buttons route through one install takeover", updateStatus.includes("UPDATE_INSTALL_REQUEST_EVENT") && card.includes("requestUpdateInstall()") && !card.includes("desktop?.installUpdate?.()"));
+check("an incomplete existing release rebuilds its missing updater assets", releaseWorkflow.includes('ASSET_COUNT="$(gh release view') && releaseWorkflow.includes('[ "$ASSET_COUNT" -lt 2 ]'));
 
 if (failures) {
   console.error(`\n${failures} updater UI regression${failures === 1 ? "" : "s"}`);
