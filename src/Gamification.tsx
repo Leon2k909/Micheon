@@ -7,10 +7,8 @@ import {
   Camera,
   Check,
   Flame,
-  Moon,
   Pencil,
   ShieldCheck,
-  Sun,
   Target,
   Trophy,
   LogOut,
@@ -45,11 +43,6 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
-import {
-  getTheme,
-  setTheme as persistTheme,
-  type Theme,
-} from "@/lib/theme";
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { applyEffects, getEffects, type Effects } from "@/lib/effects";
@@ -405,7 +398,6 @@ export default function GamificationPanel({
   const [externalInput, setExternalInput] = useState(stats.externalWords.toString());
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
-  const [theme, setTheme] = useState<Theme>(getTheme);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
@@ -450,12 +442,6 @@ export default function GamificationPanel({
   const signOut = () => {
     setAuthUser(null);
     window.location.reload();
-  };
-
-  const toggleTheme = () => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    persistTheme(next); // paint + persist locally + sync to shared store
-    setTheme(next); // update local React state
   };
 
   const toggleEffects = () => {
@@ -506,7 +492,7 @@ export default function GamificationPanel({
               <p className="text-sm font-black text-[var(--accent)]">{ui("Account")}</p>
               <h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Profile settings")}</h1>
               <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-3)]">
-                {ui("Manage your name, theme, and words learned outside Micheon.")}
+                {ui("Manage your name, learning preferences, and words learned outside Micheon.")}
               </p>
             </div>
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)]">
@@ -609,21 +595,8 @@ export default function GamificationPanel({
               <div className="mt-5 border-t border-[var(--border)] pt-5">
                 <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Appearance")}</h3>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  {ui("Theme, effects, and mascot settings.")}
+                  {ui("Effects and mascot settings.")}
                 </p>
-                <button
-                  aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
-                  className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
-                  onClick={toggleTheme}
-                  type="button"
-                >
-                  <span className="flex items-center gap-2">
-                    {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                    {ui(theme === "dark" ? "Dark mode" : "Light mode")}
-                  </span>
-                  <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
-                </button>
-
                 <button
                   aria-pressed={effects === "lite"}
                   aria-label={ui("Toggle reduced effects")}
@@ -819,7 +792,7 @@ export default function GamificationPanel({
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
             <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Profile settings")}</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Account details, theme, and external word tracking.")}</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Account details, learning preferences, and external word tracking.")}</p>
             <div className="mt-5 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">
                 <ShieldCheck className="h-5 w-5" />
@@ -860,19 +833,6 @@ export default function GamificationPanel({
           </div>
 
           <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-            <button
-              aria-label={ui(theme === "dark" ? "Switch to light mode" : "Switch to dark mode")}
-              className="mt-4 flex w-full items-center justify-between rounded-[18px] bg-[var(--surface)] px-4 py-3 text-sm font-black text-[var(--text-1)]"
-              onClick={toggleTheme}
-              type="button"
-            >
-              <span className="flex items-center gap-2">
-                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                {ui(theme === "dark" ? "Dark mode" : "Light mode")}
-              </span>
-              <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]">{ui("Change")}</span>
-            </button>
-
             <LearningModePicker value={learningMode} onChange={updateLearningMode} />
             <FlashcardModePicker
               face={flashcardFace}

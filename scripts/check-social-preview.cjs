@@ -55,7 +55,7 @@ check("the current profile email is the single feature gate", normalizedSource.i
 check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM"));
 check("global search includes social only when unlocked", normalizedSource.includes("...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : [])"));
 check("the social page renderer also checks the gate", normalizedSource.includes('activeView === "social" && socialPreviewUnlocked'));
-check("mobile navigation routes Leon through More", normalizedSource.includes('["social", "tests", "grammar", "shop", "progress", "profile"]'));
+check("mobile navigation routes Leon's social preview through More", normalizedSource.includes('["social", "shop", "progress", "profile"]'));
 check("the account menu exposes the gated destination", normalizedSource.includes("{socialPreviewUnlocked && (") && normalizedSource.includes("Your private social preview"));
 
 const socialStart = normalizedSource.indexOf("function SocialView");

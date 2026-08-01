@@ -3,7 +3,7 @@ const path = require("path");
 
 const root = path.resolve(__dirname, "..");
 const dashboard = fs.readFileSync(
-  path.join(root, "src/components/lab/DashboardView.tsx"),
+  path.join(root, "src/prototype/NewUiPrototype.tsx"),
   "utf8"
 );
 const testsView = fs.readFileSync(
@@ -23,15 +23,20 @@ function check(name, condition) {
 
 check(
   "the dashboard names the streak rather than showing an unexplained day count",
-  dashboard.includes('`${progressStats.streak}-day streak`')
-    && dashboard.includes('progressStats.streak === 1 ? "Tag" : "Tage"')
-    && dashboard.includes("{streakLabel}")
+  dashboard.includes('label="Day streak"')
+    && dashboard.includes("stats.streak.toLocaleString()")
 );
 check(
-  "My schedule is hidden behind one reversible feature flag",
-  dashboard.includes("const SHOW_MY_SCHEDULE = false;")
-    && dashboard.includes("{SHOW_MY_SCHEDULE && (")
-    && dashboard.includes('{ui("My schedule")}')
+  "the retired schedule is absent from the main dashboard",
+  !dashboard.includes("My schedule")
+);
+check(
+  "Tests and Grammar are grouped inside Practice instead of the sidebar",
+  dashboard.includes('function PracticeHub')
+    && dashboard.includes('label: "Tests"')
+    && dashboard.includes('label: "Grammar"')
+    && !/const NAVIGATION:[\s\S]*?\];/.exec(dashboard)?.[0].includes('id: "tests"')
+    && !/const NAVIGATION:[\s\S]*?\];/.exec(dashboard)?.[0].includes('id: "grammar"')
 );
 check(
   "the Tests library has an accessible search field",

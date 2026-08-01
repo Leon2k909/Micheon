@@ -4,14 +4,18 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const electronMain = read("electron/main.js");
+const app = read("src/App.tsx");
 const appStyles = read("src/index.css");
 const guidedSession = read("src/GuidedSession.tsx");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const styles = read("src/prototype/new-ui-prototype.css");
+const theme = read("src/lib/theme.ts");
 const mastery = read("src/components/lab/MasteryCard.tsx");
 const learnView = read("src/components/lab/LearnView.tsx");
 const testsView = read("src/components/tests/TestsView.tsx");
 const readme = read("README.md");
+const primaryNavigation = (/const NAVIGATION:[\s\S]*?\n\];/.exec(prototype) || [""])[0];
+const petReassertion = (/function reassertPetSurfacesAfterAppDeactivation\(\)[\s\S]*?^}/m.exec(electronMain) || [""])[0];
 
 let failures = 0;
 
@@ -42,6 +46,9 @@ check("the desktop context menu supports Copy", electronMain.includes('{ role: "
 check("editable fields receive the standard editing actions", ["undo", "redo", "cut", "paste", "selectAll"].every((role) => electronMain.includes(`role: "${role}"`)));
 check("custom non-text right-click controls stay untouched", electronMain.includes("if (!params.isEditable && !hasSelection) return;"));
 check("the text menu is installed on the main app window", electronMain.includes("installTextContextMenu(mainWindow);"));
+check("pet overlays use the highest supported ordinary Windows window level", electronMain.includes('process.platform === "win32" ? "screen-saver" : "floating"'));
+check("pet overlays reassert their z-order after Micheon deactivates", electronMain.includes('mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation)') && electronMain.includes('mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation)'));
+check("pet z-order recovery is bounded rather than a permanent polling loop", petReassertion.includes("for (const delay of [80, 700])") && petReassertion.includes("setTimeout") && !petReassertion.includes("setInterval"));
 
 check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={pct}"));
 check("course progress animates from empty", prototype.includes("<motion.span") && prototype.includes("scaleX: pct / 100") && prototype.includes("scaleX: 0"));
@@ -59,6 +66,12 @@ check("the prototype title bar carries no separator shadow", /\.titlebar--protot
 check("small prototype type uses the Windows text-optimised face", styles.includes('--np-font-text: "Segoe UI Variable Text"') && /\.new-ui-prototype\s*\{[^}]*font-family:\s*var\(--np-font-text\);/s.test(styles));
 check("display type stays reserved for headings and actions", styles.includes(".new-ui-prototype strong,") && styles.includes("font-family: var(--np-font-display);"));
 check("small prototype type has a readable desktop scale", styles.includes("--np-type-micro: 12px;") && styles.includes("--np-type-caption: 13px;") && styles.includes("--np-type-small: 14px;"));
+check("the production sidebar stays pinned to the viewport on long pages", /\.np-sidebar\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*height:\s*var\(--app-h,\s*100dvh\);/s.test(styles));
+check("the sidebar resize handle stays centered in the visible app height", /\.np-sidebar-resizer::after\s*\{[^}]*top:\s*50%;/s.test(styles));
+check("the production shell does not trap sticky navigation in hidden overflow", styles.includes("overflow-x: clip;") && /\.np-window\s*\{[^}]*overflow:\s*clip;/s.test(styles));
+check("Tests and Grammar live inside Practice instead of the primary sidebar", prototype.includes("function PracticeHub") && prototype.includes('label: "Tests"') && prototype.includes('label: "Grammar"') && !primaryNavigation.includes('id: "tests"') && !primaryNavigation.includes('id: "grammar"'));
+check("the retired dashboard switch is not shipped", !prototype.includes("Need the original dashboard") && !app.includes("legacy-dashboard") && !app.includes("guided-theme"));
+check("existing installs migrate once to the finished light theme", theme.includes('const LIGHT_DEFAULT_MIGRATION_KEY = "micheon-light-default-v1"') && theme.includes('localStorage.setItem(KEY, "light")') && app.indexOf("await hydrateLocalStorageFromSharedStorage()") < app.indexOf("migrateToLightThemeDefault()"));
 check("the prototype guided lesson uses the homepage scene as a restrained focus backdrop", /prototype-guided-session::before\s*\{[^}]*micheon-hero-v3\.webp[^}]*140% auto no-repeat[^}]*opacity:\s*0\.18;[^}]*mask-image:/s.test(appStyles) && /prototype-guided-session::after\s*\{[^}]*rgba\(255,\s*251,\s*244,\s*0\.97\)/s.test(appStyles));
 check("light lesson grading controls keep readable hover colours", /prototype-guided-session \.grade-btn-known:hover:not\(:disabled\)[\s\S]*?color:\s*#206c30;/s.test(appStyles) && /prototype-guided-session \.grade-btn-struggle:hover:not\(:disabled\)[\s\S]*?color:\s*#3e3d39;/s.test(appStyles));
 check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*72rem;/s.test(appStyles));

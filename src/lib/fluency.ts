@@ -1,7 +1,7 @@
 import { loadScopedJson, getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getMasteredCount } from "@/lib/mastery";
 
-// The per-item review/completion state (COMPLETED_KEY in german_learning_lab):
+// The per-item review/completion state (COMPLETED_KEY in guided_learning_session):
 // id -> { lastGrade, ... }. An item graded "know" is something the learner has
 // actually recalled successfully. May also be stored as a plain array of ids.
 const REVIEW_KEY = "session-completed";

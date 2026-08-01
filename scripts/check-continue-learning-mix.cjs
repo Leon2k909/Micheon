@@ -439,7 +439,7 @@ check(
   replacement?.id === "safe-replacement"
 );
 
-const labSource = fs.readFileSync(path.join(root, "src/german_learning_lab.tsx"), "utf8");
+const labSource = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
 const petProviderSource = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
@@ -449,8 +449,8 @@ const petQuestionSchedulerStart = labSource.indexOf(
   'const cadence = getCodexPetCadence("questions", petCoachingFrequencies.questions)'
 );
 const petQuestionSchedulerEnd = labSource.indexOf(
-  "const handleUpdate = () =>",
-  petQuestionSchedulerStart
+  "\n  useEffect(() => {",
+  petQuestionSchedulerStart + 1
 );
 const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestionSchedulerEnd > petQuestionSchedulerStart
   ? labSource.slice(petQuestionSchedulerStart, petQuestionSchedulerEnd)

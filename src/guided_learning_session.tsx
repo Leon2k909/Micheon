@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
-import { TopNav, type TopNavNotification, type TopNavSearchItem } from "@/components/TopNav";
-import { TestsView } from "@/components/tests/TestsView";
-import { DashboardView } from "@/components/lab/DashboardView";
-import { LearnView } from "@/components/lab/LearnView";
-import { AppLoadingState } from "@/components/lab/Shared";
 import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
-import GamificationPanel from "@/Gamification";
-import { GamesView } from "@/games/GamesView";
-import ClozeTabContent from "@/lab/ClozeTabContent";
-import GrammarTabContent from "@/lab/GrammarTabContent";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
 import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
 import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
-import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, signOut } from "@/lib/profileStorage";
+import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildCatalog, buildSession, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, type GradeRecord } from "@/lib/memoryStrength";
@@ -26,7 +16,6 @@ import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
-import { getMasteredCount } from "@/lib/mastery";
 import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 
@@ -34,16 +23,9 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 const NEW_PER_LESSON_TARGET = 3;
 import { COMPLETED_KEY, loadGradeStore, progressEntryForId, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
-import { CourseSwitcher } from "@/components/course/CourseSwitcher";
-import { CourseShell } from "@/components/course/CourseShell";
-import { CourseLessonsView } from "@/components/course/CourseLessonsView";
-import { CourseDashboardView } from "@/components/course/CourseDashboardView";
-import { CourseSession } from "@/components/course/CourseSession";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
-import { getActiveCourseId, setActiveCourseId, loadCourseProgress, saveCourseProgress } from "@/lib/courses";
-import { getCourse } from "@/lib/courseRegistry";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { getPrioritizedPetRecallItem } from "@/lib/petRecall";
 import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
@@ -94,10 +76,9 @@ function withRegisterCheck(steps: any[], user: any): any[] {
   return [...steps.slice(0, at), { type: "register", question }, ...steps.slice(at)];
 }
 
-export default function GermanLearningLab() {
+export default function GuidedLearningSession() {
   const user = getAuthUser()!;
   const guidedRequest = new URLSearchParams(window.location.search).get("guided");
-  const prototypeGuidedTheme = new URLSearchParams(window.location.search).get("guided-theme") === "prototype";
   const {
     history: petHistory,
     selectedKey: selectedPetKey,
@@ -109,12 +90,6 @@ export default function GermanLearningLab() {
   const [activePart, setActivePart] = useState(
     () => loadScopedJson<string>("active-part", "part1", user) || "part1"
   );
-  const [activeTab, setActiveTab] = useState(() => {
-    const requested = new URLSearchParams(window.location.search).get("tab");
-    return requested && ["dashboard", "learn", "profile", "grammar", "games", "tests"].includes(requested)
-      ? requested
-      : "dashboard";
-  });
   const [showPlacementTest, setShowPlacementTest] = useState<boolean>(
     () => loadScopedJson("german-lab-placement-done", false, user) === false
   );
@@ -126,11 +101,6 @@ export default function GermanLearningLab() {
   const activeStudyTimerRef = React.useRef<ActiveStudyTimer | null>(null);
   const sessionKnownBeforeRef = React.useRef<number | null>(null);
   const sessionLessonIdRef = React.useRef<string | undefined>(undefined);
-  const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
-  const [courseReaderOpen, setCourseReaderOpen] = useState(false);
-  const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
-  const [courseSessionLesson, setCourseSessionLesson] = useState<string | undefined>(undefined);
-  const [activeCourseId, setActiveCourse] = useState<string>(() => getActiveCourseId(user));
   const [apiParts, setApiParts] = useState<Record<string, Part>>({});
   const learningMode = useLearningMode();
   const [progressStats, setProgressStats] = useState<ProgressStats>(() => ({
@@ -144,7 +114,6 @@ export default function GermanLearningLab() {
   // than on every Continue learning press.
   const corpusIndex = React.useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
   const catalog = React.useMemo(() => buildCatalog(apiParts), [apiParts, learningMode]);
-  const [gameMasteryCount, setGameMasteryCount] = useState(() => getMasteredCount());
   const [gradeRevision, setGradeRevision] = useState(0);
   const petSpeechRef = React.useRef(petSpeech);
   const petHistoryRef = React.useRef(petHistory);
@@ -305,14 +274,6 @@ export default function GermanLearningLab() {
   ]);
 
   useEffect(() => {
-    const handleUpdate = () => {
-      setGameMasteryCount(getMasteredCount());
-    };
-    window.addEventListener("vocab-mastery-updated", handleUpdate);
-    return () => window.removeEventListener("vocab-mastery-updated", handleUpdate);
-  }, []);
-
-  useEffect(() => {
     // Reliability floor: blueprint lessons + bundled curated phrasebank +
     // bundled Tatoeba sentence library + the bundled frequency word bank
     // (2,500 most-common German words with EN/FR translations). All of this is
@@ -358,21 +319,11 @@ export default function GermanLearningLab() {
     }
   }, [apiParts, activePart, user]);
 
-  const currentPart = apiParts[activePart];
-  const pathParts   = Object.entries(apiParts);
-
   const updateStats = (next: Partial<ProgressStats>) => {
     const merged = { ...progressStats, ...next };
     setProgressStats(merged);
     Object.entries(merged).forEach(([k, v]) => saveScopedJson(k, v, user));
   };
-
-  // Tab switches must be SYNCHRONOUS. This used to be
-  // `startTransition(() => setActiveTab(tab))` with the view reading a
-  // `useDeferredValue` copy — React then treated the switch as low priority and,
-  // combined with the mode="wait" tab wrapper below, the profile
-  // view never actually swapped in: clicking "Profile settings" did nothing.
-  const openTab = (tab: string) => setActiveTab(tab);
 
   const COMPLETED_KEY = "session-completed";
 
@@ -560,51 +511,6 @@ export default function GermanLearningLab() {
     // Keep the epoch timestamp as well: markCompleted uses it to prevent one
     // exercise from advancing the same memory record twice in a lesson.
     sessionStartRef.current = Date.now();
-  };
-
-  /**
-   * Start a lesson on an explicit list of items — the words a learner marked
-   * as "I don't know this" while taking a test.
-   *
-   * These are deliberately NOT filtered by what the learner already knows, the
-   * way a normal lesson is: they asked for these specifically, so a "known"
-   * grade from weeks ago should not quietly drop them from the lesson they just
-   * requested. Hence the empty review state.
-   */
-  const startFocusSession = (items: { de: string; en: string; id?: string }[]) => {
-    if (!items.length) return;
-    // buildSession caps a lesson at NEW_PER_LESSON (3) fresh phrases, which is
-    // right for pacing the curriculum and wrong here: the learner named these
-    // words, so silently teaching three of ten would be a lie. Build in chunks
-    // of three and stitch the blocks together, dropping every block's trailing
-    // "complete" step except the last so it still reads as one lesson.
-    const CHUNK = 3;
-    const steps: any[] = [];
-    for (let i = 0; i < items.length; i += CHUNK) {
-      const slice = items.slice(i, i + CHUNK);
-      const block = buildSession(
-        {
-          partKey: "focus",
-          label: ui("Your words"),
-          level: "",
-          theme: ui("Words you marked in a test"),
-          vocab: [],
-          phrases: slice.map((item) => ({ de: item.de, en: item.en })),
-          dialogues: [],
-        },
-        [],
-        {},
-        0
-      );
-      steps.push(...block.filter((step: any) => step?.type !== "complete"));
-    }
-    if (!steps.length) return;
-    steps.push({ type: "complete" });
-    const directed = learningEnglish() ? steps.map(swapStepForEnglish) : steps;
-    setSessionSteps(withRegisterCheck(directed, user));
-    beginLessonTiming("focus");
-    setShowGuidedSession(true);
-    openTab("learn");
   };
 
   const startSession = (partId?: string) => {
@@ -931,32 +837,10 @@ export default function GermanLearningLab() {
     }, user);
   };
 
-  const handleSelectCourse = (courseId: string) => {
-    setActiveCourse(courseId);
-    setActiveCourseId(courseId, user);
-  };
-
-  const activeCourse = getCourse(activeCourseId);
-  const courseHasReader = Boolean(activeCourse?.lessons?.length);
-  const openReader = (lessonId?: string) => {
-    setCourseReaderLesson(lessonId);
-    setCourseReaderOpen(true);
-  };
-  const startCourseLesson = (lessonId: string) => setCourseSessionLesson(lessonId);
-  const completeCourseLesson = (lessonId: string) => {
-    const done = loadCourseProgress(activeCourseId, user);
-    if (!done.includes(lessonId)) saveCourseProgress(activeCourseId, [...done, lessonId], user);
-    updateStats({ streak: recordStreakDay(user) });
-    setCourseSessionLesson(undefined);
-  };
-  const sessionLesson = activeCourse?.lessons?.find((l) => l.id === courseSessionLesson);
-  const returnToPrototypeHome = () => {
+  const returnToHome = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("guided");
-    url.searchParams.delete("guided-theme");
-    url.searchParams.delete("legacy-dashboard");
     url.searchParams.delete("tab");
-    url.searchParams.set("ui-prototype", "1");
     window.location.assign(url.toString());
   };
 
@@ -972,7 +856,6 @@ export default function GermanLearningLab() {
 
   if (
     guidedRequest
-    && prototypeGuidedTheme
     && !showGuidedSession
     && (
       Object.keys(apiParts).length === 0
@@ -998,13 +881,12 @@ export default function GermanLearningLab() {
 
   if (showGuidedSession) return (
     <GuidedSession
-      appearance={prototypeGuidedTheme ? "prototype" : "focus"}
       onCancel={(completedUpTo?: number) => {
         // Each non-skipped step is persisted as it is left. Replaying the
         // whole prefix here would accidentally grade any skipped steps.
         logActivity(sessionSteps.slice(0, completedUpTo && completedUpTo > 0 ? completedUpTo : 0));
         setShowGuidedSession(false);
-        if (prototypeGuidedTheme) returnToPrototypeHome();
+        returnToHome();
       }}
       onComplete={() => {
         setShowGuidedSession(false);
@@ -1043,216 +925,18 @@ export default function GermanLearningLab() {
     />
   );
 
-  if (!pathParts.length) return <AppLoadingState />;
-
-  const wordBankParts = pathParts.filter(([key]) => key.startsWith("wordbank"));
-  const totalWords = pathParts.reduce((sum, [, part]) => sum + part.vocab.length, 0);
-  const wordsTracked = progressStats.totalReviews + progressStats.externalWords + gameMasteryCount;
-  const dailyLessonDone = progressStats.sessionsCompleted > 0;
-
-  const topNavSearchItems: TopNavSearchItem[] = [
-    {
-      id: "page-dashboard",
-      title: ui("Dashboard"),
-      subtitle: ui("Today, schedule, next lesson, and daily target."),
-      group: ui("Page"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("dashboard"),
-    },
-    {
-      id: "page-lessons",
-      title: ui("Lessons"),
-      subtitle: ui(uiIsGerman() ? "Browse all English modules and word-bank sets." : "Browse all German modules and word-bank sets."),
-      group: ui("Page"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("learn"),
-    },
-    {
-      id: "page-practice",
-      title: ui("Practice library"),
-      subtitle: ui("Games for spelling, recall, verbs, and quick recognition."),
-      group: ui("Page"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("games"),
-    },
-    {
-      id: "page-tests",
-      title: ui("Tests"),
-      subtitle: ui("Build vocabulary, phrase, mixed, or weak-spot tests at your level."),
-      group: ui("Page"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("tests"),
-    },
-    {
-      id: "page-profile",
-      title: ui("Profile and progress"),
-      subtitle: ui("Settings, account details, milestones, XP, and learning totals."),
-      group: ui("Page"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("profile"),
-    },
-    ...pathParts.map(([id, part]) => ({
-      id: `lesson-${id}`,
-      title: part.theme,
-      subtitle: `${part.level} · ${part.description}`,
-      group: ui(id.startsWith("wordbank") ? "Word bank" : "Lesson"),
-      actionLabel: ui("Start"),
-      onSelect: () => startSession(id),
-    })),
-    ...[
-      ["Word Snake", "Spell German words by steering through letters."],
-      ["Falling Letters", "Catch the correct letters before they leave the screen."],
-      ["Letter Tap", "Tap the right letter quickly to train visual recall."],
-      ["Verb Shooter", "Choose the right form of the verb before time runs out."],
-      ["Vocab Minesweeper", "Translate carefully and avoid wrong picks."],
-      ["Vocab Slither", "Match target words while keeping the run alive."],
-    ].map(([title, subtitle]) => ({
-      id: `practice-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      title,
-      subtitle,
-      group: ui("Games"),
-      actionLabel: ui("Open"),
-      onSelect: () => openTab("games"),
-    })),
-  ];
-
-  const topNavNotifications: TopNavNotification[] = [
-    {
-      id: "next-lesson",
-      title: `${currentPart?.theme ?? ui("Next lesson")} ${ui("is ready")}`,
-      body: currentPart?.focus ?? ui(uiIsGerman() ? "Continue your current English lesson." : "Continue your current German lesson."),
-      actionLabel: ui("Start lesson"),
-      unread: !dailyLessonDone,
-      onSelect: () => startSession(),
-    },
-    {
-      id: "daily-target",
-      title: ui(dailyLessonDone ? "Daily lesson logged" : "Daily target waiting"),
-      body: ui(dailyLessonDone ? "You have a session recorded. Add a few words if you want extra progress." : "Finish 1 lesson and track 5 words to move today forward."),
-      actionLabel: ui(dailyLessonDone ? "View profile" : "Continue"),
-      unread: !dailyLessonDone,
-      onSelect: () => (dailyLessonDone ? openTab("profile") : startSession()),
-    },
-    {
-      id: "word-bank",
-      title: `${totalWords.toLocaleString()} ${ui("words available")}`,
-      body: `${wordBankParts.length.toLocaleString()} ${ui("word-bank sets are ready when you want more vocabulary.")}`,
-      actionLabel: ui("Browse lessons"),
-      unread: wordsTracked < 5,
-      onSelect: () => openTab("learn"),
-    },
-    {
-      id: "streak",
-      title: `${progressStats.streak} ${ui("day streak")}`,
-      body: ui(progressStats.streak > 1 ? "Keep the rhythm going with one short session." : "Start building a habit with one focused lesson."),
-      actionLabel: ui("View profile"),
-      unread: false,
-      onSelect: () => openTab("profile"),
-    },
-  ];
-
-  const view = activeTab === "learn" ? (
-    courseHasReader && activeCourse ? (
-      <CourseLessonsView course={activeCourse} onOpenLesson={(id) => startCourseLesson(id)} onOpenReader={() => openReader()} />
-    ) : (
-      <LearnView apiParts={apiParts} onOpenLesson={startSession} />
-    )
-  ) : activeTab === "profile" ? (
-    <GamificationPanel profileOnly stats={progressStats} user={user} onUpdateStats={updateStats} apiParts={apiParts} onSwitchCourse={() => setCourseSwitcherOpen(true)} activeCourseName={activeCourse?.name ?? "German"} />
-  ) : activeTab === "grammar" ? (
-    <div className="guided-session space-y-4">
-      <ClozeTabContent />
-      <GrammarTabContent />
-    </div>
-  ) : activeTab === "games" ? (
-    <GamesView 
-      apiParts={apiParts}
-      totalReviews={progressStats.totalReviews}
-      externalWords={progressStats.externalWords}
-      gameMasteryCount={gameMasteryCount}
-    />
-  ) : activeTab === "tests" ? (
-    <TestsView apiParts={apiParts} onLearnItems={startFocusSession} profile={user} />
-  ) : (
-    courseHasReader && activeCourse ? (
-      <CourseDashboardView
-        course={activeCourse}
-        onOpenLesson={(id) => startCourseLesson(id)}
-        onOpenReader={() => openReader()}
-        onBrowseLessons={() => openTab("learn")}
-      />
-    ) : (
-      <DashboardView
-        currentPart={currentPart}
-        onOpenLesson={startSession}
-        pathParts={pathParts}
-        progressStats={progressStats}
-        gameMasteryCount={gameMasteryCount}
-        setActiveTab={openTab}
-        activePart={activePart}
-      />
-    )
-  );
-
   return (
-    <div className="min-h-[var(--app-h)] bg-[var(--bg)] text-[var(--text-1)]">
-      <TopNav
-        activeTab={activeTab}
-        setActiveTab={openTab}
-        streak={progressStats.streak}
-        xp={progressStats.totalXp}
-        userName={user.name}
-        userEmail={user.email}
-        avatarUrl={user.avatar}
-        notifications={topNavNotifications}
-        onAvatarClick={() => openTab("profile")}
-        onSignOut={() => { signOut(); window.location.reload(); }}
-        onSwitchCourse={() => setCourseSwitcherOpen(true)}
-        searchItems={topNavSearchItems}
-        brandName={activeCourse?.name ?? "Micheon"}
-        onOpenReader={courseHasReader ? () => openReader() : undefined}
-        onOpenBetaTheme={returnToPrototypeHome}
-        readerLabel="Course material"
-      />
-
-      <CourseSwitcher
-        open={courseSwitcherOpen}
-        activeCourseId={activeCourseId}
-        onSelect={handleSelectCourse}
-        onClose={() => setCourseSwitcherOpen(false)}
-      />
-
-      {courseReaderOpen && activeCourse && courseHasReader && (
-        <CourseShell course={activeCourse} initialLessonId={courseReaderLesson} onExit={() => setCourseReaderOpen(false)} />
-      )}
-
-      {sessionLesson && activeCourse && (
-        <CourseSession
-          course={activeCourse}
-          lesson={sessionLesson}
-          onComplete={() => completeCourseLesson(sessionLesson.id)}
-          onExit={() => setCourseSessionLesson(undefined)}
-        />
-      )}
-
-
-      <main className="mx-auto max-w-[1380px] px-4 py-5 pb-24 sm:px-6 lg:py-8 xl:pb-10">
-        {/* No mode="wait" here on purpose. With it, the incoming tab could not
-            mount until the outgoing one finished its exit animation — and if
-            that animation never completed (reduced motion, a backgrounded
-            window, an interrupted transition) the tab silently never changed.
-            That is what made "Profile settings" appear to do nothing. Fading
-            the new view in over the old one is a cosmetic downgrade of ~0.2s
-            and makes navigation unconditional. */}
-        <motion.div
-          key={activeTab}
-          animate={{ opacity: 1, y: 0 }}
-          initial={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {view}
-        </motion.div>
-      </main>
+    <div className="guided-session fs-app prototype-guided-session prototype-guided-loading-screen">
+      <div className="prototype-guided-loading-card">
+        <img src="/icon-64.png" alt="" />
+        <div className="prototype-guided-loading-copy">
+          <strong>{ui("Lesson unavailable")}</strong>
+          <span>{ui("Return home and choose another lesson.")}</span>
+        </div>
+        <button className="lesson-cta" onClick={returnToHome} type="button">
+          {ui("Back to Micheon")}
+        </button>
+      </div>
     </div>
   );
 }

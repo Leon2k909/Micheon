@@ -4835,7 +4835,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ appearance = "focus", steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -5001,7 +5001,7 @@ export default function GuidedSession({ appearance = "focus", steps, onComplete,
   };
 
   return (
-    <div className={`guided-session fs-app app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans${appearance === "prototype" ? " prototype-guided-session" : ""}`}>
+    <div className="guided-session fs-app prototype-guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans">
 
       {/* Topbar: brand · lesson progress · mute/close */}
       <header className="fs-topbar">
@@ -5032,7 +5032,7 @@ export default function GuidedSession({ appearance = "focus", steps, onComplete,
           <MuteButton
             className="fs-iconbtn shrink-0"
             iconClassName="h-4 w-4"
-            panelClassName={appearance === "prototype" ? "prototype-audio-mixer" : undefined}
+            panelClassName="prototype-audio-mixer"
           />
           <button type="button" aria-label={ui("Close lesson")} className="fs-iconbtn" onClick={handleCancel}>
             <X className="h-4 w-4" />

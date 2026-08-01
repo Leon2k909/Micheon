@@ -220,13 +220,13 @@ check(
   loadLearningTimeStats(profile).completedLessons === 1
 );
 
-const labSource = fs.readFileSync(path.join(root, "src/german_learning_lab.tsx"), "utf8");
-const dashboardSource = fs.readFileSync(path.join(root, "src/components/lab/DashboardView.tsx"), "utf8");
+const labSource = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
+const dashboardSource = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 const meterSource = fs.readFileSync(path.join(root, "src/components/FluencyMeter.tsx"), "utf8");
 check(
   "every guided lesson path starts the active clock with a known-item baseline",
-  labSource.includes('beginLessonTiming("focus")')
-    && (labSource.match(/beginLessonTiming\(id\)/g) || []).length === 2
+  (labSource.match(/beginLessonTiming\(id\)/g) || []).length === 2
+    && labSource.includes("startSessionRef.current(requestedPart)")
     && labSource.includes("sessionKnownBeforeRef.current = countKnownVocab")
 );
 check(
@@ -237,9 +237,11 @@ check(
 );
 check(
   "the dashboard visibly opts into the study-hours estimate",
-  dashboardSource.includes("<FluencyMeter vocab={vocab} compact showStudyTimeEstimate />")
+  dashboardSource.includes("function FluencyOutlook")
+    && dashboardSource.includes("estimateFluencyHours(fluency.toFluent")
+    && dashboardSource.includes("Estimated active study left")
+    && dashboardSource.includes('window.addEventListener("activity-updated", refresh)')
     && meterSource.includes('ui("study hours left")')
-    && meterSource.includes('window.addEventListener("activity-updated", refresh)')
 );
 
 if (failures) {

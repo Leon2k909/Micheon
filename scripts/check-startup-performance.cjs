@@ -4,7 +4,6 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
-const topNav = read("src/components/TopNav.tsx");
 const dashboardArtwork = [
   "src/prototype/assets/micheon-hero-v3.webp",
   "src/prototype/assets/achievements-v1/achievement-atlas-v3.webp",
@@ -72,8 +71,8 @@ check(
   dashboardArtwork.reduce((total, file) => total + fs.statSync(path.join(root, file)).size, 0) < 300_000,
 );
 check(
-  "shared navigation uses lightweight progress maths",
-  prototype.includes('@/lib/gamificationProgress') && topNav.includes('@/lib/gamificationProgress'),
+  "the main navigation uses lightweight progress maths",
+  prototype.includes('@/lib/gamificationProgress'),
 );
 
 if (failures) {

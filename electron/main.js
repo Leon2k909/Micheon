@@ -62,6 +62,33 @@ const PET_OVERLAY_CURSOR_INTERVAL_MS = 16;
 const PET_HISTORY_WINDOW_WIDTH = 636;
 const PET_HISTORY_WINDOW_HEIGHT = 576;
 const PET_HISTORY_WINDOW_MARGIN = 8;
+// Electron's ordinary `floating` level can sit behind fullscreen/topmost game
+// windows on Windows. `screen-saver` is the highest supported cross-platform
+// level intended for a visible desktop surface; this remains a normal,
+// click-through BrowserWindow and does not inject into or hook a game process.
+const PET_ALWAYS_ON_TOP_LEVEL = process.platform === "win32" ? "screen-saver" : "floating";
+
+function keepPetSurfaceOnTop(window, moveToFront = false) {
+  if (!window || window.isDestroyed()) return;
+  window.setAlwaysOnTop(true, PET_ALWAYS_ON_TOP_LEVEL);
+  // Electron documents visibleOnFullScreen as a macOS workspace option. It is
+  // harmless elsewhere and keeps the same behavior on macOS/Linux.
+  window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (moveToFront && window.isVisible()) window.moveTop();
+}
+
+function reassertPetSurfacesAfterAppDeactivation() {
+  // A fullscreen game may finish its own z-order transition after Micheon has
+  // already blurred/minimized. Two bounded reassertions cover that hand-off
+  // without a permanent timer that would waste CPU while someone is playing.
+  for (const delay of [80, 700]) {
+    const timer = setTimeout(() => {
+      keepPetSurfaceOnTop(petWindow, true);
+      if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
+    }, delay);
+    timer.unref?.();
+  }
+}
 
 // Only allow one instance — a second launch focuses the existing window instead
 // of trying to bind the port or create another overlay.
@@ -664,8 +691,7 @@ function createPetOverlayWindow() {
   });
 
   petWindow = overlay;
-  overlay.setAlwaysOnTop(true, "floating");
-  overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  keepPetSurfaceOnTop(overlay);
   overlay.setIgnoreMouseEvents(true, { forward: true });
   overlay.on("move", () => {
     if (petWindow === overlay) publishPetOverlayGeometry();
@@ -895,8 +921,7 @@ function createPetHistoryWindow() {
   });
 
   petHistoryWindow = historyWindow;
-  historyWindow.setAlwaysOnTop(true, "floating");
-  historyWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  keepPetSurfaceOnTop(historyWindow);
   // `will-move` is emitted for an interactive OS drag (not our setBounds
   // calls on Windows). The first real drag therefore detaches the panel, and
   // every later move in this open session preserves the user's chosen place.
@@ -954,7 +979,7 @@ function openPetHistoryWindow(anchorBounds) {
     const next = initialPetHistoryBounds({ attached: true });
     petHistoryBounds = next;
     setPetHistoryBounds(historyWindow, next);
-    historyWindow.setAlwaysOnTop(true, "floating");
+    keepPetSurfaceOnTop(historyWindow, true);
     historyWindow.show();
     historyWindow.focus();
   };
@@ -1017,8 +1042,9 @@ function setPetOverlayVisible(visible) {
     loadPetOverlay();
   }
   syncPetOverlayBounds();
-  overlay.setAlwaysOnTop(true, "floating");
+  keepPetSurfaceOnTop(overlay);
   overlay.showInactive();
+  keepPetSurfaceOnTop(overlay, true);
   // A hidden window runs no animation frames, so a hit-region sync scheduled
   // while hidden never completed and the overlay came back with no shape —
   // fully click-through, which looks exactly like the pet failing to appear.
@@ -1077,6 +1103,8 @@ async function createWindow() {
     mainWindow?.webContents.send("window:maximize-change", mainWindow.isMaximized());
   mainWindow.on("maximize", sendMaxState);
   mainWindow.on("unmaximize", sendMaxState);
+  mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation);
+  mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation);
 
   // Open external links (http/https to other sites) in the user's real browser
   // instead of inside the app window.

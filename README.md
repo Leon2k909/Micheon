@@ -117,7 +117,7 @@ npm run electron
 3. **Check what you remember with your pet.** At the end of a lesson, your desktop companion asks you to recall each item before revealing the answer. Anything you mark **Not yet** is reviewed again before Micheon introduces fresh material.
 4. **Do your scheduled reviews.** Your pet also checks learned words and phrases between lessons. Confident answers move further along the spaced-repetition schedule; forgotten items return sooner.
 5. **Play a game or two.** When you want a break that's still practice, the Games tab drills your current vocabulary.
-6. **Make it yours.** In *Profile settings → Appearance*, recolour anything and tune the gradient; in *Preferences*, toggle light/dark, adjust your desktop pet, and switch learning direction.
+6. **Make it yours.** Open *More → Profile and settings* to adjust your desktop pet, learning direction, and personal preferences.
 
 ---
 
@@ -131,16 +131,18 @@ Micheon is deliberately simple and self-contained:
 - **Lesson audio** — `server/index.js` is a small Express server that turns text into Microsoft neural-voice audio with `edge-tts-universal`, served locally (default port `41730`). The Speak lesson stage is temporarily paused, and the desktop build contains no downloadable speech-recognition model.
 - **Desktop shell** — `electron/main.js` wraps the UI, hosts the TTS server, provides the custom title bar, and handles automatic updates via `electron-updater`.
 - **Desktop pets** — `src/components/codexPets/` renders animated companions, proactive recall questions, lesson memory checks, message history, and language-focused tips. Pet answers update the same spaced-repetition records used by lessons and Continue Learning.
-- **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Preferences, including Micheon's light/dark mode, sync the same way.
+- **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Preferences sync the same way.
 
 ### Project layout
 
 ```
 src/
-  german_learning_lab.tsx   Main app shell & tab routing
+  App.tsx                   Main shell routing
+  prototype/                Micheon's production dashboard and navigation
+  guided_learning_session.tsx  Guided lesson orchestration
   GuidedSession.tsx         The lesson-taking experience
   Gamification.tsx          Profile, stats, milestones, preferences
-  components/               UI (TopNav, dashboard, lab views)
+  components/               Shared learning, course, account, and pet UI
   games/                    The eight vocabulary games
   lib/
     data.ts                 Authored lesson content

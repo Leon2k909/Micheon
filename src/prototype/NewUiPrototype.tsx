@@ -51,10 +51,15 @@ import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMasteredCount } from "@/lib/mastery";
 import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
-import { getStreak } from "@/lib/streak";
+import { getStreak, recordStreakDay } from "@/lib/streak";
 import { getLevelInfo, MILESTONES, type GamificationStats } from "@/lib/gamificationProgress";
 import type { Blueprint, Part } from "@/lib/types";
-import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@/lib/courses";
+import {
+  getActiveCourseId,
+  loadCourseProgress,
+  saveCourseProgress,
+  setActiveCourseId as persistActiveCourseId,
+} from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { countKnownVocab, getFluency } from "@/lib/fluency";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
@@ -75,6 +80,10 @@ const TestsView = lazy(() => import("@/components/tests/TestsView").then((module
 const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
 const ClozeTabContent = lazy(() => import("@/lab/ClozeTabContent"));
 const GrammarTabContent = lazy(() => import("@/lab/GrammarTabContent"));
+const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboardView").then((module) => ({ default: module.CourseDashboardView })));
+const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
+const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
+const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
 
 type PrototypeView = "home" | "learn" | "practice" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
@@ -114,8 +123,6 @@ const NAVIGATION: NavigationItem[] = [
   { id: "learn", label: "Learn", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "games", label: "Games", icon: Gamepad2 },
-  { id: "tests", label: "Tests", icon: ClipboardCheck },
-  { id: "grammar", label: "Grammar", icon: GraduationCap },
   { id: "shop", label: "Shop", icon: ShoppingBag },
   { id: "more", label: "More", icon: Menu },
 ];
@@ -148,7 +155,7 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   { id: "grammar", title: "Grammar", subtitle: "Cloze practice and accessible grammar explanations.", keywords: "fill blanks rules sentence structure" },
   { id: "shop", title: "Shop", subtitle: "Unlock and equip profile badges with earned coins.", keywords: "rewards coins badge cosmetics" },
   { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
-  { id: "profile", title: "Profile and settings", subtitle: "Account, appearance, learning direction, and preferences.", keywords: "account dark mode theme settings language" },
+  { id: "profile", title: "Profile and settings", subtitle: "Account, learning direction, sound, and preferences.", keywords: "account settings language sound preferences" },
   { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
 ];
 
@@ -437,7 +444,9 @@ function Sidebar({
       <nav aria-label="Prototype navigation" className="np-side-nav">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const active = item.id === activeView || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
+          const active = item.id === activeView
+            || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
+            || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
           return (
             <button
               aria-current={active ? "page" : undefined}
@@ -965,6 +974,59 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
+  const tools = [
+    {
+      description: "Search by level or topic, then build a focused test from words, phrases, or weak spots.",
+      icon: ClipboardCheck,
+      label: "Tests",
+      meta: "Focused recall",
+      tone: "mint",
+      view: "tests" as const,
+    },
+    {
+      description: "Practise useful sentence patterns with short explanations and fill-in-the-gap activities.",
+      icon: GraduationCap,
+      label: "Grammar",
+      meta: "Patterns in context",
+      tone: "yellow",
+      view: "grammar" as const,
+    },
+  ];
+
+  return (
+    <div className="np-practice-hub">
+      <section className="np-practice-launcher">
+        <div className="np-page-intro">
+          <span className="np-page-icon"><MessageSquareText /></span>
+          <div>
+            <small>Practice hub</small>
+            <h1>Choose what to strengthen</h1>
+            <p>Keep conversational phrases central, or open a focused test or grammar activity.</p>
+          </div>
+        </div>
+        <div className="np-practice-tools">
+          {tools.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <button key={tool.label} onClick={() => onNavigate(tool.view)} type="button">
+                <span className={`np-feature-directory-icon np-feature-directory-icon--${tool.tone}`}><Icon /></span>
+                <span>
+                  <small>{tool.meta}</small>
+                  <strong>{tool.label}</strong>
+                  <p>{tool.description}</p>
+                </span>
+                <ChevronRight />
+              </button>
+            );
+          })}
+        </div>
+      </section>
+      <PracticeCard />
+    </div>
+  );
+}
+
 function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
   return (
     <section className="np-lesson-path">
@@ -1207,14 +1269,14 @@ function FeatureLoading() {
   );
 }
 
-function AccountGate({ onOpenFullApp }: { onOpenFullApp: (tab: string) => void }) {
+function AccountGate({ onRequestSignIn }: { onRequestSignIn: () => void }) {
   return (
     <section className="np-page-card np-account-gate">
       <div className="np-page-intro">
         <span className="np-page-icon"><CircleUserRound /></span>
         <div><h1>Sign in to manage your profile</h1><p>Your lessons and games are available in preview mode. Sign in to save account, pet, course, and flashcard changes.</p></div>
       </div>
-      <button className="np-primary-button" onClick={() => onOpenFullApp("profile")} type="button">
+      <button className="np-primary-button" onClick={onRequestSignIn} type="button">
         Open sign in
         <ChevronRight />
       </button>
@@ -1579,12 +1641,10 @@ function SocialView({ userName }: { userName: string }) {
 
 function MoreView({
   onNavigate,
-  onOpenFullApp,
   onSwitchCourse,
   socialPreviewUnlocked,
 }: {
   onNavigate: (view: PrototypeView) => void;
-  onOpenFullApp: (tab: string) => void;
   onSwitchCourse: () => void;
   socialPreviewUnlocked: boolean;
 }) {
@@ -1602,11 +1662,9 @@ function MoreView({
       tone: "mint",
       action: () => onNavigate("social"),
     }] : []),
-    { title: "Tests", description: "Search and filter vocabulary, phrase, and level tests.", icon: ClipboardCheck, tone: "mint", action: () => onNavigate("tests") },
-    { title: "Grammar", description: "Practise sentence patterns and fill in missing words.", icon: GraduationCap, tone: "yellow", action: () => onNavigate("grammar") },
     { title: "Progress", description: "See your streak, achievements, recent lessons, and goals.", icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     { title: "Reward shop", description: "Earn coins through learning and collect profile pins.", icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") },
-    { title: "Profile and settings", description: "Manage your account, sound, theme, learning mode, and goals.", icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
+    { title: "Profile and settings", description: "Manage your account, sound, learning mode, and goals.", icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
     { title: "Courses and packs", description: "Switch courses or browse every hardcoded lesson and phrase pack.", icon: Languages, tone: "blue", action: onSwitchCourse },
     { title: "Pets and flashcards", description: "Choose pets, adjust coaching, and set how flashcards flip.", icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
   ];
@@ -1615,7 +1673,7 @@ function MoreView({
     <section className="np-page-card np-more-view">
       <div className="np-page-intro">
         <span className="np-page-icon"><Menu /></span>
-        <div><h1>Everything in one place</h1><p>Games, tests, grammar, course packs, pets, flashcards, progress, and account settings now live inside this layout.</p></div>
+        <div><h1>Everything in one place</h1><p>Courses, pets, flashcards, rewards, progress, and account settings all live inside Micheon.</p></div>
       </div>
       <div className="np-feature-directory">
         {features.map((feature) => {
@@ -1628,10 +1686,6 @@ function MoreView({
             </button>
           );
         })}
-      </div>
-      <div className="np-full-app-callout">
-        <div><strong>Need the original dashboard?</strong><p>Your familiar dashboard and every legacy tool are still available.</p></div>
-        <button onClick={() => onOpenFullApp("dashboard")} type="button">Open original dashboard <ChevronRight /></button>
       </div>
     </section>
   );
@@ -1699,9 +1753,9 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
     <nav aria-label="Mobile prototype navigation" className="np-mobile-nav">
       {MOBILE_NAVIGATION.map((item) => {
         const Icon = item.icon;
-        const active = item.id === activeView || (
-          item.id === "more" && ["social", "tests", "grammar", "shop", "progress", "profile"].includes(activeView)
-        );
+        const active = item.id === activeView
+          || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
+          || (item.id === "more" && ["social", "shop", "progress", "profile"].includes(activeView));
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
@@ -1713,10 +1767,19 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
   );
 }
 
-export default function NewUiPrototype({ profile }: { profile: UserProfile | null }) {
+export default function NewUiPrototype({
+  onRequestSignIn,
+  profile,
+}: {
+  onRequestSignIn: () => void;
+  profile: UserProfile | null;
+}) {
   const [activeView, setActiveView] = useState<PrototypeView>("home");
   const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
   const [activeCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
+  const [courseReaderOpen, setCourseReaderOpen] = useState(false);
+  const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
+  const [courseSessionLesson, setCourseSessionLesson] = useState<string | undefined>(undefined);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const fallback = defaultPrototypeSidebarWidth();
     const stored = Number(loadScopedJson(PROTOTYPE_SIDEBAR_KEY, fallback, profile));
@@ -1742,7 +1805,10 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
   const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);
-  const activeCourseName = getCourse(activeCourseId)?.name ?? "German";
+  const activeCourse = getCourse(activeCourseId) ?? getCourse("german");
+  const activeCourseName = activeCourse?.name ?? "German";
+  const courseHasReader = Boolean(activeCourse?.lessons?.length);
+  const sessionLesson = activeCourse?.lessons?.find((lesson) => lesson.id === courseSessionLesson);
   const partsReady = Object.keys(apiParts).length > 0;
   const earnedShopCoins = 80
     + Math.floor(stats.totalXp / 100)
@@ -1782,7 +1848,9 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
 
   useEffect(() => {
     document.documentElement.style.setProperty("--prototype-sidebar-width", `${sidebarWidth}px`);
-    return () => document.documentElement.style.removeProperty("--prototype-sidebar-width");
+    return () => {
+      document.documentElement.style.removeProperty("--prototype-sidebar-width");
+    };
   }, [sidebarWidth]);
 
   useEffect(() => {
@@ -1800,33 +1868,17 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     });
   };
 
-  const openFullApp = (tab: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("ui-prototype");
-    url.searchParams.delete("guided");
-    url.searchParams.delete("guided-theme");
-    url.searchParams.set("legacy-dashboard", "1");
-    url.searchParams.set("tab", tab);
-    window.location.assign(url.toString());
-  };
-
   const openGuidedSession = () => {
     const url = new URL(window.location.href);
-    url.searchParams.delete("ui-prototype");
-    url.searchParams.delete("legacy-dashboard");
-    url.searchParams.set("tab", "learn");
+    url.searchParams.delete("tab");
     url.searchParams.set("guided", "continue");
-    url.searchParams.set("guided-theme", "prototype");
     window.location.assign(url.toString());
   };
 
   const openGuidedLesson = (partId: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.delete("ui-prototype");
-    url.searchParams.delete("legacy-dashboard");
-    url.searchParams.set("tab", "learn");
+    url.searchParams.delete("tab");
     url.searchParams.set("guided", partId);
-    url.searchParams.set("guided-theme", "prototype");
     window.location.assign(url.toString());
   };
 
@@ -1847,7 +1899,22 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const selectCourse = (courseId: string) => {
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
-    if (courseId !== "german") openFullApp("dashboard");
+    setCourseReaderOpen(false);
+    setCourseSessionLesson(undefined);
+    setCourseSwitcherOpen(false);
+    navigate("home");
+  };
+
+  const openCourseReader = (lessonId?: string) => {
+    setCourseReaderLesson(lessonId);
+    setCourseReaderOpen(true);
+  };
+
+  const completeCourseLesson = (lessonId: string) => {
+    const done = loadCourseProgress(activeCourseId, profile);
+    if (!done.includes(lessonId)) saveCourseProgress(activeCourseId, [...done, lessonId], profile);
+    updateStats({ streak: recordStreakDay(profile) });
+    setCourseSessionLesson(undefined);
   };
 
   const chooseShopBadge = (id: ShopBadgeId) => {
@@ -1896,23 +1963,44 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   ];
 
   const mainView = activeView === "home" ? (
-    <HomeView
-      onPractice={openGuidedSession}
-      profile={profile}
-      onSwitchCourse={() => setCourseSwitcherOpen(true)}
-      stats={stats}
-      vocab={knownVocab}
-    />
+    courseHasReader && activeCourse ? (
+      <div className="np-feature-host">
+        <Suspense fallback={<FeatureLoading />}>
+          <CourseDashboardView
+            course={activeCourse}
+            onBrowseLessons={() => navigate("learn")}
+            onOpenLesson={(lessonId) => setCourseSessionLesson(lessonId)}
+            onOpenReader={() => openCourseReader()}
+          />
+        </Suspense>
+      </div>
+    ) : (
+      <HomeView
+        onPractice={openGuidedSession}
+        profile={profile}
+        onSwitchCourse={() => setCourseSwitcherOpen(true)}
+        stats={stats}
+        vocab={knownVocab}
+      />
+    )
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
-      {partsReady ? (
+      {courseHasReader && activeCourse ? (
         <Suspense fallback={<FeatureLoading />}>
-          <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} />
+          <CourseLessonsView
+            course={activeCourse}
+            onOpenLesson={(lessonId) => setCourseSessionLesson(lessonId)}
+            onOpenReader={() => openCourseReader()}
+          />
+        </Suspense>
+      ) : partsReady ? (
+        <Suspense fallback={<FeatureLoading />}>
+          <LearningLibraryView apiParts={apiParts} onOpenLesson={openGuidedLesson} />
         </Suspense>
       ) : <FeatureLoading />}
     </div>
   ) : activeView === "practice" ? (
-    <PracticeCard />
+    <PracticeHub onNavigate={navigate} />
   ) : activeView === "games" ? (
     <div className="np-feature-host">
       {partsReady ? (
@@ -1969,17 +2057,16 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
           </Suspense>
         ) : <FeatureLoading />}
       </div>
-    ) : <AccountGate onOpenFullApp={openFullApp} />
+    ) : <AccountGate onRequestSignIn={onRequestSignIn} />
   ) : (
     <MoreView
       onNavigate={navigate}
-      onOpenFullApp={openFullApp}
       onSwitchCourse={() => setCourseSwitcherOpen(true)}
       socialPreviewUnlocked={socialPreviewUnlocked}
     />
   );
 
-  const showRightRail = activeView === "home" || activeView === "practice";
+  const showRightRail = !courseHasReader && (activeView === "home" || activeView === "practice");
 
   return (
     <div className="new-ui-prototype">
@@ -2036,6 +2123,25 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
           onSelect={selectCourse}
           open={courseSwitcherOpen}
         />
+        {courseReaderOpen && activeCourse && courseHasReader && (
+          <Suspense fallback={<FeatureLoading />}>
+            <CourseShell
+              course={activeCourse}
+              initialLessonId={courseReaderLesson}
+              onExit={() => setCourseReaderOpen(false)}
+            />
+          </Suspense>
+        )}
+        {sessionLesson && activeCourse && (
+          <Suspense fallback={<FeatureLoading />}>
+            <CourseSession
+              course={activeCourse}
+              lesson={sessionLesson}
+              onComplete={() => completeCourseLesson(sessionLesson.id)}
+              onExit={() => setCourseSessionLesson(undefined)}
+            />
+          </Suspense>
+        )}
       </div>
     </div>
   );

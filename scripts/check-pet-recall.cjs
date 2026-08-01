@@ -38,7 +38,7 @@ const provider = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
   "utf8"
 );
-const lab = fs.readFileSync(path.join(root, "src/german_learning_lab.tsx"), "utf8");
+const lab = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
 const main = fs.readFileSync(path.join(root, "electron/main.js"), "utf8");
 
 let failures = 0;

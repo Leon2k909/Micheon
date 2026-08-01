@@ -36,7 +36,10 @@
   --accent-dim: #e6f8d9;
   --shadow-strong: rgba(82, 68, 53, 0.16);
   min-height: var(--app-h, 100dvh);
-  overflow-x: hidden;
+  /* `hidden` creates a non-scrolling sticky container and made the sidebar
+     leave the viewport on long pages such as Shop. `clip` keeps the horizontal
+     edge clean without changing the page's scroll container. */
+  overflow-x: clip;
   padding: 0;
   color: var(--np-text);
   background: var(--np-shell);
@@ -93,7 +96,7 @@
   width: 100%;
   min-height: var(--app-h, 100dvh);
   margin: 0;
-  overflow: hidden;
+  overflow: clip;
   border: 0;
   border-radius: 0;
   background: var(--np-shell);
@@ -107,9 +110,12 @@
 }
 
 .np-sidebar {
-  position: relative;
+  position: sticky;
+  top: 0;
   display: flex;
+  height: var(--app-h, 100dvh);
   min-width: 0;
+  align-self: start;
   flex-direction: column;
   padding: 30px 20px 24px;
   border-right: 1px solid var(--np-line);
@@ -305,7 +311,7 @@
   border-radius: 999px;
   background: var(--np-soft);
   box-shadow: 0 0 0 4px var(--np-shell);
-  opacity: 0;
+  opacity: 0.28;
   transform: translate(-50%, -50%);
 }
 
@@ -1379,6 +1385,106 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-practice-card {
   padding: 27px;
+}
+
+.np-practice-hub {
+  display: grid;
+  gap: 18px;
+}
+
+.np-practice-launcher {
+  padding: 24px;
+  border: 1px solid rgba(79, 189, 81, 0.2);
+  border-radius: 27px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(207, 244, 188, 0.7), transparent 34%),
+    rgba(255, 253, 248, 0.98);
+  box-shadow:
+    0 4px 0 rgba(58, 145, 65, 0.1),
+    0 15px 28px rgba(96, 82, 66, 0.08);
+}
+
+.np-practice-launcher .np-page-intro {
+  padding: 0;
+}
+
+.np-practice-launcher .np-page-intro > div > small {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--np-green-dark);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.np-practice-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  margin-top: 20px;
+}
+
+.np-practice-tools > button {
+  display: grid;
+  min-height: 126px;
+  grid-template-columns: 58px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--np-line);
+  border-radius: 21px;
+  color: var(--np-text);
+  background: rgba(255, 253, 250, 0.96);
+  box-shadow:
+    0 3px 0 rgba(85, 72, 57, 0.07),
+    0 10px 20px rgba(85, 72, 57, 0.05);
+  text-align: left;
+  transition:
+    transform var(--np-motion-fast) var(--np-ease-out),
+    border-color var(--np-motion-fast) ease,
+    box-shadow var(--np-motion-fast) ease;
+}
+
+.np-practice-tools > button:hover {
+  border-color: rgba(79, 189, 81, 0.45);
+  box-shadow:
+    0 4px 0 rgba(55, 145, 62, 0.14),
+    0 14px 24px rgba(58, 131, 64, 0.1);
+  transform: translateY(-2px);
+}
+
+.np-practice-tools > button > span:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.np-practice-tools small {
+  color: var(--np-green-dark);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.np-practice-tools strong {
+  margin-top: 3px;
+  font-size: 19px;
+  font-weight: 950;
+}
+
+.np-practice-tools p {
+  margin: 5px 0 0;
+  color: var(--np-muted);
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1.4;
+}
+
+.np-practice-tools > button > svg {
+  width: 20px;
+  color: var(--np-soft);
 }
 
 .np-section-heading,
@@ -3808,50 +3914,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-feature-directory-icon--blue { color: #227da7; background: #def3ff; }
 .np-feature-directory-icon--violet { color: var(--np-violet); background: var(--np-violet-soft); }
 
-.np-full-app-callout {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-top: 18px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  color: #fff;
-  background: linear-gradient(140deg, #7857de, #5f43bd);
-  box-shadow: 0 4px 0 #4f379e;
-}
-
-.np-full-app-callout strong {
-  font-size: 16px;
-  font-weight: 950;
-}
-
-.np-full-app-callout p {
-  margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12px;
-  font-weight: 680;
-}
-
-.np-full-app-callout button {
-  display: inline-flex;
-  min-height: 43px;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 5px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 13px;
-  color: #5940ac;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 950;
-}
-
-.np-full-app-callout button svg {
-  width: 17px;
-}
-
 .new-ui-prototype .np-mobile-course-button,
 .new-ui-prototype .np-mobile-course-button > svg:first-child,
 .new-ui-prototype .np-mobile-course-button strong {
@@ -3918,6 +3980,29 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
   .np-practice-card {
     padding: 23px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .np-sidebar {
+    padding-block: 18px;
+  }
+
+  .np-brand {
+    padding-bottom: 15px;
+  }
+
+  .np-side-nav {
+    gap: 5px;
+  }
+
+  .np-side-nav button {
+    min-height: 50px;
+  }
+
+  .np-nav-visual {
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -4722,17 +4807,14 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     margin-top: 23px;
   }
 
+  .np-practice-tools {
+    grid-template-columns: 1fr;
+  }
+
   .np-feature-directory > button {
     min-height: 104px;
   }
 
-  .np-full-app-callout {
-    align-items: stretch;
-    flex-direction: column;
-    padding: 18px;
-  }
-
-  .np-full-app-callout button,
   .np-account-gate .np-primary-button {
     width: 100%;
     min-height: 55px;

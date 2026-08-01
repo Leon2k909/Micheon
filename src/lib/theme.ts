@@ -1,13 +1,30 @@
 import { syncLocalStorageItem } from "./profileStorage";
 
 const KEY = "gl-theme";
+const LIGHT_DEFAULT_MIGRATION_KEY = "micheon-light-default-v1";
 
 export type Theme = "dark" | "light";
 
 export function getTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem(KEY);
-  return stored === "light" || stored === "dark" ? stored : "dark";
+  return stored === "light" || stored === "dark" ? stored : "light";
+}
+
+/**
+ * Promote the finished light shell for existing installs once. Older Micheon
+ * builds persisted dark mode while the new dashboard was still a beta, so
+ * simply changing the fallback would leave those users in a partly themed UI.
+ * The marker deliberately is not part of the synced `gl-` namespace: each
+ * browser/app installation performs this migration after hydrating its shared
+ * profile, then the new light preference becomes the synced source of truth.
+ */
+export function migrateToLightThemeDefault() {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem(LIGHT_DEFAULT_MIGRATION_KEY) === "1") return;
+  localStorage.setItem(KEY, "light");
+  localStorage.setItem(LIGHT_DEFAULT_MIGRATION_KEY, "1");
+  syncLocalStorageItem(KEY, "light");
 }
 
 /**
