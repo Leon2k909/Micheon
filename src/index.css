@@ -449,6 +449,109 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn {
 html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-close) {
   background: rgba(192, 228, 188, 0.1);
 }
+
+/* The updater is mounted beside the dashboard rather than inside it, so it
+   owns the current Micheon palette instead of inheriting the legacy purple
+   root tokens. This keeps every updater state consistent in either shell. */
+.micheon-update-panel {
+  --surface: #fffdf8;
+  --surface-2: #f0f7ea;
+  --surface-3: #dfe8d8;
+  --border: rgba(67, 82, 57, 0.16);
+  --text-1: #292725;
+  --text-2: #5f5a55;
+  --text-3: #746f69;
+  --accent: #43b84c;
+  --accent-dim: #e4f7d9;
+  --accent-text: #ffffff;
+  --accent-hover: #319f3e;
+  --shadow: rgba(58, 78, 47, 0.18);
+  isolation: isolate;
+  color-scheme: light;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(205, 240, 188, 0.72), transparent 43%),
+    linear-gradient(180deg, #fffefb, #fffaf2);
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 0 rgba(71, 102, 58, 0.12),
+    0 24px 58px var(--shadow);
+}
+
+.micheon-update-panel::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  height: 4px;
+  background: linear-gradient(90deg, #2e9d3c, #65d560 55%, #39ad45);
+  content: "";
+  pointer-events: none;
+}
+
+.micheon-update-panel .micheon-update-icon {
+  border: 1px solid rgba(67, 184, 76, 0.18);
+  background: linear-gradient(180deg, #eefae7, #dff3d5);
+  box-shadow: 0 3px 0 rgba(58, 151, 66, 0.14), 0 9px 18px rgba(71, 111, 59, 0.08);
+}
+
+.micheon-update-panel .micheon-update-primary {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(180deg, #5bd35b, #35ad43);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 0 #238831, 0 9px 17px rgba(42, 137, 53, 0.16);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.micheon-update-panel .micheon-update-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #65da63, #39b348);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 5px 0 #238831, 0 12px 20px rgba(42, 137, 53, 0.2);
+}
+
+.micheon-update-panel .micheon-update-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 0 #238831, 0 6px 11px rgba(42, 137, 53, 0.16);
+}
+
+.micheon-update-panel .micheon-update-progress {
+  background: linear-gradient(90deg, #65d85f, #35ad43);
+  box-shadow: 0 0 12px rgba(53, 173, 67, 0.24);
+}
+
+.micheon-update-panel .micheon-update-secondary:hover {
+  background: #edf7e7;
+  color: #286f32;
+}
+
+html[data-theme="dark"] .micheon-update-panel {
+  --surface: #182119;
+  --surface-2: #222d23;
+  --surface-3: #303c31;
+  --border: rgba(208, 232, 204, 0.14);
+  --text-1: #f2f7f0;
+  --text-2: #c2cec0;
+  --text-3: #94a291;
+  --accent: #61cf62;
+  --accent-dim: rgba(91, 205, 91, 0.14);
+  --accent-hover: #70dc70;
+  --shadow: rgba(0, 0, 0, 0.38);
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(75, 165, 76, 0.2), transparent 45%),
+    linear-gradient(180deg, #1b261d, #151d17);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 0 rgba(0, 0, 0, 0.22), 0 24px 58px var(--shadow);
+}
+
+html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
+  border-color: rgba(103, 212, 103, 0.2);
+  background: linear-gradient(180deg, #263b28, #203222);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
+  background: #263529;
+  color: #d7edd4;
+}
+
 button:disabled { cursor: not-allowed; }
 img, svg { display: block; }
 a { color: inherit; text-decoration: none; }
@@ -2481,9 +2584,13 @@ a { color: inherit; text-decoration: none; }
   color-scheme: light;
   color: var(--fs-text);
   background:
-    radial-gradient(62% 50% at 83% 0%, rgba(187, 240, 163, 0.68), transparent 72%),
-    radial-gradient(52% 40% at 8% 96%, rgba(255, 221, 134, 0.3), transparent 72%),
-    linear-gradient(180deg, #f8fbf1 0%, #eef6e6 100%);
+    radial-gradient(ellipse 70% 300px at 50% 0%, rgba(255, 255, 255, 0.74), transparent 100%),
+    linear-gradient(180deg, #e4f4da 0%, #edf7e7 31%, #f6f9f1 62%, #fffaf1 100%);
+  background-attachment: fixed;
+}
+
+.guided-session.fs-app.prototype-guided-session main > div {
+  max-width: 72rem;
 }
 
 .prototype-guided-loading-screen {
@@ -2603,11 +2710,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-topbar {
-  border-bottom-color: rgba(67, 82, 57, 0.1);
-  background: linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(252, 250, 243, 0.96));
+  border-bottom-color: rgba(67, 82, 57, 0.08);
+  background: rgba(255, 253, 248, 0.96);
   box-shadow:
-    0 3px 0 rgba(86, 101, 70, 0.06),
-    0 14px 32px rgba(75, 91, 59, 0.1);
+    0 2px 0 rgba(86, 101, 70, 0.05),
+    0 12px 28px rgba(75, 91, 59, 0.08);
   backdrop-filter: blur(18px);
 }
 

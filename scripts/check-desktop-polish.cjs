@@ -52,6 +52,8 @@ check("the prototype title bar carries no separator shadow", /\.titlebar--protot
 check("small prototype type uses the Windows text-optimised face", styles.includes('--np-font-text: "Segoe UI Variable Text"') && /\.new-ui-prototype\s*\{[^}]*font-family:\s*var\(--np-font-text\);/s.test(styles));
 check("display type stays reserved for headings and actions", styles.includes(".new-ui-prototype strong,") && styles.includes("font-family: var(--np-font-display);"));
 check("small prototype type has a readable desktop scale", styles.includes("--np-type-micro: 12px;") && styles.includes("--np-type-caption: 13px;") && styles.includes("--np-type-small: 14px;"));
+check("the prototype guided lesson uses one calm staged background", /\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*linear-gradient\(180deg,\s*#e4f4da 0%,\s*#edf7e7 31%,\s*#f6f9f1 62%,\s*#fffaf1 100%\)/s.test(appStyles) && !/\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*rgba\(255,\s*221,\s*134,/s.test(appStyles));
+check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*72rem;/s.test(appStyles));
 
 const screenshotPaths = [
   "docs/screenshots/micheon-home.png",

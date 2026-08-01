@@ -67,7 +67,7 @@ function UpdateInstallTakeover({
       animate={{ opacity: 1 }}
       aria-labelledby="micheon-install-title"
       aria-modal="true"
-      className="fixed inset-0 z-[5000] flex items-center justify-center overflow-hidden bg-[#0f1018] p-5 text-[#f7f7fb]"
+      className="fixed inset-0 z-[5000] flex items-center justify-center overflow-hidden bg-[#0e1710] p-5 text-[#f7fbf6]"
       data-testid="update-install-takeover"
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
@@ -76,36 +76,36 @@ function UpdateInstallTakeover({
     >
       <div
         aria-hidden="true"
-        className="absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full bg-[#7834f7]/35 blur-[110px]"
+        className="absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full bg-[#2f9e3d]/35 blur-[110px]"
       />
       <div
         aria-hidden="true"
-        className="absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full bg-[#a177ff]/25 blur-[120px]"
+        className="absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full bg-[#69d267]/20 blur-[120px]"
       />
 
       <motion.section
         animate={{ scale: 1, y: 0 }}
-        className="relative w-full max-w-[590px] overflow-hidden rounded-[32px] border border-white/10 bg-[#1b1d27]/95 p-6 shadow-[0_36px_110px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-9"
+        className="relative w-full max-w-[590px] overflow-hidden rounded-[32px] border border-white/10 bg-[#172019]/95 p-6 shadow-[0_36px_110px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-9"
         initial={reduceMotion ? undefined : { scale: 0.975, y: 18 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#7834f7] via-[#a177ff] to-[#7834f7]" />
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#2f9e3d] via-[#69d267] to-[#2f9e3d]" />
 
         <div className="flex items-center justify-between gap-4">
           <MicheonLogo className="max-w-[150px]" height={34} theme="dark" />
-          <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#c6afff]">
+          <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#bff0bf]">
             {ui("Micheon update")}
           </span>
         </div>
 
-        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px] border border-white/10 bg-[#252735] shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
-          <div aria-hidden="true" className="absolute inset-2 rounded-[23px] bg-gradient-to-br from-[#a177ff]/20 to-[#7834f7]/40" />
+        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px] border border-white/10 bg-[#223025] shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
+          <div aria-hidden="true" className="absolute inset-2 rounded-[23px] bg-gradient-to-br from-[#69d267]/20 to-[#2f9e3d]/40" />
           <img
             alt=""
             className="relative h-14 w-14 rounded-[18px] shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
             src="/icon-64.png"
           />
-          <div className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2 border-[#1b1d27] bg-[#6ee7ad] text-[#10231a] shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+          <div className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2 border-[#172019] bg-[#79e47d] text-[#102313] shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
             <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
           </div>
         </div>
@@ -119,9 +119,9 @@ function UpdateInstallTakeover({
           </p>
 
           {(status?.currentVersion || status?.version) && (
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#252735] px-3 py-2 text-xs font-black tabular-nums text-[#d2d4df]">
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#223025] px-3 py-2 text-xs font-black tabular-nums text-[#d5ded4]">
               <span>{status?.currentVersion ? `v${status.currentVersion}` : ui("Current")}</span>
-              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[#a177ff]" />
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[#79df78]" />
               <span className="text-white">{status?.version ? `v${status.version}` : ui("Update ready")}</span>
             </div>
           )}
@@ -141,7 +141,7 @@ function UpdateInstallTakeover({
             <span className="h-2 rounded-full bg-[#6ee7ad]" />
             <motion.span
               animate={reduceMotion ? undefined : { opacity: [0.45, 1, 0.45] }}
-              className="h-2 rounded-full bg-[#a177ff] shadow-[0_0_14px_rgba(161,119,255,0.38)]"
+              className="h-2 rounded-full bg-[#69d267] shadow-[0_0_14px_rgba(79,189,81,0.38)]"
               transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
             />
             <span className="h-2 rounded-full bg-[#3a3d4d]" />
@@ -152,8 +152,8 @@ function UpdateInstallTakeover({
               <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[#7ff0ba]" />
               {ui("Download complete")}
             </div>
-            <div className="flex items-center gap-2.5 rounded-[13px] border border-[#a177ff]/20 bg-[#a177ff]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
-              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[#b799ff]" />
+            <div className="flex items-center gap-2.5 rounded-[13px] border border-[#69d267]/20 bg-[#69d267]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
+              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[#8be98a]" />
               {ui("Restarting Micheon")}
             </div>
           </div>
@@ -249,6 +249,7 @@ export function UpdateBanner() {
           aria-labelledby="micheon-update-title"
           aria-live="polite"
           className={[
+            "micheon-update-panel",
             "fixed bottom-5 right-5 z-[2000] w-[388px] max-w-[calc(100vw-2.5rem)] overflow-hidden",
             "rounded-[22px] border border-[var(--border)] bg-[var(--surface)]",
             "shadow-[0_22px_58px_var(--shadow)]",
@@ -264,6 +265,7 @@ export function UpdateBanner() {
               <div
                 className={[
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]",
+                  "micheon-update-icon",
                   status.state === "error"
                     ? "bg-amber-500/12 text-amber-500"
                     : "bg-[var(--accent-dim)] text-[var(--accent)]",
@@ -316,7 +318,7 @@ export function UpdateBanner() {
                   role="progressbar"
                 >
                   <div
-                    className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300 motion-reduce:transition-none"
+                    className="micheon-update-progress h-full rounded-full bg-[var(--accent)] transition-[width] duration-300 motion-reduce:transition-none"
                     data-testid="update-progress-fill"
                     style={{ width: `${percent}%` }}
                   />
@@ -327,7 +329,7 @@ export function UpdateBanner() {
             <div className="mt-4 flex items-center justify-end gap-2">
               {status.state === "ready" && (
                 <button
-                  className="h-10 flex-1 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
+                  className="micheon-update-primary h-10 flex-1 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
                   disabled={installing}
                   onClick={beginInstall}
                   type="button"
@@ -338,7 +340,7 @@ export function UpdateBanner() {
 
               {status.state === "error" && (
                 <button
-                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
+                  className="micheon-update-primary inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px disabled:opacity-70"
                   disabled={retrying}
                   onClick={retry}
                   type="button"
@@ -349,7 +351,7 @@ export function UpdateBanner() {
               )}
 
               <button
-                className="h-10 rounded-xl px-3.5 text-sm font-bold text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px"
+                className="micheon-update-secondary h-10 rounded-xl px-3.5 text-sm font-bold text-[var(--text-3)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:translate-y-px"
                 onClick={() => setDismissedFor(key)}
                 type="button"
               >

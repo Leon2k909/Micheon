@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const main = read("electron/main.js");
 const preload = read("electron/preload.cjs");
 const banner = read("src/components/UpdateBanner.tsx");
+const styles = read("src/index.css");
 const card = read("src/components/UpdateStatusCard.tsx");
 const updateStatus = read("src/lib/updateStatus.ts");
 const releaseWorkflow = read(".github/workflows/release.yml");
@@ -68,6 +69,9 @@ check("explicit updates keep the generic NSIS window hidden", /autoUpdater\.quit
 check("the branded install takeover owns the visible restart phase", banner.includes('data-testid="update-install-takeover"') && banner.includes('aria-modal="true"') && banner.includes('ui("Installing your update")'));
 check("the custom install screen uses calm staged restart feedback", banner.includes('data-testid="update-install-steps"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
+check("the updater owns the current green Micheon palette", banner.includes("micheon-update-panel") && styles.includes(".micheon-update-panel") && styles.includes("--accent: #43b84c;"));
+check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
+check("the updater no longer ships legacy purple accents", !/(#7834f7|#a177ff|rgba\(161,\s*119,\s*255)/i.test(banner));
 check("all restart buttons route through one install takeover", updateStatus.includes("UPDATE_INSTALL_REQUEST_EVENT") && card.includes("requestUpdateInstall()") && !card.includes("desktop?.installUpdate?.()"));
 check("an incomplete existing release rebuilds its missing updater assets", releaseWorkflow.includes('ASSET_COUNT="$(gh release view') && releaseWorkflow.includes('[ "$ASSET_COUNT" -lt 2 ]'));
 
