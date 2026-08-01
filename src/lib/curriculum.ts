@@ -109,6 +109,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part235",         // Karneval und Fasching
   "part236",         // Aberglaube und Glücksbringer
   "part237",         // Briefe und E-Mails: die Formeln
+  "part238",         // Bezahlen im Lokal: stimmt so
+  "part239",         // Volksfest und Kirmes
+  "part240",         // Lotto
+  "part241",         // Sternzeichen
+  "part242",         // Die Fahrgemeinschaft
+  "part243",         // Das Klassentreffen
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
