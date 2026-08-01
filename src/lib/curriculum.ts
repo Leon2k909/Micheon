@@ -85,6 +85,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part211",         // Homeoffice und Videokonferenz
   "part212",         // Nachbarschaftshilfe
   "part213",         // Oma und Opa
+  "part214",         // Im Kino
+  "part215",         // Flohmarkt: feilschen und stöbern
+  "part216",         // Baby und Kleinkind
+  "part217",         // Camping
+  "part218",         // Krankenhausbesuch
+  "part219",         // Die Steuererklärung
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
