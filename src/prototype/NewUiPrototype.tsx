@@ -280,13 +280,6 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
       </nav>
 
       <div className="np-sidebar-spacer" />
-      <div className="np-tip-card">
-        <RewardIcon kind="star" />
-        <div>
-          <strong>Keep it going!</strong>
-          <p>You are doing great.</p>
-        </div>
-      </div>
     </aside>
   );
 }

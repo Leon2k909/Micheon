@@ -215,41 +215,6 @@
   flex: 1;
 }
 
-.np-tip-card {
-  display: grid;
-  min-height: 84px;
-  grid-template-columns: 56px 1fr;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  padding: 12px 14px 12px 10px;
-  border: 1px solid rgba(79, 189, 81, 0.24);
-  border-radius: 19px;
-  background: linear-gradient(145deg, #f6ffef, #ecf9e3);
-  box-shadow:
-    0 3px 0 rgba(51, 145, 62, 0.11),
-    0 10px 20px rgba(58, 131, 64, 0.08);
-}
-
-.np-tip-card .np-reward-icon {
-  width: 56px;
-  height: 56px;
-}
-
-.np-tip-card strong {
-  display: block;
-  color: var(--np-green-dark);
-  font-size: 15px;
-  font-weight: 950;
-}
-
-.np-tip-card p {
-  margin: 3px 0 0;
-  color: var(--np-muted);
-  font-size: 11px;
-  font-weight: 720;
-}
-
 .np-app-area {
   min-width: 0;
 }
