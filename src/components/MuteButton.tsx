@@ -96,11 +96,13 @@ export function MuteButton({
   className,
   iconClassName = "h-4 w-4",
   label,
+  panelClassName,
   settingsOnly = false,
 }: {
   className?: string;
   iconClassName?: string;
   label?: string;
+  panelClassName?: string;
   settingsOnly?: boolean;
 }) {
   const [settings, setSettings] = useState<AudioSettings>(getAudioSettings);
@@ -218,7 +220,7 @@ export function MuteButton({
     <div
       aria-label={ui("Audio settings")}
       aria-modal="false"
-      className="audio-mixer-panel"
+      className={cn("audio-mixer-panel", panelClassName)}
       data-testid="audio-mixer-panel"
       id={panelId}
       onBlur={(event) => {

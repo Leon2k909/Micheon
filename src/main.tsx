@@ -5,6 +5,14 @@ import App from "./App";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 
+const initialParams = new URLSearchParams(window.location.search);
+if (
+  initialParams.get("guided") === "continue"
+  && initialParams.get("guided-theme") === "prototype"
+) {
+  document.documentElement.classList.add("is-prototype-guided-launch");
+}
+
 // Paint saved theme + effects preference before first render to avoid flash.
 // Paint-only (no sync) so it can't clobber the shared value hydrate will load.
 applyThemeToDom(getTheme());
@@ -12,11 +20,11 @@ applyEffects(getEffects());
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
 if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");
-if (new URLSearchParams(window.location.search).get("pet-overlay") === "1") {
+if (initialParams.get("pet-overlay") === "1") {
   document.documentElement.classList.add("is-pet-overlay");
   document.title = "Micheon mascot";
 }
-if (new URLSearchParams(window.location.search).get("pet-history") === "1") {
+if (initialParams.get("pet-history") === "1") {
   document.documentElement.classList.add("is-pet-history");
   document.title = "Micheon pet messages";
 }

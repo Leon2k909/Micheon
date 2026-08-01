@@ -61,7 +61,7 @@ import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
   MessageSquareQuote, RotateCcw, Target, Languages, GripVertical, ArrowLeftRight,
-  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick
+  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -4348,12 +4348,14 @@ function SessionFlashcardPreview({
   index,
   onIndexChange,
   onKnown,
+  onSkip,
   onStart,
 }: {
   cards: SessionPreviewCard[];
   index: number;
   onIndexChange: (index: number) => void;
   onKnown: (itemId: string) => void;
+  onSkip: () => void;
   onStart: () => void;
 }) {
   const card = cards[Math.min(index, cards.length - 1)];
@@ -4566,10 +4568,16 @@ function SessionFlashcardPreview({
           <ChevronLeft className="h-4 w-4" />
           {ui("Previous")}
         </button>
-        <button type="button" onClick={next} className="fs-preview-next">
-          {ui(isLast ? "Start matching" : "Next flashcard")}
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <div className="fs-preview-primary-actions">
+          <button type="button" onClick={onSkip} className="fs-preview-skip">
+            <SkipForward className="h-4 w-4" />
+            {ui("Skip preview")}
+          </button>
+          <button type="button" onClick={next} className="fs-preview-next">
+            {ui(isLast ? "Start matching" : "Next flashcard")}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -5010,7 +5018,11 @@ export default function GuidedSession({ appearance = "focus", steps, onComplete,
               <kbd>Alt →</kbd>
             </Button>
           )}
-          <MuteButton className="fs-iconbtn shrink-0" iconClassName="h-4 w-4" />
+          <MuteButton
+            className="fs-iconbtn shrink-0"
+            iconClassName="h-4 w-4"
+            panelClassName={appearance === "prototype" ? "prototype-audio-mixer" : undefined}
+          />
           <button type="button" aria-label={ui("Close lesson")} className="fs-iconbtn" onClick={handleCancel}>
             <X className="h-4 w-4" />
           </button>
@@ -5033,6 +5045,11 @@ export default function GuidedSession({ appearance = "focus", steps, onComplete,
                     index={previewIndex}
                     onIndexChange={setPreviewIndex}
                     onKnown={markPreviewItemKnown}
+                    onSkip={() => {
+                      setPreviewActive(false);
+                      setMatchingActive(false);
+                      setMatchingProgress(0);
+                    }}
                     onStart={() => {
                       setPreviewActive(false);
                       setMatchingActive(previewCards.length > 1);

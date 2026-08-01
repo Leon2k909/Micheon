@@ -967,6 +967,23 @@ export default function GermanLearningLab() {
     </div>
   );
 
+  if (guidedRequest === "continue" && prototypeGuidedTheme && !showGuidedSession) return (
+    <div
+      aria-live="polite"
+      className="guided-session fs-app prototype-guided-session prototype-guided-loading-screen"
+      role="status"
+    >
+      <div className="prototype-guided-loading-card">
+        <img src="/icon-64.png" alt="" />
+        <div className="prototype-guided-loading-copy">
+          <strong>{ui("Preparing your lesson")}</strong>
+          <span>{ui("Choosing useful phrases for this session.")}</span>
+        </div>
+        <div className="prototype-guided-loading-track" aria-hidden="true"><i /></div>
+      </div>
+    </div>
+  );
+
   if (showGuidedSession) return (
     <GuidedSession
       appearance={prototypeGuidedTheme ? "prototype" : "focus"}
