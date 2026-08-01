@@ -9,6 +9,8 @@ const guidedSession = read("src/GuidedSession.tsx");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const styles = read("src/prototype/new-ui-prototype.css");
 const mastery = read("src/components/lab/MasteryCard.tsx");
+const learnView = read("src/components/lab/LearnView.tsx");
+const testsView = read("src/components/tests/TestsView.tsx");
 const readme = read("README.md");
 
 let failures = 0;
@@ -46,8 +48,12 @@ check("course progress animates from empty", prototype.includes("<motion.span") 
 check("course progress respects reduced-motion preferences", prototype.includes("const reduceMotion = useReducedMotion();") && prototype.includes("initial={reduceMotion ? false"));
 check("search focus uses one clean outer ring", styles.includes(".np-search-field:focus-within") && styles.includes(".np-search-field input:focus-visible"));
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
+check("lesson-library search uses one focused border", learnView.includes('className="learn-library-search ') && /learn-library-search:focus-visible\s*\{[^}]*outline:\s*0;/s.test(styles));
+check("light test cards define the yellow icon tile treatment", testsView.includes("bg-[var(--yellow-dim)]") && /\.np-feature-host\s*\{[^}]*--yellow-dim:\s*#fff1c7;[^}]*--yellow-ink:\s*#986000;/s.test(styles));
 check("the hero progress bar uses a labelled mint-on-green treatment", prototype.includes(">Level progress<") && styles.includes("#f5fff6 0%, #dff8e4 100%") && !styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
+check("the mastery ring halo has a defined first animation frame", mastery.includes('initial={reduce ? false : { r: dotR * 1.1, opacity: 0.55 }}'));
+check("the mastery percentage uses its real progress ring on a light tile", /\.np-feature-host \.mastery-ring > svg\s*\{[^}]*display:\s*block;/s.test(styles) && /\.np-feature-host \.mastery-ring::after\s*\{[^}]*display:\s*none;/s.test(styles) && styles.includes("linear-gradient(145deg, #fdfff9 0%, #edf8e8 100%)"));
 check("the prototype title bar is one uninterrupted surface", appStyles.includes("background: #fffaf1;") && appStyles.includes(".titlebar--prototype::after") && appStyles.includes("content: none;"));
 check("the prototype title bar carries no separator shadow", /\.titlebar--prototype\s*\{[^}]*box-shadow:\s*none;/s.test(appStyles));
 check("small prototype type uses the Windows text-optimised face", styles.includes('--np-font-text: "Segoe UI Variable Text"') && /\.new-ui-prototype\s*\{[^}]*font-family:\s*var\(--np-font-text\);/s.test(styles));

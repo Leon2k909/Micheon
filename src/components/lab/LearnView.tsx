@@ -159,7 +159,7 @@ export function LearnView({
               className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]"
             />
             <input
-              className="h-12 w-full rounded-[16px] border-2 border-[var(--border)] bg-[var(--surface)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+              className="learn-library-search h-12 w-full rounded-[16px] border-2 border-[var(--border)] bg-[var(--surface)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
               onChange={(event) => setQuery(event.target.value)}
               placeholder={ui("Search lessons, topics or a German word…")}
               type="search"

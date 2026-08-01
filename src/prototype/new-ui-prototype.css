@@ -2675,6 +2675,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   --accent-hover: #2f9e3d;
   --mint: #46c991;
   --yellow: #ffbe2e;
+  --yellow-dim: #fff1c7;
+  --yellow-ink: #986000;
   --orange: #f29b35;
   --ink: #292725;
   --ink-text: #fff;
@@ -2746,11 +2748,11 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-feature-host .mastery-card {
   --mastery-ring-start: #2ea742;
   --mastery-ring-middle: #56c85c;
-  --mastery-ring-end: #ffbf31;
+  --mastery-ring-end: #8bd060;
   --mastery-ring-track: #dcebd5;
-  --mastery-ring-halo: rgba(255, 191, 49, 0.3);
-  --mastery-ring-tip: #fff7d8;
-  --mastery-ring-shadow: none;
+  --mastery-ring-halo: rgba(86, 200, 92, 0.24);
+  --mastery-ring-tip: #f6fff1;
+  --mastery-ring-shadow: drop-shadow(0 2px 4px rgba(47, 143, 57, 0.18));
   --mastery-tip-shadow: none;
   position: relative;
   overflow: hidden;
@@ -2827,17 +2829,14 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   height: 112px !important;
   align-self: stretch;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(72, 168, 72, 0.24);
   border-radius: 26px;
-  color: #fff;
-  background:
-    radial-gradient(circle at 82% 13%, rgba(255, 231, 125, 0.58), transparent 25%),
-    linear-gradient(145deg, #58ca62 0%, #2ca443 58%, #238c38 100%);
+  color: #267d35;
+  background: linear-gradient(145deg, #fdfff9 0%, #edf8e8 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -2px 0 rgba(16, 105, 39, 0.18),
-    0 5px 0 #237d34,
-    0 14px 24px rgba(35, 125, 52, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 4px 0 rgba(71, 145, 67, 0.11),
+    0 12px 22px rgba(61, 112, 55, 0.1);
 }
 
 .np-feature-host .mastery-ring::before {
@@ -2846,56 +2845,44 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   inset: 0;
   border-radius: inherit;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%),
-    radial-gradient(circle at 20% 110%, rgba(20, 103, 38, 0.34), transparent 54%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), transparent 48%),
+    radial-gradient(circle at 18% 112%, rgba(112, 202, 104, 0.16), transparent 56%);
   content: "";
   pointer-events: none;
 }
 
 .np-feature-host .mastery-ring::after {
-  position: absolute;
-  right: 15px;
-  bottom: 14px;
-  left: 15px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #ffe477 0 var(--mastery-value),
-    rgba(16, 89, 34, 0.33) var(--mastery-value) 100%
-  );
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.28),
-    0 1px 0 rgba(19, 91, 34, 0.18);
-  content: "";
-}
-
-.np-feature-host .mastery-ring > svg {
   display: none;
 }
 
+.np-feature-host .mastery-ring > svg {
+  display: block;
+  inset: 6px;
+}
+
 .np-feature-host .mastery-ring__label {
+  z-index: 1;
   width: 100%;
   height: 100%;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 16px 15px 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .np-feature-host .mastery-ring__value {
-  color: #fff;
-  font-size: 38px;
+  color: #267d35;
+  font-size: 29px;
   font-weight: 950;
   letter-spacing: -0.045em;
   line-height: 1;
-  text-shadow: 0 2px 0 rgba(20, 103, 37, 0.26);
+  text-shadow: none;
 }
 
 .np-feature-host .mastery-ring__label > span:last-child {
   order: -1;
-  margin-bottom: 7px;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: var(--np-type-caption);
+  margin-bottom: 3px;
+  color: #667764;
+  font-size: var(--np-type-micro);
   font-weight: 880;
   line-height: 1;
   text-transform: capitalize;
@@ -2974,6 +2961,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-feature-host select,
 .np-feature-host textarea {
   font-family: inherit;
+}
+
+.new-ui-prototype .np-feature-host .learn-library-search:focus-visible {
+  border-color: var(--accent);
+  outline: 0;
+  box-shadow: 0 7px 18px rgba(47, 158, 61, 0.09);
 }
 
 .np-grammar-view {
@@ -5510,19 +5503,27 @@ html[data-theme="dark"] .np-feature-host .mastery-card__milestone.is-next {
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-ring {
-  border-color: rgba(181, 242, 183, 0.24);
-  background:
-    radial-gradient(circle at 82% 13%, rgba(255, 225, 104, 0.5), transparent 25%),
-    linear-gradient(145deg, #4fc75c 0%, #2da848 58%, #21883a 100%);
+  border-color: rgba(88, 199, 95, 0.26);
+  color: #dff5df;
+  background: linear-gradient(145deg, #263a29 0%, #203123 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -2px 0 rgba(8, 67, 26, 0.22),
-    0 5px 0 #176b2b,
-    0 14px 26px rgba(0, 0, 0, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 4px 0 rgba(0, 0, 0, 0.22),
+    0 12px 24px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .np-feature-host .mastery-ring::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 48%),
+    radial-gradient(circle at 18% 112%, rgba(88, 199, 95, 0.12), transparent 56%);
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-ring__value {
-  color: #fff;
+  color: #e5f6e5;
+}
+
+html[data-theme="dark"] .np-feature-host .mastery-ring__label > span:last-child {
+  color: #b8c9b8;
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-card__milestone.is-locked {
