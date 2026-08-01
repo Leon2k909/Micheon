@@ -1647,6 +1647,16 @@ a { color: inherit; text-decoration: none; }
 /* ── lesson flashcard preview ── */
 .fs-preview { display: grid; gap: 18px; }
 .fs-preview-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.fs-preview-heading-copy { min-width: 0; }
+.fs-preview-summary {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 15px;
+}
+.fs-preview-summary > span {
+  min-height: 31px; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--fs-line); border-radius: 10px; padding: 0 10px;
+  background: rgba(255,255,255,0.035); color: var(--fs-text-2);
+  font-size: 11px; font-weight: 800;
+}
 .fs-preview-count {
   min-width: 74px; height: 54px; display: flex; align-items: baseline; justify-content: center; gap: 5px;
   border: 1px solid rgba(168,120,255,0.24); border-radius: 16px;
@@ -1677,6 +1687,7 @@ a { color: inherit; text-decoration: none; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 20px 50px rgba(0,0,0,0.22), 0 0 0 1px rgba(139,76,255,0.055);
 }
 .fs-flashcard-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.fs-flashcard-content { min-height: 0; display: grid; align-content: center; }
 .fs-flashcard-badge {
   justify-self: start; padding: 5px 9px; border-radius: 999px;
   background: rgba(139,76,255,0.13); color: #cbb5ff; font-size: 10px; font-weight: 850;
@@ -1705,6 +1716,10 @@ a { color: inherit; text-decoration: none; }
 .fs-flashcard-divider { display: flex; align-items: center; gap: 12px; color: var(--fs-muted-2); font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .fs-flashcard-divider::before, .fs-flashcard-divider::after { content: ""; height: 1px; flex: 1; background: rgba(255,255,255,0.075); }
 .fs-flashcard-note { margin: 7px 0 0; color: var(--fs-muted); font-size: 12px; font-weight: 600; line-height: 1.45; }
+.fs-flashcard-footer {
+  align-self: end; display: flex; align-items: center; gap: 7px; margin-top: 10px; padding-top: 12px;
+  border-top: 1px solid var(--fs-line); color: var(--fs-muted); font-size: 11px; font-weight: 750;
+}
 .fs-preview-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fs-preview-primary-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .guided-session .fs-preview-back,
@@ -3153,6 +3168,89 @@ a { color: inherit; text-decoration: none; }
     inset 0 1px 0 #fff;
 }
 
+.guided-session.fs-app.prototype-guided-session .fs-card--preview {
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fffefb, #faf8f0);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-card--preview .fs-card-body {
+  gap: 16px;
+  padding: 20px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head {
+  position: relative;
+  isolation: isolate;
+  min-height: 158px;
+  overflow: hidden;
+  align-items: stretch;
+  padding: 22px 24px;
+  border: 1px solid rgba(36, 132, 48, 0.38);
+  border-radius: 22px;
+  background-color: #2eac42;
+  background-image:
+    linear-gradient(90deg, rgba(31, 157, 53, 0.98) 0%, rgba(35, 164, 57, 0.94) 43%, rgba(40, 168, 61, 0.62) 62%, rgba(40, 168, 61, 0.12) 100%),
+    url("./prototype/assets/micheon-hero-v3.webp");
+  background-repeat: no-repeat;
+  background-position: center, center 54%;
+  background-size: 100% 100%, cover;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 5px 0 rgba(34, 132, 47, 0.38),
+    0 16px 28px rgba(48, 116, 42, 0.16);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {
+  position: relative;
+  z-index: 1;
+  width: min(670px, calc(100% - 160px));
+  align-self: center;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-eyebrow,
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-h1,
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-sub {
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(18, 88, 31, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-eyebrow {
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-eyebrow i {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: #ffd451;
+  box-shadow: 0 0 0 3px rgba(255, 212, 81, 0.16), 0 0 16px rgba(255, 212, 81, 0.32);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-h1 {
+  max-width: 570px;
+  font-size: clamp(28px, 2.35vw, 37px);
+  line-height: 1.03;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-sub {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-summary {
+  margin-top: 15px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-summary > span {
+  min-height: 30px;
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(18, 116, 38, 0.28);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(8px);
+}
+
 .guided-session.fs-app.prototype-guided-session .fs-preview-count,
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
 .guided-session.fs-app.prototype-guided-session .fs-chip {
@@ -3162,10 +3260,23 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-count {
+  position: absolute;
+  top: 22px;
+  right: calc(50% + 22px);
+  z-index: 1;
+  align-self: flex-start;
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.9);
+  color: #248c35;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 4px 0 rgba(60, 148, 68, 0.16),
-    0 10px 18px rgba(70, 112, 59, 0.09);
+    0 4px 0 rgba(30, 118, 44, 0.25),
+    0 10px 20px rgba(24, 93, 36, 0.16);
+  backdrop-filter: blur(9px);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-count small {
+  color: #5f755c;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge {
@@ -3175,31 +3286,55 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
-  height: 10px;
-  background: #dfe5d8;
+  height: 38px;
+  overflow: visible;
+  border: 1px solid rgba(67, 82, 57, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fffefb, #f2efe7);
+  color: #77786f;
+  font-size: 12px;
+  font-weight: 900;
   box-shadow:
-    inset 0 2px 2px rgba(69, 83, 58, 0.12),
-    0 2px 0 rgba(255, 255, 255, 0.8);
+    inset 0 1px 0 #fff,
+    0 3px 0 rgba(86, 96, 75, 0.14),
+    0 7px 13px rgba(73, 89, 60, 0.06);
 }
 
-.guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover,
-.guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
-  background: #9cdb8f;
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(67, 184, 76, 0.32);
+  background: #eff9e9;
+  color: #2e8d3a;
   box-shadow:
-    inset 0 1px 1px rgba(35, 126, 48, 0.12),
-    0 2px 0 rgba(51, 143, 61, 0.18);
+    inset 0 1px 0 #fff,
+    0 5px 0 rgba(51, 143, 61, 0.18),
+    0 10px 16px rgba(54, 125, 53, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
+  border-color: rgba(67, 184, 76, 0.25);
+  background: linear-gradient(180deg, #eaf8e2, #dcf0d3);
+  color: #338e3e;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(51, 143, 61, 0.15);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.46);
   background: linear-gradient(180deg, #61d263, #39ae46);
+  color: #fff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    0 3px 0 #2e943b,
-    0 8px 14px rgba(54, 155, 63, 0.2);
+    0 5px 0 #2e943b,
+    0 11px 18px rgba(54, 155, 63, 0.22);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard {
+  min-height: 272px;
+  gap: 8px;
+  padding: 20px 24px 16px;
   border: 2px solid rgba(67, 184, 76, 0.28);
+  border-radius: 22px;
   background:
     radial-gradient(72% 100% at 100% 0%, rgba(188, 238, 164, 0.38), transparent 72%),
     linear-gradient(145deg, #fbfff6, #fffdf8 52%, #f6f2e8);
@@ -3207,6 +3342,62 @@ a { color: inherit; text-decoration: none; }
     inset 0 1px 0 #fff,
     0 6px 0 rgba(54, 148, 62, 0.2),
     0 19px 34px rgba(77, 95, 62, 0.13);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  border: 1px solid rgba(67, 184, 76, 0.08);
+  border-radius: 15px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-topline,
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-content,
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-note,
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-topline {
+  margin-bottom: 0;
+  padding-bottom: 11px;
+  border-bottom: 1px solid rgba(67, 82, 57, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-content {
+  min-height: 132px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-language {
+  min-height: 94px;
+  padding: 10px 4px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-language span {
+  color: #6f7569;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-language strong {
+  font-size: clamp(27px, 2.55vw, 39px);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-footer {
+  min-height: 29px;
+  margin-top: 0;
+  padding: 10px 4px 0;
+  border-top-color: rgba(67, 82, 57, 0.1);
+  color: #667161;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-footer svg {
+  color: #3b9a47;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard.is-flippable:hover {
@@ -3712,4 +3903,143 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session .fs-when-label {
   color: #338f3d;
+}
+
+@media (max-width: 860px) {
+  .guided-session.fs-app.prototype-guided-session .fs-card--preview .fs-card-body {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head {
+    min-height: 148px;
+    padding: 19px 20px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {
+    width: calc(100% - 150px);
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-h1 {
+    font-size: clamp(26px, 4vw, 33px);
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-summary {
+    margin-top: 12px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
+    height: 36px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard {
+    min-height: 252px;
+    padding: 18px 20px 14px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard-content {
+    min-height: 118px;
+  }
+}
+
+@media (max-width: 600px) {
+  .guided-session.fs-app.prototype-guided-session main {
+    padding: 14px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-card--preview {
+    border-radius: 23px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-card--preview .fs-card-body {
+    padding: 12px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head {
+    min-height: 172px;
+    padding: 17px 18px;
+    border-radius: 17px;
+    background-image:
+      linear-gradient(90deg, rgba(31, 157, 53, 0.99) 0%, rgba(48, 178, 70, 0.96) 62%, rgba(48, 178, 70, 0.5) 100%),
+      url("./prototype/assets/micheon-hero-v3.webp");
+    background-position: center, 62% center;
+    background-size: 100% 100%, auto 100%;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {
+    width: 100%;
+    padding-right: 54px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-h1 {
+    font-size: 26px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-sub {
+    max-width: 290px;
+    font-size: 12px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-summary {
+    gap: 6px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-summary > span {
+    min-height: 28px;
+    padding-inline: 8px;
+    font-size: 10px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-count {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    min-width: 58px;
+    height: 46px;
+    font-size: 19px;
+    line-height: 46px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-count small {
+    font-size: 9px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-route {
+    gap: 5px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
+    height: 34px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard {
+    min-height: 250px;
+    padding: 16px 15px 13px;
+    border-radius: 18px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard-content {
+    min-height: 112px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard-language {
+    min-height: 82px;
+    gap: 11px;
+    padding-inline: 1px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard-language strong {
+    font-size: clamp(23px, 7vw, 30px);
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-primary-actions {
+    gap: 8px;
+  }
 }

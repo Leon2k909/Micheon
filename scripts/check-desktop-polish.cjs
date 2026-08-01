@@ -5,6 +5,7 @@ const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const electronMain = read("electron/main.js");
 const appStyles = read("src/index.css");
+const guidedSession = read("src/GuidedSession.tsx");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const styles = read("src/prototype/new-ui-prototype.css");
 const mastery = read("src/components/lab/MasteryCard.tsx");
@@ -54,6 +55,12 @@ check("display type stays reserved for headings and actions", styles.includes(".
 check("small prototype type has a readable desktop scale", styles.includes("--np-type-micro: 12px;") && styles.includes("--np-type-caption: 13px;") && styles.includes("--np-type-small: 14px;"));
 check("the prototype guided lesson uses one calm staged background", /\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*linear-gradient\(180deg,\s*#e4f4da 0%,\s*#edf7e7 31%,\s*#f6f9f1 62%,\s*#fffaf1 100%\)/s.test(appStyles) && !/\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*rgba\(255,\s*221,\s*134,/s.test(appStyles));
 check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*72rem;/s.test(appStyles));
+check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));
+check("the lesson preview reuses the lightweight homepage course scene", appStyles.includes('url("./prototype/assets/micheon-hero-v3.webp")'));
+check("the lesson preview exposes useful phrase and language context", guidedSession.includes('className="fs-preview-summary"') && guidedSession.includes('{cards.length} {ui("Phrases")}'));
+check("the lesson preview uses tactile numbered route steps", /prototype-guided-session \.fs-preview-route button\s*\{[^}]*height:\s*38px;[^}]*color:\s*#77786f;/s.test(appStyles));
+check("the lesson preview card has a stable content and helper hierarchy", guidedSession.includes('className="fs-flashcard-content"') && guidedSession.includes('className="fs-flashcard-footer"'));
+check("the redesigned lesson preview has narrow-screen composition rules", /@media \(max-width: 600px\)\s*\{[^}]*prototype-guided-session main\s*\{[^}]*padding:\s*14px;/s.test(appStyles));
 
 const screenshotPaths = [
   "docs/screenshots/micheon-home.png",

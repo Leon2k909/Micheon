@@ -4477,10 +4477,14 @@ function SessionFlashcardPreview({
   return (
     <div className="fs-card-body fs-preview">
       <div className="fs-preview-head">
-        <div>
+        <div className="fs-preview-heading-copy">
           <span className="fs-eyebrow"><i />{ui("Lesson preview")}</span>
           <h1 className="fs-h1">{ui("Meet today's phrases")}</h1>
-            <p className="fs-sub">{ui("Review both languages before sentence practice.")}</p>
+          <p className="fs-sub">{ui("Review both languages before sentence practice.")}</p>
+          <div className="fs-preview-summary" aria-label={ui("Lesson preview")}>
+            <span><BookOpen className="h-4 w-4" />{cards.length} {ui("Phrases")}</span>
+            <span><Languages className="h-4 w-4" />{ui("German")} + {ui("English")}</span>
+          </div>
         </div>
         <span className="fs-preview-count">
           {index + 1} <small>{ui("of")} {cards.length}</small>
@@ -4533,28 +4537,35 @@ function SessionFlashcardPreview({
             </button>
           </div>
 
-          {mode === "flip" ? (
-            <FlipFace
-              back={backSide}
-              flipped={flipped}
-              front={frontSide}
-              onFlip={toggleFlip}
-            />
-          ) : (
-            <>
-              {germanRow()}
-              <div className="fs-flashcard-divider" aria-hidden>
-                <span>{ui("means")}</span>
-              </div>
-              {englishRow()}
-            </>
-          )}
+          <div className="fs-flashcard-content">
+            {mode === "flip" ? (
+              <FlipFace
+                back={backSide}
+                flipped={flipped}
+                front={frontSide}
+                onFlip={toggleFlip}
+              />
+            ) : (
+              <>
+                {germanRow()}
+                <div className="fs-flashcard-divider" aria-hidden>
+                  <span>{ui("means")}</span>
+                </div>
+                {englishRow()}
+              </>
+            )}
+          </div>
 
           {/* The usage note explains the answer, so on a flip card it waits
               until the card has actually been turned over. */}
           {card.use && (mode !== "flip" || flipped) && (
             <p className="fs-flashcard-note">{card.use}</p>
           )}
+
+          <div className="fs-flashcard-footer">
+            {mode === "flip" ? <RotateCcw className="h-4 w-4" /> : <Languages className="h-4 w-4" />}
+            <span>{ui(mode === "flip" ? "Click or press space to flip" : "Both languages")}</span>
+          </div>
         </motion.div>
       </AnimatePresence>
 
@@ -5037,7 +5048,7 @@ export default function GuidedSession({ appearance = "focus", steps, onComplete,
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex w-full max-w-5xl justify-center">
-            <div className="fs-card relative">
+            <div className={cn("fs-card relative", inPreview && "fs-card--preview")}>
               <div className="relative z-10 flex flex-col">
                 {inPreview ? (
                   <SessionFlashcardPreview
