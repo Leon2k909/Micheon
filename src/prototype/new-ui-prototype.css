@@ -1,11 +1,13 @@
 .new-ui-prototype {
+  --np-font-display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --np-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --np-bg: #eaf6e6;
   --np-shell: #fffaf1;
   --np-surface: #fffdf8;
   --np-surface-soft: #f8f4eb;
   --np-text: #292725;
-  --np-muted: #6f6a65;
-  --np-soft: #9b9690;
+  --np-muted: #625e59;
+  --np-soft: #817c76;
   --np-line: rgba(76, 66, 55, 0.1);
   --np-green: #4fbd51;
   --np-green-dark: #238d35;
@@ -15,9 +17,9 @@
   --np-yellow: #ffbe2e;
   --np-blue: #4eb8e8;
   --np-danger: #e45b5b;
-  --np-type-micro: 11px;
-  --np-type-caption: 12px;
-  --np-type-small: 13px;
+  --np-type-micro: 12px;
+  --np-type-caption: 13px;
+  --np-type-small: 14px;
   --np-motion-fast: 160ms;
   --np-motion-base: 230ms;
   --np-motion-slow: 520ms;
@@ -38,9 +40,11 @@
   padding: 0;
   color: var(--np-text);
   background: var(--np-shell);
-  font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  font-family: var(--np-font-text);
   font-size: 16px;
   line-height: 1.35;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .new-ui-prototype,
@@ -51,6 +55,28 @@
 .new-ui-prototype button,
 .new-ui-prototype input {
   font: inherit;
+}
+
+/* Rounded display lettering gives Micheon its game-like character. The default
+   text face is tuned for Windows at small sizes; reserve the rounder face for
+   headings, actions and the pieces that should carry personality. */
+.new-ui-prototype h1,
+.new-ui-prototype h2,
+.new-ui-prototype h3,
+.new-ui-prototype h4,
+.new-ui-prototype strong,
+.new-ui-prototype button,
+.new-ui-prototype .np-greeting > p {
+  font-family: var(--np-font-display);
+}
+
+.new-ui-prototype small,
+.new-ui-prototype p,
+.new-ui-prototype .np-greeting > span,
+.new-ui-prototype .np-fluency-status > span,
+.new-ui-prototype .np-fluency-footnote {
+  font-family: var(--np-font-text);
+  letter-spacing: 0.005em;
 }
 
 .new-ui-prototype button {
@@ -330,7 +356,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin-top: 8px;
   color: var(--np-muted);
   font-size: 16px;
-  font-weight: 680;
+  font-weight: 650;
 }
 
 .np-header-stats {
@@ -382,7 +408,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin-top: 4px;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 780;
+  font-weight: 650;
   line-height: 1.2;
 }
 
@@ -508,7 +534,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin-top: 2px;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 780;
+  font-weight: 650;
 }
 
 .np-notification-heading > button {
@@ -890,7 +916,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-search-panel-heading small {
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 820;
+  font-weight: 650;
 }
 
 .np-search-results {
@@ -1192,8 +1218,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-course-progress-row small {
-  font-size: 12px;
-  font-weight: 850;
+  font-size: var(--np-type-caption);
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1280,8 +1306,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-course-button-kicker {
   margin-bottom: 3px;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 10px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 750;
   letter-spacing: 0.095em;
   line-height: 1.1;
   text-transform: uppercase;
@@ -1896,8 +1922,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-level-copy > small {
   margin-top: 2px;
   color: #4e6f43;
-  font-size: 12px;
-  font-weight: 780;
+  font-size: var(--np-type-caption);
+  font-weight: 650;
 }
 
 .np-level-copy .np-progress-track {
@@ -1911,7 +1937,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin-top: -8px;
   color: #4a6841;
   font-size: var(--np-type-caption);
-  font-weight: 870;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -1979,7 +2005,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   justify-content: center;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 780;
+  font-weight: 650;
   line-height: 1.25;
   text-align: center;
 }
@@ -2005,13 +2031,13 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-block-heading button {
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .np-achievement-count {
   color: var(--np-green-dark);
-  font-size: 12px;
-  font-weight: 850;
+  font-size: var(--np-type-caption);
+  font-weight: 700;
 }
 
 .np-badge-list {
@@ -2090,7 +2116,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin: 0;
   color: #514d48;
   font-size: var(--np-type-caption);
-  font-weight: 820;
+  font-weight: 650;
   line-height: 1.2;
 }
 
@@ -2146,7 +2172,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   align-self: start;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 780;
+  font-weight: 650;
 }
 
 .np-goal-card {
@@ -2178,8 +2204,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-goal-card small {
   margin-top: 3px;
   color: #456683;
-  font-size: 12px;
-  font-weight: 750;
+  font-size: var(--np-type-caption);
+  font-weight: 650;
 }
 
 .np-goal-card .np-progress-track {
@@ -2196,7 +2222,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin: 5px 0 0;
   color: #315e83;
   font-size: var(--np-type-caption);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .np-goal-card > .np-achievement-art {
@@ -2239,7 +2265,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   overflow: hidden;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 720;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2247,7 +2273,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-completed-row b {
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .np-progress-panel--standalone {
@@ -2681,7 +2707,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-feature-host .text-xs {
   font-size: var(--np-type-small) !important;
-  font-weight: 680;
+  font-weight: 650;
   line-height: 1.4;
 }
 
@@ -4882,7 +4908,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin: 4px 0 0;
   color: var(--np-muted);
   font-size: var(--np-type-small);
-  font-weight: 720;
+  font-weight: 650;
   line-height: 1.42;
 }
 
@@ -4912,7 +4938,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-fluency-footnote {
   color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1.35;
 }
 
@@ -4923,7 +4949,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-fluency-status > span {
   flex: 0 0 auto;
   color: var(--np-green-dark);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .np-fluency-track {
@@ -4976,7 +5002,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   color: #376b40;
   background: rgba(255, 255, 255, 0.5);
   font-size: var(--np-type-caption);
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.1;
 }
 
@@ -4992,7 +5018,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   margin: 5px 0 0;
   color: #57775c;
   font-size: var(--np-type-caption);
-  font-weight: 740;
+  font-weight: 650;
   line-height: 1.4;
 }
 

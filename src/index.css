@@ -390,30 +390,18 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 .titlebar-btn:hover { background: color-mix(in srgb, var(--text-1) 12%, transparent); opacity: 1; }
 .titlebar-close:hover { background: #e81123; color: #ffffff; opacity: 1; }
 
-/* Continue the prototype shell through the desktop chrome instead of placing a
-   generic white web strip above it. The divider tracks the resizable sidebar. */
+/* Keep the prototype desktop chrome deliberately quiet. A single uninterrupted
+   surface reads as native window furniture; carrying the page grid and its
+   dividers through the title bar made the shell look like a website in a frame. */
 .titlebar--prototype {
   border-bottom: 0;
-  background: linear-gradient(
-    90deg,
-    #fffdf7 0,
-    #fffdf7 var(--prototype-sidebar-width, 226px),
-    #fffaf1 var(--prototype-sidebar-width, 226px),
-    #fffaf1 100%
-  );
-  box-shadow: inset 0 -1px 0 rgba(76, 66, 55, 0.055);
+  background: #fffaf1;
+  box-shadow: none;
   color: #625d57;
 }
 
 .titlebar--prototype::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--prototype-sidebar-width, 226px);
-  width: 1px;
-  background: rgba(76, 66, 55, 0.08);
-  content: "";
-  pointer-events: none;
+  content: none;
 }
 
 .titlebar--prototype .titlebar-drag {
@@ -426,7 +414,7 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
   height: 17px;
   border-radius: 5px;
   opacity: 1;
-  box-shadow: 0 1px 2px rgba(48, 39, 70, 0.14);
+  box-shadow: none;
 }
 
 .titlebar--prototype .titlebar-title {
@@ -449,18 +437,8 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 }
 
 html[data-theme="dark"] .titlebar--prototype {
-  background: linear-gradient(
-    90deg,
-    #121c14 0,
-    #121c14 var(--prototype-sidebar-width, 226px),
-    #111a13 var(--prototype-sidebar-width, 226px),
-    #111a13 100%
-  );
-  box-shadow: inset 0 -1px 0 rgba(220, 238, 218, 0.07);
-}
-
-html[data-theme="dark"] .titlebar--prototype::after {
-  background: rgba(220, 238, 218, 0.08);
+  background: #111a13;
+  box-shadow: none;
 }
 
 html[data-theme="dark"] .titlebar--prototype .titlebar-title,

@@ -4,6 +4,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const electronMain = read("electron/main.js");
+const appStyles = read("src/index.css");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const styles = read("src/prototype/new-ui-prototype.css");
 const mastery = read("src/components/lab/MasteryCard.tsx");
@@ -46,6 +47,11 @@ check("search focus uses one clean outer ring", styles.includes(".np-search-fiel
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
 check("the hero progress bar has a dimensional orange gradient", styles.includes("#ffe16a 0%, #ffc43b 52%, #ff9f1f 100%") && styles.includes(".np-progress-track--hero > span::after"));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
+check("the prototype title bar is one uninterrupted surface", appStyles.includes("background: #fffaf1;") && appStyles.includes(".titlebar--prototype::after") && appStyles.includes("content: none;"));
+check("the prototype title bar carries no separator shadow", /\.titlebar--prototype\s*\{[^}]*box-shadow:\s*none;/s.test(appStyles));
+check("small prototype type uses the Windows text-optimised face", styles.includes('--np-font-text: "Segoe UI Variable Text"') && /\.new-ui-prototype\s*\{[^}]*font-family:\s*var\(--np-font-text\);/s.test(styles));
+check("display type stays reserved for headings and actions", styles.includes(".new-ui-prototype strong,") && styles.includes("font-family: var(--np-font-display);"));
+check("small prototype type has a readable desktop scale", styles.includes("--np-type-micro: 12px;") && styles.includes("--np-type-caption: 13px;") && styles.includes("--np-type-small: 14px;"));
 
 const screenshotPaths = [
   "docs/screenshots/micheon-home.png",
