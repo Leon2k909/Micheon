@@ -6,7 +6,7 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, shell, ipcMain, screen } from "electron";
+import { app, BrowserWindow, Menu, shell, ipcMain, screen } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
@@ -81,6 +81,36 @@ async function ensureServer() {
   if (serverStarted) return;
   await startServer(PORT);
   serverStarted = true;
+}
+
+/**
+ * Give selectable text and form fields the native desktop editing menu.
+ *
+ * Chromium does not create this menu inside a frameless Electron window, so a
+ * highlighted phrase otherwise appears copyable but right-clicking does
+ * nothing. Keep the menu scoped to text interactions so Micheon's own
+ * right-click controls, such as the audio mixer, continue to receive clicks.
+ */
+function installTextContextMenu(window) {
+  window.webContents.on("context-menu", (_event, params) => {
+    const hasSelection = Boolean(params.selectionText?.trim());
+    if (!params.isEditable && !hasSelection) return;
+
+    const template = params.isEditable
+      ? [
+          { role: "undo", enabled: params.editFlags.canUndo },
+          { role: "redo", enabled: params.editFlags.canRedo },
+          { type: "separator" },
+          { role: "cut", enabled: params.editFlags.canCut },
+          { role: "copy", enabled: params.editFlags.canCopy && hasSelection },
+          { role: "paste", enabled: params.editFlags.canPaste },
+          { type: "separator" },
+          { role: "selectAll", enabled: params.editFlags.canSelectAll },
+        ]
+      : [{ role: "copy", enabled: params.editFlags.canCopy && hasSelection }];
+
+    Menu.buildFromTemplate(template).popup({ window });
+  });
 }
 
 /**
@@ -1033,6 +1063,8 @@ async function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
     },
   });
+
+  installTextContextMenu(mainWindow);
 
   await mainWindow.loadURL(`http://localhost:${PORT}`);
   // The overlay is NOT created here. It uses a second lightweight renderer and

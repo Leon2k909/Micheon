@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.82",
+  "version": "1.2.83",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -35,7 +35,8 @@
     "check:gap-fill": "node scripts/check-gap-fill.cjs",
     "check:learning-time": "node scripts/check-learning-time.cjs",
     "check:social-preview": "node scripts/check-social-preview.cjs",
-    "build": "npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answer-matching && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && vite build",
+    "check:desktop-polish": "node scripts/check-desktop-polish.cjs",
+    "build": "npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answer-matching && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && npm run check:desktop-polish && vite build",
     "start": "node server/index.js",
     "electron": "npm run build && electron .",
     "electron:run": "electron .",

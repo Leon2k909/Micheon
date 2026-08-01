@@ -795,15 +795,24 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   align-items: center;
   gap: 10px;
   padding: 0 11px 0 16px;
-  border: 2px solid rgba(79, 189, 81, 0.3);
+  border: 2px solid rgba(76, 66, 55, 0.12);
   border-radius: 18px;
-  background: var(--np-surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  background: #fffefb;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 3px 0 rgba(84, 70, 55, 0.06);
+  transition:
+    border-color var(--np-motion-fast) ease,
+    box-shadow var(--np-motion-fast) ease,
+    background var(--np-motion-fast) ease;
 }
 
 .np-search-field:focus-within {
   border-color: var(--np-green);
-  box-shadow: 0 0 0 4px rgba(79, 189, 81, 0.12);
+  background: var(--np-surface);
+  box-shadow:
+    0 0 0 4px rgba(79, 189, 81, 0.12),
+    0 4px 0 rgba(35, 141, 53, 0.1);
 }
 
 .np-search-field > svg {
@@ -814,13 +823,28 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-search-field input {
+  appearance: none;
   min-width: 0;
-  border: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
   color: var(--np-text);
-  outline: 0;
+  outline: 0 !important;
   background: transparent;
+  box-shadow: none !important;
   font-size: 14px;
   font-weight: 800;
+}
+
+.np-search-field input:focus,
+.np-search-field input:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.np-search-field input::-webkit-search-cancel-button {
+  display: none;
 }
 
 .np-search-field input::placeholder {
@@ -1190,8 +1214,35 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-progress-track--hero {
-  height: 13px;
-  background: rgba(255, 255, 255, 0.72);
+  position: relative;
+  height: 14px;
+  border: 1px solid rgba(26, 104, 37, 0.2);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 2px 3px rgba(51, 92, 50, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.np-progress-track--hero > span {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(90deg, #ffe16a 0%, #ffc43b 52%, #ff9f1f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -2px 1px rgba(185, 94, 0, 0.2),
+    2px 0 5px rgba(255, 164, 27, 0.28);
+}
+
+.np-progress-track--hero > span::after {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  left: 3px;
+  height: 38%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.46);
+  content: "";
 }
 
 .np-mobile-course-button {

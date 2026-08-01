@@ -67,7 +67,7 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
         {value > 0 && (
           <>
             <motion.circle
-              cx={dotCx} cy={dotCy} fill="var(--mastery-ring-halo, rgba(255,210,51,0.45))"
+              cx={dotCx} cy={dotCy} fill="var(--mastery-ring-halo, rgba(255,210,51,0.45))" r={dotR * 1.1}
               animate={reduce ? { r: dotR * 1.6, opacity: 0.4 } : { r: [dotR * 1.1, dotR * 2.8], opacity: [0.55, 0] }}
               transition={reduce ? {} : { duration: 1.8, repeat: Infinity, ease: "easeOut" }}
             />

@@ -808,6 +808,7 @@ function Header({
 }
 
 function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; stats: PrototypeStats }) {
+  const reduceMotion = useReducedMotion();
   const { nxt, pct } = getLevelInfo(stats.totalXp);
   const xpTarget = nxt?.xpRequired ?? stats.totalXp;
 
@@ -833,8 +834,20 @@ function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; sta
             <span>Everyday speaker</span>
           </div>
           <div className="np-course-progress-row">
-            <div className="np-progress-track np-progress-track--hero">
-              <span style={{ width: `${pct}%` }} />
+            <div
+              aria-label={`${pct}% progress to the next level`}
+              aria-valuemax={100}
+              aria-valuemin={0}
+              aria-valuenow={pct}
+              className="np-progress-track np-progress-track--hero"
+              role="progressbar"
+            >
+              <motion.span
+                animate={{ scaleX: pct / 100 }}
+                initial={reduceMotion ? false : { scaleX: 0 }}
+                style={{ transformOrigin: "left center" }}
+                transition={{ delay: 0.22, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+              />
             </div>
             <small>{stats.totalXp.toLocaleString()} / {xpTarget.toLocaleString()} XP</small>
           </div>
