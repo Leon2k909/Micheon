@@ -371,6 +371,30 @@ const expected = {
     theme: "Lüften und Heizen: die deutsche Wissenschaft vom Raumklima",
     fixture: "Fünf Minuten Durchzug bringen mehr als den ganzen Tag auf Kipp.",
   },
+  part232: {
+    theme: "Kleinanzeigen: Ist das noch da?",
+    fixture: "Ist das noch da?",
+  },
+  part233: {
+    theme: "Beim Metzger: Aufschnitt, halb und halb und die Scheibe auf die Hand",
+    fixture: "Darf es etwas mehr sein? — Ja, passt schon.",
+  },
+  part234: {
+    theme: "Im Zoo: Fütterung, Streichelzoo und das weise Faultier",
+    fixture: "Das Faultier hat das Leben verstanden.",
+  },
+  part235: {
+    theme: "Karneval und Fasching: Alaaf, Helau und Kamelle",
+    fixture: "In Köln ruft man Alaaf, in Düsseldorf Helau.",
+  },
+  part236: {
+    theme: "Aberglaube: auf Holz klopfen und bloß nicht verschreien",
+    fixture: "Anstoßen immer mit Blickkontakt — sonst sieben Jahre Pech.",
+  },
+  part237: {
+    theme: "Briefe und E-Mails: Sehr geehrte, anbei und der fehlende Anhang",
+    fixture: "Der Anhang fehlt — die berühmteste Mail-Panne der Welt.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -406,7 +430,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all eighty-one packs",
+  "new authored phrases are unique across all eighty-seven packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -430,9 +454,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the eighty-one expansion packs contain at least 2677 authored phrases", newPhrases.length >= 2677, `found ${newPhrases.length}`);
-check("the eighty-one expansion packs contain at least 1296 vocabulary entries", totalSeeds >= 1296, `found ${totalSeeds}`);
-check("the eighty-one expansion packs contain at least 208 dialogues", totalDialogues >= 208, `found ${totalDialogues}`);
+check("the eighty-seven expansion packs contain at least 2845 authored phrases", newPhrases.length >= 2845, `found ${newPhrases.length}`);
+check("the eighty-seven expansion packs contain at least 1386 vocabulary entries", totalSeeds >= 1386, `found ${totalSeeds}`);
+check("the eighty-seven expansion packs contain at least 220 dialogues", totalDialogues >= 220, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);

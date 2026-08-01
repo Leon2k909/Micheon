@@ -103,6 +103,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part229",         // Den Führerschein machen
   "part230",         // Prüfungen und Lernen
   "part231",         // Lüften und Heizen
+  "part232",         // Kleinanzeigen: Ist das noch da?
+  "part233",         // Beim Metzger
+  "part234",         // Im Zoo
+  "part235",         // Karneval und Fasching
+  "part236",         // Aberglaube und Glücksbringer
+  "part237",         // Briefe und E-Mails: die Formeln
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
