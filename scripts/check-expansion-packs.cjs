@@ -615,6 +615,30 @@ const expected = {
     theme: "Gäste bewirten: Menü planen, Allergien und alles am Vortag",
     fixture: "Koch nichts, was du zum ersten Mal machst.",
   },
+  part324: {
+    theme: "Briefe verschicken: Briefmarke, Einwurf-Einschreiben und der Kasten an der Ecke",
+    fixture: "Auf dem Kasten steht, wann die nächste Leerung ist.",
+  },
+  part325: {
+    theme: "Eine Feier planen: Gästeliste, Zusagen und die Torte",
+    fixture: "Die Gästeliste wächst wie von selbst.",
+  },
+  part326: {
+    theme: "Krank im Job: der gelbe Schein, Lohnfortzahlung und wieder zurück",
+    fixture: "Ab dem dritten Tag brauchst du ein Attest.",
+  },
+  part327: {
+    theme: "Skiurlaub: Skipass, Piste und der Schnee, der nicht liegt",
+    fixture: "Blaue Piste heißt leicht, rote mittel, schwarze schwer.",
+  },
+  part328: {
+    theme: "Krankenkasse: gesetzlich, privat und der Zusatzbeitrag",
+    fixture: "Die Leistungen sind bei allen Kassen fast gleich.",
+  },
+  part329: {
+    theme: "Streit mit den Nachbarn: Lärm, Gespräch und die Hausordnung",
+    fixture: "Such zuerst das Gespräch, nicht den Anwalt.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -674,9 +698,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and forty-two expansion packs contain at least 4407 authored phrases", newPhrases.length >= 4407, `found ${newPhrases.length}`);
-check("the one hundred and forty-two expansion packs contain at least 2216 vocabulary entries", totalSeeds >= 2216, `found ${totalSeeds}`);
-check("the one hundred and forty-two expansion packs contain at least 332 dialogues", totalDialogues >= 332, `found ${totalDialogues}`);
+check("the one hundred and forty-eight expansion packs contain at least 4575 authored phrases", newPhrases.length >= 4575, `found ${newPhrases.length}`);
+check("the one hundred and forty-eight expansion packs contain at least 2306 vocabulary entries", totalSeeds >= 2306, `found ${totalSeeds}`);
+check("the one hundred and forty-eight expansion packs contain at least 344 dialogues", totalDialogues >= 344, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

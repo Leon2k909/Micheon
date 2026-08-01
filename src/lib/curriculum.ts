@@ -164,6 +164,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part321",         // Physiotherapie und Reha
   "part322",         // Arbeitsrecht
   "part323",         // Gäste bewirten
+  "part324",         // Briefe verschicken
+  "part325",         // Eine Feier planen
+  "part326",         // Krank im Job
+  "part327",         // Skiurlaub
+  "part328",         // Krankenkasse
+  "part329",         // Streit mit den Nachbarn
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
