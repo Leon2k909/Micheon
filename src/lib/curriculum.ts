@@ -79,6 +79,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part205",         // Mülltrennung
   "part206",         // WG und Haushalt teilen
   "part207",         // In der Warteschleife
+  "part208",         // Floskeln: die kleinen Antworten
+  "part209",         // Nein sagen mit Stil
+  "part210",         // In der Arztpraxis
+  "part211",         // Homeoffice und Videokonferenz
+  "part212",         // Nachbarschaftshilfe
+  "part213",         // Oma und Opa
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
