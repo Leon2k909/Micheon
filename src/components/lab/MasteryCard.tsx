@@ -29,7 +29,16 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
   const dotCy = useTransform(mv, (v) => size / 2 + r * Math.sin((clamp(v) / 100) * 2 * Math.PI));
 
   return (
-    <div className="mastery-ring relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      aria-label={`${Math.round(value)}% ${ui("mastered")}`}
+      className="mastery-ring relative flex shrink-0 items-center justify-center"
+      role="img"
+      style={{
+        width: size,
+        height: size,
+        "--mastery-value": `${clamp(value)}%`,
+      } as React.CSSProperties}
+    >
       <svg aria-hidden="true" className="absolute inset-0 -rotate-90" height={size} width={size} style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id={id} x1="0%" x2="100%" y1="0%" y2="100%">

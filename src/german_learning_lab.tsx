@@ -895,15 +895,17 @@ export default function GermanLearningLab() {
 
   startSessionRef.current = startSession;
   useEffect(() => {
+    const requestedPart = guidedRequest && guidedRequest !== "continue" ? guidedRequest : undefined;
     if (
-      guidedRequest !== "continue"
+      !guidedRequest
       || guidedAutoStartedRef.current
       || showPlacementTest
       || Object.keys(apiParts).length === 0
+      || (requestedPart && !apiParts[requestedPart])
     ) return;
 
     guidedAutoStartedRef.current = true;
-    startSessionRef.current();
+    startSessionRef.current(requestedPart);
   }, [apiParts, guidedRequest, showPlacementTest]);
 
   const logActivity = (stepsForCount: any[], completed = false) => {
@@ -952,6 +954,7 @@ export default function GermanLearningLab() {
     const url = new URL(window.location.href);
     url.searchParams.delete("guided");
     url.searchParams.delete("guided-theme");
+    url.searchParams.delete("legacy-dashboard");
     url.searchParams.delete("tab");
     url.searchParams.set("ui-prototype", "1");
     window.location.assign(url.toString());
@@ -967,7 +970,16 @@ export default function GermanLearningLab() {
     </div>
   );
 
-  if (guidedRequest === "continue" && prototypeGuidedTheme && !showGuidedSession) return (
+  if (
+    guidedRequest
+    && prototypeGuidedTheme
+    && !showGuidedSession
+    && (
+      Object.keys(apiParts).length === 0
+      || guidedRequest === "continue"
+      || Boolean(apiParts[guidedRequest])
+    )
+  ) return (
     <div
       aria-live="polite"
       className="guided-session fs-app prototype-guided-session prototype-guided-loading-screen"
@@ -1199,6 +1211,7 @@ export default function GermanLearningLab() {
         searchItems={topNavSearchItems}
         brandName={activeCourse?.name ?? "Micheon"}
         onOpenReader={courseHasReader ? () => openReader() : undefined}
+        onOpenBetaTheme={returnToPrototypeHome}
         readerLabel="Course material"
       />
 

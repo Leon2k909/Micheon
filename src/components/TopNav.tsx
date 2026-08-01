@@ -13,6 +13,7 @@ import {
   Menu,
   Repeat,
   Search,
+  Sparkles,
   User,
   X,
 } from "lucide-react";
@@ -65,6 +66,7 @@ interface TopNavProps {
   brandName?: string;
   brandIcon?: string;
   onOpenReader?: () => void;
+  onOpenBetaTheme?: () => void;
   readerLabel?: string;
 }
 
@@ -86,6 +88,7 @@ export function TopNav({
   brandName = "Micheon",
   brandIcon,
   onOpenReader,
+  onOpenBetaTheme,
   readerLabel = "Course material",
 }: TopNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -266,6 +269,19 @@ export function TopNav({
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
+            {onOpenBetaTheme && (
+              <button
+                aria-label={ui("Open the new beta theme")}
+                className="hidden h-10 items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 text-[12px] font-black text-emerald-600 transition-[transform,background-color,color,box-shadow] hover:-translate-y-0.5 hover:bg-emerald-500 hover:text-white hover:shadow-[0_5px_0_rgba(34,139,68,0.34)] active:translate-y-0 active:shadow-none md:flex"
+                onClick={onOpenBetaTheme}
+                title={ui("Open the new beta theme")}
+                type="button"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden lg:inline 2xl:hidden">{ui("Beta")}</span>
+                <span className="hidden 2xl:inline">{ui("New beta theme")}</span>
+              </button>
+            )}
             {onOpenReader && (
               <button
                 aria-label={ui(readerLabel)}
@@ -668,6 +684,16 @@ export function TopNav({
                   label={ui("Audio settings")}
                   settingsOnly
                 />
+                {onOpenBetaTheme && (
+                  <button
+                    className="col-span-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-3 text-sm font-black text-emerald-600 transition-colors hover:bg-emerald-500 hover:text-white"
+                    onClick={onOpenBetaTheme}
+                    type="button"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {ui("Open the new beta theme")}
+                  </button>
+                )}
               </div>
               {NAV.map((item) => {
                 const active = item.id === activeTab;

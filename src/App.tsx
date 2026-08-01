@@ -22,7 +22,8 @@ export default function App() {
   const search = new URLSearchParams(window.location.search);
   const isPetOverlay = search.get("pet-overlay") === "1";
   const isPetHistory = search.get("pet-history") === "1";
-  const isUiPrototype = search.get("ui-prototype") === "1";
+  const isGuidedSession = search.has("guided");
+  const isLegacyDashboard = search.get("legacy-dashboard") === "1";
   if (isPetOverlay) {
     return (
       <CodexPetProvider>
@@ -37,7 +38,7 @@ export default function App() {
       </CodexPetProvider>
     );
   }
-  if (isUiPrototype) {
+  if (!isLegacyDashboard && !isGuidedSession) {
     return <MicheonPrototype />;
   }
 
@@ -65,6 +66,8 @@ function MicheonPrototype() {
     };
   }, []);
 
+  useEffect(() => watchStoredThemePreferences(), []);
+
   return (
     <>
       <TitleBar />
@@ -85,12 +88,12 @@ function MicheonPrototype() {
 
 function PrototypeSkeleton() {
   return (
-    <div className="flex min-h-[var(--app-h)] items-center justify-center bg-[#ececf4] p-6">
-      <div className="w-full max-w-sm rounded-[28px] border border-black/5 bg-[#fffdf8] p-6 shadow-[0_24px_70px_rgba(48,38,83,0.12)]">
-        <div className="h-4 w-24 rounded-full bg-[#e5e1ef]" />
-        <div className="mt-5 h-10 w-3/4 rounded-2xl bg-[#ece9f4]" />
-        <div className="mt-3 h-4 w-1/2 rounded-full bg-[#f0edf5]" />
-        <div className="mt-8 h-44 rounded-[22px] bg-[#e7e2f5]" />
+    <div className="flex min-h-[var(--app-h)] items-center justify-center bg-[var(--bg)] p-6">
+      <div className="w-full max-w-sm rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_24px_70px_var(--shadow-strong)]">
+        <div className="h-4 w-24 rounded-full bg-[var(--surface-3)]" />
+        <div className="mt-5 h-10 w-3/4 rounded-2xl bg-[var(--surface-2)]" />
+        <div className="mt-3 h-4 w-1/2 rounded-full bg-[var(--surface-3)]" />
+        <div className="mt-8 h-44 rounded-[22px] bg-[var(--surface-2)]" />
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CircleUserRound,
   ClipboardCheck,
+  Clock3,
   Coins,
   Crown,
   Gamepad2,
@@ -24,11 +25,21 @@ import {
   Search,
   Settings2,
   ShoppingBag,
+  Target,
   Trophy,
   UserRound,
   Volume2,
+  X,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 
 import GamificationPanel, { getLevelInfo, MILESTONES, type GamificationStats } from "@/Gamification";
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
@@ -39,7 +50,8 @@ import ClozeTabContent from "@/lab/ClozeTabContent";
 import GrammarTabContent from "@/lab/GrammarTabContent";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
-import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
+import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection, isBulkPartKey } from "@/lib/contentBank";
+import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { buildCustomParts, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
 import { DIRECTION_CHANGE_EVENT } from "@/lib/direction";
@@ -49,6 +61,8 @@ import { getStreak } from "@/lib/streak";
 import type { Blueprint, Part } from "@/lib/types";
 import { getActiveCourseId, setActiveCourseId as persistActiveCourseId } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
+import { countKnownVocab, getFluency } from "@/lib/fluency";
+import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 
 import heroImage from "./assets/micheon-hero-v3.png";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.png";
@@ -64,6 +78,16 @@ type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
 type PrototypeStats = GamificationStats;
+
+type PrototypeSearchItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  group: "Page" | "Lesson" | "Word bank" | "Game";
+  actionLabel: "Open" | "Start";
+  searchText: string;
+  onSelect: () => void;
+};
 
 type NavigationItem = {
   id: PrototypeView;
@@ -100,6 +124,48 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
   { id: "games", label: "Games", icon: Gamepad2 },
   { id: "more", label: "More", icon: Menu },
 ];
+
+const PROTOTYPE_SIDEBAR_MIN = 188;
+const PROTOTYPE_SIDEBAR_MAX = 330;
+const PROTOTYPE_SIDEBAR_KEY = "prototype-sidebar-width";
+
+const PROTOTYPE_SEARCH_PAGES: Array<{
+  id: PrototypeView;
+  title: string;
+  subtitle: string;
+  keywords: string;
+}> = [
+  { id: "home", title: "Home", subtitle: "Your course, progress, lesson path, and fluency outlook.", keywords: "dashboard today continue learning" },
+  { id: "learn", title: "Lessons", subtitle: "Browse every German lesson and word-bank pack.", keywords: "learn modules packs vocabulary phrases" },
+  { id: "practice", title: "Practice", subtitle: "Choose useful phrases and review conversational German.", keywords: "review recall sentences conversation" },
+  { id: "games", title: "Games", subtitle: "Spelling, recall, verbs, and quick-recognition games.", keywords: "play word snake falling letters shooter minesweeper slither" },
+  { id: "tests", title: "Tests", subtitle: "Build vocabulary, phrase, mixed, or weak-spot tests.", keywords: "quiz assessment level search filters" },
+  { id: "grammar", title: "Grammar", subtitle: "Cloze practice and accessible grammar explanations.", keywords: "fill blanks rules sentence structure" },
+  { id: "shop", title: "Shop", subtitle: "Unlock and equip profile badges with earned coins.", keywords: "rewards coins badge cosmetics" },
+  { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
+  { id: "profile", title: "Profile and settings", subtitle: "Account, appearance, learning direction, and preferences.", keywords: "account dark mode theme settings language" },
+  { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
+];
+
+const PROTOTYPE_SEARCH_GAMES = [
+  ["Word Snake", "Spell German words by steering through letters."],
+  ["Falling Letters", "Catch the correct letters before they leave the screen."],
+  ["Letter Tap", "Tap the right letter quickly to train visual recall."],
+  ["Verb Shooter", "Choose the right verb form before time runs out."],
+  ["Vocab Minesweeper", "Translate carefully and avoid wrong picks."],
+  ["Vocab Slither", "Match target words while keeping the run alive."],
+] as const;
+
+function clampPrototypeSidebarWidth(width: number) {
+  return Math.min(PROTOTYPE_SIDEBAR_MAX, Math.max(PROTOTYPE_SIDEBAR_MIN, Math.round(width)));
+}
+
+function defaultPrototypeSidebarWidth() {
+  if (typeof window === "undefined") return 226;
+  if (window.innerWidth <= 1100) return 192;
+  if (window.innerWidth <= 1280) return 205;
+  return 226;
+}
 
 const PREVIEW_PROFILE: UserProfile = {
   id: "micheon-preview",
@@ -150,6 +216,13 @@ const LESSONS = [
 
 const SHOP_PURCHASES_KEY = "prototypeShopPurchases";
 const SHOP_EQUIPPED_KEY = "prototypeShopEquippedBadge";
+
+const COIN_PACKS = [
+  { id: "pocket", coins: 500, price: "£1.99", label: "Pocket pack", note: "A small boost for profile rewards." },
+  { id: "popular", coins: 1_200, price: "£3.99", label: "Popular pack", note: "Enough for several pins and future rewards.", featured: true },
+  { id: "power", coins: 3_000, price: "£7.99", label: "Power pack", note: "A bigger balance for regular learners." },
+  { id: "vault", coins: 6_500, price: "£14.99", label: "Coin vault", note: "The largest preview bundle in the shop." },
+] as const;
 
 const SHOP_ITEMS: ReadonlyArray<{
   id: ShopBadgeId;
@@ -256,7 +329,52 @@ function BrandMark() {
   );
 }
 
-function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavigate: (view: PrototypeView) => void }) {
+function Sidebar({
+  activeView,
+  onNavigate,
+  onResize,
+  width,
+}: {
+  activeView: PrototypeView;
+  onNavigate: (view: PrototypeView) => void;
+  onResize: (width: number, persist?: boolean) => void;
+  width: number;
+}) {
+  const resizeCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => resizeCleanupRef.current?.(), []);
+
+  const startResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    resizeCleanupRef.current?.();
+
+    const startX = event.clientX;
+    const startWidth = width;
+    let latestWidth = width;
+    document.documentElement.classList.add("is-resizing-prototype-sidebar");
+
+    const move = (pointerEvent: PointerEvent) => {
+      latestWidth = clampPrototypeSidebarWidth(startWidth + pointerEvent.clientX - startX);
+      onResize(latestWidth);
+    };
+    const cleanup = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+      document.documentElement.classList.remove("is-resizing-prototype-sidebar");
+      resizeCleanupRef.current = null;
+    };
+    const finish = () => {
+      onResize(latestWidth, true);
+      cleanup();
+    };
+
+    resizeCleanupRef.current = cleanup;
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+  };
+
   return (
     <aside className="np-sidebar">
       <BrandMark />
@@ -280,6 +398,34 @@ function Sidebar({ activeView, onNavigate }: { activeView: PrototypeView; onNavi
       </nav>
 
       <div className="np-sidebar-spacer" />
+      <button
+        aria-label="Resize sidebar"
+        aria-orientation="vertical"
+        aria-valuemax={PROTOTYPE_SIDEBAR_MAX}
+        aria-valuemin={PROTOTYPE_SIDEBAR_MIN}
+        aria-valuenow={width}
+        className="np-sidebar-resizer"
+        onDoubleClick={() => onResize(defaultPrototypeSidebarWidth(), true)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            onResize(width - 8, true);
+          } else if (event.key === "ArrowRight") {
+            event.preventDefault();
+            onResize(width + 8, true);
+          } else if (event.key === "Home") {
+            event.preventDefault();
+            onResize(PROTOTYPE_SIDEBAR_MIN, true);
+          } else if (event.key === "End") {
+            event.preventDefault();
+            onResize(PROTOTYPE_SIDEBAR_MAX, true);
+          }
+        }}
+        onPointerDown={startResize}
+        role="separator"
+        title="Drag to resize. Double-click to reset."
+        type="button"
+      />
     </aside>
   );
 }
@@ -299,33 +445,76 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 function Header({
   equippedBadge,
   onNavigate,
+  searchItems,
   stats,
   userName,
 }: {
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
+  searchItems: PrototypeSearchItem[];
   stats: PrototypeStats;
   userName: string;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "there";
   const notifications: Array<{ title: string; body: string; view: PrototypeView }> = [
     { title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
     { title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
   ];
+  const filteredSearchItems = useMemo(() => {
+    const terms = normalizeCatalogSearchText(searchQuery).split(" ").filter(Boolean);
+    const matches = terms.length
+      ? searchItems.filter((item) => terms.every((term) => item.searchText.includes(term)))
+      : searchItems.filter((item) => item.group === "Page");
+    return matches.slice(0, 9);
+  }, [searchItems, searchQuery]);
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  };
+
+  const selectSearchItem = (item: PrototypeSearchItem) => {
+    closeSearch();
+    item.onSelect();
+  };
 
   const openNotification = (view: PrototypeView) => {
+    closeSearch();
     setNotificationsOpen(false);
     onNavigate(view);
   };
 
   const openProfileDestination = (view: PrototypeView) => {
+    closeSearch();
     setProfileOpen(false);
     onNavigate(view);
   };
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const focusTimer = window.setTimeout(() => searchInputRef.current?.focus(), 80);
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (event.target instanceof Node && !searchWrapRef.current?.contains(event.target)) closeSearch();
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeSearch();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [searchOpen]);
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -359,28 +548,94 @@ function Header({
         <StatChip kind="trophy" label="Lessons done" value={stats.sessionsCompleted.toLocaleString()} />
       </div>
       <div className="np-header-actions">
-        <AnimatePresence initial={false}>
-          {searchOpen && (
-            <motion.label
-              animate={{ opacity: 1, width: 220 }}
-              className="np-search"
-              exit={{ opacity: 0, width: 0 }}
-              initial={{ opacity: 0, width: 0 }}
-            >
-              <Search />
-              <input aria-label="Search prototype" autoFocus placeholder="Search lessons" />
-            </motion.label>
-          )}
-        </AnimatePresence>
-        <button aria-label="Search" className="np-icon-button np-desktop-search" onClick={() => setSearchOpen((open) => !open)} type="button">
-          <Search />
-        </button>
+        <div className="np-search-wrap" ref={searchWrapRef}>
+          <button
+            aria-controls="prototype-global-search"
+            aria-expanded={searchOpen}
+            aria-label="Search Micheon"
+            className={`np-icon-button np-desktop-search${searchOpen ? " is-active" : ""}`}
+            onClick={() => {
+              setNotificationsOpen(false);
+              setProfileOpen(false);
+              if (searchOpen) closeSearch();
+              else setSearchOpen(true);
+            }}
+            type="button"
+          >
+            <Search />
+          </button>
+          <AnimatePresence initial={false}>
+            {searchOpen && (
+              <motion.div
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                aria-label="Search Micheon"
+                className="np-search-panel"
+                exit={{ opacity: 0, scale: 0.985, y: -6 }}
+                id="prototype-global-search"
+                initial={{ opacity: 0, scale: 0.985, y: -9 }}
+                role="dialog"
+                transition={{ duration: 0.16 }}
+              >
+                <label className="np-search-field">
+                  <Search aria-hidden="true" />
+                  <input
+                    aria-label="Search lessons, pages, and games"
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && filteredSearchItems[0]) selectSearchItem(filteredSearchItems[0]);
+                    }}
+                    placeholder="Search lessons, pages, games, or a German phrase…"
+                    ref={searchInputRef}
+                    type="search"
+                    value={searchQuery}
+                  />
+                  {searchQuery && (
+                    <button
+                      aria-label="Clear search"
+                      onClick={() => {
+                        setSearchQuery("");
+                        searchInputRef.current?.focus();
+                      }}
+                      type="button"
+                    >
+                      <X />
+                    </button>
+                  )}
+                </label>
+
+                <div className="np-search-panel-heading">
+                  <strong>{searchQuery ? "Search results" : "Quick links"}</strong>
+                  <small>{filteredSearchItems.length} {filteredSearchItems.length === 1 ? "result" : "results"}</small>
+                </div>
+
+                <div className="np-search-results">
+                  {filteredSearchItems.length > 0 ? filteredSearchItems.map((item) => (
+                    <button data-testid="prototype-search-result" key={item.id} onClick={() => selectSearchItem(item)} type="button">
+                      <span className="np-search-result-group">{item.group}</span>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <small>{item.subtitle}</small>
+                      </div>
+                      <span className="np-search-result-action">{item.actionLabel}<ChevronRight /></span>
+                    </button>
+                  )) : (
+                    <div className="np-search-empty">
+                      <strong>No matching result</strong>
+                      <span>Try a lesson name, topic, German phrase, or game.</span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <div className="np-notification-wrap">
           <button
             aria-expanded={notificationsOpen}
             aria-label={`${notifications.length} unread notifications`}
             className="np-icon-button np-notification"
             onClick={() => {
+              closeSearch();
               setProfileOpen(false);
               setNotificationsOpen((open) => !open);
             }}
@@ -424,6 +679,7 @@ function Header({
             aria-label="Open profile menu"
             className={`np-profile-button${profileOpen ? " is-open" : ""}`}
             onClick={() => {
+              closeSearch();
               setNotificationsOpen(false);
               setProfileOpen((open) => !open);
             }}
@@ -487,33 +743,35 @@ function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; sta
   const xpTarget = nxt?.xpRequired ?? stats.totalXp;
 
   return (
-    <section className="np-course-hero">
-      <img alt="" className="np-course-art" src={heroImage} />
-      <div aria-hidden="true" className="np-course-shade" />
-      <div className="np-course-copy">
-        <div className="np-course-meta-row">
-          <span className="np-course-kicker">Your active course</span>
-          <button aria-label="Switch course, currently German" className="np-course-language-chip" onClick={onSwitchCourse} type="button">
-            <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
-            <strong>German</strong>
-            <ChevronDown />
-          </button>
-        </div>
-        <div className="np-course-title-row">
-          <h1>German for real conversations</h1>
-        </div>
-        <div className="np-level-line">
-          <strong>Level A2</strong>
-          <span>Everyday speaker</span>
-        </div>
-        <div className="np-course-progress-row">
-          <div className="np-progress-track np-progress-track--hero">
-            <span style={{ width: `${pct}%` }} />
+    <div className="np-course-hero-frame">
+      <section className="np-course-hero">
+        <img alt="" className="np-course-art" src={heroImage} />
+        <div aria-hidden="true" className="np-course-shade" />
+        <div className="np-course-copy">
+          <div className="np-course-meta-row">
+            <span className="np-course-kicker">Your active course</span>
+            <button aria-label="Switch course, currently German" className="np-course-language-chip" onClick={onSwitchCourse} type="button">
+              <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
+              <strong>German</strong>
+              <ChevronDown />
+            </button>
           </div>
-          <small>{stats.totalXp.toLocaleString()} / {xpTarget.toLocaleString()} XP</small>
+          <div className="np-course-title-row">
+            <h1>German for real conversations</h1>
+          </div>
+          <div className="np-level-line">
+            <strong>Level A2</strong>
+            <span>Everyday speaker</span>
+          </div>
+          <div className="np-course-progress-row">
+            <div className="np-progress-track np-progress-track--hero">
+              <span style={{ width: `${pct}%` }} />
+            </div>
+            <small>{stats.totalXp.toLocaleString()} / {xpTarget.toLocaleString()} XP</small>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -638,6 +896,62 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
   );
 }
 
+function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab: number }) {
+  const [revision, setRevision] = useState(0);
+  const fluency = getFluency(vocab);
+
+  useEffect(() => {
+    const refresh = () => setRevision((value) => value + 1);
+    window.addEventListener("activity-updated", refresh);
+    window.addEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
+    return () => {
+      window.removeEventListener("activity-updated", refresh);
+      window.removeEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
+    };
+  }, []);
+
+  const estimate = useMemo(
+    () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
+    [fluency.toFluent, profile, revision]
+  );
+  const estimateNote = estimate.confidence === "personalized"
+    ? "Based on your active lesson pace."
+    : estimate.confidence === "developing"
+      ? "Becomes more accurate as you complete lessons."
+      : "Starting estimate. Complete a timed lesson to personalise it.";
+
+  return (
+    <section className="np-fluency-outlook">
+      <div className="np-fluency-main">
+        <div className="np-fluency-heading">
+          <span aria-hidden="true"><Target /></span>
+          <div>
+            <h2>Your path to fluent conversations</h2>
+            <p>A realistic outlook based on useful words and phrases you can recall.</p>
+          </div>
+        </div>
+        <div className="np-fluency-status">
+          <div><strong>{fluency.cur.label}</strong><small>{fluency.vocab.toLocaleString()} useful items known</small></div>
+          <span>{fluency.overallPct}% to fluent</span>
+        </div>
+        <div aria-label={`${fluency.overallPct}% to fluent`} className="np-fluency-track">
+          <span style={{ width: `${fluency.overallPct}%` }} />
+        </div>
+        <div className="np-fluency-footnote">
+          <span>{fluency.toFluent.toLocaleString()} words and phrases to go</span>
+          <span>Fluent target: 5,000</span>
+        </div>
+      </div>
+      <div className="np-fluency-hours">
+        <span aria-hidden="true"><Clock3 /></span>
+        <small>Estimated active study left</small>
+        <strong>About {estimate.hoursRemaining.toLocaleString()} hours</strong>
+        <p>{estimateNote}</p>
+      </div>
+    </section>
+  );
+}
+
 function AchievementBadge({ achievement, standalone, stats }: { achievement: Milestone; standalone: boolean; stats: PrototypeStats }) {
   const unlocked = achievement.check(stats);
   const progress = Math.min(achievement.current(stats), achievement.target);
@@ -753,12 +1067,16 @@ function ProgressPanel({
 
 function HomeView({
   onPractice,
+  profile,
   onSwitchCourse,
   stats,
+  vocab,
 }: {
   onPractice: () => void;
+  profile: UserProfile | null;
   onSwitchCourse: () => void;
   stats: PrototypeStats;
+  vocab: number;
 }) {
   return (
     <div className="np-home-view">
@@ -768,6 +1086,7 @@ function HomeView({
         <span><strong>Continue learning</strong><small>Lesson 12: Everyday phrases</small></span>
         <ChevronRight />
       </button>
+      <FluencyOutlook profile={profile} vocab={vocab} />
       <div className="np-home-practice"><PracticeCard compact /></div>
       <LessonPath onOpenLesson={onPractice} />
     </div>
@@ -809,6 +1128,12 @@ function ShopView({
   onChooseBadge: (id: ShopBadgeId) => void;
   ownedBadges: ShopBadgeId[];
 }) {
+  const [previewMessage, setPreviewMessage] = useState("");
+
+  const previewPurchase = (message: string) => {
+    setPreviewMessage(message);
+  };
+
   return (
     <section className="np-shop-view">
       <div className="np-shop-hero">
@@ -830,6 +1155,71 @@ function ShopView({
         <Coins />
         <p>You start with 80 welcome coins. More coins come from XP, completed lessons, and reviews. Buying a pin never reduces your XP.</p>
       </div>
+
+      {previewMessage && (
+        <div aria-live="polite" className="np-shop-preview-message" data-testid="shop-preview-message" role="status">
+          <CheckCircle2 />
+          <div><strong>Shop preview</strong><p>{previewMessage}</p></div>
+          <button aria-label="Dismiss message" onClick={() => setPreviewMessage("")} type="button"><X /></button>
+        </div>
+      )}
+
+      <section aria-labelledby="coin-packs-heading" className="np-shop-purchase-section">
+        <div className="np-shop-section-heading">
+          <div><h2 id="coin-packs-heading">Buy Micheon coins</h2><p>Choose a coin pack for profile pins and future shop rewards.</p></div>
+          <span>Checkout preview</span>
+        </div>
+
+        <div className="np-coin-pack-grid">
+          {COIN_PACKS.map((pack) => (
+            <article className={`np-coin-pack${pack.featured ? " is-featured" : ""}`} key={pack.id}>
+              <div className="np-coin-pack-icon"><Coins /></div>
+              <div className="np-coin-pack-copy">
+                <small>{pack.featured ? "Most popular" : pack.label}</small>
+                <h3>{pack.coins.toLocaleString()} coins</h3>
+                <p>{pack.note}</p>
+              </div>
+              <button
+                data-testid={`shop-coin-pack-${pack.coins}`}
+                onClick={() => previewPurchase(`${pack.coins.toLocaleString()} coins are not charged or added yet. Checkout will be connected later.`)}
+                type="button"
+              >
+                <span>{pack.price}</span>
+                Buy coins
+              </button>
+            </article>
+          ))}
+        </div>
+        <p className="np-shop-checkout-note">Preview prices only. Payments are not connected, so these buttons will not charge you.</p>
+      </section>
+
+      <section aria-labelledby="premium-heading" className="np-premium-card">
+        <div className="np-premium-copy">
+          <span className="np-premium-mark"><Crown /></span>
+          <div>
+            <small>Micheon Premium</small>
+            <h2 id="premium-heading">Learn better together</h2>
+            <p>A future membership for learners who want more motivation from the people they know.</p>
+          </div>
+        </div>
+        <div className="np-premium-benefits" aria-label="Planned Premium features">
+          <span><UserRound /><strong>Add friends</strong></span>
+          <span><Trophy /><strong>Friendly leaderboards</strong></span>
+          <span><MessageCircleMore /><strong>Learn together</strong></span>
+        </div>
+        <div className="np-premium-action">
+          <div><strong>£5.99</strong><span>per month, preview price</span></div>
+          <button
+            data-testid="shop-premium-buy"
+            onClick={() => previewPurchase("Premium checkout and its social features are not connected yet.")}
+            type="button"
+          >
+            Get Premium
+            <ChevronRight />
+          </button>
+          <small>No charge is made. Friends, leaderboards, and learning together are planned features.</small>
+        </div>
+      </section>
 
       <div className="np-shop-section-heading">
         <div><h2>Profile pins</h2><p>Your equipped pin appears on the profile button.</p></div>
@@ -916,8 +1306,8 @@ function MoreView({
         })}
       </div>
       <div className="np-full-app-callout">
-        <div><strong>Need the original dashboard?</strong><p>It stays available while the new home is being finished.</p></div>
-        <button onClick={() => onOpenFullApp("dashboard")} type="button">Open it <ChevronRight /></button>
+        <div><strong>Need the original dashboard?</strong><p>Your familiar dashboard and every legacy tool are still available.</p></div>
+        <button onClick={() => onOpenFullApp("dashboard")} type="button">Open original dashboard <ChevronRight /></button>
       </div>
     </section>
   );
@@ -976,6 +1366,11 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const [activeView, setActiveView] = useState<PrototypeView>("home");
   const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
   const [activeCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const fallback = defaultPrototypeSidebarWidth();
+    const stored = Number(loadScopedJson(PROTOTYPE_SIDEBAR_KEY, fallback, profile));
+    return Number.isFinite(stored) ? clampPrototypeSidebarWidth(stored) : fallback;
+  });
   const [stats, setStats] = useState<PrototypeStats>(() => ({
     totalXp: loadScopedJson("totalXp", 0, profile) as number,
     sessionsCompleted: loadScopedJson("sessionsCompleted", 0, profile) as number,
@@ -1004,17 +1399,30 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     total + (SHOP_ITEMS.find((item) => item.id === id)?.price ?? 0)
   ), 0);
   const availableShopCoins = Math.max(0, earnedShopCoins - spentShopCoins);
+  const knownVocab = countKnownVocab(profile, stats.externalWords);
+  const searchableLessons = useMemo(() => Object.entries(apiParts).map(([id, part]) => ({
+    id,
+    title: part.theme || part.label,
+    subtitle: `${part.level} · ${part.description || part.focus}`,
+    group: (isBulkPartKey(id) ? "Word bank" : "Lesson") as "Word bank" | "Lesson",
+    searchText: buildCatalogSearchText([
+      id,
+      part.label,
+      part.level,
+      part.theme,
+      part.description,
+      part.focus,
+      ...(part.phrases ?? []).flatMap((phrase) => [phrase.de, phrase.en]),
+      ...(part.vocab ?? []).flatMap((word) => [word.de, word.en]),
+    ]),
+  })), [apiParts]);
 
   useEffect(() => {
-    const previousTheme = document.documentElement.dataset.theme;
     const previousTitle = document.title;
-    document.documentElement.dataset.theme = "light";
     document.documentElement.classList.add("is-ui-prototype");
-    document.title = "Micheon UI prototype";
+    document.title = "Micheon";
     return () => {
       document.documentElement.classList.remove("is-ui-prototype");
-      if (previousTheme) document.documentElement.dataset.theme = previousTheme;
-      else delete document.documentElement.dataset.theme;
       document.title = previousTitle;
     };
   }, []);
@@ -1032,6 +1440,9 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const openFullApp = (tab: string) => {
     const url = new URL(window.location.href);
     url.searchParams.delete("ui-prototype");
+    url.searchParams.delete("guided");
+    url.searchParams.delete("guided-theme");
+    url.searchParams.set("legacy-dashboard", "1");
     url.searchParams.set("tab", tab);
     window.location.assign(url.toString());
   };
@@ -1039,8 +1450,19 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   const openGuidedSession = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("ui-prototype");
+    url.searchParams.delete("legacy-dashboard");
     url.searchParams.set("tab", "learn");
     url.searchParams.set("guided", "continue");
+    url.searchParams.set("guided-theme", "prototype");
+    window.location.assign(url.toString());
+  };
+
+  const openGuidedLesson = (partId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ui-prototype");
+    url.searchParams.delete("legacy-dashboard");
+    url.searchParams.set("tab", "learn");
+    url.searchParams.set("guided", partId);
     url.searchParams.set("guided-theme", "prototype");
     window.location.assign(url.toString());
   };
@@ -1051,6 +1473,12 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
       Object.entries(next).forEach(([key, value]) => saveScopedJson(key, value, profile));
       return updated;
     });
+  };
+
+  const resizeSidebar = (nextWidth: number, persist = false) => {
+    const next = clampPrototypeSidebarWidth(nextWidth);
+    setSidebarWidth(next);
+    if (persist) saveScopedJson(PROTOTYPE_SIDEBAR_KEY, next, profile);
   };
 
   const selectCourse = (courseId: string) => {
@@ -1074,8 +1502,41 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
     saveScopedJson(SHOP_EQUIPPED_KEY, id, profile);
   };
 
+  const searchItems: PrototypeSearchItem[] = [
+    ...PROTOTYPE_SEARCH_PAGES.map((page) => ({
+      id: `page-${page.id}`,
+      title: page.title,
+      subtitle: page.subtitle,
+      group: "Page" as const,
+      actionLabel: "Open" as const,
+      searchText: buildCatalogSearchText([page.title, page.subtitle, page.keywords]),
+      onSelect: () => navigate(page.id),
+    })),
+    ...searchableLessons.map((lesson) => ({
+      ...lesson,
+      id: `lesson-${lesson.id}`,
+      actionLabel: "Start" as const,
+      onSelect: () => openGuidedLesson(lesson.id),
+    })),
+    ...PROTOTYPE_SEARCH_GAMES.map(([title, subtitle]) => ({
+      id: `game-${title.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      title,
+      subtitle,
+      group: "Game" as const,
+      actionLabel: "Open" as const,
+      searchText: buildCatalogSearchText([title, subtitle, "practice play"]),
+      onSelect: () => navigate("games"),
+    })),
+  ];
+
   const mainView = activeView === "home" ? (
-    <HomeView onPractice={openGuidedSession} onSwitchCourse={() => setCourseSwitcherOpen(true)} stats={stats} />
+    <HomeView
+      onPractice={openGuidedSession}
+      profile={profile}
+      onSwitchCourse={() => setCourseSwitcherOpen(true)}
+      stats={stats}
+      vocab={knownVocab}
+    />
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
       {partsReady ? <LearningLibraryView apiParts={apiParts} onOpenLesson={() => openFullApp("learn")} /> : <FeatureLoading />}
@@ -1134,10 +1595,19 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
   return (
     <div className="new-ui-prototype">
       <div className="np-window">
-        <div className="np-shell">
-          <Sidebar activeView={activeView} onNavigate={navigate} />
+        <div
+          className="np-shell"
+          style={{ "--np-sidebar-width": `${sidebarWidth}px` } as CSSProperties}
+        >
+          <Sidebar activeView={activeView} onNavigate={navigate} onResize={resizeSidebar} width={sidebarWidth} />
           <div className="np-app-area">
-            <Header equippedBadge={equippedShopBadge} onNavigate={navigate} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+            <Header
+              equippedBadge={equippedShopBadge}
+              onNavigate={navigate}
+              searchItems={searchItems}
+              stats={stats}
+              userName={profile?.name ?? PREVIEW_PROFILE.name}
+            />
             <div className={`np-content-grid${showRightRail ? "" : " np-content-grid--wide"}`}>
               <motion.main
                 animate={{ opacity: 1, y: 0 }}
