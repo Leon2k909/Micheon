@@ -67,6 +67,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part193",         // Draußen im Park und am See
   "part194",         // Die Wohnung einrichten
   "part195",         // Über Deutsch reden
+  "part196",         // Im Supermarkt: Chip, Pfand, SB-Kasse
+  "part197",         // Zusammen sein: Jahrestag und Kosenamen
+  "part198",         // Feiertage: Silvester, Weihnachten, Ostern
+  "part199",         // Termine jonglieren
+  "part200",         // Pendeln und Bahn fahren
+  "part201",         // Garten und Balkon
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
