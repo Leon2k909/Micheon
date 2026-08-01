@@ -447,6 +447,30 @@ const expected = {
     theme: "Beim Tierarzt: Impfpass, Krallen schneiden und der Katzenkorb",
     fixture: "Sobald der Katzenkorb rauskommt, ist die Katze verschwunden.",
   },
+  part251: {
+    theme: "Putzen: der Wischmopp, der Kalk und die Grundreinigung",
+    fixture: "Fenster putzt man am besten bei bewölktem Himmel.",
+  },
+  part252: {
+    theme: "Fußball schauen: Anpfiff, Abseits und der Elfmeter",
+    fixture: "Das war doch klares Abseits!",
+  },
+  part253: {
+    theme: "Im Café: Milchschaum, zum Hierbleiben und der Stammplatz",
+    fixture: "Zum Mitnehmen oder zum Hierbleiben?",
+  },
+  part254: {
+    theme: "Küchengeräte: entkalken, die Sicherung und der Toaster mit Eigenleben",
+    fixture: "Das war ein Kurzschluss — die Sicherung ist rausgeflogen.",
+  },
+  part255: {
+    theme: "Die Ausbildung: Azubi, Berufsschule und übernommen werden",
+    fixture: "Nicht jeder muss studieren — Ausbildung ist ein guter Weg.",
+  },
+  part256: {
+    theme: "Wenn es Ärger gibt: Widerspruch, Anwalt und die Schlichtungsstelle",
+    fixture: "Erst mal ruhig durchlesen — die klingen alle schlimmer, als sie sind.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -506,9 +530,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred expansion packs contain at least 3231 authored phrases", newPhrases.length >= 3231, `found ${newPhrases.length}`);
-check("the one hundred expansion packs contain at least 1586 vocabulary entries", totalSeeds >= 1586, `found ${totalSeeds}`);
-check("the one hundred expansion packs contain at least 248 dialogues", totalDialogues >= 248, `found ${totalDialogues}`);
+check("the one hundred and six expansion packs contain at least 3399 authored phrases", newPhrases.length >= 3399, `found ${newPhrases.length}`);
+check("the one hundred and six expansion packs contain at least 1676 vocabulary entries", totalSeeds >= 1676, `found ${totalSeeds}`);
+check("the one hundred and six expansion packs contain at least 260 dialogues", totalDialogues >= 260, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

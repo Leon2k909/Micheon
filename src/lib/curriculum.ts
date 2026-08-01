@@ -122,6 +122,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part248",         // In der Kneipe
   "part249",         // Hochzeit feiern
   "part250",         // Beim Tierarzt
+  "part251",         // Putzen
+  "part252",         // Fußball schauen
+  "part253",         // Im Café
+  "part254",         // Küchengeräte
+  "part255",         // Die Ausbildung
+  "part256",         // Wenn es Ärger gibt: Recht im Alltag
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
