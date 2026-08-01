@@ -91,6 +91,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part217",         // Camping
   "part218",         // Krankenhausbesuch
   "part219",         // Die Steuererklärung
+  "part220",         // Im Blumenladen
+  "part221",         // Glückwünsche für jeden Anlass
+  "part222",         // Musik machen
+  "part223",         // Kleidung und Anprobe
+  "part224",         // Wandern
+  "part225",         // Reklamieren im Restaurant
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
