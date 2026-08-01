@@ -2304,6 +2304,25 @@ a { color: inherit; text-decoration: none; }
    session, but keeps the warm cream/green visual language of that dashboard.
    The normal focus-mode lesson remains untouched for every other entry path. */
 .guided-session.fs-app.prototype-guided-session {
+  --bg: #f3f7ea;
+  --surface: #fffdf8;
+  --surface-2: #f4f1e8;
+  --surface-3: #ece9df;
+  --border: rgba(67, 82, 57, 0.13);
+  --border-2: rgba(67, 82, 57, 0.2);
+  --text-1: #292725;
+  --text-2: #5f5a55;
+  --text-3: #7f7972;
+  --accent: #43b84c;
+  --accent-dim: #e6f8d9;
+  --accent-text: #fff;
+  --accent-hover: #2f9e3d;
+  --ink: #292725;
+  --ink-text: #fff;
+  --success-bg: #e6f8d9;
+  --success-text: #218635;
+  --shadow: rgba(82, 68, 53, 0.07);
+  --shadow-strong: rgba(82, 68, 53, 0.16);
   --fs-bg: #f3f7ea;
   --fs-surface: #fffdf8;
   --fs-surface-2: #f4f1e8;
@@ -2321,15 +2340,17 @@ a { color: inherit; text-decoration: none; }
   color-scheme: light;
   color: var(--fs-text);
   background:
-    radial-gradient(62% 50% at 83% 0%, rgba(187, 240, 163, 0.54), transparent 72%),
-    radial-gradient(52% 40% at 8% 96%, rgba(255, 221, 134, 0.22), transparent 72%),
+    radial-gradient(62% 50% at 83% 0%, rgba(187, 240, 163, 0.68), transparent 72%),
+    radial-gradient(52% 40% at 8% 96%, rgba(255, 221, 134, 0.3), transparent 72%),
     linear-gradient(180deg, #f8fbf1 0%, #eef6e6 100%);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-topbar {
   border-bottom-color: rgba(67, 82, 57, 0.1);
-  background: rgba(255, 253, 248, 0.94);
-  box-shadow: 0 12px 32px rgba(75, 91, 59, 0.09);
+  background: linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(252, 250, 243, 0.96));
+  box-shadow:
+    0 3px 0 rgba(86, 101, 70, 0.06),
+    0 14px 32px rgba(75, 91, 59, 0.1);
   backdrop-filter: blur(18px);
 }
 
@@ -2359,79 +2380,144 @@ a { color: inherit; text-decoration: none; }
   border-color: rgba(67, 82, 57, 0.14);
   background: #fffdf8;
   color: #6d7466;
-  box-shadow: 0 3px 0 rgba(73, 89, 60, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 3px 0 rgba(73, 89, 60, 0.12),
+    0 8px 16px rgba(73, 89, 60, 0.08);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-iconbtn:hover {
   border-color: rgba(67, 184, 76, 0.34);
   background: #edf9e6;
   color: #278b35;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 0 rgba(49, 144, 58, 0.18),
+    0 10px 18px rgba(73, 120, 60, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-card {
-  border-color: rgba(67, 82, 57, 0.13);
-  background: linear-gradient(180deg, rgba(255, 254, 251, 0.99), rgba(251, 249, 242, 0.99));
-  box-shadow: 0 28px 75px rgba(67, 88, 50, 0.16), inset 0 1px 0 #fff;
+  border-color: rgba(67, 82, 57, 0.16);
+  background:
+    radial-gradient(48% 68% at 98% 0%, rgba(218, 244, 199, 0.3), transparent 74%),
+    linear-gradient(180deg, rgba(255, 254, 251, 0.995), rgba(251, 249, 242, 0.995));
+  box-shadow:
+    0 6px 0 rgba(86, 101, 70, 0.13),
+    0 27px 56px rgba(67, 88, 50, 0.18),
+    inset 0 1px 0 #fff;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-count,
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
 .guided-session.fs-app.prototype-guided-session .fs-chip {
   border-color: rgba(67, 184, 76, 0.22);
-  background: #eaf8df;
+  background: linear-gradient(180deg, #f0fbe8, #e4f5d8);
   color: #288d36;
 }
 
+.guided-session.fs-app.prototype-guided-session .fs-preview-count {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 4px 0 rgba(60, 148, 68, 0.16),
+    0 10px 18px rgba(70, 112, 59, 0.09);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard-badge {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 3px 0 rgba(60, 148, 68, 0.13);
+}
+
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
-  background: #e0e5da;
+  height: 10px;
+  background: #dfe5d8;
+  box-shadow:
+    inset 0 2px 2px rgba(69, 83, 58, 0.12),
+    0 2px 0 rgba(255, 255, 255, 0.8);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover,
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
   background: #9cdb8f;
+  box-shadow:
+    inset 0 1px 1px rgba(35, 126, 48, 0.12),
+    0 2px 0 rgba(51, 143, 61, 0.18);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-active {
-  background: #43b84c;
-  box-shadow: 0 0 15px rgba(67, 184, 76, 0.25);
+  background: linear-gradient(180deg, #61d263, #39ae46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 3px 0 #2e943b,
+    0 8px 14px rgba(54, 155, 63, 0.2);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard {
-  border-color: rgba(67, 184, 76, 0.2);
+  border: 2px solid rgba(67, 184, 76, 0.28);
   background:
-    radial-gradient(60% 80% at 100% 0%, rgba(188, 238, 164, 0.24), transparent 75%),
-    linear-gradient(145deg, #fbfff6, #fffdf8 52%, #f7f3e9);
-  box-shadow: inset 0 1px 0 #fff, 0 17px 42px rgba(77, 95, 62, 0.1);
+    radial-gradient(72% 100% at 100% 0%, rgba(188, 238, 164, 0.38), transparent 72%),
+    linear-gradient(145deg, #fbfff6, #fffdf8 52%, #f6f2e8);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 0 rgba(54, 148, 62, 0.2),
+    0 19px 34px rgba(77, 95, 62, 0.13);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard.is-flippable:hover {
   border-color: rgba(67, 184, 76, 0.42);
-  box-shadow: inset 0 1px 0 #fff, 0 19px 46px rgba(67, 113, 52, 0.14), 0 0 0 2px rgba(67, 184, 76, 0.05);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 8px 0 rgba(54, 148, 62, 0.22),
+    0 24px 40px rgba(67, 113, 52, 0.16),
+    0 0 0 2px rgba(67, 184, 76, 0.05);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-flashcard.is-flippable:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 3px 0 rgba(54, 148, 62, 0.22),
+    0 12px 24px rgba(67, 113, 52, 0.13);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-known {
   border-color: rgba(42, 157, 87, 0.28);
-  background: rgba(50, 186, 99, 0.09);
+  background: linear-gradient(180deg, #effbee, #e2f6df);
   color: #23874a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 3px 0 rgba(42, 157, 87, 0.17);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-known:hover {
   border-color: rgba(42, 157, 87, 0.5);
-  background: rgba(50, 186, 99, 0.15);
+  background: linear-gradient(180deg, #e9fbe8, #d9f2d7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 4px 0 rgba(42, 157, 87, 0.2);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button,
 .guided-session.fs-app.prototype-guided-session .fs-listen-icon,
 .guided-session.fs-app.prototype-guided-session .fs-missing-play {
   border-color: rgba(67, 184, 76, 0.23);
-  background: #eaf8df;
+  background: linear-gradient(180deg, #f0fbe8, #e2f5d8);
   color: #278f35;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 4px 0 rgba(58, 151, 66, 0.17),
+    0 9px 16px rgba(77, 112, 65, 0.08);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button:hover,
 .guided-session.fs-app.prototype-guided-session .fs-missing-play:hover {
   border-color: rgba(67, 184, 76, 0.48);
   background: #ddf4cf;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 5px 0 rgba(58, 151, 66, 0.2),
+    0 12px 18px rgba(77, 112, 65, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-flashcard-divider::before,
@@ -2441,13 +2527,19 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-back {
   border-color: var(--fs-line-strong);
-  background: #f7f4ec;
+  background: linear-gradient(180deg, #fbf9f3, #f1ede4);
   color: var(--fs-text-2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 0 rgba(93, 88, 78, 0.13);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-back:hover:not(:disabled) {
   border-color: rgba(67, 184, 76, 0.3);
   background: #edf8e6;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 5px 0 rgba(49, 144, 58, 0.16);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-next {
@@ -2472,13 +2564,18 @@ a { color: inherit; text-decoration: none; }
   .fs-board,
   .fs-panel,
   .fs-listen,
+  .fs-meaning-prompt,
   .fs-meaning-select-board,
+  .fs-listening-prompt,
   .fs-translation-bank,
   .fs-recall-board
 ) {
   border-color: rgba(67, 82, 57, 0.13);
   background: rgba(247, 246, 238, 0.86);
-  box-shadow: inset 0 1px 0 #fff, 0 12px 30px rgba(74, 89, 61, 0.07);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 0 rgba(86, 101, 70, 0.09),
+    0 15px 30px rgba(74, 89, 61, 0.08);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
@@ -2515,6 +2612,219 @@ a { color: inherit; text-decoration: none; }
   background: #eff9e8;
   color: var(--fs-text);
   box-shadow: inset 0 1px 0 #fff, 0 5px 0 rgba(49, 144, 58, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-eyebrow,
+  .fs-board-top span,
+  .fs-meaning-choice-top > span
+) {
+  color: #3b9147;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-line {
+  color: var(--fs-text);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-recall {
+  color: #4d8d54;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-match-column-head svg {
+  color: #43a94c;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-meaning-prompt,
+  .fs-listening-prompt
+) {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(188, 238, 164, 0.3), transparent 34%),
+    linear-gradient(145deg, #fbfff6, #f7f3e9);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 0 rgba(54, 148, 62, 0.16),
+    0 18px 32px rgba(77, 95, 62, 0.11);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-listen .fs-listen-icon,
+  .fs-listening-disc
+) {
+  border-color: rgba(255, 255, 255, 0.48);
+  background: var(--fs-grad);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 5px 0 #248831,
+    0 12px 22px rgba(42, 137, 53, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-listen:hover {
+  border-color: rgba(67, 184, 76, 0.36);
+  background: #edf8e6;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-board:hover {
+  border-color: rgba(67, 184, 76, 0.38);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-word {
+  text-shadow: none;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-word:hover {
+  background: rgba(67, 184, 76, 0.11);
+  color: var(--fs-text);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-word:hover::after {
+  background: rgba(56, 165, 68, 0.72);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-word.is-playing {
+  background: rgba(67, 184, 76, 0.15);
+  color: #267d34;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-word.is-playing::after {
+  background: #3caf48;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(.fs-word, .fs-order-token)[data-gloss]::before {
+  border-color: rgba(67, 184, 76, 0.42);
+  background: #28452b;
+  color: #fffdf8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 28px rgba(45, 73, 42, 0.24);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-listening-choice > span,
+  .fs-missing-option-number
+) {
+  border-color: rgba(67, 184, 76, 0.25);
+  background: linear-gradient(180deg, #effae7, #e2f4d8);
+  color: #2f8f3b;
+  box-shadow: 0 3px 0 rgba(58, 151, 66, 0.14);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-match-option.is-selected:not(.is-matched):not(.is-wrong),
+  .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong),
+  .fs-meaning-select-choice.is-selected:not(.is-correct):not(.is-wrong),
+  .fs-missing-audio-option.is-selected:not(.is-correct):not(.is-wrong)
+) {
+  border-color: rgba(67, 184, 76, 0.58);
+  background: linear-gradient(180deg, #eaf8df, #dff2d3);
+  color: var(--fs-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 6px 0 rgba(48, 145, 58, 0.24),
+    0 14px 24px rgba(65, 122, 58, 0.13);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) .fs-meaning-choice-top kbd,
+  .fs-meaning-select-choice.is-selected:not(.is-correct):not(.is-wrong) kbd,
+  .fs-missing-audio-option.is-selected:not(.is-correct):not(.is-wrong) .fs-missing-option-number
+) {
+  border-color: rgba(67, 184, 76, 0.48);
+  background: #cfecc5;
+  color: #237b31;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-translation-modes button.is-active {
+  border-color: rgba(67, 184, 76, 0.42);
+  background: #e5f5da;
+  color: #287f35;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-translation-picked-word {
+  border-color: rgba(67, 184, 76, 0.4);
+  background: linear-gradient(180deg, #edf9e6, #e0f2d6);
+  color: var(--fs-text);
+  box-shadow: 0 4px 0 rgba(48, 145, 58, 0.2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-translation-picked-word:hover {
+  border-color: rgba(67, 184, 76, 0.6);
+  background: #d9efcf;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-recall-help.is-answer {
+  border-color: rgba(67, 184, 76, 0.3);
+  background: rgba(67, 184, 76, 0.07);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-panel:focus-within {
+  border-color: rgba(67, 184, 76, 0.5);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 0 rgba(48, 145, 58, 0.16),
+    0 18px 34px rgba(65, 122, 58, 0.11),
+    0 0 0 4px rgba(67, 184, 76, 0.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-missing-choose {
+  border-color: rgba(67, 184, 76, 0.28);
+  background: linear-gradient(180deg, #fffef9, #f1f6ea);
+  color: var(--fs-text);
+  box-shadow: 0 4px 0 rgba(75, 91, 62, 0.11);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-missing-choose:hover:not(:disabled) {
+  border-color: rgba(67, 184, 76, 0.5);
+  background: #e5f5da;
+  box-shadow: 0 5px 0 rgba(48, 145, 58, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-mic:hover {
+  border-color: rgba(67, 184, 76, 0.36);
+  background: rgba(67, 184, 76, 0.08);
+  color: var(--fs-text);
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .fs-listening-wave i,
+  .fs-missing-wave i
+) {
+  background: #4eba57;
+  box-shadow: 0 0 9px rgba(67, 184, 76, 0.24);
+}
+
+.guided-session.fs-app.prototype-guided-session .bg-violet-500\/10 {
+  background: rgba(67, 184, 76, 0.1) !important;
+}
+
+.guided-session.fs-app.prototype-guided-session .text-violet-500 {
+  color: #328c3e !important;
+}
+
+.guided-session.fs-app.prototype-guided-session .bg-zinc-100 {
+  background: #f0ede5 !important;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  .hover\:bg-zinc-50,
+  .hover\:bg-zinc-100,
+  .hover\:bg-zinc-200
+):hover {
+  background: #e8f4e1 !important;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(.text-emerald-700, .text-emerald-600) {
+  color: #278748 !important;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(.text-amber-700, .text-amber-600) {
+  color: #8a6300 !important;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(.text-rose-700, .text-rose-600) {
+  color: #b54457 !important;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebar {

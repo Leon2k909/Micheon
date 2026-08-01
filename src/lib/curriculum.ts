@@ -265,7 +265,7 @@ const TIER3_NOTES: Record<string, string> = {
 /** Tier + note for a pack key. Tatoeba packs are extra practice at the very end. */
 export function packMeta(partKey: string | undefined): PackMeta {
   const key = String(partKey ?? "");
-  if (key.startsWith("tatoeba")) return { tier: 3, note: "Real-world sentence — extra practice" };
+  if (key.startsWith("tatoeba")) return { tier: 3, note: "Extra real-world practice" };
   if (TIER3_NOTES[key]) return { tier: 3, note: TIER3_NOTES[key] };
   if (TIER1.has(key)) return { tier: 1 };
   return { tier: 2 };

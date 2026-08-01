@@ -328,7 +328,7 @@ export default function GermanLearningLab() {
     // sentence is predefined by hand.
     // Tatoeba packs are the FINAL tier: real native-written sentences as
     // extra practice, unlocked only after the curated curriculum, each item
-    // labelled ("Real-world sentence — extra practice").
+    // labelled ("Extra real-world practice").
     // The learner's own words go in last so they are packs like any other:
     // lessons, tracker, search and tests all read this one map, so nothing
     // downstream needs to know where a phrase came from.
