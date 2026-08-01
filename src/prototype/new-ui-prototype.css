@@ -1256,25 +1256,24 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-progress-track--hero {
   position: relative;
-  height: 15px;
-  border: 1px solid rgba(18, 79, 30, 0.28);
-  background: rgba(19, 80, 34, 0.34);
+  height: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(13, 74, 29, 0.32);
   box-shadow:
-    inset 0 3px 5px rgba(12, 64, 26, 0.24),
-    0 1px 0 rgba(255, 255, 255, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.07);
+    inset 0 3px 5px rgba(8, 59, 22, 0.24),
+    0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .np-progress-track--hero > span {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  background: linear-gradient(90deg, #fff2a6 0%, #ffdc63 55%, #f6c746 100%);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background: linear-gradient(180deg, #f5fff6 0%, #dff8e4 100%);
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.56),
-    inset 0 -2px 1px rgba(155, 105, 11, 0.14),
-    2px 0 7px rgba(255, 220, 99, 0.3);
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -2px 1px rgba(41, 133, 62, 0.12),
+    2px 0 8px rgba(224, 255, 231, 0.26);
 }
 
 .np-progress-track--hero > span::after {
@@ -1284,7 +1283,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   left: 4px;
   height: 34%;
   border-radius: inherit;
-  background: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.64);
   content: "";
 }
 

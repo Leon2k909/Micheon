@@ -46,14 +46,15 @@ check("course progress animates from empty", prototype.includes("<motion.span") 
 check("course progress respects reduced-motion preferences", prototype.includes("const reduceMotion = useReducedMotion();") && prototype.includes("initial={reduceMotion ? false"));
 check("search focus uses one clean outer ring", styles.includes(".np-search-field:focus-within") && styles.includes(".np-search-field input:focus-visible"));
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
-check("the hero progress bar uses a labelled, dimensional gold treatment", prototype.includes(">Level progress<") && styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
+check("the hero progress bar uses a labelled mint-on-green treatment", prototype.includes(">Level progress<") && styles.includes("#f5fff6 0%, #dff8e4 100%") && !styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
 check("the prototype title bar is one uninterrupted surface", appStyles.includes("background: #fffaf1;") && appStyles.includes(".titlebar--prototype::after") && appStyles.includes("content: none;"));
 check("the prototype title bar carries no separator shadow", /\.titlebar--prototype\s*\{[^}]*box-shadow:\s*none;/s.test(appStyles));
 check("small prototype type uses the Windows text-optimised face", styles.includes('--np-font-text: "Segoe UI Variable Text"') && /\.new-ui-prototype\s*\{[^}]*font-family:\s*var\(--np-font-text\);/s.test(styles));
 check("display type stays reserved for headings and actions", styles.includes(".new-ui-prototype strong,") && styles.includes("font-family: var(--np-font-display);"));
 check("small prototype type has a readable desktop scale", styles.includes("--np-type-micro: 12px;") && styles.includes("--np-type-caption: 13px;") && styles.includes("--np-type-small: 14px;"));
-check("the prototype guided lesson uses one calm staged background", /\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*linear-gradient\(180deg,\s*#e4f4da 0%,\s*#edf7e7 31%,\s*#f6f9f1 62%,\s*#fffaf1 100%\)/s.test(appStyles) && !/\.guided-session\.fs-app\.prototype-guided-session\s*\{[^}]*rgba\(255,\s*221,\s*134,/s.test(appStyles));
+check("the prototype guided lesson uses the homepage scene as a restrained focus backdrop", /prototype-guided-session::before\s*\{[^}]*micheon-hero-v3\.webp[^}]*140% auto no-repeat[^}]*opacity:\s*0\.18;[^}]*mask-image:/s.test(appStyles) && /prototype-guided-session::after\s*\{[^}]*rgba\(255,\s*251,\s*244,\s*0\.97\)/s.test(appStyles));
+check("light lesson grading controls keep readable hover colours", /prototype-guided-session \.grade-btn-known:hover:not\(:disabled\)[\s\S]*?color:\s*#206c30;/s.test(appStyles) && /prototype-guided-session \.grade-btn-struggle:hover:not\(:disabled\)[\s\S]*?color:\s*#3e3d39;/s.test(appStyles));
 check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*72rem;/s.test(appStyles));
 check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));
 check("the lesson preview reuses the lightweight homepage course scene", appStyles.includes('url("./prototype/assets/micheon-hero-v3.webp")'));
