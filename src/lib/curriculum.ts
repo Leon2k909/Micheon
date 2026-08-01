@@ -170,6 +170,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part327",         // Skiurlaub
   "part328",         // Krankenkasse
   "part329",         // Streit mit den Nachbarn
+  "part330",         // Buchstabieren
+  "part331",         // Auf dem Wochenmarkt
+  "part332",         // Im Tanzkurs
+  "part333",         // Theater und Oper
+  "part334",         // Flug gestrichen
+  "part335",         // Mit dem Zug auf Fernreise
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
