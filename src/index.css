@@ -25,6 +25,11 @@
   --success-text: #139a62;
   --info-bg: #dbeeff;
   --info-text: #2374c7;
+  --activity-green-soft-bg: #e7f7df;
+  --activity-green-text: #237f35;
+  --activity-green-bar: #82cf83;
+  --activity-green-bar-strong: #35b94a;
+  --activity-green-icon: #2da741;
   --shadow: rgba(25, 27, 38, 0.06);
   --shadow-strong: rgba(25, 27, 38, 0.09);
   --feature-gradient: linear-gradient(135deg, #7834f7 0%, #8b4cff 52%, #6b2ee6 100%);
@@ -84,6 +89,11 @@ html[data-theme="dark"] {
   --success-text: #7ff0ba;
   --info-bg: #1c3453;
   --info-text: #8fc6ff;
+  --activity-green-soft-bg: #1d4027;
+  --activity-green-text: #8de097;
+  --activity-green-bar: #2f8542;
+  --activity-green-bar-strong: #58d56b;
+  --activity-green-icon: #62d572;
   --shadow: rgba(0, 0, 0, 0.24);
   --shadow-strong: rgba(0, 0, 0, 0.34);
 }
@@ -117,6 +127,20 @@ html.is-prototype-guided-launch #root {
     radial-gradient(62% 50% at 83% 0%, rgba(187, 240, 163, 0.68), transparent 72%),
     radial-gradient(52% 40% at 8% 96%, rgba(255, 221, 134, 0.3), transparent 72%),
     linear-gradient(180deg, #f8fbf1 0%, #eef6e6 100%);
+}
+
+/* Match the new desktop shell before React mounts, including the title-bar
+   handoff, so launch feels like one native surface instead of two pages. */
+html.is-prototype-shell,
+html.is-prototype-shell body,
+html.is-prototype-shell #root {
+  background: #fffaf1;
+}
+
+html[data-theme="dark"].is-prototype-shell,
+html[data-theme="dark"].is-prototype-shell body,
+html[data-theme="dark"].is-prototype-shell #root {
+  background: #111a13;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -365,6 +389,88 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 }
 .titlebar-btn:hover { background: color-mix(in srgb, var(--text-1) 12%, transparent); opacity: 1; }
 .titlebar-close:hover { background: #e81123; color: #ffffff; opacity: 1; }
+
+/* Continue the prototype shell through the desktop chrome instead of placing a
+   generic white web strip above it. The divider tracks the resizable sidebar. */
+.titlebar--prototype {
+  border-bottom: 0;
+  background: linear-gradient(
+    90deg,
+    #fffdf7 0,
+    #fffdf7 var(--prototype-sidebar-width, 226px),
+    #fffaf1 var(--prototype-sidebar-width, 226px),
+    #fffaf1 100%
+  );
+  box-shadow: inset 0 -1px 0 rgba(76, 66, 55, 0.055);
+  color: #625d57;
+}
+
+.titlebar--prototype::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--prototype-sidebar-width, 226px);
+  width: 1px;
+  background: rgba(76, 66, 55, 0.08);
+  content: "";
+  pointer-events: none;
+}
+
+.titlebar--prototype .titlebar-drag {
+  gap: 7px;
+  padding-left: 10px;
+}
+
+.titlebar--prototype .titlebar-logo {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  opacity: 1;
+  box-shadow: 0 1px 2px rgba(48, 39, 70, 0.14);
+}
+
+.titlebar--prototype .titlebar-title {
+  padding-left: 0;
+  color: #625d57;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.titlebar--prototype .titlebar-btn {
+  color: #5f5a55;
+  opacity: 0.86;
+}
+
+.titlebar--prototype .titlebar-btn:hover:not(.titlebar-close) {
+  background: rgba(48, 102, 55, 0.085);
+}
+
+html[data-theme="dark"] .titlebar--prototype {
+  background: linear-gradient(
+    90deg,
+    #121c14 0,
+    #121c14 var(--prototype-sidebar-width, 226px),
+    #111a13 var(--prototype-sidebar-width, 226px),
+    #111a13 100%
+  );
+  box-shadow: inset 0 -1px 0 rgba(220, 238, 218, 0.07);
+}
+
+html[data-theme="dark"] .titlebar--prototype::after {
+  background: rgba(220, 238, 218, 0.08);
+}
+
+html[data-theme="dark"] .titlebar--prototype .titlebar-title,
+html[data-theme="dark"] .titlebar--prototype .titlebar-btn {
+  color: #d8e2d7;
+}
+
+html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-close) {
+  background: rgba(192, 228, 188, 0.1);
+}
 button:disabled { cursor: not-allowed; }
 img, svg { display: block; }
 a { color: inherit; text-decoration: none; }

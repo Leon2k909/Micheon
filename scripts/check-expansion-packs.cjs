@@ -419,6 +419,10 @@ const expected = {
     theme: "Das Klassentreffen: Namensschilder, Anekdoten und der harte Kern",
     fixture: "Du hast dich kaum verändert!",
   },
+  part244: {
+    theme: "Reacting to everyday news: surprise, sympathy, relief and what happens next",
+    fixture: "Das sind ja gute Nachrichten!",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -454,7 +458,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all ninety-three packs",
+  "new authored phrases are unique across all ninety-four packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -478,9 +482,11 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the ninety-three expansion packs contain at least 3013 authored phrases", newPhrases.length >= 3013, `found ${newPhrases.length}`);
-check("the ninety-three expansion packs contain at least 1476 vocabulary entries", totalSeeds >= 1476, `found ${totalSeeds}`);
-check("the ninety-three expansion packs contain at least 232 dialogues", totalDialogues >= 232, `found ${totalDialogues}`);
+check("the ninety-four expansion packs contain at least 3063 authored phrases", newPhrases.length >= 3063, `found ${newPhrases.length}`);
+check("the ninety-four expansion packs contain at least 1496 vocabulary entries", totalSeeds >= 1496, `found ${totalSeeds}`);
+check("the ninety-four expansion packs contain at least 236 dialogues", totalDialogues >= 236, `found ${totalDialogues}`);
+check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
+check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);
@@ -708,6 +714,19 @@ const conversationUpdateCoverage = {
 };
 for (const [area, fixtures] of Object.entries(conversationUpdateCoverage)) {
   check(`conversation-update pack covers ${area}`, fixtures.every((phrase) => conversationUpdatePhrases.has(phrase)));
+}
+
+const everydayNewsPhrases = new Set((allPartBlueprints.part244?.phrases ?? []).map((phrase) => phrase.de));
+const everydayNewsCoverage = {
+  surprise: ["Ach, echt?", "Damit habe ich nicht gerechnet.", "Ach so, daher also."],
+  celebrating: ["Das sind ja gute Nachrichten!", "Das freut mich wirklich für dich.", "Darauf müssen wir anstoßen."],
+  sympathy: ["Oh nein, wie blöd.", "Das tut mir leid zu hören.", "Hoffentlich wird es bald besser."],
+  relief: ["Hauptsache, du bist okay.", "Da fällt mir ein Stein vom Herzen.", "Jetzt bin ich aber beruhigt."],
+  nextSteps: ["Wann weißt du mehr?", "Halt mich auf dem Laufenden.", "Meld dich, wenn du etwas brauchst."],
+  storyFollowups: ["Was hat er dann gesagt?", "Und wie hast du reagiert?", "Wie ging es dann weiter?"],
+};
+for (const [area, fixtures] of Object.entries(everydayNewsCoverage)) {
+  check(`everyday-news pack covers ${area}`, fixtures.every((phrase) => everydayNewsPhrases.has(phrase)));
 }
 
 if (failures) {

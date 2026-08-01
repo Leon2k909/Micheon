@@ -77,7 +77,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
                   className={cn(
                     "w-full rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors",
                     option.days === range.days
-                      ? "bg-[var(--accent-dim)] text-[var(--accent)]"
+                      ? "bg-[var(--activity-green-soft-bg)] text-[var(--activity-green-text)]"
                       : "text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                   )}
                   key={option.days}
@@ -117,8 +117,8 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
                         bucket.minutes === 0
                           ? "bg-[var(--surface-3)]"
                           : isToday
-                            ? "bg-[var(--accent)]"
-                            : "bg-[#cbbbf8] dark:bg-[#4b3a78]"
+                            ? "bg-[var(--activity-green-bar-strong)]"
+                            : "bg-[var(--activity-green-bar)]"
                       )}
                       style={{ height: `${heightPct}%` }}
                       title={`${weekday}: ${bucket.minutes.toFixed(0)} min, ${bucket.items} ${ui("items")}`}
@@ -146,7 +146,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
             { label: ui("Day streak"), value: `${progressStats.streak} ${ui(progressStats.streak === 1 ? "day" : "days")}`, time: `${summary.activeDays} ${ui("active")}`, icon: MessageCircle },
           ].map((item) => (
             <div className="flex items-center gap-3" key={item.label}>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--activity-green-icon)]">
                 <item.icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">

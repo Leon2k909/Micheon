@@ -43,6 +43,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part169",         // Thinking, knowing, remembering, clarifying and checking
   "part170",         // Getting things done: starting, waiting, finishing and following up
   "part171",         // Keeping conversations moving: updates, reactions and follow-up questions
+  "part244",         // Reacting to everyday news: surprise, sympathy, relief and next steps
   "part172",         // Strom, Gas und die Heizkosten
   "part173",         // Essen mit Einschränkungen
   "part174",         // False friends that trap English speakers

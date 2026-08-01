@@ -6,6 +6,15 @@ import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 
 const initialParams = new URLSearchParams(window.location.search);
+const isPrototypeShell = (
+  initialParams.get("pet-overlay") !== "1"
+  && initialParams.get("pet-history") !== "1"
+  && initialParams.get("legacy-dashboard") !== "1"
+  && !initialParams.has("guided")
+);
+if (isPrototypeShell) {
+  document.documentElement.classList.add("is-prototype-shell");
+}
 if (
   initialParams.get("guided") === "continue"
   && initialParams.get("guided-theme") === "prototype"

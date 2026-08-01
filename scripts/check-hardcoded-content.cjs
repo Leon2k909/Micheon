@@ -111,6 +111,68 @@ check(
   incompleteDialogueLines.slice(0, 8).join(", ")
 );
 
+const strongLanguagePack = allPartBlueprints.part29;
+const strongLanguagePhrases = new Map(
+  (strongLanguagePack?.phrases ?? []).map((phrase) => [phrase.de, phrase])
+);
+const strongLanguageCoverage = {
+  situationDirectedSwearing: [
+    "Scheiße, ich habe meinen Schlüssel vergessen.",
+    "Was soll der Scheiß?",
+    "Das ist echt beschissen gelaufen.",
+    "Das war scheiße von mir.",
+  ],
+  roughReactions: [
+    "Willst du mich verarschen?",
+    "Du kannst mich mal.",
+    "Leck mich.",
+  ],
+  schwanzInContext: [
+    "Der Fuchs hat einen langen, buschigen Schwanz.",
+    "Bei einem Mann ist das Wort Schwanz eine vulgäre Bezeichnung für den Penis.",
+    "Er hat mir ungefragt ein Bild von seinem Schwanz geschickt.",
+    "Jetzt zieht er den Schwanz ein.",
+    "Da war kein Schwanz.",
+    "Das ist doch nur ein Schwanzvergleich.",
+    "Er denkt auch nur mit seinem Schwanz.",
+  ],
+  insultsAndBoundaries: [
+    "Der Typ ist ein Wichser.",
+    "Halt jetzt endlich die Klappe.",
+    "So redest du nicht mit mir.",
+    "Lass mich in Ruhe, sonst hole ich Hilfe.",
+  ],
+};
+const contextualStrongLanguage = Object.values(strongLanguageCoverage).flat();
+
+check(
+  "the strong-language pack includes Schwanz as a context-sensitive hardcoded word",
+  (strongLanguagePack?.seeds ?? []).some(
+    (seed) => seed.de === "der Schwanz" && seed.fallbackEn.includes("tail") && seed.fallbackEn.includes("penis")
+  )
+);
+for (const [area, fixtures] of Object.entries(strongLanguageCoverage)) {
+  check(
+    `the strong-language pack covers ${area}`,
+    fixtures.every((phrase) => strongLanguagePhrases.has(phrase)),
+    fixtures.filter((phrase) => !strongLanguagePhrases.has(phrase)).join(" | ")
+  );
+}
+check(
+  "every new strong-language sentence explains both register and speaking situation",
+  contextualStrongLanguage.every((text) => {
+    const phrase = strongLanguagePhrases.get(text);
+    return phrase?.use?.trim() && phrase?.when?.trim();
+  })
+);
+check(
+  "the strong-language dialogues contrast neutral, idiomatic and vulgar meanings",
+  [
+    "Ein Wort, drei Bedeutungen (Schwanz in context)",
+    "Ein ungefragtes Bild (setting a boundary)",
+  ].every((title) => (strongLanguagePack?.dialogues ?? []).some((dialogue) => dialogue.title === title))
+);
+
 if (failures) {
   console.error(`\n${failures} hardcoded-content regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

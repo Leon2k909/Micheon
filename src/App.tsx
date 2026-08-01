@@ -70,7 +70,7 @@ function MicheonPrototype() {
 
   return (
     <>
-      <TitleBar />
+      <TitleBar variant="prototype" />
       <UpdateBanner />
       {!ready ? (
         <PrototypeSkeleton />

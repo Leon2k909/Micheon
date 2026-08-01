@@ -118,11 +118,11 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 72px;
-  height: 72px;
+  width: 58px;
+  height: 58px;
   max-width: none;
   object-fit: contain;
-  /* Keep the mark prominent without cropping away its rounded silhouette. */
+  /* Preserve the artwork's full rounded silhouette instead of cropping it. */
   pointer-events: none;
   transform: translate(-50%, -50%);
 }
@@ -1008,9 +1008,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-course-hero-frame {
-  overflow: hidden;
   border-radius: 27px;
-  background: #5ec760;
   box-shadow:
     0 5px 0 rgba(41, 133, 53, 0.3),
     0 17px 30px rgba(49, 131, 54, 0.19);
@@ -1022,11 +1020,10 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   min-height: 330px;
   overflow: hidden;
   border: 1px solid rgba(43, 128, 57, 0.16);
-  border-radius: inherit;
+  border-radius: 27px;
   background: #5ec760;
   background-clip: padding-box;
-  clip-path: inset(0 round 27px);
-  contain: paint;
+  backface-visibility: hidden;
 }
 
 .np-course-art,
@@ -1095,7 +1092,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   transition:
     background var(--np-motion-fast) ease,
     border-color var(--np-motion-fast) ease,
-    transform var(--np-motion-base) var(--np-ease-out),
     box-shadow var(--np-motion-base) var(--np-ease-out);
 }
 
@@ -1114,7 +1110,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   height: 14px;
   margin-left: 1px;
   stroke-width: 3;
-  transition: transform var(--np-motion-base) var(--np-ease-out);
+  transition: opacity var(--np-motion-fast) ease;
 }
 
 .np-course-title-row {
@@ -1202,55 +1198,67 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: relative;
   isolation: isolate;
   display: grid;
-  min-height: 76px;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  min-height: 96px;
+  grid-template-columns: 54px minmax(0, 1fr) 52px;
   align-items: center;
-  gap: 13px;
+  gap: 15px;
   overflow: hidden;
-  padding: 10px 13px 10px 15px;
-  border-radius: 22px;
+  padding: 13px 16px 13px 18px;
+  border-radius: 26px;
   text-align: left;
 }
 
 .np-mobile-course-button > svg:first-child {
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 50px;
   margin: 0 auto;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 14px;
+  border-radius: 16px;
   fill: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.np-mobile-course-button > span {
+.np-course-button-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
 }
 
+.np-course-button-kicker {
+  margin-bottom: 3px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.095em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
 .np-mobile-course-button strong {
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 950;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
 }
 
 .np-mobile-course-button small {
   overflow: hidden;
-  margin-top: 3px;
+  margin-top: 5px;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 12px;
-  font-weight: 720;
+  font-size: 13px;
+  font-weight: 760;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .np-mobile-course-button > svg:last-child {
-  width: 42px;
-  height: 42px;
-  padding: 10px;
+  width: 48px;
+  height: 48px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 14px;
+  border-radius: 16px;
   color: #fff;
   background: rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
@@ -1569,6 +1577,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     box-shadow var(--np-motion-base) var(--np-ease-out);
 }
 
+.np-mobile-course-button {
+  box-shadow:
+    0 7px 0 #258f35,
+    0 16px 26px rgba(41, 144, 53, 0.28);
+}
+
 .np-mobile-course-button::before {
   position: absolute;
   z-index: 0;
@@ -1586,7 +1600,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   z-index: 0;
   inset: 1px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 20px;
+  border-radius: 24px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
   content: "";
   pointer-events: none;
@@ -1600,8 +1614,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-mobile-course-button:hover {
   background: linear-gradient(180deg, #6cdd70, #46bf50);
   box-shadow:
-    0 6px 0 #258f35,
-    0 17px 28px rgba(41, 144, 53, 0.3);
+    0 8px 0 #258f35,
+    0 20px 32px rgba(41, 144, 53, 0.34);
 }
 
 .np-feedback-next:active,
@@ -4138,18 +4152,18 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
   .np-mobile-course-button {
     display: grid;
-    min-height: 82px;
-    grid-template-columns: 47px 1fr 49px;
+    min-height: 92px;
+    grid-template-columns: 50px 1fr 49px;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px 10px 14px;
-    border-radius: 22px;
+    padding: 11px 13px 11px 15px;
+    border-radius: 24px;
     text-align: left;
   }
 
   .np-mobile-course-button > svg:first-child {
-    width: 43px;
-    height: 43px;
+    width: 47px;
+    height: 47px;
     margin: 0 auto;
   }
 
@@ -4160,16 +4174,20 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   }
 
   .np-mobile-course-button strong {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 950;
-    text-transform: capitalize;
+  }
+
+  .np-course-button-kicker {
+    margin-bottom: 2px;
+    font-size: 9px;
   }
 
   .np-mobile-course-button small {
     overflow: hidden;
     margin-top: 3px;
     color: rgba(255, 255, 255, 0.88);
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 720;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4693,7 +4711,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     transform: rotate(180deg) scale(1.05);
   }
 
-  .np-course-language-chip:hover > svg,
   .np-list-heading button:hover svg,
   .np-answer:hover > svg,
   .np-lesson-row:hover .np-lesson-chevron {
@@ -4736,10 +4753,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   .np-answer:active,
   .np-lesson-row:active {
     transform: translateY(2px) scale(0.99);
-  }
-
-  .np-course-language-chip:active {
-    transform: translateY(1px) scale(0.98);
   }
 
   .np-feedback-next:active,

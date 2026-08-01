@@ -1081,9 +1081,18 @@ function HomeView({
   return (
     <div className="np-home-view">
       <CourseHero onSwitchCourse={onSwitchCourse} stats={stats} />
-      <button className="np-mobile-course-button" onClick={onPractice} type="button">
+      <button
+        aria-label="Continue learning. Lesson 12: Everyday phrases."
+        className="np-mobile-course-button"
+        onClick={onPractice}
+        type="button"
+      >
         <Play />
-        <span><strong>Continue learning</strong><small>Lesson 12: Everyday phrases</small></span>
+        <span className="np-course-button-copy">
+          <span className="np-course-button-kicker">Your next lesson</span>
+          <strong>Continue learning</strong>
+          <small>Lesson 12: Everyday phrases</small>
+        </span>
         <ChevronRight />
       </button>
       <FluencyOutlook profile={profile} vocab={vocab} />
@@ -1426,6 +1435,11 @@ export default function NewUiPrototype({ profile }: { profile: UserProfile | nul
       document.title = previousTitle;
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--prototype-sidebar-width", `${sidebarWidth}px`);
+    return () => document.documentElement.style.removeProperty("--prototype-sidebar-width");
+  }, [sidebarWidth]);
 
   const navigate = (view: PrototypeView) => {
     setActiveView(view);

@@ -10,7 +10,11 @@ const desktop = typeof window !== "undefined" ? (window as any).germDesktop : un
  * our own draggable bar and min/maximize/close buttons, themed via the app's
  * CSS variables so it matches light/dark automatically. No-op on the website.
  */
-export function TitleBar() {
+type TitleBarProps = {
+  variant?: "default" | "prototype";
+};
+
+export function TitleBar({ variant = "default" }: TitleBarProps) {
   const [maximized, setMaximized] = useState(false);
 
   useEffect(() => {
@@ -22,19 +26,24 @@ export function TitleBar() {
   if (!desktop) return null;
 
   return (
-    <div className="titlebar">
+    <div className={`titlebar${variant === "prototype" ? " titlebar--prototype" : ""}`}>
       <div className="titlebar-drag">
+        {variant === "prototype" && (
+          <img alt="" aria-hidden="true" className="titlebar-logo" draggable="false" src="/icon-64.png" />
+        )}
         <span className="titlebar-title">Micheon</span>
       </div>
       <div className="titlebar-controls">
         <button className="titlebar-btn" onClick={() => desktop.minimize()} aria-label="Minimize">
-          <Minus className="h-3.5 w-3.5" />
+          <Minus className="h-3.5 w-3.5" strokeWidth={1.4} />
         </button>
         <button className="titlebar-btn" onClick={() => desktop.toggleMaximize()} aria-label="Maximize">
-          {maximized ? <Copy className="h-3 w-3" /> : <Square className="h-3 w-3" />}
+          {maximized
+            ? <Copy className="h-3 w-3" strokeWidth={1.45} />
+            : <Square className="h-3 w-3" strokeWidth={1.45} />}
         </button>
         <button className="titlebar-btn titlebar-close" onClick={() => desktop.close()} aria-label="Close">
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" strokeWidth={1.4} />
         </button>
       </div>
     </div>
