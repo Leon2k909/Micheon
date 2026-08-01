@@ -146,6 +146,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part303",         // Internet kaputt
   "part304",         // Komplimente machen
   "part305",         // Wenn eine Beziehung endet
+  "part306",         // Haus kaufen
+  "part307",         // Renovieren
+  "part308",         // Fotografieren
+  "part309",         // Ein Haustier anschaffen
+  "part310",         // Die Handwerkerrechnung
+  "part311",         // Kirche im Alltag
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
