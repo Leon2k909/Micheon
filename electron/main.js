@@ -44,6 +44,7 @@ let petOverlayGeometrySignature = null;
 let petOverlayGeometryRevision = 0;
 let petOverlayPendingGeometryRevision = 0;
 let petOverlayGeometryTransitionTimer = null;
+let petDisplayMode = "games";
 let serverStarted = false;
 
 // Keep the transparent compositor surface close to the mascot instead of the
@@ -62,22 +63,31 @@ const PET_OVERLAY_CURSOR_INTERVAL_MS = 16;
 const PET_HISTORY_WINDOW_WIDTH = 636;
 const PET_HISTORY_WINDOW_HEIGHT = 576;
 const PET_HISTORY_WINDOW_MARGIN = 8;
-// Electron's ordinary `floating` level can sit behind fullscreen/topmost game
-// windows on Windows. `screen-saver` is the highest supported cross-platform
-// level intended for a visible desktop surface; this remains a normal,
-// click-through BrowserWindow and does not inject into or hook a game process.
-const PET_ALWAYS_ON_TOP_LEVEL = process.platform === "win32" ? "screen-saver" : "floating";
+const PET_DESKTOP_TOP_LEVEL = "floating";
+// `screen-saver` is Electron's highest ordinary Windows level. It gives game
+// mode its best chance of staying visible without injecting into or hooking a
+// game process. Exclusive fullscreen games can still own the final top layer.
+const PET_GAME_TOP_LEVEL = process.platform === "win32" ? "screen-saver" : "floating";
+const PET_DISPLAY_MODES = new Set(["app", "desktop", "games"]);
+
+function normalizePetDisplayMode(value) {
+  return PET_DISPLAY_MODES.has(value) ? value : "games";
+}
 
 function keepPetSurfaceOnTop(window, moveToFront = false) {
-  if (!window || window.isDestroyed()) return;
-  window.setAlwaysOnTop(true, PET_ALWAYS_ON_TOP_LEVEL);
-  // Electron documents visibleOnFullScreen as a macOS workspace option. It is
-  // harmless elsewhere and keeps the same behavior on macOS/Linux.
-  window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (!window || window.isDestroyed() || petDisplayMode === "app") return;
+  const level = petDisplayMode === "games" ? PET_GAME_TOP_LEVEL : PET_DESKTOP_TOP_LEVEL;
+  window.setAlwaysOnTop(true, level);
+  // Game mode opts into fullscreen workspaces. Desktop mode remains above
+  // ordinary apps without requesting the more aggressive fullscreen layer.
+  window.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: petDisplayMode === "games",
+  });
   if (moveToFront && window.isVisible()) window.moveTop();
 }
 
 function reassertPetSurfacesAfterAppDeactivation() {
+  if (petDisplayMode === "app") return;
   // A fullscreen game may finish its own z-order transition after Micheon has
   // already blurred/minimized. Two bounded reassertions cover that hand-off
   // without a permanent timer that would waste CPU while someone is playing.
@@ -1011,8 +1021,26 @@ function syncPetDesktopSurfaces() {
   syncPetHistoryBounds();
 }
 
+function setPetOverlayDisplayMode(mode) {
+  const next = normalizePetDisplayMode(mode);
+  petDisplayMode = next;
+
+  for (const window of [mainWindow, petWindow, petHistoryWindow]) {
+    if (!window || window.isDestroyed() || window.webContents.isDestroyed()) continue;
+    window.webContents.send("pet-overlay:display-mode", next);
+  }
+
+  if (next === "app") {
+    setPetOverlayVisible(false);
+    return;
+  }
+
+  keepPetSurfaceOnTop(petWindow, true);
+  if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
+}
+
 function setPetOverlayVisible(visible) {
-  if (!visible) {
+  if (!visible || petDisplayMode === "app") {
     closePetHistoryWindow();
     finishPetOverlayDrag();
     finishPetOverlayGeometryTransition();
@@ -1268,6 +1296,12 @@ ipcMain.on("window:toggle-maximize", () => {
 });
 ipcMain.on("window:close", () => mainWindow?.close());
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
+
+ipcMain.on("pet-overlay:set-display-mode", (event, mode) => {
+  const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
+  if (!trustedSender) return;
+  setPetOverlayDisplayMode(mode);
+});
 
 ipcMain.on("pet-overlay:set-visible", (event, visible) => {
   const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);

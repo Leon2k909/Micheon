@@ -23,6 +23,7 @@ const sprite = fs.readFileSync(
   "utf8"
 );
 const app = fs.readFileSync(path.join(root, "src/App.tsx"), "utf8");
+const displayMode = fs.readFileSync(path.join(root, "src/lib/petDisplayMode.ts"), "utf8");
 const main = fs.readFileSync(path.join(root, "electron/main.js"), "utf8");
 const preload = fs.readFileSync(path.join(root, "electron/preload.cjs"), "utf8");
 
@@ -133,7 +134,31 @@ check(
   layer.includes("const targetPet = menuPet ?? selectedPet;")
     && layer.includes("const nextSizes = { ...petSizes, [targetKey]: nextSize };")
     && layer.includes("value={menuPetSize}")
-    && layer.includes("{menuPet ? petName(menuPet) : ui(\"Size\")}")
+    && layer.includes('id="codex-pet-size-label"')
+);
+check(
+  "pet display mode persists as one of three explicit choices with game mode preserving current behaviour",
+  displayMode.includes('CODEX_PET_DISPLAY_MODE_KEY = "gl-codex-pet-display-mode-v1"')
+    && displayMode.includes('value === "app" || value === "desktop" || value === "games"')
+    && displayMode.includes('DEFAULT_PET_DISPLAY_MODE: PetDisplayMode = "games"')
+    && displayMode.includes("syncLocalStorageItem(CODEX_PET_DISPLAY_MODE_KEY, mode)")
+);
+check(
+  "the right-click panel separates controls and exposes all three display choices",
+  layer.includes("const PET_MENU_WIDTH = 280;")
+    && layer.includes('role="radiogroup"')
+    && layer.includes('data-pet-display-mode={option.value}')
+    && layer.includes('ui("Where pets appear")')
+    && layer.includes('ui("This pet")')
+    && layer.includes('ui("Messages & voice")')
+    && layer.includes("min-h-11 w-full items-center gap-3")
+);
+check(
+  "hiding the talking pet uses the normal hand-off instead of duplicating close behaviour",
+  layer.includes("togglePetVisibility(codexPetKey(menuPet));")
+    && !layer.includes('if (menuPetIsSpeaker) selectPet("off");')
+    && layer.includes('{ui("Close all pets")}')
+    && layer.includes("{allVisiblePets.length > 1 && (")
 );
 check(
   "grouped and separated pets render with their own saved widths",
@@ -225,6 +250,28 @@ check(
     && historyWindow.includes("nativeWindow")
 );
 check(
+  "app-only mode renders pets inside Micheon and removes them from the native overlay",
+  app.includes("function PetOverlaySurface()")
+    && app.includes('petDisplayMode === "app"')
+    && app.includes("function MainWindowPetSurface")
+    && app.includes('return petDisplayMode === "app" ? <CodexPetLayer /> : null;')
+);
+check(
+  "the preload and main process exchange only validated pet display modes",
+  preload.includes('ipcRenderer.send("pet-overlay:set-display-mode", mode)')
+    && preload.includes('ipcRenderer.on("pet-overlay:display-mode", handler)')
+    && main.includes('const PET_DISPLAY_MODES = new Set(["app", "desktop", "games"]);')
+    && /ipcMain\.on\("pet-overlay:set-display-mode"[\s\S]*?eventCameFrom\(event, mainWindow\)[\s\S]*?eventCameFrom\(event, petWindow\)[\s\S]*?setPetOverlayDisplayMode\(mode\)/.test(main)
+);
+check(
+  "desktop and game modes use distinct topmost policies while app mode cannot create an overlay",
+  main.includes('const PET_DESKTOP_TOP_LEVEL = "floating";')
+    && main.includes('process.platform === "win32" ? "screen-saver" : "floating"')
+    && main.includes('petDisplayMode === "games" ? PET_GAME_TOP_LEVEL : PET_DESKTOP_TOP_LEVEL')
+    && main.includes('visibleOnFullScreen: petDisplayMode === "games"')
+    && main.includes('if (!visible || petDisplayMode === "app") {')
+);
+check(
   "native history uses OS header dragging without mascot overlay drag IPC",
   panel.includes('nativeWindow && "pet-history-window-drag"')
     && panel.includes("onPointerDown={nativeWindow ? undefined : startDrag}")
@@ -245,7 +292,7 @@ check(
 );
 check(
   "history-originated speech can still reach the mascot",
-  provider.includes("if (desktop && !isDesktopPetOverlay) {")
+  provider.includes('if (desktop && !isDesktopPetOverlay && petDisplayMode !== "app") {')
     && provider.includes("desktop.sendPetOverlaySpeech")
     && /ipcMain\.on\("pet-overlay:speak"[\s\S]*?eventCameFrom\(event, mainWindow\)[\s\S]*?eventCameFrom\(event, petHistoryWindow\)/.test(main)
 );

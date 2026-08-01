@@ -34,6 +34,12 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("update:status", handler);
     return () => ipcRenderer.removeListener("update:status", handler);
   },
+  setPetDisplayMode: (mode) => ipcRenderer.send("pet-overlay:set-display-mode", mode),
+  onPetDisplayModeChange: (cb) => {
+    const handler = (_event, mode) => cb(mode);
+    ipcRenderer.on("pet-overlay:display-mode", handler);
+    return () => ipcRenderer.removeListener("pet-overlay:display-mode", handler);
+  },
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
   openPetHistory: (mascotBounds) => ipcRenderer.send("pet-history:open", mascotBounds),
   closePetHistory: () => ipcRenderer.send("pet-history:close"),

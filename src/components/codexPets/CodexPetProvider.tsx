@@ -29,6 +29,14 @@ import {
   syncLocalStorageItem,
 } from "@/lib/profileStorage";
 import { uiIsGerman } from "@/lib/i18n";
+import {
+  CODEX_PET_DISPLAY_MODE_EVENT,
+  CODEX_PET_DISPLAY_MODE_KEY,
+  getPetDisplayMode,
+  isPetDisplayMode,
+  setPetDisplayMode as storePetDisplayMode,
+  type PetDisplayMode,
+} from "@/lib/petDisplayMode";
 import { notePetRecallAnswer, notePetRecallQuestion } from "@/lib/petRecall";
 
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
@@ -94,9 +102,11 @@ type CodexPetContextValue = {
   isLoading: boolean;
   pets: CodexPet[];
   refresh: () => Promise<void>;
+  petDisplayMode: PetDisplayMode;
   selectedKey: string;
   selectedPet: CodexPet | null;
   selectPet: (key: string) => void;
+  setPetDisplayMode: (mode: PetDisplayMode) => void;
   togglePetVisibility: (key: string) => void;
   visibleKeys: string[];
   speak: (text: string, options?: CodexPetSpeechOptions) => void;
@@ -157,6 +167,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   const [pets, setPets] = useState<CodexPet[]>([]);
   const [selectedKey, setSelectedKey] = useState(() => getStoredCodexPetKey() ?? "");
   const [visibleKeys, setVisibleKeys] = useState<string[]>(getStoredVisiblePetKeys);
+  const [petDisplayMode, setPetDisplayModeState] = useState<PetDisplayMode>(getPetDisplayMode);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [speech, setSpeech] = useState<CodexPetSpeech | null>(null);
@@ -266,10 +277,10 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     // The history renderer may still announce an explicitly requested answer
     // through the mascot. Only the mascot renderer itself suppresses forwarding
     // to avoid echoing a message back to its own native window.
-    if (desktop && !isDesktopPetOverlay) {
+    if (desktop && !isDesktopPetOverlay && petDisplayMode !== "app") {
       desktop.sendPetOverlaySpeech({ message, options: { durationMs: options.durationMs } });
     }
-  }, [selectedKey, showSpeech, upsertHistory]);
+  }, [petDisplayMode, selectedKey, showSpeech, upsertHistory]);
 
   const answerQuestion = useCallback((
     messageId: string,
@@ -486,14 +497,33 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   useEffect(() => {
+    const syncDisplayMode = () => setPetDisplayModeState(getPetDisplayMode());
     const handleStorage = (event: StorageEvent) => {
       if (event.key === CODEX_PET_PREFERENCE_KEY && event.newValue) {
         setSelectedKey(event.newValue);
       }
       if (event.key === PET_VISIBLE_KEYS_KEY) setVisibleKeys(getStoredVisiblePetKeys());
+      if (event.key === CODEX_PET_DISPLAY_MODE_KEY) syncDisplayMode();
     };
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener(CODEX_PET_DISPLAY_MODE_EVENT, syncDisplayMode);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(CODEX_PET_DISPLAY_MODE_EVENT, syncDisplayMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!desktop?.onPetDisplayModeChange) return undefined;
+    return desktop.onPetDisplayModeChange((mode: unknown) => {
+      if (isPetDisplayMode(mode)) setPetDisplayModeState(mode);
+    });
+  }, []);
+
+  const setPetDisplayMode = useCallback((mode: PetDisplayMode) => {
+    setPetDisplayModeState(mode);
+    storePetDisplayMode(mode);
+    desktop?.setPetDisplayMode?.(mode);
   }, []);
 
   const selectPet = useCallback((key: string) => {
@@ -506,9 +536,9 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
         return next;
       });
     }
-    desktop?.setPetOverlayVisible(key !== "off");
+    desktop?.setPetOverlayVisible(key !== "off" && petDisplayMode !== "app");
     if (key === "off") clearSpeech();
-  }, [clearSpeech]);
+  }, [clearSpeech, petDisplayMode]);
 
   /**
    * Show or hide one pet.
@@ -537,7 +567,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
         setSelectedKey(key);
         storeCodexPetKey(key);
       }
-      desktop?.setPetOverlayVisible(true);
+      desktop?.setPetOverlayVisible(petDisplayMode !== "app");
       return;
     }
 
@@ -545,13 +575,13 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       const heir = next[0] ?? "off";
       setSelectedKey(heir);
       storeCodexPetKey(heir);
-      desktop?.setPetOverlayVisible(heir !== "off");
+      desktop?.setPetOverlayVisible(heir !== "off" && petDisplayMode !== "app");
       if (heir === "off") clearSpeech();
       return;
     }
 
-    desktop?.setPetOverlayVisible(selectedKey !== "off");
-  }, [clearSpeech, selectedKey, visibleKeys]);
+    desktop?.setPetOverlayVisible(selectedKey !== "off" && petDisplayMode !== "app");
+  }, [clearSpeech, petDisplayMode, selectedKey, visibleKeys]);
 
   const selectedPet = useMemo(
     () => pets.find((pet) => codexPetKey(pet) === selectedKey) ?? null,
@@ -568,12 +598,17 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
   // that resolves to the same pet no longer counts as a change.
   const pushedOverlayVisible = useRef<boolean | null>(null);
   useEffect(() => {
+    if (!desktop || isDesktopPetSurface) return;
+    desktop.setPetDisplayMode?.(petDisplayMode);
+  }, [petDisplayMode]);
+
+  useEffect(() => {
     if (!desktop || isDesktopPetSurface || isLoading) return;
-    const shouldShow = Boolean(selectedPet);
+    const shouldShow = Boolean(selectedPet) && petDisplayMode !== "app";
     if (pushedOverlayVisible.current === shouldShow) return;
     pushedOverlayVisible.current = shouldShow;
     desktop.setPetOverlayVisible(shouldShow);
-  }, [isLoading, selectedKey, Boolean(selectedPet)]);
+  }, [isLoading, petDisplayMode, selectedKey, Boolean(selectedPet)]);
 
   const value = useMemo<CodexPetContextValue>(
     () => ({
@@ -583,17 +618,19 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       error,
       history,
       isLoading,
+      petDisplayMode,
       pets,
       refresh,
       selectedKey,
       selectedPet,
       selectPet,
+      setPetDisplayMode,
       togglePetVisibility,
       visibleKeys,
       speak,
       speech,
     }),
-    [answerQuestion, clearSpeech, dismissMessage, error, history, isLoading, pets, refresh, selectedKey, selectedPet, selectPet, speak, speech, togglePetVisibility, visibleKeys]
+    [answerQuestion, clearSpeech, dismissMessage, error, history, isLoading, petDisplayMode, pets, refresh, selectedKey, selectedPet, selectPet, setPetDisplayMode, speak, speech, togglePetVisibility, visibleKeys]
   );
 
   return <CodexPetContext.Provider value={value}>{children}</CodexPetContext.Provider>;

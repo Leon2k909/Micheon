@@ -46,7 +46,10 @@ check("the desktop context menu supports Copy", electronMain.includes('{ role: "
 check("editable fields receive the standard editing actions", ["undo", "redo", "cut", "paste", "selectAll"].every((role) => electronMain.includes(`role: "${role}"`)));
 check("custom non-text right-click controls stay untouched", electronMain.includes("if (!params.isEditable && !hasSelection) return;"));
 check("the text menu is installed on the main app window", electronMain.includes("installTextContextMenu(mainWindow);"));
-check("pet overlays use the highest supported ordinary Windows window level", electronMain.includes('process.platform === "win32" ? "screen-saver" : "floating"'));
+check("desktop pets use a normal always-on-top level", electronMain.includes('const PET_DESKTOP_TOP_LEVEL = "floating"'));
+check("game-visible pets use the strongest ordinary Windows level", electronMain.includes('const PET_GAME_TOP_LEVEL = process.platform === "win32" ? "screen-saver" : "floating"'));
+check("only game-visible pets opt into fullscreen workspaces", electronMain.includes('visibleOnFullScreen: petDisplayMode === "games"'));
+check("Micheon-only pets do not open the desktop overlay", electronMain.includes('if (petDisplayMode === "app")') && electronMain.includes("setPetOverlayVisible(false)"));
 check("pet overlays reassert their z-order after Micheon deactivates", electronMain.includes('mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation)') && electronMain.includes('mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation)'));
 check("pet z-order recovery is bounded rather than a permanent polling loop", petReassertion.includes("for (const delay of [80, 700])") && petReassertion.includes("setTimeout") && !petReassertion.includes("setInterval"));
 

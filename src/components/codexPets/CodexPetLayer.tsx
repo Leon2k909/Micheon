@@ -9,7 +9,22 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, EyeOff, History, Link2, MessageSquare, MessageSquareOff, Unlink2, Volume2, VolumeX, X } from "lucide-react";
+import {
+  AppWindow,
+  Check,
+  EyeOff,
+  Gamepad2,
+  History,
+  Link2,
+  MessageSquare,
+  MessageSquareOff,
+  Monitor,
+  Unlink2,
+  Volume2,
+  VolumeX,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 
 import { CodexPetHistoryPanel } from "@/components/codexPets/CodexPetHistoryPanel";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";
@@ -20,6 +35,7 @@ import {
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { codexPetKey, type CodexPet } from "@/lib/codexPets";
 import { PET_NAMES_EVENT, PET_NAMES_KEY, petDisplayName } from "@/lib/petNames";
+import type { PetDisplayMode } from "@/lib/petDisplayMode";
 import { petGreetingLines } from "@/lib/petGreetings";
 import {
   CODEX_PET_MESSAGES_MUTED_EVENT,
@@ -57,8 +73,8 @@ const PET_SIZE_STEP = 4;
 const PET_SIZE_DEFAULT = 96;
 const PET_HEIGHT_RATIO = 104 / 96;
 const PET_GROUP_GAP = 8;
-const PET_MENU_WIDTH = 224;
-const PET_MENU_ESTIMATED_HEIGHT = 328;
+const PET_MENU_WIDTH = 280;
+const PET_MENU_ESTIMATED_HEIGHT = 600;
 const PET_BUBBLE_WIDTH = 240;
 // A click opens history, but only after the browser has had time to tell us it
 // was actually the first half of a double-click. Opening immediately unmounts
@@ -71,6 +87,32 @@ const isDesktopPetOverlay = typeof window !== "undefined"
 const PET_POSITION_STORAGE_KEY = isDesktopPetOverlay
   ? DESKTOP_PET_POSITION_KEY
   : PET_POSITION_KEY;
+
+const PET_DISPLAY_OPTIONS: Array<{
+  description: string;
+  icon: LucideIcon;
+  label: string;
+  value: PetDisplayMode;
+}> = [
+  {
+    description: "Only show inside Micheon.",
+    icon: AppWindow,
+    label: "App only",
+    value: "app",
+  },
+  {
+    description: "Stay above the desktop and normal apps.",
+    icon: Monitor,
+    label: "Desktop",
+    value: "desktop",
+  },
+  {
+    description: "Also try to stay visible over fullscreen games.",
+    icon: Gamepad2,
+    label: "Games",
+    value: "games",
+  },
+];
 
 type PetOverlayGeometry = {
   height: number;
@@ -341,8 +383,10 @@ export function CodexPetLayer() {
     clearSpeech,
     dismissMessage,
     history,
+    petDisplayMode,
     pets,
     selectPet,
+    setPetDisplayMode,
     togglePetVisibility,
     selectedKey,
     selectedPet,
@@ -1576,7 +1620,8 @@ export function CodexPetLayer() {
             )}
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="pointer-events-auto absolute z-10 w-56 overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--surface)] p-2 text-[var(--text-1)] shadow-[0_16px_44px_rgba(0,0,0,0.28)]"
+              aria-label={ui("Pet controls")}
+              className="pointer-events-auto absolute z-10 w-[280px] overflow-y-auto rounded-xl border border-[var(--border-2)] bg-[var(--surface)] p-3 text-[var(--text-1)] shadow-[0_18px_48px_rgba(0,0,0,0.24)]"
               data-pet-motion-part="menu"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
@@ -1584,7 +1629,7 @@ export function CodexPetLayer() {
               onContextMenu={(event) => event.preventDefault()}
               onPointerDown={(event) => event.stopPropagation()}
               ref={menuMotionRef}
-              role="menu"
+              role="dialog"
               style={{
                 left: menuLeft,
                 // Against the screen, not against wherever the menu was put:
@@ -1596,13 +1641,18 @@ export function CodexPetLayer() {
               }}
               transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
-                <p className="text-xs font-bold uppercase text-[var(--text-3)]">
-                  {ui("Pet size")}
-                </p>
+              <div className="flex items-start justify-between gap-3 px-1 pb-3 pt-0.5">
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-black leading-5 text-[var(--text-1)]">
+                    {menuPet ? petName(menuPet) : ui("Pet controls")}
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                    {ui(menuPetIsSpeaker ? "Talking pet" : "Pet controls")}
+                  </p>
+                </div>
                 <button
                   aria-label={ui("Close menu")}
-                  className="flex h-7 w-7 items-center justify-center rounded text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                   onClick={() => setMenuOpen(false)}
                   title={ui("Close menu")}
                   type="button"
@@ -1610,10 +1660,13 @@ export function CodexPetLayer() {
                   <X aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
-              <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+              <section
+                aria-labelledby="codex-pet-size-label"
+                className="rounded-xl border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-3"
+              >
                 <div className="mb-2 flex items-center justify-between text-xs font-bold">
-                  <span className="truncate pr-3 text-[var(--text-2)]">
-                    {menuPet ? petName(menuPet) : ui("Size")}
+                  <span className="truncate pr-3 text-[var(--text-2)]" id="codex-pet-size-label">
+                    {ui("Pet size")}
                   </span>
                   <output
                     className="tabular-nums text-[var(--text-1)]"
@@ -1624,7 +1677,7 @@ export function CodexPetLayer() {
                 </div>
                 <input
                   aria-label={`${ui("Pet size")}: ${menuPet ? petName(menuPet) : ui("Size")}`}
-                  className="h-5 w-full cursor-pointer accent-[var(--accent)]"
+                  className="h-5 w-full cursor-pointer accent-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                   id="codex-pet-size"
                   max={PET_SIZE_MAX}
                   min={PET_SIZE_MIN}
@@ -1640,124 +1693,173 @@ export function CodexPetLayer() {
                   <span>{ui("Small")}</span>
                   <span>{ui("Large")}</span>
                 </div>
-              </div>
-              {/* Actions for the pet that was actually right-clicked. Only one
-                  pet speaks at a time, so "let this one talk" IS the speaker
-                  switch — and hiding acts on this pet rather than the group. */}
+              </section>
+
+              <section aria-labelledby="codex-pet-visibility-label" className="mt-3">
+                <p
+                  className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
+                  id="codex-pet-visibility-label"
+                >
+                  {ui("Where pets appear")}
+                </p>
+                <div
+                  aria-label={ui("Where pets appear")}
+                  className="grid grid-cols-3 gap-1.5"
+                  role="radiogroup"
+                >
+                  {PET_DISPLAY_OPTIONS.map((option) => {
+                    const Icon = option.icon;
+                    const selected = petDisplayMode === option.value;
+                    return (
+                      <button
+                        aria-checked={selected}
+                        className={`flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border px-1.5 text-[11px] font-black leading-4 transition-[border-color,background-color,color,transform] active:scale-[0.98] ${
+                          selected
+                            ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                            : "border-[var(--border-1)] bg-[var(--surface)] text-[var(--text-2)] hover:border-[var(--accent)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                        }`}
+                        data-pet-display-mode={option.value}
+                        key={option.value}
+                        onClick={() => setPetDisplayMode(option.value)}
+                        role="radio"
+                        title={ui(option.description)}
+                        type="button"
+                      >
+                        <Icon aria-hidden="true" className="h-4 w-4" />
+                        <span className="truncate">{ui(option.label)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="min-h-8 px-1 pt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                  {ui(PET_DISPLAY_OPTIONS.find((option) => option.value === petDisplayMode)?.description ?? "")}
+                </p>
+              </section>
+              {/* Actions for the pet that was actually right-clicked. Hiding
+                  the speaker promotes another visible pet when possible. */}
               {menuPet && (
-                <>
-                  <div className="my-2 h-px bg-[var(--border-1)]" />
-                  <p className="px-2.5 pb-1 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                    {petName(menuPet)}
+                <section aria-labelledby="codex-pet-actions-label" className="mt-3">
+                  <p
+                    className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
+                    id="codex-pet-actions-label"
+                  >
+                    {ui("This pet")}
                   </p>
                   {!menuPetIsSpeaker && (
                     <button
-                      className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                       onClick={() => {
                         setMenuOpen(false);
                         selectPet(codexPetKey(menuPet));
                       }}
-                      role="menuitem"
                       type="button"
                     >
-                      <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                      <MessageSquare aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
                       {ui("Let this one do the talking")}
                     </button>
                   )}
-                  {menuPetIsSpeaker && (
-                    <p className="px-2.5 pb-2 text-xs font-semibold text-[var(--text-3)]">
-                      {ui("This is your talking pet.")}
-                    </p>
-                  )}
                   <button
-                    className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
                     onClick={() => {
                       setMenuOpen(false);
-                      // The speaker cannot simply be hidden — that would leave
-                      // nobody talking — so hiding it turns the mascot off.
-                      if (menuPetIsSpeaker) selectPet("off");
-                      else togglePetVisibility(codexPetKey(menuPet));
+                      // Hiding the speaker promotes another visible pet when possible.
+                      togglePetVisibility(codexPetKey(menuPet));
                     }}
-                    role="menuitem"
                     type="button"
                   >
-                    <EyeOff aria-hidden="true" className="h-4 w-4" />
+                    <EyeOff aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
                     {ui("Hide this pet")}
                   </button>
-                </>
+                </section>
               )}
-              <div className="my-2 h-px bg-[var(--border-1)]" />
-              <button
-                aria-checked={messagesMuted}
-                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                onClick={() => setCodexPetMessagesMuted(!messagesMuted)}
-                role="menuitemcheckbox"
-                type="button"
-              >
-                {messagesMuted ? (
-                  <MessageSquare aria-hidden="true" className="h-4 w-4" />
-                ) : (
-                  <MessageSquareOff aria-hidden="true" className="h-4 w-4" />
-                )}
-                {ui(messagesMuted ? "Show messages & questions" : "Mute messages & questions")}
-              </button>
-              <button
-                aria-checked={petVoiceEnabled}
-                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                onClick={() => setCodexPetVoiceEnabled(!petVoiceEnabled)}
-                role="menuitemcheckbox"
-                type="button"
-              >
-                {petVoiceEnabled ? (
-                  <VolumeX aria-hidden="true" className="h-4 w-4" />
-                ) : (
-                  <Volume2 aria-hidden="true" className="h-4 w-4" />
-                )}
-                {ui(petVoiceEnabled ? "Mute pet voice" : "Turn on pet voice")}
-              </button>
-              <button
-                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                onClick={() => {
-                  setMenuOpen(false);
-                  openHistory();
-                }}
-                role="menuitem"
-                type="button"
-              >
-                <History aria-hidden="true" className="h-4 w-4" />
-                {ui("Message history")}
-              </button>
+              <section aria-labelledby="codex-pet-chat-label" className="mt-3">
+                <p
+                  className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
+                  id="codex-pet-chat-label"
+                >
+                  {ui("Messages & voice")}
+                </p>
+                <div className="space-y-1">
+                  <button
+                    aria-checked={messagesMuted}
+                    className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => setCodexPetMessagesMuted(!messagesMuted)}
+                    role="checkbox"
+                    type="button"
+                  >
+                    {messagesMuted ? (
+                      <MessageSquare aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                    ) : (
+                      <MessageSquareOff aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                    )}
+                    {ui(messagesMuted ? "Show messages & questions" : "Mute messages & questions")}
+                  </button>
+                  <button
+                    aria-checked={petVoiceEnabled}
+                    className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => setCodexPetVoiceEnabled(!petVoiceEnabled)}
+                    role="checkbox"
+                    type="button"
+                  >
+                    {petVoiceEnabled ? (
+                      <VolumeX aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                    ) : (
+                      <Volume2 aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                    )}
+                    {ui(petVoiceEnabled ? "Mute pet voice" : "Turn on pet voice")}
+                  </button>
+                  <button
+                    className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      openHistory();
+                    }}
+                    type="button"
+                  >
+                    <History aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                    {ui("Message history")}
+                  </button>
+                </div>
+              </section>
               {/* Only worth offering once there is more than one pet on screen. */}
               {allVisiblePets.length > 1 && (
-                <button
-                  className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    const next = layoutMode === "apart" ? "together" : "apart";
-                    setLayoutMode(next);
-                    setPetLayoutMode(next);
-                  }}
-                  role="menuitem"
-                  type="button"
-                >
-                  {layoutMode === "apart"
-                    ? <Link2 aria-hidden="true" className="h-4 w-4" />
-                    : <Unlink2 aria-hidden="true" className="h-4 w-4" />}
-                  {ui(layoutMode === "apart" ? "Keep pets together" : "Move pets separately")}
-                </button>
+                <section aria-labelledby="codex-pet-layout-label" className="mt-3">
+                  <p
+                    className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
+                    id="codex-pet-layout-label"
+                  >
+                    {ui("Layout")}
+                  </p>
+                  <div className="space-y-1">
+                    <button
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        const next = layoutMode === "apart" ? "together" : "apart";
+                        setLayoutMode(next);
+                        setPetLayoutMode(next);
+                      }}
+                      type="button"
+                    >
+                      {layoutMode === "apart"
+                        ? <Link2 aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                        : <Unlink2 aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />}
+                      {ui(layoutMode === "apart" ? "Keep pets together" : "Move pets separately")}
+                    </button>
+                    <button
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        selectPet("off");
+                      }}
+                      type="button"
+                    >
+                      <X aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                      {ui("Close all pets")}
+                    </button>
+                  </div>
+                </section>
               )}
-              <button
-                className="flex h-10 w-full items-center gap-2 rounded-md px-2.5 text-left text-sm font-bold text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                onClick={() => {
-                  setMenuOpen(false);
-                  selectPet("off");
-                }}
-                role="menuitem"
-                type="button"
-              >
-                <X aria-hidden="true" className="h-4 w-4" />
-                {ui("Close pet")}
-              </button>
             </motion.div>
           </>
         )}

@@ -662,6 +662,18 @@ const DE: Record<string, string> = {
   "Move pets separately": "Tiere einzeln bewegen",
   "Keep pets together": "Tiere zusammen halten",
   "to move it on its own.": "um es einzeln zu bewegen.",
+  "Pet controls": "Maskottchen-Einstellungen",
+  "Talking pet": "Sprechendes Tier",
+  "Where pets appear": "Wo Tiere angezeigt werden",
+  "App only": "Nur Micheon",
+  "Desktop": "Desktop",
+  "Only show inside Micheon.": "Nur innerhalb von Micheon anzeigen.",
+  "Stay above the desktop and normal apps.": "Über dem Desktop und normalen Apps anzeigen.",
+  "Also try to stay visible over fullscreen games.": "Auch über Vollbildspielen sichtbar bleiben, wenn möglich.",
+  "This pet": "Dieses Tier",
+  "Messages & voice": "Nachrichten und Stimme",
+  "Layout": "Anordnung",
+  "Close all pets": "Alle Tiere schließen",
 
   // ── Test setup ──
   "Difficulty": "Schwierigkeit",

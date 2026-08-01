@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useState } from "react";
 
 import { CodexPetHistoryWindow } from "./components/codexPets/CodexPetHistoryWindow";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
-import { CodexPetProvider } from "./components/codexPets/CodexPetProvider";
+import { CodexPetProvider, useCodexPets } from "./components/codexPets/CodexPetProvider";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { UpdateBanner } from "./components/UpdateBanner";
@@ -33,7 +33,7 @@ export default function App() {
   if (isPetOverlay) {
     return (
       <CodexPetProvider>
-        <CodexPetLayer />
+        <PetOverlaySurface />
       </CodexPetProvider>
     );
   }
@@ -116,11 +116,25 @@ function MicheonSurface({ guided }: { guided: boolean }) {
               <MicheonMain profile={user} onRequestSignIn={() => setShowLogin(true)} />
             </Suspense>
           )}
-          {!isElectronApp() && user && <CodexPetLayer />}
+          <MainWindowPetSurface signedIn={Boolean(user)} />
         </CodexPetProvider>
       )}
     </>
   );
+}
+
+function PetOverlaySurface() {
+  const { petDisplayMode } = useCodexPets();
+  if (isElectronApp() && petDisplayMode === "app") return null;
+  return <CodexPetLayer />;
+}
+
+function MainWindowPetSurface({ signedIn }: { signedIn: boolean }) {
+  const { petDisplayMode } = useCodexPets();
+  if (isElectronApp()) {
+    return petDisplayMode === "app" ? <CodexPetLayer /> : null;
+  }
+  return signedIn ? <CodexPetLayer /> : null;
 }
 
 function MainSkeleton() {
