@@ -61,6 +61,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part187",         // Geld überweisen und Rechnungen
   "part188",         // Versicherungen im Alltag
   "part189",         // Amt, Ausweis und Formulare
+  "part190",         // Geburtstag feiern
+  "part191",         // Im Hotel
+  "part192",         // Krank zu Hause
+  "part193",         // Draußen im Park und am See
+  "part194",         // Die Wohnung einrichten
+  "part195",         // Über Deutsch reden
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
