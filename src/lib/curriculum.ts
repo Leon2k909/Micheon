@@ -134,6 +134,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part260",         // Schlaf
   "part261",         // Gesund essen
   "part262",         // Beileid und Trauer
+  "part263",         // Handyvertrag
+  "part264",         // Nichts vergessen
+  "part265",         // Das Vorstellungsgespräch
+  "part266",         // Geld leihen
+  "part267",         // Winterreifen
+  "part268",         // Elternabend und Elterngespräch
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
