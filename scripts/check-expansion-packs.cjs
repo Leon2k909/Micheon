@@ -179,6 +179,246 @@ const expected = {
     theme: "Das Auto im Alltag: tanken, Werkstatt und geblitzt",
     fixture: "Ich bin geblitzt worden.",
   },
+  part184: {
+    theme: "Der Notfall: 112, Erste Hilfe und die Notaufnahme",
+    fixture: "Es ist ein Unfall passiert.",
+  },
+  part185: {
+    theme: "Beim Zahnarzt: Vorsorge, Füllung und das kurze Piksen",
+    fixture: "Einmal ausspülen, bitte.",
+  },
+  part186: {
+    theme: "Kita und Schule: Schultüte, Pausenbrot und Elternabend",
+    fixture: "Zur Einschulung bekommt jedes Kind eine Schultüte.",
+  },
+  part187: {
+    theme: "Geld überweisen: IBAN, Verwendungszweck und die Mahnung",
+    fixture: "Vergiss den Verwendungszweck nicht, sonst kann ich es nicht zuordnen.",
+  },
+  part188: {
+    theme: "Versicherungen: Haftpflicht, Hausrat und der Schadensfall",
+    fixture: "Ich habe einen Schaden zu melden.",
+  },
+  part189: {
+    theme: "Amt, Ausweis und Formulare: zuständig oder nicht",
+    fixture: "Dafür sind wir nicht zuständig, das macht das Landratsamt.",
+  },
+  part190: {
+    theme: "Geburtstag feiern: Ständchen, Kerzen und reinfeiern",
+    fixture: "Puste alle Kerzen auf einmal aus!",
+  },
+  part191: {
+    theme: "Im Hotel: buchen, einchecken und das laute Zimmer",
+    fixture: "Bis wann kann ich kostenlos stornieren?",
+  },
+  part192: {
+    theme: "Krank zu Hause: auskurieren, Hühnersuppe und der Damm",
+    fixture: "Mich hat es jetzt auch erwischt.",
+  },
+  part193: {
+    theme: "Draußen im Park und am See: die Runde, die Decke, das Eis",
+    fixture: "Komm, wir drehen eine Runde durch den Park.",
+  },
+  part194: {
+    theme: "Die Wohnung einrichten: Flohmarkt, Glühbirnen und das ewige Regal",
+    fixture: "Die Glühbirne im Flur ist durchgebrannt.",
+  },
+  part195: {
+    theme: "Über Deutsch reden: wenn das Wort nicht kommen will",
+    fixture: "Es liegt mir auf der Zunge.",
+  },
+  part196: {
+    theme: "Im Supermarkt: der Chip, das Pfand und die SB-Kasse",
+    fixture: "Hast du einen Chip für den Einkaufswagen?",
+  },
+  part197: {
+    theme: "Zusammen sein: Jahrestag, Kosenamen und Händchen halten",
+    fixture: "Morgen ist unser Jahrestag, hast du daran gedacht?",
+  },
+  part198: {
+    theme: "Feiertage: Silvester, Weihnachten und Ostern",
+    fixture: "Zwischen den Jahren machen wir gar nichts.",
+  },
+  part199: {
+    theme: "Termine jonglieren: absagen, verschieben und doch noch treffen",
+    fixture: "Mir ist leider etwas dazwischengekommen.",
+  },
+  part200: {
+    theme: "Pendeln und Bahn fahren: Anschluss, Zugbindung und der Ruhebereich",
+    fixture: "Das Pendeln schlaucht mehr, als man denkt.",
+  },
+  part201: {
+    theme: "Garten und Balkon: gießen, jäten und der Krieg mit den Schnecken",
+    fixture: "Die Schnecken haben den halben Salat gefressen.",
+  },
+  part202: {
+    theme: "Fahrrad fahren: Platten, Kette und der endende Radweg",
+    fixture: "Ich habe einen Platten, hinten ist die Luft raus.",
+  },
+  part203: {
+    theme: "Wäsche waschen: sortieren, schleudern und die rote Socke",
+    fixture: "Eine rote Socke, und die ganze Wäsche ist rosa.",
+  },
+  part204: {
+    theme: "Schwimmbad und Sauna: Bahnen, Pommes und der Aufguss",
+    fixture: "Sie hat gerade ihr Seepferdchen gemacht.",
+  },
+  part205: {
+    theme: "Mülltrennung: der Gelbe Sack, die Biotonne und der Pizzakarton",
+    fixture: "Der Joghurtbecher muss nicht gespült sein — löffelrein reicht.",
+  },
+  part206: {
+    theme: "WG und Haushalt teilen: Putzplan, Kühlschrankfach und wer dran ist",
+    fixture: "Wer meinen Joghurt isst, schreibt ihn bitte auf die Einkaufsliste.",
+  },
+  part207: {
+    theme: "In der Warteschleife: Hotlines, Ansagen und endlich ein Mensch",
+    fixture: "Bitte bleiben Sie dran, der nächste freie Mitarbeiter ist gleich für Sie da.",
+  },
+  part208: {
+    theme: "Floskeln: die kleinen Antworten, die Gespräche tragen",
+    fixture: "Schönes Wochenende! — Danke, gleichfalls!",
+  },
+  part209: {
+    theme: "Nein sagen mit Stil: freundlich, aber bestimmt",
+    fixture: "Das ist lieb gemeint, aber nichts für mich.",
+  },
+  part210: {
+    theme: "In der Arztpraxis: Überweisung, Wartezimmer und nüchtern kommen",
+    fixture: "Zur Blutabnahme kommen Sie bitte nüchtern.",
+  },
+  part211: {
+    theme: "Homeoffice und Videokonferenz: du bist auf stumm",
+    fixture: "Du bist auf stumm!",
+  },
+  part212: {
+    theme: "Nachbarschaftshilfe: Pakete, Schlüssel und eine Tasse Zucker",
+    fixture: "Nimmst du mein Paket an, wenn ich nicht da bin?",
+  },
+  part213: {
+    theme: "Oma und Opa: Kuchen, Fotoalben und die goldene Hochzeit",
+    fixture: "Mit über achtzig ist sie noch erstaunlich rüstig.",
+  },
+  part214: {
+    theme: "Im Kino: Reihe zwölf, Popcorn gemischt und der Abspann",
+    fixture: "Ich schaue Filme am liebsten in der Originalfassung.",
+  },
+  part215: {
+    theme: "Flohmarkt: feilschen, stöbern und der letzte Preis",
+    fixture: "Was ist der letzte Preis?",
+  },
+  part216: {
+    theme: "Baby und Kleinkind: wickeln, zahnen und der heilige Mittagsschlaf",
+    fixture: "Beim Zahnen ist die Nacht kurz.",
+  },
+  part217: {
+    theme: "Camping: Heringe, Stockbrot und der Sternenhimmel",
+    fixture: "Beim Aufbauen fehlt am Ende immer ein Hering.",
+  },
+  part218: {
+    theme: "Krankenhausbesuch: Station drei, Zimmer zwölf",
+    fixture: "Die Operation ist gut verlaufen.",
+  },
+  part219: {
+    theme: "Die Steuererklärung: absetzen, Elster und der Schuhkarton",
+    fixture: "Die Fahrten zur Arbeit setzt du über die Pendlerpauschale ab.",
+  },
+  part220: {
+    theme: "Im Blumenladen: einen Strauß binden lassen",
+    fixture: "Schneide die Stiele schräg an, dann halten sie länger.",
+  },
+  part221: {
+    theme: "Glückwünsche: zur Prüfung, zur Geburt, zum Einzug",
+    fixture: "Nachwuchs ist unterwegs? Herzlichen Glückwunsch!",
+  },
+  part222: {
+    theme: "Musik machen: Tonleitern, Lampenfieber und der Applaus",
+    fixture: "Vor dem Vorspielen habe ich immer Lampenfieber.",
+  },
+  part223: {
+    theme: "Kleidung und Anprobe: sitzt wie angegossen",
+    fixture: "Wie sitzt die Hose? — Wie angegossen.",
+  },
+  part224: {
+    theme: "Wandern: Höhenmeter, Gipfelkreuz und die Abkürzung, die keine war",
+    fixture: "Die Abkürzung war natürlich keine.",
+  },
+  part225: {
+    theme: "Reklamieren im Restaurant: freundlich, deutlich, gelöst",
+    fixture: "Da ist tatsächlich ein Haar in der Suppe.",
+  },
+  part226: {
+    theme: "In der Apotheke: Beipackzettel, Generikum und der Notdienst",
+    fixture: "Zu Risiken und Nebenwirkungen fragen Sie Ihre Ärztin oder Apothekerin.",
+  },
+  part227: {
+    theme: "In der Bücherei: Leihfrist, Mahngebühr und die Onleihe",
+    fixture: "Die Leihfrist beträgt vier Wochen.",
+  },
+  part228: {
+    theme: "Im Museum: Audioguide, Sonderausstellung und der Shop am Ausgang",
+    fixture: "Der Ausgang führt natürlich durch den Museumsshop.",
+  },
+  part229: {
+    theme: "Den Führerschein machen: Fahrstunden, Schulterblick und der große Tag",
+    fixture: "Beim Anfahren am Berg würge ich den Motor ab.",
+  },
+  part230: {
+    theme: "Prüfungen und Lernen: Karteikarten, Eselsbrücken und der Blackout",
+    fixture: "Eselsbrücken sind albern und genau deshalb unvergesslich.",
+  },
+  part231: {
+    theme: "Lüften und Heizen: die deutsche Wissenschaft vom Raumklima",
+    fixture: "Fünf Minuten Durchzug bringen mehr als den ganzen Tag auf Kipp.",
+  },
+  part232: {
+    theme: "Kleinanzeigen: Ist das noch da?",
+    fixture: "Ist das noch da?",
+  },
+  part233: {
+    theme: "Beim Metzger: Aufschnitt, halb und halb und die Scheibe auf die Hand",
+    fixture: "Darf es etwas mehr sein? — Ja, passt schon.",
+  },
+  part234: {
+    theme: "Im Zoo: Fütterung, Streichelzoo und das weise Faultier",
+    fixture: "Das Faultier hat das Leben verstanden.",
+  },
+  part235: {
+    theme: "Karneval und Fasching: Alaaf, Helau und Kamelle",
+    fixture: "In Köln ruft man Alaaf, in Düsseldorf Helau.",
+  },
+  part236: {
+    theme: "Aberglaube: auf Holz klopfen und bloß nicht verschreien",
+    fixture: "Anstoßen immer mit Blickkontakt — sonst sieben Jahre Pech.",
+  },
+  part237: {
+    theme: "Briefe und E-Mails: Sehr geehrte, anbei und der fehlende Anhang",
+    fixture: "Der Anhang fehlt — die berühmteste Mail-Panne der Welt.",
+  },
+  part238: {
+    theme: "Bezahlen im Lokal: getrennt oder zusammen — und stimmt so",
+    fixture: "Dreißig — stimmt so.",
+  },
+  part239: {
+    theme: "Volksfest und Kirmes: Riesenrad, Zuckerwatte und die Losbude",
+    fixture: "An der Losbude gewinnt am Ende immer die Bude.",
+  },
+  part240: {
+    theme: "Lotto: sechs Richtige, die Tippgemeinschaft und der Traum",
+    fixture: "Beim Rubbellos gewinnt man meistens: noch ein Rubbellos.",
+  },
+  part241: {
+    theme: "Sternzeichen: typisch Steinbock und Merkur ist rückläufig",
+    fixture: "Merkur ist rückläufig — daran liegt es bestimmt.",
+  },
+  part242: {
+    theme: "Die Fahrgemeinschaft: Spritgeld, Musikhoheit und Schweigen vor acht",
+    fixture: "Bei uns gilt: Wer fährt, bestimmt die Musik.",
+  },
+  part243: {
+    theme: "Das Klassentreffen: Namensschilder, Anekdoten und der harte Kern",
+    fixture: "Du hast dich kaum verändert!",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -214,7 +454,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all thirty-three packs",
+  "new authored phrases are unique across all ninety-three packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -238,9 +478,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the thirty-three expansion packs contain at least 1333 authored phrases", newPhrases.length >= 1333, `found ${newPhrases.length}`);
-check("the thirty-three expansion packs contain at least 576 vocabulary entries", totalSeeds >= 576, `found ${totalSeeds}`);
-check("the thirty-three expansion packs contain at least 112 dialogues", totalDialogues >= 112, `found ${totalDialogues}`);
+check("the ninety-three expansion packs contain at least 3013 authored phrases", newPhrases.length >= 3013, `found ${newPhrases.length}`);
+check("the ninety-three expansion packs contain at least 1476 vocabulary entries", totalSeeds >= 1476, `found ${totalSeeds}`);
+check("the ninety-three expansion packs contain at least 232 dialogues", totalDialogues >= 232, `found ${totalDialogues}`);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);
 check("digital safety follows the modern-tech packs", CURRICULUM_ORDER.indexOf("part151") === CURRICULUM_ORDER.indexOf("part56") + 1);
 check("DIY follows the apartment-repair pack", CURRICULUM_ORDER.indexOf("part154") === CURRICULUM_ORDER.indexOf("cb-apartment-repairs") + 1);

@@ -55,6 +55,66 @@ export const CURRICULUM_ORDER: string[] = [
   "part181",         // Fitnessstudio und Verein
   "part182",         // Kochen: einmal durchs Rezept
   "part183",         // Das Auto im Alltag
+  "part184",         // Der Notfall: 112 und Erste Hilfe
+  "part185",         // Beim Zahnarzt
+  "part186",         // Kita und Schule
+  "part187",         // Geld überweisen und Rechnungen
+  "part188",         // Versicherungen im Alltag
+  "part189",         // Amt, Ausweis und Formulare
+  "part190",         // Geburtstag feiern
+  "part191",         // Im Hotel
+  "part192",         // Krank zu Hause
+  "part193",         // Draußen im Park und am See
+  "part194",         // Die Wohnung einrichten
+  "part195",         // Über Deutsch reden
+  "part196",         // Im Supermarkt: Chip, Pfand, SB-Kasse
+  "part197",         // Zusammen sein: Jahrestag und Kosenamen
+  "part198",         // Feiertage: Silvester, Weihnachten, Ostern
+  "part199",         // Termine jonglieren
+  "part200",         // Pendeln und Bahn fahren
+  "part201",         // Garten und Balkon
+  "part202",         // Fahrrad fahren
+  "part203",         // Wäsche waschen
+  "part204",         // Schwimmbad und Sauna
+  "part205",         // Mülltrennung
+  "part206",         // WG und Haushalt teilen
+  "part207",         // In der Warteschleife
+  "part208",         // Floskeln: die kleinen Antworten
+  "part209",         // Nein sagen mit Stil
+  "part210",         // In der Arztpraxis
+  "part211",         // Homeoffice und Videokonferenz
+  "part212",         // Nachbarschaftshilfe
+  "part213",         // Oma und Opa
+  "part214",         // Im Kino
+  "part215",         // Flohmarkt: feilschen und stöbern
+  "part216",         // Baby und Kleinkind
+  "part217",         // Camping
+  "part218",         // Krankenhausbesuch
+  "part219",         // Die Steuererklärung
+  "part220",         // Im Blumenladen
+  "part221",         // Glückwünsche für jeden Anlass
+  "part222",         // Musik machen
+  "part223",         // Kleidung und Anprobe
+  "part224",         // Wandern
+  "part225",         // Reklamieren im Restaurant
+  "part226",         // In der Apotheke
+  "part227",         // In der Bücherei
+  "part228",         // Im Museum
+  "part229",         // Den Führerschein machen
+  "part230",         // Prüfungen und Lernen
+  "part231",         // Lüften und Heizen
+  "part232",         // Kleinanzeigen: Ist das noch da?
+  "part233",         // Beim Metzger
+  "part234",         // Im Zoo
+  "part235",         // Karneval und Fasching
+  "part236",         // Aberglaube und Glücksbringer
+  "part237",         // Briefe und E-Mails: die Formeln
+  "part238",         // Bezahlen im Lokal: stimmt so
+  "part239",         // Volksfest und Kirmes
+  "part240",         // Lotto
+  "part241",         // Sternzeichen
+  "part242",         // Die Fahrgemeinschaft
+  "part243",         // Das Klassentreffen
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
