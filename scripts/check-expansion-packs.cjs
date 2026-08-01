@@ -423,6 +423,78 @@ const expected = {
     theme: "Reacting to everyday news: surprise, sympathy, relief and what happens next",
     fixture: "Das sind ja gute Nachrichten!",
   },
+  part245: {
+    theme: "Der Sprachkurs: Einstufungstest, Niveau B1 und die Prüfung",
+    fixture: "Fehler machen gehört dazu — sonst lernt man nichts.",
+  },
+  part246: {
+    theme: "Streaming und Serien: noch eine Folge, dann wirklich Schluss",
+    fixture: "Nur noch eine Folge — sagte ich vor drei Stunden.",
+  },
+  part247: {
+    theme: "Wohnungssuche: Warmmiete, Schufa und die Besichtigung mit vierzig Leuten",
+    fixture: "Steht da Kaltmiete oder Warmmiete?",
+  },
+  part248: {
+    theme: "In der Kneipe: vom Fass, der Deckel und die letzte Runde",
+    fixture: "Ein Bier vom Fass, bitte.",
+  },
+  part249: {
+    theme: "Hochzeit feiern: Polterabend, das Ja-Wort und der Eröffnungstanz",
+    fixture: "Dann kommt das Ja-Wort — und alle halten die Luft an.",
+  },
+  part250: {
+    theme: "Beim Tierarzt: Impfpass, Krallen schneiden und der Katzenkorb",
+    fixture: "Sobald der Katzenkorb rauskommt, ist die Katze verschwunden.",
+  },
+  part251: {
+    theme: "Putzen: der Wischmopp, der Kalk und die Grundreinigung",
+    fixture: "Fenster putzt man am besten bei bewölktem Himmel.",
+  },
+  part252: {
+    theme: "Fußball schauen: Anpfiff, Abseits und der Elfmeter",
+    fixture: "Das war doch klares Abseits!",
+  },
+  part253: {
+    theme: "Im Café: Milchschaum, zum Hierbleiben und der Stammplatz",
+    fixture: "Zum Mitnehmen oder zum Hierbleiben?",
+  },
+  part254: {
+    theme: "Küchengeräte: entkalken, die Sicherung und der Toaster mit Eigenleben",
+    fixture: "Das war ein Kurzschluss — die Sicherung ist rausgeflogen.",
+  },
+  part255: {
+    theme: "Die Ausbildung: Azubi, Berufsschule und übernommen werden",
+    fixture: "Nicht jeder muss studieren — Ausbildung ist ein guter Weg.",
+  },
+  part256: {
+    theme: "Wenn es Ärger gibt: Widerspruch, Anwalt und die Schlichtungsstelle",
+    fixture: "Erst mal ruhig durchlesen — die klingen alle schlimmer, als sie sind.",
+  },
+  part257: {
+    theme: "Smalltalk im Büro: Kaffeeküche, Montagsgesicht und Feierabend",
+    fixture: "So, ich mache Feierabend.",
+  },
+  part258: {
+    theme: "Hausversammlung: Hausgeld, Umlage und die Mieterhöhung",
+    fixture: "Wer nicht hingeht, beschwert sich hinterher am lautesten.",
+  },
+  part259: {
+    theme: "Pakete: Packstation, Sendungsverfolgung und der Zettel im Briefkasten",
+    fixture: "Im Briefkasten lag nur die Benachrichtigungskarte.",
+  },
+  part260: {
+    theme: "Schlaf: durchschlafen, der Wecker und die verlorene Stunde",
+    fixture: "Einschlafen geht, aber durchschlafen nicht.",
+  },
+  part261: {
+    theme: "Gesund essen: Portionen, Zucker und der gute Vorsatz",
+    fixture: "Verbieten hilft nichts, in Maßen essen schon.",
+  },
+  part262: {
+    theme: "Beileid und Trauer: die richtigen Worte finden",
+    fixture: "Du musst nichts sagen, ich bin einfach da.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -458,7 +530,7 @@ const newPhraseKeys = newPhrases.map((phrase) => normalise(phrase.de));
 const duplicateNewKeys = newPhraseKeys.filter((key, index) => newPhraseKeys.indexOf(key) !== index);
 const duplicateNewPhrases = newPhrases.filter((phrase) => duplicateNewKeys.includes(normalise(phrase.de)));
 check(
-  "new authored phrases are unique across all ninety-four packs",
+  "new authored phrases are unique across all one hundred packs",
   duplicateNewKeys.length === 0,
   duplicateNewPhrases.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
@@ -482,9 +554,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the ninety-four expansion packs contain at least 3063 authored phrases", newPhrases.length >= 3063, `found ${newPhrases.length}`);
-check("the ninety-four expansion packs contain at least 1496 vocabulary entries", totalSeeds >= 1496, `found ${totalSeeds}`);
-check("the ninety-four expansion packs contain at least 236 dialogues", totalDialogues >= 236, `found ${totalDialogues}`);
+check("the one hundred and twelve expansion packs contain at least 3567 authored phrases", newPhrases.length >= 3567, `found ${newPhrases.length}`);
+check("the one hundred and twelve expansion packs contain at least 1766 vocabulary entries", totalSeeds >= 1766, `found ${totalSeeds}`);
+check("the one hundred and twelve expansion packs contain at least 272 dialogues", totalDialogues >= 272, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

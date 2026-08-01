@@ -116,6 +116,24 @@ export const CURRICULUM_ORDER: string[] = [
   "part241",         // Sternzeichen
   "part242",         // Die Fahrgemeinschaft
   "part243",         // Das Klassentreffen
+  "part245",         // Der Sprachkurs
+  "part246",         // Streaming und Serien
+  "part247",         // Wohnungssuche
+  "part248",         // In der Kneipe
+  "part249",         // Hochzeit feiern
+  "part250",         // Beim Tierarzt
+  "part251",         // Putzen
+  "part252",         // Fußball schauen
+  "part253",         // Im Café
+  "part254",         // Küchengeräte
+  "part255",         // Die Ausbildung
+  "part256",         // Wenn es Ärger gibt: Recht im Alltag
+  "part257",         // Smalltalk im Büro
+  "part258",         // Hausversammlung und Mietsachen
+  "part259",         // Pakete und Rücksendungen
+  "part260",         // Schlaf
+  "part261",         // Gesund essen
+  "part262",         // Beileid und Trauer
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
