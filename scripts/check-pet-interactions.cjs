@@ -18,6 +18,10 @@ const provider = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
   "utf8"
 );
+const sprite = fs.readFileSync(
+  path.join(root, "src/components/codexPets/CodexPetSprite.tsx"),
+  "utf8"
+);
 const app = fs.readFileSync(path.join(root, "src/App.tsx"), "utf8");
 const main = fs.readFileSync(path.join(root, "electron/main.js"), "utf8");
 const preload = fs.readFileSync(path.join(root, "electron/preload.cjs"), "utf8");
@@ -58,6 +62,9 @@ const openNativeHistory = main.slice(openNativeHistoryStart, openNativeHistoryEn
 const syncAttachedHistoryStart = main.indexOf("function syncAttachedPetHistoryBounds()");
 const syncAttachedHistoryEnd = main.indexOf("function syncPetHistoryBounds()", syncAttachedHistoryStart);
 const syncAttachedHistory = main.slice(syncAttachedHistoryStart, syncAttachedHistoryEnd);
+const createOverlayStart = main.indexOf("function createPetOverlayWindow()");
+const createOverlayEnd = main.indexOf("function createPetHistoryWindow()", createOverlayStart);
+const createOverlayWindow = main.slice(createOverlayStart, createOverlayEnd);
 
 check("pet pointer handler exists", pointerStart >= 0 && pointerEnd > pointerStart);
 check("pet click handler exists", clickStart >= 0 && clickEnd > clickStart);
@@ -255,6 +262,33 @@ check(
 check(
   "changing the selected pet clears queued history",
   /useEffect\(\(\) => \{\s*cancelPendingPetClick\(\);\s*\}, \[cancelPendingPetClick, selectedKey\]\);/.test(layer)
+);
+check(
+  "the desktop overlay starts click-through so games receive input outside the visible pet",
+  createOverlayWindow.includes("overlay.setIgnoreMouseEvents(true, { forward: true });")
+);
+check(
+  "the desktop overlay keeps Chromium background throttling enabled",
+  createOverlayWindow.includes("backgroundThrottling: true")
+    && !createOverlayWindow.includes("backgroundThrottling: false")
+);
+check(
+  "the native shaped window owns input only inside actual pet regions",
+  main.includes("petWindow.setShape(regions);")
+    && main.includes("if (signature === petOverlayShapeSignature) return true;")
+    && main.includes("petWindow.setIgnoreMouseEvents(false);")
+);
+check(
+  "sprite frame style updates cannot trigger native shape recalculation",
+  layer.includes("const observer = new MutationObserver(scheduleHitRegionSync);")
+    && layer.includes("attributes: false,")
+    && !/observer\.observe\(document\.body, \{[\s\S]*?attributes:\s*true/.test(layer)
+);
+check(
+  "pet animation timers pause whenever the renderer is hidden",
+  sprite.includes("const onVisibility = () => (document.hidden ? stop() : start());")
+    && sprite.includes('document.addEventListener("visibilitychange", onVisibility);')
+    && sprite.includes('document.removeEventListener("visibilitychange", onVisibility);')
 );
 
 if (failures) {

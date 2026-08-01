@@ -552,6 +552,224 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
   color: #d7edd4;
 }
 
+/* Full-screen install handoff. Keep this in the same tactile cream-and-green
+   family as the prototype dashboard so restarting never feels like leaving
+   Micheon for a separate installer. */
+.micheon-update-takeover {
+  --install-page: #edf8e8;
+  --install-surface: #fffdf8;
+  --install-surface-2: #f1f8eb;
+  --install-surface-3: #dce9d6;
+  --install-border: rgba(61, 110, 50, 0.2);
+  --install-text: #292725;
+  --install-copy: #625e58;
+  --install-muted: #6f776a;
+  --install-accent: #46bd50;
+  --install-accent-strong: #218c32;
+  --install-accent-soft: #e2f6d8;
+  --install-shadow: rgba(52, 86, 43, 0.2);
+  color-scheme: light;
+  color: var(--install-text);
+  background:
+    radial-gradient(circle at 16% 8%, rgba(255, 239, 174, 0.55), transparent 29%),
+    radial-gradient(circle at 88% 88%, rgba(117, 211, 104, 0.34), transparent 35%),
+    linear-gradient(135deg, #fffdf5 0%, var(--install-page) 58%, #e3f5dd 100%);
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+.micheon-update-takeover::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(69, 128, 59, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(69, 128, 59, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  pointer-events: none;
+  mask-image: radial-gradient(circle at center, #000, transparent 78%);
+}
+
+.micheon-update-takeover-glow--top {
+  background: rgba(255, 217, 89, 0.34);
+}
+
+.micheon-update-takeover-glow--bottom {
+  background: rgba(76, 190, 81, 0.34);
+}
+
+.micheon-update-install-card {
+  border: 1px solid var(--install-border);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(219, 247, 207, 0.72), transparent 34%),
+    linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(255, 251, 243, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 0 rgba(53, 126, 48, 0.13),
+    0 34px 90px var(--install-shadow);
+}
+
+.micheon-update-install-accent {
+  background: linear-gradient(90deg, #2ca23c, #63d35f 48%, #2eac41);
+  box-shadow: 0 2px 12px rgba(51, 170, 60, 0.26);
+}
+
+.micheon-update-install-lockup {
+  display: grid;
+  align-items: center;
+  min-height: 34px;
+}
+
+.micheon-update-install-logo {
+  grid-area: 1 / 1;
+}
+
+.micheon-update-install-logo--dark {
+  visibility: hidden;
+}
+
+.micheon-update-install-badge {
+  border: 1px solid rgba(53, 165, 61, 0.2);
+  color: var(--install-accent-strong);
+  background: linear-gradient(180deg, #effbe8, #e0f4d7);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(52, 133, 47, 0.1);
+}
+
+.micheon-update-install-icon-shell {
+  border: 1px solid rgba(61, 133, 55, 0.18);
+  background: linear-gradient(180deg, #f3fbea, #deefd7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 5px 0 rgba(48, 128, 48, 0.13),
+    0 18px 36px rgba(64, 104, 51, 0.13);
+}
+
+.micheon-update-install-icon-well {
+  background: linear-gradient(145deg, #d8f0cd, #f7fbef 52%, #bde5b6);
+  box-shadow: inset 0 0 0 1px rgba(58, 137, 54, 0.12);
+}
+
+.micheon-update-install-app-icon {
+  box-shadow: 0 12px 25px rgba(61, 92, 52, 0.2);
+}
+
+.micheon-update-install-check {
+  border-color: var(--install-surface);
+  color: #fff;
+  background: linear-gradient(180deg, #63d666, #34ac44);
+  box-shadow: 0 3px 0 #238831, 0 8px 18px rgba(43, 135, 51, 0.24);
+}
+
+.micheon-update-install-version {
+  border: 1px solid var(--install-border);
+  color: var(--install-copy);
+  background: var(--install-surface-2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.micheon-update-install-status {
+  border: 1px solid var(--install-border);
+  background: color-mix(in srgb, var(--install-surface-2) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.micheon-update-install-step {
+  background: var(--install-surface-3);
+  box-shadow: inset 0 1px 1px rgba(40, 77, 35, 0.1);
+}
+
+.micheon-update-install-step--done {
+  background: #9edb89;
+}
+
+.micheon-update-install-step--active {
+  background: linear-gradient(90deg, #62d560, #35ac43);
+  box-shadow: 0 0 14px rgba(53, 173, 67, 0.28);
+}
+
+.micheon-update-install-state {
+  border: 1px solid rgba(61, 112, 51, 0.13);
+  color: var(--install-copy);
+  background: var(--install-surface);
+}
+
+.micheon-update-install-state--active {
+  border-color: rgba(48, 166, 58, 0.28);
+  color: var(--install-accent-strong);
+  background: var(--install-accent-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66), 0 2px 0 rgba(50, 135, 47, 0.1);
+}
+
+html[data-theme="dark"] .micheon-update-takeover {
+  --install-page: #111a13;
+  --install-surface: #1a251c;
+  --install-surface-2: #222f24;
+  --install-surface-3: #344337;
+  --install-border: rgba(200, 229, 195, 0.14);
+  --install-text: #f3f7f1;
+  --install-copy: #c0cdbd;
+  --install-muted: #92a18f;
+  --install-accent: #65d466;
+  --install-accent-strong: #86e184;
+  --install-accent-soft: #263c29;
+  --install-shadow: rgba(0, 0, 0, 0.44);
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 14% 6%, rgba(111, 171, 79, 0.12), transparent 30%),
+    radial-gradient(circle at 88% 88%, rgba(44, 151, 56, 0.18), transparent 38%),
+    linear-gradient(135deg, #101712, var(--install-page) 58%, #132219);
+}
+
+html[data-theme="dark"] .micheon-update-install-card {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(68, 137, 64, 0.18), transparent 35%),
+    linear-gradient(180deg, rgba(28, 39, 30, 0.98), rgba(21, 30, 23, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 0 rgba(0, 0, 0, 0.24), 0 34px 90px var(--install-shadow);
+}
+
+html[data-theme="dark"] .micheon-update-install-logo--light {
+  visibility: hidden;
+}
+
+html[data-theme="dark"] .micheon-update-install-logo--dark {
+  visibility: visible;
+}
+
+html[data-theme="dark"] .micheon-update-install-badge {
+  border-color: rgba(103, 212, 103, 0.2);
+  background: linear-gradient(180deg, #263a28, #203222);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 0 rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="dark"] .micheon-update-install-icon-shell {
+  border-color: rgba(112, 206, 106, 0.17);
+  background: linear-gradient(180deg, #263a29, #1f3022);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 5px 0 rgba(0, 0, 0, 0.24), 0 18px 36px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .micheon-update-install-icon-well {
+  background: linear-gradient(145deg, #2d492f, #243827 52%, #1d3020);
+  box-shadow: inset 0 0 0 1px rgba(119, 213, 111, 0.1);
+}
+
+html[data-theme="dark"] .micheon-update-install-check {
+  border-color: var(--install-surface);
+}
+
+html[data-theme="dark"] .micheon-update-install-version,
+html[data-theme="dark"] .micheon-update-install-status {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+html[data-theme="dark"] .micheon-update-install-state {
+  background: #202c22;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .micheon-update-install-step--active {
+    box-shadow: none;
+  }
+}
+
 button:disabled { cursor: not-allowed; }
 img, svg { display: block; }
 a { color: inherit; text-decoration: none; }

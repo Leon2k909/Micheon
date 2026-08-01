@@ -45,7 +45,7 @@ check("course progress animates from empty", prototype.includes("<motion.span") 
 check("course progress respects reduced-motion preferences", prototype.includes("const reduceMotion = useReducedMotion();") && prototype.includes("initial={reduceMotion ? false"));
 check("search focus uses one clean outer ring", styles.includes(".np-search-field:focus-within") && styles.includes(".np-search-field input:focus-visible"));
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
-check("the hero progress bar has a dimensional orange gradient", styles.includes("#ffe16a 0%, #ffc43b 52%, #ff9f1f 100%") && styles.includes(".np-progress-track--hero > span::after"));
+check("the hero progress bar uses a labelled, dimensional gold treatment", prototype.includes(">Level progress<") && styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
 check("the prototype title bar is one uninterrupted surface", appStyles.includes("background: #fffaf1;") && appStyles.includes(".titlebar--prototype::after") && appStyles.includes("content: none;"));
 check("the prototype title bar carries no separator shadow", /\.titlebar--prototype\s*\{[^}]*box-shadow:\s*none;/s.test(appStyles));

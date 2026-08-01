@@ -68,9 +68,13 @@ check("account settings mirror download progress", card.includes('role="progress
 check("explicit updates keep the generic NSIS window hidden", /autoUpdater\.quitAndInstall\(\s*true\s*,\s*true\s*\)/.test(main));
 check("the branded install takeover owns the visible restart phase", banner.includes('data-testid="update-install-takeover"') && banner.includes('aria-modal="true"') && banner.includes('ui("Installing your update")'));
 check("the custom install screen uses calm staged restart feedback", banner.includes('data-testid="update-install-steps"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
+check("development builds expose the complete install takeover for visual QA", banner.includes('get("update-preview") === "installing"') && banner.includes("useState(previewInstalling)"));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
 check("the updater owns the current green Micheon palette", banner.includes("micheon-update-panel") && styles.includes(".micheon-update-panel") && styles.includes("--accent: #43b84c;"));
 check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
+check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));
+check("the install takeover follows the learner's dark-theme setting", styles.includes('html[data-theme="dark"] .micheon-update-takeover') && styles.includes("--install-accent: #65d466;"));
+check("the install takeover no longer hardcodes the old dark purple shell", !banner.includes('bg-[#0e1710]') && !banner.includes('bg-[#172019]'));
 check("the updater no longer ships legacy purple accents", !/(#7834f7|#a177ff|rgba\(161,\s*119,\s*255)/i.test(banner));
 check("all restart buttons route through one install takeover", updateStatus.includes("UPDATE_INSTALL_REQUEST_EVENT") && card.includes("requestUpdateInstall()") && !card.includes("desktop?.installUpdate?.()"));
 check("an incomplete existing release rebuilds its missing updater assets", releaseWorkflow.includes('ASSET_COUNT="$(gh release view') && releaseWorkflow.includes('[ "$ASSET_COUNT" -lt 2 ]'));

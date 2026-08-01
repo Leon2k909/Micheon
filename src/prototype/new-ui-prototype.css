@@ -1210,16 +1210,31 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-course-progress-row {
   display: grid;
-  width: min(410px, 100%);
-  grid-template-columns: minmax(130px, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+  width: min(430px, 100%);
+  gap: 7px;
+  margin-top: 14px;
 }
 
-.np-course-progress-row small {
-  font-size: var(--np-type-caption);
-  font-weight: 700;
+.np-course-progress-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding-inline: 2px;
+}
+
+.np-course-progress-label > span {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.np-course-progress-label small {
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
@@ -1241,33 +1256,35 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-progress-track--hero {
   position: relative;
-  height: 14px;
-  border: 1px solid rgba(26, 104, 37, 0.2);
-  background: rgba(255, 255, 255, 0.78);
+  height: 15px;
+  border: 1px solid rgba(18, 79, 30, 0.28);
+  background: rgba(19, 80, 34, 0.34);
   box-shadow:
-    inset 0 2px 3px rgba(51, 92, 50, 0.16),
-    0 1px 0 rgba(255, 255, 255, 0.28);
+    inset 0 3px 5px rgba(12, 64, 26, 0.24),
+    0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
 }
 
 .np-progress-track--hero > span {
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(90deg, #ffe16a 0%, #ffc43b 52%, #ff9f1f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: linear-gradient(90deg, #fff2a6 0%, #ffdc63 55%, #f6c746 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
-    inset 0 -2px 1px rgba(185, 94, 0, 0.2),
-    2px 0 5px rgba(255, 164, 27, 0.28);
+    inset 0 2px 0 rgba(255, 255, 255, 0.56),
+    inset 0 -2px 1px rgba(155, 105, 11, 0.14),
+    2px 0 7px rgba(255, 220, 99, 0.3);
 }
 
 .np-progress-track--hero > span::after {
   position: absolute;
-  top: 1px;
-  right: 3px;
-  left: 3px;
-  height: 38%;
+  top: 2px;
+  right: 4px;
+  left: 4px;
+  height: 34%;
   border-radius: inherit;
-  background: rgba(255, 255, 255, 0.46);
+  background: rgba(255, 255, 255, 0.52);
   content: "";
 }
 
@@ -4216,15 +4233,20 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   }
 
   .np-course-progress-row {
-    display: block;
-    width: min(205px, 100%);
+    width: min(255px, 100%);
     margin-top: 11px;
   }
 
-  .np-course-progress-row small {
-    display: block;
-    margin-top: 7px;
-    font-size: var(--np-type-caption);
+  .np-course-progress-label {
+    gap: 10px;
+  }
+
+  .np-course-progress-label > span {
+    font-size: 9px;
+  }
+
+  .np-course-progress-label small {
+    font-size: 10px;
   }
 
   .np-mobile-course-button {

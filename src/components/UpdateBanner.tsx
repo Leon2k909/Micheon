@@ -18,7 +18,8 @@ const desktop = typeof window !== "undefined" ? (window as any).germDesktop : un
 function developmentPreview(): UpdateStatus | null {
   if (!import.meta.env.DEV || typeof window === "undefined") return null;
   const search = new URLSearchParams(window.location.search);
-  const state = search.get("update-preview") as UpdateState | null;
+  const requestedState = search.get("update-preview");
+  const state = (requestedState === "installing" ? "ready" : requestedState) as UpdateState | null;
   if (!state || !["downloading", "ready", "error"].includes(state)) return null;
   return {
     state,
@@ -31,6 +32,9 @@ function developmentPreview(): UpdateStatus | null {
 }
 
 const previewStatus = developmentPreview();
+const previewInstalling = import.meta.env.DEV
+  && typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("update-preview") === "installing";
 
 function panelCopy(status: UpdateStatus): string {
   if (status.state === "downloading") {
@@ -67,7 +71,7 @@ function UpdateInstallTakeover({
       animate={{ opacity: 1 }}
       aria-labelledby="micheon-install-title"
       aria-modal="true"
-      className="fixed inset-0 z-[5000] flex items-center justify-center overflow-hidden bg-[#0e1710] p-5 text-[#f7fbf6]"
+      className="micheon-update-takeover fixed inset-0 z-[5000] flex items-center justify-center overflow-hidden p-5"
       data-testid="update-install-takeover"
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
@@ -76,84 +80,87 @@ function UpdateInstallTakeover({
     >
       <div
         aria-hidden="true"
-        className="absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full bg-[#2f9e3d]/35 blur-[110px]"
+        className="micheon-update-takeover-glow micheon-update-takeover-glow--top absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full blur-[110px]"
       />
       <div
         aria-hidden="true"
-        className="absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full bg-[#69d267]/20 blur-[120px]"
+        className="micheon-update-takeover-glow micheon-update-takeover-glow--bottom absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full blur-[120px]"
       />
 
       <motion.section
         animate={{ scale: 1, y: 0 }}
-        className="relative w-full max-w-[590px] overflow-hidden rounded-[32px] border border-white/10 bg-[#172019]/95 p-6 shadow-[0_36px_110px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-9"
+        className="micheon-update-install-card relative w-full max-w-[590px] overflow-hidden rounded-[32px] p-6 backdrop-blur-xl sm:p-9"
         initial={reduceMotion ? undefined : { scale: 0.975, y: 18 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#2f9e3d] via-[#69d267] to-[#2f9e3d]" />
+        <div aria-hidden="true" className="micheon-update-install-accent absolute inset-x-0 top-0 h-1" />
 
         <div className="flex items-center justify-between gap-4">
-          <MicheonLogo className="max-w-[150px]" height={34} theme="dark" />
-          <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#bff0bf]">
+          <div className="micheon-update-install-lockup">
+            <MicheonLogo className="micheon-update-install-logo micheon-update-install-logo--light max-w-[150px]" height={34} theme="light" />
+            <MicheonLogo className="micheon-update-install-logo micheon-update-install-logo--dark max-w-[150px]" height={34} theme="dark" />
+          </div>
+          <span className="micheon-update-install-badge rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]">
             {ui("Micheon update")}
           </span>
         </div>
 
-        <div className="relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px] border border-white/10 bg-[#223025] shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
-          <div aria-hidden="true" className="absolute inset-2 rounded-[23px] bg-gradient-to-br from-[#69d267]/20 to-[#2f9e3d]/40" />
+        <div className="micheon-update-install-icon-shell relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px]">
+          <div aria-hidden="true" className="micheon-update-install-icon-well absolute inset-2 rounded-[23px]" />
           <img
             alt=""
-            className="relative h-14 w-14 rounded-[18px] shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
+            className="micheon-update-install-app-icon relative h-14 w-14 rounded-[18px]"
             src="/icon-64.png"
           />
-          <div className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2 border-[#172019] bg-[#79e47d] text-[#102313] shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+          <div className="micheon-update-install-check absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2">
             <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
           </div>
         </div>
 
         <div className="mx-auto mt-7 max-w-[460px] text-center">
-          <h1 className="text-3xl font-black tracking-[-0.035em] text-white sm:text-[34px]" id="micheon-install-title">
+          <h1 className="text-3xl font-black tracking-[-0.035em] text-[var(--install-text)] sm:text-[34px]" id="micheon-install-title">
             {ui("Installing your update")}
           </h1>
-          <p className="mx-auto mt-3 max-w-[420px] text-sm font-semibold leading-6 text-[#b7bac9]">
+          <p className="mx-auto mt-3 max-w-[420px] text-sm font-semibold leading-6 text-[var(--install-copy)]">
             {ui("Micheon will close for a moment and reopen automatically.")}
           </p>
 
           {(status?.currentVersion || status?.version) && (
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#223025] px-3 py-2 text-xs font-black tabular-nums text-[#d5ded4]">
+            <div className="micheon-update-install-version mt-5 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black tabular-nums">
               <span>{status?.currentVersion ? `v${status.currentVersion}` : ui("Current")}</span>
-              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[#79df78]" />
-              <span className="text-white">{status?.version ? `v${status.version}` : ui("Update ready")}</span>
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[var(--install-accent)]" />
+              <span className="text-[var(--install-text)]">{status?.version ? `v${status.version}` : ui("Update ready")}</span>
             </div>
           )}
         </div>
 
         <div
           aria-live="polite"
-          className="mt-8 rounded-[18px] border border-white/[0.07] bg-white/[0.035] p-4"
+          className="micheon-update-install-status mt-8 rounded-[18px] p-4"
           data-testid="update-install-steps"
           role="status"
         >
-          <div className="mb-2 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.12em] text-[#8f94a8]">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.12em] text-[var(--install-muted)]">
             <span>{ui("Preparing restart")}</span>
             <span>{ui("Just a moment")}</span>
           </div>
           <div aria-hidden="true" className="grid grid-cols-3 gap-2">
-            <span className="h-2 rounded-full bg-[#6ee7ad]" />
+            <span className="micheon-update-install-step micheon-update-install-step--done h-2 rounded-full" />
             <motion.span
               animate={reduceMotion ? undefined : { opacity: [0.45, 1, 0.45] }}
-              className="h-2 rounded-full bg-[#69d267] shadow-[0_0_14px_rgba(79,189,81,0.38)]"
+              className="micheon-update-install-step micheon-update-install-step--active h-2 rounded-full"
               transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
             />
-            <span className="h-2 rounded-full bg-[#3a3d4d]" />
+            <span className="micheon-update-install-step h-2 rounded-full" />
           </div>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            <div className="flex items-center gap-2.5 rounded-[13px] border border-white/[0.06] bg-[#22242f] px-3.5 py-3 text-xs font-bold text-[#d2d4df]">
-              <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[#7ff0ba]" />
+            <div className="micheon-update-install-state flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-xs font-bold">
+              <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--install-accent)]" />
               {ui("Download complete")}
             </div>
-            <div className="flex items-center gap-2.5 rounded-[13px] border border-[#69d267]/20 bg-[#69d267]/[0.08] px-3.5 py-3 text-xs font-bold text-white">
-              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[#8be98a]" />
+            <div className="micheon-update-install-state micheon-update-install-state--active flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-xs font-bold">
+              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--install-accent-strong)]" />
               {ui("Restarting Micheon")}
             </div>
           </div>
@@ -171,7 +178,7 @@ export function UpdateBanner() {
   const reduceMotion = useReducedMotion();
   const [status, setStatus] = useState<UpdateStatus | null>(previewStatus);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
-  const [installing, setInstalling] = useState(false);
+  const [installing, setInstalling] = useState(previewInstalling);
   const [retrying, setRetrying] = useState(false);
   const installTimer = useRef<number | null>(null);
 
