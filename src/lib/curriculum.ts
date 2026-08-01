@@ -140,6 +140,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part266",         // Geld leihen
   "part267",         // Winterreifen
   "part268",         // Elternabend und Elterngespräch
+  "part300",         // Grillen
+  "part301",         // Gebrauchtwagen kaufen
+  "part302",         // Kinderkrankheiten
+  "part303",         // Internet kaputt
+  "part304",         // Komplimente machen
+  "part305",         // Wenn eine Beziehung endet
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
