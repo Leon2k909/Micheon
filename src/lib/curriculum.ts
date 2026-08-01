@@ -73,6 +73,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part199",         // Termine jonglieren
   "part200",         // Pendeln und Bahn fahren
   "part201",         // Garten und Balkon
+  "part202",         // Fahrrad fahren
+  "part203",         // Wäsche waschen
+  "part204",         // Schwimmbad und Sauna
+  "part205",         // Mülltrennung
+  "part206",         // WG und Haushalt teilen
+  "part207",         // In der Warteschleife
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
