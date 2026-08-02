@@ -182,6 +182,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part339",         // Beim Optiker
   "part340",         // Krank am Wochenende
   "part341",         // Die Kita-Suche
+  "part342",         // Schuhe und Schuster
+  "part343",         // Die Waschstraße
+  "part344",         // Im Fundbüro
+  "part345",         // Änderungsschneiderei
+  "part346",         // Das E-Auto laden
+  "part347",         // Der Schrebergarten
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
