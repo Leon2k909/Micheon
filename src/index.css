@@ -3578,9 +3578,9 @@ a { color: inherit; text-decoration: none; }
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: url("./prototype/assets/micheon-hero-v3.webp") right center / auto 112% no-repeat;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, rgba(0, 0, 0, 0.18) 45%, rgba(0, 0, 0, 0.72) 58%, #000 68%, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, rgba(0, 0, 0, 0.18) 45%, rgba(0, 0, 0, 0.72) 58%, #000 68%, #000 100%);
+  background: url("./prototype/assets/micheon-hero-v3.webp") right center / auto 120% no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.04) 48%, rgba(0, 0, 0, 0.18) 56%, rgba(0, 0, 0, 0.48) 65%, rgba(0, 0, 0, 0.82) 74%, #000 82%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.04) 48%, rgba(0, 0, 0, 0.18) 56%, rgba(0, 0, 0, 0.48) 65%, rgba(0, 0, 0, 0.82) 74%, #000 82%, #000 100%);
   pointer-events: none;
 }
 
@@ -3591,7 +3591,7 @@ a { color: inherit; text-decoration: none; }
   z-index: 0;
   border-radius: inherit;
   background:
-    linear-gradient(90deg, rgba(13, 112, 34, 0.2) 0%, rgba(15, 121, 37, 0.08) 46%, transparent 72%),
+    linear-gradient(90deg, transparent 0%, transparent 34%, rgba(36, 168, 61, 0.96) 48%, rgba(36, 168, 61, 0.86) 55%, rgba(34, 164, 59, 0.58) 64%, rgba(32, 158, 56, 0.26) 73%, transparent 82%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%, rgba(16, 101, 31, 0.12));
   pointer-events: none;
 }
