@@ -5,6 +5,7 @@ const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const gamification = read("src/Gamification.tsx");
+const vocabTracker = read("src/components/lab/VocabTracker.tsx");
 const dashboardArtwork = [
   "src/prototype/assets/micheon-hero-v3.webp",
   "src/prototype/assets/achievements-v1/achievement-atlas-v3.webp",
@@ -59,11 +60,19 @@ check(
     && prototype.includes("void loadGamificationPanel()"),
 );
 check(
-  "heavy profile tools wait until their sections approach the viewport",
+  "heavy profile tools stay deferred while the tracker prewarms before scrolling",
   gamification.includes('lazy(() => import("@/components/codexPets/CodexPetPicker")')
-    && gamification.includes('lazy(() => import("@/components/lab/VocabTracker")')
-    && gamification.includes('rootMargin: "420px 0px"')
+    && gamification.includes('const loadVocabTrackerModule = () => import("@/components/lab/VocabTracker")')
+    && gamification.includes('rootMargin: "1200px 0px"')
+    && gamification.includes("module.prepareVocabTrackerData(apiParts)")
     && gamification.includes("onReveal={onRequestCatalogue}"),
+);
+check(
+  "the tracker reuses idle-prepared search and priority indexes on first view",
+  vocabTracker.includes("const preparedTrackerCache = new WeakMap")
+    && vocabTracker.includes("export function prepareVocabTrackerData")
+    && vocabTracker.includes("return commonOrder")
+    && vocabTracker.includes("const { catalog, commonOrder, priorityIndex, searchIndex } = prepared"),
 );
 check(
   "large feature views are split behind React lazy boundaries",

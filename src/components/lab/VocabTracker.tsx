@@ -14,10 +14,11 @@ import { tts } from "@/lib/voice";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
-import { useLearningMode } from "@/lib/learningMode";
+import { getLearningMode, useLearningMode } from "@/lib/learningMode";
 import {
   conversationPriorityInfo,
   conversationPriorityScore,
+  type ConversationPriorityInfo,
   type ConversationUsefulness,
 } from "@/lib/conversationPriority";
 
@@ -50,6 +51,63 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "recent", label: "Recently practised" },
 ];
 const PAGE_SIZE = 40;
+const GERMAN_COLLATOR = new Intl.Collator("de");
+
+type TrackerPriority = {
+  commonality: number;
+  difficulty: number;
+  info: ConversationPriorityInfo;
+  length: number;
+  score: number;
+};
+
+type PreparedTrackerData = {
+  catalog: CatalogItem[];
+  commonOrder: CatalogItem[];
+  priorityIndex: Map<CatalogItem, TrackerPriority>;
+  searchIndex: Map<CatalogItem, string>;
+};
+
+// Profile settings can render immediately while this immutable catalogue work
+// is prepared during browser idle time. The same object is reused when the
+// tracker reaches the viewport, avoiding a large synchronous task mid-scroll.
+const preparedTrackerCache = new WeakMap<object, { mode: string; data: PreparedTrackerData }>();
+
+export function prepareVocabTrackerData(apiParts: Record<string, Part>): PreparedTrackerData {
+  const mode = String(getLearningMode());
+  const cacheable = Boolean(apiParts) && typeof apiParts === "object";
+  const cached = cacheable ? preparedTrackerCache.get(apiParts) : undefined;
+  if (cached?.mode === mode) return cached.data;
+
+  const catalog = buildCatalog(apiParts);
+  const searchIndex = new Map(catalog.map((item) => [item, buildCatalogSearchText(item)]));
+  const corpusIndex = buildCorpusIndex(apiParts as any);
+  const priorityIndex = new Map<CatalogItem, TrackerPriority>(catalog.map((item) => {
+    const commonality = sentenceCommonality(item.de, corpusIndex);
+    return [item, {
+      commonality,
+      difficulty: BAND_ORDER.indexOf(
+        itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length)
+      ),
+      info: conversationPriorityInfo(item.partKey),
+      length: item.de.length,
+      score: conversationPriorityScore({
+        partKey: item.partKey,
+        kind: item.kind,
+        commonality,
+        lessonPriority: item.lessonPriority,
+      }),
+    }];
+  }));
+  const commonOrder = [...catalog].sort((a, b) => {
+    const aScore = priorityIndex.get(a)?.score ?? Number.MAX_SAFE_INTEGER;
+    const bScore = priorityIndex.get(b)?.score ?? Number.MAX_SAFE_INTEGER;
+    return aScore - bScore || GERMAN_COLLATOR.compare(a.de, b.de);
+  });
+  const data = { catalog, commonOrder, priorityIndex, searchIndex };
+  if (cacheable) preparedTrackerCache.set(apiParts, { mode, data });
+  return data;
+}
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
@@ -312,35 +370,11 @@ export function VocabTracker({
     return () => window.removeEventListener("grades-updated", onUpdate);
   }, [user]);
 
-  const catalog = useMemo(() => buildCatalog(apiParts), [apiParts, learningMode]);
-  // Search every catalogue field without rebuilding 8,000+ normalized strings
-  // on each keystroke. Keeping this cache local avoids adding tracker-only text
-  // to the shared catalog used by games, tests, and the desktop mascot.
-  const searchIndex = useMemo(
-    () => new Map(catalog.map((item) => [item, buildCatalogSearchText(item)])),
-    [catalog]
+  const prepared = useMemo(
+    () => prepareVocabTrackerData(apiParts),
+    [apiParts, learningMode]
   );
-  // Scans every phrase, so it is built once per pack list rather than per sort.
-  const corpusIndex = useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
-  // One shared ranking powers both the visible usefulness filter and the
-  // "Most common first" sort. This keeps the label honest: a niche sentence
-  // cannot leapfrog a conversation essential just because its words are short.
-  const priorityIndex = useMemo(
-    () => new Map(catalog.map((item) => {
-      const commonality = sentenceCommonality(item.de, corpusIndex);
-      return [item, {
-        commonality,
-        info: conversationPriorityInfo(item.partKey),
-        score: conversationPriorityScore({
-          partKey: item.partKey,
-          kind: item.kind,
-          commonality,
-          lessonPriority: item.lessonPriority,
-        }),
-      }] as const;
-    })),
-    [catalog, corpusIndex]
-  );
+  const { catalog, commonOrder, priorityIndex, searchIndex } = prepared;
 
   const counts = useMemo(() => {
     let known = 0;
@@ -361,6 +395,15 @@ export function VocabTracker({
 
   const filtered = useMemo(() => {
     const q = normalizeCatalogSearchText(query);
+    if (
+      !q
+      && filter === "all"
+      && itemTypeFilter === "all"
+      && usefulnessFilter === "all"
+      && sort === "common"
+    ) {
+      return commonOrder;
+    }
     const matches = catalog.filter((item) => {
       const status = statusForId(grades, item.id, item.aliases);
       if (filter !== "all" && status !== filter) return false;
@@ -382,20 +425,17 @@ export function VocabTracker({
     // the comparator about 93,000 times, so a value that costs a tokenise and a
     // corpus lookup was paid roughly 23 times per item instead of once. Opening
     // this tab took 2.3 seconds, and a second of that was this sort.
-    const collator = new Intl.Collator("de");
     const keyed = matches.map((item) => ({
       item,
       commonality: priorityIndex.get(item)?.commonality ?? 5_000,
       priorityScore: priorityIndex.get(item)?.score ?? Number.MAX_SAFE_INTEGER,
-      difficulty: BAND_ORDER.indexOf(
-        itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length)
-      ),
+      difficulty: priorityIndex.get(item)?.difficulty ?? 0,
       practisedAt: Date.parse(recordFor(grades, item.id, item.aliases)?.updatedAt ?? "") || 0,
-      length: item.de.length,
+      length: priorityIndex.get(item)?.length ?? item.de.length,
       de: item.de,
     }));
     type Keyed = (typeof keyed)[number];
-    const byText = (a: Keyed, b: Keyed) => collator.compare(a.de, b.de);
+    const byText = (a: Keyed, b: Keyed) => GERMAN_COLLATOR.compare(a.de, b.de);
 
     const compare: Record<SortKey, (a: Keyed, b: Keyed) => number> = {
       common: (a, b) => a.priorityScore - b.priorityScore || byText(a, b),
@@ -411,7 +451,7 @@ export function VocabTracker({
     };
     keyed.sort(compare[sort]);
     return keyed.map((entry) => entry.item);
-  }, [catalog, grades, filter, itemTypeFilter, priorityIndex, query, searchIndex, sort, usefulnessFilter]);
+  }, [catalog, commonOrder, grades, filter, itemTypeFilter, priorityIndex, query, searchIndex, sort, usefulnessFilter]);
 
   const visible = filtered.slice(0, limit);
 

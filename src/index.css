@@ -2965,7 +2965,7 @@ a { color: inherit; text-decoration: none; }
   color-scheme: light;
   color: var(--fs-text);
   isolation: isolate;
-  background: #fffaf1;
+  background: linear-gradient(180deg, #fbfaf6 0%, #f6f2e9 100%);
   font-family: var(--fs-font-text);
   font-size: 16px;
   line-height: 1.4;
@@ -3191,28 +3191,29 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-card {
-  border: 1px solid rgba(54, 82, 45, 0.18);
+  border: 1px solid rgba(76, 73, 64, 0.16);
   border-radius: 28px;
-  background: #fffdf9;
+  background: #fffefa;
   box-shadow:
-    0 8px 0 rgba(80, 111, 68, 0.15),
-    0 30px 70px rgba(56, 82, 46, 0.18),
-    0 0 0 7px rgba(255, 255, 255, 0.32),
+    0 7px 0 rgba(90, 87, 74, 0.13),
+    0 30px 70px rgba(76, 69, 57, 0.16),
+    0 0 0 7px rgba(255, 255, 255, 0.42),
     inset 0 1px 0 #fff;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-card-body {
-  padding: 28px 30px 26px;
+  padding: 25px 30px 25px;
 }
 
 .guided-session.fs-app.prototype-guided-session .grade-btn {
-  min-height: 40px;
-  padding-inline: 15px;
+  min-height: 52px;
+  padding-inline: 17px;
+  border-radius: 16px;
   border-color: rgba(54, 82, 45, 0.18);
   background: #fffdf9;
   color: #444941;
-  font-size: 12px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 950;
   box-shadow:
     inset 0 1px 0 #fff,
     0 3px 0 rgba(78, 91, 66, 0.12),
@@ -4122,15 +4123,15 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebar {
-  padding: 22px 30px 20px;
-  border-bottom-color: rgba(54, 82, 45, 0.13);
-  background: #f0f7ec;
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.72);
+  padding: 17px 30px 15px;
+  border-bottom-color: rgba(76, 73, 64, 0.13);
+  background: linear-gradient(180deg, #fffefa 0%, #faf8f2 100%);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagemeta {
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagemeta > div:first-child {
@@ -4191,27 +4192,27 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stageline {
-  top: 23px;
+  top: 20px;
   height: 4px;
   background: #dce7d7;
   box-shadow: inset 0 1px 2px rgba(54, 82, 45, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn > span {
-  width: 47px;
-  height: 47px;
+  width: 42px;
+  height: 42px;
   border-color: rgba(54, 82, 45, 0.15);
   border-radius: 15px;
   background: #fffefb;
   color: #60675e;
   box-shadow: inset 0 1px 0 #fff, 0 5px 0 #d5ddd0, 0 10px 18px rgba(66, 84, 55, 0.09);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 950;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn small {
   color: #626960;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 820;
   line-height: 1.05;
 }
@@ -4366,7 +4367,306 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.15;
 }
 
+/* Dashboard-quality lesson interaction: one clear prompt, stacked tactile
+   choices, and a full-width feedback tray instead of disconnected widgets. */
+.guided-session.fs-app.prototype-guided-session .fs-heading > div:last-child {
+  align-items: stretch;
+  gap: 10px;
+}
+
+.guided-session.fs-app.prototype-guided-session .grade-btn,
+.guided-session.fs-app.prototype-guided-session .fs-listen {
+  min-height: 52px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.88fr) minmax(0, 1.42fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
+  min-height: 252px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 26px;
+  border-color: rgba(69, 154, 205, 0.19);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(110, 206, 241, 0.14), transparent 34%),
+    #fffefa;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 0 rgba(81, 94, 101, 0.12),
+    0 18px 34px rgba(72, 83, 88, 0.09);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-new {
+  align-self: flex-start;
+  color: #6f51d9;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-meaning-prompt-icon {
+  width: 52px;
+  height: 52px;
+  color: #4bb6e5;
+  filter: drop-shadow(0 4px 0 rgba(50, 148, 193, 0.12));
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt > p {
+  max-width: 360px;
+  font-size: clamp(23px, 2.1vw, 31px);
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt > small {
+  color: #6d6b65;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choices {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-radius: 16px;
+  color: #2e332d;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 0 rgba(81, 84, 73, 0.12),
+    0 9px 18px rgba(78, 74, 64, 0.055);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-top {
+  display: contents;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-top > span {
+  display: none;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-top kbd {
+  grid-column: 1;
+  width: 34px;
+  height: 34px;
+  border-color: rgba(93, 88, 78, 0.12);
+  border-radius: 11px;
+  background: #f4f0e8;
+  color: #6c675e;
+  font-size: 12px;
+  box-shadow: 0 2px 0 rgba(87, 82, 71, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice > strong {
+  grid-column: 2;
+  font-size: clamp(15px, 1.25vw, 18px);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-state {
+  grid-column: 3;
+  min-height: 0;
+  color: #8a8b84;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(57, 178, 72, 0.48);
+  background: #f0fae9;
+  color: #21772d;
+  box-shadow: inset 0 1px 0 #fff, 0 6px 0 rgba(49, 144, 58, 0.17), 0 13px 23px rgba(61, 114, 54, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) {
+  border-color: rgba(57, 178, 72, 0.58);
+  background: #e7f7dd;
+  color: #1f702b;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 rgba(49, 144, 58, 0.22);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-correct {
+  border-color: #37b947;
+  background: #eaf9e2;
+  color: #176d27;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #8fd48a, 0 13px 24px rgba(48, 150, 57, 0.13);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-wrong {
+  border-color: #e5828f;
+  background: #fff0f1;
+  color: #9f3346;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #efb9c0;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result {
+  min-height: 80px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+  padding: 12px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 4px 0 rgba(70, 102, 58, 0.12);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result::before {
+  content: "";
+  width: 52px;
+  height: 52px;
+  grid-column: 1;
+  grid-row: 1;
+  background: url("./prototype/assets/rewards-v3/star.webp") center / contain no-repeat;
+  filter: drop-shadow(0 5px 4px rgba(114, 85, 0, 0.15));
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result.is-good {
+  border-color: rgba(63, 183, 74, 0.22);
+  background: linear-gradient(90deg, #e9f9d8, #dff5cf);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result.is-bad {
+  border-color: rgba(213, 83, 103, 0.25);
+  background: #fff0f1;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result strong {
+  color: #17752b;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result span {
+  color: #3b7142;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-result.is-bad strong,
+.guided-session.fs-app.prototype-guided-session .fs-result.is-bad span {
+  color: #9d3446;
+}
+
+/* The dashboard uses a real German flag rather than a green DE abbreviation. */
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german {
+  border: 1px solid rgba(59, 62, 55, 0.16);
+  background: #fff;
+  box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-german-flag {
+  width: 26px;
+  height: 26px;
+  display: block;
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, #171717 0 33.333%, #dd2638 33.333% 66.666%, #f4cb37 66.666% 100%);
+  box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.18), 0 2px 5px rgba(52, 50, 43, 0.18);
+}
+
+/* Alt codes stay compact enough to scan without turning shortcut help into a
+   wall of rows. The explicit leading zero matters on Windows. */
+.guided-session.fs-app.prototype-guided-session .fs-shortcut-panel {
+  width: min(420px, calc(100vw - 36px));
+}
+
+.fs-shortcut-altcodes {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid rgba(67, 82, 57, 0.12);
+  padding: 10px 5px 9px;
+}
+
+.fs-shortcut-altcodes-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fs-shortcut-altcodes-head strong {
+  color: var(--fs-text);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fs-shortcut-altcodes-head span,
+.fs-shortcut-altcodes > p {
+  color: var(--fs-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.fs-shortcut-altcodes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.fs-shortcut-altcode {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid rgba(67, 82, 57, 0.12);
+  border-radius: 10px;
+  padding: 5px 8px;
+  background: #f5f7f0;
+}
+
+.fs-shortcut-altcode > strong {
+  color: #238432;
+  font-size: 17px;
+  font-weight: 950;
+  text-transform: none;
+}
+
+.fs-shortcut-altcode > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #77776f;
+}
+
+.fs-shortcut-altcode b {
+  font-size: 9px;
+}
+
+.fs-shortcut-altcode code {
+  color: #4d514a;
+  font: 850 10px/1 var(--fs-font-text);
+}
+
+.fs-shortcut-altcodes > p {
+  margin: 0;
+  line-height: 1.4;
+}
+
 @media (max-width: 860px) {
+  .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
+    min-height: 190px;
+  }
+
   .guided-session.fs-app.prototype-guided-session .fs-stagebar {
     padding: 18px 20px 17px;
   }
@@ -4463,6 +4763,42 @@ a { color: inherit; text-decoration: none; }
 
   .guided-session.fs-app.prototype-guided-session .fs-card-body {
     padding: 21px 16px 20px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-heading > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-heading > div:last-child .fs-listen {
+    grid-column: 1 / -1;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .grade-btn {
+    justify-content: center;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
+    min-height: 170px;
+    padding: 18px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-result {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-result::before {
+    width: 42px;
+    height: 42px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-result span {
+    grid-column: 2;
   }
 
   .guided-session.fs-app.prototype-guided-session .fs-h1 {

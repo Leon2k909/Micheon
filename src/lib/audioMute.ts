@@ -214,8 +214,7 @@ export function setTtsLanguageVolume(language: TtsAudioLanguage, volume: number)
 }
 
 /** Effective volume for a spoken language after master and language controls. */
-export function getTtsAudioVolume(lang: string): number {
-  const settings = getAudioSettings();
+export function getTtsAudioVolume(lang: string, settings: AudioSettings = getAudioSettings()): number {
   if (settings.muted || settings.masterVolume <= 0) return 0;
   const language = audioLanguageFromTag(lang);
   if (language === "english") {

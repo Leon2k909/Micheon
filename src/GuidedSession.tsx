@@ -34,7 +34,7 @@ import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
   getSfxAudioVolume,
-  isMasterAudioSilent,
+  getTtsAudioVolume,
 } from "@/lib/audioMute";
 import {
   BILINGUAL_SENTENCE_PHASES,
@@ -60,7 +60,7 @@ import {
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, CheckCircle2, X,
   BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Target, Languages, GripVertical, ArrowLeftRight,
+  MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
   Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward
 } from "lucide-react";
 
@@ -672,7 +672,27 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
                   <strong>{ui("Struggle")}</strong>
                 </div>
               </div>
-              <p>{ui("Stage numbers use Ctrl so Windows Alt-codes keep working. Arrow keys never take over an answer box.")}</p>
+              <div className="fs-shortcut-altcodes">
+                <div className="fs-shortcut-altcodes-head">
+                  <strong>{ui("German characters")}</strong>
+                  <span>{ui("Windows number pad")}</span>
+                </div>
+                <div className="fs-shortcut-altcodes-grid">
+                  {[
+                    ["ä", "0228"],
+                    ["ö", "0246"],
+                    ["ü", "0252"],
+                    ["ß", "0223"],
+                  ].map(([character, code]) => (
+                    <div className="fs-shortcut-altcode" key={character}>
+                      <strong>{character}</strong>
+                      <span><kbd>Alt</kbd><b>+</b><code>{code}</code></span>
+                    </div>
+                  ))}
+                </div>
+                <p>{ui("Uppercase: Ä Alt + 0196 · Ö Alt + 0214 · Ü Alt + 0220")}</p>
+              </div>
+              <p>{ui("Stage numbers use Ctrl so Windows Alt-codes keep working. Hold Alt while typing the number-pad code, then release it. Arrow keys never take over an answer box.")}</p>
             </div>
           )}
         </div>
@@ -1040,6 +1060,26 @@ function LangBlock({ label, text, active, onHear, onKnown, onStruggle }: {
   );
 }
 
+function guidedTargetLanguageTag(): "de-DE" | "en-GB" | "en-US" {
+  if (!learningEnglish()) return "de-DE";
+  return resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US";
+}
+
+function PromptLanguageBadge({ label }: { label: string }) {
+  const isGerman = label === "German";
+  const shortLabel = label === "English" ? "EN" : label.slice(0, 2).toUpperCase();
+
+  return (
+    <span
+      className={cn("fs-prompt-language", isGerman && "is-german")}
+      aria-label={ui(label)}
+      title={ui(label)}
+    >
+      {isGerman ? <i className="fs-german-flag" aria-hidden="true" /> : shortLabel}
+    </span>
+  );
+}
+
 // Section
 // Section
 // Only advances when the user types the sentence correctly.
@@ -1068,14 +1108,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // permanent downgrade of how carefully the phrase is taught.
   const [recallFailed, setRecallFailed] = useState(false);
   const masteredRoute = item?.mastery === "strong" && !recallFailed;
-  const [audioMuted, setAudioMuted] = useState(() => isMasterAudioSilent());
+  const [audioMuted, setAudioMuted] = useState(
+    () => getTtsAudioVolume(guidedTargetLanguageTag()) <= 0
+  );
   const audioMutedRef = useRef(audioMuted);
   useEffect(() => {
     const syncAudioState = () => {
-      const muted = isMasterAudioSilent();
+      // Listening checks require the voice for the language being learned.
+      // Muting only German or only English must therefore remove those checks
+      // even when sound effects and the other language remain audible.
+      const muted = getTtsAudioVolume(guidedTargetLanguageTag()) <= 0;
       audioMutedRef.current = muted;
       setAudioMuted(muted);
     };
+    syncAudioState();
     window.addEventListener(AUDIO_SETTINGS_EVENT, syncAudioState);
     return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, syncAudioState);
   }, []);
@@ -1180,9 +1226,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.
-  const targetLang = learnEn
-    ? (resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US")
-    : "de-DE";
+  const targetLang = guidedTargetLanguageTag();
   const targetLabel = learnEn ? "English" : "German";
   const meaningLabel = learnEn ? "German" : "English";
   // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
@@ -1292,9 +1336,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const memDeResult = useMemo(() => matchEither(memDeInput), [memDeInput, matchEither]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
 
-  // The master speaker button changes lessons immediately. If it is pressed
-  // during an audio-only check, continue at the next stage that can be done
-  // without sound instead of leaving an invisible or impossible stage active.
+  // Audio settings change lessons immediately. If the required target voice
+  // is muted during an audio-only check, continue at the next stage that can
+  // be done without sound instead of leaving an impossible stage active.
   useEffect(() => {
     if (!audioMuted) return;
     const replacement = replacementSentencePhaseWhenMuted(phase, {
@@ -2192,20 +2236,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           </div>
         )}
 
-        {phase === "MeaningPick" ? (
-          <div className="fs-meaning-prompt">
-            <span className="fs-meaning-new">
-              <Target aria-hidden="true" className="h-4 w-4" />
-              {ui(item.de.trim().split(/\s+/).length > 1 ? "New phrase" : "New word")}
-            </span>
-            <p>
-              {uiIsGerman()
-                ? `Welcher Ausdruck bedeutet "${shownEnglish}"?`
-                : `Which one means "${shownEnglish}"?`}
-            </p>
-            <small>{ui(`Choose the correct ${targetLabel} answer.`)}</small>
-          </div>
-        ) : phase === "MeaningSelect" ? (
+        {phase === "MeaningPick" ? null : phase === "MeaningSelect" ? (
           <div className="fs-board fs-meaning-select-board">
             <div className="fs-board-top">
               <span>{ui(targetLabel)}</span>
@@ -2379,40 +2410,48 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             exit={{ opacity: 0, y: -8 }}
             className="space-y-4"
           >
-            <div className="fs-meaning-choices" role="radiogroup" aria-label={ui("Meaning choices")}>
-              {meaningChoices.map((choice, choiceIndex) => {
-                const isSelected = meaningChoice === choice;
-                const isAnswer = choiceKey(choice) === choiceKey(item.de);
-                return (
-                  <button
-                    key={`${choice}-${choiceIndex}`}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    disabled={meaningChecked}
-                    onClick={() => selectMeaningAnswer(choice)}
-                    className={cn(
-                      "fs-meaning-choice",
-                      isSelected && "is-selected",
-                      meaningChecked && isAnswer && "is-correct",
-                      meaningChecked && isSelected && !isAnswer && "is-wrong"
-                    )}
-                  >
-                    <span className="fs-meaning-choice-top">
-                      <span>{ui(targetLabel)}</span>
-                      <kbd>{choiceIndex + 1}</kbd>
-                    </span>
-                    <strong>{choice}</strong>
-                    <span className="fs-meaning-choice-state" aria-hidden="true">
-                      {meaningChecked && isAnswer
-                        ? <CheckCircle2 className="h-5 w-5" />
-                        : meaningChecked && isSelected
-                          ? <X className="h-5 w-5" />
-                          : <span />}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="fs-dashboard-choice-layout">
+              <div className="fs-meaning-prompt">
+                <span className="fs-meaning-new">{ui(meaningLabel)}</span>
+                <MessageSquareQuote className="fs-meaning-prompt-icon" aria-hidden="true" />
+                <p>{shownEnglish}</p>
+                <small>{ui("Everyday conversation")}</small>
+              </div>
+              <div className="fs-meaning-choices" role="radiogroup" aria-label={ui("Meaning choices")}>
+                {meaningChoices.map((choice, choiceIndex) => {
+                  const isSelected = meaningChoice === choice;
+                  const isAnswer = choiceKey(choice) === choiceKey(item.de);
+                  return (
+                    <button
+                      key={`${choice}-${choiceIndex}`}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      disabled={meaningChecked}
+                      onClick={() => selectMeaningAnswer(choice)}
+                      className={cn(
+                        "fs-meaning-choice",
+                        isSelected && "is-selected",
+                        meaningChecked && isAnswer && "is-correct",
+                        meaningChecked && isSelected && !isAnswer && "is-wrong"
+                      )}
+                    >
+                      <span className="fs-meaning-choice-top">
+                        <span>{ui(targetLabel)}</span>
+                        <kbd>{choiceIndex + 1}</kbd>
+                      </span>
+                      <strong>{choice}</strong>
+                      <span className="fs-meaning-choice-state" aria-hidden="true">
+                        {meaningChecked && isAnswer
+                          ? <CheckCircle2 className="h-5 w-5" />
+                          : meaningChecked && isSelected
+                            ? <X className="h-5 w-5" />
+                            : <ChevronRight className="h-5 w-5" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <AnimatePresence>
@@ -2423,10 +2462,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   exit={{ opacity: 0 }}
                   className={cn("fs-result", meaningCorrect ? "is-good" : "is-bad")}
                 >
-                  <strong>{ui(meaningCorrect ? "That's it!" : "Not quite")}</strong>
+                  <strong>{ui(meaningCorrect ? "Exactly right!" : "Not quite")}</strong>
                   <span>
                     {meaningCorrect
-                      ? ui("You matched the meaning.")
+                      ? ui("This is the natural everyday choice.")
                       : <>{ui("Answer:")} <strong>{item.de}</strong></>}
                   </span>
                 </motion.div>
@@ -2747,7 +2786,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 sayChecked && sayResult.ok && "is-good",
                 sayChecked && !sayResult.ok && (sayResult.phrasingNote ? "is-coach" : "is-bad"))}>
                 <div className="fs-prompt">
-                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <PromptLanguageBadge label={targetLabel} />
                   <strong>{ui(`Type in ${targetLabel}`)}</strong>
                 </div>
                 <Input ref={sayRef}
@@ -2821,7 +2860,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 recallTargetChecked && !recallTargetResult.ok && "is-bad"
               )}>
                 <div className="fs-prompt">
-                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <PromptLanguageBadge label={targetLabel} />
                   <strong>{ui(`Type in ${targetLabel}`)}</strong>
                 </div>
                 <Input
@@ -2898,7 +2937,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 recallMeaningChecked && !recallMeaningResult.ok && "is-bad"
               )}>
                 <div className="fs-prompt">
-                  <span>{learnEn ? "DE" : "EN"}</span>
+                  <PromptLanguageBadge label={meaningLabel} />
                   <strong>{ui(`Type in ${meaningLabel}`)}</strong>
                 </div>
                 <Input
@@ -2976,7 +3015,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   recallBothChecked && recallBothTargetResult.ok && "is-good",
                   recallBothChecked && !recallBothTargetResult.ok && "is-bad"
                 )}>
-                  <div className="fs-prompt"><span>{learnEn ? "EN" : "DE"}</span><strong>{ui(`Type in ${targetLabel}`)}</strong></div>
+                  <div className="fs-prompt"><PromptLanguageBadge label={targetLabel} /><strong>{ui(`Type in ${targetLabel}`)}</strong></div>
                   <Input
                     ref={recallBothTargetRef}
                     className="fs-input"
@@ -3017,7 +3056,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   recallBothChecked && recallBothMeaningResult.ok && "is-good",
                   recallBothChecked && !recallBothMeaningResult.ok && "is-bad"
                 )}>
-                  <div className="fs-prompt"><span>{learnEn ? "DE" : "EN"}</span><strong>{ui(`Type in ${meaningLabel}`)}</strong></div>
+                  <div className="fs-prompt"><PromptLanguageBadge label={meaningLabel} /><strong>{ui(`Type in ${meaningLabel}`)}</strong></div>
                   <Input
                     ref={recallBothMeaningRef}
                     className="fs-input"
@@ -3103,7 +3142,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 checked && result.ok && "is-good",
                 checked && !result.ok && (result.phrasingNote ? "is-coach" : "is-bad"))}>
                 <div className="fs-prompt">
-                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <PromptLanguageBadge label={targetLabel} />
                   <strong>{ui(`Type in ${targetLabel}`)}</strong>
                 </div>
                 <Input ref={inputRef}
@@ -3266,7 +3305,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       enChecked && enResult.ok && "is-good",
                       enChecked && !enResult.ok && (enResult.phrasingNote ? "is-coach" : "is-bad"))}>
                       <div className="fs-prompt">
-                        <span>{learnEn ? "DE" : "EN"}</span>
+                        <PromptLanguageBadge label={meaningLabel} />
                         <strong>{ui(`Type in ${meaningLabel}`)}</strong>
                       </div>
                       <Input ref={enInputRef}
@@ -3356,7 +3395,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 gapChecked && gapResult.ok && "is-good",
                 gapChecked && !gapResult.ok && "is-bad")}>
                 <div className="fs-prompt">
-                  <span>{learnEn ? "EN" : "DE"}</span>
+                  <PromptLanguageBadge label={targetLabel} />
                   <strong>{ui("Fill in")}</strong>
                 </div>
                 <Input ref={gapInputRef}

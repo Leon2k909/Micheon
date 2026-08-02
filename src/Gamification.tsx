@@ -60,8 +60,22 @@ import { ui, uiIsGerman } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
   .then((module) => ({ default: module.CodexPetPicker })));
-const VocabTracker = lazy(() => import("@/components/lab/VocabTracker")
+const loadVocabTrackerModule = () => import("@/components/lab/VocabTracker");
+const VocabTracker = lazy(() => loadVocabTrackerModule()
   .then((module) => ({ default: module.VocabTracker })));
+
+function scheduleProfileIdleWork(task: () => void, timeout = 1200): () => void {
+  const idleWindow = window as Window & typeof globalThis & {
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+  if (idleWindow.requestIdleCallback) {
+    const handle = idleWindow.requestIdleCallback(task, { timeout });
+    return () => idleWindow.cancelIdleCallback?.(handle);
+  }
+  const timer = window.setTimeout(task, 120);
+  return () => window.clearTimeout(timer);
+}
 
 function ProfileSectionLoading({ embedded = false, label }: { embedded?: boolean; label: string }) {
   return (
@@ -123,7 +137,7 @@ function DeferredProfileSection({
       if (!entry?.isIntersecting) return;
       observer.disconnect();
       reveal();
-    }, { rootMargin: "420px 0px", threshold: 0.01 });
+    }, { rootMargin: "1200px 0px", threshold: 0.01 });
     observer.observe(anchor);
     return () => observer.disconnect();
   }, [onReveal, revealed]);
@@ -509,6 +523,33 @@ export default function GamificationPanel({
   const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
   const catalogueReady = Object.keys(apiParts).length > 0;
+
+  // Keep the first profile paint cheap, then fetch the catalogue and tracker
+  // chunk while the learner is still reading the sections above it.
+  useEffect(() => {
+    if (!profileOnly) return undefined;
+    return scheduleProfileIdleWork(() => {
+      onRequestCatalogue?.();
+      void loadVocabTrackerModule();
+    });
+  }, [onRequestCatalogue, profileOnly]);
+
+  // Catalogue ranking and search indexing used to start only after the tracker
+  // entered the viewport. Preparing the cached result in idle time removes the
+  // long loader and main-thread hitch when scrolling down to the section.
+  useEffect(() => {
+    if (!profileOnly || !catalogueReady) return undefined;
+    let cancelled = false;
+    const cancelIdle = scheduleProfileIdleWork(() => {
+      void loadVocabTrackerModule().then((module) => {
+        if (!cancelled) module.prepareVocabTrackerData(apiParts);
+      });
+    });
+    return () => {
+      cancelled = true;
+      cancelIdle();
+    };
+  }, [apiParts, catalogueReady, profileOnly]);
 
   const saveName = () => {
     if (!newName.trim()) return;

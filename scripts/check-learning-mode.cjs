@@ -23,7 +23,7 @@ const result = esbuild.buildSync({
         replacementSentencePhaseWhenMuted,
       } from "./src/lib/guidedLessonPhases.ts";
       export { wordOrderTokensMatchSentence } from "./src/lib/wordOrder.ts";
-      export { getSfxAudioVolume } from "./src/lib/audioMute.ts";
+      export { getSfxAudioVolume, getTtsAudioVolume } from "./src/lib/audioMute.ts";
       export { germanWordGloss } from "./src/lib/germanWordGloss.ts";
     `,
     resolveDir: root,
@@ -52,6 +52,7 @@ const {
   curatedTopics,
   germanWordGloss,
   getSfxAudioVolume,
+  getTtsAudioVolume,
   MASTERED_SENTENCE_PHASES,
   matchLearningModeGermanAnswer,
   phraseForLearningMode,
@@ -629,7 +630,7 @@ check(
     && !guidedSource.includes('phase === "Speak"')
 );
 check(
-  "master mute temporarily removes every audio-required sentence stage",
+  "unavailable target audio temporarily removes every audio-required sentence stage",
   AUDIO_REQUIRED_SENTENCE_PHASES.length === 2
     && AUDIO_REQUIRED_SENTENCE_PHASES.includes("ListenPick")
     && AUDIO_REQUIRED_SENTENCE_PHASES.includes("MissingWord")
@@ -651,10 +652,45 @@ check(
     && replacementSentencePhaseWhenMuted("Type", { mastered: false, bilingual: false }) === "Type"
 );
 check(
-  "the guided lesson reacts to the shared top-right mute control",
+  "the guided lesson reacts to both master and learning-language mute controls",
   guidedSource.includes("window.addEventListener(AUDIO_SETTINGS_EVENT, syncAudioState)")
+    && guidedSource.includes("getTtsAudioVolume(guidedTargetLanguageTag()) <= 0")
     && guidedSource.includes("replacementSentencePhaseWhenMuted(phase")
     && guidedSource.includes("audioMuted: audioMutedRef.current")
+);
+check(
+  "lesson shortcut help lists the Windows Alt codes for German characters",
+  guidedSource.includes('["ä", "0228"]')
+    && guidedSource.includes('["ö", "0246"]')
+    && guidedSource.includes('["ü", "0252"]')
+    && guidedSource.includes('["ß", "0223"]')
+    && guidedSource.includes("Ä Alt + 0196 · Ö Alt + 0214 · Ü Alt + 0220")
+    && guidedSource.includes("Windows number pad")
+);
+check(
+  "German answer prompts use the dashboard-style flag instead of a DE tile",
+  guidedSource.includes('function PromptLanguageBadge(')
+    && guidedSource.includes('className="fs-german-flag"')
+    && !guidedSource.includes('<span>{learnEn ? "EN" : "DE"}</span>')
+    && guidedStyles.includes(".fs-prompt .fs-prompt-language.is-german")
+);
+const audibleSettings = {
+  muted: false,
+  masterVolume: 1,
+  sfxVolume: 1,
+  englishVolume: 1,
+  germanVolume: 1,
+  sfxMuted: false,
+  englishMuted: false,
+  germanMuted: false,
+};
+check(
+  "language voice mute only silences listening work for that language",
+  getTtsAudioVolume("de-DE", { ...audibleSettings, germanMuted: true }) === 0
+    && getTtsAudioVolume("en-GB", { ...audibleSettings, germanMuted: true }) === 1
+    && getTtsAudioVolume("en-US", { ...audibleSettings, englishMuted: true }) === 0
+    && getTtsAudioVolume("de-DE", { ...audibleSettings, englishMuted: true }) === 1
+    && getTtsAudioVolume("de-DE", { ...audibleSettings, muted: true }) === 0
 );
 check(
   "the audio mixer exposes a separate persistent sound-effects slider",
