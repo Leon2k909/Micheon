@@ -68,7 +68,9 @@ const PET_SIZE_KEY = "gl-codex-pet-size-v1";
 const PET_SIZES_KEY = "gl-codex-pet-sizes-v2";
 const PET_MARGIN = 8;
 const PET_SIZE_MIN = 64;
-const PET_SIZE_MAX = 192;
+// Large enough to feel like a proper desktop companion on a high-resolution
+// screen, while still leaving room for its speech bubble and controls.
+const PET_SIZE_MAX = 320;
 const PET_SIZE_STEP = 4;
 const PET_SIZE_DEFAULT = 96;
 const PET_HEIGHT_RATIO = 104 / 96;
@@ -1621,7 +1623,7 @@ export function CodexPetLayer() {
             <motion.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
               aria-label={ui("Pet controls")}
-              className="pointer-events-auto absolute z-10 w-[280px] overflow-y-auto rounded-xl border border-[var(--border-2)] bg-[var(--surface)] p-3 text-[var(--text-1)] shadow-[0_18px_48px_rgba(0,0,0,0.24)]"
+              className="pointer-events-auto absolute z-10 w-[280px] overflow-y-auto rounded-xl border border-[var(--border-2)] bg-[var(--surface)] p-3 text-[var(--text-1)] shadow-[0_18px_44px_rgba(66,82,57,0.15)]"
               data-pet-motion-part="menu"
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               initial={{ opacity: 0, scale: 0.96, y: 4 }}
@@ -1874,7 +1876,7 @@ export function CodexPetLayer() {
             // Width comes from the style below, against the DESKTOP size. A vw
             // unit here measured the compact overlay window instead, which is
             // only as wide as the pet plus its margin.
-            className="pointer-events-auto absolute z-10 flex flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_36px_rgba(0,0,0,0.18)]"
+            className="pointer-events-auto absolute z-10 flex flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_30px_rgba(66,82,57,0.14)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             data-pet-interactive="true"
@@ -1977,7 +1979,7 @@ export function CodexPetLayer() {
         {visiblePets.map((pet, index) => (
           <CodexPetSprite
             animation={index === 0 ? animation : "idle"}
-            className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
+            className="origin-bottom-right drop-shadow-[0_9px_10px_rgba(48,65,42,0.14)]"
             key={codexPetKey(pet)}
             onVisibleBounds={(bounds) => updatePetVisibleBounds(codexPetKey(pet), bounds)}
             pet={pet}
@@ -2030,7 +2032,7 @@ export function CodexPetLayer() {
             >
               <CodexPetSprite
                 animation="idle"
-                className="origin-bottom-right drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]"
+                className="origin-bottom-right drop-shadow-[0_9px_10px_rgba(48,65,42,0.14)]"
                 onVisibleBounds={(bounds) => updatePetVisibleBounds(key, bounds)}
                 pet={pet}
                 playbackKey={0}

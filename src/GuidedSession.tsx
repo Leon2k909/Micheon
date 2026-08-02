@@ -505,28 +505,60 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
     );
   };
 
+  const copySelectionWithSpaces = (event: React.ClipboardEvent<HTMLSpanElement>) => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedWords = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>(".fs-word")
+    ).filter((word) => {
+      try {
+        return range.intersectsNode(word);
+      } catch {
+        return false;
+      }
+    });
+    if (selectedWords.length === 0) return;
+
+    // Flex gaps and adjacent interactive words are visual spacing only, so the
+    // browser may omit them (or insert line breaks) when copying. Rebuild a
+    // normal sentence for multi-word selections and normalize a single word.
+    const copiedText = selectedWords.length > 1
+      ? selectedWords.map((word) => word.textContent?.trim()).filter(Boolean).join(" ")
+      : selection.toString().replace(/\s+/g, " ").trim();
+    if (!copiedText) return;
+
+    event.preventDefault();
+    event.clipboardData.setData("text/plain", copiedText);
+  };
+
   return (
-    <>
+    <span className="fs-tappable-sentence" onCopy={copySelectionWithSpaces}>
       {words.map((w, i) => {
         const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;
         return (
-          <button
-            key={`${w}-${i}`}
-            type="button"
-            className={cn("fs-word", playingIndex === i && "is-playing")}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => playWord(w, i)}
-            aria-label={hoverGloss
-              ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
-              : `${ui("Hear it")}: ${w}`}
-            data-gloss={hoverGloss ?? undefined}
-            title={hoverGloss ? undefined : ui("Tap a word to hear it")}
-          >
-            {w}
-          </button>
+          <React.Fragment key={`${w}-${i}`}>
+            {i > 0 && " "}
+            <button
+              type="button"
+              className={cn("fs-word", playingIndex === i && "is-playing")}
+              onClick={() => {
+                if (window.getSelection()?.toString().trim()) return;
+                playWord(w, i);
+              }}
+              aria-label={hoverGloss
+                ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
+                : `${ui("Hear it")}: ${w}`}
+              data-gloss={hoverGloss ?? undefined}
+              title={hoverGloss ? undefined : ui("Tap a word to hear it")}
+            >
+              {w}
+            </button>
+          </React.Fragment>
         );
       })}
-    </>
+    </span>
   );
 }
 
@@ -2793,6 +2825,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   className="fs-input"
                   placeholder={`Type the ${targetLabel} sentence...`}
                   autoFocus
+                  spellCheck={false}
                   value={sayInput}
                   onChange={(e) => { setSayInput(e.target.value); if (sayChecked) setSayChecked(false); }}
                   onKeyDown={(e) => e.key === "Enter" && (sayChecked && sayResult.ok ? advanceOrFinish() : checkSay())}
@@ -2869,6 +2902,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   aria-label={ui(`Recall the ${targetLabel} sentence`)}
                   placeholder={ui(`Type the ${targetLabel} sentence...`)}
                   autoFocus
+                  spellCheck={false}
                   value={recallTargetInput}
                   onChange={(event) => {
                     setRecallTargetInput(event.target.value);
@@ -2946,6 +2980,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   aria-label={ui(`Recall the ${meaningLabel} meaning`)}
                   placeholder={ui(`Type the ${meaningLabel} meaning...`)}
                   autoFocus
+                  spellCheck={false}
                   value={recallMeaningInput}
                   onChange={(event) => {
                     setRecallMeaningInput(event.target.value);
@@ -3021,6 +3056,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className="fs-input"
                     aria-label={ui(`Recall the ${targetLabel} sentence`)}
                     placeholder={ui(`Type the ${targetLabel} sentence...`)}
+                    spellCheck={false}
                     value={recallBothTargetInput}
                     onChange={(event) => {
                       setRecallBothTargetInput(event.target.value);
@@ -3062,6 +3098,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className="fs-input"
                     aria-label={ui(`Recall the ${meaningLabel} meaning`)}
                     placeholder={ui(`Type the ${meaningLabel} meaning...`)}
+                    spellCheck={false}
                     value={recallBothMeaningInput}
                     onChange={(event) => {
                       setRecallBothMeaningInput(event.target.value);
@@ -3149,6 +3186,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   className="fs-input"
                   placeholder="Type the sentence..."
                   autoFocus
+                  spellCheck={false}
                   value={input}
                   onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
                   onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
@@ -3312,6 +3350,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                         className="fs-input"
                         placeholder={`Type the ${meaningLabel} meaning...`}
                         autoFocus
+                        spellCheck={false}
                         value={enInput}
                         onChange={e => { setEnInput(e.target.value); if (enChecked) setEnChecked(false); }}
                         onKeyDown={e => e.key === "Enter" && (enChecked && enResult.ok ? advanceOrFinish() : checkEnAnswer())}
@@ -3402,6 +3441,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   className="fs-input"
                   placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
                   autoFocus
+                  spellCheck={false}
                   value={gapInput}
                   onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
                   onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
@@ -3610,6 +3650,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className="fs-input"
                     placeholder="Type it in French..."
                     autoFocus
+                    spellCheck={false}
                     value={frInput}
                     onChange={e => { setFrInput(e.target.value); if (frChecked) setFrChecked(false); }}
                     onKeyDown={e => e.key === "Enter" && (frChecked && frResult.ok ? onNext() : checkFrAnswer())}
@@ -3682,6 +3723,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                                                         "focus:border-[var(--accent)]"
                     )}
                     placeholder="Type the German sentence..."
+                    spellCheck={false}
                     value={memDeInput}
                     onChange={e => { setMemDeInput(e.target.value); if (memDeChecked) { setMemDeChecked(false); setMemFrChecked(false); } }}
                     onKeyDown={e => e.key === "Enter" && memFrRef.current?.focus()}
@@ -3706,6 +3748,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                                                       "focus:border-[var(--accent)]"
                   )}
                   placeholder="Type the French sentence..."
+                  spellCheck={false}
                   value={memFrInput}
                   onChange={e => { setMemFrInput(e.target.value); if (memFrChecked) { setMemDeChecked(false); setMemFrChecked(false); } }}
                   onKeyDown={e => e.key === "Enter" && (!memDeChecked ? checkMemory() : undefined)}
@@ -3833,6 +3876,13 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
     setGrade("struggle");
     onGradeItem?.(lineGradeId, "struggle");
   };
+  const skipLine = () => {
+    // Skipping should unblock the learner without pretending the line was
+    // known. Keep it in the short-term review queue, then move straight on.
+    onGradeItem?.(lineGradeId, "struggle");
+    onAnswer?.(false);
+    nextLine();
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -3858,7 +3908,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 w-full max-w-2xl">
       <div className="text-center space-y-1">
-        <Badge variant="outline" className="rounded-full border-pink-500/30 bg-pink-500/10 px-5 py-2 text-base font-black uppercase tracking-[0.14em] text-pink-300">
+        <Badge variant="outline" className="dialogue-title-badge rounded-full px-5 py-2 text-base font-black uppercase tracking-[0.14em]">
           <MessageSquareQuote className="mr-2 h-5 w-5" /> {dialogue.title}
         </Badge>
         <div className="text-xs font-black tracking-wide text-zinc-500">{lineIdx + 1} / {lines.length}</div>
@@ -3925,6 +3975,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
           className={cn("h-14 rounded-2xl border-zinc-200 bg-white px-5 text-base font-bold text-zinc-950 transition-all placeholder:text-zinc-400",
             checked && result.ok ? "border-emerald-500/40" : checked ? "border-rose-500/40" : "focus:border-[var(--accent)]")}
           placeholder="Type this line..."
+          spellCheck={false}
           value={input}
           onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
           onKeyDown={e => e.key === "Enter" && (checked && result.ok ? nextLine() : checkLine())}
@@ -3954,17 +4005,31 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
         )}
       </AnimatePresence>
 
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {checked && !result.ok && (
           <Button onClick={() => { setInput(""); setChecked(false); }} variant="outline"
             className="flex-1 h-14 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
             <RotateCcw className="mr-2 h-4 w-4" /> Retry
           </Button>
         )}
+        {!(checked && result.ok) && (
+          <Button
+            aria-label="Skip this line for now and keep it in practice"
+            className="dialogue-skip-action h-14 rounded-2xl text-sm font-black"
+            onClick={skipLine}
+            type="button"
+            variant="outline"
+          >
+            <SkipForward className="mr-2 h-4 w-4" /> {ui("Skip for now")}
+          </Button>
+        )}
         <Button onClick={checked && result.ok ? nextLine : checkLine}
-          className={cn("continue-glow flex-1 h-14 rounded-2xl text-sm font-black transition-all",
-            "bg-zinc-950 text-white shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:bg-zinc-800")}>
+          className={cn(
+            "dialogue-primary-action h-14 rounded-2xl text-sm font-black",
+            checked && "col-span-2"
+          )}>
           {checked && result.ok ? (isLast ? "Done" : "Next line") : ui("Check")}
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </motion.div>

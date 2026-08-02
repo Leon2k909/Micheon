@@ -32,6 +32,7 @@ const DE: Record<string, string> = {
   "Next": "Weiter",
   "Try again": "Nochmal",
   "Skip": "Überspringen",
+  "Skip for now": "Vorerst überspringen",
   "← Back": "← Zurück",
   "One more round": "Noch eine Runde",
   "Not quite": "Nicht ganz",

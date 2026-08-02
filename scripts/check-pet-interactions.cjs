@@ -137,6 +137,18 @@ check(
     && layer.includes('id="codex-pet-size-label"')
 );
 check(
+  "each pet can be enlarged beyond the old 192px ceiling",
+  Number(layer.match(/const PET_SIZE_MAX = (\d+);/)?.[1]) >= 320
+    && layer.includes("max={PET_SIZE_MAX}")
+);
+check(
+  "pet artwork and speech use a soft neutral shadow instead of a black halo on light pages",
+  !layer.includes("drop-shadow-[0_12px_18px_rgba(0,0,0,0.24)]")
+    && !layer.includes("shadow-[0_12px_36px_rgba(0,0,0,0.18)]")
+    && layer.includes("drop-shadow-[0_9px_10px_rgba(48,65,42,0.14)]")
+    && layer.includes("shadow-[0_12px_30px_rgba(66,82,57,0.14)]")
+);
+check(
   "pet display mode persists as one of three explicit choices with game mode preserving current behaviour",
   displayMode.includes('CODEX_PET_DISPLAY_MODE_KEY = "gl-codex-pet-display-mode-v1"')
     && displayMode.includes('value === "app" || value === "desktop" || value === "games"')

@@ -185,6 +185,41 @@ if (reportedPhrase) {
   );
 }
 
+const reportedVentingPhrase = authoredPhrases.find((phrase) =>
+  phrase?.de === "Der Tag war einfach nur zum Kotzen."
+);
+
+check("the reported bad-day phrase still exists", Boolean(reportedVentingPhrase));
+check(
+  "the bad-day phrase declares a faithful English meaning for its spoken form",
+  reportedVentingPhrase?.shortEn === "That was fucking awful. / That really sucked.",
+  `found ${JSON.stringify(reportedVentingPhrase?.shortEn)}`
+);
+
+if (reportedVentingPhrase) {
+  const conversation = phraseForLearningMode(reportedVentingPhrase, "conversation");
+  const exam = phraseForLearningMode(reportedVentingPhrase, "exam");
+  const spoken = "War echt zum Kotzen.";
+  const standard = "Der Tag war einfach nur zum Kotzen.";
+
+  check(
+    "Conversation mode teaches the common spoken bad-day phrase first",
+    conversation.de === spoken
+      && conversation.en === reportedVentingPhrase.shortEn
+      && conversation.long === standard,
+    `found ${JSON.stringify(conversation)}`
+  );
+  check(
+    "Conversation grading also accepts the fuller bad-day sentence",
+    acceptsSelectedPhrase(conversation, standard)
+  );
+  check(
+    "Exam mode keeps the complete bad-day sentence as its target",
+    exam.de === standard && exam.short === spoken && exam.long === undefined,
+    `found ${JSON.stringify(exam)}`
+  );
+}
+
 const reportedDislikePhrase = allPartBlueprints.part69?.phrases?.[1];
 
 check("the reported conversational dislike still exists", Boolean(reportedDislikePhrase));
@@ -596,8 +631,14 @@ const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsV
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const packageLockSource = fs.readFileSync(path.join(root, "package-lock.json"), "utf8");
 const dialogueStart = guidedSource.indexOf("function DialogueExercise(");
-const dialogueEnd = guidedSource.indexOf("// ── Main ──", dialogueStart);
+const dialogueEnd = guidedSource.indexOf("// Section", dialogueStart);
 const dialogueSource = guidedSource.slice(dialogueStart, dialogueEnd > dialogueStart ? dialogueEnd : undefined);
+const tappableSentenceStart = guidedSource.indexOf("function TappableSentence(");
+const tappableSentenceEnd = guidedSource.indexOf("// Prototype-style stage route", tappableSentenceStart);
+const tappableSentenceSource = guidedSource.slice(
+  tappableSentenceStart,
+  tappableSentenceEnd > tappableSentenceStart ? tappableSentenceEnd : undefined
+);
 
 function phaseNames(constantName) {
   const body = guidedSource.match(new RegExp(`const ${constantName}[^=]*= \\[(.*?)\\]`, "s"))?.[1] ?? "";
@@ -756,6 +797,15 @@ check(
     && guidedSource.includes("data-gloss={hoverGloss ?? undefined}")
     && guidedStyles.includes("[data-gloss]:is(:hover, :focus-visible)::before")
 );
+check(
+  "copying tappable lesson words produces one normally spaced sentence",
+  tappableSentenceSource.includes('className="fs-tappable-sentence"')
+    && tappableSentenceSource.includes('onCopy={copySelectionWithSpaces}')
+    && tappableSentenceSource.includes('.filter(Boolean).join(" ")')
+    && tappableSentenceSource.includes('{i > 0 && " "}')
+    && !tappableSentenceSource.includes('onMouseDown={(e) => e.preventDefault()}')
+    && guidedStyles.includes(".fs-tappable-sentence { display: contents; }")
+);
 const glossaryTokens = authoredPhrases.flatMap((phrase) =>
   [phrase?.de, phrase?.short, phrase?.long]
     .filter(Boolean)
@@ -803,6 +853,27 @@ check(
   "DialogueExercise uses the production learning-mode matcher",
   dialogueSource.includes("matchLearningModeGermanAnswer(input")
     && dialogueSource.includes("long: line?.long")
+);
+check(
+  "dialogue typing can be skipped without falsely marking the line known",
+  dialogueSource.includes("const skipLine = () => {")
+    && dialogueSource.includes('onGradeItem?.(lineGradeId, "struggle");')
+    && dialogueSource.includes('aria-label="Skip this line for now and keep it in practice"')
+    && dialogueSource.includes("nextLine();")
+);
+check(
+  "dialogue actions use the green prototype hierarchy instead of the legacy black glow",
+  dialogueSource.includes('className="dialogue-skip-action')
+    && dialogueSource.includes('"dialogue-primary-action h-14')
+    && dialogueSource.includes('className="dialogue-title-badge')
+    && !dialogueSource.includes("continue-glow")
+    && !dialogueSource.includes("bg-zinc-950 text-white")
+);
+check(
+  "guided answer boxes disable the browser spellchecker because the app grades the selected language itself",
+  (guidedSource.match(/<Input\b/g) || []).length > 0
+    && (guidedSource.match(/<Input\b/g) || []).length
+      === (guidedSource.match(/spellCheck=\{false\}/g) || []).length
 );
 check(
   "Tests carry the paired full form into grading",
