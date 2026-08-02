@@ -2272,7 +2272,8 @@ a { color: inherit; text-decoration: none; }
 .fs-line {
   min-height: 84px; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
   gap: 0.18em; padding: 14px 4px 0; text-align: center;
-  color: #fafafd; font-size: clamp(28px, 3.4vw, 44px); font-weight: 860; line-height: 1.12; letter-spacing: -0.045em;
+  /* Instructional text needs gentler tracking so ä, ö and ü stay unmistakable. */
+  color: #fafafd; font-size: clamp(28px, 3.4vw, 44px); font-weight: 860; line-height: 1.12; letter-spacing: -0.018em;
 }
 .fs-tappable-sentence { display: contents; }
 .guided-session .fs-word {
@@ -3392,7 +3393,7 @@ a { color: inherit; text-decoration: none; }
   font-size: clamp(31px, 3.15vw, 45px);
   font-weight: 950;
   line-height: 1.12;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.018em;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-hint {

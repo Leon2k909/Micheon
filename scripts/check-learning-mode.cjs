@@ -692,6 +692,9 @@ const tappableSentenceSource = guidedSource.slice(
   tappableSentenceStart,
   tappableSentenceEnd > tappableSentenceStart ? tappableSentenceEnd : undefined
 );
+const guidedSentenceTracking = [...guidedStyles.matchAll(
+  /(?:^|\n)[^{\n]*\.fs-line\s*\{[^}]*letter-spacing:\s*(-?\d*\.?\d+)em;/g
+)].map((match) => Number(match[1]));
 
 function phaseNames(constantName) {
   const body = guidedSource.match(new RegExp(`const ${constantName}[^=]*= \\[(.*?)\\]`, "s"))?.[1] ?? "";
@@ -734,6 +737,11 @@ check(
   "context-specific spoken alternatives can replace the generic People say label",
   guidedSource.includes("shortLabel ? uiOr(shortLabel")
     && guidedSource.includes("shortLabel={learnEn ? undefined : item.shortLabel}")
+);
+check(
+  "guided sentence tracking keeps German umlauts visually distinct",
+  guidedSentenceTracking.length >= 2
+    && guidedSentenceTracking.every((tracking) => tracking >= -0.02)
 );
 
 check(
