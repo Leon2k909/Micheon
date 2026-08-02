@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Languages } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Gauge, Languages } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ const QUESTIONS = [
 ];
 
 export function PlacementTest({ onComplete }: { onComplete: (partKey: string) => void }) {
+  const [stage, setStage] = useState<"choice" | "questions">("choice");
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -65,6 +66,68 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
     if (correctCount >= 3) return "part3";
     return "part1";
   };
+
+  if (stage === "choice") {
+    return (
+      <motion.div animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl" initial={{ opacity: 0, y: 12 }}>
+        <div className="rounded-[26px] border border-[#dcd8ce] bg-[#fffdf8] p-7 text-zinc-950 shadow-[0_24px_70px_rgba(82,68,53,0.14)] sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e9f8e5] text-[#218c36] shadow-[inset_0_0_0_1px_#b9e3b7]">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2a8e3d]">
+                {ui("Your starting point")}
+              </p>
+              <h2 className="mt-1 text-[28px] font-black leading-tight tracking-[-0.025em] text-[#24211f]">
+                {ui(reverse ? "Are you completely new to English?" : "Are you completely new to German?")}
+              </h2>
+            </div>
+          </div>
+
+          <p className="mt-4 text-[15px] font-semibold leading-6 text-[#68625c]">
+            {ui("Choose the route that fits you. You can change level later.")}
+          </p>
+
+          <div className="mt-7 grid gap-3">
+            <button
+              className="group flex w-full items-center gap-4 rounded-2xl border border-[#8fd49a] bg-[#eefbea] px-5 py-4 text-left shadow-[0_4px_0_#b7dfb8] transition-[transform,box-shadow,background-color] hover:-translate-y-0.5 hover:bg-[#e5f8df] hover:shadow-[0_6px_0_#afd8b1] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#2fb344]/25 active:translate-y-0 active:shadow-[0_2px_0_#afd8b1]"
+              onClick={() => onComplete("part1")}
+              type="button"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2fb344] text-white shadow-[0_3px_0_#238c34]">
+                <BookOpen className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-base font-black text-[#1f5329]">{ui("Yes, start from the beginning")}</strong>
+                <span className="mt-1 block text-sm font-semibold leading-5 text-[#52705a]">
+                  {ui("Begin with greetings, basic questions, numbers, and everyday phrases.")}
+                </span>
+              </span>
+              <ArrowRight className="h-5 w-5 shrink-0 text-[#268f39] transition-transform group-hover:translate-x-0.5" />
+            </button>
+
+            <button
+              className="group flex w-full items-center gap-4 rounded-2xl border border-[#ded9cf] bg-white px-5 py-4 text-left shadow-[0_4px_0_#e5e0d7] transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:border-[#b8cdb9] hover:shadow-[0_6px_0_#dfdbd3] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#2fb344]/20 active:translate-y-0 active:shadow-[0_2px_0_#dfdbd3]"
+              onClick={() => setStage("questions")}
+              type="button"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f3f1eb] text-[#59544e] shadow-[inset_0_0_0_1px_#ded9cf]">
+                <Gauge className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-base font-black text-[#2b2825]">{ui("No, check my level")}</strong>
+                <span className="mt-1 block text-sm font-semibold leading-5 text-[#6c665f]">
+                  {ui("Answer 10 short questions so Micheon can choose a better starting point.")}
+                </span>
+              </span>
+              <ArrowRight className="h-5 w-5 shrink-0 text-[#777169] transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (showResult) {
     const partKey = calculatePlacement();

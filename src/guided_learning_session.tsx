@@ -865,6 +865,7 @@ export default function GuidedLearningSession() {
       <PlacementTest onComplete={(key) => {
         setActivePart(key);
         setShowPlacementTest(false);
+        saveScopedJson("german-lab-placement-result", key, user);
         saveScopedJson("german-lab-placement-done", true, user);
       }} />
     </div>

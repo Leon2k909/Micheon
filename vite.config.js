@@ -12,8 +12,11 @@ function storageDevPlugin() {
   const appdataDir = path.join(process.env.APPDATA || os.homedir(), "germ");
   const appdataFile = path.join(appdataDir, "shared-progress.json");
   const workspaceFile = path.resolve(__dirname, "./shared-progress.json");
+  const isolatedFirstRunQa = process.env.MICHEON_FRESH_ONBOARDING_QA === "1";
+  let isolatedStorage = { items: {}, updatedAt: new Date().toISOString() };
 
   function readSharedStorage() {
+    if (isolatedFirstRunQa) return isolatedStorage;
     let appdataData = { items: {} };
     let workspaceData = { items: {} };
 
@@ -46,6 +49,10 @@ function storageDevPlugin() {
   }
 
   function writeSharedStorage(next) {
+    if (isolatedFirstRunQa) {
+      isolatedStorage = next;
+      return;
+    }
     const raw = JSON.stringify(next, null, 2);
     try {
       fs.mkdirSync(appdataDir, { recursive: true });

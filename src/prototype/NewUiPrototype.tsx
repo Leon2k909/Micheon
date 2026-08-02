@@ -190,7 +190,7 @@ function defaultPrototypeSidebarWidth() {
 
 const PREVIEW_PROFILE: UserProfile = {
   id: "micheon-preview",
-  name: "Leon",
+  name: "Learner",
   email: "preview@micheon.app",
   joinedAt: "2026-01-01T00:00:00.000Z",
   externalWordsLearned: 0,
@@ -836,9 +836,26 @@ function Header({
   );
 }
 
-function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; stats: PrototypeStats }) {
+function CourseHero({
+  needsStartingPoint,
+  onSwitchCourse,
+  placementPart,
+  stats,
+}: {
+  needsStartingPoint: boolean;
+  onSwitchCourse: () => void;
+  placementPart: string | null;
+  stats: PrototypeStats;
+}) {
   const reduceMotion = useReducedMotion();
   const { nxt, pct, into, needed } = getLevelInfo(stats.totalXp);
+  const displayedProgress = needsStartingPoint ? 0 : pct;
+  const placementLevel = placementPart === "part1" ? ["A1", "Building the basics"]
+    : placementPart === "part3" ? ["A1-A2", "Building confidence"]
+      : placementPart === "part5" ? ["A2", "Everyday foundations"]
+        : placementPart === "part8" ? ["A2-B1", "Independent learner"]
+          : placementPart === "part11" ? ["B1", "Independent speaker"]
+            : ["A2", "Everyday speaker"];
 
   return (
     <div className="np-course-hero-frame">
@@ -858,24 +875,28 @@ function CourseHero({ onSwitchCourse, stats }: { onSwitchCourse: () => void; sta
             <h1>German for real conversations</h1>
           </div>
           <div className="np-level-line">
-            <strong>Level A2</strong>
-            <span>Everyday speaker</span>
+            <strong>{needsStartingPoint ? "New learner" : `Level ${placementLevel[0]}`}</strong>
+            <span>{needsStartingPoint ? "Choose where to begin" : placementLevel[1]}</span>
           </div>
           <div className="np-course-progress-row">
             <div className="np-course-progress-label">
-              <span>Level progress</span>
-              <small>{nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : "Maximum level"}</small>
+              <span>{needsStartingPoint ? "Starting point" : "Level progress"}</span>
+              <small>
+                {needsStartingPoint
+                  ? "One quick choice before your first lesson"
+                  : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : "Maximum level"}
+              </small>
             </div>
             <div
-              aria-label={`${pct}% progress to the next level`}
+              aria-label={needsStartingPoint ? "Starting point not chosen" : `${pct}% progress to the next level`}
               aria-valuemax={100}
               aria-valuemin={0}
-              aria-valuenow={pct}
+              aria-valuenow={displayedProgress}
               className="np-progress-track np-progress-track--hero"
               role="progressbar"
             >
               <motion.span
-                animate={{ scaleX: pct / 100 }}
+                animate={{ scaleX: displayedProgress / 100 }}
                 initial={reduceMotion ? false : { scaleX: 0 }}
                 style={{ transformOrigin: "left center" }}
                 transition={{ delay: 0.22, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
@@ -1244,20 +1265,50 @@ function HomeView({
   stats: PrototypeStats;
   vocab: number;
 }) {
+  const needsStartingPoint = Boolean(profile)
+    && loadScopedJson("german-lab-placement-done", false, profile) !== true;
+  const placementPart = profile
+    ? loadScopedJson<string | null>("german-lab-placement-result", null, profile)
+    : null;
+  const firstLessonReady = !needsStartingPoint
+    && Boolean(placementPart)
+    && stats.sessionsCompleted === 0;
+  const firstLessonLevel = placementPart === "part1" ? "A1"
+    : placementPart === "part3" ? "A1-A2"
+      : placementPart === "part5" ? "A2"
+        : placementPart === "part8" ? "A2-B1"
+          : placementPart === "part11" ? "B1"
+            : "A1";
+
   return (
     <div className="np-home-view">
-      <CourseHero onSwitchCourse={onSwitchCourse} stats={stats} />
+      <CourseHero
+        needsStartingPoint={needsStartingPoint}
+        onSwitchCourse={onSwitchCourse}
+        placementPart={placementPart}
+        stats={stats}
+      />
       <button
-        aria-label="Continue learning. Lesson 12: Everyday phrases."
+        aria-label={needsStartingPoint
+          ? "Choose your starting point. Tell us if you are a total beginner."
+          : firstLessonReady
+            ? `Start your first lesson. Level ${firstLessonLevel} everyday essentials.`
+            : "Continue learning. Lesson 12: Everyday phrases."}
         className="np-mobile-course-button"
         onClick={onPractice}
         type="button"
       >
         <Play />
         <span className="np-course-button-copy">
-          <span className="np-course-button-kicker">Your next lesson</span>
-          <strong>Continue learning</strong>
-          <small>Lesson 12: Everyday phrases</small>
+          <span className="np-course-button-kicker">
+            {needsStartingPoint ? "First step" : firstLessonReady ? "Your first lesson" : "Your next lesson"}
+          </span>
+          <strong>{needsStartingPoint ? "Choose your starting point" : firstLessonReady ? "Start learning" : "Continue learning"}</strong>
+          <small>
+            {needsStartingPoint
+              ? "Tell us if you are a total beginner"
+              : firstLessonReady ? `Level ${firstLessonLevel}: Everyday essentials` : "Lesson 12: Everyday phrases"}
+          </small>
         </span>
         <ChevronRight />
       </button>
@@ -2049,7 +2100,7 @@ export default function NewUiPrototype({
       ) : <FeatureLoading />}
     </div>
   ) : activeView === "social" && socialPreviewUnlocked ? (
-    <SocialView userName={profile?.name ?? "Leon"} />
+    <SocialView userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
       {partsReady ? (

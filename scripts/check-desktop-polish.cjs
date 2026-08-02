@@ -60,14 +60,14 @@ check("Micheon-only pets do not open the desktop overlay", electronMain.includes
 check("pet overlays reassert their z-order after Micheon deactivates", electronMain.includes('mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation)') && electronMain.includes('mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation)'));
 check("pet z-order recovery is bounded rather than a permanent polling loop", petReassertion.includes("for (const delay of [80, 700])") && petReassertion.includes("setTimeout") && !petReassertion.includes("setInterval"));
 
-check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={pct}"));
-check("course progress animates from empty", prototype.includes("<motion.span") && prototype.includes("scaleX: pct / 100") && prototype.includes("scaleX: 0"));
+check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={displayedProgress}"));
+check("course progress animates from empty", prototype.includes("<motion.span") && prototype.includes("scaleX: displayedProgress / 100") && prototype.includes("scaleX: 0"));
 check("course progress respects reduced-motion preferences", prototype.includes("const reduceMotion = useReducedMotion();") && prototype.includes("initial={reduceMotion ? false"));
 check("search focus uses one clean outer ring", styles.includes(".np-search-field:focus-within") && styles.includes(".np-search-field input:focus-visible"));
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
 check("lesson-library search uses one focused border", learnView.includes('className="learn-library-search ') && /learn-library-search:focus-visible\s*\{[^}]*outline:\s*0;/s.test(styles));
 check("light test cards define the yellow icon tile treatment", testsView.includes("bg-[var(--yellow-dim)]") && /\.np-feature-host\s*\{[^}]*--yellow-dim:\s*#fff1c7;[^}]*--yellow-ink:\s*#986000;/s.test(styles));
-check("the hero progress bar uses a labelled mint-on-green treatment", prototype.includes(">Level progress<") && styles.includes("#f5fff6 0%, #dff8e4 100%") && !styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
+check("the hero progress bar uses a labelled mint-on-green treatment", prototype.includes('"Level progress"') && styles.includes("#f5fff6 0%, #dff8e4 100%") && !styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
 check("the mastery ring halo has a defined first animation frame", mastery.includes('initial={reduce ? false : { r: dotR * 1.1, opacity: 0.55 }}'));
 check("the mastery percentage uses its real progress ring on a light tile", /\.np-feature-host \.mastery-ring > svg\s*\{[^}]*display:\s*block;/s.test(styles) && /\.np-feature-host \.mastery-ring::after\s*\{[^}]*display:\s*none;/s.test(styles) && styles.includes("linear-gradient(145deg, #fdfff9 0%, #edf8e8 100%)"));

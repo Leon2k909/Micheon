@@ -6,6 +6,7 @@ const SHARED_SYNC_PREFIXES = [
   "german-arena-",
   "active-part:",
   "german-lab-placement-done:",
+  "german-lab-placement-result:",
   "session-completed:",
   "totalXp:",
   "sessionsCompleted:",

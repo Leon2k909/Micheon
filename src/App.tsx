@@ -96,21 +96,17 @@ function MicheonSurface({ guided }: { guided: boolean }) {
         <MainSkeleton />
       ) : (
         <CodexPetProvider>
-          {guided ? (
-            user ? (
-              <Suspense fallback={<MainSkeleton />}>
-                <GuidedLearningSession />
-              </Suspense>
-            ) : (
-              <LoginScreen onLogin={(authenticated) => setUser(authenticated)} />
-            )
-          ) : showLogin ? (
+          {!user || showLogin ? (
             <LoginScreen
               onLogin={(authenticated) => {
                 setUser(authenticated);
                 setShowLogin(false);
               }}
             />
+          ) : guided ? (
+            <Suspense fallback={<MainSkeleton />}>
+              <GuidedLearningSession />
+            </Suspense>
           ) : (
             <Suspense fallback={<MainSkeleton />}>
               <MicheonMain profile={user} onRequestSignIn={() => setShowLogin(true)} />
