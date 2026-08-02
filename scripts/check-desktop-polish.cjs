@@ -16,6 +16,7 @@ const testsView = read("src/components/tests/TestsView.tsx");
 const readme = read("README.md");
 const primaryNavigation = (/const NAVIGATION:[\s\S]*?\n\];/.exec(prototype) || [""])[0];
 const petReassertion = (/function reassertPetSurfacesAfterAppDeactivation\(\)[\s\S]*?^}/m.exec(electronMain) || [""])[0];
+const guidedBackdrop = (/\.guided-session\.fs-app\.prototype-guided-session::before\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 
 let failures = 0;
 
@@ -75,15 +76,18 @@ check("the production shell does not trap sticky navigation in hidden overflow",
 check("Tests and Grammar live inside Practice instead of the primary sidebar", prototype.includes("function PracticeHub") && prototype.includes('label: "Tests"') && prototype.includes('label: "Grammar"') && !primaryNavigation.includes('id: "tests"') && !primaryNavigation.includes('id: "grammar"'));
 check("the retired dashboard switch is not shipped", !prototype.includes("Need the original dashboard") && !app.includes("legacy-dashboard") && !app.includes("guided-theme"));
 check("existing installs migrate once to the finished light theme", theme.includes('const LIGHT_DEFAULT_MIGRATION_KEY = "micheon-light-default-v1"') && theme.includes('localStorage.setItem(KEY, "light")') && app.indexOf("await hydrateLocalStorageFromSharedStorage()") < app.indexOf("migrateToLightThemeDefault()"));
-check("the prototype guided lesson uses the homepage scene as a restrained focus backdrop", /prototype-guided-session::before\s*\{[^}]*micheon-hero-v3\.webp[^}]*140% auto no-repeat[^}]*opacity:\s*0\.18;[^}]*mask-image:/s.test(appStyles) && /prototype-guided-session::after\s*\{[^}]*rgba\(255,\s*251,\s*244,\s*0\.97\)/s.test(appStyles));
-check("light lesson grading controls keep readable hover colours", /prototype-guided-session \.grade-btn-known:hover:not\(:disabled\)[\s\S]*?color:\s*#206c30;/s.test(appStyles) && /prototype-guided-session \.grade-btn-struggle:hover:not\(:disabled\)[\s\S]*?color:\s*#3e3d39;/s.test(appStyles));
-check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*72rem;/s.test(appStyles));
+check("the prototype guided lesson uses a clean mint focus backdrop", guidedBackdrop.includes("border-radius: 44px") && guidedBackdrop.includes("rgba(208, 239, 198, 0.38)") && !guidedBackdrop.includes("micheon-hero-v3.webp"));
+check("light lesson grading controls keep readable hover colours", /prototype-guided-session \.grade-btn-known:hover:not\(:disabled\)[\s\S]*?color:\s*#195f27;/s.test(appStyles) && /prototype-guided-session \.grade-btn-struggle:hover:not\(:disabled\)[\s\S]*?color:\s*#363530;/s.test(appStyles));
+check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*76rem;/s.test(appStyles));
+check("the active guided stage uses Micheon green instead of legacy gold", /prototype-guided-session \.fs-stagebtn\.is-active > span\s*\{[^}]*background:\s*var\(--fs-grad\);[^}]*color:\s*#fff;/s.test(appStyles));
+check("guided streak feedback uses the light green product surface", guidedSession.includes('className="fs-praise-pop"') && /prototype-guided-session \.fs-praise-pop\s*\{[^}]*background:\s*rgba\(255,\s*254,\s*250,\s*0\.97\);/s.test(appStyles));
+check("notifications close with a neutral icon action", prototype.includes('aria-label="Close notifications"') && prototype.includes('<X aria-hidden="true" />') && /\.np-notification-heading > button\s*\{[^}]*background:\s*var\(--np-surface-soft\);/s.test(styles));
 check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));
 check("the lesson preview reuses the lightweight homepage course scene", appStyles.includes('url("./prototype/assets/micheon-hero-v3.webp")'));
 check("the lesson preview exposes useful phrase and language context", guidedSession.includes('className="fs-preview-summary"') && guidedSession.includes('{cards.length} {ui("Phrases")}'));
 check("the lesson preview uses tactile numbered route steps", /prototype-guided-session \.fs-preview-route button\s*\{[^}]*height:\s*38px;[^}]*color:\s*#77786f;/s.test(appStyles));
 check("the lesson preview card has a stable content and helper hierarchy", guidedSession.includes('className="fs-flashcard-content"') && guidedSession.includes('className="fs-flashcard-footer"'));
-check("the redesigned lesson preview has narrow-screen composition rules", /@media \(max-width: 600px\)\s*\{[^}]*prototype-guided-session main\s*\{[^}]*padding:\s*14px;/s.test(appStyles));
+check("the redesigned lesson preview has narrow-screen composition rules", /@media \(max-width: 600px\)[\s\S]*?prototype-guided-session main\s*\{[^}]*padding:\s*14px;/s.test(appStyles));
 
 const screenshotPaths = [
   "docs/screenshots/micheon-home.png",

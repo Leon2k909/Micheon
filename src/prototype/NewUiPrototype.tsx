@@ -739,7 +739,9 @@ function Header({
               >
                 <div className="np-notification-heading">
                   <div><strong>Notifications</strong><small>{notifications.length} new</small></div>
-                  <button aria-label="Close notifications" onClick={() => setNotificationsOpen(false)} type="button">Close</button>
+                  <button aria-label="Close notifications" onClick={() => setNotificationsOpen(false)} type="button">
+                    <X aria-hidden="true" />
+                  </button>
                 </div>
                 <div className="np-notification-list">
                   {notifications.map((notification, index) => (

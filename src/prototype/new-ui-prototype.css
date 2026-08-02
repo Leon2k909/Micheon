@@ -544,13 +544,39 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-notification-heading > button {
-  padding: 7px 10px;
-  border: 0;
-  border-radius: 10px;
-  color: var(--np-violet);
-  background: var(--np-violet-soft);
-  font-size: var(--np-type-caption);
-  font-weight: 900;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--np-line);
+  border-radius: 11px;
+  color: var(--np-muted);
+  background: var(--np-surface-soft);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(85, 72, 57, 0.08);
+  transition:
+    color var(--np-motion-fast) ease,
+    border-color var(--np-motion-fast) ease,
+    background var(--np-motion-fast) ease,
+    transform var(--np-motion-fast) ease;
+}
+
+.np-notification-heading > button svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.6;
+}
+
+.np-notification-heading > button:hover,
+.np-notification-heading > button:focus-visible {
+  border-color: rgba(79, 189, 81, 0.4);
+  color: var(--np-green-dark);
+  background: var(--np-green-soft);
+}
+
+.np-notification-heading > button:active {
+  transform: translateY(1px);
 }
 
 .np-notification-list {

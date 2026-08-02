@@ -5115,18 +5115,18 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               ? { duration: 0.12 }
               : { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
             aria-label={`${praise.count} ${ui("correct in a row")}`}
-            className="pointer-events-none absolute left-1/2 top-[78px] z-40 inline-flex min-w-[176px] items-center gap-2.5 rounded-[12px] border border-white/10 bg-[#1b1c26]/95 px-3 py-2.5 text-[var(--fs-text)] shadow-[0_14px_36px_rgba(0,0,0,0.34)] backdrop-blur-sm"
+            className="fs-praise-pop"
             data-testid="lesson-streak-feedback"
             role="status"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-[rgba(139,76,255,0.14)] text-sm font-black tabular-nums text-[#cdb8ff]">
+            <span className="fs-praise-count">
               {praise.count}
             </span>
-            <span className="flex flex-col">
-              <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#a98aff]">
+            <span className="fs-praise-copy">
+              <span className="fs-praise-label">
                 {ui("Correct streak")}
               </span>
-              <strong className="text-sm font-black leading-tight">{ui("Keep it going")}</strong>
+              <strong>{ui("Keep it going")}</strong>
             </span>
           </motion.div>
         )}

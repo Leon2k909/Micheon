@@ -2945,43 +2945,53 @@ a { color: inherit; text-decoration: none; }
    session, but keeps the warm cream/green visual language of that dashboard.
    The normal focus-mode lesson remains untouched for every other entry path. */
 .guided-session.fs-app.prototype-guided-session {
-  --bg: #f3f7ea;
-  --surface: #fffdf8;
-  --surface-2: #f4f1e8;
-  --surface-3: #ece9df;
-  --border: rgba(67, 82, 57, 0.13);
-  --border-2: rgba(67, 82, 57, 0.2);
-  --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #7f7972;
-  --accent: #43b84c;
-  --accent-dim: #e6f8d9;
+  --bg: #edf6e8;
+  --surface: #fffdf9;
+  --surface-2: #f4f7ef;
+  --surface-3: #e7eee2;
+  --border: rgba(54, 82, 45, 0.16);
+  --border-2: rgba(54, 82, 45, 0.24);
+  --text-1: #242622;
+  --text-2: #50554d;
+  --text-3: #70766b;
+  --accent: #3eb84a;
+  --accent-dim: #e3f6dc;
   --accent-text: #fff;
-  --accent-hover: #2f9e3d;
-  --ink: #292725;
+  --accent-hover: #2c9d39;
+  --ink: #242622;
   --ink-text: #fff;
-  --success-bg: #e6f8d9;
-  --success-text: #218635;
-  --shadow: rgba(82, 68, 53, 0.07);
-  --shadow-strong: rgba(82, 68, 53, 0.16);
-  --fs-bg: #f3f7ea;
-  --fs-surface: #fffdf8;
-  --fs-surface-2: #f4f1e8;
-  --fs-deep: #edf5e5;
-  --fs-line: rgba(67, 82, 57, 0.13);
-  --fs-line-strong: rgba(67, 82, 57, 0.2);
-  --fs-text: #292725;
-  --fs-text-2: #5f5a55;
-  --fs-muted: #7f7972;
-  --fs-muted-2: #938d85;
-  --fs-purple: #43b84c;
-  --fs-grad: linear-gradient(135deg, #62d65e 0%, #43be4e 52%, #2fa63b 100%);
-  --fs-yellow: #ffc538;
-  --fs-yellow-hover: #ffd35f;
+  --success-bg: #e3f6dc;
+  --success-text: #1f7d30;
+  --shadow: rgba(56, 81, 47, 0.08);
+  --shadow-strong: rgba(56, 81, 47, 0.18);
+  --fs-bg: #edf6e8;
+  --fs-surface: #fffdf9;
+  --fs-surface-2: #f4f7ef;
+  --fs-deep: #e7f1e2;
+  --fs-line: rgba(54, 82, 45, 0.16);
+  --fs-line-strong: rgba(54, 82, 45, 0.24);
+  --fs-text: #242622;
+  --fs-text-2: #50554d;
+  --fs-muted: #70766b;
+  --fs-muted-2: #858b80;
+  --fs-purple: #3eb84a;
+  --fs-grad: linear-gradient(135deg, #58cf59 0%, #3fbb4b 52%, #2ca33a 100%);
+  --fs-yellow: #3eb84a;
+  --fs-yellow-hover: #4cc756;
+  --fs-font-display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --fs-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   color-scheme: light;
   color: var(--fs-text);
   isolation: isolate;
-  background: #f2f7ed;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(101, 202, 97, 0.16), transparent 29%),
+    radial-gradient(circle at 88% 78%, rgba(75, 184, 82, 0.1), transparent 27%),
+    linear-gradient(180deg, #edf7e9 0%, #f5f8f0 48%, #fffaf1 100%);
+  font-family: var(--fs-font-text);
+  font-size: 16px;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .guided-session.fs-app.prototype-guided-session::before,
@@ -2994,20 +3004,33 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session::before {
-  background: url("./prototype/assets/micheon-hero-v3.webp") left 68px / 140% auto no-repeat;
-  opacity: 0.18;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 82%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 82%);
+  inset: 84px 5vw auto;
+  height: min(520px, 58vh);
+  border-radius: 44px;
+  background: linear-gradient(135deg, rgba(208, 239, 198, 0.38), rgba(255, 253, 248, 0.1));
+  filter: blur(1px);
+  opacity: 0.72;
 }
 
 .guided-session.fs-app.prototype-guided-session::after {
-  background:
-    radial-gradient(ellipse 62% 46% at 50% 10%, rgba(255, 255, 255, 0.94) 0%, rgba(250, 253, 247, 0.7) 50%, transparent 100%),
-    linear-gradient(180deg, rgba(229, 245, 222, 0.62) 0%, rgba(244, 249, 239, 0.84) 50%, rgba(255, 251, 244, 0.97) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 32%, rgba(255, 250, 241, 0.22));
 }
 
 .guided-session.fs-app.prototype-guided-session main > div {
-  max-width: 72rem;
+  max-width: 76rem;
+}
+
+.guided-session.fs-app.prototype-guided-session :is(
+  h1,
+  h2,
+  h3,
+  strong,
+  button,
+  .fs-h1,
+  .fs-line,
+  .fs-stagebtn > span
+) {
+  font-family: var(--fs-font-display);
 }
 
 .prototype-guided-loading-screen {
@@ -3127,12 +3150,27 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-topbar {
-  border-bottom-color: rgba(67, 82, 57, 0.08);
-  background: rgba(255, 253, 248, 0.96);
+  height: 72px;
+  padding-inline: 24px;
+  border-bottom-color: rgba(54, 82, 45, 0.12);
+  background: rgba(255, 253, 249, 0.97);
   box-shadow:
-    0 2px 0 rgba(86, 101, 70, 0.05),
-    0 12px 28px rgba(75, 91, 59, 0.08);
+    0 3px 0 rgba(75, 101, 64, 0.07),
+    0 13px 30px rgba(63, 91, 52, 0.09);
   backdrop-filter: blur(18px);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-brand-name {
+  color: #2a3028;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-brand-byline {
+  color: #666c62;
+  font-size: 11px;
+  font-weight: 720;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-brand img {
@@ -3146,21 +3184,39 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session .fs-progress-track,
 .guided-session.fs-app.prototype-guided-session .fs-match-progress-track {
-  background: #e1e8d9;
-  box-shadow: inset 0 1px 2px rgba(69, 83, 58, 0.11);
+  height: 9px;
+  border: 1px solid rgba(54, 82, 45, 0.1);
+  background: #e1eadc;
+  box-shadow: inset 0 2px 3px rgba(54, 82, 45, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-progress-track i,
 .guided-session.fs-app.prototype-guided-session .fs-match-progress-track i,
 .guided-session.fs-app.prototype-guided-session .fs-stageline i {
   background: linear-gradient(90deg, #65d85f, #35ad43);
-  box-shadow: 0 0 14px rgba(53, 173, 67, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-progress-copy span {
+  color: #62695f;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-progress-copy strong,
+.guided-session.fs-app.prototype-guided-session .fs-progress-pct {
+  color: #33372f;
+  font-size: 13px;
+  font-weight: 950;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-iconbtn {
+  width: 42px;
+  height: 42px;
   border-color: rgba(67, 82, 57, 0.14);
-  background: #fffdf8;
-  color: #6d7466;
+  border-radius: 14px;
+  background: #fffdf9;
+  color: #555c52;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 3px 0 rgba(73, 89, 60, 0.12),
@@ -3178,22 +3234,28 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-card {
-  border-color: rgba(67, 82, 57, 0.16);
-  background:
-    radial-gradient(48% 68% at 98% 0%, rgba(218, 244, 199, 0.3), transparent 74%),
-    linear-gradient(180deg, rgba(255, 254, 251, 0.995), rgba(251, 249, 242, 0.995));
+  border: 1px solid rgba(54, 82, 45, 0.18);
+  border-radius: 28px;
+  background: #fffdf9;
   box-shadow:
-    0 7px 0 rgba(86, 101, 70, 0.14),
-    0 30px 68px rgba(67, 88, 50, 0.19),
-    0 0 0 8px rgba(255, 255, 255, 0.28),
+    0 8px 0 rgba(80, 111, 68, 0.15),
+    0 30px 70px rgba(56, 82, 46, 0.18),
+    0 0 0 7px rgba(255, 255, 255, 0.32),
     inset 0 1px 0 #fff;
 }
 
+.guided-session.fs-app.prototype-guided-session .fs-card-body {
+  padding: 28px 30px 26px;
+}
+
 .guided-session.fs-app.prototype-guided-session .grade-btn {
-  min-height: 36px;
-  border-color: rgba(67, 82, 57, 0.16);
-  background: #fffdf8;
-  color: #555850;
+  min-height: 40px;
+  padding-inline: 15px;
+  border-color: rgba(54, 82, 45, 0.18);
+  background: #fffdf9;
+  color: #444941;
+  font-size: 12px;
+  font-weight: 900;
   box-shadow:
     inset 0 1px 0 #fff,
     0 3px 0 rgba(78, 91, 66, 0.12),
@@ -3205,16 +3267,16 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .grade-btn-known {
-  border-color: rgba(52, 157, 65, 0.24);
-  background: #f8fcf5;
-  color: #2d7138;
+  border-color: rgba(47, 145, 59, 0.34);
+  background: #e9f7e3;
+  color: #216f30;
 }
 
 .guided-session.fs-app.prototype-guided-session .grade-btn-known:hover:not(:disabled),
 .guided-session.fs-app.prototype-guided-session .grade-btn-known:focus-visible {
   border-color: rgba(52, 157, 65, 0.46);
-  background: #e9f7e2;
-  color: #206c30;
+  background: #dff3d7;
+  color: #195f27;
   box-shadow:
     inset 0 1px 0 #fff,
     0 4px 0 rgba(49, 144, 58, 0.18),
@@ -3222,16 +3284,16 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .grade-btn-struggle {
-  border-color: rgba(83, 80, 73, 0.17);
-  background: #fffdf8;
-  color: #5b5953;
+  border-color: rgba(83, 80, 73, 0.24);
+  background: #faf8f2;
+  color: #514e48;
 }
 
 .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:hover:not(:disabled),
 .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:focus-visible {
   border-color: rgba(83, 80, 73, 0.34);
-  background: #efeee8;
-  color: #3e3d39;
+  background: #ebe9e2;
+  color: #363530;
   box-shadow:
     inset 0 1px 0 #fff,
     0 4px 0 rgba(83, 80, 73, 0.16),
@@ -3250,6 +3312,119 @@ a { color: inherit; text-decoration: none; }
   background: rgba(255, 255, 255, 0.76);
   color: currentColor;
   opacity: 0.78;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-heading {
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-eyebrow {
+  gap: 9px;
+  margin-bottom: 7px;
+  color: #2b8738;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-eyebrow i {
+  width: 7px;
+  height: 7px;
+  border: 0;
+  background: #43b84c;
+  box-shadow: 0 0 0 4px rgba(67, 184, 76, 0.12);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-h1 {
+  color: #20241f;
+  font-size: clamp(29px, 2.25vw, 36px);
+  font-weight: 950;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-sub {
+  margin-top: 8px;
+  color: #62685f;
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-listen {
+  min-height: 52px;
+  padding: 6px 15px 7px 6px;
+  border-color: rgba(54, 82, 45, 0.17);
+  border-radius: 16px;
+  background: #fffefb;
+  color: #343a32;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 0 rgba(78, 98, 68, 0.12),
+    0 10px 20px rgba(66, 86, 56, 0.08);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-listen strong {
+  color: #2a2f29;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-listen small {
+  margin-top: 1px;
+  color: #70766c;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-board {
+  margin-top: 6px;
+  padding: 16px 22px 24px;
+  border: 1px solid rgba(54, 82, 45, 0.18);
+  border-radius: 23px;
+  background: #fffefb;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 0 rgba(81, 103, 70, 0.12),
+    0 18px 34px rgba(63, 83, 53, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-board-top span {
+  color: #2d8739;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-board-top small {
+  color: #777d73;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-line {
+  min-height: 104px;
+  padding-top: 18px;
+  color: #222520;
+  font-size: clamp(31px, 3.15vw, 45px);
+  font-weight: 950;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-hint {
+  color: #666d63;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-hint kbd {
+  border-color: rgba(54, 82, 45, 0.17);
+  background: #fffefb;
+  color: #4f554d;
+  box-shadow: 0 2px 0 rgba(78, 98, 68, 0.13);
+  font-weight: 850;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-card--preview {
@@ -3609,12 +3784,12 @@ a { color: inherit; text-decoration: none; }
   .fs-translation-bank,
   .fs-recall-board
 ) {
-  border-color: rgba(67, 82, 57, 0.13);
-  background: rgba(247, 246, 238, 0.86);
+  border-color: rgba(54, 82, 45, 0.17);
+  background: #fffefb;
   box-shadow:
     inset 0 1px 0 #fff,
-    0 4px 0 rgba(86, 101, 70, 0.09),
-    0 15px 30px rgba(74, 89, 61, 0.08);
+    0 5px 0 rgba(80, 103, 68, 0.11),
+    0 18px 34px rgba(64, 86, 54, 0.09);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
@@ -3633,10 +3808,12 @@ a { color: inherit; text-decoration: none; }
   .fs-translation-option,
   .fs-recall-char-slot
 ) {
-  border-color: rgba(67, 82, 57, 0.16);
-  background: #fffdf8;
-  color: var(--fs-text-2);
-  box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(75, 91, 62, 0.1);
+  border-color: rgba(54, 82, 45, 0.17);
+  background: #fffefb;
+  color: #3e443c;
+  box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(75, 96, 63, 0.11);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .guided-session.fs-app.prototype-guided-session :is(
@@ -3867,21 +4044,48 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebar {
-  border-bottom-color: rgba(67, 82, 57, 0.1);
-  background: rgba(239, 246, 231, 0.62);
+  padding: 22px 30px 20px;
+  border-bottom-color: rgba(54, 82, 45, 0.13);
+  background: #f0f7ec;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagemeta {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagemeta > div:first-child {
+  gap: 12px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagemeta span {
+  color: #687066;
+  font-size: 11px;
+  font-weight: 920;
+  letter-spacing: 0.12em;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagemeta strong {
+  color: #252a24;
+  font-size: 16px;
+  font-weight: 950;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger {
-  border-color: rgba(67, 184, 76, 0.2);
-  background: rgba(67, 184, 76, 0.07);
-  color: var(--fs-text-2);
+  min-height: 38px;
+  border-color: rgba(54, 82, 45, 0.17);
+  background: #fffefb;
+  color: #50574e;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(76, 99, 65, 0.12);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,
 .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger[aria-expanded="true"] {
-  border-color: rgba(67, 184, 76, 0.4);
-  background: rgba(67, 184, 76, 0.13);
-  color: var(--fs-text);
+  transform: translateY(-1px);
+  border-color: rgba(67, 184, 76, 0.42);
+  background: #e9f7e3;
+  color: #256f30;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger > svg,
@@ -3909,14 +4113,29 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stageline {
-  background: #dfe6d8;
+  top: 23px;
+  height: 4px;
+  background: #dce7d7;
+  box-shadow: inset 0 1px 2px rgba(54, 82, 45, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn > span {
-  border-color: rgba(67, 82, 57, 0.13);
-  background: #fffdf8;
-  color: #777b71;
-  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #d7d9ce, 0 10px 18px rgba(66, 80, 54, 0.08);
+  width: 47px;
+  height: 47px;
+  border-color: rgba(54, 82, 45, 0.15);
+  border-radius: 15px;
+  background: #fffefb;
+  color: #60675e;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #d5ddd0, 0 10px 18px rgba(66, 84, 55, 0.09);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn small {
+  color: #626960;
+  font-size: 12px;
+  font-weight: 820;
+  line-height: 1.05;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn:hover > span {
@@ -3926,18 +4145,33 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done {
-  color: #288d36;
+  color: #2a7f36;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span {
-  border-color: rgba(67, 184, 76, 0.35);
-  background: var(--fs-grad);
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 5px 0 #248831, 0 11px 21px rgba(42, 137, 53, 0.16);
+  border-color: rgba(56, 158, 67, 0.34);
+  background: #e3f5dc;
+  color: #267b32;
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 #b7dab0, 0 11px 20px rgba(54, 125, 53, 0.1);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-active {
-  color: #8a6300;
+  color: #237c31;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-active > span {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.62);
+  background: var(--fs-grad);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 6px 0 #248831,
+    0 14px 24px rgba(42, 137, 53, 0.2);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-recall-start::before {
+  background: linear-gradient(180deg, transparent, rgba(67, 184, 76, 0.36), transparent);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-order-token {
@@ -3954,9 +4188,11 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session .fs-input {
   border-color: rgba(67, 82, 57, 0.16);
-  background: #fffdf8;
+  background: #fffefb;
   color: var(--fs-text);
   box-shadow: inset 0 1px 2px rgba(68, 78, 58, 0.06);
+  font-size: 16px;
+  font-weight: 720;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-input:focus {
@@ -3967,10 +4203,14 @@ a { color: inherit; text-decoration: none; }
 .guided-session.fs-app.prototype-guided-session .lesson-cta,
 [data-theme="dark"] .guided-session.fs-app.prototype-guided-session .lesson-cta,
 [data-theme="light"] .guided-session.fs-app.prototype-guided-session .lesson-cta {
+  min-height: 56px;
   border-color: rgba(255, 255, 255, 0.48);
+  border-radius: 16px;
   background: var(--fs-grad);
   color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 5px 0 #248831, 0 13px 26px rgba(42, 137, 53, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 0 #248831, 0 15px 28px rgba(42, 137, 53, 0.23);
+  font-size: 16px;
+  font-weight: 950;
 }
 
 .guided-session.fs-app.prototype-guided-session .lesson-cta:hover,
@@ -3989,7 +4229,88 @@ a { color: inherit; text-decoration: none; }
   color: #338f3d;
 }
 
+.guided-session.fs-app.prototype-guided-session .fs-praise-pop {
+  pointer-events: none;
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  z-index: 40;
+  display: inline-flex;
+  min-width: 188px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px 12px;
+  border: 1px solid rgba(54, 82, 45, 0.18);
+  border-radius: 15px;
+  background: rgba(255, 254, 250, 0.97);
+  color: #252a24;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 0 rgba(80, 112, 68, 0.14),
+    0 18px 38px rgba(55, 80, 46, 0.17);
+  backdrop-filter: blur(14px);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-praise-count {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(51, 151, 62, 0.25);
+  border-radius: 12px;
+  background: #e3f5dc;
+  color: #247a31;
+  box-shadow: 0 3px 0 rgba(54, 145, 62, 0.16);
+  font-family: var(--fs-font-display);
+  font-size: 15px;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-praise-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-praise-label {
+  color: #338f3d;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-praise-copy strong {
+  color: #252a24;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
 @media (max-width: 860px) {
+  .guided-session.fs-app.prototype-guided-session .fs-stagebar {
+    padding: 18px 20px 17px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-card-body {
+    padding: 23px 22px 22px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-heading {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-heading > div:last-child {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-line {
+    min-height: 94px;
+  }
+
   .guided-session.fs-app.prototype-guided-session .fs-card--preview .fs-card-body {
     gap: 14px;
     padding: 16px;
@@ -4027,8 +4348,65 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (max-width: 600px) {
+  .guided-session.fs-app.prototype-guided-session {
+    font-size: 15px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-topbar {
+    height: 64px;
+    padding-inline: 14px;
+  }
+
   .guided-session.fs-app.prototype-guided-session main {
     padding: 14px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-card {
+    border-radius: 22px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-stagebar {
+    padding: 16px 15px 15px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-stagemeta {
+    align-items: flex-start;
+    margin-bottom: 13px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-stagemeta > div:first-child {
+    display: grid;
+    gap: 3px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger-label {
+    display: none;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-card-body {
+    padding: 21px 16px 20px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-h1 {
+    font-size: 28px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-board {
+    padding: 14px 15px 20px;
+    border-radius: 19px;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-board-top small {
+    display: none;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-line {
+    min-height: 86px;
+    font-size: clamp(27px, 8.5vw, 36px);
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
+    top: 72px;
   }
 
   .guided-session.fs-app.prototype-guided-session .fs-card--preview {
