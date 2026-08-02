@@ -3950,6 +3950,39 @@ a { color: inherit; text-decoration: none; }
   background: rgba(67, 184, 76, 0.07);
 }
 
+.guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue {
+  border-color: rgba(67, 184, 76, 0.3);
+  background: linear-gradient(180deg, #fbfff8 0%, #f1f8ec 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 5px 0 rgba(78, 118, 67, 0.13),
+    0 18px 34px rgba(64, 86, 54, 0.1);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue > span {
+  color: #287f35;
+  font-weight: 950;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue > span svg {
+  color: #35a944;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue strong {
+  max-width: 780px;
+  color: #252a24;
+  font-weight: 950;
+  line-height: 1.16;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue small {
+  max-width: 680px;
+  color: #5f685b;
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.4;
+}
+
 .guided-session.fs-app.prototype-guided-session .fs-panel:focus-within {
   border-color: rgba(67, 184, 76, 0.5);
   box-shadow:
