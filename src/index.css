@@ -324,8 +324,31 @@ button { cursor: pointer; }
   font-weight: 650;
   line-height: 1.45;
 }
+.audio-mixer-speed {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+.audio-mixer-speed-chip {
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 750;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.audio-mixer-speed-chip:hover { border-color: var(--accent); color: var(--text-1); }
+.audio-mixer-speed-chip.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
 @media (prefers-reduced-motion: reduce) {
   .audio-mixer-panel { animation: none; }
+  .audio-mixer-speed-chip { transition: none; }
 }
 
 /* ── Electron desktop title bar ────────────────────────────────────────────
@@ -2243,6 +2266,52 @@ a { color: inherit; text-decoration: none; }
 .fs-listen-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--fs-grad); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 9px 19px rgba(71,25,151,0.24); }
 .fs-listen strong { color: var(--fs-text); font-size: 13px; display: block; text-align: left; }
 .fs-listen small { color: var(--fs-muted); font-size: 10px; display: block; text-align: left; }
+
+/* Right-click speed menu on the replay button. Anchored to the button so it
+   opens where the pointer already is. */
+.fs-listen-wrap { position: relative; flex: 0 0 auto; }
+.fs-speed-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--fs-line-strong);
+  border-radius: 12px;
+  background: var(--fs-surface, #fff);
+  box-shadow: 0 12px 32px rgba(20, 24, 18, 0.18);
+}
+.fs-speed-menu-label {
+  padding-right: 4px;
+  color: var(--fs-muted);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.fs-speed-option {
+  min-width: 42px;
+  height: 30px;
+  border: 1px solid var(--fs-line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fs-text-2);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.fs-speed-option:hover { border-color: var(--fs-line-strong); color: var(--fs-text); }
+.fs-speed-option.is-active {
+  border-color: transparent;
+  background: var(--fs-grad);
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-speed-option { transition: none; }
+}
 
 /* grade pills (Know it / Struggle) restyled for dark */
 .guided-session .grade-btn {

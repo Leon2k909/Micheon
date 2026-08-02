@@ -8,7 +8,7 @@
 // blocked), we fall back to the browser's built-in speechSynthesis so audio never
 // goes fully silent — it just won't be the premium voice.
 
-import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume } from "@/lib/audioMute";
+import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume, getTtsSpeechRate } from "@/lib/audioMute";
 import {
   smoothSpeechLevel,
   speechLevelFromPcm,
@@ -20,6 +20,11 @@ import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 type SeqItem = { text: string; rate?: number; lang: string };
 
 const DEFAULT_RATE = 0.88;
+
+/** Each clip's own pace times the learner's speech-speed setting, kept sane. */
+function effectiveRate(rate: number): number {
+  return Math.min(2, Math.max(0.3, rate * getTtsSpeechRate()));
+}
 
 /** Fired on window with detail=true when speech starts and detail=false when it
  *  ends or is interrupted — lets the UI (lesson waveform) react to the voice. */
@@ -398,7 +403,7 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
 async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Promise<void> {
   const { lang } = item;
   const text = firstSpokenAlternative(item.text);
-  const rate = item.rate ?? DEFAULT_RATE;
+  const rate = effectiveRate(item.rate ?? DEFAULT_RATE);
   if (!text || getTtsAudioVolume(lang) <= 0) return;
   try {
     const url = await getAudioUrl(text, rate, lang, signal);
@@ -451,5 +456,6 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
 export function preloadTts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): void {
   const spokenText = firstSpokenAlternative(text);
   if (!spokenText) return;
-  getAudioUrl(spokenText, rate, lang).catch(() => {});
+  // Same multiplier as playback so the warmed cache entry is the one used.
+  getAudioUrl(spokenText, effectiveRate(rate), lang).catch(() => {});
 }

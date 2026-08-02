@@ -53,21 +53,127 @@ export function englishVariantLabel(variant: ResolvedEnglishVariant): string {
   return variant === "british" ? "British English" : "American English";
 }
 
+/**
+ * Word stems that flip between -ise and -ize. An explicit list, never a blind
+ * suffix rule: capsize, seize, prize and size must never become -ise, and
+ * advertise or surprise must never become -ize.
+ */
+const IZE_STEMS = "real|organ|apolog|normal|general|social|summar|character|priorit|minim|maxim|recogn|memor|standard|custom|final|critic|emphas|fertil|sympath|author|util|mobil";
+
+/** Stems that flip between -or and -our (colour family). */
+const OUR_STEMS = "col|flav|hum|lab|neighb|behavi|rum|hon|fav";
+const OUR_SUFFIXES = "s|ed|ing|ful|less|ly|ite|ites|hood|hoods";
+
+/** Match the first-letter case of the source word ("Gray" -> "Grey"). */
+function matchWordCase(source: string, replacement: string): string {
+  return source[0] >= "A" && source[0] <= "Z"
+    ? replacement[0].toUpperCase() + replacement.slice(1)
+    : replacement;
+}
+
+/**
+ * Word-for-word display pairs (American form, British form). Only unambiguous
+ * pairs belong here: words with a second meaning in one variant (tire, meter,
+ * story, check, draft, curb) are deliberately left alone — a wrong "tyre" is
+ * worse than a tolerated "tire". Suffix families live in the regex rules below.
+ */
+const DISPLAY_WORD_PAIRS: Array<[string, string]> = [
+  ["practice", "practise"],
+  ["practices", "practises"],
+  ["practiced", "practised"],
+  ["practicing", "practising"],
+  ["gray", "grey"],
+  ["program", "programme"],
+  ["programs", "programmes"],
+  ["license", "licence"],
+  ["licenses", "licences"],
+  ["donut", "doughnut"],
+  ["donuts", "doughnuts"],
+  ["pajamas", "pyjamas"],
+  ["mustache", "moustache"],
+  ["mustaches", "moustaches"],
+  ["cozy", "cosy"],
+  ["aluminum", "aluminium"],
+  ["jewelry", "jewellery"],
+  ["specialty", "speciality"],
+  ["airplane", "aeroplane"],
+  ["airplanes", "aeroplanes"],
+  ["yogurt", "yoghurt"],
+  ["yogurts", "yoghurts"],
+  ["omelet", "omelette"],
+  ["omelets", "omelettes"],
+  ["chili", "chilli"],
+  ["chilies", "chillies"],
+  ["ax", "axe"],
+  ["woolen", "woollen"],
+  ["skillful", "skilful"],
+  ["willful", "wilful"],
+  ["fulfillment", "fulfilment"],
+  ["enrollment", "enrolment"],
+  ["enrollments", "enrolments"],
+  ["installment", "instalment"],
+  ["installments", "instalments"],
+  ["judgment", "judgement"],
+  ["judgments", "judgements"],
+  ["aging", "ageing"],
+  ["sulfur", "sulphur"],
+  ["mold", "mould"],
+  ["molds", "moulds"],
+  ["moldy", "mouldy"],
+  ["savory", "savoury"],
+  ["diarrhea", "diarrhoea"],
+  ["estrogen", "oestrogen"],
+  ["fetus", "foetus"],
+  ["maneuver", "manoeuvre"],
+  ["maneuvers", "manoeuvres"],
+  ["plow", "plough"],
+  ["plows", "ploughs"],
+];
+
+const AMERICAN_TO_BRITISH = new Map(DISPLAY_WORD_PAIRS);
+const BRITISH_TO_AMERICAN = new Map(DISPLAY_WORD_PAIRS.map(([us, uk]) => [uk, us] as [string, string]));
+const AMERICAN_WORDS_RE = new RegExp(`\\b(${DISPLAY_WORD_PAIRS.map(([us]) => us).join("|")})\\b`, "gi");
+const BRITISH_WORDS_RE = new RegExp(`\\b(${DISPLAY_WORD_PAIRS.map(([, uk]) => uk).join("|")})\\b`, "gi");
+
+/** Rewrite American spellings to British for display, preserving case. */
+function britishiseEnglishSpelling(text: string) {
+  return String(text ?? "")
+    .replace(AMERICAN_WORDS_RE, (m) => {
+      const uk = AMERICAN_TO_BRITISH.get(m.toLowerCase());
+      return uk ? matchWordCase(m, uk) : m;
+    })
+    .replace(new RegExp(`\\b(${OUR_STEMS})or(${OUR_SUFFIXES})?\\b`, "gi"), "$1our$2")
+    .replace(new RegExp(`\\b(${IZE_STEMS})iz(e|es|ed|ing|ation|ations|er|ers|able)\\b`, "gi"), "$1is$2")
+    .replace(/\b(cent|theat|lit|fib)er(s)?\b/gi, "$1re$2")
+    .replace(/\b(travel|cancel|label|signal|model)(ed|ing|er|ers)\b/gi, "$1l$2")
+    .replace(/\b(def|off)ense(s)?\b/gi, "$1ence$2")
+    .replace(/\b(anal|dial|catal|mon|pro)og(s)?\b/gi, "$1ogue$2")
+    .replace(/\bskeptic(al|ally|ism|s)?\b/gi, (m) => matchWordCase(m, "sceptic" + m.slice(7)))
+    .replace(/\bpediatric(s)?\b/gi, (m) => matchWordCase(m, "paediatric" + m.slice(9)));
+}
+
+/** Rewrite British spellings to American for display, preserving case. */
+function americaniseEnglishSpelling(text: string) {
+  return String(text ?? "")
+    .replace(BRITISH_WORDS_RE, (m) => {
+      const us = BRITISH_TO_AMERICAN.get(m.toLowerCase());
+      return us ? matchWordCase(m, us) : m;
+    })
+    .replace(new RegExp(`\\b(${OUR_STEMS})our(${OUR_SUFFIXES})?\\b`, "gi"), "$1or$2")
+    .replace(new RegExp(`\\b(${IZE_STEMS})is(e|es|ed|ing|ation|ations|er|ers|able)\\b`, "gi"), "$1iz$2")
+    .replace(/\b(cent|theat|lit|fib)re(s)?\b/gi, "$1er$2")
+    .replace(/\b(travel|cancel|label|signal|model)l(ed|ing|er|ers)\b/gi, "$1$2")
+    .replace(/\b(def|off)ence(s)?\b/gi, "$1ense$2")
+    .replace(/\b(anal|dial|catal|mon|pro)ogue(s)?\b/gi, "$1og$2")
+    .replace(/\bsceptic(al|ally|ism|s)?\b/gi, (m) => matchWordCase(m, "skeptic" + m.slice(7)))
+    .replace(/\bpaediatric(s)?\b/gi, (m) => matchWordCase(m, "pediatric" + m.slice(10)));
+}
+
 export function formatEnglishText(text: string, variant: EnglishVariant | ResolvedEnglishVariant) {
   const resolved = variant === "auto" ? detectEnglishVariant() : variant;
-  if (resolved === "british") {
-    return String(text ?? "")
-      .replace(/\b[Pp]ractice\b/g, (match) => match[0] === "P" ? "Practise" : "practise")
-      .replace(/\b[Pp]ractices\b/g, (match) => match[0] === "P" ? "Practises" : "practises")
-      .replace(/\b[Pp]racticed\b/g, (match) => match[0] === "P" ? "Practised" : "practised")
-      .replace(/\b[Pp]racticing\b/g, (match) => match[0] === "P" ? "Practising" : "practising");
-  }
-
-  return String(text ?? "")
-    .replace(/\b[Pp]ractise\b/g, (match) => match[0] === "P" ? "Practice" : "practice")
-    .replace(/\b[Pp]ractises\b/g, (match) => match[0] === "P" ? "Practices" : "practices")
-    .replace(/\b[Pp]ractised\b/g, (match) => match[0] === "P" ? "Practiced" : "practiced")
-    .replace(/\b[Pp]ractising\b/g, (match) => match[0] === "P" ? "Practicing" : "practicing");
+  return resolved === "british"
+    ? britishiseEnglishSpelling(String(text ?? ""))
+    : americaniseEnglishSpelling(String(text ?? ""));
 }
 
 export function normalizeEnglishSpelling(text: string) {
@@ -76,8 +182,8 @@ export function normalizeEnglishSpelling(text: string) {
     .replace(/\bpractises\b/gi, "practices")
     .replace(/\bpractised\b/gi, "practiced")
     .replace(/\bpractising\b/gi, "practicing")
-    .replace(/\b(col|flav|hum|lab|neighb|behavi|rum|hon|fav)our(s|ed|ing|ful|less|ly)?\b/gi, "$1or$2")
-    .replace(/\b(real|organ|apolog|normal|general|social|summar|character|priorit|minim|maxim|recogn|memor|standard|custom|final|critic|emphas)is(e|es|ed|ing|ation|ations|er|ers|able)\b/gi, "$1iz$2")
+    .replace(new RegExp(`\\b(${OUR_STEMS})our(${OUR_SUFFIXES})?\\b`, "gi"), "$1or$2")
+    .replace(new RegExp(`\\b(${IZE_STEMS})is(e|es|ed|ing|ation|ations|er|ers|able)\\b`, "gi"), "$1iz$2")
     .replace(/\b(cent|theat|met|lit|fib)re(s)?\b/gi, "$1er$2")
     .replace(/\b(travel|cancel|label|signal|model)ll(ed|ing|er|ers)\b/gi, "$1l$2")
     .replace(/\blicence(s)?\b/gi, "license$1")
@@ -97,6 +203,8 @@ export function normalizeEnglishSpelling(text: string) {
     .replace(/\bageing\b/gi, "aging")
     .replace(/\b(judge|acknowledge)ment(s)?\b/gi, "$1ment$2")
     .replace(/\b(mould|moult|savour)\b/gi, (m) => m.toLowerCase() === "mould" ? "mold" : m.toLowerCase() === "moult" ? "molt" : "savor")
+    .replace(/\bmould(s|y)\b/gi, "mold$1")
+    .replace(/\bsavour(y|ier|iest)\b/gi, "savor$1")
     .replace(/\bcosy\b/gi, "cozy")
     .replace(/\bmoustache\b/gi, "mustache")
     .replace(/\b(skil|wil)ful\b/gi, "$1lful")

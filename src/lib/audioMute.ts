@@ -17,6 +17,7 @@ export interface AudioSettings {
   sfxMuted: boolean;
   englishMuted: boolean;
   germanMuted: boolean;
+  speechRate: number;
 }
 
 type StoredAudioSettings = Omit<AudioSettings, "muted">;
@@ -29,12 +30,22 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   sfxMuted: false,
   englishMuted: false,
   germanMuted: false,
+  speechRate: 1,
 };
+
+/** Selectable speech-speed multipliers, applied on top of each clip's own pace. */
+export const TTS_SPEED_PRESETS = [0.5, 0.75, 1, 1.25] as const;
 
 function clampVolume(value: unknown, fallback = 1): number {
   const number = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(1, Math.max(0, number));
+}
+
+function clampSpeechRate(value: unknown, fallback = 1): number {
+  const number = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(1.5, Math.max(0.5, number));
 }
 
 function readStoredSettings(): StoredAudioSettings {
@@ -52,6 +63,7 @@ function readStoredSettings(): StoredAudioSettings {
       sfxMuted: parsed.sfxMuted === true,
       englishMuted: parsed.englishMuted === true,
       germanMuted: parsed.germanMuted === true,
+      speechRate: clampSpeechRate(parsed.speechRate, DEFAULT_SETTINGS.speechRate),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -163,6 +175,17 @@ export function setSfxAudioVolume(volume: number) {
 export function getSfxAudioVolume(settings: AudioSettings = getAudioSettings()): number {
   if (settings.muted || settings.masterVolume <= 0 || settings.sfxMuted) return 0;
   return settings.masterVolume * settings.sfxVolume;
+}
+
+/** Global speech-speed multiplier for all spoken audio (0.5-1.5, default 1). */
+export function getTtsSpeechRate(): number {
+  return readStoredSettings().speechRate;
+}
+
+export function setTtsSpeechRate(rate: number) {
+  const stored = readStoredSettings();
+  writeStoredSettings({ ...stored, speechRate: clampSpeechRate(rate) });
+  emitAudioSettingsChanged();
 }
 
 export function audioLanguageFromTag(lang: string): TtsAudioLanguage | null {

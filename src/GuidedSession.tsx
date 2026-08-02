@@ -35,6 +35,9 @@ import {
   AUDIO_SETTINGS_EVENT,
   getSfxAudioVolume,
   getTtsAudioVolume,
+  getTtsSpeechRate,
+  setTtsSpeechRate,
+  TTS_SPEED_PRESETS,
 } from "@/lib/audioMute";
 import {
   BILINGUAL_SENTENCE_PHASES,
@@ -227,6 +230,76 @@ const FRENCH_ALT_CODES: Record<string, string> = {
   "é": "0233", "è": "0232", "ê": "0234", "à": "0224", "â": "0226",
   "ç": "0231", "î": "0238", "ô": "0244", "û": "0251", "œ": "0156",
 };
+
+/**
+ * The replay button plus a right-click speed menu. The speed is the global
+ * speech-speed setting, so choosing one here also updates Audio settings.
+ */
+function HearItButton({ speaking, onPlay }: { speaking: boolean; onPlay: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [speechRate, setSpeechRate] = useState(() => getTtsSpeechRate());
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const sync = () => setSpeechRate(getTtsSpeechRate());
+    window.addEventListener(AUDIO_SETTINGS_EVENT, sync);
+    return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: PointerEvent) => {
+      if (event.target instanceof Node && wrapRef.current?.contains(event.target)) return;
+      setMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
+  return (
+    <div className="fs-listen-wrap" ref={wrapRef}>
+      <button
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        className={cn("fs-listen", speaking && "is-speaking")}
+        onClick={onPlay}
+        onContextMenu={(event) => { event.preventDefault(); setMenuOpen((current) => !current); }}
+        title={`${ui("Hear it")} · ${ui("Right-click to change speed")} (${speechRate}×)`}
+        type="button"
+      >
+        <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
+        <span>
+          <strong>{ui("Hear it")}</strong>
+          <small>{speechRate !== 1 ? `${speechRate}× · ${ui("Tap to replay")}` : ui("Tap to replay")}</small>
+        </span>
+      </button>
+      {menuOpen && (
+        <div aria-label={ui("Speech speed")} className="fs-speed-menu" role="menu">
+          <span className="fs-speed-menu-label">{ui("Speech speed")}</span>
+          {TTS_SPEED_PRESETS.map((preset) => (
+            <button
+              aria-checked={Math.abs(speechRate - preset) < 0.01}
+              className={cn("fs-speed-option", Math.abs(speechRate - preset) < 0.01 && "is-active")}
+              key={preset}
+              onClick={() => { setTtsSpeechRate(preset); setMenuOpen(false); onPlay(); }}
+              role="menuitemradio"
+              type="button"
+            >
+              {preset}×
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
@@ -2238,17 +2311,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               && phase !== "RecallTarget"
               && phase !== "RecallBoth"
               && (
-              <button
-                className={cn("fs-listen", ttsOn && "is-speaking")}
-                onClick={() => tts(item.de, 0.82, targetLang)}
-                type="button"
-              >
-                <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
-                <span>
-                  <strong>{ui("Hear it")}</strong>
-                  <small>{ui("Tap to replay")}</small>
-                </span>
-              </button>
+              <HearItButton speaking={ttsOn} onPlay={() => tts(item.de, 0.82, targetLang)} />
             )}
           </div>
         </div>
@@ -2257,9 +2320,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && !isClosedBookPhase(phase) && (
           <UsageChips
             de={learnEn ? item.en : item.de}
-            use={item.use}
+            use={item.use ? formatEnglishText(item.use, englishVariant) : item.use}
             lookup={item.lookup}
-            tierNote={item.tierNote}
+            tierNote={item.tierNote ? formatEnglishText(item.tierNote, englishVariant) : item.tierNote}
             short={learnEn ? undefined : item.short}
             shortLabel={learnEn ? undefined : item.shortLabel}
             long={learnEn || phase === "Read" ? undefined : item.long}
@@ -4417,7 +4480,7 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
       id: String(step.item.id ?? key),
       german,
       english,
-      use: step.item.use,
+      use: step.item.use ? formatEnglishText(step.item.use, englishVariant) : step.item.use,
       review: Boolean(step.review),
     });
     if (cards.length === 6) break;
