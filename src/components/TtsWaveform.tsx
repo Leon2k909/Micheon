@@ -3,6 +3,7 @@ import {
   TTS_AUDIO_LEVEL_EVENT,
   type TtsAudioLevelDetail,
 } from "@/lib/voice";
+import { resampleSpectrum } from "@/lib/audioLevel";
 
 type WaveStyle = CSSProperties & { "--tts-wave-level": number };
 
@@ -23,38 +24,42 @@ export function TtsWaveform({
   const barRefs = useRef<Array<HTMLElement | null>>([]);
 
   useEffect(() => {
-    const history = Array.from({ length: bars }, () => 0);
-
-    const draw = (latest: number, available: boolean, reset = false) => {
-      if (reset) history.fill(0);
-      else {
-        history.shift();
-        history.push(clampLevel(latest));
-      }
+    const draw = (
+      latest: number,
+      available: boolean,
+      spectrum: ArrayLike<number> = [],
+      reset = false
+    ) => {
+      const levels = reset
+        ? Array.from({ length: bars }, () => 0)
+        : spectrum.length
+          ? resampleSpectrum(spectrum, bars)
+          : Array.from({ length: bars }, () => clampLevel(latest));
 
       const root = rootRef.current;
       if (root) {
-        root.dataset.audioReactive = available ? "true" : "false";
+        root.dataset.audioReactive = available && spectrum.length ? "true" : "false";
         root.dataset.level = clampLevel(latest).toFixed(3);
       }
-      history.forEach((level, index) => {
+      levels.forEach((level, index) => {
         const bar = barRefs.current[index];
         if (!bar) return;
-        bar.style.setProperty("--tts-wave-level", String(level));
-        bar.dataset.level = level.toFixed(3);
+        const clamped = clampLevel(level);
+        bar.style.setProperty("--tts-wave-level", String(clamped));
+        bar.dataset.level = clamped.toFixed(3);
       });
     };
 
-    draw(0, false, true);
+    draw(0, false, [], true);
     if (!active) return;
 
     const onAudioLevel = (event: Event) => {
       const detail = (event as CustomEvent<TtsAudioLevelDetail>).detail;
       if (!detail?.available) {
-        draw(0, false, true);
+        draw(0, false, [], true);
         return;
       }
-      draw(detail.level, true);
+      draw(detail.level, true, detail.spectrum);
     };
 
     window.addEventListener(TTS_AUDIO_LEVEL_EVENT, onAudioLevel);
@@ -73,6 +78,7 @@ export function TtsWaveform({
         <i
           key={index}
           ref={(element) => { barRefs.current[index] = element; }}
+          data-frequency-band={index}
           data-level="0.000"
           style={{ "--tts-wave-level": 0 } as WaveStyle}
         />

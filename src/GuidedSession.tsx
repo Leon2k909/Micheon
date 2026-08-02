@@ -121,7 +121,7 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, tierNote, hideUse, short, long }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; long?: string }) {
+function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, long }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
   const syn = synonymNote(lookup);
@@ -199,10 +199,10 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, long }: { de: s
       )}
       {showShort && (
         <span
-          title={ui("Natural form people commonly use in conversation")}
+          title={shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("Natural form people commonly use in conversation")}
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
-          {ui("People say")}: “{short}”
+          {shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("People say")}: “{short}”
         </span>
       )}
       {showLong && (
@@ -1632,6 +1632,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       if (!option) return;
       event.preventDefault();
       const ok = choiceKey(option) === choiceKey(missingWord.answer);
+      setMissingWordPreview(null);
       setMissingWordChoice(option);
       setMissingWordChecked(true);
       reactToAnswer(ok);
@@ -1922,6 +1923,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const selectMissingWord = (choice: string) => {
     if (missingWordChecked) return;
     const ok = choiceKey(choice) === choiceKey(missingWord.answer);
+    setMissingWordPreview(null);
     setMissingWordChoice(choice);
     setMissingWordChecked(true);
     reactToAnswer(ok);
@@ -1937,6 +1939,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   };
 
   const retryMissingWord = () => {
+    setMissingWordPreview(null);
     setMissingWordChoice(null);
     setMissingWordChecked(false);
   };
@@ -2258,6 +2261,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             lookup={item.lookup}
             tierNote={item.tierNote}
             short={learnEn ? undefined : item.short}
+            shortLabel={learnEn ? undefined : item.shortLabel}
             long={learnEn || phase === "Read" ? undefined : item.long}
             hideUse={phase === "Translate" || phase === "TranslateAgain"}
           />

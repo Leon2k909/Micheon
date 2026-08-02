@@ -9,7 +9,11 @@
 // goes fully silent — it just won't be the premium voice.
 
 import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume } from "@/lib/audioMute";
-import { smoothSpeechLevel, speechLevelFromPcm } from "@/lib/audioLevel";
+import {
+  smoothSpeechLevel,
+  speechLevelFromPcm,
+  speechSpectrumFromFft,
+} from "@/lib/audioLevel";
 import { firstSpokenAlternative } from "@/lib/spokenText";
 import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
@@ -29,11 +33,16 @@ function emitSpeaking(on: boolean) {
 /** Real audio energy from the premium MP3 path. Browser speechSynthesis cannot
  * expose PCM, so it deliberately reports available=false rather than faking it. */
 export const TTS_AUDIO_LEVEL_EVENT = "tts-audio-level";
-export type TtsAudioLevelDetail = { level: number; available: boolean };
-function emitAudioLevel(level: number, available: boolean) {
+export type TtsAudioLevelDetail = {
+  level: number;
+  available: boolean;
+  /** Low-to-high real frequency energy from the currently playing TTS clip. */
+  spectrum: number[];
+};
+function emitAudioLevel(level: number, available: boolean, spectrum: number[] = []) {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent<TtsAudioLevelDetail>(TTS_AUDIO_LEVEL_EVENT, {
-      detail: { level, available },
+      detail: { level, available, spectrum },
     }));
   }
 }
@@ -152,8 +161,10 @@ async function attachAudioAnalysis(audio: HTMLAudioElement, token: number) {
   try {
     source = context.createMediaElementSource(audio);
     const analyser = context.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.55;
+    // 1024 gives speech fundamentals and consonants visibly separate bars
+    // without adding meaningful work at the 25 Hz UI sampling rate.
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.58;
     source.connect(analyser);
     analyser.connect(context.destination);
     currentAudioSource = source;
@@ -180,7 +191,9 @@ function startAudioAnalysis(
   token: number
 ) {
   const samples = new Uint8Array(analyser.fftSize);
+  const frequencySamples = new Uint8Array(analyser.frequencyBinCount);
   let smoothedLevel = 0;
+  let smoothedSpectrum = Array.from({ length: 12 }, () => 0);
   let lastSampleAt = 0;
 
   const sample = (now: number) => {
@@ -194,8 +207,23 @@ function startAudioAnalysis(
     if (now - lastSampleAt < 40) return;
     lastSampleAt = now;
     analyser.getByteTimeDomainData(samples);
+    analyser.getByteFrequencyData(frequencySamples);
     smoothedLevel = smoothSpeechLevel(smoothedLevel, speechLevelFromPcm(samples));
-    emitAudioLevel(smoothedLevel, true);
+    const measuredSpectrum = speechSpectrumFromFft(
+      frequencySamples,
+      analyser.context.sampleRate,
+      analyser.fftSize,
+      smoothedSpectrum.length
+    );
+    // The RMS gate lets genuine frequency shape through while dropping the
+    // analyser's low-level MP3/noise floor between spoken syllables.
+    const levelGate = smoothedLevel <= 0.012
+      ? 0
+      : Math.min(1, 0.32 + smoothedLevel * 1.9);
+    smoothedSpectrum = measuredSpectrum.map((band, index) => (
+      smoothSpeechLevel(smoothedSpectrum[index], band * levelGate)
+    ));
+    emitAudioLevel(smoothedLevel, true, smoothedSpectrum);
   };
 
   if (currentAudioLevelFrame !== null) {

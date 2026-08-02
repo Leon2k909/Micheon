@@ -24,6 +24,7 @@ const result = esbuild.buildSync({
       } from "./src/lib/guidedLessonPhases.ts";
       export { wordOrderTokensMatchSentence } from "./src/lib/wordOrder.ts";
       export { getSfxAudioVolume, getTtsAudioVolume } from "./src/lib/audioMute.ts";
+      export { resampleSpectrum, speechSpectrumFromFft } from "./src/lib/audioLevel.ts";
       export { germanWordGloss } from "./src/lib/germanWordGloss.ts";
     `,
     resolveDir: root,
@@ -56,8 +57,10 @@ const {
   MASTERED_SENTENCE_PHASES,
   matchLearningModeGermanAnswer,
   phraseForLearningMode,
+  resampleSpectrum,
   replacementSentencePhaseWhenMuted,
   SENTENCE_PHASES,
+  speechSpectrumFromFft,
   wordOrderTokensMatchSentence,
 } = compiled.exports;
 
@@ -185,6 +188,31 @@ if (reportedPhrase) {
   );
 }
 
+const testFft = Array.from({ length: 512 }, () => 0);
+for (let index = 3; index <= 6; index += 1) testFft[index] = 225;
+for (let index = 35; index <= 48; index += 1) testFft[index] = 178;
+const measuredSpectrum = speechSpectrumFromFft(testFft, 48_000, 1_024, 12);
+const compactSpectrum = resampleSpectrum(measuredSpectrum, 9);
+check(
+  "TTS meters preserve real low-to-high frequency differences",
+  measuredSpectrum.length === 12
+    && measuredSpectrum.some((level) => level > 0.6)
+    && measuredSpectrum.some((level) => level > 0.5 && level < 0.75)
+    && new Set(measuredSpectrum.map((level) => level.toFixed(2))).size >= 3,
+  `found ${JSON.stringify(measuredSpectrum)}`
+);
+check(
+  "frequency spectra resample cleanly to the Stage 5 bar count",
+  compactSpectrum.length === 9
+    && compactSpectrum.every((level) => level >= 0 && level <= 1)
+    && new Set(compactSpectrum.map((level) => level.toFixed(2))).size >= 3,
+  `found ${JSON.stringify(compactSpectrum)}`
+);
+check(
+  "silent FFT input produces a silent meter",
+  speechSpectrumFromFft(Array.from({ length: 512 }, () => 0), 48_000, 1_024, 12).every((level) => level === 0)
+);
+
 const reportedVentingPhrase = authoredPhrases.find((phrase) =>
   phrase?.de === "Der Tag war einfach nur zum Kotzen."
 );
@@ -217,6 +245,29 @@ if (reportedVentingPhrase) {
     "Exam mode keeps the complete bad-day sentence as its target",
     exam.de === standard && exam.short === spoken && exam.long === undefined,
     `found ${JSON.stringify(exam)}`
+  );
+}
+
+const reportedGoingOutPhrase = authoredPhrases.find((phrase) =>
+  phrase?.de === "So kannst du da nicht hingehen."
+);
+
+check("the reported going-out phrase still exists", Boolean(reportedGoingOutPhrase));
+check(
+  "the blunter going-out alternative is labelled as parent-specific rather than generic speech",
+  reportedGoingOutPhrase?.short === "So gehst du nicht raus."
+    && reportedGoingOutPhrase?.shortLabel === "Parents often say"
+    && String(reportedGoingOutPhrase?.use ?? "").includes("especially associated with a parent"),
+  `found ${JSON.stringify(reportedGoingOutPhrase)}`
+);
+if (reportedGoingOutPhrase) {
+  const conversation = phraseForLearningMode(reportedGoingOutPhrase, "conversation");
+  check(
+    "Conversation mode keeps the neutral full target while preserving the contextual parent alternative",
+    conversation.de === "So kannst du da nicht hingehen."
+      && conversation.short === "So gehst du nicht raus."
+      && conversation.shortLabel === "Parents often say",
+    `found ${JSON.stringify(conversation)}`
   );
 }
 
@@ -626,6 +677,8 @@ check(
 
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
 const muteButtonSource = fs.readFileSync(path.join(root, "src/components/MuteButton.tsx"), "utf8");
+const ttsWaveformSource = fs.readFileSync(path.join(root, "src/components/TtsWaveform.tsx"), "utf8");
+const voiceSource = fs.readFileSync(path.join(root, "src/lib/voice.ts"), "utf8");
 const guidedStyles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsView.tsx"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -662,6 +715,26 @@ const mutedMasteredLessonPhases = buildSentencePhaseRoute({
   bilingual: false,
   audioMuted: true,
 });
+
+check(
+  "Stage 5 waveforms use the playing clip's real frequency spectrum instead of a scrolling fake",
+  voiceSource.includes("getByteFrequencyData(frequencySamples)")
+    && voiceSource.includes("speechSpectrumFromFft(")
+    && voiceSource.includes("analyser.fftSize = 1024")
+    && ttsWaveformSource.includes("detail.spectrum")
+    && ttsWaveformSource.includes("resampleSpectrum(spectrum, bars)")
+    && !ttsWaveformSource.includes("history.shift()")
+);
+check(
+  "Hear it stays visually steady while TTS is playing",
+  !guidedStyles.includes("fsListenPulse")
+    && !guidedStyles.includes(".fs-listen.is-speaking .fs-listen-icon { animation")
+);
+check(
+  "context-specific spoken alternatives can replace the generic People say label",
+  guidedSource.includes("shortLabel ? uiOr(shortLabel")
+    && guidedSource.includes("shortLabel={learnEn ? undefined : item.shortLabel}")
+);
 
 check(
   "guided lesson routes omit the temporarily disabled speaking stage",

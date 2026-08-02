@@ -28,6 +28,10 @@ export interface Phrase {
   /** Shorter colloquial form people actually say out loud, for longer phrases
    *  (e.g. "Ich weiß es nicht" → "Weiß nicht"). Omitted when already short. */
   short?: string;
+  /** Optional learner-facing context for a `short` alternative that is natural
+   *  but belongs to a specific speaker or situation (for example, something
+   *  parents often say) rather than neutral conversation in general. */
+  shortLabel?: string;
   /** English for `short`, and ONLY what the short form actually says.
    *  "Zu teuer." means "Too expensive." — not "I don't want to buy that, it's
    *  too expensive", which is the full sentence's meaning. Without this the

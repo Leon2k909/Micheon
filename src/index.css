@@ -2243,8 +2243,6 @@ a { color: inherit; text-decoration: none; }
 .fs-listen-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--fs-grad); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 9px 19px rgba(71,25,151,0.24); }
 .fs-listen strong { color: var(--fs-text); font-size: 13px; display: block; text-align: left; }
 .fs-listen small { color: var(--fs-muted); font-size: 10px; display: block; text-align: left; }
-.fs-listen.is-speaking .fs-listen-icon { animation: fsListenPulse 0.82s ease-in-out infinite; }
-@keyframes fsListenPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 0 24px rgba(139,76,255,0.34); } }
 
 /* grade pills (Know it / Struggle) restyled for dark */
 .guided-session .grade-btn {
@@ -2490,7 +2488,6 @@ a { color: inherit; text-decoration: none; }
   transition: transform 70ms linear, opacity 120ms ease;
   will-change: transform;
 }
-.fs-listening-prompt.is-speaking .fs-listening-disc { animation: fsListenPulse 0.82s ease-in-out infinite; }
 .fs-listening-wave[data-audio-reactive="true"] i { opacity: 1; }
 
 .fs-listening-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }

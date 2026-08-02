@@ -88,7 +88,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     return "learning";
   };
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number, shortLabel?: string) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -101,7 +101,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const progressRecord = findProgressRecord(reviewState, id, aliases);
     const item = {
       id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage,
-      short, when, say, long, group, lessonPriority, partKey,
+      short, shortLabel, when, say, long, group, lessonPriority, partKey,
       kind: lookup ? "vocab" : "phrase",
       level: part.level, mastery: masteryOf(progressRecord),
     };
@@ -185,7 +185,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       lessonPhrase.say,
       lessonPhrase.long,
       lessonPhrase.group,
-      lessonPhrase.lessonPriority
+      lessonPhrase.lessonPriority,
+      lessonPhrase.shortLabel
     );
   });
 
@@ -236,7 +237,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
         line.say,
         line.long,
         line.group,
-        line.lessonPriority
+        line.lessonPriority,
+        line.shortLabel
       );
     });
   });
@@ -497,6 +499,7 @@ export type CatalogItem = {
   use?: string;
   fr?: string;
   short?: string;
+  shortLabel?: string;
   when?: string;
   say?: string;
   long?: string;
@@ -529,7 +532,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     lookup?: string,
     aliases: string[] = [],
     use?: string,
-    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "when" | "say" | "long" | "group" | "lessonPriority">> = {}
+    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "shortLabel" | "when" | "say" | "long" | "group" | "lessonPriority">> = {}
   ) => {
     const key = de.trim().toLowerCase();
     if (!de.trim() || seen.has(key)) return;
@@ -557,6 +560,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     push(catalogPhrase.de, catalogPhrase.en, ph.id ?? `${partKey}-phrase-${i}`, "phrase", undefined, [], catalogPhrase.use, {
       fr: catalogPhrase.fr,
       short: catalogPhrase.short,
+      shortLabel: catalogPhrase.shortLabel,
       when: catalogPhrase.when,
       say: catalogPhrase.say,
       long: catalogPhrase.long,
@@ -574,6 +578,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
       push(catalogLine.de, catalogLine.en, id, "dialogue", undefined, [`${partKey}-dlg-${di}-${li}`, legacyDialogueId], catalogLine.use, {
         fr: catalogLine.fr,
         short: catalogLine.short,
+        shortLabel: catalogLine.shortLabel,
         when: catalogLine.when,
         say: catalogLine.say,
         long: catalogLine.long,

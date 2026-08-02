@@ -102,6 +102,7 @@ const DE: Record<string, string> = {
   "Sie · polite — strangers, staff, elders": "Sie · höflich — Fremde, Personal und ältere Menschen",
   "Natural form people commonly use in conversation": "Natürliche Form, die im Gespräch häufig verwendet wird",
   "People say": "Im Gespräch sagt man",
+  "Parents often say": "Eltern sagen oft",
   "Mark known and skip to the next item. Shortcut Alt K": "Als bekannt markieren und zum nächsten Eintrag springen. Kürzel Alt K",
   "Mark this item as a struggle. Shortcut Alt S": "Als schwierig markieren. Kürzel Alt S",
   "Marked as struggle. This item will stay in practice instead of being skipped next time.": "Als schwierig markiert. Dieser Eintrag bleibt für die nächste Übung eingeplant.",
