@@ -4655,8 +4655,10 @@ a { color: inherit; text-decoration: none; }
   color: #9d3446;
 }
 
-/* The dashboard uses a real German flag rather than a green DE abbreviation. */
-.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german {
+/* Real language flags share one neutral shell so the active answer colour
+   stays on the field instead of tinting either flag badge. */
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german,
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-english {
   border: 1px solid rgba(59, 62, 55, 0.16);
   background: #fff;
   box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
@@ -4673,10 +4675,8 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.18), 0 2px 5px rgba(52, 50, 43, 0.18);
 }
 
-/* The English side of the prompt badge mirrors the German flag disc, but the
-   flag follows the profile's English-variant setting (Union Jack simplified to
-   its cross and saltire; Stars and Stripes to stripes plus canton — 26px has no
-   room for stars). */
+/* The English flag follows the profile's variant setting. The small disc uses
+   a simplified Union Jack or Stars and Stripes so both stay legible at 26px. */
 .guided-session.fs-app.prototype-guided-session .fs-english-flag {
   position: relative;
   width: 26px;

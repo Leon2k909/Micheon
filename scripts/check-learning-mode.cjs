@@ -789,12 +789,17 @@ check(
     && guidedSource.includes("Ä Alt + 0196 · Ö Alt + 0214 · Ü Alt + 0220")
     && guidedSource.includes("Windows number pad")
 );
+const promptLanguageFlagShell = guidedStyles.match(
+  /\.fs-prompt \.fs-prompt-language\.is-german,\s*[\s\S]*?\.fs-prompt \.fs-prompt-language\.is-english\s*\{([^}]*)\}/u
+)?.[1] ?? "";
 check(
-  "German answer prompts use the dashboard-style flag instead of a DE tile",
+  "answer prompts use neutral dashboard-style language flags",
   guidedSource.includes('function PromptLanguageBadge(')
     && guidedSource.includes('className="fs-german-flag"')
+    && guidedSource.includes('"fs-english-flag"')
     && !guidedSource.includes('<span>{learnEn ? "EN" : "DE"}</span>')
-    && guidedStyles.includes(".fs-prompt .fs-prompt-language.is-german")
+    && promptLanguageFlagShell.includes("background: #fff;")
+    && !promptLanguageFlagShell.includes("var(--fs-grad)")
 );
 const audibleSettings = {
   muted: false,
