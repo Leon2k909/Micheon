@@ -37,6 +37,7 @@ let petOverlayDragging = false;
 let petOverlayDragDesktopBounds = null;
 let petOverlayDragTimer = null;
 let petOverlayDragWatchdog = null;
+let petGameZOrderTimer = null;
 let petOverlayHitRegions = [];
 /** Geometry of the shape currently applied, so identical updates are skipped. */
 let petOverlayShapeSignature = null;
@@ -56,6 +57,7 @@ const PET_OVERLAY_RECENTER_INSET = 48;
 const PET_OVERLAY_INITIAL_WIDTH = 480;
 const PET_OVERLAY_INITIAL_HEIGHT = 560;
 const PET_OVERLAY_CURSOR_INTERVAL_MS = 16;
+const PET_GAME_Z_ORDER_INTERVAL_MS = 2000;
 // The history is its own deliberately small compositor surface. Its React
 // panel is 620x560 with eight pixels of transparent breathing room per side.
 // Never merge these bounds with the mascot overlay: the empty union between a
@@ -78,12 +80,49 @@ function keepPetSurfaceOnTop(window, moveToFront = false) {
   if (!window || window.isDestroyed() || petDisplayMode === "app") return;
   const level = petDisplayMode === "games" ? PET_GAME_TOP_LEVEL : PET_DESKTOP_TOP_LEVEL;
   window.setAlwaysOnTop(true, level);
-  // Game mode opts into fullscreen workspaces. Desktop mode remains above
-  // ordinary apps without requesting the more aggressive fullscreen layer.
-  window.setVisibleOnAllWorkspaces(true, {
-    visibleOnFullScreen: petDisplayMode === "games",
-  });
+  // Electron's workspace API is useful on macOS/Linux but explicitly does
+  // nothing on Windows. Windows game mode is maintained separately below.
+  if (process.platform !== "win32") {
+    window.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: petDisplayMode === "games",
+    });
+  }
   if (moveToFront && window.isVisible()) window.moveTop();
+}
+
+function stopPetGameZOrderWatchdog() {
+  if (petGameZOrderTimer) clearInterval(petGameZOrderTimer);
+  petGameZOrderTimer = null;
+}
+
+function shouldMaintainPetGameZOrder() {
+  return process.platform === "win32"
+    && petDisplayMode === "games"
+    && petWindow
+    && !petWindow.isDestroyed()
+    && petWindow.isVisible()
+    && (!mainWindow || mainWindow.isDestroyed() || !mainWindow.isFocused());
+}
+
+function syncPetGameZOrderWatchdog() {
+  stopPetGameZOrderWatchdog();
+  if (!shouldMaintainPetGameZOrder()) return;
+
+  // Fullscreen-windowed games such as Fortnite can make their own window
+  // topmost after Micheon's one-off blur/minimize hand-off has finished. Keep
+  // the mascot at the front of that same topmost band without taking focus or
+  // touching the game process. One native z-order call every two seconds is
+  // deliberately tiny and only runs while a visible pet is in Games mode and
+  // Micheon itself is inactive.
+  petGameZOrderTimer = setInterval(() => {
+    if (!shouldMaintainPetGameZOrder()) {
+      stopPetGameZOrderWatchdog();
+      return;
+    }
+    keepPetSurfaceOnTop(petWindow, true);
+    if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
+  }, PET_GAME_Z_ORDER_INTERVAL_MS);
+  petGameZOrderTimer.unref?.();
 }
 
 function reassertPetSurfacesAfterAppDeactivation() {
@@ -98,6 +137,7 @@ function reassertPetSurfacesAfterAppDeactivation() {
     }, delay);
     timer.unref?.();
   }
+  syncPetGameZOrderWatchdog();
 }
 
 // Only allow one instance — a second launch focuses the existing window instead
@@ -752,6 +792,7 @@ function createPetOverlayWindow() {
   loadPetOverlay();
   overlay.on("closed", () => {
     if (petWindow !== overlay) return;
+    stopPetGameZOrderWatchdog();
     clearPetOverlayDestroyTimer();
     clearPetOverlayGeometryTransitionTimer();
     stopPetOverlayCursorTracking();
@@ -1031,16 +1072,19 @@ function setPetOverlayDisplayMode(mode) {
   }
 
   if (next === "app") {
+    stopPetGameZOrderWatchdog();
     setPetOverlayVisible(false);
     return;
   }
 
   keepPetSurfaceOnTop(petWindow, true);
   if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
+  syncPetGameZOrderWatchdog();
 }
 
 function setPetOverlayVisible(visible) {
   if (!visible || petDisplayMode === "app") {
+    stopPetGameZOrderWatchdog();
     closePetHistoryWindow();
     finishPetOverlayDrag();
     finishPetOverlayGeometryTransition();
@@ -1086,6 +1130,7 @@ function setPetOverlayVisible(visible) {
   // The permanent did-finish-load listener sends this after recovery. Sending
   // here as well is only needed for an already healthy renderer.
   if (petOverlayLoaded && !overlay.webContents.isLoading()) requestResync();
+  syncPetGameZOrderWatchdog();
 }
 
 function eventCameFrom(event, window) {
@@ -1133,6 +1178,7 @@ async function createWindow() {
   mainWindow.on("unmaximize", sendMaxState);
   mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation);
   mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation);
+  mainWindow.on("focus", stopPetGameZOrderWatchdog);
 
   // Open external links (http/https to other sites) in the user's real browser
   // instead of inside the app window.
@@ -1145,6 +1191,7 @@ async function createWindow() {
   });
 
   mainWindow.on("closed", () => {
+    stopPetGameZOrderWatchdog();
     mainWindow = null;
     clearPetHistoryDestroyTimer();
     if (petHistoryWindow && !petHistoryWindow.isDestroyed()) petHistoryWindow.destroy();

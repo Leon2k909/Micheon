@@ -58,7 +58,8 @@ check("game-visible pets use the strongest ordinary Windows level", electronMain
 check("only game-visible pets opt into fullscreen workspaces", electronMain.includes('visibleOnFullScreen: petDisplayMode === "games"'));
 check("Micheon-only pets do not open the desktop overlay", electronMain.includes('if (petDisplayMode === "app")') && electronMain.includes("setPetOverlayVisible(false)"));
 check("pet overlays reassert their z-order after Micheon deactivates", electronMain.includes('mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation)') && electronMain.includes('mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation)'));
-check("pet z-order recovery is bounded rather than a permanent polling loop", petReassertion.includes("for (const delay of [80, 700])") && petReassertion.includes("setTimeout") && !petReassertion.includes("setInterval"));
+check("immediate pet z-order recovery remains bounded", petReassertion.includes("for (const delay of [80, 700])") && petReassertion.includes("setTimeout") && !petReassertion.includes("setInterval"));
+check("Windows game z-order maintenance is low-frequency and tightly scoped", electronMain.includes("const PET_GAME_Z_ORDER_INTERVAL_MS = 2000;") && electronMain.includes('process.platform === "win32"') && electronMain.includes('petDisplayMode === "games"') && electronMain.includes("petWindow.isVisible()") && electronMain.includes("!mainWindow.isFocused()") && electronMain.includes("mainWindow.on(\"focus\", stopPetGameZOrderWatchdog)") && /stopPetGameZOrderWatchdog\(\);\r?\n\s+closePetHistoryWindow\(\);/.test(electronMain));
 
 check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={displayedProgress}"));
 check("course progress animates from empty", prototype.includes("<motion.span") && prototype.includes("scaleX: displayedProgress / 100") && prototype.includes("scaleX: 0"));
