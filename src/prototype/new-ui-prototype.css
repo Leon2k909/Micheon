@@ -4074,6 +4074,36 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   }
 }
 
+@media (max-width: 1024px) and (min-width: 761px) {
+  .np-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 14px;
+  }
+
+  .np-greeting {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .np-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .np-header-stats {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .np-stat-chip {
+    min-width: 0;
+  }
+}
+
 @media (max-width: 760px) {
   html.is-ui-prototype,
   html.is-ui-prototype body,
