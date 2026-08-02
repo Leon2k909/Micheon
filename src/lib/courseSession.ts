@@ -47,8 +47,8 @@ function editDistance(a: string, b: string): number {
 }
 
 function typoHint(input: string, target: string): CodeCheck["typoHint"] {
-  const inputWords = input.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) ?? [];
-  const targetWords = target.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) ?? [];
+  const inputWords: string[] = input.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) ?? [];
+  const targetWords: string[] = target.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) ?? [];
   for (const typed of inputWords) {
     if (targetWords.includes(typed)) continue;
     const expected = targetWords.find((word) => word.length >= 4 && editDistance(typed, word) <= 2);

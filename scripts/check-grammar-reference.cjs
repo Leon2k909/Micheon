@@ -158,10 +158,10 @@ for (const [label, pattern] of misleadingClaims) {
 
 check(
   "grammar data is exported as reviewed hardcoded arrays",
-  /export const GRAMMAR_TIPS\s*=\s*\[/u.test(source)
-    && /export const ENGLISH_GRAMMAR_TIPS\s*=\s*\[/u.test(source)
-    && /export const CLOZE_EXERCISES\s*=\s*\[/u.test(source)
-    && /export const ENGLISH_CLOZE_EXERCISES\s*=\s*\[/u.test(source)
+  /export const GRAMMAR_TIPS(?:\s*:\s*GrammarTip\[\])?\s*=\s*\[/u.test(source)
+    && /export const ENGLISH_GRAMMAR_TIPS(?:\s*:\s*GrammarTip\[\])?\s*=\s*\[/u.test(source)
+    && /export const CLOZE_EXERCISES(?:\s*:\s*ClozeExercise\[\])?\s*=\s*\[/u.test(source)
+    && /export const ENGLISH_CLOZE_EXERCISES(?:\s*:\s*ClozeExercise\[\])?\s*=\s*\[/u.test(source)
 );
 
 if (failures) {

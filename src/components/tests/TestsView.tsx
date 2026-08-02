@@ -1727,7 +1727,7 @@ export function TestsView({
               {isParagraph ? (
                 <textarea
                   autoFocus
-                  ref={answerInputRef}
+                  ref={(element) => { answerInputRef.current = element; }}
                   className={cn(
                     "min-h-40 w-full resize-y rounded-[18px] border-2 bg-[var(--surface)] px-5 py-4 text-base font-bold leading-7 text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
                     feedback
@@ -1745,7 +1745,7 @@ export function TestsView({
               ) : (
                 <input
                   autoFocus
-                  ref={answerInputRef}
+                  ref={(element) => { answerInputRef.current = element; }}
                   className={cn(
                     "h-16 w-full rounded-[18px] border-2 bg-[var(--surface)] px-5 text-lg font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)]",
                     feedback

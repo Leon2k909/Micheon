@@ -52,7 +52,7 @@ export type GameContentEntry = CatalogItem & {
   letters: string[];
   target: string;
   targetLanguage: "de" | "en";
-  targetLocale: "de-DE" | "en-US";
+  targetLocale: "de-DE" | "en-GB" | "en-US";
 };
 
 type GameContentContextValue = {

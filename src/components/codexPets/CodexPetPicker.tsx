@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, EyeOff, Loader2, MessageSquare, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, EyeOff, Loader2, MessageSquare, Pencil, RefreshCw, Trash2 } from "lucide-react";
 
 import { CodexPetSprite } from "@/components/codexPets/CodexPetSprite";
 import { PetGallery } from "@/components/codexPets/PetGallery";
@@ -29,6 +29,7 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [galleryRevision, setGalleryRevision] = useState(0);
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const {
     error,
     isLoading,
@@ -183,7 +184,7 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
                       id: pet.id,
                       key,
                       name: petDisplayName(key, pet.displayName),
-                      source: pet.source,
+                      source: pet.source === "custom" ? "custom" : "micheon-custom",
                     });
                   }}
                   title={ui("Delete this user-managed pet")}
@@ -258,7 +259,18 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
           {error ? ui(error) : ui("No mascot pets are available.")}
         </p>
       )}
-      <PetGallery key={galleryRevision} onInstalled={() => void refresh()} />
+      {galleryOpen ? (
+        <PetGallery key={galleryRevision} onInstalled={() => void refresh()} />
+      ) : (
+        <button
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm font-black text-[var(--text-2)] transition-colors hover:border-[var(--accent)]/45 hover:text-[var(--accent)]"
+          onClick={() => setGalleryOpen(true)}
+          type="button"
+        >
+          <Download className="h-4 w-4" />
+          {ui("Get more pets")}
+        </button>
+      )}
 
       {deleteCandidate && (
         <div

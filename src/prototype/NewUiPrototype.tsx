@@ -240,12 +240,21 @@ const LESSONS = [
 const SHOP_PURCHASES_KEY = "prototypeShopPurchases";
 const SHOP_EQUIPPED_KEY = "prototypeShopEquippedBadge";
 
-const COIN_PACKS = [
+type CoinPack = {
+  id: string;
+  coins: number;
+  price: string;
+  label: string;
+  note: string;
+  featured?: boolean;
+};
+
+const COIN_PACKS: readonly CoinPack[] = [
   { id: "pocket", coins: 500, price: "£1.99", label: "Pocket pack", note: "A small boost for profile rewards." },
   { id: "popular", coins: 1_200, price: "£3.99", label: "Popular pack", note: "Enough for several pins and future rewards.", featured: true },
   { id: "power", coins: 3_000, price: "£7.99", label: "Power pack", note: "A bigger balance for regular learners." },
   { id: "vault", coins: 6_500, price: "£14.99", label: "Coin vault", note: "The largest preview bundle in the shop." },
-] as const;
+];
 
 const SHOP_ITEMS: ReadonlyArray<{
   id: ShopBadgeId;
@@ -1276,7 +1285,7 @@ function HomeView({
   vocab: number;
 }) {
   const needsStartingPoint = Boolean(profile)
-    && loadScopedJson("german-lab-placement-done", false, profile) !== true;
+    && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
     ? loadScopedJson<string | null>("german-lab-placement-result", null, profile)
     : null;

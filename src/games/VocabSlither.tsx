@@ -720,7 +720,7 @@ export default function VocabSlither() {
     updateBots(timestamp, deltaSeconds);
 
     // Food Collision (Optimized distance check)
-    const nextFood = [];
+    const nextFood: Food[] = [];
     let queuedEnglishTarget: GameContentEntry | null = null;
     for (const f of foodRef.current) {
         const dx = head.x - f.x;

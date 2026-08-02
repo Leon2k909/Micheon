@@ -938,7 +938,7 @@ function reduceForMeaning(s: string): string {
 export function matchEnglishPhrase(
   input: string,
   target: string
-): { ok: boolean; spellingNote: boolean; phrasingNote?: boolean } {
+): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
   // "A / B" answer keys offer alternatives — accept a match against either
   // side (or the whole thing). Recurse per segment, slash-free.
   if (/\//.test(String(target ?? ""))) {

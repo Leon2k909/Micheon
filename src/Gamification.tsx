@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -138,7 +138,7 @@ function DeferredProfileSection({
       if (!entry?.isIntersecting) return;
       observer.disconnect();
       reveal();
-    }, { rootMargin: "1200px 0px", threshold: 0.01 });
+    }, { rootMargin: "0px", threshold: 0.01 });
     observer.observe(anchor);
     return () => observer.disconnect();
   }, [onReveal, revealed]);
@@ -531,33 +531,42 @@ export default function GamificationPanel({
   const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
   const catalogueReady = Object.keys(apiParts).length > 0;
+  const [trackerRequested, setTrackerRequested] = useState(false);
+  const [trackerPrepared, setTrackerPrepared] = useState(false);
+  const requestVocabTracker = useCallback(() => {
+    setTrackerRequested(true);
+    onRequestCatalogue?.();
+  }, [onRequestCatalogue]);
 
-  // Keep the first profile paint cheap, then fetch the catalogue and tracker
-  // chunk while the learner is still reading the sections above it.
+  // Preload only the small tracker component while the browser is idle. The
+  // multi-megabyte lesson catalogue stays deferred until its section is
+  // actually reached.
   useEffect(() => {
     if (!profileOnly) return undefined;
     return scheduleProfileIdleWork(() => {
-      onRequestCatalogue?.();
       void loadVocabTrackerModule();
     });
-  }, [onRequestCatalogue, profileOnly]);
+  }, [profileOnly]);
 
-  // Catalogue ranking and search indexing used to start only after the tracker
-  // entered the viewport. Preparing the cached result in idle time removes the
-  // long loader and main-thread hitch when scrolling down to the section.
+  // Once the learner reaches the tracker, build its immutable indexes during
+  // browser idle time before mounting the interactive list. This avoids a
+  // visible main-thread hitch in the middle of a scroll.
   useEffect(() => {
-    if (!profileOnly || !catalogueReady) return undefined;
+    if (!profileOnly || !trackerRequested || !catalogueReady) return undefined;
     let cancelled = false;
+    setTrackerPrepared(false);
     const cancelIdle = scheduleProfileIdleWork(() => {
       void loadVocabTrackerModule().then((module) => {
-        if (!cancelled) module.prepareVocabTrackerData(apiParts);
+        if (cancelled) return;
+        module.prepareVocabTrackerData(apiParts);
+        setTrackerPrepared(true);
       });
     });
     return () => {
       cancelled = true;
       cancelIdle();
     };
-  }, [apiParts, catalogueReady, profileOnly]);
+  }, [apiParts, catalogueReady, profileOnly, trackerRequested]);
 
   const saveName = () => {
     if (!newName.trim()) return;
@@ -886,9 +895,9 @@ export default function GamificationPanel({
         <DeferredProfileSection
           fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
           minHeight={360}
-          onReveal={onRequestCatalogue}
+          onReveal={requestVocabTracker}
         >
-          {catalogueReady ? (
+          {catalogueReady && trackerPrepared ? (
             <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
               <VocabTracker apiParts={apiParts} user={user} />
             </Suspense>

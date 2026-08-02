@@ -6,6 +6,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 const gamification = read("src/Gamification.tsx");
 const vocabTracker = read("src/components/lab/VocabTracker.tsx");
+const petPicker = read("src/components/codexPets/CodexPetPicker.tsx");
 const dashboardArtwork = [
   "src/prototype/assets/micheon-hero-v3.webp",
   "src/prototype/assets/achievements-v1/achievement-atlas-v3.webp",
@@ -60,12 +61,16 @@ check(
     && prototype.includes("void loadGamificationPanel()"),
 );
 check(
-  "heavy profile tools stay deferred while the tracker prewarms before scrolling",
+  "heavy profile tools stay deferred until the learner reaches or opens them",
   gamification.includes('lazy(() => import("@/components/codexPets/CodexPetPicker")')
     && gamification.includes('const loadVocabTrackerModule = () => import("@/components/lab/VocabTracker")')
-    && gamification.includes('rootMargin: "1200px 0px"')
+    && gamification.includes('rootMargin: "0px"')
+    && gamification.includes("const [trackerRequested, setTrackerRequested] = useState(false)")
+    && gamification.includes("if (!profileOnly || !trackerRequested || !catalogueReady)")
     && gamification.includes("module.prepareVocabTrackerData(apiParts)")
-    && gamification.includes("onReveal={onRequestCatalogue}"),
+    && gamification.includes("onReveal={requestVocabTracker}")
+    && petPicker.includes("galleryOpen ? (")
+    && petPicker.includes("onClick={() => setGalleryOpen(true)}"),
 );
 check(
   "the tracker reuses idle-prepared search and priority indexes on first view",

@@ -452,7 +452,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
           }, delay);
         }
       } finally {
-        if (catalogRefreshInFlight.current === request) catalogRefreshInFlight.current = null;
+        catalogRefreshInFlight.current = null;
         setIsLoading(false);
       }
     })();

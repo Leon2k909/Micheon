@@ -4,6 +4,9 @@ export interface VocabSeed {
   fallbackEn: string;
   tip?: string;
   article?: string;
+  use?: string;
+  when?: string;
+  say?: string;
 }
 
 export interface DialogueLine {
@@ -11,6 +14,11 @@ export interface DialogueLine {
   de: string;
   en: string;
   fr?: string;
+  use?: string;
+  when?: string;
+  say?: string;
+  long?: string;
+  id?: string;
 }
 
 export interface Dialogue {
@@ -21,7 +29,7 @@ export interface Dialogue {
 export interface Phrase {
   de: string;
   en: string;
-  use: string;
+  use?: string;
   /** Related phrases learned together, e.g. several ways to say goodbye. */
   group?: string;
   fr?: string;

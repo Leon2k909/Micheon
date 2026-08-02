@@ -938,7 +938,7 @@ export function CodexPetLayer() {
   // Measured while it is open, and again whenever its contents change — a
   // question adds answer buttons, and a long message wraps.
   useEffect(() => {
-    const targets: [HTMLDivElement | null, (size: { height: number; width: number }) => void][] = [
+    const targets: [HTMLDivElement | null, React.Dispatch<React.SetStateAction<{ height: number; width: number }>>][] = [
       [menuMotionRef.current, setMenuSize],
       [speechMotionRef.current, setBubbleSize],
     ];

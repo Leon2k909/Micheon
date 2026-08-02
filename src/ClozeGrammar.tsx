@@ -6,8 +6,26 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, ChevronRight, Lightbulb, BookOpen, Search } from "lucide-react";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
+type GrammarExample = { de: string; en: string };
+type GrammarTip = {
+  id: string;
+  title: string;
+  level: string;
+  summary: string;
+  rules: string[];
+  tip: string;
+  examples: GrammarExample[];
+};
+type ClozeExercise = {
+  id: string;
+  sentence: string;
+  answer: string;
+  hint: string;
+  tip_id: string;
+};
+
 // ── Grammar tips data ─────────────────────────────────────────────────────────
-export const GRAMMAR_TIPS = [
+export const GRAMMAR_TIPS: GrammarTip[] = [
   {
     id: "articles",
     title: "Nouns and articles: der, die, das",
@@ -719,7 +737,7 @@ export const GRAMMAR_TIPS = [
   },
 ];
 
-export const ENGLISH_GRAMMAR_TIPS = [
+export const ENGLISH_GRAMMAR_TIPS: GrammarTip[] = [
   {
     id: "articles",
     title: "Artikel: a, an und the",
@@ -1476,7 +1494,7 @@ export const ENGLISH_GRAMMAR_TIPS = [
   },
 ];
 
-export const ENGLISH_CLOZE_EXERCISES = [
+export const ENGLISH_CLOZE_EXERCISES: ClozeExercise[] = [
   { id: "en1", sentence: "I need ___ room.", answer: "a", hint: "Unbestimmter Artikel vor einem Konsonantenlaut", tip_id: "articles" },
   { id: "en2", sentence: "She has ___ idea.", answer: "an", hint: "Unbestimmter Artikel vor einem Vokallaut", tip_id: "articles" },
   { id: "en3", sentence: "___ room is ready.", answer: "The", hint: "Bestimmter Artikel", tip_id: "articles" },
@@ -1539,7 +1557,7 @@ export const ENGLISH_CLOZE_EXERCISES = [
 ];
 
 // ── Cloze exercises ───────────────────────────────────────────────────────────
-export const CLOZE_EXERCISES = [
+export const CLOZE_EXERCISES: ClozeExercise[] = [
   // Articles
   { id: "c1",  sentence: "___ Mann trinkt Kaffee.",        answer: "Der",    hint: "Masculine article", tip_id: "articles" },
   { id: "c2",  sentence: "___ Stadt ist groß.",            answer: "Die",    hint: "Feminine article",  tip_id: "articles" },
@@ -1593,7 +1611,7 @@ export const CLOZE_EXERCISES = [
   { id: "c46", sentence: "Heute ___ Pizza.", answer: "gibt's", hint: "Common spoken contraction of gibt es", tip_id: "spoken_reductions" },
 ];
 
-function normalize(t) {
+function normalize(t: unknown) {
   return String(t ?? "").toLowerCase().trim().replace(/[.!?,]/g, "");
 }
 
@@ -1605,8 +1623,8 @@ export function ClozeTab() {
   const [checked, setChecked] = useState(false);
   const [score, setScore] = useState(0);
   const [showTip, setShowTip] = useState(false);
-  const inputRef = useRef(null);
-  const timerRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const exercises = learnsEnglish ? ENGLISH_CLOZE_EXERCISES : CLOZE_EXERCISES;
   const tips = learnsEnglish ? ENGLISH_GRAMMAR_TIPS : GRAMMAR_TIPS;
@@ -1615,9 +1633,11 @@ export function ClozeTab() {
   const correct = normalize(input) === normalize(ex.answer);
 
   useEffect(() => { inputRef.current?.focus(); setShowTip(false); }, [index]);
-  useEffect(() => () => clearTimeout(timerRef.current), []);
+  useEffect(() => () => {
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+  }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (checked) return;
     const val = e.target.value;
     setInput(val);
@@ -1630,13 +1650,13 @@ export function ClozeTab() {
 
   const check = () => {
     if (!input.trim() || checked) return;
-    clearTimeout(timerRef.current);
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
     setChecked(true);
     if (correct) { setScore(s => s + 1); timerRef.current = setTimeout(() => next(), 1200); }
   };
 
   const next = useCallback(() => {
-    clearTimeout(timerRef.current);
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
     setIndex(i => i + 1);
     setInput("");
     setChecked(false);
@@ -1737,7 +1757,7 @@ export function ClozeTab() {
 // ── GrammarTab component ──────────────────────────────────────────────────────
 const GRAMMAR_LEVELS = ["All", "A1", "A2", "B1", "B2", "C1", "C2"];
 const GRAMMAR_LEVEL_RANK = new Map(GRAMMAR_LEVELS.map((item, index) => [item, index]));
-const orderGrammarTopics = (topics) => [...topics].sort(
+const orderGrammarTopics = (topics: GrammarTip[]) => [...topics].sort(
   (left, right) => (GRAMMAR_LEVEL_RANK.get(left.level) ?? 99) - (GRAMMAR_LEVEL_RANK.get(right.level) ?? 99)
 );
 const ORDERED_GERMAN_GRAMMAR_TIPS = orderGrammarTopics(GRAMMAR_TIPS);

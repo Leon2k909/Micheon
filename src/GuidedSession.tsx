@@ -4007,6 +4007,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
   const [checked, setChecked] = useState(false);
   const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const missingLineHandled = useRef(false);
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
   const learnEn = useMemo(() => learningEnglish(), []);
@@ -4024,16 +4025,28 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
     : "de-DE";
   const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);
 
-  useEffect(() => { if (line?.de) tts(line.de, 0.88, targetLang); }, [lineIdx]);
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, [lineIdx]);
-
-  if (!line) { onNext(); return null; }
+  useEffect(() => {
+    if (line?.de) tts(line.de, 0.88, targetLang);
+  }, [line?.de, targetLang]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => inputRef.current?.focus(), 80);
+    return () => window.clearTimeout(timer);
+  }, [lineIdx]);
+  useEffect(() => {
+    if (line) {
+      missingLineHandled.current = false;
+      return;
+    }
+    if (missingLineHandled.current) return;
+    missingLineHandled.current = true;
+    onNext();
+  }, [line, onNext]);
 
   const checkLine = () => {
     if (!input.trim() || checked) return;
     setChecked(true);
     onAnswer?.(result.ok);
-    tts(line.de, 0.88, targetLang);
+    tts(line?.de ?? "", 0.88, targetLang);
     if (result.ok) setTimeout(nextLine, 900);
   };
 
@@ -4046,7 +4059,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
   };
 
   useEffect(() => {
-    if (!checked && input.trim() && result.ok && !result.spellingNote) checkLine();
+    if (line && !checked && input.trim() && result.ok && !result.spellingNote) checkLine();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
 
@@ -4070,6 +4083,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!line) return;
       // The answer box keeps focus permanently now, so Alt combos must work
       // while "typing" — Alt+K/S never inserts a character anyway.
       if (!event.altKey) return;
@@ -4088,6 +4102,8 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lineGradeId, onGradeItem]);
+
+  if (!line) return null;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 w-full max-w-2xl">

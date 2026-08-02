@@ -418,10 +418,22 @@ app.use((req, res, next) => {
 
 // Start listening. Returns a promise that resolves once the server is up, so
 // callers (e.g. the Electron main process) can wait before loading the window.
-export function startServer(port = process.env.PORT || 3001) {
-  return new Promise((resolve) => {
-    const srv = app.listen(port, () => {
-      console.log(`germ TTS server listening on http://localhost:${port}`);
+export function startServer(port = process.env.PORT || 3001, host = "127.0.0.1") {
+  const resolvedPort = Number(port);
+  if (!Number.isInteger(resolvedPort) || resolvedPort < 0 || resolvedPort > 65_535) {
+    return Promise.reject(new RangeError(`Invalid server port: ${port}`));
+  }
+
+  return new Promise((resolve, reject) => {
+    const srv = app.listen(resolvedPort, host);
+    const onError = (error) => reject(error);
+
+    srv.once("error", onError);
+    srv.once("listening", () => {
+      srv.off("error", onError);
+      const address = srv.address();
+      const listeningPort = typeof address === "object" && address ? address.port : resolvedPort;
+      console.log(`germ TTS server listening on http://${host}:${listeningPort}`);
       resolve(srv);
     });
   });
