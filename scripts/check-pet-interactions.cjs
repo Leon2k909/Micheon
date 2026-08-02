@@ -284,13 +284,14 @@ check(
     && main.includes('if (!visible || petDisplayMode === "app") {')
 );
 check(
-  "game mode recovers when a fullscreen-windowed game takes the topmost slot later",
-  main.includes("const PET_GAME_Z_ORDER_INTERVAL_MS = 2000;")
-    && main.includes("function syncPetGameZOrderWatchdog()")
-    && main.includes("if (!shouldMaintainPetGameZOrder()) return;")
-    && main.includes("keepPetSurfaceOnTop(petWindow, true);")
-    && main.includes('mainWindow.on("focus", stopPetGameZOrderWatchdog)')
-    && /stopPetGameZOrderWatchdog\(\);\r?\n\s+closePetHistoryWindow\(\);/.test(main)
+  "game-visible pets use bounded non-focusing z-order recovery",
+  !main.includes("PET_GAME_Z_ORDER_INTERVAL_MS")
+    && !main.includes("syncPetGameZOrderWatchdog")
+    && main.includes("for (const delay of [80, 700])")
+    && main.includes("const petSurfaceTopLevels = new WeakMap();")
+    && main.includes("configuredLevel !== level || !window.isAlwaysOnTop()")
+    && main.includes("focusable: false")
+    && main.includes("overlay.showInactive()")
 );
 check(
   "native history uses OS header dragging without mascot overlay drag IPC",
