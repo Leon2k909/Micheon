@@ -67,6 +67,19 @@ function check(name, condition, detail = "") {
   console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
 }
 
+check(
+  "casual texting 'ik' and 'u' are accepted in an English meaning answer",
+  matchEnglishPhrase("ik what u mean", "I know what you mean.").ok
+);
+check(
+  "texting aliases remain whole-token only",
+  !matchEnglishPhrase("bike what under mean", "I know what you mean.").ok
+);
+check(
+  "texting aliases do not accept a changed meaning",
+  !matchEnglishPhrase("ik what i mean", "I know what you mean.").ok
+);
+
 const german = "Wir sind noch nicht komplett, einer kommt später.";
 const phrase = findPhrase(allPartBlueprints, german);
 check("the reported restaurant phrase still exists", Boolean(phrase));
