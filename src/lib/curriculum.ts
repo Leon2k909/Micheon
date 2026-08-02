@@ -188,6 +188,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part345",         // Änderungsschneiderei
   "part346",         // Das E-Auto laden
   "part347",         // Der Schrebergarten
+  "part348",         // Im Baumarkt
+  "part349",         // Strom anmelden
+  "part350",         // Impfen gehen
+  "part351",         // Serienabend
+  "part352",         // Winterdienst
+  "part353",         // Der Handyvertrag
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
