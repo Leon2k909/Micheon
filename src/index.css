@@ -3403,17 +3403,37 @@ a { color: inherit; text-decoration: none; }
   padding: 22px 24px;
   border: 1px solid rgba(36, 132, 48, 0.38);
   border-radius: 22px;
-  background-color: #2eac42;
-  background-image:
-    linear-gradient(90deg, rgba(31, 157, 53, 0.98) 0%, rgba(35, 164, 57, 0.94) 43%, rgba(40, 168, 61, 0.62) 62%, rgba(40, 168, 61, 0.12) 100%),
-    url("./prototype/assets/micheon-hero-v3.webp");
-  background-repeat: no-repeat;
-  background-position: center, right center;
-  background-size: 100% 100%, auto 110%;
+  background:
+    radial-gradient(circle at 6% 120%, rgba(8, 112, 31, 0.28), transparent 48%),
+    linear-gradient(110deg, #199d37 0%, #27aa41 48%, #45bd52 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 5px 0 rgba(34, 132, 47, 0.38),
     0 16px 28px rgba(48, 116, 42, 0.16);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: url("./prototype/assets/micheon-hero-v3.webp") right center / auto 112% no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, rgba(0, 0, 0, 0.18) 45%, rgba(0, 0, 0, 0.72) 58%, #000 68%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, rgba(0, 0, 0, 0.18) 45%, rgba(0, 0, 0, 0.72) 58%, #000 68%, #000 100%);
+  pointer-events: none;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-preview-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(13, 112, 34, 0.2) 0%, rgba(15, 121, 37, 0.08) 46%, transparent 72%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%, rgba(16, 101, 31, 0.12));
+  pointer-events: none;
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {
@@ -3807,10 +3827,19 @@ a { color: inherit; text-decoration: none; }
   color: #43a94c;
 }
 
-.guided-session.fs-app.prototype-guided-session :is(
-  .fs-meaning-prompt,
-  .fs-listening-prompt
-) {
+.guided-session.fs-app.prototype-guided-session .fs-meaning-prompt {
+  background: #fffefb;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 0 rgba(76, 104, 65, 0.12),
+    0 18px 32px rgba(77, 95, 62, 0.09);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-meaning-new {
+  color: #2c8f39;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-listening-prompt {
   background:
     radial-gradient(circle at 8% 12%, rgba(188, 238, 164, 0.3), transparent 34%),
     linear-gradient(145deg, #fbfff6, #f7f3e9);
@@ -3818,6 +3847,37 @@ a { color: inherit; text-decoration: none; }
     inset 0 1px 0 #fff,
     0 6px 0 rgba(54, 148, 62, 0.16),
     0 18px 32px rgba(77, 95, 62, 0.11);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-check {
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  background: var(--fs-grad);
+  color: #123c1a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 4px 0 #248831,
+    0 11px 20px rgba(42, 137, 53, 0.18);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-check:hover {
+  background: linear-gradient(135deg, #65d963 0%, #47c453 52%, #31aa40 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 6px 0 #248831,
+    0 15px 24px rgba(42, 137, 53, 0.22);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-check:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 1px 0 #248831,
+    0 6px 11px rgba(42, 137, 53, 0.16);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-check:disabled {
+  background: #91d694;
+  color: rgba(18, 60, 26, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 3px 0 #69b970;
 }
 
 .guided-session.fs-app.prototype-guided-session :is(
@@ -4411,11 +4471,12 @@ a { color: inherit; text-decoration: none; }
     min-height: 172px;
     padding: 17px 18px;
     border-radius: 17px;
-    background-image:
-      linear-gradient(90deg, rgba(31, 157, 53, 0.99) 0%, rgba(48, 178, 70, 0.96) 62%, rgba(48, 178, 70, 0.5) 100%),
-      url("./prototype/assets/micheon-hero-v3.webp");
-    background-position: center, right center;
-    background-size: 100% 100%, auto 110%;
+  }
+
+  .guided-session.fs-app.prototype-guided-session .fs-preview-head::before {
+    background-size: auto 108%;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.38) 55%, #000 70%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.38) 55%, #000 70%, #000 100%);
   }
 
   .guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {

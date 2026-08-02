@@ -17,6 +17,11 @@ const readme = read("README.md");
 const primaryNavigation = (/const NAVIGATION:[\s\S]*?\n\];/.exec(prototype) || [""])[0];
 const petReassertion = (/function reassertPetSurfacesAfterAppDeactivation\(\)[\s\S]*?^}/m.exec(electronMain) || [""])[0];
 const guidedCanvas = (/\.guided-session\.fs-app\.prototype-guided-session\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
+const previewHead = (/prototype-guided-session \.fs-preview-head\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
+const previewScene = (/prototype-guided-session \.fs-preview-head::before\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
+const meaningPrompt = (/prototype-guided-session \.fs-meaning-prompt\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
+const checkButton = (/prototype-guided-session \.fs-check\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
+const checkButtonHover = (/prototype-guided-session \.fs-check:hover\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 
 let failures = 0;
 
@@ -85,7 +90,10 @@ check("closed-book recall uses a high-contrast light learning surface", /prototy
 check("notifications close with a neutral icon action", prototype.includes('aria-label="Close notifications"') && prototype.includes('<X aria-hidden="true" />') && /\.np-notification-heading > button\s*\{[^}]*background:\s*var\(--np-surface-soft\);/s.test(styles));
 check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));
 check("the lesson preview reuses the lightweight homepage course scene", appStyles.includes('url("./prototype/assets/micheon-hero-v3.webp")'));
-check("the lesson preview fits the complete monkey at the right edge", /prototype-guided-session \.fs-preview-head\s*\{[^}]*background-position:\s*center,\s*right center;[^}]*background-size:\s*100% 100%,\s*auto 110%;/s.test(appStyles));
+check("the lesson preview blends its course scene without a centre seam", !previewHead.includes("url(") && previewScene.includes('url("./prototype/assets/micheon-hero-v3.webp") right center / auto 112% no-repeat') && previewScene.includes("-webkit-mask-image: linear-gradient"));
+check("the meaning question uses a clean solid learning surface", meaningPrompt.includes("background: #fffefb;") && !meaningPrompt.includes("gradient"));
+check("the meaning question label uses the Micheon green accent", /prototype-guided-session \.fs-meaning-new\s*\{[^}]*color:\s*#2c8f39;/s.test(appStyles));
+check("guided Check buttons use readable ink on a green tactile base with no inherited gold", checkButton.includes("color: #123c1a;") && checkButton.includes("0 4px 0 #248831") && checkButtonHover.includes("0 6px 0 #248831") && !`${checkButton}${checkButtonHover}`.includes("#a77b00"));
 check("the lesson preview exposes useful phrase and language context", guidedSession.includes('className="fs-preview-summary"') && guidedSession.includes('{cards.length} {ui("Phrases")}'));
 check("the lesson preview uses tactile numbered route steps", /prototype-guided-session \.fs-preview-route button\s*\{[^}]*height:\s*38px;[^}]*color:\s*#77786f;/s.test(appStyles));
 check("the lesson preview card has a stable content and helper hierarchy", guidedSession.includes('className="fs-flashcard-content"') && guidedSession.includes('className="fs-flashcard-footer"'));
