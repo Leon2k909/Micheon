@@ -2,9 +2,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const source = fs.readFileSync(path.resolve(__dirname, "../src/GuidedSession.tsx"), "utf8");
+const normalizedSource = source.replace(/\r\n?/gu, "\n");
 const renderTimeAdvance = /if\s*\(\s*!line\s*\)\s*\{\s*onNext\(\);\s*return null;\s*\}/u;
 
-if (renderTimeAdvance.test(source)) {
+if (renderTimeAdvance.test(normalizedSource)) {
   console.error("FAIL an empty dialogue advances the parent during React render");
   process.exit(1);
 }
@@ -17,7 +18,7 @@ const requiredGuards = [
 
 let failed = false;
 for (const [label, marker] of requiredGuards) {
-  if (source.includes(marker)) {
+  if (normalizedSource.includes(marker)) {
     console.log(`ok   ${label}`);
   } else {
     failed = true;
