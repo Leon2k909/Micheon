@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -50,15 +50,90 @@ import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
-import { CodexPetPicker } from "@/components/codexPets/CodexPetPicker";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
 import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
 import { ActivityCard } from "@/components/lab/ActivityCard";
-import { VocabTracker } from "@/components/lab/VocabTracker";
 import { cn } from "@/lib/utils";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
 import { ui, uiIsGerman } from "@/lib/i18n";
+
+const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
+  .then((module) => ({ default: module.CodexPetPicker })));
+const VocabTracker = lazy(() => import("@/components/lab/VocabTracker")
+  .then((module) => ({ default: module.VocabTracker })));
+
+function ProfileSectionLoading({ embedded = false, label }: { embedded?: boolean; label: string }) {
+  return (
+    <div
+      aria-label={label}
+      className={cn(
+        "flex min-h-[190px] flex-col justify-center overflow-hidden p-5 sm:p-6",
+        embedded ? "rounded-[24px] bg-[var(--surface-2)]" : "card"
+      )}
+      role="status"
+    >
+      <div className="h-4 w-36 rounded-full bg-[var(--surface-3)] motion-safe:animate-pulse" />
+      <div className="mt-3 h-3 w-64 max-w-full rounded-full bg-[var(--surface-3)] motion-safe:animate-pulse" />
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        {[0, 1, 2].map((item) => (
+          <span
+            aria-hidden="true"
+            className="h-14 rounded-[16px] bg-[var(--surface)] motion-safe:animate-pulse"
+            key={item}
+          />
+        ))}
+      </div>
+      <span className="sr-only">{label}</span>
+    </div>
+  );
+}
+
+function DeferredProfileSection({
+  children,
+  className,
+  fallback,
+  minHeight = 240,
+  onReveal,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  fallback: React.ReactNode;
+  minHeight?: number;
+  onReveal?: () => void;
+}) {
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    if (revealed) return undefined;
+    const anchor = anchorRef.current;
+    if (!anchor) return undefined;
+
+    const reveal = () => {
+      onReveal?.();
+      setRevealed(true);
+    };
+    if (!("IntersectionObserver" in window)) {
+      reveal();
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      reveal();
+    }, { rootMargin: "420px 0px", threshold: 0.01 });
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [onReveal, revealed]);
+
+  return (
+    <div className={className} ref={anchorRef} style={revealed ? undefined : { minHeight }}>
+      {revealed ? children : fallback}
+    </div>
+  );
+}
 
 export type GamificationStats = {
   totalXp: number;
@@ -384,6 +459,7 @@ export default function GamificationPanel({
   onUpdateStats,
   profileOnly = false,
   apiParts = {},
+  onRequestCatalogue,
   onSwitchCourse,
   activeCourseName = "German",
 }: {
@@ -392,6 +468,7 @@ export default function GamificationPanel({
   onUpdateStats?: (next: Partial<Stats>) => void;
   profileOnly?: boolean;
   apiParts?: Record<string, any>;
+  onRequestCatalogue?: () => void;
   onSwitchCourse?: () => void;
   activeCourseName?: string;
 }) {
@@ -431,6 +508,7 @@ export default function GamificationPanel({
   const words = (stats.totalReviews || 0) + (stats.externalWords || 0);
   const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
+  const catalogueReady = Object.keys(apiParts).length > 0;
 
   const saveName = () => {
     if (!newName.trim()) return;
@@ -694,9 +772,17 @@ export default function GamificationPanel({
 
             </div>
 
-            <div className="rounded-[24px] bg-[var(--surface-2)] p-5 lg:col-span-2">
-              <CodexPetPicker className="mt-0 border-t-0 pt-0" />
-            </div>
+            <DeferredProfileSection
+              className="lg:col-span-2"
+              fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}
+              minHeight={260}
+            >
+              <Suspense fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}>
+                <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+                  <CodexPetPicker className="mt-0 border-t-0 pt-0" />
+                </div>
+              </Suspense>
+            </DeferredProfileSection>
           </div>
         </section>
 
@@ -748,7 +834,19 @@ export default function GamificationPanel({
           </div>
         </section>
 
-        <VocabTracker apiParts={apiParts} user={user} />
+        <DeferredProfileSection
+          fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
+          minHeight={360}
+          onReveal={onRequestCatalogue}
+        >
+          {catalogueReady ? (
+            <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
+              <VocabTracker apiParts={apiParts} user={user} />
+            </Suspense>
+          ) : (
+            <ProfileSectionLoading label={ui("Loading vocabulary library")} />
+          )}
+        </DeferredProfileSection>
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
           <div>

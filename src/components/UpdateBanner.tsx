@@ -78,18 +78,9 @@ function UpdateInstallTakeover({
       role="dialog"
       transition={{ duration: reduceMotion ? 0.01 : 0.24 }}
     >
-      <div
-        aria-hidden="true"
-        className="micheon-update-takeover-glow micheon-update-takeover-glow--top absolute -left-24 -top-28 h-[420px] w-[420px] rounded-full blur-[110px]"
-      />
-      <div
-        aria-hidden="true"
-        className="micheon-update-takeover-glow micheon-update-takeover-glow--bottom absolute -bottom-32 -right-20 h-[440px] w-[440px] rounded-full blur-[120px]"
-      />
-
       <motion.section
         animate={{ scale: 1, y: 0 }}
-        className="micheon-update-install-card relative w-full max-w-[590px] overflow-hidden rounded-[32px] p-6 backdrop-blur-xl sm:p-9"
+        className="micheon-update-install-card relative w-full max-w-[590px] overflow-hidden rounded-[32px] p-6 sm:p-9"
         initial={reduceMotion ? undefined : { scale: 0.975, y: 18 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.16, 1, 0.3, 1] }}
       >

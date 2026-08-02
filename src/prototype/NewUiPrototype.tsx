@@ -38,6 +38,7 @@ import {
 import {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -74,7 +75,8 @@ import starReward from "./assets/rewards-v3/star.webp";
 import trophyReward from "./assets/rewards-v3/trophy.webp";
 import "./new-ui-prototype.css";
 
-const GamificationPanel = lazy(() => import("@/Gamification"));
+const loadGamificationPanel = () => import("@/Gamification");
+const GamificationPanel = lazy(loadGamificationPanel);
 const LearningLibraryView = lazy(() => import("@/components/lab/LearnView").then((module) => ({ default: module.LearnView })));
 const TestsView = lazy(() => import("@/components/tests/TestsView").then((module) => ({ default: module.TestsView })));
 const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
@@ -510,6 +512,7 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 function Header({
   equippedBadge,
   onNavigate,
+  onProfileIntent,
   onSearchOpen,
   searchCatalogLoading,
   searchItems,
@@ -520,6 +523,7 @@ function Header({
 }: {
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
+  onProfileIntent: () => void;
   onSearchOpen: () => void;
   searchCatalogLoading: boolean;
   searchItems: PrototypeSearchItem[];
@@ -763,11 +767,13 @@ function Header({
             aria-haspopup="menu"
             aria-label="Open profile menu"
             className={`np-profile-button${profileOpen ? " is-open" : ""}`}
+            onFocus={onProfileIntent}
             onClick={() => {
               closeSearch();
               setNotificationsOpen(false);
               setProfileOpen((open) => !open);
             }}
+            onPointerEnter={onProfileIntent}
             type="button"
           >
             <span className="np-profile-avatar-mark">
@@ -1804,6 +1810,7 @@ export default function NewUiPrototype({
   });
   const [partsRequested, setPartsRequested] = useState(false);
   const apiParts = usePrototypeParts(partsRequested);
+  const requestParts = useCallback(() => setPartsRequested(true), []);
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
   const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);
@@ -1856,11 +1863,36 @@ export default function NewUiPrototype({
   }, [sidebarWidth]);
 
   useEffect(() => {
+    let cancelled = false;
+    const warmProfile = () => {
+      if (!cancelled) void loadGamificationPanel();
+    };
+    const idleWindow = window as Window & typeof globalThis & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      const handle = idleWindow.requestIdleCallback(warmProfile, { timeout: 3500 });
+      return () => {
+        cancelled = true;
+        idleWindow.cancelIdleCallback?.(handle);
+      };
+    }
+
+    const timer = window.setTimeout(warmProfile, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!socialPreviewUnlocked && activeView === "social") setActiveView("home");
   }, [activeView, socialPreviewUnlocked]);
 
   const navigate = (view: PrototypeView) => {
-    if (["learn", "games", "tests", "profile"].includes(view)) setPartsRequested(true);
+    if (["learn", "games", "tests"].includes(view)) setPartsRequested(true);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -2045,19 +2077,18 @@ export default function NewUiPrototype({
   ) : activeView === "profile" ? (
     profile ? (
       <div className="np-feature-host">
-        {partsReady ? (
-          <Suspense fallback={<FeatureLoading />}>
-            <GamificationPanel
-              activeCourseName={activeCourseName}
-              apiParts={apiParts}
-              onSwitchCourse={() => setCourseSwitcherOpen(true)}
-              onUpdateStats={updateStats}
-              profileOnly
-              stats={stats}
-              user={profile}
-            />
-          </Suspense>
-        ) : <FeatureLoading />}
+        <Suspense fallback={<FeatureLoading />}>
+          <GamificationPanel
+            activeCourseName={activeCourseName}
+            apiParts={apiParts}
+            onRequestCatalogue={requestParts}
+            onSwitchCourse={() => setCourseSwitcherOpen(true)}
+            onUpdateStats={updateStats}
+            profileOnly
+            stats={stats}
+            user={profile}
+          />
+        </Suspense>
       </div>
     ) : <AccountGate onRequestSignIn={onRequestSignIn} />
   ) : (
@@ -2088,7 +2119,8 @@ export default function NewUiPrototype({
             <Header
               equippedBadge={equippedShopBadge}
               onNavigate={navigate}
-              onSearchOpen={() => setPartsRequested(true)}
+              onProfileIntent={() => { void loadGamificationPanel(); }}
+              onSearchOpen={requestParts}
               searchCatalogLoading={partsRequested && !partsReady}
               searchItems={searchItems}
               socialPreviewUnlocked={socialPreviewUnlocked}

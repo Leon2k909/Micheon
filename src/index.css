@@ -720,56 +720,41 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
    family as the prototype dashboard so restarting never feels like leaving
    Micheon for a separate installer. */
 .micheon-update-takeover {
-  --install-page: #edf8e8;
-  --install-surface: #fffdf8;
-  --install-surface-2: #f1f8eb;
-  --install-surface-3: #dce9d6;
-  --install-border: rgba(61, 110, 50, 0.2);
+  --install-page: #eef0ec;
+  --install-surface: #fbfaf7;
+  --install-surface-2: #f2f4ef;
+  --install-surface-3: #dfe3dc;
+  --install-border: rgba(58, 70, 55, 0.17);
   --install-text: #292725;
   --install-copy: #625e58;
   --install-muted: #6f776a;
   --install-accent: #46bd50;
   --install-accent-strong: #218c32;
   --install-accent-soft: #e2f6d8;
-  --install-shadow: rgba(52, 86, 43, 0.2);
+  --install-shadow: rgba(38, 48, 35, 0.17);
   color-scheme: light;
   color: var(--install-text);
   background:
-    radial-gradient(circle at 16% 8%, rgba(255, 239, 174, 0.55), transparent 29%),
-    radial-gradient(circle at 88% 88%, rgba(117, 211, 104, 0.34), transparent 35%),
-    linear-gradient(135deg, #fffdf5 0%, var(--install-page) 58%, #e3f5dd 100%);
+    radial-gradient(circle at 50% 41%, rgba(255, 255, 255, 0.96) 0%, rgba(248, 249, 246, 0.72) 30%, transparent 59%),
+    linear-gradient(180deg, #f5f6f3 0%, var(--install-page) 100%);
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
 .micheon-update-takeover::before {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(69, 128, 59, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(69, 128, 59, 0.035) 1px, transparent 1px);
-  background-size: 42px 42px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 30%, rgba(67, 75, 63, 0.035));
   content: "";
   pointer-events: none;
-  mask-image: radial-gradient(circle at center, #000, transparent 78%);
-}
-
-.micheon-update-takeover-glow--top {
-  background: rgba(255, 217, 89, 0.34);
-}
-
-.micheon-update-takeover-glow--bottom {
-  background: rgba(76, 190, 81, 0.34);
 }
 
 .micheon-update-install-card {
   border: 1px solid var(--install-border);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(219, 247, 207, 0.72), transparent 34%),
-    linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(255, 251, 243, 0.98));
+  background: linear-gradient(180deg, #fffefa 0%, var(--install-surface) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 6px 0 rgba(53, 126, 48, 0.13),
-    0 34px 90px var(--install-shadow);
+    0 4px 0 rgba(64, 91, 58, 0.1),
+    0 28px 72px var(--install-shadow);
 }
 
 .micheon-update-install-accent {
@@ -792,24 +777,24 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
 }
 
 .micheon-update-install-badge {
-  border: 1px solid rgba(53, 165, 61, 0.2);
+  border: 1px solid rgba(53, 132, 57, 0.18);
   color: var(--install-accent-strong);
-  background: linear-gradient(180deg, #effbe8, #e0f4d7);
-  box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(52, 133, 47, 0.1);
+  background: #eef5ea;
+  box-shadow: inset 0 1px 0 #fff;
 }
 
 .micheon-update-install-icon-shell {
-  border: 1px solid rgba(61, 133, 55, 0.18);
-  background: linear-gradient(180deg, #f3fbea, #deefd7);
+  border: 1px solid rgba(70, 82, 66, 0.16);
+  background: linear-gradient(180deg, #f6f7f3, #e9ece6);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 5px 0 rgba(48, 128, 48, 0.13),
-    0 18px 36px rgba(64, 104, 51, 0.13);
+    0 4px 0 rgba(61, 75, 57, 0.11),
+    0 16px 32px rgba(52, 61, 49, 0.13);
 }
 
 .micheon-update-install-icon-well {
-  background: linear-gradient(145deg, #d8f0cd, #f7fbef 52%, #bde5b6);
-  box-shadow: inset 0 0 0 1px rgba(58, 137, 54, 0.12);
+  background: linear-gradient(145deg, #e4e8e0, #fafaf7 54%, #dce2d8);
+  box-shadow: inset 0 0 0 1px rgba(62, 76, 58, 0.1);
 }
 
 .micheon-update-install-app-icon {
@@ -832,7 +817,7 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
 
 .micheon-update-install-status {
   border: 1px solid var(--install-border);
-  background: color-mix(in srgb, var(--install-surface-2) 90%, transparent);
+  background: var(--install-surface-2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
@@ -842,12 +827,12 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
 }
 
 .micheon-update-install-step--done {
-  background: #9edb89;
+  background: #8fd58d;
 }
 
 .micheon-update-install-step--active {
   background: linear-gradient(90deg, #62d560, #35ac43);
-  box-shadow: 0 0 14px rgba(53, 173, 67, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
 .micheon-update-install-state {
@@ -864,10 +849,10 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
 }
 
 html[data-theme="dark"] .micheon-update-takeover {
-  --install-page: #111a13;
-  --install-surface: #1a251c;
-  --install-surface-2: #222f24;
-  --install-surface-3: #344337;
+  --install-page: #171a17;
+  --install-surface: #20231f;
+  --install-surface-2: #282c27;
+  --install-surface-3: #3a4038;
   --install-border: rgba(200, 229, 195, 0.14);
   --install-text: #f3f7f1;
   --install-copy: #c0cdbd;
@@ -878,15 +863,12 @@ html[data-theme="dark"] .micheon-update-takeover {
   --install-shadow: rgba(0, 0, 0, 0.44);
   color-scheme: dark;
   background:
-    radial-gradient(circle at 14% 6%, rgba(111, 171, 79, 0.12), transparent 30%),
-    radial-gradient(circle at 88% 88%, rgba(44, 151, 56, 0.18), transparent 38%),
-    linear-gradient(135deg, #101712, var(--install-page) 58%, #132219);
+    radial-gradient(circle at 50% 41%, rgba(50, 56, 49, 0.72), transparent 56%),
+    linear-gradient(180deg, #1d201c, var(--install-page));
 }
 
 html[data-theme="dark"] .micheon-update-install-card {
-  background:
-    radial-gradient(circle at 50% 0%, rgba(68, 137, 64, 0.18), transparent 35%),
-    linear-gradient(180deg, rgba(28, 39, 30, 0.98), rgba(21, 30, 23, 0.98));
+  background: linear-gradient(180deg, #252923, var(--install-surface));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 0 rgba(0, 0, 0, 0.24), 0 34px 90px var(--install-shadow);
 }
 

@@ -754,6 +754,8 @@ const DE: Record<string, string> = {
   "Toggle reduced effects": "Reduzierte Effekte umschalten",
   "Reduce effects": "Effekte reduzieren",
   "Turns off glows and continuous animations to save battery on slower devices.": "Deaktiviert Leuchteffekte und dauerhafte Animationen, um auf langsameren Geräten Energie zu sparen.",
+  "Loading pet settings": "Haustiereinstellungen werden geladen",
+  "Loading vocabulary library": "Vokabelsammlung wird geladen",
   "On": "Ein",
   "Off": "Aus",
   "Language": "Sprache",

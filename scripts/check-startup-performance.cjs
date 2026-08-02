@@ -4,6 +4,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
+const gamification = read("src/Gamification.tsx");
 const dashboardArtwork = [
   "src/prototype/assets/micheon-hero-v3.webp",
   "src/prototype/assets/achievements-v1/achievement-atlas-v3.webp",
@@ -41,8 +42,28 @@ check(
 );
 check(
   "global search explicitly requests the lesson catalogue",
-  prototype.includes("onSearchOpen={() => setPartsRequested(true)}")
+  prototype.includes("const requestParts = useCallback(() => setPartsRequested(true), [])")
+    && prototype.includes("onSearchOpen={requestParts}")
     && prototype.includes("searchCatalogLoading={partsRequested && !partsReady}"),
+);
+check(
+  "profile settings paint without waiting for the lesson catalogue",
+  prototype.includes('if (["learn", "games", "tests"].includes(view)) setPartsRequested(true)')
+    && !prototype.includes('if (["learn", "games", "tests", "profile"].includes(view))')
+    && prototype.includes("onRequestCatalogue={requestParts}"),
+);
+check(
+  "profile settings prewarm after startup and on pointer intent",
+  prototype.includes("requestIdleCallback(warmProfile")
+    && prototype.includes("onPointerEnter={onProfileIntent}")
+    && prototype.includes("void loadGamificationPanel()"),
+);
+check(
+  "heavy profile tools wait until their sections approach the viewport",
+  gamification.includes('lazy(() => import("@/components/codexPets/CodexPetPicker")')
+    && gamification.includes('lazy(() => import("@/components/lab/VocabTracker")')
+    && gamification.includes('rootMargin: "420px 0px"')
+    && gamification.includes("onReveal={onRequestCatalogue}"),
 );
 check(
   "large feature views are split behind React lazy boundaries",

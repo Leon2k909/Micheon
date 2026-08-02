@@ -120,7 +120,7 @@ check(
 );
 check(
   "the pet manager spans both profile columns below the balanced settings row",
-  profile.includes('className="rounded-[24px] bg-[var(--surface-2)] p-5 lg:col-span-2"')
+  /<DeferredProfileSection[\s\S]*?className="lg:col-span-2"[\s\S]*?<CodexPetPicker className="mt-0 border-t-0 pt-0" \/>/.test(profile)
     && profile.includes('<CodexPetPicker className="mt-0 border-t-0 pt-0" />')
     && profile.indexOf('<CodexPetPicker className="mt-0 border-t-0 pt-0" />')
       > profile.indexOf('ui("Preferences")')

@@ -76,6 +76,8 @@ check("the updater error copy explains the failed check plainly", banner.include
 check("the compact updater keeps both actions inside the card", styles.includes(".micheon-update-actions") && styles.includes("grid-template-columns: minmax(0, 1fr) auto"));
 check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
 check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));
+check("the install takeover keeps the full-screen background calm and neutral", !banner.includes("micheon-update-takeover-glow") && styles.includes("--install-page: #eef0ec;") && styles.includes("linear-gradient(180deg, #f5f6f3 0%, var(--install-page) 100%)") && !styles.includes("background-size: 42px 42px"));
+check("the install takeover avoids expensive decorative blur layers", !banner.includes("blur-[110px]") && !banner.includes("blur-[120px]") && !banner.includes("backdrop-blur-xl"));
 check("the install takeover follows the learner's dark-theme setting", styles.includes('html[data-theme="dark"] .micheon-update-takeover') && styles.includes("--install-accent: #65d466;"));
 check("the install takeover no longer hardcodes the old dark purple shell", !banner.includes('bg-[#0e1710]') && !banner.includes('bg-[#172019]'));
 check("the updater no longer ships legacy purple accents", !/(#7834f7|#a177ff|rgba\(161,\s*119,\s*255)/i.test(banner));
