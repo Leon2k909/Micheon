@@ -54,6 +54,7 @@ import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { germanWordGloss } from "@/lib/germanWordGloss";
+import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import {
@@ -571,15 +572,64 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
 }
 
 // The sentence as tappable words — click any word to hear just that word.
-function TappableSentence({ text, lang }: { text: string; lang: string }) {
+// Hovering (or right-clicking) a German word opens a small popover with its
+// meaning and a "Practice this word" action that saves it to the learner's own
+// words, so a tricky spelling like Postfiliale can be drilled on its own later.
+function TappableSentence({ text, lang, meaningText }: { text: string; lang: string; meaningText?: string }) {
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
   const showEnglishGloss = lang.toLowerCase().startsWith("de");
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const playingTimer = useRef<number | undefined>(undefined);
+  const [popoverIndex, setPopoverIndex] = useState<number | null>(null);
+  const [popoverSaved, setPopoverSaved] = useState(false);
+  const openTimer = useRef<number | undefined>(undefined);
+  const closeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => {
     if (playingTimer.current) window.clearTimeout(playingTimer.current);
+    if (openTimer.current) window.clearTimeout(openTimer.current);
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
   }, []);
+
+  const bareWord = (word: string) => word.replace(/[.,!?;:"«»„“()]/g, "");
+
+  const wordIsSaved = (word: string) => {
+    const key = bareWord(word).toLocaleLowerCase("de-DE");
+    return getCustomPacks().some((pack) =>
+      pack.entries.some((entry) => entry.de.toLocaleLowerCase("de-DE") === key)
+    );
+  };
+
+  const openPopover = (index: number) => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setPopoverIndex(index);
+    setPopoverSaved(wordIsSaved(words[index]));
+  };
+
+  const scheduleOpen = (index: number) => {
+    if (!showEnglishGloss) return;
+    if (openTimer.current) window.clearTimeout(openTimer.current);
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    openTimer.current = window.setTimeout(() => openPopover(index), 320);
+  };
+
+  const scheduleClose = () => {
+    if (openTimer.current) window.clearTimeout(openTimer.current);
+    closeTimer.current = window.setTimeout(() => setPopoverIndex(null), 240);
+  };
+
+  const cancelClose = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+  };
+
+  const practiseWord = (word: string) => {
+    const de = bareWord(word);
+    const gloss = germanWordGloss(de);
+    const en = gloss || meaningText || "";
+    if (!de || !en) return;
+    addCustomEntries([{ de, en, use: text }]);
+    setPopoverSaved(true);
+  };
 
   const playWord = (word: string, index: number) => {
     const spokenWord = word.replace(/[.,!?;:"«»„“]/g, "");
@@ -625,24 +675,62 @@ function TappableSentence({ text, lang }: { text: string; lang: string }) {
     <span className="fs-tappable-sentence" onCopy={copySelectionWithSpaces}>
       {words.map((w, i) => {
         const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;
+        const popoverOpen = popoverIndex === i;
+        const practiceMeaning = hoverGloss || meaningText || "";
         return (
           <React.Fragment key={`${w}-${i}`}>
             {i > 0 && " "}
-            <button
-              type="button"
-              className={cn("fs-word", playingIndex === i && "is-playing")}
-              onClick={() => {
-                if (window.getSelection()?.toString().trim()) return;
-                playWord(w, i);
-              }}
-              aria-label={hoverGloss
-                ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
-                : `${ui("Hear it")}: ${w}`}
-              data-gloss={hoverGloss ?? undefined}
-              title={hoverGloss ? undefined : ui("Tap a word to hear it")}
+            <span
+              className="fs-word-anchor"
+              onPointerEnter={() => scheduleOpen(i)}
+              onPointerLeave={scheduleClose}
             >
-              {w}
-            </button>
+              <button
+                type="button"
+                className={cn("fs-word", playingIndex === i && "is-playing", popoverOpen && "has-popover")}
+                onClick={() => {
+                  if (window.getSelection()?.toString().trim()) return;
+                  playWord(w, i);
+                }}
+                onContextMenu={(event) => {
+                  if (!showEnglishGloss) return;
+                  event.preventDefault();
+                  openPopover(i);
+                }}
+                aria-label={hoverGloss
+                  ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
+                  : `${ui("Hear it")}: ${w}`}
+                data-gloss={hoverGloss ?? undefined}
+                title={hoverGloss ? undefined : ui("Tap a word to hear it")}
+              >
+                {w}
+              </button>
+              {popoverOpen && (
+                <span
+                  className="fs-word-popover"
+                  onPointerEnter={cancelClose}
+                  onPointerLeave={scheduleClose}
+                  role="group"
+                  aria-label={`${bareWord(w)}`}
+                >
+                  <span className="fs-word-popover-word">{bareWord(w)}</span>
+                  {hoverGloss && <span className="fs-word-popover-gloss">{hoverGloss}</span>}
+                  <span className="fs-word-popover-actions">
+                    <button className="fs-word-popover-btn" onClick={() => playWord(w, i)} type="button">
+                      <Volume2 aria-hidden="true" className="h-3.5 w-3.5" />
+                      {ui("Hear it")}
+                    </button>
+                    {practiceMeaning && (popoverSaved ? (
+                      <span className="fs-word-popover-saved">✓ {ui("In your words")}</span>
+                    ) : (
+                      <button className="fs-word-popover-btn is-primary" onClick={() => practiseWord(w)} type="button">
+                        + {ui("Practice this word")}
+                      </button>
+                    ))}
+                  </span>
+                </span>
+              )}
+            </span>
           </React.Fragment>
         );
       })}
@@ -2371,7 +2459,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <small>{ui("Select its meaning below")}</small>
             </div>
             <div className="fs-line">
-              <TappableSentence text={item.de} lang={targetLang} />
+              <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />
             </div>
           </div>
         ) : phase === "ListenPick" ? (
@@ -2397,7 +2485,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
               <div className="fs-line">
                 {missingWordChecked && missingWordCorrect
-                  ? <TappableSentence text={item.de} lang={targetLang} />
+                  ? <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />
                   : missingWord.display}
               </div>
             </div>
@@ -2421,7 +2509,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <small>{ui("Sentence cue — recall the hidden meaning")}</small>
             </div>
             <div className="fs-line">
-              <TappableSentence text={item.de} lang={targetLang} />
+              <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />
             </div>
           </div>
         ) : phase === "RecallBoth" ? (
@@ -2474,7 +2562,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
                   : phase === "Order" && !(orderChecked && orderIsCorrect) ? "• • •"
                   : phase === "WriteFromMemory" && !sayChecked ? "• • •"
-                  : <TappableSentence text={item.de} lang={targetLang} />}
+                  : <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />}
               </div>
             </div>
             <AnimatePresence>

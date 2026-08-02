@@ -775,6 +775,8 @@ const DE: Record<string, string> = {
   "British English": "Britisches Englisch",
   "American English": "Amerikanisches Englisch",
   "Speech speed": "Sprechtempo",
+  "Practice this word": "Dieses Wort üben",
+  "In your words": "In deinen Wörtern",
   "Right-click to change speed": "Rechtsklick zum Ändern des Tempos",
   "How fast lessons, games, and the companion speak. You can also change this from the speaker menu or by right-clicking Hear it.": "Wie schnell Lektionen, Spiele und die Begleiterin sprechen. Auch über das Lautsprecher-Menü oder per Rechtsklick auf Anhören änderbar.",
   "External word count": "Externe Wortanzahl",

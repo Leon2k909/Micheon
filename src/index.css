@@ -2346,6 +2346,81 @@ a { color: inherit; text-decoration: none; }
 .guided-session .fs-word:hover::after { background: rgba(168,120,255,0.64); transform: scaleX(1); }
 .guided-session .fs-word.is-playing { color: #cdbbff; background: rgba(139,76,255,0.11); }
 .guided-session .fs-word.is-playing::after { background: #9b63ff; transform: scaleX(1); }
+/* Word popover: hover or right-click a German word for its meaning plus a
+   practice action. While it is open the plain gloss tooltip stays hidden so
+   the two never stack. */
+.guided-session .fs-word-anchor { position: relative; display: inline-block; }
+.guided-session .fs-word.has-popover[data-gloss]::before,
+.guided-session .fs-word.has-popover[data-gloss]::after { display: none; }
+.guided-session .fs-word-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 190px;
+  padding: 10px 11px;
+  border: 1px solid var(--fs-line-strong);
+  border-radius: 13px;
+  background: var(--fs-surface, #fff);
+  box-shadow: 0 14px 34px rgba(20, 24, 18, 0.2);
+  transform: translateX(-50%);
+  cursor: default;
+  text-align: left;
+}
+.guided-session .fs-word-popover-word {
+  color: var(--fs-text);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+.guided-session .fs-word-popover-gloss {
+  color: var(--fs-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.guided-session .fs-word-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.guided-session .fs-word-popover-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--fs-line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fs-text-2);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.guided-session .fs-word-popover-btn:hover { border-color: var(--fs-line-strong); color: var(--fs-text); }
+.guided-session .fs-word-popover-btn.is-primary {
+  border-color: transparent;
+  background: var(--fs-grad);
+  color: #fff;
+}
+.guided-session .fs-word-popover-saved {
+  color: var(--fs-accent, #39aa45);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guided-session .fs-word-popover-btn { transition: none; }
+}
+
 .guided-session :is(.fs-word, .fs-order-token)[data-gloss]::before {
   content: attr(data-gloss);
   position: absolute; z-index: 40; left: 50%; bottom: calc(100% + 10px);
