@@ -2942,10 +2942,10 @@ a { color: inherit; text-decoration: none; }
 
 /* Prototype entry mode ----------------------------------------------------
    Continue learning from the new dashboard opens the real adaptive guided
-   session, but keeps the warm cream/green visual language of that dashboard.
+   session, keeping its warm neutral canvas and green action language.
    The normal focus-mode lesson remains untouched for every other entry path. */
 .guided-session.fs-app.prototype-guided-session {
-  --bg: #edf6e8;
+  --bg: #fffaf1;
   --surface: #fffdf9;
   --surface-2: #f4f7ef;
   --surface-3: #e7eee2;
@@ -2964,7 +2964,7 @@ a { color: inherit; text-decoration: none; }
   --success-text: #1f7d30;
   --shadow: rgba(56, 81, 47, 0.08);
   --shadow-strong: rgba(56, 81, 47, 0.18);
-  --fs-bg: #edf6e8;
+  --fs-bg: #fffaf1;
   --fs-surface: #fffdf9;
   --fs-surface-2: #f4f7ef;
   --fs-deep: #e7f1e2;
@@ -2983,37 +2983,12 @@ a { color: inherit; text-decoration: none; }
   color-scheme: light;
   color: var(--fs-text);
   isolation: isolate;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(101, 202, 97, 0.16), transparent 29%),
-    radial-gradient(circle at 88% 78%, rgba(75, 184, 82, 0.1), transparent 27%),
-    linear-gradient(180deg, #edf7e9 0%, #f5f8f0 48%, #fffaf1 100%);
+  background: #fffaf1;
   font-family: var(--fs-font-text);
   font-size: 16px;
   line-height: 1.4;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-}
-
-.guided-session.fs-app.prototype-guided-session::before,
-.guided-session.fs-app.prototype-guided-session::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.guided-session.fs-app.prototype-guided-session::before {
-  inset: 84px 5vw auto;
-  height: min(520px, 58vh);
-  border-radius: 44px;
-  background: linear-gradient(135deg, rgba(208, 239, 198, 0.38), rgba(255, 253, 248, 0.1));
-  filter: blur(1px);
-  opacity: 0.72;
-}
-
-.guided-session.fs-app.prototype-guided-session::after {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 32%, rgba(255, 250, 241, 0.22));
 }
 
 .guided-session.fs-app.prototype-guided-session main > div {
@@ -3451,8 +3426,8 @@ a { color: inherit; text-decoration: none; }
     linear-gradient(90deg, rgba(31, 157, 53, 0.98) 0%, rgba(35, 164, 57, 0.94) 43%, rgba(40, 168, 61, 0.62) 62%, rgba(40, 168, 61, 0.12) 100%),
     url("./prototype/assets/micheon-hero-v3.webp");
   background-repeat: no-repeat;
-  background-position: center, center 54%;
-  background-size: 100% 100%, cover;
+  background-position: center, right center;
+  background-size: 100% 100%, auto 110%;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 5px 0 rgba(34, 132, 47, 0.38),
@@ -4424,8 +4399,8 @@ a { color: inherit; text-decoration: none; }
     background-image:
       linear-gradient(90deg, rgba(31, 157, 53, 0.99) 0%, rgba(48, 178, 70, 0.96) 62%, rgba(48, 178, 70, 0.5) 100%),
       url("./prototype/assets/micheon-hero-v3.webp");
-    background-position: center, 62% center;
-    background-size: 100% 100%, auto 100%;
+    background-position: center, right center;
+    background-size: 100% 100%, auto 110%;
   }
 
   .guided-session.fs-app.prototype-guided-session .fs-preview-heading-copy {
