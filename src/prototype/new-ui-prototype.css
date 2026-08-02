@@ -159,17 +159,21 @@
   transform: translate(-50%, -50%);
 }
 
-.np-brand > span:last-child {
+.np-brand-copy {
   display: flex;
   min-width: 0;
+  flex: 1 1 auto;
   flex-direction: column;
 }
 
 .np-brand strong {
+  max-width: 100%;
   color: #242126;
   font-size: 20px;
   font-weight: 950;
   letter-spacing: 0.09em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .np-brand small {
@@ -179,6 +183,58 @@
   font-size: var(--np-type-caption);
   font-weight: 780;
   line-height: 1.32;
+}
+
+.np-brand small > span {
+  display: inline;
+}
+
+.np-brand small > span + span::before {
+  content: " ";
+}
+
+.np-sidebar.is-brand-compact .np-brand {
+  gap: 10px;
+  padding-inline: 0;
+}
+
+.np-sidebar.is-brand-compact .np-brand small {
+  max-width: none;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.np-sidebar:is(.is-brand-compact, .is-brand-stacked) .np-brand small > span {
+  display: block;
+  white-space: nowrap;
+}
+
+.np-sidebar:is(.is-brand-compact, .is-brand-stacked) .np-brand small > span + span::before {
+  content: none;
+}
+
+.np-sidebar.is-brand-stacked .np-brand {
+  flex-direction: column;
+  gap: 11px;
+  padding-inline: 0;
+  text-align: center;
+}
+
+.np-sidebar.is-brand-stacked .np-brand-copy {
+  width: 100%;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.np-sidebar.is-brand-stacked .np-brand strong {
+  font-size: 19px;
+  letter-spacing: 0.08em;
+}
+
+.np-sidebar.is-brand-stacked .np-brand small {
+  max-width: 17ch;
+  margin-top: 4px;
+  text-wrap: balance;
 }
 
 .np-side-nav {

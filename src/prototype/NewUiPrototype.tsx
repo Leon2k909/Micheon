@@ -141,6 +141,8 @@ const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends",
 
 const PROTOTYPE_SIDEBAR_MIN = 188;
 const PROTOTYPE_SIDEBAR_MAX = 330;
+const PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX = 212;
+const PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX = 240;
 const PROTOTYPE_SIDEBAR_KEY = "prototype-sidebar-width";
 
 const PROTOTYPE_SEARCH_PAGES: Array<{
@@ -381,9 +383,12 @@ function BrandMark() {
       <span className="np-brand-icon">
         <img alt="" src="/icon-64.png" />
       </span>
-      <span>
+      <span className="np-brand-copy">
         <strong>MICHEON</strong>
-        <small>Made with love by Leon &amp; Michelle</small>
+        <small>
+          <span>Made with love by</span>
+          <span>Leon &amp; Michelle</span>
+        </small>
       </span>
     </div>
   );
@@ -406,6 +411,11 @@ function Sidebar({
   const navigationItems = socialPreviewUnlocked
     ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM, ...NAVIGATION.slice(4)]
     : NAVIGATION;
+  const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
+    ? " is-brand-stacked"
+    : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
+      ? " is-brand-compact"
+      : "";
 
   useEffect(() => () => resizeCleanupRef.current?.(), []);
 
@@ -441,7 +451,7 @@ function Sidebar({
   };
 
   return (
-    <aside className="np-sidebar">
+    <aside className={`np-sidebar${brandLayoutClass}`}>
       <BrandMark />
       <nav aria-label="Prototype navigation" className="np-side-nav">
         {navigationItems.map((item) => {
