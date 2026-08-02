@@ -1801,8 +1801,8 @@ a { color: inherit; text-decoration: none; }
   box-shadow: inset 0 0 0 1px rgba(184,147,255,0.18), 0 6px 0 #3b176f, 0 12px 20px rgba(69,25,141,0.18);
 }
 .guided-session .fs-match-option.is-matched {
-  border-color: rgba(105,225,173,0.5); background: rgba(105,225,173,0.09); color: #98edc8;
-  box-shadow: inset 0 0 0 1px rgba(105,225,173,0.09), 0 4px 0 rgba(16,94,69,0.78);
+  border-color: rgba(105,225,173,0.58); background: rgba(105,225,173,0.16); color: #b3f5d8;
+  box-shadow: inset 0 0 0 1px rgba(105,225,173,0.14), 0 4px 0 rgba(16,94,69,0.78);
 }
 .guided-session .fs-match-option.is-wrong {
   border-color: rgba(255,140,160,0.58); background: rgba(255,140,160,0.11); color: #ff9cb0;
@@ -3956,6 +3956,34 @@ a { color: inherit; text-decoration: none; }
     inset 0 1px 0 rgba(255, 255, 255, 0.82),
     0 6px 0 rgba(48, 145, 58, 0.24),
     0 14px 24px rgba(65, 122, 58, 0.13);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched {
+  transform: none;
+  border-color: #62bd68;
+  background: #ddf4d7;
+  color: #205f2c;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 4px 0 #a8d7a5,
+    0 10px 18px rgba(55, 118, 54, 0.12);
+  opacity: 1;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched > span {
+  font-weight: 850;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched > svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #2fae3f;
+  color: #fff;
+  box-shadow: 0 2px 0 #218b2e;
 }
 
 .guided-session.fs-app.prototype-guided-session :is(
