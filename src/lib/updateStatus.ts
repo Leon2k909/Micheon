@@ -32,10 +32,14 @@ export function normaliseUpdatePercent(value: unknown): number {
   return Math.min(100, Math.max(0, Math.round(numeric)));
 }
 
+/**
+ * Only states the learner can act on open the floating panel. A failed
+ * background check stays silent: the app retries on its own, and anyone who
+ * explicitly checks from settings gets their feedback inline there.
+ */
 export function updatePanelIsUseful(status: UpdateStatus | null): boolean {
   return status?.state === "downloading"
-    || status?.state === "ready"
-    || status?.state === "error";
+    || status?.state === "ready";
 }
 
 export function updateStatusKey(status: UpdateStatus | null): string {

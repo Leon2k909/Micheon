@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CircleCheck, Download, Power, RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowRight, CircleCheck, Download, Power } from "lucide-react";
 import {
   normaliseUpdatePercent,
   UPDATE_INSTALL_REQUEST_EVENT,
@@ -36,27 +36,23 @@ const previewInstalling = import.meta.env.DEV
   && typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("update-preview") === "installing";
 
+// A failed background check never opens the panel (the app retries silently
+// and settings has its own inline feedback), so only two states need copy.
 function panelCopy(status: UpdateStatus): string {
   if (status.state === "downloading") {
     return uiIsGerman()
       ? "Lerne weiter, während Micheon die neue Version vorbereitet."
       : "Keep learning while Micheon prepares the new version.";
   }
-  if (status.state === "ready") {
-    const version = status.version ? ` v${status.version}` : "";
-    return uiIsGerman()
-      ? `Starte Micheon neu, um das Update${version} zu installieren. Du kannst auch weiterlernen.`
-      : `Restart Micheon to install update${version}. You can also keep learning.`;
-  }
+  const version = status.version ? ` v${status.version}` : "";
   return uiIsGerman()
-    ? "Micheon konnte den Update-Dienst nicht erreichen. Wir versuchen es automatisch erneut."
-    : "Micheon couldn't reach the update service. We'll try again automatically.";
+    ? `Starte Micheon neu, um das Update${version} zu installieren. Du kannst auch weiterlernen.`
+    : `Restart Micheon to install update${version}. You can also keep learning.`;
 }
 
 function panelTitle(state: UpdateState): string {
   if (state === "downloading") return ui("Downloading update");
-  if (state === "ready") return ui("Your update is ready");
-  return ui("Couldn't check for updates");
+  return ui("Your update is ready");
 }
 
 function UpdateInstallTakeover({
@@ -171,7 +167,6 @@ export function UpdateBanner() {
   const [status, setStatus] = useState<UpdateStatus | null>(previewStatus);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [installing, setInstalling] = useState(previewInstalling);
-  const [retrying, setRetrying] = useState(false);
   const installTimer = useRef<number | null>(null);
 
   const beginInstall = useCallback(() => {
@@ -216,28 +211,7 @@ export function UpdateBanner() {
     [status?.percent, status?.state]
   );
 
-  const retry = async () => {
-    if (!desktop?.checkForUpdateNow || retrying) return;
-    setRetrying(true);
-    setDismissedFor(null);
-    try {
-      const next = await desktop.checkForUpdateNow();
-      setStatus(next);
-    } catch {
-      setStatus((current) => ({
-        ...(current ?? { version: null, checkedAt: null }),
-        state: "error",
-      }));
-    } finally {
-      setRetrying(false);
-    }
-  };
-
-  const Icon = status?.state === "ready"
-    ? CircleCheck
-    : status?.state === "error"
-      ? TriangleAlert
-      : Download;
+  const Icon = status?.state === "ready" ? CircleCheck : Download;
 
   return (
     <>
@@ -320,24 +294,12 @@ export function UpdateBanner() {
                 </button>
               )}
 
-              {status.state === "error" && (
-                <button
-                  className="micheon-update-primary"
-                  disabled={retrying}
-                  onClick={retry}
-                  type="button"
-                >
-                  <RefreshCw className={`h-4 w-4 ${retrying ? "animate-pulse motion-reduce:animate-none" : ""}`} />
-                  {ui("Try again")}
-                </button>
-              )}
-
               <button
                 className="micheon-update-secondary"
                 onClick={() => setDismissedFor(key)}
                 type="button"
               >
-                {status.state === "downloading" ? ui("Hide") : status.state === "ready" ? ui("Keep learning") : ui("Dismiss")}
+                {status.state === "downloading" ? ui("Hide") : ui("Keep learning")}
               </button>
             </div>
           </div>

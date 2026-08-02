@@ -52,8 +52,8 @@ check("update percentages clamp below zero", normaliseUpdatePercent(-5) === 0);
 check("update percentages round for display", normaliseUpdatePercent(47.6) === 48);
 check("update percentages clamp above one hundred", normaliseUpdatePercent(105) === 100);
 check("invalid update percentages fall back to zero", normaliseUpdatePercent("not-a-number") === 0);
-check("download, ready and error states open the panel", ["downloading", "ready", "error"].every((state) => updatePanelIsUseful({ state })));
-check("quiet updater states stay out of the learner's way", ["idle", "checking", "current", "unsupported"].every((state) => !updatePanelIsUseful({ state })));
+check("only actionable download and ready states open the panel", ["downloading", "ready"].every((state) => updatePanelIsUseful({ state })));
+check("quiet updater states stay out of the learner's way", ["idle", "checking", "current", "unsupported", "error"].every((state) => !updatePanelIsUseful({ state })));
 check("dismissal keys change with state and version", updateStatusKey({ state: "downloading", version: "1.2.59" }) !== updateStatusKey({ state: "ready", version: "1.2.59" }));
 
 check("startup uses the in-app updater path", /autoUpdater\.checkForUpdates\(\)/.test(main));
@@ -63,7 +63,7 @@ check("preload exposes status, manual checking and installation", ["getUpdateSta
 check("the themed panel restores the current state on mount", banner.includes("desktop.getUpdateStatus()"));
 check("the themed panel listens for every updater state", banner.includes("desktop.onUpdateStatus?."));
 check("the themed panel includes accessible progress", banner.includes('role="progressbar"') && banner.includes("aria-valuenow={percent}"));
-check("the themed panel includes restart and retry actions", banner.includes('ui("Restart Micheon")') && banner.includes('ui("Try again")'));
+check("the themed panel offers restart; manual retry lives in settings", banner.includes('ui("Restart Micheon")') && !banner.includes('ui("Try again")') && card.includes('ui("Check for updates")'));
 check("account settings mirror download progress", card.includes('role="progressbar"') && card.includes("normaliseUpdatePercent"));
 check("explicit updates keep the generic NSIS window hidden", /autoUpdater\.quitAndInstall\(\s*true\s*,\s*true\s*\)/.test(main));
 check("the branded install takeover owns the visible restart phase", banner.includes('data-testid="update-install-takeover"') && banner.includes('aria-modal="true"') && banner.includes('ui("Installing your update")'));
@@ -71,8 +71,8 @@ check("the custom install screen uses calm staged restart feedback", banner.incl
 check("development builds expose the complete install takeover for visual QA", banner.includes('get("update-preview") === "installing"') && banner.includes("useState(previewInstalling)"));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
 check("the compact updater uses the current tactile Micheon surface", banner.includes("micheon-update-panel__main") && banner.includes("micheon-update-actions") && styles.includes("--accent: #39aa45;") && styles.includes("0 3px 0 rgba(58, 104, 48, 0.12)"));
-check("the compact updater has state-aware warning treatment", banner.includes("micheon-update-icon--${status.state}") && styles.includes(".micheon-update-icon--error"));
-check("the updater error copy explains the failed check plainly", banner.includes('ui("Couldn\'t check for updates")') && !banner.includes('ui("Update paused")'));
+check("the compact updater keeps its state-keyed icon without dead error styling", banner.includes("micheon-update-icon--${status.state}") && !styles.includes(".micheon-update-icon--error"));
+check("a failed background check stays silent; settings explains it inline", !banner.includes('ui("Couldn\'t check for updates")') && card.includes("Couldn't reach the update service"));
 check("the compact updater keeps both actions inside the card", styles.includes(".micheon-update-actions") && styles.includes("grid-template-columns: minmax(0, 1fr) auto"));
 check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
 check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));

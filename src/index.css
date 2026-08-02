@@ -518,12 +518,7 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
   box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(56, 137, 54, 0.12);
 }
 
-.micheon-update-panel .micheon-update-icon--error {
-  border-color: rgba(205, 145, 25, 0.25);
-  color: #a96700;
-  background: linear-gradient(180deg, #fff9e8, #fff1c7);
-  box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(173, 119, 14, 0.1);
-}
+/* No error icon variant: a failed background check never opens the panel. */
 
 .micheon-update-panel__copy {
   min-width: 0;
@@ -709,11 +704,6 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-html[data-theme="dark"] .micheon-update-panel .micheon-update-icon--error {
-  border-color: rgba(231, 177, 70, 0.2);
-  color: #efbd5b;
-  background: linear-gradient(180deg, #3a3321, #302b1e);
-}
 
 html[data-theme="dark"] .micheon-update-version,
 html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary {
