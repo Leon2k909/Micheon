@@ -111,6 +111,8 @@ const DE: Record<string, string> = {
   "Listening — tap to stop": "Ich höre zu — zum Beenden tippen",
   "Type in English": "Auf Englisch tippen",
   "Type in German": "Auf Deutsch tippen",
+  "British English": "Britisches Englisch",
+  "American English": "Amerikanisches Englisch",
   "Read & listen": "Lesen & hören",
   "Read the sentence": "Lies den Satz",
   "Pick the meaning": "Bedeutung auswählen",

@@ -80,44 +80,17 @@ function UpdateInstallTakeover({
     >
       <motion.section
         animate={{ scale: 1, y: 0 }}
-        className="micheon-update-install-card relative w-full max-w-[590px] overflow-hidden rounded-[32px] p-6 sm:p-9"
+        className="micheon-update-install-card relative w-full max-w-[560px] overflow-hidden rounded-[32px] p-6 sm:p-9"
         initial={reduceMotion ? undefined : { scale: 0.975, y: 18 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div aria-hidden="true" className="micheon-update-install-accent absolute inset-x-0 top-0 h-1" />
-
         <div className="flex items-center justify-between gap-4">
           <div className="micheon-update-install-lockup">
             <MicheonLogo className="micheon-update-install-logo micheon-update-install-logo--light max-w-[150px]" height={34} theme="light" />
             <MicheonLogo className="micheon-update-install-logo micheon-update-install-logo--dark max-w-[150px]" height={34} theme="dark" />
           </div>
-          <span className="micheon-update-install-badge rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]">
-            {ui("Micheon update")}
-          </span>
-        </div>
-
-        <div className="micheon-update-install-icon-shell relative mx-auto mt-10 flex h-24 w-24 items-center justify-center rounded-[30px]">
-          <div aria-hidden="true" className="micheon-update-install-icon-well absolute inset-2 rounded-[23px]" />
-          <img
-            alt=""
-            className="micheon-update-install-app-icon relative h-14 w-14 rounded-[18px]"
-            src="/icon-64.png"
-          />
-          <div className="micheon-update-install-check absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-[11px] border-2">
-            <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
-          </div>
-        </div>
-
-        <div className="mx-auto mt-7 max-w-[460px] text-center">
-          <h1 className="text-3xl font-black tracking-[-0.035em] text-[var(--install-text)] sm:text-[34px]" id="micheon-install-title">
-            {ui("Installing your update")}
-          </h1>
-          <p className="mx-auto mt-3 max-w-[420px] text-sm font-semibold leading-6 text-[var(--install-copy)]">
-            {ui("Micheon will close for a moment and reopen automatically.")}
-          </p>
-
           {(status?.currentVersion || status?.version) && (
-            <div className="micheon-update-install-version mt-5 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black tabular-nums">
+            <div className="micheon-update-install-version inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black tabular-nums">
               <span>{status?.currentVersion ? `v${status.currentVersion}` : ui("Current")}</span>
               <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-[var(--install-accent)]" />
               <span className="text-[var(--install-text)]">{status?.version ? `v${status.version}` : ui("Update ready")}</span>
@@ -125,35 +98,63 @@ function UpdateInstallTakeover({
           )}
         </div>
 
+        <div className="micheon-update-install-icon-shell relative mx-auto mt-9 flex h-24 w-24 items-center justify-center rounded-[28px]">
+          <img
+            alt=""
+            className="micheon-update-install-app-icon relative h-14 w-14 rounded-[18px]"
+            src="/icon-64.png"
+          />
+          <motion.div
+            animate={{ scale: 1, opacity: 1 }}
+            className="micheon-update-install-check absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2"
+            initial={reduceMotion ? undefined : { scale: 0.5, opacity: 0 }}
+            transition={{ delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0.01 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
+          </motion.div>
+        </div>
+
+        <div className="mx-auto mt-6 max-w-[460px] text-center">
+          <h1 className="text-3xl font-black tracking-[-0.035em] text-[var(--install-text)] sm:text-[34px]" id="micheon-install-title">
+            {ui("Installing your update")}
+          </h1>
+          <p className="mx-auto mt-3 max-w-[420px] text-sm font-semibold leading-6 text-[var(--install-copy)]">
+            {ui("Micheon will close for a moment and reopen automatically.")}
+          </p>
+        </div>
+
         <div
           aria-live="polite"
-          className="micheon-update-install-status mt-8 rounded-[18px] p-4"
+          className="micheon-update-install-status mt-8 pt-6"
           data-testid="update-install-steps"
           role="status"
         >
-          <div className="mb-2 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.12em] text-[var(--install-muted)]">
+          <div className="mb-3 flex items-center justify-between text-[13px] font-bold text-[var(--install-muted)]">
             <span>{ui("Preparing restart")}</span>
             <span>{ui("Just a moment")}</span>
           </div>
           <div aria-hidden="true" className="grid grid-cols-3 gap-2">
-            <span className="micheon-update-install-step micheon-update-install-step--done h-2 rounded-full" />
+            <span className="micheon-update-install-step micheon-update-install-step--done h-1.5 rounded-full" />
             <motion.span
               animate={reduceMotion ? undefined : { opacity: [0.45, 1, 0.45] }}
-              className="micheon-update-install-step micheon-update-install-step--active h-2 rounded-full"
+              className="micheon-update-install-step micheon-update-install-step--active h-1.5 rounded-full"
               transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
             />
-            <span className="micheon-update-install-step h-2 rounded-full" />
+            <span className="micheon-update-install-step h-1.5 rounded-full" />
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            <div className="micheon-update-install-state flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-xs font-bold">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs font-bold">
+            <span className="micheon-update-install-state inline-flex items-center gap-1.5">
               <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--install-accent)]" />
               {ui("Download complete")}
-            </div>
-            <div className="micheon-update-install-state micheon-update-install-state--active flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-xs font-bold">
-              <Power aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--install-accent-strong)]" />
+            </span>
+            <span aria-hidden="true" className="micheon-update-install-state-divider">
+              <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+            <span className="micheon-update-install-state micheon-update-install-state--active inline-flex items-center gap-1.5">
+              <Power aria-hidden="true" className="h-4 w-4 shrink-0" />
               {ui("Restarting Micheon")}
-            </div>
+            </span>
           </div>
         </div>
       </motion.section>

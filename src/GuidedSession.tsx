@@ -16,7 +16,7 @@ import {
 } from "@/lib/germanTextMatch";
 import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
 import type { AnswerPerformance } from "@/lib/adaptivePractice";
-import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import { englishVariantLabel, formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { matchLearningModeGermanAnswer } from "@/lib/learningMode";
 import {
   FLASHCARD_FACE_KEY,
@@ -217,11 +217,24 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, long }: { de: s
   );
 }
 
+// Windows Alt codes for each helper character, surfaced on hover so learners
+// can graduate from clicking the buttons to typing the characters directly.
+const GERMAN_ALT_CODES: Record<string, string> = {
+  "Ä": "0196", "ä": "0228", "Ö": "0214", "ö": "0246", "Ü": "0220", "ü": "0252", "ß": "0223",
+};
+
+const FRENCH_ALT_CODES: Record<string, string> = {
+  "é": "0233", "è": "0232", "ê": "0234", "à": "0224", "â": "0226",
+  "ç": "0231", "î": "0238", "ô": "0244", "û": "0251", "œ": "0156",
+};
+
 function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {["Ä","ä","Ö","ö","Ü","ü","ß"].map(c => (
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={`${c} · Alt + ${GERMAN_ALT_CODES[c]}`}
+          aria-keyshortcuts={`Alt+${GERMAN_ALT_CODES[c]}`}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
           onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
           {c}
@@ -237,6 +250,8 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
     <div className="flex flex-wrap justify-center gap-2">
       {["é","è","ê","à","â","ç","î","ô","û","œ"].map(c => (
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={`${c} · Alt + ${FRENCH_ALT_CODES[c]}`}
+          aria-keyshortcuts={`Alt+${FRENCH_ALT_CODES[c]}`}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
           onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
           {c}
@@ -1099,15 +1114,29 @@ function guidedTargetLanguageTag(): "de-DE" | "en-GB" | "en-US" {
 
 function PromptLanguageBadge({ label }: { label: string }) {
   const isGerman = label === "German";
-  const shortLabel = label === "English" ? "EN" : label.slice(0, 2).toUpperCase();
+  const isEnglish = label === "English";
+  // The English side mirrors the German flag treatment, but honours the
+  // profile's English-variant setting so British learners see their own flag.
+  const englishVariant = isEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
+  const shortLabel = label.slice(0, 2).toUpperCase();
+  const title = englishVariant ? ui(englishVariantLabel(englishVariant)) : ui(label);
 
   return (
     <span
-      className={cn("fs-prompt-language", isGerman && "is-german")}
-      aria-label={ui(label)}
-      title={ui(label)}
+      className={cn("fs-prompt-language", isGerman && "is-german", isEnglish && "is-english")}
+      aria-label={title}
+      title={title}
     >
-      {isGerman ? <i className="fs-german-flag" aria-hidden="true" /> : shortLabel}
+      {isGerman ? (
+        <i className="fs-german-flag" aria-hidden="true" />
+      ) : isEnglish ? (
+        <i
+          className={cn("fs-english-flag", englishVariant === "british" ? "is-british" : "is-american")}
+          aria-hidden="true"
+        />
+      ) : (
+        shortLabel
+      )}
     </span>
   );
 }
