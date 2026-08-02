@@ -1,8 +1,9 @@
 // Guided session engine — every step is a full sentence exercise
 
 import { isDueForReview, overdueBy } from "@/lib/memoryStrength";
-import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
+import { conversationPriorityScore } from "@/lib/conversationPriority";
+import { sentenceCommonality } from "@/lib/corpusFrequency";
 import { getLearningMode, phraseForLearningMode } from "@/lib/learningMode";
 import { matchingVisibleKeys, takeMatchingSafe } from "@/lib/germanTextMatch";
 import {
@@ -16,15 +17,6 @@ export const EX = {
   DIALOGUE: "dialogue",   // line-by-line conversation practice
   COMPLETE: "complete",
 };
-
-function shuffle(arr: any[]) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 function hasSentenceShape(text: string) {
   return String(text ?? "").trim().split(/\s+/).filter(Boolean).length >= 1;
@@ -96,7 +88,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     return "learning";
   };
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number) => {
     const key = de.trim().toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
@@ -109,7 +101,9 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const progressRecord = findProgressRecord(reviewState, id, aliases);
     const item = {
       id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage,
-      short, when, say, long, group, level: part.level, mastery: masteryOf(progressRecord),
+      short, when, say, long, group, lessonPriority, partKey,
+      kind: lookup ? "vocab" : "phrase",
+      level: part.level, mastery: masteryOf(progressRecord),
     };
     if (isAttemptedPracticeEligible(progressRecord)) {
       // Reaching and answering a sentence makes it familiar, even when the
@@ -190,7 +184,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       lessonPhrase.when,
       lessonPhrase.say,
       lessonPhrase.long,
-      lessonPhrase.group
+      lessonPhrase.group,
+      lessonPhrase.lessonPriority
     );
   });
 
@@ -240,7 +235,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
         line.when,
         line.say,
         line.long,
-        line.group
+        line.group,
+        line.lessonPriority
       );
     });
   });
@@ -256,10 +252,20 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
   const reviewKeys = reviews.flatMap(matchingKeysForStep);
   const freshSentences = pickFresh(
-    shuffle(queue.filter((s) => s.type === EX.SENTENCE && !s.review))
-      .sort((a, b) => {
-        return frequencyRank(a.item?.lookup) - frequencyRank(b.item?.lookup);
-      }),
+    queue
+      .filter((s) => s.type === EX.SENTENCE && !s.review)
+      .map((step, index) => ({
+        step,
+        index,
+        score: conversationPriorityScore({
+          partKey,
+          kind: step.item?.kind,
+          commonality: sentenceCommonality(step.item?.de ?? "", null),
+          lessonPriority: step.item?.lessonPriority,
+        }),
+      }))
+      .sort((a, b) => a.score - b.score || a.index - b.index)
+      .map(({ step }) => step),
     NEW_PER_LESSON,
     reviewKeys
   );
@@ -572,6 +578,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
         say: catalogLine.say,
         long: catalogLine.long,
         group: catalogLine.group,
+        lessonPriority: catalogLine.lessonPriority,
       });
     });
   });

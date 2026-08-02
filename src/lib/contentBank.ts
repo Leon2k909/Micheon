@@ -29,6 +29,10 @@ interface RawSentence {
 // here instead of teaching a technically possible but confusing construction
 // or silently changing German "ich" into English "you/we".
 const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Ich gebe zu, dass ich es nicht verstehe.": {
+    en: "I admit I don't understand.",
+    use: "Natural, but more deliberate than the everyday repair phrase 'Ich hab das nicht ganz verstanden.' Learn this later when you specifically want to admit or acknowledge something.",
+  },
   "Sie müssen nicht mit, wenn Sie nicht wollen.": {
     en: "You don't have to come along if you don't want to.",
     use: "'Sie' and 'nicht' each appear twice on purpose: the first half says there is no obligation, and the second says 'if you don't want to'. In everyday German, 'mit' can stand for the full verb 'mitkommen' when the activity is already clear.",

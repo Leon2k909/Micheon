@@ -5,7 +5,7 @@ import { CustomContentEditor } from "@/components/lab/CustomContentEditor";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, progressEntryForId, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
-import { frequencyInfo, frequencyRank, synonymNote } from "@/lib/wordFrequency";
+import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
@@ -15,9 +15,16 @@ import { ui, uiIsGerman } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { useLearningMode } from "@/lib/learningMode";
+import {
+  conversationPriorityInfo,
+  conversationPriorityScore,
+  type ConversationUsefulness,
+} from "@/lib/conversationPriority";
 
 type Part = Record<string, any>;
 type FilterKey = "all" | "known" | "struggle" | "new";
+type ItemTypeFilter = "all" | "phrases" | "vocab";
+type UsefulnessFilter = "all" | ConversationUsefulness;
 
 type SortKey =
   | "common"
@@ -34,7 +41,7 @@ const BAND_ORDER: AbilityBand[] = ["easy", "medium", "hard", "expert"];
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "common", label: "Most common first" },
-  { key: "rare", label: "Rarest first" },
+  { key: "rare", label: "Least common first" },
   { key: "easiest", label: "Easiest first" },
   { key: "hardest", label: "Hardest first" },
   { key: "shortest", label: "Shortest first" },
@@ -50,6 +57,31 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "struggle", label: "Struggling" },
   { key: "new", label: "To learn" },
 ];
+
+const ITEM_TYPE_FILTERS: { key: ItemTypeFilter; label: string }[] = [
+  { key: "all", label: "All items" },
+  { key: "phrases", label: "Phrases & dialogues" },
+  { key: "vocab", label: "Vocabulary in context" },
+];
+
+const USEFULNESS_FILTERS: { key: UsefulnessFilter; label: string }[] = [
+  { key: "all", label: "All usefulness levels" },
+  { key: "essential", label: "Conversation essentials" },
+  { key: "everyday", label: "Everyday conversation" },
+  { key: "personal", label: "Your material" },
+  { key: "situational", label: "Situational" },
+  { key: "specialist", label: "Specialist / casual" },
+  { key: "extra", label: "Extra practice" },
+];
+
+const usefulnessTone: Record<ConversationUsefulness, string> = {
+  essential: "border-emerald-300 bg-emerald-50 text-emerald-700",
+  personal: "border-sky-300 bg-sky-50 text-sky-700",
+  everyday: "border-green-200 bg-green-50 text-green-700",
+  situational: "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)]",
+  specialist: "border-amber-300 bg-amber-50 text-amber-700",
+  extra: "border-[var(--border)] bg-[var(--surface-3)] text-[var(--text-3)]",
+};
 
 function speak(text: string) {
   tts(text, 0.9, targetLangTag());
@@ -264,6 +296,8 @@ export function VocabTracker({
 }) {
   const [grades, setGrades] = useState<GradeStore>(() => loadGradeStore(user));
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [itemTypeFilter, setItemTypeFilter] = useState<ItemTypeFilter>("all");
+  const [usefulnessFilter, setUsefulnessFilter] = useState<UsefulnessFilter>("all");
   const [sort, setSort] = useState<SortKey>("common");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -288,6 +322,25 @@ export function VocabTracker({
   );
   // Scans every phrase, so it is built once per pack list rather than per sort.
   const corpusIndex = useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
+  // One shared ranking powers both the visible usefulness filter and the
+  // "Most common first" sort. This keeps the label honest: a niche sentence
+  // cannot leapfrog a conversation essential just because its words are short.
+  const priorityIndex = useMemo(
+    () => new Map(catalog.map((item) => {
+      const commonality = sentenceCommonality(item.de, corpusIndex);
+      return [item, {
+        commonality,
+        info: conversationPriorityInfo(item.partKey),
+        score: conversationPriorityScore({
+          partKey: item.partKey,
+          kind: item.kind,
+          commonality,
+          lessonPriority: item.lessonPriority,
+        }),
+      }] as const;
+    })),
+    [catalog, corpusIndex]
+  );
 
   const counts = useMemo(() => {
     let known = 0;
@@ -311,13 +364,17 @@ export function VocabTracker({
     const matches = catalog.filter((item) => {
       const status = statusForId(grades, item.id, item.aliases);
       if (filter !== "all" && status !== filter) return false;
+      if (itemTypeFilter === "phrases" && item.kind === "vocab") return false;
+      if (itemTypeFilter === "vocab" && item.kind !== "vocab") return false;
+      const usefulness = priorityIndex.get(item)?.info.key;
+      if (usefulnessFilter !== "all" && usefulness !== usefulnessFilter) return false;
       if (!q) return true;
       return catalogItemMatchesQuery(item, q, searchIndex.get(item));
     });
-    // The curated frequency list only reaches a fraction of what is taught, so
-    // "most common" leans on the corpus-backed score, which covers 99% of it.
-    // Everything is sorted with a stable tie-break on the German text, or items
-    // that score identically would shuffle between renders.
+    // "Most common" is conversation-first: authored usefulness category,
+    // curriculum order, phrase-vs-vocabulary intent, then corpus frequency.
+    // Everything has a stable German-text tie-break so equal items never jump
+    // around between renders.
     //
     // Every one of these values is worked out ONCE PER ITEM, up front, and the
     // comparator then only reads numbers. It used to compute them inside the
@@ -328,7 +385,8 @@ export function VocabTracker({
     const collator = new Intl.Collator("de");
     const keyed = matches.map((item) => ({
       item,
-      commonality: sentenceCommonality(item.de, corpusIndex),
+      commonality: priorityIndex.get(item)?.commonality ?? 5_000,
+      priorityScore: priorityIndex.get(item)?.score ?? Number.MAX_SAFE_INTEGER,
       difficulty: BAND_ORDER.indexOf(
         itemDifficulty(item.level, item.de.trim().split(/\s+/).filter(Boolean).length)
       ),
@@ -340,10 +398,10 @@ export function VocabTracker({
     const byText = (a: Keyed, b: Keyed) => collator.compare(a.de, b.de);
 
     const compare: Record<SortKey, (a: Keyed, b: Keyed) => number> = {
-      common: (a, b) => a.commonality - b.commonality || byText(a, b),
-      rare: (a, b) => b.commonality - a.commonality || byText(a, b),
-      easiest: (a, b) => a.difficulty - b.difficulty || a.commonality - b.commonality || byText(a, b),
-      hardest: (a, b) => b.difficulty - a.difficulty || a.commonality - b.commonality || byText(a, b),
+      common: (a, b) => a.priorityScore - b.priorityScore || byText(a, b),
+      rare: (a, b) => b.priorityScore - a.priorityScore || byText(a, b),
+      easiest: (a, b) => a.difficulty - b.difficulty || a.priorityScore - b.priorityScore || byText(a, b),
+      hardest: (a, b) => b.difficulty - a.difficulty || a.priorityScore - b.priorityScore || byText(a, b),
       shortest: (a, b) => a.length - b.length || byText(a, b),
       longest: (a, b) => b.length - a.length || byText(a, b),
       alpha: byText,
@@ -353,7 +411,7 @@ export function VocabTracker({
     };
     keyed.sort(compare[sort]);
     return keyed.map((entry) => entry.item);
-  }, [catalog, corpusIndex, grades, filter, query, searchIndex, sort]);
+  }, [catalog, grades, filter, itemTypeFilter, priorityIndex, query, searchIndex, sort, usefulnessFilter]);
 
   const visible = filtered.slice(0, limit);
 
@@ -513,10 +571,40 @@ export function VocabTracker({
             {ui(f.label)}
           </button>
         ))}
-        <label className="ml-auto flex items-center gap-2">
-          <span className="text-xs font-black text-[var(--text-3)]">{ui("Sort")}</span>
+        <p className="ml-auto text-xs font-bold text-[var(--text-3)]">
+          {filtered.length.toLocaleString()} {ui("of")} {catalog.length.toLocaleString()} {ui("items")}
+        </p>
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 sm:grid-cols-2">
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Item type")}</span>
           <select
-            className="h-10 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-2 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setItemTypeFilter(event.target.value as ItemTypeFilter); resetList(); }}
+            value={itemTypeFilter}
+          >
+            {ITEM_TYPE_FILTERS.map((option) => (
+              <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Usefulness")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setUsefulnessFilter(event.target.value as UsefulnessFilter); resetList(); }}
+            value={usefulnessFilter}
+          >
+            {USEFULNESS_FILTERS.map((option) => (
+              <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Sort by")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
             onChange={(event) => { setSort(event.target.value as SortKey); resetList(); }}
             value={sort}
           >
@@ -525,16 +613,25 @@ export function VocabTracker({
             ))}
           </select>
         </label>
-        <div className="relative min-w-[180px] flex-1 sm:max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
-          <input
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); resetList(); }}
-            placeholder={ui("Search German or English…")}
-            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-          />
-        </div>
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Search")}</span>
+          <span className="relative block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
+            <input
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); resetList(); }}
+              placeholder={ui("German or English…")}
+              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            />
+          </span>
+        </label>
       </div>
+
+      <p className="mt-2 text-[11px] font-bold text-[var(--text-3)]">
+        {sort === "common"
+          ? ui("Most common first uses conversation usefulness, curriculum order, and then word frequency. Niche and extra-practice material stays later.")
+          : ui("Filters and sorting apply to the full tracker, not only the rows currently visible.")}
+      </p>
 
       {selected.size > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-dim)] px-4 py-3">
@@ -569,6 +666,7 @@ export function VocabTracker({
             const status = statusForId(grades, item.id, item.aliases);
             const primaryText = uiIsGerman() ? item.en : item.de;
             const meaningText = uiIsGerman() ? item.de : item.en;
+            const usefulness = priorityIndex.get(item)?.info ?? conversationPriorityInfo(item.partKey);
             return (
               <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
                 <SelectBox
@@ -585,7 +683,18 @@ export function VocabTracker({
                   <Volume2 className="h-4 w-4" />
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <p className="min-w-0 flex-1 truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em]",
+                        usefulnessTone[usefulness.key]
+                      )}
+                      title={ui(usefulness.hint)}
+                    >
+                      {ui(usefulness.label)}
+                    </span>
+                  </div>
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                     {meaningText} · {ui(item.partLabel)}
                     {!uiIsGerman() && item.use ? ` · ${ui(item.use)}` : ""}

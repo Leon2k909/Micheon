@@ -18,6 +18,7 @@ import {
 } from "@/lib/registerCheck";
 import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
+import { conversationPriorityScore } from "@/lib/conversationPriority";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 const NEW_PER_LESSON_TARGET = 3;
@@ -158,13 +159,23 @@ export default function GuidedLearningSession() {
           return {
             item,
             priority: record?.lastGrade === "struggle" ? 0 : isDueForReview(record) ? 1 : 2,
+            conversationPriority: conversationPriorityScore({
+              partKey: item.partKey,
+              kind: item.kind,
+              commonality: sentenceCommonality(item.de, corpusIndex),
+              lessonPriority: item.lessonPriority,
+            }),
             updatedAt: Date.parse(record?.updatedAt ?? "") || 0,
           };
         });
-      keyed.sort((a, b) => a.priority - b.priority || a.updatedAt - b.updatedAt);
+      keyed.sort((a, b) =>
+        a.priority - b.priority
+        || a.conversationPriority - b.conversationPriority
+        || a.updatedAt - b.updatedAt
+      );
       return keyed.slice(0, 1200).map((entry) => entry.item);
     },
-    [catalog, gradeRevision, user]
+    [catalog, corpusIndex, gradeRevision, user]
   );
   petQuizItemsRef.current = petQuizItems;
   const petQuizAvailable = petQuizItems.length > 0;
@@ -657,16 +668,21 @@ export default function GuidedLearningSession() {
         const p = apiParts[pId];
         if (!p) return;
         const text = String(item.de ?? "");
+        const commonality = sentenceCommonality(text, corpusIndex);
         candidates.push({
           pId,
           index,
-          score: itemPriority({
+          score: conversationPriorityScore({
+            partKey: pId,
+            kind: item.kind,
+            commonality,
+            lessonPriority: item.lessonPriority,
+          }) + itemPriority({
             ability: ability.band,
-            commonality: sentenceCommonality(text, corpusIndex),
+            commonality,
             difficulty: itemDifficulty(p.level, text.trim().split(/\s+/).filter(Boolean).length),
             own: isCustomPartKey(pId),
-            lessonPriority: item.lessonPriority,
-          }),
+          }) * 100,
           step: {
             type: "sentence",
             item: {
