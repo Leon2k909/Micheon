@@ -176,6 +176,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part333",         // Theater und Oper
   "part334",         // Flug gestrichen
   "part335",         // Mit dem Zug auf Fernreise
+  "part336",         // Beim Friseur
+  "part337",         // Fahrradwerkstatt
+  "part338",         // Ein Tag in der Therme
+  "part339",         // Beim Optiker
+  "part340",         // Krank am Wochenende
+  "part341",         // Die Kita-Suche
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
