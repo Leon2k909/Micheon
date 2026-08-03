@@ -3488,8 +3488,8 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session.guided-background-monkey {
   background:
-    linear-gradient(90deg, rgba(255, 252, 245, 0.42) 0%, rgba(255, 252, 245, 0.24) 38%, rgba(255, 250, 241, 0.08) 100%),
-    url("./prototype/assets/micheon-hero-v3.webp") center / cover no-repeat;
+    linear-gradient(90deg, rgba(255, 252, 245, 0.22) 0%, rgba(255, 252, 245, 0.1) 46%, rgba(255, 250, 241, 0.04) 100%),
+    url("./prototype/assets/guided-monkey-world-v1.png") center / cover no-repeat;
 }
 
 .guided-session.fs-app.prototype-guided-session.guided-background-dawn {

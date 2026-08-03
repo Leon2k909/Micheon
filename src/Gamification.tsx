@@ -813,7 +813,7 @@ export default function GamificationPanel({
                   </div>
                   <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-2" role="radiogroup">
                     {([
-                      ["monkey", "Monkey world", "The homepage course scene, with the monkey by your lesson."],
+                      ["monkey", "Monkey world", "Default \u2014 a calm lesson landscape with the monkey beside you."],
                       ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
                       ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
                       ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
