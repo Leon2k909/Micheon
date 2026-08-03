@@ -13,6 +13,17 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.invoke("windows-settings:set-launch-at-login", Boolean(enabled)),
   setCloseBehavior: (behavior) =>
     ipcRenderer.invoke("windows-settings:set-close-behavior", behavior),
+  // Main-window zoom. All changes route through the main process so every
+  // path (these calls, Ctrl+=/-/0, Ctrl+wheel) walks the same ladder and the
+  // mascot windows are re-pinned. Each resolves to the applied factor.
+  getZoomFactor: () => ipcRenderer.invoke("zoom:get"),
+  setZoomFactor: (factor) => ipcRenderer.invoke("zoom:set", Number(factor)),
+  stepZoom: (direction) => ipcRenderer.invoke("zoom:step", direction),
+  onZoomChanged: (cb) => {
+    const handler = (_e, factor) => cb(factor);
+    ipcRenderer.on("zoom:changed", handler);
+    return () => ipcRenderer.removeListener("zoom:changed", handler);
+  },
   // Subscribe to maximize/unmaximize so the button icon can swap. Returns an
   // unsubscribe function.
   onMaximizeChange: (cb) => {

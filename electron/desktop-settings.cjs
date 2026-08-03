@@ -1,8 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const { clampZoomFactor } = require("./zoom-steps.cjs");
 
 const DEFAULT_DESKTOP_SETTINGS = Object.freeze({
   closeBehavior: "exit",
+  zoomFactor: 1,
 });
 
 const CLOSE_BEHAVIORS = new Set(["exit", "tray"]);
@@ -12,6 +14,9 @@ function normalizeDesktopSettings(value) {
     closeBehavior: CLOSE_BEHAVIORS.has(value?.closeBehavior)
       ? value.closeBehavior
       : DEFAULT_DESKTOP_SETTINGS.closeBehavior,
+    // Clamped to the zoom ladder's range so a corrupt or hand-edited file can
+    // never boot the window at an unusable size.
+    zoomFactor: clampZoomFactor(value?.zoomFactor ?? DEFAULT_DESKTOP_SETTINGS.zoomFactor),
   };
 }
 

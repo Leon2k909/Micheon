@@ -15,6 +15,9 @@ import {
   Zap,
   Languages,
   Palette,
+  Monitor,
+  Layers,
+  PawPrint,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -51,6 +54,8 @@ import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
+import { SettingsCategory } from "@/components/SettingsCategory";
+import { AppZoomControl } from "@/components/AppZoomControl";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
@@ -772,208 +777,243 @@ export default function GamificationPanel({
               </div>
 
               <div className="mt-5 border-t border-[var(--border)] pt-5">
-                <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Appearance")}</h3>
+                <h3 className="text-sm font-black text-[var(--text-1)]">{ui("More settings")}</h3>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  {ui("Effects and mascot settings.")}
+                  {ui("Sections you'll rarely need day to day. Open one to change it.")}
                 </p>
-                <button
-                  aria-pressed={effects === "lite"}
-                  aria-label={ui("Toggle reduced effects")}
-                  className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                  onClick={toggleEffects}
-                  type="button"
+                <SettingsCategory
+                  description={ui("Effects, lesson background, and app zoom.")}
+                  icon={Palette}
+                  title={ui("Appearance")}
                 >
-                  <span className="min-w-0">
-                    <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                      <Zap className="h-4 w-4" /> {ui("Reduce effects")}
-                    </span>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {ui("Turns off glows and continuous animations to save battery on slower devices.")}
-                    </span>
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                      effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
-                    )}
+                  <button
+                    aria-pressed={effects === "lite"}
+                    aria-label={ui("Toggle reduced effects")}
+                    className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                    onClick={toggleEffects}
+                    type="button"
                   >
-                    {ui(effects === "lite" ? "On" : "Off")}
-                  </span>
-                </button>
-
-                <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
-                  <div className="flex items-start gap-2">
-                    <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
-                    <div>
-                      <p className="text-sm font-black text-[var(--text-1)]">{ui("Guided lesson background")}</p>
-                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                        {ui("Choose the scenery behind your focused lesson. It never changes the lesson itself.")}
-                      </p>
-                    </div>
-                  </div>
-                  <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-2" role="radiogroup">
-                    {([
-                      ["monkey", "Monkey world", "Default \u2014 a calm lesson landscape with the monkey beside you."],
-                      ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
-                      ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
-                      ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
-                    ] as const).map(([value, label, note]) => {
-                      const active = guidedBackground === value;
-                      return (
-                        <button
-                          aria-checked={active}
-                          className={cn(
-                            "rounded-2xl border px-3 py-3 text-left transition-colors",
-                            active
-                              ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
-                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]/50"
-                          )}
-                          key={value}
-                          onClick={() => updateGuidedBackground(value)}
-                          role="radio"
-                          type="button"
-                        >
-                          <span className="block text-sm font-black">{ui(label)}</span>
-                          <span className="mt-1 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">{ui(note)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className={cn(
-                    "mt-2 flex flex-wrap items-center gap-3 rounded-2xl border p-3",
-                    guidedBackground === "custom"
-                      ? "border-[var(--accent)] bg-[var(--accent-dim)]"
-                      : "border-[var(--border)] bg-[var(--surface-2)]"
-                  )}>
-                    <button
-                      aria-pressed={guidedBackground === "custom"}
-                      className={cn(
-                        "flex min-w-0 flex-1 items-center gap-3 text-left",
-                        !guidedCustomBackground && "cursor-default"
-                      )}
-                      disabled={!guidedCustomBackground}
-                      onClick={() => updateGuidedBackground("custom")}
-                      type="button"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="h-12 w-16 shrink-0 rounded-xl border border-black/5 bg-[var(--surface)] bg-cover bg-center shadow-sm"
-                        style={guidedCustomBackground ? { backgroundImage: `url(${guidedCustomBackground})` } : undefined}
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-black text-[var(--text-1)]">{ui("Your own image")}</span>
-                        <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">
-                          {ui(guidedCustomBackground ? "Use your saved image behind every guided lesson." : "Choose a photo or illustration that puts you in the right mood.")}
-                        </span>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                        <Zap className="h-4 w-4" /> {ui("Reduce effects")}
                       </span>
-                    </button>
-                    <input ref={guidedBackgroundInputRef} accept="image/*" className="hidden" onChange={onGuidedBackgroundFile} type="file" />
-                    <button
-                      className="ghost-btn h-9 shrink-0 px-3 text-xs"
-                      onClick={() => guidedBackgroundInputRef.current?.click()}
-                      type="button"
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                        {ui("Turns off glows and continuous animations to save battery on slower devices.")}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                        effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                      )}
                     >
-                      {ui(guidedCustomBackground ? "Change image" : "Upload image")}
-                    </button>
-                    {guidedCustomBackground && (
+                      {ui(effects === "lite" ? "On" : "Off")}
+                    </span>
+                  </button>
+
+                  <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex items-start gap-2">
+                      <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Guided lesson background")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {ui("Choose the scenery behind your focused lesson. It never changes the lesson itself.")}
+                        </p>
+                      </div>
+                    </div>
+                    <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-2" role="radiogroup">
+                      {([
+                        ["monkey", "Monkey world", "Default \u2014 a calm lesson landscape with the monkey beside you."],
+                        ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
+                        ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
+                        ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
+                      ] as const).map(([value, label, note]) => {
+                        const active = guidedBackground === value;
+                        return (
+                          <button
+                            aria-checked={active}
+                            className={cn(
+                              "rounded-2xl border px-3 py-3 text-left transition-colors",
+                              active
+                                ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                                : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]/50"
+                            )}
+                            key={value}
+                            onClick={() => updateGuidedBackground(value)}
+                            role="radio"
+                            type="button"
+                          >
+                            <span className="block text-sm font-black">{ui(label)}</span>
+                            <span className="mt-1 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">{ui(note)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className={cn(
+                      "mt-2 flex flex-wrap items-center gap-3 rounded-2xl border p-3",
+                      guidedBackground === "custom"
+                        ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                        : "border-[var(--border)] bg-[var(--surface-2)]"
+                    )}>
                       <button
-                        className="h-9 shrink-0 rounded-xl px-3 text-xs font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
-                        onClick={removeGuidedBackgroundImage}
+                        aria-pressed={guidedBackground === "custom"}
+                        className={cn(
+                          "flex min-w-0 flex-1 items-center gap-3 text-left",
+                          !guidedCustomBackground && "cursor-default"
+                        )}
+                        disabled={!guidedCustomBackground}
+                        onClick={() => updateGuidedBackground("custom")}
                         type="button"
                       >
-                        {ui("Remove")}
+                        <span
+                          aria-hidden="true"
+                          className="h-12 w-16 shrink-0 rounded-xl border border-black/5 bg-[var(--surface)] bg-cover bg-center shadow-sm"
+                          style={guidedCustomBackground ? { backgroundImage: `url(${guidedCustomBackground})` } : undefined}
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-black text-[var(--text-1)]">{ui("Your own image")}</span>
+                          <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                            {ui(guidedCustomBackground ? "Use your saved image behind every guided lesson." : "Choose a photo or illustration that puts you in the right mood.")}
+                          </span>
+                        </span>
                       </button>
-                    )}
+                      <input ref={guidedBackgroundInputRef} accept="image/*" className="hidden" onChange={onGuidedBackgroundFile} type="file" />
+                      <button
+                        className="ghost-btn h-9 shrink-0 px-3 text-xs"
+                        onClick={() => guidedBackgroundInputRef.current?.click()}
+                        type="button"
+                      >
+                        {ui(guidedCustomBackground ? "Change image" : "Upload image")}
+                      </button>
+                      {guidedCustomBackground && (
+                        <button
+                          className="h-9 shrink-0 rounded-xl px-3 text-xs font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
+                          onClick={removeGuidedBackgroundImage}
+                          type="button"
+                        >
+                          {ui("Remove")}
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                      {guidedBackgroundError || ui("Your image is compressed and stored only on this device.")}
+                    </p>
                   </div>
-                  <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
-                    {guidedBackgroundError || ui("Your image is compressed and stored only on this device.")}
-                  </p>
-                </div>
+                  <AppZoomControl />
+                </SettingsCategory>
 
+                <SettingsCategory
+                  description={ui("Startup, close button, and update checks.")}
+                  icon={Monitor}
+                  title={ui("Desktop app & updates")}
+                >
+                  <WindowsAppSettings />
+
+                  {/* Account-adjacent status and progress controls balance this
+                      column without hiding them among the learning-mode choices. */}
+                  <UpdateStatusCard />
+                </SettingsCategory>
+
+                <SettingsCategory
+                  description={ui("Learning style and words learned elsewhere.")}
+                  icon={BookOpen}
+                  title={ui("Learning options")}
+                >
+                  <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+                    <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
+                    </p>
+                    <input
+                      className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                      min="0"
+                      onChange={(event) => {
+                        const valueString = event.target.value;
+                        setExternalInput(valueString);
+                        onUpdateStats?.({ externalWords: parseInt(valueString, 10) || 0 });
+                      }}
+                      placeholder="0"
+                      type="number"
+                      value={externalInput}
+                    />
+                  </div>
+
+                  <LearningModePicker value={learningMode} onChange={updateLearningMode} />
+                </SettingsCategory>
               </div>
-
-              <WindowsAppSettings />
-
-              {/* Account-adjacent status and progress controls balance this
-                  column without hiding them among the learning-mode choices. */}
-              <UpdateStatusCard />
-
-              <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-                <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  {ui("Add words learned elsewhere so the app can show a more honest vocabulary total.")}
-                </p>
-                <input
-                  className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                  min="0"
-                  onChange={(event) => {
-                    const valueString = event.target.value;
-                    setExternalInput(valueString);
-                    onUpdateStats?.({ externalWords: parseInt(valueString, 10) || 0 });
-                  }}
-                  placeholder="0"
-                  type="number"
-                  value={externalInput}
-                />
-              </div>
-
-              <LearningModePicker value={learningMode} onChange={updateLearningMode} />
             </div>
 
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
               <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Flashcard and language settings.")}</p>
 
-              <FlashcardModePicker
-                face={flashcardFace}
-                mode={flashcardMode}
-                onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
-                onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
-              />
-
-              <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {direction === "learn-en"
-                        ? ui("Learning English as a German speaker. German is shown as the meaning.")
-                        : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-                    {direction === "learn-en" ? "Deutsch" : resolvedEnglishVariant === "british" ? "practise" : "practice"}
-                  </span>
-                </div>
-                <select
-                  className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                  onChange={(event) => updateLanguageSelection(event.target.value)}
-                  value={LANGUAGE_SELECT_VALUE}
+                <SettingsCategory
+                  description={ui("Which side shows first and how cards behave.")}
+                  icon={Layers}
+                  title={ui("Flashcards")}
                 >
-                  <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
-                  <option value="british">{ui("British English")}</option>
-                  <option value="american">{ui("American English")}</option>
-                  <option value="german">Deutsch</option>
-                </select>
-                {/* Sits with the accent setting: one picks how English is
-                    written and which accent is spoken, the other picks who
-                    speaks it. Separating them into two cards read as two
-                    unrelated things. */}
-                <VoicePicker />
-              </div>
+                  <FlashcardModePicker
+                    face={flashcardFace}
+                    mode={flashcardMode}
+                    onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
+                    onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
+                  />
+                </SettingsCategory>
 
+                <SettingsCategory
+                  description={ui("English spelling, app language, and the speaking voice.")}
+                  icon={Languages}
+                  title={ui("Language & voice")}
+                >
+                  <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {direction === "learn-en"
+                            ? ui("Learning English as a German speaker. German is shown as the meaning.")
+                            : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
+                        {direction === "learn-en" ? "Deutsch" : resolvedEnglishVariant === "british" ? "practise" : "practice"}
+                      </span>
+                    </div>
+                    <select
+                      className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                      onChange={(event) => updateLanguageSelection(event.target.value)}
+                      value={LANGUAGE_SELECT_VALUE}
+                    >
+                      <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
+                      <option value="british">{ui("British English")}</option>
+                      <option value="american">{ui("American English")}</option>
+                      <option value="german">Deutsch</option>
+                    </select>
+                    {/* Sits with the accent setting: one picks how English is
+                        written and which accent is spoken, the other picks who
+                        speaks it. Separating them into two cards read as two
+                        unrelated things. */}
+                    <VoicePicker />
+                  </div>
+                </SettingsCategory>
             </div>
 
             <DeferredProfileSection
               className="lg:col-span-2"
-              fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}
-              minHeight={260}
+              fallback={<div aria-hidden="true" className="h-[72px] rounded-[24px] bg-[var(--surface-2)] motion-safe:animate-pulse" />}
+              minHeight={72}
             >
-              <Suspense fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}>
-                <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-                  <CodexPetPicker className="mt-0 border-t-0 pt-0" />
-                </div>
-              </Suspense>
+              <div className="rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
+                <SettingsCategory
+                  description={ui("Pick a desk pet and choose how often it talks.")}
+                  icon={PawPrint}
+                  title={ui("Pet & mascot")}
+                >
+                  <Suspense fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}>
+                    <CodexPetPicker className="mt-0 border-t-0 pt-0" />
+                  </Suspense>
+                </SettingsCategory>
+              </div>
             </DeferredProfileSection>
           </div>
         </section>

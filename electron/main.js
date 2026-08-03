@@ -13,10 +13,12 @@ import electronUpdater from "electron-updater";
 import { startServer } from "../server/index.js";
 import petHistoryGeometry from "./pet-history-geometry.cjs";
 import desktopSettingsStore from "./desktop-settings.cjs";
+import zoomSteps from "./zoom-steps.cjs";
 
 const { autoUpdater } = electronUpdater;
 const { clampHistoryBounds, placePetHistoryBounds } = petHistoryGeometry;
 const { readDesktopSettings, writeDesktopSettings } = desktopSettingsStore;
+const { clampZoomFactor, nextZoomStep } = zoomSteps;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -141,7 +143,9 @@ function getDesktopSettings() {
 }
 
 function saveDesktopSettings(value) {
-  desktopSettings = writeDesktopSettings(desktopSettingsPath(), value);
+  // Callers pass partial updates; merge over the current settings so saving
+  // one preference can never reset another to its default.
+  desktopSettings = writeDesktopSettings(desktopSettingsPath(), { ...getDesktopSettings(), ...value });
   if (desktopSettings.closeBehavior === "exit") destroyTray();
   return desktopSettings;
 }
@@ -715,6 +719,68 @@ function pinPetOverlayZoom(contents) {
   }
 }
 
+// ── Main-window zoom ─────────────────────────────────────────────────────
+// Zoom IS offered as a feature, but only for the main window and only through
+// applyMainZoom, which keeps the two contracts above intact: every change
+// lands on the fixed ladder (zoom-steps.cjs), and the mascot surfaces — which
+// share the origin and are silently re-zoomed by Chromium's per-origin map —
+// are pinned straight back to level 0.
+function applyMainZoom(factor) {
+  if (!mainWindow || mainWindow.isDestroyed()) return 1;
+  const next = clampZoomFactor(factor);
+  mainWindow.webContents.setZoomFactor(next);
+  pinPetOverlayZoom(petWindow?.webContents);
+  pinPetOverlayZoom(petHistoryWindow?.webContents);
+  saveDesktopSettings({ zoomFactor: next });
+  mainWindow.webContents.send("zoom:changed", next);
+  return next;
+}
+
+function currentMainZoom() {
+  if (!mainWindow || mainWindow.isDestroyed()) return getDesktopSettings().zoomFactor;
+  try {
+    return clampZoomFactor(mainWindow.webContents.getZoomFactor());
+  } catch {
+    return getDesktopSettings().zoomFactor;
+  }
+}
+
+function stepMainZoom(direction) {
+  return applyMainZoom(nextZoomStep(currentMainZoom(), direction));
+}
+
+/**
+ * Ctrl+= / Ctrl+- / Ctrl+0 for the main window.
+ *
+ * Electron's default menu only binds zoom-in to the literal "+" character,
+ * which needs Shift on most layouts — so Ctrl+- zoomed out but Ctrl+= did
+ * nothing to zoom back in. Handling the keys here accepts both the "=" key
+ * and a shifted "+", and preventDefault stops the default menu roles from
+ * double-stepping the ones they did catch. Ctrl+wheel arrives separately as
+ * a zoom-changed request and walks the same ladder.
+ */
+function installMainZoomHandlers(contents) {
+  contents.on("before-input-event", (event, input) => {
+    if (input.type !== "keyDown") return;
+    const modifier = process.platform === "darwin" ? input.meta : input.control;
+    if (!modifier || input.alt) return;
+    if (input.key === "=" || input.key === "+") {
+      event.preventDefault();
+      stepMainZoom(1);
+    } else if (input.key === "-" || input.key === "_") {
+      event.preventDefault();
+      stepMainZoom(-1);
+    } else if (input.key === "0" && !input.shift) {
+      event.preventDefault();
+      applyMainZoom(1);
+    }
+  });
+  contents.on("zoom-changed", (event, zoomDirection) => {
+    event.preventDefault();
+    stepMainZoom(zoomDirection === "in" ? 1 : -1);
+  });
+}
+
 function loadPetOverlay() {
   if (!petWindow || petWindow.isDestroyed()) return;
   if (petWindow.webContents.isLoading()) return;
@@ -1195,8 +1261,12 @@ async function createWindow() {
   });
 
   installTextContextMenu(mainWindow);
+  installMainZoomHandlers(mainWindow.webContents);
 
   await mainWindow.loadURL(`http://localhost:${PORT}`);
+  // Restore the saved zoom (and repair any stray per-origin level a pinch or
+  // old install left behind — our stored ladder value is the authority).
+  applyMainZoom(getDesktopSettings().zoomFactor);
   // The overlay is NOT created here. It uses a second lightweight renderer and
   // is created only when a pet is actually shown, so someone who never turns
   // one on never pays for it.
@@ -1397,6 +1467,21 @@ ipcMain.handle("windows-settings:set-close-behavior", (event, closeBehavior) => 
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
   saveDesktopSettings({ closeBehavior });
   return windowsSettingsSnapshot();
+});
+
+ipcMain.handle("zoom:get", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted zoom request");
+  return currentMainZoom();
+});
+
+ipcMain.handle("zoom:set", (event, factor) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted zoom request");
+  return applyMainZoom(factor);
+});
+
+ipcMain.handle("zoom:step", (event, direction) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted zoom request");
+  return stepMainZoom(Number(direction) > 0 ? 1 : -1);
 });
 
 ipcMain.on("pet-overlay:set-display-mode", (event, mode) => {

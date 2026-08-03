@@ -1,0 +1,155 @@
+// Profile & settings organisation + main-window zoom.
+//
+// Two promises are guarded here. First: the rarely-used settings live behind
+// collapsed categories whose children are not mounted until first opened, so
+// the profile screen stays fast and tidy. Second: zoom is a real feature —
+// Ctrl+= zooms in (the historic bug: only Ctrl+- worked), every zoom path
+// walks one fixed ladder, the value survives restarts, and the mascot
+// windows (same origin, silently re-zoomed by Chromium's per-origin map) are
+// pinned straight back after every change.
+const fs = require("fs");
+const path = require("path");
+
+const root = path.resolve(__dirname, "..");
+const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
+const main = read("electron/main.js");
+const preload = read("electron/preload.cjs");
+const gamification = read("src/Gamification.tsx");
+const category = read("src/components/SettingsCategory.tsx");
+const zoomControl = read("src/components/AppZoomControl.tsx");
+const i18n = read("src/lib/i18n.ts");
+const zoomSteps = require(path.join(root, "electron/zoom-steps.cjs"));
+const settingsStore = require(path.join(root, "electron/desktop-settings.cjs"));
+
+const profileStart = gamification.indexOf("if (profileOnly)");
+const profileEnd = gamification.indexOf("\n  return (", profileStart);
+const profile = gamification.slice(profileStart, profileEnd);
+
+let failures = 0;
+function check(name, condition) {
+  if (condition) {
+    console.log(`ok   ${name}`);
+    return;
+  }
+  failures += 1;
+  console.error(`FAIL ${name}`);
+}
+
+// ── The zoom ladder is sane ────────────────────────────────────────────────
+check("a garbage zoom factor falls back to 100%", zoomSteps.clampZoomFactor("nonsense") === 1);
+check("zoom factors clamp to the ladder's range", zoomSteps.clampZoomFactor(9) === 2 && zoomSteps.clampZoomFactor(0.1) === 0.5);
+check("zooming in from 100% lands on the next rung", zoomSteps.nextZoomStep(1, 1) === 1.1);
+check("zooming out from 100% lands on the previous rung", zoomSteps.nextZoomStep(1, -1) === 0.9);
+check(
+  "a legacy fractional level snaps back onto the ladder in one step",
+  zoomSteps.nextZoomStep(0.76, 1) === 0.8 && zoomSteps.nextZoomStep(0.76, -1) === 0.75
+);
+check("the ladder has hard ends", zoomSteps.nextZoomStep(2, 1) === 2 && zoomSteps.nextZoomStep(0.5, -1) === 0.5);
+check(
+  "the saved zoom factor is normalised like every other desktop setting",
+  settingsStore.normalizeDesktopSettings({ zoomFactor: 9 }).zoomFactor === 2
+    && settingsStore.normalizeDesktopSettings({}).zoomFactor === 1
+    && settingsStore.DEFAULT_DESKTOP_SETTINGS.zoomFactor === 1
+);
+
+// ── Every zoom path goes through one gatekeeper ────────────────────────────
+const applyStart = main.indexOf("function applyMainZoom");
+const applyEnd = main.indexOf("function currentMainZoom", applyStart);
+const applyBody = applyStart >= 0 && applyEnd > applyStart ? main.slice(applyStart, applyEnd) : "";
+check(
+  "applyMainZoom clamps, persists, broadcasts, and re-pins both mascot windows",
+  applyBody.includes("clampZoomFactor(factor)")
+    && applyBody.includes("pinPetOverlayZoom(petWindow?.webContents)")
+    && applyBody.includes("pinPetOverlayZoom(petHistoryWindow?.webContents)")
+    && applyBody.includes("saveDesktopSettings({ zoomFactor: next })")
+    && applyBody.includes('send("zoom:changed", next)')
+);
+check(
+  "Ctrl+= zooms in without needing Shift, and Ctrl+- still zooms out",
+  main.includes('input.key === "=" || input.key === "+"')
+    && main.includes('input.key === "-" || input.key === "_"')
+    && main.includes('before-input-event')
+);
+check(
+  "Ctrl+0 resets and the handled keys never double-fire the default menu",
+  main.includes('input.key === "0" && !input.shift')
+    && (main.match(/event\.preventDefault\(\);\s*\n\s*(stepMainZoom|applyMainZoom)/g) ?? []).length >= 3
+);
+check(
+  "Ctrl+wheel walks the same ladder instead of writing fractional levels",
+  main.includes('stepMainZoom(zoomDirection === "in" ? 1 : -1)')
+);
+check(
+  "the saved zoom is restored (and stray levels repaired) at startup",
+  main.includes("applyMainZoom(getDesktopSettings().zoomFactor)")
+);
+check(
+  "partial desktop-setting saves merge instead of resetting other keys",
+  main.includes("{ ...getDesktopSettings(), ...value }")
+);
+check(
+  "the zoom IPC surface rejects other windows",
+  ["zoom:get", "zoom:set", "zoom:step"].every((channel) => main.includes(`"${channel}"`))
+    && (main.match(/Untrusted zoom request/g) ?? []).length === 3
+);
+check(
+  "the preload bridge exposes the full zoom API",
+  ["getZoomFactor", "setZoomFactor", "stepZoom", "onZoomChanged"].every((name) => preload.includes(name))
+);
+
+// ── The settings screen stays organised and lazy ───────────────────────────
+check(
+  "collapsed categories do not mount their children until first opened",
+  category.includes("const [everOpened, setEverOpened] = useState(defaultOpen)")
+    && category.includes("{everOpened && (")
+    && category.includes("hidden={!open}")
+);
+check(
+  "categories are accessible disclosures",
+  category.includes("aria-expanded={open}") && category.includes("aria-controls={panelId}")
+);
+check(
+  "the profile screen groups the rarely-used settings into six categories",
+  (profile.match(/<SettingsCategory\r?\n/g) ?? []).length === 6
+    && !profile.includes("defaultOpen")
+);
+check(
+  "appearance, desktop, learning, flashcards, language, and pet all have a category",
+  ['title={ui("Appearance")}', 'title={ui("Desktop app & updates")}', 'title={ui("Learning options")}',
+    'title={ui("Flashcards")}', 'title={ui("Language & voice")}', 'title={ui("Pet & mascot")}']
+    .every((marker) => profile.includes(marker))
+);
+check(
+  "the pet picker only loads once its category is opened",
+  /<SettingsCategory\r?\n[^<]*?description=\{ui\("Pick a desk pet[\s\S]*?<Suspense[\s\S]*?<CodexPetPicker/.test(profile)
+);
+check(
+  "the zoom control lives in the Appearance category",
+  profile.indexOf('title={ui("Appearance")}') < profile.indexOf("<AppZoomControl />")
+    && profile.indexOf("<AppZoomControl />") < profile.indexOf('title={ui("Desktop app & updates")}')
+);
+check(
+  "the zoom control hides in the browser, where the browser's own zoom rules",
+  zoomControl.includes("api?.getZoomFactor ? api : undefined")
+    && zoomControl.includes("if (factor === null) return null;")
+);
+check(
+  "the zoom control is a labelled group with reachable buttons and a reset",
+  zoomControl.includes('aria-label={ui("Zoom in")}')
+    && zoomControl.includes('aria-label={ui("Zoom out")}')
+    && zoomControl.includes('ui("Reset to 100%")')
+    && zoomControl.includes('role="group"')
+);
+check(
+  "the new settings strings are translated for German-first learners",
+  ['"App zoom":', '"Desktop app & updates":', '"Learning options":', '"Language & voice":',
+    '"Pet & mascot":', '"More settings":', '"Zoom in":', '"Zoom out":', '"Show":']
+    .every((key) => i18n.includes(key))
+);
+
+if (failures) {
+  console.error(`\n${failures} profile organisation regression${failures === 1 ? "" : "s"}`);
+  process.exit(1);
+}
+
+console.log("\nprofile organisation and app zoom are guarded");
