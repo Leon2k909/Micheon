@@ -206,6 +206,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part363",         // Den Job wechseln
   "part365",         // Der Schadensfall
   "part361",         // Der Erste-Hilfe-Kurs
+  "part368",         // Kind krank
+  "part366",         // Der Reisepass
+  "part369",         // Die Wohnungsübergabe
+  "part370",         // Die Haushaltshilfe
+  "part371",         // Lebenslauf und Anschreiben
+  "part367",         // Mit dem Fernbus
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
