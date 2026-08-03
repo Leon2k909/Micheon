@@ -72,6 +72,10 @@ check(
   matchEnglishPhrase("ik what u mean", "I know what you mean.").ok
 );
 check(
+  "casual texting 'lmk' and 'u' are accepted in an English recall answer",
+  matchEnglishPhrase("lmk when u get there", "Let me know when you get there.").ok
+);
+check(
   "texting aliases remain whole-token only",
   !matchEnglishPhrase("bike what under mean", "I know what you mean.").ok
 );
