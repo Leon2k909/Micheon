@@ -14,6 +14,7 @@ import {
   LogOut,
   Zap,
   Languages,
+  Palette,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -58,6 +59,7 @@ import { ActivityCard } from "@/components/lab/ActivityCard";
 import { cn } from "@/lib/utils";
 import { AUDIO_SETTINGS_EVENT, getTtsSpeechRate, setTtsSpeechRate, TTS_SPEED_PRESETS } from "@/lib/audioMute";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
+import { getGuidedBackground, setGuidedBackground as saveGuidedBackground, type GuidedBackground } from "@/lib/guidedBackground";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
@@ -499,6 +501,7 @@ export default function GamificationPanel({
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const [speechRate, setSpeechRateState] = useState<number>(() => getTtsSpeechRate());
+  const [guidedBackground, setGuidedBackgroundState] = useState<GuidedBackground>(() => getGuidedBackground());
 
   useEffect(() => {
     const sync = () => setSpeechRateState(getTtsSpeechRate());
@@ -601,6 +604,11 @@ export default function GamificationPanel({
   const updateLearningMode = (value: LearningMode) => {
     setLearningMode(value);
     setLearningModeState(value);
+  };
+
+  const updateGuidedBackground = (value: GuidedBackground) => {
+    saveGuidedBackground(value);
+    setGuidedBackgroundState(value);
   };
 
   // Single dropdown covering "what's your language": pick an English variant to
@@ -758,6 +766,45 @@ export default function GamificationPanel({
                     {ui(effects === "lite" ? "On" : "Off")}
                   </span>
                 </button>
+
+                <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                  <div className="flex items-start gap-2">
+                    <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                    <div>
+                      <p className="text-sm font-black text-[var(--text-1)]">{ui("Guided lesson background")}</p>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                        {ui("Choose the scenery behind your focused lesson. It never changes the lesson itself.")}
+                      </p>
+                    </div>
+                  </div>
+                  <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-3" role="radiogroup">
+                    {([
+                      ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
+                      ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
+                      ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
+                    ] as const).map(([value, label, note]) => {
+                      const active = guidedBackground === value;
+                      return (
+                        <button
+                          aria-checked={active}
+                          className={cn(
+                            "rounded-2xl border px-3 py-3 text-left transition-colors",
+                            active
+                              ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
+                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]/50"
+                          )}
+                          key={value}
+                          onClick={() => updateGuidedBackground(value)}
+                          role="radio"
+                          type="button"
+                        >
+                          <span className="block text-sm font-black">{ui(label)}</span>
+                          <span className="mt-1 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">{ui(note)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
               </div>
 

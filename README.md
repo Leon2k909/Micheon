@@ -26,7 +26,13 @@ The app keeps the next useful lesson obvious while still giving you full access 
   <img src="docs/screenshots/micheon-guided-lesson.png" alt="Micheon guided lesson preview showing a natural German phrase" width="100%" />
 </p>
 
-<p align="center"><strong>Guided lessons</strong><br />Preview both languages, listen to every phrase, then practise through reading, meaning, typing, translation, word order, and recall.</p>
+<p align="center"><strong>Lesson preview</strong><br />Preview both languages, listen to every phrase, then practise through reading, meaning, typing, translation, word order, and recall.</p>
+
+<p align="center">
+  <img src="docs/screenshots/micheon-guided-session.png" alt="Micheon guided session showing the lesson stage path and a German phrase in the garden frame" width="100%" />
+</p>
+
+<p align="center"><strong>Guided session</strong><br />A focused practice space with a clear stage path, natural phrasing notes, audio replay, personal mastery controls, and a background you can choose in Profile &amp; Settings.</p>
 
 <table>
   <tr>

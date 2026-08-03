@@ -28,6 +28,11 @@ import {
   type FlashcardMode,
 } from "@/lib/flashcardMode";
 import { effectsReduced } from "@/lib/effects";
+import {
+  GUIDED_BACKGROUND_EVENT,
+  getGuidedBackground,
+  type GuidedBackground,
+} from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
 import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
@@ -5232,6 +5237,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
+  const [guidedBackground, setGuidedBackground] = useState<GuidedBackground>(() => getGuidedBackground());
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -5247,6 +5253,11 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   } | null>(null);
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
   const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
+  useEffect(() => {
+    const syncGuidedBackground = () => setGuidedBackground(getGuidedBackground());
+    window.addEventListener(GUIDED_BACKGROUND_EVENT, syncGuidedBackground);
+    return () => window.removeEventListener(GUIDED_BACKGROUND_EVENT, syncGuidedBackground);
+  }, []);
   const lessonProgressRef = useRef<HTMLDivElement | null>(null);
   const lessonProgressTriggerRef = useRef<HTMLButtonElement | null>(null);
   const comboRef = useRef(0);
@@ -5533,7 +5544,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   };
 
   return (
-    <div className="guided-session fs-app prototype-guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans">
+    <div className={cn("guided-session fs-app prototype-guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans", `guided-background-${guidedBackground}`)}>
 
       {/* Topbar: brand · lesson progress · mute/close */}
       <header className="fs-topbar">
