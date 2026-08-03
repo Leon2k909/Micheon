@@ -55,6 +55,8 @@ import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { germanWordGloss } from "@/lib/germanWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
+import { getCodexPetFrequency } from "@/lib/codexPetCoaching";
+import { pronounNote } from "@/lib/pronounNotes";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import {
@@ -715,6 +717,10 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
                 >
                   <span className="fs-word-popover-word">{bareWord(w)}</span>
                   {hoverGloss && <span className="fs-word-popover-gloss">{hoverGloss}</span>}
+                  {(() => {
+                    const note = showEnglishGloss ? pronounNote(bareWord(w)) : null;
+                    return note ? <span className="fs-word-popover-note">{note}</span> : null;
+                  })()}
                   <span className="fs-word-popover-actions">
                     <button className="fs-word-popover-btn" onClick={() => playWord(w, i)} type="button">
                       <Volume2 aria-hidden="true" className="h-3.5 w-3.5" />
@@ -5319,6 +5325,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         mistakes: current.mistakes + (ok ? 0 : 1),
       });
     }
+    // The praise filter: off silences the pet's cheering entirely, low keeps
+    // only streak milestones. The little on-screen streak flash stays either
+    // way — the filter is about chatter, not feedback.
+    const praiseFrequency = getCodexPetFrequency("praise");
     if (ok) {
       const n = comboRef.current + 1;
       comboRef.current = n;
@@ -5327,12 +5337,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         const id = ++praiseId.current;
         setPraise({ count: n, id });
         setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
-        petSpeak(`${n} correct in a row! Excellent work.`, {
-          durationMs: 3800,
-          mood: "celebrate",
-          voiceLang: "en-US",
-        });
-      } else {
+        if (praiseFrequency !== "off") {
+          petSpeak(`${n} correct in a row! Excellent work.`, {
+            durationMs: 3800,
+            mood: "celebrate",
+            voiceLang: "en-US",
+          });
+        }
+      } else if (praiseFrequency !== "off" && praiseFrequency !== "low") {
         const messages = ["Well done!", "Sehr gut! Very good.", "Nice work!", "You got it."];
         petSpeak(messages[correctPraiseIndex.current++ % messages.length], {
           mood: "success",
@@ -5342,16 +5354,18 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     } else {
       comboRef.current = 0;
       playWrong();
-      const messages = [
-        "Nearly. Try once more.",
-        "Keep going. Check the hint.",
-        "No problem. You can get the next one.",
-      ];
+      if (praiseFrequency !== "off") {
+        const messages = [
+          "Nearly. Try once more.",
+          "Keep going. Check the hint.",
+          "No problem. You can get the next one.",
+        ];
         petSpeak(messages[retryPraiseIndex.current++ % messages.length], {
           durationMs: 3400,
           mood: "encourage",
           voiceLang: "en-US",
-      });
+        });
+      }
     }
   };
 

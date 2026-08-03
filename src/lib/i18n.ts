@@ -829,6 +829,8 @@ const DE: Record<string, string> = {
   "Review questions": "Wiederholungsfragen",
   "Checks words and phrases you've already learned.": "Prüft Wörter und Sätze, die du bereits gelernt hast.",
   "Language tips": "Sprachtipps",
+  "Praise & encouragement": "Lob & Ermutigung",
+  "Cheers after answers and streaks. On Low, only milestones like 5 or 10 in a row speak.": "Feiert Antworten und Serien. Bei Niedrig sprechen nur Meilensteine wie 5 oder 10 in Folge.",
   "Shares useful grammar, word-order, and vocabulary tips.": "Gibt hilfreiche Tipps zu Grammatik, Satzbau und Wortschatz.",
   "Low": "Selten",
   "Normal": "Normal",

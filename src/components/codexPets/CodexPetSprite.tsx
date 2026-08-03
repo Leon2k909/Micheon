@@ -140,6 +140,8 @@ export function CodexPetSprite({
   size = 96,
 }: CodexPetSpriteProps) {
   const visibleBoundsCallback = useRef(onVisibleBounds);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [atlas, setAtlas] = useState<HTMLImageElement | null>(null);
   const [loadRetry, setLoadRetry] = useState(0);
   const requestedAnimation = pet.animations[animation] ? animation : "idle";
   const [activeAnimation, setActiveAnimation] = useState(requestedAnimation);
@@ -231,47 +233,75 @@ export function CodexPetSprite({
   useEffect(() => {
     let cancelled = false;
     let timer = 0;
-    void loadSpritesheet(spritesheetUrl).catch(() => {
-      if (cancelled || loadRetry >= 6) return;
-      timer = window.setTimeout(
-        () => setLoadRetry((current) => current + 1),
-        Math.min(10000, 500 * 2 ** loadRetry)
-      );
-    });
+    void loadSpritesheet(spritesheetUrl)
+      .then((image) => {
+        if (!cancelled) setAtlas(image);
+      })
+      .catch(() => {
+        if (cancelled || loadRetry >= 6) return;
+        timer = window.setTimeout(
+          () => setLoadRetry((current) => current + 1),
+          Math.min(10000, 500 * 2 ** loadRetry)
+        );
+      });
     return () => {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
   }, [loadRetry, spritesheetUrl]);
 
+  // Redraw when the frame or geometry changes. A canvas with high-quality
+  // smoothing resamples the 192px atlas cells noticeably better than the old
+  // CSS background upscale, which is what made a large mascot look pixelated.
+  // The backing store follows devicePixelRatio so HiDPI screens get real pixels.
+  const [dprTick, setDprTick] = useState(0);
+  useEffect(() => {
+    const media = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    const onChange = () => setDprTick((current) => current + 1);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [dprTick]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !atlas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.round(size * dpr));
+    const drawnHeight = Math.max(1, Math.round(height * dpr));
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== drawnHeight) canvas.height = drawnHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.clearRect(0, 0, width, drawnHeight);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(
+      atlas,
+      column * pet.frame.width,
+      row * pet.frame.height,
+      pet.frame.width,
+      pet.frame.height,
+      0,
+      0,
+      width,
+      drawnHeight
+    );
+  }, [atlas, column, dprTick, height, pet.frame.height, pet.frame.width, row, size]);
+
   const style = useMemo<CSSProperties>(
     () => ({
       width: size,
       height,
-      backgroundImage: `url("${spritesheetUrl}")`,
-      backgroundRepeat: "no-repeat",
-      // Scale from the atlas's intrinsic aspect ratio and use exact cell-sized
-      // offsets. This clips one 192x208 frame even if an old catalog reports a
-      // v2 8x11 atlas as the legacy nine-row format.
-      backgroundSize: `${pet.frame.columns * size}px auto`,
-      backgroundPosition: `${-column * size}px ${-row * height}px`,
       contain: "strict",
-      imageRendering: "auto",
     }),
-    [
-      column,
-      height,
-      pet.frame.columns,
-      row,
-      size,
-      spritesheetUrl,
-    ]
+    [height, size]
   );
 
   return (
-    <span
+    <canvas
       aria-hidden="true"
       className={`block shrink-0 bg-transparent ${className}`}
+      ref={canvasRef}
       style={style}
     />
   );

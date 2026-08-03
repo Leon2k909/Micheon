@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   CODEX_PET_COACHING_FREQUENCY_EVENT,
+  CODEX_PET_PRAISE_FREQUENCY_KEY,
   CODEX_PET_QUESTION_FREQUENCY_KEY,
   CODEX_PET_TIP_FREQUENCY_KEY,
   getCodexPetFrequency,
@@ -14,6 +15,7 @@ function readFrequencies() {
   return {
     questions: getCodexPetFrequency("questions"),
     tips: getCodexPetFrequency("tips"),
+    praise: getCodexPetFrequency("praise"),
   };
 }
 
@@ -26,6 +28,7 @@ export function useCodexPetCoaching() {
       if (
         event.key === CODEX_PET_QUESTION_FREQUENCY_KEY
         || event.key === CODEX_PET_TIP_FREQUENCY_KEY
+        || event.key === CODEX_PET_PRAISE_FREQUENCY_KEY
       ) sync();
     };
     window.addEventListener("storage", handleStorage);

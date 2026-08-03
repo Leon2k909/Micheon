@@ -119,6 +119,9 @@ export default function GuidedLearningSession() {
   const petSpeechRef = React.useRef(petSpeech);
   const petHistoryRef = React.useRef(petHistory);
   const petQuizIndex = React.useRef(0);
+  // Flips between production ("say it in German") and recognition ("what does
+  // this mean?") so recall practice covers both directions.
+  const petQuizReverse = React.useRef(false);
   const petQuizItemsRef = React.useRef<ReturnType<typeof buildCatalog>>([]);
   petSpeechRef.current = petSpeech;
   petHistoryRef.current = petHistory;
@@ -252,16 +255,28 @@ export default function GuidedLearningSession() {
         return;
       }
 
+      // Alternate the direction: production ("how do you say X?") and
+      // recognition ("what does X mean?") train different recall paths, and
+      // seeing only one gets stale. Deterministic alternation, no coin flips.
+      const reverse = petQuizReverse.current;
+      petQuizReverse.current = !petQuizReverse.current;
       const question = learnsEnglish
-        ? `Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?`
-        : `Do you remember how to say “${item.en}” in German?`;
+        ? (reverse
+            ? `Weißt du noch, was „${item.en}“ bedeutet?`
+            : `Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?`)
+        : (reverse
+            ? `Do you remember what “${item.de}” means?`
+            : `Do you remember how to say “${item.en}” in German?`);
+      const answerLanguage = learnsEnglish
+        ? (reverse ? "de" : "en")
+        : (reverse ? "en" : "de");
       petSpeak(question, {
         durationMs: 20000,
         mood: "greeting",
         voiceLang: learnsEnglish ? "de-DE" : "en-US",
         question: {
           aliases: item.aliases,
-          answerLanguage: learnsEnglish ? "en" : "de",
+          answerLanguage,
           de: item.de,
           en: item.en,
           itemId: item.id,

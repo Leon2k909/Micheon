@@ -2,9 +2,15 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 export const CODEX_PET_QUESTION_FREQUENCY_KEY = "gl-codex-pet-question-frequency-v1";
 export const CODEX_PET_TIP_FREQUENCY_KEY = "gl-codex-pet-tip-frequency-v1";
+export const CODEX_PET_PRAISE_FREQUENCY_KEY = "gl-codex-pet-praise-frequency-v1";
 export const CODEX_PET_COACHING_FREQUENCY_EVENT = "codex-pet-coaching-frequency-changed";
 
-export type CodexPetCoachingKind = "questions" | "tips";
+/**
+ * "praise" has no cadence of its own — it reacts to answers rather than a
+ * timer. Its frequency reads as: off = silent, low = streak milestones only,
+ * normal and up = every answer.
+ */
+export type CodexPetCoachingKind = "questions" | "tips" | "praise";
 export type CodexPetFrequency = "off" | "low" | "normal" | "high" | "custom";
 
 export type CodexPetCadence = {
@@ -29,9 +35,17 @@ const CADENCES: Record<
     normal: { initialDelayMs: 45_000, intervalMs: 60_000 },
     high: { initialDelayMs: 20_000, intervalMs: 30_000 },
   },
+  // Praise is answer-driven; these values exist only so the cadence lookup
+  // stays total over every kind.
+  praise: {
+    low: { initialDelayMs: 0, intervalMs: 0 },
+    normal: { initialDelayMs: 0, intervalMs: 0 },
+    high: { initialDelayMs: 0, intervalMs: 0 },
+  },
 };
 
 function storageKey(kind: CodexPetCoachingKind) {
+  if (kind === "praise") return CODEX_PET_PRAISE_FREQUENCY_KEY;
   return kind === "questions"
     ? CODEX_PET_QUESTION_FREQUENCY_KEY
     : CODEX_PET_TIP_FREQUENCY_KEY;

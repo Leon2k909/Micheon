@@ -248,6 +248,13 @@ export function CodexPetPicker({ className }: { className?: string } = {}) {
             onChange={setFrequency}
             value={frequencies.tips}
           />
+          <FrequencyControl
+            description={ui("Cheers after answers and streaks. On Low, only milestones like 5 or 10 in a row speak.")}
+            kind="praise"
+            label={ui("Praise & encouragement")}
+            onChange={setFrequency}
+            value={frequencies.praise}
+          />
         </div>
         <PetTimingEditor
           customCadence={frequencies.questions === "custom" || frequencies.tips === "custom"}
