@@ -3469,6 +3469,194 @@ a { color: inherit; text-decoration: none; }
   opacity: 0.78;
 }
 
+/* The optional level picker uses the same quiet, tactile treatment as the
+   main grade buttons. It lets learners correct an accidental grade without
+   sending them away to the tracker. */
+.guided-session.fs-app.prototype-guided-session .grade-btn-level {
+  border-color: rgba(54, 82, 45, 0.2);
+  background: #fffefa;
+  color: #4b5147;
+}
+
+.guided-session.fs-app.prototype-guided-session .grade-btn-level:hover:not(:disabled),
+.guided-session.fs-app.prototype-guided-session .grade-btn-level:focus-visible {
+  border-color: rgba(47, 145, 59, 0.38);
+  background: #f2faec;
+  color: #216f30;
+}
+
+.fs-review-level {
+  position: relative;
+  z-index: 18;
+}
+
+.fs-review-level-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(292px, calc(100vw - 34px));
+  padding: 10px;
+  border: 1px solid rgba(72, 92, 59, 0.2);
+  border-radius: 18px;
+  background: #fffefa;
+  box-shadow: 0 5px 0 rgba(67, 83, 55, 0.12), 0 20px 35px rgba(65, 77, 55, 0.2);
+}
+
+.fs-review-level-menu-head {
+  display: grid;
+  gap: 2px;
+  padding: 4px 6px 9px;
+}
+
+.fs-review-level-menu-head strong {
+  color: #273327;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.fs-review-level-menu-head span {
+  color: #6a7064;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.fs-review-level-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.fs-review-level-option {
+  display: grid;
+  gap: 2px;
+  min-height: 50px;
+  padding: 8px 9px;
+  border: 1px solid rgba(72, 92, 59, 0.14);
+  border-radius: 12px;
+  background: #f8f8f3;
+  color: #354035;
+  text-align: left;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.fs-review-level-option:hover,
+.fs-review-level-option:focus-visible {
+  border-color: rgba(47, 145, 59, 0.36);
+  background: #eaf8e3;
+  box-shadow: 0 2px 0 rgba(49, 144, 58, 0.15);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.fs-review-level-option.is-struggle:hover,
+.fs-review-level-option.is-struggle:focus-visible {
+  border-color: rgba(196, 111, 34, 0.34);
+  background: #fff4df;
+  box-shadow: 0 2px 0 rgba(191, 126, 49, 0.14);
+}
+
+.fs-review-level-option.is-permanent:hover,
+.fs-review-level-option.is-permanent:focus-visible {
+  border-color: rgba(77, 93, 68, 0.34);
+  background: #edf1e9;
+}
+
+.fs-review-level-option strong {
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.fs-review-level-option small {
+  color: #798071;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo {
+  position: fixed;
+  z-index: 60;
+  bottom: 28px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(520px, calc(100vw - 32px));
+  padding: 11px 12px 11px 16px;
+  border: 1px solid rgba(47, 145, 59, 0.3);
+  border-radius: 18px;
+  background: #fffefa;
+  box-shadow: 0 5px 0 rgba(49, 144, 58, 0.18), 0 18px 36px rgba(53, 89, 45, 0.18);
+  color: #354035;
+  transform: translateX(-50%);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo strong {
+  color: #216f30;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo span {
+  overflow: hidden;
+  color: #667060;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(47, 145, 59, 0.35);
+  border-radius: 12px;
+  background: #e8f7e2;
+  box-shadow: 0 3px 0 rgba(49, 144, 58, 0.18);
+  color: #216f30;
+  font-size: 12px;
+  font-weight: 950;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss):hover,
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss):focus-visible {
+  background: #dff3d7;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #70776a;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:hover,
+.guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:focus-visible {
+  background: #f1f2ec;
+  color: #41463e;
+  outline: none;
+}
+
 /* Dialogue drills use the same warm-green, tactile hierarchy as the dashboard.
    These used to retain a pink heading and a black CTA with an animated halo. */
 .guided-session.fs-app.prototype-guided-session .dialogue-title-badge {

@@ -1302,16 +1302,97 @@ function PromptLanguageBadge({ label }: { label: string }) {
   );
 }
 
-// Section
-// Section
+type GuidedReviewLevel = "know" | "struggle" | "new" | "permanent" | 1 | 2 | 3 | 4 | 5;
+
+const GUIDED_REVIEW_LEVELS: Array<{ value: GuidedReviewLevel; label: string; note: string }> = [
+  { value: "new", label: "New", note: "Start this item from the beginning" },
+  { value: "struggle", label: "Struggling", note: "Bring this back for priority practice" },
+  { value: 1, label: "Learning", note: "Review tomorrow" },
+  { value: 2, label: "Familiar", note: "Review in 3 days" },
+  { value: 3, label: "Strong", note: "Review in 10 days" },
+  { value: 4, label: "Solid", note: "Review in 30 days" },
+  { value: 5, label: "Mastered", note: "Review in 180 days" },
+  { value: "permanent", label: "Never review", note: "Keep this out of future reviews" },
+];
+
+function ReviewLevelPicker({ onSelect }: { onSelect: (level: GuidedReviewLevel) => void }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <div className="fs-review-level" ref={menuRef}>
+      <button
+        type="button"
+        className="grade-btn grade-btn-level"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((current) => !current)}
+      >
+        {ui("Set level")}
+        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="fs-review-level-menu" role="menu" aria-label={ui("Set review level")}>
+          <div className="fs-review-level-menu-head">
+            <strong>{ui("Set review level")}</strong>
+            <span>{ui("Choose the rung that feels right today.")}</span>
+          </div>
+          <div className="fs-review-level-options">
+            {GUIDED_REVIEW_LEVELS.map((option) => (
+              <button
+                key={String(option.value)}
+                type="button"
+                role="menuitem"
+                className={cn("fs-review-level-option", option.value === "struggle" && "is-struggle", option.value === "permanent" && "is-permanent")}
+                onClick={() => {
+                  onSelect(option.value);
+                  setOpen(false);
+                }}
+              >
+                <strong>{ui(option.label)}</strong>
+                <small>{ui(option.note)}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function reviewLevelDetails(level: GuidedReviewLevel) {
+  if (level === "know") {
+    return { label: "Known", note: "This item will return much later for a proper check." };
+  }
+  return GUIDED_REVIEW_LEVELS.find((option) => option.value === level) ?? GUIDED_REVIEW_LEVELS[0];
+}
+
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onAnswer }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onAnswer }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
   onNext: () => void;
   onSkip?: () => void;
   onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
+  onReviewLevel?: (level: GuidedReviewLevel) => void;
   onAnswer?: (correct: boolean) => void;
 }) {
   const shakeControls = useAnimationControls();
@@ -2393,6 +2474,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {ui("Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
+            {onReviewLevel && <ReviewLevelPicker onSelect={onReviewLevel} />}
             {phase !== "MeaningPick"
               && phase !== "ListenPick"
               && phase !== "MissingWord"
@@ -4000,7 +4082,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 }
 
 // Section
-function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onAnswer?: (correct: boolean) => void }) {
+function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void; onAnswer?: (correct: boolean) => void }) {
   const lines: any[] = dialogue?.lines ?? [];
   const [lineIdx, setLineIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -4131,6 +4213,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onAnswer }: { dialogu
             {ui("Struggle")}
             <kbd className="grade-kbd">Alt S</kbd>
           </button>
+          {onReviewLevel && <ReviewLevelPicker onSelect={(level) => onReviewLevel(lineGradeId, level)} />}
         </div>
       </div>
 
@@ -5139,7 +5222,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -5150,6 +5233,13 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [matchingProgress, setMatchingProgress] = useState(0);
   const [lessonNavigatorOpen, setLessonNavigatorOpen] = useState(false);
   const [completedLessonNumbers, setCompletedLessonNumbers] = useState<Set<number>>(() => new Set());
+  const [lastManualReviewChange, setLastManualReviewChange] = useState<{
+    itemIds: string[];
+    label: string;
+    note: string;
+    returnIndex: number;
+  } | null>(null);
+  const [gradeResetNonce, setGradeResetNonce] = useState(0);
   const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
   const lessonProgressRef = useRef<HTMLDivElement | null>(null);
   const lessonProgressTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -5168,9 +5258,20 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     [safeSteps]
   );
   const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
+  const applyManualReviewChange = useCallback((itemIds: string[], level: GuidedReviewLevel) => {
+    const ids = Array.from(new Set(itemIds.filter(Boolean)));
+    if (!ids.length) return;
+    ids.forEach((itemId) => {
+      if (level === "know" || level === "struggle") onGradeItem?.(itemId, level);
+      else if (level === "permanent") onSetItemPermanent?.(itemId);
+      else onSetItemStrength?.(itemId, level === "new" ? 0 : level);
+    });
+    const details = reviewLevelDetails(level);
+    setLastManualReviewChange({ itemIds: ids, label: details.label, note: details.note, returnIndex: index });
+  }, [index, onGradeItem, onSetItemPermanent, onSetItemStrength]);
   const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
-    onGradeItem?.(itemId, grade);
-  }, [onGradeItem]);
+    applyManualReviewChange([itemId], grade);
+  }, [applyManualReviewChange]);
   const markPreviewItemKnown = useCallback((itemId: string) => {
     if (onPreviewKnown) onPreviewKnown(itemId);
     else onGradeItem?.(itemId, "know");
@@ -5330,7 +5431,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     const itemId = current?.type === "sentence" ? current.item?.id : undefined;
     const performance = itemId ? answerPerformanceRef.current.get(itemId) : undefined;
     if (markCurrentAsStruggle) {
-      struggleIdsForStep(current).forEach((struggleId) => gradeItem(struggleId, "struggle"));
+      applyManualReviewChange(struggleIdsForStep(current), "struggle");
       petSpeak("Marked as a struggle. We will bring it back for more practice.", {
         durationMs: 3600,
         mood: "encourage",
@@ -5350,7 +5451,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       return;
     }
     const current = safeSteps[index];
-    struggleIdsForStep(current).forEach((struggleId) => gradeItem(struggleId, "struggle"));
+    applyManualReviewChange(struggleIdsForStep(current), "struggle");
     setLessonNavigatorOpen(false);
     petSpeak("Marked as a struggle. We will bring it back for more practice.", {
       durationMs: 3600,
@@ -5358,6 +5459,35 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       voiceLang: "en-US",
     });
     leaveStep(true);
+  };
+
+  const undoLastManualReviewChange = () => {
+    if (!lastManualReviewChange) return;
+    let restored = false;
+    for (const itemId of lastManualReviewChange.itemIds) {
+      if (onUndoGradeItem?.(itemId)) restored = true;
+    }
+    if (!restored) return;
+    const returningTo = lastManualReviewChange.returnIndex;
+    if (returningTo !== index) {
+      setIndex(returningTo);
+      const lessonNumber = lessonStepIndexes.indexOf(returningTo) + 1;
+      if (lessonNumber > 0) {
+        setCompletedLessonNumbers((previous) => {
+          const nextCompleted = new Set(previous);
+          nextCompleted.delete(lessonNumber);
+          return nextCompleted;
+        });
+      }
+    }
+    setLessonNavigatorOpen(false);
+    setGradeResetNonce((current) => current + 1);
+    setLastManualReviewChange(null);
+    petSpeak("Undone. You can decide again whenever you are ready.", {
+      durationMs: 2600,
+      mood: "encourage",
+      voiceLang: "en-US",
+    });
   };
 
   useEffect(() => {
@@ -5518,8 +5648,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise dialogue={step.dialogue} onGradeItem={gradeItem} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyManualReviewChange([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyManualReviewChange([itemId], level)} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">
@@ -5539,6 +5669,36 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               </div>
             </div>
           </motion.div>
+        </AnimatePresence>
+        <AnimatePresence>
+          {lastManualReviewChange && !inIntro && (
+            <motion.div
+              key={`${lastManualReviewChange.itemIds.join("-")}-${lastManualReviewChange.label}`}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+              transition={{ duration: reduceMotion ? 0.12 : 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+              className="fs-grade-undo"
+              role="status"
+            >
+              <div>
+                <strong>{ui("Marked as")} {ui(lastManualReviewChange.label)}</strong>
+                <span>{ui(lastManualReviewChange.note)}</span>
+              </div>
+              <button type="button" onClick={undoLastManualReviewChange}>
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                {ui("Undo")}
+              </button>
+              <button
+                type="button"
+                className="fs-grade-undo-dismiss"
+                aria-label={ui("Dismiss")}
+                onClick={() => setLastManualReviewChange(null)}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 

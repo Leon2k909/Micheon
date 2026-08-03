@@ -10,7 +10,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { buildCatalog, buildSession, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
-import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, type GradeRecord } from "@/lib/memoryStrength";
+import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
@@ -352,13 +352,24 @@ export default function GuidedLearningSession() {
     saveGradeStore(grades, user);
   };
 
+  // Manual changes made from a guided lesson are deliberately reversible. Keep
+  // the exact previous record in memory for this session, rather than trying to
+  // guess a prior review rung after the write has happened.
+  const manualGradeUndoRef = React.useRef(new Map<string, GradeRecord | null>());
+
+  const rememberGradeBeforeChange = (store: Record<string, GradeRecord>, itemId: string) => {
+    const prior = progressEntryForId(store, itemId)?.record;
+    manualGradeUndoRef.current.set(itemId, prior ? { ...prior } : null);
+    return prior;
+  };
+
   // Explicit skip button ("Know it") — a declaration of prior knowledge, not
   // a drill result, so it jumps most of the way up the ladder rather than
   // climbing one rung like an earned recall does. See recordDeclaredKnown.
   const markGrade = (itemId: string, grade: "know" | "struggle") => {
     try {
       const existing = loadCompleted();
-      const prior = progressEntryForId(existing, itemId)?.record;
+      const prior = rememberGradeBeforeChange(existing, itemId);
       saveReviewGrades({
         ...existing,
         [itemId]: grade === "know"
@@ -366,6 +377,41 @@ export default function GuidedLearningSession() {
           : recordStruggle(Date.now(), prior),
       });
     } catch {}
+  };
+
+  const setGuidedStrength = (itemId: string, level: number) => {
+    try {
+      const existing = loadCompleted();
+      const prior = rememberGradeBeforeChange(existing, itemId);
+      const next = setStrengthLevel(level, Date.now(), prior);
+      if (next) existing[itemId] = next;
+      else delete existing[itemId];
+      saveReviewGrades(existing);
+    } catch {}
+  };
+
+  const setGuidedPermanent = (itemId: string) => {
+    try {
+      const existing = loadCompleted();
+      const prior = rememberGradeBeforeChange(existing, itemId);
+      existing[itemId] = recordPermanent(Date.now(), prior);
+      saveReviewGrades(existing);
+    } catch {}
+  };
+
+  const undoGuidedGrade = (itemId: string) => {
+    if (!manualGradeUndoRef.current.has(itemId)) return false;
+    try {
+      const existing = loadCompleted();
+      const prior = manualGradeUndoRef.current.get(itemId);
+      if (prior) existing[itemId] = prior;
+      else delete existing[itemId];
+      saveReviewGrades(existing);
+      manualGradeUndoRef.current.delete(itemId);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const replaceKnownPreviewItem = (itemId: string) => {
@@ -927,6 +973,9 @@ export default function GuidedLearningSession() {
         );
       }}
       onGradeItem={(itemId: string, grade: "know" | "struggle") => markGrade(itemId, grade)}
+      onSetItemStrength={(itemId: string, level: number) => setGuidedStrength(itemId, level)}
+      onSetItemPermanent={(itemId: string) => setGuidedPermanent(itemId)}
+      onUndoGradeItem={(itemId: string) => undoGuidedGrade(itemId)}
       onPreviewKnown={replaceKnownPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
