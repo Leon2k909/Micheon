@@ -3128,7 +3128,9 @@ a { color: inherit; text-decoration: none; }
   color-scheme: light;
   color: var(--fs-text);
   isolation: isolate;
-  background: linear-gradient(180deg, #fbfaf6 0%, #f6f2e9 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 245, 0.12) 0%, rgba(255, 250, 241, 0.18) 100%),
+    url("./prototype/assets/guided-garden-frame-v1.png") center / cover no-repeat;
   font-family: var(--fs-font-text);
   font-size: 16px;
   line-height: 1.4;
