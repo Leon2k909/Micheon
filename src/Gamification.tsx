@@ -50,6 +50,7 @@ import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
+import { WindowsAppSettings } from "@/components/WindowsAppSettings";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
 import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
@@ -759,6 +760,8 @@ export default function GamificationPanel({
                 </button>
 
               </div>
+
+              <WindowsAppSettings />
 
               {/* Account-adjacent status and progress controls balance this
                   column without hiding them among the learning-mode choices. */}

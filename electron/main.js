@@ -6,15 +6,17 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, Menu, shell, ipcMain, screen } from "electron";
+import { app, BrowserWindow, Menu, shell, ipcMain, screen, Tray } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
 import { startServer } from "../server/index.js";
 import petHistoryGeometry from "./pet-history-geometry.cjs";
+import desktopSettingsStore from "./desktop-settings.cjs";
 
 const { autoUpdater } = electronUpdater;
 const { clampHistoryBounds, placePetHistoryBounds } = petHistoryGeometry;
+const { readDesktopSettings, writeDesktopSettings } = desktopSettingsStore;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -47,6 +49,9 @@ let petOverlayPendingGeometryRevision = 0;
 let petOverlayGeometryTransitionTimer = null;
 let petDisplayMode = "games";
 let serverStarted = false;
+let desktopSettings = null;
+let tray = null;
+let appIsQuitting = false;
 
 // Keep the transparent compositor surface close to the mascot instead of the
 // size of the entire virtual desktop. The margin gives drag hit regions room
@@ -116,10 +121,7 @@ if (!hasSingleInstanceLock) {
   app.quit();
 } else {
   app.on("second-instance", () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    showMainWindow();
   });
 }
 
@@ -127,6 +129,71 @@ async function ensureServer() {
   if (serverStarted) return;
   await startServer(PORT);
   serverStarted = true;
+}
+
+function desktopSettingsPath() {
+  return path.join(app.getPath("userData"), "desktop-settings.json");
+}
+
+function getDesktopSettings() {
+  if (!desktopSettings) desktopSettings = readDesktopSettings(desktopSettingsPath());
+  return desktopSettings;
+}
+
+function saveDesktopSettings(value) {
+  desktopSettings = writeDesktopSettings(desktopSettingsPath(), value);
+  if (desktopSettings.closeBehavior === "exit") destroyTray();
+  return desktopSettings;
+}
+
+function showMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  if (!mainWindow.isVisible()) mainWindow.show();
+  mainWindow.focus();
+}
+
+function destroyTray() {
+  if (!tray) return;
+  tray.destroy();
+  tray = null;
+}
+
+function ensureTray() {
+  if (tray) return tray;
+  tray = new Tray(path.join(__dirname, "..", "dist", "icon.png"));
+  tray.setToolTip("Micheon");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Open Micheon", click: showMainWindow },
+    { type: "separator" },
+    {
+      label: "Quit Micheon",
+      click: () => {
+        appIsQuitting = true;
+        app.quit();
+      },
+    },
+  ]));
+  tray.on("click", showMainWindow);
+  return tray;
+}
+
+function windowsSettingsSnapshot() {
+  const launchAtLoginSupported = process.platform === "win32" && app.isPackaged;
+  let launchAtLogin = false;
+  if (process.platform === "win32") {
+    try {
+      launchAtLogin = app.getLoginItemSettings().openAtLogin;
+    } catch {
+      launchAtLogin = false;
+    }
+  }
+  return {
+    ...getDesktopSettings(),
+    launchAtLogin,
+    launchAtLoginSupported,
+    platform: process.platform,
+  };
 }
 
 /**
@@ -1142,6 +1209,12 @@ async function createWindow() {
   mainWindow.on("unmaximize", sendMaxState);
   mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation);
   mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation);
+  mainWindow.on("close", (event) => {
+    if (appIsQuitting || getDesktopSettings().closeBehavior !== "tray") return;
+    event.preventDefault();
+    ensureTray();
+    mainWindow.hide();
+  });
 
   // Open external links (http/https to other sites) in the user's real browser
   // instead of inside the app window.
@@ -1305,6 +1378,26 @@ ipcMain.on("window:toggle-maximize", () => {
 });
 ipcMain.on("window:close", () => mainWindow?.close());
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
+
+ipcMain.handle("windows-settings:get", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
+  return windowsSettingsSnapshot();
+});
+
+ipcMain.handle("windows-settings:set-launch-at-login", (event, enabled) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
+  if (process.platform !== "win32" || !app.isPackaged) {
+    throw new Error("Windows startup is only available in the installed app");
+  }
+  app.setLoginItemSettings({ openAtLogin: Boolean(enabled) });
+  return windowsSettingsSnapshot();
+});
+
+ipcMain.handle("windows-settings:set-close-behavior", (event, closeBehavior) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
+  saveDesktopSettings({ closeBehavior });
+  return windowsSettingsSnapshot();
+});
 
 ipcMain.on("pet-overlay:set-display-mode", (event, mode) => {
   const trustedSender = eventCameFrom(event, mainWindow) || eventCameFrom(event, petWindow);
@@ -1541,10 +1634,16 @@ if (hasSingleInstanceLock) {
   });
 }
 
+app.on("before-quit", () => {
+  appIsQuitting = true;
+  destroyTray();
+});
+
 // macOS: re-create a window when the dock icon is clicked and none are open.
 app.on("activate", () => {
   if (!hasSingleInstanceLock) return;
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (mainWindow && !mainWindow.isDestroyed()) showMainWindow();
+  else if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 // Quit when all windows are closed, except on macOS where apps stay alive.

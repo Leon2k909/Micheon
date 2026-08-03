@@ -8,6 +8,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
   toggleMaximize: () => ipcRenderer.send("window:toggle-maximize"),
   close: () => ipcRenderer.send("window:close"),
   isMaximized: () => ipcRenderer.invoke("window:is-maximized"),
+  getWindowsSettings: () => ipcRenderer.invoke("windows-settings:get"),
+  setLaunchAtLogin: (enabled) =>
+    ipcRenderer.invoke("windows-settings:set-launch-at-login", Boolean(enabled)),
+  setCloseBehavior: (behavior) =>
+    ipcRenderer.invoke("windows-settings:set-close-behavior", behavior),
   // Subscribe to maximize/unmaximize so the button icon can swap. Returns an
   // unsubscribe function.
   onMaximizeChange: (cb) => {
