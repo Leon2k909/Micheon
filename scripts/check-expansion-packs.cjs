@@ -735,6 +735,30 @@ const expected = {
     theme: "Der Handyvertrag: Datenvolumen, Mindestlaufzeit und die Nummer mitnehmen",
     fixture: "Nach dem Datenlimit wird gedrosselt.",
   },
+  part354: {
+    theme: "Panne auf der Straße: Warndreieck, Warnweste und der Pannendienst",
+    fixture: "Zieh die Warnweste an, bevor du aussteigst.",
+  },
+  part359: {
+    theme: "Wählen gehen: Wahlbenachrichtigung, Wahllokal und zwei Stimmen",
+    fixture: "Die Zweitstimme entscheidet über die Sitze im Bundestag.",
+  },
+  part356: {
+    theme: "Der Strafzettel: falsch geparkt, Bußgeld und der Einspruch",
+    fixture: "Punkte kommen nach Flensburg.",
+  },
+  part358: {
+    theme: "Aufs Standesamt: Anmeldung, Papiere und die Eheurkunde",
+    fixture: "Ohne Standesamt gilt die Ehe nicht.",
+  },
+  part355: {
+    theme: "Heuschnupfen: Pollenflug, juckende Augen und die Tablette am Morgen",
+    fixture: "Wie ist heute der Pollenflug?",
+  },
+  part357: {
+    theme: "Sperrmüll: das alte Sofa, die Anmeldung und der Wertstoffhof",
+    fixture: "Rausstellen darfst du erst am Abend vorher.",
+  },
 };
 
 const newKeys = new Set(Object.keys(expected));
@@ -794,9 +818,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and seventy-two expansion packs contain at least 5247 authored phrases", newPhrases.length >= 5247, `found ${newPhrases.length}`);
-check("the one hundred and seventy-two expansion packs contain at least 2666 vocabulary entries", totalSeeds >= 2666, `found ${totalSeeds}`);
-check("the one hundred and seventy-two expansion packs contain at least 392 dialogues", totalDialogues >= 392, `found ${totalDialogues}`);
+check("the one hundred and seventy-eight expansion packs contain at least 5415 authored phrases", newPhrases.length >= 5415, `found ${newPhrases.length}`);
+check("the one hundred and seventy-eight expansion packs contain at least 2756 vocabulary entries", totalSeeds >= 2756, `found ${totalSeeds}`);
+check("the one hundred and seventy-eight expansion packs contain at least 404 dialogues", totalDialogues >= 404, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

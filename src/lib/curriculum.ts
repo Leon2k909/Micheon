@@ -194,6 +194,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part351",         // Serienabend
   "part352",         // Winterdienst
   "part353",         // Der Handyvertrag
+  "part354",         // Panne auf der Straße
+  "part359",         // Wählen gehen
+  "part356",         // Der Strafzettel
+  "part358",         // Aufs Standesamt
+  "part355",         // Heuschnupfen
+  "part357",         // Sperrmüll
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
