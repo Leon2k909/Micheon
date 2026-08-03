@@ -83,6 +83,14 @@ check(
   "texting aliases do not accept a changed meaning",
   !matchEnglishPhrase("ik what i mean", "I know what you mean.").ok
 );
+check(
+  "apostrophe-free numeric time shorthand is accepted",
+  matchEnglishPhrase("ill be there in 10 mins", "I'll be there in ten minutes.").ok
+);
+check(
+  "time shorthand does not accept a changed arrival time",
+  !matchEnglishPhrase("ill be there in 15 mins", "I'll be there in ten minutes.").ok
+);
 
 const german = "Wir sind noch nicht komplett, einer kommt später.";
 const phrase = findPhrase(allPartBlueprints, german);
