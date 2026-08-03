@@ -200,6 +200,12 @@ export const CURRICULUM_ORDER: string[] = [
   "part358",         // Aufs Standesamt
   "part355",         // Heuschnupfen
   "part357",         // Sperrmüll
+  "part362",         // Das Gehaltsgespräch
+  "part360",         // Blut spenden
+  "part364",         // Pflege in der Familie
+  "part363",         // Den Job wechseln
+  "part365",         // Der Schadensfall
+  "part361",         // Der Erste-Hilfe-Kurs
   "cb-smalltalk",
   "cb-numbers-time",
   "cb-letters-numbers",
