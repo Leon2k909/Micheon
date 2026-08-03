@@ -31,6 +31,7 @@ import { effectsReduced } from "@/lib/effects";
 import {
   GUIDED_BACKGROUND_EVENT,
   getGuidedBackground,
+  getGuidedCustomBackground,
   type GuidedBackground,
 } from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
@@ -5238,6 +5239,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [guidedBackground, setGuidedBackground] = useState<GuidedBackground>(() => getGuidedBackground());
+  const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -5254,7 +5256,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
   const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
   useEffect(() => {
-    const syncGuidedBackground = () => setGuidedBackground(getGuidedBackground());
+    const syncGuidedBackground = () => {
+      setGuidedBackground(getGuidedBackground());
+      setGuidedCustomBackground(getGuidedCustomBackground());
+    };
     window.addEventListener(GUIDED_BACKGROUND_EVENT, syncGuidedBackground);
     return () => window.removeEventListener(GUIDED_BACKGROUND_EVENT, syncGuidedBackground);
   }, []);
@@ -5543,8 +5548,15 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     onRegisterAnswer?.(questionId, ok);
   };
 
+  const guidedBackgroundStyle = guidedBackground === "custom" && guidedCustomBackground
+    ? { "--guided-custom-background": `url("${guidedCustomBackground}")` } as React.CSSProperties
+    : undefined;
+
   return (
-    <div className={cn("guided-session fs-app prototype-guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans", `guided-background-${guidedBackground}`)}>
+    <div
+      className={cn("guided-session fs-app prototype-guided-session app-overlay fixed inset-0 z-[500] flex flex-col overflow-hidden font-sans", `guided-background-${guidedBackground}`)}
+      style={guidedBackgroundStyle}
+    >
 
       {/* Topbar: brand · lesson progress · mute/close */}
       <header className="fs-topbar">

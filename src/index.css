@@ -3486,12 +3486,24 @@ a { color: inherit; text-decoration: none; }
     url("./prototype/assets/guided-garden-frame-v1.png") center / cover no-repeat;
 }
 
+.guided-session.fs-app.prototype-guided-session.guided-background-monkey {
+  background:
+    linear-gradient(90deg, rgba(255, 252, 245, 0.42) 0%, rgba(255, 252, 245, 0.24) 38%, rgba(255, 250, 241, 0.08) 100%),
+    url("./prototype/assets/micheon-hero-v3.webp") center / cover no-repeat;
+}
+
 .guided-session.fs-app.prototype-guided-session.guided-background-dawn {
   background: linear-gradient(135deg, #fff8e9 0%, #f7f2e8 48%, #edf7e6 100%);
 }
 
 .guided-session.fs-app.prototype-guided-session.guided-background-plain {
   background: linear-gradient(180deg, #fbfaf6 0%, #f6f2e9 100%);
+}
+
+.guided-session.fs-app.prototype-guided-session.guided-background-custom {
+  background:
+    linear-gradient(180deg, rgba(255, 252, 245, 0.18) 0%, rgba(255, 250, 241, 0.24) 100%),
+    var(--guided-custom-background) center / cover no-repeat;
 }
 
 /* The optional level picker uses the same quiet, tactile treatment as the

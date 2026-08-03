@@ -59,7 +59,14 @@ import { ActivityCard } from "@/components/lab/ActivityCard";
 import { cn } from "@/lib/utils";
 import { AUDIO_SETTINGS_EVENT, getTtsSpeechRate, setTtsSpeechRate, TTS_SPEED_PRESETS } from "@/lib/audioMute";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
-import { getGuidedBackground, setGuidedBackground as saveGuidedBackground, type GuidedBackground } from "@/lib/guidedBackground";
+import {
+  clearGuidedCustomBackground,
+  getGuidedBackground,
+  getGuidedCustomBackground,
+  saveGuidedCustomBackground,
+  setGuidedBackground as saveGuidedBackground,
+  type GuidedBackground,
+} from "@/lib/guidedBackground";
 import { ui, uiIsGerman } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
@@ -502,6 +509,8 @@ export default function GamificationPanel({
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const [speechRate, setSpeechRateState] = useState<number>(() => getTtsSpeechRate());
   const [guidedBackground, setGuidedBackgroundState] = useState<GuidedBackground>(() => getGuidedBackground());
+  const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
+  const [guidedBackgroundError, setGuidedBackgroundError] = useState("");
 
   useEffect(() => {
     const sync = () => setSpeechRateState(getTtsSpeechRate());
@@ -510,6 +519,7 @@ export default function GamificationPanel({
   }, []);
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const guidedBackgroundInputRef = useRef<HTMLInputElement | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(user.avatar);
 
   const onAvatarFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -608,7 +618,31 @@ export default function GamificationPanel({
 
   const updateGuidedBackground = (value: GuidedBackground) => {
     saveGuidedBackground(value);
-    setGuidedBackgroundState(value);
+    setGuidedBackgroundState(getGuidedBackground());
+    setGuidedBackgroundError("");
+  };
+
+  const onGuidedBackgroundFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setGuidedBackgroundError("");
+    try {
+      await saveGuidedCustomBackground(file);
+      const saved = getGuidedCustomBackground();
+      setGuidedCustomBackground(saved);
+      setGuidedBackgroundState(getGuidedBackground());
+      if (!saved) setGuidedBackgroundError(ui("We couldn't save that image on this device. Try a smaller one."));
+    } catch (error) {
+      setGuidedBackgroundError(error instanceof Error ? error.message : ui("We couldn't prepare that image."));
+    }
+  };
+
+  const removeGuidedBackgroundImage = () => {
+    clearGuidedCustomBackground();
+    setGuidedCustomBackground(null);
+    setGuidedBackgroundState(getGuidedBackground());
+    setGuidedBackgroundError("");
   };
 
   // Single dropdown covering "what's your language": pick an English variant to
@@ -777,8 +811,9 @@ export default function GamificationPanel({
                       </p>
                     </div>
                   </div>
-                  <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-3" role="radiogroup">
+                  <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-2" role="radiogroup">
                     {([
+                      ["monkey", "Monkey world", "The homepage course scene, with the monkey by your lesson."],
                       ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
                       ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
                       ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
@@ -804,6 +839,55 @@ export default function GamificationPanel({
                       );
                     })}
                   </div>
+                  <div className={cn(
+                    "mt-2 flex flex-wrap items-center gap-3 rounded-2xl border p-3",
+                    guidedBackground === "custom"
+                      ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                      : "border-[var(--border)] bg-[var(--surface-2)]"
+                  )}>
+                    <button
+                      aria-pressed={guidedBackground === "custom"}
+                      className={cn(
+                        "flex min-w-0 flex-1 items-center gap-3 text-left",
+                        !guidedCustomBackground && "cursor-default"
+                      )}
+                      disabled={!guidedCustomBackground}
+                      onClick={() => updateGuidedBackground("custom")}
+                      type="button"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="h-12 w-16 shrink-0 rounded-xl border border-black/5 bg-[var(--surface)] bg-cover bg-center shadow-sm"
+                        style={guidedCustomBackground ? { backgroundImage: `url(${guidedCustomBackground})` } : undefined}
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-black text-[var(--text-1)]">{ui("Your own image")}</span>
+                        <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                          {ui(guidedCustomBackground ? "Use your saved image behind every guided lesson." : "Choose a photo or illustration that puts you in the right mood.")}
+                        </span>
+                      </span>
+                    </button>
+                    <input ref={guidedBackgroundInputRef} accept="image/*" className="hidden" onChange={onGuidedBackgroundFile} type="file" />
+                    <button
+                      className="ghost-btn h-9 shrink-0 px-3 text-xs"
+                      onClick={() => guidedBackgroundInputRef.current?.click()}
+                      type="button"
+                    >
+                      {ui(guidedCustomBackground ? "Change image" : "Upload image")}
+                    </button>
+                    {guidedCustomBackground && (
+                      <button
+                        className="h-9 shrink-0 rounded-xl px-3 text-xs font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
+                        onClick={removeGuidedBackgroundImage}
+                        type="button"
+                      >
+                        {ui("Remove")}
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                    {guidedBackgroundError || ui("Your image is compressed and stored only on this device.")}
+                  </p>
                 </div>
 
               </div>
