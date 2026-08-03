@@ -183,24 +183,35 @@ export function conversationPriorityInfo(partKeyValue: string | undefined): Conv
 /**
  * Stable ascending score used by lessons, the tracker and pet recall.
  *
- * Category and authored pack order are hard boundaries. Inside one pack,
- * phrases come before vocabulary examples, explicit lessonPriority wins next,
- * and word-frequency commonality is the final content-based tie-break.
+ * Category bands stay hard boundaries — essentials always come before
+ * everyday material, and both before situational packs. INSIDE a band,
+ * how common the sentence actually is drives the order: the guided flow
+ * promises "what people say most, first", and authored pack order used to
+ * override that (packRank * 10,000 dwarfed commonality's 0-5,000 range), so
+ * reaching a niche pack pushed lines like "Ich war ein totaler Streber" ahead
+ * of thousands of more common unseen phrases. Now an author's lessonPriority
+ * can still deliberately promote or demote an item, phrases still edge out
+ * vocabulary examples at equal commonality, and pack order is only the final
+ * tie-break for lesson coherence.
  */
 export function conversationPriorityScore(input: ConversationPriorityInput): number {
   const info = conversationPriorityInfo(input.partKey);
-  const kindOffset = input.kind === "vocab" ? 600 : input.kind === "dialogue" ? 300 : 0;
+  const kindOffset = input.kind === "vocab" ? 60_000 : input.kind === "dialogue" ? 30_000 : 0;
+  // One authored step outweighs a 1,500-point commonality gap — the same
+  // relative strength it had before commonality was scaled up, so an editor's
+  // deliberate promotion or demotion still decides the order inside a pack.
   const authored = Number.isFinite(input.lessonPriority)
-    ? Math.max(-2, Math.min(2, Number(input.lessonPriority))) * 1_500
+    ? Math.max(-2, Math.min(2, Number(input.lessonPriority))) * 1_500_000
     : 0;
   const commonality = Number.isFinite(input.commonality)
     ? Math.max(0, Math.min(5_000, Number(input.commonality)))
     : 5_000;
 
+  // Within-band total stays below the 10,000,000 band gap:
+  // 5,000,000 + 3,000,000 + 60,000 + packRank < 10,000,000.
   return info.band * 10_000_000
-    + info.packRank * 10_000
-    + 3_000
-    + kindOffset
+    + commonality * 1_000
     + authored
-    + commonality;
+    + kindOffset
+    + info.packRank;
 }

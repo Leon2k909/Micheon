@@ -121,6 +121,31 @@ check(
 );
 
 check(
+  "inside one band, a common sentence in a later pack outranks a rare one in an earlier pack",
+  conversationPriorityScore({ partKey: "tatoeba-b1-9", kind: "phrase", commonality: 300 })
+    < conversationPriorityScore({ partKey: "tatoeba-a1-1", kind: "phrase", commonality: 3_000 })
+);
+
+const freshRanked = catalog
+  .map((item, index) => ({ item, index, s: score(item) }))
+  .sort((a, b) => a.s - b.s || a.index - b.index);
+check(
+  "the thirty best fresh candidates are common sentences or deliberate promotions",
+  freshRanked.slice(0, 30).every(({ item }) =>
+    sentenceCommonality(item.de, corpusIndex) <= 2_500
+    || (Number.isFinite(item.lessonPriority) && Number(item.lessonPriority) < 0)
+  )
+);
+const streberRow = catalog.find((item) => /totaler Streber/.test(item.de ?? ""));
+check("the nostalgic Streber dialogue line is still shipped", Boolean(streberRow));
+if (streberRow) {
+  check(
+    "a rare nostalgic line cannot lead fresh lessons ahead of common material",
+    freshRanked.findIndex(({ item }) => item === streberRow) > 2_000
+  );
+}
+
+check(
   "phrases rank before vocabulary examples inside the same pack",
   conversationPriorityScore({ partKey: "cb-greetings", kind: "phrase", commonality: 1_000 })
     < conversationPriorityScore({ partKey: "cb-greetings", kind: "vocab", commonality: 1_000 })
