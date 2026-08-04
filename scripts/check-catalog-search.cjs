@@ -16,6 +16,7 @@ const result = esbuild.buildSync({
       export { buildApiPartFromResolved } from "./src/lib/api.ts";
       export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";
       export { buildCatalog } from "./src/session.ts";
+      export { toSpokenGerman } from "./src/lib/spokenGerman.ts";
     `,
     resolveDir: root,
     sourcefile: "catalog-search-check-entry.ts",
@@ -43,6 +44,7 @@ const {
   buildBundledParts,
   buildTatoebaParts,
   buildCatalog,
+  toSpokenGerman,
 } = compiled.exports;
 
 const resolvedBlueprints = Object.fromEntries(
@@ -67,8 +69,13 @@ function check(name, condition, detail = "") {
   console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
 }
 
+// The catalogue is built in the default Conversation mode, which now teaches
+// the spoken ich-form ("Ich glaub nicht, dass…"). This check is about the
+// corrected ENGLISH still being present and searchable, so the German is only
+// a lookup key — match it in either form rather than pinning the spelling.
 const reportedGerman = "Ich glaube nicht, dass es gut für dich ist, ihn zu sehen.";
-const reported = fullCatalog.find((item) => item.de === reportedGerman);
+const reportedSpoken = toSpokenGerman(reportedGerman);
+const reported = fullCatalog.find((item) => item.de === reportedGerman || item.de === reportedSpoken);
 
 check(
   "the corrected sentence is present in the full shipped catalog",

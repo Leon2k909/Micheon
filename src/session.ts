@@ -196,17 +196,23 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       .map((line: any, li: number) => ({
         ...phraseForLearningMode(line, learningMode),
         originalIndex: li,
+        // Legacy progress was keyed by the SOURCE German, before any
+        // learning-mode rewriting existed. Building the alias from the
+        // rewritten text instead would silently orphan that progress the
+        // moment a mode changes the wording — which Conversation mode now
+        // does for every spoken ich-form.
+        originalDe: line?.de ?? "",
         id: line?.id ?? `${partKey}-dlg-${di}-${li}`,
       }))
       .filter((line: any, li: number) => {
         if (!hasSentenceShape(line.de)) return false;
-        const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line?.de ?? ""}`;
+        const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${li}-${line.originalDe}`;
         if (!isKnownItem(reviewState, line.id, [legacyDialogueId])) return true;
         const rec = findRecord(reviewState, line.id, [legacyDialogueId]);
         return isAdaptiveReinforcementEligible(rec, { ...line, level: part.level });
       });
     const newDialogueLines = usable.filter((line: any) => {
-      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line?.de ?? ""}`;
+      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line.originalDe}`;
       const progressRecord = findProgressRecord(reviewState, line.id, [legacyDialogueId]);
       // Dialogue capstones only contain genuinely unseen lines. Attempted,
       // struggling and adaptive-known lines still receive their individual
@@ -223,7 +229,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     }
     // Then drill each new or adaptively selected line as a sentence exercise.
     usable.forEach((line: any) => {
-      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line?.de ?? ""}`;
+      const legacyDialogueId = `dialogue-${d?.title ?? "line"}-${line.originalIndex}-${line.originalDe}`;
       addSentence(
         line.de,
         line.en,

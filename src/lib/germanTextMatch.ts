@@ -310,6 +310,13 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // kriegen == bekommen (colloquial "get") — person/tense kept per pair
   [/\bkriege\b/g, "bekomme"], [/\bkriegst\b/g, "bekommst"], [/\bkriegt\b/g, "bekommt"],
   [/\bkriegen\b/g, "bekommen"], [/\bgekriegt\b/g, "bekommen"],
+  // The spoken "ich krieg" has to fold here too. The -e rules further down run
+  // after this block, so a contracted "krieg" would otherwise never reach
+  // "bekomme" while the written "kriege" already had — and the two spellings of
+  // one sentence would stop matching each other. Both forms are anchored to
+  // "ich" so the noun "der Krieg" is never touched.
+  [/\bich krieg\b(?!e)/g, "ich bekomme"],
+  [/\bkrieg\b(?!e)(?=\s+ich\b)/g, "bekomme"],
 
   // ── Written form vs. spoken form ────────────────────────────────────────
   // Germans drop the ich-form -e constantly ("ich hab", "ich geh", "ich mach",
@@ -325,8 +332,16 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // (weiß, will, muss, kann, soll, darf, mag) are deliberately absent — adding
   // them would invent words like "ich weiße".
   [
-    /\bich (hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart)\b(?!e)/g,
+    /\bich (hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd)\b(?!e)/g,
     "ich $1e",
+  ],
+  // The same drop happens with the subject after the verb — "So hab ich das
+  // noch nicht gesehen", "Das mach ich gleich", "Hab ich das gesagt?". Without
+  // this the fold above only covered half the sentences it was written for,
+  // and the most natural way to say an inverted sentence was marked wrong.
+  [
+    /\b(hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd)\b(?!e)(?=\s+ich\b)/g,
+    "$1e",
   ],
   // "gibt's" / "gibts" == "gibt es"; likewise "geht's", "hat's".
   [/\b(gibt|geht|hat|passt|klappt|läuft|l(?:ä|ae)uft)['’]?s\b/g, "$1 es"],

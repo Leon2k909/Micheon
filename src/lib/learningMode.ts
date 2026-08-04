@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { matchGermanSentence } from "@/lib/germanTextMatch";
+import { toSpokenGerman } from "@/lib/spokenGerman";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 const KEY = "gl-learning-mode";
@@ -108,11 +109,11 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   // fuller standard form in `long`. Conversation mode must preserve that full
   // form as supporting context (and as an accepted answer).
   if (spoken === original) {
-    return {
+    return withSpokenIchForm({
       ...phrase,
       short: undefined,
       long: standard !== original ? standard : undefined,
-    };
+    });
   }
 
   // Swapping the German for its short form while leaving the English describing
@@ -123,11 +124,16 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   //
   // Without one, the full pair is taught and `short` is left in place, which the
   // usage chip already surfaces as what people actually say — the hint stays,
-  // the mismatched definition goes.
+  // the mismatched definition goes. The ich-form contraction below still
+  // applies, because that one never changes what the English means.
   if (!spokenEn) {
-    return { ...phrase, long: undefined };
+    return withSpokenIchForm({ ...phrase, long: undefined });
   }
 
+  // No derived contraction here on purpose: this phrase carries a hand-written
+  // conversational form with its own English, and a reviewed wording outranks a
+  // generated one. If an author wrote "Das denke ich.", that is what gets
+  // taught — the rule only fills the silence where nobody wrote anything.
   return {
     ...phrase,
     de: spoken,
@@ -135,4 +141,21 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
     short: undefined,
     long: standard !== spoken ? standard : undefined,
   };
+}
+
+/**
+ * Conversation mode's last step: drop the ich-form -e the way people speak
+ * ("So hab ich das noch nicht gesehen"). Meaning-preserving, so the English
+ * needs no counterpart — see spokenGerman.ts.
+ *
+ * The written sentence is kept in `long`, which is both the supporting context
+ * the card shows and, through matchLearningModeGermanAnswer, an accepted
+ * answer. Nobody is marked wrong for typing the textbook form. An authored
+ * `long` always wins, since a hand-written pairing knows more than this rule.
+ */
+function withSpokenIchForm<T extends PhraseForm>(phrase: T): T {
+  const written = phrase.de.trim();
+  const spoken = toSpokenGerman(written);
+  if (spoken === written) return phrase;
+  return { ...phrase, de: spoken, long: phrase.long?.trim() || written };
 }
