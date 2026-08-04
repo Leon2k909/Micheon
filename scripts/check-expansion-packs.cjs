@@ -803,6 +803,18 @@ const expected = {
     theme: "Lebenslauf und Anschreiben: tabellarisch, die Lücke und ein einziges PDF",
     fixture: "Der deutsche Lebenslauf ist tabellarisch.",
   },
+  part374: {
+    theme: "Am Stück erzählen: längere Gesprächsbeiträge",
+    fixture: "Lange Rede, kurzer Sinn: Wir haben es einfach gekauft.",
+  },
+  part372: {
+    theme: "Gründe geben: weil, denn und nämlich",
+    fixture: "Ich muss jetzt los, denn mein Zug fährt in zwanzig Minuten.",
+  },
+  part373: {
+    theme: "Folgen und Gegensätze: deshalb, obwohl und trotzdem",
+    fixture: "Einerseits ist die Wohnung teuer, andererseits spare ich mir den langen Weg.",
+  },
   part367: {
     theme: "Mit dem Fernbus: Handyticket, Gepäckfach und die Pause an der Raststätte",
     fixture: "Die Fahrzeit ist geschätzt, nicht versprochen.",
@@ -866,9 +878,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and ninety expansion packs contain at least 5751 authored phrases", newPhrases.length >= 5751, `found ${newPhrases.length}`);
-check("the one hundred and ninety expansion packs contain at least 2936 vocabulary entries", totalSeeds >= 2936, `found ${totalSeeds}`);
-check("the one hundred and ninety expansion packs contain at least 428 dialogues", totalDialogues >= 428, `found ${totalDialogues}`);
+check("the one hundred and ninety-three expansion packs contain at least 5835 authored phrases", newPhrases.length >= 5835, `found ${newPhrases.length}`);
+check("the one hundred and ninety-three expansion packs contain at least 2981 vocabulary entries", totalSeeds >= 2981, `found ${totalSeeds}`);
+check("the one hundred and ninety-three expansion packs contain at least 434 dialogues", totalDialogues >= 434, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

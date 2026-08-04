@@ -211,6 +211,9 @@ export const CURRICULUM_ORDER: string[] = [
   "part369",         // Die Wohnungsübergabe
   "part370",         // Die Haushaltshilfe
   "part371",         // Lebenslauf und Anschreiben
+  "part374",         // Am Stück erzählen
+  "part372",         // Gründe geben: weil und denn
+  "part373",         // Folgen und Gegensätze
   "part367",         // Mit dem Fernbus
   "cb-smalltalk",
   "cb-numbers-time",
