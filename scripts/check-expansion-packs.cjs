@@ -815,6 +815,18 @@ const expected = {
     theme: "Folgen und Gegensätze: deshalb, obwohl und trotzdem",
     fixture: "Einerseits ist die Wohnung teuer, andererseits spare ich mir den langen Weg.",
   },
+  part375: {
+    theme: "Battle Royale auf Deutsch: der Sturm, looten und der epische Sieg",
+    fixture: "Epischer Sieg! Wir haben es echt geschafft!",
+  },
+  part377: {
+    theme: "Mario Kart und Couch-Spiele: der blaue Panzer und die Revanche",
+    fixture: "Ich lieg in Führung, bitte nicht den blauen Panzer!",
+  },
+  part376: {
+    theme: "Minecraft auf Deutsch: craften, die Höhle und der Creeper",
+    fixture: "Der Creeper hat mein halbes Haus gesprengt.",
+  },
   part367: {
     theme: "Mit dem Fernbus: Handyticket, Gepäckfach und die Pause an der Raststätte",
     fixture: "Die Fahrzeit ist geschätzt, nicht versprochen.",
@@ -878,9 +890,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and ninety-three expansion packs contain at least 5835 authored phrases", newPhrases.length >= 5835, `found ${newPhrases.length}`);
-check("the one hundred and ninety-three expansion packs contain at least 2981 vocabulary entries", totalSeeds >= 2981, `found ${totalSeeds}`);
-check("the one hundred and ninety-three expansion packs contain at least 434 dialogues", totalDialogues >= 434, `found ${totalDialogues}`);
+check("the one hundred and ninety-six expansion packs contain at least 5919 authored phrases", newPhrases.length >= 5919, `found ${newPhrases.length}`);
+check("the one hundred and ninety-six expansion packs contain at least 3026 vocabulary entries", totalSeeds >= 3026, `found ${totalSeeds}`);
+check("the one hundred and ninety-six expansion packs contain at least 440 dialogues", totalDialogues >= 440, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

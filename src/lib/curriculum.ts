@@ -214,6 +214,9 @@ export const CURRICULUM_ORDER: string[] = [
   "part374",         // Am Stück erzählen
   "part372",         // Gründe geben: weil und denn
   "part373",         // Folgen und Gegensätze
+  "part375",         // Battle Royale auf Deutsch
+  "part377",         // Mario Kart und Couch-Spiele
+  "part376",         // Minecraft auf Deutsch
   "part367",         // Mit dem Fernbus
   "cb-smalltalk",
   "cb-numbers-time",
