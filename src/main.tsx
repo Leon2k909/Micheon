@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
+import { applyHighContrast, getHighContrast } from "./lib/highContrast";
 
 const initialParams = new URLSearchParams(window.location.search);
 const isMainShell = (
@@ -22,6 +23,7 @@ if (initialParams.has("guided")) {
 // Paint-only (no sync) so it can't clobber the shared value hydrate will load.
 applyThemeToDom(isMainShell || initialParams.has("guided") ? "light" : getTheme());
 applyEffects(getEffects());
+applyHighContrast(getHighContrast());
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
 if ((window as any).germDesktop) document.documentElement.classList.add("is-electron");

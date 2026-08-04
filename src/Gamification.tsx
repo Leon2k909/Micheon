@@ -18,6 +18,8 @@ import {
   Monitor,
   Layers,
   PawPrint,
+  Accessibility,
+  Contrast,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -56,6 +58,7 @@ import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory } from "@/components/SettingsCategory";
 import { AppZoomControl } from "@/components/AppZoomControl";
+import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
@@ -506,6 +509,7 @@ export default function GamificationPanel({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [effects, setEffects] = useState<Effects>(getEffects);
+  const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
@@ -603,6 +607,12 @@ export default function GamificationPanel({
     const next: Effects = effects === "lite" ? "full" : "lite";
     applyEffects(next);
     setEffects(next);
+  };
+
+  const toggleHighContrast = () => {
+    const next = !highContrast;
+    applyHighContrast(next);
+    setHighContrastState(next);
   };
 
   const toggleCompanion = () => {
@@ -782,35 +792,10 @@ export default function GamificationPanel({
                   {ui("Sections you'll rarely need day to day. Open one to change it.")}
                 </p>
                 <SettingsCategory
-                  description={ui("Effects, lesson background, and app zoom.")}
+                  description={ui("Lesson background and app zoom.")}
                   icon={Palette}
                   title={ui("Appearance")}
                 >
-                  <button
-                    aria-pressed={effects === "lite"}
-                    aria-label={ui("Toggle reduced effects")}
-                    className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
-                    onClick={toggleEffects}
-                    type="button"
-                  >
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
-                        <Zap className="h-4 w-4" /> {ui("Reduce effects")}
-                      </span>
-                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-                        {ui("Turns off glows and continuous animations to save battery on slower devices.")}
-                      </span>
-                    </span>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full px-3 py-1 text-xs font-black",
-                        effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
-                      )}
-                    >
-                      {ui(effects === "lite" ? "On" : "Off")}
-                    </span>
-                  </button>
-
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex items-start gap-2">
                       <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
@@ -900,6 +885,94 @@ export default function GamificationPanel({
                     </p>
                   </div>
                   <AppZoomControl />
+                </SettingsCategory>
+
+                <SettingsCategory
+                  description={ui("High contrast, calmer motion, and speech speed.")}
+                  icon={Accessibility}
+                  title={ui("Accessibility")}
+                >
+                  <button
+                    aria-pressed={highContrast}
+                    aria-label={ui("Toggle high contrast")}
+                    className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                    onClick={toggleHighContrast}
+                    type="button"
+                  >
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                        <Contrast className="h-4 w-4" /> {ui("High contrast")}
+                      </span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                        {ui("Stronger text and clearer edges in both light and dark mode.")}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                        highContrast ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                      )}
+                    >
+                      {ui(highContrast ? "On" : "Off")}
+                    </span>
+                  </button>
+
+                  <button
+                    aria-pressed={effects === "lite"}
+                    aria-label={ui("Toggle reduced effects")}
+                    className="mt-3 flex w-full items-start justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-left"
+                    onClick={toggleEffects}
+                    type="button"
+                  >
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 text-sm font-black text-[var(--text-1)]">
+                        <Zap className="h-4 w-4" /> {ui("Reduce effects")}
+                      </span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+                        {ui("Turns off glows and continuous animations to save battery on slower devices.")}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                        effects === "lite" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--text-2)]"
+                      )}
+                    >
+                      {ui(effects === "lite" ? "On" : "Off")}
+                    </span>
+                  </button>
+
+                  <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Speech speed")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {ui("How fast lessons, games, and the companion speak. You can also change this from the speaker menu or by right-clicking Hear it.")}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
+                        {speechRate}×
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-4 gap-2" role="group" aria-label={ui("Speech speed")}>
+                      {TTS_SPEED_PRESETS.map((preset) => (
+                        <button
+                          aria-pressed={Math.abs(speechRate - preset) < 0.01}
+                          className={cn(
+                            "h-11 rounded-xl border text-sm font-bold transition-colors",
+                            Math.abs(speechRate - preset) < 0.01
+                              ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
+                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]"
+                          )}
+                          key={preset}
+                          onClick={() => { setSpeechRateState(preset); setTtsSpeechRate(preset); }}
+                          type="button"
+                        >
+                          {preset}×
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </SettingsCategory>
 
                 <SettingsCategory

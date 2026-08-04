@@ -905,6 +905,12 @@ const DE: Record<string, string> = {
   "Change image": "Bild ändern",
   // ── Profile settings categories & zoom ──
   "More settings": "Weitere Einstellungen",
+  "Accessibility": "Barrierefreiheit",
+  "High contrast, calmer motion, and speech speed.": "Hoher Kontrast, ruhigere Bewegung und Sprechtempo.",
+  "High contrast": "Hoher Kontrast",
+  "Toggle high contrast": "Hohen Kontrast umschalten",
+  "Stronger text and clearer edges in both light and dark mode.": "Kräftigere Schrift und klarere Kanten im hellen und dunklen Modus.",
+  "Lesson background and app zoom.": "Lektionshintergrund und App-Zoom.",
   "Sections you'll rarely need day to day. Open one to change it.": "Bereiche, die du im Alltag selten brauchst. Öffne einen, um etwas zu ändern.",
   "Effects, lesson background, and app zoom.": "Effekte, Lektionshintergrund und App-Zoom.",
   "Desktop app & updates": "Desktop-App & Updates",

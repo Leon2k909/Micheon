@@ -7,7 +7,7 @@
   --np-surface-soft: #f8f4eb;
   --np-text: #292725;
   --np-muted: #625e59;
-  --np-soft: #817c76;
+  --np-soft: #6e6963;
   --np-line: rgba(76, 66, 55, 0.1);
   --np-green: #4fbd51;
   --np-green-dark: #238d35;
@@ -27,11 +27,11 @@
   --surface: #fffdf8;
   --surface-2: #f8f4eb;
   --surface-3: #eee9df;
-  --border: rgba(76, 66, 55, 0.11);
-  --border-2: rgba(76, 66, 55, 0.19);
+  --border: rgba(76, 66, 55, 0.16);
+  --border-2: rgba(76, 66, 55, 0.26);
   --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #7f7972;
+  --text-2: #514c46;
+  --text-3: #6b655d;
   --accent: #43b84c;
   --accent-dim: #e6f8d9;
   --shadow-strong: rgba(82, 68, 53, 0.16);
@@ -2852,11 +2852,11 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   --surface: #fffdf8;
   --surface-2: #f8f4eb;
   --surface-3: #eee9df;
-  --border: rgba(76, 66, 55, 0.11);
-  --border-2: rgba(76, 66, 55, 0.19);
+  --border: rgba(76, 66, 55, 0.16);
+  --border-2: rgba(76, 66, 55, 0.26);
   --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #7f7972;
+  --text-2: #514c46;
+  --text-3: #6b655d;
   --accent: #43b84c;
   --accent-dim: #e6f8d9;
   --accent-text: #fff;
@@ -7362,4 +7362,33 @@ html[data-theme="dark"] .np-social-empty {
   .np-social-empty > button {
     transition: none;
   }
+}
+
+/* High contrast --------------------------------------------------------------
+   Opted into from Profile settings -> Accessibility. Same layout, same hues —
+   only stronger ink and clearer edges, keyed off the html data-contrast
+   attribute exactly like data-theme and data-fx. */
+html[data-contrast="high"] .new-ui-prototype,
+html[data-contrast="high"] .np-feature-host {
+  --text-1: #171513;
+  --text-2: #38342f;
+  --text-3: #4c4640;
+  --border: rgba(56, 48, 40, 0.34);
+  --border-2: rgba(56, 48, 40, 0.5);
+}
+html[data-contrast="high"] .new-ui-prototype {
+  --np-muted: #3d3a36;
+  --np-soft: #514d47;
+}
+html[data-theme="dark"][data-contrast="high"] .new-ui-prototype,
+html[data-theme="dark"][data-contrast="high"] .np-feature-host {
+  --text-1: #ffffff;
+  --text-2: #edf1eb;
+  --text-3: #ccd5c9;
+  --border: rgba(221, 238, 218, 0.32);
+  --border-2: rgba(221, 238, 218, 0.48);
+}
+html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
+  --np-muted: #d5dcd3;
+  --np-soft: #b9c2b6;
 }

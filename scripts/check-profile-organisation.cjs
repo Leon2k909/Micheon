@@ -109,14 +109,15 @@ check(
   category.includes("aria-expanded={open}") && category.includes("aria-controls={panelId}")
 );
 check(
-  "the profile screen groups the rarely-used settings into six categories",
-  (profile.match(/<SettingsCategory\r?\n/g) ?? []).length === 6
+  "the profile screen groups the rarely-used settings into seven categories",
+  (profile.match(/<SettingsCategory\r?\n/g) ?? []).length === 7
     && !profile.includes("defaultOpen")
 );
 check(
-  "appearance, desktop, learning, flashcards, language, and pet all have a category",
-  ['title={ui("Appearance")}', 'title={ui("Desktop app & updates")}', 'title={ui("Learning options")}',
-    'title={ui("Flashcards")}', 'title={ui("Language & voice")}', 'title={ui("Pet & mascot")}']
+  "appearance, accessibility, desktop, learning, flashcards, language, and pet all have a category",
+  ['title={ui("Appearance")}', 'title={ui("Accessibility")}', 'title={ui("Desktop app & updates")}',
+    'title={ui("Learning options")}', 'title={ui("Flashcards")}', 'title={ui("Language & voice")}',
+    'title={ui("Pet & mascot")}']
     .every((marker) => profile.includes(marker))
 );
 check(
@@ -143,8 +144,44 @@ check(
 check(
   "the new settings strings are translated for German-first learners",
   ['"App zoom":', '"Desktop app & updates":', '"Learning options":', '"Language & voice":',
-    '"Pet & mascot":', '"More settings":', '"Zoom in":', '"Zoom out":', '"Show":']
+    '"Pet & mascot":', '"More settings":', '"Zoom in":', '"Zoom out":', '"Show":',
+    '"Accessibility":', '"High contrast":']
     .every((key) => i18n.includes(key))
+);
+
+// ── Accessibility: legible by default, stronger on demand ──────────────────
+const npCss = read("src/prototype/new-ui-prototype.css");
+const appCss = read("src/index.css");
+const highContrastLib = read("src/lib/highContrast.ts");
+const mainTsx = read("src/main.tsx");
+check(
+  "the washed-out light palette is gone from the dashboard and settings",
+  !npCss.includes("--text-3: #7f7972;") && !npCss.includes("--text-2: #5f5a55;")
+    && !appCss.includes("--text-3: #7f7972;")
+);
+check(
+  "high contrast overrides exist for light and dark, dashboard and lesson",
+  npCss.includes('html[data-contrast="high"] .new-ui-prototype')
+    && npCss.includes('html[data-theme="dark"][data-contrast="high"] .new-ui-prototype')
+    && appCss.includes('html[data-contrast="high"] .guided-session.fs-app.prototype-guided-session')
+);
+check(
+  "the high-contrast preference applies as a root attribute and persists",
+  highContrastLib.includes('setAttribute("data-contrast", "high")')
+    && highContrastLib.includes('removeAttribute("data-contrast")')
+    && highContrastLib.includes("localStorage.setItem(KEY")
+);
+check(
+  "the stored contrast preference paints at boot like theme and effects",
+  mainTsx.includes("applyHighContrast(getHighContrast())")
+);
+check(
+  "the Accessibility category offers contrast, motion, and speech controls",
+  profile.includes('title={ui("Accessibility")}')
+    && profile.indexOf('ui("High contrast")') > profile.indexOf('title={ui("Accessibility")}')
+    && profile.indexOf('ui("Reduce effects")') > profile.indexOf('title={ui("Accessibility")}')
+    && profile.indexOf('ui("Speech speed")') > profile.indexOf('title={ui("Accessibility")}')
+    && profile.includes("aria-pressed={highContrast}")
 );
 
 if (failures) {

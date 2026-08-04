@@ -107,11 +107,11 @@ html.is-prototype-guided-launch {
   --surface: #fffdf8;
   --surface-2: #f4f1e8;
   --surface-3: #e5ecdd;
-  --border: rgba(67, 82, 57, 0.13);
-  --border-2: rgba(67, 82, 57, 0.2);
+  --border: rgba(67, 82, 57, 0.18);
+  --border-2: rgba(67, 82, 57, 0.27);
   --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #7f7972;
+  --text-2: #514c46;
+  --text-3: #6b655d;
   --accent: #43b84c;
   --accent-dim: #e6f8d9;
   --accent-text: #ffffff;
@@ -3097,8 +3097,8 @@ a { color: inherit; text-decoration: none; }
   --border: rgba(54, 82, 45, 0.16);
   --border-2: rgba(54, 82, 45, 0.24);
   --text-1: #242622;
-  --text-2: #50554d;
-  --text-3: #70766b;
+  --text-2: #474c44;
+  --text-3: #5f6559;
   --accent: #3eb84a;
   --accent-dim: #e3f6dc;
   --accent-text: #fff;
@@ -3240,11 +3240,11 @@ a { color: inherit; text-decoration: none; }
   --surface: #fffdf8;
   --surface-2: #f1f7eb;
   --surface-3: #e1e9da;
-  --border: rgba(67, 82, 57, 0.13);
-  --border-2: rgba(67, 82, 57, 0.2);
+  --border: rgba(67, 82, 57, 0.18);
+  --border-2: rgba(67, 82, 57, 0.27);
   --text-1: #292725;
-  --text-2: #5f5a55;
-  --text-3: #7f7972;
+  --text-2: #514c46;
+  --text-3: #6b655d;
   --accent: #43b84c;
   --accent-dim: #e6f8d9;
   --shadow-strong: rgba(82, 68, 53, 0.16);
@@ -5443,4 +5443,15 @@ a { color: inherit; text-decoration: none; }
   .guided-session.fs-app.prototype-guided-session .fs-preview-primary-actions {
     gap: 8px;
   }
+}
+
+/* High contrast: guided lesson + its launch shell + the audio mixer. */
+html[data-contrast="high"].is-prototype-guided-launch,
+html[data-contrast="high"] .guided-session.fs-app.prototype-guided-session,
+html[data-contrast="high"] .audio-mixer-panel.prototype-audio-mixer {
+  --text-1: #171513;
+  --text-2: #373b33;
+  --text-3: #4a4f45;
+  --border: rgba(50, 62, 43, 0.36);
+  --border-2: rgba(50, 62, 43, 0.52);
 }
