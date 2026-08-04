@@ -92,6 +92,29 @@ check(
   !matchEnglishPhrase("ill be there in 15 mins", "I'll be there in ten minutes.").ok
 );
 
+// Plural "ihr": the display says "you all"/"you two"/"you both"/"you lot",
+// but any way of saying plural you — including plain "you" — is accepted.
+check(
+  "plain 'you' is accepted where the display says 'you all'",
+  matchEnglishPhrase("You can do it.", "You can all do it. / You can do it.").ok
+);
+check(
+  "'you all', 'you two', 'you lot', and 'yous' all fold to plain you",
+  matchEnglishPhrase("you all can do it", "You can all do it.").ok
+    && matchEnglishPhrase("yous can do it", "You can all do it.").ok
+    && matchEnglishPhrase("you make a beautiful couple", "You two make a beautiful couple.").ok
+    && matchEnglishPhrase("you just believe everything the paper says", "You lot just believe everything the paper says.").ok
+);
+check(
+  "contracted plural forms fold too",
+  matchEnglishPhrase("next time youre coming to ours", "Next time you're both coming to ours!").ok
+    && matchEnglishPhrase("thank you for taking that on", "Thank you all for taking that on.").ok
+);
+check(
+  "'Are you all right?' keeps its meaning — 'all right' is never folded away",
+  !matchEnglishPhrase("are you right", "Are you all right?").ok
+);
+
 const german = "Wir sind noch nicht komplett, einer kommt später.";
 const phrase = findPhrase(allPartBlueprints, german);
 check("the reported restaurant phrase still exists", Boolean(phrase));

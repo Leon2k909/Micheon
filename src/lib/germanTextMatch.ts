@@ -602,7 +602,25 @@ function canonicalizeEnglish(t: string) {
     
     // Polite request / question equivalents
     .replace(/\bcould\b/g, "can")
-    
+
+    // Plural you: German "ihr" sentences display "you all" / "you two" /
+    // "you both" / "you lot" so the group is visible, but English has no real
+    // plural you — every way of saying it folds to plain "you" and is
+    // accepted. "(all|both) right" is guarded so "Are you all right?" keeps
+    // its meaning.
+    .replace(/\b(?:yous|y[’']?all|yall)\b/g, "you")
+    .replace(/\byou (?:guys|lot|two|both)\b/g, "you")
+    .replace(/\b(?:all|both|the two) of you\b/g, "you")
+    .replace(/\byou[’']?re (?:all|both)\b(?!\s+right\b)/g, "you are")
+    .replace(/\byou are (?:all|both)\b(?!\s+right\b)/g, "you are")
+    .replace(/\byou[’']?ll (?:all|both)\b/g, "you will")
+    .replace(/\byou will (?:all|both)\b/g, "you will")
+    .replace(/\byou (can|could|will|would|shall|should|must|may|might|do|did|have|had) (?:all|both)\b/g, "you $1")
+    .replace(/\byou (?:all|both)\b(?!\s+right\b)/g, "you")
+    // "thank you" already folded to "thanks" a few tiers up, taking the
+    // "you" with it — catch the plural marker it left behind.
+    .replace(/\bthanks (?:all|both)\b/g, "thanks")
+
     // Common vocabulary synonyms
     .replace(/\b(pretty good|quite well)\b/g, "pretty well")
     .replace(/\b(quite a lot|a lot|pretty much|lots|plenty)\b/g, "quite a lot")

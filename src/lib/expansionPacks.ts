@@ -138,7 +138,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { title: "A lucky ending", lines: [
         { speaker: "A", de: "Habt ihr den verlorenen Schlüssel noch gefunden?", en: "Did you find the lost key in the end?" },
         { speaker: "B", de: "Ja. Ausgerechnet der Hund hatte ihn unter das Sofa geschoben.", en: "Yes. The dog, of all creatures, had pushed it under the sofa." },
-        { speaker: "A", de: "Wie habt ihr ihn gefunden?", en: "How did you find it?" },
+        { speaker: "A", de: "Wie habt ihr ihn gefunden?", en: "How did you all find it?" },
         { speaker: "B", de: "Zum Glück hat er später wieder damit gespielt.", en: "Luckily, he started playing with it again later." },
       ]},
     ],
@@ -1154,7 +1154,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Wie lange bist du schon hier?", en: "How long have you been here?", use: "Use this when the person is still here. German normally uses the present in this situation, while English asks how long they have been here.", group: "meeting-and-getting-acquainted" },
       { de: "Mit wem bist du hier?", en: "Who are you here with?", use: "A casual event or venue question. 'mit wem' asks which person or group someone came with or is spending time with.", group: "meeting-and-getting-acquainted" },
       { de: "Seid ihr schon lange befreundet?", en: "Have you been friends for long?", use: "A natural follow-up after meeting two friends. 'seid ihr' addresses both people together.", group: "meeting-and-getting-acquainted" },
-      { de: "Wie habt ihr euch kennengelernt?", en: "How did you meet?", use: "Ask two or more people for the story of how they first met. It can be about friends, a couple or colleagues.", group: "meeting-and-getting-acquainted" },
+      { de: "Wie habt ihr euch kennengelernt?", en: "How did you two meet?", use: "Ask two or more people for the story of how they first met. It can be about friends, a couple or colleagues.", group: "meeting-and-getting-acquainted" },
 
       { de: "Arbeitest du oder studierst du?", en: "Do you work or are you studying?", use: "A common getting-to-know-you question when either work or study could fit. Avoid it if the setting makes the answer obvious.", group: "work-and-study-follow-ups" },
       { de: "Was studierst du?", en: "What do you study? / What are you studying?", use: "The normal follow-up after someone says they are at university. German present tense covers what they are studying now.", group: "work-and-study-follow-ups" },
@@ -2813,7 +2813,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Bei der Übergabe zählen wir die Schlüssel.", en: "At the handover we'll count the keys.", use: "Every key must come back — a lost one can cost a whole locking system.", group: "amt-und-papierkram" },
       { de: "Die alten Möbel kommen auf den Sperrmüll.", en: "The old furniture's going out as bulky waste.", use: "der Sperrmüll — kerbside bulky waste. Half of it finds a new home before the lorry arrives.", group: "ankommen" },
       { de: "Die Nachbarn haben sich schon vorgestellt.", en: "The neighbours have already introduced themselves.", use: "sich vorstellen — introducing yourself. With dative (sich etwas vorstellen) it means imagining.", group: "ankommen" },
-      { de: "Zur Einweihungsfeier seid ihr herzlich eingeladen.", en: "You're warmly invited to the housewarming.", use: "die Einweihungsfeier — inaugurating the flat. 'herzlich eingeladen' is the fixed inviting phrase.", group: "ankommen" },
+      { de: "Zur Einweihungsfeier seid ihr herzlich eingeladen.", en: "You're all warmly invited to the housewarming.", use: "die Einweihungsfeier — inaugurating the flat. 'herzlich eingeladen' is the fixed inviting phrase.", group: "ankommen" },
       { de: "Endlich fühlt es sich wie zu Hause an.", en: "It finally feels like home.", use: "sich anfühlen wie — how something feels. The sentence the whole move was for.", group: "ankommen" },
     ],
     dialogues: [
@@ -3560,7 +3560,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Herzlichen Glückwunsch nachträglich!", en: "Happy belated birthday!", use: "nachträglich — after the fact. The essential save for the forgotten date.", group: "geschenke" },
       { de: "Was wünschst du dir denn zum Geburtstag?", en: "What would you like for your birthday then?", use: "sich etwas wünschen again — 'zum Geburtstag' pins it to the occasion.", group: "geschenke" },
       { de: "Ich habe nur ein Mitbringsel dabei, das Geschenk kommt noch.", en: "I've only got a little something with me — the present is still coming.", use: "das Mitbringsel — the small brought-along gift. Its smallness is in the word itself.", group: "geschenke" },
-      { de: "Ihr müsst doch nichts schenken — Hauptsache, ihr seid da.", en: "You don't need to give anything — the main thing is you're here.", use: "'Hauptsache, ...' — what really counts. Said sincerely and never entirely believed.", group: "geschenke" },
+      { de: "Ihr müsst doch nichts schenken — Hauptsache, ihr seid da.", en: "You don't need to give anything — the main thing is you're all here.", use: "'Hauptsache, ...' — what really counts. Said sincerely and never entirely believed.", group: "geschenke" },
       { de: "Der Gastgeber hat an alles gedacht.", en: "The host thought of everything.", use: "denken an + accusative — thinking OF something. The highest hosting compliment.", group: "geschenke" },
       { de: "Die Party ging bis tief in die Nacht.", en: "The party went on deep into the night.", use: "'bis tief in die Nacht' — the measure of a good one.", group: "geschenke" },
       { de: "Beim Aufräumen helfen zum Glück alle mit.", en: "Luckily everyone helps with the clearing up.", use: "mithelfen — pitching in. The morning-after miracle that separates friends from guests.", group: "geschenke" },
@@ -5135,7 +5135,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { title: "Sunday at Grandma's", lines: [
         { speaker: "A", de: "Kommt rein! Der Kuchen ist noch warm.", en: "Come in! The cake's still warm." },
         { speaker: "B", de: "Oma, du verwöhnst uns viel zu sehr.", en: "Grandma, you spoil us far too much." },
-        { speaker: "A", de: "Dafür seid ihr ja da. Setzt euch!", en: "That's what you're here for. Sit down!" },
+        { speaker: "A", de: "Dafür seid ihr ja da. Setzt euch!", en: "That's what you're all here for. Sit down!" },
         { speaker: "B", de: "Erst eine Runde durch den Garten, Opa wartet schon.", en: "First a lap round the garden — Grandpa's already waiting." },
       ]},
       { title: "The photo album", lines: [
@@ -8093,7 +8093,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Ein Prozess dauert lange und kostet Nerven.", en: "A lawsuit takes a long time and costs you your nerves.", use: "der Prozess — the proceedings. 'kostet Nerven' — the currency nobody budgets for.", group: "einigung" },
       { de: "Die Klage hätte ich mir sparen können.", en: "I could have spared myself the lawsuit.", use: "sich etwas sparen können — could have done without. The hindsight of most litigants.", group: "einigung" },
       { de: "Wir haben uns die Kosten geteilt und Schluss.", en: "We split the costs and that was that.", use: "The most common ending. 'und Schluss' — and done: the sound of relief.", group: "einigung" },
-      { de: "Schriftlich festhalten, was ihr vereinbart habt.", en: "Put in writing what you've agreed.", use: "festhalten — recording. The last step people skip, and later wish they hadn't.", group: "einigung" },
+      { de: "Schriftlich festhalten, was ihr vereinbart habt.", en: "Put in writing what you've both agreed.", use: "festhalten — recording. The last step people skip, and later wish they hadn't.", group: "einigung" },
       { de: "Streit kostet immer mehr, als man denkt.", en: "A dispute always costs more than you think.", use: "The summary of the whole pack, in money, time and sleep.", group: "einigung" },
       { de: "Lieber ein schlechter Vergleich als ein guter Prozess.", en: "Better a bad settlement than a good lawsuit.", use: "The German legal proverb every lawyer quotes, usually while agreeing to one.", group: "einigung" },
     ],
@@ -8952,7 +8952,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Serviette", lookup: "Serviette", fallbackEn: "napkin", tip: "noun", article: "die" },
     ],
     phrases: [
-      { de: "Am Samstag grillen wir, kommt ihr?", en: "We're barbecuing on Saturday — are you coming?", use: "grillen — the verb that organises a whole German summer weekend.", group: "einladen" },
+      { de: "Am Samstag grillen wir, kommt ihr?", en: "We're barbecuing on Saturday — are you all coming?", use: "grillen — the verb that organises a whole German summer weekend.", group: "einladen" },
       { de: "Jeder bringt etwas mit — sag Bescheid, was.", en: "Everyone brings something — let us know what.", use: "The Potluck principle, coordinated by group chat since 2015.", group: "einladen" },
       { de: "Ich mache den Nudelsalat, wie immer.", en: "I'll do the pasta salad, as always.", use: "der Nudelsalat — the mandatory side. Every family has the recipe and defends it.", group: "einladen" },
       { de: "Fleisch bringt jeder selbst mit.", en: "Everyone brings their own meat.", use: "The standard arrangement. The host supplies fire, salads and space.", group: "einladen" },
@@ -9387,7 +9387,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Die Schlüsselübergabe ist nach der Zahlung.", en: "The handover of keys is after payment.", use: "die Schlüsselübergabe — keys follow money, always, in that order.", group: "danach" },
       { de: "Der erste Abend im eigenen Haus ist ein komisches Gefühl.", en: "The first evening in your own house is a strange feeling.", use: "The honest emotional report: pride, and quiet panic about the roof.", group: "danach" },
       { de: "Jetzt tilgen wir zwanzig Jahre — aber es ist unseres.", en: "Now we're paying it off for twenty years — but it's ours.", use: "tilgen — paying down. The trade, stated plainly.", group: "danach" },
-      { de: "Kaufen lohnt sich nur, wenn ihr wirklich bleiben wollt.", en: "Buying only pays off if you genuinely want to stay.", use: "The conclusion. Under seven or eight years, renting usually wins.", group: "danach" },
+      { de: "Kaufen lohnt sich nur, wenn ihr wirklich bleiben wollt.", en: "Buying only pays off if you both genuinely want to stay.", use: "The conclusion. Under seven or eight years, renting usually wins.", group: "danach" },
     ],
     dialogues: [
       { title: "At the bank", lines: [
@@ -10541,7 +10541,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Das Rezept musst du mir unbedingt geben.", en: "You absolutely have to give me the recipe.", use: "The highest compliment at any German table. Say it and mean it.", group: "am-tisch" },
       { de: "Bleibt sitzen, ich räume nur schnell ab.", en: "Stay seated, I'll just clear up quickly.", use: "abräumen — clearing. Said firmly; the guests will offer anyway.", group: "am-tisch" },
       { de: "Wir helfen beim Abräumen, das ist doch klar.", en: "We'll help clear up, obviously.", use: "The guests' non-negotiable counter-move.", group: "danach" },
-      { de: "Den Rest packe ich euch ein, ihr esst das morgen.", en: "I'll pack the rest up for you — you'll eat it tomorrow.", use: "einpacken — the leftovers sent home. The dish comes back next month, filled.", group: "danach" },
+      { de: "Den Rest packe ich euch ein, ihr esst das morgen.", en: "I'll pack the rest up for you two — you'll eat it tomorrow.", use: "einpacken — the leftovers sent home. The dish comes back next month, filled.", group: "danach" },
       { de: "Es hat wunderbar geschmeckt, vielen Dank für alles.", en: "It tasted wonderful, thank you for everything.", use: "The doorway thank-you, said properly and with coats already on.", group: "danach" },
       { de: "Nächstes Mal kochen wir — abgemacht.", en: "Next time we cook — agreed.", use: "The reciprocity that turns one dinner into a rotation for years.", group: "danach" },
     ],
@@ -10744,7 +10744,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Beim Hamburger Modell fängst du mit zwei Stunden am Tag an.", en: "With the phased model you start with two hours a day.", use: "The scheme's everyday name. Paid by the insurer, not the employer, during the ramp-up.", group: "zurueck" },
       { de: "Sag ehrlich, wenn die Belastung noch zu hoch ist.", en: "Say honestly if the workload is still too much.", use: "die Belastung — the strain. The sentence that prevents a second sick note.", group: "zurueck" },
       { de: "Die Kollegen haben alles aufgefangen, ohne zu murren.", en: "The colleagues absorbed everything without grumbling.", use: "auffangen — catching, covering. The thing to thank people for on your first day back.", group: "zurueck" },
-      { de: "Danke, dass ihr das übernommen habt.", en: "Thank you for taking that on.", use: "The sentence to say out loud, not just think, on the first morning back.", group: "zurueck" },
+      { de: "Danke, dass ihr das übernommen habt.", en: "Thank you all for taking that on.", use: "The sentence to say out loud, not just think, on the first morning back.", group: "zurueck" },
       { de: "Schön, dass du wieder da bist.", en: "Good to have you back.", use: "The greeting that makes returning easy. Say it to others too.", group: "zurueck" },
       { de: "Bleib bloß zu Hause, wenn du ansteckend bist.", en: "Do stay at home if you're contagious.", use: "ansteckend from the children's illness pack. Presenteeism is genuinely frowned upon.", group: "zurueck" },
       { de: "Krank arbeiten bringt niemandem etwas.", en: "Working while ill does nobody any good.", use: "The closing position, and increasingly the official one in German workplaces.", group: "zurueck" },
@@ -10758,7 +10758,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       ]},
       { title: "Coming back", lines: [
         { speaker: "A", de: "Schön, dass du wieder da bist!", en: "Good to have you back!" },
-        { speaker: "B", de: "Danke. Und danke, dass ihr alles aufgefangen habt.", en: "Thanks. And thank you for absorbing everything." },
+        { speaker: "B", de: "Danke. Und danke, dass ihr alles aufgefangen habt.", en: "Thanks. And thank you all for absorbing everything." },
         { speaker: "A", de: "Kein Thema. Fang langsam an, ja?", en: "No problem at all. Start slowly, yeah?" },
         { speaker: "B", de: "Mache ich. Sonst kommt der Rückfall.", en: "I will. Otherwise the relapse comes." },
       ]},
@@ -13581,7 +13581,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Danach bist du offiziell raus.", en: "After that you're officially out.", use: "The oddly emotional moment of handing over the last key.", group: "die-schluessel" },
       { de: "Alle Schlüssel kommen zurück, auch der Briefkastenschlüssel.", en: "All keys come back, including the letterbox key.", use: "der Briefkastenschlüssel — the one that hides in a jacket pocket until March.", group: "die-schluessel" },
       { de: "Ein fehlender Schlüssel kann die ganze Schließanlage kosten.", en: "One missing key can cost the whole locking system.", use: "die Schließanlage — in shared buildings a lost key is expensive company.", group: "die-schluessel" },
-      { de: "Beim Termin geht ihr Raum für Raum durch.", en: "At the appointment you go through room by room.", use: "die Wohnungsabnahme — a slow lap of the flat with a clipboard.", group: "das-protokoll" },
+      { de: "Beim Termin geht ihr Raum für Raum durch.", en: "At the appointment the two of you go through room by room.", use: "die Wohnungsabnahme — a slow lap of the flat with a clipboard.", group: "das-protokoll" },
       { de: "Fotos dazu, mit Datum — sicher ist sicher.", en: "Photos as well, with the date — better safe than sorry.", use: "'sicher ist sicher' — the phrase that has won a thousand deposit disputes.", group: "das-protokoll" },
       { de: "Unterschreib nichts, was du nicht selbst gesehen hast.", en: "Don't sign anything you haven't seen yourself.", use: "The protocol binds both sides — read it standing in the room it describes.", group: "das-protokoll" },
       { de: "Jeder Mangel kommt ins Übergabeprotokoll.", en: "Every defect goes into the handover protocol.", use: "die Mängel — named, located, agreed. What's written counts; what's said evaporates.", group: "das-protokoll" },
