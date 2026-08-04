@@ -17,6 +17,7 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
+import { getMutedPacks, withoutMutedPacks } from "@/lib/mutedPacks";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 
@@ -613,7 +614,11 @@ export default function GuidedLearningSession() {
     };
 
     if (!explicit) {
-      const keys = Object.keys(apiParts);
+      // Paused packs leave Continue Learning entirely — no fresh phrases, no
+      // due reviews, no optional practice. Opening one by hand still works,
+      // which is why this only guards the automatic path.
+      const activeParts = withoutMutedPacks(apiParts);
+      const keys = Object.keys(activeParts);
       const requiredReviews: any[] = [];
       const globalReviews: any[] = [];
       const reinforcementReviews: any[] = [];
@@ -634,7 +639,7 @@ export default function GuidedLearningSession() {
       // "struggle" is a priority review, not a new phrase; it may use a legacy
       // alias in saved progress, so classify through statusForId.
       for (const pId of keys) {
-        const p = apiParts[pId];
+        const p = activeParts[pId];
         if (!p) continue;
         const s = sessionForPack(pId);
         for (const st of s) {
@@ -672,7 +677,8 @@ export default function GuidedLearningSession() {
         const attemptedPractice = isAttemptedPracticeEligible(record);
         if (!ordinaryReinforcement && !adaptiveReinforcement && !attemptedPractice) return;
         const pId = item.partKey;
-        if (!apiParts[pId]) return;
+        // The catalogue still holds every pack, so paused ones are dropped here.
+        if (!activeParts[pId]) return;
         const lastPractisedRaw = record?.reinforcedAt ?? record?.lastAnswerAt ?? record?.updatedAt;
         const parsedLastPractised = lastPractisedRaw ? Date.parse(lastPractisedRaw) : 0;
         const repeatPriority = adaptiveReinforcement || attemptedPractice
@@ -726,7 +732,7 @@ export default function GuidedLearningSession() {
         const progressRecord = progressEntryForId(reviewState, item.id, item.aliases)?.record;
         if (isAttemptedPracticeEligible(progressRecord)) return;
         const pId = item.partKey;
-        const p = apiParts[pId];
+        const p = activeParts[pId];
         if (!p) return;
         const text = String(item.de ?? "");
         const commonality = sentenceCommonality(text, corpusIndex);
@@ -839,13 +845,15 @@ export default function GuidedLearningSession() {
       // packs may hold due reviews or unfinished tier-1 content, and the
       // most common German must be re-served (and mastered) before anything
       // rarer further down the order unlocks.
-      const partKeys = Object.keys(apiParts);
+      // Auto-advancing must not drop the learner into a pack they paused.
+      const advanceParts = withoutMutedPacks(apiParts);
+      const partKeys = Object.keys(advanceParts);
       let nextIdWithContent: string | undefined;
 
       for (let i = 0; i < partKeys.length; i++) {
         const pId = partKeys[i];
         if (pId === id) continue; // already checked above
-        const p = apiParts[pId];
+        const p = advanceParts[pId];
         if (!p) continue;
         const pSteps = sessionForPack(pId);
         if (pSteps.some(s => s.type === "sentence" || s.type === "dialogue")) {

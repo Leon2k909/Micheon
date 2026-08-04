@@ -217,6 +217,8 @@ export const CURRICULUM_ORDER: string[] = [
   "part375",         // Battle Royale auf Deutsch
   "part377",         // Mario Kart und Couch-Spiele
   "part376",         // Minecraft auf Deutsch
+  "part379",         // Laune und Stimmung
+  "part378",         // Schuld und Ausreden
   "part367",         // Mit dem Fernbus
   "cb-smalltalk",
   "cb-numbers-time",

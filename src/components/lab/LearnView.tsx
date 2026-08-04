@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, CheckCircle2, Clock3, Headphones, Search, X } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Clock3, Headphones, PauseCircle, PlayCircle, Search, X } from "lucide-react";
 import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
@@ -8,10 +8,11 @@ import { getAuthUser } from "@/lib/profileStorage";
 import { cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
+import { getMutedPacks, setPackMuted } from "@/lib/mutedPacks";
 
 type LevelFilter = "all" | CefrTier;
 type KindFilter = "all" | "core" | "wordbank";
-type ProgressFilter = "all" | "unstarted" | "started" | "done";
+type ProgressFilter = "all" | "unstarted" | "started" | "done" | "paused";
 
 const LEVEL_FILTERS: { id: LevelFilter; label: string }[] = [
   { id: "all", label: "All levels" },
@@ -33,6 +34,7 @@ const PROGRESS_FILTERS: { id: ProgressFilter; label: string }[] = [
   { id: "unstarted", label: "Not started" },
   { id: "started", label: "In progress" },
   { id: "done", label: "Finished" },
+  { id: "paused", label: "Paused" },
 ];
 
 /** Everything about a pack a search should be able to reach. */
@@ -62,6 +64,11 @@ export function LearnView({
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
+  const [mutedPacks, setMutedPacks] = useState<Set<string>>(() => getMutedPacks());
+
+  const togglePaused = (key: string) => {
+    setMutedPacks(new Set(setPackMuted(key, !mutedPacks.has(key))));
+  };
 
   const parts = Object.entries(apiParts);
   const coreParts = parts.filter(([key]) => !isBulkPartKey(key));
@@ -95,7 +102,8 @@ export function LearnView({
     if (kindFilter === "wordbank" && !isBulkPartKey(key)) return false;
     if (levelFilter !== "all" && cefrTier(part.level) !== levelFilter) return false;
 
-    if (progressFilter !== "all") {
+    if (progressFilter === "paused" && !mutedPacks.has(key)) return false;
+    if (progressFilter !== "all" && progressFilter !== "paused") {
       const progress = progressByPart.get(key) ?? { done: 0, total: 0 };
       const ratio = progress.total ? progress.done / progress.total : 0;
       if (progressFilter === "unstarted" && progress.done !== 0) return false;
@@ -106,7 +114,7 @@ export function LearnView({
     // Every term must appear somewhere, so extra words narrow rather than widen.
     const corpus = corpora.get(key) ?? "";
     return terms.every((term) => corpus.includes(term));
-  }), [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart]);
+  }), [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks]);
 
   const filtering = Boolean(terms.length) || levelFilter !== "all"
     || kindFilter !== "all" || progressFilter !== "all";
@@ -254,22 +262,37 @@ export function LearnView({
             const featured = index === 0 && !filtering;
             const progress = progressByPart.get(key) ?? { done: 0, total: 0 };
             const finished = progress.total > 0 && progress.done >= progress.total;
+            const paused = mutedPacks.has(key);
             return (
-              <motion.button
+              <motion.div
                 className={[
-                  "card card-hover min-h-[236px] p-5 text-left",
+                  "card card-hover relative min-h-[236px] p-5 text-left",
                   featured ? "lg:col-span-2" : "",
+                  paused ? "opacity-60" : "",
                 ].join(" ")}
                 key={key}
-                onClick={() => onOpenLesson(key)}
-                type="button"
                 whileTap={{ scale: 0.985 }}
               >
-                <div className="flex items-start justify-between gap-3">
+                {/* The whole card opens the lesson, but the pause control has to
+                    be a real button of its own — so the card-wide target is an
+                    overlay behind it rather than a button wrapping everything. */}
+                <button
+                  aria-label={`${ui("Open")} ${uiOr(part.theme, "Konversationsmodul")}`}
+                  className="absolute inset-0 z-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                  onClick={() => onOpenLesson(key)}
+                  type="button"
+                />
+                <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
                     {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
                   </div>
                   <div className="flex items-center gap-2">
+                    {paused && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-3)] px-2.5 py-1 text-[11px] font-black text-[var(--text-2)]">
+                        <PauseCircle className="h-3 w-3" />
+                        {ui("Paused")}
+                      </span>
+                    )}
                     {finished && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2.5 py-1 text-[11px] font-black text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-3 w-3" />
@@ -281,15 +304,15 @@ export function LearnView({
                     </span>
                   </div>
                 </div>
-                <h2 className="mt-5 text-xl font-black leading-tight tracking-tight text-[var(--text-1)]">
+                <h2 className="pointer-events-none relative z-10 mt-5 text-xl font-black leading-tight tracking-tight text-[var(--text-1)]">
                   {uiOr(part.theme, "Konversationsmodul")}
                 </h2>
-                <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
+                <p className="pointer-events-none relative z-10 mt-2 line-clamp-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
                   {uiOr(part.description, "Praktische Sätze und Wörter für natürliche Gespräche zu diesem Thema.")}
                 </p>
 
-                <div className="mt-6 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                <div className="relative z-10 mt-6 flex items-center justify-between gap-3">
+                  <div className="pointer-events-none flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-2)]">
                       <Clock3 className="h-4 w-4" />
                     </div>
@@ -302,11 +325,25 @@ export function LearnView({
                       </p>
                     </div>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#070707] text-white">
-                    <ArrowRight className="h-4 w-4" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      aria-pressed={paused}
+                      className="flex h-10 items-center gap-1.5 rounded-full bg-[var(--surface-2)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      onClick={() => togglePaused(key)}
+                      title={ui(paused
+                        ? "Bring this pack back into your lessons."
+                        : "Skip this pack in lessons. Nothing is deleted — you can bring it back any time.")}
+                      type="button"
+                    >
+                      {paused ? <PlayCircle className="h-4 w-4" /> : <PauseCircle className="h-4 w-4" />}
+                      {ui(paused ? "Resume" : "Pause")}
+                    </button>
+                    <div className="pointer-events-none flex h-10 w-10 items-center justify-center rounded-full bg-[#070707] text-white">
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
-              </motion.button>
+              </motion.div>
             );
           })}
         </section>

@@ -827,6 +827,14 @@ const expected = {
     theme: "Minecraft auf Deutsch: craften, die Höhle und der Creeper",
     fixture: "Der Creeper hat mein halbes Haus gesprengt.",
   },
+  part379: {
+    theme: "Laune und Stimmung: gut drauf, schlecht gelaunt und alles dazwischen",
+    fixture: "Ich bin heute richtig gut gelaunt.",
+  },
+  part378: {
+    theme: "Schuld und Ausreden: wer war's, wer gibt es zu und wer redet sich raus",
+    fixture: "Ich kann nichts dafür.",
+  },
   part367: {
     theme: "Mit dem Fernbus: Handyticket, Gepäckfach und die Pause an der Raststätte",
     fixture: "Die Fahrzeit ist geschätzt, nicht versprochen.",
@@ -890,9 +898,9 @@ check(
   duplicates.map((phrase) => `${phrase.partKey}: ${phrase.de}`).join(" | ")
 );
 
-check("the one hundred and ninety-six expansion packs contain at least 5919 authored phrases", newPhrases.length >= 5919, `found ${newPhrases.length}`);
-check("the one hundred and ninety-six expansion packs contain at least 3026 vocabulary entries", totalSeeds >= 3026, `found ${totalSeeds}`);
-check("the one hundred and ninety-six expansion packs contain at least 440 dialogues", totalDialogues >= 440, `found ${totalDialogues}`);
+check("the one hundred and ninety-eight expansion packs contain at least 5975 authored phrases", newPhrases.length >= 5975, `found ${newPhrases.length}`);
+check("the one hundred and ninety-eight expansion packs contain at least 3056 vocabulary entries", totalSeeds >= 3056, `found ${totalSeeds}`);
+check("the one hundred and ninety-eight expansion packs contain at least 444 dialogues", totalDialogues >= 444, `found ${totalDialogues}`);
 check("everyday-news reactions follow the conversation-update pack", CURRICULUM_ORDER.indexOf("part244") === CURRICULUM_ORDER.indexOf("part171") + 1);
 check("everyday-news reactions stay in the core conversation tier", packMeta("part244").tier === 1);
 check("storytelling follows the conversation-bridges pack", CURRICULUM_ORDER.indexOf("part152") === CURRICULUM_ORDER.indexOf("cb-conversation-bridges") + 1);

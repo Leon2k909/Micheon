@@ -905,6 +905,11 @@ const DE: Record<string, string> = {
   "Change image": "Bild ändern",
   // ── Profile settings categories & zoom ──
   "More settings": "Weitere Einstellungen",
+  // ── Pausing packs that aren't relevant yet ──
+  "Pause": "Pausieren",
+  "Resume": "Fortsetzen",
+  "Skip this pack in lessons. Nothing is deleted — you can bring it back any time.": "Dieses Paket im Unterricht überspringen. Nichts wird gelöscht — du kannst es jederzeit zurückholen.",
+  "Bring this pack back into your lessons.": "Dieses Paket wieder in deine Lektionen aufnehmen.",
   "Accessibility": "Barrierefreiheit",
   "High contrast, calmer motion, and speech speed.": "Hoher Kontrast, ruhigere Bewegung und Sprechtempo.",
   "High contrast": "Hoher Kontrast",
