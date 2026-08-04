@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.150",
+  "version": "1.2.151",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -45,7 +45,7 @@
     "check:startup-performance": "node scripts/check-startup-performance.cjs",
     "check:windows-settings": "node scripts/check-windows-settings.cjs",
     "check:desktop-polish": "node scripts/check-desktop-polish.cjs",
-    "build": "npm run typecheck && npm run check:server-loopback && npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answerable-content && npm run check:grammar-reference && npm run check:answer-matching && npm run check:spoken-forms && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:guided-render-safety && npm run check:lesson-navigation && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:conversation-priority && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && npm run check:first-run-onboarding && npm run check:startup-performance && npm run check:windows-settings && npm run check:profile-organisation && npm run check:muted-packs && npm run check:desktop-polish && vite build",
+    "build": "npm run typecheck && npm run check:server-loopback && npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answerable-content && npm run check:grammar-reference && npm run check:answer-matching && npm run check:spoken-forms && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:guided-render-safety && npm run check:lesson-navigation && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:conversation-priority && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && npm run check:first-run-onboarding && npm run check:startup-performance && npm run check:windows-settings && npm run check:profile-organisation && npm run check:contrast && npm run check:muted-packs && npm run check:desktop-polish && vite build",
     "start": "node server/index.js",
     "electron": "npm run build && electron .",
     "electron:run": "electron .",
@@ -56,7 +56,8 @@
     "check:profile-organisation": "node scripts/check-profile-organisation.cjs",
     "check:answerable-content": "node scripts/check-answerable-content.cjs",
     "check:muted-packs": "node scripts/check-muted-packs.cjs",
-    "check:spoken-forms": "node scripts/check-spoken-forms.cjs"
+    "check:spoken-forms": "node scripts/check-spoken-forms.cjs",
+    "check:contrast": "node scripts/check-contrast.cjs"
   },
   "build": {
     "appId": "com.germ.germanlab",
