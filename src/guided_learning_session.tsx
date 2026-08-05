@@ -10,7 +10,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
-import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, reviewCapForBacklog, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
@@ -901,7 +901,10 @@ export default function GuidedLearningSession() {
         requiredReviews,
         globalReviews,
         NEW_PER_LESSON_TARGET,
-        OLD_PER_LESSON,
+        // The review half breathes with the backlog: three slots on a quiet
+        // day, more when due items have piled up, so review debt drains
+        // instead of stranding most of what was learned.
+        reviewCapForBacklog(requiredReviews.length + globalReviews.length),
         reinforcementReviews,
         learningEnglish() ? "en" : "de"
       );

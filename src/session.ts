@@ -263,7 +263,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // Reviews win a visible-answer collision because their schedule is
   // time-sensitive. Fresh selection then scans farther down the pack to fill
   // its slots without producing an impossible Quick Match round.
-  const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
+  const dueSteps = queue.filter((s) => s.review);
+  const reviews = pickReviews(dueSteps, reviewCapForBacklog(dueSteps.length));
   const reviewKeys = reviews.flatMap(matchingKeysForStep);
   // Bases a chained phrase may point at: every sentence this pack teaches,
   // scored the same way the fresh queue is, learned or not. A known base is
@@ -357,6 +358,22 @@ export function dialogueIsEarned(step: any, servedDe: ReadonlySet<string>): bool
   if (!lines.length) return false;
   const served = lines.filter((text: string) => servedDe.has(text)).length;
   return served >= Math.ceil(lines.length / 2);
+}
+
+/**
+ * How many due reviews one lesson may carry, given the backlog.
+ *
+ * A flat cap of three was starving the spaced-repetition system: a learner
+ * doing three new phrases a lesson banks far more future reviews than three
+ * slots can ever serve, so due items queued up faster than they drained and
+ * most learned material simply never came back (measured at 91% stranded in
+ * the course audit). The cap now grows with the backlog — still three on a
+ * quiet day, up to eight when reviews have piled up — so a backlog drains
+ * instead of compounding, while lessons stay a manageable size.
+ */
+export function reviewCapForBacklog(dueCount: number): number {
+  const due = Math.max(0, Math.floor(dueCount));
+  return Math.max(OLD_PER_LESSON, Math.min(8, Math.ceil(due / 2)));
 }
 
 /** At most NEW_PER_LESSON brand-new phrases per lesson. */

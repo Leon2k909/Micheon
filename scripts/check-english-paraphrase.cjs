@@ -36,6 +36,11 @@ const ACCEPT = [
   ["that is how i see it too", "That's how I see it too."],
   ["give me the book", "Give the book to me."],
   ["i have seen that already", "I have already seen that."],
+  // The exact answer a learner typed that came back "Not quite": mitkommen is
+  // come along OR come with, and the key now says so.
+  ["ill come with although im pretty worn out",
+   "I'll come along, although I'm pretty worn out. / I'll come with, although I'm pretty worn out."],
+  ["wait until im finished", "Hang on until I'm done. / Wait until I'm finished."],
 ];
 
 // These change the meaning and must still be refused.

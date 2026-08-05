@@ -67,6 +67,7 @@ import {
   setActiveCourseId as persistActiveCourseId,
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
+import { loadActivitySessions } from "@/lib/activity";
 import { countKnownVocab, getFluency } from "@/lib/fluency";
 import {
   NOTIFICATION_KINDS,
@@ -1351,6 +1352,17 @@ function AchievementBadge({ achievement, standalone, stats }: { achievement: Mil
   );
 }
 
+/** "Today", "Yesterday", or a short date — the learner's own words for when. */
+function describeSessionDay(ts: number): string {
+  const day = 24 * 60 * 60 * 1000;
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const diff = startOfToday.getTime() - ts;
+  if (diff < 0) return "Today";
+  if (diff < day) return "Yesterday";
+  return new Date(ts).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
 function ProgressPanel({
   onViewAllAchievements,
   standalone = false,
@@ -1364,6 +1376,13 @@ function ProgressPanel({
 }) {
   const firstName = userName.trim().split(/\s+/)[0] || "there";
   const earnedAchievements = MILESTONES.filter((achievement) => achievement.check(stats)).length;
+  // The learner's actual last three sittings, newest first. The block used to
+  // show three invented lessons to everybody; real records or no card at all.
+  const recentSessions = useMemo(
+    () => loadActivitySessions().slice(-3).reverse(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stats.sessionsCompleted]
+  );
   const visibleAchievements = standalone ? MILESTONES : MILESTONES.slice(0, 4);
   const nextAchievement = MILESTONES.find((achievement) => !achievement.check(stats));
   const nextProgress = nextAchievement ? Math.min(nextAchievement.current(stats), nextAchievement.target) : 1;
@@ -1423,20 +1442,21 @@ function ProgressPanel({
         <AchievementArt id={nextAchievement?.id ?? "week"} />
       </div>
 
-      <div className="np-completed-block">
-        <div className="np-block-heading"><strong>Recently completed</strong><button type="button">View all</button></div>
-        {[
-          ["Lesson 11", "Getting clarification", "+18 XP"],
-          ["Lesson 10", "Giving your opinion", "+16 XP"],
-          ["Lesson 9", "Small talk", "+14 XP"],
-        ].map(([lesson, title, xp]) => (
-          <div className="np-completed-row" key={lesson}>
-            <CheckCircle2 />
-            <span><strong>{lesson}</strong><small>{title}</small></span>
-            <b>{xp}</b>
-          </div>
-        ))}
-      </div>
+      {recentSessions.length > 0 && (
+        <div className="np-completed-block">
+          <div className="np-block-heading"><strong>Recently completed</strong></div>
+          {recentSessions.map((session, index) => (
+            <div className="np-completed-row" key={`${session.ts}-${index}`}>
+              <CheckCircle2 />
+              <span>
+                <strong>{describeSessionDay(session.ts)}</strong>
+                <small>{session.sentences} {session.sentences === 1 ? "sentence" : "sentences"}{session.dialogues > 0 ? `, ${session.dialogues} ${session.dialogues === 1 ? "conversation" : "conversations"}` : ""}</small>
+              </span>
+              <b>{Math.max(1, Math.round(session.durationSec / 60))} min</b>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -1482,7 +1502,7 @@ function HomeView({
           ? "Choose your starting point. Tell us if you are a total beginner."
           : firstLessonReady
             ? `Start your first lesson. Level ${firstLessonLevel} everyday essentials.`
-            : "Continue learning. Lesson 12: Everyday phrases."}
+            : `Continue learning. Lesson ${stats.sessionsCompleted + 1}.`}
         className="np-mobile-course-button"
         onClick={onPractice}
         type="button"
@@ -1496,7 +1516,7 @@ function HomeView({
           <small>
             {needsStartingPoint
               ? "Tell us if you are a total beginner"
-              : firstLessonReady ? `Level ${firstLessonLevel}: Everyday essentials` : "Lesson 12: Everyday phrases"}
+              : firstLessonReady ? `Level ${firstLessonLevel}: Everyday essentials` : `Lesson ${stats.sessionsCompleted + 1}: picks up where you left off`}
           </small>
         </span>
         <ChevronRight />
