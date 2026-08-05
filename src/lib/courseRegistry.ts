@@ -1,5 +1,6 @@
 import type { Course } from "@/lib/courses";
 import { csharpCourse } from "@/lib/csharpCourse";
+import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 
 // The native German experience is "built in" — selecting it returns to the
 // normal app. Other courses render through the in-app course shell.
@@ -29,6 +30,17 @@ export const COURSES: Course[] = [
     icon: "🇫🇷",
     available: false,
   },
+  // Everything else people might come looking for. Listed, searchable and
+  // honest about not being ready — a picker with three rows makes someone
+  // wonder whether their language was considered and rejected.
+  ...PLANNED_LANGUAGES.map((language) => ({
+    id: language.id,
+    kind: "language" as const,
+    name: language.name,
+    tagline: "Coming soon.",
+    icon: language.icon,
+    available: false,
+  })),
   csharpCourse,
 ];
 

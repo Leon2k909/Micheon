@@ -32,7 +32,9 @@ export function SettingsCategory({
         aria-controls={panelId}
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center justify-between gap-3 rounded-[18px] bg-[var(--surface)] px-4 py-3.5 text-left transition-colors",
+          // A white card on a near-white page has no edge at all. The border is
+          // what makes each category read as a separate thing you can open.
+          "flex w-full items-center justify-between gap-3 rounded-[18px] border border-[color:var(--card-edge)] bg-[var(--surface)] px-4 py-3.5 text-left transition-colors",
           "hover:bg-[var(--surface-3)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
         )}
         onClick={() => {

@@ -13,6 +13,13 @@ const MAX_TRACKED_ITEMS = 40;
 const MAX_OTHER_QUESTIONS_BEFORE_FOCUS = 2;
 const REINFORCEMENT_FORCE_AFTER_QUESTIONS = 6;
 const REINFORCEMENT_GAPS = [3, 8] as const;
+/**
+ * After this many "no"s the pet stops asking and leaves the phrase to the
+ * lesson. Saying you cannot remember something and then being asked it again,
+ * and again, is not teaching — the lesson can actually show you the answer and
+ * drill it, which is what a repeated miss is asking for.
+ */
+const MISSES_BEFORE_HANDOVER = 2;
 
 export type PetRecallQuestionIdentity = {
   aliases?: string[];
@@ -39,6 +46,7 @@ export type PetRecallState = {
 
 export type PetRecallAnswerOutcome =
   | "focused"
+  | "handed-over"
   | "reinforcement"
   | "retired"
   | "unchanged";
@@ -168,6 +176,17 @@ export function applyPetRecallAnswer(
   );
 
   if (answer === "no") {
+    const misses = (existing?.misses ?? 0) + 1;
+    if (misses >= MISSES_BEFORE_HANDOVER) {
+      // Marked for the lesson by the caller; the pet lets it go and asks
+      // about something else next time.
+      return {
+        outcome: "handed-over",
+        state: existingIndex >= 0
+          ? { ...state, entries: state.entries.filter((_, index) => index !== existingIndex) }
+          : state,
+      };
+    }
     const nextEntry: PetRecallEntry = {
       aliases: mergedAliases(existing, question),
       dueQuestion: answeredQuestion,
@@ -176,7 +195,7 @@ export function applyPetRecallAnswer(
         : answeredQuestion,
       itemId: existing?.itemId ?? question.itemId,
       lastAskedQuestion: Math.max(existing?.lastAskedQuestion ?? 0, answeredQuestion),
-      misses: (existing?.misses ?? 0) + 1,
+      misses,
       phase: "learning",
       successes: 0,
       updatedAt: now,

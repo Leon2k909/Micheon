@@ -286,7 +286,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const newBlock: any[] = [...freshSentences];
   const dialogueSteps = queue
     .filter((s) => s.type === EX.DIALOGUE)
-    .filter((d: any) => (d.dialogue?.lines ?? []).some((l: any) => servedDe.has(String(l.de ?? "").trim().toLowerCase())));
+    .filter((d: any) => dialogueIsEarned(d, servedDe));
   for (const d of dialogueSteps) {
     const lineTexts = new Set(
       (d.dialogue?.lines ?? []).map((l: any) => String(l.de ?? "").trim().toLowerCase())
@@ -303,6 +303,30 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   const ordered = [...newBlock, ...reviews];
   ordered.push({ type: EX.COMPLETE });
   return ordered;
+}
+
+/**
+ * May this conversation run yet?
+ *
+ * A capstone used to open on ONE of its lines being taught, which meant the
+ * rest arrived with it however far down the course they sat: across the 634
+ * conversations, the median gap between a conversation's earliest and latest
+ * line is 6,382 places and 79% reach more than 2,000 places ahead. That is how
+ * "Ich war ein totaler Streber - fast nur Einsen im Zeugnis." (10,250th of
+ * 12,647 by how commonly it is said) turned up in the second lesson of its
+ * pack: it shares a conversation with a line ranked 3,563rd.
+ *
+ * Most of the conversation now has to be on the table before it runs. Lines
+ * still get their own drill in ranked order, so the conversation assembles
+ * over a few lessons rather than arriving whole and early.
+ */
+export function dialogueIsEarned(step: any, servedDe: ReadonlySet<string>): boolean {
+  const lines = (step?.dialogue?.lines ?? [])
+    .map((l: any) => String(l?.de ?? "").trim().toLowerCase())
+    .filter(Boolean);
+  if (!lines.length) return false;
+  const served = lines.filter((text: string) => servedDe.has(text)).length;
+  return served >= Math.ceil(lines.length / 2);
 }
 
 /** At most NEW_PER_LESSON brand-new phrases per lesson. */
@@ -434,6 +458,26 @@ export function rankReinforcementCandidates<T extends { successes: number; lastP
  * independently. Visible primary answers are deduped across BOTH languages,
  * because Quick Match can be flipped in either direction.
  */
+/**
+ * Which struggles go first.
+ *
+ * The phrase you failed most recently leads. That is usually the one the pet
+ * just asked about, or the one you pressed Struggle on last lesson, and being
+ * told "I'll bring that back" and then not seeing it for weeks is the fastest
+ * way to stop trusting the app.
+ *
+ * Only the lead is claimed by recency. The rest run longest-waiting first, so
+ * an older backlog still drains instead of being buried under every new miss.
+ */
+export function orderStrugglingReviews(struggling: any[]): any[] {
+  if (struggling.length <= 1) return [...struggling];
+  const at = (step: any) => Number(step?.struggledAt) || 0;
+  const byOldest = [...struggling].sort((a, b) => at(a) - at(b));
+  const newest = [...struggling].sort((a, b) => at(b) - at(a))[0];
+  if (!at(newest)) return byOldest;
+  return [newest, ...byOldest.filter((step) => step !== newest)];
+}
+
 export function selectContinueLearningMix(
   rankedFresh: any[],
   struggling: any[],
@@ -447,7 +491,7 @@ export function selectContinueLearningMix(
     return takeMatchingSafe(steps, limit, matchingPairForStep, blocked);
   };
 
-  const priorityReviews = takeUnique(struggling, reviewLimit);
+  const priorityReviews = takeUnique(orderStrugglingReviews(struggling), reviewLimit);
   const selectedReviewKeys = new Set(priorityReviews.flatMap(matchingKeysForStep));
   const duePool = takeUnique(due, due.length, selectedReviewKeys);
   const dueReviews = pickReviews(

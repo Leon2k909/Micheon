@@ -5,6 +5,7 @@ import {
   BellOff,
   BookOpen,
   Check,
+  CheckCheck,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -25,7 +26,9 @@ import {
   MessageSquareText,
   Play,
   Search,
+  RotateCcw,
   SlidersHorizontal,
+  Trash2,
   Settings2,
   ShoppingBag,
   Swords,
@@ -68,7 +71,11 @@ import { countKnownVocab, getFluency } from "@/lib/fluency";
 import {
   NOTIFICATION_KINDS,
   NOTIFICATION_PREFS_EVENT,
+  dismissNotifications,
   getMutedNotificationKinds,
+  getNotificationStatus,
+  markNotificationsRead,
+  restoreDismissedNotifications,
   setAllNotificationsMuted,
   setNotificationKindMuted,
   type NotificationKind,
@@ -570,9 +577,13 @@ function Header({
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "there";
   const [mutedNotifications, setMutedNotifications] = useState<Set<NotificationKind>>(() => getMutedNotificationKinds());
+  const [notificationStatus, setNotificationStatus] = useState(() => getNotificationStatus());
   const [notificationFiltersOpen, setNotificationFiltersOpen] = useState(false);
   useEffect(() => {
-    const sync = () => setMutedNotifications(getMutedNotificationKinds());
+    const sync = () => {
+      setMutedNotifications(getMutedNotificationKinds());
+      setNotificationStatus(getNotificationStatus());
+    };
     window.addEventListener(NOTIFICATION_PREFS_EVENT, sync);
     window.addEventListener("storage-sync-completed", sync);
     return () => {
@@ -582,16 +593,27 @@ function Header({
   }, []);
   // Written from the learner's real numbers, so the streak note only appears
   // when there is a streak to talk about.
-  const allNotifications: Array<{ kind: NotificationKind; title: string; body: string; view: PrototypeView }> = [
-    { kind: "reviews", title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
-    { kind: "games", title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
+  // Clearing one is about today's showing, not the kind — tomorrow's streak
+  // note is a different notification and should come back. Muting is the
+  // control for "never show me this kind".
+  const today = new Date().toISOString().slice(0, 10);
+  const allNotifications: Array<{ id: string; kind: NotificationKind; title: string; body: string; view: PrototypeView }> = [
+    { id: `reviews:${today}`, kind: "reviews", title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
+    { id: `games:${today}`, kind: "games", title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
     stats.streak > 0
-      ? { kind: "streak" as const, title: `${stats.streak}-day streak`, body: "One short block today keeps it going.", view: "home" as PrototypeView }
-      : { kind: "streak" as const, title: "Start a streak today", body: "A single lesson is enough to begin one.", view: "practice" as PrototypeView },
-    { kind: "progress", title: "See how far you have come", body: "Your vocabulary total and next milestone are on your profile.", view: "profile" },
+      ? { id: `streak:${today}`, kind: "streak" as const, title: `${stats.streak}-day streak`, body: "One short block today keeps it going.", view: "home" as PrototypeView }
+      : { id: `streak:${today}`, kind: "streak" as const, title: "Start a streak today", body: "A single lesson is enough to begin one.", view: "practice" as PrototypeView },
+    { id: `progress:${today}`, kind: "progress", title: "See how far you have come", body: "Your vocabulary total and next milestone are on your profile.", view: "profile" },
   ];
-  const notifications = allNotifications.filter((item) => !mutedNotifications.has(item.kind));
+  const notifications = allNotifications.filter((item) =>
+    !mutedNotifications.has(item.kind) && !notificationStatus.dismissed.has(item.id));
+  const unreadNotifications = notifications.filter((item) => !notificationStatus.read.has(item.id));
   const allNotificationsMuted = mutedNotifications.size >= NOTIFICATION_KINDS.length;
+  const clearedSomething = allNotifications.some((item) => notificationStatus.dismissed.has(item.id));
+  const applyNotificationChange = (change: () => void) => {
+    change();
+    setNotificationStatus(getNotificationStatus());
+  };
   const filteredSearchItems = useMemo(() => {
     const terms = normalizeCatalogSearchText(searchQuery).split(" ").filter(Boolean);
     const matches = terms.length
@@ -769,7 +791,7 @@ function Header({
             aria-expanded={notificationsOpen}
             aria-label={allNotificationsMuted
               ? "Notifications, all muted"
-              : `${notifications.length} unread notifications`}
+              : `${unreadNotifications.length} unread notifications`}
             className={`np-icon-button np-notification${allNotificationsMuted ? " is-muted" : ""}`}
             onClick={() => {
               closeSearch();
@@ -779,7 +801,7 @@ function Header({
             type="button"
           >
             {allNotificationsMuted ? <BellOff /> : <Bell />}
-            {notifications.length > 0 && <span aria-hidden="true">{notifications.length}</span>}
+            {unreadNotifications.length > 0 && <span aria-hidden="true">{unreadNotifications.length}</span>}
           </button>
           <AnimatePresence initial={false}>
             {notificationsOpen && (
@@ -796,7 +818,9 @@ function Header({
                     <strong>Notifications</strong>
                     <small>{allNotificationsMuted
                       ? "All muted"
-                      : `${notifications.length} of ${allNotifications.length} shown`}</small>
+                      : unreadNotifications.length > 0
+                        ? `${unreadNotifications.length} unread of ${notifications.length}`
+                        : `${notifications.length} shown, all read`}</small>
                   </div>
                   <button
                     aria-expanded={notificationFiltersOpen}
@@ -811,6 +835,27 @@ function Header({
                     <X aria-hidden="true" />
                   </button>
                 </div>
+                {notifications.length > 0 && (
+                  <div className="np-notification-actions">
+                    <button
+                      disabled={unreadNotifications.length === 0}
+                      onClick={() => applyNotificationChange(() =>
+                        markNotificationsRead(notifications.map((item) => item.id)))}
+                      type="button"
+                    >
+                      <CheckCheck aria-hidden="true" />
+                      Mark all as read
+                    </button>
+                    <button
+                      onClick={() => applyNotificationChange(() =>
+                        dismissNotifications(notifications.map((item) => item.id)))}
+                      type="button"
+                    >
+                      <Trash2 aria-hidden="true" />
+                      Clear all
+                    </button>
+                  </div>
+                )}
                 {notificationFiltersOpen && (
                   <div className="np-notification-filters">
                     <div className="np-notification-filters-head">
@@ -842,17 +887,61 @@ function Header({
                   </div>
                 )}
                 <div className="np-notification-list">
-                  {notifications.length > 0 ? notifications.map((notification, index) => (
-                    <button key={notification.title} onClick={() => openNotification(notification.view)} type="button">
-                      <span>{index + 1}</span>
-                      <div><strong>{notification.title}</strong><small>{notification.body}</small></div>
-                      <ChevronRight />
-                    </button>
-                  )) : (
+                  {notifications.length > 0 ? notifications.map((notification, index) => {
+                    const unread = !notificationStatus.read.has(notification.id);
+                    return (
+                      <div className={`np-notification-row${unread ? " is-unread" : ""}`} key={notification.id}>
+                        <button
+                          className="np-notification-open"
+                          onClick={() => {
+                            applyNotificationChange(() => markNotificationsRead([notification.id]));
+                            openNotification(notification.view);
+                          }}
+                          type="button"
+                        >
+                          <span>{unread ? <span className="np-notification-dot" /> : index + 1}</span>
+                          <div><strong>{notification.title}</strong><small>{notification.body}</small></div>
+                          <ChevronRight />
+                        </button>
+                        <div className="np-notification-row-actions">
+                          {unread && (
+                            <button
+                              aria-label={`Mark "${notification.title}" as read`}
+                              onClick={() => applyNotificationChange(() => markNotificationsRead([notification.id]))}
+                              title="Mark as read"
+                              type="button"
+                            >
+                              <Check aria-hidden="true" />
+                            </button>
+                          )}
+                          <button
+                            aria-label={`Delete "${notification.title}"`}
+                            onClick={() => applyNotificationChange(() => dismissNotifications([notification.id]))}
+                            title="Delete"
+                            type="button"
+                          >
+                            <X aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }) : (
                     <div className="np-notification-empty">
                       <BellOff aria-hidden="true" />
-                      <strong>Nothing to show</strong>
-                      <span>Every kind of notification is muted. Use the filter above to bring some back.</span>
+                      <strong>{allNotificationsMuted ? "Nothing to show" : "You are all caught up"}</strong>
+                      <span>{allNotificationsMuted
+                        ? "Every kind of notification is muted. Use the filter above to bring some back."
+                        : "Cleared notifications come back tomorrow. Mute a kind above to stop it for good."}</span>
+                      {clearedSomething && !allNotificationsMuted && (
+                        <button
+                          className="np-notification-restore"
+                          onClick={() => applyNotificationChange(() => restoreDismissedNotifications())}
+                          type="button"
+                        >
+                          <RotateCcw aria-hidden="true" />
+                          Undo clear
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

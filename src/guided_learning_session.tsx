@@ -9,7 +9,7 @@ import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/c
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildCatalog, buildSession, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
@@ -646,7 +646,19 @@ export default function GuidedLearningSession() {
           if (st.type !== "sentence" || !st.item?.id) continue;
           const status = statusForId(reviewState, st.item.id, st.item.aliases);
           if (status === "struggle") {
-            const priorityReview = { ...st, review: true, reviewReason: "struggle", interval: 0 };
+            // When it was marked matters. Gathering runs in pack order, so
+            // without this a phrase you just failed on a late pack queues up
+            // behind every older struggle and may never be reached.
+            const struggledAt = Date.parse(
+              progressEntryForId(reviewState as any, st.item.id, st.item.aliases)?.record?.updatedAt ?? ""
+            );
+            const priorityReview = {
+              ...st,
+              review: true,
+              reviewReason: "struggle",
+              interval: 0,
+              struggledAt: Number.isFinite(struggledAt) ? struggledAt : 0,
+            };
             requiredReviews.push(priorityReview);
             reviewPartByStep.set(priorityReview, pId);
           } else if (st.review && !st.reinforcement && st.reviewReason !== "attempted") {
@@ -801,10 +813,7 @@ export default function GuidedLearningSession() {
       );
       const dialogues = freshId
         ? sessionForPack(freshId).filter(
-            (step: any) => step.type === "dialogue"
-              && (step.dialogue?.lines ?? []).some(
-                (line: any) => servedFreshDe.has(String(line?.de ?? "").trim().toLocaleLowerCase("de-DE"))
-              )
+            (step: any) => step.type === "dialogue" && dialogueIsEarned(step, servedFreshDe)
           )
         : [];
       const freshSteps = [...fresh, ...dialogues];

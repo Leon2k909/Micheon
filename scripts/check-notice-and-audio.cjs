@@ -71,11 +71,13 @@ for (const kind of ["reviews", "games", "streak", "progress"]) {
 if (!/saveScopedJson/.test(prefs)) failures.push("notificationPrefs.ts: choices should be saved per profile");
 
 const shell = read("src/prototype/NewUiPrototype.tsx");
-if (!/const notifications = allNotifications\.filter\(\(item\) => !mutedNotifications\.has\(item\.kind\)\)/.test(shell)) {
+if (!/!mutedNotifications\.has\(item\.kind\)/.test(shell)) {
   failures.push("NewUiPrototype: muted kinds are not being filtered out of the list");
 }
-if (!/\{notifications\.length > 0 && <span aria-hidden="true">\{notifications\.length\}<\/span>\}/.test(shell)) {
-  failures.push("NewUiPrototype: the badge should count only what is actually shown, and vanish at zero");
+// The badge counts unread rather than every row; check-notification-actions
+// pins that shape, so here just make sure it is never a fixed number.
+if (!/<span aria-hidden="true">\{unreadNotifications\.length\}<\/span>/.test(shell)) {
+  failures.push("NewUiPrototype: the badge should count what is actually unread, and vanish at zero");
 }
 if (!/setNotificationKindMuted\(kind\.id, !muted\)/.test(shell)) {
   failures.push("NewUiPrototype: the filter chips do not toggle anything");

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES } from "@/lib/courseRegistry";
+import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { ui } from "@/lib/i18n";
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
@@ -10,7 +11,15 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   spanish: "es espanol español spain spanisch espagnol",
   french: "fr francais français france franzosisch französisch",
   csharp: "c# c sharp dotnet .net programming coding sandbox sbox s&box",
+  // Endonyms and alternative spellings for everything in the catalogue, so
+  // searching "nihongo" or "espanol" finds the right row.
+  ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),
 };
+
+/** Diacritics fold away, so "cestina" matches "čeština" and vice versa. */
+function foldForSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+}
 
 function CourseArtwork({ id }: { id: string }) {
   if (id === "csharp") {
@@ -27,7 +36,17 @@ function CourseArtwork({ id }: { id: string }) {
     ? "linear-gradient(to bottom, #181818 0 33.333%, #dd0000 33.333% 66.666%, #ffce00 66.666% 100%)"
     : id === "spanish"
       ? "linear-gradient(to bottom, #aa151b 0 25%, #f1bf00 25% 75%, #aa151b 75% 100%)"
-      : "linear-gradient(to right, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%)";
+      : id === "french"
+        ? "linear-gradient(to right, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%)"
+        : null;
+
+  if (!backgroundImage) {
+    // The rest of the catalogue carries its own flag, and there are eighty of
+    // them — drawing each one by hand would be eighty chances to get a flag
+    // subtly wrong.
+    const icon = PLANNED_LANGUAGES.find((language) => language.id === id)?.icon ?? "🌍";
+    return <span aria-hidden="true" className="text-2xl leading-none">{icon}</span>;
+  }
 
   return (
     <span
@@ -51,7 +70,7 @@ export function CourseSwitcher({
 }) {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const normalizedQuery = foldForSearch(query.trim());
   const visibleCourses = useMemo(() => {
     if (!normalizedQuery) return COURSES;
     return COURSES.filter((course) => {
@@ -62,8 +81,9 @@ export function CourseSwitcher({
         course.tagline,
         ui(course.tagline),
         COURSE_SEARCH_ALIASES[course.id] ?? "",
-      ].join(" ").toLocaleLowerCase();
-      return normalizedQuery.split(/\s+/).every((term) => corpus.includes(term));
+      ].join(" ");
+      const folded = foldForSearch(corpus);
+      return normalizedQuery.split(/\s+/).every((term) => folded.includes(term));
     });
   }, [normalizedQuery]);
   const languages = visibleCourses.filter((c) => c.kind === "language");
@@ -133,7 +153,7 @@ export function CourseSwitcher({
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-lg rounded-[26px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_28px_80px_var(--shadow-strong)]"
+            className="flex max-h-[min(78vh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_28px_80px_var(--shadow-strong)]"
             initial={{ opacity: 0, y: -12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.985 }}
@@ -181,30 +201,39 @@ export function CourseSwitcher({
               )}
             </label>
 
-            {languages.length > 0 && (
-              <>
-                <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Languages")}</p>
-                <div className="mt-2 grid gap-2">
-                  {languages.map((c) => <Card key={c.id} {...c} />)}
-                </div>
-              </>
-            )}
+            <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
+              {languages.length > 0 && (
+                <>
+                  <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
+                    {ui("Languages")}
+                    <span className="ml-2 font-bold normal-case tracking-normal opacity-70">
+                      {languages.length}
+                    </span>
+                  </p>
+                  <div className="mt-2 grid gap-2">
+                    {languages.map((c) => <Card key={c.id} {...c} />)}
+                  </div>
+                </>
+              )}
 
-            {programming.length > 0 && (
-              <>
-                <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Programming")}</p>
-                <div className="mt-2 grid gap-2">
-                  {programming.map((c) => <Card key={c.id} {...c} />)}
-                </div>
-              </>
-            )}
+              {programming.length > 0 && (
+                <>
+                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Programming")}</p>
+                  <div className="mt-2 grid gap-2">
+                    {programming.map((c) => <Card key={c.id} {...c} />)}
+                  </div>
+                </>
+              )}
 
-            {visibleCourses.length === 0 && (
-              <div className="mt-5 rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-5 py-8 text-center">
-                <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching course")}</p>
-                <p className="mt-1 text-[13px] font-bold text-[var(--text-3)]">{ui("Try German, Spanish, French, C#, or s&box.")}</p>
-              </div>
-            )}
+              {visibleCourses.length === 0 && (
+                <div className="mt-5 rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-5 py-8 text-center">
+                  <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching course")}</p>
+                  <p className="mt-1 text-[13px] font-bold text-[var(--text-3)]">
+                    {ui("Search by name, language code, or the name in that language — Deutsch, español, 日本語.")}
+                  </p>
+                </div>
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}

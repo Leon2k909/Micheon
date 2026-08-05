@@ -340,13 +340,20 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
         : uiIsGerman()
           ? `Geschafft — „${target}“ sitzt jetzt.`
           : `You’ve got it — “${target}” is secure now.`
-      : question.confirm
+      : recallOutcome === "handed-over"
+        // Asking a third time would just be the same question again. The
+        // lesson can show the answer and drill it, so it goes there and the
+        // pet moves on to something else.
         ? uiIsGerman()
-          ? `Kein Problem — ich frage dich „${target}“ bald wieder.`
-          : `No problem — I’ll ask you “${target}” again soon.`
-        : uiIsGerman()
-          ? `Kein Problem — die Antwort ist „${target}“. Ich frage dich das bald wieder.`
-          : `No problem — the answer is “${target}”. I’ll ask you this again soon.`;
+          ? `Die Antwort ist „${target}“. Das üben wir in der nächsten Lektion richtig — ich frage dich etwas anderes.`
+          : `The answer is “${target}”. I’ve put it at the front of your next lesson so we can practise it properly — I’ll ask you something else.`
+        : question.confirm
+          ? uiIsGerman()
+            ? `Kein Problem — ich frage dich „${target}“ bald wieder.`
+            : `No problem — I’ll ask you “${target}” again soon.`
+          : uiIsGerman()
+            ? `Kein Problem — die Antwort ist „${target}“. Ich frage dich das bald wieder.`
+            : `No problem — the answer is “${target}”. I’ll ask you this again soon.`;
     window.setTimeout(() => {
       speak(response, {
         durationMs: 5600,

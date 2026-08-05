@@ -643,7 +643,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   gap: 9px;
 }
 
-.np-notification-list > button {
+.np-notification-list > .np-notification-row > .np-notification-open {
   display: grid;
   min-height: 76px;
   grid-template-columns: 38px 1fr 20px;
@@ -658,12 +658,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   text-align: left;
 }
 
-.np-notification-list > button:hover {
+.np-notification-list > .np-notification-row > .np-notification-open:hover {
   border-color: rgba(79, 189, 81, 0.38);
   background: #f8fff3;
 }
 
-.np-notification-list > button > span {
+.np-notification-list > .np-notification-row > .np-notification-open > span {
   display: grid;
   width: 36px;
   height: 36px;
@@ -675,7 +675,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   font-weight: 950;
 }
 
-.np-notification-list > button > div {
+.np-notification-list > .np-notification-row > .np-notification-open > div {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -694,7 +694,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   line-height: 1.4;
 }
 
-.np-notification-list svg {
+.np-notification-list > .np-notification-row > .np-notification-open svg {
   width: 18px;
   color: var(--np-soft);
 }
@@ -5429,13 +5429,13 @@ html[data-theme="dark"] .np-profile-menu {
     0 24px 55px rgba(0, 0, 0, 0.42);
 }
 
-html[data-theme="dark"] .np-notification-list > button {
+html[data-theme="dark"] .np-notification-list > .np-notification-row > .np-notification-open {
   color: var(--np-text);
   background: var(--np-surface-soft);
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-html[data-theme="dark"] .np-notification-list > button:hover,
+html[data-theme="dark"] .np-notification-list > .np-notification-row > .np-notification-open:hover,
 html[data-theme="dark"] .np-profile-menu-actions button:hover {
   background: #223b27;
 }
@@ -7500,3 +7500,96 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
 
 /* A muted bell should look muted rather than just empty. */
 .np-notification.is-muted { opacity: 0.72; }
+
+/* ── notification rows: read state, and per-row actions ──────────────────── */
+/* Each row is a link plus its own controls, so marking one read or deleting
+   it never means opening it first. */
+.np-notification-actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.np-notification-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--np-surface);
+  color: var(--np-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.np-notification-actions button svg { width: 14px; height: 14px; }
+.np-notification-actions button:hover:not(:disabled) { border-color: var(--border-2); }
+.np-notification-actions button:disabled { opacity: 0.45; cursor: default; }
+
+.np-notification-row {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.np-notification-row > .np-notification-open { flex: 1; min-width: 0; }
+
+/* Unread reads as unread at a glance, not only in the badge. */
+.np-notification-row.is-unread { background: var(--np-surface-soft); }
+.np-notification-row.is-unread strong { font-weight: 800; }
+.np-notification-row:not(.is-unread) strong { font-weight: 600; }
+.np-notification-row:not(.is-unread) { opacity: 0.78; }
+
+.np-notification-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent, #43b84c);
+}
+
+.np-notification-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 8px;
+}
+
+.np-notification-row-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--np-muted);
+  cursor: pointer;
+}
+
+.np-notification-row-actions button svg { width: 15px; height: 15px; }
+.np-notification-row-actions button:hover { background: var(--surface-3); color: var(--np-text); }
+
+.np-notification-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--np-surface);
+  color: var(--np-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.np-notification-restore svg { width: 14px; height: 14px; }
+.np-notification-restore:hover { border-color: var(--border-2); }

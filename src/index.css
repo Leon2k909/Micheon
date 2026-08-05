@@ -370,8 +370,12 @@ button { cursor: pointer; }
      same gradient. Keep the values in step with new-ui-prototype.css. */
   --shell-top: #f1f6ee;
   --shell-bottom: #e8eee3;
+  /* Boundary for cards that sit on a near-white surface, where the ordinary
+     --border measures 2.17:1 and effectively disappears. 3.6:1 against
+     #fbfdfa, comfortably past the 3:1 a control boundary needs. */
+  --card-edge: #7d887c;
 }
-html[data-theme="dark"] { --shell-top: #111a13; --shell-bottom: #111a13; }
+html[data-theme="dark"] { --shell-top: #111a13; --shell-bottom: #111a13; --card-edge: #5d6a5c; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
