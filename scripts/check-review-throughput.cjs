@@ -26,8 +26,8 @@ function load(entry, name) {
   return mod.exports;
 }
 
-const { reviewCapForBacklog, buildSession } = load(
-  `export { reviewCapForBacklog, buildSession } from "./src/session.ts";`, "throughput-a");
+const { lessonMixForBacklog, buildSession } = load(
+  `export { lessonMixForBacklog, buildSession } from "./src/session.ts";`, "throughput-a");
 const { allPartBlueprints } = load(
   `export { allPartBlueprints } from "./src/lib/data.ts";`, "throughput-b");
 const { recordSuccess } = load(
@@ -35,13 +35,25 @@ const { recordSuccess } = load(
 
 const failures = [];
 
-// ── the shape of the cap ───────────────────────────────────────────────────
-if (reviewCapForBacklog(0) !== 3) failures.push("a quiet day should stay at three reviews");
-if (reviewCapForBacklog(6) !== 3) failures.push("a small queue should not inflate the lesson");
-if (reviewCapForBacklog(10) !== 5) failures.push("ten due should serve five");
-if (reviewCapForBacklog(15) !== 8) failures.push("fifteen due should serve eight");
-if (reviewCapForBacklog(60) !== 8) failures.push("the cap must stop at eight — lessons stay lessons");
-if (reviewCapForBacklog(10000) !== 8) failures.push("the ceiling must hold under any backlog");
+// ── the shape of the sitting ───────────────────────────────────────────────
+// Leon's rule: a sitting is SIX sentences at most — a backlog trades new
+// slots for review slots, it never grows the session.
+for (const due of [0, 3, 4, 9, 10, 60, 10000]) {
+  const mix = lessonMixForBacklog(due);
+  if (mix.reviewSlots + mix.freshSlots > 6) {
+    failures.push(`${due} due produced a ${mix.reviewSlots + mix.freshSlots}-sentence sitting — six is the ceiling`);
+  }
+  if (mix.freshSlots < 1) failures.push(`${due} due left no new-material slot — something new every day, always`);
+}
+if (JSON.stringify(lessonMixForBacklog(0)) !== JSON.stringify({ reviewSlots: 3, freshSlots: 3 })) {
+  failures.push("a quiet day should be the classic 3 reviews + 3 new");
+}
+if (JSON.stringify(lessonMixForBacklog(6)) !== JSON.stringify({ reviewSlots: 4, freshSlots: 2 })) {
+  failures.push("a building queue should trade one new slot for a review slot");
+}
+if (JSON.stringify(lessonMixForBacklog(20)) !== JSON.stringify({ reviewSlots: 5, freshSlots: 1 })) {
+  failures.push("a loaded queue should trade two new slots for review slots");
+}
 
 // ── a simulated month: learn daily, answer well, count what comes back ─────
 // One pack studied for 30 daily lessons with correct answers throughout.
@@ -63,6 +75,9 @@ if (reviewCapForBacklog(10000) !== 8) failures.push("the ceiling must hold under
     try {
       const steps = buildSession(part, [], review, 0);
       const served = steps.filter((s) => s.type === "sentence");
+      if (served.length > 6) {
+        failures.push(`day ${day}: the sitting held ${served.length} sentences — six is the ceiling`);
+      }
       const dueToday = Object.values(review).filter((r) =>
         r?.dueAt && Date.parse(r.dueAt) <= now && !r.permanent).length;
       const reviewsServed = steps.filter((s) => s.type === "sentence" && s.review && !s.reinforcement).length;
@@ -99,12 +114,12 @@ if (reviewCapForBacklog(10000) !== 8) failures.push("the ceiling must hold under
 // ── and the component actually uses it ─────────────────────────────────────
 const fs = require("fs");
 const guided = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
-if (!guided.includes("reviewCapForBacklog(requiredReviews.length + globalReviews.length)")) {
-  failures.push("Continue Learning no longer scales its review slots with the backlog");
+if (!guided.includes("lessonMixForBacklog(requiredReviews.length + globalReviews.length)")) {
+  failures.push("Continue Learning no longer trades new slots for review slots with the backlog");
 }
 const session = fs.readFileSync(path.join(root, "src/session.ts"), "utf8");
-if (!session.includes("reviewCapForBacklog(dueSteps.length)")) {
-  failures.push("per-pack lessons no longer scale their review slots with the backlog");
+if (!session.includes("lessonMixForBacklog(dueSteps.length)")) {
+  failures.push("per-pack lessons no longer trade new slots for review slots with the backlog");
 }
 
 if (failures.length) {

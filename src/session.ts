@@ -264,7 +264,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // time-sensitive. Fresh selection then scans farther down the pack to fill
   // its slots without producing an impossible Quick Match round.
   const dueSteps = queue.filter((s) => s.review);
-  const reviews = pickReviews(dueSteps, reviewCapForBacklog(dueSteps.length));
+  const lessonMix = lessonMixForBacklog(dueSteps.length);
+  const reviews = pickReviews(dueSteps, lessonMix.reviewSlots);
   const reviewKeys = reviews.flatMap(matchingKeysForStep);
   // Bases a chained phrase may point at: every sentence this pack teaches,
   // scored the same way the fresh queue is, learned or not. A known base is
@@ -306,7 +307,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     orderWithChains(
       freshRows.sort((a, b) => a.score - b.score || a.index - b.index)
     ).map(({ step }) => step),
-    NEW_PER_LESSON,
+    lessonMix.freshSlots,
     reviewKeys
   );
   const servedDe = new Set(freshSentences.map((s) => String(s.item?.de ?? "").trim().toLowerCase()));
@@ -361,19 +362,26 @@ export function dialogueIsEarned(step: any, servedDe: ReadonlySet<string>): bool
 }
 
 /**
- * How many due reviews one lesson may carry, given the backlog.
+ * How a sitting splits its six slots between reviews and new material.
  *
- * A flat cap of three was starving the spaced-repetition system: a learner
- * doing three new phrases a lesson banks far more future reviews than three
- * slots can ever serve, so due items queued up faster than they drained and
- * most learned material simply never came back (measured at 91% stranded in
- * the course audit). The cap now grows with the backlog — still three on a
- * quiet day, up to eight when reviews have piled up — so a backlog drains
- * instead of compounding, while lessons stay a manageable size.
+ * A sitting is at most SIX sentences — Leon was explicit after the first cut
+ * of the backlog fix grew a session to eleven: "it should be a maximum of 6,
+ * so 3 things that im reviewing and 3 new things... teach extended sentences
+ * in the next continue learning". So the session never grows; instead, a due
+ * backlog TRADES new-material slots for review slots. That drains review
+ * debt just as surely — every review served is a review served, and every
+ * new phrase NOT introduced is future debt not banked — while a sitting
+ * stays a sitting.
+ *
+ *   quiet (≤3 due)     3 reviews + 3 new
+ *   building (4-9)     4 reviews + 2 new
+ *   loaded (10+)       5 reviews + 1 new — something new every day, always
  */
-export function reviewCapForBacklog(dueCount: number): number {
+export function lessonMixForBacklog(dueCount: number): { reviewSlots: number; freshSlots: number } {
   const due = Math.max(0, Math.floor(dueCount));
-  return Math.max(OLD_PER_LESSON, Math.min(8, Math.ceil(due / 2)));
+  if (due >= 10) return { reviewSlots: 5, freshSlots: 1 };
+  if (due >= 4) return { reviewSlots: 4, freshSlots: 2 };
+  return { reviewSlots: OLD_PER_LESSON, freshSlots: NEW_PER_LESSON };
 }
 
 /** At most NEW_PER_LESSON brand-new phrases per lesson. */
