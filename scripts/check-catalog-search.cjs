@@ -149,9 +149,17 @@ const trackerSource = fs.readFileSync(
   "utf8"
 );
 check(
+  // Still the guarded path, but the text is now derived per item on demand:
+  // building all 16k entries up front was three quarters of the time spent
+  // opening the library, and none of it was needed until someone searched.
   "the tracker filters the full catalog through the guarded search path",
-  trackerSource.includes("catalogItemMatchesQuery(item, q, searchIndex.get(item))")
-    && trackerSource.includes("new Map(catalog.map((item) => [item, buildCatalogSearchText(item)]))")
+  trackerSource.includes("catalogItemMatchesQuery(item, q, searchTextFor(item))")
+    && trackerSource.includes("text = buildCatalogSearchText(item);")
+);
+check(
+  "the search index is built lazily, not while the library is opening",
+  trackerSource.includes("const searchIndex = new Map<CatalogItem, string>();")
+    && !trackerSource.includes("new Map(catalog.map((item) => [item, buildCatalogSearchText(item)]))")
 );
 
 const learnViewSource = fs.readFileSync(

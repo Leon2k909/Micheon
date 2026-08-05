@@ -64,7 +64,10 @@ check(
   "heavy profile tools stay deferred until the learner reaches or opens them",
   gamification.includes('lazy(() => import("@/components/codexPets/CodexPetPicker")')
     && gamification.includes('const loadVocabTrackerModule = () => import("@/components/lab/VocabTracker")')
-    && gamification.includes('rootMargin: "0px"')
+    // The section still waits for an IntersectionObserver rather than loading
+    // with the profile screen — it just reaches ahead of the scroll now, so
+    // the work has started before the learner arrives instead of on arrival.
+    && /rootMargin: "\d+px 0px"/.test(gamification)
     && gamification.includes("const [trackerRequested, setTrackerRequested] = useState(false)")
     && gamification.includes("if (!profileOnly || !trackerRequested || !catalogueReady)")
     && gamification.includes("module.prepareVocabTrackerData(apiParts)")

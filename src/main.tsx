@@ -22,6 +22,8 @@ if (initialParams.has("guided")) {
 // Paint saved theme + effects preference before first render to avoid flash.
 // Paint-only (no sync) so it can't clobber the shared value hydrate will load.
 applyThemeToDom(isMainShell || initialParams.has("guided") ? "light" : getTheme());
+// Paint only — persisting here would pin the first-launch default forever
+// and stop the slow-device check from ever being consulted again.
 applyEffects(getEffects());
 applyHighContrast(getHighContrast());
 

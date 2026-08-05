@@ -51,7 +51,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
-import { applyEffects, getEffects, type Effects } from "@/lib/effects";
+import { getEffects, setEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
 import { VoicePicker } from "@/components/VoicePicker";
@@ -156,7 +156,9 @@ function DeferredProfileSection({
       if (!entry?.isIntersecting) return;
       observer.disconnect();
       reveal();
-    }, { rootMargin: "0px", threshold: 0.01 });
+      // Reach well ahead of the scroll so a heavy section is already
+      // loading by the time it appears, instead of starting on arrival.
+    }, { rootMargin: "2400px 0px", threshold: 0.01 });
     observer.observe(anchor);
     return () => observer.disconnect();
   }, [onReveal, revealed]);
@@ -605,7 +607,7 @@ export default function GamificationPanel({
 
   const toggleEffects = () => {
     const next: Effects = effects === "lite" ? "full" : "lite";
-    applyEffects(next);
+    setEffects(next);
     setEffects(next);
   };
 

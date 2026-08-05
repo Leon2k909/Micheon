@@ -80,7 +80,10 @@ export function prepareVocabTrackerData(apiParts: Record<string, Part>): Prepare
   if (cached?.mode === mode) return cached.data;
 
   const catalog = buildCatalog(apiParts);
-  const searchIndex = new Map(catalog.map((item) => [item, buildCatalogSearchText(item)]));
+  // Filled in lazily by searchTextFor below. Building all 16k entries up front
+  // was three quarters of the time spent opening the library, and none of it
+  // was needed unless the learner typed something.
+  const searchIndex = new Map<CatalogItem, string>();
   const corpusIndex = buildCorpusIndex(apiParts as any);
   const priorityIndex = new Map<CatalogItem, TrackerPriority>(catalog.map((item) => {
     const commonality = sentenceCommonality(item.de, corpusIndex);
@@ -375,6 +378,15 @@ export function VocabTracker({
     [apiParts, learningMode]
   );
   const { catalog, commonOrder, priorityIndex, searchIndex } = prepared;
+  /** Search text for one item, computed once and kept for the session. */
+  const searchTextFor = (item: CatalogItem): string => {
+    let text = searchIndex.get(item);
+    if (text === undefined) {
+      text = buildCatalogSearchText(item);
+      searchIndex.set(item, text);
+    }
+    return text;
+  };
 
   const counts = useMemo(() => {
     let known = 0;
@@ -412,7 +424,7 @@ export function VocabTracker({
       const usefulness = priorityIndex.get(item)?.info.key;
       if (usefulnessFilter !== "all" && usefulness !== usefulnessFilter) return false;
       if (!q) return true;
-      return catalogItemMatchesQuery(item, q, searchIndex.get(item));
+      return catalogItemMatchesQuery(item, q, searchTextFor(item));
     });
     // "Most common" is conversation-first: authored usefulness category,
     // curriculum order, phrase-vs-vocabulary intent, then corpus frequency.
