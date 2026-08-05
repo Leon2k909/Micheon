@@ -824,13 +824,6 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
   box-shadow: 0 10px 22px rgba(61, 92, 52, 0.2);
 }
 
-.micheon-update-install-check {
-  border-color: var(--install-surface);
-  color: #fff;
-  background: linear-gradient(180deg, #63d666, #34ac44);
-  box-shadow: 0 3px 0 #238831, 0 8px 18px rgba(43, 135, 51, 0.24);
-}
-
 .micheon-update-install-version {
   border: 1px solid var(--install-border);
   color: var(--install-copy);
@@ -913,9 +906,7 @@ html[data-theme="dark"] .micheon-update-install-icon-shell {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 36px rgba(0, 0, 0, 0.25);
 }
 
-html[data-theme="dark"] .micheon-update-install-check {
-  border-color: var(--install-surface);
-}
+
 
 html[data-theme="dark"] .micheon-update-install-version {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);

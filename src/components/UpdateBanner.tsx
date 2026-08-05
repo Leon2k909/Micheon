@@ -100,14 +100,6 @@ function UpdateInstallTakeover({
             className="micheon-update-install-app-icon relative h-14 w-14 rounded-[18px]"
             src="/icon-64.png"
           />
-          <motion.div
-            animate={{ scale: 1, opacity: 1 }}
-            className="micheon-update-install-check absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2"
-            initial={reduceMotion ? undefined : { scale: 0.5, opacity: 0 }}
-            transition={{ delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0.01 : 0.28, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <CircleCheck aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={3} />
-          </motion.div>
         </div>
 
         <div className="mx-auto mt-6 max-w-[460px] text-center">

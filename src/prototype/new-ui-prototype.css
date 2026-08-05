@@ -2451,12 +2451,10 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-completed-row > svg {
-  /* A stroke mark, not a filled badge — the row is a receipt, not a reward. */
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   color: var(--np-green);
-  fill: none;
-  justify-self: center;
+  fill: #e1f8d8;
 }
 
 .np-completed-row span {
