@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
 };
 
 /** Selectable speech-speed multipliers, applied on top of each clip's own pace. */
-export const TTS_SPEED_PRESETS = [0.5, 0.75, 1, 1.25] as const;
+export const TTS_SPEED_PRESETS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] as const;
 
 function clampVolume(value: unknown, fallback = 1): number {
   const number = typeof value === "number" ? value : Number(value);
@@ -45,7 +45,10 @@ function clampVolume(value: unknown, fallback = 1): number {
 function clampSpeechRate(value: unknown, fallback = 1): number {
   const number = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(number)) return fallback;
-  return Math.min(1.5, Math.max(0.5, number));
+  // 2x is the ceiling the TTS server can render: it converts this to an
+  // edge-tts "+N%" and clamps that at +100%. Asking for more would silently
+  // come back at 2x anyway.
+  return Math.min(2, Math.max(0.5, number));
 }
 
 function readStoredSettings(): StoredAudioSettings {

@@ -954,7 +954,7 @@ export default function GamificationPanel({
                         {speechRate}×
                       </span>
                     </div>
-                    <div className="mt-3 grid grid-cols-4 gap-2" role="group" aria-label={ui("Speech speed")}>
+                    <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-label={ui("Speech speed")}>
                       {TTS_SPEED_PRESETS.map((preset) => (
                         <button
                           aria-pressed={Math.abs(speechRate - preset) < 0.01}
@@ -1282,7 +1282,7 @@ export default function GamificationPanel({
                   {speechRate}×
                 </span>
               </div>
-              <div className="mt-3 grid grid-cols-4 gap-2" role="group" aria-label={ui("Speech speed")}>
+              <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-label={ui("Speech speed")}>
                 {TTS_SPEED_PRESETS.map((preset) => (
                   <button
                     aria-pressed={Math.abs(speechRate - preset) < 0.01}

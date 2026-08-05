@@ -657,7 +657,7 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
 
     const range = selection.getRangeAt(0);
     const selectedWords = Array.from(
-      event.currentTarget.querySelectorAll<HTMLButtonElement>(".fs-word")
+      event.currentTarget.querySelectorAll<HTMLElement>(".fs-word")
     ).filter((word) => {
       try {
         return range.intersectsNode(word);
@@ -693,11 +693,17 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
               onPointerEnter={() => scheduleOpen(i)}
               onPointerLeave={scheduleClose}
             >
-              <button
-                type="button"
+              <span
+                role="button"
+                tabIndex={0}
                 className={cn("fs-word", playingIndex === i && "is-playing", popoverOpen && "has-popover")}
                 onClick={() => {
                   if (window.getSelection()?.toString().trim()) return;
+                  playWord(w, i);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
                   playWord(w, i);
                 }}
                 onContextMenu={(event) => {
@@ -712,7 +718,7 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
                 title={hoverGloss ? undefined : ui("Tap a word to hear it")}
               >
                 {w}
-              </button>
+              </span>
               {popoverOpen && (
                 <span
                   className="fs-word-popover"
