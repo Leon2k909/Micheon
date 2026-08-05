@@ -9,7 +9,8 @@ import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/c
 import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
-import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, pickPreviewReplacement, rankReinforcementCandidates, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { sentenceIdentityKey } from "@/lib/germanTextMatch";
+import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
@@ -738,8 +739,43 @@ export default function GuidedLearningSession() {
       });
 
       // Score every unseen sentence in the course, then take the best few.
+      // Chained phrases need their base's score even when the base is already
+      // learned, so those are looked up first and captured during the walk.
+      const chainTargetKeys = new Set<string>();
+      catalog.forEach((item) => {
+        if (item.buildsOn) chainTargetKeys.add(sentenceIdentityKey(String(item.buildsOn)).toLowerCase());
+      });
+      const chainBaseScores = new Map<string, number>();
       const candidates: { pId: string; index: number; score: number; step: any }[] = [];
       catalog.forEach((item, index) => {
+        if (chainTargetKeys.size) {
+          const keys = [
+            sentenceIdentityKey(String(item.de ?? "")).toLowerCase(),
+            sentenceIdentityKey(String(item.originalDe ?? item.de ?? "")).toLowerCase(),
+          ].filter((key) => key && chainTargetKeys.has(key));
+          if (keys.length) {
+            const basePart = activeParts[item.partKey];
+            if (basePart) {
+              const baseText = String(item.de ?? "");
+              const baseCommonality = sentenceCommonality(baseText, corpusIndex);
+              const baseScore = conversationPriorityScore({
+                partKey: item.partKey,
+                kind: item.kind,
+                commonality: baseCommonality,
+                lessonPriority: item.lessonPriority,
+              }) + itemPriority({
+                ability: ability.band,
+                commonality: baseCommonality,
+                difficulty: itemDifficulty(basePart.level, baseText.trim().split(/\s+/).filter(Boolean).length),
+                own: isCustomPartKey(item.partKey),
+              }) * 100;
+              for (const key of keys) {
+                const prev = chainBaseScores.get(key);
+                if (prev == null || baseScore < prev) chainBaseScores.set(key, baseScore);
+              }
+            }
+          }
+        }
         if (statusForId(reviewState, item.id, item.aliases) !== "new") return;
         const progressRecord = progressEntryForId(reviewState, item.id, item.aliases)?.record;
         if (isAttemptedPracticeEligible(progressRecord)) return;
@@ -779,11 +815,26 @@ export default function GuidedLearningSession() {
               long: item.long,
               group: item.group,
               level: item.level,
+              buildsOn: item.buildsOn,
+              originalDe: item.originalDe,
               mastery: "new",
             },
           },
         });
       });
+      resolveChainScores(
+        candidates.map((candidate) => {
+          const proxy = {
+            get score() { return candidate.score; },
+            set score(value: number) { candidate.score = value; },
+            de: String(candidate.step.item?.de ?? ""),
+            originalDe: candidate.step.item?.originalDe ? String(candidate.step.item.originalDe) : undefined,
+            buildsOn: candidate.step.item?.buildsOn ? String(candidate.step.item.buildsOn) : undefined,
+          };
+          return proxy;
+        }),
+        chainBaseScores
+      );
       candidates.sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index));
 
       // The lead sentence is the best-scoring one anywhere. The rest of the
@@ -791,11 +842,59 @@ export default function GuidedLearningSession() {
       // then scans the remaining ranked pool to backfill duplicate/colliding
       // wording instead of silently returning fewer than 3 new phrases.
       const lead = candidates[0];
+      // Anything that builds on the lead comes straight after it, before the
+      // lead's own pack-mates — the chain IS the coherence the pack-mate rule
+      // exists for. Followed transitively so a three-link chain stays whole.
+      const chainAfterLead: typeof candidates = [];
+      if (lead) {
+        const keyOfText = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+        let linkKeys = new Set([
+          keyOfText(lead.step.item?.de),
+          keyOfText(lead.step.item?.originalDe ?? lead.step.item?.de),
+        ]);
+        for (let hops = 0; hops < 3; hops += 1) {
+          const next = candidates.find((candidate) =>
+            candidate !== lead
+            && !chainAfterLead.includes(candidate)
+            && candidate.step.item?.buildsOn
+            && linkKeys.has(keyOfText(candidate.step.item.buildsOn)));
+          if (!next) break;
+          chainAfterLead.push(next);
+          linkKeys = new Set([
+            keyOfText(next.step.item?.de),
+            keyOfText(next.step.item?.originalDe ?? next.step.item?.de),
+          ]);
+        }
+      }
+      const inChain = new Set(chainAfterLead);
+      // A chained phrase whose base lives in ANOTHER pack inherits its base's
+      // rank, but the pack-mates reorder below would bury it behind every
+      // unseen phrase of the lead's pack — for a chain onto part1 that is a
+      // dozen lessons of waiting. Any chained candidate that has earned a
+      // top-slot rank on pure score keeps it.
+      const pinnedChains = lead
+        ? candidates
+            .slice(0, NEW_PER_LESSON_TARGET)
+            .filter((candidate) => candidate !== lead && !inChain.has(candidate) && candidate.step.item?.buildsOn)
+        : [];
+      const pinned = new Set([...chainAfterLead, ...pinnedChains]);
+      // Regrouped once more at the end: the pack-mates reorder above can pull
+      // dozens of the lead's pack between a base and its extension whenever
+      // the base is NOT the lead. orderWithChains pulls every extension back
+      // to directly behind its base, wherever the reorder put them.
       const rankedCandidates = lead
-        ? [
-            ...candidates.filter((candidate) => candidate.pId === lead.pId),
-            ...candidates.filter((candidate) => candidate.pId !== lead.pId),
-          ]
+        ? orderWithChains([
+            lead,
+            ...chainAfterLead,
+            ...pinnedChains,
+            ...candidates.filter((candidate) => candidate !== lead && !pinned.has(candidate) && candidate.pId === lead.pId),
+            ...candidates.filter((candidate) => candidate !== lead && !pinned.has(candidate) && candidate.pId !== lead.pId),
+          ].map((candidate) => ({
+            candidate,
+            de: String(candidate.step.item?.de ?? ""),
+            originalDe: candidate.step.item?.originalDe ? String(candidate.step.item.originalDe) : undefined,
+            buildsOn: candidate.step.item?.buildsOn ? String(candidate.step.item.buildsOn) : undefined,
+          }))).map((row) => row.candidate)
         : [];
       const { fresh, reviews } = selectContinueLearningMix(
         rankedCandidates.map((candidate) => candidate.step),

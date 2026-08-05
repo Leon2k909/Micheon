@@ -4,6 +4,7 @@ import { X, Check, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES } from "@/lib/courseRegistry";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
+import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
 import { ui } from "@/lib/i18n";
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
@@ -41,9 +42,9 @@ function CourseArtwork({ id }: { id: string }) {
         : null;
 
   if (!backgroundImage) {
-    // The rest of the catalogue carries its own flag, and there are eighty of
-    // them — drawing each one by hand would be eighty chances to get a flag
-    // subtly wrong.
+    // Windows renders flag emoji as bare letter pairs, so the catalogue's
+    // flags are drawn as SVG art instead — same picture on every platform.
+    if (hasFlagArt(id)) return <FlagRoundel id={id} />;
     const icon = PLANNED_LANGUAGES.find((language) => language.id === id)?.icon ?? "🌍";
     return <span aria-hidden="true" className="text-2xl leading-none">{icon}</span>;
   }

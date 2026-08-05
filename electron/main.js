@@ -1247,7 +1247,7 @@ async function createWindow() {
     height: 820,
     minWidth: 880,
     minHeight: 600,
-    backgroundColor: "#f1f6ee",
+    backgroundColor: "#e9efe3",
     title: "Micheon",
     // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
     // for a clean, on-brand look like Discord/Slack.

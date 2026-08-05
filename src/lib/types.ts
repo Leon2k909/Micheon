@@ -29,6 +29,12 @@ export interface Dialogue {
 export interface Phrase {
   de: string;
   en: string;
+  /** German of a sentence this one extends (e.g. "Ich weiß nicht." for
+   *  "Ich weiß nicht, ob ich das schaffe."). Lesson ordering serves this
+   *  phrase directly after its base, so learners meet the short form first
+   *  and then how to finish the thought. Matched by sentence identity, not
+   *  by id, so it survives packs being renumbered. */
+  buildsOn?: string;
   use?: string;
   /** Related phrases learned together, e.g. several ways to say goodbye. */
   group?: string;

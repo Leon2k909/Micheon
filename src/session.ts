@@ -88,7 +88,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     return "learning";
   };
 
-  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number, shortLabel?: string) => {
+  const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number, shortLabel?: string, buildsOn?: string, originalDe?: string) => {
     // Keyed so a closing "." and "!" cannot count as two sentences.
     const key = sentenceIdentityKey(de).toLowerCase();
     if (usedSentences.has(key)) return;
@@ -103,6 +103,7 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     const item = {
       id, aliases, de, en, fr, use, lookup, tierNote, coachingLanguage,
       short, shortLabel, when, say, long, group, lessonPriority, partKey,
+      buildsOn, originalDe,
       kind: lookup ? "vocab" : "phrase",
       level: part.level, mastery: masteryOf(progressRecord),
     };
@@ -187,7 +188,11 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       lessonPhrase.long,
       lessonPhrase.group,
       lessonPhrase.lessonPriority,
-      lessonPhrase.shortLabel
+      lessonPhrase.shortLabel,
+      // A phrase that extends one the learner already knows. Scoring places
+      // it directly after its base, however the two packs are ranked.
+      ph.buildsOn,
+      ph.de
     );
   });
 
@@ -260,21 +265,46 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   // its slots without producing an impossible Quick Match round.
   const reviews = pickReviews(queue.filter((s) => s.review), OLD_PER_LESSON);
   const reviewKeys = reviews.flatMap(matchingKeysForStep);
+  // Bases a chained phrase may point at: every sentence this pack teaches,
+  // scored the same way the fresh queue is, learned or not. A known base is
+  // exactly the interesting case — its extension should arrive next.
+  const packBaseScores = new Map<string, number>();
+  const notePackBase = (de: unknown, kind: "vocab" | "phrase" | "dialogue", lessonPriority?: number) => {
+    const text = String(de ?? "").trim();
+    if (!text) return;
+    const score = conversationPriorityScore({
+      partKey, kind,
+      commonality: sentenceCommonality(text, null),
+      lessonPriority,
+    });
+    const key = sentenceIdentityKey(text).toLowerCase();
+    const prev = packBaseScores.get(key);
+    if (prev == null || score < prev) packBaseScores.set(key, score);
+  };
+  phrases.forEach((ph) => notePackBase(ph?.de, "phrase", ph?.lessonPriority));
+  vocab.forEach((word) => notePackBase(word?.example, "vocab"));
+  dialogues.forEach((d) => (d.lines ?? []).forEach((line: any) => notePackBase(line?.de, "dialogue")));
+
+  const freshRows = queue
+    .filter((s) => s.type === EX.SENTENCE && !s.review)
+    .map((step, index) => ({
+      step,
+      index,
+      de: String(step.item?.de ?? ""),
+      originalDe: step.item?.originalDe ? String(step.item.originalDe) : undefined,
+      buildsOn: step.item?.buildsOn ? String(step.item.buildsOn) : undefined,
+      score: conversationPriorityScore({
+        partKey,
+        kind: step.item?.kind,
+        commonality: sentenceCommonality(step.item?.de ?? "", null),
+        lessonPriority: step.item?.lessonPriority,
+      }),
+    }));
+  resolveChainScores(freshRows, packBaseScores);
   const freshSentences = pickFresh(
-    queue
-      .filter((s) => s.type === EX.SENTENCE && !s.review)
-      .map((step, index) => ({
-        step,
-        index,
-        score: conversationPriorityScore({
-          partKey,
-          kind: step.item?.kind,
-          commonality: sentenceCommonality(step.item?.de ?? "", null),
-          lessonPriority: step.item?.lessonPriority,
-        }),
-      }))
-      .sort((a, b) => a.score - b.score || a.index - b.index)
-      .map(({ step }) => step),
+    orderWithChains(
+      freshRows.sort((a, b) => a.score - b.score || a.index - b.index)
+    ).map(({ step }) => step),
     NEW_PER_LESSON,
     reviewKeys
   );
@@ -393,6 +423,98 @@ export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string>
  * "old" half is mostly recent with an occasional long-tail review. Deduped by
  * both visible matching columns; ties are broken by most-overdue.
  */
+/**
+ * Chained phrases take their place in the queue from their base.
+ *
+ * A sentence marked `buildsOn` extends one the learner meets earlier —
+ * "Ich weiß nicht." grows into "Ich weiß nicht, ob ich das schaffe." Scored
+ * on its own merits the longer sentence lands thousands of places later and
+ * the connection is lost; scored as base + 1 it is served immediately after
+ * its base, which is where extending a thought actually teaches something.
+ *
+ * Rows are mutated in place. Bases may be rows themselves or already-known
+ * sentences supplied via `externalBaseScores` (keyed by sentenceIdentityKey,
+ * lower-cased, on both the served and the authored wording — learning modes
+ * rewrite one but not the other). Chains resolve up to three links deep; an
+ * unresolvable buildsOn leaves the row's own score untouched.
+ */
+export function resolveChainScores(
+  rows: Array<{ score: number; de?: string; originalDe?: string; buildsOn?: string }>,
+  externalBaseScores?: Map<string, number>
+): void {
+  const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+  for (let pass = 0; pass < 3; pass += 1) {
+    const scoreOf = new Map<string, number>(externalBaseScores ?? []);
+    for (const row of rows) {
+      for (const key of [keyOf(row.de), keyOf(row.originalDe ?? row.de)]) {
+        if (!key) continue;
+        const prev = scoreOf.get(key);
+        if (prev == null || row.score < prev) scoreOf.set(key, row.score);
+      }
+    }
+    // Which identities are still queued as rows: a base that is present must
+    // come before its extension (+1); a base already learned and gone leaves
+    // its extension standing exactly in its place (+0), so a tied stranger
+    // cannot slot in between the learned base and its follow-up.
+    const rowKeys = new Set<string>();
+    for (const row of rows) {
+      rowKeys.add(keyOf(row.de));
+      rowKeys.add(keyOf(row.originalDe ?? row.de));
+    }
+    let changed = false;
+    for (const row of rows) {
+      if (!row.buildsOn) continue;
+      const baseKey = keyOf(row.buildsOn);
+      const base = scoreOf.get(baseKey);
+      if (base == null) continue;
+      const want = rowKeys.has(baseKey) ? base + 1 : base;
+      if (row.score !== want) {
+        row.score = want;
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+}
+
+/**
+ * Score-sorted rows, with every chained row pulled directly behind its base.
+ *
+ * Score inheritance alone cannot guarantee adjacency: short bases often TIE
+ * (identical commonality, same pack), and a sort puts all tied bases before
+ * all their +1 extensions, splitting every pair. This pass walks the sorted
+ * order and, after emitting a row, emits whatever builds on it — so a chain
+ * holds together whatever the scores say, and rows without chains keep their
+ * exact sorted positions.
+ */
+export function orderWithChains<T extends { de?: string; originalDe?: string; buildsOn?: string }>(
+  sorted: T[]
+): T[] {
+  const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+  const byBase = new Map<string, T[]>();
+  for (const row of sorted) {
+    if (!row.buildsOn) continue;
+    const key = keyOf(row.buildsOn);
+    const list = byBase.get(key);
+    if (list) list.push(row);
+    else byBase.set(key, [row]);
+  }
+  if (!byBase.size) return sorted;
+  const emitted = new Set<T>();
+  const out: T[] = [];
+  const emit = (row: T, depth: number) => {
+    if (emitted.has(row)) return;
+    emitted.add(row);
+    out.push(row);
+    if (depth >= 3) return;
+    for (const key of [keyOf(row.de), keyOf(row.originalDe ?? row.de)]) {
+      for (const follower of byBase.get(key) ?? []) emit(follower, depth + 1);
+    }
+  };
+  for (const row of sorted) emit(row, 0);
+  return out;
+}
+
 export function pickReviews(
   due: any[],
   n: number,
@@ -558,6 +680,10 @@ export type CatalogItem = {
   lessonPriority?: number;
   tierNote?: string;
   coachingLanguage?: "de" | "en" | "both";
+  /** Sentence this one extends; scoring serves it right after its base. */
+  buildsOn?: string;
+  /** Authored wording, kept because learning modes rewrite `de`. */
+  originalDe?: string;
 };
 
 /**
@@ -583,7 +709,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     lookup?: string,
     aliases: string[] = [],
     use?: string,
-    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "shortLabel" | "when" | "say" | "long" | "group" | "lessonPriority">> = {}
+    coaching: Partial<Pick<CatalogItem, "fr" | "short" | "shortLabel" | "when" | "say" | "long" | "group" | "lessonPriority" | "buildsOn" | "originalDe">> = {}
   ) => {
     const key = sentenceIdentityKey(de).toLowerCase();
     if (!de.trim() || seen.has(key)) return;
@@ -617,6 +743,8 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
       long: catalogPhrase.long,
       group: catalogPhrase.group,
       lessonPriority: catalogPhrase.lessonPriority,
+      buildsOn: ph.buildsOn,
+      originalDe: ph.de,
     });
   });
 

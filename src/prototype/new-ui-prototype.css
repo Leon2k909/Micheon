@@ -2,10 +2,10 @@
   --np-font-display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   --np-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --np-bg: #eaf6e6;
-  --np-shell: var(--shell-bottom, #e8eee3);
-  --np-shell-top: var(--shell-top, #f1f6ee);
+  --np-shell: var(--shell-bottom, #dde5d6);
+  --np-shell-top: var(--shell-top, #e9efe3);
   --np-surface: #ffffff;
-  --np-surface-soft: #fbfdfa;
+  --np-surface-soft: #f1f5ec;
   --np-text: #292725;
   --np-muted: #625e59;
   --np-soft: #6e6963;
@@ -26,8 +26,8 @@
   --np-motion-slow: 520ms;
   --np-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --surface: #ffffff;
-  --surface-2: #fbfdfa;
-  --surface-3: #eef3ec;
+  --surface-2: #f1f5ec;
+  --surface-3: #e3eadd;
   --border: rgba(56, 70, 52, 0.42);
   --border-2: rgba(56, 70, 52, 0.56);
   --text-1: #232120;
@@ -2853,8 +2853,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-feature-host {
   --bg: transparent;
   --surface: #ffffff;
-  --surface-2: #fbfdfa;
-  --surface-3: #eef3ec;
+  --surface-2: #f1f5ec;
+  --surface-3: #e3eadd;
   --border: rgba(56, 70, 52, 0.42);
   --border-2: rgba(56, 70, 52, 0.56);
   --text-1: #232120;

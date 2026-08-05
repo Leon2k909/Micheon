@@ -4,7 +4,7 @@
   color-scheme: light;
   /* Matches the app shell, so nothing flashes another palette before the
      themed tree has rendered. */
-  --bg: #eef3ec;
+  --bg: #e9efe3;
   --surface: #ffffff;
   --surface-2: #f6f7f9;
   --surface-3: #eef0f5;
@@ -41,7 +41,7 @@ html[data-theme="light"] {
   color-scheme: light;
   /* Matches the app shell, so nothing flashes another palette before the
      themed tree has rendered. */
-  --bg: #eef3ec;
+  --bg: #e9efe3;
   --surface: #ffffff;
   --surface-2: #f6f7f9;
   --surface-3: #eef0f5;
@@ -140,7 +140,7 @@ html.is-prototype-shell body,
 html.is-prototype-shell #root {
   /* The page's own top-of-gradient colour, so the first paint already looks
      like the app instead of the cream this used to be. */
-  background: #f1f6ee;
+  background: #e9efe3;
 }
 
 html[data-theme="dark"].is-prototype-shell,
@@ -368,8 +368,8 @@ button { cursor: pointer; }
   --app-h: 100dvh;
   /* Shared with .new-ui-prototype so window furniture and page paint the
      same gradient. Keep the values in step with new-ui-prototype.css. */
-  --shell-top: #f1f6ee;
-  --shell-bottom: #e8eee3;
+  --shell-top: #e9efe3;
+  --shell-bottom: #dde5d6;
   /* Boundary for cards that sit on a near-white surface, where the ordinary
      --border measures 2.17:1 and effectively disappears. 3.6:1 against
      #fbfdfa, comfortably past the 3:1 a control boundary needs. */
