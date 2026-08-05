@@ -984,6 +984,56 @@ function reduceForMeaning(s: string): string {
     .join(" ");
 }
 
+/**
+ * The words that carry the meaning, as an unordered set.
+ *
+ * English recall asks "did you understand the German", so the answer key is
+ * one wording of the meaning and not the only one. "That's how I see it too"
+ * and "I see it that way too" are the same thought built out of different
+ * scaffolding; the scaffolding is what this drops.
+ *
+ * Pronouns keep their case (i is not me, he is not him) and negation is kept,
+ * so answers that reverse who did what to whom still fail.
+ */
+const ENGLISH_SCAFFOLDING = new Set([
+  "a", "an", "the", "to", "that", "this", "those", "these",
+  "is", "are", "am", "was", "were", "be", "been", "being",
+  "do", "does", "did", "so", "then", "just", "how", "way", "as", "there",
+  "it", "and", "well", "please",
+]);
+
+// Prepositions stay in deliberately. "of" is the entire difference between
+// "could have" and the "could of" mistake the confusables pack teaches out,
+// and "on the table" is not "under the table".
+
+function meaningWords(s: string): string[] {
+  return normalizeGermanInput(expandEnglishContractions(s))
+    .split(" ")
+    .filter(Boolean)
+    .map(stemGerund)
+    .filter((w) => !ENGLISH_SCAFFOLDING.has(w));
+}
+
+/**
+ * Same meaning words, in any order — but only when both answers open on the
+ * same one. That opening word is almost always the subject or the verb, so
+ * "Peter calls Anna" is still refused for "Anna calls Peter" while a genuine
+ * reshuffle of the same sentence is accepted.
+ */
+function sameMeaningUnordered(input: string, target: string): boolean {
+  const a = meaningWords(input);
+  const b = meaningWords(target);
+  if (a.length < 2 || a.length !== b.length) return false;
+  if (a[0] !== b[0]) return false;
+  const bag = [...b];
+  for (const word of a) {
+    const at = bag.indexOf(word);
+    if (at === -1) return false;
+    bag.splice(at, 1);
+  }
+  return true;
+}
+
 export function matchEnglishPhrase(
   input: string,
   target: string
@@ -1053,6 +1103,14 @@ export function matchEnglishPhrase(
   const reducedInput = reduceForMeaning(inputK);
   const reducedTarget = reduceForMeaning(targetK);
   if (reducedTarget && reducedInput === reducedTarget) {
+    return { ok: true, spellingNote: false };
+  }
+  // Tier 6.5: the same meaning words in a different arrangement. English is
+  // the learner's own language and this step is testing comprehension of the
+  // German, so a correct thought worded differently must not come back as
+  // "Not quite" — being told you are wrong when you are right is the one
+  // failure that teaches nothing.
+  if (sameMeaningUnordered(inputK, targetK)) {
     return { ok: true, spellingNote: false };
   }
   // Tier 7: recognizable German-style literal translation ("I will eat" for

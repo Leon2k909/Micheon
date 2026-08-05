@@ -1,3 +1,5 @@
+import { countKnownVocab } from "@/lib/fluency";
+
 export type GamificationStats = {
   totalXp: number;
   sessionsCompleted: number;
@@ -74,8 +76,8 @@ export const MILESTONES = [
     desc: "Combine lessons and word-bank items.",
     target: 200,
     unit: "words",
-    current: (stats: GamificationStats) => stats.totalReviews + stats.externalWords,
-    check: (stats: GamificationStats) => stats.totalReviews + stats.externalWords >= 200,
+    current: (stats: GamificationStats) => countKnownVocab(undefined, stats.externalWords),
+    check: (stats: GamificationStats) => countKnownVocab(undefined, stats.externalWords) >= 200,
   },
   {
     id: "week",
@@ -119,8 +121,8 @@ export const MILESTONES = [
     desc: "Grow a broad base for everyday conversation.",
     target: 1000,
     unit: "words",
-    current: (stats: GamificationStats) => stats.totalReviews + stats.externalWords,
-    check: (stats: GamificationStats) => stats.totalReviews + stats.externalWords >= 1000,
+    current: (stats: GamificationStats) => countKnownVocab(undefined, stats.externalWords),
+    check: (stats: GamificationStats) => countKnownVocab(undefined, stats.externalWords) >= 1000,
   },
   {
     id: "streak_30",

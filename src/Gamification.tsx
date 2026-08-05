@@ -251,8 +251,8 @@ export const MILESTONES = [
     desc: "Combine lessons and word-bank items.",
     target: 200,
     unit: "words",
-    current: (s: Stats) => s.totalReviews + s.externalWords,
-    check: (s: Stats) => s.totalReviews + s.externalWords >= 200,
+    current: (s: Stats) => countKnownVocab(undefined, s.externalWords),
+    check: (s: Stats) => countKnownVocab(undefined, s.externalWords) >= 200,
   },
   {
     id: "week",
@@ -296,8 +296,8 @@ export const MILESTONES = [
     desc: "Grow a broad base for everyday conversation.",
     target: 1000,
     unit: "words",
-    current: (s: Stats) => s.totalReviews + s.externalWords,
-    check: (s: Stats) => s.totalReviews + s.externalWords >= 1000,
+    current: (s: Stats) => countKnownVocab(undefined, s.externalWords),
+    check: (s: Stats) => countKnownVocab(undefined, s.externalWords) >= 1000,
   },
   {
     id: "streak_30",
@@ -552,7 +552,6 @@ export default function GamificationPanel({
     window.location.reload();
   };
   const { cur, nxt, pct, into, needed } = getLevelInfo(stats.totalXp ?? 0);
-  const words = (stats.totalReviews || 0) + (stats.externalWords || 0);
   const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
   const catalogueReady = Object.keys(apiParts).length > 0;
@@ -1095,15 +1094,15 @@ export default function GamificationPanel({
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
           <ActivityCard className="min-w-0" progressStats={stats} />
-          <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} vocab={vocab} />
-          <ActivitySidePanel earned={earned} stats={stats} words={words} />
+          <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+          <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
         </section>
 
         <section className="grid gap-4 md:grid-cols-4">
           <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
           <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
           <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
-          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={words.toLocaleString()} />
+          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
         </section>
 
         <section className="card p-5 sm:p-6">
@@ -1189,8 +1188,8 @@ export default function GamificationPanel({
     <div className="space-y-4">
       <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
         <ActivityCard className="min-w-0" progressStats={stats} />
-        <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={words} vocab={vocab} />
-        <ActivitySidePanel earned={earned} stats={stats} words={words} />
+        <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+        <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
       </section>
 
       <section className="card overflow-hidden">
@@ -1330,7 +1329,7 @@ export default function GamificationPanel({
         <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
         <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
         <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
-        <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={words.toLocaleString()} />
+        <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
       </section>
 
       <section className="card p-5 sm:p-6">

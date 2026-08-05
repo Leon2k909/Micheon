@@ -28,6 +28,19 @@ export const FLUENCY_STAGES: FluencyStage[] = [
 export const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;
 
 /** Distinct things the learner actually knows, across lessons, games and external tracking. */
+/**
+ * How much German you actually know: distinct items you can currently
+ * produce, plus words you mastered by hand and any you told us you learned
+ * elsewhere. An item that you got wrong last time does not count until you
+ * get it right again.
+ *
+ * This is THE vocabulary number. Every screen that answers "how far along am
+ * I" — the dashboard outlook, the profile fluency meter, the profile word
+ * stat, the games mastery ring, the word milestones — reads it, so they all
+ * agree. Do not substitute `totalReviews`: that is a lifetime tally of
+ * practice events, it counts the same word once per sitting, and it will
+ * happily climb past the number of words that exist.
+ */
 export function countKnownVocab(user: UserProfile | null = getAuthUser(), externalWords = 0): number {
   let known = 0;
   try {

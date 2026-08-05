@@ -78,14 +78,11 @@ const GAMES = [
 
 export function GamesView({
   apiParts,
-  totalReviews = 0,
-  externalWords = 0,
-  gameMasteryCount = 0,
+  vocab = 0,
 }: {
   apiParts: Record<string, unknown>;
-  totalReviews?: number;
-  externalWords?: number;
-  gameMasteryCount?: number;
+  /** Distinct German you can currently produce — see countKnownVocab. */
+  vocab?: number;
 }) {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -166,11 +163,7 @@ export function GamesView({
                 )}
               </div>
             </section>
-            <MasteryCard
-              externalWords={externalWords}
-              gameMasteryCount={gameMasteryCount}
-              totalReviews={totalReviews}
-            />
+            <MasteryCard vocab={vocab} />
           </div>
 
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

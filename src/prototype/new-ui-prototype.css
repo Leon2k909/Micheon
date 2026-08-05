@@ -2,8 +2,8 @@
   --np-font-display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   --np-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --np-bg: #eaf6e6;
-  --np-shell: #e8eee3;
-  --np-shell-top: #f1f6ee;
+  --np-shell: var(--shell-bottom, #e8eee3);
+  --np-shell-top: var(--shell-top, #f1f6ee);
   --np-surface: #ffffff;
   --np-surface-soft: #fbfdfa;
   --np-text: #292725;
@@ -7395,3 +7395,108 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
   --np-muted: #d5dcd3;
   --np-soft: #b9c2b6;
 }
+
+/* ── notification filtering ─────────────────────────────────────────────── */
+/* A bell that always shows the same badge stops being read. These let the
+   learner turn off the kinds they do not care about, so what is left means
+   something. */
+.np-notification-filter-toggle,
+.np-notification-heading > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--np-muted);
+  cursor: pointer;
+}
+
+.np-notification-filter-toggle svg { width: 15px; height: 15px; }
+.np-notification-filter-toggle:hover,
+.np-notification-filter-toggle.is-open {
+  background: var(--np-surface-soft);
+  color: var(--np-text);
+}
+
+.np-notification-filters {
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.np-notification-filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.np-notification-filters-head span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+}
+
+.np-notification-filters-head button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-strong, #1f762d);
+  cursor: pointer;
+}
+
+.np-notification-filters-head button:hover { text-decoration: underline; }
+
+.np-notification-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.np-notification-filter-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--np-surface);
+  color: var(--np-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.np-notification-filter-chips button svg { width: 13px; height: 13px; }
+
+.np-notification-filter-chips button.is-muted {
+  background: var(--np-surface-soft);
+  color: var(--np-muted);
+  text-decoration: line-through;
+}
+
+.np-notification-filter-chips button:hover { border-color: var(--border-2); }
+
+.np-notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 22px 18px 26px;
+  text-align: center;
+}
+
+.np-notification-empty svg { width: 22px; height: 22px; color: var(--np-muted); }
+.np-notification-empty strong { font-size: 13px; font-weight: 800; }
+.np-notification-empty span { font-size: 12px; color: var(--np-muted); max-width: 34ch; }
+
+/* A muted bell should look muted rather than just empty. */
+.np-notification.is-muted { opacity: 0.72; }

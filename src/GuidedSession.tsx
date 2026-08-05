@@ -1395,6 +1395,13 @@ function ReviewLevelPicker({ onSelect }: { onSelect: (level: GuidedReviewLevel) 
   );
 }
 
+/**
+ * How long the "Marked as …" notice stays up before clearing itself. Long
+ * enough to read the sentence it names and reach for Undo, short enough that
+ * it is gone by the time the next card is being answered.
+ */
+const MANUAL_REVIEW_NOTICE_MS = 5000;
+
 function reviewLevelDetails(level: GuidedReviewLevel) {
   if (level === "know") {
     return { label: "Known", note: "This item will return much later for a proper check." };
@@ -1418,7 +1425,7 @@ function reviewLevelFinishesItem(level: GuidedReviewLevel): boolean {
 }
 
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
@@ -1430,6 +1437,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   /** The pending mark for THIS item, so the banner can host Undo inline. */
   manualReviewNotice?: { label: string; note: string } | null;
   onUndoManualReview?: () => void;
+  /** Pause the notice's own countdown while it is being read or aimed at. */
+  onHoldManualReview?: () => void;
+  onReleaseManualReview?: () => void;
   onDismissManualReview?: () => void;
 }) {
   const shakeControls = useAnimationControls();
@@ -1541,6 +1551,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [memFrInput, setMemFrInput] = useState("");
   const [memFrChecked, setMemFrChecked] = useState(false);
   const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
+  // The lesson owns the pending mark; this banner is one of its two faces.
+  // When the notice times out up there, the banner has to go with it —
+  // otherwise the toast disappears and this copy sits on the card for ever.
+  useEffect(() => {
+    if (!manualReviewNotice) setGrade(null);
+  }, [manualReviewNotice]);
   const inputRef = useRef<HTMLInputElement>(null);
   const enInputRef = useRef<HTMLInputElement>(null);
   const frInputRef = useRef<HTMLInputElement>(null);
@@ -2783,6 +2799,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   : "border-zinc-300/60 bg-zinc-500/10 text-zinc-700"
               )}
               role="status"
+              onMouseEnter={onHoldManualReview}
+              onMouseLeave={onReleaseManualReview}
+              onFocusCapture={onHoldManualReview}
+              onBlurCapture={onReleaseManualReview}
             >
               <span className="min-w-0 flex-1">
                 {grade === "struggle" || manualReviewNotice?.label === "Struggling"
@@ -5389,6 +5409,29 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
      */
     subject?: string;
   } | null>(null);
+  /**
+   * The mark is done and saved; the notice only exists so it can be taken
+   * back. Left on screen it becomes furniture — still there three cards
+   * later, still offering to undo something the learner has forgotten. It
+   * clears itself after a few seconds instead.
+   *
+   * The countdown does not run while the pointer is over the notice or the
+   * keyboard focus is inside it, so it never vanishes from under someone who
+   * is reaching for Undo, and moving away restarts the full window rather
+   * than resuming a nearly-expired one.
+   */
+  const [reviewNoticeHeld, setReviewNoticeHeld] = useState(false);
+  useEffect(() => {
+    if (!lastManualReviewChange) {
+      setReviewNoticeHeld(false);
+      return undefined;
+    }
+    if (reviewNoticeHeld) return undefined;
+    const timer = window.setTimeout(() => setLastManualReviewChange(null), MANUAL_REVIEW_NOTICE_MS);
+    return () => window.clearTimeout(timer);
+  }, [lastManualReviewChange, reviewNoticeHeld]);
+  const holdReviewNotice = useCallback(() => setReviewNoticeHeld(true), []);
+  const releaseReviewNotice = useCallback(() => setReviewNoticeHeld(false), []);
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
   const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
   useEffect(() => {
@@ -5872,7 +5915,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} />}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
@@ -5904,6 +5947,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               transition={{ duration: reduceMotion ? 0.12 : 0.2, ease: [0.2, 0.8, 0.2, 1] }}
               className="fs-grade-undo"
               role="status"
+              onMouseEnter={holdReviewNotice}
+              onMouseLeave={releaseReviewNotice}
+              onFocusCapture={holdReviewNotice}
+              onBlurCapture={releaseReviewNotice}
             >
               <div>
                 <strong>

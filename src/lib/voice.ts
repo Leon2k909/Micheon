@@ -1,3 +1,4 @@
+import { reportSilencedPlayback } from "@/lib/audioPrompt";
 // Front-end TTS playback.
 //
 // Primary path: fetch an MP3 from our /api/tts server, which generates the exact
@@ -417,7 +418,12 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
 
 /** Speak a single phrase. Interrupts whatever is currently playing. No-op while muted. */
 export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<void> {
-  if (getTtsAudioVolume(lang) <= 0) return Promise.resolve();
+  if (getTtsAudioVolume(lang) <= 0) {
+    // Silently doing nothing looks like a broken button. Say what is off and
+    // offer to turn it back on, then play what was asked for.
+    reportSilencedPlayback(lang, () => { void tts(text, rate, lang); });
+    return Promise.resolve();
+  }
   hardStop();
   const token = ++playSeq;
   const fetchController = new AbortController();
@@ -433,7 +439,10 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
 
 /** Speak several phrases back-to-back (e.g. German then French on the Listen step). No-op while muted. */
 export function ttsSequence(items: SeqItem[]): Promise<void> {
-  if (!items.some((item) => getTtsAudioVolume(item.lang) > 0)) return Promise.resolve();
+  if (!items.some((item) => getTtsAudioVolume(item.lang) > 0)) {
+    reportSilencedPlayback(items[0]?.lang ?? "de-DE", () => { void ttsSequence(items); });
+    return Promise.resolve();
+  }
   hardStop();
   const token = ++playSeq;
   const fetchController = new AbortController();

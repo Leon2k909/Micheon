@@ -363,7 +363,15 @@ button { cursor: pointer; }
    --app-h is the height app screens should fill. On the website it's the full
    viewport; in the desktop build we subtract the custom title bar so nothing
    overflows. The .is-electron class is added in main.tsx only inside Electron. */
-:root { --titlebar-h: 0px; --app-h: 100dvh; }
+:root {
+  --titlebar-h: 0px;
+  --app-h: 100dvh;
+  /* Shared with .new-ui-prototype so window furniture and page paint the
+     same gradient. Keep the values in step with new-ui-prototype.css. */
+  --shell-top: #f1f6ee;
+  --shell-bottom: #e8eee3;
+}
+html[data-theme="dark"] { --shell-top: #111a13; --shell-bottom: #111a13; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
@@ -423,12 +431,20 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 
 /* Keep the prototype desktop chrome deliberately quiet. A single uninterrupted
    surface reads as native window furniture; carrying the page grid and its
-   dividers through the title bar made the shell look like a website in a frame. */
+   dividers through the title bar made the shell look like a website in a frame.
+
+   The bar paints the page's own gradient rather than a colour of its own. The
+   gradient is fixed to the viewport, so repeating the declarations here lands
+   on exactly the same pixels the page would have drawn, and the window has one
+   continuous surface from the title down — the thing that makes an Electron
+   app read as native instead of as a web page wearing a frame. */
 .titlebar--prototype {
   border-bottom: 0;
-  background: #fffaf1;
+  background: var(--shell-bottom);
+  background-image: linear-gradient(180deg, var(--shell-top) 0%, var(--shell-bottom) 46%);
+  background-attachment: fixed;
   box-shadow: none;
-  color: #625d57;
+  color: #4c5449;
 }
 
 .titlebar--prototype::after {
@@ -450,7 +466,7 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 
 .titlebar--prototype .titlebar-title {
   padding-left: 0;
-  color: #625d57;
+  color: #4c5449;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
@@ -459,7 +475,7 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 }
 
 .titlebar--prototype .titlebar-btn {
-  color: #5f5a55;
+  color: #4c5449;
   opacity: 0.86;
 }
 
@@ -468,7 +484,7 @@ html.is-electron .app-overlay { top: var(--titlebar-h); }
 }
 
 html[data-theme="dark"] .titlebar--prototype {
-  background: #111a13;
+  background: var(--shell-bottom);
   box-shadow: none;
 }
 
@@ -5509,3 +5525,75 @@ html[data-contrast="high"] .audio-mixer-panel.prototype-audio-mixer {
 [data-fx="lite"] .fs-word:hover {
   transform: none !important;
 }
+
+/* ── "why did nothing play?" ────────────────────────────────────────────── */
+.audio-unmute-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 90;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: 0 18px 40px rgba(20, 30, 18, 0.18);
+}
+
+.audio-unmute-prompt > svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--text-3);
+}
+
+.audio-unmute-prompt__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audio-unmute-prompt__text strong { font-size: 13px; font-weight: 800; }
+.audio-unmute-prompt__text span { font-size: 12px; color: var(--text-3); }
+
+.audio-unmute-prompt__accept {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green, #2f7d32);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.audio-unmute-prompt__accept svg { width: 15px; height: 15px; }
+.audio-unmute-prompt__accept:hover { filter: brightness(1.06); }
+
+.audio-unmute-prompt__dismiss {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.audio-unmute-prompt__dismiss svg { width: 16px; height: 16px; }
+.audio-unmute-prompt__dismiss:hover { background: var(--surface-3); }

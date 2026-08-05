@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App, { MotionGate } from "./App";
+import { SilencedAudioPrompt } from "./components/SilencedAudioPrompt";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
@@ -50,6 +51,8 @@ if (container) {
     <StrictMode>
       <MotionGate>
         <App />
+        {/* One explanation for every play button in the app. */}
+        <SilencedAudioPrompt />
       </MotionGate>
     </StrictMode>
   );

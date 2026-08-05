@@ -90,12 +90,11 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
   );
 }
 
-export function MasteryCard({ totalReviews, externalWords, gameMasteryCount = 0 }: {
-  totalReviews: number;
-  externalWords: number;
-  gameMasteryCount?: number;
-}) {
-  const mastered = totalReviews + externalWords + gameMasteryCount;
+export function MasteryCard({ vocab }: { vocab: number }) {
+  // The same count the dashboard outlook and the profile fluency meter show.
+  // This card used to add up review events instead, so a learner could see
+  // three different "how many words do I know" answers on three screens.
+  const mastered = vocab;
   const vocabPct = Math.min(100, Math.round((mastered / VOCAB_TARGET) * 100));
   const nextMilestone = VOCAB_MILESTONES.find((m) => mastered < m.value);
   const currentMilestone = [...VOCAB_MILESTONES].reverse().find((m) => mastered >= m.value);

@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BarChart3,
   Bell,
+  BellOff,
   BookOpen,
   Check,
   CheckCircle2,
@@ -24,6 +25,7 @@ import {
   MessageSquareText,
   Play,
   Search,
+  SlidersHorizontal,
   Settings2,
   ShoppingBag,
   Swords,
@@ -63,6 +65,14 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { countKnownVocab, getFluency } from "@/lib/fluency";
+import {
+  NOTIFICATION_KINDS,
+  NOTIFICATION_PREFS_EVENT,
+  getMutedNotificationKinds,
+  setAllNotificationsMuted,
+  setNotificationKindMuted,
+  type NotificationKind,
+} from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
 
@@ -559,10 +569,29 @@ function Header({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "there";
-  const notifications: Array<{ title: string; body: string; view: PrototypeView }> = [
-    { title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
-    { title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
+  const [mutedNotifications, setMutedNotifications] = useState<Set<NotificationKind>>(() => getMutedNotificationKinds());
+  const [notificationFiltersOpen, setNotificationFiltersOpen] = useState(false);
+  useEffect(() => {
+    const sync = () => setMutedNotifications(getMutedNotificationKinds());
+    window.addEventListener(NOTIFICATION_PREFS_EVENT, sync);
+    window.addEventListener("storage-sync-completed", sync);
+    return () => {
+      window.removeEventListener(NOTIFICATION_PREFS_EVENT, sync);
+      window.removeEventListener("storage-sync-completed", sync);
+    };
+  }, []);
+  // Written from the learner's real numbers, so the streak note only appears
+  // when there is a streak to talk about.
+  const allNotifications: Array<{ kind: NotificationKind; title: string; body: string; view: PrototypeView }> = [
+    { kind: "reviews", title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
+    { kind: "games", title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
+    stats.streak > 0
+      ? { kind: "streak" as const, title: `${stats.streak}-day streak`, body: "One short block today keeps it going.", view: "home" as PrototypeView }
+      : { kind: "streak" as const, title: "Start a streak today", body: "A single lesson is enough to begin one.", view: "practice" as PrototypeView },
+    { kind: "progress", title: "See how far you have come", body: "Your vocabulary total and next milestone are on your profile.", view: "profile" },
   ];
+  const notifications = allNotifications.filter((item) => !mutedNotifications.has(item.kind));
+  const allNotificationsMuted = mutedNotifications.size >= NOTIFICATION_KINDS.length;
   const filteredSearchItems = useMemo(() => {
     const terms = normalizeCatalogSearchText(searchQuery).split(" ").filter(Boolean);
     const matches = terms.length
@@ -738,8 +767,10 @@ function Header({
         <div className="np-notification-wrap">
           <button
             aria-expanded={notificationsOpen}
-            aria-label={`${notifications.length} unread notifications`}
-            className="np-icon-button np-notification"
+            aria-label={allNotificationsMuted
+              ? "Notifications, all muted"
+              : `${notifications.length} unread notifications`}
+            className={`np-icon-button np-notification${allNotificationsMuted ? " is-muted" : ""}`}
             onClick={() => {
               closeSearch();
               setProfileOpen(false);
@@ -747,8 +778,8 @@ function Header({
             }}
             type="button"
           >
-            <Bell />
-            <span aria-hidden="true">{notifications.length}</span>
+            {allNotificationsMuted ? <BellOff /> : <Bell />}
+            {notifications.length > 0 && <span aria-hidden="true">{notifications.length}</span>}
           </button>
           <AnimatePresence initial={false}>
             {notificationsOpen && (
@@ -761,19 +792,69 @@ function Header({
                 transition={{ duration: 0.16 }}
               >
                 <div className="np-notification-heading">
-                  <div><strong>Notifications</strong><small>{notifications.length} new</small></div>
+                  <div>
+                    <strong>Notifications</strong>
+                    <small>{allNotificationsMuted
+                      ? "All muted"
+                      : `${notifications.length} of ${allNotifications.length} shown`}</small>
+                  </div>
+                  <button
+                    aria-expanded={notificationFiltersOpen}
+                    aria-label="Filter notifications"
+                    className={`np-notification-filter-toggle${notificationFiltersOpen ? " is-open" : ""}`}
+                    onClick={() => setNotificationFiltersOpen((open) => !open)}
+                    type="button"
+                  >
+                    <SlidersHorizontal aria-hidden="true" />
+                  </button>
                   <button aria-label="Close notifications" onClick={() => setNotificationsOpen(false)} type="button">
                     <X aria-hidden="true" />
                   </button>
                 </div>
+                {notificationFiltersOpen && (
+                  <div className="np-notification-filters">
+                    <div className="np-notification-filters-head">
+                      <span>Show</span>
+                      <button
+                        onClick={() => setMutedNotifications(setAllNotificationsMuted(!allNotificationsMuted))}
+                        type="button"
+                      >
+                        {allNotificationsMuted ? "Unmute all" : "Mute all"}
+                      </button>
+                    </div>
+                    <div className="np-notification-filter-chips">
+                      {NOTIFICATION_KINDS.map((kind) => {
+                        const muted = mutedNotifications.has(kind.id);
+                        return (
+                          <button
+                            aria-pressed={!muted}
+                            className={muted ? "is-muted" : ""}
+                            key={kind.id}
+                            onClick={() => setMutedNotifications(setNotificationKindMuted(kind.id, !muted))}
+                            type="button"
+                          >
+                            {muted ? <BellOff aria-hidden="true" /> : <Bell aria-hidden="true" />}
+                            {kind.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="np-notification-list">
-                  {notifications.map((notification, index) => (
+                  {notifications.length > 0 ? notifications.map((notification, index) => (
                     <button key={notification.title} onClick={() => openNotification(notification.view)} type="button">
                       <span>{index + 1}</span>
                       <div><strong>{notification.title}</strong><small>{notification.body}</small></div>
                       <ChevronRight />
                     </button>
-                  ))}
+                  )) : (
+                    <div className="np-notification-empty">
+                      <BellOff aria-hidden="true" />
+                      <strong>Nothing to show</strong>
+                      <span>Every kind of notification is muted. Use the filter above to bring some back.</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -2108,12 +2189,7 @@ export default function NewUiPrototype({
     <div className="np-feature-host">
       {partsReady ? (
         <Suspense fallback={<FeatureLoading />}>
-          <GamesView
-            apiParts={apiParts}
-            externalWords={stats.externalWords}
-            gameMasteryCount={getMasteredCount()}
-            totalReviews={stats.totalReviews}
-          />
+          <GamesView apiParts={apiParts} vocab={countKnownVocab(profile, stats.externalWords)} />
         </Suspense>
       ) : <FeatureLoading />}
     </div>
