@@ -1606,6 +1606,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
+  // The other half of the pair, used only to recognise an answer aimed at the
+  // wrong box. `displayEnglish` is whichever side carries the meaning, so this
+  // stays correct in both learning directions.
+  const matchMeaning = React.useCallback(
+    (typed: string) => (learnEn ? matchGermanSentence : matchEnglish)(typed, displayEnglish),
+    [displayEnglish, learnEn]
+  );
   const recallTargetResult = useMemo(
     () => matchEither(recallTargetInput),
     [recallTargetInput, matchEither]
@@ -2075,8 +2082,41 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memDeInput, memFrInput]);
 
+  /**
+   * Answering in the wrong language is a slip, not a gap in knowledge.
+   *
+   * Typing the English translation into the German box means the learner knew
+   * the pair perfectly well and aimed at the wrong half of it. Grading that as
+   * a failure marks the phrase "struggle", drops a mastered item back onto the
+   * full fifteen-stage route, and adds difficulty debt — all for a mis-aimed
+   * answer. So these are caught before any of that, and the learner is simply
+   * pointed at the right box.
+   *
+   * Only consulted once the expected side has already failed to match, so a
+   * genuinely correct answer can never be mistaken for one of these.
+   */
+  const [wrongLanguageNotice, setWrongLanguageNotice] = useState<string | null>(null);
+  const answeredOtherSide = (typed: string, expecting: "target" | "meaning") => {
+    const trimmed = typed.trim();
+    // Single characters and stray words match too easily to judge.
+    if (trimmed.length < 3) return false;
+    return expecting === "target"
+      ? matchMeaning(trimmed).ok
+      : matchEither(trimmed).ok;
+  };
+  const flagWrongLanguage = (expecting: "target" | "meaning") => {
+    const wanted = expecting === "target" ? targetLabel : meaningLabel;
+    const typedInstead = expecting === "target" ? meaningLabel : targetLabel;
+    setWrongLanguageNotice(
+      `${ui("That's the")} ${ui(typedInstead)} — ${ui("this one wants the")} ${ui(wanted)}.`
+    );
+  };
+  useEffect(() => { setWrongLanguageNotice(null); }, [phase]);
+
   const checkAnswer = () => {
     if (!input.trim() || checked) return;
+    if (!result.ok && answeredOtherSide(input, "target")) { flagWrongLanguage("target"); return; }
+    setWrongLanguageNotice(null);
     setChecked(true);
     reactToAnswer(result.ok, !!result.phrasingNote);
     tts(item.de, result.ok ? 0.88 : 0.75, targetLang);
@@ -2107,6 +2147,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkEnAnswer = () => {
     if (!translationAnswer.trim() || enChecked) return;
+    if (!enResult.ok && answeredOtherSide(translationAnswer, "meaning")) { flagWrongLanguage("meaning"); return; }
+    setWrongLanguageNotice(null);
     setEnChecked(true);
     reactToAnswer(enResult.ok, !!enResult.phrasingNote);
     if (enResult.ok) {
@@ -2296,6 +2338,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkSay = () => {
     if (!sayInput.trim() || sayChecked) return;
+    if (!sayResult.ok && answeredOtherSide(sayInput, "target")) { flagWrongLanguage("target"); return; }
+    setWrongLanguageNotice(null);
     setSayChecked(true);
     reactToAnswer(sayResult.ok, !!sayResult.phrasingNote);
     if (sayResult.ok) {
@@ -2307,6 +2351,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkRecallTarget = () => {
     if (!recallTargetInput.trim() || recallTargetChecked) return;
+    if (!recallTargetResult.ok && answeredOtherSide(recallTargetInput, "target")) { flagWrongLanguage("target"); return; }
+    setWrongLanguageNotice(null);
     setRecallTargetChecked(true);
     reactToAnswer(recallTargetResult.ok, !!recallTargetResult.phrasingNote);
     if (recallTargetResult.ok) {
@@ -2328,6 +2374,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkRecallMeaning = () => {
     if (!recallMeaningInput.trim() || recallMeaningChecked) return;
+    if (!recallMeaningResult.ok && answeredOtherSide(recallMeaningInput, "meaning")) { flagWrongLanguage("meaning"); return; }
+    setWrongLanguageNotice(null);
     setRecallMeaningChecked(true);
     reactToAnswer(recallMeaningResult.ok, !!recallMeaningResult.phrasingNote);
     if (recallMeaningResult.ok) {
@@ -2354,6 +2402,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       || recallBothChecked
       || recallCompletionScheduledRef.current
     ) return;
+    if (
+      (!recallBothTargetResult.ok && answeredOtherSide(recallBothTargetInput, "target"))
+      || (!recallBothMeaningResult.ok && answeredOtherSide(recallBothMeaningInput, "meaning"))
+    ) { flagWrongLanguage(recallBothTargetResult.ok ? "meaning" : "target"); return; }
+    setWrongLanguageNotice(null);
     setRecallBothChecked(true);
     const bothOk = recallBothTargetResult.ok && recallBothMeaningResult.ok;
     reactToAnswer(bothOk);
@@ -2395,6 +2448,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkMemory = () => {
     if (!memDeInput.trim() && !memFrInput.trim()) return;
+    if (!memDeResult.ok && answeredOtherSide(memDeInput, "target")) { flagWrongLanguage("target"); return; }
+    setWrongLanguageNotice(null);
     setMemDeChecked(true);
     setMemFrChecked(true);
     const bothOk = memDeResult.ok && memFrResult.ok;
@@ -2696,6 +2751,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </AnimatePresence>
           </>
         )}
+
+        {/* Aimed at the wrong box. Nothing has been graded, so this is a
+            signpost rather than a verdict — no shake, no "Not quite". */}
+        <AnimatePresence>
+          {wrongLanguageNotice && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-800"
+              role="status"
+            >
+              <Languages className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1">{wrongLanguageNotice}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {(grade === "struggle" || manualReviewNotice) && (

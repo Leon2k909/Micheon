@@ -905,6 +905,9 @@ const DE: Record<string, string> = {
   "Change image": "Bild ändern",
   // ── Profile settings categories & zoom ──
   "More settings": "Weitere Einstellungen",
+  // ── Answered in the wrong language ──
+  "That's the": "Das ist",
+  "this one wants the": "hier ist gefragt:",
   // ── Pausing packs that aren't relevant yet ──
   "Pause": "Pausieren",
   "Resume": "Fortsetzen",
