@@ -29,6 +29,11 @@ interface RawSentence {
 // here instead of teaching a technically possible but confusing construction
 // or silently changing German "ich" into English "you/we".
 const TATOEBA_CORRECTIONS: Record<string, Partial<RawSentence>> = {
+  "Ich glaube, dir ist nicht klar, wie wichtig das ist.": {
+    // British spelling leads the display; the corpus original stays as
+    // the accepted alternative.
+    en: "I don't think you realise how important this is. / I don't think you realize how important this is.",
+  },
   "Ich gebe zu, dass ich es nicht verstehe.": {
     en: "I admit I don't understand.",
     use: "Natural, but more deliberate than the everyday repair phrase 'Ich hab das nicht ganz verstanden.' Learn this later when you specifically want to admit or acknowledge something.",

@@ -58,6 +58,65 @@ collectEnglish(allPartBlueprints, "blueprints");
 collectEnglish(bundledParts, "bundled");
 collectEnglish(tatoebaParts, "tatoeba");
 
+// ── British English leads ────────────────────────────────────────────────
+// Learners in British mode see the FIRST "/"-segment, so an American-first
+// pair shows American to a British learner. Pairs are welcome; order is not
+// negotiable. The American form may appear alone only when no British twin
+// exists in the string (then it is simply a spelling error, also flagged).
+const AMERICAN_LEADS = [
+  ["tire", "tyre"], ["tires", "tyres"], ["curb", "kerb"],
+  ["aluminum", "aluminium"], ["gray", "grey"], ["color", "colour"],
+  ["colors", "colours"], ["favorite", "favourite"], ["favorites", "favourites"],
+  ["center", "centre"], ["theater", "theatre"], ["gasoline", "petrol"],
+  ["cozy", "cosy"], ["donut", "doughnut"], ["airplane", "aeroplane"],
+  ["pajamas", "pyjamas"], ["neighborhood", "neighbourhood"],
+  ["apologize", "apologise"], ["organize", "organise"], ["realize", "realise"],
+  ["soccer", "football"], ["diaper", "nappy"], ["faucet", "tap"],
+  ["zucchini", "courgette"], ["mom", "mum"],
+];
+const britishFailures = [];
+for (const { text, location } of learnerEnglish) {
+  const primary = String(text).split("/")[0];
+  for (const [american, british] of AMERICAN_LEADS) {
+    const wordRe = new RegExp("\\b" + american + "\\b", "i");
+    const match = wordRe.exec(primary);
+    if (!match) continue;
+    // "colour, color" and "football, soccer" glosses are fine: the British
+    // form already leads. Only flag when the American form comes FIRST.
+    const britishRe = new RegExp("\\b" + british + "\\b", "i");
+    const britishMatch = britishRe.exec(primary);
+    if (britishMatch && britishMatch.index < match.index) continue;
+    // "candy floss"-style glosses list both; the primary segment still must
+    // not open with the American form when the British one exists anywhere.
+    britishFailures.push(
+      location + ": the primary wording uses \"" + american + "\" — British English leads, use \"" + british + "\" first"
+    );
+  }
+}
+
+// ── plural you stays honest ──────────────────────────────────────────────
+// German "ihr" carries no headcount. "you two" may survive as a secondary
+// alternative, but a PRIMARY "you two" needs zwei/beide in the German.
+const youTwoFailures = [];
+function collectPairs(value) {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) { value.forEach(collectPairs); return; }
+  if (typeof value.de === "string" && typeof value.en === "string") {
+    const primary = value.en.split("/")[0];
+    if (/\byou two\b/i.test(primary)
+        && !/\b(zwei|beide|beiden|Paar|P\u00e4rchen|Zwillinge)\b/i.test(value.de)) {
+      youTwoFailures.push(
+        JSON.stringify(value.de.slice(0, 60)) + ": primary English says \"you two\" but the German counts nobody — lead with \"you all\""
+      );
+    }
+  }
+  for (const entry of Object.values(value)) {
+    if (entry && typeof entry === "object") collectPairs(entry);
+  }
+}
+collectPairs(allPartBlueprints);
+collectPairs(bundledParts);
+
 const definiteErrorPatterns = [
   ["the legacy 'your seeing him' sentence", /I don't think your seeing him is good for you/i],
   ["a literal German hunger or thirst construction", /\bI (?:have|had) (?:hunger|thirst)\b/i],
@@ -236,4 +295,11 @@ if (failures) {
   process.exit(1);
 }
 
+
+if (britishFailures.length || youTwoFailures.length) {
+  console.error("FAIL check-english-content (British English rules)");
+  britishFailures.forEach((line) => console.error("  " + line));
+  youTwoFailures.forEach((line) => console.error("  " + line));
+  process.exit(1);
+}
 console.log(`\n${learnerEnglish.length.toLocaleString("en-GB")} learner-facing English fields passed QA`);
