@@ -17,15 +17,30 @@ export type MatchingPair = { german: string; english: string };
  * British/American preference must never turn two hidden ids into identical
  * visible buttons.
  */
+/**
+ * Two sentences that differ only in their closing full stop or exclamation
+ * mark are the same sentence to a learner. Serving "Lange nicht gesehen." and
+ * "Lange nicht gesehen!" one after the other reads as a bug, because it is
+ * one — an exact-text comparison simply could not see it.
+ *
+ * A question mark is left alone: "Alles klar." and "Alles klar?" are a
+ * statement and a question, which really are different sentences.
+ */
+export function sentenceIdentityKey(text: string): string {
+  return String(text ?? "")
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\s*[.!…]+$/u, "")
+    .trim();
+}
+
 export function matchingVisibleKey(text: string, language: "de" | "en"): string {
   const visible = primaryAnswer(text);
   const spellingNormalised = language === "en"
     ? normalizeEnglishSpelling(visible)
     : visible;
-  return spellingNormalised
-    .normalize("NFKC")
-    .trim()
-    .replace(/\s+/g, " ")
+  return sentenceIdentityKey(spellingNormalised)
     .toLocaleLowerCase(language === "de" ? "de-DE" : "en-GB");
 }
 

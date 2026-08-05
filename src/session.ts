@@ -5,7 +5,7 @@ import { packMeta } from "@/lib/curriculum";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { sentenceCommonality } from "@/lib/corpusFrequency";
 import { getLearningMode, phraseForLearningMode } from "@/lib/learningMode";
-import { matchingVisibleKeys, takeMatchingSafe } from "@/lib/germanTextMatch";
+import { matchingVisibleKeys, sentenceIdentityKey, takeMatchingSafe } from "@/lib/germanTextMatch";
 import {
   adaptiveRepeatPriority,
   isAdaptiveReinforcementEligible,
@@ -89,7 +89,8 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
   };
 
   const addSentence = (de: string, en: string, id: string, aliases: string[] = [], fr?: string, use?: string, lookup?: string, short?: string, when?: string, say?: string, long?: string, group?: string, lessonPriority?: number, shortLabel?: string) => {
-    const key = de.trim().toLowerCase();
+    // Keyed so a closing "." and "!" cannot count as two sentences.
+    const key = sentenceIdentityKey(de).toLowerCase();
     if (usedSentences.has(key)) return;
     // Claim this sentence text up front, even if we're about to skip it for being
     // known. The same German sentence appears in the data under several ids (e.g.
@@ -540,7 +541,7 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
     use?: string,
     coaching: Partial<Pick<CatalogItem, "fr" | "short" | "shortLabel" | "when" | "say" | "long" | "group" | "lessonPriority">> = {}
   ) => {
-    const key = de.trim().toLowerCase();
+    const key = sentenceIdentityKey(de).toLowerCase();
     if (!de.trim() || seen.has(key)) return;
     seen.add(key);
     out.push({ id, aliases, de, en, kind, partKey, partLabel, level, lookup, use, tierNote, coachingLanguage: part?.coachingLanguage, ...coaching });

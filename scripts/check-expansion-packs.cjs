@@ -39,11 +39,16 @@ function check(name, condition, detail = "") {
   console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
 }
 
+// A trailing "." and "!" do not make two different sentences: shipping both
+// "Lange nicht gesehen." and "Lange nicht gesehen!" put the same line in front
+// of the learner twice. A "?" is kept, because a question is not a statement.
 const normalise = (text) => String(text ?? "")
   .normalize("NFKC")
   .trim()
   .replace(/[“”„]/g, '"')
   .replace(/\s+/g, " ")
+  .replace(/\s*[.!…]+$/u, "")
+  .trim()
   .toLocaleLowerCase("de-DE");
 
 const expected = {
