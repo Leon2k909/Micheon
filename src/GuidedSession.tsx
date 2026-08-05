@@ -1396,6 +1396,21 @@ function reviewLevelDetails(level: GuidedReviewLevel) {
   return GUIDED_REVIEW_LEVELS.find((option) => option.value === level) ?? GUIDED_REVIEW_LEVELS[0];
 }
 
+/**
+ * Does choosing this level mean "I'm finished with this one for now"?
+ *
+ * Saying an item is Mastered — or that it should never be reviewed again —
+ * and then being kept on it, still asked to pick its meaning, contradicts the
+ * choice that was just made. Those levels schedule the item away, so the
+ * lesson should move on exactly as "Know it" does.
+ *
+ * The two that stay put are the ones that ask for MORE practice, not less:
+ * "Struggling" keeps the item in rotation, and "New" restarts it from scratch.
+ */
+function reviewLevelFinishesItem(level: GuidedReviewLevel): boolean {
+  return level !== "struggle" && level !== "new";
+}
+
 // Only advances when the user types the sentence correctly.
 function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview }: {
   item: any;
@@ -5286,6 +5301,17 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     itemIds: string[];
     label: string;
     note: string;
+    /**
+     * Where the learner was standing when the mark was made, but only when the
+     * mark itself moved them on. Undo uses it to put them back; marks that
+     * stay put leave it undefined so undoing them never shifts the lesson.
+     */
+    returnIndex?: number;
+    /**
+     * What was marked, in the learner's own words — once the lesson has moved
+     * on, "Undo" on its own asks them to remember which card it belonged to.
+     */
+    subject?: string;
   } | null>(null);
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
   const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
@@ -5314,7 +5340,30 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     [safeSteps]
   );
   const previewCards = useMemo(() => buildSessionPreviewCards(safeSteps), [steps]);
-  const applyManualReviewChange = useCallback((itemIds: string[], level: GuidedReviewLevel) => {
+  /**
+   * Name what was marked, so the notice can say which phrase it means. Ids are
+   * opaque, and once the lesson has moved on the card is no longer on screen.
+   */
+  const describeMarkedItems = useCallback((ids: string[]): string | undefined => {
+    const wanted = new Set(ids);
+    const found: string[] = [];
+    for (const candidate of safeSteps) {
+      if (candidate?.type === "sentence" && wanted.has(String(candidate.item?.id))) {
+        if (candidate.item?.de) found.push(String(candidate.item.de));
+      }
+      for (const line of candidate?.dialogue?.lines ?? []) {
+        if (wanted.has(String(line?.id)) && line?.de) found.push(String(line.de));
+      }
+    }
+    if (!found.length) return undefined;
+    return found.length === 1 ? found[0] : `${found.length} lines`;
+  }, [safeSteps]);
+
+  const applyManualReviewChange = useCallback((
+    itemIds: string[],
+    level: GuidedReviewLevel,
+    returnIndex?: number
+  ) => {
     const ids = Array.from(new Set(itemIds.filter(Boolean)));
     if (!ids.length) return;
     ids.forEach((itemId) => {
@@ -5323,8 +5372,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       else onSetItemStrength?.(itemId, level === "new" ? 0 : level);
     });
     const details = reviewLevelDetails(level);
-    setLastManualReviewChange({ itemIds: ids, label: details.label, note: details.note });
-  }, [onGradeItem, onSetItemPermanent, onSetItemStrength]);
+    setLastManualReviewChange({
+      itemIds: ids,
+      label: details.label,
+      note: details.note,
+      returnIndex,
+      subject: describeMarkedItems(ids),
+    });
+  }, [describeMarkedItems, onGradeItem, onSetItemPermanent, onSetItemStrength]);
   const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
     applyManualReviewChange([itemId], grade);
   }, [applyManualReviewChange]);
@@ -5476,6 +5531,18 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     leaveStep(true);
   };
 
+  /**
+   * The "Set level" menu. Levels that finish the item move the lesson on, the
+   * same way "Know it" does — otherwise the learner tells the app an item is
+   * Mastered and is then made to keep drilling it. The index is recorded so
+   * the Undo that now appears on the NEXT card can bring them back here.
+   */
+  const applyReviewLevelFromPicker = (itemIds: string[], level: GuidedReviewLevel) => {
+    const finishes = reviewLevelFinishesItem(level);
+    applyManualReviewChange(itemIds, level, finishes ? index : undefined);
+    if (finishes) next();
+  };
+
   const struggleIdsForStep = (candidate: any): string[] => {
     if (candidate?.type === "sentence" && candidate.item?.id) return [String(candidate.item.id)];
     if (candidate?.type === "dialogue" && Array.isArray(candidate.dialogue?.lines)) {
@@ -5515,6 +5582,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       return;
     }
     const current = safeSteps[index];
+    // No returnIndex here: "continue" was the learner's explicit request, not a
+    // side effect of grading, so undoing the mark must not drag them back.
     applyManualReviewChange(struggleIdsForStep(current), "struggle");
     setLessonNavigatorOpen(false);
     petSpeak("Marked as a struggle. We will bring it back for more practice.", {
@@ -5525,9 +5594,11 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     leaveStep(true);
   };
 
-  // Undo reverts the grade and nothing else. It used to jump back to the step
-  // where the mark was made, which restarted that exercise at stage one and
-  // read as losing your place — reverting a mark should never move you.
+  // Reverting a mark should never move you — unless the mark itself moved you.
+  // Marking something Struggling keeps you on it, so undoing that must not jump
+  // anywhere (it used to, restarting the exercise at stage one, which read as
+  // losing your place). Marking something Mastered or Never review DOES move
+  // the lesson on, so undoing that has to bring you back to it.
   const undoLastManualReviewChange = () => {
     if (!lastManualReviewChange) return;
     let restored = false;
@@ -5535,6 +5606,13 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       if (onUndoGradeItem?.(itemId)) restored = true;
     }
     if (!restored) return;
+    // Only marks that moved the learner on carry a returnIndex, so this puts
+    // them back exactly where the mark was made without ever disturbing an
+    // undo made on the spot.
+    const { returnIndex } = lastManualReviewChange;
+    if (Number.isInteger(returnIndex) && returnIndex !== index && returnIndex! < safeSteps.length) {
+      setIndex(returnIndex!);
+    }
     setLastManualReviewChange(null);
     petSpeak("Undone. You can decide again whenever you are ready.", {
       durationMs: 2600,
@@ -5718,8 +5796,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyManualReviewChange([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyManualReviewChange([itemId], level)} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">
@@ -5752,10 +5830,19 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               role="status"
             >
               <div>
-                <strong>{ui("Marked as")} {ui(lastManualReviewChange.label)}</strong>
+                <strong>
+                  {ui("Marked as")} {ui(lastManualReviewChange.label)}
+                  {lastManualReviewChange.subject ? <> — “{lastManualReviewChange.subject}”</> : null}
+                </strong>
                 <span>{ui(lastManualReviewChange.note)}</span>
               </div>
-              <button type="button" onClick={undoLastManualReviewChange}>
+              <button
+                type="button"
+                onClick={undoLastManualReviewChange}
+                aria-label={lastManualReviewChange.subject
+                  ? `${ui("Undo")} — ${lastManualReviewChange.subject}`
+                  : ui("Undo")}
+              >
                 <RotateCcw className="h-4 w-4" aria-hidden="true" />
                 {ui("Undo")}
               </button>

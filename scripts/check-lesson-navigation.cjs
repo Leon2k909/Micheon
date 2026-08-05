@@ -10,7 +10,9 @@ const checks = [
   ["numbered destinations jump directly to the selected lesson", guided.includes("onClick={() => jumpToLesson(lessonNumber)}") && guided.includes("setIndex(targetIndex);")],
   ["direct jumps leave unfinished work uncompleted", guided.includes("if (current) onAdvance?.(current, true, performance);")],
   ["the struggle action saves the current lesson before advancing", guided.includes('applyManualReviewChange(struggleIdsForStep(current), "struggle")') && guided.includes("jumpToLesson(nextLessonNumber, true);")],
-  ["guided exercises offer the complete review-level picker", guided.includes("function ReviewLevelPicker") && guided.includes('onReviewLevel={(level) => applyManualReviewChange')],
+  // The picker now routes through applyReviewLevelFromPicker, which also moves
+  // the lesson on for levels that finish the item — see check-review-level-flow.
+  ["guided exercises offer the complete review-level picker", guided.includes("function ReviewLevelPicker") && (guided.match(/onReviewLevel=\{\([^)]*\) => applyReviewLevelFromPicker\(/gu) ?? []).length === 2],
   ["direct guided review changes save through the shared strength store", guided.includes("onSetItemStrength?.(itemId") && guided.includes("onSetItemPermanent?.(itemId)")],
   ["the latest guided grade can be undone", guided.includes("undoLastManualReviewChange") && guided.includes("onUndoGradeItem?.(itemId)")],
   ["review controls use the Micheon tactile theme", styles.includes(".grade-btn-level") && styles.includes(".fs-review-level-menu") && styles.includes(".fs-grade-undo")],
