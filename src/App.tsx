@@ -18,12 +18,36 @@ import {
   watchStoredThemePreferences,
 } from "./lib/theme";
 import { isElectronApp } from "./lib/platform";
+import { MotionConfig } from "framer-motion";
+import { EFFECTS_CHANGE_EVENT, getEffects, type Effects } from "./lib/effects";
 
 // Pet windows keep a tiny render path. The learning catalog and session engine
 // are loaded only by the surface that needs them, so a visible mascot does not
 // retain the full application bundle.
 const GuidedLearningSession = lazy(() => import("./guided_learning_session"));
 const MicheonMain = lazy(() => import("./prototype/NewUiPrototype"));
+
+/**
+ * Every framer-motion animation in the app, gated in one place.
+ *
+ * Only five of the twenty-nine files that animate ever checked the reduced
+ * effects setting, so turning it on left most of the motion running. Motion
+ * is driven by script rather than CSS, so no stylesheet can reach it —
+ * MotionConfig can, for the whole tree at once.
+ */
+export function MotionGate({ children }: { children: React.ReactNode }) {
+  const [effects, setEffectsState] = useState<Effects>(getEffects);
+  useEffect(() => {
+    const sync = () => setEffectsState(getEffects());
+    window.addEventListener(EFFECTS_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(EFFECTS_CHANGE_EVENT, sync);
+  }, []);
+  return (
+    <MotionConfig reducedMotion={effects === "lite" ? "always" : "user"}>
+      {children}
+    </MotionConfig>
+  );
+}
 
 export default function App() {
   const search = new URLSearchParams(window.location.search);

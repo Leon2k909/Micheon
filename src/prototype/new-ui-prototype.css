@@ -5,11 +5,11 @@
   --np-shell: #e8eee3;
   --np-shell-top: #f1f6ee;
   --np-surface: #ffffff;
-  --np-surface-soft: #f7f2e8;
+  --np-surface-soft: #f1f5ee;
   --np-text: #292725;
   --np-muted: #625e59;
   --np-soft: #6e6963;
-  --np-line: rgba(76, 66, 55, 0.34);
+  --np-line: rgba(56, 70, 52, 0.32);
   --np-green: #4fbd51;
   --np-green-dark: #238d35;
   --np-green-soft: #e6f8d9;
@@ -26,10 +26,10 @@
   --np-motion-slow: 520ms;
   --np-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --surface: #ffffff;
-  --surface-2: #f7f2e8;
-  --surface-3: #efe8da;
-  --border: rgba(76, 66, 55, 0.44);
-  --border-2: rgba(76, 66, 55, 0.58);
+  --surface-2: #f1f5ee;
+  --surface-3: #e7ede2;
+  --border: rgba(56, 70, 52, 0.42);
+  --border-2: rgba(56, 70, 52, 0.56);
   --text-1: #232120;
   --text-2: #4a453f;
   --text-3: #5f5a52;
@@ -2853,10 +2853,10 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-feature-host {
   --bg: transparent;
   --surface: #ffffff;
-  --surface-2: #f7f2e8;
-  --surface-3: #efe8da;
-  --border: rgba(76, 66, 55, 0.44);
-  --border-2: rgba(76, 66, 55, 0.58);
+  --surface-2: #f1f5ee;
+  --surface-3: #e7ede2;
+  --border: rgba(56, 70, 52, 0.42);
+  --border-2: rgba(56, 70, 52, 0.56);
   --text-1: #232120;
   --text-2: #4a453f;
   --text-3: #5f5a52;

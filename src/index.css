@@ -5467,3 +5467,39 @@ html[data-contrast="high"] .audio-mixer-panel.prototype-audio-mixer {
   --border: rgba(50, 62, 43, 0.36);
   --border-2: rgba(50, 62, 43, 0.52);
 }
+
+/* ── Reduce effects: make it mean something ──────────────────────────────────
+   The switch used to hide two decorations while every backdrop blur, keyframe
+   animation and layered shadow kept painting — so the machines that needed it
+   most got almost nothing from it. These are the three things that actually
+   cost a weak GPU frames, turned off together.
+
+   Motion from framer-motion is handled separately, at the React root, because
+   it animates via script and no stylesheet can reach it. */
+[data-fx="lite"] *,
+[data-fx="lite"] *::before,
+[data-fx="lite"] *::after {
+  /* Blur of everything behind an element, recomputed every frame it moves. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* Continuous keyframe animation: the one cost that never stops. */
+  animation: none !important;
+  /* Shadows still draw, but a single soft layer instead of three stacked. */
+  text-shadow: none !important;
+}
+
+[data-fx="lite"] .card,
+[data-fx="lite"] .fs-board,
+[data-fx="lite"] .fs-panel,
+[data-fx="lite"] .grade-btn,
+[data-fx="lite"] .fs-listen {
+  box-shadow: 0 1px 2px rgba(60, 70, 55, 0.14) !important;
+}
+
+/* Hover lifts are transform animations on every pointer move. */
+[data-fx="lite"] .card-hover:hover,
+[data-fx="lite"] .grade-btn:hover:not(:disabled),
+[data-fx="lite"] .fs-listen:hover,
+[data-fx="lite"] .fs-word:hover {
+  transform: none !important;
+}

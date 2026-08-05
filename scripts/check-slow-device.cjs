@@ -130,6 +130,53 @@ check(
   "someone opening Profile to change their name should not pay for the catalogue"
 );
 
+// ── "reduce effects" has to actually reduce work ──────────────────────────
+const css = read("src/index.css");
+const app = read("src/App.tsx");
+const mainTsx = read("src/main.tsx");
+const runtime = read("src/lib/runtimePerformance.ts");
+
+check(
+  "lite mode drops the three things that genuinely cost a weak GPU frames",
+  /\[data-fx="lite"\][\s\S]{0,400}?backdrop-filter: none !important;/.test(css)
+    && /\[data-fx="lite"\][\s\S]{0,400}?animation: none !important;/.test(css)
+    && /\[data-fx="lite"\][\s\S]{0,900}?box-shadow: 0 1px 2px/.test(css),
+  "it used to hide two decorations and leave every blur and animation running"
+);
+check(
+  "all of framer-motion is gated in one place, not per file",
+  app.includes("<MotionConfig reducedMotion={effects === \"lite\" ? \"always\" : \"user\"}>")
+    && mainTsx.includes("<MotionGate>"),
+  "only 5 of 29 animating files ever checked the setting themselves"
+);
+check(
+  "the motion gate follows a change without a reload",
+  app.includes("EFFECTS_CHANGE_EVENT") && effectsSource.includes("export const EFFECTS_CHANGE_EVENT")
+);
+
+// ── adapting to a machine that is busy right now ──────────────────────────
+check(
+  "frame pacing is sampled at start-up",
+  mainTsx.includes("watchRuntimePerformance()") && runtime.includes("requestAnimationFrame")
+);
+check(
+  "a struggling machine is judged on dropped frames, not guesses",
+  runtime.includes("export function readsAsStruggling")
+    && /frames < 40\) return false;/.test(runtime),
+  "too small a sample must never trigger it"
+);
+check(
+  "the watcher never overrides a choice, and never re-enables",
+  runtime.includes("if (hasEffectsChoice() || getEffects() === \"lite\") return () => {};")
+    && runtime.includes('applyEffects("lite");')
+    && !runtime.includes('applyEffects("full")')
+);
+check(
+  "what it decides is not written to storage",
+  !/applyEffects\("lite", true\)/.test(runtime) && !runtime.includes("setEffects("),
+  "a machine that is only busy today should be back to normal tomorrow"
+);
+
 if (failures) {
   console.error(`\n${failures} slow-device regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

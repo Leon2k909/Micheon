@@ -1,10 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App";
+import App, { MotionGate } from "./App";
 import { applyThemeToDom, getTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
+import { watchRuntimePerformance } from "./lib/runtimePerformance";
 
 const initialParams = new URLSearchParams(window.location.search);
 const isMainShell = (
@@ -38,11 +39,18 @@ if (initialParams.get("pet-history") === "1") {
   document.title = "Micheon pet messages";
 }
 
+// Hardware hints describe the machine; they cannot see how busy it is right
+// now. Watch real frame pacing for a few seconds and calm the effects down if
+// the app is genuinely stuttering. Never overrides a choice the learner made.
+watchRuntimePerformance();
+
 const container = document.getElementById("root");
 if (container) {
   createRoot(container).render(
     <StrictMode>
-      <App />
+      <MotionGate>
+        <App />
+      </MotionGate>
     </StrictMode>
   );
 }

@@ -1,5 +1,8 @@
 const KEY = "gl-effects";
 
+/** Fired whenever the effects level changes, so the motion gate can follow. */
+export const EFFECTS_CHANGE_EVENT = "gl-effects-change";
+
 export type Effects = "full" | "lite";
 
 interface DeviceHints {
@@ -72,8 +75,13 @@ export function hasEffectsChoice(): boolean {
  * check ever being consulted again.
  */
 export function applyEffects(mode: Effects, persist = false) {
+  const changed = typeof document !== "undefined"
+    && document.documentElement.getAttribute("data-fx") !== mode;
   if (typeof document !== "undefined") {
     document.documentElement.setAttribute("data-fx", mode);
+  }
+  if (changed && typeof window !== "undefined") {
+    window.dispatchEvent(new Event(EFFECTS_CHANGE_EVENT));
   }
   if (persist && typeof window !== "undefined") {
     try {
