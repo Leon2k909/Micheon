@@ -1332,7 +1332,6 @@ function HomeView({
         <ChevronRight />
       </button>
       <FluencyOutlook profile={profile} vocab={vocab} />
-      <div className="np-home-practice"><PracticeCard compact /></div>
       <LessonPath onOpenLesson={onPractice} />
     </div>
   );

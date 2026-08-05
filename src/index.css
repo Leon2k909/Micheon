@@ -2,7 +2,9 @@
 
 :root {
   color-scheme: light;
-  --bg: #d9d9e6;
+  /* Matches the app shell, so nothing flashes another palette before the
+     themed tree has rendered. */
+  --bg: #eef3ec;
   --surface: #ffffff;
   --surface-2: #f6f7f9;
   --surface-3: #eef0f5;
@@ -37,7 +39,9 @@
 
 html[data-theme="light"] {
   color-scheme: light;
-  --bg: #d9d9e6;
+  /* Matches the app shell, so nothing flashes another palette before the
+     themed tree has rendered. */
+  --bg: #eef3ec;
   --surface: #ffffff;
   --surface-2: #f6f7f9;
   --surface-3: #eef0f5;
@@ -134,7 +138,9 @@ html.is-prototype-guided-launch #root {
 html.is-prototype-shell,
 html.is-prototype-shell body,
 html.is-prototype-shell #root {
-  background: #fffaf1;
+  /* The page's own top-of-gradient colour, so the first paint already looks
+     like the app instead of the cream this used to be. */
+  background: #f1f6ee;
 }
 
 html[data-theme="dark"].is-prototype-shell,
