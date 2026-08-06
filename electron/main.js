@@ -6,7 +6,8 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, Menu, shell, ipcMain, screen, Tray } from "electron";
+import { app, BrowserWindow, Menu, shell, ipcMain, screen, session, Tray } from "electron";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
@@ -1516,6 +1517,64 @@ ipcMain.on("window:toggle-maximize", () => {
   else mainWindow.maximize();
 });
 ipcMain.on("window:close", () => mainWindow?.close());
+/**
+ * How much room Micheon takes on disk.
+ *
+ * Split so the numbers mean something: the INSTALL is the program and the
+ * German course compiled into it, which nothing in the app can remove; the
+ * CACHE is what Chromium has accumulated and is safe to clear; SAVED is the
+ * profile store. Directory walks are bounded — a runaway symlink or a huge
+ * cache should not freeze the settings screen while it counts.
+ */
+function directorySize(dir, budgetMs = 400, deadline = Date.now() + budgetMs) {
+  let total = 0;
+  let stack = [dir];
+  while (stack.length) {
+    if (Date.now() > deadline) return { bytes: total, complete: false };
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const full = path.join(current, entry.name);
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) { stack.push(full); continue; }
+      try { total += fs.statSync(full).size; } catch { /* vanished mid-walk */ }
+    }
+  }
+  return { bytes: total, complete: true };
+}
+
+ipcMain.handle("storage:get-usage", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted storage request");
+  const userData = app.getPath("userData");
+  const install = directorySize(path.dirname(app.getAppPath()));
+  const cache = directorySize(path.join(userData, "Cache"));
+  const saved = directorySize(userData);
+  return {
+    installBytes: install.bytes,
+    installComplete: install.complete,
+    cacheBytes: cache.bytes,
+    savedBytes: Math.max(0, saved.bytes - cache.bytes),
+    version: app.getVersion(),
+  };
+});
+
+/** Clear the browser cache. Never touches the profile store. */
+ipcMain.handle("storage:clear-cache", async (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted storage request");
+  try {
+    await session.defaultSession.clearCache();
+    return true;
+  } catch (e) {
+    console.error("[storage] clear cache failed:", e?.message ?? e);
+    return false;
+  }
+});
+
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 
 ipcMain.handle("windows-settings:get", (event) => {

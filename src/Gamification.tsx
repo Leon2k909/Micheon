@@ -22,6 +22,7 @@ import {
   Palette,
   Monitor,
   Layers,
+  HardDrive,
   PawPrint,
   Accessibility,
   Contrast,
@@ -73,6 +74,7 @@ import { getLearningDirection, setLearningDirection, type LearningDirection } fr
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory } from "@/components/SettingsCategory";
+import { DataAndStorage } from "@/components/DataAndStorage";
 import { AppZoomControl } from "@/components/AppZoomControl";
 import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
@@ -401,6 +403,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   Flashcards: "flashcard card side front back reveal flip order behaviour",
   "Language & voice": "english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
+  "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
 };
 
 /** Fold accents and case so "farbe" and "Färbe" both match. */
@@ -1326,6 +1329,16 @@ export default function GamificationPanel({
                   <Suspense fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}>
                     <CodexPetPicker className="mt-0 border-t-0 pt-0" />
                   </Suspense>
+                </SettingsCategory>
+
+                <SettingsCategory
+                  description={ui("Space used, and deleting what Micheon has saved.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Data & storage"), ui("Space used, and deleting what Micheon has saved."))}
+                  icon={HardDrive}
+                  title={ui("Data & storage")}
+                >
+                  <DataAndStorage />
                 </SettingsCategory>
               </div>
             </DeferredProfileSection>

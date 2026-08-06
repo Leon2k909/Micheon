@@ -120,10 +120,11 @@ check(
 const settingsCategoryTitles = [
   "Appearance", "Accessibility", "Desktop app & updates",
   "Learning options", "Flashcards", "Language & voice", "Pet & mascot",
+  "Data & storage",
 ];
 check(
-  "the profile screen groups the rarely-used settings into seven categories",
-  settingsCategoryTitles.filter((t) => profile.includes('title={ui("' + t + '")}')).length === 7
+  "the profile screen groups the rarely-used settings into categories",
+  settingsCategoryTitles.filter((t) => profile.includes('title={ui("' + t + '")}')).length === settingsCategoryTitles.length
     && !profile.includes("defaultOpen")
 );
 // Milestones is worth having and not worth the top of the screen, so it uses

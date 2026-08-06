@@ -49,6 +49,10 @@ contextBridge.exposeInMainWorld("germDesktop", {
   // to announce.
   getUpdateStatus: () => ipcRenderer.invoke("update:get-status"),
   checkForUpdateNow: () => ipcRenderer.invoke("update:check-now"),
+  // How much room Micheon takes on disk, and the one part of it that is
+  // safe to clear.
+  getStorageUsage: () => ipcRenderer.invoke("storage:get-usage"),
+  clearAppCache: () => ipcRenderer.invoke("storage:clear-cache"),
   // How updates should arrive, whether they are postponed, and whether the
   // panel narrates them at all.
   setUpdatePreferences: (preferences) =>
