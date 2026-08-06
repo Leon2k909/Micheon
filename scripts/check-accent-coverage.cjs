@@ -32,9 +32,10 @@ const norm = (s) => s.split(/\s+/).filter(Boolean).join(" ");
  */
 const key = (selector) => {
   let s = norm(selector).replace(/\[data-accent="custom"\]/g, "");
-  // Drop a leading `html` plus its attribute selectors, but keep anything
-  // still attached to it (html.is-prototype-guided-launch is a real target).
-  s = s.replace(/^html(\[[^\]]+\])*/, (m, _a, offset, whole) => {
+  // Drop a leading `html` plus its attribute selectors AND any :not() guard on
+  // it — light-mode twins are scoped html:not([data-theme="dark"]) so they
+  // cannot outrank the dark rules, and that guard is not part of the identity.
+  s = s.replace(/^html(\[[^\]]+\]|:not\([^)]*\))*/, (m, _a, offset, whole) => {
     const rest = whole.slice(m.length);
     return rest.startsWith(".") || rest.startsWith("#") ? "html" : "";
   });
@@ -99,7 +100,7 @@ for (const rel of ["src/index.css", "src/prototype/new-ui-prototype.css"]) {
 
 // The one the learner actually asked about, pinned by name.
 const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
-if (!/html\[data-accent="custom"\][^{]*\.np-course-shade\s*\{[^}]*--accent(-hover)?-rgb/.test(proto)) {
+if (!/html[^{,]*\[data-accent="custom"\][^{]*\.np-course-shade\s*\{[^}]*--accent(-hover)?-rgb/.test(proto)) {
   failures.push("the course hero's gradient wash does not follow a custom accent");
 }
 const accent = fs.readFileSync(path.join(root, "src/lib/accentColour.ts"), "utf8");

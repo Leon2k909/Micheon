@@ -191,6 +191,35 @@ export function isDefaultAccent(hex: string = getAccentColour()): boolean {
  * !important so it cannot lose to the theme blocks' higher specificity, is
  * what actually reaches the buttons.
  */
+/**
+ * The accent, pushed along its own hue until it is legible as text.
+ *
+ * Walks toward white on dark and toward black on light, one percent at a time,
+ * and stops the moment it clears 4.5:1 against the surface it will sit on —
+ * so the colour still reads as the learner's accent rather than being replaced
+ * by grey, but the label can actually be read.
+ */
+function readableInk(hex: string, theme: "dark" | "light"): string {
+  const surface = theme === "dark" ? "#161b23" : "#ffffff";
+  const towards = theme === "dark" ? 255 : 0;
+  const { r, g, b } = toRgb(hex);
+  let best = hex;
+  for (let step = 0; step <= 100; step += 2) {
+    const t = step / 100;
+    const candidate = toHex({
+      r: Math.round(r + (towards - r) * t),
+      g: Math.round(g + (towards - g) * t),
+      b: Math.round(b + (towards - b) * t),
+    });
+    best = candidate;
+    // 7, not 4.5: these labels usually sit on a translucent tint of the
+    // accent rather than the bare surface, which lifts the background and eats
+    // most of a 4.5 margin. The headroom is what makes it hold in place.
+    if (contrastRatio(candidate, surface) >= 7) break;
+  }
+  return best;
+}
+
 /** "94, 199, 96" — ready to drop into rgba(var(--accent-rgb), 0.4). */
 function accentChannels(hex: string): string {
   const { r, g, b } = toRgb(hex);
@@ -232,6 +261,10 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     ["--accent-dim", shades.accentDim],
     ["--accent-text", shades.accentText],
     ["--accent-strong", theme === "dark" ? shades.accentHover : shades.accentPressed],
+    // Accent-coloured TEXT. --accent is tuned to be a fill; used as ink on the
+    // page it lands around 3.7:1, which fails. This is the same hue pushed
+    // until it clears 4.5:1 against the surface it will actually sit on.
+    ["--accent-ink", readableInk(shades.accent, theme)],
     ["--np-green", shades.accent],
     ["--np-green-dark", shades.accentHover],
     ["--np-green-soft", shades.accentDim],
@@ -242,9 +275,14 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     // around it turned.
     ["--accent-rgb", accentChannels(shades.accent)],
     ["--accent-hover-rgb", accentChannels(shades.accentHover)],
+    ["--accent-ink-rgb", accentChannels(readableInk(shades.accent, theme))],
     ["--fs-yellow", shades.accent],
     ["--fs-yellow-hover", shades.accentHover],
     ["--fs-purple", shades.accent],
+    // The guided session's primary button — Continue, Next flashcard — is
+    // painted from this gradient rather than from --accent, so it stayed
+    // green while the session around it turned.
+    ["--fs-grad", `linear-gradient(135deg, ${shades.accentHover} 0%, ${shades.accent} 52%, ${shades.accentPressed} 100%)`],
   ].map(([name, value]) => `  ${name}: ${value} !important;`).join("\n");
 
   const style = existing ?? document.createElement("style");

@@ -204,7 +204,9 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
             ? "bg-rose-500/10 text-rose-600 font-black border-rose-500/20"
             : isSlang
               ? "bg-amber-500/10 text-amber-600 font-black border-amber-500/20"
-              : "bg-zinc-100 text-zinc-500 border-transparent"
+              // Tokens, not raw zinc: bg-zinc-100 is #f4f4f5, so this usage note
+            // sat on the dark session as a cream island.
+            : "bg-[var(--surface-3)] text-[var(--text-3)] border-transparent"
         )}>
           {uiOr(use, "Hinweis zur Verwendung")}
         </span>
@@ -4942,18 +4944,21 @@ function SessionFlashcardPreview({
 
   const toggleFlip = () => setFlipped((current) => !current);
 
-  // In "both" mode the German is spoken on sight. On a flip card that would
-  // give the answer away before the learner has tried, so it only speaks the
-  // side actually facing them.
+  // In "both" mode the language being learned is spoken on sight. On a flip
+  // card that would give the answer away before the learner has tried, so it
+  // only speaks the side actually facing them — and it speaks the TARGET
+  // language, which for a German speaker learning English is the English.
   useEffect(() => {
-    if (!card?.german) return;
-    const showingGerman = mode !== "flip"
+    const learnEnglish = learningEnglish();
+    const spoken = learnEnglish ? card?.english : card?.german;
+    if (!spoken) return;
+    const showingTarget = mode !== "flip"
       ? true
       : face === "target" ? !flipped : flipped;
-    if (!showingGerman) return;
-    const timer = window.setTimeout(() => speak(card.german, "de-DE"), 180);
+    if (!showingTarget) return;
+    const timer = window.setTimeout(() => speak(spoken, learnEnglish ? englishVoice : "de-DE"), 180);
     return () => window.clearTimeout(timer);
-  }, [card?.id, card?.german, mode, face, flipped]);
+  }, [card?.id, card?.german, card?.english, englishVoice, mode, face, flipped]);
 
   // In the two-language layout the sentence remains a generous speech target.
   // On a flip card, a sentence click belongs to the card itself; the dedicated
@@ -4988,8 +4993,13 @@ function SessionFlashcardPreview({
   );
   const germanRow = () => languageRow("German", card.german, "de-DE", "de");
   const englishRow = () => languageRow("English", card.english, englishVoice, "en");
-  const frontSide = face === "target" ? germanRow() : englishRow();
-  const backSide = face === "target" ? englishRow() : germanRow();
+  // "Target" means the language being LEARNED, which is not always German. A
+  // German speaker learning English was shown the German side first with the
+  // English hidden behind the flip — the card testing her on her own language.
+  const targetRow = () => (learningEnglish() ? englishRow() : germanRow());
+  const meaningRow = () => (learningEnglish() ? germanRow() : englishRow());
+  const frontSide = face === "target" ? targetRow() : meaningRow();
+  const backSide = face === "target" ? meaningRow() : targetRow();
 
   const previous = () => onIndexChange(Math.max(0, index - 1));
   const next = () => {

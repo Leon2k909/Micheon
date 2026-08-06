@@ -139,8 +139,24 @@ for (const [what, needle] of [
 ]) {
   if (!needle.test(tracker)) failures.push(`the explainer never covers ${what}`);
 }
-if (!/decay\.weight\.toFixed\(2\)/.test(tracker) || !/decay\.halfLifeDays/.test(tracker)) {
-  failures.push("an individual row never says what it is currently worth, or why");
+// In a unit a learner reads. "counts as 0.84" was accurate and meaningless —
+// 0.84 of what? — so the row states a percentage with the days behind it.
+if (!/Math\.round\(decay\.weight \* 100\)/.test(tracker) || !/decay\.overdueDays/.test(tracker)) {
+  failures.push("an individual row never says what it is currently worth in plain units, or how overdue it is");
+}
+if (/counts as["'\s]*\}?\s*\{?\s*decay\.weight\.toFixed/.test(tracker)) {
+  failures.push("the row is back to a bare 0-1 figure, which reads as nothing to a learner");
+}
+if (!/decay\.halfLifeDays/.test(tracker) || !/decay\.floor/.test(tracker)) {
+  failures.push("the row's tooltip does not show the workings behind the number");
+}
+// Due and fading are the same backlog a day apart; showing both chips on one
+// row said the same thing twice and implied they were different things.
+if (!/s\.due && !decay\.fading/.test(tracker)) {
+  failures.push("a row can show both 'due for review' and a fading figure, which reads as two separate problems");
+}
+if (!/Due and fading are the same backlog\./.test(tracker)) {
+  failures.push("nothing explains how fading relates to due for review");
 }
 
 if (failures.length) {

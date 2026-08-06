@@ -236,21 +236,29 @@ function StrengthMeter({
           {ui("never reviewed again")}
         </span>
       )}
-      {!s.permanent && s.due && (
-        <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
+      {/* Due and fading are nearly the same set — anything past its date is
+          both — so they were two chips saying one thing. One chip now: due on
+          the day it arrives, and once it has actually started slipping, how
+          much of it is left. "0.84" meant nothing on its own; a percentage
+          with the days attached says what it is measuring. */}
+      {!s.permanent && s.due && !decay.fading && (
+        <span
+          className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]"
+          title={ui("Its review is due today. Answer it once and it counts in full again, on a longer interval.")}
+        >
           {ui("due for review")}
         </span>
       )}
-      {/* What this item is actually contributing to your totals, and why it is
-          less than one — stated on the row rather than left to be inferred. */}
       {decay.fading && (
         <span
           className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-600"
           title={uiIsGerman()
-            ? `${Math.round(decay.overdueDays)} Tage überfällig. Halbwertszeit ${Math.round(decay.halfLifeDays)} Tage, Minimum ${decay.floor.toFixed(2)}. Eine Wiederholung setzt es auf 1,00 zurück.`
-            : `${Math.round(decay.overdueDays)} days overdue. Half-life ${Math.round(decay.halfLifeDays)} days, floor ${decay.floor.toFixed(2)}. One review puts it back to 1.00.`}
+            ? `Seit ${Math.round(decay.overdueDays)} Tagen überfällig, also wird angenommen, dass du dich noch an ${Math.round(decay.weight * 100)}% davon erinnerst — so viel zählt es gerade zu deiner Gesamtzahl. Es halbiert sich alle ${Math.round(decay.halfLifeDays)} Tage in Richtung ${Math.round(decay.floor * 100)}% und fällt nie darunter. Einmal richtig abrufen setzt es auf 100% zurück.`
+            : `${Math.round(decay.overdueDays)} days past its review, so you are assumed to still recall ${Math.round(decay.weight * 100)}% of it — that is how much it counts towards your total right now. It halves every ${Math.round(decay.halfLifeDays)} days towards ${Math.round(decay.floor * 100)}% and never drops below that. Getting it right once puts it back to 100%.`}
         >
-          {ui("fading")} · {ui("counts as")} {decay.weight.toFixed(2)}
+          {uiIsGerman()
+            ? `${Math.round(decay.overdueDays)} Tage überfällig · ${Math.round(decay.weight * 100)}% behalten`
+            : `${Math.round(decay.overdueDays)} days overdue · ${Math.round(decay.weight * 100)}% remembered`}
         </span>
       )}
       {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
@@ -327,6 +335,12 @@ function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFadi
             {uiIsGerman()
               ? "Mit dem Stern markierte Einträge, Wörter, die du von Hand als gemeistert gesetzt hast, und alles, was du außerhalb der App gelernt hast: Sie haben keinen Wiederholungsplan, gegen den man sie messen könnte, und bleiben deshalb ganz."
               : "Starred items, words you marked mastered by hand, and anything you told the app you already knew from elsewhere. They carry no review schedule to measure against, so they stay whole rather than being decayed on a guess."}
+          </p>
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("Due and fading are the same backlog.")}</span>{" "}
+            {uiIsGerman()
+              ? "„Fällig“ heißt, der Wiederholungstag ist da. „Verblasst“ heißt, er ist vorbei — dieselben Einträge, einen Tag später. Deshalb steht pro Eintrag nur eins von beidem: erst „fällig“, danach, wie viel davon noch zählt."
+              : "“Due” means its review day has arrived. “Fading” means that day has passed — the same items, one day later. That is why a row shows one or the other, never both: due on the day, then how much of it is left."}
           </p>
           <p className="text-[var(--text-3)]">
             {uiIsGerman()
