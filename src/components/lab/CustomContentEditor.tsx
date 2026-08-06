@@ -15,7 +15,47 @@ import {
   type CustomPack,
 } from "@/lib/customContent";
 
-const LEVELS = ["A1-A2", "B1", "B2", "C1", "C2"];
+/**
+ * The CEFR bands, said in words.
+ *
+ * "B2" means nothing to someone adding their own phrases — it is a standard
+ * for grading language ability, not something you would know unless you had
+ * met it. The label is what the picker shows; the description is what it is
+ * actually asking, in terms of what you can DO at that level. This only
+ * decides when the pack gets served, so an honest guess is enough.
+ */
+const LEVELS: { value: string; label: string; blurb: string; blurbDe: string }[] = [
+  {
+    value: "A1-A2",
+    label: "A1–A2 · Beginner",
+    blurb: "Everyday basics: greetings, ordering, simple questions about yourself.",
+    blurbDe: "Alltagsgrundlagen: Begrüßungen, Bestellen, einfache Fragen zu dir selbst.",
+  },
+  {
+    value: "B1",
+    label: "B1 · Getting by",
+    blurb: "Handling ordinary situations alone — appointments, plans, opinions in short.",
+    blurbDe: "Alltagssituationen allein bewältigen — Termine, Pläne, kurz gesagte Meinungen.",
+  },
+  {
+    value: "B2",
+    label: "B2 · Conversational",
+    blurb: "Keeping up with natives on familiar topics, and arguing a point.",
+    blurbDe: "Mit Muttersprachlern über vertraute Themen mithalten und einen Standpunkt vertreten.",
+  },
+  {
+    value: "C1",
+    label: "C1 · Advanced",
+    blurb: "Fluent and precise, including work, study and abstract subjects.",
+    blurbDe: "Fließend und präzise, auch zu Beruf, Studium und abstrakten Themen.",
+  },
+  {
+    value: "C2",
+    label: "C2 · Near-native",
+    blurb: "Anything a native handles: idiom, nuance, humour, fast speech.",
+    blurbDe: "Alles, was Muttersprachler können: Redewendungen, Nuancen, Humor, schnelles Sprechen.",
+  },
+];
 
 const BULK_PLACEHOLDER = `Guten Rutsch! = Happy new year!
 Der Kühlschrank ist leer, Feierabend, time to knock off
@@ -38,7 +78,7 @@ export function CustomContentEditor() {
   const [bulk, setBulk] = useState("");
   const [showBulk, setShowBulk] = useState(false);
   const [newPackName, setNewPackName] = useState("");
-  const [newPackLevel, setNewPackLevel] = useState(LEVELS[0]);
+  const [newPackLevel, setNewPackLevel] = useState(LEVELS[0].value);
   const [renaming, setRenaming] = useState(false);
   const [renameTo, setRenameTo] = useState("");
   const [status, setStatus] = useState("");
@@ -58,6 +98,7 @@ export function CustomContentEditor() {
 
   const preview = useMemo(() => (showBulk ? parseBulkEntries(bulk) : null), [bulk, showBulk]);
 
+  const selectedLevel = LEVELS.find((l) => l.value === newPackLevel) ?? LEVELS[0];
   const say = (english: string, german: string) => setStatus(uiIsGerman() ? german : english);
 
   const addOne = () => {
@@ -223,7 +264,7 @@ export function CustomContentEditor() {
           value={newPackLevel}
         >
           {LEVELS.map((level) => (
-            <option key={level} value={level}>{level}</option>
+            <option key={level.value} value={level.value}>{ui(level.label)}</option>
           ))}
         </select>
         <button
@@ -235,6 +276,20 @@ export function CustomContentEditor() {
           {ui("New pack")}
         </button>
       </div>
+
+      {/* What the letter you just picked actually means. Shown rather than
+          hidden in a tooltip: the whole problem is that nobody knows. */}
+      <p className="mt-1.5 text-xs font-semibold leading-relaxed text-[var(--text-3)]">
+        <strong className="font-black text-[var(--text-2)]">{ui(selectedLevel.label)}</strong>
+        {" — "}
+        {uiIsGerman() ? selectedLevel.blurbDe : selectedLevel.blurb}
+        {" "}
+        <span className="opacity-80">
+          {uiIsGerman()
+            ? "Das steuert nur, wann der Pack drankommt — eine ehrliche Schätzung reicht."
+            : "This only decides when the pack gets served, so an honest guess is enough."}
+        </span>
+      </p>
 
       {/* ── One at a time ──────────────────────────────────────────────── */}
       <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">

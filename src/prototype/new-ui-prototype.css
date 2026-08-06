@@ -724,6 +724,23 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   transition: transform var(--np-motion-base) var(--np-ease-out);
 }
 
+/* A photo fills the mark completely; the initial is the fallback, not the
+   only option. */
+/* Named directly, so both the top-bar mark and the menu's copy anchor the
+   photo and the equipped badge. */
+.np-profile-avatar-mark {
+  position: relative;
+}
+
+.np-profile-avatar-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 .np-profile-avatar-mark > b {
   font: inherit;
 }
@@ -5677,9 +5694,13 @@ html[data-theme="dark"] .np-feature-host .mastery-card {
   --mastery-ring-track: #2d4330;
   --mastery-ring-tip: #eef8d9;
   border-color: rgba(88, 199, 95, 0.24);
+  /* Was a #1b1f26 -> #20242b gradient under a radial that faded out by 30%:
+     a card lighter than every other card, with a visible blob where the
+     falloff ended. Flat card surface, and the tint spread wide enough to
+     read as light rather than as a shape. */
   background:
-    radial-gradient(circle at 92% 10%, rgba(58, 105, 60, 0.38), transparent 30%),
-    linear-gradient(145deg, #1b1f26 0%, #20242b 100%);
+    radial-gradient(circle at 92% 4%, rgba(58, 105, 60, 0.16), transparent 68%),
+    var(--np-surface);
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-card__title {
@@ -7978,6 +7999,7 @@ html[data-theme="dark"] .np-notification-filters-head button {
    scratchpad/gen-accent-rgba.py. */
 html:not([data-theme="dark"])[data-accent="custom"] .np-side-nav button:hover {
   border-color: rgba(var(--accent-rgb), 0.16);
+  background: rgba(var(--accent-rgb), 0.58);
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.11),
     0 9px 18px rgba(var(--accent-hover-rgb), 0.09);
 }
@@ -7988,6 +8010,7 @@ html[data-theme="dark"][data-accent="custom"] .np-side-nav button:hover {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-side-nav button.is-active {
   border-color: rgba(var(--accent-rgb), 0.45);
+  background: var(--np-green-soft, var(--accent-dim));
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.22),
     0 9px 18px rgba(var(--accent-hover-rgb), 0.12);
 }
@@ -8053,7 +8076,8 @@ html[data-theme="dark"][data-accent="custom"] .np-notification-list > .np-notifi
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-profile-button > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-equipped-badge {
@@ -8165,12 +8189,14 @@ html[data-theme="dark"][data-accent="custom"] .np-progress-track--hero {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-progress-track--hero > span {
+  background: linear-gradient(180deg, #f5fff6 0%, var(--np-green-soft, var(--accent-dim)) 100%);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7),
     inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.12),
     2px 0 8px rgba(var(--accent-rgb), 0.26);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-progress-track--hero > span {
+  background: linear-gradient(180deg, #f5fff6 0%, var(--np-green-soft, var(--accent-dim)) 100%);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7),
     inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.12),
     2px 0 8px rgba(var(--accent-rgb), 0.26);
@@ -8281,6 +8307,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-lesson-row:hover {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-lesson-row--mint {
   border-color: rgba(var(--accent-rgb), 0.3);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-level-card {
@@ -8350,6 +8377,7 @@ html[data-theme="dark"][data-accent="custom"] .np-badge-list--expanded .np-achie
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-learning-pills button.is-active {
   border-color: rgba(var(--accent-rgb), 0.4);
+  background: var(--np-green-soft, var(--accent-dim));
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.18);
 }
 
@@ -8364,6 +8392,10 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-curriculum-row:hover {
 
 html[data-theme="dark"][data-accent="custom"] .np-curriculum-row:hover {
   border-color: rgba(var(--accent-rgb), 0.42);
+}
+
+html:not([data-theme="dark"])[data-accent="custom"] .np-curriculum-icon--mint {
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .card-hover:hover {
@@ -8383,12 +8415,12 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-ca
   background: radial-gradient(circle at 92% 10%, rgba(var(--accent-rgb), 0.42), transparent 30%),
     linear-gradient(145deg, #fffef9 0%, #f8fbed 100%);
   box-shadow: 0 4px 0 rgba(var(--accent-hover-rgb), 0.11),
-    0 15px 28px rgba(83, 104, 70, 0.09);
+    0 15px 28px rgba(var(--accent-hover-rgb), 0.09);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card {
   box-shadow: 0 4px 0 rgba(var(--accent-hover-rgb), 0.11),
-    0 15px 28px rgba(83, 104, 70, 0.09);
+    0 15px 28px rgba(var(--accent-hover-rgb), 0.09);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-card__title {
@@ -8397,6 +8429,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-ca
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-card__current {
   border: 1px solid rgba(var(--accent-rgb), 0.2);
+  background: rgba(var(--accent-rgb), 0.84);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current {
@@ -8405,7 +8438,8 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__cu
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-ring {
   border: 1px solid rgba(var(--accent-rgb), 0.24);
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: linear-gradient(145deg, #fdfff9 0%, var(--np-green-soft, var(--accent-dim)) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94),
     0 4px 0 rgba(var(--accent-hover-rgb), 0.11),
     0 12px 22px rgba(var(--accent-hover-rgb), 0.1);
@@ -8424,6 +8458,18 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-ri
   color: var(--accent-ink, var(--np-green));
 }
 
+html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-ring__label > span:last-child {
+  color: var(--accent-ink, var(--np-green));
+}
+
+html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-progress__track {
+  box-shadow: inset 0 1px 2px rgba(var(--accent-hover-rgb), 0.08);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress__track {
+  box-shadow: inset 0 1px 2px rgba(var(--accent-hover-rgb), 0.08);
+}
+
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-progress__fill {
   background: linear-gradient(90deg, var(--np-green), var(--np-green-soft, var(--accent-dim)));
 }
@@ -8434,6 +8480,7 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .mastery-card__milestone.is-reached {
   border-color: rgba(var(--accent-rgb), 0.17);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-reached {
@@ -8462,10 +8509,18 @@ html[data-theme="dark"][data-accent="custom"] .new-ui-prototype .np-feature-host
   box-shadow: 0 7px 18px rgba(var(--accent-rgb), 0.09);
 }
 
+html:not([data-theme="dark"])[data-accent="custom"] .np-feature-loading > span {
+  border: 8px solid var(--np-green-soft, var(--accent-dim));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-loading > span {
+  border: 8px solid var(--np-green-soft, var(--accent-dim));
+}
+
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-hero {
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   background: radial-gradient(circle at 76% -20%, rgba(255, 244, 178, 0.72), transparent 36%),
-    linear-gradient(135deg, #e6f8d9 0%, var(--np-green-soft, var(--accent-dim)) 58%, var(--np-green-soft, var(--accent-dim)) 100%);
+    linear-gradient(135deg, var(--np-green-soft, var(--accent-dim)) 0%, var(--np-green-soft, var(--accent-dim)) 58%, var(--np-green-soft, var(--accent-dim)) 100%);
   box-shadow: 0 5px 0 rgba(var(--accent-rgb), 0.14),
     0 16px 28px rgba(var(--accent-hover-rgb), 0.1);
 }
@@ -8505,7 +8560,8 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-note {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-preview-message {
   border: 1px solid rgba(var(--accent-rgb), 0.22);
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.1);
 }
 
@@ -8569,6 +8625,14 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-card {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.34);
 }
 
+html:not([data-theme="dark"])[data-accent="custom"] .np-premium-mark {
+  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.18);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-premium-mark {
+  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.18);
+}
+
 html:not([data-theme="dark"])[data-accent="custom"] .np-premium-benefits > span {
   background: rgba(var(--accent-hover-rgb), 0.22);
 }
@@ -8620,6 +8684,7 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-owned {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-item.is-equipped {
+  background: linear-gradient(145deg, #fffef9, var(--np-green-soft, var(--accent-dim)));
   box-shadow: 0 4px 0 rgba(var(--accent-rgb), 0.13),
     0 15px 26px rgba(var(--accent-hover-rgb), 0.1);
 }
@@ -8630,7 +8695,8 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-equipped {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-item-art--mint {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-item-footer > button {
@@ -8650,7 +8716,8 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-item-footer > button:hove
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-directory > button:hover {
@@ -8666,7 +8733,8 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-directory > button:hov
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-directory-icon--mint {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .new-ui-prototype {
@@ -8690,6 +8758,10 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-course-shade {
 
 html[data-theme="dark"][data-accent="custom"] .np-course-shade {
   background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.97) 0%, rgba(var(--accent-rgb), 0.9) 42%, rgba(var(--accent-rgb), 0.52) 61%, rgba(var(--accent-rgb), 0.08) 83%, rgba(var(--accent-rgb), 0) 95%);
+}
+
+html:not([data-theme="dark"])[data-accent="custom"] .np-mobile-nav button.is-active {
+  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-outlook {
@@ -8730,7 +8802,7 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-track > span {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours {
   background: radial-gradient(circle at 88% 12%, rgba(255, 215, 87, 0.24), transparent 35%),
-    linear-gradient(145deg, #e6f8d9, var(--np-green-soft, var(--accent-dim)));
+    linear-gradient(145deg, var(--np-green-soft, var(--accent-dim)), var(--np-green-soft, var(--accent-dim)));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > small {
@@ -8756,10 +8828,11 @@ html[data-theme="dark"][data-accent="custom"] .np-side-nav button:hover {
 
 html[data-theme="dark"][data-accent="custom"] .np-side-nav button.is-active {
   border-color: rgba(var(--accent-rgb), 0.48);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-profile-button > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
@@ -8767,18 +8840,38 @@ html[data-theme="dark"][data-accent="custom"] .np-equipped-badge {
   color: var(--accent-ink, var(--np-green));
 }
 
+html[data-theme="dark"][data-accent="custom"] .np-notification-list > .np-notification-row > .np-notification-open:hover,
+html[data-theme="dark"][data-accent="custom"] .np-profile-menu-actions button:hover {
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-search-results > button {
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-search-results > button:hover,
 html[data-theme="dark"][data-accent="custom"] .np-search-results > button:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.45);
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-search-empty,
+html[data-theme="dark"][data-accent="custom"] .np-search-field button {
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-lesson-row--mint {
   border-color: rgba(var(--accent-rgb), 0.32);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-level-card {
   border-color: rgba(var(--accent-rgb), 0.3);
-  background: linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)), #1d3722);
+  background: linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)), var(--accent-pressed, var(--np-green-dark)));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-level-badge {
+  border-color: var(--np-green-soft, var(--accent-dim));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
@@ -8786,10 +8879,23 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
   color: var(--accent-ink, var(--np-green));
 }
 
+html[data-theme="dark"][data-accent="custom"] .np-achievement {
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-learning-pills button.is-active {
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card {
   border-color: rgba(var(--accent-rgb), 0.24);
-  background: radial-gradient(circle at 92% 10%, rgba(var(--accent-hover-rgb), 0.38), transparent 30%),
-    linear-gradient(145deg, #1b1f26 0%, #20242b 100%);
+  background: radial-gradient(circle at 92% 4%, rgba(var(--accent-hover-rgb), 0.16), transparent 68%),
+    var(--np-surface);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current,
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-reached {
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current > span:not(:first-child) {
@@ -8798,6 +8904,8 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__cu
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring {
   border-color: rgba(var(--accent-rgb), 0.26);
+  color: var(--accent-text);
+  background: linear-gradient(145deg, var(--accent-pressed, var(--np-green-dark)) 0%, var(--accent-pressed, var(--np-green-dark)) 100%);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring::before {
@@ -8805,29 +8913,53 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring::be
     radial-gradient(circle at 18% 112%, rgba(var(--accent-rgb), 0.12), transparent 56%);
 }
 
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__value {
+  color: var(--accent-ink, var(--np-green));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__label > span:last-child {
+  color: var(--accent-ink, var(--np-green));
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:first-child {
   color: var(--accent-ink, var(--np-green)) !important;
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:not(:first-child) {
+  color: var(--accent-ink, var(--np-green));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress__track {
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-loading > span {
+  border-color: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-hero {
   border-color: rgba(var(--accent-rgb), 0.25);
   background: radial-gradient(circle at 76% -20%, rgba(255, 200, 71, 0.16), transparent 36%),
-    linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)) 0%, #203b25 58%, #1b3220 100%);
+    linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)) 0%, var(--accent-pressed, var(--np-green-dark)) 58%, var(--accent-pressed, var(--np-green-dark)) 100%);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-heading p {
   color: var(--accent-ink, var(--np-green));
 }
 
+html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-equipped {
+  background: linear-gradient(145deg, #1b1f26, var(--accent-pressed, var(--np-green-dark)));
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-shop-item-art--mint,
 html[data-theme="dark"][data-accent="custom"] .np-feature-directory-icon--mint,
 html[data-theme="dark"][data-accent="custom"] .np-curriculum-icon--mint {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
@@ -8837,6 +8969,8 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-outlook {
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours {
   border-color: rgba(var(--accent-rgb), 0.22);
+  background: radial-gradient(circle at 88% 12%, rgba(255, 200, 71, 0.12), transparent 35%),
+    linear-gradient(145deg, var(--accent-pressed, var(--np-green-dark)), var(--accent-pressed, var(--np-green-dark)));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
@@ -8846,6 +8980,7 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p {
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
   border-color: rgba(var(--accent-rgb), 0.16);
+  background: rgba(var(--accent-hover-rgb), 0.42);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
@@ -8855,15 +8990,21 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
 html[data-theme="dark"][data-accent="custom"] .np-icon-button:hover,
 html[data-theme="dark"][data-accent="custom"] .np-profile-button:hover {
   border-color: rgba(var(--accent-rgb), 0.34);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-answer:hover {
   border-color: rgba(var(--accent-rgb), 0.48);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .new-ui-prototype {
   background: radial-gradient(circle at 86% 6%, rgba(var(--accent-hover-rgb), 0.3), transparent 24%),
       var(--np-shell);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-mobile-nav button.is-active {
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-coin-pack:hover {
@@ -8872,6 +9013,11 @@ html[data-theme="dark"][data-accent="custom"] .np-coin-pack:hover {
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message {
   border-color: rgba(var(--accent-rgb), 0.25);
+  color: var(--accent-text);
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message p {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -8891,7 +9037,7 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-card {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-hero {
   background: radial-gradient(circle at 87% -40%, rgba(255, 217, 93, 0.32), transparent 43%),
-    linear-gradient(135deg, #effce7 0%, var(--np-green-soft, var(--accent-dim)) 54%, #f6f8dc 100%);
+    linear-gradient(135deg, var(--np-green-soft, var(--accent-dim)) 0%, var(--np-green-soft, var(--accent-dim)) 54%, #f6f8dc 100%);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-hero-icon {
@@ -8908,6 +9054,14 @@ html[data-theme="dark"][data-accent="custom"] .np-social-hero-icon {
     0 13px 22px rgba(var(--accent-hover-rgb), 0.21);
 }
 
+html:not([data-theme="dark"])[data-accent="custom"] .np-social-hero-copy h1 {
+  color: var(--accent-ink, var(--np-green));
+}
+
+html:not([data-theme="dark"])[data-accent="custom"] .np-social-hero-copy p {
+  color: var(--accent-ink, var(--np-green));
+}
+
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-private-badge {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.18);
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.1),
@@ -8919,6 +9073,10 @@ html[data-theme="dark"][data-accent="custom"] .np-social-private-badge {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-private-badge strong {
+  color: var(--accent-ink, var(--np-green));
+}
+
+html:not([data-theme="dark"])[data-accent="custom"] .np-social-private-badge small {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -8944,7 +9102,8 @@ html[data-theme="dark"][data-accent="custom"] .np-social-tabs > button.is-active
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-preview-notice {
   border: 1px solid rgba(var(--accent-rgb), 0.22);
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--np-green-soft, var(--accent-dim));
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.1);
 }
 
@@ -9083,10 +9242,13 @@ html[data-theme="dark"][data-accent="custom"] .np-social-empty > button {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-side-card--invite {
   border-color: rgba(var(--accent-rgb), 0.2);
+  background: radial-gradient(circle at 100% 0%, rgba(255, 220, 99, 0.25), transparent 44%),
+    linear-gradient(145deg, var(--np-green-soft, var(--accent-dim)), var(--np-green-soft, var(--accent-dim)));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-side-card--target {
   border-color: rgba(var(--accent-rgb), 0.21);
+  background: linear-gradient(145deg, #f7fff2, var(--np-green-soft, var(--accent-dim)));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-side-icon {
@@ -9133,11 +9295,18 @@ html[data-theme="dark"][data-accent="custom"] .np-social-progress > span {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-leaderboard-list > article.is-current {
   border-color: rgba(var(--accent-rgb), 0.35);
+  background: var(--np-green-soft, var(--accent-dim));
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.12);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-hero {
   border-color: rgba(var(--accent-rgb), 0.19);
+  background: radial-gradient(circle at 87% -40%, rgba(255, 217, 93, 0.12), transparent 43%),
+    linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)) 0%, var(--accent-pressed, var(--np-green-dark)) 54%, #24282f 100%);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy p {
+  color: var(--accent-ink, var(--np-green));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-private-badge {
@@ -9148,18 +9317,31 @@ html[data-theme="dark"][data-accent="custom"] .np-social-private-badge strong {
   color: var(--accent-ink, var(--np-green));
 }
 
+html[data-theme="dark"][data-accent="custom"] .np-social-private-badge small {
+  color: var(--accent-ink, var(--np-green));
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-social-tabs > button:hover {
   border-color: rgba(var(--accent-rgb), 0.28);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-tabs > button.is-active {
   border-color: rgba(var(--accent-rgb), 0.32);
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-side-card--invite,
 html[data-theme="dark"][data-accent="custom"] .np-social-side-card--target {
   border-color: rgba(var(--accent-rgb), 0.2);
+  background: radial-gradient(circle at 100% 0%, rgba(255, 220, 99, 0.08), transparent 44%),
+    var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-search > button,
+html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice > button {
+  color: var(--accent-ink, var(--np-green));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-friend-row:hover {
@@ -9168,10 +9350,16 @@ html[data-theme="dark"][data-accent="custom"] .np-friend-row:hover {
 
 html[data-theme="dark"][data-accent="custom"] .np-leaderboard-list > article.is-current {
   border-color: rgba(var(--accent-rgb), 0.34);
+  background: var(--accent-pressed, var(--np-green-dark));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice {
   border-color: rgba(var(--accent-rgb), 0.24);
+  color: var(--accent-text);
+  background: var(--accent-pressed, var(--np-green-dark));
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice small {
   color: var(--accent-ink, var(--np-green));
 }
 

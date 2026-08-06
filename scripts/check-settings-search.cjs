@@ -108,8 +108,15 @@ if (!/\.settings-search__input:focus[\s\S]{0,220}outline: none;/.test(css)) {
   failures.push("the settings search would draw the global input ring around its own focus border");
 }
 const switcher = fs.readFileSync(path.join(root, "src/components/course/CourseSwitcher.tsx"), "utf8");
-if (!/focus-visible:outline-none/.test(switcher)) {
-  failures.push("the course switcher's search still shows two focus rings");
+// A utility class in the markup is not proof: :focus-visible from a real
+// keyboard outranks it, which is how this passed while the focused search was
+// visibly drawing two rings. What settles it is a named rule that clears the
+// outline, so that is what gets checked.
+if (!/course-switcher-search/.test(switcher)) {
+  failures.push("the course switcher's search is not covered by the single-ring rule");
+}
+if (!/\.course-switcher-search:focus-visible[\s\S]{0,200}outline: none;/.test(css)) {
+  failures.push("nothing clears the platform focus ring on the course switcher's search, so it draws two");
 }
 
 if (failures.length) {

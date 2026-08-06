@@ -69,6 +69,7 @@ import {
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownVocab, getFluency } from "@/lib/fluency";
+import { activePackProgress, type PackProgress } from "@/lib/packProgress";
 import {
   NOTIFICATION_KINDS,
   NOTIFICATION_PREFS_EVENT,
@@ -547,6 +548,7 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 }
 
 function Header({
+  avatar,
   equippedBadge,
   onNavigate,
   onProfileIntent,
@@ -558,6 +560,7 @@ function Header({
   userEmail,
   userName,
 }: {
+  avatar?: string;
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
   onProfileIntent: () => void;
@@ -966,8 +969,13 @@ function Header({
             onPointerEnter={onProfileIntent}
             type="button"
           >
+            {/* The photo, when there is one. The top bar only ever drew the
+                initial, so uploading a picture changed the profile page and
+                nothing else — the one place you look at every day. */}
             <span className="np-profile-avatar-mark">
-              <b>{firstName[0]?.toUpperCase() ?? "?"}</b>
+              {avatar
+                ? <img alt="" className="np-profile-avatar-photo" src={avatar} />
+                : <b>{firstName[0]?.toUpperCase() ?? "?"}</b>}
               {equippedBadge && <i className="np-equipped-badge"><ShopBadgeArt id={equippedBadge} /></i>}
             </span>
             <ChevronDown />
@@ -985,7 +993,9 @@ function Header({
               >
                 <div className="np-profile-menu-summary">
                   <span aria-hidden="true" className="np-profile-avatar-mark">
-                    <b>{firstName[0]?.toUpperCase() ?? "?"}</b>
+                    {avatar
+                      ? <img alt="" className="np-profile-avatar-photo" src={avatar} />
+                      : <b>{firstName[0]?.toUpperCase() ?? "?"}</b>}
                     {equippedBadge && <i className="np-equipped-badge"><ShopBadgeArt id={equippedBadge} /></i>}
                   </span>
                   <div>
@@ -1027,11 +1037,13 @@ function Header({
 }
 
 function CourseHero({
+  packProgress,
   needsStartingPoint,
   onSwitchCourse,
   placementPart,
   stats,
 }: {
+  packProgress: PackProgress | null;
   needsStartingPoint: boolean;
   onSwitchCourse: () => void;
   placementPart: string | null;
@@ -1039,7 +1051,7 @@ function CourseHero({
 }) {
   const reduceMotion = useReducedMotion();
   const { nxt, pct, into, needed } = getLevelInfo(stats.totalXp);
-  const displayedProgress = needsStartingPoint ? 0 : pct;
+  const displayedProgress = needsStartingPoint ? 0 : packProgress ? packProgress.percent : pct;
   const placementLevel = placementPart === "part1" ? ["A1", "Building the basics"]
     : placementPart === "part3" ? ["A1-A2", "Building confidence"]
       : placementPart === "part5" ? ["A2", "Everyday foundations"]
@@ -1070,15 +1082,27 @@ function CourseHero({
           </div>
           <div className="np-course-progress-row">
             <div className="np-course-progress-label">
-              <span>{needsStartingPoint ? "Starting point" : "Level progress"}</span>
+              {/* Not XP: the right rail already shows total XP twice, and "how
+                  much longer on this one?" is the question actually being
+                  asked. Falls back to the level bar only when there is no pack
+                  in progress to report on. */}
+              <span>
+                {needsStartingPoint ? "Starting point" : packProgress ? packProgress.title : "Level progress"}
+              </span>
               <small>
                 {needsStartingPoint
                   ? "One quick choice before your first lesson"
-                  : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : "Maximum level"}
+                  : packProgress
+                    ? `${packProgress.done} of ${packProgress.total} phrases · about ${packProgress.sittingsLeft} more ${packProgress.sittingsLeft === 1 ? "sitting" : "sittings"} to finish`
+                    : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : "Maximum level"}
               </small>
             </div>
             <div
-              aria-label={needsStartingPoint ? "Starting point not chosen" : `${pct}% progress to the next level`}
+              aria-label={needsStartingPoint
+        ? "Starting point not chosen"
+        : packProgress
+          ? `${packProgress.percent}% through ${packProgress.title}`
+          : `${pct}% progress to the next level`}
               aria-valuemax={100}
               aria-valuemin={0}
               aria-valuenow={displayedProgress}
@@ -1469,18 +1493,23 @@ function ProgressPanel({
 }
 
 function HomeView({
+  apiParts,
   onPractice,
   profile,
   onSwitchCourse,
   stats,
   vocab,
 }: {
+  apiParts: Record<string, Part>;
   onPractice: () => void;
   profile: UserProfile | null;
   onSwitchCourse: () => void;
   stats: PrototypeStats;
   vocab: number;
 }) {
+  // Recomputed when the catalogue arrives or a lesson lands, so the hero's
+  // "how much longer" tracks what was just learned.
+  const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -1499,6 +1528,7 @@ function HomeView({
   return (
     <div className="np-home-view">
       <CourseHero
+        packProgress={packProgress}
         needsStartingPoint={needsStartingPoint}
         onSwitchCourse={onSwitchCourse}
         placementPart={placementPart}
@@ -2276,6 +2306,7 @@ export default function NewUiPrototype({
       </div>
     ) : (
       <HomeView
+        apiParts={apiParts}
         onPractice={openGuidedSession}
         profile={profile}
         onSwitchCourse={() => setCourseSwitcherOpen(true)}
@@ -2378,6 +2409,7 @@ export default function NewUiPrototype({
           />
           <div className="np-app-area">
             <Header
+              avatar={profile?.avatar}
               equippedBadge={equippedShopBadge}
               onNavigate={navigate}
               onProfileIntent={() => { void loadGamificationPanel(); }}

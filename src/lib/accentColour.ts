@@ -268,6 +268,10 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     ["--np-green", shades.accent],
     ["--np-green-dark", shades.accentHover],
     ["--np-green-soft", shades.accentDim],
+    // Decorative, not semantic: --mint paints the activity chart and the
+    // stat chips on the profile page. --success-* stays green in every
+    // accent, because that one is carrying meaning.
+    ["--mint", shades.accent],
     // Bare channels, so a translucent gradient can be built from the accent.
     // The course hero's wash fades green to nothing across the artwork; it
     // needs the colour without an alpha baked in, which a hex token cannot
@@ -279,6 +283,10 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     ["--fs-yellow", shades.accent],
     ["--fs-yellow-hover", shades.accentHover],
     ["--fs-purple", shades.accent],
+    // The profile page paints its feature cards — "Words tracked", "Next
+    // target", the activity chart — from this gradient rather than from
+    // --accent, so they stayed green under any other colour.
+    ["--feature-gradient", `linear-gradient(145deg, ${shades.accentHover}, ${shades.accentPressed})`],
     // The guided session's primary button — Continue, Next flashcard — is
     // painted from this gradient rather than from --accent, so it stayed
     // green while the session around it turned.

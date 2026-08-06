@@ -180,7 +180,7 @@ export function CourseSwitcher({
               <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
               <input
                 aria-label={ui("Search courses")}
-                className="h-12 w-full rounded-2xl border-2 border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)] focus:bg-[var(--surface)] focus-visible:outline-none"
+                className="course-switcher-search h-12 w-full appearance-none rounded-2xl border-2 border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)] focus:bg-[var(--surface)] outline-none focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={ui("Search languages or courses…")}
                 ref={searchInputRef}

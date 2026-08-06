@@ -42,7 +42,7 @@ const key = (selector) => {
   return norm(s);
 };
 const channels = (h) => [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
-const isBrandGreen = ([r, g, b]) => g > 55 && g - Math.max(r, b) > 22;
+const isBrandGreen = ([r, g, b]) => g > 28 && g - Math.max(r, b) > 10;
 
 /**
  * Green that MEANS something, not green that is the brand.
