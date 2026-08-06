@@ -722,7 +722,7 @@ html[data-theme="dark"] .micheon-update-panel {
   --accent-dim: rgba(91, 205, 91, 0.14);
   --shadow: rgba(0, 0, 0, 0.38);
   color-scheme: dark;
-  background: linear-gradient(145deg, #1b261d, #151d17);
+  background: linear-gradient(145deg, #1a1e25, #13171e);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 3px 0 rgba(0, 0, 0, 0.22), 0 18px 46px var(--shadow);
 }
 
@@ -745,7 +745,7 @@ html[data-theme="dark"] .micheon-update-download {
 }
 
 html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
-  background: #263529;
+  background: #272b32;
   color: #d7edd4;
 }
 
@@ -879,12 +879,12 @@ html[data-theme="dark"] .micheon-update-takeover {
   --install-shadow: rgba(0, 0, 0, 0.44);
   color-scheme: dark;
   background:
-    radial-gradient(circle at 50% 41%, rgba(50, 56, 49, 0.72), transparent 56%),
-    linear-gradient(180deg, #1d201c, var(--install-page));
+    radial-gradient(circle at 50% 41%, rgba(47, 51, 58, 0.72), transparent 56%),
+    linear-gradient(180deg, #191d24, var(--install-page));
 }
 
 html[data-theme="dark"] .micheon-update-install-card {
-  background: linear-gradient(180deg, #252923, var(--install-surface));
+  background: linear-gradient(180deg, #21252c, var(--install-surface));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 0 rgba(0, 0, 0, 0.24), 0 34px 90px var(--install-shadow);
 }
 
@@ -5614,8 +5614,8 @@ html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer .audio-mixer-ro
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session {
   --bg: #0b0e13;
   --surface: #161b23;
-  --surface-2: #1c222c;
-  --surface-3: #232a35;
+  --surface-2: #161b23;
+  --surface-3: #11151c;
   --border: rgba(205, 217, 233, 0.22);
   --border-2: rgba(205, 217, 233, 0.34);
   --text-1: #eef2f8;
@@ -5633,7 +5633,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session {
   --shadow-strong: rgba(0, 0, 0, 0.5);
   --fs-bg: #0b0e13;
   --fs-surface: #161b23;
-  --fs-surface-2: #1c222c;
+  --fs-surface-2: #161b23;
   --fs-deep: #10141a;
   --fs-line: rgba(205, 217, 233, 0.14);
   --fs-line-strong: rgba(205, 217, 233, 0.24);
@@ -5692,8 +5692,8 @@ html[data-theme="dark"].is-prototype-guided-launch {
   color-scheme: dark;
   --bg: #0b0e13;
   --surface: #161b23;
-  --surface-2: #1c222c;
-  --surface-3: #232a35;
+  --surface-2: #161b23;
+  --surface-3: #11151c;
   --border: rgba(205, 217, 233, 0.22);
   --border-2: rgba(205, 217, 233, 0.34);
   --text-1: #eef2f8;
@@ -6233,8 +6233,8 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prom
 html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer {
   color-scheme: dark;
   --surface: #161b23;
-  --surface-2: #1c222c;
-  --surface-3: #232a35;
+  --surface-2: #161b23;
+  --surface-3: #11151c;
   --border: rgba(205, 217, 233, 0.3);
   --border-2: rgba(205, 217, 233, 0.44);
   --text-1: #eef2f8;
@@ -6864,3 +6864,27 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
 .settings-reset svg { width: 14px; height: 14px; }
 .settings-reset:hover:not(:disabled) { border-color: var(--border-2); color: var(--text-1); }
 .settings-reset:disabled { opacity: 0.45; cursor: default; }
+
+/* ── update preferences ──────────────────────────────────────────────────── */
+.update-prefs { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+.update-prefs__label { font-size: 11px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }
+.update-prefs__modes { display: grid; gap: 6px; margin-top: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.update-prefs__modes button {
+  padding: 8px 11px; border: 1px solid var(--card-edge, var(--border)); border-radius: 13px;
+  background: var(--surface-2); color: var(--text-1); text-align: left; cursor: pointer;
+}
+.update-prefs__modes button strong { display: block; font-size: 12px; font-weight: 850; }
+.update-prefs__modes button small { display: block; margin-top: 2px; font-size: 11px; font-weight: 650; color: var(--text-3); }
+.update-prefs__modes button.is-active { border-color: var(--accent); background: var(--accent-dim); }
+.update-prefs__row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 11px; }
+.update-prefs__chip, .update-prefs__link {
+  height: 28px; padding: 0 11px; border: 1px solid var(--card-edge, var(--border)); border-radius: 999px;
+  background: var(--surface-2); color: var(--text-2); font-size: 11px; font-weight: 800; cursor: pointer;
+}
+.update-prefs__link { border-color: transparent; background: transparent; color: var(--accent); }
+.update-prefs__chip:hover { border-color: var(--border-2); color: var(--text-1); }
+.update-prefs__snoozed { font-size: 12px; font-weight: 750; color: var(--text-2); }
+.update-prefs__toggle { display: flex; align-items: flex-start; gap: 9px; margin-top: 12px; cursor: pointer; }
+.update-prefs__toggle input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--accent); }
+.update-prefs__toggle strong { display: block; font-size: 12px; font-weight: 850; color: var(--text-1); }
+.update-prefs__toggle small { display: block; margin-top: 2px; font-size: 11px; font-weight: 650; color: var(--text-3); }

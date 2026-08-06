@@ -49,6 +49,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
   // to announce.
   getUpdateStatus: () => ipcRenderer.invoke("update:get-status"),
   checkForUpdateNow: () => ipcRenderer.invoke("update:check-now"),
+  // How updates should arrive, whether they are postponed, and whether the
+  // panel narrates them at all.
+  setUpdatePreferences: (preferences) =>
+    ipcRenderer.invoke("update:set-preferences", preferences),
+  downloadUpdateNow: () => ipcRenderer.invoke("update:download-now"),
   onUpdateStatus: (cb) => {
     const handler = (_e, status) => cb(status);
     ipcRenderer.on("update:status", handler);

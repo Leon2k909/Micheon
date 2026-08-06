@@ -1352,10 +1352,28 @@ function setUpdateStatus(state, version, details = {}) {
   }
 }
 
+/** Is the updater currently asked to keep quiet? */
+function updateSnoozeActive() {
+  const until = Number(getDesktopSettings().updateSnoozeUntil) || 0;
+  return until > Date.now();
+}
+
+/**
+ * Downloading without being asked is the part a postponed update must not do
+ * — on a metered connection it is the whole cost. "auto" keeps today's
+ * behaviour; the other modes wait to be told.
+ */
+function applyUpdatePreferences() {
+  const { updateMode } = getDesktopSettings();
+  const automatic = updateMode === "auto" && !updateSnoozeActive();
+  autoUpdater.autoDownload = automatic;
+  autoUpdater.autoInstallOnAppQuit = automatic;
+  return automatic;
+}
+
 function setupAutoUpdate() {
   if (!app.isPackaged) return;
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  applyUpdatePreferences();
   // Releases now use one stable repo/name, so block-map updates can transfer
   // only changed blocks instead of downloading the whole installer every time.
   // The old v1.2.11 updater still full-downloads this transition release; this
@@ -1397,7 +1415,9 @@ function setupAutoUpdate() {
   // Micheon owns the complete visible update experience in the renderer. Using
   // checkForUpdatesAndNotify here would add an OS notification that cannot
   // follow the app theme and would duplicate the in-app progress panel.
-  autoUpdater.checkForUpdates().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
+  if (getDesktopSettings().updateMode !== "manual" && !updateSnoozeActive()) {
+    autoUpdater.checkForUpdates().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
+  }
   // Re-check periodically for long-running sessions. Fifteen minutes rather than
   // an hour: the app is left open for hours at a time, and waiting up to a full
   // hour to even notice a release is what makes it look as though nothing is
@@ -1406,17 +1426,64 @@ function setupAutoUpdate() {
     // Do not keep polling/downloading metadata after an update is already being
     // handled. The next app launch installs it and starts a fresh schedule.
     if (["checking", "downloading", "ready"].includes(updateStatus.state)) return;
+    // Postponed, or set to manual: stay out of the way until asked. A snooze
+    // that has expired simply stops matching here, so the next tick resumes.
+    if (getDesktopSettings().updateMode === "manual" || updateSnoozeActive()) return;
+    applyUpdatePreferences();
     autoUpdater.checkForUpdates().catch(() => {});
   }, 15 * 60 * 1000);
   updateTimer.unref?.();
 }
 
 /** The renderer asking directly — "check now", and what happened last time. */
-ipcMain.handle("update:get-status", () => ({
-  ...updateStatus,
-  currentVersion: app.getVersion(),
-  supported: app.isPackaged,
-}));
+ipcMain.handle("update:get-status", () => {
+  const settings = getDesktopSettings();
+  return {
+    ...updateStatus,
+    currentVersion: app.getVersion(),
+    supported: app.isPackaged,
+    updateMode: settings.updateMode,
+    snoozedUntil: updateSnoozeActive() ? settings.updateSnoozeUntil : 0,
+    noticesHidden: settings.updateNoticesHidden === true,
+  };
+});
+
+ipcMain.handle("update:set-preferences", (event, preferences) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted update request");
+  const next = {};
+  if (["auto", "ask", "manual"].includes(preferences?.updateMode)) {
+    next.updateMode = preferences.updateMode;
+  }
+  if (preferences?.snoozeHours != null) {
+    const hours = Math.max(0, Math.min(30 * 24, Number(preferences.snoozeHours) || 0));
+    next.updateSnoozeUntil = hours > 0 ? Date.now() + hours * 60 * 60 * 1000 : 0;
+  }
+  if (typeof preferences?.noticesHidden === "boolean") {
+    next.updateNoticesHidden = preferences.noticesHidden;
+  }
+  saveDesktopSettings(next);
+  applyUpdatePreferences();
+  const settings = getDesktopSettings();
+  return {
+    ...updateStatus,
+    currentVersion: app.getVersion(),
+    supported: app.isPackaged,
+    updateMode: settings.updateMode,
+    snoozedUntil: updateSnoozeActive() ? settings.updateSnoozeUntil : 0,
+    noticesHidden: settings.updateNoticesHidden === true,
+  };
+});
+
+/** "Download it now" — the escape hatch for ask/manual and for a snooze. */
+ipcMain.handle("update:download-now", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted update request");
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  return autoUpdater.downloadUpdate().then(() => true).catch((e) => {
+    console.error("[updater] manual download failed:", e?.message ?? e);
+    return false;
+  });
+});
 
 ipcMain.handle("update:check-now", async () => {
   if (!app.isPackaged) {

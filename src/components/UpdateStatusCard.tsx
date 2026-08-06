@@ -36,6 +36,19 @@ export function UpdateStatusCard() {
   const ready = state === "ready";
   const percent = normaliseUpdatePercent(status?.percent);
 
+  const mode = status?.updateMode ?? "auto";
+  const snoozedUntil = Number(status?.snoozedUntil) || 0;
+  const noticesHidden = status?.noticesHidden === true;
+
+  const savePreferences = async (preferences: Record<string, unknown>) => {
+    if (!desktop?.setUpdatePreferences) return;
+    try {
+      setStatus(await desktop.setUpdatePreferences(preferences));
+    } catch {
+      /* the panel keeps showing the last known state rather than blanking */
+    }
+  };
+
   const check = async () => {
     setBusy(true);
     try {
@@ -132,6 +145,75 @@ export function UpdateStatusCard() {
           </button>
         )}
       </div>
+
+        {/* How updates should arrive. "auto" is the default and stays the
+            default; the others exist for a metered connection, or for someone
+            who would rather not be interrupted mid-lesson. */}
+        <div className="update-prefs">
+          <p className="update-prefs__label">{ui("How updates arrive")}</p>
+          <div aria-label={ui("How updates arrive")} className="update-prefs__modes" role="radiogroup">
+            {([
+              ["auto", "Automatic", "Download and install on quit"],
+              ["ask", "Ask first", "Check, then wait for you"],
+              ["manual", "Only when I ask", "No background checks"],
+            ] as const).map(([value, label, note]) => (
+              <button
+                aria-checked={mode === value}
+                className={mode === value ? "is-active" : ""}
+                key={value}
+                onClick={() => savePreferences({ updateMode: value })}
+                role="radio"
+                type="button"
+              >
+                <strong>{ui(label)}</strong>
+                <small>{ui(note)}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="update-prefs__row">
+            {snoozedUntil > 0 ? (
+              <>
+                <span className="update-prefs__snoozed">
+                  {ui("Postponed until")} {new Date(snoozedUntil).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
+                <button
+                  className="update-prefs__link"
+                  onClick={() => savePreferences({ snoozeHours: 0 })}
+                  type="button"
+                >
+                  {ui("Resume updates")}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="update-prefs__label">{ui("Postpone for")}</span>
+                {([["1 hour", 1], ["Today", 8], ["A week", 168]] as const).map(([label, hours]) => (
+                  <button
+                    className="update-prefs__chip"
+                    key={label}
+                    onClick={() => savePreferences({ snoozeHours: hours })}
+                    type="button"
+                  >
+                    {ui(label)}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+
+          <label className="update-prefs__toggle">
+            <input
+              checked={noticesHidden}
+              onChange={(event) => savePreferences({ noticesHidden: event.target.checked })}
+              type="checkbox"
+            />
+            <span>
+              <strong>{ui("Hide update notices")}</strong>
+              <small>{ui("Updates still install. This panel and the ready banner stay out of the way.")}</small>
+            </span>
+          </label>
+        </div>
     </div>
   );
 }

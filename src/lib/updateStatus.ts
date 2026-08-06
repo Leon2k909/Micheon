@@ -17,6 +17,12 @@ export interface UpdateStatus {
   transferred?: number | null;
   total?: number | null;
   bytesPerSecond?: number | null;
+  /** How updates arrive: download on their own, wait to be told, or only when asked. */
+  updateMode?: "auto" | "ask" | "manual";
+  /** Epoch ms the updater stays quiet until, or 0. */
+  snoozedUntil?: number;
+  /** The panel is hidden; the update still happens, it just stops narrating. */
+  noticesHidden?: boolean;
 }
 
 export const UPDATE_INSTALL_REQUEST_EVENT = "micheon:update-install-request";
@@ -38,6 +44,10 @@ export function normaliseUpdatePercent(value: unknown): number {
  * explicitly checks from settings gets their feedback inline there.
  */
 export function updatePanelIsUseful(status: UpdateStatus | null): boolean {
+  // "Hide update notices" means exactly that: the update still downloads and
+  // still installs, it simply stops announcing itself. Settings remains the
+  // place to see what is happening.
+  if (status?.noticesHidden) return false;
   return status?.state === "downloading"
     || status?.state === "ready";
 }

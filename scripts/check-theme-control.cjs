@@ -111,6 +111,39 @@ if (darkAt < 0) {
   }
 }
 
+// ── and no COMPONENT rule keeps the old olive cast either ────────────────
+// The token block going neutral was only half the job: about seventy rules
+// paint their own dark, and the sidebar kept an olive-black that read green
+// against a slate page. Accent tints (correct answers, active tabs) are
+// meant to be green and lead by a wide margin; a surface that leads by a
+// whisker is the old cast left behind.
+{
+  const sheets = [
+    ["src/prototype/new-ui-prototype.css", proto],
+    ["src/index.css", fs.readFileSync(path.join(root, "src/index.css"), "utf8")],
+  ];
+  for (const [name, css] of sheets) {
+    const stripped = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const rule of stripped.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      const selector = rule[1].replace(/\s+/g, " ").trim();
+      if (!selector.includes('[data-theme="dark"]')) continue;
+      for (const decl of rule[2].split(";")) {
+        if (!/^\s*background(-color)?\s*:/.test(decl)) continue;
+        for (const colour of decl.matchAll(/#([0-9a-f]{6})|rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/gi)) {
+          const ch = colour[1]
+            ? [0, 2, 4].map((i) => parseInt(colour[1].slice(i, i + 2), 16))
+            : [colour[2], colour[3], colour[4]].map(Number);
+          if (Math.max(...ch) > 90) continue;          // not a dark surface
+          const lead = ch[1] - Math.max(ch[0], ch[2]);
+          if (lead > 0 && lead <= 12) {
+            failures.push(`${name}: "${selector.slice(0, 60)}" paints a faintly olive dark (r${ch[0]} g${ch[1]} b${ch[2]}) — surfaces are slate, green is the accent`);
+          }
+        }
+      }
+    }
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-theme-control");
   failures.forEach((line) => console.error("  " + line));

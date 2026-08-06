@@ -5296,7 +5296,7 @@ html[data-theme="dark"] .new-ui-prototype {
   --np-bg: #0b0e13;
   --np-shell: #0d1117;
   --np-surface: #161b23;
-  --np-surface-soft: #1c222c;
+  --np-surface-soft: #161b23;
   --np-text: #eef2f8;
   --np-muted: #c2cbd8;
   --np-soft: #98a3b3;
@@ -5310,8 +5310,8 @@ html[data-theme="dark"] .new-ui-prototype {
   --np-blue: #77c9ee;
   --np-danger: #ff8989;
   --surface: #161b23;
-  --surface-2: #1c222c;
-  --surface-3: #232a35;
+  --surface-2: #161b23;
+  --surface-3: #11151c;
   --border: rgba(205, 217, 233, 0.3);
   --border-2: rgba(205, 217, 233, 0.44);
   --text-1: #eef2f8;
@@ -5342,7 +5342,7 @@ html[data-theme="dark"] .new-ui-prototype {
 html[data-theme="dark"].is-ui-prototype,
 html[data-theme="dark"].is-ui-prototype body,
 html[data-theme="dark"].is-ui-prototype #root {
-  background: var(--np-shell, #111a13);
+  background: var(--np-shell, #10141b);
 }
 
 html[data-theme="dark"] .np-window,
@@ -5351,7 +5351,7 @@ html[data-theme="dark"] .np-feature-loading {
 }
 
 html[data-theme="dark"] .np-sidebar {
-  background: rgba(18, 28, 20, 0.9);
+  background: rgba(17, 21, 28, 0.9);
 }
 
 html[data-theme="dark"] .np-brand-icon {
@@ -5385,7 +5385,7 @@ html[data-theme="dark"] .np-side-nav button:hover {
 html[data-theme="dark"] .np-nav-visual {
   border-color: var(--np-line);
   color: #c4ccc1;
-  background: #202b22;
+  background: #1f232a;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 3px 0 rgba(0, 0, 0, 0.22);
@@ -5417,7 +5417,7 @@ html[data-theme="dark"] .np-profile-button > span {
 html[data-theme="dark"] .np-equipped-badge {
   border-color: var(--np-surface);
   color: #78db80;
-  background: #253229;
+  background: #262a31;
 }
 
 html[data-theme="dark"] .np-notification-panel,
@@ -5508,7 +5508,7 @@ html[data-theme="dark"] .np-answer {
 
 html[data-theme="dark"] .np-answer > span {
   color: var(--np-muted);
-  background: #2b382d;
+  background: #2b2f36;
 }
 
 html[data-theme="dark"] .np-answer--correct {
@@ -5551,7 +5551,7 @@ html[data-theme="dark"] .np-lesson-row--violet {
 html[data-theme="dark"] .np-lesson-number {
   border-color: var(--np-line);
   color: var(--np-text);
-  background: rgba(17, 26, 19, 0.64);
+  background: rgba(16, 20, 27, 0.64);
 }
 
 html[data-theme="dark"] .np-level-card {
@@ -5595,7 +5595,7 @@ html[data-theme="dark"] .np-achievement-state {
 html[data-theme="dark"] .np-achievement.is-locked,
 html[data-theme="dark"] .np-badge-list--expanded .np-achievement.is-locked {
   border-color: var(--np-line);
-  background: #202922;
+  background: #1f232a;
 }
 
 html[data-theme="dark"] .np-achievement > small {
@@ -5608,7 +5608,7 @@ html[data-theme="dark"] .np-achievement.is-locked > small {
 
 html[data-theme="dark"] .np-achievement.is-locked .np-achievement-state {
   color: #a6afa4;
-  background: #364039;
+  background: #353940;
 }
 
 html[data-theme="dark"] .np-goal-card {
@@ -5642,8 +5642,8 @@ html[data-theme="dark"] .np-learning-pills button.is-active {
 html[data-theme="dark"] .np-feature-host {
   --bg: transparent;
   --surface: #161b23;
-  --surface-2: #1c222c;
-  --surface-3: #232a35;
+  --surface-2: #161b23;
+  --surface-3: #11151c;
   --border: rgba(205, 217, 233, 0.3);
   --border-2: rgba(205, 217, 233, 0.44);
   --text-1: #eef2f8;
@@ -5679,7 +5679,7 @@ html[data-theme="dark"] .np-feature-host .mastery-card {
   border-color: rgba(88, 199, 95, 0.24);
   background:
     radial-gradient(circle at 92% 10%, rgba(58, 105, 60, 0.38), transparent 30%),
-    linear-gradient(145deg, #1b281d 0%, #202d21 100%);
+    linear-gradient(145deg, #1b1f26 0%, #20242b 100%);
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-card__title {
@@ -5766,7 +5766,7 @@ html[data-theme="dark"] .np-shop-hero {
 html[data-theme="dark"] .np-shop-heading > span,
 html[data-theme="dark"] .np-shop-balance,
 html[data-theme="dark"] .np-shop-note {
-  background: rgba(24, 34, 26, 0.92);
+  background: rgba(23, 27, 34, 0.92);
 }
 
 html[data-theme="dark"] .np-shop-heading h1,
@@ -5792,7 +5792,7 @@ html[data-theme="dark"] .np-feature-directory > button {
 }
 
 html[data-theme="dark"] .np-shop-item.is-equipped {
-  background: linear-gradient(145deg, #1b281d, #213924);
+  background: linear-gradient(145deg, #1b1f26, #213924);
 }
 
 html[data-theme="dark"] .np-shop-item-art--mint,
@@ -5846,7 +5846,7 @@ html[data-theme="dark"] .np-shop-item-footer > span {
 
 html[data-theme="dark"] .np-shop-item-footer > button:disabled {
   color: #aab2a8;
-  background: #313c33;
+  background: #30343b;
 }
 
 html[data-theme="dark"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
@@ -5870,7 +5870,7 @@ html[data-theme="dark"] .np-fluency-hours {
 }
 
 html[data-theme="dark"] .np-fluency-hours > span {
-  background: rgba(17, 26, 19, 0.62);
+  background: rgba(16, 20, 27, 0.62);
 }
 
 html[data-theme="dark"] .np-fluency-hours > small,
@@ -5943,7 +5943,7 @@ html[data-theme="dark"] .np-lesson-row:hover {
 
 html[data-theme="dark"] .np-shop-purchase-section {
   border-color: var(--np-line);
-  background: rgba(24, 34, 26, 0.9);
+  background: rgba(23, 27, 34, 0.9);
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.22),
     0 14px 28px rgba(0, 0, 0, 0.2);
@@ -5951,7 +5951,7 @@ html[data-theme="dark"] .np-shop-purchase-section {
 
 html[data-theme="dark"] .np-coin-pack {
   border-color: var(--np-line);
-  background: #1b281d;
+  background: #1b1f26;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
 }
 
@@ -5966,7 +5966,7 @@ html[data-theme="dark"] .np-coin-pack.is-featured {
   border-color: rgba(255, 210, 95, 0.3);
   background:
     radial-gradient(circle at 95% 0%, rgba(255, 209, 85, 0.12), transparent 40%),
-    #1c291e;
+    #1c2027;
 }
 
 html[data-theme="dark"] .np-coin-pack-icon {
@@ -5991,12 +5991,12 @@ html[data-theme="dark"] .np-shop-preview-message p {
 
 html[data-theme="dark"] .np-shop-preview-message > button {
   color: #acd7b0;
-  background: rgba(13, 24, 15, 0.54);
+  background: rgba(12, 16, 23, 0.54);
 }
 
 html[data-theme="dark"] .np-shop-preview-message > button:hover {
   color: #d8f5db;
-  background: #152218;
+  background: #151920;
 }
 
 html[data-theme="dark"] .np-premium-card {
@@ -7223,7 +7223,7 @@ html[data-theme="dark"] .np-social-hero {
   border-color: rgba(96, 211, 107, 0.19);
   background:
     radial-gradient(circle at 87% -40%, rgba(255, 217, 93, 0.12), transparent 43%),
-    linear-gradient(135deg, #203a24 0%, #1c311f 54%, #253124 100%);
+    linear-gradient(135deg, #203a24 0%, #1c311f 54%, #24282f 100%);
 }
 
 html[data-theme="dark"] .np-social-hero-copy h1 {
@@ -7236,7 +7236,7 @@ html[data-theme="dark"] .np-social-hero-copy p {
 
 html[data-theme="dark"] .np-social-private-badge {
   border-color: rgba(96, 211, 107, 0.2);
-  background: rgba(20, 32, 22, 0.72);
+  background: rgba(20, 24, 31, 0.72);
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -7251,7 +7251,7 @@ html[data-theme="dark"] .np-social-private-badge small {
 html[data-theme="dark"] .np-social-tabs > button,
 html[data-theme="dark"] .np-leaderboard-time {
   border-color: var(--np-line);
-  background: #1b281d;
+  background: #1b1f26;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.23);
 }
 
@@ -7268,14 +7268,14 @@ html[data-theme="dark"] .np-social-tabs > button.is-active {
 }
 
 html[data-theme="dark"] .np-social-tabs > button > svg {
-  background: #263229;
+  background: #262a31;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
 }
 
 html[data-theme="dark"] .np-social-panel,
 html[data-theme="dark"] .np-social-side-card {
   border-color: var(--np-line);
-  background: #1a261c;
+  background: #1a1e25;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.24), 0 13px 24px rgba(0, 0, 0, 0.16);
 }
 
@@ -7289,7 +7289,7 @@ html[data-theme="dark"] .np-social-side-card--target {
 
 html[data-theme="dark"] .np-social-search {
   border-color: var(--np-line);
-  background: #142016;
+  background: #14181f;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.18);
 }
 
@@ -7300,13 +7300,13 @@ html[data-theme="dark"] .np-social-search input {
 html[data-theme="dark"] .np-social-search > button,
 html[data-theme="dark"] .np-social-preview-notice > button {
   color: #aab7a9;
-  background: #263329;
+  background: #262a31;
 }
 
 html[data-theme="dark"] .np-friend-row,
 html[data-theme="dark"] .np-leaderboard-list > article {
   border-color: var(--np-line);
-  background: #1d2a1f;
+  background: #1d2128;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -7336,7 +7336,7 @@ html[data-theme="dark"] .np-leaderboard-podium {
   border-color: var(--np-line);
   background:
     radial-gradient(circle at 50% -30%, rgba(255, 218, 91, 0.09), transparent 46%),
-    linear-gradient(180deg, #1d2c20, #172319);
+    linear-gradient(180deg, #1e2229, #171b22);
 }
 
 html[data-theme="dark"] .np-podium-place > i {
@@ -7660,4 +7660,280 @@ html[data-accent="custom"] .np-mobile-nav button.is-active {
   font-size: var(--np-type-caption);
   font-weight: 750;
   color: var(--np-muted);
+}
+
+
+/* ── a custom accent reaches the hand-painted greens ─────────────────────
+   These rules draw Micheon green as a literal rather than from a token,
+   which is right for the default and wrong for anyone who picked another
+   colour — the course hero and the Continue learning button stayed green
+   while the rest of the app turned. Generated from the light rules by
+   scratchpad/gen-accent-coverage.py; the default is untouched. */
+html[data-accent="custom"] .np-profile-button > span {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-equipped-badge {
+  color: var(--np-green);
+}
+
+html[data-accent="custom"] .np-profile-menu-summary > span {
+  background: linear-gradient(145deg, var(--np-green-dark), var(--np-green));
+}
+
+html[data-accent="custom"] .np-course-hero {
+  background: var(--np-green-dark);
+}
+
+html[data-accent="custom"] .np-mini-progress i {
+  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+}
+
+html[data-accent="custom"] .np-answer--correct {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feedback.is-correct {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feedback-next,
+html[data-accent="custom"] .np-primary-button,
+html[data-accent="custom"] .np-mobile-course-button {
+  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+    box-shadow:
+    0 5px 0 var(--np-green),
+    0 12px 20px rgba(41, 144, 53, 0.24);
+}
+
+html[data-accent="custom"] .np-mobile-course-button {
+  box-shadow:
+    0 7px 0 var(--np-green),
+    0 16px 26px rgba(41, 144, 53, 0.28);
+}
+
+html[data-accent="custom"] .np-mobile-course-button:hover {
+  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+    box-shadow:
+    0 8px 0 var(--np-green),
+    0 20px 32px rgba(41, 144, 53, 0.34);
+}
+
+html[data-accent="custom"] .np-feedback-next:active,
+html[data-accent="custom"] .np-primary-button:active,
+html[data-accent="custom"] .np-mobile-course-button:active {
+  box-shadow: 0 2px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-level-badge {
+  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+}
+
+html[data-accent="custom"] .np-feature-host .mastery-card__title {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feature-host .mastery-ring {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feature-host .mastery-ring__value {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feature-host .mastery-progress__fill {
+  background: linear-gradient(90deg, var(--np-green), var(--np-green-dark));
+}
+
+html[data-accent="custom"] .np-feature-host .mastery-card__milestone > p:first-child {
+  color: var(--np-green) !important;
+}
+
+html[data-accent="custom"] .np-shop-hero {
+  background:
+    radial-gradient(circle at 76% -20%, rgba(255, 244, 178, 0.72), transparent 36%),
+    linear-gradient(135deg, #e6f8d9 0%, #c8efb6 58%, var(--np-green-dark) 100%);
+}
+
+html[data-accent="custom"] .np-shop-heading > span {
+  color: var(--np-green);
+}
+
+html[data-accent="custom"] .np-shop-heading small {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-coin-pack > button {
+  box-shadow: 0 4px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-coin-pack > button:hover {
+  background: var(--np-green);
+    box-shadow: 0 6px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-coin-pack > button:active {
+  box-shadow: 0 1px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-premium-card {
+  background:
+    radial-gradient(circle at 88% -24%, rgba(255, 219, 108, 0.28), transparent 38%),
+    linear-gradient(135deg, var(--accent-pressed, var(--np-green)) 0%, var(--np-green) 56%, var(--np-green-dark) 100%);
+}
+
+html[data-accent="custom"] .np-shop-section-heading > span {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-shop-item-art--mint {
+  color: var(--np-green);
+}
+
+html[data-accent="custom"] .np-shop-item-footer > button {
+  box-shadow: 0 3px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-shop-item-footer > button:hover:not(:disabled) {
+  background: var(--np-green);
+}
+
+html[data-accent="custom"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-feature-directory-icon--mint {
+  color: var(--np-green);
+}
+
+html[data-accent="custom"] .np-fluency-track > span {
+  background: linear-gradient(90deg, var(--np-green), var(--np-green-dark));
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-profile-button > span {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-equipped-badge {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-answer--correct {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-feedback.is-correct {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-shop-item-art--mint,
+html[data-accent="custom"] html[data-theme="dark"] .np-feature-directory-icon--mint,
+html[data-accent="custom"] html[data-theme="dark"] .np-curriculum-icon--mint {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-fluency-hours > strong {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-shop-preview-message {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-premium-card {
+  background:
+    radial-gradient(circle at 88% -24%, rgba(255, 219, 108, 0.14), transparent 38%),
+    linear-gradient(135deg, #164b24 0%, #1f6c30 56%, var(--np-green) 100%);
+}
+
+html[data-accent="custom"] .np-social-hero-icon {
+  background: linear-gradient(160deg, var(--np-green-dark), var(--np-green));
+    box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 5px 0 var(--np-green),
+    0 13px 22px rgba(42, 135, 58, 0.21);
+}
+
+html[data-accent="custom"] .np-social-tabs > button.is-active > svg {
+  background: linear-gradient(160deg, var(--np-green-dark), var(--np-green));
+    box-shadow: 0 3px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-preview-notice {
+  color: var(--accent-pressed, var(--np-green));
+}
+
+html[data-accent="custom"] .np-social-primary-button {
+  border: 1px solid var(--np-green);
+    background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+    box-shadow: 0 4px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-primary-button:hover,
+html[data-accent="custom"] .np-social-side-card > button:hover,
+html[data-accent="custom"] .np-social-empty > button:hover {
+  box-shadow: 0 5px 0 var(--np-green), 0 10px 17px rgba(47, 145, 61, 0.15);
+}
+
+html[data-accent="custom"] .np-social-primary-button:active,
+html[data-accent="custom"] .np-social-side-card > button:active,
+html[data-accent="custom"] .np-social-empty > button:active {
+  box-shadow: 0 2px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-avatar--green {
+  background: linear-gradient(145deg, var(--np-green-dark), var(--np-green));
+}
+
+html[data-accent="custom"] .np-social-presence {
+  color: var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-presence i {
+  background: var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-empty > button {
+  border: 1px solid var(--np-green);
+    background: var(--np-green);
+    box-shadow: 0 3px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-side-icon {
+  background: linear-gradient(150deg, var(--np-green-dark), var(--np-green));
+    box-shadow: 0 4px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-side-card > button {
+  border: 1px solid var(--np-green);
+    background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+    box-shadow: 0 4px 0 var(--np-green);
+}
+
+html[data-accent="custom"] .np-social-progress > span {
+  background: linear-gradient(90deg, var(--np-green), var(--np-green-dark));
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-social-private-badge strong {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-social-tabs > button.is-active {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] html[data-theme="dark"] .np-social-preview-notice {
+  color: var(--np-green-dark);
+}
+
+html[data-accent="custom"] .np-notification-filters-head button {
+  color: var(--accent-strong, var(--accent-pressed, var(--np-green)));
+}
+
+html[data-accent="custom"] .np-notification-dot {
+  background: var(--accent, var(--np-green));
 }
