@@ -865,26 +865,35 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
 }
 
 html[data-theme="dark"] .micheon-update-takeover {
-  --install-page: #171a17;
-  --install-surface: #20231f;
-  --install-surface-2: #282c27;
-  --install-surface-3: #3a4038;
-  --install-border: rgba(200, 229, 195, 0.14);
-  --install-text: #f3f7f1;
-  --install-copy: #c0cdbd;
-  --install-muted: #92a18f;
-  --install-accent: #65d466;
-  --install-accent-strong: #86e184;
-  --install-accent-soft: #263c29;
-  --install-shadow: rgba(0, 0, 0, 0.44);
+  /* Slate, not olive. Every one of these was green-tinted — #171a17, #20231f,
+     a green border and green-grey text — while the app around it is
+     #0b0e13 / #161b23 with blue-grey ink. The updater is the last thing you
+     see before the app reopens, so it looked like a different program's
+     installer. Matched to the app's own dark tokens, and the accents point at
+     the accent so a chosen colour carries through here too. */
+  --install-page: #0b0e13;
+  --install-surface: #161b23;
+  --install-surface-2: #1c222c;
+  --install-surface-3: #2a3240;
+  --install-border: rgba(205, 217, 233, 0.16);
+  --install-text: #eef2f8;
+  --install-copy: #cdd5e1;
+  --install-muted: #9aa6b6;
+  --install-accent: var(--accent, #3fd964);
+  --install-accent-strong: var(--accent-hover, #55e278);
+  --install-accent-soft: var(--accent-dim, #17301f);
+  --install-shadow: rgba(0, 0, 0, 0.5);
   color-scheme: dark;
   background:
-    radial-gradient(circle at 50% 41%, rgba(47, 51, 58, 0.72), transparent 56%),
-    linear-gradient(180deg, #191d24, var(--install-page));
+    radial-gradient(circle at 50% 41%, rgba(41, 48, 60, 0.7), transparent 56%),
+    linear-gradient(180deg, #11151c, var(--install-page));
 }
 
 html[data-theme="dark"] .micheon-update-install-card {
-  background: linear-gradient(180deg, #21252c, var(--install-surface));
+  /* Flat, like every other card in the app — it was a shade lighter at the top
+     than the page it sat on, which is the lift that was removed everywhere
+     else. */
+  background: var(--install-surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 0 rgba(0, 0, 0, 0.24), 0 34px 90px var(--install-shadow);
 }
 
@@ -7594,27 +7603,27 @@ html[data-theme="dark"][data-accent="custom"] .guided-session .fs-match-option.i
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session .fs-word-popover-saved {
-  color: var(--fs-accent, var(--accent-ink, var(--np-green)));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session .fs-word-popover-saved {
-  color: var(--fs-accent, var(--accent-ink, var(--np-green)));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session .text-emerald-700 {
-  color: var(--accent-ink, var(--np-green)) !important;
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session .text-emerald-700 {
-  color: var(--accent-ink, var(--np-green)) !important;
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session .text-emerald-600 {
-  color: var(--accent-ink, var(--np-green)) !important;
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session .text-emerald-600 {
-  color: var(--accent-ink, var(--np-green)) !important;
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session .border-emerald-300 {
@@ -7642,11 +7651,11 @@ html[data-theme="dark"][data-accent="custom"] .fs-say {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .fs-say .fs-when-label {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .fs-say .fs-when-label {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .prototype-guided-loading-card {
@@ -8152,7 +8161,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge {
@@ -8971,12 +8980,12 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-input:focus {
   border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+  box-shadow: 0 2px 14px rgba(var(--accent-rgb), 0.3);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-input:focus {
   border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+  box-shadow: 0 2px 14px rgba(var(--accent-rgb), 0.3);
 }
 
 html[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .lesson-cta,
@@ -9333,7 +9342,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover {

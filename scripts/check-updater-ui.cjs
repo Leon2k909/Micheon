@@ -78,7 +78,36 @@ check("the updater has an explicit dark-theme treatment", styles.includes('html[
 check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));
 check("the install takeover keeps the full-screen background calm and neutral", !banner.includes("micheon-update-takeover-glow") && styles.includes("--install-page: #eef0ec;") && styles.includes("linear-gradient(180deg, #f5f6f3 0%, var(--install-page) 100%)") && !styles.includes("background-size: 42px 42px"));
 check("the install takeover avoids expensive decorative blur layers", !banner.includes("blur-[110px]") && !banner.includes("blur-[120px]") && !banner.includes("backdrop-blur-xl"));
-check("the install takeover follows the learner's dark-theme setting", styles.includes('html[data-theme="dark"] .micheon-update-takeover') && styles.includes("--install-accent: #65d466;"));
+check("the install takeover follows the learner's dark-theme setting", styles.includes('html[data-theme="dark"] .micheon-update-takeover'));
+// The takeover is the last thing you see before the app reopens, so it has to
+// look like the app. Its dark palette was olive (#171a17, #20231f, green-grey
+// ink) against a slate app, and its accent was a hardcoded green that no
+// chosen colour could reach.
+{
+  const start = styles.indexOf('html[data-theme="dark"] .micheon-update-takeover {');
+  const block = start < 0 ? "" : styles.slice(start, styles.indexOf("}", start));
+  // The SURFACE tokens only: the accent fallbacks are Micheon green on
+  // purpose, and a comment mentioning the old colours is not a colour.
+  const surfaces = ["page", "surface", "surface-2", "surface-3", "text", "copy", "muted"];
+  const declarations = block.replace(/\/\*[\s\S]*?\*\//g, "");
+  const olive = surfaces
+    // A literal regex, not a built string: "\s" inside a JS string literal is
+    // just "s", so the built version silently matched nothing and this check
+    // passed on any palette at all.
+    .map((name) => {
+      const found = declarations.match(new RegExp(`--install-${name}:\\s*#([0-9a-fA-F]{6})`));
+      return found ? found[1] : null;
+    })
+    .filter(Boolean)
+    .map((hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)))
+    .filter(([r, g, b]) => g > Math.max(r, b) && g - Math.max(r, b) >= 3);
+  check("the install takeover's dark surfaces are slate, not olive", olive.length === 0);
+  check(
+    "a chosen accent reaches the install takeover",
+    /--install-accent:\s*var\(--accent/.test(block)
+      && /--install-accent-strong:\s*var\(--accent/.test(block)
+  );
+}
 check("the install takeover no longer hardcodes the old dark purple shell", !banner.includes('bg-[#0e1710]') && !banner.includes('bg-[#172019]'));
 check("the updater no longer ships legacy purple accents", !/(#7834f7|#a177ff|rgba\(161,\s*119,\s*255)/i.test(banner));
 check("all restart buttons route through one install takeover", updateStatus.includes("UPDATE_INSTALL_REQUEST_EVENT") && card.includes("requestUpdateInstall()") && !card.includes("desktop?.installUpdate?.()"));

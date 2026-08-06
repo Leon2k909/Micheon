@@ -51,7 +51,9 @@ const isBrandGreen = ([r, g, b]) => g > 28 && g - Math.max(r, b) > 10;
  * picks a red accent must not be told their correct answer is red, so these
  * deliberately stay green in every accent and are exempt from the sweep.
  */
-const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|is-right/i;
+// "Locked"/"not started" mean NOT YET EARNED, which is meaning, not brand:
+// painting them the accent made locked achievements look unlocked.
+const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|is-right|is-locked|--locked|is-unearned|not-started|is-disabled/i;
 
 const failures = [];
 let checked = 0;

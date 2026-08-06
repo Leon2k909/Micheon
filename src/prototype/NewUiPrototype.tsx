@@ -71,6 +71,7 @@ import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownVocab, getFluency } from "@/lib/fluency";
 import { activePackProgress, type PackProgress } from "@/lib/packProgress";
+import { useDragScroll } from "@/lib/dragScroll";
 import {
   NOTIFICATION_KINDS,
   NOTIFICATION_PREFS_EVENT,
@@ -479,8 +480,12 @@ function Sidebar({
     window.addEventListener("pointercancel", finish);
   };
 
+  // Hold left click and pull, the way the old build scrolled.
+  const sidebarRef = useRef<HTMLElement | null>(null);
+  useDragScroll(sidebarRef);
+
   return (
-    <aside className={`np-sidebar${brandLayoutClass}`}>
+    <aside className={`np-sidebar${brandLayoutClass}`} ref={sidebarRef}>
       <BrandMark />
       <nav aria-label="Prototype navigation" className="np-side-nav">
         {navigationItems.map((item) => {

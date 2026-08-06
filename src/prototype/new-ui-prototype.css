@@ -112,7 +112,17 @@
   min-height: var(--app-h, 100dvh);
 }
 
+/* Grab-to-scroll. The cursor only says "grab" while a pull is happening, and
+   text selection is off mid-pull so dragging does not highlight the labels. */
+.np-sidebar.is-drag-scrolling {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .np-sidebar {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   position: sticky;
   top: 0;
   display: flex;
@@ -1401,6 +1411,23 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     2px 0 8px rgba(224, 255, 231, 0.26);
 }
 
+/* The filled part of the hero bar is INK on the accent, not a tint of it.
+   It was a near-white gradient with a green cast; re-pointed at a cool accent
+   that became a muted blue-grey and read as silver. --accent-text is picked by
+   contrast, so it is white on a dark accent and near-black on a light one —
+   never a shade of the bar it sits in. Scoped through .np-course-hero so it
+   outranks the generated accent rules that sit at the end of this file. */
+html[data-accent="custom"] .np-course-hero .np-progress-track--hero > span,
+html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span {
+  border-color: color-mix(in srgb, var(--accent-text) 45%, transparent);
+  background: var(--accent-text);
+}
+
+html[data-accent="custom"] .np-course-hero .np-progress-track--hero > span::after,
+html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span::after {
+  background: transparent;
+}
+
 .np-progress-track--hero > span::after {
   position: absolute;
   top: 2px;
@@ -2273,6 +2300,31 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   color: var(--np-muted);
   font-size: var(--np-type-caption);
   font-weight: 700;
+}
+
+/* A locked achievement is one you have NOT earned. It has to read as dimmer
+   and quieter than the ones you have — so it stays neutral whatever accent is
+   chosen, rather than being painted the same colour as an unlocked one and
+   losing its own label into the fill. Scoped past the generated accent rules
+   at the end of this file. */
+html[data-accent="custom"] .np-achievement.is-locked,
+html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked {
+  border-color: var(--np-line);
+  background: var(--np-surface-soft, var(--np-surface));
+  box-shadow: none;
+}
+
+html[data-accent="custom"] .np-achievement.is-locked > small,
+html[data-accent="custom"] .np-achievement.is-locked > strong,
+html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked > small,
+html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked > strong {
+  color: var(--np-text-3, var(--text-3));
+}
+
+html[data-accent="custom"] .np-achievement.is-locked .np-achievement-visual,
+html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achievement-visual {
+  filter: grayscale(1);
+  opacity: 0.6;
 }
 
 .np-achievement-count {
@@ -8355,7 +8407,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-level-copy > small {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-level-card > small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-desktop-search.is-active {
@@ -8587,15 +8639,15 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-preview-message p {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-preview-message > button {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-preview-message > button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-coin-pack:hover {
@@ -8824,7 +8876,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > small {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
@@ -8832,11 +8884,11 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > strong {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > p {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-side-nav button:hover {
@@ -8893,7 +8945,7 @@ html[data-theme="dark"][data-accent="custom"] .np-level-badge {
 
 html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
 html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-achievement {
@@ -8916,7 +8968,7 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__mi
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current > span:not(:first-child) {
-  color: var(--accent-ink, var(--np-green)) !important;
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring {
@@ -8935,14 +8987,6 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__va
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__label > span:last-child {
-  color: var(--accent-ink, var(--np-green));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:first-child {
-  color: var(--accent-ink, var(--np-green)) !important;
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:not(:first-child) {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -8992,7 +9036,7 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours {
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
@@ -9001,7 +9045,7 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-icon-button:hover,
@@ -9035,15 +9079,15 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message {
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message p {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message > button {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-preview-message > button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-premium-card {
@@ -9129,19 +9173,19 @@ html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice {
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-preview-notice small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-preview-notice > button {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-preview-notice > button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice > button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-primary-button {
@@ -9194,12 +9238,12 @@ html[data-theme="dark"][data-accent="custom"] .np-social-empty > button:active {
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-social-search:focus-within {
   border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+  box-shadow: 0 2px 14px rgba(var(--accent-rgb), 0.28);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-search:focus-within {
   border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+  box-shadow: 0 2px 14px rgba(var(--accent-rgb), 0.28);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-friend-row:hover {
@@ -9358,7 +9402,7 @@ html[data-theme="dark"][data-accent="custom"] .np-social-side-card--target {
 
 html[data-theme="dark"][data-accent="custom"] .np-social-search > button,
 html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice > button {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-friend-row:hover {
@@ -9377,7 +9421,7 @@ html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice {
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-preview-notice small {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-notification-filters-head button {
