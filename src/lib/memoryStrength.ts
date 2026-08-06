@@ -162,6 +162,39 @@ export function recordPermanent(now = Date.now(), prior?: GradeRecord): GradeRec
 }
 
 /** True when a known item's scheduled review has arrived. Permanent items are never due. */
+/**
+ * How much of an item you can still be assumed to recall, 0-1.
+ *
+ * A word learned once and never seen again is not worth the same as one
+ * reviewed last week, but the progress numbers counted both as a whole word
+ * for ever — so the totals only ever went up, which is not how memory works.
+ * On a real profile half of everything counted as "known" was more than a
+ * week past its review date and still counted at full value.
+ *
+ * The curve:
+ *  - inside its interval, an item is worth its full 1.0;
+ *  - past due it decays by halves, at a pace set by the interval it had
+ *    earned — a word on the 180-day rung fades far more slowly than one on
+ *    the 1-day rung, which is the whole point of the ladder;
+ *  - it never reaches zero. Forgetting is not deletion: relearning something
+ *    you once knew is much faster than meeting it new, and the floor rises
+ *    with how many times you have recalled it.
+ *
+ * Permanent items are exempt by definition, and legacy records with no
+ * schedule stay whole rather than being punished for missing data.
+ */
+export function recallWeight(record: GradeRecord | undefined, now = Date.now()): number {
+  if (!record || record.lastGrade !== "know") return 0;
+  if (record.permanent) return 1;
+  const { successes, intervalDays, dueAtMs } = normalize(record);
+  if (dueAtMs == null) return 1;
+  const overdueDays = (now - dueAtMs) / DAY_MS;
+  if (overdueDays <= 0) return 1;
+  const floor = Math.min(0.8, 0.42 + 0.08 * Math.max(0, successes));
+  const halfLife = Math.max(14, Math.max(1, intervalDays) * 1.5);
+  return floor + (1 - floor) * Math.pow(0.5, overdueDays / halfLife);
+}
+
 export function isDueForReview(record: GradeRecord | undefined, now = Date.now()): boolean {
   if (!record || record.lastGrade !== "know" || record.permanent) return false;
   const { dueAtMs } = normalize(record);

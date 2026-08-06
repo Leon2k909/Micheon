@@ -68,7 +68,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
-import { countKnownVocab, getFluency } from "@/lib/fluency";
+import { countFadingVocab, countKnownVocab, getFluency } from "@/lib/fluency";
 import {
   NOTIFICATION_KINDS,
   NOTIFICATION_PREFS_EVENT,
@@ -1276,6 +1276,8 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
 function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab: number }) {
   const [revision, setRevision] = useState(0);
   const fluency = getFluency(vocab);
+  // Recomputed with the revision counter, so finishing a lesson updates it.
+  const fading = useMemo(() => countFadingVocab(profile), [profile, revision]);
 
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1);
@@ -1318,6 +1320,11 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           <span>{fluency.toFluent.toLocaleString()} words and phrases to go</span>
           <span>Fluent target: 5,000</span>
         </div>
+        {fading > 0 && (
+          <p className="np-fluency-fading">
+            {fading.toLocaleString()} {fading === 1 ? "item is" : "items are"} fading. A review brings {fading === 1 ? "it" : "them"} back.
+          </p>
+        )}
       </div>
       <div className="np-fluency-hours">
         <span aria-hidden="true"><Clock3 /></span>

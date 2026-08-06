@@ -7653,3 +7653,11 @@ html[data-accent="custom"] .np-side-nav button.is-active .np-nav-visual {
 html[data-accent="custom"] .np-mobile-nav button.is-active {
   color: var(--np-green-dark);
 }
+
+/* A falling number needs a reason attached to it, or it reads as a fault. */
+.np-fluency-fading {
+  margin-top: 8px;
+  font-size: var(--np-type-caption);
+  font-weight: 750;
+  color: var(--np-muted);
+}

@@ -1,5 +1,6 @@
 import { loadScopedJson, getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getMasteredCount } from "@/lib/mastery";
+import { recallWeight, type GradeRecord } from "@/lib/memoryStrength";
 
 // The per-item review/completion state (COMPLETED_KEY in guided_learning_session):
 // id -> { lastGrade, ... }. An item graded "know" is something the learner has
@@ -48,12 +49,40 @@ export function countKnownVocab(user: UserProfile | null = getAuthUser(), extern
     if (Array.isArray(raw)) {
       known = raw.length; // legacy: a plain list of completed ids (all "known")
     } else if (raw && typeof raw === "object") {
-      for (const rec of Object.values(raw)) if ((rec as any)?.lastGrade === "know") known += 1;
+      // Each item is worth what you can still be assumed to recall, not a
+      // flat one for ever. Memory fades, so the total can fall as well as
+      // rise — and reviewing brings it straight back up.
+      for (const rec of Object.values(raw)) known += recallWeight(rec as GradeRecord);
     }
   } catch {
     /* ignore */
   }
-  return known + getMasteredCount() + Math.max(0, externalWords || 0);
+  // Hand-mastered words and anything learned outside the app carry no review
+  // schedule, so there is nothing to fade them against; they stay whole
+  // rather than being decayed on a guess.
+  return Math.round(known) + getMasteredCount() + Math.max(0, externalWords || 0);
+}
+
+/**
+ * How much of what you know is currently slipping.
+ *
+ * A number that falls without explanation reads as a bug or a punishment.
+ * This is what the screen shows instead: how many items have started to fade,
+ * so the drop comes with the thing that fixes it.
+ */
+export function countFadingVocab(user: UserProfile | null = getAuthUser()): number {
+  try {
+    const raw = loadScopedJson<any>(REVIEW_KEY, {}, user);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return 0;
+    let fading = 0;
+    for (const rec of Object.values(raw)) {
+      const weight = recallWeight(rec as GradeRecord);
+      if (weight > 0 && weight < 0.9) fading += 1;
+    }
+    return fading;
+  } catch {
+    return 0;
+  }
 }
 
 export function getFluency(vocab: number) {
