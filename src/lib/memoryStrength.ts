@@ -195,6 +195,42 @@ export function recallWeight(record: GradeRecord | undefined, now = Date.now()):
   return floor + (1 - floor) * Math.pow(0.5, overdueDays / halfLife);
 }
 
+export type RecallDetail = {
+  /** how much of the item still counts, 0-1 */
+  weight: number;
+  /** worth less than a whole item, and not exempt */
+  fading: boolean;
+  /** days past the scheduled review; 0 when it is not overdue yet */
+  overdueDays: number;
+  /** days it takes to lose half the distance to the floor */
+  halfLifeDays: number;
+  /** the lowest this item can ever fall to */
+  floor: number;
+  /** why it cannot fade, when it cannot */
+  exempt: "permanent" | "unscheduled" | null;
+};
+
+/**
+ * The same curve as recallWeight, with its workings exposed.
+ *
+ * Any number the app shows a learner should be one they can interrogate — the
+ * tracker uses this to say, per item, how much it is currently worth, how far
+ * past its review it is, and how far it could ever fall. A total that quietly
+ * drops with no way to see why is worse than one that never drops at all.
+ */
+export function recallDetail(record: GradeRecord | undefined, now = Date.now()): RecallDetail {
+  const bare = { weight: 0, fading: false, overdueDays: 0, halfLifeDays: 0, floor: 0, exempt: null } as RecallDetail;
+  if (!record || record.lastGrade !== "know") return bare;
+  if (record.permanent) return { ...bare, weight: 1, exempt: "permanent" };
+  const { successes, intervalDays, dueAtMs } = normalize(record);
+  if (dueAtMs == null) return { ...bare, weight: 1, exempt: "unscheduled" };
+  const floor = Math.min(0.8, 0.42 + 0.08 * Math.max(0, successes));
+  const halfLifeDays = Math.max(14, Math.max(1, intervalDays) * 1.5);
+  const overdueDays = Math.max(0, (now - dueAtMs) / DAY_MS);
+  const weight = recallWeight(record, now);
+  return { weight, fading: weight < 1, overdueDays, halfLifeDays, floor, exempt: null };
+}
+
 export function isDueForReview(record: GradeRecord | undefined, now = Date.now()): boolean {
   if (!record || record.lastGrade !== "know" || record.permanent) return false;
   const { dueAtMs } = normalize(record);

@@ -191,6 +191,12 @@ export function isDefaultAccent(hex: string = getAccentColour()): boolean {
  * !important so it cannot lose to the theme blocks' higher specificity, is
  * what actually reaches the buttons.
  */
+/** "94, 199, 96" — ready to drop into rgba(var(--accent-rgb), 0.4). */
+function accentChannels(hex: string): string {
+  const { r, g, b } = toRgb(hex);
+  return `${r}, ${g}, ${b}`;
+}
+
 const ACCENT_STYLE_ID = "micheon-accent-overrides";
 const ACCENT_SCOPES = [
   ":root",
@@ -229,6 +235,13 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     ["--np-green", shades.accent],
     ["--np-green-dark", shades.accentHover],
     ["--np-green-soft", shades.accentDim],
+    // Bare channels, so a translucent gradient can be built from the accent.
+    // The course hero's wash fades green to nothing across the artwork; it
+    // needs the colour without an alpha baked in, which a hex token cannot
+    // give it — which is why that gradient stayed green while everything
+    // around it turned.
+    ["--accent-rgb", accentChannels(shades.accent)],
+    ["--accent-hover-rgb", accentChannels(shades.accentHover)],
     ["--fs-yellow", shades.accent],
     ["--fs-yellow-hover", shades.accentHover],
     ["--fs-purple", shades.accent],

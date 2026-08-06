@@ -5,8 +5,37 @@
     <link rel="icon" type="image/png" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Micheon</title>
+    <script>
+      /*
+       * Paint the theme BEFORE the first frame.
+       *
+       * The body used to carry a hardcoded light background and the theme was
+       * only applied once the React bundle had parsed and run — so every cold
+       * start and every page that suspended flashed white first. This is
+       * deliberately inline and blocking: it must finish before the browser
+       * paints anything, which a module script cannot promise.
+       *
+       * Keep it in step with src/lib/theme.ts: same key, same "system"
+       * handling, same dark default.
+       */
+      (function () {
+        try {
+          var stored = localStorage.getItem("gl-theme");
+          var preference = stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
+          var theme = preference === "system"
+            ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+            : preference;
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.style.background = theme === "dark" ? "#0b0e13" : "#eff0ed";
+        } catch (e) {
+          /* private mode, or storage disabled: fall back to the app default */
+          document.documentElement.setAttribute("data-theme", "dark");
+          document.documentElement.style.background = "#0b0e13";
+        }
+      })();
+    </script>
   </head>
-  <body style="margin:0;background:#eff0ed">
+  <body style="margin:0;background:inherit">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

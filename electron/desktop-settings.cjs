@@ -8,7 +8,11 @@ const DEFAULT_DESKTOP_SETTINGS = Object.freeze({
   // The RESOLVED theme, remembered only so the native window can open in the
   // right colour. The learner's actual preference (which may be "system")
   // lives in the synced profile store; this is a paint hint, not the setting.
-  theme: "light",
+  //
+  // Dark, to match the app's own default. While this said "light" the native
+  // window opened white and the page painted dark over it — a white flash on
+  // every cold start for anyone who had never opened Appearance.
+  theme: "dark",
   // How updates arrive. "auto" downloads and installs on quit as before;
   // "ask" checks but waits to be told; "manual" only checks when asked.
   updateMode: "auto",

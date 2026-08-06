@@ -114,6 +114,35 @@ if (!/countFadingVocab\(profile\)/.test(home) || !/A review brings/.test(home)) 
   failures.push("the outlook does not tell the learner why the number moved, or how to move it back");
 }
 
+// ── the tracker shows the decay rather than contradicting it ───────────────
+//
+// The one screen named after tracking used to print the raw tally, so it
+// disagreed with the dashboard by hundreds of items with nothing on screen to
+// explain the gap. A number that falls has to be inspectable where it lives.
+const tracker = fs.readFileSync(path.join(root, "src/components/lab/VocabTracker.tsx"), "utf8");
+if (!/counting \+= detail\.weight/.test(tracker) || !/counts\.counting/.test(tracker)) {
+  failures.push("the tracker headline still counts a flat one per item, so it contradicts every other screen");
+}
+if (!/\{ key: "fading", label: "Fading" \}/.test(tracker)) {
+  failures.push("there is no way to filter to the fading items, so the backlog cannot be cleared from here");
+}
+// Declared AND rendered — a component nobody mounts explains nothing.
+if (!/function HowCountingWorks\b/.test(tracker) || !/<HowCountingWorks\b/.test(tracker)) {
+  failures.push("nothing on the tracker explains how the count works — a total that falls unexplained reads as a bug");
+}
+for (const [what, needle] of [
+  ["the review ladder", /The review ladder\./],
+  ["why the total can fall", /Why the total can fall\./],
+  ["the floor", /It never falls to nothing\./],
+  ["how to undo it", /One review brings it all back\./],
+  ["what is exempt", /What never fades\./],
+]) {
+  if (!needle.test(tracker)) failures.push(`the explainer never covers ${what}`);
+}
+if (!/decay\.weight\.toFixed\(2\)/.test(tracker) || !/decay\.halfLifeDays/.test(tracker)) {
+  failures.push("an individual row never says what it is currently worth, or why");
+}
+
 if (failures.length) {
   console.error("FAIL check-memory-decay");
   failures.forEach((line) => console.error("  " + line));

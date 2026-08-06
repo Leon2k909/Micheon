@@ -67,9 +67,46 @@ if (!/getDesktopSettings\(\)\.theme === "dark"/.test(electron)) {
   failures.push("the Electron window still opens light — dark mode flashes white on every launch");
 }
 const settings = read("electron/desktop-settings.cjs");
-if (!/THEMES/.test(settings) || !/theme: "light"/.test(settings)) {
+if (!/THEMES/.test(settings) || !/^\s*theme: "(light|dark)",/m.test(settings)) {
   failures.push("desktop-settings.cjs does not persist (or validate) the paint hint");
 }
+// The two defaults have to agree. This used to pin the literal "light", which
+// is how it survived dark becoming the app default and let the native window
+// keep opening white under a dark page — the exact flash it exists to stop.
+const themeLib = read("src/lib/theme.ts");
+const appDefault = (themeLib.match(/stored === "system" \? stored : "(light|dark)"/) || [])[1];
+const paintDefault = (settings.match(/^\s*theme: "(light|dark)",/m) || [])[1];
+if (appDefault && paintDefault && appDefault !== paintDefault) {
+  failures.push(`the app defaults to ${appDefault} but the native window opens ${paintDefault} — that is a flash of the wrong theme on every cold start`);
+}
+// ── the page itself must not flash either ────────────────────────────────
+//
+// The native window opening dark only helps if the DOCUMENT is dark by the
+// first frame. The body used to carry a hardcoded light background and the
+// theme was applied from the React bundle, so every cold start and every
+// suspended route painted white first.
+const html = read("index.html");
+const head = html.slice(0, html.indexOf("</head>"));
+if (!/localStorage\.getItem\("gl-theme"\)/.test(head)) {
+  failures.push("index.html does not read the stored theme before first paint");
+}
+if (!/document\.documentElement\.setAttribute\("data-theme"/.test(head)) {
+  failures.push("nothing sets data-theme before the bundle loads, so the page paints untheme'd first");
+}
+// A module script is deferred by definition, so it cannot beat the first
+// paint however early in <head> it sits.
+const prePaint = (head.match(/<script\b[^>]*>[\s\S]*?<\/script>/g) || [])
+  .find((tag) => tag.includes("gl-theme")) || "";
+if (/\btype\s*=\s*["']module["']/.test(prePaint) || /\b(defer|async)\b/.test(prePaint.split(">")[0])) {
+  failures.push("the pre-paint script is deferred (module/defer/async), so it cannot beat the first paint");
+}
+if (/<body[^>]*background:\s*#(?!.*inherit)[0-9a-fA-F]{6}/.test(html)) {
+  failures.push("the body still hardcodes a background colour, which paints before any theme is known");
+}
+if (!/prefers-color-scheme: dark/.test(head)) {
+  failures.push("the pre-paint script cannot resolve a \"system\" preference, so system-dark users still flash light");
+}
+
 const preload = read("electron/preload.cjs");
 if (!/setDesktopTheme/.test(preload)) {
   failures.push("the preload bridge cannot pass the theme to the main process");

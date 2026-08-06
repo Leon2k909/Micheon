@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { CustomContentEditor } from "@/components/lab/CustomContentEditor";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, progressEntryForId, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
-import { strengthInfo, setStrengthLevel, recordPermanent, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
+import { strengthInfo, setStrengthLevel, recordPermanent, recallDetail, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { itemDifficulty, type AbilityBand } from "@/lib/ability";
@@ -23,7 +23,7 @@ import {
 } from "@/lib/conversationPriority";
 
 type Part = Record<string, any>;
-type FilterKey = "all" | "known" | "struggle" | "new";
+type FilterKey = "all" | "known" | "fading" | "struggle" | "new";
 type ItemTypeFilter = "all" | "phrases" | "vocab";
 type UsefulnessFilter = "all" | ConversationUsefulness;
 
@@ -115,6 +115,9 @@ export function prepareVocabTrackerData(apiParts: Record<string, Part>): Prepare
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "known", label: "Known" },
+  // Everything you learned but are now past due on, so the backlog the totals
+  // are quietly discounting is something you can actually sit down and clear.
+  { key: "fading", label: "Fading" },
   { key: "struggle", label: "Struggling" },
   { key: "new", label: "To learn" },
 ];
@@ -158,8 +161,13 @@ function recordFor(grades: GradeStore, id: string, aliases: string[] = []): Grad
 
 /**
  * Memory strength meter: 5 pips fill as the spaced-repetition ladder climbs
- * (1d -> 3d -> 7d -> 14d -> 30d -> 90d review intervals). "Due" means the item
+ * (1d -> 3d -> 10d -> 30d -> 180d review intervals). "Due" means the item
  * is about to return to lessons for review.
+ *
+ * The pips are the rung you reached; the "fading" chip beside them is what the
+ * item is worth TODAY, which are different things — you can sit on the top rung
+ * and still be worth 0.7 of a word if you have not seen it in a year. Both are
+ * shown because only the second one explains the totals.
  *
  * Each pip is clickable: jump straight to that rung (e.g. "I already know
  * this cold, put me at Solid" or "I clicked too far, back to Learning")
@@ -175,6 +183,7 @@ function StrengthMeter({
   onSetPermanent: () => void;
 }) {
   const s = strengthInfo(record);
+  const decay = recallDetail(record);
   const struggling = record?.lastGrade === "struggle";
   return (
     <div className="mt-1 flex items-center gap-1.5">
@@ -232,10 +241,99 @@ function StrengthMeter({
           {ui("due for review")}
         </span>
       )}
+      {/* What this item is actually contributing to your totals, and why it is
+          less than one — stated on the row rather than left to be inferred. */}
+      {decay.fading && (
+        <span
+          className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-600"
+          title={uiIsGerman()
+            ? `${Math.round(decay.overdueDays)} Tage überfällig. Halbwertszeit ${Math.round(decay.halfLifeDays)} Tage, Minimum ${decay.floor.toFixed(2)}. Eine Wiederholung setzt es auf 1,00 zurück.`
+            : `${Math.round(decay.overdueDays)} days overdue. Half-life ${Math.round(decay.halfLifeDays)} days, floor ${decay.floor.toFixed(2)}. One review puts it back to 1.00.`}
+        >
+          {ui("fading")} · {ui("counts as")} {decay.weight.toFixed(2)}
+        </span>
+      )}
       {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
         <span className="text-[10px] font-bold text-[var(--text-3)]">
           {ui("review in")} {s.dueInDays} {ui("days short")}
         </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The rules behind every number on this screen, in the learner's own words.
+ *
+ * A total that goes down needs to be explainable on the spot, or it reads as a
+ * bug. This panel is the one place that states the ladder, the fade, the floor
+ * and the exemptions plainly — and it links straight to the fading items, so
+ * reading about the backlog and clearing it are the same click.
+ */
+function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFading: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ladder = REVIEW_INTERVALS_DAYS.join(" → ");
+  return (
+    <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="text-sm font-black text-[var(--text-1)] underline decoration-dotted underline-offset-4"
+        >
+          {ui("How this count works")}
+        </button>
+        {fading > 0 && (
+          <p className="text-xs font-bold text-[var(--text-2)]">
+            {uiIsGerman()
+              ? `${fading.toLocaleString()} ${fading === 1 ? "Eintrag verblasst" : "Einträge verblassen"} gerade.`
+              : `${fading.toLocaleString()} ${fading === 1 ? "item is" : "items are"} fading right now.`}
+            {" "}
+            <button type="button" onClick={onShowFading} className="font-black text-[var(--accent)] underline underline-offset-2">
+              {ui("Show them")}
+            </button>
+          </p>
+        )}
+      </div>
+      {open && (
+        <div className="mt-3 space-y-2 text-xs font-semibold leading-relaxed text-[var(--text-2)]">
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("The review ladder.")}</span>{" "}
+            {uiIsGerman()
+              ? `Jede richtige Antwort schiebt einen Eintrag eine Stufe hoch, und die nächste Wiederholung rückt weiter weg: ${ladder} Tage. Fünfmal sicher abgerufen heißt ein halbes Jahr Ruhe.`
+              : `Each correct recall moves an item up a rung, and pushes its next review further out: ${ladder} days. Five clean recalls buys it half a year off.`}
+          </p>
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("Why the total can fall.")}</span>{" "}
+            {uiIsGerman()
+              ? "Innerhalb seines Abstands zählt ein Eintrag voll. Ist die Wiederholung überfällig, verblasst er: Er verliert alle (Abstand × 1,5) Tage — mindestens aber alle 14 Tage — die Hälfte des Abstands zu seinem Minimum. Was auf der 180-Tage-Stufe steht, verblasst also viel langsamer als etwas frisch Gelerntes."
+              : "Inside its interval an item counts whole. Once its review is overdue it starts fading: every (interval × 1.5) days — and never faster than once a fortnight — it loses half the distance down to its floor. Something on the 180-day rung fades far more slowly than something you met last week."}
+          </p>
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("It never falls to nothing.")}</span>{" "}
+            {uiIsGerman()
+              ? "Vergessen ist kein Löschen — etwas wieder aufzufrischen geht viel schneller, als es neu zu lernen. Der Boden steigt mit jedem sicheren Abruf: 0,50 nach einem, 0,66 nach dreien, 0,80 nach fünfen."
+              : "Forgetting is not deletion — relearning something you once knew is far quicker than meeting it new. The floor rises with every clean recall: 0.50 after one, 0.66 after three, 0.80 after five."}
+          </p>
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("One review brings it all back.")}</span>{" "}
+            {uiIsGerman()
+              ? "Ein einziger richtiger Abruf setzt einen Eintrag sofort auf seinen vollen Wert zurück und schiebt ihn eine Stufe hoch. Verblassen ist eine Einschätzung, keine Strafe."
+              : "A single correct recall puts an item straight back to its full value and moves it up a rung. Fading is an estimate, not a punishment."}
+          </p>
+          <p>
+            <span className="font-black text-[var(--text-1)]">{ui("What never fades.")}</span>{" "}
+            {uiIsGerman()
+              ? "Mit dem Stern markierte Einträge, Wörter, die du von Hand als gemeistert gesetzt hast, und alles, was du außerhalb der App gelernt hast: Sie haben keinen Wiederholungsplan, gegen den man sie messen könnte, und bleiben deshalb ganz."
+              : "Starred items, words you marked mastered by hand, and anything you told the app you already knew from elsewhere. They carry no review schedule to measure against, so they stay whole rather than being decayed on a guess."}
+          </p>
+          <p className="text-[var(--text-3)]">
+            {uiIsGerman()
+              ? "Dieselbe Zahl steht auf der Startseite, im Profil und im Fortschrittsring der Spiele — sie stimmen jetzt alle überein."
+              : "This is the same number your dashboard, profile and games mastery ring use — they all agree now."}
+          </p>
+        </div>
       )}
     </div>
   );
@@ -393,16 +491,26 @@ export function VocabTracker({
     let struggle = 0;
     let fresh = 0;
     let due = 0;
+    let fading = 0;
+    // What the rest of the app actually counts: each learned item is worth
+    // what you can still be assumed to recall, not a flat one for ever. The
+    // tracker used to show the raw tally here, so it disagreed with the
+    // dashboard by hundreds of words with nothing on screen to explain it.
+    let counting = 0;
     for (const item of catalog) {
       const s = statusForId(grades, item.id, item.aliases);
       if (s === "known") {
         known += 1;
-        if (strengthInfo(recordFor(grades, item.id, item.aliases)).due) due += 1;
+        const record = recordFor(grades, item.id, item.aliases);
+        const detail = recallDetail(record);
+        counting += detail.weight;
+        if (detail.fading) fading += 1;
+        if (strengthInfo(record).due) due += 1;
       }
       else if (s === "struggle") struggle += 1;
       else fresh += 1;
     }
-    return { known, struggle, new: fresh, due, total: catalog.length };
+    return { known, counting: Math.round(counting), fading, struggle, new: fresh, due, total: catalog.length };
   }, [catalog, grades]);
 
   const filtered = useMemo(() => {
@@ -418,7 +526,12 @@ export function VocabTracker({
     }
     const matches = catalog.filter((item) => {
       const status = statusForId(grades, item.id, item.aliases);
-      if (filter !== "all" && status !== filter) return false;
+      // Fading is a slice of Known rather than a status of its own — these are
+      // items you did learn, sorted so the most faded lead.
+      if (filter === "fading") {
+        if (status !== "known") return false;
+        if (!recallDetail(recordFor(grades, item.id, item.aliases)).fading) return false;
+      } else if (filter !== "all" && status !== filter) return false;
       if (itemTypeFilter === "phrases" && item.kind === "vocab") return false;
       if (itemTypeFilter === "vocab" && item.kind !== "vocab") return false;
       const usefulness = priorityIndex.get(item)?.info.key;
@@ -574,10 +687,19 @@ export function VocabTracker({
             {ui("Review what you know, mark struggles, or reset items back to learn again.")}
           </p>
         </div>
-        <div className="flex gap-2 text-center">
+        <div className="flex flex-wrap gap-2 text-center">
           <div className="rounded-2xl bg-[var(--success-bg)] px-3 py-2">
-            <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.known}</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">{ui("known")}</p>
+            <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.counting.toLocaleString()}</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">{ui("counting now")}</p>
+            {counts.counting !== counts.known && (
+              <p className="mt-0.5 text-[10px] font-bold text-[var(--success-text)] opacity-60">
+                {ui("of")} {counts.known.toLocaleString()} {ui("learned")}
+              </p>
+            )}
+          </div>
+          <div className="rounded-2xl bg-amber-500/10 px-3 py-2">
+            <p className="text-lg font-black leading-none text-amber-600">{counts.fading.toLocaleString()}</p>
+            <p className="mt-1 text-[10px] font-black text-amber-600 opacity-80">{ui("fading")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--accent-dim)] px-3 py-2">
             <p className="text-lg font-black leading-none text-[var(--accent)]">{counts.due}</p>
@@ -593,6 +715,8 @@ export function VocabTracker({
           </div>
         </div>
       </div>
+
+      <HowCountingWorks fading={counts.fading} onShowFading={() => { setFilter("fading"); resetList(); }} />
 
       <CustomContentEditor />
 
