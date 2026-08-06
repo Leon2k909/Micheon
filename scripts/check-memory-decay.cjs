@@ -130,14 +130,31 @@ if (!/\{ key: "fading", label: "Fading" \}/.test(tracker)) {
 if (!/function HowCountingWorks\b/.test(tracker) || !/<HowCountingWorks\b/.test(tracker)) {
   failures.push("nothing on the tracker explains how the count works — a total that falls unexplained reads as a bug");
 }
+// The explainer has to answer the learner's questions, not describe the
+// algorithm. The first version of this listed intervals, half-lives, floors
+// and a formula — accurate, and Leon's verdict was "i dont understand it
+// myself". So: the four things a reader actually needs, and a ban on the
+// vocabulary that made it unreadable.
 for (const [what, needle] of [
-  ["the review ladder", /The review ladder\./],
-  ["why the total can fall", /Why the total can fall\./],
-  ["the floor", /It never falls to nothing\./],
-  ["how to undo it", /One review brings it all back\./],
-  ["what is exempt", /What never fades\./],
+  ["why the number can go down", /can go down as well as up/],
+  ["that a review restores it", /counts fully again/],
+  ["that nothing reaches zero", /nothing ever falls to zero/],
+  ["what never fades", /Never fades:/],
+  ["how fading relates to due", /Same items, just later/],
+  ["a worked example", /For example: you had/],
 ]) {
   if (!needle.test(tracker)) failures.push(`the explainer never covers ${what}`);
+}
+// Jargon that only makes sense if you already know how the thing works.
+for (const [term, pattern] of [
+  ["review intervals as a ladder of days", /1 → 3 → 10 → 30 → 180/],
+  ["the half-life formula", /interval × 1\.5|half the distance/],
+  ["\"rung\"", /rungs?/],
+  ["the floor as a bare number", /0\.50 after one|floor rises/],
+]) {
+  if (pattern.test(tracker)) {
+    failures.push(`the explainer is describing the algorithm again — it mentions ${term}`);
+  }
 }
 // In a unit a learner reads. "counts as 0.84" was accurate and meaningless —
 // 0.84 of what? — so the row states a percentage with the days behind it.
@@ -155,9 +172,7 @@ if (!/decay\.halfLifeDays/.test(tracker) || !/decay\.floor/.test(tracker)) {
 if (!/s\.due && !decay\.fading/.test(tracker)) {
   failures.push("a row can show both 'due for review' and a fading figure, which reads as two separate problems");
 }
-if (!/Due and fading are the same backlog\./.test(tracker)) {
-  failures.push("nothing explains how fading relates to due for review");
-}
+
 
 if (failures.length) {
   console.error("FAIL check-memory-decay");

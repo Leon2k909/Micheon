@@ -305,47 +305,41 @@ function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFadi
         )}
       </div>
       {open && (
-        <div className="mt-3 space-y-2 text-xs font-semibold leading-relaxed text-[var(--text-2)]">
+        <div className="mt-3 space-y-2.5 text-xs font-semibold leading-relaxed text-[var(--text-2)]">
+          {/* Written for someone who has never heard of spaced repetition. The
+              previous version explained the algorithm — intervals, half-lives,
+              floors — which is what I needed to build it, not what anyone needs
+              to read it. Four short answers to the four questions actually
+              being asked, and one concrete example instead of a formula. */}
           <p>
-            <span className="font-black text-[var(--text-1)]">{ui("The review ladder.")}</span>{" "}
             {uiIsGerman()
-              ? `Jede richtige Antwort schiebt einen Eintrag eine Stufe hoch, und die nächste Wiederholung rückt weiter weg: ${ladder} Tage. Fünfmal sicher abgerufen heißt ein halbes Jahr Ruhe.`
-              : `Each correct recall moves an item up a rung, and pushes its next review further out: ${ladder} days. Five clean recalls buys it half a year off.`}
+              ? "Diese Zahl schätzt, woran du dich JETZT erinnerst — nicht, was du irgendwann einmal gesehen hast."
+              : "This number is an estimate of what you'd remember right now — not a tally of everything you have ever seen."}
           </p>
           <p>
-            <span className="font-black text-[var(--text-1)]">{ui("Why the total can fall.")}</span>{" "}
             {uiIsGerman()
-              ? "Innerhalb seines Abstands zählt ein Eintrag voll. Ist die Wiederholung überfällig, verblasst er: Er verliert alle (Abstand × 1,5) Tage — mindestens aber alle 14 Tage — die Hälfte des Abstands zu seinem Minimum. Was auf der 180-Tage-Stufe steht, verblasst also viel langsamer als etwas frisch Gelerntes."
-              : "Inside its interval an item counts whole. Once its review is overdue it starts fading: every (interval × 1.5) days — and never faster than once a fortnight — it loses half the distance down to its floor. Something on the 180-day rung fades far more slowly than something you met last week."}
+              ? "Was du gerade gelernt hast, zählt voll. Was du lange nicht gesehen hast, zählt weniger, weil du davon wahrscheinlich weniger behalten hast. Deshalb kann die Zahl auch sinken."
+              : "Something you learned recently counts as a whole item. Something you have not seen for a long time counts as less, because you probably remember less of it. That is why the number can go down as well as up."}
+          </p>
+          <p className="rounded-xl bg-[var(--surface-3)] px-3 py-2">
+            {uiIsGerman()
+              ? "Beispiel: Du konntest „Guten Morgen“ vor zwei Monaten sicher. Seitdem nicht mehr gesehen — es zählt jetzt als 0,8 statt 1. Einmal richtig beantwortet, zählt es sofort wieder voll."
+              : "For example: you had “Guten Morgen” down two months ago and have not seen it since, so it counts as 0.8 rather than 1. Answer it correctly once and it counts fully again, immediately."}
           </p>
           <p>
-            <span className="font-black text-[var(--text-1)]">{ui("It never falls to nothing.")}</span>{" "}
             {uiIsGerman()
-              ? "Vergessen ist kein Löschen — etwas wieder aufzufrischen geht viel schneller, als es neu zu lernen. Der Boden steigt mit jedem sicheren Abruf: 0,50 nach einem, 0,66 nach dreien, 0,80 nach fünfen."
-              : "Forgetting is not deletion — relearning something you once knew is far quicker than meeting it new. The floor rises with every clean recall: 0.50 after one, 0.66 after three, 0.80 after five."}
+              ? "Je öfter du etwas sicher abgerufen hast, desto langsamer verblasst es. Und nichts fällt je auf null: etwas wieder aufzufrischen geht viel schneller, als es neu zu lernen."
+              : "The more times you have recalled something correctly, the more slowly it slips. And nothing ever falls to zero — coming back to a word you once knew is far quicker than meeting it new."}
           </p>
           <p>
-            <span className="font-black text-[var(--text-1)]">{ui("One review brings it all back.")}</span>{" "}
             {uiIsGerman()
-              ? "Ein einziger richtiger Abruf setzt einen Eintrag sofort auf seinen vollen Wert zurück und schiebt ihn eine Stufe hoch. Verblassen ist eine Einschätzung, keine Strafe."
-              : "A single correct recall puts an item straight back to its full value and moves it up a rung. Fading is an estimate, not a punishment."}
-          </p>
-          <p>
-            <span className="font-black text-[var(--text-1)]">{ui("What never fades.")}</span>{" "}
-            {uiIsGerman()
-              ? "Mit dem Stern markierte Einträge, Wörter, die du von Hand als gemeistert gesetzt hast, und alles, was du außerhalb der App gelernt hast: Sie haben keinen Wiederholungsplan, gegen den man sie messen könnte, und bleiben deshalb ganz."
-              : "Starred items, words you marked mastered by hand, and anything you told the app you already knew from elsewhere. They carry no review schedule to measure against, so they stay whole rather than being decayed on a guess."}
-          </p>
-          <p>
-            <span className="font-black text-[var(--text-1)]">{ui("Due and fading are the same backlog.")}</span>{" "}
-            {uiIsGerman()
-              ? "„Fällig“ heißt, der Wiederholungstag ist da. „Verblasst“ heißt, er ist vorbei — dieselben Einträge, einen Tag später. Deshalb steht pro Eintrag nur eins von beidem: erst „fällig“, danach, wie viel davon noch zählt."
-              : "“Due” means its review day has arrived. “Fading” means that day has passed — the same items, one day later. That is why a row shows one or the other, never both: due on the day, then how much of it is left."}
+              ? "„Fällig“ heißt: heute ist der Wiederholungstag. „Verblasst“ heißt: der Tag ist vorbei. Dieselben Einträge, nur später — deshalb steht pro Zeile immer nur eins von beidem."
+              : "“Due” means today is its review day. “Fading” means that day has been and gone. Same items, just later — which is why a row shows one or the other, never both."}
           </p>
           <p className="text-[var(--text-3)]">
             {uiIsGerman()
-              ? "Dieselbe Zahl steht auf der Startseite, im Profil und im Fortschrittsring der Spiele — sie stimmen jetzt alle überein."
-              : "This is the same number your dashboard, profile and games mastery ring use — they all agree now."}
+              ? "Nie verblassen: mit Stern markierte Einträge, von Hand als gemeistert gesetzte Wörter und alles, was du außerhalb der App gelernt hast — dafür gibt es keinen Wiederholungsplan. Dieselbe Zahl steht auf der Startseite, im Profil und bei den Spielen."
+              : "Never fades: starred items, words you marked mastered by hand, and anything you learned outside the app — there is no review schedule to measure those against. This is the same number your dashboard, profile and games use."}
           </p>
         </div>
       )}

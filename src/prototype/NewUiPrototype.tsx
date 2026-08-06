@@ -21,6 +21,7 @@ import {
   Leaf,
   LockKeyhole,
   Medal,
+  LogOut,
   Menu,
   MessageCircleMore,
   MessageSquareText,
@@ -56,7 +57,7 @@ import {
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMasteredCount } from "@/lib/mastery";
-import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
+import { loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { getLevelInfo, MILESTONES, type GamificationStats } from "@/lib/gamificationProgress";
 import type { Blueprint, Part } from "@/lib/types";
@@ -549,6 +550,7 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 
 function Header({
   avatar,
+  onSignOut,
   equippedBadge,
   onNavigate,
   onProfileIntent,
@@ -561,6 +563,7 @@ function Header({
   userName,
 }: {
   avatar?: string;
+  onSignOut: () => void;
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
   onProfileIntent: () => void;
@@ -1025,6 +1028,13 @@ function Header({
                     <span><Menu /></span>
                     <div><strong>More options</strong><small>Courses and the full Micheon app</small></div>
                     <ChevronRight />
+                  </button>
+                  {/* Signing out was buried at the bottom of Profile settings —
+                      three screens from the avatar you would naturally click to
+                      find it. */}
+                  <button className="np-profile-menu-signout" onClick={onSignOut} role="menuitem" type="button">
+                    <span><LogOut /></span>
+                    <div><strong>Sign out</strong><small>Your progress stays saved on this device</small></div>
                   </button>
                 </div>
               </motion.div>
@@ -2123,6 +2133,12 @@ export default function NewUiPrototype({
     total + (SHOP_ITEMS.find((item) => item.id === id)?.price ?? 0)
   ), 0);
   const availableShopCoins = Math.max(0, earnedShopCoins - spentShopCoins);
+  // Same two steps as the button buried in Profile settings: clear the local
+  // session and reload back to the login screen. Progress stays on the device.
+  const signOutOfPrototype = useCallback(() => {
+    setAuthUser(null);
+    window.location.reload();
+  }, []);
   const knownVocab = countKnownVocab(profile, stats.externalWords);
   const searchableLessons = useMemo(() => Object.entries(apiParts).map(([id, part]) => ({
     id,
@@ -2410,6 +2426,7 @@ export default function NewUiPrototype({
           <div className="np-app-area">
             <Header
               avatar={profile?.avatar}
+              onSignOut={signOutOfPrototype}
               equippedBadge={equippedShopBadge}
               onNavigate={navigate}
               onProfileIntent={() => { void loadGamificationPanel(); }}

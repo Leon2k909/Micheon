@@ -728,6 +728,23 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
    only option. */
 /* Named directly, so both the top-bar mark and the menu's copy anchor the
    photo and the equipped badge. */
+/* Sign out reads as the last thing in the menu, and as a different kind of
+   thing from the four navigation rows above it. */
+.np-profile-menu-signout {
+  margin-top: 6px;
+  border-top: 1px solid var(--np-line);
+  border-radius: 0 0 14px 14px;
+}
+
+.np-profile-menu-signout > span {
+  color: #ff8a9b;
+  background: rgba(255, 138, 155, 0.12);
+}
+
+.np-profile-menu-signout strong {
+  color: #ff8a9b;
+}
+
 .np-profile-avatar-mark {
   position: relative;
 }
@@ -6536,7 +6553,7 @@ html[data-theme="dark"] .np-premium-card {
 
 .np-social-search:focus-within {
   border-color: rgba(79, 189, 81, 0.55);
-  box-shadow: 0 0 0 3px rgba(79, 189, 81, 0.1);
+  box-shadow: 0 2px 14px rgba(79, 189, 81, 0.28);
 }
 
 .np-social-search > svg {

@@ -119,6 +119,32 @@ if (!/\.course-switcher-search:focus-visible[\s\S]{0,200}outline: none;/.test(cs
   failures.push("nothing clears the platform focus ring on the course switcher's search, so it draws two");
 }
 
+// ── a changed border AND a hard ring is two borders ──────────────────────
+//
+// This is what a learner sees as "2 borders": an accent border with a 0-blur
+// box-shadow just outside it traces a second rounded rectangle in the same
+// colour. A blurred shadow reads as a glow and does not. Checked across every
+// focus rule, plus the shared Input component, because the last version of
+// this gate looked for a utility class and passed while the bug was on screen.
+const sheets = ["src/index.css", "src/prototype/new-ui-prototype.css"]
+  .map((rel) => fs.readFileSync(path.join(root, rel), "utf8").replace(/\/\*[\s\S]*?\*\//g, ""));
+for (const sheet of sheets) {
+  for (const m of sheet.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const sel = m[1].replace(/\s+/g, " ").trim();
+    if (!/:focus(-visible|-within)?/.test(sel)) continue;
+    const body = m[2].replace(/\s+/g, " ");
+    if (!/border(-color)?\s*:/.test(body)) continue;
+    // 0 0 0 Npx — no offset, no blur, pure spread: a ring.
+    if (/box-shadow:[^;]*0 0 0 \d+px/.test(body)) {
+      failures.push(`${sel.slice(0, 58)} draws a border AND a hard ring on focus — that is the two borders`);
+    }
+  }
+}
+const inputComponent = fs.readFileSync(path.join(root, "src/components/ui/input.tsx"), "utf8");
+if (/focus-visible:ring-\d/.test(inputComponent) && /focus-visible:border-/.test(inputComponent)) {
+  failures.push("the shared Input draws an accent border and a ring, which is two borders on every field using it");
+}
+
 if (failures.length) {
   console.error("FAIL check-settings-search");
   failures.forEach((line) => console.error("  " + line));

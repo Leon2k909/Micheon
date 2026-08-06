@@ -1345,15 +1345,14 @@ export default function GamificationPanel({
           <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
         </section>
 
-        <section className="card p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Milestones")}</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} {ui("of")} {MILESTONES.length} {ui("reached")}</p>
-            </div>
-            <Trophy className="h-6 w-6 text-[var(--accent)]" />
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {/* Collapsed, like its twin on the profile page: worth having, not
+            worth the top third of the screen. */}
+        <SettingsCategory
+          description={`${earned} ${ui("of")} ${MILESTONES.length} ${ui("reached")}`}
+          icon={Trophy}
+          title={ui("Milestones")}
+        >
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {MILESTONES.map((item) => {
               const ok = item.check(stats);
               return (
@@ -1378,7 +1377,7 @@ export default function GamificationPanel({
               );
             })}
           </div>
-        </section>
+        </SettingsCategory>
 
         <DeferredProfileSection
           fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
@@ -1572,15 +1571,15 @@ export default function GamificationPanel({
         <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
       </section>
 
-      <section className="card p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Milestones")}</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{earned} {ui("of")} {MILESTONES.length} {ui("reached")}</p>
-          </div>
-          <Trophy className="h-6 w-6 text-[var(--accent)]" />
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {/* Collapsed by default. Milestones are a nice-to-have, not something
+          you come to this page to read, and at full width they pushed the
+          things you DO come for off the bottom of the screen. */}
+      <SettingsCategory
+        description={`${earned} ${ui("of")} ${MILESTONES.length} ${ui("reached")}`}
+        icon={Trophy}
+        title={ui("Milestones")}
+      >
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {MILESTONES.map((item) => {
             const ok = item.check(stats);
             return (
@@ -1602,7 +1601,7 @@ export default function GamificationPanel({
             );
           })}
         </div>
-      </section>
+      </SettingsCategory>
     </div>
   );
 }

@@ -4795,7 +4795,7 @@ a { color: inherit; text-decoration: none; }
 
 .guided-session.fs-app.prototype-guided-session .fs-input:focus {
   border-color: rgba(67, 184, 76, 0.55);
-  box-shadow: 0 0 0 3px rgba(67, 184, 76, 0.12);
+  box-shadow: 0 2px 14px rgba(67, 184, 76, 0.3);
 }
 
 .guided-session.fs-app.prototype-guided-session .lesson-cta,
@@ -6792,7 +6792,9 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
 .settings-search__input:focus-visible {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+  /* Blurred, not a 0-blur ring: a hard ring outside an accent border reads
+     as a second border, which is exactly what it looked like. */
+  box-shadow: 0 2px 14px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .settings-search__clear {

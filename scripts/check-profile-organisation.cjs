@@ -114,10 +114,24 @@ check(
   "search can open a category without changing what the learner collapsed",
   category.includes("const isOpen = open || forceOpen;") && category.includes("if (hidden) return null;")
 );
+// Counted by the SETTINGS they contain, not by uses of the component: the same
+// collapsible now also holds Milestones, which is not a setting. Pinning the
+// raw count meant adding a collapsible anywhere on the page broke this.
+const settingsCategoryTitles = [
+  "Appearance", "Accessibility", "Desktop app & updates",
+  "Learning options", "Flashcards", "Language & voice", "Pet & mascot",
+];
 check(
   "the profile screen groups the rarely-used settings into seven categories",
-  (profile.match(/<SettingsCategory\r?\n/g) ?? []).length === 7
+  settingsCategoryTitles.filter((t) => profile.includes('title={ui("' + t + '")}')).length === 7
     && !profile.includes("defaultOpen")
+);
+// Milestones is worth having and not worth the top of the screen, so it uses
+// the same collapsible and starts closed like everything else here.
+check(
+  "milestones are collapsed rather than filling the screen",
+  profile.includes('title={ui("Milestones")}')
+    && !/<h2[^>]*>\{ui\("Milestones"\)\}/.test(profile)
 );
 check(
   "appearance, accessibility, desktop, learning, flashcards, language, and pet all have a category",
