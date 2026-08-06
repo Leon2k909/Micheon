@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -6,6 +6,9 @@ import {
   CalendarDays,
   Camera,
   Check,
+  X,
+  Search,
+  RotateCcw,
   Flame,
   Pencil,
   ShieldCheck,
@@ -15,6 +18,7 @@ import {
   Zap,
   Languages,
   MoonStar,
+  Paintbrush,
   Palette,
   Monitor,
   Layers,
@@ -53,6 +57,16 @@ import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEn
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { THEME_CHANGE_EVENT, getThemePreference, setTheme, systemTheme, type ThemePreference } from "@/lib/theme";
+import {
+  ACCENT_CHANGE_EVENT,
+  ACCENT_PRESETS,
+  DEFAULT_ACCENT,
+  getAccentColour,
+  isDefaultAccent,
+  normaliseHex,
+  resetAccentColour,
+  setAccentColour,
+} from "@/lib/accentColour";
 import { getEffects, setEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
@@ -370,6 +384,30 @@ function StatCard({ icon: Icon, label, value, color }: {
   );
 }
 
+
+/**
+ * What lives inside each settings category.
+ *
+ * Search has to find "dark mode" or "tyre" or "streak" without the learner
+ * knowing which drawer it is in, and the categories are collapsed by default
+ * so their contents are not in the DOM to search. This is that index, kept
+ * beside the categories it describes.
+ */
+const SETTINGS_SEARCH_INDEX: Record<string, string> = {
+  Appearance: "theme dark mode light night colour color accent green button brand lesson background scenery monkey garden dawn plain canvas wallpaper zoom bigger smaller text size",
+  Accessibility: "high contrast motion reduce animation calmer speech speed slower faster voice rate readable",
+  "Desktop app & updates": "startup launch login boot close button tray minimise minimize quit update version install check",
+  "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode",
+  Flashcards: "flashcard card side front back reveal flip order behaviour",
+  "Language & voice": "english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation",
+  "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
+};
+
+/** Fold accents and case so "farbe" and "Färbe" both match. */
+function foldSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 function ProgressSummaryCard({
   cur,
   nxt,
@@ -521,6 +559,35 @@ export default function GamificationPanel({
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const [speechRate, setSpeechRateState] = useState<number>(() => getTtsSpeechRate());
+  const [settingsQuery, setSettingsQuery] = useState("");
+  const settingsSearchRef = useRef<HTMLInputElement | null>(null);
+  const settingsTerms = useMemo(
+    () => foldSearch(settingsQuery).split(/\s+/).filter(Boolean),
+    [settingsQuery]
+  );
+  /** Does this category match what has been typed? */
+  const matchesSearch = (title: string, description: string) => {
+    if (!settingsTerms.length) return true;
+    const haystack = foldSearch([title, description, SETTINGS_SEARCH_INDEX[title] ?? ""].join(" "));
+    return settingsTerms.every((term: string) => haystack.includes(term));
+  };
+  const searchHits = useMemo(
+    () => (settingsTerms.length
+      ? Object.keys(SETTINGS_SEARCH_INDEX).filter((title) => matchesSearch(title, ""))
+      : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [settingsTerms]
+  );
+  const [accentColour, setAccentColourState] = useState(() => getAccentColour());
+  useEffect(() => {
+    const sync = () => setAccentColourState(getAccentColour());
+    window.addEventListener(ACCENT_CHANGE_EVENT, sync);
+    window.addEventListener("storage-sync-completed", sync);
+    return () => {
+      window.removeEventListener(ACCENT_CHANGE_EVENT, sync);
+      window.removeEventListener("storage-sync-completed", sync);
+    };
+  }, []);
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => getThemePreference());
   // Another window (or the OS, while on "system") can change the theme; keep
   // the chosen option in step rather than showing a stale selection.
@@ -806,8 +873,42 @@ export default function GamificationPanel({
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                   {ui("Sections you'll rarely need day to day. Open one to change it.")}
                 </p>
+                <label className="settings-search mt-4 block">
+                  <Search aria-hidden="true" className="settings-search__icon" />
+                  <input
+                    aria-label={ui("Search settings")}
+                    className="settings-search__input"
+                    onChange={(event) => setSettingsQuery(event.target.value)}
+                    placeholder={ui("Search settings\u2026")}
+                    ref={settingsSearchRef}
+                    type="search"
+                    value={settingsQuery}
+                  />
+                  {settingsQuery && (
+                    <button
+                      aria-label={ui("Clear search")}
+                      className="settings-search__clear"
+                      onClick={() => {
+                        setSettingsQuery("");
+                        settingsSearchRef.current?.focus();
+                      }}
+                      type="button"
+                    >
+                      <X aria-hidden="true" />
+                    </button>
+                  )}
+                </label>
+                {settingsTerms.length > 0 && (
+                  <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
+                    {searchHits.length === 0
+                      ? ui("Nothing matches that. Try \u201ctheme\u201d, \u201cvoice\u201d, or \u201cpet\u201d.")
+                      : `${searchHits.length} ${searchHits.length === 1 ? ui("section") : ui("sections")} ${ui("match")}`}
+                  </p>
+                )}
                 <SettingsCategory
                   description={ui("Theme, lesson background, and app zoom.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Appearance"), ui("Theme, lesson background, and app zoom."))}
                   icon={Palette}
                   title={ui("Appearance")}
                 >
@@ -859,6 +960,69 @@ export default function GamificationPanel({
                           </button>
                         );
                       })}
+                    </div>
+                  </div>
+                  <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex items-start gap-2">
+                      <Paintbrush className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Accent colour")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {ui("The colour of buttons, progress and anything selected. Micheon green is the default.")}
+                        </p>
+                      </div>
+                    </div>
+                    <div aria-label={ui("Accent colour")} className="mt-3 flex flex-wrap gap-2" role="radiogroup">
+                      {ACCENT_PRESETS.map((preset) => {
+                        const active = normaliseHex(accentColour) === preset.hex;
+                        return (
+                          <button
+                            aria-checked={active}
+                            aria-label={ui(preset.name)}
+                            className={cn(
+                              "settings-swatch",
+                              active && "settings-swatch--active"
+                            )}
+                            key={preset.hex}
+                            onClick={() => {
+                              setAccentColour(preset.hex);
+                              setAccentColourState(preset.hex);
+                            }}
+                            role="radio"
+                            style={{ background: preset.hex }}
+                            title={ui(preset.name)}
+                            type="button"
+                          >
+                            {active && <Check aria-hidden="true" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <label className="settings-swatch-custom">
+                        <input
+                          aria-label={ui("Pick any colour")}
+                          onChange={(event) => {
+                            setAccentColour(event.target.value);
+                            setAccentColourState(event.target.value);
+                          }}
+                          type="color"
+                          value={normaliseHex(accentColour) ?? DEFAULT_ACCENT}
+                        />
+                        <span>{ui("Pick any colour")}</span>
+                      </label>
+                      <button
+                        className="settings-reset"
+                        disabled={isDefaultAccent(accentColour)}
+                        onClick={() => {
+                          resetAccentColour();
+                          setAccentColourState(DEFAULT_ACCENT);
+                        }}
+                        type="button"
+                      >
+                        <RotateCcw aria-hidden="true" />
+                        {ui("Reset to green")}
+                      </button>
                     </div>
                   </div>
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
@@ -954,6 +1118,8 @@ export default function GamificationPanel({
 
                 <SettingsCategory
                   description={ui("High contrast, calmer motion, and speech speed.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Accessibility"), ui("High contrast, calmer motion, and speech speed."))}
                   icon={Accessibility}
                   title={ui("Accessibility")}
                 >
@@ -1042,6 +1208,8 @@ export default function GamificationPanel({
 
                 <SettingsCategory
                   description={ui("Startup, close button, and update checks.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Desktop app & updates"), ui("Startup, close button, and update checks."))}
                   icon={Monitor}
                   title={ui("Desktop app & updates")}
                 >
@@ -1054,6 +1222,8 @@ export default function GamificationPanel({
 
                 <SettingsCategory
                   description={ui("Learning style and words learned elsewhere.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Learning options"), ui("Learning style and words learned elsewhere."))}
                   icon={BookOpen}
                   title={ui("Learning options")}
                 >
@@ -1087,6 +1257,8 @@ export default function GamificationPanel({
 
                 <SettingsCategory
                   description={ui("Which side shows first and how cards behave.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Flashcards"), ui("Which side shows first and how cards behave."))}
                   icon={Layers}
                   title={ui("Flashcards")}
                 >
@@ -1100,6 +1272,8 @@ export default function GamificationPanel({
 
                 <SettingsCategory
                   description={ui("English spelling, app language, and the speaking voice.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Language & voice"), ui("English spelling, app language, and the speaking voice."))}
                   icon={Languages}
                   title={ui("Language & voice")}
                 >
@@ -1144,6 +1318,8 @@ export default function GamificationPanel({
               <div className="rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
                 <SettingsCategory
                   description={ui("Pick a desk pet and choose how often it talks.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Pet & mascot"), ui("Pick a desk pet and choose how often it talks."))}
                   icon={PawPrint}
                   title={ui("Pet & mascot")}
                 >

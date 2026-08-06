@@ -6737,3 +6737,130 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
   background: rgba(0, 0, 0, 0.24);
   color: #2a2205;
 }
+
+/* ── settings search ─────────────────────────────────────────────────────── */
+/* One long bar over the whole of Profile settings, so a setting can be found
+   by name instead of by guessing which drawer it lives in. */
+.settings-search {
+  position: relative;
+  display: block;
+}
+
+.settings-search__icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.settings-search__input {
+  width: 100%;
+  height: 46px;
+  padding: 0 42px 0 42px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 700;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.settings-search__input::placeholder { color: var(--text-3); font-weight: 600; }
+
+/* One focus indicator, not two: the border IS the indicator here, so the
+   global input ring is suppressed rather than drawn around it. */
+.settings-search__input:focus,
+.settings-search__input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.settings-search__clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.settings-search__clear svg { width: 16px; height: 16px; }
+.settings-search__clear:hover { background: var(--surface-3); color: var(--text-1); }
+
+/* ── accent swatches ─────────────────────────────────────────────────────── */
+.settings-swatch {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+}
+
+.settings-swatch svg { width: 16px; height: 16px; color: #fff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45)); }
+.settings-swatch:hover { transform: translateY(-1px); }
+.settings-swatch--active { border-color: var(--text-1); }
+
+.settings-swatch-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.settings-swatch-custom input[type="color"] {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+
+.settings-swatch-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.settings-swatch-custom input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(0,0,0,0.2); border-radius: 999px; }
+
+.settings-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.settings-reset svg { width: 14px; height: 14px; }
+.settings-reset:hover:not(:disabled) { border-color: var(--border-2); color: var(--text-1); }
+.settings-reset:disabled { opacity: 0.45; cursor: default; }

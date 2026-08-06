@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
 
+import { applyAccentColour } from "@/lib/accentColour";
 import { CodexPetHistoryWindow } from "./components/codexPets/CodexPetHistoryWindow";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
 import { CodexPetProvider, useCodexPets } from "./components/codexPets/CodexPetProvider";
@@ -86,6 +87,7 @@ function useMicheonProfile() {
       if (cancelled) return;
       migrateToDarkThemeDefault();
       applyStoredThemePreferences();
+      applyAccentColour();
       const current = getAuthUser();
       if (current) recordKnownProfile(current);
       setUser(current);

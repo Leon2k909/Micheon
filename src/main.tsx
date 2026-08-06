@@ -4,6 +4,7 @@ import "./index.css";
 import App, { MotionGate } from "./App";
 import { SilencedAudioPrompt } from "./components/SilencedAudioPrompt";
 import { applyThemeToDom, resolveTheme } from "./lib/theme";
+import { applyAccentColour } from "./lib/accentColour";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
 import { watchRuntimePerformance } from "./lib/runtimePerformance";
@@ -37,6 +38,8 @@ if (bootTheme === "dark") {
 // Paint only — persisting here would pin the first-launch default forever
 // and stop the slow-device check from ever being consulted again.
 applyEffects(getEffects());
+// After the theme, because the dark shades are derived from a lifted base.
+applyAccentColour();
 applyHighContrast(getHighContrast());
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.

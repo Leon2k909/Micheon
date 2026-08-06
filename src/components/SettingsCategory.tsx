@@ -13,24 +13,34 @@ export function SettingsCategory({
   children,
   defaultOpen = false,
   description,
+  forceOpen = false,
+  hidden = false,
   icon: Icon,
   title,
 }: {
   children: ReactNode;
   defaultOpen?: boolean;
   description: string;
+  /** Search opened this category: show its contents without changing the
+   *  learner's own collapsed/expanded choice underneath. */
+  forceOpen?: boolean;
+  /** Search matched something else. Hidden rather than unmounted, so any
+   *  half-typed value in here survives the search being cleared. */
+  hidden?: boolean;
   icon: ComponentType<{ className?: string }>;
   title: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [everOpened, setEverOpened] = useState(defaultOpen);
   const panelId = useId();
+  const isOpen = open || forceOpen;
+  if (hidden) return null;
 
   return (
     <div className="mt-3">
       <button
         aria-controls={panelId}
-        aria-expanded={open}
+        aria-expanded={isOpen}
         className={cn(
           // A white card on a near-white page has no edge at all. The border is
           // what makes each category read as a separate thing you can open.
@@ -54,16 +64,16 @@ export function SettingsCategory({
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className="rounded-full bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-black text-[var(--text-3)]">
-            {open ? ui("Hide") : ui("Show")}
+            {isOpen ? ui("Hide") : ui("Show")}
           </span>
           <ChevronDown
             aria-hidden="true"
-            className={cn("h-4 w-4 text-[var(--text-3)] transition-transform", open && "rotate-180")}
+            className={cn("h-4 w-4 text-[var(--text-3)] transition-transform", isOpen && "rotate-180")}
           />
         </span>
       </button>
-      {everOpened && (
-        <div hidden={!open} id={panelId}>
+      {(everOpened || forceOpen) && (
+        <div hidden={!isOpen} id={panelId}>
           {children}
         </div>
       )}

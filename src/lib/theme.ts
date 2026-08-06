@@ -65,6 +65,9 @@ export function migrateToDarkThemeDefault() {
 export function applyThemeToDom(theme: Theme) {
   if (typeof window !== "undefined") {
     document.documentElement.setAttribute("data-theme", theme);
+    // A custom accent is derived per theme — the dark shades come off a
+    // lifted base — so the paint has to follow every theme change.
+    void import("@/lib/accentColour").then((m) => m.applyAccentColour()).catch(() => {});
   }
 }
 

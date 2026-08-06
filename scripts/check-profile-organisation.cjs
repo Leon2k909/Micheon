@@ -101,12 +101,18 @@ check(
 check(
   "collapsed categories do not mount their children until first opened",
   category.includes("const [everOpened, setEverOpened] = useState(defaultOpen)")
-    && category.includes("{everOpened && (")
-    && category.includes("hidden={!open}")
+    && category.includes("{(everOpened || forceOpen) && (")
+    && category.includes("hidden={!isOpen}")
 );
 check(
   "categories are accessible disclosures",
-  category.includes("aria-expanded={open}") && category.includes("aria-controls={panelId}")
+  category.includes("aria-expanded={isOpen}") && category.includes("aria-controls={panelId}")
+);
+// Search opens a category without overwriting the learner's own collapsed
+// state, so clearing the search puts everything back as they left it.
+check(
+  "search can open a category without changing what the learner collapsed",
+  category.includes("const isOpen = open || forceOpen;") && category.includes("if (hidden) return null;")
 );
 check(
   "the profile screen groups the rarely-used settings into seven categories",

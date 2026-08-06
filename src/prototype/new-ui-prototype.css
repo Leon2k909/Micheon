@@ -7635,3 +7635,21 @@ html[data-theme="dark"] .np-badge-list--expanded .np-achievement.is-unlocked {
 html[data-theme="dark"] .np-social-preview-notice > button:hover {
   background: var(--np-surface-soft);
 }
+
+/* ── a custom accent reaches the hand-painted greens too ─────────────────── */
+/* These few rules draw Micheon green as a literal gradient rather than from a
+   token, which is right for the default and wrong for anyone who picked
+   another colour. Scoped to the flag so the default stays pixel-identical. */
+html[data-accent="custom"] .np-side-nav button.is-active {
+  border-color: color-mix(in srgb, var(--np-green) 45%, transparent);
+  background: var(--np-green-soft);
+}
+
+html[data-accent="custom"] .np-side-nav button.is-active .np-nav-visual {
+  border-color: color-mix(in srgb, var(--np-green) 30%, transparent);
+  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
+}
+
+html[data-accent="custom"] .np-mobile-nav button.is-active {
+  color: var(--np-green-dark);
+}
