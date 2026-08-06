@@ -53,7 +53,7 @@ const isBrandGreen = ([r, g, b]) => g > 28 && g - Math.max(r, b) > 10;
  */
 // "Locked"/"not started" mean NOT YET EARNED, which is meaning, not brand:
 // painting them the accent made locked achievements look unlocked.
-const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|is-right|is-locked|--locked|is-unearned|not-started|is-disabled/i;
+const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|is-right|is-locked|--locked|is-unearned|not-started|is-disabled|fs-result|fs-feedback|fs-verdict/i;
 
 const failures = [];
 let checked = 0;

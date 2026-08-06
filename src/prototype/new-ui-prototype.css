@@ -1311,13 +1311,17 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   line-height: 1.02;
 }
 
+/* A round crop of a three-stripe flag eats the top and bottom bands, and a
+   3px ring on a 27px badge left only 21px for them — enough that the black
+   stripe read as a sliver and the whole thing looked cut off. Bigger badge,
+   thinner ring: 26px of flag instead of 21. */
 .np-language-badge {
   display: grid;
-  width: 27px;
-  height: 27px;
-  flex: 0 0 27px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.94);
+  border: 2px solid rgba(255, 255, 255, 0.94);
   border-radius: 50%;
   box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
 }

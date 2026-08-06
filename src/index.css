@@ -2874,7 +2874,9 @@ a { color: inherit; text-decoration: none; }
   font-size: clamp(17px, 1.25vw, 20px); font-weight: 600; text-align: left;
 }
 .guided-session .fs-panel input::placeholder { color: #6f7280; opacity: 1; }
-.fs-chars { display: flex; gap: 4px; padding-right: 4px; }
+/* Seven small targets in a row. At a 4px gap they read as one blurred
+   strip and are easy to mis-tap, so they get room to be separate keys. */
+.fs-chars { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; padding: 3px 4px; }
 .guided-session .fs-chars button {
   width: 34px; height: 34px; border: 1px solid var(--fs-line); border-radius: 10px;
   background: rgba(255,255,255,0.025); color: var(--fs-text-2); font-size: 14px; font-weight: 700; cursor: pointer;
@@ -9051,18 +9053,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   border-color: rgba(var(--accent-rgb), 0.48);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 4px 0 rgba(var(--accent-hover-rgb), 0.12);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result strong {
-  color: var(--accent-ink, var(--np-green));
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result span {
-  color: var(--accent-ink, var(--np-green));
-}
-
 html:not([data-theme="dark"])[data-accent="custom"] .fs-shortcut-altcode {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.12);
 }
@@ -9479,14 +9469,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-ink, var(--np-green));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result strong {
-  color: var(--accent-ink, var(--np-green));
-}
-
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result span {
-  color: var(--accent-ink, var(--np-green));
-}
-
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
 html[data-accent="custom"] .text-emerald-600) {
   color: var(--accent-ink, var(--np-green)) !important;
@@ -9737,10 +9719,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 0 rgba(var(--accent-hover-rgb), 0.17), 0 13px 23px rgba(var(--accent-hover-rgb), 0.1);
-}
-
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-result {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(var(--accent-hover-rgb), 0.12);
 }
 
 html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
