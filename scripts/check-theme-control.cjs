@@ -107,6 +107,53 @@ if (!/prefers-color-scheme: dark/.test(head)) {
   failures.push("the pre-paint script cannot resolve a \"system\" preference, so system-dark users still flash light");
 }
 
+// ── nesting you can see ──────────────────────────────────────────────────
+//
+// A card, the panel inside it and the field inside THAT were all #161b23 —
+// three levels separated by nothing, which reads as one flat sheet and is
+// tiring to look at. Adjacent surfaces need a real step. 1.06 is the floor
+// here rather than a WCAG number because this is depth, not legibility: below
+// it two planes are indistinguishable.
+{
+  const proto = read("src/prototype/new-ui-prototype.css");
+  const lum = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const rel = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return 0.2126 * lum(r) + 0.7152 * lum(g) + 0.0722 * lum(b);
+  };
+  const ratio = (a, b) => {
+    const x = rel(a), y = rel(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const grab = (name) => {
+    // `\\s` — a single backslash inside a template literal is dropped, which
+    // makes the pattern match nothing and the check pass on any palette.
+    const m = proto.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`, "g")) || [];
+    // The dark values are the darkest ones declared for that token.
+    const values = m.map((entry) => entry.match(/#[0-9a-fA-F]{6}/)[0]);
+    return values.sort((a, b) => rel(a) - rel(b))[0];
+  };
+  const surface = grab("surface");
+  const surface2 = grab("surface-2");
+  const surface3 = grab("surface-3");
+  if (!surface || !surface2 || !surface3) {
+    failures.push("the dark surface ladder cannot be read, so its separation cannot be checked");
+  } else {
+    if (ratio(surface, surface2) < 1.06) {
+      failures.push(`a panel inside a card is ${ratio(surface, surface2).toFixed(2)}:1 against it — that is one flat sheet, not two levels`);
+    }
+    if (ratio(surface2, surface3) < 1.06) {
+      failures.push(`the third level is ${ratio(surface2, surface3).toFixed(2)}:1 against the second — indistinguishable`);
+    }
+    // And the lift must not cost legibility, which is what made the old
+    // lighter cards unpleasant in the first place.
+    for (const [name, hex] of [["surface", surface], ["surface-2", surface2], ["surface-3", surface3]]) {
+      const ink = ratio("#eef2f8", hex);
+      if (ink < 7) failures.push(`body text is only ${ink.toFixed(1)}:1 on --${name}`);
+    }
+  }
+}
+
 const preload = read("electron/preload.cjs");
 if (!/setDesktopTheme/.test(preload)) {
   failures.push("the preload bridge cannot pass the theme to the main process");

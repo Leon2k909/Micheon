@@ -5379,14 +5379,22 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 /* Prototype dark mode follows the stored app preference. The hierarchy stays
    warm and tactile, with green remaining the only primary action colour. */
 html[data-theme="dark"] .new-ui-prototype {
-  --np-bg: #0b0e13;
-  --np-shell: #0d1117;
+  /* Every step in this ladder used to be about 1.12:1 apart — a card, the
+     panel inside it and the field inside THAT were all #161b23, so three
+     levels of nesting were separated by nothing but a barely-there line and
+     the screen read as one flat sheet. The steps below are ~1.2:1, which is
+     where two planes start looking like two planes. Nothing gets harder to
+     read: body ink measures 15.4:1 on a card and 12.6:1 on the panel inside
+     it, so the lift costs no legibility — the earlier trouble with "lighter
+     cards" was a far bigger jump than this. */
+  --np-bg: #070910;
+  --np-shell: #0c1017;
   --np-surface: #161b23;
-  --np-surface-soft: #161b23;
+  --np-surface-soft: #232b3a;
   --np-text: #eef2f8;
   --np-muted: #c2cbd8;
   --np-soft: #98a3b3;
-  --np-line: rgba(205, 217, 233, 0.16);
+  --np-line: rgba(205, 217, 233, 0.22);
   --np-green: #3fd964;
   --np-green-dark: #6ee88b;
   --np-green-soft: #10301d;
@@ -5396,8 +5404,8 @@ html[data-theme="dark"] .new-ui-prototype {
   --np-blue: #77c9ee;
   --np-danger: #ff8989;
   --surface: #161b23;
-  --surface-2: #161b23;
-  --surface-3: #11151c;
+  --surface-2: #232b3a;
+  --surface-3: #2e3747;
   --border: rgba(205, 217, 233, 0.3);
   --border-2: rgba(205, 217, 233, 0.44);
   --text-1: #eef2f8;
@@ -5728,8 +5736,8 @@ html[data-theme="dark"] .np-learning-pills button.is-active {
 html[data-theme="dark"] .np-feature-host {
   --bg: transparent;
   --surface: #161b23;
-  --surface-2: #161b23;
-  --surface-3: #11151c;
+  --surface-2: #232b3a;
+  --surface-3: #2e3747;
   --border: rgba(205, 217, 233, 0.3);
   --border-2: rgba(205, 217, 233, 0.44);
   --text-1: #eef2f8;

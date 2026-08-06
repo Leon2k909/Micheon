@@ -375,7 +375,7 @@ button { cursor: pointer; }
      #fbfdfa, comfortably past the 3:1 a control boundary needs. */
   --card-edge: #7e827c;
 }
-html[data-theme="dark"] { --shell-top: #0d1117; --shell-bottom: #0b0e13; --card-edge: #6a7688; }
+html[data-theme="dark"] { --shell-top: #0c1017; --shell-bottom: #070910; --card-edge: #7d8a9e; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
@@ -5627,7 +5627,7 @@ html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer .audio-mixer-ro
    hundred. The scenery keeps whatever the learner picked; artwork gets a
    scrim so the card and its text still read over it. */
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session {
-  --bg: #0b0e13;
+  --bg: #070910;
   --surface: #161b23;
   --surface-2: #161b23;
   --surface-3: #11151c;
@@ -5705,7 +5705,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-b
    Without this the lesson opens on a bright green wash and then snaps dark. */
 html[data-theme="dark"].is-prototype-guided-launch {
   color-scheme: dark;
-  --bg: #0b0e13;
+  --bg: #070910;
   --surface: #161b23;
   --surface-2: #161b23;
   --surface-3: #11151c;
@@ -6778,7 +6778,8 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
   padding: 0 42px 0 42px;
   border: 1px solid var(--card-edge, var(--border));
   border-radius: 999px;
-  background: var(--surface);
+  /* A step in from the card it sits on, not the same plane as it. */
+  background: var(--surface-2);
   color: var(--text-1);
   font-size: 14px;
   font-weight: 700;
