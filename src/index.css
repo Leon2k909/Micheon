@@ -146,7 +146,7 @@ html.is-prototype-shell #root {
 html[data-theme="dark"].is-prototype-shell,
 html[data-theme="dark"].is-prototype-shell body,
 html[data-theme="dark"].is-prototype-shell #root {
-  background: #12140f;
+  background: #0b0e13;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -375,7 +375,7 @@ button { cursor: pointer; }
      #fbfdfa, comfortably past the 3:1 a control boundary needs. */
   --card-edge: #7e827c;
 }
-html[data-theme="dark"] { --shell-top: #161813; --shell-bottom: #12140f; --card-edge: #6e7367; }
+html[data-theme="dark"] { --shell-top: #0d1117; --shell-bottom: #0b0e13; --card-edge: #6a7688; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
@@ -5592,3 +5592,1148 @@ html[data-contrast="high"] .audio-mixer-panel.prototype-audio-mixer {
 
 .audio-unmute-prompt__dismiss svg { width: 16px; height: 16px; }
 .audio-unmute-prompt__dismiss:hover { background: var(--surface-3); }
+
+/* The audio mixer opens from the themed shell, so it follows the theme.
+   (The guided lesson deliberately does not — see the theme control's own
+   copy: "Lessons keep their own background either way.") */
+html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer .audio-mixer-heading-icon {
+  background: var(--surface-3);
+  color: var(--accent);
+}
+
+html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer .audio-mixer-row:hover,
+html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer .audio-mixer-row:focus-within {
+  background: var(--surface-2);
+}
+
+/* ══════════════ Guided lesson, dark ══════════════
+   Everything in the lesson is scoped to .prototype-guided-session and driven
+   by this token block, so the dark theme is one override rather than three
+   hundred. The scenery keeps whatever the learner picked; artwork gets a
+   scrim so the card and its text still read over it. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session {
+  --bg: #0b0e13;
+  --surface: #161b23;
+  --surface-2: #1c222c;
+  --surface-3: #232a35;
+  --border: rgba(205, 217, 233, 0.22);
+  --border-2: rgba(205, 217, 233, 0.34);
+  --text-1: #eef2f8;
+  --text-2: #cdd5e1;
+  --text-3: #a3aebc;
+  --accent: #3fd964;
+  --accent-dim: #10301d;
+  --accent-text: #05170c;
+  --accent-hover: #55e278;
+  --ink: #eef2f8;
+  --ink-text: #0b0e13;
+  --success-bg: #12301f;
+  --success-text: #7fe6a0;
+  --shadow: rgba(0, 0, 0, 0.34);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+  --fs-bg: #0b0e13;
+  --fs-surface: #161b23;
+  --fs-surface-2: #1c222c;
+  --fs-deep: #10141a;
+  --fs-line: rgba(205, 217, 233, 0.14);
+  --fs-line-strong: rgba(205, 217, 233, 0.24);
+  --fs-text: #eef2f8;
+  --fs-text-2: #cdd5e1;
+  --fs-muted: #a3aebc;
+  --fs-muted-2: #8894a5;
+  --fs-purple: #3fd964;
+  --fs-grad: linear-gradient(135deg, #55e278 0%, #3fd964 52%, #2fae4f 100%);
+  --fs-yellow: #3fd964;
+  --fs-yellow-hover: #55e278;
+  color-scheme: dark;
+  background: #0b0e13;
+}
+
+/* The lesson card itself, and the panels inside it. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level {
+  border-color: rgba(205, 217, 233, 0.22);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+/* ── scenery ──
+   Photographic backgrounds stay, behind a scrim heavy enough that white text
+   and the lesson card read over them. The two flat washes become dark ones
+   rather than being dimmed, which would only make them muddy. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-garden {
+  background:
+    linear-gradient(180deg, rgba(11, 14, 19, 0.82) 0%, rgba(11, 14, 19, 0.88) 100%),
+    url("./prototype/assets/guided-garden-frame-v1.png") center / cover no-repeat;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-monkey {
+  background:
+    linear-gradient(90deg, rgba(11, 14, 19, 0.86) 0%, rgba(11, 14, 19, 0.8) 46%, rgba(11, 14, 19, 0.74) 100%),
+    url("./prototype/assets/guided-monkey-world-v1.png") center / cover no-repeat;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-dawn {
+  background: linear-gradient(135deg, #171a22 0%, #12151c 48%, #101720 100%);
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-plain {
+  background: linear-gradient(180deg, #12151b 0%, #0b0e13 100%);
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-custom {
+  background:
+    linear-gradient(180deg, rgba(11, 14, 19, 0.8) 0%, rgba(11, 14, 19, 0.86) 100%),
+    var(--guided-custom-background) center / cover no-repeat;
+}
+
+/* ── the launch shell, before React mounts ──
+   Without this the lesson opens on a bright green wash and then snaps dark. */
+html[data-theme="dark"].is-prototype-guided-launch {
+  color-scheme: dark;
+  --bg: #0b0e13;
+  --surface: #161b23;
+  --surface-2: #1c222c;
+  --surface-3: #232a35;
+  --border: rgba(205, 217, 233, 0.22);
+  --border-2: rgba(205, 217, 233, 0.34);
+  --text-1: #eef2f8;
+  --text-2: #cdd5e1;
+  --text-3: #a3aebc;
+  --accent: #3fd964;
+  --accent-dim: #10301d;
+  --accent-text: #05170c;
+  --accent-hover: #55e278;
+  --shadow: rgba(0, 0, 0, 0.34);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"].is-prototype-guided-launch,
+html[data-theme="dark"].is-prototype-guided-launch body,
+html[data-theme="dark"].is-prototype-guided-launch #root {
+  background:
+    radial-gradient(62% 50% at 83% 0%, rgba(45, 96, 62, 0.34), transparent 72%),
+    radial-gradient(52% 40% at 8% 96%, rgba(58, 74, 45, 0.2), transparent 72%),
+    linear-gradient(180deg, #12151b 0%, #0b0e13 100%);
+}
+
+html[data-theme="dark"] .prototype-guided-loading-card {
+  border-color: rgba(205, 217, 233, 0.2);
+  background: var(--surface, #161b23);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .prototype-guided-loading-card img {
+  background: var(--surface-2, #1c222c);
+}
+
+html[data-theme="dark"] .prototype-guided-loading-track {
+  background: rgba(205, 217, 233, 0.16);
+}
+
+/* ── the level picker, which lives inside the lesson ── */
+html[data-theme="dark"] .fs-review-level-menu {
+  border-color: rgba(205, 217, 233, 0.2);
+  background: #161b23;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.52);
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .fs-review-level-menu small {
+  color: #a3aebc;
+}
+
+html[data-theme="dark"] .fs-review-level-option {
+  border-color: rgba(205, 217, 233, 0.18);
+  background: #1c222c;
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .fs-review-level-option:hover,
+html[data-theme="dark"] .fs-review-level-option:focus-visible {
+  border-color: rgba(63, 217, 100, 0.5);
+  background: #10301d;
+}
+
+html[data-theme="dark"] .fs-review-level-option.is-struggle:hover,
+html[data-theme="dark"] .fs-review-level-option.is-struggle:focus-visible {
+  border-color: rgba(255, 152, 92, 0.5);
+  background: #33210f;
+}
+
+html[data-theme="dark"] .fs-review-level-option.is-permanent:hover,
+html[data-theme="dark"] .fs-review-level-option.is-permanent:focus-visible {
+  border-color: rgba(146, 212, 243, 0.46);
+  background: #12293b;
+}
+
+html[data-theme="dark"] .fs-shortcut-altcode {
+  background: rgba(205, 217, 233, 0.14);
+  color: #cdd5e1;
+}
+
+
+/* ── Guided lesson, dark: the surfaces that paint their own colour ──
+   Generated from the light rules (scratchpad gen-guided-dark.py) so no
+   surface is missed. Light near-whites become the card surfaces, tinted
+   states become their dark equivalents, and dark labels on those states
+   are lifted so they stay readable. Flags keep their own colours. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-track,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-progress-track {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-trigger.is-navigable:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-trigger.is-navigable:focus-visible,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-trigger[aria-expanded="true"] {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head > button {
+  background: #1c222c;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head > button:hover {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number {
+  background: #1c222c;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number:hover {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number.is-complete:not(.is-current) {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-struggle-next {
+  background: #3d2f14;
+  color: #ffd68a;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-struggle-next:hover {
+  background: #3d2f14;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-iconbtn {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-iconbtn:hover {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-card {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known:focus-visible {
+  background: #1d472c;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle {
+  background: #1c222c;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:focus-visible {
+  background: #232a35;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:focus-visible {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss) {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss):hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss):focus-visible {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:focus-visible {
+  background: #1c222c;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-title-badge {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:focus-visible {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-board {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-hint kbd {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-card--preview {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-eyebrow i {
+  background: #463618;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-count,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-chip {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-known {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-known:hover {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen-icon,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-missing-play {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-missing-play:hover {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-back {
+  background: #1c222c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-back:hover:not(:disabled) {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip:hover {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,
+html[data-theme="dark"] .fs-match-board,
+html[data-theme="dark"] .fs-order-panel,
+html[data-theme="dark"] .fs-board,
+html[data-theme="dark"] .fs-panel,
+html[data-theme="dark"] .fs-meaning-prompt,
+html[data-theme="dark"] .fs-meaning-select-board,
+html[data-theme="dark"] .fs-listening-prompt,
+html[data-theme="dark"] .fs-translation-bank,
+html[data-theme="dark"] .fs-recall-board ) {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button.is-active {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
+html[data-theme="dark"] .fs-listening-choice,
+html[data-theme="dark"] .fs-meaning-choice,
+html[data-theme="dark"] .fs-meaning-select-choice,
+html[data-theme="dark"] .fs-missing-audio-option,
+html[data-theme="dark"] .fs-translation-option,
+html[data-theme="dark"] .fs-recall-char-slot ) {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
+html[data-theme="dark"] .fs-listening-choice,
+html[data-theme="dark"] .fs-meaning-choice,
+html[data-theme="dark"] .fs-meaning-select-choice,
+html[data-theme="dark"] .fs-missing-audio-option,
+html[data-theme="dark"] .fs-translation-option ):hover:not(:disabled) {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-meaning-prompt {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listening-prompt {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen:hover {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
+html[data-theme="dark"] .fs-missing-option-number ) {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option.is-selected:not(.is-matched):not(.is-wrong),
+html[data-theme="dark"] .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong),
+html[data-theme="dark"] .fs-meaning-select-choice.is-selected:not(.is-correct):not(.is-wrong),
+html[data-theme="dark"] .fs-missing-audio-option.is-selected:not(.is-correct):not(.is-wrong) ) {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched {
+  background: #1d472c;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) .fs-meaning-choice-top kbd,
+html[data-theme="dark"] .fs-meaning-select-choice.is-selected:not(.is-correct):not(.is-wrong) kbd,
+html[data-theme="dark"] .fs-missing-audio-option.is-selected:not(.is-correct):not(.is-wrong) .fs-missing-option-number ) {
+  background: #1d472c;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-translation-modes button.is-active {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-translation-picked-word {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-translation-picked-word:hover {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-missing-choose {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-missing-choose:hover:not(:disabled) {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .bg-zinc-100 {
+  background: #232a35;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,
+html[data-theme="dark"] .hover\:bg-zinc-100,
+html[data-theme="dark"] .hover\:bg-zinc-200 ):hover {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebar {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger[aria-expanded="true"] {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-panel {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-row kbd,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger-keys kbd {
+  background: #232a35;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stageline {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn > span {
+  background: #161b23;
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn:hover > span {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-order-token {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-order-token:hover {
+  background: #1d472c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-input {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
+  background: #161b23;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-top kbd {
+  background: #3d2f14;
+  color: #ffd68a;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-correct {
+  background: #173a24;
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-wrong {
+  background: #451f26;
+  color: #ff9ea8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result.is-good {
+  background: #173a24;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result.is-bad {
+  background: #451f26;
+}
+
+/* The lesson topbar, its logo tile, the praise pop and the language chips
+   fill with literal light colours rather than tokens, so they need saying
+   again in dark. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-topbar {
+  border-bottom-color: rgba(205, 217, 233, 0.14);
+  background: rgba(16, 20, 26, 0.97);
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-brand img {
+  border-color: rgba(63, 217, 100, 0.28);
+  background: #1c222c;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
+  background: #1c222c;
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-english {
+  background: #232a35;
+  color: #cdd5e1;
+}
+
+/* The mixer is portalled into document.body, so — like its light rule — it
+   carries its own token block rather than inheriting one. */
+html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer {
+  color-scheme: dark;
+  --surface: #161b23;
+  --surface-2: #1c222c;
+  --surface-3: #232a35;
+  --border: rgba(205, 217, 233, 0.3);
+  --border-2: rgba(205, 217, 233, 0.44);
+  --text-1: #eef2f8;
+  --text-2: #cdd5e1;
+  --text-3: #a3aebc;
+  --accent: #3fd964;
+  --accent-dim: #10301d;
+  --accent-text: #05170c;
+  --shadow: rgba(0, 0, 0, 0.34);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+  background: #161b23;
+  color: #eef2f8;
+}
+
+
+/* ── Guided lesson, dark: inks that assumed a light surface ──
+   The mirror of the surface pass. These rules hardcode a dark colour
+   and relied on what was behind them being pale; with dark surfaces
+   they vanished. Lifted per hue so a correct answer stays green and a
+   struggle stays amber. Generated by scratchpad/gen-guided-ink.py. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-brand-name {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-brand-byline {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-copy span {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-copy strong,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-progress-pct {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head strong {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head span,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number small,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-struggle-next small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head > button {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head > button:hover {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number svg {
+  color: #57c885;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-lesson-struggle-next {
+  color: #ffd68a;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-iconbtn {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-iconbtn:hover {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-known:focus-visible {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-struggle:focus-visible {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:hover:not(:disabled),
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:focus-visible {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo strong {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss) {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo-dismiss:focus-visible {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-title-badge {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:focus-visible {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-eyebrow {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-h1 {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-sub {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen strong {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-board-top span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-board-top small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-line {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-hint {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-hint kbd {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-count,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-chip {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-count {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-count small {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-language span {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-footer {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-footer svg {
+  color: #57c885;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-known {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-listen-icon,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-missing-play {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip:hover {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button.is-active {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
+html[data-theme="dark"] .fs-listening-choice,
+html[data-theme="dark"] .fs-meaning-choice,
+html[data-theme="dark"] .fs-meaning-select-choice,
+html[data-theme="dark"] .fs-missing-audio-option,
+html[data-theme="dark"] .fs-translation-option,
+html[data-theme="dark"] .fs-recall-char-slot ) {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,
+html[data-theme="dark"] .fs-board-top span,
+html[data-theme="dark"] .fs-meaning-choice-top > span ) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-recall {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-column-head svg {
+  color: #57c885;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-meaning-new {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-check {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-word.is-playing {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
+html[data-theme="dark"] .fs-missing-option-number ) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) .fs-meaning-choice-top kbd,
+html[data-theme="dark"] .fs-meaning-select-choice.is-selected:not(.is-correct):not(.is-wrong) kbd,
+html[data-theme="dark"] .fs-missing-audio-option.is-selected:not(.is-correct):not(.is-wrong) .fs-missing-option-number ) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-translation-modes button.is-active {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue > span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue > span svg {
+  color: #57c885;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue strong {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .text-violet-500 {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
+html[data-theme="dark"] .text-emerald-600) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-amber-700,
+html[data-theme="dark"] .text-amber-600) {
+  color: #f2c377;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-rose-700,
+html[data-theme="dark"] .text-rose-600) {
+  color: #f08d98;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagemeta span {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagemeta strong {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger[aria-expanded="true"] {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger > svg,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-head > div > svg {
+  color: #57c885;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-row kbd,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger-keys kbd {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn > span {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn:hover > span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-active {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-when-label {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-label {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-copy strong {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-new {
+  color: #8fbde6;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-meaning-prompt-icon {
+  color: #7fadd6;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt > small {
+  color: #cdd5e1;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice {
+  color: #eef2f8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-top kbd {
+  color: #f2c377;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice-state {
+  color: #a3aebc;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-selected:not(.is-correct):not(.is-wrong) {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-correct {
+  color: #7fe6a0;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice.is-wrong {
+  color: #ff9ea8;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result strong {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result span {
+  color: #6ddc92;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result.is-bad strong,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-result.is-bad span {
+  color: #ff9ea8;
+}
+
+/* The Tailwind colour utilities the lesson re-points at its own palette.
+   They carry !important, so dark has to answer at the same weight. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700, .text-emerald-600) {
+  color: #7fe6a0 !important;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-amber-700, .text-amber-600) {
+  color: #ffd68a !important;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(
+  .bg-zinc-100,
+  .bg-zinc-200,
+  .hover\:bg-zinc-100,
+  .hover\:bg-zinc-200
+):hover {
+  background: #232a35 !important;
+}
+
+/* The shortcut chips sit inside the grade buttons at 76% white, which on a
+   dark button is a pale smudge with pale text on it. In dark they become a
+   recess instead: darker than the button, with bright type.
+*/
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-kbd,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn:hover .grade-kbd,
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .grade-btn:focus-visible .grade-kbd {
+  border-color: rgba(205, 217, 233, 0.18);
+  background: rgba(0, 0, 0, 0.42);
+  color: #eef2f8;
+  opacity: 0.95;
+}
+
+/* The dark rule for this chip assumes a dark button, but the lesson's Skip
+   is yellow in both themes — white ink on it measured 1.36:1. Dark ink on
+   the dimmed gold reads properly. */
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-step-btn kbd {
+  background: rgba(0, 0, 0, 0.24);
+  color: #2a2205;
+}

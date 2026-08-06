@@ -14,7 +14,7 @@ import {
 } from "./lib/profileStorage";
 import {
   applyStoredThemePreferences,
-  migrateToLightThemeDefault,
+  migrateToDarkThemeDefault,
   watchStoredThemePreferences,
   watchSystemTheme,
 } from "./lib/theme";
@@ -84,7 +84,7 @@ function useMicheonProfile() {
     async function hydrateProfile() {
       await hydrateLocalStorageFromSharedStorage();
       if (cancelled) return;
-      migrateToLightThemeDefault();
+      migrateToDarkThemeDefault();
       applyStoredThemePreferences();
       const current = getAuthUser();
       if (current) recordKnownProfile(current);

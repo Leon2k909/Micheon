@@ -1249,7 +1249,7 @@ async function createWindow() {
     minHeight: 600,
     // Opens in the colour the learner last saw, so neither theme flashes the
     // other before the page paints.
-    backgroundColor: getDesktopSettings().theme === "dark" ? "#12140f" : "#eff0ed",
+    backgroundColor: getDesktopSettings().theme === "dark" ? "#0b0e13" : "#eff0ed",
     title: "Micheon",
     // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
     // for a clean, on-brand look like Discord/Slack.

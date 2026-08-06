@@ -74,6 +74,20 @@ const preload = read("electron/preload.cjs");
 if (!/setDesktopTheme/.test(preload)) {
   failures.push("the preload bridge cannot pass the theme to the main process");
 }
+// ── dark is the default, but never over a real choice ────────────────────
+if (!/return "dark";/.test(theme) || /stored === "system" \? stored : "light"/.test(theme)) {
+  failures.push("theme.ts no longer defaults to dark");
+}
+if (!/THEME_CHOSEN_KEY/.test(theme) || !/migrateToDarkThemeDefault/.test(theme)) {
+  failures.push("nothing separates an install that never chose from one that picked light — the migration would overwrite a real choice");
+}
+if (!/localStorage\.setItem\(THEME_CHOSEN_KEY, "1"\)/.test(theme)) {
+  failures.push("setTheme does not record that the learner chose, so the next default migration would overwrite them");
+}
+if (!/migrateToDarkThemeDefault\(\)/.test(app)) {
+  failures.push("App.tsx never runs the dark default migration");
+}
+
 if (!/germDesktop\?\.setDesktopTheme/.test(theme)) {
   failures.push("setTheme never tells the desktop shell, so the hint is never written");
 }

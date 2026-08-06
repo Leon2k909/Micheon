@@ -31,8 +31,8 @@ applyThemeToDom(bootTheme);
 if (bootTheme === "dark") {
   // index.html carries a light background inline so the first frame is not
   // bare white; inline styles beat the stylesheet, so dark has to say so.
-  document.documentElement.style.background = "#12140f";
-  document.body.style.background = "#12140f";
+  document.documentElement.style.background = "#0b0e13";
+  document.body.style.background = "#0b0e13";
 }
 // Paint only — persisting here would pin the first-launch default forever
 // and stop the slow-device check from ever being consulted again.

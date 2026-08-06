@@ -1,7 +1,13 @@
 import { syncLocalStorageItem } from "./profileStorage";
 
 const KEY = "gl-theme";
-const LIGHT_DEFAULT_MIGRATION_KEY = "micheon-light-default-v1";
+const DARK_DEFAULT_MIGRATION_KEY = "micheon-dark-default-v1";
+/**
+ * Set the first time a learner picks a theme for themselves. Before the
+ * control existed there was no way to choose, so a stored "light" was the
+ * app's decision, not theirs — this is what tells the two apart.
+ */
+const THEME_CHOSEN_KEY = "gl-theme-chosen";
 
 export type Theme = "dark" | "light";
 
@@ -14,14 +20,14 @@ export type ThemePreference = Theme | "system";
 const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
 
 export function systemTheme(): Theme {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "light";
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "dark";
   return window.matchMedia(SYSTEM_DARK_QUERY).matches ? "dark" : "light";
 }
 
 export function getThemePreference(): ThemePreference {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const stored = localStorage.getItem(KEY);
-  return stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
 }
 
 export function resolveTheme(preference: ThemePreference = getThemePreference()): Theme {
@@ -34,19 +40,21 @@ export function getTheme(): Theme {
 }
 
 /**
- * Promote the finished light shell for existing installs once. Older Micheon
- * builds persisted dark mode while the new dashboard was still a beta, so
- * simply changing the fallback would leave those users in a partly themed UI.
- * The marker deliberately is not part of the synced `gl-` namespace: each
- * browser/app installation performs this migration after hydrating its shared
- * profile, then the new light preference becomes the synced source of truth.
+ * Dark becomes the default.
+ *
+ * The earlier light migration wrote "light" into every install, so simply
+ * changing the fallback would move nobody: an install that never chose looks
+ * identical to one that did. THEME_CHOSEN_KEY is what separates them — it is
+ * only written when someone presses an option in Appearance. Installs that
+ * never chose are moved to dark once; a real choice is never touched.
  */
-export function migrateToLightThemeDefault() {
+export function migrateToDarkThemeDefault() {
   if (typeof window === "undefined") return;
-  if (localStorage.getItem(LIGHT_DEFAULT_MIGRATION_KEY) === "1") return;
-  localStorage.setItem(KEY, "light");
-  localStorage.setItem(LIGHT_DEFAULT_MIGRATION_KEY, "1");
-  syncLocalStorageItem(KEY, "light");
+  if (localStorage.getItem(DARK_DEFAULT_MIGRATION_KEY) === "1") return;
+  localStorage.setItem(DARK_DEFAULT_MIGRATION_KEY, "1");
+  if (localStorage.getItem(THEME_CHOSEN_KEY) === "1") return;
+  localStorage.setItem(KEY, "dark");
+  syncLocalStorageItem(KEY, "dark");
 }
 
 /**
@@ -93,6 +101,7 @@ export function setTheme(preference: ThemePreference) {
   applyThemeToDom(resolved);
   if (typeof window !== "undefined") {
     localStorage.setItem(KEY, preference);
+    localStorage.setItem(THEME_CHOSEN_KEY, "1");
     // "gl-theme" matches the "gl-" sync prefix, so this keeps the shared store
     // authoritative; the next boot's hydrate reads it back instead of reverting.
     syncLocalStorageItem(KEY, preference);

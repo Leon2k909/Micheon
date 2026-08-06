@@ -5293,45 +5293,45 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 /* Prototype dark mode follows the stored app preference. The hierarchy stays
    warm and tactile, with green remaining the only primary action colour. */
 html[data-theme="dark"] .new-ui-prototype {
-  --np-bg: #12140f;
-  --np-shell: #161813;
-  --np-surface: #1e211a;
-  --np-surface-soft: #262a21;
-  --np-text: #f3f4f0;
-  --np-muted: #bcc0b6;
-  --np-soft: #99a094;
-  --np-line: rgba(226, 232, 219, 0.16);
-  --np-green: #62d06a;
-  --np-green-dark: #7bd982;
-  --np-green-soft: #22331f;
+  --np-bg: #0b0e13;
+  --np-shell: #0d1117;
+  --np-surface: #161b23;
+  --np-surface-soft: #1c222c;
+  --np-text: #eef2f8;
+  --np-muted: #c2cbd8;
+  --np-soft: #98a3b3;
+  --np-line: rgba(205, 217, 233, 0.16);
+  --np-green: #3fd964;
+  --np-green-dark: #6ee88b;
+  --np-green-soft: #10301d;
   --np-violet: #b8a2ff;
   --np-violet-soft: #342b52;
   --np-yellow: #ffc847;
   --np-blue: #77c9ee;
   --np-danger: #ff8989;
-  --surface: #1e211a;
-  --surface-2: #262a21;
-  --surface-3: #2f342a;
-  --border: rgba(226, 232, 219, 0.3);
-  --border-2: rgba(226, 232, 219, 0.44);
-  --text-1: #f3f4f0;
-  --text-2: #d7dad2;
-  --text-3: #b0b5aa;
-  --accent: #62d06a;
-  --accent-dim: #22331f;
-  --accent-text: #0f1c12;
-  --accent-hover: #6bd171;
-  --accent-pressed: #3b9f45;
+  --surface: #161b23;
+  --surface-2: #1c222c;
+  --surface-3: #232a35;
+  --border: rgba(205, 217, 233, 0.3);
+  --border-2: rgba(205, 217, 233, 0.44);
+  --text-1: #eef2f8;
+  --text-2: #cdd5e1;
+  --text-3: #a3aebc;
+  --accent: #3fd964;
+  --accent-dim: #10301d;
+  --accent-text: #05170c;
+  --accent-hover: #55e278;
+  --accent-pressed: #2fae4f;
   --mint: #5bd4a0;
   --yellow: #ffc847;
-  --yellow-dim: #453a1d;
+  --yellow-dim: #3b3320;
   --yellow-ink: #ffe083;
   --orange: #f4a654;
-  --ink: #edf3ec;
-  --ink-text: #152018;
-  --success-bg: #203b2a;
+  --ink: #e9eef6;
+  --ink-text: #0d1117;
+  --success-bg: #12301f;
   --success-text: #8ce3a0;
-  --info-bg: #20384a;
+  --info-bg: #12293b;
   --info-text: #92d4f3;
   --shadow: rgba(0, 0, 0, 0.2);
   --shadow-strong: rgba(0, 0, 0, 0.36);
@@ -5423,7 +5423,7 @@ html[data-theme="dark"] .np-equipped-badge {
 html[data-theme="dark"] .np-notification-panel,
 html[data-theme="dark"] .np-profile-menu {
   border-color: var(--np-line);
-  background: rgba(24, 34, 26, 0.98);
+  background: rgba(22, 27, 35, 0.98);
   box-shadow:
     0 5px 0 rgba(0, 0, 0, 0.24),
     0 24px 55px rgba(0, 0, 0, 0.42);
@@ -5475,7 +5475,7 @@ html[data-theme="dark"] .np-practice-card,
 html[data-theme="dark"] .np-lesson-path,
 html[data-theme="dark"] .np-progress-panel,
 html[data-theme="dark"] .np-page-card {
-  background: rgba(24, 34, 26, 0.98);
+  background: rgba(22, 27, 35, 0.98);
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.22),
     0 15px 30px rgba(0, 0, 0, 0.22);
@@ -5535,7 +5535,7 @@ html[data-theme="dark"] .np-feedback.is-wrong {
 
 html[data-theme="dark"] .np-lesson-row--mint {
   border-color: rgba(88, 199, 95, 0.32);
-  background: #203a24;
+  background: #12301d;
 }
 
 html[data-theme="dark"] .np-lesson-row--yellow {
@@ -5636,38 +5636,38 @@ html[data-theme="dark"] .np-page-search input::placeholder {
 
 html[data-theme="dark"] .np-learning-pills button.is-active {
   color: var(--np-green-dark);
-  background: #203a24;
+  background: #12301d;
 }
 
 html[data-theme="dark"] .np-feature-host {
   --bg: transparent;
-  --surface: #1e211a;
-  --surface-2: #262a21;
-  --surface-3: #2f342a;
-  --border: rgba(226, 232, 219, 0.3);
-  --border-2: rgba(226, 232, 219, 0.44);
-  --text-1: #f3f4f0;
-  --text-2: #d7dad2;
-  --text-3: #b0b5aa;
-  --accent: #62d06a;
-  --accent-dim: #22331f;
-  --accent-text: #0f1c12;
-  --accent-hover: #6bd171;
-  --accent-pressed: #3b9f45;
-  --yellow-dim: #453a1d;
+  --surface: #161b23;
+  --surface-2: #1c222c;
+  --surface-3: #232a35;
+  --border: rgba(205, 217, 233, 0.3);
+  --border-2: rgba(205, 217, 233, 0.44);
+  --text-1: #eef2f8;
+  --text-2: #cdd5e1;
+  --text-3: #a3aebc;
+  --accent: #3fd964;
+  --accent-dim: #10301d;
+  --accent-text: #05170c;
+  --accent-hover: #55e278;
+  --accent-pressed: #2fae4f;
+  --yellow-dim: #3b3320;
   --yellow-ink: #ffe083;
-  --ink: #edf3ec;
-  --ink-text: #152018;
-  --success-bg: #203b2a;
+  --ink: #e9eef6;
+  --ink-text: #0d1117;
+  --success-bg: #12301f;
   --success-text: #8ce3a0;
-  --info-bg: #20384a;
+  --info-bg: #12293b;
   --info-text: #92d4f3;
   --shadow: rgba(0, 0, 0, 0.2);
   --shadow-strong: rgba(0, 0, 0, 0.36);
 }
 
 html[data-theme="dark"] .np-feature-host .card {
-  background: rgba(24, 34, 26, 0.98);
+  background: rgba(22, 27, 35, 0.98);
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.23),
     0 15px 30px rgba(0, 0, 0, 0.22);
@@ -5688,7 +5688,7 @@ html[data-theme="dark"] .np-feature-host .mastery-card__title {
 
 html[data-theme="dark"] .np-feature-host .mastery-card__current,
 html[data-theme="dark"] .np-feature-host .mastery-card__milestone.is-reached {
-  background: #203a24;
+  background: #12301d;
 }
 
 html[data-theme="dark"] .np-feature-host .mastery-card__current > span:not(:first-child) {
@@ -5785,7 +5785,7 @@ html[data-theme="dark"] .np-shop-heading p {
 html[data-theme="dark"] .np-shop-item,
 html[data-theme="dark"] .np-feature-directory > button {
   color: var(--np-text);
-  background: rgba(24, 34, 26, 0.98);
+  background: rgba(22, 27, 35, 0.98);
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.22),
     0 14px 25px rgba(0, 0, 0, 0.2);
@@ -5890,7 +5890,7 @@ html[data-theme="dark"] .np-fluency-hours > strong {
 html[data-theme="dark"] .np-icon-button:hover,
 html[data-theme="dark"] .np-profile-button:hover {
   border-color: rgba(96, 211, 107, 0.34);
-  background: #203a24;
+  background: #12301d;
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.26),
     0 13px 24px rgba(0, 0, 0, 0.28);
@@ -5919,13 +5919,13 @@ html[data-theme="dark"] .np-lesson-row:hover {
 @media (max-width: 760px) {
   html[data-theme="dark"] .new-ui-prototype {
     background:
-      radial-gradient(circle at 86% 6%, rgba(48, 83, 49, 0.34), transparent 24%),
+      radial-gradient(circle at 86% 6%, rgba(45, 96, 62, 0.3), transparent 24%),
       var(--np-shell);
   }
 
   html[data-theme="dark"] .np-mobile-nav {
     border-color: var(--np-line);
-    background: rgba(24, 34, 26, 0.96);
+    background: rgba(22, 27, 35, 0.96);
     box-shadow:
       0 4px 0 rgba(0, 0, 0, 0.24),
       0 16px 34px rgba(0, 0, 0, 0.36);
@@ -5937,7 +5937,7 @@ html[data-theme="dark"] .np-lesson-row:hover {
 
   html[data-theme="dark"] .np-mobile-nav button.is-active {
     color: var(--np-green-dark);
-    background: #203a24;
+    background: #12301d;
   }
 }
 
@@ -5981,7 +5981,7 @@ html[data-theme="dark"] .np-coin-pack.is-featured .np-coin-pack-copy small {
 html[data-theme="dark"] .np-shop-preview-message {
   border-color: rgba(96, 211, 107, 0.25);
   color: #a9e7ae;
-  background: #203a24;
+  background: #12301d;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
 }
 
@@ -7263,7 +7263,7 @@ html[data-theme="dark"] .np-social-tabs > button:hover {
 html[data-theme="dark"] .np-social-tabs > button.is-active {
   border-color: rgba(96, 211, 107, 0.32);
   color: #8fe29a;
-  background: #203a24;
+  background: #12301d;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.26);
 }
 
@@ -7317,14 +7317,14 @@ html[data-theme="dark"] .np-friend-row:hover {
 
 html[data-theme="dark"] .np-leaderboard-list > article.is-current {
   border-color: rgba(96, 211, 107, 0.34);
-  background: #203a24;
+  background: #12301d;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
 }
 
 html[data-theme="dark"] .np-social-preview-notice {
   border-color: rgba(96, 211, 107, 0.24);
   color: #9fe5a7;
-  background: #203a24;
+  background: #12301d;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.23);
 }
 
@@ -7593,3 +7593,45 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
 
 .np-notification-restore svg { width: 14px; height: 14px; }
 .np-notification-restore:hover { border-color: var(--border-2); }
+
+/* ── surfaces that hardcode a light fill need a dark answer ──────────────── */
+/* Everything token-driven flips for free; these paint literal near-whites,
+   so in dark mode they kept their white cards while the text on them went
+   near-white too and the headings vanished. */
+html[data-theme="dark"] .np-practice-launcher {
+  border-color: rgba(63, 217, 100, 0.22);
+  background:
+    radial-gradient(circle at 92% 0%, rgba(45, 96, 62, 0.42), transparent 34%),
+    var(--np-surface);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.26),
+    0 15px 28px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme="dark"] .np-practice-tools > button {
+  background: var(--np-surface-soft);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.24),
+    0 10px 20px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .np-practice-tools > button:hover {
+  border-color: rgba(63, 217, 100, 0.5);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.3),
+    0 14px 24px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme="dark"] .np-social-secondary-button:hover {
+  border-color: rgba(63, 217, 100, 0.4);
+  background: var(--np-green-soft);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .np-badge-list--expanded .np-achievement.is-unlocked {
+  background: var(--np-green-soft);
+}
+
+html[data-theme="dark"] .np-social-preview-notice > button:hover {
+  background: var(--np-surface-soft);
+}
