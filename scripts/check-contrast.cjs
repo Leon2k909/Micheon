@@ -120,7 +120,7 @@ function audit(label, anchors, { textMin, edgeMin }) {
 }
 
 const LIGHT = "  --surface: #ffffff;";
-const DARK = "  --surface: #18221a;";
+const DARK = "  --surface: #1e211a;";
 
 audit("light", LIGHT, { textMin: 4.5, edgeMin: 2.0 });
 audit("dark", DARK, { textMin: 4.5, edgeMin: 1.9 });

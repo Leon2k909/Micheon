@@ -146,7 +146,7 @@ html.is-prototype-shell #root {
 html[data-theme="dark"].is-prototype-shell,
 html[data-theme="dark"].is-prototype-shell body,
 html[data-theme="dark"].is-prototype-shell #root {
-  background: #111a13;
+  background: #12140f;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -375,7 +375,7 @@ button { cursor: pointer; }
      #fbfdfa, comfortably past the 3:1 a control boundary needs. */
   --card-edge: #7e827c;
 }
-html[data-theme="dark"] { --shell-top: #111a13; --shell-bottom: #111a13; --card-edge: #5d6a5c; }
+html[data-theme="dark"] { --shell-top: #161813; --shell-bottom: #12140f; --card-edge: #6e7367; }
 html.is-electron { --titlebar-h: 32px; --app-h: calc(100dvh - 32px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the

@@ -5,10 +5,32 @@ const LIGHT_DEFAULT_MIGRATION_KEY = "micheon-light-default-v1";
 
 export type Theme = "dark" | "light";
 
-export function getTheme(): Theme {
+/**
+ * What the learner CHOSE, which is not always what is on screen: "system"
+ * resolves against the OS setting and follows it while the app is open.
+ */
+export type ThemePreference = Theme | "system";
+
+const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
+
+export function systemTheme(): Theme {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "light";
+  return window.matchMedia(SYSTEM_DARK_QUERY).matches ? "dark" : "light";
+}
+
+export function getThemePreference(): ThemePreference {
   if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem(KEY);
-  return stored === "light" || stored === "dark" ? stored : "light";
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
+}
+
+export function resolveTheme(preference: ThemePreference = getThemePreference()): Theme {
+  return preference === "system" ? systemTheme() : preference;
+}
+
+/** The theme actually on screen. Callers that only paint want this one. */
+export function getTheme(): Theme {
+  return resolveTheme();
 }
 
 /**
@@ -58,7 +80,7 @@ export function watchStoredThemePreferences(): () => void {
 
 /** Repaint the stored mode after shared-profile hydration. */
 export function applyStoredThemePreferences() {
-  applyThemeToDom(getTheme());
+  applyThemeToDom(resolveTheme());
 }
 
 /**
@@ -66,12 +88,43 @@ export function applyStoredThemePreferences() {
  * shared store so it survives restarts and follows them across browsers/tools
  * on this machine. Only call this from an explicit user action, never on boot.
  */
-export function setTheme(theme: Theme) {
-  applyThemeToDom(theme);
+export function setTheme(preference: ThemePreference) {
+  const resolved = resolveTheme(preference);
+  applyThemeToDom(resolved);
   if (typeof window !== "undefined") {
-    localStorage.setItem(KEY, theme);
+    localStorage.setItem(KEY, preference);
     // "gl-theme" matches the "gl-" sync prefix, so this keeps the shared store
     // authoritative; the next boot's hydrate reads it back instead of reverting.
-    syncLocalStorageItem(KEY, theme);
+    syncLocalStorageItem(KEY, preference);
+    // The native window paints before any of this runs, so the choice is also
+    // handed to the main process for the NEXT launch's backgroundColor.
+    // Without it a dark-mode learner gets a white flash on every start.
+    try {
+      (window as any).germDesktop?.setDesktopTheme?.(resolved);
+    } catch {
+      /* browser build, or an older desktop shell: nothing to tell */
+    }
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }
+}
+
+export const THEME_CHANGE_EVENT = "gl-theme-changed";
+
+/**
+ * Follow the OS while the preference is "system".
+ *
+ * Returns a cleanup function. Re-reads the preference on every change rather
+ * than capturing it, so switching to Light or Dark stops the following without
+ * needing the listener to be torn down and rebuilt.
+ */
+export function watchSystemTheme(): () => void {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return () => {};
+  const query = window.matchMedia(SYSTEM_DARK_QUERY);
+  const onChange = () => {
+    if (getThemePreference() !== "system") return;
+    applyThemeToDom(systemTheme());
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+  };
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
 }

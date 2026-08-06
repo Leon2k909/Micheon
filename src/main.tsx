@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App, { MotionGate } from "./App";
 import { SilencedAudioPrompt } from "./components/SilencedAudioPrompt";
-import { applyThemeToDom, getTheme } from "./lib/theme";
+import { applyThemeToDom, resolveTheme } from "./lib/theme";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
 import { watchRuntimePerformance } from "./lib/runtimePerformance";
@@ -23,7 +23,17 @@ if (initialParams.has("guided")) {
 
 // Paint saved theme + effects preference before first render to avoid flash.
 // Paint-only (no sync) so it can't clobber the shared value hydrate will load.
-applyThemeToDom(isMainShell || initialParams.has("guided") ? "light" : getTheme());
+// Every surface honours the stored choice — the main shell used to be pinned
+// to light here, which meant a learner in dark mode watched the app load
+// white and then flip.
+const bootTheme = resolveTheme();
+applyThemeToDom(bootTheme);
+if (bootTheme === "dark") {
+  // index.html carries a light background inline so the first frame is not
+  // bare white; inline styles beat the stylesheet, so dark has to say so.
+  document.documentElement.style.background = "#12140f";
+  document.body.style.background = "#12140f";
+}
 // Paint only — persisting here would pin the first-launch default forever
 // and stop the slow-device check from ever being consulted again.
 applyEffects(getEffects());

@@ -1247,7 +1247,9 @@ async function createWindow() {
     height: 820,
     minWidth: 880,
     minHeight: 600,
-    backgroundColor: "#eff0ed",
+    // Opens in the colour the learner last saw, so neither theme flashes the
+    // other before the page paints.
+    backgroundColor: getDesktopSettings().theme === "dark" ? "#12140f" : "#eff0ed",
     title: "Micheon",
     // Frameless: we draw our own title bar in the app (src/components/TitleBar.tsx)
     // for a clean, on-brand look like Discord/Slack.
@@ -1466,6 +1468,12 @@ ipcMain.handle("windows-settings:set-launch-at-login", (event, enabled) => {
 ipcMain.handle("windows-settings:set-close-behavior", (event, closeBehavior) => {
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
   saveDesktopSettings({ closeBehavior });
+  return windowsSettingsSnapshot();
+});
+
+ipcMain.handle("windows-settings:set-theme", (event, theme) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
+  saveDesktopSettings({ theme: theme === "dark" ? "dark" : "light" });
   return windowsSettingsSnapshot();
 });
 

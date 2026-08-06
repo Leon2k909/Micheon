@@ -13,6 +13,10 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.invoke("windows-settings:set-launch-at-login", Boolean(enabled)),
   setCloseBehavior: (behavior) =>
     ipcRenderer.invoke("windows-settings:set-close-behavior", behavior),
+  // Remembers the resolved theme so the next launch opens the native window
+  // in the right colour instead of flashing white at a dark-mode learner.
+  setDesktopTheme: (theme) =>
+    ipcRenderer.invoke("windows-settings:set-theme", theme),
   // Main-window zoom. All changes route through the main process so every
   // path (these calls, Ctrl+=/-/0, Ctrl+wheel) walks the same ladder and the
   // mascot windows are re-pinned. Each resolves to the applied factor.

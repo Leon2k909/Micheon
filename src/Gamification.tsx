@@ -14,6 +14,7 @@ import {
   LogOut,
   Zap,
   Languages,
+  MoonStar,
   Palette,
   Monitor,
   Layers,
@@ -51,6 +52,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { FluencyMeter } from "@/components/FluencyMeter";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
+import { THEME_CHANGE_EVENT, getThemePreference, setTheme, systemTheme, type ThemePreference } from "@/lib/theme";
 import { getEffects, setEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
@@ -519,6 +521,18 @@ export default function GamificationPanel({
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const [speechRate, setSpeechRateState] = useState<number>(() => getTtsSpeechRate());
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => getThemePreference());
+  // Another window (or the OS, while on "system") can change the theme; keep
+  // the chosen option in step rather than showing a stale selection.
+  useEffect(() => {
+    const sync = () => setThemePreferenceState(getThemePreference());
+    window.addEventListener(THEME_CHANGE_EVENT, sync);
+    window.addEventListener("storage-sync-completed", sync);
+    return () => {
+      window.removeEventListener(THEME_CHANGE_EVENT, sync);
+      window.removeEventListener("storage-sync-completed", sync);
+    };
+  }, []);
   const [guidedBackground, setGuidedBackgroundState] = useState<GuidedBackground>(() => getGuidedBackground());
   const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
   const [guidedBackgroundError, setGuidedBackgroundError] = useState("");
@@ -793,10 +807,60 @@ export default function GamificationPanel({
                   {ui("Sections you'll rarely need day to day. Open one to change it.")}
                 </p>
                 <SettingsCategory
-                  description={ui("Lesson background and app zoom.")}
+                  description={ui("Theme, lesson background, and app zoom.")}
                   icon={Palette}
                   title={ui("Appearance")}
                 >
+                  <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex items-start gap-2">
+                      <MoonStar className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("App theme")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {ui("Light for daytime study, dark for late evenings. Lessons keep their own background either way.")}
+                        </p>
+                      </div>
+                    </div>
+                    <div aria-label={ui("App theme")} className="mt-3 grid gap-2 sm:grid-cols-3" role="radiogroup">
+                      {([
+                        ["light", "Light", "Sun"],
+                        ["dark", "Dark", "Moon"],
+                        ["system", "Match system", "Monitor"],
+                      ] as const).map(([value, label]) => {
+                        const active = themePreference === value;
+                        return (
+                          <button
+                            aria-checked={active}
+                            className={cn(
+                              "rounded-[16px] border px-3 py-3 text-left transition-colors",
+                              active
+                                ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                                : "border-[color:var(--card-edge)] bg-[var(--surface-2)] hover:bg-[var(--surface-3)]"
+                            )}
+                            key={value}
+                            onClick={() => {
+                              setTheme(value);
+                              setThemePreferenceState(value);
+                            }}
+                            role="radio"
+                            type="button"
+                          >
+                            <span className={cn(
+                              "block text-sm font-black",
+                              active ? "text-[var(--accent-strong,var(--accent))]" : "text-[var(--text-1)]"
+                            )}>
+                              {ui(label)}
+                            </span>
+                            <span className="mt-0.5 block text-[11px] font-semibold text-[var(--text-3)]">
+                              {value === "system"
+                                ? `${ui("Currently")} ${ui(systemTheme() === "dark" ? "dark" : "light")}`
+                                : value === "dark" ? ui("Easier on tired eyes") : ui("The default")}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex items-start gap-2">
                       <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />

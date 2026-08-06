@@ -16,6 +16,7 @@ import {
   applyStoredThemePreferences,
   migrateToLightThemeDefault,
   watchStoredThemePreferences,
+  watchSystemTheme,
 } from "./lib/theme";
 import { isElectronApp } from "./lib/platform";
 import { MotionConfig } from "framer-motion";
@@ -104,6 +105,8 @@ function useMicheonProfile() {
   }, []);
 
   useEffect(() => watchStoredThemePreferences(), []);
+  // Follows the OS while the preference is "system".
+  useEffect(() => watchSystemTheme(), []);
 
   return { ready, setUser, user };
 }
