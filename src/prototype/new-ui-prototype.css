@@ -9479,3 +9479,27 @@ html[data-theme="dark"][data-accent="custom"] .np-social-presence {
 html[data-theme="dark"][data-accent="custom"] .np-notification-filters-head button {
   color: var(--accent-ink, var(--np-green));
 }
+
+/* ── Requested overrides, kept at the end of the file on purpose ─────────────
+   These are asked-for appearance choices, not derived ones, so they must not be
+   rewritten by an accent sweep. An earlier version of this block lived up in
+   the dark+custom section and relied on source order alone; the v1.2.186 sweep
+   rewrote that section and took it with it, and the cards went back to black.
+   Hence !important, and hence down here. Anything added below the accent
+   sections is deliberate — please re-check it rather than regenerate over it. */
+
+/* The study estimate and the level card are filled with --accent-pressed. Their
+   text is --accent-text, which is chosen for contrast and lands near-black
+   (11, 14, 19) — readable at 5.7:1, but black on pink, and white was asked for
+   to match the lesson preview banner. White measures 3.4:1 on this fill: a
+   deliberate trade of contrast for consistency, not an oversight.
+   Dark only — the light accent fills these same cards with a pale --accent-dim
+   that white would vanish into. The level badge and the level label are already
+   white and are left alone. */
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong,
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p,
+html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
+html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
+  color: #fff !important;
+}
