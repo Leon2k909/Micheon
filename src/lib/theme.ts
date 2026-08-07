@@ -65,6 +65,21 @@ export function migrateToDarkThemeDefault() {
 export function applyThemeToDom(theme: Theme) {
   if (typeof window !== "undefined") {
     document.documentElement.setAttribute("data-theme", theme);
+    // Tell the native shell what colour to open in NEXT time — on every paint,
+    // not only when someone visits Appearance and picks something.
+    //
+    // This used to live in setTheme alone, so an install that had been dark
+    // since before the control existed (or that was moved to dark by the
+    // default migration, which only writes localStorage) still had "light"
+    // saved as its paint hint. The window opened white and the page painted
+    // dark over it: a flash on every single launch, for exactly the people who
+    // had never touched the setting. Doing it here self-heals those installs
+    // on their first run.
+    try {
+      (window as any).germDesktop?.setDesktopTheme?.(theme);
+    } catch {
+      /* browser build, or an older desktop shell: nothing to tell */
+    }
     // A custom accent is derived per theme — the dark shades come off a
     // lifted base — so the paint has to follow every theme change.
     void import("@/lib/accentColour").then((m) => m.applyAccentColour()).catch(() => {});

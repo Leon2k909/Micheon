@@ -151,6 +151,11 @@ html[data-theme="dark"].is-prototype-shell #root {
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
+  /* A page should never scroll sideways. Whatever overruns its width is a
+     bug in that element, not something the whole document should grow a
+     scrollbar for — and a horizontal bar across the bottom of a desktop
+     app looks broken even when nothing important is cut off. */
+  overflow-x: clip;
   margin: 0;
   min-height: 100%;
   background: var(--bg);

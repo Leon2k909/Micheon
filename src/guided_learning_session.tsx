@@ -23,6 +23,16 @@ import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
+/**
+ * How far behind the lead a pack-mate may be and still take a fresh slot.
+ *
+ * On the priority scale a band is 10,000,000 and vocabulary difficulty
+ * contributes up to 5,000,000, so this is roughly a quarter of the difficulty
+ * range — close enough to feel like the same lesson, far from enough to reach
+ * the back of a pack.
+ */
+const PACK_MATE_SCORE_MARGIN = 1_200_000;
+
 const NEW_PER_LESSON_TARGET = 3;
 import { COMPLETED_KEY, loadGradeStore, progressEntryForId, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
@@ -887,7 +897,15 @@ export default function GuidedLearningSession() {
             lead,
             ...chainAfterLead,
             ...pinnedChains,
-            ...candidates.filter((candidate) => candidate !== lead && !pinned.has(candidate) && candidate.pId === lead.pId),
+            // Pack-mates come next so the sitting feels coherent — but only the
+            // ones that are still nearly as worth learning as the lead. Without
+            // a bound, one well-chosen lead dragged in whatever happened to sit
+            // beside it: a driving lead pulled in "Könnten Sie bitte den
+            // Reifendruck überprüfen?", 1,500 places worse. Coherence is worth
+            // a little; it is not worth a slot you would rather have spent on
+            // something you will actually say.
+            ...candidates.filter((candidate) => candidate !== lead && !pinned.has(candidate)
+              && candidate.pId === lead.pId && candidate.score - lead.score <= PACK_MATE_SCORE_MARGIN),
             ...candidates.filter((candidate) => candidate !== lead && !pinned.has(candidate) && candidate.pId !== lead.pId),
           ].map((candidate) => ({
             candidate,

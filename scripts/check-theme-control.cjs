@@ -154,6 +154,23 @@ if (!/prefers-color-scheme: dark/.test(head)) {
   }
 }
 
+// The paint hint has to be refreshed on every boot, not only when someone
+// opens Appearance and picks something. Installs that were already dark — or
+// that the default migration moved to dark — never called setTheme, so their
+// saved hint stayed "light" and the native window flashed white on every
+// launch for precisely the people who had never touched the setting.
+{
+  // Scoped to applyThemeToDom's own body. A character window is not enough:
+  // setTheme calls setDesktopTheme too, so a loose search matched that one and
+  // the check passed with the boot call deleted.
+  const start = theme.indexOf("export function applyThemeToDom");
+  const next = theme.indexOf("export function", start + 10);
+  const body = start < 0 ? "" : theme.slice(start, next < 0 ? undefined : next);
+  if (!/setDesktopTheme/.test(body)) {
+    failures.push("the native window's colour is only updated when the theme is changed, so an install that never chose one keeps flashing the wrong colour");
+  }
+}
+
 const preload = read("electron/preload.cjs");
 if (!/setDesktopTheme/.test(preload)) {
   failures.push("the preload bridge cannot pass the theme to the main process");

@@ -272,6 +272,14 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     // stat chips on the profile page. --success-* stays green in every
     // accent, because that one is carrying meaning.
     ["--mint", shades.accent],
+    // The activity chart has its own family of tokens, so it kept its green
+    // bars under every other colour. They are decorative — how much you
+    // studied is not a success/failure signal — so they follow the accent.
+    ["--activity-green-bar", shades.accentHover],
+    ["--activity-green-bar-strong", shades.accent],
+    ["--activity-green-icon", shades.accent],
+    ["--activity-green-text", readableInk(shades.accent, theme)],
+    ["--activity-green-soft-bg", shades.accentDim],
     // Bare channels, so a translucent gradient can be built from the accent.
     // The course hero's wash fades green to nothing across the artwork; it
     // needs the colour without an alpha baked in, which a hex token cannot

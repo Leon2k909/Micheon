@@ -192,6 +192,18 @@ export const DAILY_LIFE_PACKS = [
   "part329",
   "part340",
   "part370",
+  // From the curated phrasebank, which the first pass never reached:
+  "cb-work",
+  "cb-phone",
+  "cb-emotions",
+  "cb-housing",
+  "cb-social",
+  "cb-german-rules",
+  "cb-post-packages",
+  "cb-diet-allergies",
+  "cb-apartment-repairs",
+  "cb-internet-support",
+  "cb-body-skin",
 ];
 
 /** Comes up now and then rather than most weeks. */
@@ -372,6 +384,23 @@ export const OCCASIONAL_PACKS = [
   "part379",
   "part378",
   "part380",
+  // From the curated phrasebank:
+  "cb-hotel",
+  "cb-train-travel",
+  "cb-driving",
+  "cb-hobbies",
+  "cb-celebrations",
+  "cb-amt",
+  "cb-pets-animals",
+  "cb-kids-school",
+  "cb-beer-culture",
+  "cb-nightlife",
+  "cb-football-culture",
+  "cb-flea-markets",
+  "cb-barber-requests",
+  "cb-gardening-plants",
+  "cb-medical-bureaucracy",
+  "cb-traffic-fines",
 ];
 
 /** Rare life events, heavy subjects and specific interests. */
@@ -420,6 +449,13 @@ export const LIFE_EVENT_PACKS = [
   "part258",
   "part262",
   "part362",
+  // From the curated phrasebank:
+  "cb-dating",
+  "cb-finance-insurance",
+  "cb-family-problems",
+  "cb-dreams-aspirations",
+  "cb-money-woes",
+  "cb-salary-negotiations",
 ];
 
 const essentialRank = new Map<string, number>(

@@ -106,12 +106,24 @@ if (everydayRepair && deliberateAdmission && speedCamera) {
   );
 }
 
+// The middle used to be one "situational" band holding 85% of the catalogue,
+// so this example pack was the flat bucket. It is now split by how often the
+// situation arises, and the bands must stay strictly ordered.
 check(
-  "the priority model separates essential, situational, specialist and extra material",
+  "the priority model separates essential, everyday, the situational middle, specialist and extra",
   conversationPriorityInfo("cb-conversation-repair").key === "essential"
-    && conversationPriorityInfo("cb-traffic-fines").key === "situational"
+    && conversationPriorityInfo("cb-traffic-fines").key === "occasional"
     && conversationPriorityInfo("part29").key === "specialist"
     && conversationPriorityInfo("tatoeba-b1-1").key === "extra"
+);
+
+check(
+  "how often you need something decides the order, strictly",
+  conversationPriorityInfo("cb-conversation-repair").band
+    < conversationPriorityInfo("cb-work").band
+    && conversationPriorityInfo("cb-work").band < conversationPriorityInfo("cb-driving").band
+    && conversationPriorityInfo("cb-driving").band < conversationPriorityInfo("cb-dating").band
+    && conversationPriorityInfo("cb-dating").band < conversationPriorityInfo("part29").band
 );
 
 check(
