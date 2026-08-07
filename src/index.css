@@ -1698,6 +1698,17 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(180deg, rgba(29, 30, 40, 0.985), rgba(23, 24, 32, 0.985));
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
+/* The level menu is absolutely positioned inside the card and is taller than
+   the room left below its trigger, so the card's own clipping cut it off — with
+   a full lesson open, 286px of a 540px menu, which is the entire "Or put it
+   off" section. Every snooze option was unreachable, and nothing on screen
+   suggested there was more below.
+   Opening it downwards is not an alternative: the menu is taller than the card
+   region either side of the trigger, so it has to be allowed out of the card.
+   :has scopes that to exactly the moment a menu is open and reverts by itself
+   when it closes, so the card goes on clipping everything else as before. */
+.fs-card:has(.fs-review-level-menu) { overflow: visible; }
+
 .fs-card-body { padding: 24px 30px 22px; }
 
 /* ── lesson flashcard preview ── */
