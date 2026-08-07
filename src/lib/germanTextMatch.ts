@@ -447,6 +447,12 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bgotta\b/g, "got to"], [/\bgn\b/g, "good night"],
   [/\bofc\b/g, "of course"],
   [/\bsec\b/g, "second"], [/\bmins?\b/g, "minutes"],
+  // The clock abbreviations everyone actually writes. "sec" and "mins" were
+  // already here; "hr" was not, so "can we meet an hr later" failed against
+  // an answer key reading "an hour later".
+  [/\bhrs\b/g, "hours"], [/\bhr\b/g, "hour"],
+  [/\bwks\b/g, "weeks"], [/\bwk\b/g, "week"],
+  [/\byrs\b/g, "years"], [/\byr\b/g, "year"],
   // apostrophe-less question contractions — unambiguous tokens
   [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
   [/\bwhos\b/g, "who is"], [/\bwhys\b/g, "why is"], [/\bhows\b/g, "how is"],
@@ -489,6 +495,10 @@ function canonicalizeEnglish(t: string) {
     // "may" as a modal too — but not the month, so date contexts are excluded.
     .replace(/(?<!\b(?:in|of|until|till|since|from|by|during|early|late|mid) )\bmay\b/g, "can")
     .replace(/\bshall\b/g, "should")     // "Shall we meet?" == "Should we meet?"
+    // "my kind of thing" / "my type of thing" / "my sort of thing" are the same
+    // English. What the lesson is testing is whether the GERMAN was understood,
+    // and all three show that it was.
+    .replace(/\b(type|sort) of thing\b/g, "kind of thing")
     .replace(/\b(alright|all right)\b/g, "ok")   // "alright" == "all right" == "okay" ("okay" already folds to "ok")
     // whose/who's homophone: the app tests GERMAN comprehension — an English
     // homophone slip ("whos turn is it") shouldn't fail the lesson. "whose"

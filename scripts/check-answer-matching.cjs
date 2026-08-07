@@ -83,6 +83,30 @@ check(
   "texting aliases do not accept a changed meaning",
   !matchEnglishPhrase("ik what i mean", "I know what you mean.").ok
 );
+
+// The clock abbreviations everyone writes. "sec" and "mins" were accepted;
+// "hr" was not, so "can we meet an hr later" failed on an English answer that
+// showed the German had been understood perfectly.
+check(
+  "clock abbreviations are accepted in an English meaning answer",
+  matchEnglishPhrase("can we meet an hr later", "Can we meet an hour later?").ok
+    && matchEnglishPhrase("see you in 2 hrs", "See you in 2 hours.").ok
+);
+check(
+  "an abbreviation cannot turn one unit into another",
+  !matchEnglishPhrase("can we meet a day later", "Can we meet an hour later?").ok
+);
+// kind / type / sort of thing are the same English. The lesson is testing the
+// German, and all three show it was understood.
+check(
+  "kind, type and sort of thing are interchangeable",
+  matchEnglishPhrase("that might be my type of thing", "That might be my kind of thing.").ok
+    && matchEnglishPhrase("that might be my sort of thing", "That might be my kind of thing.").ok
+);
+check(
+  "the synonym does not accept a vaguer answer that skips the meaning",
+  !matchEnglishPhrase("this is my thing", "That might be my kind of thing.").ok
+);
 check(
   "apostrophe-free numeric time shorthand is accepted",
   matchEnglishPhrase("ill be there in 10 mins", "I'll be there in ten minutes.").ok
