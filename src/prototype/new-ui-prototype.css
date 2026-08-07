@@ -1371,6 +1371,16 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
 }
 
+/* Learning English gets the English flag. Same simplified Union Jack the
+   lesson badge uses, drawn with gradients so it stays legible at 30px. */
+.np-language-badge.is-english {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 3px), #cf142b calc(50% - 3px) calc(50% + 3px), transparent calc(50% + 3px)),
+    linear-gradient(0deg, transparent calc(50% - 3px), #cf142b calc(50% - 3px) calc(50% + 3px), transparent calc(50% + 3px)),
+    linear-gradient(90deg, transparent calc(50% - 5px), #fff calc(50% - 5px) calc(50% + 5px), transparent calc(50% + 5px)),
+    linear-gradient(0deg, transparent calc(50% - 5px), #fff calc(50% - 5px) calc(50% + 5px), transparent calc(50% + 5px)),
+    #00247d;
+}
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }

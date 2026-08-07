@@ -56,6 +56,7 @@ import {
 } from "react";
 
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
+import { learningEnglish, setLearningDirection } from "@/lib/direction";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMasteredCount } from "@/lib/mastery";
 import { loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -1076,6 +1077,7 @@ function CourseHero({
           : placementPart === "part11" ? ["B1", ui("Independent speaker")]
             : ["A2", ui("Everyday speaker")];
 
+  const learnsEnglish = learningEnglish();
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
@@ -1084,14 +1086,18 @@ function CourseHero({
         <div className="np-course-copy">
           <div className="np-course-meta-row">
             <span className="np-course-kicker">{ui("Your active course")}</span>
-            <button aria-label={ui("Switch course, currently German")} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
-              <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
-              <strong>{ui("German")}</strong>
+            {/* The chip was hardcoded to German, so someone learning English
+                was told their active course was German on every visit. */}
+            <button aria-label={uiFmt("Switch course, currently {course}", { course: learnsEnglish ? ui("English") : ui("German") })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
+              <span aria-hidden="true" className={"np-language-badge" + (learnsEnglish ? " is-english" : "")}>
+                {learnsEnglish ? null : <><i /><i /><i /></>}
+              </span>
+              <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
               <ChevronDown />
             </button>
           </div>
           <div className="np-course-title-row">
-            <h1>{ui("German for real conversations")}</h1>
+            <h1>{learnsEnglish ? ui("English for real conversations") : ui("German for real conversations")}</h1>
           </div>
           <div className="np-level-line">
             <strong>{needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })}</strong>
@@ -2097,7 +2103,13 @@ export default function NewUiPrototype({
 }) {
   const [activeView, setActiveView] = useState<PrototypeView>("home");
   const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
-  const [activeCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
+  const [storedCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
+  // The direction is the source of truth for the two built-in courses: an
+  // install that has been learning English since before English was listed
+  // still has "german" stored, and would otherwise show the wrong course.
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "english")
+    ? (learningEnglish() ? "english" : "german")
+    : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
   const [courseSessionLesson, setCourseSessionLesson] = useState<string | undefined>(undefined);
@@ -2250,6 +2262,11 @@ export default function NewUiPrototype({
   };
 
   const selectCourse = (courseId: string) => {
+    // German and English are the same built-in course read in opposite
+    // directions, so picking one has to move the direction as well as the id.
+    // Without this, choosing English left the app teaching German.
+    if (courseId === "english") setLearningDirection("learn-en");
+    else if (courseId === "german") setLearningDirection("learn-de");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);

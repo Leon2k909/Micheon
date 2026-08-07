@@ -1547,6 +1547,9 @@ const DE: Record<string, string> = {
   "You're at": "Du bist bei",
 
   // ── Course and interface language ──
+  "English for real conversations": "Englisch für echte Gespräche",
+  "Switch course, currently {course}": "Kurs wechseln, aktuell {course}",
+  "Read, listen, type and translate real English.": "Echtes Englisch lesen, hören, tippen und übersetzen.",
   "What you are learning and what the app is written in are set separately.": "Was du lernst und in welcher Sprache die App geschrieben ist, stellst du getrennt ein.",
   "I am learning": "Ich lerne",
   "App language": "App-Sprache",

@@ -14,6 +14,19 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // The app has always been able to teach English to a German speaker -- it
+  // is the learn-en direction, with the same content read the other way. It
+  // was simply never listed as a course, so the one person here who is
+  // learning English saw a picker that only offered German.
+  {
+    id: "english",
+    kind: "language",
+    name: "English",
+    tagline: "Read, listen, type and translate real English.",
+    icon: "🇬🇧",
+    available: true,
+    builtIn: true,
+  },
   {
     id: "spanish",
     kind: "language",
