@@ -345,8 +345,8 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
         // lesson can show the answer and drill it, so it goes there and the
         // pet moves on to something else.
         ? uiIsGerman()
-          ? `Die Antwort ist „${target}“. Das üben wir in der nächsten Lektion richtig — ich frage dich etwas anderes.`
-          : `The answer is “${target}”. I’ve put it at the front of your next lesson so we can practise it properly — I’ll ask you something else.`
+          ? `Die Antwort ist „${target}“. Das üben wir in der nächsten Lektion richtig.`
+          : `The answer is “${target}”. I’ve put it at the front of your next lesson so we can practise it properly.`
         : question.confirm
           ? uiIsGerman()
             ? `Kein Problem — ich frage dich „${target}“ bald wieder.`

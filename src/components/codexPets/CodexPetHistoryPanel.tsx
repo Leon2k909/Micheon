@@ -6,7 +6,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Check, Clock3, Copy, MessageCircle, TextSelect, X } from "lucide-react";
+import { Check, Clock3, Copy, MessageCircle, Search, TextSelect, X } from "lucide-react";
 
 import type {
   CodexPetAnswer,
@@ -145,7 +145,26 @@ export function CodexPetHistoryPanel({
     height: Number.isFinite(viewportHeight) ? Number(viewportHeight) : viewportSize().height,
     width: Number.isFinite(viewportWidth) ? Number(viewportWidth) : viewportSize().width,
   };
-  const messages = [...history].reverse();
+  const allMessages = [...history].reverse();
+  // Most of what the pet says is encouragement. The things worth coming back
+  // to — the questions, and specifically the ones you missed, which are the
+  // ones that got queued for review — were buried in it.
+  const [filter, setFilter] = useState<"all" | "questions" | "unanswered" | "missed">("all");
+  const [query, setQuery] = useState("");
+  const messages = allMessages.filter((message) => {
+    if (filter === "questions" && !message.question) return false;
+    if (filter === "unanswered" && (!message.question || message.answer)) return false;
+    if (filter === "missed" && message.answer !== "no") return false;
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return String(message.text ?? "").toLowerCase().includes(q);
+  });
+  const counts = {
+    all: allMessages.length,
+    questions: allMessages.filter((m) => m.question).length,
+    unanswered: allMessages.filter((m) => m.question && !m.answer).length,
+    missed: allMessages.filter((m) => m.answer === "no").length,
+  };
   const [position, setPosition] = useState(() => nativeWindow
     ? { x: PANEL_MARGIN, y: PANEL_MARGIN }
     : initialPanelPosition(requestedViewport));
@@ -482,6 +501,42 @@ export function CodexPetHistoryPanel({
         </button>
       </header>
 
+      <div className="pet-history-window-no-drag border-b border-[var(--border)] px-3 py-2.5">
+        <label className="relative block">
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-3)]" />
+          <input
+            aria-label={ui("Search pet messages")}
+            className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] pl-9 pr-3 text-xs font-bold text-[var(--text-1)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={ui("Search what the pet said…")}
+            type="search"
+            value={query}
+          />
+        </label>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {([
+            ["all", "All"],
+            ["questions", "Questions"],
+            ["unanswered", "Unanswered"],
+            ["missed", "Missed"],
+          ] as const).map(([key, label]) => (
+            <button
+              className={cn(
+                "rounded-full px-2.5 py-1 text-[11px] font-black transition-colors",
+                filter === key
+                  ? "bg-[var(--accent)] text-[var(--accent-text)]"
+                  : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+              )}
+              key={key}
+              onClick={() => setFilter(key)}
+              type="button"
+            >
+              {ui(label)} {counts[key]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3" ref={contentRef}>
         {messages.length > 0 ? (
           <div className="grid gap-2.5">
@@ -553,9 +608,16 @@ export function CodexPetHistoryPanel({
         ) : (
           <div className="flex h-full min-h-32 flex-col items-center justify-center px-6 text-center">
             <MessageCircle className="h-7 w-7 text-[var(--text-3)]" />
-            <p className="mt-3 text-sm font-black text-[var(--text-1)]">{ui("No pet messages yet")}</p>
+            {/* "Nothing here yet" and "nothing matched your filter" are different
+                situations, and saying the first when the second is true reads as
+                the panel being broken. */}
+            <p className="mt-3 text-sm font-black text-[var(--text-1)]">
+              {ui(allMessages.length === 0 ? "No pet messages yet" : "Nothing matches that")}
+            </p>
             <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-              {ui("Tips and questions will appear here after the mascot speaks.")}
+              {ui(allMessages.length === 0
+                ? "Tips and questions will appear here after the mascot speaks."
+                : "Try another filter, or clear the search.")}
             </p>
           </div>
         )}
