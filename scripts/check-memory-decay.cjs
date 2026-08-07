@@ -145,14 +145,20 @@ for (const [what, needle] of [
 ]) {
   if (!needle.test(tracker)) failures.push(`the explainer never covers ${what}`);
 }
+// Only what a learner can actually read. Comments explaining the design to
+// the next person are not jargon on screen, and policing them pushes the
+// explanation out of the code rather than off the page.
+const trackerCopy = tracker
+  .replace(new RegExp('\\/\\*[\\s\\S]*?\\*\\/', 'g'), ' ')
+  .replace(new RegExp('(^|[^:])\\/\\/[^\\n]*', 'g'), '$1 ');
 // Jargon that only makes sense if you already know how the thing works.
 for (const [term, pattern] of [
   ["review intervals as a ladder of days", /1 → 3 → 10 → 30 → 180/],
   ["the half-life formula", /interval × 1\.5|half the distance/],
-  ["\"rung\"", /rungs?/],
+  ["\"rung\"", /\brungs?\b/],
   ["the floor as a bare number", /0\.50 after one|floor rises/],
 ]) {
-  if (pattern.test(tracker)) {
+  if (pattern.test(trackerCopy)) {
     failures.push(`the explainer is describing the algorithm again — it mentions ${term}`);
   }
 }

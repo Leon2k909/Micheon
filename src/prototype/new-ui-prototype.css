@@ -1027,7 +1027,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   border-color: var(--np-green);
   background: var(--np-surface);
   box-shadow:
-    0 0 0 4px rgba(79, 189, 81, 0.12),
+    0 0 12px 4px rgba(79, 189, 81, 0.12),
     0 4px 0 rgba(35, 141, 53, 0.1);
 }
 

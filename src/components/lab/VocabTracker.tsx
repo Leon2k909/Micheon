@@ -199,7 +199,7 @@ function StrengthMeter({
             type="button"
             title={uiIsGerman()
               ? `Auf ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "Tag" : "Tage"} Wiederholungsabstand setzen (Stufe ${n}/5)`
-              : `Set to ${REVIEW_INTERVALS_DAYS[n - 1]}d review (rung ${n}/5)`}
+              : `Come back in ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "day" : "days"} (level ${n} of 5)`}
             onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
             className="cursor-pointer p-1 -m-1"
           >

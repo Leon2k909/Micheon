@@ -139,7 +139,7 @@ function MicheonSurface({ guided }: { guided: boolean }) {
               }}
             />
           ) : guided ? (
-            <Suspense fallback={<MainSkeleton />}>
+            <Suspense fallback={<LessonSkeleton />}>
               <GuidedLearningSession />
             </Suspense>
           ) : (
@@ -176,6 +176,37 @@ function MainWindowPetSurface({ signedIn }: { signedIn: boolean }) {
  * mode painted a full-viewport near-white rectangle for as long as the guided
  * chunk took to arrive. That is the flash. It follows the theme now.
  */
+/**
+ * What fills the window while the LESSON chunk loads.
+ *
+ * The dashboard skeleton was standing in for both routes, so opening a lesson
+ * showed a sidebar and stat chips for a moment and then replaced them with
+ * something entirely different. A skeleton is only worth having if it is the
+ * shape of what arrives: header with its progress bar, the step track, the
+ * sentence panel, the continue button.
+ */
+function LessonSkeleton() {
+  return (
+    <div className="lesson-skeleton" aria-hidden="true">
+      <div className="lesson-skeleton-topbar">
+        <div className="lesson-skeleton-brand" />
+        <div className="lesson-skeleton-progress" />
+        <div className="lesson-skeleton-tools" />
+      </div>
+      <div className="lesson-skeleton-card">
+        <div className="lesson-skeleton-steps">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((step) => (
+            <div className="lesson-skeleton-step" key={step} />
+          ))}
+        </div>
+        <div className="lesson-skeleton-prompt" />
+        <div className="lesson-skeleton-sentence" />
+        <div className="lesson-skeleton-cta" />
+      </div>
+    </div>
+  );
+}
+
 function MainSkeleton() {
   return (
     <div className="main-skeleton" aria-hidden="true">

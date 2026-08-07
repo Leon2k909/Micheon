@@ -73,6 +73,35 @@ if (!/@media \(max-width: 1040px\)[\s\S]{0,320}\.main-skeleton-rail \{ display: 
   failures.push("the loading screen keeps its sidebar on a narrow window, where the real shell has none");
 }
 
+// Each route needs its OWN shape. One skeleton standing in for both meant
+// opening a lesson showed a sidebar and stat chips for a moment and then
+// replaced them with something entirely different -- the same jump the
+// skeleton exists to prevent.
+if (!/function LessonSkeleton\(/.test(app)) {
+  failures.push("the lesson route has no skeleton of its own, so it borrows the dashboard shape");
+}
+if (!/guided \? \([\s\S]{0,120}fallback=\{<LessonSkeleton \/>\}/.test(app)) {
+  failures.push("the lesson route does not use the lesson skeleton");
+}
+for (const piece of ['lesson-skeleton-steps', 'lesson-skeleton-sentence', 'lesson-skeleton-progress']) {
+  if (!app.includes(piece)) {
+    failures.push(`the lesson skeleton has no ${piece.replace('lesson-skeleton-', '')}, so it is not the shape of a lesson`);
+  }
+}
+// And it must not depend on tokens that are out of scope where it renders,
+// which is the mistake that made the other one flash light over a dark app.
+const lessonRules = [...css.matchAll(/([^{}]*)\{([^{}]*)\}/g)].filter((m) => m[1].includes('.lesson-skeleton'));
+for (const [, , body] of lessonRules) {
+  for (const [, name] of body.matchAll(/var\((--[a-z0-9-]+)/g)) {
+    if (shellScoped.has(name)) {
+      failures.push(`the lesson skeleton uses ${name}, which only exists inside .new-ui-prototype`);
+    }
+  }
+}
+if (!/html\[data-theme="dark"\][^{]*\.lesson-skeleton[ .{]/.test(css)) {
+  failures.push("the lesson skeleton has no dark variant");
+}
+
 if (failures.length) {
   console.error("FAIL check-no-flash");
   failures.forEach((line) => console.error("  " + line));

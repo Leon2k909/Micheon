@@ -230,7 +230,7 @@ if (darkAt < 0) {
       if (!selector.includes('[data-theme="dark"]')) continue;
       for (const decl of rule[2].split(";")) {
         if (!/^\s*background(-color)?\s*:/.test(decl)) continue;
-        for (const colour of decl.matchAll(/#([0-9a-f]{6})|rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/gi)) {
+        for (const colour of decl.matchAll(/#([0-9a-f]{6})\b|rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/gi)) {
           const ch = colour[1]
             ? [0, 2, 4].map((i) => parseInt(colour[1].slice(i, i + 2), 16))
             : [colour[2], colour[3], colour[4]].map(Number);

@@ -131,11 +131,11 @@ const sheets = ["src/index.css", "src/prototype/new-ui-prototype.css"]
 for (const sheet of sheets) {
   for (const m of sheet.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
     const sel = m[1].replace(/\s+/g, " ").trim();
-    if (!/:focus(-visible|-within)?/.test(sel)) continue;
+    if (!/:focus(-visible|-within)?\b/.test(sel)) continue;
     const body = m[2].replace(/\s+/g, " ");
     if (!/border(-color)?\s*:/.test(body)) continue;
     // 0 0 0 Npx — no offset, no blur, pure spread: a ring.
-    if (/box-shadow:[^;]*0 0 0 \d+px/.test(body)) {
+    if (/box-shadow:[^;]*\b0 0 0 \d+px/.test(body)) {
       failures.push(`${sel.slice(0, 58)} draws a border AND a hard ring on focus — that is the two borders`);
     }
   }

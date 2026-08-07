@@ -2900,7 +2900,7 @@ a { color: inherit; text-decoration: none; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 16px 32px rgba(0,0,0,0.2);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.fs-panel:focus-within { transform: translateY(-2px); border-color: rgba(168,120,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 38px rgba(0,0,0,0.24), 0 0 0 4px rgba(139,76,255,0.065); }
+.fs-panel:focus-within { transform: translateY(-2px); border-color: rgba(168,120,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 38px rgba(0,0,0,0.24), 0 0 12px 4px rgba(139,76,255,0.065); }
 .fs-panel.is-good { border-color: rgba(105,225,173,0.5); }
 .fs-panel.is-bad { border-color: rgba(255,140,160,0.48); }
 .fs-panel.is-coach { border-color: rgba(255,210,63,0.42); }
@@ -4682,7 +4682,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
     inset 0 1px 0 #fff,
     0 4px 0 rgba(48, 145, 58, 0.16),
     0 18px 34px rgba(65, 122, 58, 0.11),
-    0 0 0 4px rgba(67, 184, 76, 0.08);
+    0 0 12px 4px rgba(67, 184, 76, 0.08);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-missing-choose {
@@ -8682,7 +8682,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
   box-shadow: inset 0 1px 0 #fff,
     0 4px 0 rgba(var(--accent-hover-rgb), 0.16),
     0 18px 34px rgba(var(--accent-hover-rgb), 0.11),
-    0 0 0 4px rgba(var(--accent-rgb), 0.08);
+    0 0 12px 4px rgba(var(--accent-rgb), 0.08);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-panel:focus-within {
@@ -10044,6 +10044,84 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* The lesson's own loading screen.
+
+   Opening a lesson used to show the DASHBOARD skeleton -- a sidebar and stat
+   chips -- and then replace them with something completely different, which
+   is the same jump the skeleton exists to prevent. This is the shape of a
+   lesson: header with its progress bar, the thirteen steps, the sentence
+   panel, the continue button.
+
+   Same two colours index.html paints on the document before React exists, for
+   the same reason as the other one: this can render before the app's tokens
+   are in scope. */
+.lesson-skeleton {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  min-height: var(--app-h);
+  padding: 14px 16px 24px;
+  background: #eff0ed;
+}
+
+.lesson-skeleton-topbar {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 110px;
+  align-items: center;
+  gap: 16px;
+}
+
+.lesson-skeleton-brand { height: 44px; border-radius: 14px; background: #e3e3de; }
+.lesson-skeleton-progress { height: 12px; border-radius: 999px; background: #e3e3de; }
+.lesson-skeleton-tools { height: 40px; border-radius: 14px; background: #e3e3de; }
+
+.lesson-skeleton-card {
+  display: grid;
+  gap: 18px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 22px;
+  border-radius: 28px;
+  background: #fffdf9;
+}
+
+.lesson-skeleton-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.lesson-skeleton-step {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  background: #e9e9e5;
+}
+
+.lesson-skeleton-prompt { width: min(420px, 70%); height: 54px; border-radius: 16px; background: #e9e9e5; }
+.lesson-skeleton-sentence { height: 150px; border-radius: 22px; background: #e6e7e2; }
+.lesson-skeleton-cta { height: 62px; border-radius: 20px; background: #e3e3de; }
+
+/* Thirteen steps do not fit a narrow window, and the real track scrolls
+   rather than shrinking them, so the skeleton lets them run off too. */
+@media (max-width: 900px) {
+  .lesson-skeleton-topbar { grid-template-columns: minmax(0, 1fr) 90px; }
+  .lesson-skeleton-brand { display: none; }
+  .lesson-skeleton-steps { justify-content: flex-start; }
+}
+
+html[data-theme="dark"] .lesson-skeleton { background: #0b0e13; }
+html[data-theme="dark"] .lesson-skeleton-card { background: #161b23; }
+html[data-theme="dark"] .lesson-skeleton-brand,
+html[data-theme="dark"] .lesson-skeleton-progress,
+html[data-theme="dark"] .lesson-skeleton-tools,
+html[data-theme="dark"] .lesson-skeleton-cta { background: #1c2330; }
+html[data-theme="dark"] .lesson-skeleton-step,
+html[data-theme="dark"] .lesson-skeleton-prompt { background: #232b3a; }
+html[data-theme="dark"] .lesson-skeleton-sentence { background: #1c2330; }
 
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
