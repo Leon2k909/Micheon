@@ -479,6 +479,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-header-stats {
   display: flex;
+  flex-wrap: wrap;
   min-width: 0;
   justify-content: center;
   gap: 13px;
@@ -486,7 +487,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-stat-chip {
   display: grid;
-  min-width: 132px;
+  min-width: 0;
+  flex: 0 1 auto;
   min-height: 65px;
   grid-template-columns: 51px 1fr;
   align-items: center;
@@ -509,10 +511,20 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   min-width: 0;
 }
 
-.np-stat-chip strong,
-.np-stat-chip small {
+/* The number never wraps; the label always may.
+
+   Both were nowrap, which is fine in English and not in German: "Lektionen
+   abgeschlossen" is twice the length of "Lessons done" and forced the chip
+   wider than the row, so the three of them ran off a narrow window. */
+.np-stat-chip strong {
   display: block;
   white-space: nowrap;
+}
+
+.np-stat-chip small {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .np-stat-chip strong {

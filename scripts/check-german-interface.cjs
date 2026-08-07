@@ -19,12 +19,22 @@ const root = path.join(__dirname, "..");
 const failures = [];
 
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
+// The settings page was outside this check and drifted back to English one
+// string at a time: a German learner opened Profileinstellungen and read
+// "Manage your name, learning preferences…" underneath it.
+const settings = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8");
 const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
 
 const translated = new Set([...i18n.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map((m) => m[1]));
 
 // ── every key the shell asks for is translated ────────────────────────────
-const asked = new Set([...shell.matchAll(/\bui(?:Fmt)?\("([^"]+)"/g)].map((m) => m[1]));
+// Source may write a character as a \uXXXX escape; the key the app looks up at
+// runtime is the character itself, so both sides are compared unescaped.
+const unescapeKey = (raw) => raw.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+const asked = new Set([
+  ...[...shell.matchAll(/\bui(?:Fmt)?\("([^"]+)"/g)].map((m) => unescapeKey(m[1])),
+  ...[...settings.matchAll(/\bui(?:Fmt|Or)?\("([^"]+)"/g)].map((m) => unescapeKey(m[1])),
+]);
 // Table fields reach the screen through ui(...) at their render site, so their
 // values are keys too.
 const FIELDS = "label|title|subtitle|note|detail|desc|description|actionLabel|group|name|body";

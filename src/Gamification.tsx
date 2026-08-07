@@ -74,7 +74,7 @@ import { getLearningDirection, setLearningDirection, type LearningDirection } fr
 import { getInterfaceLanguage, setInterfaceLanguage, type InterfaceLanguage } from "@/lib/interfaceLanguage";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
-import { SettingsCategory } from "@/components/SettingsCategory";
+import { SettingsCategory, SettingsCategoryLayout } from "@/components/SettingsCategory";
 import { DataAndStorage } from "@/components/DataAndStorage";
 import { AppZoomControl } from "@/components/AppZoomControl";
 import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
@@ -799,6 +799,7 @@ export default function GamificationPanel({
           </button>
         </section>
 
+        <SettingsCategoryLayout searching={settingsTerms.length > 0}>
         <section className="card overflow-hidden">
           <div className="grid items-start gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
@@ -1368,6 +1369,7 @@ export default function GamificationPanel({
             </DeferredProfileSection>
           </div>
         </section>
+        </SettingsCategoryLayout>
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
           <ActivityCard className="min-w-0" progressStats={stats} />

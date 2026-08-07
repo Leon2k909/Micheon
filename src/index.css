@@ -9803,6 +9803,103 @@ html[data-theme="dark"] .main-skeleton-bar {
   box-shadow: none;
 }
 
+/* Settings: a sidebar of categories, one panel.
+
+   Ten collapsed cards down a page meant finding anything was a matter of
+   reading ten descriptions and guessing, then scrolling back when you guessed
+   wrong. Every category is visible at once now and one of them is open. */
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 216px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.settings-nav {
+  position: sticky;
+  top: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 20px;
+  background: var(--surface-2);
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 11px;
+  border-radius: 13px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.settings-nav-item:hover { background: var(--surface-3); color: var(--text-1); }
+
+.settings-nav-item.is-active {
+  background: var(--accent-dim);
+  color: var(--accent-ink, var(--accent));
+}
+
+.settings-nav-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--surface);
+  color: inherit;
+}
+
+.settings-nav-item.is-active .settings-nav-icon { background: var(--surface); }
+
+.settings-nav-label { min-width: 0; overflow-wrap: anywhere; }
+
+.settings-panel { min-width: 0; }
+
+.settings-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 4px;
+  padding: 12px 2px 10px;
+}
+
+.settings-panel-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent-ink, var(--accent));
+}
+
+/* On a narrow window the sidebar becomes a row above the panel rather than
+   squeezing both into a column that fits neither. */
+@media (max-width: 900px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .settings-nav {
+    position: static;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .settings-nav::-webkit-scrollbar { display: none; }
+  .settings-nav-label { white-space: nowrap; }
+}
+
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
    new-ui-prototype.css relied on source order and an accent sweep rewrote the

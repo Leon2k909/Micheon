@@ -1,13 +1,114 @@
-import { useId, useState, type ComponentType, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
 /**
- * A collapsed-by-default settings group. The children are not mounted until
- * the first open, so rarely visited settings cost nothing on the profile
- * screen's first paint; after that they stay mounted (hidden) so reopening is
- * instant and any in-progress state survives a collapse.
+ * Settings as a list of categories with a sidebar, not a column of accordions.
+ *
+ * Ten collapsed cards stacked down a page means finding anything is a matter of
+ * reading ten descriptions and guessing which one hides it, then scrolling back
+ * up when you guessed wrong. A sidebar shows every category at once and keeps
+ * one of them open, which is how settings work in most things people already
+ * use.
+ *
+ * The categories register themselves, so the sidebar is built from whatever is
+ * actually rendered rather than from a second list that has to be kept in step
+ * with it. That matters here because several categories are conditional.
+ */
+type Registered = {
+  id: string;
+  title: string;
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+  hidden: boolean;
+};
+
+type NavContext = {
+  register: (entry: Registered) => void;
+  unregister: (id: string) => void;
+  selected: string | null;
+  select: (id: string) => void;
+  /** Search is on: show every match at once instead of one category. */
+  listMode: boolean;
+};
+
+const SettingsNavContext = createContext<NavContext | null>(null);
+
+export function SettingsCategoryLayout({ children, searching }: {
+  children: ReactNode;
+  /** While searching, the sidebar steps aside and every match is shown. */
+  searching: boolean;
+}) {
+  const [entries, setEntries] = useState<Registered[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const value = useMemo<NavContext>(() => ({
+    register: (entry) => setEntries((current) => {
+      // Replace in place rather than re-appending: a category re-registers
+      // whenever its title or hidden state changes, and moving it to the end
+      // would shuffle the sidebar while you were looking at it. Mount order
+      // is DOM order for siblings, so first registration sets the position.
+      const at = current.findIndex((item) => item.id === entry.id);
+      if (at === -1) return [...current, entry];
+      const next = [...current];
+      next[at] = entry;
+      return next;
+    }),
+    unregister: (id) => setEntries((current) => current.filter((item) => item.id !== id)),
+    selected,
+    select: setSelected,
+    listMode: searching,
+  }), [selected, searching]);
+
+  const visible = entries.filter((entry) => !entry.hidden);
+  // Nothing chosen yet, or the chosen one disappeared: fall back to the first.
+  const active = visible.some((entry) => entry.id === selected) ? selected : visible[0]?.id ?? null;
+
+  return (
+    <SettingsNavContext.Provider value={{ ...value, selected: active }}>
+      {searching ? (
+        <div>{children}</div>
+      ) : (
+        <div className="settings-layout">
+          <nav aria-label={ui("Settings categories")} className="settings-nav">
+            {visible.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                aria-current={entry.id === active ? "page" : undefined}
+                className={cn("settings-nav-item", entry.id === active && "is-active")}
+                onClick={() => setSelected(entry.id)}
+              >
+                <span className="settings-nav-icon">
+                  <entry.icon aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <span className="settings-nav-label">{entry.title}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="settings-panel">{children}</div>
+        </div>
+      )}
+    </SettingsNavContext.Provider>
+  );
+}
+
+/**
+ * One settings category.
+ *
+ * Inside a layout it registers itself and renders only when chosen. Outside
+ * one — and while a search is running — it falls back to the collapsible card
+ * it has always been, so search results still read as a list of sections.
  */
 export function SettingsCategory({
   children,
@@ -33,9 +134,39 @@ export function SettingsCategory({
   const [open, setOpen] = useState(defaultOpen);
   const [everOpened, setEverOpened] = useState(defaultOpen);
   const panelId = useId();
-  const isOpen = open || forceOpen;
+  const nav = useContext(SettingsNavContext);
+  const id = panelId;
+
+  useEffect(() => {
+    if (!nav) return;
+    nav.register({ id, title, description, icon: Icon, hidden });
+    return () => nav.unregister(id);
+    // register is stable per render of the layout; title/hidden are what change
+  }, [id, title, description, hidden]);
+
   if (hidden) return null;
 
+  // ── sidebar mode ────────────────────────────────────────────────────────
+  if (nav && !nav.listMode) {
+    if (nav.selected !== id) return null;
+    return (
+      <section aria-label={title}>
+        <header className="settings-panel-head">
+          <span className="settings-panel-icon">
+            <Icon aria-hidden="true" className="h-4 w-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-black text-[var(--text-1)]">{title}</span>
+            <span className="mt-0.5 block text-xs font-semibold text-[var(--text-3)]">{description}</span>
+          </span>
+        </header>
+        <div id={panelId}>{children}</div>
+      </section>
+    );
+  }
+
+  // ── the original card, used while searching ─────────────────────────────
+  const isOpen = open || forceOpen;
   return (
     <div className="mt-3">
       <button

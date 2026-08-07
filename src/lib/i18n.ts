@@ -1546,6 +1546,23 @@ const DE: Record<string, string> = {
   "to fluent": "bis fließend",
   "You're at": "Du bist bei",
 
+  // ── Profile and settings ──
+  "section": "Bereich",
+  "sections": "Bereiche",
+  "match": "passen",
+  "The colour of buttons, progress and anything selected. Micheon green is the default.": "Die Farbe von Schaltflächen, Fortschritt und allem Ausgewählten. Micheon-Grün ist die Voreinstellung.",
+  "Settings categories": "Einstellungskategorien",
+  "Accent colour": "Akzentfarbe",
+  "Account details, learning preferences, and external word tracking.": "Kontodaten, Lerneinstellungen und extern gelernte Wörter.",
+  "Data & storage": "Daten & Speicher",
+  "Manage your name, learning preferences, and words learned outside Micheon.": "Verwalte deinen Namen, deine Lerneinstellungen und Wörter, die du außerhalb von Micheon gelernt hast.",
+  "Pick any colour": "Beliebige Farbe wählen",
+  "Reset to green": "Auf Grün zurücksetzen",
+  "Search settings": "Einstellungen durchsuchen",
+  "Search settings…": "Einstellungen durchsuchen…",
+  "Space used, and deleting what Micheon has saved.": "Belegter Speicher und das Löschen dessen, was Micheon gespeichert hat.",
+  "Nothing matches that. Try “theme”, “voice”, or “pet”.": "Dazu passt nichts. Probier „Design“, „Stimme“ oder „Tier“.",
+
   // ── Short forms: typed shorter vs merely spoken shorter ──
   "Shorter, and fine to type": "Kürzer — kannst du auch so tippen",
   "A shorter wording people use. Typing either one is accepted.": "Eine kürzere Formulierung, die man wirklich sagt. Beides wird akzeptiert.",
