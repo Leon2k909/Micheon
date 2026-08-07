@@ -3920,6 +3920,14 @@ a { color: inherit; text-decoration: none; }
      positioned from this too, so the two cannot drift apart and end up on top
      of each other the way they did when the counter was pinned to 50%. */
   --fs-preview-copy: min(670px, calc(100% - 160px));
+  /* The heading stops short of the column, so the counter follows the heading
+     rather than the column — measuring from the column left a ~100px hole.
+     A plain length, deliberately: a percentage inside a custom property is
+     resolved against whoever uses it, so folding --fs-preview-copy in here
+     made the heading measure itself against the column (510px) while the
+     absolutely positioned counter measured the same token against the banner
+     (570px). The heading cannot exceed the column anyway — it sits inside it. */
+  --fs-preview-h1: 570px;
   position: relative;
   isolation: isolate;
   min-height: 158px;
@@ -3987,7 +3995,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-h1 {
-  max-width: 570px;
+  max-width: var(--fs-preview-h1);
   font-size: clamp(28px, 2.35vw, 37px);
   line-height: 1.03;
 }
@@ -4023,10 +4031,12 @@ a { color: inherit; text-decoration: none; }
 .guided-session.fs-app.prototype-guided-session .fs-preview-count {
   position: absolute;
   top: 22px;
-  /* Just past the text column, in the empty band before the mascot artwork.
-     This used to be right: calc(50% + 22px) — the banner's own centre, which
-     is where the heading ends, so the counter sat on the last word of it. */
-  left: calc(24px + var(--fs-preview-copy) + 20px);
+  /* Just past the heading, in the empty band before the mascot artwork. This
+     used to be right: calc(50% + 22px) — the banner's own centre, which is
+     where the heading ends, so the counter sat on the last word of it.
+     Measured from the heading's cap rather than its rendered width, so a
+     longer translation cannot grow into the counter. */
+  left: calc(24px + var(--fs-preview-h1) + 24px);
   right: auto;
   z-index: 1;
   align-self: flex-start;
