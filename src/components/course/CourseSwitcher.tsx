@@ -33,6 +33,34 @@ function CourseArtwork({ id }: { id: string }) {
     );
   }
 
+  // Drawn rather than emoji: Windows renders flag emoji as bare letter pairs,
+  // which is why English showed a globe. The Union Jack is simplified to its
+  // two crosses -- the diagonals disappear at 36px anyway -- and the US flag
+  // to stripes plus a canton.
+  if (id === "english-uk" || id === "english-us") {
+    return (
+      <span
+        aria-hidden="true"
+        className="block h-9 w-9 overflow-hidden rounded-full shadow-[0_3px_8px_rgba(0,0,0,0.18)]"
+        style={id === "english-uk" ? {
+          background: [
+            "linear-gradient(90deg, transparent calc(50% - 4px), #cf142b calc(50% - 4px) calc(50% + 4px), transparent calc(50% + 4px))",
+            "linear-gradient(0deg, transparent calc(50% - 4px), #cf142b calc(50% - 4px) calc(50% + 4px), transparent calc(50% + 4px))",
+            "linear-gradient(90deg, transparent calc(50% - 7px), #fff calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px))",
+            "linear-gradient(0deg, transparent calc(50% - 7px), #fff calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px))",
+            "#00247d",
+          ].join(", "),
+        } : {
+          background: "repeating-linear-gradient(180deg, #b22234 0 2.8px, #fff 2.8px 5.6px)",
+        }}
+      >
+        {id === "english-us" && (
+          <span aria-hidden="true" className="block h-[46%] w-[55%] bg-[#3c3b6e]" />
+        )}
+      </span>
+    );
+  }
+
   const backgroundImage = id === "german"
     ? "linear-gradient(to bottom, #181818 0 33.333%, #dd0000 33.333% 66.666%, #ffce00 66.666% 100%)"
     : id === "spanish"

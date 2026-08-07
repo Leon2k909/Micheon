@@ -104,13 +104,18 @@ check(
   /rankForBeta\(fresh\.map/.test(lesson) && !/freshLimit\s*\+/.test(lesson),
 );
 check("it only applies when switched on", /conversationBetaOn\(\)\s*\?/.test(lesson));
-
 // ── and the entry point is Leon's only ────────────────────────────────────
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 check(
   "the switch is behind the Leon-only gate",
-  /hasLeonSocialPreview\(profile\?\.email\) && \([\s\S]{0,400}np-beta-toggle/.test(shell),
+  /hasLeonSocialPreview\(profile\?\.email\) && \([\s\S]{0,600}np-beta-button/.test(shell),
 );
+
+// A second button beside Continue learning, not a checkbox: pressing it has
+// to start a lesson, and the ordinary button has to turn the beta back off or
+// one press would quietly change every lesson after it.
+check("the beta button starts a lesson rather than only setting a flag", /setConversationBeta\(true\);[\s\S]{0,80}onPractice\(\)/.test(shell));
+check("the ordinary Continue learning turns the beta back off", /setConversationBeta\(false\);[\s\S]{0,80}onPractice\(\)/.test(shell));
 
 if (failures) {
   console.error(`\n${failures} conversation-beta regression${failures === 1 ? "" : "s"}`);

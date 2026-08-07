@@ -9557,31 +9557,19 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
   color: #fff !important;
 }
 
-/* Conversation Beta's switch. Deliberately plain -- it is a trial setting on a
-   dashboard, not a feature to advertise. */
-.np-beta-toggle {
-  display: flex;
-  align-items: center;
-  gap: 11px;
+/* Conversation Beta's way in. The same control as Continue learning, one
+   step quieter: it is the second button on the page, not the first. */
+.np-beta-button {
   margin-top: 10px;
-  padding: 11px 13px;
-  border: 1px solid var(--np-line);
-  border-radius: 16px;
-  background: var(--np-surface);
-  cursor: pointer;
+  border: 1px solid rgba(var(--accent-rgb, 79, 189, 81), 0.4);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.1);
+  color: var(--np-text);
+  box-shadow: none;
 }
 
-.np-beta-toggle > span { display: grid; gap: 2px; flex: 1; min-width: 0; }
-.np-beta-toggle strong { color: var(--np-text); font-size: 13px; font-weight: 850; }
-.np-beta-toggle small { color: var(--np-text-soft, var(--np-text)); font-size: 11px; font-weight: 650; }
-
-.np-beta-toggle input { width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--accent, var(--np-green)); }
-
-.np-beta-badge {
-  flex: 0 0 auto;
-  padding: 3px 8px;
-  border: 1px solid var(--np-line);
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 850;
+.np-beta-button:hover {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.6);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.16);
 }
+
+.np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }

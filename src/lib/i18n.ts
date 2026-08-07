@@ -1547,6 +1547,14 @@ const DE: Record<string, string> = {
   "You're at": "Du bist bei",
 
   // ── Conversation Beta ──
+  "Start a Conversation Beta lesson. Hard structure first, each phrase taught as an answer.": "Eine Gesprächs-Beta-Lektion starten. Schwere Strukturen zuerst, jeder Satz als Antwort.",
+  "Beta · Leon only": "Beta · nur Leon",
+  "Continue learning — conversations": "Weiterlernen — Gespräche",
+  "Each phrase as the answer to a question, hard structure — weil, dass, wenn — first.": "Jeder Satz als Antwort auf eine Frage, schwere Strukturen — weil, dass, wenn — zuerst.",
+  "English (UK)": "Englisch (UK)",
+  "English (US)": "Englisch (US)",
+  "British spelling and accent — colour, practise, timetable.": "Britische Schreibweise und Aussprache — colour, practise, timetable.",
+  "American spelling and accent — color, practice, schedule.": "Amerikanische Schreibweise und Aussprache — color, practice, schedule.",
   "Conversation Beta": "Gesprächs-Beta",
   "Learn each phrase as the answer to a question, and meet hard structure — weil, dass, wenn — first.": "Lerne jeden Satz als Antwort auf eine Frage und begegne den schweren Strukturen — weil, dass, wenn — zuerst.",
   "They ask": "Sie fragen",

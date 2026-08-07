@@ -24,6 +24,7 @@ import {
   Medal,
   LogOut,
   Menu,
+  MessagesSquare,
   MessageCircleMore,
   MessageSquareText,
   Play,
@@ -57,6 +58,7 @@ import {
 
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import { learningEnglish, setLearningDirection } from "@/lib/direction";
+import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMasteredCount } from "@/lib/mastery";
 import { loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -88,7 +90,7 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
-import { conversationBetaOn, setConversationBeta } from "@/lib/betaMode";
+import { setConversationBeta } from "@/lib/betaMode";
 
 import heroImage from "./assets/micheon-hero-v3.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
@@ -1533,7 +1535,6 @@ function HomeView({
 }) {
   // Recomputed when the catalogue arrives or a lesson lands, so the hero's
   // "how much longer" tracks what was just learned.
-  const [betaOn, setBetaOn] = useState(conversationBetaOn);
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
@@ -1566,7 +1567,13 @@ function HomeView({
             ? uiFmt("Start your first lesson. Level {level} everyday essentials.", { level: firstLessonLevel })
             : uiFmt("Continue learning. Lesson {n}.", { n: stats.sessionsCompleted + 1 })}
         className="np-mobile-course-button"
-        onClick={onPractice}
+        onClick={() => {
+          // Pressing the ordinary button means the ordinary lesson. Without
+          // this, one press of the beta would quietly change every lesson
+          // after it, and there would be no way back.
+          setConversationBeta(false);
+          onPractice();
+        }}
         type="button"
       >
         <Play />
@@ -1584,24 +1591,30 @@ function HomeView({
         <ChevronRight />
       </button>
       {/* Conversation Beta. Leon's account only while it is being tried out.
-          It reorders the new half of a sitting rather than replacing it, so
-          the sitting is still six and reviews are untouched. */}
+          A second way in rather than a setting: it starts a sitting of its own,
+          reordering the new half so the hard structure comes first and each
+          phrase arrives as the answer to a question. The sitting is still six
+          and the review half is untouched. */}
       {hasLeonSocialPreview(profile?.email) && (
-        <label className="np-beta-toggle">
-          <input
-            type="checkbox"
-            checked={betaOn}
-            onChange={(event) => {
-              setConversationBeta(event.target.checked);
-              setBetaOn(event.target.checked);
-            }}
-          />
-          <span>
-            <strong>{ui("Conversation Beta")}</strong>
-            <small>{ui("Learn each phrase as the answer to a question, and meet hard structure — weil, dass, wenn — first.")}</small>
+        <button
+          aria-label={ui("Start a Conversation Beta lesson. Hard structure first, each phrase taught as an answer.")}
+          className="np-mobile-course-button np-beta-button"
+          onClick={() => {
+            setConversationBeta(true);
+            onPractice();
+          }}
+          type="button"
+        >
+          <MessagesSquare />
+          <span className="np-course-button-copy">
+            <span className="np-course-button-kicker">{ui("Beta · Leon only")}</span>
+            <strong>{ui("Continue learning — conversations")}</strong>
+            <small>
+              {ui("Each phrase as the answer to a question, hard structure — weil, dass, wenn — first.")}
+            </small>
           </span>
-          <span className="np-beta-badge">{ui("Leon only")}</span>
-        </label>
+          <ChevronRight />
+        </button>
       )}
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} />
@@ -2129,8 +2142,10 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId === "english")
-    ? (learningEnglish() ? "english" : "german")
+  const activeCourseId = (storedCourseId === "german" || storedCourseId.startsWith("english"))
+    ? (learningEnglish()
+        ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
+        : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
@@ -2287,7 +2302,14 @@ export default function NewUiPrototype({
     // German and English are the same built-in course read in opposite
     // directions, so picking one has to move the direction as well as the id.
     // Without this, choosing English left the app teaching German.
-    if (courseId === "english") setLearningDirection("learn-en");
+    // The two English courses are the same course with a different spelling
+    // and accent, so picking one sets both. Doing it here means the choice is
+    // made once, in the place you choose the language, instead of being a
+    // second setting you have to know to go and find.
+    if (courseId === "english-uk" || courseId === "english-us") {
+      setLearningDirection("learn-en");
+      setEnglishVariant(courseId === "english-uk" ? "british" : "american");
+    }
     else if (courseId === "german") setLearningDirection("learn-de");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);

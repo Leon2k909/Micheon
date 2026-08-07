@@ -19,11 +19,20 @@ export const COURSES: Course[] = [
   // was simply never listed as a course, so the one person here who is
   // learning English saw a picker that only offered German.
   {
-    id: "english",
+    id: "english-uk",
     kind: "language",
-    name: "English",
-    tagline: "Read, listen, type and translate real English.",
+    name: "English (UK)",
+    tagline: "British spelling and accent — colour, practise, timetable.",
     icon: "🇬🇧",
+    available: true,
+    builtIn: true,
+  },
+  {
+    id: "english-us",
+    kind: "language",
+    name: "English (US)",
+    tagline: "American spelling and accent — color, practice, schedule.",
+    icon: "🇺🇸",
     available: true,
     builtIn: true,
   },
