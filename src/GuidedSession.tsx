@@ -1522,6 +1522,58 @@ function reviewLevelFinishesItem(level: GuidedReviewLevel): boolean {
 }
 
 // Only advances when the user types the sentence correctly.
+/**
+ * The "marked as …" note, shown inside the verdict card rather than above it.
+ *
+ * It used to be its own banner floating above "Not quite", which made one
+ * moment look like two separate things happening: a verdict, and then an
+ * unrelated red bar about scheduling. It is the same moment -- you got it
+ * wrong, and here is what that means for when you see it again -- so it
+ * belongs in the same card.
+ */
+function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease }: {
+  grade: string | null;
+  notice?: { label: string; note: string } | null;
+  onUndo?: () => void;
+  onDismiss?: () => void;
+  onHold?: () => void;
+  onRelease?: () => void;
+}) {
+  if (grade !== "struggle" && !notice) return null;
+  const isStruggle = grade === "struggle" || notice?.label === "Struggling";
+  return (
+    <span
+      className={cn("fs-result-note", isStruggle && "is-struggle")}
+      role="status"
+      onMouseEnter={onHold}
+      onMouseLeave={onRelease}
+      onFocusCapture={onHold}
+      onBlurCapture={onRelease}
+    >
+      <span className="fs-result-note-text">
+        {isStruggle
+          ? ui("Marked as struggle. This item will stay in practice instead of being skipped next time.")
+          : `${ui("Marked as")} ${ui(notice?.label ?? "")}. ${ui(notice?.note ?? "")}`}
+      </span>
+      {notice && (
+        <span className="fs-result-note-actions">
+          <button type="button" className="fs-result-note-undo" onClick={onUndo}>
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            {ui("Undo")}
+          </button>
+          <button
+            type="button"
+            className="fs-result-note-dismiss"
+            aria-label={ui("Dismiss")}
+            onClick={onDismiss}
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </span>
+      )}
+    </span>
+  );
+}
 function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview }: {
   item: any;
   listeningChoicePool: string[];
@@ -2888,49 +2940,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
-          {(grade === "struggle" || manualReviewNotice) && (
-            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className={cn(
-                "flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border px-4 py-3 text-sm font-bold",
-                grade === "struggle" || manualReviewNotice?.label === "Struggling"
-                  ? "border-rose-500/25 bg-rose-500/10 text-rose-700"
-                  : "border-zinc-300/60 bg-zinc-500/10 text-zinc-700"
-              )}
-              role="status"
-              onMouseEnter={onHoldManualReview}
-              onMouseLeave={onReleaseManualReview}
-              onFocusCapture={onHoldManualReview}
-              onBlurCapture={onReleaseManualReview}
-            >
-              <span className="min-w-0 flex-1">
-                {grade === "struggle" || manualReviewNotice?.label === "Struggling"
-                  ? ui("Marked as struggle. This item will stay in practice instead of being skipped next time.")
-                  : `${ui("Marked as")} ${ui(manualReviewNotice?.label ?? "")}. ${ui(manualReviewNotice?.note ?? "")}`}
-              </span>
-              {manualReviewNotice && (
-                <span className="flex shrink-0 items-center gap-1.5">
-                  <button
-                    type="button"
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/70 px-3 text-xs font-black text-current transition-opacity hover:opacity-80"
-                    onClick={() => { onUndoManualReview?.(); setGrade(null); }}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                    {ui("Undo")}
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-current transition-opacity hover:opacity-70"
-                    aria-label={ui("Dismiss")}
-                    onClick={() => onDismissManualReview?.()}
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </span>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
       {/* Phase-specific controls */}
       <AnimatePresence mode="wait">
@@ -3023,6 +3032,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       ? ui("This is the natural everyday choice.")
                       : <>{ui("Answer:")} <strong>{item.de}</strong></>}
                   </span>
+                                  <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -3213,6 +3223,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       ? ui("You matched the spoken phrase.")
                       : <>{ui("Answer:")} <strong>{item.de}</strong></>}
                   </span>
+                                  <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -3466,6 +3477,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <div className={cn("fs-result", recallTargetResult.ok ? "is-good" : "is-bad")} role="status">
                 <strong>{ui(recallTargetResult.ok ? "Recalled correctly" : "Not quite")}</strong>
                 <span>{ui(recallTargetResult.ok ? "The next recall round is ready." : "Try again or use Hint. The answer will stay hidden until you ask for it.")}</span>
+                              <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
               </div>
             )}
             {recallTargetChecked && !recallTargetResult.ok ? (
@@ -3544,6 +3556,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <div className={cn("fs-result", recallMeaningResult.ok ? "is-good" : "is-bad")} role="status">
                 <strong>{ui(recallMeaningResult.ok ? "Recalled correctly" : "Not quite")}</strong>
                 <span>{ui(recallMeaningResult.ok ? "One final recall round remains." : "Try again or use Hint. The answer will stay hidden until you ask for it.")}</span>
+                              <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
               </div>
             )}
             {recallMeaningChecked && !recallMeaningResult.ok ? (
@@ -3660,6 +3673,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <span aria-hidden="true"> · </span>
                   {ui(meaningLabel)}: {ui(recallBothMeaningResult.ok ? "Correct" : "Try again")}
                 </span>
+                <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
               </div>
             )}
 
@@ -4130,6 +4144,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <div className={cn("fs-result", orderIsCorrect ? "is-good" : "is-bad")} role="status">
                   <strong>{ui(orderIsCorrect ? "Correct word order" : "Not quite")}</strong>
                   <span>{ui(orderIsCorrect ? "The sentence is ready to write from memory." : "Rearrange the words and check again.")}</span>
+                                  <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
                 </div>
               )}
 

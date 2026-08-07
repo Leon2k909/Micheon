@@ -2046,7 +2046,13 @@ a { color: inherit; text-decoration: none; }
   transform: translateY(-2px); border-color: rgba(177,139,255,0.52); background: rgba(139,76,255,0.2);
 }
 .guided-session .fs-order-token:active { cursor: grabbing; }
-.guided-session .fs-order-token svg { color: var(--fs-muted-2); }
+/* The drag handle follows the chip's own ink instead of a fixed grey, so it
+   is white on a filled chip and dark on a pale one without a second rule. A
+   grey that ignored the chip underneath read as dirty against the accent. */
+.guided-session .fs-order-token svg {
+  color: inherit;
+  opacity: 0.72;
+}
 .guided-session .fs-order-token.is-dragging {
   z-index: 2; cursor: grabbing; opacity: 0.58;
   border-color: #ffe987; background: rgba(255,210,63,0.14);
@@ -9730,6 +9736,71 @@ html[data-theme="dark"] .main-skeleton-bar {
   color: var(--accent-ink, var(--fs-text));
   font-size: 10px;
   font-weight: 800;
+}
+
+/* The "marked as …" note, inside the verdict card.
+
+   It was a separate banner above "Not quite", which made one moment look
+   like two things happening: a verdict, and then an unrelated red bar about
+   scheduling. Same moment, same card. The rule above it is the seam. */
+.fs-result-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid currentColor;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.92;
+}
+
+/* The seam is a hairline, not a line: currentColor at full strength would
+   cut the card in half. */
+.fs-result-note { border-top-color: color-mix(in srgb, currentColor 22%, transparent); }
+
+.fs-result-note-text { flex: 1 1 220px; min-width: 0; }
+
+.fs-result-note-actions { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; }
+
+.fs-result-note-undo {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fs-result-note-undo:hover { background: color-mix(in srgb, currentColor 22%, transparent); }
+
+.fs-result-note-dismiss {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: inherit;
+}
+
+.fs-result-note-dismiss:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+
+/* One focus indicator on a test answer, not two.
+
+   The field draws its own 2px border and turns it to the accent on focus,
+   and a ring was being drawn outside that as well -- so a focused answer box
+   had a border inside a ring in two different colours and read as a double
+   border. Settings already suppresses the same ring for the same reason. */
+.test-answer-field:focus,
+.test-answer-field:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────

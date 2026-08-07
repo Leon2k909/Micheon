@@ -32,11 +32,31 @@ if (!/if \(reviewNoticeHeld\) return undefined;/.test(guided)) {
 if (!/if \(!manualReviewNotice\) setGrade\(null\);/.test(guided)) {
   failures.push("GuidedSession: the in-card banner must clear when the notice does, not outlive it");
 }
+// Both the floating toast and the in-card note have to hold it, or one of the
+// two can still disappear while you are reaching for Undo. The in-card note is
+// one component rendered inside every verdict card, so the handlers are
+// counted where they are declared rather than per card.
+// Sliced rather than matched: the component's own type annotation closes with
+// "}) {" at column 0, which a lazy regex stops at, capturing only a signature
+// that contains none of the handlers being looked for.
+const noteStart = guided.indexOf("function ManualReviewNote");
+const noteEnd = noteStart === -1 ? -1 : guided.indexOf("\nfunction ", noteStart + 1);
+const noteComponent = noteStart === -1 ? "" : guided.slice(noteStart, noteEnd === -1 ? undefined : noteEnd);
+if (!noteComponent) {
+  failures.push("GuidedSession: the in-card note component is gone");
+}
 for (const handler of ["onMouseEnter", "onMouseLeave", "onFocusCapture", "onBlurCapture"]) {
-  // Both the floating toast and the in-card banner have to hold it, or one of
-  // the two can still disappear mid-reach.
-  const uses = (guided.match(new RegExp(handler + "=\\{(holdReviewNotice|releaseReviewNotice|onHoldManualReview|onReleaseManualReview)\\}", "g")) || []).length;
-  if (uses < 2) failures.push(`GuidedSession: ${handler} should hold the notice on both the toast and the in-card banner (found ${uses})`);
+  const onToast = new RegExp(handler + "=\{(holdReviewNotice|releaseReviewNotice)\}").test(guided);
+  const onNote = new RegExp(handler + "=\{(onHold|onRelease)\}").test(noteComponent);
+  if (!onToast) failures.push(`GuidedSession: ${handler} is missing from the floating toast`);
+  if (!onNote) failures.push(`GuidedSession: ${handler} is missing from the in-card note`);
+}
+// And the note has to live INSIDE the verdict card. As its own banner above
+// "Not quite" it read as a second, unrelated thing happening.
+const cardsWithNote = (guided.match(/<ManualReviewNote /g) || []).length;
+const cards = (guided.match(/"fs-result"/g) || []).length;
+if (cardsWithNote < cards) {
+  failures.push(`GuidedSession: ${cards - cardsWithNote} verdict card(s) do not carry the marked-as note`);
 }
 
 // ── 2. the silent play button ─────────────────────────────────────────────
