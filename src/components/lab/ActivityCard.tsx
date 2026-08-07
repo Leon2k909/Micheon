@@ -49,7 +49,10 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
 
   return (
     <section className={cn("card p-5 sm:p-6", className)}>
-      <div className="flex items-start justify-between gap-4">
+      {/* Wraps, or the range picker runs out of the card and lands on top of
+          whatever is beside it. In a narrow column there is no room for a
+          heading and a dropdown on one line. */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Activity")}</h2>
           <div className="mt-5 flex items-end gap-2">
@@ -58,7 +61,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative min-w-0">
           <button
             aria-expanded={open}
             className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-[var(--text-2)] transition-colors hover:border-[var(--border-2)] hover:bg-[var(--surface-2)]"

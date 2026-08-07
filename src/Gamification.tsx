@@ -496,7 +496,7 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
     <aside className="card flex min-w-0 flex-col justify-between p-5 sm:p-6">
       <div>
         <div className="flex items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("This week")}</p>
             <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">{ui("Quick read on your practice rhythm.")}</p>
           </div>
@@ -1387,13 +1387,13 @@ export default function GamificationPanel({
         </section>
         </SettingsCategoryLayout>
 
-        <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
           <ActivityCard className="min-w-0" progressStats={stats} />
           <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
           <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
         </section>
 
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
           <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
           <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
@@ -1480,7 +1480,7 @@ export default function GamificationPanel({
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
         <ActivityCard className="min-w-0" progressStats={stats} />
         <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
         <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
@@ -1643,7 +1643,7 @@ export default function GamificationPanel({
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
         <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
         <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />

@@ -101,7 +101,7 @@ export function MasteryCard({ vocab }: { vocab: number }) {
 
   return (
     <div className="card mastery-card p-5 sm:p-6">
-      <div className="mastery-card__header flex items-start justify-between gap-4">
+      <div className="mastery-card__header flex flex-wrap items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="mastery-card__title text-sm font-black text-[var(--text-1)]">{ui("Vocabulary mastery")}</p>
           <p className="mastery-card__count mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
