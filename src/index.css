@@ -9588,6 +9588,38 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
 
 .fs-flashcard-grade .fs-review-level { z-index: 24; }
 
+/* The loading screen between routes.
+
+   It was a hardcoded cream with no dark variant, and it is what fills the
+   window while the lesson chunk loads -- so pressing Continue learning in
+   dark mode flashed a full-screen near-white rectangle. */
+.main-skeleton {
+  background: var(--np-shell, #fffaf1);
+}
+
+.main-skeleton-card {
+  border: 1px solid var(--np-line, #e8e0d4);
+  background: var(--np-surface, #fffdf8);
+  box-shadow: 0 24px 70px rgba(8, 11, 18, 0.24);
+}
+
+.main-skeleton-bar {
+  background: var(--np-surface-soft, #eee9df);
+}
+
+/* Putting a phrase off is a different kind of decision from saying how well
+   you know it, so it gets its own section with its own heading rather than
+   sitting as two more rungs on the same ladder. */
+.fs-review-snooze {
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--fs-line, rgba(72, 92, 59, 0.16));
+}
+
+.fs-review-level-option.is-snooze strong {
+  color: var(--accent-ink, var(--fs-text));
+}
+
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
    new-ui-prototype.css relied on source order and an accent sweep rewrote the

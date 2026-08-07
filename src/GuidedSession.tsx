@@ -1324,18 +1324,46 @@ function PromptLanguageBadge({ label }: { label: string }) {
 
 type GuidedReviewLevel = "know" | "struggle" | "new" | "permanent" | 1 | 2 | 3 | 4 | 5;
 
+/**
+ * The rungs, described by what they actually do.
+ *
+ * These notes used to read "Review tomorrow", "Review in 3 days" and so on,
+ * which was not true. A date on the ladder is the EARLIEST a review is asked
+ * for, and an item you keep getting wrong is deliberately pulled back before
+ * it -- that is the app working as intended, but the label promised something
+ * else and so it read as a bug. Snooze is the control that genuinely holds an
+ * item back; these set how strongly you know it.
+ */
 const GUIDED_REVIEW_LEVELS: Array<{ value: GuidedReviewLevel; label: string; note: string }> = [
-  { value: "new", label: "New", note: "Start this item from the beginning" },
-  { value: "struggle", label: "Struggling", note: "Bring this back for priority practice" },
-  { value: 1, label: "Learning", note: "Review tomorrow" },
-  { value: 2, label: "Familiar", note: "Review in 3 days" },
-  { value: 3, label: "Strong", note: "Review in 10 days" },
-  { value: 4, label: "Solid", note: "Review in 30 days" },
-  { value: 5, label: "Mastered", note: "Review in 180 days" },
-  { value: "permanent", label: "Never review", note: "Keep this out of future reviews" },
+  { value: "new", label: "New", note: "Starts over from the beginning" },
+  { value: "struggle", label: "Struggling", note: "Comes back as soon as there is a slot" },
+  { value: 1, label: "Not confident", note: "Comes back soon, often within a day" },
+  { value: 2, label: "Familiar", note: "About 3 days away, sooner if you slip" },
+  { value: 3, label: "Strong", note: "About 10 days away, sooner if you slip" },
+  { value: 4, label: "Solid", note: "About 30 days away, sooner if you slip" },
+  { value: 5, label: "Mastered", note: "About 180 days away, sooner if you slip" },
+  { value: "permanent", label: "Never review", note: "Never comes back at all" },
 ];
 
-function ReviewLevelPicker({ onSelect }: { onSelect: (level: GuidedReviewLevel) => void }) {
+/**
+ * Putting something off, and meaning it.
+ *
+ * The rungs above are about how well you know a phrase, and the app is
+ * allowed to bring those back early. These are a hard floor: nothing shows a
+ * snoozed phrase before its date -- not a struggle mark, not the pet, not the
+ * extra practice that repeated mistakes would normally earn it.
+ */
+const GUIDED_SNOOZE_CHOICES: Array<{ days: number; label: string; note: string }> = [
+  { days: 1, label: "Tomorrow", note: "Nothing brings it back today" },
+  { days: 3, label: "In 3 days", note: "Held back until then" },
+  { days: 7, label: "In a week", note: "Held back until then" },
+  { days: 30, label: "In a month", note: "Held back until then" },
+];
+
+function ReviewLevelPicker({ onSelect, onSnooze }: {
+  onSelect: (level: GuidedReviewLevel) => void;
+  onSnooze?: (days: number) => void;
+}) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -1372,7 +1400,7 @@ function ReviewLevelPicker({ onSelect }: { onSelect: (level: GuidedReviewLevel) 
         <div className="fs-review-level-menu" role="menu" aria-label={ui("Set review level")}>
           <div className="fs-review-level-menu-head">
             <strong>{ui("Set review level")}</strong>
-            <span>{ui("Choose the rung that feels right today.")}</span>
+            <span>{ui("How well do you know this? The app can still bring it back early if you keep slipping.")}</span>
           </div>
           <div className="fs-review-level-options">
             {GUIDED_REVIEW_LEVELS.map((option) => (
@@ -1391,6 +1419,31 @@ function ReviewLevelPicker({ onSelect }: { onSelect: (level: GuidedReviewLevel) 
               </button>
             ))}
           </div>
+          {onSnooze && (
+            <div className="fs-review-snooze">
+              <div className="fs-review-level-menu-head">
+                <strong>{ui("Or put it off")}</strong>
+                <span>{ui("This one is a promise. Nothing shows it before the date you pick.")}</span>
+              </div>
+              <div className="fs-review-level-options">
+                {GUIDED_SNOOZE_CHOICES.map((choice) => (
+                  <button
+                    key={choice.days}
+                    type="button"
+                    role="menuitem"
+                    className="fs-review-level-option is-snooze"
+                    onClick={() => {
+                      onSnooze(choice.days);
+                      setOpen(false);
+                    }}
+                  >
+                    <strong>{ui(choice.label)}</strong>
+                    <small>{ui(choice.note)}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1427,7 +1480,7 @@ function reviewLevelFinishesItem(level: GuidedReviewLevel): boolean {
 }
 
 // Only advances when the user types the sentence correctly.
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
@@ -1435,6 +1488,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   onSkip?: () => void;
   onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
   onReviewLevel?: (level: GuidedReviewLevel) => void;
+  onSnooze?: (days: number) => void;
   onAnswer?: (correct: boolean) => void;
   /** The pending mark for THIS item, so the banner can host Undo inline. */
   manualReviewNotice?: { label: string; note: string } | null;
@@ -2584,7 +2638,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {ui("Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
-            {onReviewLevel && <ReviewLevelPicker onSelect={onReviewLevel} />}
+            {onReviewLevel && <ReviewLevelPicker onSelect={onReviewLevel} onSnooze={onSnooze} />}
             {phase !== "MeaningPick"
               && phase !== "ListenPick"
               && phase !== "MissingWord"
@@ -4242,7 +4296,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 }
 
 // Section
-function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void; onAnswer?: (correct: boolean) => void }) {
+function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void; onSnooze?: (itemId: string, days: number) => void; onAnswer?: (correct: boolean) => void }) {
   const lines: any[] = dialogue?.lines ?? [];
   const [lineIdx, setLineIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -4373,7 +4427,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onAnsw
             {ui("Struggle")}
             <kbd className="grade-kbd">Alt S</kbd>
           </button>
-          {onReviewLevel && <ReviewLevelPicker onSelect={(level) => onReviewLevel(lineGradeId, level)} />}
+          {onReviewLevel && <ReviewLevelPicker onSelect={(level) => onReviewLevel(lineGradeId, level)} onSnooze={onSnooze && ((days) => onSnooze(lineGradeId, days))} />}
         </div>
       </div>
 
@@ -4896,6 +4950,7 @@ function SessionFlashcardPreview({
   onIndexChange,
   onKnown,
   onReviewLevel,
+  onSnooze,
   onSkip,
   onStart,
 }: {
@@ -4904,6 +4959,7 @@ function SessionFlashcardPreview({
   onIndexChange: (index: number) => void;
   onKnown: (itemId: string) => void;
   onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void;
+  onSnooze?: (itemId: string, days: number) => void;
   onSkip: () => void;
   onStart: () => void;
 }) {
@@ -5099,7 +5155,7 @@ function SessionFlashcardPreview({
                 {ui("Know it")}
               </button>
               {onReviewLevel && (
-                <ReviewLevelPicker onSelect={(level) => onReviewLevel(card.id, level)} />
+                <ReviewLevelPicker onSelect={(level) => onReviewLevel(card.id, level)} onSnooze={onSnooze && ((days) => onSnooze(card.id, days))} />
               )}
             </span>
           </div>
@@ -5402,7 +5458,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onSnoozeItem, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -5521,6 +5577,25 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       subject: describeMarkedItems(ids),
     });
   }, [describeMarkedItems, onGradeItem, onSetItemPermanent, onSetItemStrength]);
+  /**
+   * Put an item off, and say so in the same notice the levels use.
+   *
+   * Unlike a level, this does not claim anything about how well it is known --
+   * it only moves the earliest date it can reappear, and nothing overrides it.
+   */
+  const applyManualSnooze = useCallback((itemIds: string[], days: number) => {
+    const ids = Array.from(new Set(itemIds.filter(Boolean)));
+    if (!ids.length) return;
+    ids.forEach((itemId) => onSnoozeItem?.(itemId, days));
+    const choice = GUIDED_SNOOZE_CHOICES.find((option) => option.days === days);
+    setLastManualReviewChange({
+      itemIds: ids,
+      label: choice ? `Put off until ${choice.label.toLowerCase()}` : "Put off",
+      note: "Nothing will show this before then.",
+      subject: describeMarkedItems(ids),
+    });
+  }, [describeMarkedItems, onSnoozeItem]);
+
   const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
     applyManualReviewChange([itemId], grade);
   }, [applyManualReviewChange]);
@@ -5934,6 +6009,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     onIndexChange={setPreviewIndex}
                     onKnown={markPreviewItemKnown}
                     onReviewLevel={setPreviewItemLevel}
+                    onSnooze={(itemId, days) => applyManualSnooze([itemId], days)}
                     onSkip={() => {
                       setPreviewActive(false);
                       setMatchingActive(false);
@@ -5953,8 +6029,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">

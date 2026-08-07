@@ -1546,6 +1546,28 @@ const DE: Record<string, string> = {
   "to fluent": "bis fließend",
   "You're at": "Du bist bei",
 
+  // ── Review levels and snooze ──
+  "Starts over from the beginning": "Fängt wieder von vorne an",
+  "Comes back as soon as there is a slot": "Kommt zurück, sobald ein Platz frei ist",
+  "Not confident": "Unsicher",
+  "Comes back soon, often within a day": "Kommt bald zurück, oft noch am selben oder nächsten Tag",
+  "About 3 days away, sooner if you slip": "In etwa 3 Tagen, früher, wenn du patzt",
+  "About 10 days away, sooner if you slip": "In etwa 10 Tagen, früher, wenn du patzt",
+  "About 30 days away, sooner if you slip": "In etwa 30 Tagen, früher, wenn du patzt",
+  "About 180 days away, sooner if you slip": "In etwa 180 Tagen, früher, wenn du patzt",
+  "Never comes back at all": "Kommt überhaupt nicht mehr zurück",
+  "How well do you know this? The app can still bring it back early if you keep slipping.": "Wie gut kannst du das? Die App darf es trotzdem früher zeigen, wenn du weiter patzt.",
+  "Or put it off": "Oder aufschieben",
+  "This one is a promise. Nothing shows it before the date you pick.": "Das hier ist ein Versprechen: Vor dem gewählten Datum zeigt es nichts.",
+  "Tomorrow": "Morgen",
+  "In 3 days": "In 3 Tagen",
+  "In a week": "In einer Woche",
+  "In a month": "In einem Monat",
+  "Nothing brings it back today": "Heute holt es nichts zurück",
+  "Held back until then": "Bis dahin zurückgehalten",
+  "Nothing will show this before then.": "Vorher zeigt das nichts an.",
+  "Put off": "Aufgeschoben",
+
   // ── App shell: sidebar, dashboard, search, notifications, shop, social ──
   "Read everything with the full sidebar view": "Alles in der vollen Seitenleistenansicht lesen",
   "{n}-day streak": "{n}-Tage-Serie",

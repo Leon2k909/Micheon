@@ -11,7 +11,7 @@ import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
-import { isDueForReview, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
+import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
@@ -169,6 +169,9 @@ export default function GuidedLearningSession() {
       // rebuilt after every graded item in a lesson.
       const keyed = eligible
         .filter((item) => statusForId(grades, item.id, item.aliases) !== "new")
+        // Putting something off means putting it off everywhere, not just
+        // in lessons -- being quizzed on it by the pet is the same thing.
+        .filter((item) => !isSnoozed(recordFor(item)))
         .map((item) => {
           const record = recordFor(item);
           return {
@@ -413,6 +416,15 @@ export default function GuidedLearningSession() {
       const next = setStrengthLevel(level, Date.now(), prior);
       if (next) existing[itemId] = next;
       else delete existing[itemId];
+      saveReviewGrades(existing);
+    } catch {}
+  };
+
+  const snoozeGuidedItem = (itemId: string, days: number) => {
+    try {
+      const existing = loadCompleted();
+      const prior = rememberGradeBeforeChange(existing, itemId);
+      existing[itemId] = snoozeForDays(days, Date.now(), prior);
       saveReviewGrades(existing);
     } catch {}
   };
@@ -1143,6 +1155,7 @@ export default function GuidedLearningSession() {
       onUndoGradeItem={(itemId: string) => undoGuidedGrade(itemId)}
       onPreviewKnown={replaceKnownPreviewItem}
       onPreviewSwap={swapPreviewItem}
+      onSnoozeItem={(itemId: string, days: number) => snoozeGuidedItem(itemId, days)}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
       onAdvance={(step: any, skipped?: boolean, performance?: AnswerPerformance) => {

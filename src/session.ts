@@ -1,6 +1,6 @@
 // Guided session engine — every step is a full sentence exercise
 
-import { isDueForReview, overdueBy } from "@/lib/memoryStrength";
+import { isDueForReview, isSnoozed, overdueBy } from "@/lib/memoryStrength";
 import { packMeta } from "@/lib/curriculum";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { sentenceCommonality } from "@/lib/corpusFrequency";
@@ -122,6 +122,10 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       });
       return;
     }
+    // Snoozing is the learner's own decision about when to see this again,
+    // so it outranks every reason the app has for showing it sooner --
+    // including a struggle mark and adaptive reinforcement.
+    if (isSnoozed(rec)) return;
     if (rec?.lastGrade === "struggle") {
       queue.push({ type: EX.SENTENCE, review: true, reviewReason: "struggle", interval: 0, item });
       return;

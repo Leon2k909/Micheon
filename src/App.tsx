@@ -162,14 +162,22 @@ function MainWindowPetSurface({ signedIn }: { signedIn: boolean }) {
   return signedIn ? <CodexPetLayer /> : null;
 }
 
+/**
+ * What fills the screen while a lazy route loads.
+ *
+ * This was a hardcoded cream (#fffaf1) with no dark variant, and it is the
+ * fallback for BOTH main routes -- so pressing "Continue learning" in dark
+ * mode painted a full-viewport near-white rectangle for as long as the guided
+ * chunk took to arrive. That is the flash. It follows the theme now.
+ */
 function MainSkeleton() {
   return (
-    <div className="flex min-h-[var(--app-h)] items-center justify-center bg-[#fffaf1] p-6">
-      <div className="w-full max-w-sm rounded-[28px] border border-[#e8e0d4] bg-[#fffdf8] p-6 shadow-[0_24px_70px_rgba(82,68,53,0.16)]">
-        <div className="h-4 w-24 rounded-full bg-[#eee9df]" />
-        <div className="mt-5 h-10 w-3/4 rounded-2xl bg-[#f8f4eb]" />
-        <div className="mt-3 h-4 w-1/2 rounded-full bg-[#eee9df]" />
-        <div className="mt-8 h-44 rounded-[22px] bg-[#f8f4eb]" />
+    <div className="main-skeleton flex min-h-[var(--app-h)] items-center justify-center p-6">
+      <div className="main-skeleton-card w-full max-w-sm rounded-[28px] p-6">
+        <div className="main-skeleton-bar h-4 w-24 rounded-full" />
+        <div className="main-skeleton-bar mt-5 h-10 w-3/4 rounded-2xl" />
+        <div className="main-skeleton-bar mt-3 h-4 w-1/2 rounded-full" />
+        <div className="main-skeleton-bar mt-8 h-44 rounded-[22px]" />
       </div>
     </div>
   );

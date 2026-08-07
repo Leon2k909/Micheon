@@ -15,6 +15,15 @@ export type GradeRecord = {
   intervalDays?: number;
   /** when this item should come back for review */
   dueAt?: string;
+  /**
+   * Held back until this date, by explicit request.
+   *
+   * dueAt is only ever a preference: an item you keep getting wrong can be
+   * pulled back before its date, which is usually the right call and is why
+   * 'review tomorrow' did not mean tomorrow. This is the one date nothing
+   * overrides, so choosing to put something off actually puts it off.
+   */
+  snoozedUntil?: string;
   /** never schedule a review again — the tier above Mastered */
   permanent?: boolean;
   /** last extra practice rep; does not move the spaced-review ladder */
@@ -231,8 +240,24 @@ export function recallDetail(record: GradeRecord | undefined, now = Date.now()):
   return { weight, fading: weight < 1, overdueDays, halfLifeDays, floor, exempt: null };
 }
 
+/** Held back by explicit request, and not yet released. */
+export function isSnoozed(record: GradeRecord | undefined, now = Date.now()): boolean {
+  const until = Date.parse(record?.snoozedUntil ?? "");
+  return Number.isFinite(until) && now < until;
+}
+
+/** Put an item off for a set number of days, whatever else would recall it. */
+export function snoozeForDays(days: number, now = Date.now(), prior?: GradeRecord): GradeRecord {
+  return {
+    ...prior,
+    updatedAt: new Date(now).toISOString(),
+    snoozedUntil: new Date(now + Math.max(0, days) * DAY_MS).toISOString(),
+  };
+}
+
 export function isDueForReview(record: GradeRecord | undefined, now = Date.now()): boolean {
   if (!record || record.lastGrade !== "know" || record.permanent) return false;
+  if (isSnoozed(record, now)) return false;
   const { dueAtMs } = normalize(record);
   return dueAtMs != null && now >= dueAtMs;
 }
