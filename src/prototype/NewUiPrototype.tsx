@@ -71,7 +71,7 @@ import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownVocab, getFluency } from "@/lib/fluency";
 import { activePackProgress, type PackProgress } from "@/lib/packProgress";
-import { useDragScroll } from "@/lib/dragScroll";
+import { useSlideSelect } from "@/lib/slideSelect";
 import {
   NOTIFICATION_KINDS,
   NOTIFICATION_PREFS_EVENT,
@@ -480,9 +480,10 @@ function Sidebar({
     window.addEventListener("pointercancel", finish);
   };
 
-  // Hold left click and pull, the way the old build scrolled.
+  // Press a nav button, keep the mouse down, slide to another, release to
+  // pick it — the gesture the old build had on its top nav.
   const sidebarRef = useRef<HTMLElement | null>(null);
-  useDragScroll(sidebarRef);
+  useSlideSelect(sidebarRef, ".np-side-nav button");
 
   return (
     <aside className={`np-sidebar${brandLayoutClass}`} ref={sidebarRef}>
