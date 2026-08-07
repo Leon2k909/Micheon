@@ -53,6 +53,12 @@ for (const handler of ["onMouseEnter", "onMouseLeave", "onFocusCapture", "onBlur
 }
 // And the note has to live INSIDE the verdict card. As its own banner above
 // "Not quite" it read as a second, unrelated thing happening.
+// And it needs somewhere to go when there is NO verdict on screen. Marking a
+// level or a snooze before answering suppresses the floating toast, so
+// without this Undo is simply not rendered anywhere.
+if (!/!verdictShowing && \(/.test(guided) || !/fs-standalone-note/.test(guided)) {
+  failures.push("GuidedSession: with no verdict card on screen the marked-as note has nowhere to render, so Undo disappears");
+}
 const cardsWithNote = (guided.match(/<ManualReviewNote /g) || []).length;
 const cards = (guided.match(/"fs-result"/g) || []).length;
 if (cardsWithNote < cards) {

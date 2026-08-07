@@ -7382,8 +7382,15 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prom
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
 }
 
+/* No border in dark either.
+
+   The light rule drops the flag's own ring; this one put a 2px ring back,
+   and 2px off a 26px circle is a sixth of it -- enough to trim the black and
+   gold bands of a tricolour to slivers. It is why the flag looked cut off in
+   dark mode and nowhere else, and why the dashboard badge was fine: nothing
+   re-adds a border there. */
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-german-flag {
-  border: 2px solid rgba(255,255,255,0.10);
+  border: 0;
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-english-flag {
@@ -9898,6 +9905,27 @@ html[data-theme="dark"] .main-skeleton-bar {
   }
   .settings-nav::-webkit-scrollbar { display: none; }
   .settings-nav-label { white-space: nowrap; }
+}
+
+/* The "marked as" note when there is no verdict to sit inside.
+
+   It borrows the verdict card's shape so the two read as the same thing in
+   two places, rather than a banner and a card that happen to say the same
+   words. Empty when nothing is marked, so it costs no space. */
+.fs-standalone-note:not(:empty) {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(124, 126, 120, 0.22);
+  border-radius: 16px;
+  background: var(--fs-surface-raised, var(--fs-surface));
+  color: var(--fs-text);
+}
+
+/* Inside its own card there is nothing above it, so the seam is not needed. */
+.fs-standalone-note .fs-result-note {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────

@@ -1699,6 +1699,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [recallBothTargetInput, setRecallBothTargetInput] = useState("");
   const [recallBothMeaningInput, setRecallBothMeaningInput] = useState("");
   const [recallBothChecked, setRecallBothChecked] = useState(false);
+  // Is a verdict card on screen? If one is, it hosts the "marked as" note;
+  // if not, the note needs a card of its own or Undo has nowhere to live.
+  const verdictShowing = enChecked || gapChecked || meaningChecked || meaningSelectChecked
+    || listeningChecked || missingWordChecked || orderChecked || sayChecked
+    || recallTargetChecked || recallMeaningChecked || recallBothChecked;
   const recallBothTargetRef = useRef<HTMLInputElement>(null);
   const recallBothMeaningRef = useRef<HTMLInputElement>(null);
   const [recallTransitionPending, setRecallTransitionPending] = useState(false);
@@ -2684,6 +2689,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
       {/* Stage route (full-bleed inside the card) */}
+      {/* Folding the note into the verdict card left it homeless whenever
+          there was no verdict: snoozing or setting a level BEFORE answering
+          suppressed the floating toast and had nowhere of its own to go, so
+          Undo simply was not on screen. It gets its own card in that case. */}
+      {!verdictShowing && (
+        <div className="fs-standalone-note">
+          <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
+        </div>
+      )}
       <BetaConversationFrame asks={item?.asks} notes={item?.structureNotes} />
       <StageRoute
         current={phase}
