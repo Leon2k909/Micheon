@@ -175,6 +175,14 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
           {ui(REGISTER_LABEL.informal)}
         </span>
       )}
+      {register === "plural" && (
+        <span
+          title={ui("The German is aimed at more than one person. English says \"you\" either way.")}
+          className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-black text-amber-600"
+        >
+          {ui(REGISTER_LABEL.plural)}
+        </span>
+      )}
       {register === "formal" && (
         <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-black text-indigo-500">
           {ui(REGISTER_LABEL.formal)}

@@ -14,7 +14,7 @@ const PRONOUN_NOTES: Record<string, string> = {
   dir: "you / to you — 'du' when something is given or done to you: Ich helfe dir (I'm helping you).",
   ihn: "him — this is 'er' when something happens to him, like he → him: Ruf ihn an (call him). You'd never say 'call he' — same idea here.",
   ihm: "him / to him — 'er' when something is given or done to him: Gib ihm Zeit (give him time).",
-  ihr: "her / to her — like she → her: Ich helfe ihr (I'm helping her). To a group it means 'you all': Was macht ihr? (what are you all up to?).",
+  ihr: "three words in one. Talking TO a group it is 'you all': Was macht ihr? (what are you all up to?). Before a noun it is 'her/their': ihr Auto (her car). On its own it can be 'to her': Ich helfe ihr (I'm helping her).",
   uns: "us — this is 'wir' when something happens to us, like we → us: Besuch uns mal (come visit us).",
   euch: "you (all) — 'ihr' when something happens to you all: Ich sehe euch (I see you all).",
   ihnen: "them / to them — like they → them: Ich helfe ihnen (I'm helping them). Capitalised (Ihnen) it's the polite 'you': Wie geht es Ihnen?",

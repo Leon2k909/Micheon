@@ -5151,9 +5151,9 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
 }
 
-/* A rounded square, not a circle. A circular crop eats the top and bottom
-   bands of a three-stripe flag while leaving the middle at full width, so
-   the black and gold read as slivers and the whole thing looks wrong. */
+/* A circle, matching the English flag beside it and the course chip on the
+   dashboard. A round crop does trim the outer bands of a tricolour, but two
+   flags of different shapes in the same row looked far worse. */
 .guided-session.fs-app.prototype-guided-session .fs-german-flag {
   width: 26px;
   height: 26px;
@@ -5163,7 +5163,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
      white border just held the flag away from its own edges and read as
      the flag not fitting. A hairline keeps the edge defined. */
   border: 0;
-  border-radius: 7px;
+  border-radius: 50%;
   background: linear-gradient(to bottom, #171717 0 33.333%, #dd2638 33.333% 66.666%, #f4cb37 66.666% 100%);
   box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.22);
 }

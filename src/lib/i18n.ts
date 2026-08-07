@@ -1547,6 +1547,8 @@ const DE: Record<string, string> = {
   "You're at": "Du bist bei",
 
   // ── Course and interface language ──
+  "ihr · a group — you all, not one person": "ihr · eine Gruppe — ihr alle, nicht eine Person",
+  "The German is aimed at more than one person. English says \"you\" either way.": "Der deutsche Satz richtet sich an mehrere Personen. Im Englischen heißt beides „you“.",
   "English for real conversations": "Englisch für echte Gespräche",
   "Switch course, currently {course}": "Kurs wechseln, aktuell {course}",
   "Read, listen, type and translate real English.": "Echtes Englisch lesen, hören, tippen und übersetzen.",

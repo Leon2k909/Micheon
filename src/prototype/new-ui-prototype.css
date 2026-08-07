@@ -1367,7 +1367,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   border: 2px solid rgba(255, 255, 255, 0.94);
   /* Squared off to match the session badge: a circle crops the outer two
      stripes of a three-stripe flag and leaves the middle one full width. */
-  border-radius: 9px;
+  border-radius: 50%;
   box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
 }
 

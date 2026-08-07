@@ -1,11 +1,17 @@
 // Formal/informal register detection for German sentences.
 //
 // German distinguishes addressing friends & family (du/dich/dir/dein…) from
-// polite address to strangers, staff, and elders (Sie/Ihnen). Learners need
+// polite address to strangers, staff, and elders (Sie/Ihnen), and both of
+// those from addressing a GROUP (ihr/euch). English has one "you" for all
+// three, so the English side of a card cannot show which one is meant.
+// Learners need
 // to know WHICH one a sentence uses, or they'll greet a shop assistant like
 // a schoolmate.
 
-export type Register = "formal" | "informal" | null;
+export type Register = "formal" | "informal" | "plural" | null;
+
+const PLURAL_PRONOUN = /\b(euch|euer|eue?re?[nmrs]?)\b/i;
+const PLURAL_ONLY_VERB = /\b(seid|habt|werdet|wollt|k(?:ö|oe)nnt|m(?:ü|ue)sst|sollt|d(?:ü|ue)rft|m(?:ö|oe)gt|wisst|seht|lest|sprecht|nehmt|gebt|esst|helft|fahrt|lauft|schlaft|lasst|haltet|tragt)\b/i;
 
 export function detectRegister(de: string): Register {
   const text = String(de ?? "");
@@ -13,6 +19,18 @@ export function detectRegister(de: string): Register {
   // sentence-initial "Sie" is ambiguous with "she/they". Imperatives put the
   // verb first ("Rufen Sie…", "Gehen Sie…"), so they match mid-sentence too.
   if (/[^.!?]\s(Sie|Ihnen)\b/.test(text)) return "formal";
+  // Addressed to a GROUP. English collapses du, ihr and Sie into one "you",
+  // so "Ist das alles, was ihr zu sagen habt?" reads as "Is that all you have
+  // to say?" with nothing to show it is aimed at several people -- and no way
+  // to work out which form to produce when typing it back.
+  //
+  // "ihr" alone is no evidence: it is also "her" (Ich helfe ihr) and "their"
+  // (ihr Auto). These two are, though. euch/euer exist only in the second
+  // person plural, and each verb form below differs from its third-person
+  // singular -- er hat / ihr habt, er ist / ihr seid, er sieht / ihr seht --
+  // so it cannot be anything else. Plural imperatives ("Seid still!", "Nehmt
+  // das!") match too, and are also addressed to a group.
+  if (PLURAL_PRONOUN.test(text) || PLURAL_ONLY_VERB.test(text)) return "plural";
   // Casual du-forms anywhere (also sentence-initial "Du bist…").
   if (/\b(du|dich|dir|dein|deine|deinen|deinem|deiner|deins)\b/i.test(text)) return "informal";
   return null;
@@ -20,5 +38,6 @@ export function detectRegister(de: string): Register {
 
 export const REGISTER_LABEL: Record<Exclude<Register, null>, string> = {
   informal: "du · casual — friends & family",
+  plural: "ihr · a group — you all, not one person",
   formal: "Sie · polite — strangers, staff, elders",
 };
