@@ -480,6 +480,41 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
   [/\bwhos\b/g, "who is"], [/\bwhys\b/g, "why is"], [/\bhows\b/g, "how is"],
   [/\bthats\b/g, "that is"], [/\btheres\b/g, "there is"], [/\bheres\b/g, "here is"],
+  // The rest of the apostrophe-less contractions. Typing "id like a coffee"
+  // is a correct answer to "Ich möchte einen Kaffee" -- the German was
+  // understood, and the only thing missing is a punctuation mark that no
+  // one reaches for at speed.
+  //
+  // Words that are ALSO ordinary English are deliberately absent: ill, wed,
+  // lets, were and its all mean something on their own, and expanding them
+  // would change a sentence rather than forgive a keystroke.
+  [/\bim\b/g, "i am"],
+  [/\bid\b/g, "i would"],
+  [/\bive\b/g, "i have"],
+  [/\byoure\b/g, "you are"],
+  [/\byouve\b/g, "you have"],
+  [/\byoud\b/g, "you would"],
+  [/\byoull\b/g, "you will"],
+  [/\bhes\b/g, "he is"],
+  [/\bshes\b/g, "she is"],
+  [/\btheyre\b/g, "they are"],
+  [/\btheyve\b/g, "they have"],
+  [/\btheyd\b/g, "they would"],
+  [/\bdont\b/g, "do not"],
+  [/\bdoesnt\b/g, "does not"],
+  [/\bdidnt\b/g, "did not"],
+  [/\bcant\b/g, "cannot"],
+  [/\bwont\b/g, "will not"],
+  [/\bwouldnt\b/g, "would not"],
+  [/\bcouldnt\b/g, "could not"],
+  [/\bshouldnt\b/g, "should not"],
+  [/\bisnt\b/g, "is not"],
+  [/\barent\b/g, "are not"],
+  [/\bwasnt\b/g, "was not"],
+  [/\bwerent\b/g, "were not"],
+  [/\bhasnt\b/g, "has not"],
+  [/\bhavent\b/g, "have not"],
+  [/\bhadnt\b/g, "had not"],
 ];
 
 function expandEnglishContractions(t: string) {

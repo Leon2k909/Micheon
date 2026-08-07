@@ -121,6 +121,25 @@ check(
   "the fold does not paper over a real meaning change",
   !matchGermanSentence("Ich geb zu, dass ich es verstehe.", "Ich gebe zu, dass ich es nicht verstehe.").ok
 );
+// Apostrophes are the first thing to go when typing at speed, and leaving one
+// out does not mean the German was misunderstood: "id like a coffee please" is
+// a correct answer to "Ich möchte einen Kaffee, bitte."
+check(
+  "apostrophe-less contractions are accepted",
+  matchEnglishPhrase("id like a coffee please", "I would like a coffee, please.").ok
+    && matchEnglishPhrase("im hungry", "I'm hungry.").ok
+    && matchEnglishPhrase("i dont know", "I don't know.").ok
+    && matchEnglishPhrase("that wasnt me", "That wasn't me.").ok
+);
+// Words that are also ordinary English -- ill, wed, lets, were, its -- are
+// deliberately NOT expanded, because that would change a sentence rather than
+// forgive a keystroke.
+check(
+  "expanding a contraction never rewrites the meaning",
+  !matchEnglishPhrase("id like a tea please", "I would like a coffee, please.").ok
+    && !matchEnglishPhrase("i know", "I don't know.").ok
+    && !matchEnglishPhrase("we wed last year", "We would last year.").ok
+);
 // Single-letter shorthand. "what are u worried abt" is a complete, correct
 // answer that was marked wrong purely on spelling nobody uses when typing.
 check(
