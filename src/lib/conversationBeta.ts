@@ -1,5 +1,6 @@
 import { allPartBlueprints } from "@/lib/data";
 import { curatedTopics } from "@/lib/phrasebank";
+import { assignedQuestionFor } from "@/lib/conversationQuestions";
 
 /**
  * Conversation Beta: learn a phrase as a reply, and meet hard structure early.
@@ -76,6 +77,11 @@ let questionIndex: Map<string, { de: string; en: string }> | null = null;
  * a question and then carrying on talking has not been answered.
  */
 export function questionFor(de: string): { de: string; en: string } | null {
+  // Hand-assigned first. The dialogue-derived index covers 0.3% of the
+  // phrases a review is drawn from, so on its own the beta was an ordinary
+  // review with a banner that almost never appeared.
+  const assigned = assignedQuestionFor(de);
+  if (assigned) return assigned;
   if (!questionIndex) {
     questionIndex = new Map();
     const packs: any[] = [...Object.values(allPartBlueprints), ...curatedTopics];
