@@ -1570,6 +1570,7 @@ const DE: Record<string, string> = {
   "The same words. Only the spoken ending differs, and both are accepted.": "Dieselben Wörter. Nur die gesprochene Endung fällt weg, beides wird akzeptiert.",
 
   // ── Conversation Beta ──
+  "Say": "Sag",
   "Conversation practice": "Gesprächsübung",
   "Answer with what you have been learning": "Antworte mit dem, was du gerade lernst",
   "Turn {n} of {total}. Each reply is the review for that phrase.": "Zug {n} von {total}. Jede Antwort ist die Wiederholung für diesen Satz.",

@@ -130,6 +130,15 @@ check(
 check("the beta button starts a lesson rather than only setting a flag", /setConversationBeta\(true\);[\s\S]{0,80}onPractice\(\)/.test(shell));
 check("the ordinary Continue learning turns the beta back off", /setConversationBeta\(false\);[\s\S]{0,80}onPractice\(\)/.test(shell));
 
+// A question has many good answers and exactly one is being marked, because
+// that one is the review. Without saying WHICH, the turn is guessing what the
+// app wants rather than producing a phrase you know.
+const guidedForCue = fs.readFileSync(path.join(root, 'src/GuidedSession.tsx'), 'utf8');
+check(
+  "the turn says which phrase it is asking for",
+  /fs-conversation-cue/.test(guidedForCue) && /ui\("Say"\)/.test(guidedForCue),
+);
+
 // ── it is a conversation, not the drill with a caption ────────────────────
 //
 // The first two attempts printed the question above the ordinary thirteen

@@ -10035,6 +10035,17 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   text-transform: uppercase;
 }
 
+/* What to say, so the turn is production rather than a guess at which of the
+   many good answers is being marked. */
+.fs-conversation-cue {
+  margin-bottom: 2px;
+  color: var(--fs-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fs-conversation-cue strong { color: var(--fs-text); font-weight: 850; }
+
 .fs-conversation-actions { display: grid; gap: 8px; justify-items: center; }
 
 .fs-conversation-hint {

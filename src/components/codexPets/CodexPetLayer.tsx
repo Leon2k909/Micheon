@@ -1740,7 +1740,7 @@ export function CodexPetLayer() {
                     return (
                       <button
                         aria-checked={selected}
-                        className={`flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border px-1.5 text-[11px] font-black leading-4 transition-[border-color,background-color,color,transform] active:scale-[0.98] ${
+                        className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-1.5 text-[11px] font-black leading-4 transition-[border-color,background-color,color,transform] active:scale-[0.98] ${
                           selected
                             ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
                             : "border-[var(--border-1)] bg-[var(--surface)] text-[var(--text-2)] hover:border-[var(--accent)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
@@ -1753,7 +1753,13 @@ export function CodexPetLayer() {
                         type="button"
                       >
                         <Icon aria-hidden="true" className="h-4 w-4" />
-                        <span className="truncate">{ui(option.label)}</span>
+                        {/* truncate needs a definite width to clip against,
+                            and this span had none -- so a longer label ran
+                            past the button instead of being cut. "Nur
+                            Micheon" is twice "App only". It wraps inside the
+                            button now, which is better than an ellipsis on a
+                            two-word label anyway. */}
+                        <span className="w-full text-center leading-tight">{ui(option.label)}</span>
                       </button>
                     );
                   })}

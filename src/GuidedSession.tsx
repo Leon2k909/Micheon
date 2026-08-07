@@ -1636,6 +1636,15 @@ function ConversationExercise({ turns, onGradeItem, onAnswer, onNext }: {
 
       <label className="fs-conversation-reply">
         <span className="fs-conversation-reply-label">{ui("Your reply")}</span>
+        {/* Which reply. Without this the question has a dozen good answers
+            and only one is being marked, so it turns into guessing what the
+            app wants -- and the phrase being revised is the whole point of
+            the turn. The German is still yours to produce. */}
+        {turn.item?.en && (
+          <span className="fs-conversation-cue">
+            {ui("Say")}: <strong>{turn.item.en}</strong>
+          </span>
+        )}
         <Input
           ref={inputRef}
           className="fs-input"
