@@ -178,13 +178,32 @@ function MainWindowPetSurface({ signedIn }: { signedIn: boolean }) {
  */
 function MainSkeleton() {
   return (
-    <div className="main-skeleton flex min-h-[var(--app-h)] items-center justify-center p-6">
-      <div className="main-skeleton-card w-full max-w-sm rounded-[28px] p-6">
-        <div className="main-skeleton-bar h-4 w-24 rounded-full" />
-        <div className="main-skeleton-bar mt-5 h-10 w-3/4 rounded-2xl" />
-        <div className="main-skeleton-bar mt-3 h-4 w-1/2 rounded-full" />
-        <div className="main-skeleton-bar mt-8 h-44 rounded-[22px]" />
+    <div className="main-skeleton" aria-hidden="true">
+      <div className="main-skeleton-rail">
+        <div className="main-skeleton-brand" />
+        {[0, 1, 2, 3, 4, 5].map((row) => (
+          <div className="main-skeleton-nav" key={row} />
+        ))}
+      </div>
+      <div className="main-skeleton-body">
+        <div className="main-skeleton-topline">
+          <div className="main-skeleton-greeting" />
+          <div className="main-skeleton-chips">
+            {[0, 1, 2].map((chip) => (
+              <div className="main-skeleton-chip" key={chip} />
+            ))}
+          </div>
+        </div>
+        <div className="main-skeleton-columns">
+          <div className="main-skeleton-main">
+            <div className="main-skeleton-hero" />
+            <div className="main-skeleton-cta" />
+            <div className="main-skeleton-cta is-short" />
+          </div>
+          <div className="main-skeleton-rail-right" />
+        </div>
       </div>
     </div>
   );
 }
+

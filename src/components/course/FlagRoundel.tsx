@@ -132,6 +132,32 @@ const SOUTH_AFRICA: Layer[] = [
 
 /** One spec per planned-language id. Shared flags are aliased below. */
 const FLAGS: Record<string, Layer[]> = {
+  // English is drawn here with everything else rather than as its own CSS
+  // gradient beside the switcher. Drawn separately it came out a different
+  // size, without the surface-coloured ring the rest have, and looked like a
+  // flag from another set sitting in the same list.
+  //
+  // The Union Jack is the full construction, because the simplified two-cross
+  // version is recognisably not the flag: white diagonals, red counter-charged
+  // diagonals offset the way they really are, then the cross over the top.
+  "english-uk": [
+    { h: ["#012169"] },
+    { poly: ["0,0 8,0 60,35 60,40 52,40 0,5", "#ffffff"] },
+    { poly: ["52,0 60,0 60,5 8,40 0,40 0,35", "#ffffff"] },
+    { poly: ["0,0 4,0 60,37 60,40 56,40 0,3", "#c8102e"] },
+    { poly: ["56,0 60,0 60,3 4,40 0,40 0,37", "#c8102e"] },
+    { rect: [0, 14, 60, 12, "#ffffff"] },
+    { rect: [24, 0, 12, 40, "#ffffff"] },
+    { rect: [0, 16.5, 60, 7, "#c8102e"] },
+    { rect: [26.5, 0, 7, 40, "#c8102e"] },
+  ],
+  // Thirteen stripes and a canton. The stars are left out on purpose: at 32px
+  // they turn into noise, and the canton alone is what makes it readable.
+  "english-us": [
+    { h: ["#b22234", "#ffffff", "#b22234", "#ffffff", "#b22234", "#ffffff", "#b22234",
+          "#ffffff", "#b22234", "#ffffff", "#b22234", "#ffffff", "#b22234"] },
+    { rect: [0, 0, 24, 21.6, "#3c3b6e"] },
+  ],
   italian: [{ v: ["#009246", "#ffffff", "#ce2b37"] }],
   portuguese: [{ v: ["#046a38", "#da291c"], r: [2, 3] }, { c: [24, 20, 6.5, "#ffe600"] }, { c: [24, 20, 3.2, "#da291c"] }],
   dutch: [{ h: ["#ae1c28", "#ffffff", "#21468b"] }],

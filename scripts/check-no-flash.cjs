@@ -58,6 +58,21 @@ if (bootDark) {
   }
 }
 
+// It also has to look like the thing it is standing in for. A small card in
+// the middle of an empty window meant the app appeared to jump from one
+// screen to a completely different one when the real layout arrived.
+const app = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
+for (const piece of ['main-skeleton-rail', 'main-skeleton-chip', 'main-skeleton-hero']) {
+  if (!app.includes(piece)) {
+    failures.push(`the loading screen has no ${piece.replace('main-skeleton-', '')}, so it does not trace the layout it is standing in for`);
+  }
+}
+// And it must drop the sidebar where the shell drops its own, or it promises
+// a layout that never arrives.
+if (!/@media \(max-width: 1040px\)[\s\S]{0,320}\.main-skeleton-rail \{ display: none; \}/.test(css)) {
+  failures.push("the loading screen keeps its sidebar on a narrow window, where the real shell has none");
+}
+
 if (failures.length) {
   console.error("FAIL check-no-flash");
   failures.forEach((line) => console.error("  " + line));
