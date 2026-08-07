@@ -9792,3 +9792,24 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   color: var(--accent-ink, var(--np-green));
 }
+
+/* ── Requested overrides, kept at the end of the file on purpose ─────────────
+   Asked-for appearance choices, not derived ones. The equivalent block in
+   new-ui-prototype.css relied on source order and an accent sweep rewrote the
+   section it sat in, which put those cards back to black. Hence !important, and
+   hence below every accent section. Anything down here is deliberate — please
+   re-check it rather than regenerate over it. */
+
+/* Digits on accent-filled badges, white to match the rest of the pink chrome.
+   --accent-text is contrast-picked and lands near-black on this fill, which is
+   the more legible of the two: white measures 3.4:1 against --accent-pressed
+   where the near-black is 5.7:1. White is the explicit request.
+   Only the resting option number is taken — selected, correct and wrong colour
+   that digit themselves to report an answer, and painting over those would
+   destroy the feedback. Custom accent and dark only: a preset accent already
+   puts a contrasting green here, and the light theme fills these badges with a
+   pale --accent-dim that white would vanish into. */
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span,
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-missing-audio-option:not(.is-selected):not(.is-correct):not(.is-wrong) .fs-missing-option-number {
+  color: #fff !important;
+}
