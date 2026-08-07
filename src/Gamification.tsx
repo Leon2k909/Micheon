@@ -26,6 +26,7 @@ import {
   PawPrint,
   Accessibility,
   Contrast,
+  UserRound,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
 
@@ -799,10 +800,49 @@ export default function GamificationPanel({
           </button>
         </section>
 
-        <SettingsCategoryLayout searching={settingsTerms.length > 0}>
+        <SettingsCategoryLayout
+          searching={settingsTerms.length > 0}
+          search={(
+                  <label className="settings-search mt-4 block">
+                    <Search aria-hidden="true" className="settings-search__icon" />
+                    <input
+                      aria-label={ui("Search settings")}
+                      className="settings-search__input"
+                      onChange={(event) => setSettingsQuery(event.target.value)}
+                      placeholder={ui("Search settings\u2026")}
+                      ref={settingsSearchRef}
+                      type="search"
+                      value={settingsQuery}
+                    />
+                    {settingsQuery && (
+                      <button
+                        aria-label={ui("Clear search")}
+                        className="settings-search__clear"
+                        onClick={() => {
+                          setSettingsQuery("");
+                          settingsSearchRef.current?.focus();
+                        }}
+                        type="button"
+                      >
+                        <X aria-hidden="true" />
+                      </button>
+                    )}
+                  </label>
+          )}
+        >
         <section className="card overflow-hidden">
           <div className="grid items-start gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+              {/* Account details used to sit above everything, permanently, while
+                  the things you might actually be looking for were behind a search
+                  box. It is a category like the rest now. */}
+              <SettingsCategory
+                description={ui("Your photo, display name, and login email.")}
+                forceOpen={settingsTerms.length > 0}
+                hidden={!matchesSearch(ui("Account details"), ui("Your photo, display name, and login email."))}
+                icon={UserRound}
+                title={ui("Account details")}
+              >
               <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Account details")}</h2>
               <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Your photo, display name, and login email.")}</p>
               <div className="mt-5 flex items-center gap-4">
@@ -871,37 +911,13 @@ export default function GamificationPanel({
                 )}
                 <span className="text-[11px] font-semibold text-[var(--text-3)]">{ui("Square images look best. They are stored on this device.")}</span>
               </div>
+              </SettingsCategory>
 
               <div className="mt-5 border-t border-[var(--border)] pt-5">
                 <h3 className="text-sm font-black text-[var(--text-1)]">{ui("More settings")}</h3>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                   {ui("Sections you'll rarely need day to day. Open one to change it.")}
                 </p>
-                <label className="settings-search mt-4 block">
-                  <Search aria-hidden="true" className="settings-search__icon" />
-                  <input
-                    aria-label={ui("Search settings")}
-                    className="settings-search__input"
-                    onChange={(event) => setSettingsQuery(event.target.value)}
-                    placeholder={ui("Search settings\u2026")}
-                    ref={settingsSearchRef}
-                    type="search"
-                    value={settingsQuery}
-                  />
-                  {settingsQuery && (
-                    <button
-                      aria-label={ui("Clear search")}
-                      className="settings-search__clear"
-                      onClick={() => {
-                        setSettingsQuery("");
-                        settingsSearchRef.current?.focus();
-                      }}
-                      type="button"
-                    >
-                      <X aria-hidden="true" />
-                    </button>
-                  )}
-                </label>
                 {settingsTerms.length > 0 && (
                   <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
                     {searchHits.length === 0

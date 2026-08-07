@@ -48,6 +48,18 @@ if (!/max-width:\s*900px[\s\S]{0,400}\.settings-layout \{ grid-template-columns:
   failures.push("the sidebar keeps its column on a narrow window instead of becoming a row");
 }
 
+// Account details used to sit above everything, permanently, while the things
+// you might actually be looking for were behind a search box. It is a
+// category like the rest now, and the search is in the sidebar with them,
+// because typing to find a setting and picking one from a list are the same
+// job.
+if (!/<SettingsCategory[\s\S]{0,400}title=\{ui\("Account details"\)\}/.test(settings)) {
+  failures.push("Account details is not a category, so it is pinned above every other setting");
+}
+if (!/search=\{\(/.test(settings) || !/settings-nav-search/.test(category)) {
+  failures.push("the settings search is not in the sidebar with the categories");
+}
+
 // ── the header stats survive German ───────────────────────────────────────
 const chipStrong = /\.np-stat-chip strong \{([^}]*)\}/.exec(proto)?.[1] ?? "";
 const chipSmall = /\.np-stat-chip small \{([^}]*)\}/.exec(proto)?.[1] ?? "";

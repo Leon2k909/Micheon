@@ -9786,6 +9786,10 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
    like two things happening: a verdict, and then an unrelated red bar about
    scheduling. Same moment, same card. The rule above it is the seam. */
 .fs-result-note {
+  /* The verdict card is a grid -- an icon column and a text column -- so
+     without this the note lands in the 46px icon column and wraps to one
+     word per line. It is a row of its own under both. */
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -9867,6 +9871,12 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   border-radius: 20px;
   background: var(--surface-2);
 }
+
+/* Search lives at the top of the sidebar: finding a setting by typing and
+   finding it by picking are the same job, so they belong in the same place
+   rather than the search sitting above the entire page. */
+.settings-nav-search { margin-bottom: 6px; }
+.settings-nav-search .settings-search { margin: 0; }
 
 .settings-nav-item {
   display: flex;

@@ -44,10 +44,14 @@ type NavContext = {
 
 const SettingsNavContext = createContext<NavContext | null>(null);
 
-export function SettingsCategoryLayout({ children, searching }: {
+export function SettingsCategoryLayout({ children, searching, search }: {
   children: ReactNode;
   /** While searching, the sidebar steps aside and every match is shown. */
   searching: boolean;
+  /** Rendered at the top of the sidebar: searching for a setting and
+   *  picking one from a list are the same job, so they belong together
+   *  rather than the search sitting above the whole page. */
+  search?: ReactNode;
 }) {
   const [entries, setEntries] = useState<Registered[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -81,6 +85,7 @@ export function SettingsCategoryLayout({ children, searching }: {
       ) : (
         <div className="settings-layout">
           <nav aria-label={ui("Settings categories")} className="settings-nav">
+            {search && <div className="settings-nav-search">{search}</div>}
             {visible.map((entry) => (
               <button
                 key={entry.id}

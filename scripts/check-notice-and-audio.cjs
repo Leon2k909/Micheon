@@ -59,6 +59,12 @@ for (const handler of ["onMouseEnter", "onMouseLeave", "onFocusCapture", "onBlur
 if (!/!verdictShowing && \(/.test(guided) || !/fs-standalone-note/.test(guided)) {
   failures.push("GuidedSession: with no verdict card on screen the marked-as note has nowhere to render, so Undo disappears");
 }
+// The verdict card is a grid. A note that does not span it lands in the
+// narrow icon column and wraps to one word per line.
+const css = fs.readFileSync(path.join(__dirname, '..', 'src/index.css'), 'utf8');
+if (!/\.fs-result-note \{[^}]*grid-column: 1 \/ -1/.test(css)) {
+  failures.push("the marked-as note does not span the verdict card, so it wraps into the icon column");
+}
 const cardsWithNote = (guided.match(/<ManualReviewNote /g) || []).length;
 const cards = (guided.match(/"fs-result"/g) || []).length;
 if (cardsWithNote < cards) {

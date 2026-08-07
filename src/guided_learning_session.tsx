@@ -987,7 +987,17 @@ export default function GuidedLearningSession() {
       // the exchanges have no question is not a conversation, and decorating
       // the ones that do is what made the beta indistinguishable from an
       // ordinary lesson. Anything without one stays a normal review.
-      const betaTurns = conversationBetaOn()
+      // A conversation, every time the button is pressed.
+      //
+      // Building it only from due reviews meant that a sitting with no due
+      // review carrying a question produced no conversation at all -- so the
+      // beta was, quite literally, the ordinary lesson. Due reviews still come
+      // first, because practising what is fading is the point; the rest of the
+      // conversation is topped up from phrases already met, and only then from
+      // ones not met yet.
+      const CONVERSATION_TURNS = 4;
+      const betaGrades = conversationBetaOn() ? loadGradeStore(user) : {};
+      const dueTurns = conversationBetaOn()
         ? rankForBeta(reviews.map((step: any) => step.item ?? {}))
             .filter((ranked) => ranked.asks)
             .map((ranked) => ({
@@ -997,6 +1007,28 @@ export default function GuidedLearningSession() {
             }))
             .filter((turn) => turn.step)
         : [];
+      const topUp = () => {
+        const used = new Set(dueTurns.map((turn) => String(turn.item?.id ?? "")));
+        const withQuestion = catalog.filter((item: any) =>
+          !used.has(String(item.id)) && Boolean(questionFor(String(item.de ?? "")))
+        );
+        // Something already met beats something brand new: a conversation is
+        // for using what you know, not for meeting three phrases at once.
+        const seen = withQuestion.filter((item: any) =>
+          statusForId(betaGrades, item.id, item.aliases) !== "new"
+        );
+        const fresh = withQuestion.filter((item: any) =>
+          statusForId(betaGrades, item.id, item.aliases) === "new"
+        );
+        return [...seen, ...fresh]
+          .slice(0, Math.max(0, CONVERSATION_TURNS - dueTurns.length))
+          .map((item: any) => ({
+            step: { type: "sentence", review: true, item },
+            item,
+            asks: questionFor(String(item.de ?? "")),
+          }));
+      };
+      const betaTurns = conversationBetaOn() ? [...dueTurns, ...topUp()] : [];
       const conversationIds = new Set(betaTurns.map((turn) => String(turn.item?.id ?? "")));
       const betaReviews = conversationBetaOn()
         ? [
