@@ -963,29 +963,40 @@ export default function GuidedLearningSession() {
             (step: any) => step.type === "dialogue" && dialogueIsEarned(step, servedFreshDe)
           )
         : [];
-      // Conversation Beta reorders the new material rather than replacing it,
-      // so the sitting is still six and the review half is untouched. Hardest
-      // structure first -- weil and friends send the verb to the end, which
-      // nothing in English prepares you for -- and each sentence carries the
-      // question it answers when the course already has one.
-      const orderedFresh = conversationBetaOn()
-        ? rankForBeta(fresh.map((step: any) => step.item ?? {}))
-            .map((ranked) => fresh.find((step: any) => step.item === ranked.item))
-            .filter(Boolean)
-        : fresh;
-      const betaFresh = conversationBetaOn()
-        ? orderedFresh.map((step: any) => {
-            const asks = questionFor(String(step.item?.de ?? ""));
-            const notes = structureNotes(String(step.item?.de ?? ""));
-            if (!asks && !notes.length) return step;
-            return { ...step, item: { ...step.item, asks, structureNotes: notes } };
-          })
-        : fresh;
-      const freshSteps = [...betaFresh, ...dialogues];
+      // Conversation Beta works on the REVIEW half, not the new half.
+      //
+      // Meeting a phrase for the first time inside a conversation is a lot to
+      // carry: you are working out what it means AND what to do with it. A
+      // phrase you have already met is the opposite -- being asked a question
+      // you can only answer with it is exactly the practice that turns
+      // recognising it into being able to use it. So the conversation is built
+      // from what is due, and answering counts as that review: same grading,
+      // same SRS record, same credit in the tracker.
+      const attachConversation = (steps: any[]) => steps.map((step: any) => {
+        const de = String(step?.item?.de ?? "");
+        if (!de) return step;
+        const asks = questionFor(de);
+        const notes = structureNotes(de);
+        if (!asks && !notes.length) return step;
+        return { ...step, item: { ...step.item, asks, structureNotes: notes } };
+      });
+      // Within the review half, the ones that teach structure lead.
+      const betaReviews = conversationBetaOn()
+        ? attachConversation(
+            rankForBeta(reviews.map((step: any) => step.item ?? {}))
+              .map((ranked) => reviews.find((step: any) => step.item === ranked.item))
+              .filter(Boolean)
+          )
+        : reviews;
+      const freshSteps = [...fresh, ...dialogues];
 
       if (reviews.length > 0 || freshSteps.length > 0) {
         const id = freshId ?? reviewPartByStep.get(reviews[0]) ?? keys[0];
-        let steps = [...freshSteps, ...reviews, { type: "complete" }];
+        // The beta leads with the conversation, because the whole point is
+        // using what you already half-know before meeting anything new.
+        let steps = conversationBetaOn()
+          ? [...betaReviews, ...freshSteps, { type: "complete" }]
+          : [...freshSteps, ...betaReviews, { type: "complete" }];
         if (learningEnglish()) steps = steps.map(swapStepForEnglish);
         setActivePart(id);
         saveScopedJson("active-part", id, user);

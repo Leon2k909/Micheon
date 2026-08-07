@@ -84,9 +84,20 @@ check(
   "the spelling picker no longer switches the course",
   !/updateLanguageSelection[\s\S]{0,400}setLearningDirection/.test(settings),
 );
+// The two settings live in the two places they belong: what you are LEARNING
+// is the course, chosen from the course card on the home page, and the app's
+// own language is a setting. Offering the course in both places was the same
+// choice in two spots, which is how they drift apart.
 check(
-  "both settings are offered",
-  settings.includes('ui("I am learning")') && settings.includes('ui("App language")'),
+  "the app language is a setting",
+  settings.includes('ui("App language")'),
+);
+check(
+  "the course is chosen from the course picker, not duplicated in settings",
+  !settings.includes('ui("I am learning")')
+    && /courseId === "english-uk"[\s\S]{0,200}setLearningDirection/.test(
+      fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8")
+    ),
 );
 check(
   "the interface picker offers auto, English and German",

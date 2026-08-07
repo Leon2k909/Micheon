@@ -99,9 +99,22 @@ check("ranking leads with the structural sentence", /weil/.test(ranked[0].item.d
 
 // ── it reorders the sitting, it does not grow it ──────────────────────────
 const lesson = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
+// The conversation is built from what is DUE, not from new material. Meeting
+// a phrase for the first time inside a conversation is two jobs at once;
+// being asked a question you can only answer with a phrase you already half
+// know is the practice that turns recognising it into using it. Answering is
+// the review, so it grades and credits exactly as a review does.
 check(
-  "the beta reorders the new material rather than adding to it",
-  /rankForBeta\(fresh\.map/.test(lesson) && !/freshLimit\s*\+/.test(lesson),
+  "the conversation is built from the review half",
+  /rankForBeta\(reviews\.map/.test(lesson) && !/rankForBeta\(fresh\.map/.test(lesson),
+);
+check(
+  "it reorders the sitting rather than growing it",
+  !/freshLimit\s*\+/.test(lesson) && !/reviewLimit\s*\+/.test(lesson),
+);
+check(
+  "the beta leads with the conversation",
+  /\[\.\.\.betaReviews, \.\.\.freshSteps/.test(lesson),
 );
 check("it only applies when switched on", /conversationBetaOn\(\)\s*\?/.test(lesson));
 // ── and the entry point is Leon's only ────────────────────────────────────

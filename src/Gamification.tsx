@@ -751,17 +751,6 @@ export default function GamificationPanel({
   // learn German as an English speaker, or pick German to flip the app and learn
   // English as a German speaker.
   const LANGUAGE_SELECT_VALUE = englishVariant;
-  /**
-   * The course. Which language you are learning, and nothing else.
-   *
-   * This used to be folded into the spelling picker, where choosing "Deutsch"
-   * silently switched the course AND the interface. Two people wanted the two
-   * halves set differently and neither could.
-   */
-  const updateLearningDirection = (next: LearningDirection) => {
-    setLearningDirection(next);
-    setDirectionState(next);
-  };
 
   /** The interface. Which language the app itself is written in. */
   const updateInterfaceLanguage = (next: InterfaceLanguage) => {
@@ -1299,20 +1288,9 @@ export default function GamificationPanel({
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                     <p className="text-sm font-black text-[var(--text-1)]">{ui("Languages")}</p>
                     <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {ui("What you are learning and what the app is written in are set separately.")}
+                      {ui("Which language the app itself is written in. Pick what you are LEARNING from the course card on the home page.")}
                     </p>
-                    <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                      {ui("I am learning")}
-                    </label>
-                    <select
-                      className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                      onChange={(event) => updateLearningDirection(event.target.value as LearningDirection)}
-                      value={direction}
-                    >
-                      <option value="learn-de">{ui("German")}</option>
-                      <option value="learn-en">{ui("English")}</option>
-                    </select>
-                    <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+<label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                       {ui("App language")}
                     </label>
                     <select
@@ -1551,20 +1529,9 @@ export default function GamificationPanel({
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <p className="text-sm font-black text-[var(--text-1)]">{ui("Languages")}</p>
               <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                {ui("What you are learning and what the app is written in are set separately.")}
+                {ui("Which language the app itself is written in. Pick what you are LEARNING from the course card on the home page.")}
               </p>
-              <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                {ui("I am learning")}
-              </label>
-              <select
-                className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                onChange={(event) => updateLearningDirection(event.target.value as LearningDirection)}
-                value={direction}
-              >
-                <option value="learn-de">{ui("German")}</option>
-                <option value="learn-en">{ui("English")}</option>
-              </select>
-              <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+<label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 {ui("App language")}
               </label>
               <select
