@@ -347,7 +347,7 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // (weiß, will, muss, kann, soll, darf, mag) are deliberately absent — adding
   // them would invent words like "ich weiße".
   [
-    /\bich (hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|versuch|zieh|trag|schlaf|sitz|lieg|lieb|zahl|schick|schaff|erkl(?:ä|ae)r|erinner|probier|schaff)\b(?!e)/g,
+    /\bich (hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|versuch|zieh|trag|schlaf|sitz|lieg|lieb|zahl|schick|schaff|ruf|kenn|wohn|helf|lauf|sing|erinner|erkl(?:ä|ae)r|probier|erkl(?:ä|ae)r|erinner|probier|schaff|ruf|kenn|wohn|helf|lauf|sing)\b(?!e)/g,
     "ich $1e",
   ],
   // The same drop happens with the subject after the verb — "So hab ich das
@@ -355,7 +355,7 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // this the fold above only covered half the sentences it was written for,
   // and the most natural way to say an inverted sentence was marked wrong.
   [
-    /\b(hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|versuch|zieh|trag|schlaf|sitz|lieg|lieb|zahl|schick|schaff|erkl(?:ä|ae)r|erinner|probier|schaff)\b(?!e)(?=\s+ich\b)/g,
+    /\b(hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|mein|red|schau|schreib|spiel|such|trink|versteh|zeig|arbeit|wart|bleib|bring|krieg|setz|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|versuch|zieh|trag|schlaf|sitz|lieg|lieb|zahl|schick|schaff|ruf|kenn|wohn|helf|lauf|sing|erinner|erkl(?:ä|ae)r|probier|erkl(?:ä|ae)r|erinner|probier|schaff|ruf|kenn|wohn|helf|lauf|sing)\b(?!e)(?=\s+ich\b)/g,
     "$1e",
   ],
   // And the same drop at the END of a subordinate clause, which is where
@@ -368,8 +368,8 @@ const GERMAN_SYNONYMS: [RegExp, string][] = [
   // and noun homographs (Arbeit, Krieg, Versuch, Schlaf, Sitz, mein) are left
   // out because this rule does not sit directly against "ich".
   [
-    /\b(dass|weil|wenn|ob|obwohl|damit|bevor|nachdem|w(?:ä|ae)hrend|falls|solange|sobald|soda(?:ss|ß)) ich\b([^,.;!?]*?)\b(hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|red|schreib|spiel|such|trink|versteh|zeig|wart|bleib|bring|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|zieh|trag|lieg|zahl|schick|schaff)\b(?!e)/g,
-    "$1 ich$2$3e",
+    /\b(dass|weil|wenn|ob|obwohl|damit|bevor|nachdem|w(?:ä|ae)hrend|falls|solange|sobald|soda(?:ss|ß)) (ichs?)\b([^,.;!?]*?)\b(hab|geh|mach|sag|komm|nehm|seh|steh|glaub|denk|find|frag|freu|f(?:ü|ue)hl|h(?:ö|oe)r|kauf|leb|lern|leg|red|schreib|spiel|such|trink|versteh|zeig|wart|bleib|bring|hol|brauch|werd|geb|les|ess|fahr|lass|hoff|zieh|trag|lieg|zahl|schick|schaff|ruf|kenn|wohn|helf|lauf|sing|erinner|erkl(?:ä|ae)r|probier)\b(?!e)/g,
+    "$1 $2$3$4e",
   ],
   // "gibt's" / "gibts" == "gibt es"; likewise "geht's", "hat's".
   [/\b(gibt|geht|hat|passt|klappt|läuft|l(?:ä|ae)uft)['’]?s\b/g, "$1 es"],

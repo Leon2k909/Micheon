@@ -15,7 +15,9 @@
  *
  * Two deliberate limits:
  *
- *  1. Only next to "ich", in either order — "ich habe" and "habe ich". The -e
+ *  1. Only where the -e is unambiguously a first-person ending: next to
+ *     "ich" in either order, or last in a clause that opened with a
+ *     subordinating conjunction plus "ich". The -e
  *     is only droppable because it is the first-person ending; nothing else in
  *     the sentence is touched, so no noun can be mangled.
  *  2. Only verbs whose stem survives without the -e. Stems ending in -t or -d
@@ -31,6 +33,14 @@ const SPOKEN_STEMS = [
   "denk", "schau", "spiel", "such", "versteh", "zeig", "h(?:ö|oe)r", "kauf",
   "leb", "lern", "leg", "freu", "frag", "mein", "schreib", "trink",
   "f(?:ü|ue)hl", "werd", "bleib", "bring", "krieg", "setz", "hol", "brauch",
+  // "geb" was missing, which is how a sentence beginning "Ich gebe zu" was
+  // printed in full while "ich hab" beside it was contracted.
+  "geb", "les", "ess", "fahr", "lass", "hoff", "zieh", "trag", "lieg",
+  // "lieb" is deliberately absent: "ich lieb dich" is said, but "Ich lieb
+  // meine Mutter" reads as marked, and the bar for PRINTING a model sentence
+  // is higher than for accepting one.
+  "zahl", "schick", "schaff", "sitz", "erkl(?:ä|ae)r", "erinner",
+  "probier", "versuch", "ruf", "kenn", "wohn", "helf", "lauf", "sing",
 ];
 
 const STEMS = SPOKEN_STEMS.join("|");
@@ -38,6 +48,21 @@ const STEMS = SPOKEN_STEMS.join("|");
 const AFTER_ICH = new RegExp(`\\b(ich\\s+)(${STEMS})e\\b`, "gi");
 // "habe ich" -> "hab ich" (inversion, questions, and anything fronted)
 const BEFORE_ICH = new RegExp(`\\b(${STEMS})e(\\s+ich\\b)`, "gi");
+// "..., dass ich es nicht verstehe" -> "... versteh". German puts the verb
+// last after dass/weil/wenn, which is nowhere near "ich", so neither rule
+// above ever reached it. Sentences came out half-contracted as a result:
+// "Ich bleib hier, weil ich noch etwas mache."
+//
+// Safe without an "ich" next to it because of the two anchors: the clause
+// must open with a subordinating conjunction plus "ich", and the word must
+// be the LAST thing in the clause. Subordinate clauses end on their verb, so
+// a noun cannot occupy that slot -- which is what keeps "weil ich die Frage
+// nicht verstehe" and "dass ich die Kriege nicht verstehe" intact.
+const SUBORDINATORS = "dass|weil|wenn|ob|obwohl|damit|bevor|nachdem|w(?:ä|ae)hrend|falls|solange|sobald";
+const CLAUSE_FINAL = new RegExp(
+  `\\b(?:${SUBORDINATORS})\\s+ich\\b[^,.;!?]*?\\b(${STEMS})e(?=[,.;!?]|$)`,
+  "gi",
+);
 
 /**
  * The everyday spoken rendering of a sentence. Returns the input unchanged
@@ -51,7 +76,10 @@ export function toSpokenGerman(sentence: string): string {
   // survives: "Habe ich das gesagt?" -> "Hab ich das gesagt?".
   return text
     .replace(AFTER_ICH, (_match, lead: string, stem: string) => `${lead}${stem}`)
-    .replace(BEFORE_ICH, (_match, stem: string, tail: string) => `${stem}${tail}`);
+    .replace(BEFORE_ICH, (_match, stem: string, tail: string) => `${stem}${tail}`)
+    // Only the trailing -e goes; the rest of the clause is handed back as it
+    // came in, so nothing between the conjunction and the verb is touched.
+    .replace(CLAUSE_FINAL, (match: string) => match.replace(/e$/, ""));
 }
 
 /** True when the sentence reads differently once spoken. */

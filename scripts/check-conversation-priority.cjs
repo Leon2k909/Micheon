@@ -81,7 +81,13 @@ const score = (item) => conversationPriorityScore({
 });
 
 const everydayRepair = catalog.find((item) => item.de === "Ich hab das nicht ganz verstanden.");
-const deliberateAdmission = catalog.find((item) => item.de === "Ich gebe zu, dass ich es nicht verstehe.");
+// Conversation mode renders this one as "Ich geb zu, dass ich es nicht
+// versteh." and keeps the written sentence in `long`, so pinning either
+// spelling alone would break whenever the other mode is the default.
+const ADMISSION = ["Ich gebe zu, dass ich es nicht verstehe.", "Ich geb zu, dass ich es nicht versteh."];
+const deliberateAdmission = catalog.find(
+  (item) => ADMISSION.includes(item.de) || ADMISSION.includes(String(item.long ?? "").trim())
+);
 const speedCamera = catalog.find((item) => item.de === "Ich wurde auf der Autobahn geblitzt.");
 
 check("the everyday repair phrase is shipped", Boolean(everydayRepair));

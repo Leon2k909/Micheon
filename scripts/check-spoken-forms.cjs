@@ -131,7 +131,10 @@ check(
 let total = 0;
 let reshaped = 0;
 const suspicious = [];
-for (const packs of [allPartBlueprints, expansionPartBlueprints]) {
+// allPartBlueprints already spreads in expansionPartBlueprints, so iterating
+// both counted every expansion pack twice and reported a total nearly half
+// again as large as the course really is.
+for (const packs of [allPartBlueprints]) {
   for (const pack of Object.values(packs)) {
     for (const phrase of pack.phrases ?? []) {
       if (!phrase?.de) continue;
@@ -145,6 +148,31 @@ for (const packs of [allPartBlueprints, expansionPartBlueprints]) {
     }
   }
 }
+// The verb goes LAST after dass/weil/wenn, which is nowhere near "ich", so
+// the two ich-adjacent rules never reached it and sentences came out half
+// contracted: "Ich bleib hier, weil ich noch etwas mache."
+check(
+  "the ich-form -e is dropped at the end of a subordinate clause too",
+  toSpokenGerman("Ich gebe zu, dass ich es nicht verstehe.") === "Ich geb zu, dass ich es nicht versteh."
+    && toSpokenGerman("Ich bleibe hier, weil ich noch etwas mache.") === "Ich bleib hier, weil ich noch etwas mach."
+);
+// That rule is not anchored to "ich", so it leans entirely on the verb being
+// clause-final. A noun cannot stand there in German, which is what keeps
+// these intact -- and getting it wrong would PRINT a mangled model sentence.
+check(
+  "it never strips the -e off a noun",
+  toSpokenGerman("Weil ich die Frage nicht verstehe, frage ich nach.").includes("die Frage")
+    && toSpokenGerman("Ich weiß, dass ich die Kriege nicht verstehe.").includes("die Kriege")
+    && toSpokenGerman("Das ist die Frage.") === "Das ist die Frage."
+);
+// Stems ending in -t or -d keep their -e in real German. Accepting "ich
+// arbeit" from a learner is kindness; printing it as the model is not.
+check(
+  "stems that keep their -e are left alone",
+  toSpokenGerman("Ich arbeite morgen.") === "Ich arbeite morgen."
+    && toSpokenGerman("Ich rede mit ihm.") === "Ich rede mit ihm."
+    && toSpokenGerman("Ich finde das gut.") === "Ich finde das gut."
+);
 check(
   `Conversation mode reshapes a meaningful share of the course (${reshaped} of ${total})`,
   reshaped > 500,
