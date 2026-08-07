@@ -92,6 +92,35 @@ check(
   matchEnglishPhrase("can we meet an hr later", "Can we meet an hour later?").ok
     && matchEnglishPhrase("see you in 2 hrs", "See you in 2 hours.").ok
 );
+// German drops the ich-form -e in speech, including at the END of a
+// subordinate clause -- which is exactly where the grammar puts the verb
+// after dass/weil/wenn. The fold only fired next to "ich", so "ich versteh
+// das" was accepted while ", dass ich es nicht versteh" was marked wrong.
+check(
+  "the dropped ich-form -e is accepted at the end of a subordinate clause",
+  matchGermanSentence("Ich geb zu, dass ich es nicht versteh.", "Ich gebe zu, dass ich es nicht verstehe.").ok
+    && matchGermanSentence("Ich bleib hier, weil ich noch etwas mach.", "Ich bleibe hier, weil ich noch etwas mache.").ok
+    && matchGermanSentence("Ich hoff, dass ich das schaff.", "Ich hoffe, dass ich das schaffe.").ok
+);
+check(
+  "geben and the other everyday verbs fold too",
+  matchGermanSentence("Ich geb dir das morgen.", "Ich gebe dir das morgen.").ok
+    && matchGermanSentence("Ich les das spaeter.", "Ich lese das später.").ok
+    && matchGermanSentence("Ich fahr gleich los.", "Ich fahre gleich los.").ok
+);
+// The clause-final fold is not anchored to "ich", so nouns that look like a
+// stripped verb must survive it untouched.
+check(
+  "the fold never invents a plural noun",
+  !matchGermanSentence("Die Arbeit ist fertig.", "Die Arbeite ist fertig.").ok
+    && !matchGermanSentence("Der Krieg war lang.", "Der Kriege war lang.").ok
+    && !matchGermanSentence("Der Versuch war gut.", "Der Versuche war gut.").ok
+    && !matchGermanSentence("Das ist mein Buch.", "Das ist meine Buch.").ok
+);
+check(
+  "the fold does not paper over a real meaning change",
+  !matchGermanSentence("Ich geb zu, dass ich es verstehe.", "Ich gebe zu, dass ich es nicht verstehe.").ok
+);
 // Single-letter shorthand. "what are u worried abt" is a complete, correct
 // answer that was marked wrong purely on spelling nobody uses when typing.
 check(
