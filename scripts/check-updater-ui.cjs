@@ -70,7 +70,26 @@ check("the branded install takeover owns the visible restart phase", banner.incl
 check("the custom install screen uses calm staged restart feedback", banner.includes('data-testid="update-install-steps"') && banner.includes('ui("Download complete")') && banner.includes('ui("Restarting Micheon")'));
 check("development builds expose the complete install takeover for visual QA", banner.includes('get("update-preview") === "installing"') && banner.includes("useState(previewInstalling)"));
 check("updater surfaces do not use rotating spinner indicators", !banner.includes("animate-spin") && !banner.includes("rotate: 360") && !card.includes("animate-spin"));
-check("the compact updater uses the current tactile Micheon surface", banner.includes("micheon-update-panel__main") && banner.includes("micheon-update-actions") && styles.includes("--accent: #39aa45;") && styles.includes("0 3px 0 rgba(58, 104, 48, 0.12)"));
+check("the compact updater uses the current tactile Micheon surface", banner.includes("micheon-update-panel__main") && banner.includes("micheon-update-actions") && styles.includes("0 3px 0 rgba(58, 104, 48, 0.12)"));
+// The panel owns its own palette, which is exactly why the accent sweep could
+// not reach it: the progress TRACK stayed pale green while the fill turned to
+// the chosen accent, and the two sat side by side. Its accent tokens have to
+// follow the app's, and its surfaces have to be neutral rather than tinted.
+const panelTokens = /\.micheon-update-panel \{([^}]*)\}/.exec(styles)?.[1] ?? "";
+const darkPanelTokens = /html\[data-theme="dark"\] \.micheon-update-panel \{([^}]*)\}/.exec(styles)?.[1] ?? "";
+check(
+  "the updater's accent follows the chosen accent instead of a fixed green",
+  /--accent:\s*var\(--np-green/.test(panelTokens) && /--accent:\s*var\(--np-green/.test(darkPanelTokens),
+);
+check(
+  "the updater's progress fill is painted from those tokens, not a green literal",
+  !styles.includes("#69d463")
+    && /\.micheon-update-progress\s*\{[^}]*var\(--accent\)/.test(styles),
+);
+check(
+  "the updater's surfaces are neutral, so the track cannot read green under another accent",
+  !/--surface-3:\s*#(?:dbe8d5|303c31)/.test(styles),
+);
 check("the compact updater keeps its state-keyed icon without dead error styling", banner.includes("micheon-update-icon--${status.state}") && !styles.includes(".micheon-update-icon--error"));
 check("a failed background check stays silent; settings explains it inline", !banner.includes('ui("Couldn\'t check for updates")') && card.includes("Couldn't reach the update service"));
 check("the compact updater keeps both actions inside the card", styles.includes(".micheon-update-actions") && styles.includes("grid-template-columns: minmax(0, 1fr) auto"));

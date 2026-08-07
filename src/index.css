@@ -510,22 +510,29 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
    owns the current Micheon palette instead of inheriting the legacy purple
    root tokens. This keeps every updater state consistent in either shell. */
 .micheon-update-panel {
-  --surface: #fffdf8;
-  --surface-2: #f1f7ec;
-  --surface-3: #dbe8d5;
-  --border: rgba(61, 103, 50, 0.2);
+  /* Neutral greys, not green-tinted ones. The panel owns its palette, which
+     is why the accent sweep never reached these: the progress TRACK stayed a
+     pale green while the fill turned blue, and the two sat side by side.
+     Surfaces are not accent-coloured in the rest of the app either. */
+  --surface: #fffdf9;
+  --surface-2: #f4f4f1;
+  --surface-3: #e3e3de;
+  --border: rgba(70, 72, 66, 0.2);
   --text-1: #292725;
   --text-2: #625e58;
   --text-3: #686e63;
-  --accent: #39aa45;
-  --accent-strong: #1f762d;
-  --accent-dim: #e4f7d9;
+  /* The accent system publishes the chosen colour as --np-green*, which
+     inherits in. Writing --accent: var(--accent) would be self-referential,
+     so these follow that instead, defaulting to Micheon green. */
+  --accent: var(--np-green, #39aa45);
+  --accent-strong: var(--np-green-dark, #1f762d);
+  --accent-dim: var(--np-green-soft, #e4f7d9);
   --accent-text: #ffffff;
   --shadow: rgba(51, 78, 43, 0.17);
   isolation: isolate;
   border: 1px solid var(--border);
   color-scheme: light;
-  background: linear-gradient(145deg, #fffefb 0%, #f8fcf3 100%);
+  background: var(--surface);
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -547,7 +554,7 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 .micheon-update-panel .micheon-update-icon {
   border: 1px solid rgba(55, 164, 64, 0.2);
   color: var(--accent-strong);
-  background: linear-gradient(180deg, #edf9e7, #e1f3d9);
+  background: var(--accent-dim);
   box-shadow: inset 0 1px 0 #fff, 0 3px 0 rgba(56, 137, 54, 0.12);
 }
 
@@ -641,7 +648,7 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 .micheon-update-panel .micheon-update-progress {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #69d463, #36a943);
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition: width 300ms ease;
 }
@@ -671,13 +678,13 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 .micheon-update-panel .micheon-update-primary {
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--accent-text);
-  background: linear-gradient(180deg, #2f8d3a, #23762f);
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 3px 0 #195b24, 0 8px 16px rgba(32, 109, 44, 0.16);
   font-weight: 850;
 }
 
 .micheon-update-panel .micheon-update-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #379943, #288134);
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent-strong));
   transform: translateY(-1px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 0 #195b24, 0 10px 18px rgba(32, 109, 44, 0.18);
 }
@@ -715,16 +722,18 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 }
 
 html[data-theme="dark"] .micheon-update-panel {
-  --surface: #182119;
-  --surface-2: #222d23;
-  --surface-3: #303c31;
-  --border: rgba(208, 232, 204, 0.14);
-  --text-1: #f2f7f0;
-  --text-2: #c2cec0;
-  --text-3: #94a291;
-  --accent: #61cf62;
-  --accent-strong: #83df81;
-  --accent-dim: rgba(91, 205, 91, 0.14);
+  /* The app's own dark ladder, so the updater reads as part of the same
+     window rather than a green-tinted box sitting on it. */
+  --surface: #161b23;
+  --surface-2: #232b3a;
+  --surface-3: #2e3747;
+  --border: rgba(205, 217, 233, 0.22);
+  --text-1: #e8edf5;
+  --text-2: #c2cad6;
+  --text-3: #94a0b2;
+  --accent: var(--np-green, #61cf62);
+  --accent-strong: var(--np-green-dark, #83df81);
+  --accent-dim: var(--np-green-soft, rgba(91, 205, 91, 0.14));
   --shadow: rgba(0, 0, 0, 0.38);
   color-scheme: dark;
   background: linear-gradient(145deg, #1a1e25, #13171e);
