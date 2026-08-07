@@ -9610,21 +9610,41 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
 
 /* The loading screen between routes.
 
-   It was a hardcoded cream with no dark variant, and it is what fills the
-   window while the lesson chunk loads -- so pressing Continue learning in
-   dark mode flashed a full-screen near-white rectangle. */
+   This is what fills the window while a lazy chunk loads, and it is the last
+   white flash. The first fix pointed it at --np-shell, which is declared on
+   .new-ui-prototype -- and the skeleton renders ABOVE that element, so the
+   variable was never in scope and every paint used the cream fallback.
+
+   So it uses the same two colours index.html hardcodes on the document before
+   React exists. Those are the only values guaranteed to be in scope here, and
+   matching them means the skeleton is invisible against the page behind it
+   instead of being a rectangle that appears and leaves. */
 .main-skeleton {
-  background: var(--np-shell, #fffaf1);
+  background: #eff0ed;
 }
 
 .main-skeleton-card {
-  border: 1px solid var(--np-line, #e8e0d4);
-  background: var(--np-surface, #fffdf8);
-  box-shadow: 0 24px 70px rgba(8, 11, 18, 0.24);
+  border: 1px solid rgba(70, 72, 66, 0.16);
+  background: #fffdf9;
+  box-shadow: 0 24px 70px rgba(82, 68, 53, 0.12);
 }
 
 .main-skeleton-bar {
-  background: var(--np-surface-soft, #eee9df);
+  background: #e3e3de;
+}
+
+html[data-theme="dark"] .main-skeleton {
+  background: #0b0e13;
+}
+
+html[data-theme="dark"] .main-skeleton-card {
+  border-color: rgba(205, 217, 233, 0.16);
+  background: #161b23;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .main-skeleton-bar {
+  background: #232b3a;
 }
 
 /* Putting a phrase off is a different kind of decision from saying how well
