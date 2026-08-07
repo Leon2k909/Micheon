@@ -9060,6 +9060,23 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
   color: var(--accent-text);
 }
 
+/* White throughout both accent-filled cards, to match the lesson preview
+   banner. They are filled with --accent-pressed, while --accent-text is
+   near-black (11, 14, 19) — a colour chosen to read on the bright --accent
+   rather than on this deeper one, which is why the study estimate and the XP
+   lines came out black on pink.
+   Same selectors as the rules they follow, so ordering alone settles it and no
+   !important is needed. The level badge and "Holding your own" are already
+   white and are deliberately left alone. Dark only: the light accent fills
+   these cards with a pale --accent-dim that white would vanish into. */
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong,
+html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p,
+html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
+html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
+  color: #fff;
+}
+
 html[data-theme="dark"][data-accent="custom"] .np-icon-button:hover,
 html[data-theme="dark"][data-accent="custom"] .np-profile-button:hover {
   border-color: rgba(var(--accent-rgb), 0.34);
