@@ -9557,6 +9557,25 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
   color: #fff !important;
 }
 
+/* Achievement labels have to stay inside their tile. The label column is 85px
+   wide once the 52px art and the gaps are taken out, and German compounds do
+   not fit: measured in the running app, "50 Wiederholungen" wanted 129px and
+   "Wiederholungsplan" 151px, so the text simply ran out past the rounded edge.
+   Nothing in the default wrapping rules can break a single long word.
+   hyphens does the polite thing first — the document carries lang="de", so the
+   break lands between syllables — and overflow-wrap is the fallback for a word
+   it cannot hyphenate. min-width: 0 keeps the grid item from refusing to
+   shrink to its content.
+   Tiles grow taller for those labels: 64px to 70px at two lines and 89px at
+   three. That is the deliberate trade — the row height follows the text rather
+   than the text leaving the box. English labels are unaffected; they already
+   fit on one line. */
+.np-achievement > small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
 /* Conversation Beta's way in. The same control as Continue learning, one
    step quieter: it is the second button on the page, not the first. */
 .np-beta-button {
