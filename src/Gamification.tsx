@@ -71,6 +71,7 @@ import {
 import { getEffects, setEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
+import { getInterfaceLanguage, setInterfaceLanguage, type InterfaceLanguage } from "@/lib/interfaceLanguage";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory } from "@/components/SettingsCategory";
@@ -557,6 +558,7 @@ export default function GamificationPanel({
   const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
   const [companion, setCompanionState] = useState<Companion>(getCompanion);
   const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
+  const [interfaceLanguage, setInterfaceLanguageState] = useState<InterfaceLanguage>(getInterfaceLanguage);
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
   const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
@@ -748,17 +750,26 @@ export default function GamificationPanel({
   // Single dropdown covering "what's your language": pick an English variant to
   // learn German as an English speaker, or pick German to flip the app and learn
   // English as a German speaker.
-  const LANGUAGE_SELECT_VALUE = direction === "learn-en" ? "german" : englishVariant;
+  const LANGUAGE_SELECT_VALUE = englishVariant;
+  /**
+   * The course. Which language you are learning, and nothing else.
+   *
+   * This used to be folded into the spelling picker, where choosing "Deutsch"
+   * silently switched the course AND the interface. Two people wanted the two
+   * halves set differently and neither could.
+   */
+  const updateLearningDirection = (next: LearningDirection) => {
+    setLearningDirection(next);
+    setDirectionState(next);
+  };
+
+  /** The interface. Which language the app itself is written in. */
+  const updateInterfaceLanguage = (next: InterfaceLanguage) => {
+    setInterfaceLanguage(next);
+    setInterfaceLanguageState(next);
+  };
+
   const updateLanguageSelection = (value: string) => {
-    if (value === "german") {
-      setLearningDirection("learn-en");
-      setDirectionState("learn-en");
-      return;
-    }
-    if (direction === "learn-en") {
-      setLearningDirection("learn-de");
-      setDirectionState("learn-de");
-    }
     updateEnglishVariant(value as EnglishVariant);
   };
 
@@ -1280,12 +1291,48 @@ export default function GamificationPanel({
                   icon={Languages}
                   title={ui("Language & voice")}
                 >
+                  {/* Two questions, two answers. Which language you are learning, and
+                      which language the app is written in. Deriving the second from the
+                      first meant a German speaker learning English could not have an
+                      English app, and an English speaker learning German could not have
+                      a German one -- both of which people actually wanted. */}
+                  <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+                    <p className="text-sm font-black text-[var(--text-1)]">{ui("Languages")}</p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      {ui("What you are learning and what the app is written in are set separately.")}
+                    </p>
+                    <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                      {ui("I am learning")}
+                    </label>
+                    <select
+                      className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                      onChange={(event) => updateLearningDirection(event.target.value as LearningDirection)}
+                      value={direction}
+                    >
+                      <option value="learn-de">{ui("German")}</option>
+                      <option value="learn-en">{ui("English")}</option>
+                    </select>
+                    <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                      {ui("App language")}
+                    </label>
+                    <select
+                      className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                      onChange={(event) => updateInterfaceLanguage(event.target.value as InterfaceLanguage)}
+                      value={interfaceLanguage}
+                    >
+                      <option value="auto">
+                        {ui("Match my course")} ({direction === "learn-en" ? "Deutsch" : ui("English")})
+                      </option>
+                      <option value="en">English</option>
+                      <option value="de">Deutsch</option>
+                    </select>
+                  </div>
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                         <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                          {direction === "learn-en"
+                          {false
                             ? ui("Learning English as a German speaker. German is shown as the meaning.")
                             : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                         </p>
@@ -1302,8 +1349,7 @@ export default function GamificationPanel({
                       <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
                       <option value="british">{ui("British English")}</option>
                       <option value="american">{ui("American English")}</option>
-                      <option value="german">Deutsch</option>
-                    </select>
+                                          </select>
                     {/* Sits with the accent setting: one picks how English is
                         written and which accent is spoken, the other picks who
                         speaks it. Separating them into two cards read as two
@@ -1497,12 +1543,48 @@ export default function GamificationPanel({
               onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
             />
 
+            {/* Two questions, two answers. Which language you are learning, and
+                which language the app is written in. Deriving the second from the
+                first meant a German speaker learning English could not have an
+                English app, and an English speaker learning German could not have
+                a German one -- both of which people actually wanted. */}
+            <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+              <p className="text-sm font-black text-[var(--text-1)]">{ui("Languages")}</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                {ui("What you are learning and what the app is written in are set separately.")}
+              </p>
+              <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                {ui("I am learning")}
+              </label>
+              <select
+                className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                onChange={(event) => updateLearningDirection(event.target.value as LearningDirection)}
+                value={direction}
+              >
+                <option value="learn-de">{ui("German")}</option>
+                <option value="learn-en">{ui("English")}</option>
+              </select>
+              <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                {ui("App language")}
+              </label>
+              <select
+                className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                onChange={(event) => updateInterfaceLanguage(event.target.value as InterfaceLanguage)}
+                value={interfaceLanguage}
+              >
+                <option value="auto">
+                  {ui("Match my course")} ({direction === "learn-en" ? "Deutsch" : ui("English")})
+                </option>
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[var(--text-1)]">{ui("Language")}</p>
+                  <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    {direction === "learn-en"
+                    {false
                       ? ui("Learning English as a German speaker. German is shown as the meaning.")
                       : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
                   </p>
@@ -1519,8 +1601,7 @@ export default function GamificationPanel({
                 <option value="auto">{ui("Auto-detect")} ({ui(englishVariantLabel(detectEnglishVariant()))})</option>
                 <option value="british">{ui("British English")}</option>
                 <option value="american">{ui("American English")}</option>
-                <option value="german">Deutsch</option>
-              </select>
+                              </select>
             </div>
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">

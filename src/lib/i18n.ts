@@ -1,4 +1,4 @@
-import { learningEnglish } from "@/lib/direction";
+import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
 
 // UI language follows the learning direction: a German speaker learning
 // English (learn-en) gets the app chrome in German. English UI is the source
@@ -1546,6 +1546,13 @@ const DE: Record<string, string> = {
   "to fluent": "bis fließend",
   "You're at": "Du bist bei",
 
+  // ── Course and interface language ──
+  "What you are learning and what the app is written in are set separately.": "Was du lernst und in welcher Sprache die App geschrieben ist, stellst du getrennt ein.",
+  "I am learning": "Ich lerne",
+  "App language": "App-Sprache",
+  "Match my course": "Passend zu meinem Kurs",
+  "English spelling and accent": "Englische Schreibweise und Aussprache",
+
   // ── Review levels and snooze ──
   "Starts over from the beginning": "Fängt wieder von vorne an",
   "Comes back as soon as there is a slot": "Kommt zurück, sobald ein Platz frei ist",
@@ -1834,7 +1841,7 @@ const DE: Record<string, string> = {
 
 /** Translate a UI string into the learner's interface language. */
 export function ui(s: string): string {
-  return learningEnglish() ? DE[s] ?? s : s;
+  return uiIsGerman() ? DE[s] ?? s : s;
 }
 
 /**
@@ -1851,12 +1858,19 @@ export function uiFmt(pattern: string, values: Record<string, string | number>):
 
 /** Translate UI copy, replacing unmapped English metadata with a German fallback. */
 export function uiOr(s: string, germanFallback: string): string {
-  return learningEnglish() ? DE[s] ?? germanFallback : s;
+  return uiIsGerman() ? DE[s] ?? germanFallback : s;
 }
 
-/** True when the app chrome should render in German (learn-en mode). */
+/**
+ * True when the app chrome should render in German.
+ *
+ * This asked the course which language to use, so a German speaker learning
+ * English could not have an English app and an English speaker learning German
+ * could not have a German one. It reads the interface setting now, which still
+ * defaults to deriving it from the course.
+ */
 export function uiIsGerman(): boolean {
-  return learningEnglish();
+  return resolveInterfaceLanguage() === "de";
 }
 
 /** Locale used for UI-only dates and number formatting. */

@@ -358,8 +358,8 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     const response = answer === "yes"
       ? recallOutcome === "reinforcement"
         ? uiIsGerman()
-          ? `Gut — „${target}“ sitzt schon besser. Ich frage dich später noch einmal.`
-          : `Nice — “${target}” is getting stronger. I’ll check it again later.`
+          ? `Gut — „${target}“ sitzt schon besser.`
+          : `Nice — “${target}” is getting stronger.`
         : uiIsGerman()
           ? `Geschafft — „${target}“ sitzt jetzt.`
           : `You’ve got it — “${target}” is secure now.`
@@ -372,11 +372,11 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
           : `The answer is “${target}”. I’ve put it at the front of your next lesson so we can practise it properly.`
         : question.confirm
           ? uiIsGerman()
-            ? `Kein Problem — ich frage dich „${target}“ bald wieder.`
-            : `No problem — I’ll ask you “${target}” again soon.`
+            ? `Kein Problem — die Antwort ist „${target}“.`
+            : `No problem — the answer is “${target}”.`
           : uiIsGerman()
-            ? `Kein Problem — die Antwort ist „${target}“. Ich frage dich das bald wieder.`
-            : `No problem — the answer is “${target}”. I’ll ask you this again soon.`;
+            ? `Kein Problem — die Antwort ist „${target}“.`
+            : `No problem — the answer is “${target}”.`;
     window.setTimeout(() => {
       speak(response, {
         durationMs: 5600,

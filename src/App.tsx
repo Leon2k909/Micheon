@@ -1,3 +1,4 @@
+import { useInterfaceLanguage } from "@/lib/interfaceLanguage";
 import React, { lazy, Suspense, useEffect, useState } from "react";
 
 import { applyAccentColour } from "@/lib/accentColour";
@@ -76,6 +77,11 @@ export default function App() {
 }
 
 function useMicheonProfile() {
+  // ui() is a plain lookup read during render, so nothing re-runs by itself
+  // when the interface language changes. Subscribing here is what turns the
+  // setting into a re-render of the whole tree rather than a reload. Nothing
+  // below is memoised, so one root render reaches every ui() call.
+  useInterfaceLanguage();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
 
