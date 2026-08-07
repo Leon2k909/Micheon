@@ -750,7 +750,32 @@ export function CodexPetLayer() {
           '[data-pet-interactive="true"], [role="dialog"]'
         )
       )
-        .map((element) => element.getBoundingClientRect())
+        // The settled layout box, not the animated one. getBoundingClientRect
+        // includes the open animation's scale, so a bubble measured mid-fade
+        // reported 221x166 on one frame and 240x180 two frames later — 0.92,
+        // the entry scale. Main recompacts the native window for each of those,
+        // and every recompaction is a chance for a frame to be painted against
+        // an origin the renderer has not rebased to yet: measured live, the
+        // bubble's position within the desktop plane stayed correct at ~669
+        // while its position within the window flipped from +315 to -27, which
+        // is the top of the speech bubble being sliced off.
+        //
+        // offsetWidth/Height are transform-free, and framer-motion scales about
+        // the centre, so re-centring the layout size on the measured centre
+        // recovers the untransformed box exactly. The animation's small y
+        // travel is deliberately left in — it is under half the padding above,
+        // so it cannot uncover anything, and cancelling it would need
+        // assumptions about offsetParent that the history panel breaks.
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          const width = element.offsetWidth || rect.width;
+          const height = element.offsetHeight || rect.height;
+          const centreX = rect.left + rect.width / 2;
+          const centreY = rect.top + rect.height / 2;
+          const left = centreX - width / 2;
+          const top = centreY - height / 2;
+          return { bottom: top + height, height, left, right: left + width, top, width };
+        })
         .filter((rect) => rect.width > 0 && rect.height > 0)
         .map((rect) => {
           const x = isDesktopPetOverlay
