@@ -9752,3 +9752,16 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-missing-audio-option:not(.is-selected):not(.is-correct):not(.is-wrong) .fs-missing-option-number {
   color: #fff !important;
 }
+
+/* Headings and option titles in the level menu take the accent, the way the
+   snooze titles below them already do — that rule is unscoped and reads
+   var(--accent-ink), so this borrows the same value rather than inventing a
+   second pink. Measured on the menu's own fill: the snooze titles sit at
+   6.61:1, so this is well clear, unlike the badge digits further up.
+   Dark only. The light theme already colours the section headings this way a
+   few thousand lines above; its option titles are left as they are because
+   nothing here measured them. */
+html[data-theme="dark"] .fs-review-level-menu-head strong,
+html[data-theme="dark"] .fs-review-level-option strong {
+  color: var(--accent-ink, var(--fs-text)) !important;
+}
