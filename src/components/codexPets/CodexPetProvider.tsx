@@ -115,10 +115,44 @@ type CodexPetContextValue = {
 
 const CodexPetContext = createContext<CodexPetContextValue | null>(null);
 
-function messageSemanticKey(entry: CodexPetSpeech) {
+/**
+ * What makes two pet messages "the same message".
+ *
+ * Repeats of the same question inside the duplicate window collapse into one
+ * history row, so a pet that asks about a phrase twice does not fill the log
+ * with the same line. The confirm step is deliberately part of the key: it is
+ * a SEPARATE message in the exchange -- the pet reveals the answer and asks
+ * whether you really had it -- and without it in the key it collapsed into
+ * the question it was following up, so "did you have it?" never appeared in
+ * the history at all.
+ */
+export function messageSemanticKey(entry: CodexPetSpeech) {
   return entry.question?.itemId
-    ? `question:${entry.question.itemId}:${entry.question.answerLanguage}`
+    ? `question:${entry.question.itemId}:${entry.question.answerLanguage}:${entry.question.confirm ? "confirm" : "ask"}`
     : `message:${entry.text.trim().toLocaleLowerCase()}`;
+}
+
+/**
+ * Add a message to the log, folding it into an existing row when it is
+ * genuinely the same message. Pure, so the folding rules can be tested
+ * without standing a provider up.
+ */
+export function appendPetMessage(
+  current: CodexPetSpeech[],
+  entry: CodexPetSpeech,
+  windowMs = PET_DUPLICATE_WINDOW_MS,
+): CodexPetSpeech[] {
+  const existingIndex = current.findIndex((item) => item.id === entry.id);
+  const semanticDuplicateIndex = existingIndex === -1
+    ? current.findLastIndex((item) =>
+        messageSemanticKey(item) === messageSemanticKey(entry)
+        && Math.abs(entry.createdAt - item.createdAt) <= windowMs
+      )
+    : -1;
+  const replaceIndex = existingIndex === -1 ? semanticDuplicateIndex : existingIndex;
+  return replaceIndex === -1
+    ? [...current, entry]
+    : current.map((item, index) => index === replaceIndex ? { ...item, ...entry } : item);
 }
 
 function dedupePetHistory(entries: CodexPetSpeech[]) {
@@ -211,18 +245,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
 
   const upsertHistory = useCallback((entry: CodexPetSpeech) => {
     setHistory((current) => {
-      const existingIndex = current.findIndex((item) => item.id === entry.id);
-      const semanticDuplicateIndex = existingIndex === -1
-        ? current.findLastIndex((item) =>
-            messageSemanticKey(item) === messageSemanticKey(entry)
-            && Math.abs(entry.createdAt - item.createdAt) <= PET_DUPLICATE_WINDOW_MS
-          )
-        : -1;
-      const replaceIndex = existingIndex === -1 ? semanticDuplicateIndex : existingIndex;
-      const next = replaceIndex === -1
-        ? [...current, entry]
-        : current.map((item, index) => index === replaceIndex ? { ...item, ...entry } : item);
-      const limited = next.slice(-MAX_PET_HISTORY);
+      const limited = appendPetMessage(current, entry).slice(-MAX_PET_HISTORY);
       savePetHistory(limited);
       historyRef.current = limited;
       return limited;
