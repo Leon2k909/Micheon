@@ -1322,7 +1322,9 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   flex: 0 0 30px;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.94);
-  border-radius: 50%;
+  /* Squared off to match the session badge: a circle crops the outer two
+     stripes of a three-stripe flag and leaves the middle one full width. */
+  border-radius: 9px;
   box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
 }
 
@@ -8749,11 +8751,11 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-action > button:active
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-section-heading > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-section-heading > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-shop-item.is-owned {
@@ -9058,23 +9060,6 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
   color: var(--accent-text);
-}
-
-/* White throughout both accent-filled cards, to match the lesson preview
-   banner. They are filled with --accent-pressed, while --accent-text is
-   near-black (11, 14, 19) — a colour chosen to read on the bright --accent
-   rather than on this deeper one, which is why the study estimate and the XP
-   lines came out black on pink.
-   Same selectors as the rules they follow, so ordering alone settles it and no
-   !important is needed. The level badge and "Holding your own" are already
-   white and are deliberately left alone. Dark only: the light accent fills
-   these cards with a pale --accent-dim that white would vanish into. */
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong,
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p,
-html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
-html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
-  color: #fff;
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-icon-button:hover,

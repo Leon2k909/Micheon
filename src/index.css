@@ -2887,7 +2887,16 @@ a { color: inherit; text-decoration: none; }
   background: rgba(255,255,255,0.025); color: var(--fs-text-2); font-size: 14px; font-weight: 700; cursor: pointer;
   transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
 }
-.guided-session .fs-chars button:hover { transform: translateY(-2px); border-color: rgba(255,210,63,0.3); background: rgba(255,210,63,0.065); color: #ffe470; }
+/* Hover was a pale yellow ink on a near-transparent yellow tint — a
+   colour pair that survives on exactly one background and vanished on
+   the others. The ink is now the session's own text colour, which is
+   readable by construction, and the tint follows the accent. */
+.guided-session .fs-chars button:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--fs-text);
+}
 .guided-session .fs-mic {
   width: 40px; height: 40px; margin-right: 4px; flex: 0 0 auto; display: grid; place-items: center;
   border: 1px solid var(--fs-line); border-radius: 12px;
@@ -3053,7 +3062,12 @@ a { color: inherit; text-decoration: none; }
   background: rgba(255,255,255,0.025); color: var(--fs-text-2); font-size: 14px; font-weight: 700; cursor: pointer;
   transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
 }
-.guided-session .fs-charsrow button:hover { transform: translateY(-2px); border-color: rgba(255,210,63,0.3); background: rgba(255,210,63,0.065); color: #ffe470; }
+.guided-session .fs-charsrow button:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--fs-text);
+}
 
 /* ── Browser dictation status: visible, not hidden in a tooltip ── */
 .guided-session .fs-mic { position: relative; overflow: visible; }
@@ -5141,13 +5155,16 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
 }
 
+/* A rounded square, not a circle. A circular crop eats the top and bottom
+   bands of a three-stripe flag while leaving the middle at full width, so
+   the black and gold read as slivers and the whole thing looks wrong. */
 .guided-session.fs-app.prototype-guided-session .fs-german-flag {
   width: 26px;
   height: 26px;
   display: block;
   overflow: hidden;
   border: 2px solid #fff;
-  border-radius: 50%;
+  border-radius: 8px;
   background: linear-gradient(to bottom, #171717 0 33.333%, #dd2638 33.333% 66.666%, #f4cb37 66.666% 100%);
   box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.18), 0 2px 5px rgba(52, 50, 43, 0.18);
 }
@@ -8208,7 +8225,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86),
     0 4px 0 rgba(var(--accent-hover-rgb), 0.25),
     0 10px 20px rgba(var(--accent-hover-rgb), 0.16);
@@ -8591,7 +8608,7 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-check {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36),
     0 4px 0 var(--np-green),
     0 11px 20px rgba(var(--accent-hover-rgb), 0.18);
@@ -9328,7 +9345,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-lesson-navigator-head > button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-lesson-number svg {
@@ -9336,12 +9353,12 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-iconbtn:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:hover:not(:disabled),
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .grade-btn-level:focus-visible {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo strong {
@@ -9353,16 +9370,16 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-grade-undo button:not(.fs-grade-undo-dismiss) {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .dialogue-title-badge {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:hover,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .dialogue-skip-action:focus-visible {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-eyebrow {
@@ -9376,11 +9393,11 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-badge,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-chip {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-count small {
@@ -9388,11 +9405,11 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-route button.is-seen {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-footer {
@@ -9406,7 +9423,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-flashcard-language button,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-listen-icon,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-missing-play {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip {
@@ -9414,12 +9431,12 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-preview-skip:hover {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button:hover,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-match-direction button.is-active {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,
@@ -9450,15 +9467,15 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
 html[data-theme="dark"][data-accent="custom"] .fs-missing-option-number ) {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-translation-modes button.is-active {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-closed-recall-cue > span {
@@ -9480,7 +9497,7 @@ html[data-theme="dark"][data-accent="custom"] .text-emerald-600) {
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger[aria-expanded="true"] {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger > svg,
@@ -9489,7 +9506,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn:hover > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done {
@@ -9497,7 +9514,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-done > span {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-stagebtn.is-active {
@@ -9509,7 +9526,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-label {
@@ -9517,7 +9534,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
