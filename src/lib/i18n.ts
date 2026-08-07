@@ -1546,6 +1546,17 @@ const DE: Record<string, string> = {
   "to fluent": "bis fließend",
   "You're at": "Du bist bei",
 
+  // ── Conversation Beta ──
+  "Conversation Beta": "Gesprächs-Beta",
+  "Learn each phrase as the answer to a question, and meet hard structure — weil, dass, wenn — first.": "Lerne jeden Satz als Antwort auf eine Frage und begegne den schweren Strukturen — weil, dass, wenn — zuerst.",
+  "They ask": "Sie fragen",
+  "verb sent to the end (weil, dass, wenn …)": "Verb ans Ende (weil, dass, wenn …)",
+  "Konjunktiv II — would / could have": "Konjunktiv II — wäre / hätte / würde",
+  "relative clause": "Relativsatz",
+  "passive": "Passiv",
+  "infinitive parked at the end": "Infinitiv am Satzende",
+  "separable prefix at the end": "trennbare Vorsilbe am Ende",
+
   // ── Course and interface language ──
   "ihr · a group — you all, not one person": "ihr · eine Gruppe — ihr alle, nicht eine Person",
   "The German is aimed at more than one person. English says \"you\" either way.": "Der deutsche Satz richtet sich an mehrere Personen. Im Englischen heißt beides „you“.",

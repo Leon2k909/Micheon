@@ -11,6 +11,8 @@ import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { conversationBetaOn } from "@/lib/betaMode";
+import { rankForBeta, questionFor, structureNotes } from "@/lib/conversationBeta";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
@@ -961,7 +963,25 @@ export default function GuidedLearningSession() {
             (step: any) => step.type === "dialogue" && dialogueIsEarned(step, servedFreshDe)
           )
         : [];
-      const freshSteps = [...fresh, ...dialogues];
+      // Conversation Beta reorders the new material rather than replacing it,
+      // so the sitting is still six and the review half is untouched. Hardest
+      // structure first -- weil and friends send the verb to the end, which
+      // nothing in English prepares you for -- and each sentence carries the
+      // question it answers when the course already has one.
+      const orderedFresh = conversationBetaOn()
+        ? rankForBeta(fresh.map((step: any) => step.item ?? {}))
+            .map((ranked) => fresh.find((step: any) => step.item === ranked.item))
+            .filter(Boolean)
+        : fresh;
+      const betaFresh = conversationBetaOn()
+        ? orderedFresh.map((step: any) => {
+            const asks = questionFor(String(step.item?.de ?? ""));
+            const notes = structureNotes(String(step.item?.de ?? ""));
+            if (!asks && !notes.length) return step;
+            return { ...step, item: { ...step.item, asks, structureNotes: notes } };
+          })
+        : fresh;
+      const freshSteps = [...betaFresh, ...dialogues];
 
       if (reviews.length > 0 || freshSteps.length > 0) {
         const id = freshId ?? reviewPartByStep.get(reviews[0]) ?? keys[0];

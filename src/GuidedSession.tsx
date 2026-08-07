@@ -768,6 +768,40 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
 
 // Prototype-style stage route: numbered squares with labels on a progress
 // line. Clicking a stage jumps to it (same behaviour the dots had).
+/**
+ * Conversation Beta's frame: the question this sentence answers.
+ *
+ * A phrase learned on its own is one you can recite. Shown as the reply to
+ * something somebody actually asked, it is one you can use -- and the course
+ * already contains the question, because these lines come from dialogues.
+ * The structure notes sit beside it because the beta chooses sentences BY
+ * their grammar, so saying which grammar is the point.
+ */
+function BetaConversationFrame({ asks, notes }: {
+  asks?: { de: string; en: string } | null;
+  notes?: string[];
+}) {
+  if (!asks && !(notes && notes.length)) return null;
+  return (
+    <div className="fs-beta-frame">
+      {asks && (
+        <div className="fs-beta-ask">
+          <span className="fs-beta-ask-label">{ui("They ask")}</span>
+          <strong lang="de">{asks.de}</strong>
+          {asks.en && <small>{asks.en}</small>}
+        </div>
+      )}
+      {notes && notes.length > 0 && (
+        <div className="fs-beta-notes">
+          {notes.map((note) => (
+            <span key={note} className="fs-beta-note">{ui(note)}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase, phases }: {
   current: Phase;
   withFrench?: boolean;
@@ -2585,6 +2619,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
       {/* Stage route (full-bleed inside the card) */}
+      <BetaConversationFrame asks={item?.asks} notes={item?.structureNotes} />
       <StageRoute
         current={phase}
         phases={phaseRoute()}

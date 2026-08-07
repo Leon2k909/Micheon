@@ -88,6 +88,7 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
+import { conversationBetaOn, setConversationBeta } from "@/lib/betaMode";
 
 import heroImage from "./assets/micheon-hero-v3.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
@@ -1532,6 +1533,7 @@ function HomeView({
 }) {
   // Recomputed when the catalogue arrives or a lesson lands, so the hero's
   // "how much longer" tracks what was just learned.
+  const [betaOn, setBetaOn] = useState(conversationBetaOn);
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
@@ -1581,6 +1583,26 @@ function HomeView({
         </span>
         <ChevronRight />
       </button>
+      {/* Conversation Beta. Leon's account only while it is being tried out.
+          It reorders the new half of a sitting rather than replacing it, so
+          the sitting is still six and reviews are untouched. */}
+      {hasLeonSocialPreview(profile?.email) && (
+        <label className="np-beta-toggle">
+          <input
+            type="checkbox"
+            checked={betaOn}
+            onChange={(event) => {
+              setConversationBeta(event.target.checked);
+              setBetaOn(event.target.checked);
+            }}
+          />
+          <span>
+            <strong>{ui("Conversation Beta")}</strong>
+            <small>{ui("Learn each phrase as the answer to a question, and meet hard structure — weil, dass, wenn — first.")}</small>
+          </span>
+          <span className="np-beta-badge">{ui("Leon only")}</span>
+        </label>
+      )}
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} />
     </div>

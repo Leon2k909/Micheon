@@ -9649,6 +9649,43 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   z-index: 32;
 }
 
+/* Conversation Beta's frame. Quiet on purpose: it is context for the
+   sentence being taught, not a second thing to read. */
+.fs-beta-frame {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--fs-line, rgba(124, 126, 120, 0.22));
+  border-radius: 14px;
+  background: var(--fs-surface-raised, var(--fs-surface));
+}
+
+.fs-beta-ask { display: grid; gap: 3px; }
+
+.fs-beta-ask-label {
+  color: var(--accent-ink, var(--fs-muted));
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fs-beta-ask strong { color: var(--fs-text); font-size: 17px; font-weight: 800; }
+.fs-beta-ask small { color: var(--fs-muted); font-size: 12px; font-weight: 650; }
+
+.fs-beta-notes { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.fs-beta-note {
+  padding: 3px 8px;
+  border: 1px solid rgba(var(--accent-rgb, 79, 189, 81), 0.35);
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.12);
+  color: var(--accent-ink, var(--fs-text));
+  font-size: 10px;
+  font-weight: 800;
+}
+
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
    new-ui-prototype.css relied on source order and an accent sweep rewrote the
