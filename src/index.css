@@ -9620,6 +9620,29 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   color: var(--accent-ink, var(--fs-text));
 }
 
+/* An open menu cannot climb out of a stacking context its parent created.
+
+   The flashcard's four panels -- topline, content, note, footer -- all sit at
+   position: relative; z-index: 1. The topline holds Set level, so the menu's
+   own z-index only ever competed INSIDE the topline and was capped at 1 along
+   with it. .fs-flashcard-content is a sibling at the same z-index and later in
+   the DOM, so it painted on top: its audio button sat over the open menu and
+   swallowed presses meant for the options underneath.
+
+   Raising the panel that actually contains the open menu is the part the menu
+   cannot do for itself. It applies only while a menu is open, so the four
+   panels keep their normal, deliberately flat relationship the rest of the
+   time. */
+.guided-session.fs-app.prototype-guided-session
+  :is(.fs-flashcard-topline, .fs-flashcard-content, .fs-flashcard-note, .fs-flashcard-footer):has(.fs-review-level-menu) {
+  z-index: 30;
+}
+
+/* And the menu sits above anything inside its own panel. */
+.fs-review-level-menu {
+  z-index: 32;
+}
+
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
    new-ui-prototype.css relied on source order and an accent sweep rewrote the

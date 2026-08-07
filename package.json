@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.196",
+  "version": "1.2.197",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -79,7 +79,7 @@
     "check:hero-progress": "node scripts/check-hero-progress.cjs",
     "check:data-and-storage": "node scripts/check-data-and-storage.cjs",
     "check:teaching-order": "node scripts/check-teaching-order.cjs",
-    "check:slide-select": "node scripts/check-slide-select.cjs && node scripts/check-german-interface.cjs && node scripts/check-review-honesty.cjs && node scripts/check-pet-history.cjs",
+    "check:slide-select": "node scripts/check-slide-select.cjs && node scripts/check-german-interface.cjs && node scripts/check-review-honesty.cjs && node scripts/check-pet-history.cjs && node scripts/check-menu-stacking.cjs",
     "check:dark-coverage": "node scripts/check-dark-coverage.cjs"
   },
   "build": {
