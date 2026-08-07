@@ -119,12 +119,45 @@
 
 .np-sidebar.is-slide-selecting {
   user-select: none;
-  cursor: pointer;
+  cursor: grabbing;
+}
+
+/* Press-and-slide: the item under the pointer wears a bubble.
+
+   A faint tint was not enough to read as a gesture -- it looked like plain
+   hover, so there was nothing to tell you the press was still doing
+   something. The bubble is deliberately heavy: accent fill, a lift, and a
+   ring on the icon, so running down the list looks like dragging one object
+   through the menu rather than skimming several separate buttons. It uses
+   the chosen accent rather than a fixed green, and the transition is what
+   makes it appear to travel with the pointer instead of blinking between
+   items. */
+.np-side-nav button {
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease,
+    box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .np-side-nav button.is-slide-target {
-  background: var(--np-surface-soft);
-  color: var(--np-text);
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.55);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.18);
+  color: var(--accent-ink, var(--np-green-dark));
+  transform: translateX(3px) scale(1.035);
+  box-shadow:
+    0 4px 0 rgba(var(--accent-rgb, 79, 189, 81), 0.28),
+    0 14px 26px rgba(var(--accent-rgb, 79, 189, 81), 0.26);
+}
+
+.np-side-nav button.is-slide-target .np-nav-visual {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.5);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.24);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb, 79, 189, 81), 0.16);
+}
+
+/* Someone who has asked for less motion still needs to see where the
+   pointer is -- they just do not need it to slide. */
+@media (prefers-reduced-motion: reduce) {
+  .np-side-nav button { transition: none; }
+  .np-side-nav button.is-slide-target { transform: none; }
 }
 
 .np-sidebar {

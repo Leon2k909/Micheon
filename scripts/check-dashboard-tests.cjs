@@ -23,7 +23,7 @@ function check(name, condition) {
 
 check(
   "the dashboard names the streak rather than showing an unexplained day count",
-  dashboard.includes('label="Day streak"')
+  dashboard.includes('label={ui("Day streak")}')
     && dashboard.includes("stats.streak.toLocaleString()")
 );
 check(
@@ -33,8 +33,8 @@ check(
 check(
   "Tests and Grammar are grouped inside Practice instead of the sidebar",
   dashboard.includes('function PracticeHub')
-    && dashboard.includes('label: "Tests"')
-    && dashboard.includes('label: "Grammar"')
+    && dashboard.includes('label: ui("Tests")')
+    && dashboard.includes('label: ui("Grammar")')
     && !/const NAVIGATION:[\s\S]*?\];/.exec(dashboard)?.[0].includes('id: "tests"')
     && !/const NAVIGATION:[\s\S]*?\];/.exec(dashboard)?.[0].includes('id: "grammar"')
 );

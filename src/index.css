@@ -2436,6 +2436,14 @@ a { color: inherit; text-decoration: none; }
    practice action. While it is open the plain gloss tooltip stays hidden so
    the two never stack. */
 .guided-session .fs-word-anchor { position: relative; display: inline-block; }
+/* While a word panel is open, no hover tooltips anywhere in the sentence. The
+   panel already gives the meaning, the audio and the save action; a second
+   green chip floating beside it is the same information twice. The tooltip
+   still works on its own when no panel is up. */
+.guided-session:has(.fs-word.has-popover) :is(.fs-word, .fs-order-token)[data-gloss]::before {
+  display: none;
+}
+
 .guided-session .fs-word.has-popover[data-gloss]::before,
 .guided-session .fs-word.has-popover[data-gloss]::after { display: none; }
 .guided-session .fs-word-popover {
@@ -4510,15 +4518,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   background: #3caf48;
 }
 
-.guided-session.fs-app.prototype-guided-session :is(.fs-word, .fs-order-token)[data-gloss]::before {
-  border-color: rgba(67, 184, 76, 0.42);
-  background: #28452b;
-  color: #fffdf8;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 10px 28px rgba(45, 73, 42, 0.24);
-}
-
 .guided-session.fs-app.prototype-guided-session :is(
   .fs-listening-choice > span,
   .fs-missing-option-number
@@ -5163,10 +5162,13 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   height: 26px;
   display: block;
   overflow: hidden;
-  border: 2px solid #fff;
-  border-radius: 8px;
+  /* No ring of its own. The chip around it is already the frame, so a 2px
+     white border just held the flag away from its own edges and read as
+     the flag not fitting. A hairline keeps the edge defined. */
+  border: 0;
+  border-radius: 7px;
   background: linear-gradient(to bottom, #171717 0 33.333%, #dd2638 33.333% 66.666%, #f4cb37 66.666% 100%);
-  box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.18), 0 2px 5px rgba(52, 50, 43, 0.18);
+  box-shadow: 0 0 0 1px rgba(44, 45, 41, 0.22);
 }
 
 /* The English flag follows the profile's variant setting. The small disc uses
@@ -6080,16 +6082,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   color: #7fe6a0;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,
-html[data-theme="dark"] .fs-match-board,
-html[data-theme="dark"] .fs-order-panel,
-html[data-theme="dark"] .fs-board,
-html[data-theme="dark"] .fs-panel,
-html[data-theme="dark"] .fs-meaning-prompt,
-html[data-theme="dark"] .fs-meaning-select-board,
-html[data-theme="dark"] .fs-listening-prompt,
-html[data-theme="dark"] .fs-translation-bank,
-html[data-theme="dark"] .fs-recall-board ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,.fs-match-board,.fs-order-panel,.fs-board,.fs-panel,.fs-meaning-prompt,.fs-meaning-select-board,.fs-listening-prompt,.fs-translation-bank,.fs-recall-board ) {
   background: #161b23;
 }
 
@@ -6099,23 +6092,12 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-matc
   color: #7fe6a0;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"] .fs-listening-choice,
-html[data-theme="dark"] .fs-meaning-choice,
-html[data-theme="dark"] .fs-meaning-select-choice,
-html[data-theme="dark"] .fs-missing-audio-option,
-html[data-theme="dark"] .fs-translation-option,
-html[data-theme="dark"] .fs-recall-char-slot ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option,.fs-recall-char-slot ) {
   background: #161b23;
   color: #cdd5e1;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"] .fs-listening-choice,
-html[data-theme="dark"] .fs-meaning-choice,
-html[data-theme="dark"] .fs-meaning-select-choice,
-html[data-theme="dark"] .fs-missing-audio-option,
-html[data-theme="dark"] .fs-translation-option ):hover:not(:disabled) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option ):hover:not(:disabled) {
   background: #173a24;
 }
 
@@ -6131,8 +6113,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-list
   background: #173a24;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
-html[data-theme="dark"] .fs-missing-option-number ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,.fs-missing-option-number ) {
   background: #173a24;
   color: #7fe6a0;
 }
@@ -6185,9 +6166,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .bg-zinc
   background: #232a35;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,
-html[data-theme="dark"] .hover\:bg-zinc-100,
-html[data-theme="dark"] .hover\:bg-zinc-200 ):hover {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,.hover\:bg-zinc-100,.hover\:bg-zinc-200 ):hover {
   background: #173a24;
 }
 
@@ -6569,19 +6548,11 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-matc
   color: #6ddc92;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"] .fs-listening-choice,
-html[data-theme="dark"] .fs-meaning-choice,
-html[data-theme="dark"] .fs-meaning-select-choice,
-html[data-theme="dark"] .fs-missing-audio-option,
-html[data-theme="dark"] .fs-translation-option,
-html[data-theme="dark"] .fs-recall-char-slot ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option,.fs-recall-char-slot ) {
   color: #eef2f8;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,
-html[data-theme="dark"] .fs-board-top span,
-html[data-theme="dark"] .fs-meaning-choice-top > span ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,.fs-board-top span,.fs-meaning-choice-top > span ) {
   color: #6ddc92;
 }
 
@@ -6605,8 +6576,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-word
   color: #6ddc92;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
-html[data-theme="dark"] .fs-missing-option-number ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,.fs-missing-option-number ) {
   color: #6ddc92;
 }
 
@@ -6644,18 +6614,15 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .text-vi
   color: #6ddc92;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
-html[data-theme="dark"] .text-emerald-600) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,.text-emerald-600) {
   color: #6ddc92;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-amber-700,
-html[data-theme="dark"] .text-amber-600) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-amber-700,.text-amber-600) {
   color: #f2c377;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-rose-700,
-html[data-theme="dark"] .text-rose-600) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.text-rose-700,.text-rose-600) {
   color: #f08d98;
 }
 
@@ -7152,7 +7119,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-head .fs-eyebrow i {
-  border: 2px solid rgba(255,255,255,0.10);
+  border: 0;
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-preview-summary > span {
@@ -7246,35 +7213,15 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 #79aa70;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,
-html[data-theme="dark"] .fs-match-board,
-html[data-theme="dark"] .fs-order-panel,
-html[data-theme="dark"] .fs-board,
-html[data-theme="dark"] .fs-panel,
-html[data-theme="dark"] .fs-meaning-prompt,
-html[data-theme="dark"] .fs-meaning-select-board,
-html[data-theme="dark"] .fs-listening-prompt,
-html[data-theme="dark"] .fs-translation-bank,
-html[data-theme="dark"] .fs-recall-board ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,.fs-match-board,.fs-order-panel,.fs-board,.fs-panel,.fs-meaning-prompt,.fs-meaning-select-board,.fs-listening-prompt,.fs-translation-bank,.fs-recall-board ) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(80, 103, 68, 0.11), 0 18px 34px rgba(64, 86, 54, 0.09);
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"] .fs-listening-choice,
-html[data-theme="dark"] .fs-meaning-choice,
-html[data-theme="dark"] .fs-meaning-select-choice,
-html[data-theme="dark"] .fs-missing-audio-option,
-html[data-theme="dark"] .fs-translation-option,
-html[data-theme="dark"] .fs-recall-char-slot ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option,.fs-recall-char-slot ) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(75, 96, 63, 0.11);
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"] .fs-listening-choice,
-html[data-theme="dark"] .fs-meaning-choice,
-html[data-theme="dark"] .fs-meaning-select-choice,
-html[data-theme="dark"] .fs-missing-audio-option,
-html[data-theme="dark"] .fs-translation-option ):hover:not(:disabled) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option ):hover:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(49, 144, 58, 0.18);
 }
 
@@ -7303,15 +7250,9 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-chec
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 #69b970;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,
-html[data-theme="dark"] .fs-listening-disc ) {
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,.fs-listening-disc ) {
   border-color: rgba(255,255,255,0.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 #248831, 0 9px 18px rgba(42, 137, 53, 0.16);
-}
-
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is(.fs-word,
-html[data-theme="dark"] .fs-order-token)[data-gloss]::before {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 10px 28px rgba(45, 73, 42, 0.24);
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option.is-selected:not(.is-matched):not(.is-wrong),
@@ -8431,59 +8372,14 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 0 var(--np-green);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-match-board,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-order-panel,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-board,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-panel,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-prompt,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-select-board,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-listening-prompt,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-translation-bank,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-recall-board ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,.fs-match-board,.fs-order-panel,.fs-board,.fs-panel,.fs-meaning-prompt,.fs-meaning-select-board,.fs-listening-prompt,.fs-translation-bank,.fs-recall-board ) {
   border-color: rgba(var(--accent-hover-rgb), 0.17);
   box-shadow: inset 0 1px 0 #fff,
     0 5px 0 rgba(var(--accent-hover-rgb), 0.11),
     0 18px 34px rgba(var(--accent-hover-rgb), 0.09);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-match-board {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-order-panel {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-board {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-panel {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-prompt {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-board {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-listening-prompt {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-translation-bank {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-recall-board ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction , .fs-match-board , .fs-order-panel , .fs-board , .fs-panel , .fs-meaning-prompt , .fs-meaning-select-board , .fs-listening-prompt , .fs-translation-bank , .fs-recall-board ) {
   border-color: rgba(var(--accent-hover-rgb), 0.17);
 }
 
@@ -8502,82 +8398,25 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   border-color: rgba(var(--accent-rgb), 0.3);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-listening-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-select-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-missing-audio-option,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-translation-option,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-recall-char-slot ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option,.fs-recall-char-slot ) {
   border-color: rgba(var(--accent-hover-rgb), 0.17);
   box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(var(--accent-hover-rgb), 0.11);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option , .fs-listening-choice , .fs-meaning-choice , .fs-meaning-select-choice , .fs-missing-audio-option , .fs-translation-option , .fs-recall-char-slot ) {
   border-color: rgba(var(--accent-hover-rgb), 0.17);
 }
 
-html[data-theme="dark"][data-accent="custom"] .fs-listening-choice {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-choice {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-missing-audio-option {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-translation-option {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-recall-char-slot ) {
-  border-color: rgba(var(--accent-hover-rgb), 0.17);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-listening-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-select-choice,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-missing-audio-option,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-translation-option ):hover:not(:disabled) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option ):hover:not(:disabled) {
   border-color: rgba(var(--accent-rgb), 0.42);
   box-shadow: inset 0 1px 0 #fff, 0 5px 0 rgba(var(--accent-hover-rgb), 0.18);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option , .fs-listening-choice , .fs-meaning-choice , .fs-meaning-select-choice , .fs-missing-audio-option , .fs-translation-option ):hover:not(:disabled) {
   border-color: rgba(var(--accent-rgb), 0.42);
 }
 
-html[data-theme="dark"][data-accent="custom"] .fs-listening-choice {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-choice {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-missing-audio-option {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-translation-option ):hover:not(:disabled) {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-board-top span,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-meaning-choice-top > span ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,.fs-board-top span,.fs-meaning-choice-top > span ) {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -8642,8 +8481,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-text);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-listening-disc ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,.fs-listening-disc ) {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34),
     0 3px 0 var(--np-green),
     0 9px 18px rgba(var(--accent-hover-rgb), 0.16);
@@ -8699,38 +8537,14 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: var(--np-green);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.fs-word,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-order-token)[data-gloss]::before {
-  border-color: rgba(var(--accent-rgb), 0.42);
-  background: var(--accent-pressed, var(--np-green-dark));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 10px 28px rgba(var(--accent-hover-rgb), 0.24);
-}
-
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.fs-word {
-  border-color: rgba(var(--accent-rgb), 0.42);
-  background: var(--accent-pressed, var(--np-green-dark));
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-order-token)[data-gloss]::before {
-  border-color: rgba(var(--accent-rgb), 0.42);
-  background: var(--accent-pressed, var(--np-green-dark));
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-missing-option-number ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,.fs-missing-option-number ) {
   border-color: rgba(var(--accent-rgb), 0.25);
   background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green-soft, var(--accent-dim)));
   color: var(--accent-text);
   box-shadow: 0 3px 0 rgba(var(--accent-rgb), 0.14);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span {
-  border-color: rgba(var(--accent-rgb), 0.25);
-  box-shadow: 0 3px 0 rgba(var(--accent-rgb), 0.14);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-missing-option-number ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span , .fs-missing-option-number ) {
   border-color: rgba(var(--accent-rgb), 0.25);
   box-shadow: 0 3px 0 rgba(var(--accent-rgb), 0.14);
 }
@@ -8861,18 +8675,12 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: rgba(var(--accent-rgb), 0.08);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-wave i,
-html:not([data-theme="dark"])[data-accent="custom"] .fs-missing-wave i ) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-wave i,.fs-missing-wave i ) {
   background: var(--np-green);
   box-shadow: 0 0 9px rgba(var(--accent-rgb), 0.24);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-wave i {
-  background: var(--np-green);
-  box-shadow: 0 0 9px rgba(var(--accent-rgb), 0.24);
-}
-
-html[data-theme="dark"][data-accent="custom"] .fs-missing-wave i ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-wave i , .fs-missing-wave i ) {
   background: var(--np-green);
   box-shadow: 0 0 9px rgba(var(--accent-rgb), 0.24);
 }
@@ -8889,14 +8697,11 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
   color: var(--accent-ink, var(--np-green)) !important;
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,
-html:not([data-theme="dark"])[data-accent="custom"] .hover\:bg-zinc-100,
-html:not([data-theme="dark"])[data-accent="custom"] .hover\:bg-zinc-200 ):hover {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,.hover\:bg-zinc-100,.hover\:bg-zinc-200 ):hover {
   background: var(--np-green-soft, var(--accent-dim)) !important;
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
-html:not([data-theme="dark"])[data-accent="custom"] .text-emerald-600) {
+html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,.text-emerald-600) {
   color: var(--accent-ink, var(--np-green)) !important;
 }
 
@@ -9255,12 +9060,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-text);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"][data-accent="custom"] .fs-listening-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-missing-audio-option,
-html[data-theme="dark"][data-accent="custom"] .fs-translation-option ):hover:not(:disabled) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option ):hover:not(:disabled) {
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
@@ -9268,8 +9068,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
-html[data-theme="dark"][data-accent="custom"] .fs-missing-option-number ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,.fs-missing-option-number ) {
   background: var(--accent-pressed, var(--np-green-dark));
   color: var(--accent-text);
 }
@@ -9296,9 +9095,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,
-html[data-theme="dark"][data-accent="custom"] .hover\:bg-zinc-100,
-html[data-theme="dark"][data-accent="custom"] .hover\:bg-zinc-200 ):hover {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,.hover\:bg-zinc-100,.hover\:bg-zinc-200 ):hover {
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
@@ -9439,9 +9236,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-text);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,
-html[data-theme="dark"][data-accent="custom"] .fs-board-top span,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice-top > span ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-eyebrow,.fs-board-top span,.fs-meaning-choice-top > span ) {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -9465,8 +9260,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-ink, var(--np-green));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,
-html[data-theme="dark"][data-accent="custom"] .fs-missing-option-number ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listening-choice > span,.fs-missing-option-number ) {
   color: var(--accent-text);
 }
 
@@ -9490,8 +9284,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-ink, var(--np-green));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
-html[data-theme="dark"][data-accent="custom"] .text-emerald-600) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,.text-emerald-600) {
   color: var(--accent-ink, var(--np-green));
 }
 
@@ -9537,8 +9330,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-text);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,
-html[data-accent="custom"] .text-emerald-600) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.text-emerald-700,.text-emerald-600) {
   color: var(--accent-ink, var(--np-green)) !important;
 }
 
@@ -9679,35 +9471,15 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 var(--np-green);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,
-html[data-theme="dark"][data-accent="custom"] .fs-match-board,
-html[data-theme="dark"][data-accent="custom"] .fs-order-panel,
-html[data-theme="dark"][data-accent="custom"] .fs-board,
-html[data-theme="dark"][data-accent="custom"] .fs-panel,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-prompt,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-board,
-html[data-theme="dark"][data-accent="custom"] .fs-listening-prompt,
-html[data-theme="dark"][data-accent="custom"] .fs-translation-bank,
-html[data-theme="dark"][data-accent="custom"] .fs-recall-board ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-direction,.fs-match-board,.fs-order-panel,.fs-board,.fs-panel,.fs-meaning-prompt,.fs-meaning-select-board,.fs-listening-prompt,.fs-translation-bank,.fs-recall-board ) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(var(--accent-hover-rgb), 0.11), 0 18px 34px rgba(var(--accent-hover-rgb), 0.09);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"][data-accent="custom"] .fs-listening-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-missing-audio-option,
-html[data-theme="dark"][data-accent="custom"] .fs-translation-option,
-html[data-theme="dark"][data-accent="custom"] .fs-recall-char-slot ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option,.fs-recall-char-slot ) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(var(--accent-hover-rgb), 0.11);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,
-html[data-theme="dark"][data-accent="custom"] .fs-listening-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-meaning-select-choice,
-html[data-theme="dark"][data-accent="custom"] .fs-missing-audio-option,
-html[data-theme="dark"][data-accent="custom"] .fs-translation-option ):hover:not(:disabled) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-match-option,.fs-listening-choice,.fs-meaning-choice,.fs-meaning-select-choice,.fs-missing-audio-option,.fs-translation-option ):hover:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(var(--accent-hover-rgb), 0.18);
 }
 
@@ -9735,14 +9507,8 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 var(--np-green-soft, var(--accent-dim));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,
-html[data-theme="dark"][data-accent="custom"] .fs-listening-disc ) {
+html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,.fs-listening-disc ) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 var(--np-green), 0 9px 18px rgba(var(--accent-hover-rgb), 0.16);
-}
-
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is(.fs-word,
-html[data-theme="dark"][data-accent="custom"] .fs-order-token)[data-gloss]::before {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 10px 28px rgba(var(--accent-hover-rgb), 0.24);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-match-option.is-matched {
@@ -9792,6 +9558,35 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   color: var(--accent-ink, var(--np-green));
 }
+
+/* The word tooltip and the tier label are information, not status. They used
+   to be painted green, which read as 'correct' and fought whatever accent was
+   chosen. Both now sit on the same neutral panel surface the click-a-word
+   popover uses, so hovering and clicking a word look like one feature. */
+.guided-session :is(.fs-word, .fs-order-token)[data-gloss]::before {
+  border-color: var(--fs-line-strong);
+  background: var(--fs-surface-raised, var(--fs-surface));
+  color: var(--fs-text);
+  box-shadow: 0 10px 28px rgba(8, 11, 18, 0.28);
+}
+
+.fs-tier-note {
+  border: 1px solid var(--fs-line-strong);
+  background: var(--fs-surface-raised, var(--fs-surface));
+  color: var(--fs-text);
+}
+
+/* 'Know it' and 'Set level' sit together at the top of a preview card. One
+   says you already have it, the other says how well — and both hand the slot
+   back so a phrase you have not met takes its place. */
+.fs-flashcard-grade {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+
+.fs-flashcard-grade .fs-review-level { z-index: 24; }
 
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in

@@ -90,7 +90,7 @@ check(
 check(
   "lazy feature views have an accessible loading surface",
   prototype.includes("<Suspense fallback={<FeatureLoading />}")
-    && prototype.includes('aria-label="Loading learning content"'),
+    && prototype.includes('aria-label={ui("Loading learning content")}'),
 );
 check(
   "the course hero remains the intentional high-priority image",

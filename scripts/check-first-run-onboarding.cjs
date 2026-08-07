@@ -44,8 +44,8 @@ check(
 check(
   "unplaced profiles see an honest starting-point home action instead of an A2 lesson claim",
   /loadScopedJson(?:<boolean>)?\("german-lab-placement-done", false, profile\) !== true/u.test(prototype)
-    && prototype.includes('needsStartingPoint ? "New learner" : `Level ${placementLevel[0]}`')
-    && prototype.includes('needsStartingPoint ? "Choose your starting point" : firstLessonReady ? "Start learning" : "Continue learning"'),
+    && prototype.includes('needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })')
+    && prototype.includes('needsStartingPoint ? ui("Choose your starting point") : firstLessonReady ? ui("Start learning") : ui("Continue learning")'),
 );
 
 const choiceStart = placement.indexOf('if (stage === "choice")');
@@ -75,8 +75,8 @@ check(
 );
 check(
   "a total beginner returns to an A1 first-lesson home state",
-  prototype.includes('placementPart === "part1" ? ["A1", "Building the basics"]')
-    && prototype.includes('firstLessonReady ? "Start learning" : "Continue learning"'),
+  prototype.includes('placementPart === "part1" ? ["A1", ui("Building the basics")]')
+    && prototype.includes('firstLessonReady ? ui("Start learning") : ui("Continue learning")'),
 );
 check(
   "the beginner choice is translated for German-speaking English learners",

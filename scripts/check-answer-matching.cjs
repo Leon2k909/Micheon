@@ -92,6 +92,19 @@ check(
   matchEnglishPhrase("can we meet an hr later", "Can we meet an hour later?").ok
     && matchEnglishPhrase("see you in 2 hrs", "See you in 2 hours.").ok
 );
+// Single-letter shorthand. "what are u worried abt" is a complete, correct
+// answer that was marked wrong purely on spelling nobody uses when typing.
+check(
+  "single-letter and clipped shorthand are accepted",
+  matchEnglishPhrase("what are u worried abt", "What are you worried about?").ok
+    && matchEnglishPhrase("can u help me pls", "Can you help me please?").ok
+    && matchEnglishPhrase("r u coming", "Are you coming?").ok
+);
+check(
+  "shorthand does not make the matcher accept a different meaning",
+  !matchEnglishPhrase("i need smth to drink", "I need something to eat").ok
+    && !matchEnglishPhrase("what are u worried abt", "Who are you waiting for?").ok
+);
 check(
   "an abbreviation cannot turn one unit into another",
   !matchEnglishPhrase("can we meet a day later", "Can we meet an hour later?").ok

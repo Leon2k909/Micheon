@@ -441,8 +441,14 @@ export default function GuidedLearningSession() {
     }
   };
 
-  const replaceKnownPreviewItem = (itemId: string) => {
-    markGrade(itemId, "know");
+  /**
+   * Hand a slot back and pull in a phrase you have not met.
+   *
+   * Split out from the grading so setting a level in the preview can reuse it:
+   * choosing 'Mastered' must keep the level that was chosen, not overwrite it
+   * with 'know' on the way past.
+   */
+  const swapPreviewItem = (itemId: string) => {
     setSessionSteps((current) => {
       const replaceAt = current.findIndex(
         (step) => step?.type === "sentence" && step.item?.id === itemId
@@ -503,6 +509,12 @@ export default function GuidedLearningSession() {
       next[replaceAt] = replacementStep;
       return next;
     });
+  };
+
+  /** "Know it" on a preview card: grade it known, then take the fresh phrase. */
+  const replaceKnownPreviewItem = (itemId: string) => {
+    markGrade(itemId, "know");
+    swapPreviewItem(itemId);
   };
 
   const markCompleted = (stepsToMark: any[], performance?: AnswerPerformance) => {
@@ -1130,6 +1142,7 @@ export default function GuidedLearningSession() {
       onSetItemPermanent={(itemId: string) => setGuidedPermanent(itemId)}
       onUndoGradeItem={(itemId: string) => undoGuidedGrade(itemId)}
       onPreviewKnown={replaceKnownPreviewItem}
+      onPreviewSwap={swapPreviewItem}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
       onAdvance={(step: any, skipped?: boolean, performance?: AnswerPerformance) => {

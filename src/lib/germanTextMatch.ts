@@ -453,6 +453,16 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bhrs\b/g, "hours"], [/\bhr\b/g, "hour"],
   [/\bwks\b/g, "weeks"], [/\bwk\b/g, "week"],
   [/\byrs\b/g, "years"], [/\byr\b/g, "year"],
+  // Single-letter and clipped shorthand. "what are u worried abt" is a
+  // complete, correct answer to "Was macht dir Sorgen?" and was marked wrong
+  // purely on spelling nobody uses when typing quickly.
+  [/\bu\b/g, "you"], [/\bur\b/g, "your"], [/\br\b/g, "are"],
+  [/\babt\b/g, "about"], [/\bbout\b/g, "about"],
+  [/\bpls\b/g, "please"], [/\bplz\b/g, "please"],
+  [/\bthx\b/g, "thanks"], [/\bty\b/g, "thank you"],
+  [/\bsmth\b/g, "something"], [/\bsth\b/g, "something"],
+  [/\bb4\b/g, "before"], [/\bw\/\b/g, "with"],
+
   // apostrophe-less question contractions — unambiguous tokens
   [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
   [/\bwhos\b/g, "who is"], [/\bwhys\b/g, "why is"], [/\bhows\b/g, "how is"],

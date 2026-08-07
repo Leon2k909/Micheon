@@ -53,8 +53,21 @@ if (!/is-slide-target/.test(lib)) {
   failures.push("nothing highlights the item under the pointer, so a slide gives no feedback");
 }
 const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
-if (!/\.np-side-nav button\.is-slide-target/.test(proto)) {
+// The bubble has to be obviously heavier than hover. A faint tint read as an
+// ordinary hover state, so the gesture looked like nothing was happening.
+const bubble = /\.np-side-nav button\.is-slide-target \{([^}]*)\}/.exec(proto)?.[1] ?? "";
+if (!bubble) {
   failures.push("the highlighted item has no style, so the feedback is invisible");
+} else {
+  if (!/transform:\s*translateX/.test(bubble) || !/box-shadow:/.test(bubble)) {
+    failures.push("the slide target has no lift, so it reads as hover rather than a dragged bubble");
+  }
+  if (!/--accent-rgb/.test(bubble)) {
+    failures.push("the slide bubble is painted a fixed colour instead of the chosen accent");
+  }
+}
+if (!/\.np-side-nav button \{[^}]*transition:[^}]*transform/.test(proto)) {
+  failures.push("nothing animates, so the bubble blinks between items instead of travelling");
 }
 if (!/\.np-sidebar\.is-slide-selecting[\s\S]{0,120}user-select: none/.test(proto)) {
   failures.push("dragging through the menu would select its text instead");

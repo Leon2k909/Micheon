@@ -1,3 +1,4 @@
+import { ui } from "@/lib/i18n";
 import React from "react";
 import { ArrowRight, BookOpen, Check, Code2, Trophy } from "lucide-react";
 import type { Course } from "@/lib/courses";
@@ -49,7 +50,7 @@ export function CourseDashboardView({
 
         <div className="mt-6 grid gap-3">
           <div className="course-feature-panel rounded-[18px] p-4">
-            <p className="course-feature-label text-[11px] font-bold">Course progress</p>
+            <p className="course-feature-label text-[11px] font-bold">{ui("Course progress")}</p>
             <div className="mt-3 flex items-center gap-3">
               <div className="course-feature-progress-track h-4 flex-1 rounded-full">
                 <div className="course-feature-progress h-full rounded-full" style={{ width: `${pct}%` }} />
@@ -80,7 +81,7 @@ export function CourseDashboardView({
             <Code2 className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-[var(--text-1)]">Browse lessons</p>
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Browse lessons")}</p>
             <p className="text-xs font-semibold text-[var(--text-3)]">{lessons.length} lessons across {new Set(lessons.map((l) => l.section)).size} sections</p>
           </div>
           <ArrowRight className="h-4 w-4 text-[var(--text-3)]" />
@@ -95,8 +96,8 @@ export function CourseDashboardView({
             <BookOpen className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-[var(--text-1)]">Course material</p>
-            <p className="text-xs font-semibold text-[var(--text-3)]">Read everything with the full sidebar view</p>
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Course material")}</p>
+            <p className="text-xs font-semibold text-[var(--text-3)]">{ui("Read everything with the full sidebar view")}</p>
           </div>
           <ArrowRight className="h-4 w-4 text-[var(--text-3)]" />
         </button>
@@ -105,7 +106,7 @@ export function CourseDashboardView({
       {/* Recent / up next list */}
       <section className="card p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">Up next</h2>
+          <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Up next")}</h2>
           <Trophy className="h-5 w-5 text-[var(--accent)]" />
         </div>
         <div className="mt-4 space-y-2">

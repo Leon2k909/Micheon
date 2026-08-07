@@ -165,7 +165,7 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
       {tierNote && (
         <span
           title={ui("Not everyday neutral German — use in the right company")}
-          className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[11px] font-black text-violet-500"
+          className="fs-tier-note rounded-full px-2.5 py-1 text-[11px] font-black"
         >
           {uiOr(tierNote, "Besonderer Sprachgebrauch")}
         </span>
@@ -4895,6 +4895,7 @@ function SessionFlashcardPreview({
   index,
   onIndexChange,
   onKnown,
+  onReviewLevel,
   onSkip,
   onStart,
 }: {
@@ -4902,6 +4903,7 @@ function SessionFlashcardPreview({
   index: number;
   onIndexChange: (index: number) => void;
   onKnown: (itemId: string) => void;
+  onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void;
   onSkip: () => void;
   onStart: () => void;
 }) {
@@ -5009,6 +5011,9 @@ function SessionFlashcardPreview({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      // While the level menu is open its own keys win. Space on a focused
+      // option would otherwise flip the card instead of choosing the level.
+      if (event.target instanceof Element && event.target.closest(".fs-review-level")) return;
       if (event.key === "ArrowLeft" && index > 0) {
         event.preventDefault();
         previous();
@@ -5079,17 +5084,24 @@ function SessionFlashcardPreview({
             <div className="fs-flashcard-badge">
               {ui(card.review ? "Review phrase" : "New phrase")}
             </div>
-            <button
-              type="button"
-              className="fs-flashcard-known"
-              onClick={(event) => {
-                event.stopPropagation();
-                onKnown(card.id);
-              }}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              {ui("Know it")}
-            </button>
+            {/* Both of these stop the click reaching the card, which would
+                otherwise flip it while you were choosing. */}
+            <span className="fs-flashcard-grade" onClick={(event) => event.stopPropagation()}>
+              <button
+                type="button"
+                className="fs-flashcard-known"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onKnown(card.id);
+                }}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {ui("Know it")}
+              </button>
+              {onReviewLevel && (
+                <ReviewLevelPicker onSelect={(level) => onReviewLevel(card.id, level)} />
+              )}
+            </span>
           </div>
 
           <div className="fs-flashcard-content">
@@ -5390,7 +5402,7 @@ function SessionMatchingPairs({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onAdvance, onRegisterAnswer }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -5516,6 +5528,21 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     if (onPreviewKnown) onPreviewKnown(itemId);
     else onGradeItem?.(itemId, "know");
   }, [onGradeItem, onPreviewKnown]);
+
+  /**
+   * Set a phrase's level from the preview, before the lesson has begun.
+   *
+   * Saying "Mastered" or "Never review" here means you already have this one,
+   * so keeping it in today's six wastes a slot on something you know. The
+   * levels that finish an item hand the slot back and a fresh phrase takes its
+   * place, exactly as "Know it" does — the sitting stays six either way.
+   *
+   * "Struggling" and "New" ask for MORE practice, so those keep the card.
+   */
+  const setPreviewItemLevel = useCallback((itemId: string, level: GuidedReviewLevel) => {
+    applyManualReviewChange([itemId], level);
+    if (reviewLevelFinishesItem(level)) onPreviewSwap?.(itemId);
+  }, [applyManualReviewChange, onPreviewSwap]);
   const listeningChoicePool = useMemo(
     () => safeSteps
       .filter((candidate: any) => candidate?.type === "sentence" && candidate.item?.de)
@@ -5906,6 +5933,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     index={previewIndex}
                     onIndexChange={setPreviewIndex}
                     onKnown={markPreviewItemKnown}
+                    onReviewLevel={setPreviewItemLevel}
                     onSkip={() => {
                       setPreviewActive(false);
                       setMatchingActive(false);

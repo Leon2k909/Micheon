@@ -1,3 +1,4 @@
+import { ui, uiFmt } from "@/lib/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BarChart3,
@@ -172,16 +173,16 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   subtitle: string;
   keywords: string;
 }> = [
-  { id: "home", title: "Home", subtitle: "Your course, progress, lesson path, and fluency outlook.", keywords: "dashboard today continue learning" },
-  { id: "learn", title: "Lessons", subtitle: "Browse every German lesson and word-bank pack.", keywords: "learn modules packs vocabulary phrases" },
-  { id: "practice", title: "Practice", subtitle: "Choose useful phrases and review conversational German.", keywords: "review recall sentences conversation" },
-  { id: "games", title: "Games", subtitle: "Spelling, recall, verbs, and quick-recognition games.", keywords: "play word snake falling letters shooter minesweeper slither" },
-  { id: "tests", title: "Tests", subtitle: "Build vocabulary, phrase, mixed, or weak-spot tests.", keywords: "quiz assessment level search filters" },
-  { id: "grammar", title: "Grammar", subtitle: "Cloze practice and accessible grammar explanations.", keywords: "fill blanks rules sentence structure" },
-  { id: "shop", title: "Shop", subtitle: "Unlock and equip profile badges with earned coins.", keywords: "rewards coins badge cosmetics" },
-  { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
-  { id: "profile", title: "Profile and settings", subtitle: "Account, learning direction, sound, and preferences.", keywords: "account settings language sound preferences" },
-  { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
+  { id: "home", title: ui("Home"), subtitle: ui("Your course, progress, lesson path, and fluency outlook."), keywords: "dashboard today continue learning" },
+  { id: "learn", title: ui("Lessons"), subtitle: ui("Browse every German lesson and word-bank pack."), keywords: "learn modules packs vocabulary phrases" },
+  { id: "practice", title: ui("Practice"), subtitle: ui("Choose useful phrases and review conversational German."), keywords: "review recall sentences conversation" },
+  { id: "games", title: ui("Games"), subtitle: ui("Spelling, recall, verbs, and quick-recognition games."), keywords: "play word snake falling letters shooter minesweeper slither" },
+  { id: "tests", title: ui("Tests"), subtitle: ui("Build vocabulary, phrase, mixed, or weak-spot tests."), keywords: "quiz assessment level search filters" },
+  { id: "grammar", title: ui("Grammar"), subtitle: ui("Cloze practice and accessible grammar explanations."), keywords: "fill blanks rules sentence structure" },
+  { id: "shop", title: ui("Shop"), subtitle: ui("Unlock and equip profile badges with earned coins."), keywords: "rewards coins badge cosmetics" },
+  { id: "progress", title: ui("Progress and achievements"), subtitle: ui("Levels, streaks, XP, milestones, and activity."), keywords: "stats achievements streak level xp" },
+  { id: "profile", title: ui("Profile and settings"), subtitle: ui("Account, learning direction, sound, and preferences."), keywords: "account settings language sound preferences" },
+  { id: "more", title: ui("More"), subtitle: ui("Course switching and the rest of Micheon's tools."), keywords: "courses switch full app options" },
 ];
 
 const LEON_SOCIAL_SEARCH_PAGE = {
@@ -284,13 +285,13 @@ const SHOP_ITEMS: ReadonlyArray<{
   price: number;
   tone: string;
 }> = [
-  { id: "leaf", name: "Fresh start pin", description: "A calm green badge for your profile.", price: 60, tone: "mint" },
-  { id: "star", name: "Bright star pin", description: "A cheerful badge for steady progress.", price: 90, tone: "yellow" },
-  { id: "heart", name: "Kind heart pin", description: "A warm badge for patient learners.", price: 110, tone: "rose" },
-  { id: "flame", name: "Streak flame pin", description: "Show that you keep coming back.", price: 140, tone: "orange" },
-  { id: "backpack", name: "Explorer pin", description: "A travel badge for curious learners.", price: 170, tone: "violet" },
-  { id: "trophy", name: "Champion pin", description: "A gold badge for your biggest wins.", price: 220, tone: "blue" },
-  { id: "crown", name: "Conversation crown", description: "The top profile badge in the reward shop.", price: 260, tone: "gold" },
+  { id: "leaf", name: ui("Fresh start pin"), description: ui("A calm green badge for your profile."), price: 60, tone: "mint" },
+  { id: "star", name: ui("Bright star pin"), description: ui("A cheerful badge for steady progress."), price: 90, tone: "yellow" },
+  { id: "heart", name: ui("Kind heart pin"), description: ui("A warm badge for patient learners."), price: 110, tone: "rose" },
+  { id: "flame", name: ui("Streak flame pin"), description: ui("Show that you keep coming back."), price: 140, tone: "orange" },
+  { id: "backpack", name: ui("Explorer pin"), description: ui("A travel badge for curious learners."), price: 170, tone: "violet" },
+  { id: "trophy", name: ui("Champion pin"), description: ui("A gold badge for your biggest wins."), price: 220, tone: "blue" },
+  { id: "crown", name: ui("Conversation crown"), description: ui("The top profile badge in the reward shop."), price: 260, tone: "gold" },
 ];
 
 type SocialFriend = {
@@ -414,9 +415,9 @@ function BrandMark() {
         <img alt="" src="/icon-64.png" />
       </span>
       <span className="np-brand-copy">
-        <strong>MICHEON</strong>
+        <strong>{ui("MICHEON")}</strong>
         <small>
-          <span>Made with love by</span>
+          <span>{ui("Made with love by")}</span>
           <span>Leon &amp; Michelle</span>
         </small>
       </span>
@@ -488,7 +489,7 @@ function Sidebar({
   return (
     <aside className={`np-sidebar${brandLayoutClass}`} ref={sidebarRef}>
       <BrandMark />
-      <nav aria-label="Prototype navigation" className="np-side-nav">
+      <nav aria-label={ui("Prototype navigation")} className="np-side-nav">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const active = item.id === activeView
@@ -503,7 +504,7 @@ function Sidebar({
               type="button"
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
-              <span>{item.label}</span>
+              <span>{ui(item.label)}</span>
             </button>
           );
         })}
@@ -511,7 +512,7 @@ function Sidebar({
 
       <div className="np-sidebar-spacer" />
       <button
-        aria-label="Resize sidebar"
+        aria-label={ui("Resize sidebar")}
         aria-orientation="vertical"
         aria-valuemax={PROTOTYPE_SIDEBAR_MAX}
         aria-valuemin={PROTOTYPE_SIDEBAR_MIN}
@@ -525,7 +526,7 @@ function Sidebar({
           } else if (event.key === "ArrowRight") {
             event.preventDefault();
             onResize(width + 8, true);
-          } else if (event.key === "Home") {
+          } else if (event.key === ui("Home")) {
             event.preventDefault();
             onResize(PROTOTYPE_SIDEBAR_MIN, true);
           } else if (event.key === "End") {
@@ -535,7 +536,7 @@ function Sidebar({
         }}
         onPointerDown={startResize}
         role="separator"
-        title="Drag to resize. Double-click to reset."
+        title={ui("Drag to resize. Double-click to reset.")}
         type="button"
       />
     </aside>
@@ -611,12 +612,12 @@ function Header({
   // control for "never show me this kind".
   const today = new Date().toISOString().slice(0, 10);
   const allNotifications: Array<{ id: string; kind: NotificationKind; title: string; body: string; view: PrototypeView }> = [
-    { id: `reviews:${today}`, kind: "reviews", title: "Your review is ready", body: "Revisit a few useful phrases while they are still fresh.", view: "practice" },
-    { id: `games:${today}`, kind: "games", title: "Seven games are ready", body: "Try a short spelling, recall, or vocabulary game.", view: "games" },
+    { id: `reviews:${today}`, kind: "reviews", title: ui("Your review is ready"), body: ui("Revisit a few useful phrases while they are still fresh."), view: "practice" },
+    { id: `games:${today}`, kind: "games", title: ui("Seven games are ready"), body: ui("Try a short spelling, recall, or vocabulary game."), view: "games" },
     stats.streak > 0
-      ? { id: `streak:${today}`, kind: "streak" as const, title: `${stats.streak}-day streak`, body: "One short block today keeps it going.", view: "home" as PrototypeView }
-      : { id: `streak:${today}`, kind: "streak" as const, title: "Start a streak today", body: "A single lesson is enough to begin one.", view: "practice" as PrototypeView },
-    { id: `progress:${today}`, kind: "progress", title: "See how far you have come", body: "Your vocabulary total and next milestone are on your profile.", view: "profile" },
+      ? { id: `streak:${today}`, kind: "streak" as const, title: uiFmt("{n}-day streak", { n: stats.streak }), body: ui("One short block today keeps it going."), view: "home" as PrototypeView }
+      : { id: `streak:${today}`, kind: "streak" as const, title: ui("Start a streak today"), body: ui("A single lesson is enough to begin one."), view: "practice" as PrototypeView },
+    { id: `progress:${today}`, kind: "progress", title: ui("See how far you have come"), body: ui("Your vocabulary total and next milestone are on your profile."), view: "profile" },
   ];
   const notifications = allNotifications.filter((item) =>
     !mutedNotifications.has(item.kind) && !notificationStatus.dismissed.has(item.id));
@@ -700,19 +701,19 @@ function Header({
     <header className="np-header">
       <div className="np-greeting">
         <p>Hi, {firstName}!</p>
-        <span>Ready to learn today?</span>
+        <span>{ui("Ready to learn today?")}</span>
       </div>
       <div className="np-header-stats">
-        <StatChip kind="flame" label="Day streak" value={stats.streak.toLocaleString()} />
-        <StatChip kind="star" label="Total XP" value={`${stats.totalXp.toLocaleString()} XP`} />
-        <StatChip kind="trophy" label="Lessons done" value={stats.sessionsCompleted.toLocaleString()} />
+        <StatChip kind="flame" label={ui("Day streak")} value={stats.streak.toLocaleString()} />
+        <StatChip kind="star" label={ui("Total XP")} value={`${stats.totalXp.toLocaleString()} XP`} />
+        <StatChip kind="trophy" label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
       </div>
       <div className="np-header-actions">
         <div className="np-search-wrap" ref={searchWrapRef}>
           <button
             aria-controls="prototype-global-search"
             aria-expanded={searchOpen}
-            aria-label="Search Micheon"
+            aria-label={ui("Search Micheon")}
             className={`np-icon-button np-desktop-search${searchOpen ? " is-active" : ""}`}
             onClick={() => {
               setNotificationsOpen(false);
@@ -731,7 +732,7 @@ function Header({
             {searchOpen && (
               <motion.div
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                aria-label="Search Micheon"
+                aria-label={ui("Search Micheon")}
                 className="np-search-panel"
                 exit={{ opacity: 0, scale: 0.985, y: -6 }}
                 id="prototype-global-search"
@@ -742,19 +743,19 @@ function Header({
                 <label className="np-search-field">
                   <Search aria-hidden="true" />
                   <input
-                    aria-label="Search lessons, pages, and games"
+                    aria-label={ui("Search lessons, pages, and games")}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" && filteredSearchItems[0]) selectSearchItem(filteredSearchItems[0]);
                     }}
-                    placeholder="Search lessons, pages, games, or a German phrase…"
+                    placeholder={ui("Search lessons, pages, games, or a German phrase…")}
                     ref={searchInputRef}
                     type="search"
                     value={searchQuery}
                   />
                   {searchQuery && (
                     <button
-                      aria-label="Clear search"
+                      aria-label={ui("Clear search")}
                       onClick={() => {
                         setSearchQuery("");
                         searchInputRef.current?.focus();
@@ -767,31 +768,31 @@ function Header({
                 </label>
 
                 <div className="np-search-panel-heading">
-                  <strong>{searchQuery ? "Search results" : "Quick links"}</strong>
+                  <strong>{searchQuery ? ui("Search results") : ui("Quick links")}</strong>
                   <small>{searchCatalogLoading
-                    ? "Loading lessons…"
+                    ? ui("Loading lessons…")
                     : `${filteredSearchItems.length} ${filteredSearchItems.length === 1 ? "result" : "results"}`}</small>
                 </div>
 
                 <div className="np-search-results">
                   {filteredSearchItems.length > 0 ? filteredSearchItems.map((item) => (
                     <button data-testid="prototype-search-result" key={item.id} onClick={() => selectSearchItem(item)} type="button">
-                      <span className="np-search-result-group">{item.group}</span>
+                      <span className="np-search-result-group">{ui(item.group)}</span>
                       <div>
-                        <strong>{item.title}</strong>
-                        <small>{item.subtitle}</small>
+                        <strong>{ui(item.title)}</strong>
+                        <small>{ui(item.subtitle)}</small>
                       </div>
-                      <span className="np-search-result-action">{item.actionLabel}<ChevronRight /></span>
+                      <span className="np-search-result-action">{ui(item.actionLabel)}<ChevronRight /></span>
                     </button>
                   )) : searchCatalogLoading ? (
                     <div className="np-search-empty">
-                      <strong>Loading lesson search</strong>
-                      <span>Pages and games are ready now.</span>
+                      <strong>{ui("Loading lesson search")}</strong>
+                      <span>{ui("Pages and games are ready now.")}</span>
                     </div>
                   ) : (
                     <div className="np-search-empty">
-                      <strong>No matching result</strong>
-                      <span>Try a lesson name, topic, German phrase, or game.</span>
+                      <strong>{ui("No matching result")}</strong>
+                      <span>{ui("Try a lesson name, topic, German phrase, or game.")}</span>
                     </div>
                   )}
                 </div>
@@ -803,8 +804,8 @@ function Header({
           <button
             aria-expanded={notificationsOpen}
             aria-label={allNotificationsMuted
-              ? "Notifications, all muted"
-              : `${unreadNotifications.length} unread notifications`}
+              ? ui("Notifications, all muted")
+              : uiFmt("{n} unread notifications", { n: unreadNotifications.length })}
             className={`np-icon-button np-notification${allNotificationsMuted ? " is-muted" : ""}`}
             onClick={() => {
               closeSearch();
@@ -828,23 +829,23 @@ function Header({
               >
                 <div className="np-notification-heading">
                   <div>
-                    <strong>Notifications</strong>
+                    <strong>{ui("Notifications")}</strong>
                     <small>{allNotificationsMuted
-                      ? "All muted"
+                      ? ui("All muted")
                       : unreadNotifications.length > 0
-                        ? `${unreadNotifications.length} unread of ${notifications.length}`
-                        : `${notifications.length} shown, all read`}</small>
+                        ? uiFmt("{n} unread of {total}", { n: unreadNotifications.length, total: notifications.length })
+                        : uiFmt("{n} shown, all read", { n: notifications.length })}</small>
                   </div>
                   <button
                     aria-expanded={notificationFiltersOpen}
-                    aria-label="Filter notifications"
+                    aria-label={ui("Filter notifications")}
                     className={`np-notification-filter-toggle${notificationFiltersOpen ? " is-open" : ""}`}
                     onClick={() => setNotificationFiltersOpen((open) => !open)}
                     type="button"
                   >
                     <SlidersHorizontal aria-hidden="true" />
                   </button>
-                  <button aria-label="Close notifications" onClick={() => setNotificationsOpen(false)} type="button">
+                  <button aria-label={ui("Close notifications")} onClick={() => setNotificationsOpen(false)} type="button">
                     <X aria-hidden="true" />
                   </button>
                 </div>
@@ -857,7 +858,7 @@ function Header({
                       type="button"
                     >
                       <CheckCheck aria-hidden="true" />
-                      Mark all as read
+                      {ui("Mark all as read")}
                     </button>
                     <button
                       onClick={() => applyNotificationChange(() =>
@@ -865,19 +866,19 @@ function Header({
                       type="button"
                     >
                       <Trash2 aria-hidden="true" />
-                      Clear all
+                      {ui("Clear all")}
                     </button>
                   </div>
                 )}
                 {notificationFiltersOpen && (
                   <div className="np-notification-filters">
                     <div className="np-notification-filters-head">
-                      <span>Show</span>
+                      <span>{ui("Show")}</span>
                       <button
                         onClick={() => setMutedNotifications(setAllNotificationsMuted(!allNotificationsMuted))}
                         type="button"
                       >
-                        {allNotificationsMuted ? "Unmute all" : "Mute all"}
+                        {allNotificationsMuted ? ui("Unmute all") : ui("Mute all")}
                       </button>
                     </div>
                     <div className="np-notification-filter-chips">
@@ -892,7 +893,7 @@ function Header({
                             type="button"
                           >
                             {muted ? <BellOff aria-hidden="true" /> : <Bell aria-hidden="true" />}
-                            {kind.label}
+                            {ui(kind.label)}
                           </button>
                         );
                       })}
@@ -913,24 +914,24 @@ function Header({
                           type="button"
                         >
                           <span>{unread ? <span className="np-notification-dot" /> : index + 1}</span>
-                          <div><strong>{notification.title}</strong><small>{notification.body}</small></div>
+                          <div><strong>{ui(notification.title)}</strong><small>{ui(notification.body)}</small></div>
                           <ChevronRight />
                         </button>
                         <div className="np-notification-row-actions">
                           {unread && (
                             <button
-                              aria-label={`Mark "${notification.title}" as read`}
+                              aria-label={uiFmt("Mark {name} as read", { name: ui(notification.title) })}
                               onClick={() => applyNotificationChange(() => markNotificationsRead([notification.id]))}
-                              title="Mark as read"
+                              title={ui("Mark as read")}
                               type="button"
                             >
                               <Check aria-hidden="true" />
                             </button>
                           )}
                           <button
-                            aria-label={`Delete "${notification.title}"`}
+                            aria-label={uiFmt("Delete {name}", { name: ui(notification.title) })}
                             onClick={() => applyNotificationChange(() => dismissNotifications([notification.id]))}
-                            title="Delete"
+                            title={ui("Delete")}
                             type="button"
                           >
                             <X aria-hidden="true" />
@@ -941,10 +942,10 @@ function Header({
                   }) : (
                     <div className="np-notification-empty">
                       <BellOff aria-hidden="true" />
-                      <strong>{allNotificationsMuted ? "Nothing to show" : "You are all caught up"}</strong>
+                      <strong>{allNotificationsMuted ? ui("Nothing to show") : ui("You are all caught up")}</strong>
                       <span>{allNotificationsMuted
-                        ? "Every kind of notification is muted. Use the filter above to bring some back."
-                        : "Cleared notifications come back tomorrow. Mute a kind above to stop it for good."}</span>
+                        ? ui("Every kind of notification is muted. Use the filter above to bring some back.")
+                        : ui("Cleared notifications come back tomorrow. Mute a kind above to stop it for good.")}</span>
                       {clearedSomething && !allNotificationsMuted && (
                         <button
                           className="np-notification-restore"
@@ -952,7 +953,7 @@ function Header({
                           type="button"
                         >
                           <RotateCcw aria-hidden="true" />
-                          Undo clear
+                          {ui("Undo clear")}
                         </button>
                       )}
                     </div>
@@ -967,7 +968,7 @@ function Header({
             aria-controls="prototype-profile-menu"
             aria-expanded={profileOpen}
             aria-haspopup="menu"
-            aria-label="Open profile menu"
+            aria-label={ui("Open profile menu")}
             className={`np-profile-button${profileOpen ? " is-open" : ""}`}
             onFocus={onProfileIntent}
             onClick={() => {
@@ -1009,30 +1010,30 @@ function Header({
                   </span>
                   <div>
                     <strong>{firstName}</strong>
-                    <small>{userEmail || "Learning German"}</small>
+                    <small>{userEmail || ui("Learning German")}</small>
                   </div>
                 </div>
                 <div className="np-profile-menu-actions">
                   <button onClick={() => openProfileDestination("profile")} role="menuitem" type="button">
                     <span><CircleUserRound /></span>
-                    <div><strong>Profile and settings</strong><small>Account, appearance, and preferences</small></div>
+                    <div><strong>{ui("Profile and settings")}</strong><small>{ui("Account, appearance, and preferences")}</small></div>
                     <ChevronRight />
                   </button>
                   {socialPreviewUnlocked && (
                     <button onClick={() => openProfileDestination("social")} role="menuitem" type="button">
                       <span><UsersRound /></span>
-                      <div><strong>Friends and leaderboard</strong><small>Your private social preview</small></div>
+                      <div><strong>{ui("Friends and leaderboard")}</strong><small>{ui("Your private social preview")}</small></div>
                       <ChevronRight />
                     </button>
                   )}
                   <button onClick={() => openProfileDestination("progress")} role="menuitem" type="button">
                     <span><BarChart3 /></span>
-                    <div><strong>Your progress</strong><small>Levels, achievements, and activity</small></div>
+                    <div><strong>{ui("Your progress")}</strong><small>{ui("Levels, achievements, and activity")}</small></div>
                     <ChevronRight />
                   </button>
                   <button onClick={() => openProfileDestination("more")} role="menuitem" type="button">
                     <span><Menu /></span>
-                    <div><strong>More options</strong><small>Courses and the full Micheon app</small></div>
+                    <div><strong>{ui("More options")}</strong><small>{ui("Courses and the full Micheon app")}</small></div>
                     <ChevronRight />
                   </button>
                   {/* Signing out was buried at the bottom of Profile settings —
@@ -1040,7 +1041,7 @@ function Header({
                       find it. */}
                   <button className="np-profile-menu-signout" onClick={onSignOut} role="menuitem" type="button">
                     <span><LogOut /></span>
-                    <div><strong>Sign out</strong><small>Your progress stays saved on this device</small></div>
+                    <div><strong>{ui("Sign out")}</strong><small>{ui("Your progress stays saved on this device")}</small></div>
                   </button>
                 </div>
               </motion.div>
@@ -1068,12 +1069,12 @@ function CourseHero({
   const reduceMotion = useReducedMotion();
   const { nxt, pct, into, needed } = getLevelInfo(stats.totalXp);
   const displayedProgress = needsStartingPoint ? 0 : packProgress ? packProgress.percent : pct;
-  const placementLevel = placementPart === "part1" ? ["A1", "Building the basics"]
-    : placementPart === "part3" ? ["A1-A2", "Building confidence"]
-      : placementPart === "part5" ? ["A2", "Everyday foundations"]
-        : placementPart === "part8" ? ["A2-B1", "Independent learner"]
-          : placementPart === "part11" ? ["B1", "Independent speaker"]
-            : ["A2", "Everyday speaker"];
+  const placementLevel = placementPart === "part1" ? ["A1", ui("Building the basics")]
+    : placementPart === "part3" ? ["A1-A2", ui("Building confidence")]
+      : placementPart === "part5" ? ["A2", ui("Everyday foundations")]
+        : placementPart === "part8" ? ["A2-B1", ui("Independent learner")]
+          : placementPart === "part11" ? ["B1", ui("Independent speaker")]
+            : ["A2", ui("Everyday speaker")];
 
   return (
     <div className="np-course-hero-frame">
@@ -1082,19 +1083,19 @@ function CourseHero({
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
-            <span className="np-course-kicker">Your active course</span>
-            <button aria-label="Switch course, currently German" className="np-course-language-chip" onClick={onSwitchCourse} type="button">
+            <span className="np-course-kicker">{ui("Your active course")}</span>
+            <button aria-label={ui("Switch course, currently German")} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
               <span aria-hidden="true" className="np-language-badge"><i /><i /><i /></span>
-              <strong>German</strong>
+              <strong>{ui("German")}</strong>
               <ChevronDown />
             </button>
           </div>
           <div className="np-course-title-row">
-            <h1>German for real conversations</h1>
+            <h1>{ui("German for real conversations")}</h1>
           </div>
           <div className="np-level-line">
-            <strong>{needsStartingPoint ? "New learner" : `Level ${placementLevel[0]}`}</strong>
-            <span>{needsStartingPoint ? "Choose where to begin" : placementLevel[1]}</span>
+            <strong>{needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })}</strong>
+            <span>{needsStartingPoint ? ui("Choose where to begin") : placementLevel[1]}</span>
           </div>
           <div className="np-course-progress-row">
             <div className="np-course-progress-label">
@@ -1103,22 +1104,22 @@ function CourseHero({
                   asked. Falls back to the level bar only when there is no pack
                   in progress to report on. */}
               <span>
-                {needsStartingPoint ? "Starting point" : packProgress ? packProgress.title : "Level progress"}
+                {needsStartingPoint ? ui("Starting point") : packProgress ? packProgress.title : ui("Level progress")}
               </span>
               <small>
                 {needsStartingPoint
-                  ? "One quick choice before your first lesson"
+                  ? ui("One quick choice before your first lesson")
                   : packProgress
                     ? `${packProgress.done} of ${packProgress.total} phrases · about ${packProgress.sittingsLeft} more ${packProgress.sittingsLeft === 1 ? "sitting" : "sittings"} to finish`
-                    : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : "Maximum level"}
+                    : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : ui("Maximum level")}
               </small>
             </div>
             <div
               aria-label={needsStartingPoint
-        ? "Starting point not chosen"
+        ? ui("Starting point not chosen")
         : packProgress
-          ? `${packProgress.percent}% through ${packProgress.title}`
-          : `${pct}% progress to the next level`}
+          ? uiFmt("{pct}% through {pack}", { pct: packProgress.percent, pack: packProgress.title })
+          : uiFmt("{pct}% progress to the next level", { pct })}
               aria-valuemax={100}
               aria-valuemin={0}
               aria-valuenow={displayedProgress}
@@ -1163,8 +1164,8 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
     <section className={`np-practice-card${compact ? " np-practice-card--compact" : ""}`}>
       <div className="np-section-heading">
         <div>
-          <h2>Choose the phrase</h2>
-          <p>Pick what people actually say in a normal conversation.</p>
+          <h2>{ui("Choose the phrase")}</h2>
+          <p>{ui("Pick what people actually say in a normal conversation.")}</p>
         </div>
         <div className="np-mini-progress">
           <strong>{exerciseIndex + 1} in a row</strong>
@@ -1174,16 +1175,16 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
 
       <div className="np-practice-grid">
         <div className="np-prompt-card">
-          <span className="np-prompt-language">English</span>
-          <button aria-label="Hear the German phrase" className="np-sound-button" onClick={() => playPhrase(exercise.answers[exercise.correct].german)} type="button">
+          <span className="np-prompt-language">{ui("English")}</span>
+          <button aria-label={ui("Hear the German phrase")} className="np-sound-button" onClick={() => playPhrase(exercise.answers[exercise.correct].german)} type="button">
             <Volume2 />
           </button>
           <MessageCircleMore aria-hidden="true" className="np-prompt-symbol" />
           <strong>{exercise.english}</strong>
-          <small>Everyday conversation</small>
+          <small>{ui("Everyday conversation")}</small>
         </div>
 
-        <div aria-label="German answer choices" className="np-answer-list">
+        <div aria-label={ui("German answer choices")} className="np-answer-list">
           {exercise.answers.map((answer, index) => {
             const chosen = selected === index;
             const state = chosen ? (index === exercise.correct ? "correct" : "wrong") : "idle";
@@ -1217,12 +1218,12 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
           >
             <RewardIcon kind={correct ? "star" : "heart"} />
             <div>
-              <strong>{correct ? "Exactly right!" : "Try another one"}</strong>
-              <p>{exercise.answers[selected].note}</p>
+              <strong>{correct ? ui("Exactly right!") : ui("Try another one")}</strong>
+              <p>{ui(exercise.answers[selected].note)}</p>
             </div>
             {correct && (
               <button className="np-feedback-next" onClick={next} type="button">
-                Next phrase
+                {ui("Next phrase")}
                 <ChevronRight />
               </button>
             )}
@@ -1236,18 +1237,18 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
 function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
   const tools = [
     {
-      description: "Search by level or topic, then build a focused test from words, phrases, or weak spots.",
+      description: ui("Search by level or topic, then build a focused test from words, phrases, or weak spots."),
       icon: ClipboardCheck,
-      label: "Tests",
-      meta: "Focused recall",
+      label: ui("Tests"),
+      meta: ui("Focused recall"),
       tone: "mint",
       view: "tests" as const,
     },
     {
-      description: "Practise useful sentence patterns with short explanations and fill-in-the-gap activities.",
+      description: ui("Practise useful sentence patterns with short explanations and fill-in-the-gap activities."),
       icon: GraduationCap,
-      label: "Grammar",
-      meta: "Patterns in context",
+      label: ui("Grammar"),
+      meta: ui("Patterns in context"),
       tone: "yellow",
       view: "grammar" as const,
     },
@@ -1259,21 +1260,21 @@ function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void
         <div className="np-page-intro">
           <span className="np-page-icon"><MessageSquareText /></span>
           <div>
-            <small>Practice hub</small>
-            <h1>Choose what to strengthen</h1>
-            <p>Keep conversational phrases central, or open a focused test or grammar activity.</p>
+            <small>{ui("Practice hub")}</small>
+            <h1>{ui("Choose what to strengthen")}</h1>
+            <p>{ui("Keep conversational phrases central, or open a focused test or grammar activity.")}</p>
           </div>
         </div>
         <div className="np-practice-tools">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <button key={tool.label} onClick={() => onNavigate(tool.view)} type="button">
+              <button key={ui(tool.label)} onClick={() => onNavigate(tool.view)} type="button">
                 <span className={`np-feature-directory-icon np-feature-directory-icon--${tool.tone}`}><Icon /></span>
                 <span>
                   <small>{tool.meta}</small>
-                  <strong>{tool.label}</strong>
-                  <p>{tool.description}</p>
+                  <strong>{ui(tool.label)}</strong>
+                  <p>{ui(tool.description)}</p>
                 </span>
                 <ChevronRight />
               </button>
@@ -1291,10 +1292,10 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
     <section className="np-lesson-path">
       <div className="np-list-heading">
         <div>
-          <h2>Your lesson path</h2>
-          <p>Common sentences and phrases come first.</p>
+          <h2>{ui("Your lesson path")}</h2>
+          <p>{ui("Common sentences and phrases come first.")}</p>
         </div>
-        <button type="button">View all <ChevronRight /></button>
+        <button type="button">{ui("View all")} <ChevronRight /></button>
       </div>
       <div className="np-lesson-list">
         {LESSONS.slice(0, 3).map((lesson) => (
@@ -1302,8 +1303,8 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
             <span className="np-lesson-illustration"><RewardIcon kind={lesson.reward} /></span>
             <span className="np-lesson-number">{lesson.number}</span>
             <span className="np-lesson-copy">
-              <strong>{lesson.title}</strong>
-              <small>{lesson.detail}</small>
+              <strong>{ui(lesson.title)}</strong>
+              <small>{ui(lesson.detail)}</small>
             </span>
             <ChevronRight className="np-lesson-chevron" />
           </button>
@@ -1334,10 +1335,10 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
     [fluency.toFluent, profile, revision]
   );
   const estimateNote = estimate.confidence === "personalized"
-    ? "Based on your active lesson pace."
+    ? ui("Based on your active lesson pace.")
     : estimate.confidence === "developing"
-      ? "Becomes more accurate as you complete lessons."
-      : "Starting estimate. Complete a timed lesson to personalise it.";
+      ? ui("Becomes more accurate as you complete lessons.")
+      : ui("Starting estimate. Complete a timed lesson to personalise it.");
 
   return (
     <section className="np-fluency-outlook">
@@ -1345,15 +1346,15 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <div className="np-fluency-heading">
           <span aria-hidden="true"><Target /></span>
           <div>
-            <h2>Your path to fluent conversations</h2>
-            <p>A realistic outlook based on useful words and phrases you can recall.</p>
+            <h2>{ui("Your path to fluent conversations")}</h2>
+            <p>{ui("A realistic outlook based on useful words and phrases you can recall.")}</p>
           </div>
         </div>
         <div className="np-fluency-status">
-          <div><strong>{fluency.cur.label}</strong><small>{fluency.vocab.toLocaleString()} useful items known</small></div>
+          <div><strong>{ui(fluency.cur.label)}</strong><small>{fluency.vocab.toLocaleString()} useful items known</small></div>
           <span>{fluency.overallPct}% to fluent</span>
         </div>
-        <div aria-label={`${fluency.overallPct}% to fluent`} className="np-fluency-track">
+        <div aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })} className="np-fluency-track">
           <span style={{ width: `${fluency.overallPct}%` }} />
         </div>
         <div className="np-fluency-footnote">
@@ -1368,7 +1369,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
       </div>
       <div className="np-fluency-hours">
         <span aria-hidden="true"><Clock3 /></span>
-        <small>Estimated active study left</small>
+        <small>{ui("Estimated active study left")}</small>
         <strong>About {estimate.hoursRemaining.toLocaleString()} hours</strong>
         <p>{estimateNote}</p>
       </div>
@@ -1382,14 +1383,14 @@ function AchievementBadge({ achievement, standalone, stats }: { achievement: Mil
 
   return (
     <div
-      aria-label={`${achievement.label}. ${unlocked ? "Unlocked" : `${progress} of ${achievement.target} ${achievement.unit}`}. ${achievement.desc}`}
+      aria-label={`${ui(achievement.label)}. ${unlocked ? "Unlocked" : `${progress} of ${achievement.target} ${achievement.unit}`}. ${ui(achievement.desc)}`}
       className={`np-achievement${unlocked ? " is-unlocked" : " is-locked"}`}
     >
       <span className="np-achievement-visual">
         <AchievementArt id={achievement.id} />
         <span aria-hidden="true" className="np-achievement-state">{unlocked ? <Check /> : <LockKeyhole />}</span>
       </span>
-      <small>{achievement.label}</small>
+      <small>{ui(achievement.label)}</small>
       {standalone && (
         <span className="np-achievement-detail">
           {unlocked ? "Unlocked" : `${progress} / ${achievement.target} ${achievement.unit}`}
@@ -1441,7 +1442,7 @@ function ProgressPanel({
     <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}`}>
       <div className="np-progress-title">
         <div>
-          <h2>Your progress</h2>
+          <h2>{ui("Your progress")}</h2>
           <p>{earnedAchievements} of {MILESTONES.length} achievements unlocked, {firstName}.</p>
         </div>
         <AchievementArt id="week" />
@@ -1450,26 +1451,26 @@ function ProgressPanel({
       <div className="np-level-card">
         <span className="np-level-badge">L{cur.level}</span>
         <div className="np-level-copy">
-          <strong>{cur.label}</strong>
-          <small>{nxt ? `${nxt.xpRequired - stats.totalXp} XP to level ${nxt.level}` : "Highest level reached"}</small>
+          <strong>{ui(cur.label)}</strong>
+          <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: nxt.xpRequired - stats.totalXp, level: nxt.level }) : ui("Highest level reached")}</small>
           <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
         </div>
         <small>{stats.totalXp.toLocaleString()} total XP</small>
       </div>
 
       <div className="np-progress-stats">
-        <div><AchievementArt id="xp_500" /><strong>{stats.totalXp.toLocaleString()}</strong><small>Total XP</small></div>
-        <div><AchievementArt id="streak_3" /><strong>{stats.streak.toLocaleString()}</strong><small>Day streak</small></div>
-        <div><AchievementArt id="first_session" /><strong>{stats.sessionsCompleted.toLocaleString()}</strong><small>Lessons done</small></div>
+        <div><AchievementArt id="xp_500" /><strong>{stats.totalXp.toLocaleString()}</strong><small>{ui("Total XP")}</small></div>
+        <div><AchievementArt id="streak_3" /><strong>{stats.streak.toLocaleString()}</strong><small>{ui("Day streak")}</small></div>
+        <div><AchievementArt id="first_session" /><strong>{stats.sessionsCompleted.toLocaleString()}</strong><small>{ui("Lessons done")}</small></div>
       </div>
 
       <div className="np-badges-block">
         <div className="np-block-heading">
-          <strong>Achievements</strong>
+          <strong>{ui("Achievements")}</strong>
           {standalone ? (
             <span className="np-achievement-count">{earnedAchievements} unlocked</span>
           ) : (
-            <button onClick={onViewAllAchievements} type="button">View all</button>
+            <button onClick={onViewAllAchievements} type="button">{ui("View all")}</button>
           )}
         </div>
         <div className={`np-badge-list${standalone ? " np-badge-list--expanded" : ""}`}>
@@ -1481,8 +1482,8 @@ function ProgressPanel({
 
       <div className="np-goal-card">
         <div>
-          <strong>{nextAchievement ? "Next achievement" : "All achievements unlocked"}</strong>
-          <small>{nextAchievement?.label ?? "You reached every current milestone."}</small>
+          <strong>{nextAchievement ? ui("Next achievement") : ui("All achievements unlocked")}</strong>
+          <small>{nextAchievement?.label ?? ui("You reached every current milestone.")}</small>
           <div className="np-progress-track"><span style={{ width: `${nextAchievement ? nextProgressPercent : 100}%` }} /></div>
           <p>{nextAchievement ? `${nextProgress} / ${nextTarget} ${nextAchievement.unit}` : "Complete"}</p>
         </div>
@@ -1491,7 +1492,7 @@ function ProgressPanel({
 
       {recentSessions.length > 0 && (
         <div className="np-completed-block">
-          <div className="np-block-heading"><strong>Recently completed</strong></div>
+          <div className="np-block-heading"><strong>{ui("Recently completed")}</strong></div>
           {recentSessions.map((session, index) => (
             <div className="np-completed-row" key={`${session.ts}-${index}`}>
               <CheckCircle2 />
@@ -1552,10 +1553,10 @@ function HomeView({
       />
       <button
         aria-label={needsStartingPoint
-          ? "Choose your starting point. Tell us if you are a total beginner."
+          ? ui("Choose your starting point. Tell us if you are a total beginner.")
           : firstLessonReady
-            ? `Start your first lesson. Level ${firstLessonLevel} everyday essentials.`
-            : `Continue learning. Lesson ${stats.sessionsCompleted + 1}.`}
+            ? uiFmt("Start your first lesson. Level {level} everyday essentials.", { level: firstLessonLevel })
+            : uiFmt("Continue learning. Lesson {n}.", { n: stats.sessionsCompleted + 1 })}
         className="np-mobile-course-button"
         onClick={onPractice}
         type="button"
@@ -1563,13 +1564,13 @@ function HomeView({
         <Play />
         <span className="np-course-button-copy">
           <span className="np-course-button-kicker">
-            {needsStartingPoint ? "First step" : firstLessonReady ? "Your first lesson" : "Your next lesson"}
+            {needsStartingPoint ? ui("First step") : firstLessonReady ? ui("Your first lesson") : ui("Your next lesson")}
           </span>
-          <strong>{needsStartingPoint ? "Choose your starting point" : firstLessonReady ? "Start learning" : "Continue learning"}</strong>
+          <strong>{needsStartingPoint ? ui("Choose your starting point") : firstLessonReady ? ui("Start learning") : ui("Continue learning")}</strong>
           <small>
             {needsStartingPoint
-              ? "Tell us if you are a total beginner"
-              : firstLessonReady ? `Level ${firstLessonLevel}: Everyday essentials` : `Lesson ${stats.sessionsCompleted + 1}: picks up where you left off`}
+              ? ui("Tell us if you are a total beginner")
+              : firstLessonReady ? uiFmt("Level {level}: Everyday essentials", { level: firstLessonLevel }) : uiFmt("Lesson {n}: picks up where you left off", { n: stats.sessionsCompleted + 1 })}
           </small>
         </span>
         <ChevronRight />
@@ -1582,7 +1583,7 @@ function HomeView({
 
 function FeatureLoading() {
   return (
-    <section aria-label="Loading learning content" className="np-feature-loading">
+    <section aria-label={ui("Loading learning content")} className="np-feature-loading">
       <span />
       <div><i /><i /><i /></div>
     </section>
@@ -1594,10 +1595,10 @@ function AccountGate({ onRequestSignIn }: { onRequestSignIn: () => void }) {
     <section className="np-page-card np-account-gate">
       <div className="np-page-intro">
         <span className="np-page-icon"><CircleUserRound /></span>
-        <div><h1>Sign in to manage your profile</h1><p>Your lessons and games are available in preview mode. Sign in to save account, pet, course, and flashcard changes.</p></div>
+        <div><h1>{ui("Sign in to manage your profile")}</h1><p>{ui("Your lessons and games are available in preview mode. Sign in to save account, pet, course, and flashcard changes.")}</p></div>
       </div>
       <button className="np-primary-button" onClick={onRequestSignIn} type="button">
-        Open sign in
+        {ui("Open sign in")}
         <ChevronRight />
       </button>
     </section>
@@ -1627,34 +1628,34 @@ function ShopView({
         <div className="np-shop-heading">
           <span><ShoppingBag /></span>
           <div>
-            <small>Reward shop</small>
-            <h1>Make your profile yours</h1>
-            <p>Earn coins by learning, then use them on profile pins.</p>
+            <small>{ui("Reward shop")}</small>
+            <h1>{ui("Make your profile yours")}</h1>
+            <p>{ui("Earn coins by learning, then use them on profile pins.")}</p>
           </div>
         </div>
         <div aria-live="polite" className="np-shop-balance">
           <Coins />
-          <div><strong>{availableCoins.toLocaleString()}</strong><small>Micheon coins</small></div>
+          <div><strong>{availableCoins.toLocaleString()}</strong><small>{ui("Micheon coins")}</small></div>
         </div>
       </div>
 
       <div className="np-shop-note">
         <Coins />
-        <p>You start with 80 welcome coins. More coins come from XP, completed lessons, and reviews. Buying a pin never reduces your XP.</p>
+        <p>{ui("You start with 80 welcome coins. More coins come from XP, completed lessons, and reviews. Buying a pin never reduces your XP.")}</p>
       </div>
 
       {previewMessage && (
         <div aria-live="polite" className="np-shop-preview-message" data-testid="shop-preview-message" role="status">
           <CheckCircle2 />
-          <div><strong>Shop preview</strong><p>{previewMessage}</p></div>
-          <button aria-label="Dismiss message" onClick={() => setPreviewMessage("")} type="button"><X /></button>
+          <div><strong>{ui("Shop preview")}</strong><p>{previewMessage}</p></div>
+          <button aria-label={ui("Dismiss message")} onClick={() => setPreviewMessage("")} type="button"><X /></button>
         </div>
       )}
 
       <section aria-labelledby="coin-packs-heading" className="np-shop-purchase-section">
         <div className="np-shop-section-heading">
-          <div><h2 id="coin-packs-heading">Buy Micheon coins</h2><p>Choose a coin pack for profile pins and future shop rewards.</p></div>
-          <span>Checkout preview</span>
+          <div><h2 id="coin-packs-heading">{ui("Buy Micheon coins")}</h2><p>{ui("Choose a coin pack for profile pins and future shop rewards.")}</p></div>
+          <span>{ui("Checkout preview")}</span>
         </div>
 
         <div className="np-coin-pack-grid">
@@ -1662,9 +1663,9 @@ function ShopView({
             <article className={`np-coin-pack${pack.featured ? " is-featured" : ""}`} key={pack.id}>
               <div className="np-coin-pack-icon"><Coins /></div>
               <div className="np-coin-pack-copy">
-                <small>{pack.featured ? "Most popular" : pack.label}</small>
+                <small>{pack.featured ? ui("Most popular") : pack.label}</small>
                 <h3>{pack.coins.toLocaleString()} coins</h3>
-                <p>{pack.note}</p>
+                <p>{ui(pack.note)}</p>
               </div>
               <button
                 data-testid={`shop-coin-pack-${pack.coins}`}
@@ -1672,44 +1673,44 @@ function ShopView({
                 type="button"
               >
                 <span>{pack.price}</span>
-                Buy coins
+                {ui("Buy coins")}
               </button>
             </article>
           ))}
         </div>
-        <p className="np-shop-checkout-note">Preview prices only. Payments are not connected, so these buttons will not charge you.</p>
+        <p className="np-shop-checkout-note">{ui("Preview prices only. Payments are not connected, so these buttons will not charge you.")}</p>
       </section>
 
       <section aria-labelledby="premium-heading" className="np-premium-card">
         <div className="np-premium-copy">
           <span className="np-premium-mark"><Crown /></span>
           <div>
-            <small>Micheon Premium</small>
-            <h2 id="premium-heading">Learn better together</h2>
-            <p>A future membership for learners who want more motivation from the people they know.</p>
+            <small>{ui("Micheon Premium")}</small>
+            <h2 id="premium-heading">{ui("Learn better together")}</h2>
+            <p>{ui("A future membership for learners who want more motivation from the people they know.")}</p>
           </div>
         </div>
-        <div className="np-premium-benefits" aria-label="Planned Premium features">
-          <span><UserRound /><strong>Add friends</strong></span>
-          <span><Trophy /><strong>Friendly leaderboards</strong></span>
-          <span><MessageCircleMore /><strong>Learn together</strong></span>
+        <div className="np-premium-benefits" aria-label={ui("Planned Premium features")}>
+          <span><UserRound /><strong>{ui("Add friends")}</strong></span>
+          <span><Trophy /><strong>{ui("Friendly leaderboards")}</strong></span>
+          <span><MessageCircleMore /><strong>{ui("Learn together")}</strong></span>
         </div>
         <div className="np-premium-action">
-          <div><strong>£5.99</strong><span>per month, preview price</span></div>
+          <div><strong>£5.99</strong><span>{ui("per month, preview price")}</span></div>
           <button
             data-testid="shop-premium-buy"
-            onClick={() => previewPurchase("Premium checkout and its social features are not connected yet.")}
+            onClick={() => previewPurchase(ui("Premium checkout and its social features are not connected yet."))}
             type="button"
           >
-            Get Premium
+            {ui("Get Premium")}
             <ChevronRight />
           </button>
-          <small>No charge is made. Friends, leaderboards, and learning together are planned features.</small>
+          <small>{ui("No charge is made. Friends, leaderboards, and learning together are planned features.")}</small>
         </div>
       </section>
 
       <div className="np-shop-section-heading">
-        <div><h2>Profile pins</h2><p>Your equipped pin appears on the profile button.</p></div>
+        <div><h2>{ui("Profile pins")}</h2><p>{ui("Your equipped pin appears on the profile button.")}</p></div>
         <span>{ownedBadges.length} of {SHOP_ITEMS.length} owned</span>
       </div>
 
@@ -1724,16 +1725,16 @@ function ShopView({
             : owned
               ? "Equip"
               : shortfall > 0
-                ? `Need ${shortfall} more`
-                : "Buy and equip";
+                ? uiFmt("Need {n} more", { n: shortfall })
+                : ui("Buy and equip");
 
           return (
             <article className={`np-shop-item${owned ? " is-owned" : ""}${equipped ? " is-equipped" : ""}`} key={item.id}>
               <span className={`np-shop-item-art np-shop-item-art--${item.tone}`}><ShopBadgeArt id={item.id} /></span>
               <div className="np-shop-item-copy">
-                <small>Profile pin</small>
-                <h3>{item.name}</h3>
-                <p>{item.description}</p>
+                <small>{ui("Profile pin")}</small>
+                <h3>{ui(item.name)}</h3>
+                <p>{ui(item.description)}</p>
               </div>
               <div className="np-shop-item-footer">
                 <span>{owned ? "Owned" : <><Coins /> {item.price}</>}</span>
@@ -1773,7 +1774,7 @@ function SocialView({ userName }: { userName: string }) {
   const podium = [leaderboard[1], leaderboard[0], leaderboard[2]];
 
   const showPreviewNotice = (action: string) => {
-    setPreviewNotice(`${action} is a preview in this release. Nothing was sent or changed.`);
+    setPreviewNotice(uiFmt("{action} is a preview in this release. Nothing was sent or changed.", { action }));
   };
 
   return (
@@ -1781,17 +1782,17 @@ function SocialView({ userName }: { userName: string }) {
       <div className="np-social-hero">
         <span aria-hidden="true" className="np-social-hero-icon"><UsersRound /></span>
         <div className="np-social-hero-copy">
-          <span>Leon only</span>
-          <h1>Learn better together</h1>
-          <p>Keep up with friends, compare weekly XP, and turn practice into a friendly routine.</p>
+          <span>{ui("Leon only")}</span>
+          <h1>{ui("Learn better together")}</h1>
+          <p>{ui("Keep up with friends, compare weekly XP, and turn practice into a friendly routine.")}</p>
         </div>
         <div className="np-social-private-badge">
           <LockKeyhole aria-hidden="true" />
-          <span><strong>Private preview</strong><small>Visible only on Leon&apos;s account</small></span>
+          <span><strong>{ui("Private preview")}</strong><small>Visible only on Leon&apos;s account</small></span>
         </div>
       </div>
 
-      <div aria-label="Social sections" className="np-social-tabs" role="tablist">
+      <div aria-label={ui("Social sections")} className="np-social-tabs" role="tablist">
         <button
           aria-controls="social-friends-panel"
           aria-selected={activeSection === "friends"}
@@ -1801,7 +1802,7 @@ function SocialView({ userName }: { userName: string }) {
           type="button"
         >
           <UsersRound aria-hidden="true" />
-          <span><strong>Friends</strong><small>{SOCIAL_FRIENDS.length} learning partners</small></span>
+          <span><strong>{ui("Friends")}</strong><small>{SOCIAL_FRIENDS.length} learning partners</small></span>
         </button>
         <button
           aria-controls="social-leaderboard-panel"
@@ -1812,7 +1813,7 @@ function SocialView({ userName }: { userName: string }) {
           type="button"
         >
           <Medal aria-hidden="true" />
-          <span><strong>Leaderboard</strong><small>Friends league this week</small></span>
+          <span><strong>{ui("Leaderboard")}</strong><small>{ui("Friends league this week")}</small></span>
         </button>
       </div>
 
@@ -1826,8 +1827,8 @@ function SocialView({ userName }: { userName: string }) {
             role="status"
           >
             <CheckCircle2 aria-hidden="true" />
-            <span><strong>UI preview only</strong><small>{previewNotice}</small></span>
-            <button aria-label="Dismiss preview message" onClick={() => setPreviewNotice(null)} type="button"><X /></button>
+            <span><strong>{ui("UI preview only")}</strong><small>{previewNotice}</small></span>
+            <button aria-label={ui("Dismiss preview message")} onClick={() => setPreviewNotice(null)} type="button"><X /></button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1836,19 +1837,19 @@ function SocialView({ userName }: { userName: string }) {
         <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
           <section className="np-social-panel np-friends-panel">
             <div className="np-social-panel-heading">
-              <div><span>Your circle</span><h2>Friends</h2><p>See who is learning and keep each other moving.</p></div>
-              <button className="np-social-primary-button" onClick={() => showPreviewNotice("Add friend")} type="button"><UserPlus /> Add friend</button>
+              <div><span>{ui("Your circle")}</span><h2>{ui("Friends")}</h2><p>{ui("See who is learning and keep each other moving.")}</p></div>
+              <button className="np-social-primary-button" onClick={() => showPreviewNotice(ui("Add friend"))} type="button"><UserPlus /> {ui("Add friend")}</button>
             </div>
             <label className="np-social-search">
               <Search aria-hidden="true" />
               <input
-                aria-label="Search friends"
+                aria-label={ui("Search friends")}
                 onChange={(event) => setFriendQuery(event.target.value)}
-                placeholder="Search your friends"
+                placeholder={ui("Search your friends")}
                 type="search"
                 value={friendQuery}
               />
-              {friendQuery && <button aria-label="Clear friend search" onClick={() => setFriendQuery("")} type="button"><X /></button>}
+              {friendQuery && <button aria-label={ui("Clear friend search")} onClick={() => setFriendQuery("")} type="button"><X /></button>}
             </label>
 
             <div className="np-friend-list">
@@ -1862,22 +1863,22 @@ function SocialView({ userName }: { userName: string }) {
                   </div>
                   <div className="np-friend-stat">
                     <RewardIcon kind="flame" />
-                    <span><strong>{friend.streak} days</strong><small>Current streak</small></span>
+                    <span><strong>{friend.streak} days</strong><small>{ui("Current streak")}</small></span>
                   </div>
                   <div className="np-friend-stat">
                     <RewardIcon kind="star" />
-                    <span><strong>{friend.weeklyXp.toLocaleString()} XP</strong><small>This week</small></span>
+                    <span><strong>{friend.weeklyXp.toLocaleString()} XP</strong><small>{ui("This week")}</small></span>
                   </div>
-                  <button className="np-social-secondary-button" onClick={() => showPreviewNotice(`Message ${friend.name}`)} type="button">
-                    <MessageCircleMore aria-hidden="true" /><span>Message</span>
+                  <button className="np-social-secondary-button" onClick={() => showPreviewNotice(uiFmt("Message {name}", { name: friend.name }))} type="button">
+                    <MessageCircleMore aria-hidden="true" /><span>{ui("Message")}</span>
                   </button>
                 </article>
               )) : (
                 <div className="np-social-empty">
                   <Search aria-hidden="true" />
-                  <strong>No friend matches that search</strong>
-                  <span>Try another name or clear the search.</span>
-                  <button onClick={() => setFriendQuery("")} type="button">Clear search</button>
+                  <strong>{ui("No friend matches that search")}</strong>
+                  <span>{ui("Try another name or clear the search.")}</span>
+                  <button onClick={() => setFriendQuery("")} type="button">{ui("Clear search")}</button>
                 </div>
               )}
             </div>
@@ -1886,18 +1887,18 @@ function SocialView({ userName }: { userName: string }) {
           <aside className="np-social-side-stack">
             <section className="np-social-side-card np-social-side-card--invite">
               <span className="np-social-side-icon"><UserPlus /></span>
-              <small>Grow your circle</small>
-              <h2>Invite a learning partner</h2>
-              <p>Practising feels easier when someone is learning alongside you.</p>
-              <button onClick={() => showPreviewNotice("Invite friend")} type="button">Preview invite <ChevronRight /></button>
+              <small>{ui("Grow your circle")}</small>
+              <h2>{ui("Invite a learning partner")}</h2>
+              <p>{ui("Practising feels easier when someone is learning alongside you.")}</p>
+              <button onClick={() => showPreviewNotice(ui("Invite friend"))} type="button">{ui("Preview invite")} <ChevronRight /></button>
             </section>
             <section className="np-social-side-card">
               <span className="np-social-side-icon np-social-side-icon--blue"><Swords /></span>
-              <small>Friendly challenge</small>
-              <h2>Reach 500 XP together</h2>
-              <p>You and Michelle are 68% of the way to a shared weekly target.</p>
+              <small>{ui("Friendly challenge")}</small>
+              <h2>{ui("Reach 500 XP together")}</h2>
+              <p>{ui("You and Michelle are 68% of the way to a shared weekly target.")}</p>
               <div className="np-social-progress"><span style={{ width: "68%" }} /></div>
-              <button onClick={() => showPreviewNotice("Challenge Michelle")} type="button">Open challenge <ChevronRight /></button>
+              <button onClick={() => showPreviewNotice(ui("Challenge Michelle"))} type="button">{ui("Open challenge")} <ChevronRight /></button>
             </section>
           </aside>
         </div>
@@ -1905,16 +1906,16 @@ function SocialView({ userName }: { userName: string }) {
         <div className="np-social-layout" id="social-leaderboard-panel" role="tabpanel">
           <section className="np-social-panel np-leaderboard-panel">
             <div className="np-social-panel-heading">
-              <div><span>Friends league</span><h2>This week</h2><p>XP earned from Monday to Sunday.</p></div>
-              <div className="np-leaderboard-time"><Clock3 /><span><strong>3 days left</strong><small>Resets Monday</small></span></div>
+              <div><span>{ui("Friends league")}</span><h2>{ui("This week")}</h2><p>{ui("XP earned from Monday to Sunday.")}</p></div>
+              <div className="np-leaderboard-time"><Clock3 /><span><strong>{ui("3 days left")}</strong><small>{ui("Resets Monday")}</small></span></div>
             </div>
 
-            <div aria-label="Top three friends" className="np-leaderboard-podium">
+            <div aria-label={ui("Top three friends")} className="np-leaderboard-podium">
               {podium.map((entry) => {
                 const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
                 return (
                   <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
-                    <span className="np-podium-rank">{rank === 1 ? <Medal aria-label="First place" /> : rank}</span>
+                    <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
                     <SocialAvatar initials={entry.initials} tone={entry.tone} />
                     <strong>{entry.name}</strong>
                     <small>{entry.weeklyXp.toLocaleString()} XP</small>
@@ -1929,7 +1930,7 @@ function SocialView({ userName }: { userName: string }) {
                 <article className={entry.current ? "is-current" : ""} key={entry.id}>
                   <strong className="np-leaderboard-rank">{index + 1}</strong>
                   <SocialAvatar initials={entry.initials} tone={entry.tone} />
-                  <span className="np-leaderboard-person"><strong>{entry.name}{entry.current && <small>You</small>}</strong><small>{entry.streak}-day streak</small></span>
+                  <span className="np-leaderboard-person"><strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong><small>{entry.streak}-day streak</small></span>
                   <span className="np-leaderboard-xp"><strong>{entry.weeklyXp.toLocaleString()} XP</strong><small>{entry.movement} this week</small></span>
                 </article>
               ))}
@@ -1939,18 +1940,18 @@ function SocialView({ userName }: { userName: string }) {
           <aside className="np-social-side-stack">
             <section className="np-social-side-card np-social-side-card--target">
               <span className="np-social-side-icon"><Target /></span>
-              <small>Your weekly goal</small>
-              <h2>685 XP to go</h2>
-              <p>You have earned 2,315 of your 3,000 XP target.</p>
+              <small>{ui("Your weekly goal")}</small>
+              <h2>{ui("685 XP to go")}</h2>
+              <p>{ui("You have earned 2,315 of your 3,000 XP target.")}</p>
               <div className="np-social-progress"><span style={{ width: "77%" }} /></div>
-              <strong className="np-social-target-caption">77% complete</strong>
+              <strong className="np-social-target-caption">{ui("77% complete")}</strong>
             </section>
             <section className="np-social-side-card">
               <span className="np-social-side-icon np-social-side-icon--gold"><Trophy /></span>
-              <small>League reward</small>
-              <h2>Finish in the top three</h2>
-              <p>Leon is currently second. A short lesson could close the gap.</p>
-              <button onClick={() => showPreviewNotice("League details")} type="button">How leagues work <ChevronRight /></button>
+              <small>{ui("League reward")}</small>
+              <h2>{ui("Finish in the top three")}</h2>
+              <p>{ui("Leon is currently second. A short lesson could close the gap.")}</p>
+              <button onClick={() => showPreviewNotice(ui("League details"))} type="button">{ui("How leagues work")} <ChevronRight /></button>
             </section>
           </aside>
         </div>
@@ -1976,32 +1977,32 @@ function MoreView({
     action: () => void;
   }> = [
     ...(socialPreviewUnlocked ? [{
-      title: "Friends and leaderboard",
-      description: "See friend activity, weekly XP, streaks, and the private friends league preview.",
+      title: ui("Friends and leaderboard"),
+      description: ui("See friend activity, weekly XP, streaks, and the private friends league preview."),
       icon: UsersRound,
       tone: "mint",
       action: () => onNavigate("social"),
     }] : []),
-    { title: "Progress", description: "See your streak, achievements, recent lessons, and goals.", icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
-    { title: "Reward shop", description: "Earn coins through learning and collect profile pins.", icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") },
-    { title: "Profile and settings", description: "Manage your account, sound, learning mode, and goals.", icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
-    { title: "Courses and packs", description: "Switch courses or browse every hardcoded lesson and phrase pack.", icon: Languages, tone: "blue", action: onSwitchCourse },
-    { title: "Pets and flashcards", description: "Choose pets, adjust coaching, and set how flashcards flip.", icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
+    { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
+    { title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") },
+    { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
+    { title: ui("Courses and packs"), description: ui("Switch courses or browse every hardcoded lesson and phrase pack."), icon: Languages, tone: "blue", action: onSwitchCourse },
+    { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
   ];
 
   return (
     <section className="np-page-card np-more-view">
       <div className="np-page-intro">
         <span className="np-page-icon"><Menu /></span>
-        <div><h1>Everything in one place</h1><p>Courses, pets, flashcards, rewards, progress, and account settings all live inside Micheon.</p></div>
+        <div><h1>{ui("Everything in one place")}</h1><p>{ui("Courses, pets, flashcards, rewards, progress, and account settings all live inside Micheon.")}</p></div>
       </div>
       <div className="np-feature-directory">
         {features.map((feature) => {
           const Icon = feature.icon;
           return (
-            <button key={feature.title} onClick={feature.action} type="button">
+            <button key={ui(feature.title)} onClick={feature.action} type="button">
               <span className={`np-feature-directory-icon np-feature-directory-icon--${feature.tone}`}><Icon /></span>
-              <span><strong>{feature.title}</strong><small>{feature.description}</small></span>
+              <span><strong>{ui(feature.title)}</strong><small>{ui(feature.description)}</small></span>
               <ChevronRight />
             </button>
           );
@@ -2070,7 +2071,7 @@ function usePrototypeParts(requested: boolean) {
 
 function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNavigate: (view: PrototypeView) => void }) {
   return (
-    <nav aria-label="Mobile prototype navigation" className="np-mobile-nav">
+    <nav aria-label={ui("Mobile prototype navigation")} className="np-mobile-nav">
       {MOBILE_NAVIGATION.map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView
@@ -2079,7 +2080,7 @@ function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNa
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
-            <span>{item.label}</span>
+            <span>{ui(item.label)}</span>
           </button>
         );
       })}
