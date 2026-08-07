@@ -112,17 +112,27 @@
   min-height: var(--app-h, 100dvh);
 }
 
-/* Grab-to-scroll. The cursor only says "grab" while a pull is happening, and
-   text selection is off mid-pull so dragging does not highlight the labels. */
-.np-sidebar.is-drag-scrolling {
-  cursor: grabbing;
+/* Slide-select: press a nav button, keep the mouse down, run down the list
+   and release on the one you want. Text selection is off mid-slide so the
+   gesture does not highlight the labels instead. */
+.np-sidebar::-webkit-scrollbar { display: none; }
+
+.np-sidebar.is-slide-selecting {
   user-select: none;
+  cursor: pointer;
+}
+
+.np-side-nav button.is-slide-target {
+  background: var(--np-surface-soft);
+  color: var(--np-text);
 }
 
 .np-sidebar {
+  /* Still reachable when the window is short, but without a visible bar
+     down the edge of the menu. */
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   position: sticky;
   top: 0;
   display: flex;
