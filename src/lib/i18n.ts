@@ -1546,6 +1546,12 @@ const DE: Record<string, string> = {
   "to fluent": "bis fließend",
   "You're at": "Du bist bei",
 
+  // ── Short forms: typed shorter vs merely spoken shorter ──
+  "Shorter, and fine to type": "Kürzer — kannst du auch so tippen",
+  "A shorter wording people use. Typing either one is accepted.": "Eine kürzere Formulierung, die man wirklich sagt. Beides wird akzeptiert.",
+  "Written out (same words)": "Ausgeschrieben (dieselben Wörter)",
+  "The same words. Only the spoken ending differs, and both are accepted.": "Dieselben Wörter. Nur die gesprochene Endung fällt weg, beides wird akzeptiert.",
+
   // ── Conversation Beta ──
   "Start a Conversation Beta lesson. Hard structure first, each phrase taught as an answer.": "Eine Gesprächs-Beta-Lektion starten. Schwere Strukturen zuerst, jeder Satz als Antwort.",
   "Beta · Leon only": "Beta · nur Leon",

@@ -63,6 +63,7 @@ import { germanWordGloss } from "@/lib/germanWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { getCodexPetFrequency } from "@/lib/codexPetCoaching";
 import { pronounNote } from "@/lib/pronounNotes";
+import { toSpokenGerman } from "@/lib/spokenGerman";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import {
@@ -158,6 +159,16 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
   // standard version visible in the same place where Exam mode shows the spoken
   // alternative, so the relationship between the two forms is unmistakable.
   const showLong = Boolean(long && !hideUse && long.trim().toLowerCase() !== de.trim().toLowerCase());
+  // Two different things wear this chip and the learner cannot tell them
+  // apart. A `short` is a genuinely different, shorter WORDING -- you could
+  // type it instead. A `long` in Conversation mode is usually the same words
+  // written out, where the only difference is the ich-form -e that gets
+  // dropped in speech: "ich versteh" against "ich verstehe". One is a choice
+  // about what to say, the other is only how it is said, and being told
+  // "Full version" for both leaves you guessing which.
+  const longIsSpokenForm = Boolean(
+    long && toSpokenGerman(long).trim().toLowerCase() === de.trim().toLowerCase()
+  );
   if (!register && !freq && !syn && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -221,18 +232,20 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
       )}
       {showShort && (
         <span
-          title={shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("Natural form people commonly use in conversation")}
+          title={shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("A shorter wording people use. Typing either one is accepted.")}
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
-          {shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("People say")}: “{short}”
+          {shortLabel ? uiOr(shortLabel, "Hinweis zur Verwendung") : ui("Shorter, and fine to type")}: “{short}”
         </span>
       )}
       {showLong && (
         <span
-          title={ui("Complete standard form")}
+          title={longIsSpokenForm
+            ? ui("The same words. Only the spoken ending differs, and both are accepted.")
+            : ui("Complete standard form")}
           className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[11px] font-black text-teal-600"
         >
-          {ui("Full version")}: “{long}”
+          {longIsSpokenForm ? ui("Written out (same words)") : ui("Full version")}: “{long}”
         </span>
       )}
     </div>
