@@ -463,8 +463,12 @@ check(
 check(
   "lesson completion does not bulk-grade skipped exercises",
   !/onComplete=\{\(\) => \{[\s\S]*?markCompleted\(sessionSteps\)/.test(labSource)
-    && labSource.includes("if (skipped) markAttempted(step, performance);")
-    && labSource.includes("else markCompleted([step], performance);")
+    // A skipped exercise is attempted, never completed. A conversation step
+    // holds several reviews, so it expands into its turns first -- but the
+    // skipped/completed split still has to survive that.
+    && /if \(skipped\) parts\.forEach\([\s\S]{0,60}markAttempted/.test(labSource)
+    && /else markCompleted\(parts, performance\);/.test(labSource)
+    && labSource.includes('step?.type === "conversation"')
 );
 check(
   "wrong stage answers are batched and persisted once when the sentence is left",

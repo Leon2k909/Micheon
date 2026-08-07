@@ -981,12 +981,30 @@ export default function GuidedLearningSession() {
         return { ...step, item: { ...step.item, asks, structureNotes: notes } };
       });
       // Within the review half, the ones that teach structure lead.
+      // Conversation Beta turns the review half INTO a conversation rather
+      // than printing a question above the usual drill. Only phrases that
+      // have a question assigned can be a turn -- a conversation where half
+      // the exchanges have no question is not a conversation, and decorating
+      // the ones that do is what made the beta indistinguishable from an
+      // ordinary lesson. Anything without one stays a normal review.
+      const betaTurns = conversationBetaOn()
+        ? rankForBeta(reviews.map((step: any) => step.item ?? {}))
+            .filter((ranked) => ranked.asks)
+            .map((ranked) => ({
+              step: reviews.find((step: any) => step.item === ranked.item),
+              item: ranked.item,
+              asks: ranked.asks,
+            }))
+            .filter((turn) => turn.step)
+        : [];
+      const conversationIds = new Set(betaTurns.map((turn) => String(turn.item?.id ?? "")));
       const betaReviews = conversationBetaOn()
-        ? attachConversation(
-            rankForBeta(reviews.map((step: any) => step.item ?? {}))
-              .map((ranked) => reviews.find((step: any) => step.item === ranked.item))
-              .filter(Boolean)
-          )
+        ? [
+            ...(betaTurns.length
+              ? [{ type: "conversation", turns: betaTurns }]
+              : []),
+            ...reviews.filter((step: any) => !conversationIds.has(String(step.item?.id ?? ""))),
+          ]
         : reviews;
       const freshSteps = [...fresh, ...dialogues];
 
@@ -1190,8 +1208,14 @@ export default function GuidedLearningSession() {
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.
       onAdvance={(step: any, skipped?: boolean, performance?: AnswerPerformance) => {
-        if (skipped) markAttempted(step, performance);
-        else markCompleted([step], performance);
+        // A conversation step holds several reviews. Expanded here so each one
+        // climbs its own ladder and shows up in the tracker -- the whole point
+        // of practising them this way rather than in a separate mode.
+        const parts = step?.type === "conversation"
+          ? (step.turns ?? []).map((turn: any) => turn.step).filter(Boolean)
+          : [step];
+        if (skipped) parts.forEach((part: any) => markAttempted(part, performance));
+        else markCompleted(parts, performance);
       }}
       onRegisterAnswer={(id: string, correct: boolean) => {
         const state = (loadScopedJson<RegisterState>(REGISTER_KEY, {}, user) as RegisterState) ?? {};

@@ -130,6 +130,35 @@ check(
 check("the beta button starts a lesson rather than only setting a flag", /setConversationBeta\(true\);[\s\S]{0,80}onPractice\(\)/.test(shell));
 check("the ordinary Continue learning turns the beta back off", /setConversationBeta\(false\);[\s\S]{0,80}onPractice\(\)/.test(shell));
 
+// ── it is a conversation, not the drill with a caption ────────────────────
+//
+// The first two attempts printed the question above the ordinary thirteen
+// stages, so it played exactly like a normal lesson. The turns have to be a
+// step of their own, and only phrases that HAVE a question may become one --
+// decorating the rest is what made it indistinguishable.
+const guided = fs.readFileSync(path.join(root, 'src/GuidedSession.tsx'), 'utf8');
+check(
+  "the conversation is its own exercise rather than a caption on the drill",
+  /function ConversationExercise\(/.test(guided)
+    && /kind === "conversation" && <ConversationExercise/.test(guided),
+);
+check(
+  "only phrases with a question become turns",
+  /\.filter\(\(ranked\) => ranked\.asks\)/.test(lesson),
+);
+check(
+  "a phrase with no question stays an ordinary review rather than being dropped",
+  /!conversationIds\.has/.test(lesson),
+);
+check(
+  "answering a turn IS the review, not a separate mode",
+  /onGradeItem\?\.\(String\(turn\.item\.id\), result\.ok \? "know" : "struggle"\)/.test(guided),
+);
+check(
+  "every turn is credited when the conversation finishes",
+  /step\?\.type === "conversation"[\s\S]{0,200}turns \?\? \[\]/.test(lesson),
+);
+
 if (failures) {
   console.error(`\n${failures} conversation-beta regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

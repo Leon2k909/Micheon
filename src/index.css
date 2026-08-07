@@ -9963,6 +9963,78 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   border-top: 0;
 }
 
+/* Conversation Beta's exchange. A thread you can look back over, because the
+   point is ending up with a conversation you had rather than a list of
+   sentences you got right. */
+.fs-conversation { display: grid; gap: 14px; }
+.fs-conversation-head { display: grid; gap: 4px; }
+.fs-conversation-thread { display: grid; gap: 12px; }
+.fs-conversation-turn { display: grid; gap: 5px; }
+
+.fs-bubble {
+  max-width: min(560px, 86%);
+  padding: 11px 14px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.fs-bubble.is-them {
+  justify-self: start;
+  border-bottom-left-radius: 6px;
+  background: var(--fs-surface-raised, var(--fs-surface));
+  color: var(--fs-text);
+}
+
+.fs-bubble.is-you {
+  justify-self: end;
+  border-bottom-right-radius: 6px;
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.18);
+  color: var(--fs-text);
+}
+
+.fs-bubble.is-you.is-bad { background: rgba(214, 92, 106, 0.18); }
+
+.fs-bubble-gloss {
+  justify-self: start;
+  padding-left: 14px;
+  color: var(--fs-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.fs-bubble-correction {
+  justify-self: end;
+  padding-right: 14px;
+  color: var(--fs-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* The turn you are on sits a little apart from the ones behind it. */
+.fs-conversation-turn.is-current { margin-top: 4px; }
+
+.fs-conversation-reply { display: grid; gap: 6px; }
+
+.fs-conversation-reply-label {
+  color: var(--fs-muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fs-conversation-actions { display: grid; gap: 8px; justify-items: center; }
+
+.fs-conversation-hint {
+  color: var(--fs-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── Requested overrides, kept at the end of the file on purpose ─────────────
    Asked-for appearance choices, not derived ones. The equivalent block in
    new-ui-prototype.css relied on source order and an accent sweep rewrote the

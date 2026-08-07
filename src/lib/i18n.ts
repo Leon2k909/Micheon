@@ -1570,6 +1570,16 @@ const DE: Record<string, string> = {
   "The same words. Only the spoken ending differs, and both are accepted.": "Dieselben Wörter. Nur die gesprochene Endung fällt weg, beides wird akzeptiert.",
 
   // ── Conversation Beta ──
+  "Conversation practice": "Gesprächsübung",
+  "Answer with what you have been learning": "Antworte mit dem, was du gerade lernst",
+  "Turn {n} of {total}. Each reply is the review for that phrase.": "Zug {n} von {total}. Jede Antwort ist die Wiederholung für diesen Satz.",
+  "Your reply": "Deine Antwort",
+  "Answer in German…": "Auf Deutsch antworten…",
+  "That works.": "Das passt.",
+  "A natural answer to that question.": "Eine natürliche Antwort auf diese Frage.",
+  "Show me the phrase": "Zeig mir den Satz",
+  "You wanted": "Gesucht war",
+  "Finish": "Fertig",
   "Start a Conversation Beta lesson. Hard structure first, each phrase taught as an answer.": "Eine Gesprächs-Beta-Lektion starten. Schwere Strukturen zuerst, jeder Satz als Antwort.",
   "Beta · Leon only": "Beta · nur Leon",
   "Continue learning — conversations": "Weiterlernen — Gespräche",
