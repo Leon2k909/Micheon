@@ -121,6 +121,26 @@ check(
   "the fold does not paper over a real meaning change",
   !matchGermanSentence("Ich geb zu, dass ich es verstehe.", "Ich gebe zu, dass ich es nicht verstehe.").ok
 );
+// English lets a time or place phrase sit at either end of the sentence.
+// "At the weekend we're going to the seaside" and "We're going to the seaside
+// at the weekend" are the same sentence, and 3,254 of the 3,392 course
+// answers that end in one were marked wrong if you fronted it.
+check(
+  "a fronted time or place phrase is the same sentence",
+  matchEnglishPhrase("on the weekend we're going to the seaside", "We're going to the seaside at the weekend.").ok
+    && matchEnglishPhrase("tomorrow I'm going to work", "I'm going to work tomorrow.").ok
+    && matchEnglishPhrase("I'm going to work tomorrow", "Tomorrow I'm going to work.").ok
+    && matchEnglishPhrase("sometimes I forget", "I forget sometimes.").ok
+);
+// Only a phrase STARTING with an adverbial may move. Word order carries
+// meaning in English, and forgiving arbitrary reorderings would forgive real
+// errors along with it.
+check(
+  "moving an adverbial never rewrites who did what",
+  !matchEnglishPhrase("the man bit the dog", "The dog bit the man.").ok
+    && !matchEnglishPhrase("at the weekend we're going to the mountains", "We're going to the seaside at the weekend.").ok
+    && !matchEnglishPhrase("on the weekend we're staying home", "We're going to the seaside at the weekend.").ok
+);
 // Apostrophes are the first thing to go when typing at speed, and leaving one
 // out does not mean the German was misunderstood: "id like a coffee please" is
 // a correct answer to "Ich möchte einen Kaffee, bitte."

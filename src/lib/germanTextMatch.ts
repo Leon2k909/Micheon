@@ -1102,6 +1102,47 @@ function sameMeaningUnordered(input: string, target: string): boolean {
   return true;
 }
 
+/**
+ * Words that can begin a fronted adverbial.
+ *
+ * English lets a time or place phrase sit at either end: "At the weekend
+ * we're going to the seaside" and "We're going to the seaside at the
+ * weekend" are the same sentence, and a learner who fronts it has not made a
+ * mistake.
+ *
+ * Only a phrase STARTING with one of these may move. Word order carries
+ * meaning in English -- "the dog bit the man" is not "the man bit the dog" --
+ * so accepting arbitrary reorderings would forgive real errors. An adjunct
+ * moving does not change who did what to whom.
+ */
+const FRONTABLE = new Set([
+  "at", "on", "in", "after", "before", "during", "since", "until", "by",
+  "every", "each", "next", "last", "this", "tomorrow", "today", "yesterday",
+  "tonight", "then", "usually", "normally", "sometimes", "often", "always",
+  "never", "first", "afterwards", "later", "soon", "now", "sadly", "luckily",
+  "honestly", "actually", "unfortunately", "hopefully",
+]);
+
+/**
+ * The same sentence with a leading adverbial moved to the end.
+ *
+ * Returns nothing when the sentence does not begin with one, so the caller
+ * simply does not get a second chance.
+ */
+function unfrontAdverbial(text: string): string[] {
+  const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
+  // "Sometimes I forget" is three words and still a fronted adverbial.
+  if (words.length < 3) return [];
+  if (!FRONTABLE.has(words[0].toLowerCase())) return [];
+  const out: string[] = [];
+  // An adverbial of one to five words. Beyond that it is not an adjunct any
+  // more, it is most of the sentence.
+  for (let take = 1; take <= Math.min(5, words.length - 2); take += 1) {
+    out.push([...words.slice(take), ...words.slice(0, take)].join(" "));
+  }
+  return out;
+}
+
 export function matchEnglishPhrase(
   input: string,
   target: string
@@ -1121,6 +1162,17 @@ export function matchEnglishPhrase(
   // replacement removes the token).
   if (/\bur\b/i.test(String(input ?? ""))) {
     const alt = matchEnglishPhrase(String(input).replace(/\bur\b/gi, "you are"), target);
+    if (alt.ok) return alt;
+  }
+  // A fronted time or place phrase is the same sentence. Tried on either
+  // side: the learner may front one the answer key leaves trailing, or leave
+  // one trailing that the key fronts.
+  for (const moved of unfrontAdverbial(input)) {
+    const alt = matchEnglishPhrase(moved, target);
+    if (alt.ok) return alt;
+  }
+  for (const moved of unfrontAdverbial(target)) {
+    const alt = matchEnglishPhrase(input, moved);
     if (alt.ok) return alt;
   }
   const inputNorm = stripParentheticals(normalizeEnglishSpelling(input));
