@@ -72,22 +72,38 @@ if (!/The app can still bring it back early if you keep slipping\./.test(guided)
   failures.push("the level section does not admit that the app can bring items back early");
 }
 
-// Putting a phrase off means not doing it now, so the lesson moves on and
-// Undo brings you back. And the note has to NAME the phrase: once the lesson
-// has moved on it is describing something no longer on screen, and an Undo
-// you cannot identify is one nobody will press.
-if (!/returnIndex: index,[\s\S]{0,40}\}\);[\s\S]{0,20}next\(\);/.test(guided)) {
-  failures.push("putting a phrase off leaves you sitting on it, which is the opposite of putting it off");
+// Putting a phrase off means not doing it now, so something has to move --
+// and what moves depends on where you are. Mid-lesson the exercise advances;
+// on the preview it is the CARD that is swapped, because next() is the
+// exercise's advance and does nothing there. Getting that wrong made the
+// button appear completely dead on the flashcards.
+const snoozeInLesson = guided.slice(
+  guided.indexOf("const applyManualSnooze ="),
+  guided.indexOf("const applyManualSnooze =") + 260,
+);
+if (!snoozeInLesson.includes("next();")) {
+  failures.push("putting a phrase off mid-lesson leaves you sitting on it");
 }
-if (!/notice\?\.subject && \(/.test(guided)) {
+const snoozeInPreview = guided.slice(
+  guided.indexOf("const snoozePreviewItem ="),
+  guided.indexOf("const snoozePreviewItem =") + 300,
+);
+if (!snoozeInPreview.includes("onPreviewSwap")) {
+  failures.push("putting a phrase off on the preview does not hand the slot back, so the button does nothing there");
+}
+// The preview is the intro, where the floating toast is deliberately
+// suppressed -- so it has to show the notice itself or Undo is nowhere.
+if (!guided.includes("notice={lastManualReviewChange}")) {
+  failures.push("the preview cannot show the put-off notice, so Undo is unreachable there");
+}
+if (!guided.includes("notice?.subject &&")) {
   failures.push("the marked-as note does not name the phrase, so Undo refers to something unidentifiable");
 }
 // Built through uiFmt, or it lands untranslated in the middle of a German
 // sentence -- and reads as "Put off until in a month" in English.
-if (/`Put off until \$\{/.test(guided)) {
+if (guided.includes("`Put off until ${")) {
   failures.push("the put-off label is glued together in JS, so it cannot translate and reads wrong in English");
 }
-
 if (failures.length) {
   console.error("FAIL check-review-honesty");
   failures.forEach((line) => console.error("  " + line));

@@ -5191,6 +5191,9 @@ function SessionFlashcardPreview({
   onKnown,
   onReviewLevel,
   onSnooze,
+  notice,
+  onUndoNotice,
+  onDismissNotice,
   onSkip,
   onStart,
 }: {
@@ -5200,6 +5203,11 @@ function SessionFlashcardPreview({
   onKnown: (itemId: string) => void;
   onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void;
   onSnooze?: (itemId: string, days: number) => void;
+  /** The preview is the intro, where the floating toast is suppressed, so it
+   *  has to show the "put off" notice itself or Undo is nowhere. */
+  notice?: { label: string; note: string; subject?: string } | null;
+  onUndoNotice?: () => void;
+  onDismissNotice?: () => void;
   onSkip: () => void;
   onStart: () => void;
 }) {
@@ -5346,6 +5354,12 @@ function SessionFlashcardPreview({
           {index + 1} <small>{ui("of")} {cards.length}</small>
         </span>
       </div>
+
+      {notice && (
+        <div className="fs-standalone-note">
+          <ManualReviewNote grade={null} notice={notice} onUndo={onUndoNotice} onDismiss={onDismissNotice} />
+        </div>
+      )}
 
       <div className="fs-preview-route" aria-label={ui("Flashcard progress")}>
         {cards.map((item, cardIndex) => (
@@ -5996,9 +6010,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
    * Mastered and is then made to keep drilling it. The index is recorded so
    * the Undo that now appears on the NEXT card can bring them back here.
    */
-  const applyManualSnooze = (itemIds: string[], days: number) => {
+  /**
+   * Write the snooze and say so. Does NOT decide what happens next, because
+   * that differs by where you are: mid-lesson the exercise moves on, on the
+   * preview the card is swapped for one you have not met.
+   */
+  const recordSnooze = (itemIds: string[], days: number, returnIndex?: number) => {
     const ids = Array.from(new Set(itemIds.filter(Boolean)));
-    if (!ids.length) return;
+    if (!ids.length) return false;
     ids.forEach((itemId) => onSnoozeItem?.(itemId, days));
     const choice = GUIDED_SNOOZE_CHOICES.find((option) => option.days === days);
     setLastManualReviewChange({
@@ -6008,12 +6027,30 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       // was dropped untranslated into the middle of a German sentence.
       label: choice ? uiFmt("Put off — {when}", { when: ui(choice.label) }) : ui("Put off"),
       note: "Nothing will show this before then.",
+      // Captured before anything moves: once the card is swapped or the lesson
+      // advances, the phrase is no longer in the step list to look up.
       subject: describeMarkedItems(ids),
-      // Putting something off means not doing it now, so the lesson moves on
-      // and Undo brings you back to it.
-      returnIndex: index,
+      returnIndex,
     });
+    return true;
+  };
+
+  const applyManualSnooze = (itemIds: string[], days: number) => {
+    if (!recordSnooze(itemIds, days, index)) return;
     next();
+  };
+
+  /**
+   * Putting a phrase off from the preview.
+   *
+   * next() is the EXERCISE's advance and does nothing useful here -- the
+   * preview has its own card index -- so putting one off appeared to do
+   * nothing at all. It hands the slot back like "Know it" does, so a phrase
+   * you have not met takes its place and the sitting stays six.
+   */
+  const snoozePreviewItem = (itemId: string, days: number) => {
+    if (!recordSnooze([itemId], days)) return;
+    onPreviewSwap?.(itemId);
   };
 
   const applyReviewLevelFromPicker = (itemIds: string[], level: GuidedReviewLevel) => {
@@ -6257,7 +6294,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     onIndexChange={setPreviewIndex}
                     onKnown={markPreviewItemKnown}
                     onReviewLevel={setPreviewItemLevel}
-                    onSnooze={(itemId, days) => applyManualSnooze([itemId], days)}
+                    onSnooze={snoozePreviewItem}
+                    notice={lastManualReviewChange}
+                    onUndoNotice={undoLastManualReviewChange}
+                    onDismissNotice={() => setLastManualReviewChange(null)}
                     onSkip={() => {
                       setPreviewActive(false);
                       setMatchingActive(false);
