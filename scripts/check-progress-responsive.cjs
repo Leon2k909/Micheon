@@ -43,6 +43,20 @@ if (!/flex flex-wrap items-start justify-between/.test(activity)) {
   );
 }
 
+// The lesson grid had the same fault. lg fires at a 1024px VIEWPORT and the
+// sidebar takes about 250px of it, so three columns were landing in roughly
+// 960px and the cards' level badges escaped their own headers.
+const learn = fs.readFileSync(path.join(root, 'src/components/lab/LearnView.tsx'), 'utf8');
+if (/grid gap-4 lg:grid-cols-3/.test(learn)) {
+  failures.push("the lesson grid goes three-wide at lg, where the sidebar leaves about 300px a card");
+}
+if (!/md:grid-cols-2 xl:grid-cols-3/.test(learn)) {
+  failures.push("the lesson grid does not step through two columns");
+}
+if (!/flex flex-wrap items-start justify-between/.test(learn)) {
+  failures.push("the lesson card header cannot wrap, so its level badge escapes the card");
+}
+
 if (failures.length) {
   console.error("FAIL check-progress-responsive");
   failures.forEach((line) => console.error("  " + line));

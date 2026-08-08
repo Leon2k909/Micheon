@@ -1600,6 +1600,7 @@ const DE: Record<string, string> = {
   "separable prefix at the end": "trennbare Vorsilbe am Ende",
 
   // ── Course and interface language ──
+  "{n} learning partners": "{n} Lernpartner",
   "Which language the app itself is written in. Pick what you are LEARNING from the course card on the home page.": "In welcher Sprache die App selbst geschrieben ist. Was du LERNST, wählst du auf der Startseite in der Kurskarte.",
   "ihr · a group — you all, not one person": "ihr · eine Gruppe — ihr alle, nicht eine Person",
   "The German is aimed at more than one person. English says \"you\" either way.": "Der deutsche Satz richtet sich an mehrere Personen. Im Englischen heißt beides „you“.",

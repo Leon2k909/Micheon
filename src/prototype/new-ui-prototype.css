@@ -6498,6 +6498,15 @@ html[data-theme="dark"] .np-premium-card {
   min-width: 0;
 }
 
+/* On the selected tab the sub-label followed a fixed muted grey while the
+   background turned accent-tinted, which is precisely where a fixed grey
+   stops being readable -- "4 Lernpartner" went nearly invisible. It follows
+   the tab's own ink now, like the title above it already did. */
+.np-social-tabs > button.is-active small {
+  color: inherit;
+  opacity: 0.85;
+}
+
 .np-social-tabs strong {
   color: inherit;
   font-size: 15px;

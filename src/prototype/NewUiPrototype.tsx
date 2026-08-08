@@ -1843,7 +1843,7 @@ function SocialView({ userName }: { userName: string }) {
           type="button"
         >
           <UsersRound aria-hidden="true" />
-          <span><strong>{ui("Friends")}</strong><small>{SOCIAL_FRIENDS.length} learning partners</small></span>
+          <span><strong>{ui("Friends")}</strong><small>{uiFmt("{n} learning partners", { n: SOCIAL_FRIENDS.length })}</small></span>
         </button>
         <button
           aria-controls="social-leaderboard-panel"

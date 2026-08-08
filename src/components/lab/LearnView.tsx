@@ -255,7 +255,7 @@ export function LearnView({
           </button>
         </section>
       ) : (
-        <section className="grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map(([key, part], index) => {
             // The wide featured card only makes sense for an unfiltered list;
             // in search results every hit is equally relevant.
@@ -282,11 +282,11 @@ export function LearnView({
                   onClick={() => onOpenLesson(key)}
                   type="button"
                 />
-                <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
+                <div className="pointer-events-none relative z-10 flex flex-wrap items-start justify-between gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
                     {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     {paused && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-3)] px-2.5 py-1 text-[11px] font-black text-[var(--text-2)]">
                         <PauseCircle className="h-3 w-3" />
