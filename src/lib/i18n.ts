@@ -1614,6 +1614,7 @@ const DE: Record<string, string> = {
   "English spelling and accent": "Englische Schreibweise und Aussprache",
 
   // ── Review levels and snooze ──
+  "Put off — {when}": "Aufgeschoben — {when}",
   "Starts over from the beginning": "Fängt wieder von vorne an",
   "Comes back as soon as there is a slot": "Kommt zurück, sobald ein Platz frei ist",
   "Not confident": "Unsicher",

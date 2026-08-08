@@ -1691,7 +1691,7 @@ function ConversationExercise({ turns, onGradeItem, onAnswer, onNext }: {
 }
 function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease }: {
   grade: string | null;
-  notice?: { label: string; note: string } | null;
+  notice?: { label: string; note: string; subject?: string } | null;
   onUndo?: () => void;
   onDismiss?: () => void;
   onHold?: () => void;
@@ -1712,6 +1712,12 @@ function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease 
         {isStruggle
           ? ui("Marked as struggle. This item will stay in practice instead of being skipped next time.")
           : `${ui("Marked as")} ${ui(notice?.label ?? "")}. ${ui(notice?.note ?? "")}`}
+        {/* Which phrase. Once putting one off moves the lesson on, the note
+            is describing something no longer on screen, and an Undo you
+            cannot identify is one nobody will press. */}
+        {notice?.subject && (
+          <span className="fs-result-note-subject"> — “{notice.subject}”</span>
+        )}
       </span>
       {notice && (
         <span className="fs-result-note-actions">
@@ -5817,18 +5823,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
    * Unlike a level, this does not claim anything about how well it is known --
    * it only moves the earliest date it can reappear, and nothing overrides it.
    */
-  const applyManualSnooze = useCallback((itemIds: string[], days: number) => {
-    const ids = Array.from(new Set(itemIds.filter(Boolean)));
-    if (!ids.length) return;
-    ids.forEach((itemId) => onSnoozeItem?.(itemId, days));
-    const choice = GUIDED_SNOOZE_CHOICES.find((option) => option.days === days);
-    setLastManualReviewChange({
-      itemIds: ids,
-      label: choice ? `Put off until ${choice.label.toLowerCase()}` : "Put off",
-      note: "Nothing will show this before then.",
-      subject: describeMarkedItems(ids),
-    });
-  }, [describeMarkedItems, onSnoozeItem]);
 
   const gradeItem = useCallback((itemId: string, grade: "know" | "struggle") => {
     applyManualReviewChange([itemId], grade);
@@ -6002,6 +5996,26 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
    * Mastered and is then made to keep drilling it. The index is recorded so
    * the Undo that now appears on the NEXT card can bring them back here.
    */
+  const applyManualSnooze = (itemIds: string[], days: number) => {
+    const ids = Array.from(new Set(itemIds.filter(Boolean)));
+    if (!ids.length) return;
+    ids.forEach((itemId) => onSnoozeItem?.(itemId, days));
+    const choice = GUIDED_SNOOZE_CHOICES.find((option) => option.days === days);
+    setLastManualReviewChange({
+      itemIds: ids,
+      // Built through uiFmt rather than glued together in JS. The old version
+      // produced "Put off until in a month", which is wrong in English and
+      // was dropped untranslated into the middle of a German sentence.
+      label: choice ? uiFmt("Put off — {when}", { when: ui(choice.label) }) : ui("Put off"),
+      note: "Nothing will show this before then.",
+      subject: describeMarkedItems(ids),
+      // Putting something off means not doing it now, so the lesson moves on
+      // and Undo brings you back to it.
+      returnIndex: index,
+    });
+    next();
+  };
+
   const applyReviewLevelFromPicker = (itemIds: string[], level: GuidedReviewLevel) => {
     const finishes = reviewLevelFinishesItem(level);
     applyManualReviewChange(itemIds, level, finishes ? index : undefined);

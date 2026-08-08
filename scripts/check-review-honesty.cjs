@@ -72,6 +72,22 @@ if (!/The app can still bring it back early if you keep slipping\./.test(guided)
   failures.push("the level section does not admit that the app can bring items back early");
 }
 
+// Putting a phrase off means not doing it now, so the lesson moves on and
+// Undo brings you back. And the note has to NAME the phrase: once the lesson
+// has moved on it is describing something no longer on screen, and an Undo
+// you cannot identify is one nobody will press.
+if (!/returnIndex: index,[\s\S]{0,40}\}\);[\s\S]{0,20}next\(\);/.test(guided)) {
+  failures.push("putting a phrase off leaves you sitting on it, which is the opposite of putting it off");
+}
+if (!/notice\?\.subject && \(/.test(guided)) {
+  failures.push("the marked-as note does not name the phrase, so Undo refers to something unidentifiable");
+}
+// Built through uiFmt, or it lands untranslated in the middle of a German
+// sentence -- and reads as "Put off until in a month" in English.
+if (/`Put off until \$\{/.test(guided)) {
+  failures.push("the put-off label is glued together in JS, so it cannot translate and reads wrong in English");
+}
+
 if (failures.length) {
   console.error("FAIL check-review-honesty");
   failures.forEach((line) => console.error("  " + line));

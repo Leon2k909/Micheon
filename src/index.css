@@ -1693,12 +1693,15 @@ a { color: inherit; text-decoration: none; }
 
 /* ── card ── */
 .fs-card {
-  /* Clipped for the rounded corners, but a word popover is a child of this
-     card and was being chopped off at its bottom edge -- the longer pronoun
-     notes ran past it. overflow: clip with a margin keeps the corners while
-     letting a descendant paint outside; hidden has no way to say that. */
-  overflow: clip;
-  overflow-clip-margin: 300px; width: 100%;
+  /* Clipped, and clipped absolutely.
+
+     A clip margin let the word panel escape, but it expands the clip region
+     for EVERY child -- so the card's own contents painted over its rounded
+     corners and squared them off. The panel opens upward instead, which
+     keeps it inside the card without giving anything else permission to
+     leave. */
+  overflow: hidden;
+  width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.105); border-radius: 30px;
   background: linear-gradient(180deg, rgba(29, 30, 40, 0.985), rgba(23, 24, 32, 0.985));
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.045);
@@ -2479,7 +2482,10 @@ a { color: inherit; text-decoration: none; }
 }
 .guided-session .fs-word-popover {
   position: absolute;
-  top: calc(100% + 8px);
+  /* Above the word, not below it. The sentence sits low in the card and
+     there is far more room overhead, so opening downward ran the panel into
+     the card's bottom edge and it was cut off. */
+  bottom: calc(100% + 8px);
   left: 50%;
   z-index: 70;
   display: flex;
@@ -9816,6 +9822,10 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
 .fs-result-note { border-top-color: color-mix(in srgb, currentColor 22%, transparent); }
 
 .fs-result-note-text { flex: 1 1 220px; min-width: 0; }
+
+/* The phrase the note is about. Once putting one off moves the lesson on,
+   the note describes something no longer on screen. */
+.fs-result-note-subject { opacity: 0.85; font-weight: 800; }
 
 .fs-result-note-actions { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; }
 
