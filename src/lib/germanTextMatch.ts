@@ -1,4 +1,5 @@
 import { normalizeEnglishSpelling } from "@/lib/englishVariant";
+import { foldClockTimes, foldEnglishSynonyms } from "@/lib/englishSynonyms";
 
 /**
  * Answer keys sometimes offer alternatives ("I like going to the cinema. / I
@@ -540,7 +541,7 @@ const NUM_WORDS: Record<string, string> = {
 // "She's got a car" == "She has a car". Both sides are reduced to the same
 // bare form ("you have this") purely for comparison — never for display.
 function canonicalizeEnglish(t: string) {
-  return t
+  const chained = t
     .replace(/\bgonna\b/g, "going to")
     .replace(/\bwanna\b/g, "want to")
     // "We're going to go to the seaside" is "we're going to the seaside"
@@ -733,7 +734,11 @@ function canonicalizeEnglish(t: string) {
     .replace(/\byeah\b/g, "yes")
     .replace(/\b(bye|goodbye)\b/g, "bye")
     .replace(/\b(begin|commence)\b/g, "start")
-    .replace(/\b(shut|lock)\b/g, "close")
+    // ...but not after a copula: "the shop is shut" describes a state, and the
+    // state is "closed", not "close". Folding it here left the two forms one
+    // letter apart and the answer refused, which is the opposite of the point.
+    // The state pairs are folded by the synonym table at the end instead.
+    .replace(/(?<!\b(?:is|are|was|were|been) )\b(shut|lock)\b/g, "close")
     .replace(/\b(purchase|obtain)\b/g, "buy")
     .replace(/\b(receive|acquire)\b/g, "get")
     .replace(/\btalk\b/g, "speak")
@@ -922,6 +927,11 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bevery day\b/g, "daily")
     .replace(/\bstudy(ing)?\b/g, "learn$1")   // lernen covers both; people interchange them
     .replace(/\bpossibly\b/g, "maybe");
+  // The rest of the folds live in a table rather than in this chain. They are
+  // the same idea — words that may stand in for one another — but there are
+  // enough of them now that a list you can read beats another hundred lines of
+  // .replace, and a table can be checked wholesale by the gate.
+  return foldClockTimes(foldEnglishSynonyms(chained));
 }
 
 // ─── Tier 7: "understandable" near-misses ───────────────────────────────────

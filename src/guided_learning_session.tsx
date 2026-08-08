@@ -814,6 +814,12 @@ export default function GuidedLearningSession() {
         }
         if (statusForId(reviewState, item.id, item.aliases) !== "new") return;
         const progressRecord = progressEntryForId(reviewState, item.id, item.aliases)?.record;
+        // A phrase put off from the preview has a record but no grade, so its
+        // status is still "new" and this pool would hand it straight back on
+        // the next Continue Learning. Putting it off has to mean something
+        // before it has ever been answered, which is exactly when it is easiest
+        // to want rid of it.
+        if (isSnoozed(progressRecord)) return;
         if (isAttemptedPracticeEligible(progressRecord)) return;
         const pId = item.partKey;
         const p = activeParts[pId];

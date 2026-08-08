@@ -107,6 +107,15 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       kind: lookup ? "vocab" : "phrase",
       level: part.level, mastery: masteryOf(progressRecord),
     };
+    // Snoozing is the learner's own decision about when to see this again, so
+    // it outranks every reason the app has for showing it sooner — a struggle
+    // mark, adaptive reinforcement, an unfinished attempt, and being new.
+    //
+    // Checked against progressRecord, NOT rec: rec only exists once something
+    // has been GRADED, so putting off a phrase you have never answered wrote a
+    // record that nothing here could see. That is the whole reason a put-off
+    // new sentence came straight back on the next Continue Learning.
+    if (isSnoozed(progressRecord)) return;
     if (isAttemptedPracticeEligible(progressRecord)) {
       // Reaching and answering a sentence makes it familiar, even when the
       // learner skips before earning a grade. Bring it back quickly without
@@ -122,10 +131,6 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
       });
       return;
     }
-    // Snoozing is the learner's own decision about when to see this again,
-    // so it outranks every reason the app has for showing it sooner --
-    // including a struggle mark and adaptive reinforcement.
-    if (isSnoozed(rec)) return;
     if (rec?.lastGrade === "struggle") {
       queue.push({ type: EX.SENTENCE, review: true, reviewReason: "struggle", interval: 0, item });
       return;
@@ -401,6 +406,9 @@ export const OLD_PER_LESSON = 3;
  */
 export function isReinforcementEligible(record: any, now = Date.now()): boolean {
   if (!record || record.lastGrade !== "know" || record.permanent || isDueForReview(record, now)) return false;
+  // isDueForReview is false for a snoozed item, so without this a phrase put
+  // off by hand would qualify for the familiar half by virtue of being put off.
+  if (isSnoozed(record, now)) return false;
   // Old installs stored only { lastGrade, updatedAt }. There is no evidence
   // that those items were explicitly skipped, so let them occupy the familiar
   // half and rotate without changing their inferred review schedule.

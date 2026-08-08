@@ -7,6 +7,8 @@
  * optional familiar half between those dates.
  */
 
+import { isSnoozed } from "@/lib/memoryStrength";
+
 export type AnswerPerformance = {
   attempts: number;
   mistakes: number;
@@ -155,12 +157,16 @@ export function adaptiveRepeatPriority(
  * phrases promised by Continue Learning.
  */
 export function isAttemptedPracticeEligible(
-  record: AdaptivePracticeFields | undefined
+  record: AdaptivePracticeFields | undefined,
+  now = Date.now()
 ): boolean {
   return Boolean(
     record
       && !record.lastGrade
       && !record.permanent
+      // Putting a phrase off is the learner's own decision about when to see it
+      // again. It outranks every reason this module has for showing it sooner.
+      && !isSnoozed(record, now)
       && Math.max(0, Number(record.answerAttempts) || 0) > 0
   );
 }
@@ -176,6 +182,7 @@ export function isAdaptiveReinforcementEligible(
   now = Date.now()
 ): boolean {
   if (!record || record.lastGrade !== "know" || record.permanent) return false;
+  if (isSnoozed(record, now)) return false; // put off by hand — nothing overrides that
   const dueAt = record.dueAt ? Date.parse(record.dueAt) : Number.POSITIVE_INFINITY;
   if (Number.isFinite(dueAt) && now >= dueAt) return false; // formal review owns it
   const reinforcedAt = record.reinforcedAt ? Date.parse(record.reinforcedAt) : 0;
