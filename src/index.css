@@ -1693,7 +1693,12 @@ a { color: inherit; text-decoration: none; }
 
 /* ── card ── */
 .fs-card {
-  overflow: hidden; width: 100%;
+  /* Clipped for the rounded corners, but a word popover is a child of this
+     card and was being chopped off at its bottom edge -- the longer pronoun
+     notes ran past it. overflow: clip with a margin keeps the corners while
+     letting a descendant paint outside; hidden has no way to say that. */
+  overflow: clip;
+  overflow-clip-margin: 300px; width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.105); border-radius: 30px;
   background: linear-gradient(180deg, rgba(29, 30, 40, 0.985), rgba(23, 24, 32, 0.985));
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.045);
@@ -2489,6 +2494,10 @@ a { color: inherit; text-decoration: none; }
   transform: translateX(-50%);
   cursor: default;
   text-align: left;
+  /* A long note scrolls inside the panel rather than running down the
+     screen. "ihr" is three different words and its note says so. */
+  max-height: min(320px, 60vh);
+  overflow-y: auto;
 }
 .guided-session .fs-word-popover-word {
   color: var(--fs-text);
