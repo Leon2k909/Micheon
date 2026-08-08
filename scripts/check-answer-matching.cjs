@@ -121,6 +121,18 @@ check(
   "the fold does not paper over a real meaning change",
   !matchGermanSentence("Ich geb zu, dass ich es verstehe.", "Ich gebe zu, dass ich es nicht verstehe.").ok
 );
+// "We're going to go to the seaside" is the same future as "we're going to
+// the seaside
+// with the motion verb spelled out.
+check(
+  "the spelled-out future is the same sentence",
+  matchEnglishPhrase("we're gonna go to the seaside at the weekend", "We're going to the seaside at the weekend.").ok
+    && matchEnglishPhrase("we're going to go to the seaside at the weekend", "We're going to the seaside at the weekend.").ok
+);
+check(
+  "spelling the future out does not forgive going somewhere else",
+  !matchEnglishPhrase("we're going to go to the mountains at the weekend", "We're going to the seaside at the weekend.").ok
+);
 // English lets a time or place phrase sit at either end of the sentence.
 // "At the weekend we're going to the seaside" and "We're going to the seaside
 // at the weekend" are the same sentence, and 3,254 of the 3,392 course

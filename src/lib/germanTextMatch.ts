@@ -543,6 +543,11 @@ function canonicalizeEnglish(t: string) {
   return t
     .replace(/\bgonna\b/g, "going to")
     .replace(/\bwanna\b/g, "want to")
+    // "We're going to go to the seaside" is "we're going to the seaside"
+    // with the motion verb spelled out. Both are the same future, and a
+    // learner who writes the longer one has not made a mistake.
+    .replace(new RegExp('\\bgoing to go to\\b', 'g'), 'going to')
+    .replace(new RegExp('\\bgoing to come to\\b', 'g'), 'coming to')
     .replace(/\bthank you\b/g, "thanks")
     .replace(/\bper\b/g, "for")          // "per night" == "for the night" (articles drop in the same tier)
     .replace(/\bcould\b/g, "can")        // polite request forms are interchangeable for comprehension
