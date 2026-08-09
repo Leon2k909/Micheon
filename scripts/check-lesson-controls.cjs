@@ -69,6 +69,26 @@ check(
   `Hear it ${lip(listenBlock) || "none"} vs grade-btn ${lip(gradeBlock) || "none"}`
 );
 
+// ── 2b. word order is presented as a focused reorder exercise ─────────────
+check(
+  "the word-order stage names the learner's actual task",
+  guided.includes('case "Order": return "Reorder the sentence";')
+    && guided.includes('if (p === "Order") return "Reorder";')
+);
+check(
+  "reorder shows the meaning cue instead of an anonymous dot placeholder",
+  guided.includes('className="fs-reorder-prompt"')
+    && guided.includes("{shownEnglish}")
+    && !/phase === "Order" && !\(orderChecked && orderIsCorrect\) \? "[^\"]*"/.test(guided)
+);
+check(
+  "reorder remains operable by drag, click, and arrow keys",
+  guided.includes("draggable={!orderLocked}")
+    && guided.includes("selectOrderToken(tokenIndex)")
+    && guided.includes('event.key === "ArrowLeft"')
+    && guided.includes('event.key === "ArrowRight"')
+);
+
 // ── 3. the speed range matches what the voice can render ───────────────────
 const presets = JSON.parse(
   (audio.match(/TTS_SPEED_PRESETS = (\[[^\]]+\])/) ?? [])[1].replace(/\s+/g, "")

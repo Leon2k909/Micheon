@@ -26,10 +26,15 @@ export function TitleBar({ variant = "default" }: TitleBarProps) {
   if (!desktop) return null;
 
   return (
-    <div className={`titlebar${variant === "prototype" ? " titlebar--prototype" : ""}`}>
-      <div className="titlebar-drag">
+    <div
+      className={`titlebar${variant === "prototype" ? " titlebar--prototype" : ""}`}
+      data-maximized={maximized ? "true" : "false"}
+    >
+      <div className="titlebar-drag" onDoubleClick={() => desktop.toggleMaximize()}>
         {variant === "prototype" && (
-          <img alt="" aria-hidden="true" className="titlebar-logo" draggable="false" src="/icon-64.png" />
+          <span className="titlebar-appmark" aria-hidden="true">
+            <img alt="" className="titlebar-logo" draggable="false" src="/icon-64.png" />
+          </span>
         )}
         <span className="titlebar-title">Micheon</span>
       </div>

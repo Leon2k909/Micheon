@@ -570,7 +570,7 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
-  if (p === "Order") return "Word order";
+  if (p === "Order") return "Reorder";
   if (p === "WriteFromMemory") return "Write it";
   if (p === "RecallTarget") return targetLabel === "German" ? "Recall DE" : "Recall EN";
   if (p === "RecallMeaning") return meaningLabel === "German" ? "Recall DE" : "Recall EN";
@@ -591,7 +591,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
     case "Translate": return "Translate this sentence";
     case "TranslateAgain": return "Recall the meaning";
     case "Gap": return "Fill the blank";
-    case "Order": return "Build the sentence";
+    case "Order": return "Reorder the sentence";
     case "WriteFromMemory": return "Build from memory";
     case "RecallTarget": return `Recall the ${targetLabel}`;
     case "RecallMeaning": return `Recall the ${meaningLabel}`;
@@ -3041,6 +3041,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <strong>{ui("Recall the phrase you just practised in both languages.")}</strong>
             <small>{ui("Neither answer is shown unless you choose Hint or Show answer.")}</small>
           </div>
+        ) : phase === "Order" ? (
+          <div className="fs-reorder-prompt">
+            <span>{ui(meaningLabel)}</span>
+            <p>{shownEnglish}</p>
+            <small>{ui(`Arrange the ${targetLabel} words below.`)}</small>
+          </div>
         ) : hasFr ? (
           phase === "Memory" ? (
             /* ── Memory phase: only English shown, recall both languages ── */
@@ -3083,7 +3089,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}>
                 {/* Retrieval stages hide the answer, then reveal it after a correct response. */}
                 {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
-                  : phase === "Order" && !(orderChecked && orderIsCorrect) ? "• • •"
                   : phase === "WriteFromMemory" && !sayChecked ? "• • •"
                   : <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />}
               </div>
@@ -5505,11 +5510,13 @@ function SessionMatchingPairs({
   cards,
   onAnswer,
   onProgress,
+  onSkip,
   onComplete,
 }: {
   cards: SessionPreviewCard[];
   onAnswer?: (correct: boolean) => void;
   onProgress: (matched: number) => void;
+  onSkip: () => void;
   onComplete: () => void;
 }) {
   const items = useMemo(() => buildMatchingItems(cards), [cards]);
@@ -5698,15 +5705,21 @@ function SessionMatchingPairs({
             <i style={{ width: `${items.length ? (matchedIds.size / items.length) * 100 : 0}%` }} />
           </div>
         </div>
-        <button
-          type="button"
-          className="fs-preview-next"
-          disabled={!complete}
-          onClick={onComplete}
-        >
-          {ui("Start sentence practice")}
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <div className="fs-match-actions">
+          <button type="button" className="fs-preview-skip" onClick={onSkip}>
+            <SkipForward className="h-4 w-4" />
+            {ui("Skip matching")}
+          </button>
+          <button
+            type="button"
+            className="fs-preview-next"
+            disabled={!complete}
+            onClick={onComplete}
+          >
+            {ui("Start sentence practice")}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -6300,7 +6313,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     onDismissNotice={() => setLastManualReviewChange(null)}
                     onSkip={() => {
                       setPreviewActive(false);
-                      setMatchingActive(false);
+                      setMatchingActive(previewCards.length > 1);
                       setMatchingProgress(0);
                     }}
                     onStart={() => {
@@ -6313,6 +6326,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                     cards={previewCards}
                     onAnswer={registerAnswer}
                     onProgress={setMatchingProgress}
+                    onSkip={() => {
+                      setMatchingActive(false);
+                      setMatchingProgress(0);
+                    }}
                     onComplete={() => setMatchingActive(false)}
                   />
                 ) : (

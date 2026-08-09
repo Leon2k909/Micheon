@@ -139,6 +139,16 @@ check(
   guidedSource.includes("const keys = matchingVisibleKeys(german, english);")
     && guidedSource.includes("const safeCards = takeMatchingSafe(")
 );
+check(
+  "skipping flashcards still reaches the guided matching round",
+  /onSkip=\{\(\) => \{[\s\S]*?setPreviewActive\(false\);[\s\S]*?setMatchingActive\(previewCards\.length > 1\);/.test(guidedSource)
+);
+check(
+  "the guided matching round remains optional",
+  guidedSource.includes('{ui("Skip matching")}')
+    && guidedSource.includes("onSkip={() => {")
+    && guidedSource.includes("setMatchingProgress(0);")
+);
 
 if (failures) {
   console.error(`\n${failures} matching-pair regression${failures === 1 ? "" : "s"}`);
