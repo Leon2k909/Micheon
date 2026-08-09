@@ -4215,7 +4215,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {/* WORD ORDER phase — arrange the sentence before writing it unaided. */}
         {phase === "Order" && (
           <motion.div key="order" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="space-y-4">
+            className="fs-order-phase space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
               {ui("Drag the words into the correct order. You can also select a word, then choose where to move it.")}
             </p>

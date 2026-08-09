@@ -3239,7 +3239,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .guided-session.fs-app.prototype-guided-session main > div {
-  max-width: 76rem;
+  max-width: 88rem;
 }
 
 .guided-session.fs-app.prototype-guided-session :is(
@@ -6888,12 +6888,13 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
    focused search showed two concentric rounded rectangles in two different
    colours. Utility classes could not settle it because :focus-visible from a
    real keyboard beats them; naming the element does. */
-.course-switcher-search:focus,
-.course-switcher-search:focus-visible,
-.settings-search__input:focus,
-.settings-search__input:focus-visible {
+.new-ui-prototype .course-switcher-search:focus,
+.new-ui-prototype .course-switcher-search:focus-visible,
+.new-ui-prototype .settings-search__input:focus,
+.new-ui-prototype .settings-search__input:focus-visible {
   border-color: var(--accent);
-  outline: none;
+  outline: 0 !important;
+  outline-offset: 0;
   /* Blurred, not a 0-blur ring: a hard ring outside an accent border reads
      as a second border, which is exactly what it looked like. */
   box-shadow: 0 2px 14px color-mix(in srgb, var(--accent) 30%, transparent);
@@ -9899,6 +9900,13 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
 .settings-nav-search { margin-bottom: 6px; }
 .settings-nav-search .settings-search { margin: 0; }
 
+/* Filtering changes the panel contents, not the search control itself. Keeping
+   the field anchored means a learner can refine or clear a query without the
+   control disappearing after the first character. */
+.settings-layout.is-searching .settings-nav {
+  align-self: start;
+}
+
 .settings-nav-item {
   display: flex;
   align-items: center;
@@ -9971,6 +9979,46 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   }
   .settings-nav::-webkit-scrollbar { display: none; }
   .settings-nav-label { white-space: nowrap; }
+  .settings-layout.is-searching .settings-nav {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    overflow: visible;
+  }
+  .settings-layout.is-searching .settings-nav-search { margin: 0; }
+}
+
+/* Word-order is the tallest ordinary lesson stage. On a standard 1080p
+   desktop (and while zoomed in) it should fit as one learning card instead of
+   pushing the primary action below the viewport. The roomier 88rem canvas is
+   retained; only vertical air that does not aid the exercise is tightened. */
+@media (min-width: 900px) and (max-height: 1040px) {
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-stagebar {
+    padding-block: 13px 12px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-stagemeta {
+    margin-bottom: 8px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-card-body {
+    padding-block: 20px 18px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-board {
+    padding-block: 12px 16px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-line {
+    min-height: 76px;
+    padding-top: 10px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-order-phase > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 12px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-order-panel {
+    min-height: 144px;
+    padding: 16px 20px;
+  }
+  .guided-session.fs-app.prototype-guided-session .fs-card:has(.fs-order-phase) .fs-order-feedback {
+    min-height: 94px;
+    gap: 12px;
+  }
 }
 
 /* The "marked as" note when there is no verdict to sit inside.

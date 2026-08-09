@@ -36,6 +36,13 @@ if (!/if \(nav\.selected !== id\) return null;/.test(category)) {
 if (!/listMode/.test(category) || !/searching=\{settingsTerms\.length > 0\}/.test(settings)) {
   failures.push("search does not fall back to showing every match");
 }
+if (!/className=\{cn\("settings-layout", searching && "is-searching"\)\}/.test(category) ||
+    !/\{search && <div className="settings-nav-search">\{search\}<\/div>\}/.test(category)) {
+  failures.push("typing replaces the settings layout and makes the search control disappear");
+}
+if (/\{searching \? \(/.test(category)) {
+  failures.push("search still swaps out the whole settings layout after the first character");
+}
 // A category that disappears must not leave the panel blank.
 if (!/visible\.some\(\(entry\) => entry\.id === selected\)/.test(category)) {
   failures.push("a category that becomes hidden would leave the panel empty with nothing selected");

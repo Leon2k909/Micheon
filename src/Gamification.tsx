@@ -403,7 +403,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   "Desktop app & updates": "startup launch login boot close button tray minimise minimize quit update version install check",
   "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode",
   Flashcards: "flashcard card side front back reveal flip order behaviour",
-  "Language & voice": "english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation",
+  "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
 };
@@ -574,7 +574,20 @@ export default function GamificationPanel({
   /** Does this category match what has been typed? */
   const matchesSearch = (title: string, description: string) => {
     if (!settingsTerms.length) return true;
-    const haystack = foldSearch([title, description, SETTINGS_SEARCH_INDEX[title] ?? ""].join(" "));
+    // Category titles are localised before they arrive here, while the search
+    // aliases are deliberately keyed by their stable English IDs. Resolve the
+    // translated title back to that ID so German searches still see aliases
+    // such as "Audio" and the English terms remain useful too.
+    const canonicalTitle = Object.keys(SETTINGS_SEARCH_INDEX).find(
+      (candidate) => candidate === title || ui(candidate) === title
+    ) ?? title;
+    const haystack = foldSearch([
+      canonicalTitle,
+      ui(canonicalTitle),
+      title,
+      description,
+      SETTINGS_SEARCH_INDEX[canonicalTitle] ?? "",
+    ].join(" "));
     return settingsTerms.every((term: string) => haystack.includes(term));
   };
   const searchHits = useMemo(

@@ -81,6 +81,7 @@ if (!/SETTINGS_SEARCH_INDEX/.test(profile)) {
 }
 for (const [term, category] of [
   ["dark mode", "Appearance"],
+  ["audio", "Language & voice"],
   ["tyre", "Language & voice"],
   ["startup", "Desktop app & updates"],
   ["mascot", "Pet & mascot"],
@@ -104,7 +105,7 @@ if (!/Nothing matches that/.test(profile)) {
 
 // ── one focus ring, not two ───────────────────────────────────────────────
 const css = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
-if (!/\.settings-search__input:focus[\s\S]{0,220}outline: none;/.test(css)) {
+if (!/\.new-ui-prototype \.settings-search__input:focus[\s\S]{0,300}outline:\s*0\s*!important;/.test(css)) {
   failures.push("the settings search would draw the global input ring around its own focus border");
 }
 const switcher = fs.readFileSync(path.join(root, "src/components/course/CourseSwitcher.tsx"), "utf8");
@@ -115,8 +116,13 @@ const switcher = fs.readFileSync(path.join(root, "src/components/course/CourseSw
 if (!/course-switcher-search/.test(switcher)) {
   failures.push("the course switcher's search is not covered by the single-ring rule");
 }
-if (!/\.course-switcher-search:focus-visible[\s\S]{0,200}outline: none;/.test(css)) {
+if (!/\.new-ui-prototype \.course-switcher-search:focus-visible[\s\S]{0,260}outline:\s*0\s*!important;/.test(css)) {
   failures.push("nothing clears the platform focus ring on the course switcher's search, so it draws two");
+}
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+if (!i18n.includes('"Search courses": "Kurse durchsuchen"') ||
+    !i18n.includes('"Search languages or courses…": "Sprachen oder Kurse durchsuchen…"')) {
+  failures.push("the German course picker still exposes its search control in English");
 }
 
 // ── a changed border AND a hard ring is two borders ──────────────────────

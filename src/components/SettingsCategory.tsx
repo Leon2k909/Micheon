@@ -46,7 +46,7 @@ const SettingsNavContext = createContext<NavContext | null>(null);
 
 export function SettingsCategoryLayout({ children, searching, search }: {
   children: ReactNode;
-  /** While searching, the sidebar steps aside and every match is shown. */
+  /** While searching, every matching category is shown in the panel. */
   searching: boolean;
   /** Rendered at the top of the sidebar: searching for a setting and
    *  picking one from a list are the same job, so they belong together
@@ -80,13 +80,10 @@ export function SettingsCategoryLayout({ children, searching, search }: {
 
   return (
     <SettingsNavContext.Provider value={{ ...value, selected: active }}>
-      {searching ? (
-        <div>{children}</div>
-      ) : (
-        <div className="settings-layout">
-          <nav aria-label={ui("Settings categories")} className="settings-nav">
-            {search && <div className="settings-nav-search">{search}</div>}
-            {visible.map((entry) => (
+      <div className={cn("settings-layout", searching && "is-searching")}>
+        <nav aria-label={ui("Settings categories")} className="settings-nav">
+          {search && <div className="settings-nav-search">{search}</div>}
+          {!searching && visible.map((entry) => (
               <button
                 key={entry.id}
                 type="button"
@@ -99,11 +96,10 @@ export function SettingsCategoryLayout({ children, searching, search }: {
                 </span>
                 <span className="settings-nav-label">{entry.title}</span>
               </button>
-            ))}
-          </nav>
-          <div className="settings-panel">{children}</div>
-        </div>
-      )}
+          ))}
+        </nav>
+        <div className="settings-panel">{children}</div>
+      </div>
     </SettingsNavContext.Provider>
   );
 }

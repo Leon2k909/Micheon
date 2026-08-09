@@ -1827,6 +1827,8 @@ const DE: Record<string, string> = {
   "Search friends": "Freunde suchen",
   "Search lessons, pages, and games": "Lektionen, Seiten und Spiele durchsuchen",
   "Search lessons, pages, games, or a German phrase…": "Lektionen, Seiten, Spiele oder einen deutschen Satz suchen…",
+  "Search courses": "Kurse durchsuchen",
+  "Search languages or courses…": "Sprachen oder Kurse durchsuchen…",
   "Search results": "Suchergebnisse",
   "Search your friends": "Deine Freunde durchsuchen",
   "See friend activity, weekly XP, streaks, and the private friends league preview.": "Aktivität der Freunde, Wochen-XP, Serien und die private Freundesliga-Vorschau ansehen.",
