@@ -4517,6 +4517,8 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
 .guided-session.fs-app.prototype-guided-session .fs-check:disabled {
   background: #91d694;
   color: rgba(18, 60, 26, 0.72);
+  opacity: 1;
+  cursor: not-allowed;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 3px 0 #69b970;
 }
 
@@ -8532,13 +8534,13 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-check:disabled {
   background: var(--np-green-soft, var(--accent-dim));
-  color: var(--accent-text);
+  color: var(--accent-ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 3px 0 var(--np-green-soft, var(--accent-dim));
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-check:disabled {
   background: var(--np-green-soft, var(--accent-dim));
-  color: var(--accent-text);
+  color: var(--accent-ink);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .fs-listen .fs-listen-icon,.fs-listening-disc ) {
@@ -9313,7 +9315,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-check {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-word.is-playing {

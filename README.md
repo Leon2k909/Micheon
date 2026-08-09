@@ -34,6 +34,12 @@ The app keeps the next useful lesson obvious while still giving you full access 
 
 <p align="center"><strong>Guided session</strong><br />A focused practice space with a clear stage path, natural phrasing notes, audio replay, personal mastery controls, and a background you can choose in Profile &amp; Settings.</p>
 
+<p align="center">
+  <img src="docs/screenshots/micheon-dark-accent.png" alt="Micheon dashboard in dark mode with a custom indigo accent colour" width="100%" />
+</p>
+
+<p align="center"><strong>Your app, your colours</strong><br />Use light, dark, or system mode, then pick one of Micheon's accent presets or choose any custom colour. Buttons, progress, selections, and guided lessons update together while keeping their text readable.</p>
+
 <table>
   <tr>
     <td width="50%">
@@ -76,7 +82,7 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 | **Vocabulary games** | Eight arcade-style games (Snake, Whack-a-Mole, Falling Letters, Verb Shooter, Minesweeper, and more) that drill vocab without feeling like study. |
 | **Grammar drills** | Cloze (fill-in-the-blank) exercises and grammar notes for the patterns behind the sentences. |
 | **Fluency meter & gamification** | Track known-word count toward a fluency estimate, earn XP, keep a daily streak, level up, and unlock milestones. |
-| **Micheon appearance** | One focused Micheon interface with a saved light/dark mode, keeping the app visually consistent and lightweight. |
+| **Micheon appearance** | Choose light, dark, or system mode, then use a curated accent preset or any custom colour. Micheon derives readable text, hover, pressed, and soft-selection shades from your choice and saves it on your device. |
 | **Learning direction** | Switch between *learn German* and *learn English*; the interface, prompts, and lesson make-up follow the language you pick. |
 | **Multiple courses** | German is the flagship; the course registry also carries Spanish and French tracks and a bonus C# course, selectable from the course switcher. |
 | **Local accounts** | Per-machine profiles keep each person's progress separate and sync across browser/app restarts — no account server involved. |
