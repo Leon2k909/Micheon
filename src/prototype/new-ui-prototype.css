@@ -490,10 +490,10 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   min-width: 0;
   flex: 0 1 auto;
   min-height: 65px;
-  grid-template-columns: 51px 1fr;
+  grid-template-columns: 47px 1fr;
   align-items: center;
-  gap: 4px;
-  padding: 7px 12px 7px 5px;
+  gap: 9px;
+  padding: 8px 13px 8px 8px;
   border: 1px solid var(--np-line);
   border-radius: 18px;
   background: var(--np-surface);
@@ -502,9 +502,31 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     0 10px 20px rgba(98, 82, 65, 0.1);
 }
 
-.np-stat-chip .np-reward-icon {
-  width: 49px;
-  height: 49px;
+.np-stat-chip__art {
+  --np-stat-art-rgb: 242, 171, 46;
+  display: grid;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  border: 1px solid rgba(var(--np-stat-art-rgb), 0.2);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(var(--np-stat-art-rgb), 0.18), rgba(var(--np-stat-art-rgb), 0.05)),
+    var(--np-surface-soft);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 0 rgba(94, 74, 45, 0.08);
+}
+
+.np-stat-chip__art--flame { --np-stat-art-rgb: 245, 123, 36; }
+.np-stat-chip__art--star { --np-stat-art-rgb: 246, 186, 34; }
+.np-stat-chip__art--trophy { --np-stat-art-rgb: 222, 153, 28; }
+
+.np-stat-chip__art .np-reward-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(95, 70, 34, 0.13));
 }
 
 .np-stat-chip > div {
@@ -4195,9 +4217,15 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     padding-right: 8px;
   }
 
-  .np-stat-chip .np-reward-icon {
-    width: 43px;
-    height: 43px;
+  .np-stat-chip__art {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .np-stat-chip__art .np-reward-icon {
+    width: 34px;
+    height: 34px;
   }
 
   .np-content-grid {
@@ -4430,9 +4458,15 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     border-radius: 20px;
   }
 
-  .np-stat-chip .np-reward-icon {
-    width: 58px;
-    height: 58px;
+  .np-stat-chip__art {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+  }
+
+  .np-stat-chip__art .np-reward-icon {
+    width: 44px;
+    height: 44px;
   }
 
   .np-stat-chip strong {
@@ -9613,3 +9647,147 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
 }
 
 .np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }
+
+/* Custom accents in dark mode need two distinct jobs: the accent marks an
+   edge/action, while the neutral surface carries readable content. Painting
+   both the surface and its labels from the same blue/purple family made the
+   search action, social invitation and mastery ladder disappear into their
+   cards. Keep the accent, but stop using it as both paper and ink. */
+html[data-theme="dark"][data-accent="custom"] .np-search-results > button {
+  color: var(--np-text);
+  background:
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.11), transparent 72%),
+    var(--np-surface-soft);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-search-results > button:hover,
+html[data-theme="dark"][data-accent="custom"] .np-search-results > button:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.48);
+  background:
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.17), transparent 76%),
+    var(--np-surface-soft);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-search-result-group {
+  color: var(--accent-ink);
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-search-result-action {
+  color: var(--accent-ink);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-side-nav button:hover {
+  color: var(--np-text);
+  background: rgba(var(--accent-rgb), 0.16);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-side-nav button.is-active {
+  border-color: var(--accent-pressed);
+  color: var(--accent-text);
+  background: var(--accent);
+  box-shadow:
+    0 3px 0 var(--accent-pressed),
+    0 10px 20px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-side-nav button.is-active .np-nav-visual {
+  border-color: rgba(11, 14, 19, 0.2);
+  color: var(--accent-text);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 3px 0 rgba(11, 14, 19, 0.16);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-side-card--invite,
+html[data-theme="dark"][data-accent="custom"] .np-social-side-card--target {
+  border-color: rgba(var(--accent-rgb), 0.28);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(var(--accent-rgb), 0.14), transparent 52%),
+    var(--np-surface);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-side-card > small,
+html[data-theme="dark"][data-accent="custom"] .np-social-panel-heading > div > span,
+html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy > span {
+  color: var(--accent-ink);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-primary-button,
+html[data-theme="dark"][data-accent="custom"] .np-social-side-card > button,
+html[data-theme="dark"][data-accent="custom"] .np-social-empty > button {
+  border-color: var(--accent-pressed);
+  color: var(--accent-text);
+  background: var(--accent);
+  box-shadow: 0 4px 0 var(--accent-pressed);
+  text-shadow: none;
+}
+
+html[data-theme="dark"] .np-stat-chip__art {
+  border-color: rgba(var(--np-stat-art-rgb), 0.26);
+  background:
+    linear-gradient(145deg, rgba(var(--np-stat-art-rgb), 0.16), rgba(var(--np-stat-art-rgb), 0.045)),
+    var(--np-surface-soft);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 0 rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__title {
+  color: var(--accent-ink);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current,
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-reached {
+  border-color: rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__current > span:not(:first-child),
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-reached > p:first-child {
+  color: var(--text-1) !important;
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-next {
+  border-color: rgba(var(--accent-rgb), 0.42);
+  background: var(--surface-2);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-next > p:first-child,
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__next .font-medium {
+  color: var(--accent-ink) !important;
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked {
+  opacity: 0.68;
+  background: var(--surface-2);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:first-child {
+  color: var(--text-2) !important;
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__milestone.is-locked > p:not(:first-child) {
+  color: var(--text-3);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring {
+  border-color: rgba(var(--accent-rgb), 0.34);
+  color: var(--text-1);
+  background:
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.17), rgba(var(--accent-rgb), 0.055)),
+    var(--surface-2);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__value {
+  color: var(--text-1);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__label > span:last-child {
+  color: var(--text-2);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress__track {
+  background: var(--surface-3);
+}

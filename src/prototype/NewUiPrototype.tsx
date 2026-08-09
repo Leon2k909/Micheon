@@ -550,7 +550,9 @@ function Sidebar({
 function StatChip({ kind, value, label }: { kind: RewardKind; value: string; label: string }) {
   return (
     <div className="np-stat-chip">
-      <RewardIcon kind={kind} />
+      <span aria-hidden="true" className={`np-stat-chip__art np-stat-chip__art--${kind}`}>
+        <RewardIcon kind={kind} />
+      </span>
       <div>
         <strong>{value}</strong>
         <small>{label}</small>
