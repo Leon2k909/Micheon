@@ -9648,6 +9648,40 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
 
 .np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }
 
+/* What Continue Learning serves: three pills directly under the button they
+   change. The active one is filled; the others are quiet outlines. Wraps on a
+   narrow window rather than clipping — German labels run long. */
+.np-lesson-content-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.np-lesson-content-picker > button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--np-line);
+  border-radius: 999px;
+  background: var(--np-surface-soft);
+  color: var(--np-muted);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.np-lesson-content-picker > button:hover {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.55);
+  color: var(--np-text);
+}
+
+.np-lesson-content-picker > button.is-active {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.7);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.16);
+  color: var(--accent-ink, var(--np-text));
+}
+
 /* Custom accents in dark mode need two distinct jobs: the accent marks an
    edge/action, while the neutral surface carries readable content. Painting
    both the surface and its labels from the same blue/purple family made the

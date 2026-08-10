@@ -11,8 +11,8 @@ import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
-import { conversationBetaOn } from "@/lib/betaMode";
-import { rankForBeta, questionFor, structureNotes } from "@/lib/conversationBeta";
+import { getLessonContent } from "@/lib/lessonContent";
+import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
 import {
@@ -656,6 +656,31 @@ export default function GuidedLearningSession() {
       // which is why this only guards the automatic path.
       const activeParts = withoutMutedPacks(apiParts);
       const keys = Object.keys(activeParts);
+
+      // ── Vocabulary sitting: its own button, its own catalogue, its own ids ──
+      //
+      // Everything below this block is the SENTENCE course, and it never sees
+      // a word: the two kinds of sitting share the exercise UI and the grade
+      // ladder, never a queue or an id. A word's progress lives under vw-*,
+      // which no sentence path constructs, so grading a word here cannot
+      // schedule anything in an ordinary sitting — and vice versa.
+      const lessonContent = getLessonContent();
+      if (lessonContent === "words") {
+        const rankedWords = rankWordCatalog(buildWordCatalog(activeParts), corpusIndex);
+        let wordSteps: any[] = buildWordSitting(rankedWords, reviewState);
+        if (wordSteps.length > 0) {
+          if (learningEnglish()) wordSteps = wordSteps.map(swapStepForEnglish);
+          const id = wordSteps[0]?.item?.partKey ?? keys[0] ?? activePart;
+          setActivePart(id);
+          saveScopedJson("active-part", id, user);
+          setSessionSteps(withRegisterCheck([...wordSteps, { type: "complete" }], user));
+          beginLessonTiming(id);
+          setShowGuidedSession(true);
+          return;
+        }
+        // Every word is resting or put off: fall through to an ordinary
+        // sitting rather than presenting a dead button.
+      }
       const requiredReviews: any[] = [];
       const globalReviews: any[] = [];
       const reinforcementReviews: any[] = [];
@@ -950,12 +975,28 @@ export default function GuidedLearningSession() {
       // slots for review slots (5+1 when loaded) rather than growing the
       // session — extended material waits for the next Continue Learning.
       const sittingMix = lessonMixForBacklog(requiredReviews.length + globalReviews.length);
+      // "Both": one sitting, still six — four sentence slots, two word
+      // slots. The sentence mix keeps its backlog behaviour, scaled: a due
+      // sentence backlog still trades new-sentence slots for review slots
+      // inside its four.
+      const mixedWords = lessonContent === "mixed"
+        ? buildWordSitting(rankWordCatalog(buildWordCatalog(activeParts), corpusIndex), reviewState, Date.now(), { reviewSlots: 1, freshSlots: 1 })
+        : [];
+      const sentenceSlots = mixedWords.length > 0
+        ? {
+            reviewSlots: Math.max(1, Math.round(sittingMix.reviewSlots * 2 / 3)),
+            freshSlots: 0,
+          }
+        : sittingMix;
+      if (mixedWords.length > 0) {
+        sentenceSlots.freshSlots = Math.max(1, (6 - mixedWords.length) - sentenceSlots.reviewSlots);
+      }
       const { fresh, reviews } = selectContinueLearningMix(
         rankedCandidates.map((candidate) => candidate.step),
         requiredReviews,
         globalReviews,
-        sittingMix.freshSlots,
-        sittingMix.reviewSlots,
+        sentenceSlots.freshSlots,
+        sentenceSlots.reviewSlots,
         reinforcementReviews,
         learningEnglish() ? "en" : "de"
       );
@@ -969,90 +1010,14 @@ export default function GuidedLearningSession() {
             (step: any) => step.type === "dialogue" && dialogueIsEarned(step, servedFreshDe)
           )
         : [];
-      // Conversation Beta works on the REVIEW half, not the new half.
-      //
-      // Meeting a phrase for the first time inside a conversation is a lot to
-      // carry: you are working out what it means AND what to do with it. A
-      // phrase you have already met is the opposite -- being asked a question
-      // you can only answer with it is exactly the practice that turns
-      // recognising it into being able to use it. So the conversation is built
-      // from what is due, and answering counts as that review: same grading,
-      // same SRS record, same credit in the tracker.
-      const attachConversation = (steps: any[]) => steps.map((step: any) => {
-        const de = String(step?.item?.de ?? "");
-        if (!de) return step;
-        const asks = questionFor(de);
-        const notes = structureNotes(de);
-        if (!asks && !notes.length) return step;
-        return { ...step, item: { ...step.item, asks, structureNotes: notes } };
-      });
-      // Within the review half, the ones that teach structure lead.
-      // Conversation Beta turns the review half INTO a conversation rather
-      // than printing a question above the usual drill. Only phrases that
-      // have a question assigned can be a turn -- a conversation where half
-      // the exchanges have no question is not a conversation, and decorating
-      // the ones that do is what made the beta indistinguishable from an
-      // ordinary lesson. Anything without one stays a normal review.
-      // A conversation, every time the button is pressed.
-      //
-      // Building it only from due reviews meant that a sitting with no due
-      // review carrying a question produced no conversation at all -- so the
-      // beta was, quite literally, the ordinary lesson. Due reviews still come
-      // first, because practising what is fading is the point; the rest of the
-      // conversation is topped up from phrases already met, and only then from
-      // ones not met yet.
-      const CONVERSATION_TURNS = 4;
-      const betaGrades = conversationBetaOn() ? loadGradeStore(user) : {};
-      const dueTurns = conversationBetaOn()
-        ? rankForBeta(reviews.map((step: any) => step.item ?? {}))
-            .filter((ranked) => ranked.asks)
-            .map((ranked) => ({
-              step: reviews.find((step: any) => step.item === ranked.item),
-              item: ranked.item,
-              asks: ranked.asks,
-            }))
-            .filter((turn) => turn.step)
-        : [];
-      const topUp = () => {
-        const used = new Set(dueTurns.map((turn) => String(turn.item?.id ?? "")));
-        const withQuestion = catalog.filter((item: any) =>
-          !used.has(String(item.id)) && Boolean(questionFor(String(item.de ?? "")))
-        );
-        // Something already met beats something brand new: a conversation is
-        // for using what you know, not for meeting three phrases at once.
-        const seen = withQuestion.filter((item: any) =>
-          statusForId(betaGrades, item.id, item.aliases) !== "new"
-        );
-        const fresh = withQuestion.filter((item: any) =>
-          statusForId(betaGrades, item.id, item.aliases) === "new"
-        );
-        return [...seen, ...fresh]
-          .slice(0, Math.max(0, CONVERSATION_TURNS - dueTurns.length))
-          .map((item: any) => ({
-            step: { type: "sentence", review: true, item },
-            item,
-            asks: questionFor(String(item.de ?? "")),
-          }));
-      };
-      const betaTurns = conversationBetaOn() ? [...dueTurns, ...topUp()] : [];
-      const conversationIds = new Set(betaTurns.map((turn) => String(turn.item?.id ?? "")));
-      const betaReviews = conversationBetaOn()
-        ? [
-            ...(betaTurns.length
-              ? [{ type: "conversation", turns: betaTurns }]
-              : []),
-            ...reviews.filter((step: any) => !conversationIds.has(String(step.item?.id ?? ""))),
-          ]
-        : reviews;
       const freshSteps = [...fresh, ...dialogues];
 
-      if (reviews.length > 0 || freshSteps.length > 0) {
+      if (reviews.length > 0 || freshSteps.length > 0 || mixedWords.length > 0) {
         const id = freshId ?? reviewPartByStep.get(reviews[0]) ?? keys[0];
-        // The beta leads with the conversation, because the whole point is
-        // using what you already half-know before meeting anything new.
-        let steps = conversationBetaOn()
-          ? [...betaReviews, ...freshSteps, { type: "complete" }]
-          : [...freshSteps, ...betaReviews, { type: "complete" }];
+        // New material first, then the word slots when "Both" is chosen,
+        // then reviews — words sit between so a mixed sitting reads as one
+        // lesson rather than two stapled together.
+        let steps = [...freshSteps, ...mixedWords, ...reviews, { type: "complete" }];
         if (learningEnglish()) steps = steps.map(swapStepForEnglish);
         setActivePart(id);
         saveScopedJson("active-part", id, user);

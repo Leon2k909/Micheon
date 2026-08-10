@@ -225,7 +225,9 @@ const dashboardSource = fs.readFileSync(path.join(root, "src/prototype/NewUiProt
 const meterSource = fs.readFileSync(path.join(root, "src/components/FluencyMeter.tsx"), "utf8");
 check(
   "every guided lesson path starts the active clock with a known-item baseline",
-  (labSource.match(/beginLessonTiming\(id\)/g) || []).length === 2
+  // Three launch paths now: an explicit pack, Continue Learning, and the
+  // vocabulary sitting added for words mode. Every one starts the clock.
+  (labSource.match(/beginLessonTiming\(id\)/g) || []).length === 3
     && labSource.includes("startSessionRef.current(requestedPart)")
     && labSource.includes("sessionKnownBeforeRef.current = countKnownVocab")
 );

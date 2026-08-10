@@ -102,6 +102,7 @@ const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker"
 const loadVocabTrackerModule = () => import("@/components/lab/VocabTracker");
 const VocabTracker = lazy(() => loadVocabTrackerModule()
   .then((module) => ({ default: module.VocabTracker })));
+const WordsTracker = lazy(() => import("@/components/lab/WordsTracker").then((m) => ({ default: m.WordsTracker })));
 
 function scheduleProfileIdleWork(task: () => void, timeout = 1200): () => void {
   const idleWindow = window as Window & typeof globalThis & {
@@ -1455,6 +1456,10 @@ export default function GamificationPanel({
           {catalogueReady && trackerPrepared ? (
             <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
               <VocabTracker apiParts={apiParts} user={user} />
+              {/* Words get their own card rather than 3,300 more rows in the
+                  tracker above — that component already indexes ~16,000
+                  sentences, and vocabulary progress is a different question. */}
+              <WordsTracker apiParts={apiParts} user={user} />
             </Suspense>
           ) : (
             <ProfileSectionLoading label={ui("Loading vocabulary library")} />

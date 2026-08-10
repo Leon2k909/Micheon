@@ -787,31 +787,6 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
  * The structure notes sit beside it because the beta chooses sentences BY
  * their grammar, so saying which grammar is the point.
  */
-function BetaConversationFrame({ asks, notes }: {
-  asks?: { de: string; en: string } | null;
-  notes?: string[];
-}) {
-  if (!asks && !(notes && notes.length)) return null;
-  return (
-    <div className="fs-beta-frame">
-      {asks && (
-        <div className="fs-beta-ask">
-          <span className="fs-beta-ask-label">{ui("They ask")}</span>
-          <strong lang="de">{asks.de}</strong>
-          {asks.en && <small>{asks.en}</small>}
-        </div>
-      )}
-      {notes && notes.length > 0 && (
-        <div className="fs-beta-notes">
-          {notes.map((note) => (
-            <span key={note} className="fs-beta-note">{ui(note)}</span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase, phases }: {
   current: Phase;
   withFrench?: boolean;
@@ -1486,138 +1461,6 @@ function reviewLevelFinishesItem(level: GuidedReviewLevel): boolean {
  * end you are looking at a conversation you had rather than a list of
  * sentences you got right.
  */
-function ConversationExercise({ turns, onGradeItem, onAnswer, onNext }: {
-  turns: Array<{ item: any; asks: { de: string; en: string } }>;
-  onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
-  onAnswer?: (correct: boolean, itemId?: string) => void;
-  onNext: () => void;
-}) {
-  const [turnIndex, setTurnIndex] = useState(0);
-  const [answer, setAnswer] = useState("");
-  const [checked, setChecked] = useState(false);
-  const [correct, setCorrect] = useState(false);
-  const [revealed, setRevealed] = useState(false);
-  const [done, setDone] = useState<Array<{ ask: string; said: string; target: string; ok: boolean }>>([]);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const turn = turns[turnIndex];
-  const target = String(turn?.item?.de ?? "");
-  const isLast = turnIndex >= turns.length - 1;
-
-  useEffect(() => { inputRef.current?.focus(); }, [turnIndex]);
-
-  if (!turn) return null;
-
-  const check = () => {
-    if (checked || !answer.trim()) return;
-    const result = matchLearningModeGermanAnswer(answer, turn.item);
-    setCorrect(result.ok);
-    setChecked(true);
-    onAnswer?.(result.ok, turn.item?.id);
-    // The answer is the review: a turn you got right climbs the ladder, one
-    // you did not comes back. No separate grading step afterwards.
-    if (turn.item?.id) onGradeItem?.(String(turn.item.id), result.ok ? "know" : "struggle");
-  };
-
-  const advance = () => {
-    setDone((current) => [...current, {
-      ask: turn.asks.de,
-      said: answer.trim(),
-      target,
-      ok: correct,
-    }]);
-    setAnswer("");
-    setChecked(false);
-    setCorrect(false);
-    setRevealed(false);
-    if (isLast) onNext();
-    else setTurnIndex((current) => current + 1);
-  };
-
-  return (
-    <div className="fs-card-body fs-conversation">
-      <div className="fs-conversation-head">
-        <span className="fs-eyebrow"><i />{ui("Conversation practice")}</span>
-        <h1 className="fs-h1">{ui("Answer with what you have been learning")}</h1>
-        <p className="fs-sub">
-          {uiFmt("Turn {n} of {total}. Each reply is the review for that phrase.", { n: turnIndex + 1, total: turns.length })}
-        </p>
-      </div>
-
-      <div className="fs-conversation-thread">
-        {done.map((row, i) => (
-          <div className="fs-conversation-turn" key={i}>
-            <p className="fs-bubble is-them" lang="de">{row.ask}</p>
-            <p className={cn("fs-bubble is-you", row.ok ? "is-good" : "is-bad")} lang="de">
-              {row.said || row.target}
-            </p>
-            {!row.ok && (
-              <p className="fs-bubble-correction" lang="de">{ui("You wanted")}: {row.target}</p>
-            )}
-          </div>
-        ))}
-
-        <div className="fs-conversation-turn is-current">
-          <p className="fs-bubble is-them" lang="de">{turn.asks.de}</p>
-          {turn.asks.en && <p className="fs-bubble-gloss">{turn.asks.en}</p>}
-        </div>
-      </div>
-
-      <label className="fs-conversation-reply">
-        <span className="fs-conversation-reply-label">{ui("Your reply")}</span>
-        {/* Which reply. Without this the question has a dozen good answers
-            and only one is being marked, so it turns into guessing what the
-            app wants -- and the phrase being revised is the whole point of
-            the turn. The German is still yours to produce. */}
-        {turn.item?.en && (
-          <span className="fs-conversation-cue">
-            {ui("Say")}: <strong>{turn.item.en}</strong>
-          </span>
-        )}
-        <Input
-          ref={inputRef}
-          className="fs-input"
-          disabled={checked}
-          lang="de"
-          onChange={(event) => setAnswer(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter") return;
-            event.preventDefault();
-            if (checked) advance();
-            else check();
-          }}
-          placeholder={ui("Answer in German…")}
-          spellCheck={false}
-          value={answer}
-        />
-      </label>
-
-      {checked && (
-        <div className={cn("fs-result", correct ? "is-good" : "is-bad")} role="status">
-          <strong>{ui(correct ? "That works." : "Not quite")}</strong>
-          <span>{correct ? ui("A natural answer to that question.") : <>{ui("Answer:")} <strong>{target}</strong></>}</span>
-        </div>
-      )}
-
-      {!checked && (
-        <div className="fs-conversation-actions">
-          <Button className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black" onClick={check}>
-            {ui("Check")} <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          <button className="fs-conversation-hint" onClick={() => setRevealed(true)} type="button">
-            {revealed ? target : ui("Show me the phrase")}
-          </button>
-        </div>
-      )}
-
-      {checked && (
-        <Button className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black" onClick={advance}>
-          {ui(isLast ? "Finish" : "Next")} <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      )}
-    </div>
-  );
-}
 function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease }: {
   grade: string | null;
   notice?: { label: string; note: string; subject?: string } | null;
@@ -1724,10 +1567,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const currentPhaseRef = useRef<Phase>(phase);
   useEffect(() => { currentPhaseRef.current = phase; }, [phase]);
   /** The stages this phrase actually runs through. */
+  // A vocabulary sitting reuses these exercises but not the whole march:
+  // a single word runs the short word route (see guidedLessonPhases).
+  const isWordItem = item?.kind === "word";
   const phaseRoute = (): Phase[] => buildSentencePhaseRoute({
     mastered: masteredRoute,
     bilingual: hasFr,
     audioMuted: audioMutedRef.current,
+    word: isWordItem,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -1955,6 +1802,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     const replacement = replacementSentencePhaseWhenMuted(phase, {
       mastered: masteredRoute,
       bilingual: hasFr,
+      word: isWordItem,
       });
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;
@@ -2788,7 +2636,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
       {/* Stage route (full-bleed inside the card) */}
-      <BetaConversationFrame asks={item?.asks} notes={item?.structureNotes} />
       <StageRoute
         current={phase}
         phases={phaseRoute()}
@@ -6250,7 +6097,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                 ) : (
                   <>
                     {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} />}
-                    {kind === "conversation" && <ConversationExercise key={`conversation-${index}-${gradeResetNonce}`} turns={step.turns ?? []} onGradeItem={gradeItem} onAnswer={(ok, id) => registerAnswer(ok, id)} onNext={next} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (

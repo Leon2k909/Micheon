@@ -10305,3 +10305,34 @@ html[data-theme="dark"] .fs-review-level-option strong {
   color: var(--accent-ink, var(--fs-text)) !important;
 }
 
+
+/* ── Words tracker: vocabulary progress on its own card ────────────────────
+   Kept apart from the word & sentence tracker on purpose — that list already
+   indexes ~16,000 sentences, and this one answers a different question. */
+.words-tracker { margin-top: 14px; }
+.words-tracker h3 { font-size: 16px; font-weight: 900; color: var(--text-1); }
+.words-tracker-sub { margin-top: 4px; color: var(--text-3); font-size: 12px; font-weight: 650; line-height: 1.5; }
+.words-tracker-tiles { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.words-tracker-tiles > span { display: grid; min-width: 92px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2); text-align: center; }
+.words-tracker-tiles strong { font-size: 17px; font-weight: 950; color: var(--text-1); }
+.words-tracker-tiles small { margin-top: 2px; font-size: 10.5px; font-weight: 800; color: var(--text-3); white-space: nowrap; }
+.words-tracker-filters { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.words-tracker-filters > button { min-height: 34px; padding: 0 13px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: 12px; font-weight: 800; cursor: pointer; }
+.words-tracker-filters > button.is-active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.words-tracker-search { width: 100%; margin-top: 10px; min-height: 42px; padding: 0 14px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 650; }
+.words-tracker-list { margin-top: 10px; display: grid; gap: 6px; list-style: none; padding: 0; }
+.words-tracker-list li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 8px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.words-tracker-de { font-size: 14px; font-weight: 850; color: var(--text-1); overflow-wrap: anywhere; }
+.words-tracker-en { font-size: 12.5px; font-weight: 650; color: var(--text-2); overflow-wrap: anywhere; }
+.words-tracker-status { font-size: 10.5px; font-weight: 850; white-space: nowrap; color: var(--text-3); }
+.words-tracker-status.is-known { color: #167239; }
+.words-tracker-status.is-due { color: #8a5a00; }
+.words-tracker-status.is-struggling { color: #b12e43; }
+html[data-theme="dark"] .words-tracker-status.is-known { color: #98efae; }
+html[data-theme="dark"] .words-tracker-status.is-due { color: #f5cd7d; }
+html[data-theme="dark"] .words-tracker-status.is-struggling { color: #ff9aaa; }
+/* A custom accent owns every brand green, this one included. */
+html[data-accent="custom"] .words-tracker-status.is-known { color: var(--accent); }
+html[data-theme="dark"][data-accent="custom"] .words-tracker-status.is-known { color: var(--accent); }
+.words-tracker-more { width: 100%; margin-top: 10px; min-height: 40px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text-2); font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.words-tracker-empty { margin-top: 12px; color: var(--text-3); font-size: 12.5px; font-weight: 650; }

@@ -24,7 +24,6 @@ import {
   Medal,
   LogOut,
   Menu,
-  MessagesSquare,
   MessageCircleMore,
   MessageSquareText,
   Play,
@@ -90,7 +89,7 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
-import { setConversationBeta } from "@/lib/betaMode";
+import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
 import heroImage from "./assets/micheon-hero-v3.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
@@ -1538,6 +1537,7 @@ function HomeView({
   // Recomputed when the catalogue arrives or a lesson lands, so the hero's
   // "how much longer" tracks what was just learned.
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
+  const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -1569,13 +1569,7 @@ function HomeView({
             ? uiFmt("Start your first lesson. Level {level} everyday essentials.", { level: firstLessonLevel })
             : uiFmt("Continue learning. Lesson {n}.", { n: stats.sessionsCompleted + 1 })}
         className="np-mobile-course-button"
-        onClick={() => {
-          // Pressing the ordinary button means the ordinary lesson. Without
-          // this, one press of the beta would quietly change every lesson
-          // after it, and there would be no way back.
-          setConversationBeta(false);
-          onPractice();
-        }}
+        onClick={onPractice}
         type="button"
       >
         <Play />
@@ -1592,32 +1586,30 @@ function HomeView({
         </span>
         <ChevronRight />
       </button>
-      {/* Conversation Beta. Leon's account only while it is being tried out.
-          A second way in rather than a setting: it starts a sitting of its own,
-          reordering the new half so the hard structure comes first and each
-          phrase arrives as the answer to a question. The sitting is still six
-          and the review half is untouched. */}
-      {hasLeonSocialPreview(profile?.email) && (
-        <button
-          aria-label={ui("Start a Conversation Beta lesson. Hard structure first, each phrase taught as an answer.")}
-          className="np-mobile-course-button np-beta-button"
-          onClick={() => {
-            setConversationBeta(true);
-            onPractice();
-          }}
-          type="button"
-        >
-          <MessagesSquare />
-          <span className="np-course-button-copy">
-            <span className="np-course-button-kicker">{ui("Beta · Leon only")}</span>
-            <strong>{ui("Continue learning — conversations")}</strong>
-            <small>
-              {ui("Each phrase as the answer to a question, hard structure — weil, dass, wenn — first.")}
-            </small>
-          </span>
-          <ChevronRight />
-        </button>
-      )}
+      {/* What the button above serves. One control on the button it changes,
+          not a setting three screens away: Michelle sits down for words, Leon
+          for sentences, and the choice holds until it is changed — "I'm here
+          for vocabulary" is true for weeks, not per press. Word progress
+          lives under its own ids, so nothing chosen here can ever push a
+          single word into the sentence course's queues or vice versa. */}
+      <div aria-label={ui("What your lessons are made of")} className="np-lesson-content-picker" role="group">
+        {([
+          ["sentences", ui("Sentences"), ui("Phrases, sentences and dialogues — the course as it has always been.")],
+          ["words", ui("Words"), ui("Single words with their meanings, most common first.")],
+          ["mixed", ui("Both"), ui("Four sentence slots and two word slots in each sitting.")],
+        ] as const).map(([value, label, hint]) => (
+          <button
+            aria-pressed={lessonContent === value}
+            className={lessonContent === value ? "is-active" : undefined}
+            key={value}
+            onClick={() => { setLessonContent(value); setLessonContentState(value); }}
+            title={hint}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} />
     </div>

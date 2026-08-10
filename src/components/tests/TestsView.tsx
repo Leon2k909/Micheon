@@ -34,6 +34,7 @@ import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
+import { buildWordCatalog, wordProgressId } from "@/lib/wordSession";
 import { MarkableText, normalizeMarkWord } from "@/components/tests/MarkableText";
 import { matchLearningModeGermanAnswer, useLearningMode } from "@/lib/learningMode";
 
@@ -915,15 +916,8 @@ function isDue(item: CatalogItem, grades: ReturnType<typeof loadGradeStore>) {
 function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): TestItem[] {
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
-  const catalogVocab = new Map<string, CatalogItem>();
   const seen = new Set<string>();
   const bank: TestItem[] = [];
-
-  for (const item of catalog) {
-    if (item.kind !== "vocab") continue;
-    const lookup = normalizeKey(item.lookup ?? item.de);
-    catalogVocab.set(`${item.partKey}::${lookup}`, item);
-  }
 
   const add = (item: TestItem) => {
     if (!item.de.trim() || !item.en.trim()) return;
@@ -933,32 +927,40 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     bank.push(item);
   };
 
+  // ONE record per word, everywhere. Vocabulary questions used to mint their
+  // own per-pack ids (part1-test-vocab-0), so the same word could be "known"
+  // in a test, untouched in a vocabulary sitting, and duplicated across every
+  // pack that listed it. They now share the vocabulary sittings' vw- ids: a
+  // word passed here is a word known there and in the words tracker, and each
+  // word appears exactly once. The old per-pack ids ride along as aliases so
+  // progress earned before the merge still reads.
+  const legacyTestIds = new Map<string, string[]>();
   for (const [partKey, part] of Object.entries(apiParts)) {
-    const level = part.level ?? "";
-    const topic = part.theme ?? part.label ?? partKey;
-
     (part.vocab ?? []).forEach((word, index) => {
-      const source =
-        catalogVocab.get(`${partKey}::${normalizeKey(word.lookup ?? word.de)}`) ??
-        catalogVocab.get(`${partKey}::${normalizeKey(word.de)}`);
-      const id = source?.id ?? `${partKey}-test-vocab-${index}`;
-      const aliases = source?.aliases ?? [];
-      const status = statusForId(grades, id, aliases);
-      const letters = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length;
-      const longWord = letters >= 13;
-      add({
-        id,
-        aliases,
-        de: word.de,
-        en: word.en,
-        kind: "vocabulary",
-        level,
-        topic,
-        hard: isHardLevel(level) || longWord,
-        difficulty: difficultyFor(level, letters, 13),
-        status,
-        due: source ? isDue(source, grades) : false,
-      });
+      const id = wordProgressId(word.lookup || word.de);
+      const list = legacyTestIds.get(id) ?? [];
+      list.push(`${partKey}-test-vocab-${index}`);
+      legacyTestIds.set(id, list);
+    });
+  }
+  for (const word of buildWordCatalog(apiParts)) {
+    const part = apiParts[word.partKey];
+    const level = part?.level ?? "";
+    const aliases = legacyTestIds.get(word.id) ?? [];
+    const letters = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length;
+    const longWord = letters >= 13;
+    add({
+      id: word.id,
+      aliases,
+      de: word.de,
+      en: word.en,
+      kind: "vocabulary",
+      level,
+      topic: part?.theme ?? part?.label ?? word.partKey,
+      hard: isHardLevel(level) || longWord,
+      difficulty: difficultyFor(level, letters, 13),
+      status: statusForId(grades, word.id, aliases),
+      due: isDue({ id: word.id, aliases } as CatalogItem, grades),
     });
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.242",
+  "version": "1.2.243",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -18,6 +18,7 @@
     "check:grammar-reference": "node scripts/check-grammar-reference.cjs",
     "check:answer-matching": "node scripts/check-answer-matching.cjs",
     "check:crash-visibility": "node scripts/check-crash-visibility.cjs",
+    "check:lesson-content": "node scripts/check-lesson-content.cjs",
     "check:synonyms": "node scripts/check-synonyms.cjs",
     "check:undefined-names": "node scripts/check-undefined-names.cjs",
     "check:learning-mode": "node scripts/check-learning-mode.cjs",
@@ -47,7 +48,7 @@
     "check:startup-performance": "node scripts/check-startup-performance.cjs",
     "check:windows-settings": "node scripts/check-windows-settings.cjs",
     "check:desktop-polish": "node scripts/check-desktop-polish.cjs",
-    "build": "npm run typecheck && npm run check:server-loopback && npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answerable-content && npm run check:grammar-reference && npm run check:answer-matching && npm run check:synonyms && npm run check:crash-visibility && npm run check:wrong-language && npm run check:spoken-forms && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:guided-render-safety && npm run check:lesson-navigation && npm run check:lesson-controls && npm run check:review-level-flow && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:conversation-priority && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:sentence-identity && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && npm run check:first-run-onboarding && npm run check:startup-performance && npm run check:slow-device && npm run check:windows-settings && npm run check:profile-organisation && npm run check:contrast && npm run check:muted-packs && npm run check:desktop-polish && npm run check:english-paraphrase && npm run check:progress-consistency && npm run check:notice-and-audio && npm run check:notification-actions && npm run check:pet-handover && npm run check:dialogue-capstone && npm run check:phrase-chains && npm run check:review-throughput && npm run check:theme-control && npm run check:settings-search && npm run check:memory-decay && npm run check:update-controls && npm run check:accent-coverage && npm run check:hero-progress && npm run check:data-and-storage && npm run check:teaching-order && npm run check:slide-select && npm run check:dark-coverage && vite build",
+    "build": "npm run typecheck && npm run check:server-loopback && npm run check:german-orthography && npm run check:german-punctuation && npm run check:english-content && npm run check:answerable-content && npm run check:grammar-reference && npm run check:answer-matching && npm run check:synonyms && npm run check:crash-visibility && npm run check:lesson-content && npm run check:wrong-language && npm run check:spoken-forms && npm run check:undefined-names && npm run check:learning-mode && npm run check:flashcards && npm run check:guided-render-safety && npm run check:lesson-navigation && npm run check:lesson-controls && npm run check:review-level-flow && npm run check:updater-ui && npm run check:hardcoded-content && npm run check:dashboard-tests && npm run check:catalog-search && npm run check:conversation-priority && npm run check:pet-interactions && npm run check:pet-recall && npm run check:pet-gallery && npm run check:pet-history-geometry && npm run check:continue-learning && npm run check:matching-pairs && npm run check:ability-pack && npm run check:geordie-pack && npm run check:english-confusables && npm run check:conversation-bridges && npm run check:expansion-packs && npm run check:sentence-identity && npm run check:gap-fill && npm run check:learning-time && npm run check:social-preview && npm run check:first-run-onboarding && npm run check:startup-performance && npm run check:slow-device && npm run check:windows-settings && npm run check:profile-organisation && npm run check:contrast && npm run check:muted-packs && npm run check:desktop-polish && npm run check:english-paraphrase && npm run check:progress-consistency && npm run check:notice-and-audio && npm run check:notification-actions && npm run check:pet-handover && npm run check:dialogue-capstone && npm run check:phrase-chains && npm run check:review-throughput && npm run check:theme-control && npm run check:settings-search && npm run check:memory-decay && npm run check:update-controls && npm run check:accent-coverage && npm run check:hero-progress && npm run check:data-and-storage && npm run check:teaching-order && npm run check:slide-select && npm run check:dark-coverage && vite build",
     "start": "node server/index.js",
     "electron": "npm run build && electron .",
     "electron:run": "electron .",
@@ -81,7 +82,7 @@
     "check:hero-progress": "node scripts/check-hero-progress.cjs",
     "check:data-and-storage": "node scripts/check-data-and-storage.cjs",
     "check:teaching-order": "node scripts/check-teaching-order.cjs",
-    "check:slide-select": "node scripts/check-slide-select.cjs && node scripts/check-german-interface.cjs && node scripts/check-review-honesty.cjs && node scripts/check-pet-history.cjs && node scripts/check-menu-stacking.cjs && node scripts/check-language-split.cjs && node scripts/check-english-course.cjs && node scripts/check-plural-you.cjs && node scripts/check-conversation-beta.cjs && node scripts/check-no-flash.cjs && node scripts/check-settings-nav.cjs && node scripts/check-gate-integrity.cjs && node scripts/check-progress-responsive.cjs && node scripts/check-word-popover.cjs",
+    "check:slide-select": "node scripts/check-slide-select.cjs && node scripts/check-german-interface.cjs && node scripts/check-review-honesty.cjs && node scripts/check-pet-history.cjs && node scripts/check-menu-stacking.cjs && node scripts/check-language-split.cjs && node scripts/check-english-course.cjs && node scripts/check-plural-you.cjs && node scripts/check-no-flash.cjs && node scripts/check-settings-nav.cjs && node scripts/check-gate-integrity.cjs && node scripts/check-progress-responsive.cjs && node scripts/check-word-popover.cjs",
     "check:dark-coverage": "node scripts/check-dark-coverage.cjs"
   },
   "build": {

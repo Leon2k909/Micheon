@@ -39,6 +39,27 @@ export const MASTERED_SENTENCE_PHASES: readonly SentencePhase[] = [
   "RecallBoth",
 ];
 
+/**
+ * A single word gets a short route. Running one word through the full
+ * thirteen-stage sentence drill is not rigour, it is padding: ordering one
+ * tile, gap-filling a one-word gap and writing the "sentence" from memory are
+ * all the same exercise wearing different hats. Read it, pick its meaning,
+ * type it, produce its meaning — four honest passes, and the spaced ladder
+ * does the rest across days the way it does for sentences.
+ */
+export const WORD_PHASES: readonly SentencePhase[] = [
+  "Read",
+  "MeaningPick",
+  "Type",
+  "Translate",
+];
+
+/** A word the learner already holds: straight recall, both directions. */
+export const MASTERED_WORD_PHASES: readonly SentencePhase[] = [
+  "RecallTarget",
+  "RecallMeaning",
+];
+
 /** These stages cannot be completed fairly without hearing the target audio. */
 export const AUDIO_REQUIRED_SENTENCE_PHASES: readonly SentencePhase[] = [
   "ListenPick",
@@ -51,14 +72,19 @@ export interface SentencePhaseRouteOptions {
   mastered: boolean;
   bilingual: boolean;
   audioMuted: boolean;
+  /** True for a single-word item from a vocabulary sitting. */
+  word?: boolean;
 }
 
 export function buildSentencePhaseRoute({
   mastered,
   bilingual,
   audioMuted,
+  word = false,
 }: SentencePhaseRouteOptions): SentencePhase[] {
-  const route: readonly SentencePhase[] = mastered
+  const route: readonly SentencePhase[] = word
+    ? (mastered ? MASTERED_WORD_PHASES : WORD_PHASES)
+    : mastered
     ? MASTERED_SENTENCE_PHASES
     : bilingual
       ? BILINGUAL_SENTENCE_PHASES
