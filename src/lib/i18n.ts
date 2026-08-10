@@ -50,13 +50,15 @@ const DE: Record<string, string> = {
   "This runs privately on your device.": "Das läuft privat auf deinem Gerät.",
   "Tap stop when you are finished.": "Tippe auf Stopp, wenn du fertig bist.",
   "Speak naturally at your normal pace.": "Sprich natürlich in deinem normalen Tempo.",
+  "Micheon had to guess at the amber words. Say those again.": "Micheon musste bei den gelben Wörtern raten. Sag die noch einmal.",
+  "Green came through clearly. Amber Micheon only just made out. Red did not match.":
+    "Grün ist klar angekommen. Gelb hat Micheon nur mit Mühe verstanden. Rot passte nicht.",
   "Every word came through.": "Jedes Wort ist angekommen.",
   "Most of it came through. The red parts did not.": "Das meiste ist angekommen. Die roten Stellen nicht.",
   "That did not come through. Try it again slowly.": "Das ist nicht angekommen. Versuche es noch einmal langsam.",
   "understood": "verstanden",
   "This checks whether your words came through, not how close your accent is. Micheon can understand a strong accent perfectly well, so a high score is not proof that you sound German.":
     "Das prüft, ob deine Wörter angekommen sind, nicht wie nah dein Akzent am Deutschen ist. Micheon versteht auch einen starken Akzent mühelos — ein hoher Wert ist also kein Beleg dafür, dass du deutsch klingst.",
-  "Green matched what Micheon heard. Red is the part to practise again.": "Grün stimmt mit dem Gehörten überein. Rot solltest du noch einmal üben.",
   "Micheon heard": "Micheon hat gehört",
   "Skip this speaking check": "Diese Sprechübung überspringen",
   "← Back": "← Zurück",

@@ -26,7 +26,8 @@ function loadTypeScript(relativePath) {
   return loaded.exports;
 }
 
-const { buildPronunciationFeedback } = loadTypeScript("src/lib/pronunciationFeedback.ts");
+const feedback = loadTypeScript("src/lib/pronunciationFeedback.ts");
+const { buildPronunciationFeedback } = feedback;
 const main = read("electron/main.js");
 const preload = read("electron/preload.cjs");
 const guided = read("src/GuidedSession.tsx");
@@ -126,6 +127,105 @@ assert.equal(tuningFor(40, 16).context, null);
 assert(tuningFor(9.9, 16).context > tuningFor(3, 16).context);
 // And the tuning has to actually reach whisper.
 assert(speechSource.includes("...transcriptionTuning(audio)"));
+
+// ── a repaired sentence must not read as a clean one ────────────────────────
+//
+// These are real whisper outputs, captured by synthesising each sentence twice:
+// once with a German voice, once with an English voice reading the same German
+// text — which is what a learner who cannot pronounce it yet actually sounds
+// like. The numbers are the model's own confidence per token.
+//
+// The English readings are the whole problem: the text comes back nearly
+// right, so letter-matching alone called the last one 97%. The confidence did
+// not come back right, and that is the signal being used.
+const NATIVE_S1 = [
+  [" Ich", 0.539], [" glaube", 0.997], [",", 0.964], [" wir", 0.995], [" haben", 0.999],
+  [" alles", 0.995], [",", 0.986], [" was", 0.997], [" wir", 1.0], [" brauchen", 0.999], [".", 0.952],
+];
+const ENGLISH_S5 = [
+  [" Das", 0.945], [" W", 0.331], ["etter", 0.946], [" ist", 0.995], [" heute", 0.256],
+  [" wirklich", 0.345], [" schon", 0.619], [".", 0.749],
+];
+const NATIVE_S3 = [
+  [" Ich", 0.929], [" hätte", 0.999], [" gern", 0.988], [" einen", 0.999],
+  [" K", 0.997], ["aff", 1.0], ["ee", 0.999], [".", 0.939],
+];
+const asTokens = (rows) => rows.map(([text, probability]) => ({ text, probability }));
+
+const nativeS1 = feedback.buildPronunciationFeedback(
+  "Ich glaube, wir haben alles, was wir brauchen.",
+  "Ich glaube, wir haben alles, was wir brauchen.",
+  asTokens(NATIVE_S1)
+);
+assert.deepEqual(nativeS1.unclearWords, [], "a native speaker is being told they mumbled");
+assert(nativeS1.score === 1, `a clean native reading scored ${nativeS1.score}`);
+
+const nativeS3 = feedback.buildPronunciationFeedback(
+  "Ich hätte gern einen Kaffee.",
+  "Ich hätte gern einen Kaffee.",
+  asTokens(NATIVE_S3)
+);
+assert.deepEqual(nativeS3.unclearWords, []);
+assert(nativeS3.score === 1);
+
+// The case that started this: right words, barely heard.
+const englishS5 = feedback.buildPronunciationFeedback(
+  "Das Wetter ist heute wirklich schön.",
+  "Das Wetter ist heute wirklich schon.",
+  asTokens(ENGLISH_S5)
+);
+assert(
+  englishS5.unclearWords.includes("heute") && englishS5.unclearWords.includes("wirklich"),
+  `the guessed words were not called out: ${JSON.stringify(englishS5.unclearWords)}`
+);
+assert(
+  englishS5.score < 0.8,
+  `a sentence the model guessed at still scored ${Math.round(englishS5.score * 100)}%`
+);
+// A wrong word the model was also unsure of must not collect near-miss credit
+// for sharing letters with the right one. "wie viel" came back "we will" at
+// 0.42 and 0.14, and letter overlap alone scored that sentence 90%.
+const ENGLISH_S6 = [
+  [" Ent", 0.88], ["sch", 0.681], ["uld", 0.978], ["igung", 0.935], [",", 0.861],
+  [" we", 0.424], [" will", 0.137], [" kost", 0.575], ["et", 0.98], [" das", 0.982], [".", 0.728],
+];
+const englishS6 = feedback.buildPronunciationFeedback(
+  "Entschuldigung, wie viel kostet das?",
+  "Entschuldigung, we will kostet das.",
+  asTokens(ENGLISH_S6)
+);
+assert(
+  englishS6.score <= 0.8,
+  `a guessed-at wrong word still earned near-miss credit: ${Math.round(englishS6.score * 100)}%`
+);
+// ...but a genuine near miss keeps its credit. "schön" heard as "schon" is one
+// vowel out, and the model was sure of it; that must still read as mostly right.
+const nearMiss = feedback.buildPronunciationFeedback(
+  "So ungefähr.", "So ungefahr.",
+  asTokens([[" So", 0.98], [" ungef", 0.97], ["ahr", 0.96], [".", 0.95]])
+);
+assert(nearMiss.score > 0.85, `a confident near miss was punished as a guess: ${nearMiss.score}`);
+
+// Without confidence — the browser fallback — nothing changes from before.
+const noConfidence = feedback.buildPronunciationFeedback(
+  "Das Wetter ist heute wirklich schön.",
+  "Das Wetter ist heute wirklich schon.",
+);
+assert.deepEqual(noConfidence.unclearWords, []);
+assert(noConfidence.score > 0.9, "the browser fallback should be unaffected");
+
+// The threshold has to stay between the two populations that were measured.
+assert(
+  feedback.UNCLEAR_BELOW < 0.539 && feedback.UNCLEAR_BELOW > 0.35,
+  "the unclear threshold has moved outside the range the measurements support"
+);
+// Sub-word pieces regroup into words, and a word takes its WORST piece.
+const regrouped = feedback.heardWordsWithConfidence(asTokens([
+  [" Har", 0.54], ["ben", 0.673], ["er", 0.14], ["ls", 0.736],
+]));
+assert.equal(regrouped.length, 1);
+assert.equal(regrouped[0].text, "Harbenerls");
+assert(Math.abs(regrouped[0].confidence - 0.14) < 1e-9, "a word must take its weakest syllable");
 
 // ── the Speak stage must not claim to mark pronunciation ────────────────────
 //

@@ -78,7 +78,7 @@ import {
   type SpeechRecognitionStatus,
 } from "@/lib/desktopSpeechRecognition";
 import { startSpeechRecording, type SpeechRecordingSession } from "@/lib/speechRecorder";
-import { buildPronunciationFeedback, type PronunciationFeedback } from "@/lib/pronunciationFeedback";
+import { buildPronunciationFeedback, type HeardToken, type PronunciationFeedback } from "@/lib/pronunciationFeedback";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -1098,22 +1098,25 @@ function useDesktopSpeechRecognitionStatus(): SpeechRecognitionStatus {
 }
 
 /**
- * What this stage can honestly tell you, and what it cannot.
+ * What this stage can honestly tell you.
  *
- * It cannot mark your pronunciation. Whisper is a language model: it is built
- * to turn approximate sounds into fluent text, so it quietly CORRECTS a
- * speaker. Read the German sentence below in a broad English accent -- "Ikh
- * glaubay, veer harben alles" -- and it comes back "Ich glaube, wir haben
- * alles, was wir brauchen", with per-word confidence between 0.91 and 0.98.
- * The model is not unsure. It is sure, and it is repairing you.
+ * Matching the text alone cannot judge speech, because whisper is a language
+ * model and it REPAIRS the speaker: an English voice reading "Das Wetter ist
+ * heute wirklich schön" came back as almost perfect text, 97% by letters, while
+ * the model was 0.26 sure of "heute" and 0.35 sure of "wirklich". It printed
+ * the right words. It had barely heard them.
  *
- * So a high number here means the words were RECOVERABLE, which is a real and
- * useful thing to know -- say the wrong word, or something unintelligible, and
- * this drops immediately. It is not a verdict on your accent, and the wording
- * must never imply that it is, because a learner who is told "excellent" while
- * mispronouncing every vowel has been actively taught the wrong thing.
+ * Its own confidence is the part that does reflect the sounds, and it is now
+ * used: a word the recogniser guessed at is called out by name. Across six
+ * sentences said by a German voice and by an English voice reading the same
+ * German, that flagged nothing in any native clip and something in all six of
+ * the others.
+ *
+ * It is still not a mark for an accent, and the wording still must not imply
+ * one -- "excellent" over a mispronounced sentence teaches the mistake.
  */
-function pronunciationMessage(score: number): string {
+function pronunciationMessage(score: number, unclearWords: string[]): string {
+  if (unclearWords.length) return "Micheon had to guess at the amber words. Say those again.";
   if (score >= 0.92) return "Every word came through.";
   if (score >= 0.72) return "Most of it came through. The red parts did not.";
   return "That did not come through. Try it again slowly.";
@@ -1147,7 +1150,11 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
     });
   }, [desktop, desktopStatus.enabled, desktopStatus.state]);
 
-  const useTranscript = (transcript: string) => {
+  // The tokens carry how sure the recogniser was of each piece, which is the
+  // only part of its output that reflects what was actually SAID rather than
+  // what it decided you meant. The browser fallback has none, and then this is
+  // text-matching exactly as before.
+  const useTranscript = (transcript: string, tokens: HeardToken[] = []) => {
     const clean = transcript.trim();
     if (!clean) {
       setError("Micheon did not hear a phrase. Check your microphone and try again.");
@@ -1155,7 +1162,7 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
       return;
     }
     setHeardText(clean);
-    setFeedback(buildPronunciationFeedback(expectedText, clean));
+    setFeedback(buildPronunciationFeedback(expectedText, clean, tokens));
   };
 
   const startDesktopRecording = () => {
@@ -1173,7 +1180,7 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
       setRecording(false);
       setProcessing(true);
       const result = await transcribeSpeech(audio, language);
-      useTranscript(result.text);
+      useTranscript(result.text, result.tokens ?? []);
     }).catch((reason) => {
       if (String(reason?.message ?? reason) !== "aborted") {
         setError(
@@ -1323,8 +1330,8 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
               <small>{ui("understood")}</small>
             </span>
             <div>
-              <strong>{ui(pronunciationMessage(feedback.score))}</strong>
-              <p>{ui("Green matched what Micheon heard. Red is the part to practise again.")}</p>
+              <strong>{ui(pronunciationMessage(feedback.score, feedback.unclearWords))}</strong>
+              <p>{ui("Green came through clearly. Amber Micheon only just made out. Red did not match.")}</p>
             </div>
           </div>
           <div className="fs-pronunciation-phrase" aria-label={`${Math.round(feedback.score * 100)}% understood`}>
