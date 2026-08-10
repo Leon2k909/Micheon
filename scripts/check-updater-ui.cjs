@@ -91,7 +91,13 @@ check(
   !/--surface-3:\s*#(?:dbe8d5|303c31)/.test(styles),
 );
 check("the compact updater keeps its state-keyed icon without dead error styling", banner.includes("micheon-update-icon--${status.state}") && !styles.includes(".micheon-update-icon--error"));
-check("a failed background check stays silent; settings explains it inline", !banner.includes('ui("Couldn\'t check for updates")') && card.includes("Couldn't reach the update service"));
+check("a failed background check stays silent; settings explains it inline", !banner.includes('ui("Couldn\'t check for updates")') && card.includes("a new version is being published right now"));
+// "Unreachable" nearly always meant a release was mid-publish, and the old
+// wording read as breakage. The card now says which of the two it is, split
+// on the one signal it has: whether the machine is online at all.
+check("the error line distinguishes a mid-publish check from being offline",
+  card.includes("navigator.onLine === false")
+    && card.includes("You're offline. Updates resume when you're back on the internet."));
 check("the compact updater keeps both actions inside the card", styles.includes(".micheon-update-actions") && styles.includes("grid-template-columns: minmax(0, 1fr) auto"));
 check("the updater has an explicit dark-theme treatment", styles.includes('html[data-theme="dark"] .micheon-update-panel'));
 check("the install takeover uses the cream-and-green dashboard surface", banner.includes("micheon-update-takeover") && styles.includes(".micheon-update-takeover") && styles.includes("--install-accent: #46bd50;"));

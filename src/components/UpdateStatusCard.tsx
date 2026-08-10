@@ -67,7 +67,16 @@ export function UpdateStatusCard() {
       case "downloading": return `${ui("Downloading the update…")} ${percent}%`;
       case "ready": return ui("Update ready. It installs when you close the app.");
       case "current": return ui("You're on the latest version.");
-      case "error": return ui("Couldn't reach the update service. It'll try again shortly.");
+      // "Unreachable" almost always means a new version is being published at
+      // this exact moment: the check lands in the minute where the release's
+      // files are still uploading, fails once, and the retry finds the new
+      // version. Leon watched this happen on every release day. Saying
+      // "couldn't reach the service" for that reads as something being broken
+      // when the truth is the opposite — so the two causes get their own
+      // lines, split on the only signal the renderer has.
+      case "error": return typeof navigator !== "undefined" && navigator.onLine === false
+        ? ui("You're offline. Updates resume when you're back on the internet.")
+        : ui("The update service didn't answer — usually that means a new version is being published right now. Micheon retries in a moment.");
       case "unsupported": return ui("Updates only apply to the installed app.");
       default: return ui("Checks on start and every fifteen minutes.");
     }

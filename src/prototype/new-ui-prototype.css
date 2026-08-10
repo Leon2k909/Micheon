@@ -9648,25 +9648,44 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
 
 .np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }
 
-/* What Continue Learning serves: three pills directly under the button they
-   change. The active one is filled; the others are quiet outlines. Wraps on a
-   narrow window rather than clipping — German labels run long. */
+/* What Continue Learning serves. The picker is PART of the button's card —
+   flush against its bottom edge, same width, shared corner radius — because
+   a row of pills floating below it read as unrelated chrome, and the whole
+   point is that this changes what THAT button does. Buttons do not inherit
+   the page font, which is why the first cut of this looked like fallback
+   text: font is set explicitly. */
+.np-course-launch {
+  display: grid;
+}
+
+.np-course-launch > .np-mobile-course-button {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .np-lesson-content-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px 12px;
+  border: 1px solid var(--np-line);
+  border-top: none;
+  border-radius: 0 0 26px 26px;
+  background: var(--np-surface-soft);
 }
 
 .np-lesson-content-picker > button {
-  min-height: 38px;
-  padding: 0 16px;
+  min-height: 36px;
+  padding: 0 15px;
   border: 1px solid var(--np-line);
   border-radius: 999px;
-  background: var(--np-surface-soft);
+  background: transparent;
   color: var(--np-muted);
-  font-size: 13px;
-  font-weight: 800;
+  font-family: var(--np-font-text);
+  font-size: 12.5px;
+  font-weight: 850;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
@@ -9677,8 +9696,8 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
 }
 
 .np-lesson-content-picker > button.is-active {
-  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.7);
-  background: rgba(var(--accent-rgb, 79, 189, 81), 0.16);
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.75);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.18);
   color: var(--accent-ink, var(--np-text));
 }
 

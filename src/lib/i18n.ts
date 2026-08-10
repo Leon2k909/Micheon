@@ -428,7 +428,7 @@ const DE: Record<string, string> = {
   "Uninstalled": "Deinstalliert",
   "Installing": "Wird installiert",
   "Needs attention": "Aktion erforderlich",
-  "Preparing automatic installation": "Automatische Installation wird vorbereitet",
+  "Preparing automatic installation": "Automatische Installation wird vorbereitet",
   "Uninstall": "Deinstallieren",
   "Reinstall": "Neu installieren",
   "Hover or right-click for audio settings.": "Bewegen oder rechtsklicken für Audioeinstellungen.",
@@ -621,7 +621,10 @@ const DE: Record<string, string> = {
   "Downloading the update…": "Update wird heruntergeladen…",
   "Update ready. It installs when you close the app.": "Update bereit. Es wird installiert, wenn du die App schließt.",
   "You're on the latest version.": "Du hast die neueste Version.",
-  "Couldn't reach the update service. It'll try again shortly.": "Der Update-Dienst war nicht erreichbar. Es wird gleich erneut versucht.",
+  "The update service didn't answer — usually that means a new version is being published right now. Micheon retries in a moment.":
+    "Der Update-Dienst hat nicht geantwortet — meistens heißt das, dass genau jetzt eine neue Version veröffentlicht wird. Micheon versucht es gleich erneut.",
+  "You're offline. Updates resume when you're back on the internet.":
+    "Du bist offline. Updates laufen weiter, sobald du wieder Internet hast.",
   "Updates only apply to the installed app.": "Updates gelten nur für die installierte App.",
   "Checks on start and every fifteen minutes.": "Prüft beim Start und alle fünfzehn Minuten.",
 
@@ -999,14 +1002,13 @@ const DE: Record<string, string> = {
   "Single words with their meanings, most common first.": "Einzelne Wörter mit ihrer Bedeutung, die häufigsten zuerst.",
   "Four sentence slots and two word slots in each sitting.": "Vier Satz-Plätze und zwei Wort-Plätze pro Sitzung.",
   "Words tracker": "Wörter-Übersicht",
+  "Due review": "Fällige Wiederholung",
+  "Sort by": "Sortieren nach",
+  "German or English…": "Deutsch oder Englisch…",
+  "Alphabetical": "Alphabetisch",
+  "Needs attention first": "Braucht Aufmerksamkeit zuerst",
   "Single words from vocabulary lessons. Sentences live in the tracker above — the two never mix.":
     "Einzelne Wörter aus den Vokabel-Lektionen. Sätze stehen in der Übersicht darüber — die beiden mischen sich nie.",
-  "Due for review": "Zur Wiederholung fällig",
-  "Filter words": "Wörter filtern",
-  "Search words": "Wörter suchen",
-  "Show more ({n} of {total})": "Mehr anzeigen ({n} von {total})",
-  "No words match. Start a vocabulary lesson from the home page to begin.":
-    "Keine Wörter gefunden. Starte auf der Startseite eine Vokabel-Lektion, um zu beginnen.",
   "Milestones": "Meilensteine",
   "Next target": "Nächstes Ziel",
   "Keep the rhythm": "Bleib im Rhythmus",

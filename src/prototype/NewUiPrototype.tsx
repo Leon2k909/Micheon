@@ -1562,6 +1562,7 @@ function HomeView({
         placementPart={placementPart}
         stats={stats}
       />
+      <div className="np-course-launch">
       <button
         aria-label={needsStartingPoint
           ? ui("Choose your starting point. Tell us if you are a total beginner.")
@@ -1609,6 +1610,7 @@ function HomeView({
             {label}
           </button>
         ))}
+      </div>
       </div>
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} />
