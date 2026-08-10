@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const extractZip = require("extract-zip");
@@ -94,6 +95,55 @@ function recordingBuffer(value) {
   }
   if (value?.type === "Buffer" && Array.isArray(value.data)) return Buffer.from(value.data);
   return Buffer.alloc(0);
+}
+
+/** Seconds of audio in a PCM WAV, read from its own header rather than assumed. */
+function wavDurationSeconds(audio) {
+  if (!Buffer.isBuffer(audio) || audio.length < 44) return 0;
+  const channels = audio.readUInt16LE(22) || 1;
+  const sampleRate = audio.readUInt32LE(24) || 16000;
+  const bits = audio.readUInt16LE(34) || 16;
+  const bytesPerSecond = sampleRate * channels * (bits / 8);
+  if (!Number.isFinite(bytesPerSecond) || bytesPerSecond <= 0) return 0;
+  return Math.max(0, (audio.length - 44) / bytesPerSecond);
+}
+
+/**
+ * How hard to work, and how much of the window to look at.
+ *
+ * Two defaults were costing about fifteen seconds per attempt, measured on a
+ * five-second clip: 16.6s as shipped, 2.4s with both of these.
+ *
+ * THREADS. whisper.cpp defaults to four, whatever the machine has. On a
+ * sixteen-core machine that leaves twelve cores idle while the learner waits.
+ * Two are left free so the app itself stays responsive, and the floor is the
+ * old default, so a small machine is never made slower than it was.
+ *
+ * AUDIO CONTEXT. The encoder always processes a THIRTY-SECOND window, padding
+ * whatever it is given — which is why a five-second clip and a ten-second clip
+ * both took seventeen seconds. Sizing the context to the recording, with a
+ * two-second margin, is the whole difference. It is a real trade: too small a
+ * context truncates. So it is derived from the clip rather than fixed, floored
+ * well above anything a spoken sentence needs, and dropped entirely past
+ * twenty-five seconds, where the full window is what you want anyway.
+ *
+ * Checked on synthesised speech at 5.4s and 9.9s: the transcript is
+ * word-for-word identical to the full-context one. That is two clips in
+ * English, not a proof about German — hence the deliberately generous margin.
+ */
+function transcriptionTuning(audio, cpuCount = os.cpus().length) {
+  const args = [];
+  const cores = Number.isFinite(cpuCount) && cpuCount > 0 ? Math.floor(cpuCount) : 4;
+  const threads = Math.min(16, Math.max(4, cores - 2));
+  args.push("-t", String(threads));
+
+  const seconds = wavDurationSeconds(audio);
+  // 1500 is the full window: 30 seconds of mel frames.
+  const needed = Math.ceil((1500 * (seconds + 2)) / 30);
+  if (seconds > 0 && seconds <= 25 && needed < 1500) {
+    args.push("-ac", String(Math.max(256, needed)));
+  }
+  return args;
 }
 
 function createSpeechRecognitionManager(options) {
@@ -514,6 +564,7 @@ function createSpeechRecognitionManager(options) {
         "-of", outputBase,
         "-np",
         "--no-gpu",
+        ...transcriptionTuning(audio),
       ]);
       const parsed = parseWhisperJson(JSON.parse(await fsp.readFile(outputPath, "utf8")));
       return { ...parsed, durationMs: Date.now() - startedAt };
@@ -561,4 +612,6 @@ module.exports = {
   createSpeechRecognitionManager,
   parseWhisperJson,
   recordingBuffer,
+  transcriptionTuning,
+  wavDurationSeconds,
 };
