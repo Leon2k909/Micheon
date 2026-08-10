@@ -15,13 +15,11 @@ import { startServer } from "../server/index.js";
 import petHistoryGeometry from "./pet-history-geometry.cjs";
 import desktopSettingsStore from "./desktop-settings.cjs";
 import zoomSteps from "./zoom-steps.cjs";
-import speechRecognition from "./speech-recognition.cjs";
 
 const { autoUpdater } = electronUpdater;
 const { clampHistoryBounds, placePetHistoryBounds } = petHistoryGeometry;
 const { readDesktopSettings, writeDesktopSettings } = desktopSettingsStore;
 const { clampZoomFactor, nextZoomStep } = zoomSteps;
-const { createSpeechRecognitionManager } = speechRecognition;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,7 +55,6 @@ let serverStarted = false;
 let desktopSettings = null;
 let tray = null;
 let appIsQuitting = false;
-let speechRecognitionManager = null;
 
 // Keep the transparent compositor surface close to the mascot instead of the
 // size of the entire virtual desktop. The margin gives drag hit regions room
@@ -152,21 +149,6 @@ function saveDesktopSettings(value) {
   desktopSettings = writeDesktopSettings(desktopSettingsPath(), { ...getDesktopSettings(), ...value });
   if (desktopSettings.closeBehavior === "exit") destroyTray();
   return desktopSettings;
-}
-
-function getSpeechRecognitionManager() {
-  if (speechRecognitionManager) return speechRecognitionManager;
-  speechRecognitionManager = createSpeechRecognitionManager({
-    userDataPath: app.getPath("userData"),
-    fetchImpl: (url, options) => net.fetch(url, options),
-    isEnabled: () => getDesktopSettings().speechRecognitionEnabled !== false,
-    setEnabled: (enabled) => saveDesktopSettings({ speechRecognitionEnabled: Boolean(enabled) }),
-    onStatus: (status) => {
-      if (!mainWindow || mainWindow.isDestroyed()) return;
-      mainWindow.webContents.send("speech-recognition:status", status);
-    },
-  });
-  return speechRecognitionManager;
 }
 
 function showMainWindow() {
@@ -1595,29 +1577,6 @@ ipcMain.handle("storage:clear-cache", async (event) => {
 
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-ipcMain.handle("speech-recognition:get-status", async (event) => {
-  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted speech recognition request");
-  return getSpeechRecognitionManager().getStatus();
-});
-
-ipcMain.handle("speech-recognition:install", async (event) => {
-  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted speech recognition request");
-  return getSpeechRecognitionManager().install();
-});
-
-ipcMain.handle("speech-recognition:uninstall", async (event) => {
-  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted speech recognition request");
-  return getSpeechRecognitionManager().uninstall();
-});
-
-ipcMain.handle("speech-recognition:transcribe", async (event, payload) => {
-  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted speech recognition request");
-  return getSpeechRecognitionManager().transcribe({
-    audio: payload?.audio,
-    language: payload?.language,
-  });
-});
-
 ipcMain.handle("windows-settings:get", (event) => {
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted settings request");
   return windowsSettingsSnapshot();
@@ -1895,13 +1854,20 @@ if (hasSingleInstanceLock) {
     // verified whisper.cpp/model download in the background on every launch;
     // the manager is a no-op once both files are ready, or after the learner
     // has explicitly chosen Uninstall in Settings.
-    void getSpeechRecognitionManager().ensureInstalled();
+    // Speech recognition was removed in 1.2.239. Anyone who ran a build
+    // between 1.2.235 and 1.2.238 has a 574 MB model sitting in their profile
+    // that nothing will ever read again, so it is cleared out once here.
+    void (async () => {
+      try {
+        const leftover = path.join(app.getPath("userData"), "speech-recognition");
+        await fs.promises.rm(leftover, { recursive: true, force: true });
+      } catch { /* already gone, or in use — it can wait for the next launch */ }
+    })();
   });
 }
 
 app.on("before-quit", () => {
   appIsQuitting = true;
-  speechRecognitionManager?.dispose();
   destroyTray();
 });
 

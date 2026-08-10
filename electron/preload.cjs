@@ -63,18 +63,6 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("update:status", handler);
     return () => ipcRenderer.removeListener("update:status", handler);
   },
-  getSpeechRecognitionStatus: () => ipcRenderer.invoke("speech-recognition:get-status"),
-  installSpeechRecognition: () => ipcRenderer.invoke("speech-recognition:install"),
-  uninstallSpeechRecognition: () => ipcRenderer.invoke("speech-recognition:uninstall"),
-  transcribeSpeech: (audio, language) => ipcRenderer.invoke("speech-recognition:transcribe", {
-    audio,
-    language,
-  }),
-  onSpeechRecognitionStatus: (cb) => {
-    const handler = (_event, status) => cb(status);
-    ipcRenderer.on("speech-recognition:status", handler);
-    return () => ipcRenderer.removeListener("speech-recognition:status", handler);
-  },
   setPetDisplayMode: (mode) => ipcRenderer.send("pet-overlay:set-display-mode", mode),
   onPetDisplayModeChange: (cb) => {
     const handler = (_event, mode) => cb(mode);
