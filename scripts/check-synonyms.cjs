@@ -90,6 +90,14 @@ const ACCEPT = [
   ["i'm done", "I'm finished."],
   ["it's a difficult question", "It's a hard question."],
   ["perhaps tomorrow", "Maybe tomorrow."],
+  // "Ich glaube" is think AND believe, and English hedges with either.
+  ["i believe we have enough", "I think we have enough."],
+  ["i reckon we have enough", "I think we have enough."],
+  ["i suppose we have enough", "I think we have enough."],
+  ["i guess we have enough", "I think we have enough."],
+  ["i think it is fine", "I believe it is fine."],
+  ["she believes it is true", "She thinks it is true."],
+  ["i thought so", "I believed so."],
   ["i'm really happy", "I'm really glad."],
   ["it costs about ten euros", "It costs around ten euros."],
   // Telling the time, every way people say it.
@@ -118,6 +126,13 @@ const REJECT = [
   ["the shop is open", "The shop is closed."],
   ["i go to the theatre", "I go to the cinema."],
   ["are you right", "Are you all right?"],
+  // Hedging is not certainty, and German keeps wissen and glauben apart.
+  ["i know we have enough", "I think we have enough."],
+  ["i hope we have enough", "I think we have enough."],
+  // "Guess" and "suppose" only hedge in the first person: on their own they
+  // are a riddle and an obligation, and must not fold into "think".
+  ["guess the answer", "think of the answer"],
+  ["you are supposed to wait here", "you think to wait here"],
   // A wrong time is a wrong answer, however it is phrased.
   ["it's ten past seven", "It's half past seven."],
   ["it's seven twenty", "It's seven thirty."],

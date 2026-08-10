@@ -85,6 +85,20 @@ export const ENGLISH_SYNONYMS: string[][] = [
   ["finish", "complete"],
   ["speak", "talk"],
   ["reply", "answer"],
+  // "Ich glaube" is both "I think" and "I believe", and English uses the two
+  // interchangeably to hedge: "I think we have enough" / "I believe we have
+  // enough" are the same sentence. "reckon" is the same hedge in British
+  // speech. Notably NOT "know" — German keeps wissen and glauben apart on
+  // purpose, and so does the app.
+  ["think", "believe", "reckon"],
+  ["thought", "believed", "reckoned"],
+  // These two only hedge in the first person. "Guess" on its own is what you
+  // do to a riddle, and "suppose" can carry an obligation ("you're supposed
+  // to"), so they are folded as whole phrases rather than as words. The text
+  // has been lower-cased by the time these run, hence "i".
+  // "i would say", not "i'd say": contractions are expanded before this runs,
+  // so the apostrophe form never reaches the table.
+  ["i think", "i suppose", "i guess", "i would say"],
   // "receive" and "obtain" are not here: the chain above already folds them,
   // and a row that never fires is a row that looks like cover and is not.
   // "Shut" is the same word in every tense, and "close" is not, so folding the
