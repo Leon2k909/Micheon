@@ -127,4 +127,43 @@ assert(tuningFor(9.9, 16).context > tuningFor(3, 16).context);
 // And the tuning has to actually reach whisper.
 assert(speechSource.includes("...transcriptionTuning(audio)"));
 
-console.log("Speech recognition runtime, lifecycle, stage, pronunciation feedback, and transcription tuning are guarded");
+// ── the Speak stage must not claim to mark pronunciation ────────────────────
+//
+// It cannot. Whisper is a language model and it repairs the speaker: read the
+// German in a broad English accent -- "Ikh glaubay, veer harben alles" -- and
+// it returns "Ich glaube, wir haben alles, was wir brauchen" with per-word
+// confidence of 0.91 to 0.98. Not hedging. Confident, and wrong about what was
+// actually said. So a high score here means the words were RECOVERABLE, and the
+// copy has to say that, because "Excellent" over a mispronounced sentence
+// teaches the mistake.
+const speakCopy = [
+  "Every word came through.",
+  "Most of it came through. The red parts did not.",
+  "That did not come through. Try it again slowly.",
+];
+for (const line of speakCopy) {
+  assert(guided.includes(line), `the Speak stage lost its wording: ${line}`);
+}
+// Nothing in the result panel may praise the SOUND of the attempt.
+const resultPanel = guided.slice(
+  guided.indexOf("function pronunciationMessage"),
+  guided.indexOf("function pronunciationMessage") + 1400,
+);
+for (const overclaim of ["clearly", "Excellent", "perfect", "sounds German", "pronounced"]) {
+  assert(
+    !resultPanel.includes(overclaim),
+    `the Speak stage says "${overclaim}", which claims a judgement about pronunciation that it cannot make`
+  );
+}
+// And it has to say so out loud rather than leaving a bare percentage that
+// looks like a mark out of a hundred.
+const caveat = "This checks whether your words came through, not how close your accent is.";
+assert(guided.includes(caveat), "the Speak stage no longer explains what the score is not");
+assert(guided.includes('<small>{ui("understood")}</small>'), "the score has no label, so it reads as a mark");
+// German learners see this panel too.
+const german = read("src/lib/i18n.ts");
+for (const line of [...speakCopy, caveat.slice(0, 40), '"understood"']) {
+  assert(german.includes(line), `the Speak stage wording is untranslated: ${line}`);
+}
+
+console.log("Speech recognition runtime, lifecycle, stage, pronunciation feedback, transcription tuning, and the limits of what the Speak stage claims are guarded");

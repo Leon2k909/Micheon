@@ -10401,7 +10401,13 @@ html[data-theme="dark"] .fs-review-level-option strong {
 .fs-pronunciation-heading { display: flex; align-items: center; gap: 13px; }
 .fs-pronunciation-heading strong { display: block; color: var(--text-1); font-size: 15px; font-weight: 900; }
 .fs-pronunciation-heading p { margin-top: 3px; color: var(--text-3); font-size: 12px; font-weight: 700; }
-.fs-pronunciation-score { display: grid; width: 54px; height: 54px; flex: 0 0 auto; place-items: center; border-radius: 17px; font-size: 15px; font-weight: 950; }
+/* The number carries a label now, because a bare percentage next to a phrase
+   reads as a mark for how well you said it. It is not that; it is how much of
+   it came through. German "verstanden" is twice the length of "understood",
+   so the badge grows to its content rather than clipping it. */
+.fs-pronunciation-score { display: grid; min-width: 54px; min-height: 54px; flex: 0 0 auto; place-items: center; align-content: center; gap: 1px; padding: 7px 9px; border-radius: 17px; font-size: 15px; font-weight: 950; line-height: 1.1; }
+.fs-pronunciation-score small { font-size: 9px; font-weight: 800; white-space: nowrap; opacity: 0.86; }
+.fs-pronunciation-caveat { margin-top: 11px; color: var(--text-3); font-size: 11.5px; font-weight: 700; line-height: 1.5; }
 .fs-pronunciation-score.is-good { color: #167239; background: #dcf7df; }
 .fs-pronunciation-score.is-practice { color: #b12e43; background: #ffe1e6; }
 .fs-pronunciation-phrase { margin-top: 18px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface-2); padding: 18px; color: var(--text-1); font-size: clamp(24px, 3vw, 38px); font-weight: 900; line-height: 1.45; text-align: center; }

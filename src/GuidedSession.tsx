@@ -1097,10 +1097,26 @@ function useDesktopSpeechRecognitionStatus(): SpeechRecognitionStatus {
   );
 }
 
+/**
+ * What this stage can honestly tell you, and what it cannot.
+ *
+ * It cannot mark your pronunciation. Whisper is a language model: it is built
+ * to turn approximate sounds into fluent text, so it quietly CORRECTS a
+ * speaker. Read the German sentence below in a broad English accent -- "Ikh
+ * glaubay, veer harben alles" -- and it comes back "Ich glaube, wir haben
+ * alles, was wir brauchen", with per-word confidence between 0.91 and 0.98.
+ * The model is not unsure. It is sure, and it is repairing you.
+ *
+ * So a high number here means the words were RECOVERABLE, which is a real and
+ * useful thing to know -- say the wrong word, or something unintelligible, and
+ * this drops immediately. It is not a verdict on your accent, and the wording
+ * must never imply that it is, because a learner who is told "excellent" while
+ * mispronouncing every vowel has been actively taught the wrong thing.
+ */
 function pronunciationMessage(score: number): string {
-  if (score >= 0.92) return "Excellent. Micheon heard the whole phrase clearly.";
-  if (score >= 0.72) return "Good start. Try the red sounds once more for a cleaner phrase.";
-  return "Try it again slowly. The red parts did not match what Micheon heard.";
+  if (score >= 0.92) return "Every word came through.";
+  if (score >= 0.72) return "Most of it came through. The red parts did not.";
+  return "That did not come through. Try it again slowly.";
 }
 
 function SpeakingPractice({ expectedText, language, onContinue }: {
@@ -1302,13 +1318,16 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
       {feedback && (
         <motion.div className="fs-pronunciation-result" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
           <div className="fs-pronunciation-heading">
-            <span className={cn("fs-pronunciation-score", feedback.score >= 0.72 ? "is-good" : "is-practice")}>{Math.round(feedback.score * 100)}%</span>
+            <span className={cn("fs-pronunciation-score", feedback.score >= 0.72 ? "is-good" : "is-practice")}>
+              {Math.round(feedback.score * 100)}%
+              <small>{ui("understood")}</small>
+            </span>
             <div>
               <strong>{ui(pronunciationMessage(feedback.score))}</strong>
               <p>{ui("Green matched what Micheon heard. Red is the part to practise again.")}</p>
             </div>
           </div>
-          <div className="fs-pronunciation-phrase" aria-label={`${Math.round(feedback.score * 100)}% matched`}>
+          <div className="fs-pronunciation-phrase" aria-label={`${Math.round(feedback.score * 100)}% understood`}>
             {feedback.segments.map((segment, index) => (
               <span className={`is-${segment.status}`} key={`${segment.text}-${index}`}>{segment.text}</span>
             ))}
@@ -1317,6 +1336,11 @@ function SpeakingPractice({ expectedText, language, onContinue }: {
             <span>{ui("Micheon heard")}</span>
             <q>{heardText}</q>
           </div>
+          {/* Said plainly, every time, rather than left for the learner to
+              work out from a number that looks like a mark out of a hundred. */}
+          <p className="fs-pronunciation-caveat">
+            {ui("This checks whether your words came through, not how close your accent is. Micheon can understand a strong accent perfectly well, so a high score is not proof that you sound German.")}
+          </p>
           <div className="fs-pronunciation-actions">
             <button className="ghost-btn" onClick={start} type="button"><RotateCcw aria-hidden="true" /> {ui("Try again")}</button>
             <button className="lesson-cta" onClick={onContinue} type="button">{ui("Continue")} <ArrowRight aria-hidden="true" /></button>
