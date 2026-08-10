@@ -9747,6 +9747,22 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   gap: 12px;
 }
 
+/* The screen shown when a React tree has just died. Styled with literal
+   colours matching the boot backgrounds, not shell-scoped tokens — the shell
+   whose tokens those are is exactly the thing that may have failed. */
+.app-crash-screen { display: grid; place-items: center; min-height: 100vh; padding: 24px; background: #f4f2ec; }
+.app-crash-card { max-width: 460px; padding: 28px; border: 1px solid #dcdad2; border-radius: 22px; background: #fffdf9; color: #23272f; text-align: center; }
+.app-crash-card strong { display: block; font-size: 17px; font-weight: 900; }
+.app-crash-card p { margin-top: 6px; font-size: 14px; font-weight: 700; color: #4a4f58; }
+.app-crash-card .app-crash-detail { margin-top: 12px; font-size: 12px; font-weight: 650; line-height: 1.6; color: #6a707b; }
+.app-crash-actions { margin-top: 18px; }
+.app-crash-actions button { min-height: 46px; padding: 0 26px; border: none; border-radius: 14px; background: #23272f; color: #fffdf9; font-size: 14px; font-weight: 900; cursor: pointer; }
+html[data-theme="dark"] .app-crash-screen { background: #0b0e13; }
+html[data-theme="dark"] .app-crash-card { border-color: #262e3c; background: #161b23; color: #e8ebf1; }
+html[data-theme="dark"] .app-crash-card p { color: #aab2bf; }
+html[data-theme="dark"] .app-crash-card .app-crash-detail { color: #8791a0; }
+html[data-theme="dark"] .app-crash-actions button { background: #e8ebf1; color: #0b0e13; }
+
 .main-skeleton-greeting { width: min(280px, 40%); height: 46px; border-radius: 14px; background: #e3e3de; }
 .main-skeleton-chips { display: flex; flex-wrap: wrap; gap: 12px; }
 .main-skeleton-chip { width: 138px; height: 62px; border-radius: 20px; background: #fffdf9; }

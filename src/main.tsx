@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App, { MotionGate } from "./App";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
+import { installGlobalCrashHooks } from "./lib/crashReport";
 import { SilencedAudioPrompt } from "./components/SilencedAudioPrompt";
 import { applyThemeToDom, resolveTheme } from "./lib/theme";
 import { applyAccentColour } from "./lib/accentColour";
@@ -58,15 +60,22 @@ if (initialParams.get("pet-history") === "1") {
 // the app is genuinely stuttering. Never overrides a choice the learner made.
 watchRuntimePerformance();
 
+// Two mid-lesson blank screens arrived with no trace to debug from. Anything
+// that escapes React lands here; anything that kills a React tree is caught by
+// the boundary below and shows a way out instead of an empty window.
+installGlobalCrashHooks();
+
 const container = document.getElementById("root");
 if (container) {
   createRoot(container).render(
     <StrictMode>
-      <MotionGate>
-        <App />
-        {/* One explanation for every play button in the app. */}
-        <SilencedAudioPrompt />
-      </MotionGate>
+      <AppErrorBoundary>
+        <MotionGate>
+          <App />
+          {/* One explanation for every play button in the app. */}
+          <SilencedAudioPrompt />
+        </MotionGate>
+      </AppErrorBoundary>
     </StrictMode>
   );
 }

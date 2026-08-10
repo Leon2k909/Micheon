@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo, useSyncExternalStore } from "react";
+import { recordCrash } from "@/lib/crashReport";
 import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1959,6 +1960,24 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     currentPhaseRef.current = replacement;
     setPhase(replacement);
   }, [audioMuted, hasFr, masteredRoute, phase]);
+
+  // A phase outside the current route renders NOTHING: every stage branch is
+  // false, the header stays up, and the lesson looks dead. Routes change under
+  // a live session — settings, updates that remove a stage, mastery flips —
+  // so rather than trusting every path to notice, an impossible phase snaps to
+  // the start of the route. A visible restart of one exercise beats a blank,
+  // and the recovery is recorded so it shows up in the crash reports.
+  useEffect(() => {
+    const route = phaseRoute();
+    if (route.length === 0 || route.includes(phase)) return;
+    recordCrash({
+      kind: "render",
+      message: `guided phase "${phase}" is not in the current route [${route.join(", ")}] — recovered to "${route[0]}"`,
+    });
+    currentPhaseRef.current = route[0];
+    setPhase(route[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, masteredRoute, hasFr, audioMuted]);
 
 
   // Play lesson audio automatically on first exposure and listening checks.

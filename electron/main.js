@@ -1280,6 +1280,30 @@ async function createWindow() {
     mainWindow?.webContents.send("window:maximize-change", mainWindow.isMaximized());
   mainWindow.on("maximize", sendMaxState);
   mainWindow.on("unmaximize", sendMaxState);
+  // The pet overlay has had this handler for months; the window the learner
+  // actually works in did not, so a dead renderer meant a frozen app and no
+  // evidence. Details go to renderer-crash.log in the profile folder, then
+  // the window reloads — progress is written after every answer, so a reload
+  // costs at most the exercise on screen.
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    try {
+      fs.appendFileSync(
+        path.join(app.getPath("userData"), "renderer-crash.log"),
+        `${new Date().toISOString()} renderer gone: ${JSON.stringify(details)}\n`
+      );
+    } catch { /* the reload matters more than the log line */ }
+    if (mainWindow && !mainWindow.isDestroyed() && details?.reason !== "clean-exit") {
+      mainWindow.webContents.reload();
+    }
+  });
+  mainWindow.webContents.on("unresponsive", () => {
+    try {
+      fs.appendFileSync(
+        path.join(app.getPath("userData"), "renderer-crash.log"),
+        `${new Date().toISOString()} renderer unresponsive\n`
+      );
+    } catch { /* observation only — never make it worse */ }
+  });
   mainWindow.on("blur", reassertPetSurfacesAfterAppDeactivation);
   mainWindow.on("minimize", reassertPetSurfacesAfterAppDeactivation);
   mainWindow.on("close", (event) => {
