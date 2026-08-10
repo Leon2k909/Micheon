@@ -123,6 +123,16 @@ assert(wordProgressId("Haus") === wordProgressId("haus"), "word ids are case-sen
 // ── the picker, and the flag it writes ────────────────────────────────────
 const home = read("src/prototype/NewUiPrototype.tsx");
 assert(home.includes("np-lesson-content-picker"), "the content picker is gone from the home page");
+assert(home.includes("np-lesson-content-trigger") && home.includes('aria-haspopup="menu"'),
+  "the picker is no longer the dropdown on the button that Leon asked for");
+// The preview swap must replace like with like: mastering a WORD on the
+// vocabulary flashcards used to hand back a SENTENCE, mid-preview, in a
+// sitting chosen precisely for having no sentences in it.
+const sessionSrc = read("src/guided_learning_session.tsx");
+assert(sessionSrc.includes('outgoing?.item?.kind === "word"'),
+  "the preview swap no longer distinguishes word cards from sentence cards");
+assert(sessionSrc.includes("swappingWord") && /swappingWord[\s\S]{0,220}rankWordCatalog/.test(sessionSrc),
+  "a mastered word card is not replaced from the word catalogue");
 for (const value of ['"sentences"', '"words"', '"mixed"']) {
   assert(home.includes(value), `the picker lost its ${value} option`);
 }

@@ -1538,6 +1538,23 @@ function HomeView({
   // "how much longer" tracks what was just learned.
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
+  const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  // The menu closes the way every menu should: outside click or Escape.
+  useEffect(() => {
+    if (!contentMenuOpen) return undefined;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!(event.target as Element | null)?.closest?.(".np-lesson-content-picker")) setContentMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setContentMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [contentMenuOpen]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -1587,29 +1604,48 @@ function HomeView({
         </span>
         <ChevronRight />
       </button>
-      {/* What the button above serves. One control on the button it changes,
-          not a setting three screens away: Michelle sits down for words, Leon
-          for sentences, and the choice holds until it is changed — "I'm here
-          for vocabulary" is true for weeks, not per press. Word progress
-          lives under its own ids, so nothing chosen here can ever push a
-          single word into the sentence course's queues or vice versa. */}
-      <div aria-label={ui("What your lessons are made of")} className="np-lesson-content-picker" role="group">
-        {([
-          ["sentences", ui("Sentences"), ui("Phrases, sentences and dialogues — the course as it has always been.")],
-          ["words", ui("Words"), ui("Single words with their meanings, most common first.")],
-          ["mixed", ui("Both"), ui("Four sentence slots and two word slots in each sitting.")],
-        ] as const).map(([value, label, hint]) => (
-          <button
-            aria-pressed={lessonContent === value}
-            className={lessonContent === value ? "is-active" : undefined}
-            key={value}
-            onClick={() => { setLessonContent(value); setLessonContentState(value); }}
-            title={hint}
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
+      {/* What the button serves: a dropdown ON the button, beside its arrow,
+          because a row of pills below it read as unrelated chrome. The choice
+          holds until changed — "I'm here for vocabulary" is true for weeks,
+          not per press. Word progress lives under its own ids, so nothing
+          chosen here can push a single word into the sentence course's
+          queues or vice versa. */}
+      <div className="np-lesson-content-picker">
+        <button
+          aria-expanded={contentMenuOpen}
+          aria-haspopup="menu"
+          aria-label={ui("Lesson content")}
+          className="np-lesson-content-trigger"
+          onClick={() => setContentMenuOpen((open) => !open)}
+          type="button"
+        >
+          {ui(lessonContent === "words" ? "Words" : lessonContent === "mixed" ? "Both" : "Sentences")}
+          <ChevronDown aria-hidden="true" />
+        </button>
+        {contentMenuOpen && (
+          <div aria-label={ui("What your lessons are made of")} className="np-lesson-content-menu" role="menu">
+            {([
+              ["sentences", "Sentences", "Phrases, sentences and dialogues — the course as it has always been."],
+              ["words", "Words", "Single words with their meanings, most common first."],
+              ["mixed", "Both", "Four sentence slots and two word slots in each sitting."],
+            ] as const).map(([value, label, hint]) => (
+              <button
+                aria-checked={lessonContent === value}
+                key={value}
+                onClick={() => {
+                  setLessonContent(value);
+                  setLessonContentState(value);
+                  setContentMenuOpen(false);
+                }}
+                role="menuitemradio"
+                type="button"
+              >
+                <strong>{ui(label)}</strong>
+                <small>{ui(hint)}</small>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       </div>
       <FluencyOutlook profile={profile} vocab={vocab} />

@@ -9648,57 +9648,114 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
 
 .np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }
 
-/* What Continue Learning serves. The picker is PART of the button's card —
-   flush against its bottom edge, same width, shared corner radius — because
-   a row of pills floating below it read as unrelated chrome, and the whole
-   point is that this changes what THAT button does. Buttons do not inherit
-   the page font, which is why the first cut of this looked like fallback
-   text: font is set explicitly. */
+/* What Continue Learning serves: a dropdown ON the button, sitting just left
+   of its arrow, wearing the button's own background rather than bringing one.
+   The chip is white-on-colour like the button's kicker text; the menu is an
+   ordinary app surface floating below it. Buttons do not inherit the page
+   font, so the chip sets it explicitly — the first cut of this control
+   rendered in the UA fallback font for exactly that reason. */
 .np-course-launch {
-  display: grid;
+  position: relative;
 }
 
+/* A <button> shrinks to fit unless told otherwise; before the wrapper the
+   home view stretched it directly. */
 .np-course-launch > .np-mobile-course-button {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  width: 100%;
 }
 
 .np-lesson-content-picker {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 16px 12px;
-  border: 1px solid var(--np-line);
-  border-top: none;
-  border-radius: 0 0 26px 26px;
-  background: var(--np-surface-soft);
+  position: absolute;
+  top: 50%;
+  right: 82px;
+  z-index: 5;
+  transform: translateY(-50%);
 }
 
-.np-lesson-content-picker > button {
-  min-height: 36px;
-  padding: 0 15px;
-  border: 1px solid var(--np-line);
+.new-ui-prototype .np-lesson-content-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
   background: transparent;
-  color: var(--np-muted);
+  color: rgba(255, 255, 255, 0.92);
   font-family: var(--np-font-text);
   font-size: 12.5px;
   font-weight: 850;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.np-lesson-content-picker > button:hover {
-  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.55);
+.new-ui-prototype .np-lesson-content-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.new-ui-prototype .np-lesson-content-trigger > svg {
+  width: 14px;
+  height: 14px;
+}
+
+.new-ui-prototype .np-lesson-content-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 2px;
+  min-width: 260px;
+  padding: 6px;
+  border: 1px solid var(--np-line);
+  border-radius: 16px;
+  background: var(--np-surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.new-ui-prototype .np-lesson-content-menu > button {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
   color: var(--np-text);
+  font-family: var(--np-font-text);
+  text-align: left;
+  cursor: pointer;
 }
 
-.np-lesson-content-picker > button.is-active {
-  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.75);
-  background: rgba(var(--accent-rgb, 79, 189, 81), 0.18);
-  color: var(--accent-ink, var(--np-text));
+.new-ui-prototype .np-lesson-content-menu > button:hover {
+  background: var(--np-surface-soft);
+}
+
+.new-ui-prototype .np-lesson-content-menu > button[aria-checked="true"] {
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.14);
+}
+
+.new-ui-prototype .np-lesson-content-menu > button strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.new-ui-prototype .np-lesson-content-menu > button small {
+  color: var(--np-muted);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+/* Narrow windows: the copy column reaches further right, so the chip moves to
+   the button's free top-right corner instead of overlapping the text. */
+@media (max-width: 720px) {
+  .np-lesson-content-picker {
+    top: 10px;
+    right: 14px;
+    transform: none;
+  }
 }
 
 /* Custom accents in dark mode need two distinct jobs: the accent marks an

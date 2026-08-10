@@ -485,11 +485,26 @@ export default function GuidedLearningSession() {
           en: String((learnsEnglish ? step.item?.de : step.item?.en) ?? ""),
         }));
       const grades = loadGradeStore(user);
-      const candidates = catalog.filter((item) => {
-        if (usedIds.has(item.id) || statusForId(grades, item.id, item.aliases) !== "new") return false;
-        const record = progressEntryForId(grades, item.id, item.aliases)?.record;
-        return !isAttemptedPracticeEligible(record);
-      });
+      // A word card is replaced by a WORD, a sentence card by a sentence.
+      // The pool used to be the sentence catalogue unconditionally, so
+      // mastering a word on the vocabulary flashcards handed back a sentence
+      // — mid-preview, in a sitting the learner chose precisely because it
+      // has no sentences in it.
+      const outgoing = current[replaceAt];
+      const swappingWord = outgoing?.item?.kind === "word";
+      const candidates = swappingWord
+        ? rankWordCatalog(buildWordCatalog(withoutMutedPacks(apiParts)), corpusIndex).filter((word) => {
+            if (usedIds.has(word.id)) return false;
+            return statusForId(grades, word.id) === "new" && !isSnoozed(grades[word.id]);
+          })
+        : catalog.filter((item) => {
+            if (usedIds.has(item.id) || statusForId(grades, item.id, item.aliases) !== "new") return false;
+            const record = progressEntryForId(grades, item.id, item.aliases)?.record;
+            // The put-off floor applies here too: this is the pool a snoozed
+            // card would sneak back through otherwise.
+            if (isSnoozed(record)) return false;
+            return !isAttemptedPracticeEligible(record);
+          });
       const replacement = pickPreviewReplacement(
         candidates,
         blockedPairs,
@@ -498,7 +513,11 @@ export default function GuidedLearningSession() {
 
       if (!replacement) return current;
 
-      let replacementStep: any = {
+      let replacementStep: any = swappingWord
+        // The spread keeps kind: "word" — losing it would send the new card
+        // down the thirteen-stage sentence route.
+        ? { type: "sentence", item: { ...replacement, mastery: "new" } }
+        : {
         type: "sentence",
         item: {
           id: replacement.id,

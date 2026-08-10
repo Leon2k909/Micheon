@@ -1002,6 +1002,7 @@ const DE: Record<string, string> = {
   "Single words with their meanings, most common first.": "Einzelne Wörter mit ihrer Bedeutung, die häufigsten zuerst.",
   "Four sentence slots and two word slots in each sitting.": "Vier Satz-Plätze und zwei Wort-Plätze pro Sitzung.",
   "Words tracker": "Wörter-Übersicht",
+  "Lesson content": "Lektionsinhalt",
   "Due review": "Fällige Wiederholung",
   "Sort by": "Sortieren nach",
   "German or English…": "Deutsch oder Englisch…",
