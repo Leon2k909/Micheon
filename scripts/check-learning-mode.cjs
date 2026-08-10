@@ -14,6 +14,7 @@ const result = esbuild.buildSync({
         matchLearningModeGermanAnswer,
         phraseForLearningMode,
       } from "./src/lib/learningMode.ts";
+      export { toTextedGerman } from "./src/lib/spokenGerman.ts";
       export {
         AUDIO_REQUIRED_SENTENCE_PHASES,
         BILINGUAL_SENTENCE_PHASES,
@@ -61,6 +62,7 @@ const {
   replacementSentencePhaseWhenMuted,
   SENTENCE_PHASES,
   speechSpectrumFromFft,
+  toTextedGerman,
   wordOrderTokensMatchSentence,
 } = compiled.exports;
 
@@ -569,7 +571,10 @@ for (const phrase of completeVariants) {
   const exam = phraseForLearningMode(phrase, "exam");
   const label = `${spoken} / ${standard}`;
 
-  if (conversation.de !== spoken) variantIssues.push(`${label}: Conversation target`);
+  // Conversation mode punctuates the way people type, so the authored short
+  // form is compared after that pass rather than before it. The WORDS still
+  // have to be the author's -- only the grammar commas move.
+  if (conversation.de !== toTextedGerman(spoken)) variantIssues.push(`${label}: Conversation target`);
   if (conversation.en !== phrase.shortEn.trim()) variantIssues.push(`${label}: Conversation English`);
   if (!acceptsSelectedPhrase(conversation, standard)) variantIssues.push(`${label}: standard rejected in Conversation`);
   if (exam.de !== standard) variantIssues.push(`${label}: Exam target`);

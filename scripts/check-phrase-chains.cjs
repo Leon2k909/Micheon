@@ -112,9 +112,14 @@ if (!part.label) {
   const servedAt = new Map();
   for (let lesson = 0; lesson < 40; lesson += 1) {
     const steps = buildSession(part, [], review, 0);
-    const fresh = steps.filter((s) => s.type === "sentence" && !s.review).map((s) => String(s.item?.de ?? ""));
+    // Conversation mode renders the served German -- the ich-form -e and the
+    // grammar commas both go -- while buildsOn names the AUTHORED sentence.
+    // Both spellings are recorded so a chain is still found by either name,
+    // which is exactly what the engine itself does via originalDe.
+    const fresh = steps.filter((s) => s.type === "sentence" && !s.review)
+      .map((s) => [String(s.item?.de ?? ""), String(s.item?.originalDe ?? s.item?.de ?? "")]);
     if (!fresh.length) break;
-    fresh.forEach((de, slot) => { const k = keyOf(de); if (!servedAt.has(k)) servedAt.set(k, { lesson, slot }); });
+    fresh.forEach(([de, authored], slot) => { for (const k of new Set([keyOf(de), keyOf(authored)])) { if (k && !servedAt.has(k)) servedAt.set(k, { lesson, slot }); } });
     for (const step of steps) {
       if (step.item?.id) review[step.item.id] = { lastGrade: "know", successes: 6, intervalDays: 180, dueAt: later(), updatedAt: new Date().toISOString() };
       for (const line of step.dialogue?.lines ?? []) if (line?.id) review[line.id] = { lastGrade: "know", successes: 6, intervalDays: 180, dueAt: later(), updatedAt: new Date().toISOString() };

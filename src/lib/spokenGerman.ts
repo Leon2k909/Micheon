@@ -82,6 +82,90 @@ export function toSpokenGerman(sentence: string): string {
     .replace(CLAUSE_FINAL, (match: string) => match.replace(/e$/, ""));
 }
 
+/**
+ * The commas people leave out when they are not writing an exam.
+ *
+ * German comma rules are strict and Conversation mode was following all of
+ * them, which produced a register nobody writes in: the verb clipped the way
+ * it is SPOKEN ("Ich glaub") and the punctuation set the way it is EXAMINED
+ * ("Ich glaub, wir haben alles, was wir brauchen."). Michelle read that and
+ * said there were too many commas. She is right about the register, and the
+ * register is the entire point of this mode — the other one is called Exam and
+ * keeps every comma.
+ *
+ * What goes is the grammar comma: the one before a subordinate or relative
+ * clause, which marks a boundary you cannot hear. What stays is any comma you
+ * can hear — after an interjection or a name, between list items, before a
+ * tag question ("..., oder?") and before a contrast ("..., aber nur kurz").
+ *
+ * Deliberately conservative in one place. "der", "die" and "das" are relative
+ * pronouns AND articles, and "Ich nehm den Salat, den Fisch und das Brot" is a
+ * list, not a relative clause. Getting that wrong would mangle a sentence, so
+ * only the pronouns that can never be articles are handled. The cost is that a
+ * few commas survive that a German would drop; the alternative risks producing
+ * something no German would write at all.
+ */
+const DROPPABLE_BEFORE = [
+  // Subordinating conjunctions: the comma before these is pure grammar.
+  "dass", "weil", "wenn", "ob", "obwohl", "damit", "bevor", "nachdem",
+  "w(?:ä|ae)hrend", "falls", "solange", "sobald", "bis", "seit", "seitdem",
+  "sodass", "wobei", "wenngleich",
+  // Relative pronouns and interrogatives that are never articles.
+  "was", "wo", "wer", "wen", "wem", "wessen", "dessen", "deren",
+  "welche(?:r|s|n|m)?", "warum", "wieso", "weshalb", "wohin", "woher",
+].join("|");
+
+/**
+ * Verbs that introduce a dass-less clause. "Ich glaub, wir haben alles" takes
+ * its comma from a clause boundary rather than a pause, and this is the exact
+ * shape that started this: a clipped ich-form followed by textbook punctuation.
+ */
+const MATRIX_VERBS = [
+  "glaub", "denk", "mein", "hoff", "find", "sag", "wei(?:ß|ss)", "seh",
+  "vermut", "f(?:ü|ue)rcht", "schätz", "sch(?:ä|ae)tz",
+].join("|");
+const SUBJECTS = "ich|du|er|sie|es|wir|ihr|Sie|man|das|die|der";
+
+/**
+ * Words that end a spoken pause rather than a clause. A comma after one of
+ * these survives however grammatical the next word looks: greetings, answers,
+ * thanks, apologies, fillers and the time-of-day phrases people open with.
+ */
+const PAUSE_BEFORE = new RegExp(
+  "\\b(?:hallo|hi|hey|servus|moin|tsch(?:ü|ue)ss|ja|nein|doch|danke|bitte|"
+  + "entschuldigung|sorry|verzeihung|moment|also|na|ach|oh|tja|nun|okay|ok|"
+  + "klar|genau|gut|sch(?:ö|oe)n|prost|mahlzeit|hm+|tag|abend|morgen|nacht)"
+  + "[!?.…]*\\s*$",
+  "i",
+);
+
+const GRAMMAR_COMMA = new RegExp(`,(\\s+)(?=(?:${DROPPABLE_BEFORE})\\b)`, "gi");
+const DASS_LESS_COMMA = new RegExp(
+  `\\b(?:${MATRIX_VERBS})(?:e|st|t)?(?:\\s+(?:ich|du|er|sie|es|wir|ihr|Sie))?\\s*,(\\s+)(?=(?:${SUBJECTS})\\b)`,
+  "g",
+);
+
+/**
+ * The sentence as it would be typed rather than as it would be marked.
+ *
+ * Display only. Every comparison in the app strips punctuation before it
+ * compares, so an answer typed with commas and an answer typed without are
+ * already the same answer — this changes what is shown, never what is right.
+ */
+export function toTextedGerman(sentence: string): string {
+  const text = String(sentence ?? "");
+  if (!text.includes(",")) return text;
+  return text
+    .replace(DASS_LESS_COMMA, (match, gap: string) => match.replace(`,${gap}`, gap))
+    .replace(GRAMMAR_COMMA, (match: string, gap: string, offset: number, whole: string) =>
+      // "Hallo, wer ist da?" is a greeting and a pause, not a clause boundary,
+      // and the word after it happens to be a question word. Nobody drops that
+      // comma. Keeping one too many reads as slightly formal; dropping this one
+      // reads as broken, so the doubt goes to whichever keeps the comma.
+      PAUSE_BEFORE.test(whole.slice(0, offset)) ? match : gap
+    );
+}
+
 /** True when the sentence reads differently once spoken. */
 export function hasSpokenForm(sentence: string): boolean {
   return toSpokenGerman(sentence) !== String(sentence ?? "");

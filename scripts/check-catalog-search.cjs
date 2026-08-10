@@ -16,7 +16,7 @@ const result = esbuild.buildSync({
       export { buildApiPartFromResolved } from "./src/lib/api.ts";
       export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";
       export { buildCatalog } from "./src/session.ts";
-      export { toSpokenGerman } from "./src/lib/spokenGerman.ts";
+      export { toSpokenGerman, toTextedGerman } from "./src/lib/spokenGerman.ts";
     `,
     resolveDir: root,
     sourcefile: "catalog-search-check-entry.ts",
@@ -45,6 +45,7 @@ const {
   buildTatoebaParts,
   buildCatalog,
   toSpokenGerman,
+  toTextedGerman,
 } = compiled.exports;
 
 const resolvedBlueprints = Object.fromEntries(
@@ -74,7 +75,7 @@ function check(name, condition, detail = "") {
 // corrected ENGLISH still being present and searchable, so the German is only
 // a lookup key — match it in either form rather than pinning the spelling.
 const reportedGerman = "Ich glaube nicht, dass es gut für dich ist, ihn zu sehen.";
-const reportedSpoken = toSpokenGerman(reportedGerman);
+const reportedSpoken = toTextedGerman(toSpokenGerman(reportedGerman));
 const reported = fullCatalog.find((item) => item.de === reportedGerman || item.de === reportedSpoken);
 
 check(
@@ -111,7 +112,7 @@ if (reported) {
   );
 }
 
-const sharpSItem = fullCatalog.find((item) => item.de === "Ich weiß, dass ich ohne dich nicht leben kann.");
+const sharpSItem = fullCatalog.find((item) => item.de === "Ich weiß, dass ich ohne dich nicht leben kann." || item.de === toTextedGerman(toSpokenGerman("Ich weiß, dass ich ohne dich nicht leben kann.")));
 check("the ß regression fixture is present", Boolean(sharpSItem));
 if (sharpSItem) {
   check(
@@ -120,7 +121,7 @@ if (sharpSItem) {
   );
 }
 
-const umlautItem = fullCatalog.find((item) => item.de === "Ich wünschte, ich könnte das so gut wie du.");
+const umlautItem = fullCatalog.find((item) => item.de === "Ich wünschte, ich könnte das so gut wie du." || item.de === toTextedGerman(toSpokenGerman("Ich wünschte, ich könnte das so gut wie du.")));
 check("the umlaut regression fixture is present", Boolean(umlautItem));
 if (umlautItem) {
   check(

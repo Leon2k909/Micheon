@@ -184,6 +184,60 @@ check(
   suspicious.slice(0, 3).join(" | ")
 );
 
+// ── punctuation belongs to the register too ─────────────────────────────────
+//
+// Conversation mode clipped the verb the way it is SPOKEN and punctuated the
+// way an exam is MARKED, which is a register nobody writes in. Michelle, who is
+// German, read "Ich glaub, wir haben alles, was wir brauchen." and said there
+// were too many commas. Both commas are required by the rulebook — and the
+// rulebook is not what this mode is for. The other one is called Exam.
+//
+// So the grammar comma goes and the pause comma stays, and both halves of that
+// are checked, because dropping a comma people do say is the failure that would
+// look broken rather than merely formal.
+const texted = (sentence) => phraseForLearningMode({ de: sentence, en: "x" }, "conversation").de;
+
+check(
+  "the sentence that started this loses both of its grammar commas",
+  texted("Ich glaube, wir haben alles, was wir brauchen.") === "Ich glaub wir haben alles was wir brauchen.",
+  texted("Ich glaube, wir haben alles, was wir brauchen.")
+);
+for (const [before, after] of [
+  ["Ich denke, dass das stimmt.", "Ich denk dass das stimmt."],
+  ["Ich weiß nicht, ob das stimmt.", "Ich weiß nicht ob das stimmt."],
+  ["Mein Hund bellt immer, wenn es klingelt.", "Mein Hund bellt immer wenn es klingelt."],
+  ["Ich verstehe, was du meinst.", "Ich versteh was du meinst."],
+]) {
+  check(`"${before}" is punctuated the way it would be typed`, texted(before) === after, texted(before));
+}
+// A comma you can hear survives, however grammatical the next word looks.
+for (const kept of [
+  "Hallo, wer ist da?",
+  "Entschuldigung, wo ist der Bahnhof?",
+  "Guten Morgen, wie war die Nacht?",
+  "Ja, was denn?",
+  "Ich nehm den Salat, den Fisch und das Brot.",
+  "Ich hätte gern Brot, Milch und Käse.",
+  "Das ist schön, oder?",
+  "Ich komm mit, aber nur kurz.",
+  "Komm, Papa!",
+]) {
+  check(`"${kept}" keeps the comma you can hear`, texted(kept) === kept, texted(kept));
+}
+// Exam mode is the rulebook, and stays the rulebook.
+check(
+  "exam mode keeps every comma",
+  phraseForLearningMode({ de: "Ich glaube, wir haben alles, was wir brauchen.", en: "x" }, "exam").de
+    === "Ich glaube, wir haben alles, was wir brauchen."
+);
+// And none of this can change whether an answer is right: comparison strips
+// punctuation, so a learner typing either form is typing the same sentence.
+check(
+  "typing it with textbook commas is still correct",
+  matchGermanSentence("Ich glaub, wir haben alles, was wir brauchen.", texted("Ich glaube, wir haben alles, was wir brauchen.")).ok
+    && matchGermanSentence("Ich glaub wir haben alles was wir brauchen", "Ich glaube, wir haben alles, was wir brauchen.").ok
+);
+
 if (failures) {
   console.error(`\n${failures} spoken-form regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { matchGermanSentence } from "@/lib/germanTextMatch";
-import { toSpokenGerman } from "@/lib/spokenGerman";
+import { toSpokenGerman, toTextedGerman } from "@/lib/spokenGerman";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 const KEY = "gl-learning-mode";
@@ -109,11 +109,11 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   // fuller standard form in `long`. Conversation mode must preserve that full
   // form as supporting context (and as an accepted answer).
   if (spoken === original) {
-    return withSpokenIchForm({
+    return asTexted(withSpokenIchForm({
       ...phrase,
       short: undefined,
       long: standard !== original ? standard : undefined,
-    });
+    }));
   }
 
   // Swapping the German for its short form while leaving the English describing
@@ -127,20 +127,20 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   // the mismatched definition goes. The ich-form contraction below still
   // applies, because that one never changes what the English means.
   if (!spokenEn) {
-    return withSpokenIchForm({ ...phrase, long: undefined });
+    return asTexted(withSpokenIchForm({ ...phrase, long: undefined }));
   }
 
   // No derived contraction here on purpose: this phrase carries a hand-written
   // conversational form with its own English, and a reviewed wording outranks a
   // generated one. If an author wrote "Das denke ich.", that is what gets
   // taught — the rule only fills the silence where nobody wrote anything.
-  return {
+  return asTexted({
     ...phrase,
     de: spoken,
     en: spokenEn,
     short: undefined,
     long: standard !== spoken ? standard : undefined,
-  };
+  });
 }
 
 /**
@@ -158,4 +158,19 @@ function withSpokenIchForm<T extends PhraseForm>(phrase: T): T {
   const spoken = toSpokenGerman(written);
   if (spoken === written) return phrase;
   return { ...phrase, de: spoken, long: phrase.long?.trim() || written };
+}
+
+/**
+ * Conversation mode punctuates the way people type, not the way an exam is
+ * marked. Applied to the German being TAUGHT only: the full written form kept
+ * in `long` still carries every comma, and Exam mode is untouched.
+ *
+ * This runs on hand-written conversational forms too. An author who wrote a
+ * short form was choosing the words, not adjudicating commas, and a mode that
+ * punctuated half its sentences one way and half the other would look like a
+ * bug rather than a register.
+ */
+function asTexted<T extends PhraseForm>(phrase: T): T {
+  const texted = toTextedGerman(phrase.de);
+  return texted === phrase.de ? phrase : { ...phrase, de: texted };
 }
