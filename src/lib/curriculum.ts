@@ -395,6 +395,16 @@ export const CURRICULUM_ORDER: string[] = [
   "part40",           // Conspiracies & rabbit holes
   "cb-crime-jail",
   "part26",           // C1 — university & academic life
+  "part401",
+  "part402",
+  "part403",
+  "part404",
+  "part405",
+  "part406",
+  "part407",
+  "part408",
+  "part409",
+  "part410",
 ];
 
 const TIER1 = new Set(CURRICULUM_ORDER.slice(0, CURRICULUM_ORDER.indexOf("part8")));

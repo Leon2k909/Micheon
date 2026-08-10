@@ -39,6 +39,8 @@ export type WordItem = {
   use?: string;
   kind: "word";
   partKey: string;
+  /** The owning pack's CEFR level — the ladder reads difficulty from it. */
+  level?: string;
 };
 
 const wordIdPart = (value: string) =>
@@ -89,6 +91,7 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
         use: word?.use || undefined,
         kind: "word",
         partKey,
+        level: (part as any)?.level ? String((part as any).level) : undefined,
       });
     }
   }
@@ -110,6 +113,60 @@ export function rankWordCatalog(catalog: WordItem[], corpusIndex: CorpusIndex | 
       || a.index - b.index
     )
     .map((entry) => entry.word);
+}
+
+/**
+ * The difficulty ladder, and how a sitting decides which rung to serve from.
+ *
+ * Michelle kept being handed "to be" and "to have" because words are served
+ * most-common-first — right for a beginner, insulting for someone who reads
+ * B2 English for fun. Leon's rule: if the learner keeps saying "Kann ich",
+ * the words get harder. And later, once the hard tiers run dry, sittings
+ * come BACK for the easy words that were skipped over — climbing must never
+ * mean words go missing, only that they wait.
+ *
+ * Every word sits on a rung derived from its pack's CEFR level, with the
+ * frequency bank splitting the beginner mass. The learner's own rung is
+ * counted from their word grades: each known word is a step up (a "Kann ich"
+ * press writes exactly such a grade, so mass-skipping basics climbs fast),
+ * and each struggling word pulls DOWN twice as hard, because struggling at a
+ * rung is the clearest sign it is high enough. Fifteen knowns per rung: a
+ * genuine beginner takes days to climb once; someone skipping material they
+ * find easy climbs in minutes, which is precisely the difference the ladder
+ * exists to detect.
+ *
+ * Serving order is a PREFERENCE, never a filter: at-or-above the learner's
+ * rung first (nearest rung first, most common first within it), then below,
+ * nearest first. Every word remains reachable in every state of progress.
+ */
+export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">): number {
+  const level = String(word.level ?? "").toUpperCase();
+  if (/^C/.test(level)) return 6;
+  if (level.startsWith("B2-C")) return 5;
+  if (level.startsWith("B2")) return 4;
+  if (level.startsWith("B1")) return 3;
+  // The A1-B1 mass is where nearly everything lives; the frequency bank is
+  // what separates "sein" from a mid-pack A2 noun.
+  const rank = frequencyRank(word.lookup || word.de);
+  if (rank <= 300) return 1;
+  if (rank <= 1200) return 2;
+  return level.startsWith("A1") ? 1 : level.startsWith("A2") ? 2 : 3;
+}
+
+/** Where the learner currently stands, read from their word grades alone. */
+export function learnerWordRung(
+  grades: Record<string, GradeRecord | undefined>,
+  now = Date.now()
+): number {
+  let known = 0;
+  let struggling = 0;
+  for (const [id, record] of Object.entries(grades ?? {})) {
+    if (!id.startsWith(WORD_ID_PREFIX) || !record) continue;
+    if (record.lastGrade === "know") known += 1;
+    else if (record.lastGrade === "struggle" && !isSnoozed(record, now)) struggling += 1;
+  }
+  const score = known - struggling * 2;
+  return Math.max(1, Math.min(6, 1 + Math.floor(score / 15)));
 }
 
 export type WordStep = {
@@ -144,7 +201,7 @@ export function buildWordSitting(
 
   const struggles: WordItem[] = [];
   const due: WordItem[] = [];
-  const fresh: WordItem[] = [];
+  let fresh: WordItem[] = [];
   for (const word of ranked) {
     const record = recordFor(word);
     if (isSnoozed(record, now)) continue;
@@ -156,6 +213,20 @@ export function buildWordSitting(
       // the promise legible.
     } else fresh.push(word);
   }
+
+  // The ladder: serve new words from the learner's rung upward, nearest rung
+  // first, most common first within a rung — then wrap DOWN to whatever was
+  // skipped, so finishing the hard tiers brings the easy ones back. Stable
+  // sort over the frequency-ranked input keeps in-rung order.
+  const rung = learnerWordRung(grades, now);
+  fresh = fresh
+    .map((word, index) => ({ word, index, wordRung: wordLadderRung(word) }))
+    .sort((a, b) =>
+      (a.wordRung >= rung ? 0 : 1) - (b.wordRung >= rung ? 0 : 1)
+      || Math.abs(a.wordRung - rung) - Math.abs(b.wordRung - rung)
+      || a.index - b.index
+    )
+    .map((entry) => entry.word);
   due.sort((a, b) => overdueBy(recordFor(b), now) - overdueBy(recordFor(a), now));
 
   const mix = slots ?? lessonMixForBacklog(struggles.length + due.length);

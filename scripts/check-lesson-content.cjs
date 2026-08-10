@@ -25,6 +25,8 @@ const built = esbuild.buildSync({
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { recordSuccess, recordStruggle, snoozeForDays } from "./src/lib/memoryStrength.ts";',
+      'export { recordDeclaredKnown } from "./src/lib/memoryStrength.ts";',
+      'export { wordLadderRung, learnerWordRung } from "./src/lib/wordSession.ts";',
       'export { WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute } from "./src/lib/guidedLessonPhases.ts";',
     ].join("\n"),
     resolveDir: root, sourcefile: "lesson-content-entry.ts",
@@ -40,6 +42,7 @@ const {
   buildWordCatalog, buildWordSitting, rankWordCatalog, WORD_ID_PREFIX, wordProgressId,
   buildSession, allPartBlueprints, buildApiPartFromResolved,
   recordSuccess, recordStruggle, snoozeForDays,
+  recordDeclaredKnown, wordLadderRung, learnerWordRung,
   WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute,
 } = compiled.exports;
 
@@ -78,6 +81,39 @@ assert(ids.includes(w2.id), "a struggling word is not brought back");
 assert(!ids.includes(w3.id), "a put-off word came back anyway");
 assert.equal(buildWordSitting(ranked, grades, Date.now(), { reviewSlots: 1, freshSlots: 1 }).length, 2,
   "the mixed-sitting budget is ignored");
+
+// ── the difficulty ladder ─────────────────────────────────────────────────
+//
+// Leon's rule, verbatim: "if shes repeatedly saying she knows stuff, the
+// words should get harder and harder" — and later, "it should still go back
+// to doing the beginning stuff we skipped out". Both halves are behaviour,
+// so both are run rather than read.
+assert(catalog.filter((w) => wordLadderRung(w) >= 4).length >= 300,
+  "the advanced word inventory has shrunk — part401-410 may be missing");
+for (const key of ["part401", "part405", "part410"]) {
+  assert((parts[key]?.vocab ?? []).length === 40, `${key} lost its forty words`);
+}
+// A beginner starts at the bottom.
+assert(buildWordSitting(ranked, {}).every((s) => wordLadderRung(s.item) === 1),
+  "a fresh learner is no longer started on the most common words");
+// Ninety Kann-ich presses climb to the top, and the sitting follows.
+const climbGrades = {};
+for (const w of ranked.slice(0, 90)) climbGrades[w.id] = recordDeclaredKnown(undefined);
+assert(learnerWordRung(climbGrades) >= 5, "mass-skipping basics no longer climbs the ladder");
+assert(buildWordSitting(ranked, climbGrades).filter((s) => !s.review).every((s) => wordLadderRung(s.item) >= 4),
+  "a climbed learner is still being served basics");
+// Struggles pull it back down.
+const strugglingGrades = { ...climbGrades };
+for (const w of ranked.slice(200, 245)) strugglingGrades[w.id] = recordStruggle(Date.now(), undefined);
+assert(learnerWordRung(strugglingGrades) < learnerWordRung(climbGrades),
+  "struggling at the top no longer lowers the ladder");
+// And the wrap-around: when the hard tiers are done, the skipped easy words
+// come back — climbing must never mean words go missing.
+const topDone = {};
+for (const w of ranked) if (wordLadderRung(w) >= 3) topDone[w.id] = recordDeclaredKnown(undefined);
+const wrapped = buildWordSitting(ranked, topDone).filter((s) => !s.review);
+assert(wrapped.length > 0 && wrapped.every((s) => wordLadderRung(s.item) < 3),
+  "finishing the hard tiers does not bring the skipped easy words back");
 
 // ── THE BORDER, run from both sides ───────────────────────────────────────
 // Fifty words graded hot and due; the sentence engine must serve none of them.
