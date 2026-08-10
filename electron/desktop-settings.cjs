@@ -23,6 +23,10 @@ const DEFAULT_DESKTOP_SETTINGS = Object.freeze({
   // Hide the in-app update panel entirely. The update still happens; it just
   // stops narrating.
   updateNoticesHidden: false,
+  // Offline speaking practice is part of Micheon, not an add-on. The native
+  // model installs itself on first launch and stays available until the learner
+  // explicitly removes it from Settings.
+  speechRecognitionEnabled: true,
 });
 
 const CLOSE_BEHAVIORS = new Set(["exit", "tray"]);
@@ -51,6 +55,7 @@ function normalizeDesktopSettings(value) {
     updateMode: UPDATE_MODES.has(value?.updateMode) ? value.updateMode : DEFAULT_DESKTOP_SETTINGS.updateMode,
     updateSnoozeUntil: normalizeSnooze(value?.updateSnoozeUntil),
     updateNoticesHidden: value?.updateNoticesHidden === true,
+    speechRecognitionEnabled: value?.speechRecognitionEnabled !== false,
   };
 }
 

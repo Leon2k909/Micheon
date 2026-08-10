@@ -163,6 +163,27 @@ check(
     && matchEnglishPhrase("i dont know", "I don't know.").ok
     && matchEnglishPhrase("that wasnt me", "That wasn't me.").ok
 );
+// Additive "also" normally sits before the main verb while "too" and
+// "as well" normally sit at the end. Moving that adverb does not change the
+// meaning, but dropping it altogether does lose German "auch".
+check(
+  "mid-sentence also matches sentence-final too",
+  matchEnglishPhrase("thats also happened to me before", "That's happened to me before too.").ok
+);
+check(
+  "the full present-perfect form matches the contracted answer",
+  matchEnglishPhrase("that has also happened to me before", "That's happened to me before too.").ok
+);
+check(
+  "sentence-final as well matches sentence-final too",
+  matchEnglishPhrase("that's happened to me before as well", "That's happened to me before too.").ok
+);
+check(
+  "the additive meaning cannot be omitted or replaced by a different adverb",
+  !matchEnglishPhrase("that's happened to me before", "That's happened to me before too.").ok
+    && !matchEnglishPhrase("that's never happened to me before", "That's happened to me before too.").ok
+    && !matchEnglishPhrase("it's also expensive", "It's too expensive.").ok
+);
 // Words that are also ordinary English -- ill, wed, lets, were, its -- are
 // deliberately NOT expanded, because that would change a sentence rather than
 // forgive a keystroke.

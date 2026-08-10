@@ -80,6 +80,7 @@ import { DataAndStorage } from "@/components/DataAndStorage";
 import { AppZoomControl } from "@/components/AppZoomControl";
 import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
+import { SpeechRecognitionSettings } from "@/components/SpeechRecognitionSettings";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
 import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
@@ -403,7 +404,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   "Desktop app & updates": "startup launch login boot close button tray minimise minimize quit update version install check",
   "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode",
   Flashcards: "flashcard card side front back reveal flip order behaviour",
-  "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation",
+  "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts pronunciation microphone speech recognition whisper offline model install uninstall",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
 };
@@ -1364,6 +1365,7 @@ export default function GamificationPanel({
                         unrelated things. */}
                     <VoicePicker />
                   </div>
+                  <SpeechRecognitionSettings />
                 </SettingsCategory>
             </div>
 

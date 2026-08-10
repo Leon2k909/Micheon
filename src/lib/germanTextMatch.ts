@@ -435,6 +435,11 @@ const CONTRACTIONS: [RegExp, string][] = [
   [/\b(you|he|she|it|they)ll\b/gi, "$1 will"], // youll, hell... (avoiding 'well' conflict)
   [/\b(\w+)[’'`´]d\b/gi, "$1 would"],
   [/\b(you|he|she|we|they)d\b/gi, "$1 would"],   // youd, hed... (avoiding 'id' conflict)
+  // Before an unambiguous "happened", 's means HAS rather than IS:
+  // "that's happened" == "that has happened". Keep this contextual and
+  // ahead of the generic 's -> is fold so adjectives such as "it's tired"
+  // are not rewritten as present-perfect forms.
+  [/\b(it|that|what)[’'`´]?s\b(?=\s+(?:(?:just|already|only|never|always|ever|still|also|now)\s+)*happened\b)/gi, "$1 has"],
   // A noun phrase can contract "is" too. Keep this deliberately narrow:
   // generic word+'s expansion would mistake possessives ("John's coat") for
   // verbs, while this authored answer specifically uses "one more's coming".
@@ -1085,12 +1090,21 @@ const ENGLISH_SCAFFOLDING = new Set([
   "it", "and", "well", "please",
 ]);
 
+// "also" normally sits beside the verb, while additive "too" / "as well"
+// normally sit at the end. Preserve the fact that the additive meaning is
+// present, but give it a position-independent comparison token. Restricting
+// "too" to sentence-final position avoids folding "too expensive".
+const ADDITIVE_MEANING_MARKER = "__additive__";
+
 // Prepositions stay in deliberately. "of" is the entire difference between
 // "could have" and the "could of" mistake the confusables pack teaches out,
 // and "on the table" is not "under the table".
 
 function meaningWords(s: string): string[] {
   return normalizeGermanInput(expandEnglishContractions(s))
+    .replace(/\bas well\b/g, ADDITIVE_MEANING_MARKER)
+    .replace(/\balso\b/g, ADDITIVE_MEANING_MARKER)
+    .replace(/\btoo$/g, ADDITIVE_MEANING_MARKER)
     .split(" ")
     .filter(Boolean)
     .map(stemGerund)
@@ -1107,7 +1121,11 @@ function sameMeaningUnordered(input: string, target: string): boolean {
   const a = meaningWords(input);
   const b = meaningWords(target);
   if (a.length < 2 || a.length !== b.length) return false;
-  if (a[0] !== b[0]) return false;
+  // Keep the first subject/verb as a safety anchor while allowing only the
+  // additive marker to move around it.
+  const firstAnchor = (words: string[]) =>
+    words.find((word) => word !== ADDITIVE_MEANING_MARKER);
+  if (firstAnchor(a) !== firstAnchor(b)) return false;
   const bag = [...b];
   for (const word of a) {
     const at = bag.indexOf(word);

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,10 +71,19 @@ import {
   listenGermanOnce,
 } from "@/lib/speechRecognition";
 import {
+  getSpeechRecognitionSnapshot,
+  installSpeechRecognition,
+  subscribeSpeechRecognition,
+  transcribeSpeech,
+  type SpeechRecognitionStatus,
+} from "@/lib/desktopSpeechRecognition";
+import { startSpeechRecording, type SpeechRecordingSession } from "@/lib/speechRecorder";
+import { buildPronunciationFeedback, type PronunciationFeedback } from "@/lib/pronunciationFeedback";
+import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
   MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
-  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward
+  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward, Square, Download, LoaderCircle
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -567,6 +576,7 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
   if (p === "MeaningSelect") return "Select";
   if (p === "ListenPick") return "Pick it";
   if (p === "MissingWord") return "Missing word";
+  if (p === "Speak") return "Speak";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
@@ -587,6 +597,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
     case "ListenPick": return "What did you hear?";
     case "MissingWord": return "Listen for the missing word";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
+    case "Speak": return "Speak the sentence";
     case "TypeAgain": return "Type it once more";
     case "Translate": return "Translate this sentence";
     case "TranslateAgain": return "Recall the meaning";
@@ -1075,6 +1086,249 @@ function MicButton({ lang, onText, inputRef }: {
         <span className="fs-mic-status" role="status">{label}</span>
       )}
     </>
+  );
+}
+
+function useDesktopSpeechRecognitionStatus(): SpeechRecognitionStatus {
+  return useSyncExternalStore(
+    subscribeSpeechRecognition,
+    getSpeechRecognitionSnapshot,
+    getSpeechRecognitionSnapshot
+  );
+}
+
+function pronunciationMessage(score: number): string {
+  if (score >= 0.92) return "Excellent. Micheon heard the whole phrase clearly.";
+  if (score >= 0.72) return "Good start. Try the red sounds once more for a cleaner phrase.";
+  return "Try it again slowly. The red parts did not match what Micheon heard.";
+}
+
+function SpeakingPractice({ expectedText, language, onContinue }: {
+  expectedText: string;
+  language: string;
+  onContinue: () => void;
+}) {
+  const desktopStatus = useDesktopSpeechRecognitionStatus();
+  const recorderRef = useRef<SpeechRecordingSession | null>(null);
+  const browserAbortRef = useRef<AbortController | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
+  const [heardText, setHeardText] = useState("");
+  const [feedback, setFeedback] = useState<PronunciationFeedback | null>(null);
+  const [error, setError] = useState("");
+  const desktop = isElectronApp();
+
+  useEffect(() => () => {
+    recorderRef.current?.cancel();
+    browserAbortRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!desktop || !desktopStatus.enabled || desktopStatus.state !== "missing") return;
+    void installSpeechRecognition().catch((reason) => {
+      setError(String(reason?.message ?? reason));
+    });
+  }, [desktop, desktopStatus.enabled, desktopStatus.state]);
+
+  const useTranscript = (transcript: string) => {
+    const clean = transcript.trim();
+    if (!clean) {
+      setError("Micheon did not hear a phrase. Check your microphone and try again.");
+      setFeedback(null);
+      return;
+    }
+    setHeardText(clean);
+    setFeedback(buildPronunciationFeedback(expectedText, clean));
+  };
+
+  const startDesktopRecording = () => {
+    setError("");
+    setFeedback(null);
+    setHeardText("");
+    setMicLevel(0);
+    setRecording(true);
+    const session = startSpeechRecording({
+      maxMs: 15000,
+      onLevel: setMicLevel,
+    });
+    recorderRef.current = session;
+    void session.result.then(async (audio) => {
+      setRecording(false);
+      setProcessing(true);
+      const result = await transcribeSpeech(audio, language);
+      useTranscript(result.text);
+    }).catch((reason) => {
+      if (String(reason?.message ?? reason) !== "aborted") {
+        setError(
+          String(reason?.message ?? reason).includes("microphone")
+            ? "Micheon could not access your microphone. Allow microphone access in Windows, then try again."
+            : String(reason?.message ?? reason).includes("no-speech")
+              ? "Micheon did not hear speech. Speak after tapping the microphone."
+              : String(reason?.message ?? reason)
+        );
+      }
+      setRecording(false);
+    }).finally(() => {
+      recorderRef.current = null;
+      setProcessing(false);
+      setMicLevel(0);
+    });
+  };
+
+  const startBrowserRecording = async () => {
+    const controller = new AbortController();
+    browserAbortRef.current = controller;
+    setError("");
+    setFeedback(null);
+    setHeardText("");
+    setRecording(true);
+    try {
+      const result = await listenGermanOnce({
+        lang: language,
+        signal: controller.signal,
+        onInterim: setHeardText,
+      });
+      useTranscript(result.transcript);
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : String(reason);
+      if (message !== "aborted") {
+        setError("Micheon could not hear that. Check your microphone and try again.");
+      }
+    } finally {
+      browserAbortRef.current = null;
+      setRecording(false);
+    }
+  };
+
+  const start = () => {
+    if (desktop) startDesktopRecording();
+    else void startBrowserRecording();
+  };
+
+  const stop = () => {
+    if (desktop) recorderRef.current?.stop();
+    else browserAbortRef.current?.abort();
+  };
+
+  const retryInstall = () => {
+    setError("");
+    void installSpeechRecognition().catch((reason) => setError(String(reason?.message ?? reason)));
+  };
+
+  const installing = desktop && [
+    "checking",
+    "missing",
+    "downloading-runtime",
+    "installing-runtime",
+    "downloading-model",
+  ].includes(desktopStatus.state);
+
+  if (installing) {
+    return (
+      <div className="fs-speech-setup" role="status" aria-live="polite">
+        <div className="fs-speech-setup-icon"><Download aria-hidden="true" /></div>
+        <div className="min-w-0 flex-1">
+          <strong>{ui("Preparing speaking practice")}</strong>
+          <p>{ui("Micheon is installing high-accuracy offline speech recognition. It stays on this device and works without an account.")}</p>
+          <div className="fs-speech-progress" aria-label={`${desktopStatus.progress}%`} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={desktopStatus.progress}>
+            <span style={{ width: `${Math.max(2, desktopStatus.progress)}%` }} />
+          </div>
+          <small>{desktopStatus.state === "downloading-model" ? `${desktopStatus.progress}% · large-v3-turbo-q5_0` : ui(desktopStatus.message || "Preparing the speech engine")}</small>
+        </div>
+        <button className="ghost-btn fs-speech-skip" onClick={onContinue} type="button">{ui("Skip this check")}</button>
+      </div>
+    );
+  }
+
+  if (desktop && desktopStatus.state === "error") {
+    return (
+      <div className="fs-speech-setup is-error" role="alert">
+        <div className="fs-speech-setup-icon"><Mic2 aria-hidden="true" /></div>
+        <div className="min-w-0 flex-1">
+          <strong>{ui("Speaking practice needs attention")}</strong>
+          <p>{ui(desktopStatus.message || "Micheon could not prepare speech recognition.")}</p>
+        </div>
+        <div className="fs-speech-setup-actions">
+          <button className="ghost-btn" onClick={retryInstall} type="button">{ui("Try again")}</button>
+          <button className="ghost-btn" onClick={onContinue} type="button">{ui("Skip this check")}</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (desktop && desktopStatus.state === "disabled") {
+    return (
+      <div className="fs-speech-setup">
+        <div className="fs-speech-setup-icon"><Mic2 aria-hidden="true" /></div>
+        <div className="min-w-0 flex-1">
+          <strong>{ui("Speaking practice is uninstalled")}</strong>
+          <p>{ui("Reinstall offline speech recognition from Profile & Settings to restore speaking stages.")}</p>
+        </div>
+        <button className="ghost-btn" onClick={onContinue} type="button">{ui("Continue")}</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fs-speaking-practice">
+      {!feedback && (
+        <div className="fs-speaking-action">
+          <button
+            aria-label={recording ? ui("Stop recording") : ui("Start speaking")}
+            className={cn("fs-speaking-mic", recording && "is-recording")}
+            disabled={processing}
+            onClick={recording ? stop : start}
+            type="button"
+          >
+            {processing
+              ? <LoaderCircle aria-hidden="true" className="fs-speech-spinner" />
+              : recording
+                ? <Square aria-hidden="true" />
+                : <Mic2 aria-hidden="true" />}
+          </button>
+          <div className="fs-speaking-copy">
+            <strong>{processing ? ui("Checking what Micheon heard") : recording ? ui("Listening now") : ui("Say it out loud")}</strong>
+            <span>{processing ? ui("This runs privately on your device.") : recording ? ui("Tap stop when you are finished.") : ui("Speak naturally at your normal pace.")}</span>
+          </div>
+          <div className={cn("fs-speaking-meter", recording && "is-live")} aria-hidden="true">
+            {Array.from({ length: 9 }, (_, index) => (
+              <i key={index} style={{ height: `${8 + Math.max(0.08, micLevel) * (10 + ((index * 7) % 18))}px` }} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {feedback && (
+        <motion.div className="fs-pronunciation-result" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="fs-pronunciation-heading">
+            <span className={cn("fs-pronunciation-score", feedback.score >= 0.72 ? "is-good" : "is-practice")}>{Math.round(feedback.score * 100)}%</span>
+            <div>
+              <strong>{ui(pronunciationMessage(feedback.score))}</strong>
+              <p>{ui("Green matched what Micheon heard. Red is the part to practise again.")}</p>
+            </div>
+          </div>
+          <div className="fs-pronunciation-phrase" aria-label={`${Math.round(feedback.score * 100)}% matched`}>
+            {feedback.segments.map((segment, index) => (
+              <span className={`is-${segment.status}`} key={`${segment.text}-${index}`}>{segment.text}</span>
+            ))}
+          </div>
+          <div className="fs-pronunciation-heard">
+            <span>{ui("Micheon heard")}</span>
+            <q>{heardText}</q>
+          </div>
+          <div className="fs-pronunciation-actions">
+            <button className="ghost-btn" onClick={start} type="button"><RotateCcw aria-hidden="true" /> {ui("Try again")}</button>
+            <button className="lesson-cta" onClick={onContinue} type="button">{ui("Continue")} <ArrowRight aria-hidden="true" /></button>
+          </div>
+        </motion.div>
+      )}
+
+      {error && <div className="fs-speaking-error" role="alert">{ui(error)}</div>}
+      {!feedback && !recording && !processing && (
+        <button className="fs-speaking-text-skip" onClick={onContinue} type="button">{ui("Skip this speaking check")}</button>
+      )}
+    </div>
   );
 }
 
@@ -1775,6 +2029,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [audioMuted, setAudioMuted] = useState(
     () => getTtsAudioVolume(guidedTargetLanguageTag()) <= 0
   );
+  const speechRecognitionStatus = useDesktopSpeechRecognitionStatus();
+  const speechEnabled = isElectronApp()
+    ? speechRecognitionStatus.enabled
+    : isSpeechRecognitionSupported();
   const audioMutedRef = useRef(audioMuted);
   useEffect(() => {
     const syncAudioState = () => {
@@ -1799,6 +2057,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     mastered: masteredRoute,
     bilingual: hasFr,
     audioMuted: audioMutedRef.current,
+    speechEnabled,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -2026,11 +2285,38 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     const replacement = replacementSentencePhaseWhenMuted(phase, {
       mastered: masteredRoute,
       bilingual: hasFr,
+      speechEnabled,
     });
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;
     setPhase(replacement);
-  }, [audioMuted, hasFr, masteredRoute, phase]);
+  }, [audioMuted, hasFr, masteredRoute, phase, speechEnabled]);
+
+  // Explicitly uninstalling the model in Settings removes speaking checks from
+  // the route immediately, including if Settings is changed while this stage
+  // is open. Automatic downloads and temporary errors keep the stage present.
+  useEffect(() => {
+    if (phase !== "Speak" || speechEnabled) return;
+    const fullRoute = buildSentencePhaseRoute({
+      mastered: masteredRoute,
+      bilingual: hasFr,
+      audioMuted: audioMutedRef.current,
+      speechEnabled: true,
+    });
+    const routeWithoutSpeech = buildSentencePhaseRoute({
+      mastered: masteredRoute,
+      bilingual: hasFr,
+      audioMuted: audioMutedRef.current,
+      speechEnabled: false,
+    });
+    const currentIndex = fullRoute.indexOf("Speak");
+    const replacement = fullRoute.slice(currentIndex + 1).find((candidate) => routeWithoutSpeech.includes(candidate))
+      ?? routeWithoutSpeech[Math.max(0, currentIndex - 1)]
+      ?? routeWithoutSpeech[0];
+    if (!replacement) return;
+    currentPhaseRef.current = replacement;
+    setPhase(replacement);
+  }, [hasFr, masteredRoute, phase, speechEnabled]);
 
   // Play lesson audio automatically on first exposure and listening checks.
   // TTS is a no-op while muted, so the global mute still applies.
@@ -2328,7 +2614,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // phaseRoute intentionally derives from these route inputs and the live
     // audio ref, which is updated synchronously by the mute event.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, masteredRoute, hasFr, audioMuted]);
+  }, [phase, masteredRoute, hasFr, audioMuted, speechEnabled]);
 
   // Auto-advance: once the typed answer is strictly correct (no lenient/typo
   // pass), confirm it automatically — no Check press needed.
@@ -2866,7 +3152,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </h1>
             <p className="fs-sub">
-              {phase === "RecallTarget"
+              {phase === "Speak"
+                ? ui("Say the phrase naturally. Micheon checks what it heard on your device.")
+                : phase === "RecallTarget"
                 ? ui("Use the meaning cue to recall the full target sentence.")
                 : phase === "RecallMeaning"
                   ? ui("Use the target sentence to recall its full meaning.")
@@ -3884,6 +4172,23 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               disabled={recallCompletionScheduledRef.current}
               className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)] disabled:cursor-default disabled:opacity-50"
             >
+              {ui("← Back")}
+            </button>
+          </motion.div>
+        )}
+
+        {/* SPEAK phase: the desktop app records locally, then whisper.cpp checks
+            the phrase without sending the learner's voice to a cloud service. */}
+        {phase === "Speak" && (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+            exit={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: 8 }}
+            key="speak"
+          >
+            <SpeakingPractice expectedText={item.de} language={targetLang} onContinue={advanceOrFinish} />
+            <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
               {ui("← Back")}
             </button>
           </motion.div>

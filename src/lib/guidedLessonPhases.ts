@@ -9,6 +9,7 @@ export const SENTENCE_PHASES = [
   "ListenPick",
   "MissingWord",
   "Type",
+  "Speak",
   "Translate",
   "TypeAgain",
   "TranslateAgain",
@@ -29,6 +30,7 @@ export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "ListenPick",
   "MissingWord",
   "Type",
+  "Speak",
   "French",
   "Memory",
 ];
@@ -51,12 +53,15 @@ export interface SentencePhaseRouteOptions {
   mastered: boolean;
   bilingual: boolean;
   audioMuted: boolean;
+  /** False only after the learner explicitly removes offline recognition. */
+  speechEnabled?: boolean;
 }
 
 export function buildSentencePhaseRoute({
   mastered,
   bilingual,
   audioMuted,
+  speechEnabled = true,
 }: SentencePhaseRouteOptions): SentencePhase[] {
   const route: readonly SentencePhase[] = mastered
     ? MASTERED_SENTENCE_PHASES
@@ -64,9 +69,11 @@ export function buildSentencePhaseRoute({
       ? BILINGUAL_SENTENCE_PHASES
       : SENTENCE_PHASES;
 
-  return audioMuted
-    ? route.filter((phase) => !AUDIO_REQUIRED_PHASE_SET.has(phase))
-    : [...route];
+  return route.filter((phase) => {
+    if (audioMuted && AUDIO_REQUIRED_PHASE_SET.has(phase)) return false;
+    if (!speechEnabled && phase === "Speak") return false;
+    return true;
+  });
 }
 
 /**

@@ -36,7 +36,6 @@ export const ENGLISH_SYNONYMS: string[][] = [
   ["anyone", "anybody"],
   ["no one", "nobody", "noone"],
   ["a lot", "lots", "loads"],
-  ["too", "also"],
   ["about", "around", "approximately", "roughly"],
   ["almost", "nearly"],
   ["often", "frequently"],

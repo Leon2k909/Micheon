@@ -683,6 +683,7 @@ const guidedStyles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const testsSource = fs.readFileSync(path.join(root, "src/components/tests/TestsView.tsx"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const packageLockSource = fs.readFileSync(path.join(root, "package-lock.json"), "utf8");
+const speechManagerSource = fs.readFileSync(path.join(root, "electron/speech-recognition.cjs"), "utf8");
 const dialogueStart = guidedSource.indexOf("function DialogueExercise(");
 const dialogueEnd = guidedSource.indexOf("// Section", dialogueStart);
 const dialogueSource = guidedSource.slice(dialogueStart, dialogueEnd > dialogueStart ? dialogueEnd : undefined);
@@ -745,11 +746,12 @@ check(
 );
 
 check(
-  "guided lesson routes omit the temporarily disabled speaking stage",
-  !fullLessonPhases.includes("Speak")
-    && !bilingualLessonPhases.includes("Speak")
+  "guided lesson routes include the local speaking stage",
+  fullLessonPhases.includes("Speak")
+    && bilingualLessonPhases.includes("Speak")
     && fullLessonPhases.includes("WriteFromMemory")
-    && !guidedSource.includes('phase === "Speak"')
+    && guidedSource.includes('phase === "Speak"')
+    && guidedSource.includes("<SpeakingPractice")
 );
 check(
   "unavailable target audio temporarily removes every audio-required sentence stage",
@@ -922,12 +924,14 @@ check(
     && !guidedSource.includes("withFrench ? BILINGUAL_PHASES")
 );
 check(
-  "desktop lessons cannot trigger a speech-model download",
-  guidedSource.includes("if (isElectronApp() || !isSpeechRecognitionSupported()) return null;")
+  "desktop speaking uses the managed native whisper.cpp runtime",
+  guidedSource.includes("transcribeSpeech(audio, language)")
+    && speechManagerSource.includes("whisper-cli.exe")
+    && speechManagerSource.includes("large-v3-turbo-q5_0")
     && !guidedSource.includes("whisperRecognition")
 );
 check(
-  "the offline recognition runtime and model selectors are absent from the app",
+  "the retired browser speech-model runtime stays absent from the app",
   !packageJson.dependencies?.["@huggingface/transformers"]
     && !packageJson.devDependencies?.["@huggingface/transformers"]
     && !packageLockSource.includes('node_modules/@huggingface/transformers')
