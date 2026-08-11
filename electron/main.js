@@ -1764,6 +1764,21 @@ ipcMain.handle("storage:clear-cache", async (event) => {
 // Explorer, so the only steps left are the browser's own (Developer mode,
 // Load unpacked). Re-copies every time so an app update to the extension
 // never leaves a stale folder behind.
+// Deletes files under `folder` that no longer exist in `source`, so an
+// update can drop a file without the delete-everything-first approach
+// below refuses to take.
+function pruneRemovedFiles(source, folder) {
+  for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+    const here = path.join(folder, entry.name);
+    const there = path.join(source, entry.name);
+    if (!fs.existsSync(there)) {
+      fs.rmSync(here, { recursive: true, force: true });
+    } else if (entry.isDirectory()) {
+      pruneRemovedFiles(there, here);
+    }
+  }
+}
+
 function copyExtensionFolder() {
   // fs.cpSync can't walk a folder that's still packed inside app.asar --
   // it needs the real files asarUnpack puts alongside it in
@@ -1774,8 +1789,16 @@ function copyExtensionFolder() {
     : path.join(__dirname, "..", "dist", "micheon-immersion-extension");
   if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
   const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
-  fs.rmSync(destination, { recursive: true, force: true });
-  fs.cpSync(source, destination, { recursive: true });
+  // Overwrite in place, never delete-then-recreate. By the second time a
+  // learner presses this button their browser already has THIS path loaded
+  // as an unpacked extension, and removing the directory (manifest.json
+  // included, however briefly) is how a browser decides the extension is
+  // gone: it unloads it, new pages stop being glossed entirely, and pages
+  // already open keep running the old copy -- which reads exactly like
+  // "the update did nothing and now it's broken".
+  fs.mkdirSync(destination, { recursive: true });
+  fs.cpSync(source, destination, { force: true, recursive: true });
+  pruneRemovedFiles(source, destination);
   return destination;
 }
 

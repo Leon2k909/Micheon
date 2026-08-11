@@ -29,7 +29,11 @@
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "SELECT", "OPTION", "CODE", "PRE"]);
   const MISSING_VOCAB_CAP = 3000;
   const FLUSH_DELAY_MS = 4000;
-  const GERMAN_HINT_RE = /\b(und|nicht|der|die|das|ist|sind|ich|du|wir|mit|für|auch|über|sei|ein|eine|zum|zur|auf|dem|den)\b/g;
+  // Unicode-aware boundaries, not \b. JS's \b is ASCII-only, so `\büber\b`
+  // can NEVER match: a space followed by "ü" is non-word followed by
+  // non-word, which is not a boundary. Every umlaut-initial hint word was
+  // silently dead, weakening the German detection this gate exists for.
+  const GERMAN_HINT_RE = /(?<![\p{L}])(?:und|nicht|der|die|das|ist|sind|ich|du|wir|mit|für|auch|über|sei|ein|eine|zum|zur|auf|dem|den)(?![\p{L}])/gu;
 
   const IS_YOUTUBE = /(^|\.)youtube\.com$/.test(location.hostname);
   // Title first, then the description in its collapsed and expanded homes.
@@ -46,7 +50,12 @@
   // videos especially -- their descriptions are English, the German is in
   // the audio and the comment section), and an English reply under a German
   // video is not.
-  const YT_COMMENT_SELECTOR = "ytd-comment-thread-renderer #content-text, ytd-comment-view-model #content-text";
+  // #content-text is the comment BODY in both YouTube's old
+  // (ytd-comment-renderer) and current (ytd-comment-view-model) markup.
+  // Matching on it directly rather than through a renderer element name
+  // survives the next rename of the wrapper, which is the part YouTube
+  // actually churns.
+  const YT_COMMENT_SELECTOR = "#content-text";
 
   let settings = { glossEnabled: true, collectMissingVocab: true };
   // German capitalises every noun and nothing else, so a word's authored
@@ -322,7 +331,12 @@
   let tipEl = null;
   let tipTextEl = null;
   let tipSpeakEl = null;
-  let hideTimer = null;
+  // Viewport rect of the word the tip currently belongs to, captured when
+  // it was shown. Kept as a plain rectangle rather than an element
+  // reference on purpose: the element can be destroyed by the page at any
+  // moment (see hideWhenPointerLeaves) and the geometry still has to work.
+  let anchorRect = null;
+  let tipShown = false;
 
   function ensureTip() {
     if (tipEl && tipEl.isConnected) return tipEl;
@@ -340,45 +354,54 @@
       e.preventDefault();
       e.stopPropagation();
       const text = tipEl?.dataset.micheonDe || "";
-      if (text) chrome.runtime.sendMessage({ type: "micheon-tts", text });
+      if (!text) return;
+      // chrome.* throws "Extension context invalidated" in a page that was
+      // injected before the extension was reloaded. Pronunciation is a
+      // nicety; an exception here would take the whole handler down.
+      try { chrome.runtime.sendMessage({ type: "micheon-tts", text }); } catch { /* stale context */ }
     });
     tipEl.appendChild(tipTextEl);
     tipEl.appendChild(tipSpeakEl);
-    // The tip itself cancels its own dismissal, so the speaker button is
-    // actually reachable -- the cursor has to cross the gap between word
-    // and tip without the tip vanishing under it.
-    tipEl.addEventListener("mouseenter", cancelHide);
-    tipEl.addEventListener("mouseleave", scheduleHide);
     document.documentElement.appendChild(tipEl);
     return tipEl;
   }
 
-  function cancelHide() {
-    if (hideTimer) {
-      clearTimeout(hideTimer);
-      hideTimer = null;
-    }
+  // Every visual property is written as an important INLINE style. The
+  // stylesheet's `all: unset !important` outranks any plain declaration and
+  // even out-specified class rules failed against it; an important inline
+  // style is the one thing that reliably wins.
+  function paintTip(visible) {
+    if (!tipEl) return;
+    tipEl.style.setProperty("opacity", visible ? "1" : "0", "important");
+    tipEl.style.setProperty("visibility", visible ? "visible" : "hidden", "important");
+    // The tip body stays click-through even while visible, so it never
+    // swallows a click meant for the page underneath it. Only the speaker
+    // button takes clicks, and it re-enables itself in the stylesheet.
+    tipEl.style.setProperty("pointer-events", "none", "important");
+    if (tipSpeakEl) tipSpeakEl.style.setProperty("pointer-events", visible ? "auto" : "none", "important");
+    tipEl.classList.toggle("micheon-visible", visible);
+    tipShown = visible;
   }
 
-  function scheduleHide() {
-    cancelHide();
-    hideTimer = setTimeout(() => {
-      if (tipEl) tipEl.classList.remove("micheon-visible");
-    }, 250);
+  function hideTip() {
+    anchorRect = null;
+    paintTip(false);
   }
 
   function showTip(word) {
-    const tip = ensureTip();
-    cancelHide();
-    tipTextEl.textContent = word.dataset.micheonGloss || "";
-    tip.dataset.micheonDe = word.dataset.micheonDe || "";
-    if (!tipTextEl.textContent) return;
     const rect = word.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) return; // collapsed/hidden word
-    // Measure while invisible, then clamp into the viewport. The stylesheet
-    // resets this element with `all: unset !important`, which outranks plain
-    // inline styles -- position must be set with important priority too.
-    tip.classList.remove("micheon-visible");
+    const gloss = word.dataset.micheonGloss || "";
+    // A word with no gloss or no box can't anchor anything -- and leaving
+    // the previous tooltip up in that case is how it used to strand.
+    if (!gloss || (rect.width === 0 && rect.height === 0)) {
+      hideTip();
+      return;
+    }
+    const tip = ensureTip();
+    tipTextEl.textContent = gloss;
+    tip.dataset.micheonDe = word.dataset.micheonDe || "";
+    // Measured while hidden -- visibility:hidden keeps layout, which is why
+    // it is used here rather than display:none.
     const tw = tip.offsetWidth;
     const th = tip.offsetHeight;
     let left = rect.left + rect.width / 2 - tw / 2;
@@ -387,11 +410,43 @@
     if (top < 4) top = rect.bottom + 6;
     tip.style.setProperty("left", `${Math.round(left)}px`, "important");
     tip.style.setProperty("top", `${Math.round(top)}px`, "important");
-    tip.classList.add("micheon-visible");
+    anchorRect = rect;
+    paintTip(true);
   }
 
   function tipVisible() {
-    return Boolean(tipEl && tipEl.classList.contains("micheon-visible"));
+    return Boolean(tipEl && tipShown);
+  }
+
+  /**
+   * Dismissal is decided by POINTER GEOMETRY, not by mouseout events.
+   *
+   * Two earlier attempts failed here, both for the same underlying reason:
+   * a page can destroy the hovered element while the tip is up (React
+   * re-renders on X do this constantly), and the browser fires no leave
+   * event for a node that no longer exists. A timer-based watchdog didn't
+   * save it either -- re-arming a delay on every mousemove means continuous
+   * movement resets it forever and it never fires, which is exactly the
+   * "it just sits there" the learner kept seeing.
+   *
+   * So: while the tip is visible, the pointer either is inside the box that
+   * spans the word and the tip together, or the tip goes. No events from
+   * the page are trusted, no timers are involved, and a destroyed element
+   * changes nothing because the anchor is a cached rectangle.
+   */
+  function hideWhenPointerLeaves(x, y) {
+    if (!tipVisible()) return;
+    const tipRect = tipEl.getBoundingClientRect();
+    if (!anchorRect) { hideTip(); return; }
+    // The union of both rects covers the gap the cursor crosses to reach
+    // the speaker button; the padding keeps that crossing forgiving without
+    // making the tip cling to the pointer.
+    const pad = 10;
+    const left = Math.min(anchorRect.left, tipRect.left) - pad;
+    const right = Math.max(anchorRect.right, tipRect.right) + pad;
+    const top = Math.min(anchorRect.top, tipRect.top) - pad;
+    const bottom = Math.max(anchorRect.bottom, tipRect.bottom) + pad;
+    if (x < left || x > right || y < top || y > bottom) hideTip();
   }
 
   function initTooltip() {
@@ -399,38 +454,32 @@
       const word = e.target?.closest?.(".micheon-gloss-word");
       if (word) showTip(word);
     }, true);
-    document.addEventListener("mouseout", (e) => {
-      if (e.target?.closest?.(".micheon-gloss-word")) scheduleHide();
-    }, true);
     document.addEventListener("focusin", (e) => {
       const word = e.target?.closest?.(".micheon-gloss-word");
       if (word) showTip(word);
     }, true);
-    document.addEventListener("focusout", scheduleHide, true);
-    // Watchdog: enter/leave events alone can strand the tip forever. If a
-    // React app (X, notoriously) re-renders and REMOVES the hovered word
-    // while the tip is up, the browser never fires mouseout for the removed
-    // node and nothing ever arms the hide. So while the tip is visible, any
-    // mouse movement outside the tip and outside a glossed word schedules
-    // the hide -- and any click outside the tip hides it immediately.
+    document.addEventListener("focusout", hideTip, true);
     document.addEventListener("mousemove", (e) => {
-      if (!tipVisible()) return;
-      const over = e.target;
-      if (over?.closest?.(".micheon-gloss-tip") || over?.closest?.(".micheon-gloss-word")) return;
-      scheduleHide();
+      hideWhenPointerLeaves(e.clientX, e.clientY);
     }, { capture: true, passive: true });
+    // Belt and braces for the cases a mousemove never arrives for: the
+    // pointer leaving the window entirely, a click, a scroll (a fixed tip
+    // does not follow its word), a tab switch, or the page being hidden.
+    document.addEventListener("mouseleave", hideTip);
     document.addEventListener("mousedown", (e) => {
-      if (!tipVisible()) return;
       if (e.target?.closest?.(".micheon-gloss-tip")) return;
-      cancelHide();
-      tipEl.classList.remove("micheon-visible");
+      hideTip();
     }, true);
-    // A fixed-position tooltip doesn't follow its word when the page
-    // scrolls out from under the cursor -- hide instead of drifting.
-    window.addEventListener("scroll", () => {
-      cancelHide();
-      if (tipEl) tipEl.classList.remove("micheon-visible");
-    }, { capture: true, passive: true });
+    window.addEventListener("scroll", hideTip, { capture: true, passive: true });
+    window.addEventListener("blur", hideTip);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) hideTip();
+    });
+    // Keyboard escape, because a tip pinned by focus should also be
+    // dismissable without a mouse.
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") hideTip();
+    }, true);
   }
 
   function processTextNode(node, germanMode) {
@@ -572,12 +621,11 @@
   // never scanned: the account's interface language and other people's
   // usernames aren't vocabulary.
   function scanYouTube() {
-    if (location.pathname !== "/watch") return;
+    if (location.pathname !== "/watch" && !location.pathname.startsWith("/shorts")) return;
     const containers = [];
     for (const sel of YT_SCAN_SELECTORS) {
       for (const el of document.querySelectorAll(sel)) containers.push(el);
     }
-    if (containers.length === 0) return;
     // Judge the VIDEO once, from the richest text present, then gloss every
     // container. YouTube keeps two copies of the description -- the full
     // text (hidden until "…more") and a one-line collapsed snippet -- and
@@ -585,20 +633,30 @@
     // one line of a German vocab list can't pass a language check that the
     // full description passes easily. Whether this video is German isn't a
     // per-element question.
-    const combined = containers.map((el) => el.textContent || "").join("\n");
-    if (looksGermanBlock(combined)) {
-      ytGermanFound = true;
-      for (const el of containers) walk(el, true);
+    // German text gets English glosses; anything else gets the SAME
+    // English-to-German recall glosses every other site on the web gets.
+    // Without that else, YouTube was the one place on the internet where a
+    // non-German page produced nothing at all in either direction -- and
+    // since a German-dubbed or German-teaching video usually has English
+    // metadata, that was most of the videos worth opening.
+    if (containers.length > 0) {
+      const combined = containers.map((el) => el.textContent || "").join("\n");
+      const germanMeta = looksGermanBlock(combined);
+      if (germanMeta) ytGermanFound = true;
+      for (const el of containers) walk(el, germanMeta);
     }
 
     // Comments load lazily as the page scrolls; the throttled rescan picks
-    // each batch up as it arrives.
+    // each batch up as it arrives. Judged one at a time, because a German
+    // comment under an English video is exactly the material worth reading.
     for (const el of document.querySelectorAll(YT_COMMENT_SELECTOR)) {
       const text = el.textContent || "";
       if (text.trim().length < 8) continue;
-      if (!commentLooksGerman(text)) continue;
-      ytGermanFound = true;
-      walk(el, true);
+      const germanComment = commentLooksGerman(text);
+      if (germanComment) ytGermanFound = true;
+      // Only the German verdict drives collection (processTextNode collects
+      // in German mode only), so the candidate list stays clean either way.
+      walk(el, germanComment);
     }
   }
 
@@ -662,9 +720,20 @@
     window.addEventListener("beforeunload", flushMissingVocab);
   }
 
+  // A rejection anywhere in init() would leave the page with no glossing and
+  // no signal at all -- most likely when a reloaded extension orphans an
+  // already-injected script and every chrome.* call starts throwing. Say so
+  // in the console rather than dying silently.
+  function start() {
+    init().catch((error) => {
+      console.warn("[Micheon] glossing did not start:", error?.message ?? error,
+        "-- if the extension was just reloaded, reload this page.");
+    });
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", start);
   } else {
-    init();
+    start();
   }
 })();

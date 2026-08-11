@@ -40,15 +40,21 @@
   white-space: nowrap !important;
   max-width: 320px !important;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28) !important;
-  pointer-events: none !important;
   z-index: 2147483647 !important;
-  opacity: 0;
-  transition: opacity 0.1s ease;
-}
-
-.micheon-gloss-tip.micheon-visible {
-  opacity: 1;
-  pointer-events: auto !important;
+  /* Starting state only. Showing and hiding are driven from JS as
+     important INLINE styles, not by toggling a class.
+     `all: unset !important` above expands to every longhand at important
+     priority, and the cascade weighs importance before source order, so a
+     plain `opacity: 0` here silently loses to it and computes to 1 -- which
+     is why toggling a class never actually hid anything and the tooltip sat
+     on screen from the first hover onwards. Two attempts to out-specify it
+     from the stylesheet both failed; an important inline style outranks
+     every author rule regardless of specificity, which is the same reason
+     left/top are already set that way. No transition: a fade is not worth
+     another way for this to get stuck at the wrong opacity. */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .micheon-gloss-tip-text {
@@ -59,6 +65,9 @@
 
 .micheon-gloss-tip-speak {
   all: unset !important;
+  /* The tip body is click-through so it never eats a click meant for the
+     page; the button is the one part that must take one. */
+  pointer-events: auto !important;
   cursor: pointer !important;
   font-size: 13px !important;
   line-height: 1 !important;

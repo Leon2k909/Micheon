@@ -61,6 +61,25 @@ for (const file of sourceRoots.flatMap((directory) => collectFiles(directory))) 
   }
 }
 
+// ── the display pipeline may not invent umlauts ───────────────────────────
+// toGermanDisplayText repairs mojibake, which is safe because those byte
+// sequences never occur in real German. It once ALSO expanded the digraphs
+// ae/oe/ue into umlauts, and that corrupted 580 authored strings: "teuer"
+// became "teür", "neuen" became "neün", "sauer" became "saür", "bauen"
+// became "baün". Every one of those was shown to the learner as the correct
+// spelling and marked wrong when they typed the real one. Nothing in the
+// content is ASCII-transliterated, so the expansion could only ever lose.
+const apiSource = fs.readFileSync(path.join(root, "src", "lib", "api.ts"), "utf8");
+const displayBody = apiSource.slice(apiSource.indexOf("export function toGermanDisplayText"));
+const digraphExpansion = /\.replace\(\s*\/(?:ae|oe|ue|Ae|Oe|Ue)\/g\s*,\s*"[ÄÖÜäöü]"\s*\)/;
+if (digraphExpansion.test(displayBody.slice(0, displayBody.indexOf("return result")))) {
+  failures.push({
+    file: "src/lib/api.ts",
+    line: apiSource.slice(0, apiSource.indexOf("toGermanDisplayText")).split("\n").length,
+    word: "ae/oe/ue -> umlaut expansion in toGermanDisplayText (corrupts real German: teuer, neuen, sauer, bauen)",
+  });
+}
+
 if (failures.length > 0) {
   console.error("Outdated German spellings found:");
   for (const failure of failures) {
@@ -68,5 +87,5 @@ if (failures.length > 0) {
   }
   process.exitCode = 1;
 } else {
-  console.log("German orthography check passed (modern ss/ß spellings).");
+  console.log("German orthography check passed (modern ss/ß spellings, no invented umlauts).");
 }

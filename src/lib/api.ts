@@ -47,13 +47,18 @@ export function toGermanDisplayText(text: string) {
     .replace(/â€œ|â€œ|â€ž/g, "\"")
     .replace(/â€ /g, "\"")
     .replace(/â€˜|â€™/g, "'")
-    .replace(/Â·/g, "·")
-    .replace(/Ae/g, "Ä")
-    .replace(/Oe/g, "Ö")
-    .replace(/Ue/g, "Ü")
-    .replace(/ae/g, "ä")
-    .replace(/oe/g, "ö")
-    .replace(/ue/g, "ü");
+    .replace(/Â·/g, "·");
+  // Repairing mojibake (the sequences above) is safe: those byte patterns
+  // never occur in real German. Expanding the digraphs ae/oe/ue into
+  // umlauts is NOT -- it used to happen here and it corrupted 580 authored
+  // strings, because those letter pairs are ordinary German. It turned
+  // "teuer" into "teür", "neuen" into "neün", "schauen" into "schaün",
+  // "sauer" into "saür" and "bauen" into "baün": spellings that do not
+  // exist, taught as if they did, and marked wrong when the learner typed
+  // them correctly. Nothing in the content is ASCII-transliterated (checked
+  // across all 20,068 authored German strings -- zero needed it), so the
+  // expansion had nothing to gain and everything to break.
+  // scripts/check-german-orthography.cjs holds this shut.
 
   const exactWordReplacements: [RegExp, string][] = [
     [/\bstrasse\b/gi, "Straße"],
