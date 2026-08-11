@@ -130,10 +130,13 @@ export function rankWordCatalog(catalog: WordItem[], corpusIndex: CorpusIndex | 
  * counted from their word grades: each known word is a step up (a "Kann ich"
  * press writes exactly such a grade, so mass-skipping basics climbs fast),
  * and each struggling word pulls DOWN twice as hard, because struggling at a
- * rung is the clearest sign it is high enough. Fifteen knowns per rung: a
- * genuine beginner takes days to climb once; someone skipping material they
- * find easy climbs in minutes, which is precisely the difference the ladder
- * exists to detect.
+ * rung is the clearest sign it is high enough. Five knowns per rung — Leon
+ * judged fifteen too slow, and the failure mode he was guarding against is
+ * real: someone skipping easy material should feel the sittings harden
+ * within one preview's worth of "Kann ich", not three. A genuine beginner
+ * still climbs slowly, because earning five knowns takes days while
+ * declaring five takes seconds — that difference is precisely what the
+ * ladder exists to detect.
  *
  * Serving order is a PREFERENCE, never a filter: at-or-above the learner's
  * rung first (nearest rung first, most common first within it), then below,
@@ -166,7 +169,7 @@ export function learnerWordRung(
     else if (record.lastGrade === "struggle" && !isSnoozed(record, now)) struggling += 1;
   }
   const score = known - struggling * 2;
-  return Math.max(1, Math.min(6, 1 + Math.floor(score / 15)));
+  return Math.max(1, Math.min(6, 1 + Math.floor(score / 5)));
 }
 
 export type WordStep = {

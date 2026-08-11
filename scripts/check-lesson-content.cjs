@@ -96,15 +96,17 @@ for (const key of ["part401", "part405", "part410"]) {
 // A beginner starts at the bottom.
 assert(buildWordSitting(ranked, {}).every((s) => wordLadderRung(s.item) === 1),
   "a fresh learner is no longer started on the most common words");
-// Ninety Kann-ich presses climb to the top, and the sitting follows.
+// The climb rate is Leon's: five knowns per rung, so about one preview's
+// worth of Kann-ich presses (25) reaches the top. Fifteen-per-rung was
+// shipped first and judged too slow — this assertion is what pins the fix.
 const climbGrades = {};
-for (const w of ranked.slice(0, 90)) climbGrades[w.id] = recordDeclaredKnown(undefined);
-assert(learnerWordRung(climbGrades) >= 5, "mass-skipping basics no longer climbs the ladder");
+for (const w of ranked.slice(0, 26)) climbGrades[w.id] = recordDeclaredKnown(undefined);
+assert(learnerWordRung(climbGrades) >= 6, "25 Kann-ich presses no longer reach the top rung — the climb rate has regressed");
 assert(buildWordSitting(ranked, climbGrades).filter((s) => !s.review).every((s) => wordLadderRung(s.item) >= 4),
   "a climbed learner is still being served basics");
 // Struggles pull it back down.
 const strugglingGrades = { ...climbGrades };
-for (const w of ranked.slice(200, 245)) strugglingGrades[w.id] = recordStruggle(Date.now(), undefined);
+for (const w of ranked.slice(200, 215)) strugglingGrades[w.id] = recordStruggle(Date.now(), undefined);
 assert(learnerWordRung(strugglingGrades) < learnerWordRung(climbGrades),
   "struggling at the top no longer lowers the ladder");
 // And the wrap-around: when the hard tiers are done, the skipped easy words
