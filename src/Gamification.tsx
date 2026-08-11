@@ -78,6 +78,7 @@ import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory, SettingsCategoryLayout } from "@/components/SettingsCategory";
 import { DataAndStorage } from "@/components/DataAndStorage";
+import { BROWSER_EXTENSION_ICON, BrowserExtension } from "@/components/BrowserExtension";
 import { AppZoomControl } from "@/components/AppZoomControl";
 import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
@@ -408,6 +409,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
+  "Browser extension": "chrome edge brave extension addon plugin browser download highlight gloss youtube dub captions",
   Activity: "activity streak xp sessions week milestones progress stats statistics",
 };
 
@@ -1406,6 +1408,16 @@ export default function GamificationPanel({
                   title={ui("Data & storage")}
                 >
                   <DataAndStorage />
+                </SettingsCategory>
+
+                <SettingsCategory
+                  description={ui("A companion for Chrome, Edge and Brave that keeps teaching you as you browse.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Browser extension"), ui("A companion for Chrome, Edge and Brave that keeps teaching you as you browse."))}
+                  icon={BROWSER_EXTENSION_ICON}
+                  title={ui("Browser extension")}
+                >
+                  <BrowserExtension />
                 </SettingsCategory>
 
                 {/* Used to sit permanently at the top of the page, above

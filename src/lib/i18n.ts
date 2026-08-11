@@ -1699,6 +1699,21 @@ const DE: Record<string, string> = {
   "heard": "gehört",
   "Graded in Listen mode — exposure only, not mastery.": "Im Hörmodus bewertet — nur Kontakt, kein Können.",
 
+  // ── Browser extension ──
+  "Browser extension": "Browser-Erweiterung",
+  "A companion for Chrome, Edge and Brave that keeps teaching you as you browse.": "Ein Begleiter für Chrome, Edge und Brave, der dich beim Surfen weiterlernen lässt.",
+  "A small extension for Chrome, Edge and Brave that keeps teaching you while you browse: it highlights German words you already know on any page, quietly collects the ones it doesn't recognise (with the sentence they appeared in) so the word bank can grow from real usage, and switches YouTube to its German dub with English captions when a video has one.": "Eine kleine Erweiterung für Chrome, Edge und Brave, die dich beim Surfen weiterlernen lässt: Sie hebt deutsche Wörter, die du schon kennst, auf jeder Seite hervor, sammelt still die Wörter, die sie nicht erkennt (samt dem Satz, in dem sie vorkamen), damit der Wortschatz aus echter Nutzung wachsen kann, und stellt YouTube auf die deutsche Synchronisation mit englischen Untertiteln um, wenn ein Video eine hat.",
+  "Highlights words you're learning, on any page": "Hebt Wörter hervor, die du lernst — auf jeder Seite",
+  "Spots new words for the word bank, with real examples": "Findet neue Wörter für den Wortschatz, mit echten Beispielen",
+  "Auto-switches YouTube to its German dub + English captions": "Stellt YouTube automatisch auf deutsche Synchronisation + englische Untertitel um",
+  "Download the extension": "Erweiterung herunterladen",
+  "Installing it": "Installation",
+  "Not on the Chrome, Edge or Brave web store yet, so it installs the way any in-development extension does:": "Noch nicht im Chrome-, Edge- oder Brave-Store, daher wird sie wie jede Erweiterung in Entwicklung installiert:",
+  "Unzip the download somewhere it can stay (deleting the folder later removes the extension).": "Entpacke den Download an einen Ort, an dem er bleiben kann (der Ordner löscht die Erweiterung wieder, wenn du ihn entfernst).",
+  "Open your browser's extensions page (type chrome://extensions, edge://extensions or brave://extensions into the address bar).": "Öffne die Erweiterungsseite deines Browsers (gib chrome://extensions, edge://extensions oder brave://extensions in die Adressleiste ein).",
+  "Turn on Developer mode.": "Schalte den Entwicklermodus ein.",
+  "Click “Load unpacked” and select the unzipped folder.": "Klicke auf „Entpackt laden“ und wähle den entpackten Ordner aus.",
+
   // ── App shell: sidebar, dashboard, search, notifications, shop, social ──
   "Read everything with the full sidebar view": "Alles in der vollen Seitenleistenansicht lesen",
   "{n}-day streak": "{n}-Tage-Serie",
