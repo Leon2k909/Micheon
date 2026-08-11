@@ -74,6 +74,10 @@ export interface SentencePhaseRouteOptions {
   audioMuted: boolean;
   /** True for a single-word item from a vocabulary sitting. */
   word?: boolean;
+  /** False for a phrase of two words or fewer: dragging two tiles has only
+   *  one possible swap, so the stage tests nothing and is dropped from the
+   *  route entirely rather than shown as a one-move formality. */
+  orderable?: boolean;
 }
 
 export function buildSentencePhaseRoute({
@@ -81,6 +85,7 @@ export function buildSentencePhaseRoute({
   bilingual,
   audioMuted,
   word = false,
+  orderable = true,
 }: SentencePhaseRouteOptions): SentencePhase[] {
   const route: readonly SentencePhase[] = word
     ? (mastered ? MASTERED_WORD_PHASES : WORD_PHASES)
@@ -92,6 +97,7 @@ export function buildSentencePhaseRoute({
 
   return route.filter((phase) => {
     if (audioMuted && AUDIO_REQUIRED_PHASE_SET.has(phase)) return false;
+    if (!orderable && phase === "Order") return false;
     return true;
   });
 }

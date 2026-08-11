@@ -1570,11 +1570,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // A vocabulary sitting reuses these exercises but not the whole march:
   // a single word runs the short word route (see guidedLessonPhases).
   const isWordItem = item?.kind === "word";
+  // Two tiles have exactly one possible arrangement other than the shuffle
+  // they start in, so dragging them "in order" tests nothing — drop the
+  // stage rather than ship a one-move formality.
+  const isOrderable = String(item?.de ?? "").trim().split(/\s+/).filter(Boolean).length > 2;
   const phaseRoute = (): Phase[] => buildSentencePhaseRoute({
     mastered: masteredRoute,
     bilingual: hasFr,
     audioMuted: audioMutedRef.current,
     word: isWordItem,
+    orderable: isOrderable,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -1803,6 +1808,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       mastered: masteredRoute,
       bilingual: hasFr,
       word: isWordItem,
+      orderable: isOrderable,
       });
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;

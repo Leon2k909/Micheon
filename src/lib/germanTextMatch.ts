@@ -1178,7 +1178,15 @@ function unfrontAdverbial(text: string): string[] {
 
 export function matchEnglishPhrase(
   input: string,
-  target: string
+  target: string,
+  // Internal only — every external caller keeps the two-argument contract.
+  // A fronted-adverbial rotation is tried once, at the outermost call; a
+  // rotated variant recursing back in here must not roll its own rotations
+  // on top, or a sentence with several frontable words compounds up to five
+  // branches per level with no base case, which is a stack overflow away
+  // from a live lesson (this is exactly what crashed one — see the crash
+  // report reading "Maximum call stack size exceeded" through this file).
+  allowAdverbialRetry = true
 ): { ok: boolean; spellingNote: boolean; capitalizationError?: boolean; phrasingNote?: boolean } {
   // "A / B" answer keys offer alternatives — accept a match against either
   // side (or the whole thing). Recurse per segment, slash-free.
@@ -1200,13 +1208,15 @@ export function matchEnglishPhrase(
   // A fronted time or place phrase is the same sentence. Tried on either
   // side: the learner may front one the answer key leaves trailing, or leave
   // one trailing that the key fronts.
-  for (const moved of unfrontAdverbial(input)) {
-    const alt = matchEnglishPhrase(moved, target);
-    if (alt.ok) return alt;
-  }
-  for (const moved of unfrontAdverbial(target)) {
-    const alt = matchEnglishPhrase(input, moved);
-    if (alt.ok) return alt;
+  if (allowAdverbialRetry) {
+    for (const moved of unfrontAdverbial(input)) {
+      const alt = matchEnglishPhrase(moved, target, false);
+      if (alt.ok) return alt;
+    }
+    for (const moved of unfrontAdverbial(target)) {
+      const alt = matchEnglishPhrase(input, moved, false);
+      if (alt.ok) return alt;
+    }
   }
   const inputNorm = stripParentheticals(normalizeEnglishSpelling(input));
   const targetNorm = stripParentheticals(normalizeEnglishSpelling(target));
