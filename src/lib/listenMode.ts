@@ -66,7 +66,11 @@ const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
 const PET_BILINGUAL_CAPTIONS_KEY = "gl-listen-pet-bilingual-captions-v1";
 const CONTENT_SOURCE_KEY = "gl-listen-content-source";
 const QUEUE_ORDER_KEY = "gl-listen-queue-order";
-const CURRENT_ITEM_KEY = "gl-listen-current-item-v1";
+// v2 deliberately separates cursors by queue order. The original key only
+// included course + content source, so changing from adaptive/least-heard to
+// Most common first restored the same niche item at its popularity rank
+// instead of beginning that ordering at the front.
+const CURRENT_ITEM_KEY = "gl-listen-current-item-v2";
 const MAX_LANGUAGE_REPEATS = 10;
 const MAX_LOOP_ITEMS = 12;
 const MAX_LOOP_PASSES = 6;
@@ -415,19 +419,25 @@ export function setListenPetBilingualCaptions(
   return next;
 }
 
-function currentItemStorageKey(direction: LearningDirection, source: ListenContentSource): string {
-  // Sentence, word, and mixed queues contain different ids. Keeping one
-  // cursor per mode means changing the Continue Learning dropdown and coming
-  // back never loses the learner's place in either queue.
-  return `${CURRENT_ITEM_KEY}:${direction}:${source}`;
+function currentItemStorageKey(
+  direction: LearningDirection,
+  source: ListenContentSource,
+  order: ListenQueueOrder
+): string {
+  // Sentence, word, and mixed queues contain different ids, while each queue
+  // order gives those ids a different position. Keep an exact cursor for the
+  // full combination so switching filters never drops a learner halfway into
+  // an unrelated ordering.
+  return `${CURRENT_ITEM_KEY}:${direction}:${source}:${order}`;
 }
 
 export function getListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction)
+  source: ListenContentSource = getListenContentSource(direction),
+  order: ListenQueueOrder = getListenQueueOrder(direction)
 ): string {
-  const value = loadScopedJson<unknown>(currentItemStorageKey(direction, source), "", profile);
+  const value = loadScopedJson<unknown>(currentItemStorageKey(direction, source, order), "", profile);
   return typeof value === "string" ? value : "";
 }
 
@@ -435,10 +445,11 @@ export function setListenCurrentItemId(
   itemId: string,
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction)
+  source: ListenContentSource = getListenContentSource(direction),
+  order: ListenQueueOrder = getListenQueueOrder(direction)
 ): string {
   const next = typeof itemId === "string" ? itemId.slice(0, 240) : "";
-  saveScopedJson(currentItemStorageKey(direction, source), next, profile);
+  saveScopedJson(currentItemStorageKey(direction, source, order), next, profile);
   return next;
 }
 

@@ -270,7 +270,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
   const [playhead, setPlayhead] = useState(() => {
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     return listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -340,7 +340,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   useEffect(() => {
     setHiddenIds(new Set());
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -348,12 +348,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       getListenLoopItems(learningDirection),
       getListenLoopPasses(learningDirection)
     ));
-  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id]);
+  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder]);
 
   useEffect(() => {
     if (!item) return;
-    setListenCurrentItemId(item.id, learningDirection, profile, contentSource);
-  }, [contentSource, item?.id, learningDirection, profile?.id]);
+    setListenCurrentItemId(item.id, learningDirection, profile, contentSource, queueOrder);
+  }, [contentSource, item?.id, learningDirection, profile?.id, queueOrder]);
 
   useEffect(() => {
     const sync = () => setAudioSettings(getAudioSettings());

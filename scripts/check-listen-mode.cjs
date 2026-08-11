@@ -343,11 +343,14 @@ check("pet captions show both languages by default and remain learner-controlled
 setListenCurrentItemId("sentence-cursor", "learn-de", null, "sentences");
 setListenCurrentItemId("english-course-cursor", "learn-en", null, "sentences");
 setListenCurrentItemId("word-cursor", "learn-de", null, "words");
-check("Listen remembers a separate exact cursor for each course and content mode",
+setListenCurrentItemId("learning-cursor", "learn-de", null, "sentences", "learning");
+check("Listen remembers a separate exact cursor for each course, content mode, and queue order",
   getListenCurrentItemId("learn-de", null, "words") === "word-cursor"
   && getListenCurrentItemId("learn-en", null, "words") === ""
   && getListenCurrentItemId("learn-de", null, "sentences") === "sentence-cursor"
-  && getListenCurrentItemId("learn-en", null, "sentences") === "english-course-cursor");
+  && getListenCurrentItemId("learn-en", null, "sentences") === "english-course-cursor"
+  && getListenCurrentItemId("learn-de", null, "sentences", "learning") === "learning-cursor"
+  && getListenCurrentItemId("learn-de", null, "sentences", "least-heard") === "");
 
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Headphones/.test(prototype));
@@ -412,9 +415,10 @@ check("a rapid grade or navigation cannot queue a second card advance",
   view.includes("gradeAdvanceTimerRef")
   && view.includes("if (!item || gradeAdvanceTimerRef.current != null) return;")
   && view.includes("cancelGradeAdvance();"));
-check("Listen restores and persists the exact card for this course and content mode",
+check("Listen restores and persists the exact card for this course, content mode, and queue order",
   view.includes("getListenCurrentItemId(")
-  && view.includes("setListenCurrentItemId(item.id"));
+  && view.includes("setListenCurrentItemId(item.id")
+  && view.includes("contentSource, queueOrder"));
 check("background playback is default-on, toggleable, and exposes a compact persistent player",
   view.includes("getListenBackgroundPlayback(")
   && view.includes("setListenBackgroundPlayback(")
