@@ -7,7 +7,6 @@
   font: inherit !important;
   color: inherit !important;
   cursor: help !important;
-  position: relative !important;
   text-decoration: underline dotted !important;
   text-decoration-color: #4f9a52 !important;
   text-underline-offset: 2px !important;
@@ -20,28 +19,53 @@
   outline: none !important;
 }
 
-.micheon-gloss-word::after {
-  content: attr(data-micheon-gloss);
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 6px);
-  transform: translateX(-50%) translateY(4px);
-  background: #1b1d24;
-  color: #f4f6f5;
-  font: 600 12.5px/1.4 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  padding: 5px 9px;
-  border-radius: 8px;
-  white-space: nowrap;
-  max-width: 260px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+/* One shared tooltip element, attached to the document root with fixed
+   positioning and placed by script. A per-word ::after tooltip looked
+   simpler but broke in the wild: any ancestor with overflow:hidden (chat
+   bubbles, cards) clips it, a word at the viewport edge pushes it
+   off-screen, and an ancestor stacking context can trap it underneath
+   the page's own UI regardless of z-index. Root-level fixed positioning
+   is immune to all three. */
+.micheon-gloss-tip {
+  all: unset !important;
+  position: fixed !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: #1b1d24 !important;
+  color: #f4f6f5 !important;
+  font: 600 12.5px/1.4 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  padding: 5px 9px !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+  max-width: 320px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28) !important;
+  pointer-events: none !important;
+  z-index: 2147483647 !important;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.1s ease, transform 0.1s ease;
-  z-index: 2147483647;
+  transition: opacity 0.1s ease;
 }
 
-.micheon-gloss-word:hover::after,
-.micheon-gloss-word:focus-visible::after {
+.micheon-gloss-tip.micheon-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  pointer-events: auto !important;
+}
+
+.micheon-gloss-tip-text {
+  all: unset !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.micheon-gloss-tip-speak {
+  all: unset !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  padding: 2px !important;
+  border-radius: 5px !important;
+}
+
+.micheon-gloss-tip-speak:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
 }

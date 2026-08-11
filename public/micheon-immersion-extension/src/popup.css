@@ -23,6 +23,16 @@ header .sub {
   margin-top: 2px;
 }
 
+.status {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: #eef3fb;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #274769;
+}
+
 .row {
   margin-bottom: 8px;
 }
@@ -41,6 +51,12 @@ header .sub {
   border-radius: 8px;
   font-weight: 600;
   color: #2e6b31;
+}
+
+.stats div + div {
+  margin-top: 3px;
+  font-weight: 500;
+  font-size: 12px;
 }
 
 .actions {

@@ -9,6 +9,7 @@
 import {
   app,
   BrowserWindow,
+  clipboard,
   globalShortcut,
   Menu,
   nativeImage,
@@ -18,6 +19,7 @@ import {
   session,
   Tray,
 } from "electron";
+import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -1762,25 +1764,90 @@ ipcMain.handle("storage:clear-cache", async (event) => {
 // Explorer, so the only steps left are the browser's own (Developer mode,
 // Load unpacked). Re-copies every time so an app update to the extension
 // never leaves a stale folder behind.
-ipcMain.handle("extension:install", (event) => {
+function copyExtensionFolder() {
+  // fs.cpSync can't walk a folder that's still packed inside app.asar --
+  // it needs the real files asarUnpack puts alongside it in
+  // app.asar.unpacked, not the virtual in-archive path used everywhere
+  // else in this file for simple reads.
+  const source = app.isPackaged
+    ? path.join(process.resourcesPath, "app.asar.unpacked", "dist", "micheon-immersion-extension")
+    : path.join(__dirname, "..", "dist", "micheon-immersion-extension");
+  if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
+  const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
+  fs.rmSync(destination, { recursive: true, force: true });
+  fs.cpSync(source, destination, { recursive: true });
+  return destination;
+}
+
+// The Chromium browsers this machine might have, with every install home
+// each of them actually uses (Brave in particular ships stable, beta and
+// nightly under different folder names). First existing path wins.
+const KNOWN_BROWSERS = [
+  {
+    id: "chrome",
+    name: "Google Chrome",
+    address: "chrome://extensions",
+    paths: [
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      path.join(app.getPath("home"), "AppData", "Local", "Google", "Chrome", "Application", "chrome.exe"),
+    ],
+  },
+  {
+    id: "edge",
+    name: "Microsoft Edge",
+    address: "edge://extensions",
+    paths: [
+      "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+    ],
+  },
+  {
+    id: "brave",
+    name: "Brave",
+    address: "brave://extensions",
+    paths: [
+      "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+      "C:\\Program Files\\BraveSoftware\\Brave-Browser-Nightly\\Application\\brave.exe",
+      "C:\\Program Files\\BraveSoftware\\Brave-Browser-Beta\\Application\\brave.exe",
+      "C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+      path.join(app.getPath("home"), "AppData", "Local", "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    ],
+  },
+];
+
+function installedBrowsers() {
+  return KNOWN_BROWSERS
+    .map((b) => ({ ...b, exe: b.paths.find((p) => fs.existsSync(p)) }))
+    .filter((b) => b.exe);
+}
+
+ipcMain.handle("extension:browsers", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
+  return installedBrowsers().map(({ id, name }) => ({ id, name }));
+});
+
+ipcMain.handle("extension:install", (event, browserId) => {
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
   try {
-    // fs.cpSync can't walk a folder that's still packed inside app.asar --
-    // it needs the real files asarUnpack puts alongside it in
-    // app.asar.unpacked, not the virtual in-archive path used everywhere
-    // else in this file for simple reads.
-    const source = app.isPackaged
-      ? path.join(process.resourcesPath, "app.asar.unpacked", "dist", "micheon-immersion-extension")
-      : path.join(__dirname, "..", "dist", "micheon-immersion-extension");
-    if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
-    const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
-    fs.rmSync(destination, { recursive: true, force: true });
-    fs.cpSync(source, destination, { recursive: true });
+    const destination = copyExtensionFolder();
+    // With a browser chosen, do everything a browser will allow from the
+    // outside: launch it and put its extensions-page address in the
+    // clipboard ready to paste. Chromium refuses scheme://extensions as a
+    // command-line URL (verified against current Chrome, Edge and Brave --
+    // each just opens its new-tab page), and no browser lets an external
+    // program install the extension outright, so the last clicks stay in
+    // the browser by design.
+    const browser = browserId ? installedBrowsers().find((b) => b.id === browserId) : null;
+    if (browser) {
+      clipboard.writeText(browser.address);
+      spawn(browser.exe, [], { detached: true, stdio: "ignore" }).unref();
+    }
     shell.showItemInFolder(path.join(destination, "manifest.json"));
-    return { ok: true, path: destination };
+    return { ok: true, path: destination, address: browser?.address ?? null };
   } catch (e) {
     console.error("[extension] install failed:", e?.message ?? e);
-    return { ok: false, path: null };
+    return { ok: false, path: null, address: null };
   }
 });
 

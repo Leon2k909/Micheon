@@ -68,10 +68,14 @@ contextBridge.exposeInMainWorld("germDesktop", {
   getStorageUsage: () => ipcRenderer.invoke("storage:get-usage"),
   clearAppCache: () => ipcRenderer.invoke("storage:clear-cache"),
   // Copies the bundled companion browser extension to a stable folder and
-  // opens it in Explorer -- removes the manual unzip step. Resolves
-  // { ok, path }; no browser lets this go further (Developer mode and
-  // Load unpacked still have to be the learner's own click, by design).
-  installBrowserExtension: () => ipcRenderer.invoke("extension:install"),
+  // opens it in Explorer -- removes the manual unzip step. With a browser
+  // id it also launches that browser and puts its extensions-page address
+  // in the clipboard. Resolves { ok, path, address }; no browser lets this
+  // go further (Developer mode and Load unpacked still have to be the
+  // learner's own click, by design).
+  installBrowserExtension: (browserId) => ipcRenderer.invoke("extension:install", browserId ?? null),
+  // Which of Chrome, Edge and Brave are actually installed on this machine.
+  listExtensionBrowsers: () => ipcRenderer.invoke("extension:browsers"),
   // How updates should arrive, whether they are postponed, and whether the
   // panel narrates them at all.
   setUpdatePreferences: (preferences) =>

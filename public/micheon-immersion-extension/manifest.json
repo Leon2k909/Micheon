@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Micheon Immersion",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Highlights German words you're already learning in Micheon wherever you browse, logs new words it finds so the word bank can grow, and sets YouTube to its German dub + English captions when a video has one.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "offscreen"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "src/background.js"
@@ -26,8 +26,9 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.youtube.com/watch*"],
-      "js": ["src/content-youtube.js"],
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["src/content-youtube.js", "src/content-gloss.js"],
+      "css": ["src/content-gloss.css"],
       "run_at": "document_idle"
     }
   ],

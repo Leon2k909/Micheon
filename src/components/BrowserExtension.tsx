@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Download, FolderOpen, Headphones, ListChecks, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
+interface ExtensionBrowser {
+  id: string;
+  name: string;
+}
+
 interface ExtensionDesktopApi {
-  installBrowserExtension?: () => Promise<{ ok: boolean; path: string | null }>;
+  installBrowserExtension?: (browserId?: string | null) => Promise<{ ok: boolean; path: string | null; address: string | null }>;
+  listExtensionBrowsers?: () => Promise<ExtensionBrowser[]>;
 }
 
 function getExtensionApi(): ExtensionDesktopApi | undefined {
@@ -18,29 +24,43 @@ function getExtensionApi(): ExtensionDesktopApi | undefined {
  * separate Manifest V3 project, not something built from Micheon's own
  * source -- so this card is just the download and install story for it, not
  * a settings surface. Everything the extension itself does (word glossing,
- * missing-vocabulary collection, YouTube dub automation) runs offline from
- * a snapshot of Micheon's own word list, no account, no external service.
+ * missing-vocabulary collection, YouTube dub automation, pronunciation)
+ * runs offline from a snapshot of Micheon's own word list.
  *
- * No browser lets a downloaded file quietly install itself as an extension
- * -- that restriction is deliberate, the same reason a stray .crx can't
- * just double-click its way in, and there is no way around it short of
- * publishing to that browser's own store. What the desktop app CAN do is
- * remove the one step that's actually just busywork: instead of a .zip you
- * have to find and extract yourself, it copies the already-unpacked
- * extension straight to a stable folder and opens it in Explorer. Developer
- * mode and Load unpacked stay a real click in the learner's own browser,
- * on purpose.
+ * No browser lets an outside program install an extension for it -- that
+ * restriction is deliberate, and it also refuses scheme://extensions as a
+ * launch URL (verified against current Chrome, Edge and Brave). What the
+ * desktop app CAN do per browser: copy the unpacked extension to a stable
+ * folder, open that browser, put the extensions-page address in the
+ * clipboard ready to paste, and open the folder in Explorer. Developer
+ * mode and Load unpacked stay the learner's own clicks, on purpose.
  */
 export function BrowserExtension() {
   const desktopApi = getExtensionApi();
-  const [state, setState] = useState<{ status: "idle" | "working" | "done" | "error"; path?: string }>({ status: "idle" });
+  const [browsers, setBrowsers] = useState<ExtensionBrowser[]>([]);
+  const [state, setState] = useState<{ status: "idle" | "working" | "done" | "error"; path?: string; address?: string; browser?: string }>({ status: "idle" });
 
-  const setUpFolder = async () => {
+  useEffect(() => {
+    let cancelled = false;
+    void desktopApi?.listExtensionBrowsers?.().then((list) => {
+      if (!cancelled && Array.isArray(list)) setBrowsers(list);
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // The bridge is a stable window global; re-querying it on re-render
+    // would only re-run the same IPC.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setUp = async (browser?: ExtensionBrowser) => {
     if (!desktopApi?.installBrowserExtension) return;
-    setState({ status: "working" });
+    setState({ status: "working", browser: browser?.name });
     try {
-      const result = await desktopApi.installBrowserExtension();
-      setState(result.ok && result.path ? { status: "done", path: result.path } : { status: "error" });
+      const result = await desktopApi.installBrowserExtension(browser?.id ?? null);
+      setState(result.ok && result.path
+        ? { status: "done", path: result.path, address: result.address ?? undefined, browser: browser?.name }
+        : { status: "error" });
     } catch {
       setState({ status: "error" });
     }
@@ -67,22 +87,48 @@ export function BrowserExtension() {
 
       <div className="flex flex-wrap items-center gap-3">
         {desktopApi ? (
-          <button
-            className={cn(
-              "inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-black transition-opacity",
-              state.status === "done" ? "bg-emerald-500 text-white" : "bg-[var(--accent)] text-white hover:opacity-90"
+          <>
+            {browsers.map((browser) => (
+              <button
+                className={cn(
+                  "inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-black transition-opacity",
+                  state.status === "done" && state.browser === browser.name
+                    ? "bg-emerald-500 text-white"
+                    : "bg-[var(--accent)] text-white hover:opacity-90"
+                )}
+                disabled={state.status === "working"}
+                key={browser.id}
+                onClick={() => void setUp(browser)}
+                type="button"
+              >
+                {state.status === "done" && state.browser === browser.name
+                  ? <Check className="h-4 w-4" />
+                  : <FolderOpen className="h-4 w-4" />}
+                {ui("Set up for")} {browser.name}
+              </button>
+            ))}
+            {browsers.length === 0 && (
+              <button
+                className={cn(
+                  "inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-black transition-opacity",
+                  state.status === "done" ? "bg-emerald-500 text-white" : "bg-[var(--accent)] text-white hover:opacity-90"
+                )}
+                disabled={state.status === "working"}
+                onClick={() => void setUp()}
+                type="button"
+              >
+                {state.status === "done" ? <Check className="h-4 w-4" /> : <FolderOpen className="h-4 w-4" />}
+                {ui("Set up the extension folder")}
+              </button>
             )}
-            disabled={state.status === "working"}
-            onClick={setUpFolder}
-            type="button"
-          >
-            {state.status === "done" ? <Check className="h-4 w-4" /> : <FolderOpen className="h-4 w-4" />}
-            {state.status === "working"
-              ? ui("Setting it up…")
-              : state.status === "done"
-                ? ui("Folder opened — ready to load")
-                : ui("Set up the extension folder")}
-          </button>
+            <a
+              className="text-xs font-bold text-[var(--text-3)] underline decoration-dotted hover:text-[var(--text-2)]"
+              download="micheon-immersion-extension.zip"
+              href="/micheon-immersion-extension.zip"
+            >
+              {ui("or download the .zip instead")}
+            </a>
+          </>
         ) : (
           <a
             className="accent-btn inline-flex h-11 items-center gap-2 px-5 text-sm"
@@ -93,15 +139,6 @@ export function BrowserExtension() {
             {ui("Download the extension")}
           </a>
         )}
-        {desktopApi && (
-          <a
-            className="text-xs font-bold text-[var(--text-3)] underline decoration-dotted hover:text-[var(--text-2)]"
-            download="micheon-immersion-extension.zip"
-            href="/micheon-immersion-extension.zip"
-          >
-            {ui("or download the .zip instead")}
-          </a>
-        )}
       </div>
 
       {state.status === "error" && (
@@ -110,9 +147,19 @@ export function BrowserExtension() {
         </p>
       )}
       {state.status === "done" && state.path && (
-        <p className="text-[11px] font-semibold text-[var(--text-3)]">
-          {ui("Saved to")} {state.path}
-        </p>
+        <div className="rounded-[16px] bg-emerald-500/10 p-3 text-xs font-semibold leading-5 text-[var(--text-2)]">
+          {state.address ? (
+            <>
+              {ui("The folder is ready and your browser is opening. The extensions-page address is already in your clipboard — paste it into the address bar")}
+              {" "}(<code className="font-black">{state.address}</code>),{" "}
+              {ui("turn on Developer mode, click “Load unpacked” and pick the folder that just opened.")}
+            </>
+          ) : (
+            <>
+              {ui("Folder opened — ready to load")} · {ui("Saved to")} {state.path}
+            </>
+          )}
+        </div>
       )}
 
       <div className="rounded-[18px] bg-[var(--surface)] p-4">
