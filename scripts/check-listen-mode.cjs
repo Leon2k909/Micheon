@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -69,8 +69,11 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
-  buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem,
+  buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, snoozeListenItem,
   getListenBackgroundPlayback, setListenBackgroundPlayback,
+  getListenPetBilingualCaptions, setListenPetBilingualCaptions,
+  getListenContentSource, setListenContentSource,
+  getListenQueueOrder, setListenQueueOrder,
   getListenCurrentItemId, setListenCurrentItemId,
   getListenGermanRepeats, setListenGermanRepeats,
   getListenEnglishRepeats, setListenEnglishRepeats,
@@ -81,7 +84,8 @@ const {
   getListenNextCardDelayMs, setListenNextCardDelayMs,
   DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
   DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
-  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
+  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE,
+  DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId,
   loadGradeStore, statusForId, COMPLETED_KEY,
@@ -167,31 +171,50 @@ check("Listen can genuinely put an item off",
 // ── the queue: right content, right order, snooze honoured ──────────────
 stored.clear();
 let queue = buildListenQueue(parts, {});
-check("the default queue serves the sentence course", queue.length > 1000
-  && queue.every((item) => item.kind === "sentence"));
-check("sentence queue ids never wear the word prefix",
-  queue.every((item) => !item.id.startsWith(WORD_ID_PREFIX)));
+check("the default queue combines sentence and word trackers",
+  DEFAULT_LISTEN_CONTENT_SOURCE === "mixed"
+  && queue.some((item) => item.kind === "sentence")
+  && queue.some((item) => item.kind === "word")
+  && queue.slice(0, 40).some((item) => item.kind === "word"));
+check("the default queue genuinely uses shared popularity order",
+  DEFAULT_LISTEN_QUEUE_ORDER === "common"
+  && buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
+    .slice(0, 200)
+    .every((item, index, rows) => index === 0 || rows[index - 1].popularity <= item.popularity));
 
-stored.set("gl-lesson-content", "words");
-queue = buildListenQueue(parts, {});
+queue = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
+check("sentence source only serves sentence-tracker ids", queue.length > 1000
+  && queue.every((item) => item.kind === "sentence" && !item.id.startsWith(WORD_ID_PREFIX)));
+
+queue = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
 check("words mode fills the queue from the word catalogue under vw- ids",
   queue.length > 1000 && queue.every((item) => item.kind === "word" && item.id.startsWith(WORD_ID_PREFIX)));
 
-stored.set("gl-lesson-content", "mixed");
-queue = buildListenQueue(parts, {});
+queue = buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" });
 check("mixed mode interleaves words among sentences rather than appending them",
   queue.some((item) => item.kind === "word")
   && queue.some((item) => item.kind === "sentence")
-  && queue.slice(0, 40).some((item) => item.kind === "word"));
+  && queue.slice(0, 40).some((item) => item.kind === "word")
+  && queue.slice(0, 200).every((item, index, rows) =>
+    index === 0 || rows[index - 1].popularity <= item.popularity));
 
-stored.set("gl-lesson-content", "sentences");
-const probeId = buildListenQueue(parts, {})[5].id;
+const commonSentences = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
+const heardFirstFour = Object.fromEntries(commonSentences.slice(0, 4).map((item) => [
+  item.id,
+  { listens: 4, listenedAt: new Date().toISOString() },
+]));
+queue = buildListenQueue(parts, heardFirstFour, { contentSource: "sentences", order: "least-heard" });
+check("least-heard order genuinely rotates material with less Listen exposure to the front",
+  queue[0]?.id === commonSentences[4]?.id);
+
+const learningOptions = { contentSource: "sentences", order: "learning" };
+const probeId = buildListenQueue(parts, {}, learningOptions)[5].id;
 const dueYesterday = { ...recordSuccess(undefined, Date.now() - 2 * 864e5), dueAt: new Date(Date.now() - 864e5).toISOString() };
-queue = buildListenQueue(parts, { [probeId]: dueYesterday });
-check("a due review leads the listening queue", queue[0]?.id === probeId);
+queue = buildListenQueue(parts, { [probeId]: dueYesterday }, learningOptions);
+check("adaptive learning order can still put a due review first", queue[0]?.id === probeId);
 
 const snoozed = { snoozedUntil: new Date(Date.now() + 864e5).toISOString() };
-queue = buildListenQueue(parts, { [probeId]: snoozed });
+queue = buildListenQueue(parts, { [probeId]: snoozed }, learningOptions);
 check("a snoozed item is not read aloud", queue.every((item) => item.id !== probeId));
 
 // ── settings and wiring, from source ────────────────────────────────────
@@ -217,6 +240,18 @@ check("Listen defaults to a real learning loop rather than one-pass exposure",
   && DEFAULT_LISTEN_LOOP_PASSES === 2
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2);
+check("Listen defaults to both trackers in real most-common-first order",
+  getListenContentSource("learn-de") === "mixed"
+  && getListenQueueOrder("learn-de") === "common");
+setListenContentSource("words", "learn-de");
+setListenQueueOrder("least-heard", "learn-de");
+setListenContentSource("sentences", "learn-en");
+setListenQueueOrder("learning", "learn-en");
+check("each course remembers its own Listen source and queue order",
+  getListenContentSource("learn-de") === "words"
+  && getListenQueueOrder("learn-de") === "least-heard"
+  && getListenContentSource("learn-en") === "sentences"
+  && getListenQueueOrder("learn-en") === "learning");
 const repeatedSet = Array.from(
   { length: 12 },
   (_, playhead) => listenQueueIndexForPlayhead(playhead, 20, 3, 2)
@@ -269,6 +304,8 @@ check("the next-card delay is the learner's to change", getListenNextCardDelayMs
 stored.set("gl-listen-german-repeats:learn-de", "99");
 stored.set("gl-listen-english-repeats:learn-de", "0");
 stored.set("gl-listen-language-order:learn-de", "invalid");
+stored.set("gl-listen-content-source:learn-de", "invalid");
+stored.set("gl-listen-queue-order:learn-de", "invalid");
 stored.set("gl-listen-loop-items:learn-de", "99");
 stored.set("gl-listen-loop-passes:learn-de", "0");
 stored.set("gl-listen-next-card-delay-ms", "999999");
@@ -276,12 +313,16 @@ check("corrupt Listen settings fall back to documented defaults",
   getListenGermanRepeats("learn-de") === 2
   && getListenEnglishRepeats("learn-de") === 1
   && getListenLanguageOrder("learn-de") === "english-first"
+  && getListenContentSource("learn-de") === "mixed"
+  && getListenQueueOrder("learn-de") === "common"
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2
   && getListenNextCardDelayMs() === 1100);
 check("Listen setting writers clamp typed values to safe limits",
   setListenGermanRepeats(99, "learn-de") === 10
   && setListenEnglishRepeats(-4, "learn-de") === 1
+  && setListenContentSource("invalid", "learn-de") === "mixed"
+  && setListenQueueOrder("invalid", "learn-de") === "common"
   && setListenLoopItems(99, "learn-de") === 12
   && setListenLoopPasses(0, "learn-de") === 1
   && setListenNextCardDelayMs(99_000) === 30_000);
@@ -292,17 +333,21 @@ check("background Listen playback is on by default and remains learner-controlle
   && setListenBackgroundPlayback(false, null) === false
   && getListenBackgroundPlayback(null) === false
   && setListenBackgroundPlayback(true, null) === true);
-stored.set("gl-lesson-content", "sentences");
-setListenCurrentItemId("sentence-cursor", "learn-de", null);
-setListenCurrentItemId("english-course-cursor", "learn-en", null);
-stored.set("gl-lesson-content", "words");
-setListenCurrentItemId("word-cursor", "learn-de", null);
+check("pet captions show both languages by default and remain learner-controlled",
+  getListenPetBilingualCaptions(null) === true
+  && formatListenPetCaption({ de: "Bis gleich.", en: "See you soon." }, "Bis gleich.", true) === "DE · Bis gleich.\nEN · See you soon."
+  && setListenPetBilingualCaptions(false, null) === false
+  && getListenPetBilingualCaptions(null) === false
+  && formatListenPetCaption({ de: "Bis gleich.", en: "See you soon." }, "Bis gleich.", false) === "Bis gleich."
+  && setListenPetBilingualCaptions(true, null) === true);
+setListenCurrentItemId("sentence-cursor", "learn-de", null, "sentences");
+setListenCurrentItemId("english-course-cursor", "learn-en", null, "sentences");
+setListenCurrentItemId("word-cursor", "learn-de", null, "words");
 check("Listen remembers a separate exact cursor for each course and content mode",
-  getListenCurrentItemId("learn-de", null) === "word-cursor"
-  && getListenCurrentItemId("learn-en", null) === ""
-  && (stored.set("gl-lesson-content", "sentences"), true)
-  && getListenCurrentItemId("learn-de", null) === "sentence-cursor"
-  && getListenCurrentItemId("learn-en", null) === "english-course-cursor");
+  getListenCurrentItemId("learn-de", null, "words") === "word-cursor"
+  && getListenCurrentItemId("learn-en", null, "words") === ""
+  && getListenCurrentItemId("learn-de", null, "sentences") === "sentence-cursor"
+  && getListenCurrentItemId("learn-en", null, "sentences") === "english-course-cursor");
 
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Headphones/.test(prototype));
@@ -336,6 +381,11 @@ check("whole items return through a visible, learner-controlled learning loop",
   && view.includes('testId="listen-loop-items"')
   && view.includes('testId="listen-loop-passes"')
   && view.includes('"Learning pass {pass} of {passes}"'));
+check("Listen exposes real source and queue-order controls",
+  view.includes('data-testid={`listen-source-${value}`}')
+  && view.includes('data-testid={`listen-queue-${value}`}')
+  && view.includes("setListenContentSource(")
+  && view.includes("setListenQueueOrder("));
 check("the next-card delay is visible and drives auto-advance",
   view.includes('testId="listen-next-card-delay"')
   && view.includes("}, nextCardDelayMs);"));
@@ -372,6 +422,8 @@ check("background playback is default-on, toggleable, and exposes a compact pers
   && view.includes('data-testid="listen-background-toggle"'));
 check("the active pet mirrors every spoken clip without starting a duplicate voice",
   view.includes("onStart: () => mirrorOnPet")
+  && view.includes("formatListenPetCaption(item, text, petBilingualCaptions)")
+  && view.includes('data-testid="listen-pet-bilingual-toggle"')
   && view.includes("silent: true")
   && view.includes("verbatim: true"));
 
@@ -383,7 +435,8 @@ check("the shared TTS sequence exposes an exact clip-start hook for synced capti
 check("silent pet captions are kept verbatim and never interrupt Listen audio",
   petProvider.includes("options.verbatim ? rawText")
   && petProvider.includes("silent: options.silent === true")
-  && petLayer.includes("if (speech?.silent)"));
+  && petLayer.includes("if (speech?.silent)")
+  && petLayer.includes("whitespace-pre-line"));
 
 const electronMain = read("electron/main.js");
 const electronPreload = read("electron/preload.cjs");
@@ -430,6 +483,14 @@ for (const key of [
   "Play audio",
   "Keep playing around Micheon",
   "Continue when you open Home, Practice, Settings, or another app section.",
+  "Content source",
+  "Choose whether Listen pulls from the sentence tracker, word tracker, or both.",
+  "Queue order",
+  "Most common first teaches the phrases and words people are most likely to use.",
+  "Reviews & struggles first",
+  "Least heard first",
+  "Show both languages on the pet",
+  "Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.",
   "Playing in the background",
   "Listen is paused",
   "Previous item",

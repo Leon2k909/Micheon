@@ -17,10 +17,11 @@ import {
   setStrengthLevel,
   snoozeForDays,
 } from "@/lib/memoryStrength";
-import { getLessonContent } from "@/lib/lessonContent";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
+import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
+import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import {
   getAuthUser,
@@ -62,6 +63,9 @@ const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
 const LOOP_ITEMS_KEY = "gl-listen-loop-items";
 const LOOP_PASSES_KEY = "gl-listen-loop-passes";
 const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
+const PET_BILINGUAL_CAPTIONS_KEY = "gl-listen-pet-bilingual-captions-v1";
+const CONTENT_SOURCE_KEY = "gl-listen-content-source";
+const QUEUE_ORDER_KEY = "gl-listen-queue-order";
 const CURRENT_ITEM_KEY = "gl-listen-current-item-v1";
 const MAX_LANGUAGE_REPEATS = 10;
 const MAX_LOOP_ITEMS = 12;
@@ -72,6 +76,10 @@ export const DEFAULT_ENGLISH_REPEATS = 1;
 export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
+export type ListenContentSource = "sentences" | "words" | "mixed";
+export type ListenQueueOrder = "common" | "learning" | "least-heard";
+export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
+export const DEFAULT_LISTEN_QUEUE_ORDER: ListenQueueOrder = "common";
 export type ListenLanguageOrder = "english-first" | "german-first";
 export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "english-first";
 export const DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS = 1;
@@ -186,6 +194,48 @@ export function setListenLanguageOrder(
   const next = order === "german-first" ? "german-first" : "english-first";
   try {
     window.localStorage.setItem(courseSettingKey(LANGUAGE_ORDER_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+export function getListenContentSource(
+  direction: LearningDirection = getLearningDirection()
+): ListenContentSource {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
+    if (value === "sentences" || value === "words" || value === "mixed") return value;
+  } catch { /* storage blocked: use the documented default */ }
+  return DEFAULT_LISTEN_CONTENT_SOURCE;
+}
+
+export function setListenContentSource(
+  source: ListenContentSource,
+  direction: LearningDirection = getLearningDirection()
+): ListenContentSource {
+  const next = source === "sentences" || source === "words" ? source : "mixed";
+  try {
+    window.localStorage.setItem(courseSettingKey(CONTENT_SOURCE_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+export function getListenQueueOrder(
+  direction: LearningDirection = getLearningDirection()
+): ListenQueueOrder {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(QUEUE_ORDER_KEY, direction));
+    if (value === "common" || value === "learning" || value === "least-heard") return value;
+  } catch { /* storage blocked: use the documented default */ }
+  return DEFAULT_LISTEN_QUEUE_ORDER;
+}
+
+export function setListenQueueOrder(
+  order: ListenQueueOrder,
+  direction: LearningDirection = getLearningDirection()
+): ListenQueueOrder {
+  const next = order === "learning" || order === "least-heard" ? order : "common";
+  try {
+    window.localStorage.setItem(courseSettingKey(QUEUE_ORDER_KEY, direction), next);
   } catch { /* keep Listen usable */ }
   return next;
 }
@@ -344,28 +394,51 @@ export function setListenBackgroundPlayback(
   return next;
 }
 
-function currentItemStorageKey(direction: LearningDirection): string {
+/**
+ * Show the translation beside the live line in the pet bubble. This is on by
+ * default because the pet may be the only visible part of Micheon while
+ * Listen accompanies another task; a learner can still choose the lighter
+ * single-line caption used by earlier releases.
+ */
+export function getListenPetBilingualCaptions(
+  profile: UserProfile | null = getAuthUser()
+): boolean {
+  return loadScopedJson<boolean>(PET_BILINGUAL_CAPTIONS_KEY, true, profile) !== false;
+}
+
+export function setListenPetBilingualCaptions(
+  enabled: boolean,
+  profile: UserProfile | null = getAuthUser()
+): boolean {
+  const next = Boolean(enabled);
+  saveScopedJson(PET_BILINGUAL_CAPTIONS_KEY, next, profile);
+  return next;
+}
+
+function currentItemStorageKey(direction: LearningDirection, source: ListenContentSource): string {
   // Sentence, word, and mixed queues contain different ids. Keeping one
   // cursor per mode means changing the Continue Learning dropdown and coming
   // back never loses the learner's place in either queue.
-  return `${CURRENT_ITEM_KEY}:${direction}:${getLessonContent()}`;
+  return `${CURRENT_ITEM_KEY}:${direction}:${source}`;
 }
 
 export function getListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
-  profile: UserProfile | null = getAuthUser()
+  profile: UserProfile | null = getAuthUser(),
+  source: ListenContentSource = getListenContentSource(direction)
 ): string {
-  const value = loadScopedJson<unknown>(currentItemStorageKey(direction), "", profile);
+  const value = loadScopedJson<unknown>(currentItemStorageKey(direction, source), "", profile);
   return typeof value === "string" ? value : "";
 }
 
 export function setListenCurrentItemId(
   itemId: string,
   direction: LearningDirection = getLearningDirection(),
-  profile: UserProfile | null = getAuthUser()
+  profile: UserProfile | null = getAuthUser(),
+  source: ListenContentSource = getListenContentSource(direction)
 ): string {
   const next = typeof itemId === "string" ? itemId.slice(0, 240) : "";
-  saveScopedJson(currentItemStorageKey(direction), next, profile);
+  saveScopedJson(currentItemStorageKey(direction, source), next, profile);
   return next;
 }
 
@@ -375,55 +448,93 @@ export type ListenItem = {
   de: string;
   en: string;
   kind: "sentence" | "word";
+  popularity: number;
+};
+
+export function formatListenPetCaption(
+  item: Pick<ListenItem, "de" | "en">,
+  spokenText: string,
+  showBothLanguages: boolean
+): string {
+  if (!showBothLanguages) return spokenText;
+  return `DE · ${item.de}\nEN · ${item.en}`;
+}
+
+export type ListenQueueOptions = {
+  contentSource?: ListenContentSource;
+  direction?: LearningDirection;
+  order?: ListenQueueOrder;
 };
 
 /**
- * The full listening queue, ordered like a session would prioritise it:
- * due reviews first (most overdue leading), then struggles, then new
- * material in course order, then everything known — least recently
- * listened-to first, so long passive sessions rotate rather than loop the
- * same openers. Snoozed items stay out, exactly as they do in lessons.
+ * The full listening queue. Most-common-first is the default: sentences use
+ * the same conversation-usefulness score as the tracker and guided lessons,
+ * while words use the shared corpus-frequency rank. Learners can instead use
+ * adaptive learning priority or rotate through their least-heard material.
+ * Snoozed items stay out in every order, exactly as they do in lessons.
  */
 export function buildListenQueue(
   apiParts: Record<string, any>,
   grades: GradeStore,
+  options: ListenQueueOptions = {},
   now = Date.now()
 ): ListenItem[] {
   const parts = withoutMutedPacks(apiParts);
-  const content = getLessonContent();
+  const direction = options.direction ?? getLearningDirection();
+  const content = options.contentSource ?? getListenContentSource(direction);
+  const order = options.order ?? getListenQueueOrder(direction);
+  const corpusIndex = buildCorpusIndex(parts);
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
-  const sentences: ListenItem[] = content === "words" ? [] : buildCatalog(parts)
-    .map((item) => ({
+  const rankedSentences = content === "words" ? [] : buildCatalog(parts)
+    .map((item, index) => ({
+      item,
+      index,
+      popularity: conversationPriorityScore({
+        partKey: item.partKey,
+        kind: item.kind,
+        commonality: sentenceCommonality(item.de, corpusIndex),
+        lessonPriority: item.lessonPriority,
+      }),
+    }))
+    .sort((a, b) => a.popularity - b.popularity || a.index - b.index);
+  const sentences: ListenItem[] = rankedSentences
+    .map(({ item }, index, ranked) => ({
       id: item.id,
       aliases: item.aliases ?? [],
       de: primaryAnswer(item.de),
       en: primaryAnswer(item.en),
       kind: "sentence" as const,
+      // A percentile makes sentence and word popularity comparable in the
+      // mixed queue even though their underlying scorers use different
+      // scales. The authored conversation score still decides the sentence
+      // rank before it is normalised.
+      popularity: index / Math.max(1, ranked.length - 1),
     }));
 
-  const words: ListenItem[] = content === "sentences" ? [] : rankWordCatalog(buildWordCatalog(parts), null)
-    .map((word) => ({
+  const rankedWords = content === "sentences" ? [] : rankWordCatalog(buildWordCatalog(parts), corpusIndex);
+  const words: ListenItem[] = rankedWords
+    .map((word, index, ranked) => ({
       id: word.id,
       aliases: [],
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
       kind: "word" as const,
+      popularity: index / Math.max(1, ranked.length - 1),
     }));
 
-  // "Both": words woven in at a light cadence (1 word per 4 sentences)
-  // rather than concatenated, so a mixed queue actually mixes.
+  // "Both": merge comparable popularity percentiles. Since the sentence
+  // tracker is much larger, this naturally keeps the product's phrase-first
+  // cadence while still letting the most common word outrank a much less
+  // common sentence. Sentence wins an exact tie.
   let combined: ListenItem[];
   if (sentences.length && words.length) {
-    combined = [];
-    let w = 0;
-    sentences.forEach((sentence, index) => {
-      combined.push(sentence);
-      if ((index + 1) % 4 === 0 && w < words.length) combined.push(words[w++]);
-    });
-    combined.push(...words.slice(w));
+    combined = [...sentences, ...words].sort((a, b) =>
+      a.popularity - b.popularity
+      || (a.kind === b.kind ? 0 : a.kind === "sentence" ? -1 : 1)
+    );
   } else {
     combined = sentences.length ? sentences : words;
   }
@@ -449,9 +560,23 @@ export function buildListenQueue(
     return 3;
   };
 
-  return combined
+  const available = combined
     .map((item, index) => ({ item, index, bucket: bucketOf(item) }))
-    .filter((entry) => entry.bucket >= 0)
+    .filter((entry) => entry.bucket >= 0);
+
+  if (order === "common") return available.map((entry) => entry.item);
+
+  if (order === "least-heard") {
+    return available
+      .sort((a, b) =>
+        (Number(recordFor(a.item)?.listens) || 0) - (Number(recordFor(b.item)?.listens) || 0)
+        || listenStamp(a.item) - listenStamp(b.item)
+        || a.index - b.index
+      )
+      .map((entry) => entry.item);
+  }
+
+  return available
     .sort((a, b) =>
       a.bucket - b.bucket
       || (a.bucket === 0

@@ -35,7 +35,9 @@ import {
 } from "@/lib/audioMute";
 import {
   buildListenQueue,
+  formatListenPetCaption,
   getListenBackgroundPlayback,
+  getListenContentSource,
   getListenCurrentItemId,
   getListenEnglishRepeats,
   getListenGermanRepeats,
@@ -43,11 +45,14 @@ import {
   getListenLoopItems,
   getListenLoopPasses,
   getListenNextCardDelayMs,
+  getListenPetBilingualCaptions,
+  getListenQueueOrder,
   listenLoopPassForPlayhead,
   listenPlayheadForQueueIndex,
   listenQueueIndexForPlayhead,
   recordListenGrade,
   setListenBackgroundPlayback,
+  setListenContentSource,
   setListenCurrentItemId,
   setListenEnglishRepeats,
   setListenGermanRepeats,
@@ -55,10 +60,14 @@ import {
   setListenLoopItems,
   setListenLoopPasses,
   setListenNextCardDelayMs,
+  setListenPetBilingualCaptions,
+  setListenQueueOrder,
   setListenReviewLevel,
   snoozeListenItem,
+  type ListenContentSource,
   type ListenItem,
   type ListenLanguageOrder,
+  type ListenQueueOrder,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
@@ -239,9 +248,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   onOpen: () => void;
   profile: UserProfile | null;
 }) {
+  const [contentSource, setContentSource] = useState<ListenContentSource>(
+    () => getListenContentSource(learningDirection)
+  );
+  const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
+    () => getListenQueueOrder(learningDirection)
+  );
   const baseQueue = useMemo<ListenItem[]>(
-    () => buildListenQueue(apiParts, loadGradeStore(profile)),
-    [apiParts, profile]
+    () => buildListenQueue(apiParts, loadGradeStore(profile), {
+      contentSource,
+      direction: learningDirection,
+      order: queueOrder,
+    }),
+    [apiParts, contentSource, learningDirection, profile, queueOrder]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -251,7 +270,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
   const [playhead, setPlayhead] = useState(() => {
-    const storedId = getListenCurrentItemId(learningDirection, profile);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     return listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -264,6 +283,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [sessionActivated, setSessionActivated] = useState(false);
   const [backgroundPlayback, setBackgroundPlayback] = useState(
     () => getListenBackgroundPlayback(profile)
+  );
+  const [petBilingualCaptions, setPetBilingualCaptions] = useState(
+    () => getListenPetBilingualCaptions(profile)
   );
   const [germanRepeats, setGermanRepeats] = useState(() => getListenGermanRepeats(learningDirection));
   const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
@@ -311,11 +333,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setLoopItems(getListenLoopItems(learningDirection));
     setLoopPasses(getListenLoopPasses(learningDirection));
     setBackgroundPlayback(getListenBackgroundPlayback(profile));
-  }, [learningDirection]);
+    setPetBilingualCaptions(getListenPetBilingualCaptions(profile));
+    setContentSource(getListenContentSource(learningDirection));
+    setQueueOrder(getListenQueueOrder(learningDirection));
+  }, [learningDirection, profile?.id]);
 
   useEffect(() => {
     setHiddenIds(new Set());
-    const storedId = getListenCurrentItemId(learningDirection, profile);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -323,12 +348,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       getListenLoopItems(learningDirection),
       getListenLoopPasses(learningDirection)
     ));
-  }, [apiParts, baseQueue, learningDirection, profile?.id]);
+  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id]);
 
   useEffect(() => {
     if (!item) return;
-    setListenCurrentItemId(item.id, learningDirection, profile);
-  }, [item?.id, learningDirection, profile?.id]);
+    setListenCurrentItemId(item.id, learningDirection, profile, contentSource);
+  }, [contentSource, item?.id, learningDirection, profile?.id]);
 
   useEffect(() => {
     const sync = () => setAudioSettings(getAudioSettings());
@@ -354,8 +379,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
     const mirrorOnPet = (text: string, voiceLang: "de-DE" | "en-US") => {
       if (!petCaptionsAvailable) return;
-      petSpeak(text, {
-        durationMs: Math.max(2600, Math.min(7000, text.length * 72)),
+      const caption = formatListenPetCaption(item, text, petBilingualCaptions);
+      petSpeak(caption, {
+        durationMs: Math.max(2600, Math.min(7000, caption.length * 72)),
         mood: "greeting",
         silent: true,
         verbatim: true,
@@ -403,7 +429,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       if (advanceTimer != null) window.clearTimeout(advanceTimer);
       stopTts();
     };
-  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -584,6 +610,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setLanguageOrder(setListenLanguageOrder(order, learningDirection));
   };
 
+  const chooseContentSource = (source: ListenContentSource) => {
+    setContentSource(setListenContentSource(source, learningDirection));
+  };
+
+  const chooseQueueOrder = (order: ListenQueueOrder) => {
+    setQueueOrder(setListenQueueOrder(order, learningDirection));
+  };
+
   const commitDelaySeconds = (seconds: number) => {
     const nextMs = setListenNextCardDelayMs(seconds * 1000);
     setNextCardDelayMs(nextMs);
@@ -592,6 +626,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   const chooseBackgroundPlayback = (enabled: boolean) => {
     setBackgroundPlayback(setListenBackgroundPlayback(enabled, profile));
+  };
+
+  const choosePetBilingualCaptions = (enabled: boolean) => {
+    setPetBilingualCaptions(setListenPetBilingualCaptions(enabled, profile));
   };
 
   if (!item) {
@@ -729,6 +767,84 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Choose how often whole items return and how each card is spoken.")}</p>
               </div>
             </div>
+            <fieldset className="mt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Content source")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("Choose whether Listen pulls from the sentence tracker, word tracker, or both.")}
+              </p>
+              <div
+                aria-label={ui("Content source")}
+                className="mt-2 grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5"
+                role="radiogroup"
+              >
+                {([[
+                  "sentences", "Sentences",
+                ], [
+                  "words", "Words",
+                ], [
+                  "mixed", "Both",
+                ]] as const).map(([value, label]) => {
+                  const selected = contentSource === value;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-xs font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-source-${value}`}
+                      key={value}
+                      onClick={() => chooseContentSource(value)}
+                      role="radio"
+                      type="button"
+                    >
+                      {ui(label)}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+            <fieldset className="mt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("Most common first teaches the phrases and words people are most likely to use.")}
+              </p>
+              <div
+                aria-label={ui("Queue order")}
+                className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-3"
+                role="radiogroup"
+              >
+                {([[
+                  "common", "Most common first",
+                ], [
+                  "learning", "Reviews & struggles first",
+                ], [
+                  "least-heard", "Least heard first",
+                ]] as const).map(([value, label]) => {
+                  const selected = queueOrder === value;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-queue-${value}`}
+                      key={value}
+                      onClick={() => chooseQueueOrder(value)}
+                      role="radio"
+                      type="button"
+                    >
+                      {ui(label)}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
             <div className="mt-4 rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent-dim)] p-3.5">
               <div className="flex items-start gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--accent)] shadow-sm">
@@ -842,6 +958,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <span className="listen-background-toggle__copy">
                 <strong>{ui("Keep playing around Micheon")}</strong>
                 <small>{ui("Continue when you open Home, Practice, Settings, or another app section.")}</small>
+              </span>
+              <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
+            </label>
+            <label className="listen-background-toggle" data-testid="listen-pet-bilingual-toggle">
+              <input
+                checked={petBilingualCaptions}
+                onChange={(event) => choosePetBilingualCaptions(event.target.checked)}
+                type="checkbox"
+              />
+              <span className="listen-background-toggle__copy">
+                <strong>{ui("Show both languages on the pet")}</strong>
+                <small>{ui("Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.")}</small>
               </span>
               <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
             </label>
