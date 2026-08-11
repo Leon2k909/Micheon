@@ -41,6 +41,12 @@
     "ytd-text-inline-expander",
     "#description",
   ];
+  // Comments are judged one by one, never as part of the video: a German
+  // comment under an English video is real reading material (German-dubbed
+  // videos especially -- their descriptions are English, the German is in
+  // the audio and the comment section), and an English reply under a German
+  // video is not.
+  const YT_COMMENT_SELECTOR = "ytd-comment-thread-renderer #content-text, ytd-comment-view-model #content-text";
 
   let settings = { glossEnabled: true, collectMissingVocab: true };
   // German capitalises every noun and nothing else, so a word's authored
@@ -108,6 +114,36 @@
     const stopHits = (sample.match(GERMAN_HINT_RE) || []).length;
     const umlautWords = (sample.match(/[a-zäöüß'’-]*[äöüß][a-zäöüß'’-]*/g) || []).length;
     return stopHits >= 4 || umlautWords >= 3;
+  }
+
+  // Words that mark a comment as German even though the taught word list
+  // doesn't carry them standalone (Micheon teaches "danke" and "sehr"
+  // inside sentences, not as word entries). Two distinct hits are required
+  // before a comment counts, so an English sentence containing "gut" or
+  // "toll" once doesn't flip.
+  const COMMENT_GERMAN_WORDS = new Set([
+    "danke", "bitte", "hallo", "sehr", "gut", "gute", "guten", "gutes", "super", "toll", "genau",
+    "stimmt", "wirklich", "leider", "vielen", "dank", "liebe", "lieber", "servus", "moin", "geil",
+    "krass", "endlich", "immer", "heute", "warum", "danach", "deutsch", "deutsche", "lernen", "lerne",
+  ]);
+
+  // Comment-sized German check. Comments are short and carry few function
+  // words ("Sehr gutes Video, danke!" has no article and no umlaut), so
+  // alongside the usual signals this counts words the taught list itself
+  // recognises -- the list IS a German dictionary of everything worth
+  // glossing here -- plus the everyday comment words above that the list
+  // deliberately teaches through sentences instead.
+  function commentLooksGerman(text) {
+    const sample = text.slice(0, 600).toLowerCase();
+    if ((sample.match(GERMAN_HINT_RE) || []).length >= 2) return true;
+    if (/[äöüß]/.test(sample)) return true;
+    const seen = new Set();
+    WORD_RE.lastIndex = 0;
+    let match;
+    while ((match = WORD_RE.exec(sample)) && seen.size < 2) {
+      if (byDeLowerAny.has(match[0]) || COMMENT_GERMAN_WORDS.has(match[0])) seen.add(match[0]);
+    }
+    return seen.size >= 2;
   }
 
   // Stricter, sentence-sized version of the same check. YouTube descriptions
@@ -550,9 +586,20 @@
     // full description passes easily. Whether this video is German isn't a
     // per-element question.
     const combined = containers.map((el) => el.textContent || "").join("\n");
-    if (!looksGermanBlock(combined)) return;
-    ytGermanFound = true;
-    for (const el of containers) walk(el, true);
+    if (looksGermanBlock(combined)) {
+      ytGermanFound = true;
+      for (const el of containers) walk(el, true);
+    }
+
+    // Comments load lazily as the page scrolls; the throttled rescan picks
+    // each batch up as it arrives.
+    for (const el of document.querySelectorAll(YT_COMMENT_SELECTOR)) {
+      const text = el.textContent || "";
+      if (text.trim().length < 8) continue;
+      if (!commentLooksGerman(text)) continue;
+      ytGermanFound = true;
+      walk(el, true);
+    }
   }
 
   function scheduleYouTubeScan() {

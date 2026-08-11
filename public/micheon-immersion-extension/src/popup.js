@@ -44,11 +44,11 @@ async function loadPageStatus() {
 
   if (status.youtube) {
     if (!status.watchPage) {
-      el.textContent = "YouTube: open a video — words are read from its title and description, and German dubs switch automatically.";
+      el.textContent = "YouTube: open a video — words are read from its title, description and German comments, and German dubs switch automatically.";
     } else if (status.german) {
-      el.textContent = `Reading the German in this video's title and description — ${status.glossed} known ${status.glossed === 1 ? "word" : "words"} highlighted, new ones collected.`;
+      el.textContent = `Reading the German on this video — ${status.glossed} known ${status.glossed === 1 ? "word" : "words"} highlighted in the title, description and German comments.`;
     } else {
-      el.textContent = "No German detected in this video's title or description. Dub and caption switching still runs.";
+      el.textContent = "No German found on this video yet — comments are checked as they load. Dub and caption switching still runs.";
     }
     return;
   }
@@ -97,6 +97,10 @@ for (const id of checkboxIds) {
 }
 document.getElementById("exportBtn").addEventListener("click", exportList);
 document.getElementById("clearBtn").addEventListener("click", clearList);
+
+// Which build is ACTUALLY loaded -- the folder on disk can be newer than
+// what the browser is running until its reload arrow is pressed.
+document.getElementById("extVersion").textContent = `v${chrome.runtime.getManifest().version}`;
 
 loadState();
 loadPageStatus();
