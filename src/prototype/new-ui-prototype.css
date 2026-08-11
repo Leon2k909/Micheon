@@ -4234,6 +4234,13 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     padding-inline: 20px;
   }
 
+  /* Written after the base --wide rule, so without this re-assertion the
+     breakpoint above silently gives rail-less views (Listen, courses with
+     a reader) a phantom empty 320px column at window widths ≤1280px. */
+  .np-content-grid--wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .np-course-copy {
     width: 60%;
   }

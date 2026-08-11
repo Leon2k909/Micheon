@@ -672,7 +672,26 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </span>
         </button>
         <div className="listen-mini-player__controls">
-          <button aria-label={ui("Previous item")} onClick={() => step(-1)} type="button">
+          <div className="listen-mini-player__volume">
+            <button
+              aria-label={ui(masterMuted ? "Unmute all app audio" : "Mute all app audio")}
+              aria-pressed={masterMuted}
+              onClick={() => toggleAudioMuted()}
+              type="button"
+            >
+              <VolumeGlyph className="h-4 w-4" muted={masterMuted} volume={audioSettings.masterVolume} />
+            </button>
+            <input
+              aria-label={ui("App volume")}
+              max="100"
+              min="0"
+              onChange={(event) => setMasterAudioVolume(Number(event.target.value) / 100)}
+              step="1"
+              type="range"
+              value={Math.round(audioSettings.masterVolume * 100)}
+            />
+          </div>
+          <button aria-label={ui("Previous item")} className="listen-mini-player__step" onClick={() => step(-1)} type="button">
             <ChevronLeft />
           </button>
           <button
@@ -683,7 +702,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           >
             {playing ? <Pause /> : <Play />}
           </button>
-          <button aria-label={ui("Next item")} onClick={() => step(1)} type="button">
+          <button aria-label={ui("Next item")} className="listen-mini-player__step" onClick={() => step(1)} type="button">
             <ChevronRight />
           </button>
           <button aria-label={ui("Close Listen player")} onClick={dismissBackgroundPlayer} type="button">
@@ -696,7 +715,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-4">
+    <div className="mx-auto w-full max-w-7xl space-y-4">
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -732,6 +751,96 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
           </p>
+
+          <div aria-labelledby="listen-review-heading" className="mt-6 border-t border-[var(--border)] pt-5" role="group">
+            <h2 className="sr-only" id="listen-review-heading">{ui("Review this item")}</h2>
+            <p className="text-[11px] font-semibold text-[var(--text-3)]">
+              {ui("Quick marks stay gentle. Set level makes an exact tracker change.")}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <button
+                className={cn(
+                  "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
+                  graded === "know"
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
+                )}
+                onClick={() => grade("know")}
+                type="button"
+              >
+                <Check className="h-4 w-4" /> {ui("Know it")}
+              </button>
+              <button
+                className={cn(
+                  "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
+                  graded === "difficult"
+                    ? "border-rose-500 bg-rose-500 text-white"
+                    : "border-rose-500/30 bg-rose-500/10 text-rose-700 hover:bg-rose-500/18 dark:text-rose-300"
+                )}
+                onClick={() => grade("difficult")}
+                type="button"
+              >
+                <X className="h-4 w-4" /> {ui("Struggle")}
+              </button>
+              <button
+                aria-expanded={reviewPanel === "level"}
+                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
+                onClick={() => setReviewPanel((current) => current === "level" ? null : "level")}
+                type="button"
+              >
+                {ui("Set level")} <ChevronDown className="h-4 w-4" />
+              </button>
+              <button
+                aria-expanded={reviewPanel === "snooze"}
+                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
+                onClick={() => setReviewPanel((current) => current === "snooze" ? null : "snooze")}
+                type="button"
+              >
+                <CalendarClock className="h-4 w-4" /> {ui("Put off")}
+              </button>
+            </div>
+
+            {reviewPanel === "level" && (
+              <div className="mt-4 grid gap-2 text-left sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Set review level")}>
+                {REVIEW_LEVELS.map((option) => (
+                  <button
+                    className={cn(
+                      "rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]",
+                      option.value === "struggle" && "hover:border-rose-400 hover:bg-rose-500/10"
+                    )}
+                    key={String(option.value)}
+                    onClick={() => applyReviewLevel(option.value, option.label)}
+                    type="button"
+                  >
+                    <strong className="block text-xs font-black text-[var(--text-1)]">{ui(option.label)}</strong>
+                    <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(option.note)}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {reviewPanel === "snooze" && (
+              <div className="mt-4 grid gap-2 text-left sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Put off")}>
+                {SNOOZE_CHOICES.map((choice) => (
+                  <button
+                    className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]"
+                    key={choice.days}
+                    onClick={() => putOff(choice.days, choice.label)}
+                    type="button"
+                  >
+                    <strong className="block text-xs font-black text-[var(--text-1)]">{ui(choice.label)}</strong>
+                    <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(choice.note)}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {reviewNotice && (
+              <p className="mt-4 rounded-xl bg-[var(--accent-dim)] px-3 py-2 text-center text-xs font-black text-[var(--accent)]" role="status">
+                {reviewNotice}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
@@ -1048,98 +1157,6 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             </div>
           </section>
         </div>
-
-        <section className="mt-4 rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-review-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-review-heading">{ui("Review this item")}</h2>
-              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Quick marks stay gentle. Set level makes an exact tracker change.")}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className={cn(
-                  "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
-                  graded === "know"
-                    ? "border-emerald-500 bg-emerald-500 text-white"
-                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
-                )}
-                onClick={() => grade("know")}
-                type="button"
-              >
-                <Check className="h-4 w-4" /> {ui("Know it")}
-              </button>
-              <button
-                className={cn(
-                  "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
-                  graded === "difficult"
-                    ? "border-rose-500 bg-rose-500 text-white"
-                    : "border-rose-500/30 bg-rose-500/10 text-rose-700 hover:bg-rose-500/18 dark:text-rose-300"
-                )}
-                onClick={() => grade("difficult")}
-                type="button"
-              >
-                <X className="h-4 w-4" /> {ui("Struggle")}
-              </button>
-              <button
-                aria-expanded={reviewPanel === "level"}
-                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => setReviewPanel((current) => current === "level" ? null : "level")}
-                type="button"
-              >
-                {ui("Set level")} <ChevronDown className="h-4 w-4" />
-              </button>
-              <button
-                aria-expanded={reviewPanel === "snooze"}
-                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => setReviewPanel((current) => current === "snooze" ? null : "snooze")}
-                type="button"
-              >
-                <CalendarClock className="h-4 w-4" /> {ui("Put off")}
-              </button>
-            </div>
-          </div>
-
-          {reviewPanel === "level" && (
-            <div className="mt-4 grid gap-2 border-t border-[var(--border)] pt-4 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Set review level")}>
-              {REVIEW_LEVELS.map((option) => (
-                <button
-                  className={cn(
-                    "rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]",
-                    option.value === "struggle" && "hover:border-rose-400 hover:bg-rose-500/10"
-                  )}
-                  key={String(option.value)}
-                  onClick={() => applyReviewLevel(option.value, option.label)}
-                  type="button"
-                >
-                  <strong className="block text-xs font-black text-[var(--text-1)]">{ui(option.label)}</strong>
-                  <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(option.note)}</small>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {reviewPanel === "snooze" && (
-            <div className="mt-4 grid gap-2 border-t border-[var(--border)] pt-4 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Put off")}>
-              {SNOOZE_CHOICES.map((choice) => (
-                <button
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]"
-                  key={choice.days}
-                  onClick={() => putOff(choice.days, choice.label)}
-                  type="button"
-                >
-                  <strong className="block text-xs font-black text-[var(--text-1)]">{ui(choice.label)}</strong>
-                  <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(choice.note)}</small>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {reviewNotice && (
-            <p className="mt-4 rounded-xl bg-[var(--accent-dim)] px-3 py-2 text-center text-xs font-black text-[var(--accent)]" role="status">
-              {reviewNotice}
-            </p>
-          )}
-        </section>
 
         <p className="mt-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--text-3)]">
           {ui("Repeated listening builds familiarity, but it does not mark an item mastered. Lessons still check whether you can recall and spell it.")}
