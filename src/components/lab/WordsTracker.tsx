@@ -1,11 +1,27 @@
-import { useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Circle, Search, Volume2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
-import { loadGradeStore, setItemStatus, statusForId, type ItemStatus } from "@/lib/activity";
-import { isDueForReview, strengthInfo } from "@/lib/memoryStrength";
-import { frequencyInfo } from "@/lib/wordFrequency";
+import {
+  loadGradeStore,
+  saveGradeStore,
+  setItemStatus,
+  setItemsStatus,
+  statusForId,
+  type ItemStatus,
+} from "@/lib/activity";
+import {
+  isDueForReview,
+  recordPermanent,
+  setStrengthLevel,
+  strengthInfo,
+  recallDetail,
+  REVIEW_INTERVALS_DAYS,
+  type GradeRecord,
+} from "@/lib/memoryStrength";
+import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
+import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
 import type { Part } from "@/lib/types";
@@ -13,15 +29,26 @@ import type { UserProfile } from "@/lib/profileStorage";
 
 /**
  * The words tracker: vocabulary progress in exactly the sentence tracker's
- * clothes — same tiles, same pills, same controls row, same list rows — so
- * the two read as one family. It stays a SEPARATE component on purpose: the
- * sentence tracker indexes ~16,000 sentences through priority, search and
- * commonality indexes, and folding 3,000+ words into that list was called
- * out as a lag risk before it could ship.
+ * clothes — same tiles, same pills, same controls row, same list rows, same
+ * strength bars/star and bulk-select machinery — so the two read as one
+ * family. It stays a SEPARATE component on purpose: the sentence tracker
+ * indexes ~16,000 sentences through priority, search and commonality
+ * indexes, and folding 3,000+ words into that list was called out as a lag
+ * risk before it could ship. Every function below reads/writes `WordItem.id`
+ * directly — no `aliases` array — because `vw-` word ids never fan out into
+ * multiple surface forms the way sentence catalog ids do.
  *
  * Word progress lives under vw- ids that only vocabulary sittings and the
  * tests bank write, so marking a word Known here is the same record those
  * surfaces read.
+ *
+ * Mounted as a TAB in Gamification.tsx, not a card of its own — the outer
+ * `.card` chrome, its padding, and the Sätze/Wörter switcher all live there.
+ * This component's root section deliberately carries no `card` class and no
+ * padding of its own (only `mt-4`, to clear the tab row above it): it is
+ * tab CONTENT, swapped in and out of a shell it does not own. Rendering it
+ * standalone (outside that shell) would look unstyled and flush to the
+ * edges for exactly that reason — this is expected, not a bug.
  */
 const PAGE = 40;
 
@@ -42,6 +69,172 @@ const SORTS: Array<{ key: Sort; label: string }> = [
   { key: "status", label: "Needs attention first" },
 ];
 
+/**
+ * Memory strength meter: 5 pips fill as the spaced-repetition ladder climbs
+ * (1d -> 3d -> 10d -> 30d -> 180d review intervals), plus a star for the
+ * tier above Mastered. Copied from the sentence tracker's StrengthMeter —
+ * same pips, same star, same fading/due chip — operating on a bare
+ * GradeRecord, so it needs nothing word-specific to work here.
+ */
+function StrengthMeter({
+  record,
+  onSetLevel,
+  onSetPermanent,
+}: {
+  record: GradeRecord | undefined;
+  onSetLevel: (level: number) => void;
+  onSetPermanent: () => void;
+}) {
+  const s = strengthInfo(record);
+  const decay = recallDetail(record);
+  const struggling = record?.lastGrade === "struggle";
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5" aria-label={`${ui("Memory strength")}: ${ui(s.label)}. ${ui("Click a bar to set it directly.")}`}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            title={uiIsGerman()
+              ? `Auf ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "Tag" : "Tage"} Wiederholungsabstand setzen (Stufe ${n}/5)`
+              : `Come back in ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "day" : "days"} (level ${n} of 5)`}
+            onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
+            className="cursor-pointer p-1 -m-1"
+          >
+            <span
+              className={cn(
+                "block h-1.5 w-3 rounded-full transition-transform hover:scale-125",
+                n <= s.level
+                  ? struggling ? "bg-amber-500" : "bg-[var(--success-text)]"
+                  : "bg-[var(--surface-3)] hover:bg-[var(--surface-3)]/70"
+              )}
+            />
+          </button>
+        ))}
+        {/* Above Mastered: never schedule this word for review again. */}
+        <button
+          type="button"
+          title={ui(s.permanent ? "Never reviewed again" : "Mark permanent — never show this again")}
+          onClick={(e) => { e.stopPropagation(); onSetPermanent(); }}
+          className="cursor-pointer p-1 -m-1"
+        >
+          <Star
+            className={cn(
+              "h-3 w-3 transition-transform hover:scale-125",
+              s.permanent
+                ? "fill-[var(--accent)] text-[var(--accent)]"
+                : "text-[var(--surface-3)] hover:text-[var(--accent)]/60"
+            )}
+          />
+        </button>
+      </div>
+      <span className={cn(
+        "text-[10px] font-black uppercase tracking-wide",
+        struggling ? "text-amber-600" : s.permanent ? "text-[var(--accent)]" : s.level > 0 ? "text-[var(--success-text)]" : "text-[var(--text-3)]"
+      )}>
+        {ui(s.label)}
+      </span>
+      {s.permanent && (
+        <span className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]">
+          {ui("never reviewed again")}
+        </span>
+      )}
+      {!s.permanent && s.due && !decay.fading && (
+        <span
+          className="rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black text-[var(--accent)]"
+          title={ui("Its review is due today. Answer it once and it counts in full again, on a longer interval.")}
+        >
+          {ui("due for review")}
+        </span>
+      )}
+      {decay.fading && (
+        <span
+          className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-600"
+          title={uiIsGerman()
+            ? `Seit ${Math.round(decay.overdueDays)} Tagen überfällig, also wird angenommen, dass du dich noch an ${Math.round(decay.weight * 100)}% davon erinnerst — so viel zählt es gerade zu deiner Gesamtzahl. Es halbiert sich alle ${Math.round(decay.halfLifeDays)} Tage in Richtung ${Math.round(decay.floor * 100)}% und fällt nie darunter. Einmal richtig abrufen setzt es auf 100% zurück.`
+            : `${Math.round(decay.overdueDays)} days past its review, so you are assumed to still recall ${Math.round(decay.weight * 100)}% of it — that is how much it counts towards your total right now. It halves every ${Math.round(decay.halfLifeDays)} days towards ${Math.round(decay.floor * 100)}% and never drops below that. Getting it right once puts it back to 100%.`}
+        >
+          {uiIsGerman()
+            ? `${Math.round(decay.overdueDays)} Tage überfällig · ${Math.round(decay.weight * 100)}% behalten`
+            : `${Math.round(decay.overdueDays)} days overdue · ${Math.round(decay.weight * 100)}% remembered`}
+        </span>
+      )}
+      {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
+        <span className="text-[10px] font-bold text-[var(--text-3)]">
+          {ui("review in")} {s.dueInDays} {ui("days short")}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Checkbox-style toggle used for row selection and the header select-all control — copied from the sentence tracker. */
+function SelectBox({
+  checked,
+  indeterminate = false,
+  onClick,
+  label,
+  size = "h-5 w-5",
+}: {
+  checked: boolean;
+  indeterminate?: boolean;
+  onClick: () => void;
+  label: string;
+  size?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      aria-pressed={checked}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+        size,
+        checked || indeterminate
+          ? "border-[var(--accent)] bg-[var(--accent)]"
+          : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--accent)]/50"
+      )}
+    >
+      {checked && <Check className="h-3.5 w-3.5 text-white" />}
+      {!checked && indeterminate && <Minus className="h-3.5 w-3.5 text-white" />}
+    </button>
+  );
+}
+
+function BulkActionButton({
+  icon: Icon,
+  label,
+  tone,
+  onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  tone: "known" | "struggle" | "new" | "permanent";
+  onClick: () => void;
+}) {
+  const tones: Record<string, string> = {
+    known: "border-[var(--success-text)]/30 text-[var(--success-text)] hover:bg-[var(--success-bg)]",
+    struggle: "border-amber-500/40 text-amber-600 hover:bg-amber-500/15",
+    new: "border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-3)]",
+    permanent: "border-[var(--accent)]/40 text-[var(--accent)] hover:bg-[var(--accent-dim)]",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-8 items-center gap-1.5 rounded-full border bg-[var(--surface)] px-3 text-[11px] font-black transition-colors",
+        tones[tone]
+      )}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
 export function WordsTracker({ apiParts, user }: {
   apiParts: Record<string, Part>;
   user: UserProfile | null;
@@ -51,9 +244,20 @@ export function WordsTracker({ apiParts, user }: {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
   const grades = useMemo(() => loadGradeStore(user), [user, revision]);
+
+  // Word grades share the same "grades-updated" event every grade write in
+  // the app dispatches, so a word graded elsewhere (another tracker instance,
+  // a vocabulary lesson finishing) is reflected here without needing an
+  // interaction on this component first.
+  useEffect(() => {
+    const onUpdate = () => setRevision((r) => r + 1);
+    window.addEventListener("grades-updated", onUpdate);
+    return () => window.removeEventListener("grades-updated", onUpdate);
+  }, []);
 
   const statusOf = (word: WordItem): Filter => {
     const record = grades[word.id];
@@ -91,15 +295,72 @@ export function WordsTracker({ apiParts, user }: {
 
   const visible = filtered.slice(0, page * PAGE);
 
+  const reset = () => setPage(1);
+
+  // "Select all" targets every FILTERED word, not just the currently
+  // rendered/paginated slice — matches the sentence tracker's behaviour.
+  const allFilteredSelected = filtered.length > 0 && filtered.every((w) => selected.has(w.id));
+  const someFilteredSelected = filtered.some((w) => selected.has(w.id));
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllFiltered = () => {
+    setSelected(allFilteredSelected ? new Set() : new Set(filtered.map((w) => w.id)));
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
   const apply = (word: WordItem, status: ItemStatus) => {
     setItemStatus(word.id, status, user);
     setRevision((current) => current + 1);
   };
 
-  const reset = () => setPage(1);
+  // Direct ladder override — writes the exact rung instead of climbing one
+  // success at a time, so the learner can correct the tracker on the spot.
+  // WordItem has no aliases, so this is a plain load/mutate/save cycle.
+  const applyStrength = (word: WordItem, level: number) => {
+    const store = loadGradeStore(user);
+    const prior = store[word.id];
+    const rec = setStrengthLevel(level, Date.now(), prior);
+    if (rec) store[word.id] = rec; else delete store[word.id];
+    saveGradeStore(store, user);
+    setRevision((r) => r + 1);
+  };
+
+  // Above Mastered: mark a word so easy it should never be reviewed again.
+  const applyPermanent = (word: WordItem) => {
+    const store = loadGradeStore(user);
+    const prior = store[word.id];
+    store[word.id] = recordPermanent(Date.now(), prior);
+    saveGradeStore(store, user);
+    setRevision((r) => r + 1);
+  };
+
+  // Bulk actions apply to every selected word in one load/save cycle.
+  const bulkApplyStatus = (status: ItemStatus) => {
+    const targets = catalog.filter((w) => selected.has(w.id));
+    if (targets.length === 0) return;
+    setItemsStatus(targets.map((w) => ({ id: w.id })), status, user);
+    setRevision((r) => r + 1);
+  };
+
+  const bulkApplyPermanent = () => {
+    const targets = catalog.filter((w) => selected.has(w.id));
+    if (targets.length === 0) return;
+    const store = loadGradeStore(user);
+    for (const w of targets) store[w.id] = recordPermanent(Date.now(), store[w.id]);
+    saveGradeStore(store, user);
+    setRevision((r) => r + 1);
+  };
 
   return (
-    <section className="card mt-6 p-5 sm:p-6">
+    <section className="mt-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Words tracker")}</h2>
@@ -128,6 +389,17 @@ export function WordsTracker({ apiParts, user }: {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
+        <SelectBox
+          checked={allFilteredSelected}
+          indeterminate={someFilteredSelected && !allFilteredSelected}
+          onClick={toggleSelectAllFiltered}
+          label={allFilteredSelected
+            ? ui("Deselect all")
+            : uiIsGerman()
+              ? `Alle ${filtered.length} angezeigten Einträge auswählen`
+              : `Select all ${filtered.length} shown`}
+          size="h-8 w-8"
+        />
         {FILTERS.map((f) => (
           <button
             key={f.key}
@@ -175,6 +447,28 @@ export function WordsTracker({ apiParts, user }: {
         </label>
       </div>
 
+      {selected.size > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-dim)] px-4 py-3">
+          <span className="text-xs font-black text-[var(--accent)]">
+            {selected.size} {ui("selected")}
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-1.5">
+            <BulkActionButton tone="known" icon={CheckCircle2} label={ui("Known")} onClick={() => bulkApplyStatus("known")} />
+            <BulkActionButton tone="struggle" icon={AlertTriangle} label={ui("Struggle")} onClick={() => bulkApplyStatus("struggle")} />
+            <BulkActionButton tone="new" icon={Circle} label={ui("To learn")} onClick={() => bulkApplyStatus("new")} />
+            <BulkActionButton tone="permanent" icon={Star} label={ui("Permanent")} onClick={bulkApplyPermanent} />
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
+            >
+              <XIcon className="h-3.5 w-3.5" />
+              {ui("Clear")}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
         className="mt-4 h-[min(34rem,65vh)] min-h-[24rem] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
         aria-label={ui("Words tracker")}
@@ -186,9 +480,13 @@ export function WordsTracker({ apiParts, user }: {
             const primaryText = uiIsGerman() ? word.en : word.de;
             const meaningText = uiIsGerman() ? word.de : word.en;
             const frequency = frequencyInfo(word.lookup || word.de);
-            const strength = strengthInfo(grades[word.id]);
             return (
               <div key={word.id} className="flex flex-wrap items-center gap-3 py-3">
+                <SelectBox
+                  checked={selected.has(word.id)}
+                  onClick={() => toggleSelect(word.id)}
+                  label={`${selected.has(word.id) ? ui("Deselect") : ui("Select")} ${primaryText}`}
+                />
                 <button
                   type="button"
                   onClick={() => tts(uiIsGerman() ? word.en : word.de, 0.9, targetLangTag())}
@@ -212,8 +510,23 @@ export function WordsTracker({ apiParts, user }: {
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
-                    {status !== "new" ? ` · ${ui(strength.label)}` : ""}
+                    {!uiIsGerman() && word.use ? ` · ${ui(word.use)}` : ""}
+                    {!uiIsGerman() && (() => {
+                        const syn = synonymNote(word.lookup);
+                        if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
+                        const f = frequencyInfo(word.lookup);
+                        return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
+                      })()}
+                    {!uiIsGerman() && (() => {
+                        const note = packMeta(word.partKey).note;
+                        return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
+                      })()}
                   </p>
+                  <StrengthMeter
+                    record={grades[word.id]}
+                    onSetLevel={(level) => applyStrength(word, level)}
+                    onSetPermanent={() => applyPermanent(word)}
+                  />
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <WordStatusButton

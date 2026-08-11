@@ -684,7 +684,7 @@ export function VocabTracker({
 
   if (catalog.length === 0) {
     return (
-      <section className="card p-5 sm:p-6">
+      <section className="mt-4">
         <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Word & sentence tracker")}</h2>
         <p className="mt-2 text-sm font-semibold text-[var(--text-3)]">{ui("Loading your vocabulary catalog…")}</p>
       </section>
@@ -692,7 +692,7 @@ export function VocabTracker({
   }
 
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="mt-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Word & sentence tracker")}</h2>

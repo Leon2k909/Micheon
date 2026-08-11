@@ -662,6 +662,16 @@ export default function GamificationPanel({
     setTrackerRequested(true);
     onRequestCatalogue?.();
   }, [onRequestCatalogue]);
+  // Sätze / Wörter as one tabbed section rather than two cards stacked down
+  // the page — the request was specifically not to have to scroll past one
+  // to reach the other. Sätze stays the default tab (it always has been the
+  // section people land on), so the reveal-triggered heavy index prep below
+  // is unaffected: the tab bar cannot be clicked before the section has
+  // scrolled into view in the first place, and by then that prep is already
+  // under way for the tab that is showing. Wörter's own catalogue build is
+  // far cheaper and simply happens on mount when its tab is chosen — it no
+  // longer waits on Sätze's heavy prep the way the old stacked layout did.
+  const [trackerTab, setTrackerTab] = useState<"sentences" | "words">("sentences");
 
   // Preload only the small tracker component while the browser is idle. The
   // multi-megabyte lesson catalogue stays deferred until its section is
@@ -1453,17 +1463,50 @@ export default function GamificationPanel({
           minHeight={360}
           onReveal={requestVocabTracker}
         >
-          {catalogueReady && trackerPrepared ? (
-            <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
-              <VocabTracker apiParts={apiParts} user={user} />
-              {/* Words get their own card rather than 3,300 more rows in the
-                  tracker above — that component already indexes ~16,000
-                  sentences, and vocabulary progress is a different question. */}
-              <WordsTracker apiParts={apiParts} user={user} />
-            </Suspense>
-          ) : (
-            <ProfileSectionLoading label={ui("Loading vocabulary library")} />
-          )}
+          {/* One card, one tab bar, one piece of content at a time — Sätze
+              and Wörter used to be two full cards stacked down the page,
+              which meant scrolling past one to reach the other even though
+              they're the same kind of thing. The tab bar owns the card's
+              chrome; VocabTracker/WordsTracker each render only their INNER
+              content now (see the comment atop WordsTracker.tsx) so nesting
+              them here does not double up a border/shadow inside another. */}
+          <section className="card p-5 sm:p-6">
+            <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label={ui("Tracker")}>
+              {([
+                ["sentences", "Sentences"],
+                ["words", "Words"],
+              ] as const).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={trackerTab === tab}
+                  onClick={() => setTrackerTab(tab)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-xs font-black transition-colors",
+                    trackerTab === tab
+                      ? "bg-[var(--accent)] text-white"
+                      : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  {ui(label)}
+                </button>
+              ))}
+            </div>
+            {catalogueReady ? (
+              <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
+                {trackerTab === "sentences" ? (
+                  trackerPrepared
+                    ? <VocabTracker apiParts={apiParts} user={user} />
+                    : <ProfileSectionLoading label={ui("Loading vocabulary library")} />
+                ) : (
+                  <WordsTracker apiParts={apiParts} user={user} />
+                )}
+              </Suspense>
+            ) : (
+              <ProfileSectionLoading label={ui("Loading vocabulary library")} />
+            )}
+          </section>
         </DeferredProfileSection>
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
