@@ -1754,6 +1754,30 @@ ipcMain.handle("storage:clear-cache", async (event) => {
   }
 });
 
+// No browser lets a downloaded file silently install itself as an
+// extension -- that gate exists specifically so a download can't do this,
+// and there's no way around it that isn't the extension's own store review.
+// What this CAN remove is the manual unzip: it copies the bundled,
+// already-unpacked extension straight to a stable folder and opens it in
+// Explorer, so the only steps left are the browser's own (Developer mode,
+// Load unpacked). Re-copies every time so an app update to the extension
+// never leaves a stale folder behind.
+ipcMain.handle("extension:install", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
+  try {
+    const source = path.join(__dirname, "..", "dist", "micheon-immersion-extension");
+    if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
+    const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
+    fs.rmSync(destination, { recursive: true, force: true });
+    fs.cpSync(source, destination, { recursive: true });
+    shell.showItemInFolder(path.join(destination, "manifest.json"));
+    return { ok: true, path: destination };
+  } catch (e) {
+    console.error("[extension] install failed:", e?.message ?? e);
+    return { ok: false, path: null };
+  }
+});
+
 ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 
 ipcMain.handle("windows-settings:get", (event) => {

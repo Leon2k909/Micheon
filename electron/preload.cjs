@@ -67,6 +67,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
   // safe to clear.
   getStorageUsage: () => ipcRenderer.invoke("storage:get-usage"),
   clearAppCache: () => ipcRenderer.invoke("storage:clear-cache"),
+  // Copies the bundled companion browser extension to a stable folder and
+  // opens it in Explorer -- removes the manual unzip step. Resolves
+  // { ok, path }; no browser lets this go further (Developer mode and
+  // Load unpacked still have to be the learner's own click, by design).
+  installBrowserExtension: () => ipcRenderer.invoke("extension:install"),
   // How updates should arrive, whether they are postponed, and whether the
   // panel narrates them at all.
   setUpdatePreferences: (preferences) =>

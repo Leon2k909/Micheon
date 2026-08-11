@@ -1,0 +1,47 @@
+/* Scoped to our own inserted elements only -- never touches the host
+   page's own styling. A dark tooltip with its own fixed colours reads
+   fine regardless of whether the page underneath is light or dark. */
+
+.micheon-gloss-word {
+  all: unset !important;
+  font: inherit !important;
+  color: inherit !important;
+  cursor: help !important;
+  position: relative !important;
+  text-decoration: underline dotted !important;
+  text-decoration-color: #4f9a52 !important;
+  text-underline-offset: 2px !important;
+  text-decoration-thickness: 1.5px !important;
+}
+
+.micheon-gloss-word:hover,
+.micheon-gloss-word:focus-visible {
+  text-decoration-style: solid !important;
+  outline: none !important;
+}
+
+.micheon-gloss-word::after {
+  content: attr(data-micheon-gloss);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%) translateY(4px);
+  background: #1b1d24;
+  color: #f4f6f5;
+  font: 600 12.5px/1.4 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 5px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+  max-width: 260px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  z-index: 2147483647;
+}
+
+.micheon-gloss-word:hover::after,
+.micheon-gloss-word:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

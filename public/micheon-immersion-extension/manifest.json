@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Micheon Immersion",
+  "version": "0.1.0",
+  "description": "Highlights German words you're already learning in Micheon wherever you browse, logs new words it finds so the word bank can grow, and sets YouTube to its German dub + English captions when a video has one.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Micheon Immersion"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "exclude_matches": [
+        "*://*.google.com/*",
+        "*://accounts.google.com/*",
+        "*://*.bankofengland.co.uk/*",
+        "*://*.youtube.com/*"
+      ],
+      "js": ["src/content-gloss.js"],
+      "css": ["src/content-gloss.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube.com/watch*"],
+      "js": ["src/content-youtube.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["data/words.json"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ]
+}

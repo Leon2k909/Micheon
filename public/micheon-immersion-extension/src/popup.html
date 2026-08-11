@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <strong>Micheon Immersion</strong>
+    <span class="sub">Learn from every page you read</span>
+  </header>
+
+  <section class="row">
+    <label>
+      <input type="checkbox" id="glossEnabled" />
+      Highlight words I already know
+    </label>
+  </section>
+
+  <section class="row">
+    <label>
+      <input type="checkbox" id="collectMissingVocab" />
+      Collect German words I don't know yet, with the sentence they appeared in
+    </label>
+  </section>
+
+  <section class="row">
+    <label>
+      <input type="checkbox" id="youtubeAutoDub" />
+      Auto-switch YouTube to its German dub + English captions
+    </label>
+  </section>
+
+  <section class="stats">
+    <span id="missingCount">0</span> new words spotted
+  </section>
+
+  <section class="actions">
+    <button id="exportBtn">Export list</button>
+    <button id="clearBtn" class="ghost">Clear</button>
+  </section>
+
+  <footer>Everything here runs offline, from Micheon's own word list. No data leaves your machine.</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

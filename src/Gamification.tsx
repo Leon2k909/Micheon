@@ -942,16 +942,23 @@ export default function GamificationPanel({
               </SettingsCategory>
 
               <div className="mt-5 border-t border-[var(--border)] pt-5">
-                <h3 className="text-sm font-black text-[var(--text-1)]">{ui("More settings")}</h3>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                  {ui("Sections you'll rarely need day to day. Open one to change it.")}
-                </p>
+                {/* This framing ("a list of closed sections, open one") only
+                    describes what search actually shows. Outside a search,
+                    the sidebar already has one category open \u2014 the heading
+                    sat above it anyway, reading as a stray label rather
+                    than a description of anything on screen. */}
                 {settingsTerms.length > 0 && (
-                  <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
-                    {searchHits.length === 0
-                      ? ui("Nothing matches that. Try \u201ctheme\u201d, \u201cvoice\u201d, or \u201cpet\u201d.")
-                      : `${searchHits.length} ${searchHits.length === 1 ? ui("section") : ui("sections")} ${ui("match")}`}
-                  </p>
+                  <>
+                    <h3 className="text-sm font-black text-[var(--text-1)]">{ui("More settings")}</h3>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      {ui("Sections you'll rarely need day to day. Open one to change it.")}
+                    </p>
+                    <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
+                      {searchHits.length === 0
+                        ? ui("Nothing matches that. Try \u201ctheme\u201d, \u201cvoice\u201d, or \u201cpet\u201d.")
+                        : `${searchHits.length} ${searchHits.length === 1 ? ui("section") : ui("sections")} ${ui("match")}`}
+                    </p>
+                  </>
                 )}
                 <SettingsCategory
                   description={ui("Theme, lesson background, and app zoom.")}
@@ -1300,8 +1307,15 @@ export default function GamificationPanel({
             </div>
 
             <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Flashcard and language settings.")}</p>
+              {/* Same fix as "More settings" above: this heading describes
+                  a list of closed sections, which is only what's on screen
+                  while searching. */}
+              {settingsTerms.length > 0 && (
+                <>
+                  <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Flashcard and language settings.")}</p>
+                </>
+              )}
 
                 <SettingsCategory
                   description={ui("Which side shows first and how cards behave.")}
