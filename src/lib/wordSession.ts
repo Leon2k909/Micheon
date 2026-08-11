@@ -1,8 +1,8 @@
 /**
  * Vocabulary sittings: single words, taught on their own.
  *
- * The course has carried 3,961 authored words with English glosses since the
- * beginning, and none of them was ever taught: words only entered lessons
+ * The course has carried thousands of authored words with English glosses
+ * since the beginning, and none of them was ever taught: words only entered lessons
  * through hand-written example sentences, and no word has one. That gate is
  * deliberate — an isolated word is not a sentence, and the sentence course
  * must never pad itself with flashcards. It stays. This module is the OTHER

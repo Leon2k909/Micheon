@@ -53,13 +53,51 @@ for (const [key, bp] of Object.entries(allPartBlueprints)) {
 
 // ── the words exist and are teachable ─────────────────────────────────────
 const catalog = buildWordCatalog(parts);
-assert(catalog.length > 3000, `only ${catalog.length} teachable words — the seed inventory has been lost`);
+assert(catalog.length >= 4287, `only ${catalog.length} teachable words — the expanded word inventory has been lost`);
 assert(catalog.every((w) => w.id.startsWith(WORD_ID_PREFIX)), "a word id escaped the vw- namespace");
 assert(catalog.every((w) => w.en.trim().length > 0), "a word without a gloss is being taught");
 assert(catalog.every((w) => w.de.trim().split(/\s+/).length <= 6 && !/[.!?]$/.test(w.de)),
   "something sentence-shaped got into the word catalogue");
 assert(catalog.every((w) => w.de.toLowerCase().replace(/^(der|die|das) /, "") !== w.en.toLowerCase().replace(/^(der|die|das) /, "")),
   "a card whose gloss repeats its German is being taught");
+
+// Leon asked for genuine depth in the dedicated Words mode, especially for
+// an English learner who already knows the basics. These packs deliberately
+// double the B2+ inventory with authored verbs, adjectives and modern topic
+// vocabulary. Pin both raw pack size and catalogue ownership: a duplicate
+// lemma or same-language gloss would otherwise make a seed silently vanish.
+const depthPackKeys = Array.from({ length: 10 }, (_, index) => `part${411 + index}`);
+const depthPackKeySet = new Set(depthPackKeys);
+const depthWords = catalog.filter((word) => depthPackKeySet.has(word.partKey));
+assert.equal(depthWords.length, 400, "the advanced word expansion no longer contributes 400 unique cards");
+for (const key of depthPackKeys) {
+  assert.equal((parts[key]?.vocab ?? []).length, 40, `${key} lost one of its forty authored words`);
+  assert.equal(catalog.filter((word) => word.partKey === key).length, 40,
+    `${key} contains a duplicate or unusable word that vanished from Words mode`);
+}
+assert(depthWords.filter((word) => word.pos === "verb" || word.pos === "verb phrase" || word.pos === "adjective").length >= 210,
+  "the advanced expansion has fallen back to padding the catalogue with nouns");
+const secondDepthPackKeys = Array.from({ length: 10 }, (_, index) => `part${421 + index}`);
+const secondDepthPackKeySet = new Set(secondDepthPackKeys);
+const secondDepthWords = catalog.filter((word) => secondDepthPackKeySet.has(word.partKey));
+assert.equal(secondDepthWords.length, 400, "the second advanced expansion no longer contributes 400 unique cards");
+for (const key of secondDepthPackKeys) {
+  assert.equal((parts[key]?.vocab ?? []).length, 40, `${key} lost one of its forty authored words`);
+  assert.equal(catalog.filter((word) => word.partKey === key).length, 40,
+    `${key} contains a duplicate or unusable word that vanished from Words mode`);
+}
+assert(secondDepthWords.filter((word) => ["verb", "verb phrase", "adjective", "adverb"].includes(word.pos)).length >= 235,
+  "the second advanced expansion has fallen back to padding the catalogue with nouns");
+const glossOwners = new Map();
+for (const word of catalog) {
+  const gloss = word.en.trim().toLowerCase();
+  if (!glossOwners.has(gloss)) glossOwners.set(gloss, []);
+  glossOwners.get(gloss).push(word);
+}
+assert(depthWords.every((word) => glossOwners.get(word.en.trim().toLowerCase())?.length === 1),
+  "a new advanced word reuses an existing English gloss without explaining the distinction");
+assert(secondDepthWords.every((word) => glossOwners.get(word.en.trim().toLowerCase())?.length === 1),
+  "a second-batch advanced word reuses an existing English gloss without explaining the distinction");
 
 // ── a sitting behaves like a sitting ──────────────────────────────────────
 const ranked = rankWordCatalog(catalog, null);
@@ -88,8 +126,8 @@ assert.equal(buildWordSitting(ranked, grades, Date.now(), { reviewSlots: 1, fres
 // words should get harder and harder" — and later, "it should still go back
 // to doing the beginning stuff we skipped out". Both halves are behaviour,
 // so both are run rather than read.
-assert(catalog.filter((w) => wordLadderRung(w) >= 4).length >= 300,
-  "the advanced word inventory has shrunk — part401-410 may be missing");
+assert(catalog.filter((w) => wordLadderRung(w) >= 4).length >= 1188,
+  "the advanced word inventory has shrunk — part401-430 may be missing");
 for (const key of ["part401", "part405", "part410"]) {
   assert((parts[key]?.vocab ?? []).length === 40, `${key} lost its forty words`);
 }

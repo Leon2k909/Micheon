@@ -1,5 +1,7 @@
 import { Blueprint } from "./types";
 import { expansionPartBlueprints } from "./expansionPacks";
+import { advancedWordPartBlueprints } from "./advancedWordPacks";
+import { advancedWordPartBlueprints2 } from "./advancedWordPacks2";
 
 export const GERMAN_SPECIAL_CHARACTERS = ["Ä", "ä", "É", "é", "Ö", "ö", "Ü", "ü", "ß"];
 
@@ -8260,6 +8262,8 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     dialogues: [],
     phrases: [],
   },
+...advancedWordPartBlueprints,
+...advancedWordPartBlueprints2,
 };
 
 export const verbConjugations: Record<string, Record<string, string>> = {
