@@ -564,6 +564,10 @@ export function buildListenQueue(
   const bucketOf = (item: ListenItem): number => {
     const record = recordFor(item);
     if (isSnoozed(record, now)) return -1;
+    // "Never review" promises "never comes back at all" -- that includes
+    // this queue. Listen deliberately plays items regardless of dueAt, but
+    // permanent is an explicit learner verdict, not a scheduling detail.
+    if (record?.permanent) return -1;
     const status = statusForId(grades, item.id, item.aliases);
     if (status === "known" && isDueForReview(record, now)) return 0;
     if (status === "struggle") return 1;

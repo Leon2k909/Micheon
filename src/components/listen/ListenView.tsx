@@ -569,6 +569,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setListenReviewLevel(item, level, profile);
     setReviewNotice(uiFmt("Set to {level}.", { level: ui(label) }));
     setReviewPanel(null);
+    if (level === "permanent") {
+      // "Never comes back at all" starts right now, not next session:
+      // drop the item from this queue too, which slides the next item into
+      // place -- the same move "Put off" makes. Future sessions exclude
+      // permanent items in buildListenQueue.
+      cancelGradeAdvance();
+      setHiddenIds((current) => new Set(current).add(item.id));
+    }
   };
 
   const putOff = (days: number, label: string) => {
