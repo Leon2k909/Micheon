@@ -333,9 +333,9 @@ check("background Listen playback is on by default and remains learner-controlle
   && setListenBackgroundPlayback(false, null) === false
   && getListenBackgroundPlayback(null) === false
   && setListenBackgroundPlayback(true, null) === true);
-check("pet captions show both languages by default and remain learner-controlled",
+check("pet captions show both languages with a clean gap by default and remain learner-controlled",
   getListenPetBilingualCaptions(null) === true
-  && formatListenPetCaption({ de: "Bis gleich.", en: "See you soon." }, "Bis gleich.", true) === "DE · Bis gleich.\nEN · See you soon."
+  && formatListenPetCaption({ de: "Bis gleich.", en: "See you soon." }, "Bis gleich.", true) === "Bis gleich.\n\nSee you soon."
   && setListenPetBilingualCaptions(false, null) === false
   && getListenPetBilingualCaptions(null) === false
   && formatListenPetCaption({ de: "Bis gleich.", en: "See you soon." }, "Bis gleich.", false) === "Bis gleich."

@@ -468,7 +468,7 @@ export function formatListenPetCaption(
   showBothLanguages: boolean
 ): string {
   if (!showBothLanguages) return spokenText;
-  return `DE · ${item.de}\nEN · ${item.en}`;
+  return `${item.de}\n\n${item.en}`;
 }
 
 export type ListenQueueOptions = {
