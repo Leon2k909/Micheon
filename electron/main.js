@@ -1765,7 +1765,13 @@ ipcMain.handle("storage:clear-cache", async (event) => {
 ipcMain.handle("extension:install", (event) => {
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
   try {
-    const source = path.join(__dirname, "..", "dist", "micheon-immersion-extension");
+    // fs.cpSync can't walk a folder that's still packed inside app.asar --
+    // it needs the real files asarUnpack puts alongside it in
+    // app.asar.unpacked, not the virtual in-archive path used everywhere
+    // else in this file for simple reads.
+    const source = app.isPackaged
+      ? path.join(process.resourcesPath, "app.asar.unpacked", "dist", "micheon-immersion-extension")
+      : path.join(__dirname, "..", "dist", "micheon-immersion-extension");
     if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
     const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
     fs.rmSync(destination, { recursive: true, force: true });

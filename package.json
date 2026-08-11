@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.259",
+  "version": "1.2.260",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -94,6 +94,9 @@
       "server/**",
       "dist/**",
       "package.json"
+    ],
+    "asarUnpack": [
+      "dist/micheon-immersion-extension/**"
     ],
     "directories": {
       "output": "release"
