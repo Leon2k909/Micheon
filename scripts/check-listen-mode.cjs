@@ -183,8 +183,16 @@ check("the view speaks German then English in one sequence", view.includes("ttsS
 check("the view repeats the German the configured number of times",
   view.includes("Array.from({ length: repeats }"));
 check("pausing actually stops the voice", view.includes("stopTts()"));
+check("silent playback is detected from a real start event, not a duration guess",
+  view.includes("TTS_SPEAKING_EVENT")
+  && view.includes("if (!heardSpeech)")
+  && !view.includes("startedAt < 600"));
 check("grading uses the damped listen path, not the lesson path",
   view.includes("recordListenGrade(") && !view.includes("recordDeclaredKnown") && !view.includes("setItemStatus("));
+check("a rapid grade or navigation cannot queue a second card advance",
+  view.includes("gradeAdvanceTimerRef")
+  && view.includes("if (!item || gradeAdvanceTimerRef.current != null) return;")
+  && view.includes("cancelGradeAdvance();"));
 
 const vocabTracker = read("src/components/lab/VocabTracker.tsx");
 const wordsTracker = read("src/components/lab/WordsTracker.tsx");

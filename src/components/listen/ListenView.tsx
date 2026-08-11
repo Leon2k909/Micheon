@@ -10,7 +10,7 @@ import {
   setListenGermanRepeats,
   type ListenItem,
 } from "@/lib/listenMode";
-import { stopTts, ttsSequence } from "@/lib/voice";
+import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -43,6 +43,10 @@ export function ListenView({ apiParts, profile }: {
   // Stale-completion guard: every (re)start bumps this; a finished sequence
   // only advances if nothing newer superseded it.
   const runRef = useRef(0);
+  // A grade deliberately pauses for a beat before moving on. Keep that
+  // transition cancellable so a double-click or an immediate prev/next click
+  // cannot queue two advances and silently skip a card.
+  const gradeAdvanceTimerRef = useRef<number | null>(null);
 
   const item = queue.length ? queue[index % queue.length] : null;
   const englishLang = resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
@@ -51,19 +55,24 @@ export function ListenView({ apiParts, profile }: {
     if (!playing || !item) return undefined;
     const run = ++runRef.current;
     let advanceTimer: number | null = null;
+    let heardSpeech = false;
+    const markSpeechStarted = (event: Event) => {
+      if ((event as CustomEvent<boolean>).detail === true) heardSpeech = true;
+    };
+    window.addEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
 
     const sequence = [
       ...Array.from({ length: repeats }, () => ({ text: item.de, rate: 0.92, lang: "de-DE" })),
       { text: item.en, rate: 0.95, lang: englishLang },
     ];
-    const startedAt = Date.now();
     void ttsSequence(sequence).then(() => {
+      window.removeEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
       if (runRef.current !== run) return;
-      // Muted or broken audio resolves the whole sequence in milliseconds.
-      // Advancing on that signal turns "play" into a silent carousel racing
-      // through the queue — stop instead, so the learner sees a paused
-      // player rather than a blur of cards nobody read aloud.
-      if (Date.now() - startedAt < 600) {
+      // Muted or broken audio never emits a real playback start. Advancing in
+      // that state turns "play" into a silent carousel racing through cards.
+      // Use the actual signal rather than elapsed time: a short cached word is
+      // still valid audio and must not be mistaken for a failed sequence.
+      if (!heardSpeech) {
         setPlaying(false);
         return;
       }
@@ -75,12 +84,26 @@ export function ListenView({ apiParts, profile }: {
     });
 
     return () => {
+      window.removeEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
       if (advanceTimer != null) window.clearTimeout(advanceTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, index, repeats, item?.id]);
 
-  useEffect(() => () => { runRef.current += 1; stopTts(); }, []);
+  useEffect(() => () => {
+    runRef.current += 1;
+    if (gradeAdvanceTimerRef.current != null) {
+      window.clearTimeout(gradeAdvanceTimerRef.current);
+      gradeAdvanceTimerRef.current = null;
+    }
+    stopTts();
+  }, []);
+
+  const cancelGradeAdvance = () => {
+    if (gradeAdvanceTimerRef.current == null) return;
+    window.clearTimeout(gradeAdvanceTimerRef.current);
+    gradeAdvanceTimerRef.current = null;
+  };
 
   const pause = () => {
     runRef.current += 1;
@@ -89,6 +112,7 @@ export function ListenView({ apiParts, profile }: {
   };
 
   const step = (direction: 1 | -1) => {
+    cancelGradeAdvance();
     runRef.current += 1;
     stopTts();
     setGraded(null);
@@ -99,13 +123,14 @@ export function ListenView({ apiParts, profile }: {
   };
 
   const grade = (verdict: "know" | "difficult") => {
-    if (!item) return;
+    if (!item || gradeAdvanceTimerRef.current != null) return;
     recordListenGrade(item, verdict, profile);
     setGraded(verdict);
     // Move on right away — the grade was the learner saying "next".
     runRef.current += 1;
     stopTts();
-    window.setTimeout(() => {
+    gradeAdvanceTimerRef.current = window.setTimeout(() => {
+      gradeAdvanceTimerRef.current = null;
       setGraded(null);
       setIndex((current) => (current + 1) % Math.max(1, queue.length));
     }, 350);
