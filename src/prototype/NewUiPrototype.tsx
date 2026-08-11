@@ -2458,7 +2458,11 @@ export default function NewUiPrototype({
     <div className="np-feature-host">
       {partsReady ? (
         <Suspense fallback={<FeatureLoading />}>
-          <ListenView apiParts={apiParts} profile={profile} />
+          <ListenView
+            apiParts={apiParts}
+            learningDirection={learningEnglish() ? "learn-en" : "learn-de"}
+            profile={profile}
+          />
         </Suspense>
       ) : <FeatureLoading />}
     </div>

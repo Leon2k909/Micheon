@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, recordListenGrade, getListenGermanRepeats, DEFAULT_GERMAN_REPEATS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -69,7 +69,15 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
-  buildListenQueue, recordListenGrade, getListenGermanRepeats, DEFAULT_GERMAN_REPEATS, listenCountForId,
+  buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem,
+  getListenGermanRepeats, setListenGermanRepeats,
+  getListenEnglishRepeats, setListenEnglishRepeats,
+  getListenLanguageOrder, setListenLanguageOrder,
+  getListenNextCardDelayMs, setListenNextCardDelayMs,
+  DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
+  DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
+  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS,
+  listenCountForId,
   loadGradeStore, statusForId, COMPLETED_KEY,
   recordSuccess,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
@@ -133,6 +141,23 @@ check("a listen grade folds legacy alias records into the canonical id like ever
 check("the exposure count is readable back through aliases",
   listenCountForId(grades, "canonical-id") === 1);
 
+stored.clear();
+setListenReviewLevel({ id: "manual-level", aliases: [] }, 5, null, Date.now());
+grades = readGrades();
+check("an explicit Listen level correction can set Mastered",
+  grades["manual-level"]?.lastGrade === "know"
+  && grades["manual-level"]?.successes === 5
+  && grades["manual-level"]?.intervalDays === 180);
+setListenReviewLevel({ id: "manual-level", aliases: [] }, "new", null, Date.now());
+check("an explicit Listen level correction can reset an item to New",
+  readGrades()["manual-level"] === undefined);
+
+stored.clear();
+snoozeListenItem({ id: "listen-snooze", aliases: [] }, 7, null, Date.now());
+grades = readGrades();
+check("Listen can genuinely put an item off",
+  Date.parse(grades["listen-snooze"]?.snoozedUntil ?? "") > Date.now() + 6 * 864e5);
+
 // ── the queue: right content, right order, snooze honoured ──────────────
 stored.clear();
 let queue = buildListenQueue(parts, {});
@@ -164,24 +189,91 @@ queue = buildListenQueue(parts, { [probeId]: snoozed });
 check("a snoozed item is not read aloud", queue.every((item) => item.id !== probeId));
 
 // ── settings and wiring, from source ────────────────────────────────────
-check("German is spoken twice by default", DEFAULT_GERMAN_REPEATS === 2 && getListenGermanRepeats() === 2);
-stored.set("gl-listen-german-repeats", "3");
-check("the repeat count is the learner's to change", getListenGermanRepeats() === 3);
-stored.set("gl-listen-german-repeats", "99");
-check("a corrupt repeat count falls back to the default", getListenGermanRepeats() === 2);
+stored.clear();
+check("the German course defaults to English once, then German twice",
+  DEFAULT_GERMAN_REPEATS === 2
+  && DEFAULT_ENGLISH_REPEATS === 1
+  && DEFAULT_LISTEN_LANGUAGE_ORDER === "english-first"
+  && getListenGermanRepeats("learn-de") === 2
+  && getListenEnglishRepeats("learn-de") === 1
+  && getListenLanguageOrder("learn-de") === "english-first");
+check("the English course defaults to German once, then English twice",
+  DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS === 1
+  && DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS === 2
+  && DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER === "german-first"
+  && getListenGermanRepeats("learn-en") === 1
+  && getListenEnglishRepeats("learn-en") === 2
+  && getListenLanguageOrder("learn-en") === "german-first");
+check("the next card waits 1.1 seconds by default",
+  DEFAULT_NEXT_CARD_DELAY_MS === 1100 && getListenNextCardDelayMs() === 1100);
+setListenGermanRepeats(3, "learn-de");
+setListenEnglishRepeats(4, "learn-de");
+setListenLanguageOrder("german-first", "learn-de");
+setListenGermanRepeats(5, "learn-en");
+setListenEnglishRepeats(6, "learn-en");
+setListenLanguageOrder("english-first", "learn-en");
+stored.set("gl-listen-next-card-delay-ms", "2500");
+check("each course keeps its own repeat counts and language order",
+  getListenGermanRepeats("learn-de") === 3
+  && getListenEnglishRepeats("learn-de") === 4
+  && getListenLanguageOrder("learn-de") === "german-first"
+  && getListenGermanRepeats("learn-en") === 5
+  && getListenEnglishRepeats("learn-en") === 6
+  && getListenLanguageOrder("learn-en") === "english-first");
+check("the next-card delay is the learner's to change", getListenNextCardDelayMs() === 2500);
+stored.set("gl-listen-german-repeats:learn-de", "99");
+stored.set("gl-listen-english-repeats:learn-de", "0");
+stored.set("gl-listen-language-order:learn-de", "invalid");
+stored.set("gl-listen-next-card-delay-ms", "999999");
+check("corrupt Listen settings fall back to documented defaults",
+  getListenGermanRepeats("learn-de") === 2
+  && getListenEnglishRepeats("learn-de") === 1
+  && getListenLanguageOrder("learn-de") === "english-first"
+  && getListenNextCardDelayMs() === 1100);
+check("Listen setting writers clamp typed values to safe limits",
+  setListenGermanRepeats(99, "learn-de") === 10
+  && setListenEnglishRepeats(-4, "learn-de") === 1
+  && setListenNextCardDelayMs(99_000) === 30_000);
 
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Headphones/.test(prototype));
 check("navigating to Listen loads the course catalogue",
   /\["learn", "games", "tests", "listen"\]\.includes\(view\)/.test(prototype));
 check("the Listen view is mounted behind the catalogue gate",
-  prototype.includes('activeView === "listen"') && prototype.includes("<ListenView apiParts={apiParts}"));
+  prototype.includes('activeView === "listen"')
+  && prototype.includes("<ListenView")
+  && prototype.includes('learningDirection={learningEnglish() ? "learn-en" : "learn-de"}'));
 
 const view = read("src/components/listen/ListenView.tsx");
-check("the view speaks German then English in one sequence", view.includes("ttsSequence(")
-  && view.includes('lang: "de-DE"') && view.includes("englishLang"));
-check("the view repeats the German the configured number of times",
-  view.includes("Array.from({ length: repeats }"));
+check("the view schedules both languages in the learner-selected order", view.includes("ttsSequence(")
+  && view.includes('lang: "de-DE"')
+  && view.includes("englishLang")
+  && view.includes('languageOrder === "english-first"')
+  && view.includes("[...englishSequence, ...germanSequence]"));
+check("the view repeats German and English independently",
+  /Array\.from\(\s*\{ length: germanRepeats \}/.test(view)
+  && /Array\.from\(\s*\{ length: englishRepeats \}/.test(view));
+check("the playback plan, order switch, and typed repeat counts are visible",
+  view.includes('"English {en}×, then German {de}×"')
+  && view.includes('"German {de}×, then English {en}×"')
+  && view.includes('data-testid={`listen-order-${value}`}')
+  && view.includes('testId="listen-german-repeats"')
+  && view.includes('testId="listen-english-repeats"'));
+check("the next-card delay is visible and drives auto-advance",
+  view.includes('testId="listen-next-card-delay"')
+  && view.includes("}, nextCardDelayMs);"));
+check("master, German, and English volume sliders are always in the Listen view",
+  view.includes('testId="listen-master"')
+  && view.includes('testId="listen-german"')
+  && view.includes('testId="listen-english"'));
+check("muted language state cannot silently hide from the learner",
+  view.includes('"English voice is muted and will be skipped."')
+  && view.includes('"German voice is muted and will be skipped."'));
+check("Listen exposes exact review levels and real snooze choices",
+  view.includes("setListenReviewLevel(")
+  && view.includes("snoozeListenItem(")
+  && view.includes('ui("Set level")')
+  && view.includes('ui("Put off")'));
 check("pausing actually stops the voice", view.includes("stopTts()"));
 check("silent playback is detected from a real start event, not a duration guess",
   view.includes("TTS_SPEAKING_EVENT")
@@ -202,9 +294,21 @@ check("both trackers surface the exposure count",
 const i18n = read("src/lib/i18n.ts");
 for (const key of [
   "Both languages read aloud while you do something else.",
+  "German {de}×, then English {en}×",
+  "English {en}×, then German {de}×",
+  "Language order",
+  "English first",
+  "German first",
+  "Times spoken on every card",
+  "German repeats",
+  "English repeats",
+  "Next card delay",
+  "Voice levels",
+  "English voice is muted and will be skipped.",
+  "Quick marks stay gentle. Set level makes an exact tracker change.",
   "Play audio",
   "heard",
-  "Listening counts as exposure, not mastery — these items still appear in your lessons, because hearing a sentence is not spelling it.",
+  "Listening counts as exposure, not mastery. These items still appear in lessons because hearing a sentence is not spelling it.",
 ]) {
   check(`the new UI string is translated: ${key.slice(0, 40)}…`, new RegExp(`"${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}": "`).test(i18n));
 }

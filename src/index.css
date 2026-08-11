@@ -359,9 +359,33 @@ button { cursor: pointer; }
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent);
 }
+
+.listen-play-button {
+  border: 1px solid color-mix(in srgb, var(--accent-text) 28%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  color: var(--accent-text);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 30%, transparent), 0 3px 0 color-mix(in srgb, var(--accent-strong) 78%, black);
+  font-weight: 850;
+  transition: filter 150ms ease, box-shadow 150ms ease, transform 120ms ease;
+}
+.listen-play-button:hover {
+  filter: brightness(1.04);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 34%, transparent), 0 4px 0 color-mix(in srgb, var(--accent-strong) 78%, black), 0 9px 20px color-mix(in srgb, var(--accent) 20%, transparent);
+  transform: translateY(-1px);
+}
+.listen-play-button:active {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 24%, transparent), 0 1px 0 color-mix(in srgb, var(--accent-strong) 78%, black);
+  transform: translateY(2px);
+}
+.listen-play-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: reduce) {
   .audio-mixer-panel { animation: none; }
-  .audio-mixer-speed-chip { transition: none; }
+  .audio-mixer-speed-chip,
+  .listen-play-button { transition: none; }
 }
 
 /* ── Electron desktop title bar ────────────────────────────────────────────
@@ -10304,6 +10328,5 @@ html[data-theme="dark"] .fs-review-level-menu-head strong,
 html[data-theme="dark"] .fs-review-level-option strong {
   color: var(--accent-ink, var(--fs-text)) !important;
 }
-
 
 

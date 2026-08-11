@@ -11,8 +11,11 @@ import {
   isDueForReview,
   isSnoozed,
   overdueBy,
+  recordPermanent,
   recordReinforcement,
   recordStruggle,
+  setStrengthLevel,
+  snoozeForDays,
 } from "@/lib/memoryStrength";
 import { getLessonContent } from "@/lib/lessonContent";
 import { primaryAnswer } from "@/lib/germanTextMatch";
@@ -20,6 +23,7 @@ import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
+import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 
 /**
  * Listen mode: passive exposure, deliberately NOT a lesson.
@@ -46,20 +50,139 @@ import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
  *    signal a wrong answer leaves, so practice resurfaces it sooner.
  */
 
-const REPEATS_KEY = "gl-listen-german-repeats";
+const GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
+const ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
+const LANGUAGE_ORDER_KEY = "gl-listen-language-order";
+const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
+const MAX_LANGUAGE_REPEATS = 10;
+const MAX_NEXT_CARD_DELAY_MS = 30_000;
 export const DEFAULT_GERMAN_REPEATS = 2;
+export const DEFAULT_ENGLISH_REPEATS = 1;
+export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
+export type ListenLanguageOrder = "english-first" | "german-first";
+export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "english-first";
+export const DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS = 1;
+export const DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS = 2;
+export const DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER: ListenLanguageOrder = "german-first";
 
-export function getListenGermanRepeats(): number {
-  try {
-    const raw = Number(window.localStorage.getItem(REPEATS_KEY));
-    if (Number.isFinite(raw) && raw >= 1 && raw <= 3) return Math.round(raw);
-  } catch { /* storage blocked — default below */ }
-  return DEFAULT_GERMAN_REPEATS;
+function courseSettingKey(key: string, direction: LearningDirection): string {
+  return `${key}:${direction}`;
 }
 
-export function setListenGermanRepeats(count: number): void {
-  const clamped = Math.max(1, Math.min(3, Math.round(count)));
-  try { window.localStorage.setItem(REPEATS_KEY, String(clamped)); } catch { /* fine */ }
+function defaultGermanRepeats(direction: LearningDirection): number {
+  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS : DEFAULT_GERMAN_REPEATS;
+}
+
+function defaultEnglishRepeats(direction: LearningDirection): number {
+  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS : DEFAULT_ENGLISH_REPEATS;
+}
+
+function defaultLanguageOrder(direction: LearningDirection): ListenLanguageOrder {
+  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER : DEFAULT_LISTEN_LANGUAGE_ORDER;
+}
+
+function readIntegerSetting(key: string, fallback: number, min: number, max: number): number {
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (stored == null || stored.trim() === "") return fallback;
+    const raw = Number(stored);
+    if (Number.isFinite(raw) && raw >= min && raw <= max) return Math.round(raw);
+  } catch { /* storage blocked: use the documented default */ }
+  return fallback;
+}
+
+function storeIntegerSetting(key: string, value: number, min: number, max: number): number {
+  const clamped = Math.max(min, Math.min(max, Math.round(value)));
+  try { window.localStorage.setItem(key, String(clamped)); } catch { /* keep Listen usable */ }
+  return clamped;
+}
+
+function readCourseIntegerSetting(
+  key: string,
+  direction: LearningDirection,
+  fallback: number,
+  min: number,
+  max: number
+): number {
+  const scopedKey = courseSettingKey(key, direction);
+  try {
+    if (window.localStorage.getItem(scopedKey) != null) {
+      return readIntegerSetting(scopedKey, fallback, min, max);
+    }
+  } catch { /* storage blocked: use the documented default */ }
+  // Repeat settings existed before courses had separate playback plans. Keep
+  // that choice for the original German course without applying it backwards
+  // to the English course.
+  return direction === "learn-de"
+    ? readIntegerSetting(key, fallback, min, max)
+    : fallback;
+}
+
+export function getListenGermanRepeats(direction: LearningDirection = getLearningDirection()): number {
+  return readCourseIntegerSetting(
+    GERMAN_REPEATS_KEY,
+    direction,
+    defaultGermanRepeats(direction),
+    1,
+    MAX_LANGUAGE_REPEATS
+  );
+}
+
+export function setListenGermanRepeats(
+  count: number,
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return storeIntegerSetting(courseSettingKey(GERMAN_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
+}
+
+export function getListenEnglishRepeats(direction: LearningDirection = getLearningDirection()): number {
+  return readCourseIntegerSetting(
+    ENGLISH_REPEATS_KEY,
+    direction,
+    defaultEnglishRepeats(direction),
+    1,
+    MAX_LANGUAGE_REPEATS
+  );
+}
+
+export function setListenEnglishRepeats(
+  count: number,
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return storeIntegerSetting(courseSettingKey(ENGLISH_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
+}
+
+export function getListenLanguageOrder(
+  direction: LearningDirection = getLearningDirection()
+): ListenLanguageOrder {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(LANGUAGE_ORDER_KEY, direction));
+    if (value === "english-first" || value === "german-first") return value;
+    if (direction === "learn-de") {
+      const legacyValue = window.localStorage.getItem(LANGUAGE_ORDER_KEY);
+      if (legacyValue === "english-first" || legacyValue === "german-first") return legacyValue;
+    }
+  } catch { /* storage blocked: use the documented default */ }
+  return defaultLanguageOrder(direction);
+}
+
+export function setListenLanguageOrder(
+  order: ListenLanguageOrder,
+  direction: LearningDirection = getLearningDirection()
+): ListenLanguageOrder {
+  const next = order === "german-first" ? "german-first" : "english-first";
+  try {
+    window.localStorage.setItem(courseSettingKey(LANGUAGE_ORDER_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+export function getListenNextCardDelayMs(): number {
+  return readIntegerSetting(NEXT_CARD_DELAY_KEY, DEFAULT_NEXT_CARD_DELAY_MS, 0, MAX_NEXT_CARD_DELAY_MS);
+}
+
+export function setListenNextCardDelayMs(delayMs: number): number {
+  return storeIntegerSetting(NEXT_CARD_DELAY_KEY, delayMs, 0, MAX_NEXT_CARD_DELAY_MS);
 }
 
 export type ListenItem = {
@@ -157,6 +280,7 @@ export function buildListenQueue(
 }
 
 export type ListenGrade = "know" | "difficult";
+export type ListenReviewLevel = "new" | "struggle" | "permanent" | 1 | 2 | 3 | 4 | 5;
 
 /**
  * Record a listen-mode grade. See the module comment for why every branch
@@ -206,6 +330,48 @@ export function recordListenGrade(
     }
   }
 
+  saveGradeStore(store, profile);
+}
+
+/**
+ * An explicit tracker correction is intentionally stronger than passive
+ * Listen grading. The learner chose an exact memory level, so write the same
+ * spaced-review record the tracker and guided lesson use.
+ */
+export function setListenReviewLevel(
+  item: Pick<ListenItem, "id" | "aliases">,
+  level: ListenReviewLevel,
+  profile: UserProfile | null = getAuthUser(),
+  now = Date.now()
+): void {
+  const store = loadGradeStore(profile);
+  const prior = progressEntryForId(store, item.id, item.aliases)?.record;
+
+  if (level === "new") {
+    delete store[item.id];
+    item.aliases.forEach((alias) => delete store[alias]);
+  } else if (level === "struggle") {
+    setCanonicalGradeRecord(store, item.id, item.aliases, recordStruggle(now, prior));
+  } else if (level === "permanent") {
+    setCanonicalGradeRecord(store, item.id, item.aliases, recordPermanent(now, prior));
+  } else {
+    const record = setStrengthLevel(level, now, prior);
+    if (record) setCanonicalGradeRecord(store, item.id, item.aliases, record);
+  }
+
+  saveGradeStore(store, profile);
+}
+
+/** Hold the current item out of every learning surface until the chosen date. */
+export function snoozeListenItem(
+  item: Pick<ListenItem, "id" | "aliases">,
+  days: number,
+  profile: UserProfile | null = getAuthUser(),
+  now = Date.now()
+): void {
+  const store = loadGradeStore(profile);
+  const prior = progressEntryForId(store, item.id, item.aliases)?.record;
+  setCanonicalGradeRecord(store, item.id, item.aliases, snoozeForDays(days, now, prior));
   saveGradeStore(store, profile);
 }
 
