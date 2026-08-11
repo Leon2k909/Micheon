@@ -84,6 +84,19 @@ export function toLearnerGloss(seedFallback: string, glosses: string[] | undefin
   return ranked[0] ?? lookupWord ?? "";
 }
 
+/**
+ * A gloss like "development, trend" lists alternative meanings for the
+ * learner to recognise — it was never meant to be typed back whole. The
+ * translate step's matcher already accepts a "/"-joined target as
+ * alternatives (see matchEnglishPhrase); this just puts word glosses into
+ * that format instead of the comma/semicolon they're authored with, so
+ * answering with any one listed meaning is graded correct.
+ */
+function toAnswerAlternates(gloss: string): string {
+  const parts = String(gloss ?? "").split(/[;,]/).map((part) => part.trim()).filter(Boolean);
+  return parts.length > 1 ? parts.join(" / ") : gloss;
+}
+
 export function hasDialogueSentenceShape(text: string) {
   return String(text ?? "").trim().split(/\s+/).filter(Boolean).length >= 2;
 }
@@ -400,7 +413,7 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     const learnerGloss = toLearnerGloss(seed.fallbackEn, entry?.glosses, seed.lookup);
     return {
       de: toGermanDisplayText(seed.de),
-      en: learnerGloss,
+      en: toAnswerAlternates(learnerGloss),
       tip: seed.tip ?? entry?.pos ?? "word",
       lookup: seed.lookup,
       // Vocabulary lookups may enrich a word's gloss or part of speech, but

@@ -5205,6 +5205,15 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     transform: translateY(-3px);
   }
 
+  /* The picker chip is a sibling of the button, not a child of it, so its own
+     translateY(-50%) centring never picked up the button's hover lift — it
+     read as a separate thing floating over the button rather than part of
+     it. Hovering anywhere in the shared wrapper keeps both in sync, so the
+     lift doesn't reverse the moment the pointer crosses onto the chip. */
+  .np-course-launch:hover .np-lesson-content-picker {
+    transform: translateY(calc(-50% - 3px));
+  }
+
   .np-mobile-course-button:hover::before {
     opacity: 1;
     transform: translateX(112%);
@@ -9755,6 +9764,12 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
     top: 10px;
     right: 14px;
     transform: none;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .np-course-launch:hover .np-lesson-content-picker {
+      transform: translateY(-3px);
+    }
   }
 }
 

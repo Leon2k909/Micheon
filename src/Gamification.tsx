@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Activity,
   BarChart3,
   BookOpen,
   CalendarDays,
@@ -407,6 +408,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
+  Activity: "activity streak xp sessions week milestones progress stats statistics",
 };
 
 /** Fold accents and case so "farbe" and "Färbe" both match. */
@@ -1405,14 +1407,27 @@ export default function GamificationPanel({
                 >
                   <DataAndStorage />
                 </SettingsCategory>
+
+                {/* Used to sit permanently at the top of the page, above
+                    everything else worth looking at. It is a category like
+                    the rest now — still one search away, not the first
+                    thing anyone sees. */}
+                <SettingsCategory
+                  description={ui("Your streak, sessions, and this week's activity.")}
+                  forceOpen={settingsTerms.length > 0}
+                  hidden={!matchesSearch(ui("Activity"), ui("Your streak, sessions, and this week's activity."))}
+                  icon={Activity}
+                  title={ui("Activity")}
+                >
+                  <ActivityCard className="mt-3 min-w-0" progressStats={stats} />
+                </SettingsCategory>
               </div>
             </DeferredProfileSection>
           </div>
         </section>
         </SettingsCategoryLayout>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
-          <ActivityCard className="min-w-0" progressStats={stats} />
+        <section className="grid gap-4 md:grid-cols-2">
           <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
           <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
         </section>

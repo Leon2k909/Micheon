@@ -971,6 +971,7 @@ const DE: Record<string, string> = {
 
   // ── Progress and activity ──
   "Activity": "Aktivität",
+  "Your streak, sessions, and this week's activity.": "Deine Serie, Lektionen und Aktivität dieser Woche.",
   "hours": "Stunden",
   "spent": "gelernt",
   "Last 7 days": "Letzte 7 Tage",
