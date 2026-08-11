@@ -79,6 +79,7 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 | **Smart answer matching** | Write it your way. The checker forgives typos, contractions, British/American spelling, articles, word-order-preserving paraphrases, and a large library of synonyms — while still rejecting genuinely wrong answers, wrong tense, and reversed meaning. |
 | **Spaced review** | Items you've seen come back on a memory-strength schedule so they stick for the long term. |
 | **Desktop learning pets** | Animated companions live on your desktop and actively help you remember. They ask whether you still recall learned words and phrases, bring struggling material back sooner, give useful language-specific grammar tips, and run a recall checkpoint after each lesson before new material is introduced. Pets can be moved, resized, muted, or hidden whenever you want. |
+| **Micheon Immersion for Chromium** | An optional companion extension for Chrome, Edge, and Brave. It adds bilingual hover definitions to Micheon vocabulary while you browse, collects unfamiliar German words for review, and selects an official German YouTube audio track with English captions when one is available. |
 | **Vocabulary games** | Eight arcade-style games (Snake, Whack-a-Mole, Falling Letters, Verb Shooter, Minesweeper, and more) that drill vocab without feeling like study. |
 | **Grammar drills** | Cloze (fill-in-the-blank) exercises and grammar notes for the patterns behind the sentences. |
 | **Fluency meter & gamification** | Track known-word count toward a fluency estimate, earn XP, keep a daily streak, level up, and unlock milestones. |
@@ -122,6 +123,28 @@ npm run electron
 
 ---
 
+## Micheon Immersion browser extension
+
+Micheon includes an optional Manifest V3 extension for **Chrome, Edge, and Brave**. It is a browsing companion rather than a full-page translator: it reinforces vocabulary from Micheon's bundled word bank while leaving the page itself intact.
+
+- **Learn from normal browsing.** Known Micheon vocabulary receives a dotted underline and a translation tooltip on hover or keyboard focus. German pages show the English meaning; on other pages, recognised English words can show the German you are learning.
+- **Find useful gaps in the curriculum.** On pages detected as German, the extension keeps a local candidate list of plausible words it does not recognise, including one real sentence where each word appeared. You can review, reset, or export that list as JSON. Candidates are never added to lessons automatically.
+- **Use German audio on YouTube.** When a video provides an official German audio track, the extension selects it and enables English captions. Videos without a German track are left unchanged.
+
+### Install it from the desktop app
+
+1. Open **More → Profile and settings → Browser extension** in Micheon.
+2. Select **Set up the extension folder**. Micheon copies the unpacked extension to a stable folder in Documents and opens it in Explorer.
+3. Open `chrome://extensions`, `edge://extensions`, or `brave://extensions` in the matching browser.
+4. Enable **Developer mode**, select **Load unpacked**, and choose the folder Micheon opened.
+5. Pin **Micheon Immersion** if you want its status and candidate-word controls within easy reach.
+
+Chromium deliberately prevents apps from silently installing unpacked extensions, so the **Load unpacked** step must be confirmed in the browser. When Micheon is running outside the desktop shell, the same settings card offers a ZIP download that can be extracted and loaded instead.
+
+All vocabulary matching and language detection run on the device against the word list bundled with the extension. It does not call a translation API, require a Micheon account, or upload its candidate-word list; extension preferences and candidates stay in Chromium's local extension storage.
+
+---
+
 ## How to use it, day to day
 
 1. **Pick up where you left off.** The dashboard's *Continue learning* card drops you into the next lesson.
@@ -143,6 +166,7 @@ Micheon is deliberately simple and self-contained:
 - **Lesson audio** — `server/index.js` is a small Express server that turns text into Microsoft neural-voice audio with `edge-tts-universal`, served locally (default port `41730`). The Speak lesson stage is temporarily paused, and the desktop build contains no downloadable speech-recognition model.
 - **Desktop shell** — `electron/main.js` wraps the UI, hosts the TTS server, provides the custom title bar, and handles automatic updates via `electron-updater`.
 - **Desktop pets** — `src/components/codexPets/` renders animated companions, proactive recall questions, lesson memory checks, message history, and language-focused tips. Pet answers update the same spaced-repetition records used by lessons and Continue Learning.
+- **Chromium companion** — `dist/micheon-immersion-extension/` contains the bundled Manifest V3 extension, its offline word-list snapshot, webpage glossing and candidate collection, and YouTube audio-track handling.
 - **Accounts & sync** — profiles and progress are stored in the browser's `localStorage`, backed by a machine-local shared store so the same profile follows you across app restarts. Preferences sync the same way.
 
 ### Project layout
@@ -165,6 +189,8 @@ src/
     ...
 server/index.js             Local Express TTS server (edge-tts)
 electron/main.js            Electron desktop wrapper + auto-update
+dist/micheon-immersion-extension/
+                             Chrome, Edge, and Brave companion extension
 ```
 
 ---
