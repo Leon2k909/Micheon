@@ -6,7 +6,18 @@
 // identically to the website — including the premium Microsoft TTS voices, which
 // work here because the server runs locally inside the app.
 
-import { app, BrowserWindow, Menu, shell, ipcMain, screen, session, Tray, net } from "electron";
+import {
+  app,
+  BrowserWindow,
+  globalShortcut,
+  Menu,
+  nativeImage,
+  shell,
+  ipcMain,
+  screen,
+  session,
+  Tray,
+} from "electron";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -55,6 +66,138 @@ let serverStarted = false;
 let desktopSettings = null;
 let tray = null;
 let appIsQuitting = false;
+let listenMediaState = {
+  available: false,
+  playing: false,
+  title: "",
+  subtitle: "",
+};
+
+const LISTEN_MEDIA_SHORTCUTS = new Map([
+  ["MediaPreviousTrack", "previous"],
+  ["MediaPlayPause", "toggle"],
+  ["MediaNextTrack", "next"],
+]);
+let listenThumbarIcons = null;
+
+/**
+ * Windows thumbnail buttons require NativeImage glyphs rather than text.
+ * These tiny alpha-mask bitmaps stay crisp at the native 16px size and avoid
+ * shipping a second icon family just for three operating-system controls.
+ */
+function createListenMediaGlyph(kind) {
+  const size = 16;
+  const bitmap = Buffer.alloc(size * size * 4);
+  const pixel = (x, y, alpha = 255) => {
+    if (x < 0 || y < 0 || x >= size || y >= size) return;
+    const offset = ((y * size) + x) * 4;
+    bitmap[offset] = 255;
+    bitmap[offset + 1] = 255;
+    bitmap[offset + 2] = 255;
+    bitmap[offset + 3] = alpha;
+  };
+  const rect = (left, top, right, bottom) => {
+    for (let y = top; y <= bottom; y += 1) {
+      for (let x = left; x <= right; x += 1) pixel(x, y);
+    }
+  };
+  const triangle = (direction, left, top, width, height) => {
+    for (let row = 0; row < height; row += 1) {
+      const half = Math.floor((row < height / 2 ? row : height - row - 1) * width / height) + 1;
+      if (direction === "right") {
+        for (let x = 0; x <= half; x += 1) pixel(left + x, top + row);
+      } else {
+        for (let x = 0; x <= half; x += 1) pixel(left + width - 1 - x, top + row);
+      }
+    }
+  };
+
+  if (kind === "pause") {
+    rect(4, 3, 6, 12);
+    rect(9, 3, 11, 12);
+  } else if (kind === "play") {
+    triangle("right", 5, 3, 8, 10);
+  } else if (kind === "previous") {
+    rect(3, 4, 4, 11);
+    triangle("left", 5, 4, 8, 8);
+  } else {
+    triangle("right", 3, 4, 8, 8);
+    rect(11, 4, 12, 11);
+  }
+  return nativeImage.createFromBitmap(bitmap, { width: size, height: size, scaleFactor: 1 });
+}
+
+function getListenThumbarIcons() {
+  if (!listenThumbarIcons) {
+    listenThumbarIcons = {
+      next: createListenMediaGlyph("next"),
+      pause: createListenMediaGlyph("pause"),
+      play: createListenMediaGlyph("play"),
+      previous: createListenMediaGlyph("previous"),
+    };
+  }
+  return listenThumbarIcons;
+}
+
+function sendListenMediaCommand(command) {
+  if (!listenMediaState.available || !mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.send("listen-media:command", command);
+}
+
+function syncListenMediaShortcuts() {
+  for (const [accelerator, command] of LISTEN_MEDIA_SHORTCUTS) {
+    if (!listenMediaState.available) {
+      if (globalShortcut.isRegistered(accelerator)) globalShortcut.unregister(accelerator);
+      continue;
+    }
+    if (globalShortcut.isRegistered(accelerator)) continue;
+    try {
+      globalShortcut.register(accelerator, () => sendListenMediaCommand(command));
+    } catch { /* another media app may already own this key */ }
+  }
+}
+
+function syncListenMediaControls() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  // Keep the next-card timer and audio sequence punctual while minimized, but
+  // hand Chromium its normal idle savings back as soon as Listen is paused.
+  mainWindow.webContents.setBackgroundThrottling(!listenMediaState.playing);
+  syncListenMediaShortcuts();
+  if (process.platform !== "win32") return;
+  if (!listenMediaState.available) {
+    mainWindow.setThumbarButtons([]);
+    return;
+  }
+  const icons = getListenThumbarIcons();
+  mainWindow.setThumbarButtons([
+    {
+      click: () => sendListenMediaCommand("previous"),
+      icon: icons.previous,
+      tooltip: "Previous phrase",
+    },
+    {
+      click: () => sendListenMediaCommand("toggle"),
+      icon: listenMediaState.playing ? icons.pause : icons.play,
+      tooltip: listenMediaState.playing ? "Pause Listen" : "Play Listen",
+    },
+    {
+      click: () => sendListenMediaCommand("next"),
+      icon: icons.next,
+      tooltip: "Next phrase",
+    },
+  ]);
+}
+
+function clearListenMediaControls() {
+  listenMediaState = { available: false, playing: false, title: "", subtitle: "" };
+  for (const accelerator of LISTEN_MEDIA_SHORTCUTS.keys()) {
+    if (globalShortcut.isRegistered(accelerator)) globalShortcut.unregister(accelerator);
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setBackgroundThrottling(true);
+    if (process.platform === "win32") mainWindow.setThumbarButtons([]);
+  }
+}
 
 // Keep the transparent compositor surface close to the mascot instead of the
 // size of the entire virtual desktop. The margin gives drag hit regions room
@@ -1324,6 +1467,7 @@ async function createWindow() {
   });
 
   mainWindow.on("closed", () => {
+    clearListenMediaControls();
     mainWindow = null;
     clearPetHistoryDestroyTimer();
     if (petHistoryWindow && !petHistoryWindow.isDestroyed()) petHistoryWindow.destroy();
@@ -1541,6 +1685,17 @@ ipcMain.on("window:toggle-maximize", () => {
   else mainWindow.maximize();
 });
 ipcMain.on("window:close", () => mainWindow?.close());
+
+ipcMain.on("listen-media:set-state", (event, state) => {
+  if (!eventCameFrom(event, mainWindow)) return;
+  listenMediaState = {
+    available: state?.available === true,
+    playing: state?.available === true && state?.playing === true,
+    subtitle: typeof state?.subtitle === "string" ? state.subtitle.slice(0, 240) : "",
+    title: typeof state?.title === "string" ? state.title.slice(0, 240) : "",
+  };
+  syncListenMediaControls();
+});
 /**
  * How much room Micheon takes on disk.
  *
@@ -1556,7 +1711,7 @@ function directorySize(dir, budgetMs = 400, deadline = Date.now() + budgetMs) {
   while (stack.length) {
     if (Date.now() > deadline) return { bytes: total, complete: false };
     const current = stack.pop();
-    let entries = [];
+    let entries;
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
     } catch {
@@ -1838,6 +1993,7 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
       createdAt: Number.isFinite(Number(message.createdAt)) ? Number(message.createdAt) : Date.now(),
       id,
       mood: typeof message.mood === "string" ? message.mood : "greeting",
+      silent: message.silent === true,
       question: question && typeof question.itemId === "string"
         ? {
             aliases: Array.isArray(question.aliases)
@@ -1892,6 +2048,7 @@ if (hasSingleInstanceLock) {
 
 app.on("before-quit", () => {
   appIsQuitting = true;
+  clearListenMediaControls();
   destroyTray();
 });
 

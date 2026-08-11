@@ -382,10 +382,213 @@ button { cursor: pointer; }
   outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
   outline-offset: 3px;
 }
+
+.listen-background-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+.listen-background-toggle:hover {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+  background: color-mix(in srgb, var(--accent-dim) 38%, var(--surface));
+}
+.listen-background-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.listen-background-toggle:has(input:focus-visible) {
+  outline: 3px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  outline-offset: 2px;
+}
+.listen-background-toggle__copy { min-width: 0; }
+.listen-background-toggle__copy strong {
+  display: block;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 850;
+}
+.listen-background-toggle__copy small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-3);
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.listen-background-toggle__switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-3);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, black 12%, transparent);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.listen-background-toggle__switch i {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 2px 5px color-mix(in srgb, black 20%, transparent);
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1), background-color 160ms ease;
+}
+.listen-background-toggle input:checked ~ .listen-background-toggle__switch {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.listen-background-toggle input:checked ~ .listen-background-toggle__switch i {
+  background: var(--accent-text);
+  transform: translateX(20px);
+}
+
+.listen-mini-player {
+  position: fixed;
+  z-index: 460;
+  right: clamp(16px, 2.2vw, 34px);
+  bottom: clamp(16px, 2.2vw, 30px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(680px, calc(100vw - 40px));
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--border-strong) 48%, transparent),
+    0 18px 46px color-mix(in srgb, var(--text-1) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 42%, transparent);
+  backdrop-filter: blur(18px) saturate(1.12);
+  animation: listen-mini-enter 220ms cubic-bezier(.2,.8,.2,1) both;
+}
+.listen-mini-player__copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  text-align: left;
+}
+.listen-mini-player__copy:hover .listen-mini-player__art { transform: translateY(-1px) scale(1.03); }
+.listen-mini-player__art {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--accent), var(--accent-strong));
+  color: var(--accent-text);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 32%, transparent), 0 3px 0 var(--accent-dark);
+  transition: transform 150ms ease;
+}
+.listen-mini-player__art svg { width: 21px; height: 21px; }
+.listen-mini-player__text { min-width: 0; }
+.listen-mini-player__text small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent-ink, var(--accent));
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.listen-mini-player__text small svg { width: 11px; height: 11px; }
+.listen-mini-player__text strong,
+.listen-mini-player__text > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.listen-mini-player__text strong {
+  margin-top: 3px;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 850;
+}
+.listen-mini-player__text > span {
+  margin-top: 1px;
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 700;
+}
+.listen-mini-player__controls { display: flex; align-items: center; gap: 6px; }
+.listen-mini-player__controls button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--border-strong) 44%, transparent);
+  transition: border-color 140ms ease, color 140ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+.listen-mini-player__controls button:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--text-1);
+  transform: translateY(-1px);
+}
+.listen-mini-player__controls button:active { transform: translateY(1px); box-shadow: none; }
+.listen-mini-player__controls button.is-primary {
+  width: 44px;
+  height: 44px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 30%, transparent), 0 3px 0 var(--accent-dark);
+}
+.listen-mini-player__controls svg { width: 17px; height: 17px; }
+.listen-mini-player__controls button.is-primary svg { width: 19px; height: 19px; }
+@keyframes listen-mini-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 720px) {
+  .listen-mini-player {
+    right: 10px;
+    bottom: 78px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: calc(100vw - 20px);
+  }
+  .listen-mini-player__text > span { display: none; }
+  .listen-mini-player__controls button:first-child,
+  .listen-mini-player__controls button:nth-child(3) { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .audio-mixer-panel { animation: none; }
   .audio-mixer-speed-chip,
-  .listen-play-button { transition: none; }
+  .listen-play-button,
+  .listen-background-toggle,
+  .listen-background-toggle__switch,
+  .listen-background-toggle__switch i,
+  .listen-mini-player,
+  .listen-mini-player__art,
+  .listen-mini-player__controls button { animation: none; transition: none; }
 }
 
 /* ── Electron desktop title bar ────────────────────────────────────────────
@@ -10328,5 +10531,4 @@ html[data-theme="dark"] .fs-review-level-menu-head strong,
 html[data-theme="dark"] .fs-review-level-option strong {
   color: var(--accent-ink, var(--fs-text)) !important;
 }
-
 

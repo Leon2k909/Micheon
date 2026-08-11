@@ -82,6 +82,8 @@ export type CodexPetSpeech = {
   id: string;
   mood: CodexPetSpeechMood;
   question?: CodexPetQuestion;
+  /** Display this as a bubble/history caption without starting pet TTS. */
+  silent?: boolean;
   text: string;
   voiceLang?: CodexPetVoiceLanguage;
 };
@@ -90,6 +92,9 @@ type CodexPetSpeechOptions = {
   durationMs?: number;
   mood?: CodexPetSpeechMood;
   question?: CodexPetQuestion;
+  silent?: boolean;
+  /** Keep lesson/listen captions exact instead of adding a pet greeting. */
+  verbatim?: boolean;
   voiceLang?: CodexPetVoiceLanguage;
 };
 
@@ -277,7 +282,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     // Was a hardcoded check for one pet's key, which prefixed everything it
     // said with "Hello darling." Every pet now gets that same dial, set by the
     // learner rather than by a code change.
-    const messageText = withPetPrefix(selectedKey, rawText);
+    const messageText = options.verbatim ? rawText : withPetPrefix(selectedKey, rawText);
     const question = options.question && !options.question.confirm
       ? {
           ...options.question,
@@ -289,6 +294,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       id: `${Date.now()}-${++speechId.current}`,
       mood: options.mood ?? "greeting",
       question,
+      silent: options.silent === true,
       text: messageText,
       voiceLang: options.voiceLang
         ?? (question

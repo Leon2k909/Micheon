@@ -940,6 +940,14 @@ export function CodexPetLayer() {
   // cleanup here, because the immediate development cleanup would silence the
   // first utterance and the guard would then suppress its retry.
   useEffect(() => {
+    if (speech?.silent) {
+      // Listen-mode captions mirror the audio already in progress. Starting a
+      // second pet voice here would both duplicate the line and interrupt the
+      // shared TTS player that is producing it.
+      spokenSpeechId.current = "";
+      activePetTtsId.current = "";
+      return;
+    }
     if (!petVoiceEnabled || messagesMuted || !speech) {
       spokenSpeechId.current = "";
       if (activePetTtsId.current) {
@@ -958,7 +966,7 @@ export function CodexPetLayer() {
     ).finally(() => {
       if (activePetTtsId.current === speech.id) activePetTtsId.current = "";
     });
-  }, [messagesMuted, petVoiceEnabled, speech?.id, speech?.text, speech?.voiceLang]);
+  }, [messagesMuted, petVoiceEnabled, speech?.id, speech?.silent, speech?.text, speech?.voiceLang]);
 
   // Measured while it is open, and again whenever its contents change — a
   // question adds answer buttons, and a long message wraps.

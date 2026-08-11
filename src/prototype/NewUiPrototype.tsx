@@ -2456,15 +2456,7 @@ export default function NewUiPrototype({
     <PracticeHub onNavigate={navigate} />
   ) : activeView === "listen" ? (
     <div className="np-feature-host">
-      {partsReady ? (
-        <Suspense fallback={<FeatureLoading />}>
-          <ListenView
-            apiParts={apiParts}
-            learningDirection={learningEnglish() ? "learn-en" : "learn-de"}
-            profile={profile}
-          />
-        </Suspense>
-      ) : <FeatureLoading />}
+      <FeatureLoading />
     </div>
   ) : activeView === "games" ? (
     <div className="np-feature-host">
@@ -2557,15 +2549,34 @@ export default function NewUiPrototype({
               userName={profile?.name ?? PREVIEW_PROFILE.name}
             />
             <div className={`np-content-grid${showRightRail ? "" : " np-content-grid--wide"}`}>
-              <motion.main
-                animate={{ opacity: 1, y: 0 }}
-                className="np-main"
-                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                key={activeView}
-                transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {mainView}
-              </motion.main>
+              {(activeView !== "listen" || !partsReady) && (
+                <motion.main
+                  animate={{ opacity: 1, y: 0 }}
+                  className="np-main"
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                  key={activeView}
+                  transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {mainView}
+                </motion.main>
+              )}
+              {partsReady && (
+                <main
+                  aria-hidden={activeView !== "listen"}
+                  className={activeView === "listen" ? "np-main" : "hidden"}
+                >
+                  <Suspense fallback={<FeatureLoading />}>
+                    <ListenView
+                      active={activeView === "listen"}
+                      apiParts={apiParts}
+                      key={`${profile?.id ?? "default"}:${learningEnglish() ? "learn-en" : "learn-de"}`}
+                      learningDirection={learningEnglish() ? "learn-en" : "learn-de"}
+                      onOpen={() => navigate("listen")}
+                      profile={profile}
+                    />
+                  </Suspense>
+                </main>
+              )}
               {showRightRail && (
                 <aside className="np-right-rail">
                   <ProgressPanel

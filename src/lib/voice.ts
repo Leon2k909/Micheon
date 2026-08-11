@@ -18,7 +18,13 @@ import {
 import { firstSpokenAlternative } from "@/lib/spokenText";
 import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
-type SeqItem = { text: string; rate?: number; lang: string };
+type SeqItem = {
+  text: string;
+  rate?: number;
+  lang: string;
+  /** Runs immediately before this clip starts, used for synced captions. */
+  onStart?: () => void;
+};
 
 const DEFAULT_RATE = 0.88;
 
@@ -406,12 +412,20 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
   const text = firstSpokenAlternative(item.text);
   const rate = effectiveRate(item.rate ?? DEFAULT_RATE);
   if (!text || getTtsAudioVolume(lang) <= 0) return;
+  let announced = false;
+  const announceStart = () => {
+    if (announced) return;
+    announced = true;
+    try { item.onStart?.(); } catch { /* captions must never break audio */ }
+  };
   try {
     const url = await getAudioUrl(text, rate, lang, signal);
     if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
+    announceStart();
     await playUrl(url, token, lang);
   } catch {
     if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
+    announceStart();
     await speakFallback(text, rate, lang);
   }
 }

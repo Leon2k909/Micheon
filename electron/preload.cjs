@@ -35,6 +35,20 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.on("window:maximize-change", handler);
     return () => ipcRenderer.removeListener("window:maximize-change", handler);
   },
+  // Native Windows media controls for Listen mode. The renderer remains the
+  // source of truth; Electron only mirrors its state into taskbar buttons and
+  // forwards media-key/button commands back to the mounted player.
+  setListenMediaState: (state) => ipcRenderer.send("listen-media:set-state", {
+    available: state?.available === true,
+    playing: state?.playing === true,
+    subtitle: typeof state?.subtitle === "string" ? state.subtitle.slice(0, 240) : "",
+    title: typeof state?.title === "string" ? state.title.slice(0, 240) : "",
+  }),
+  onListenMediaCommand: (cb) => {
+    const handler = (_event, command) => cb(command);
+    ipcRenderer.on("listen-media:command", handler);
+    return () => ipcRenderer.removeListener("listen-media:command", handler);
+  },
   // Auto-update: fires with the new version once an update has finished
   // downloading (it will also install automatically on next quit). Returns an
   // unsubscribe function. installUpdate() restarts and applies it right away.
@@ -126,6 +140,7 @@ contextBridge.exposeInMainWorld("germDesktop", {
         createdAt: Number.isFinite(Number(message?.createdAt)) ? Number(message.createdAt) : Date.now(),
         id: typeof message?.id === "string" ? message.id.slice(0, 96) : "",
         mood: typeof message?.mood === "string" ? message.mood : "greeting",
+        silent: message?.silent === true,
         question: question && typeof question.itemId === "string"
           ? {
               aliases: Array.isArray(question.aliases)

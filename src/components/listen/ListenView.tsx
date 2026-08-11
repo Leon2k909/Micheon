@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CalendarClock,
   Check,
@@ -8,6 +9,7 @@ import {
   Clock3,
   Gauge,
   Headphones,
+  Minimize2,
   Pause,
   Play,
   Volume1,
@@ -32,11 +34,15 @@ import {
 } from "@/lib/audioMute";
 import {
   buildListenQueue,
+  getListenBackgroundPlayback,
+  getListenCurrentItemId,
   getListenEnglishRepeats,
   getListenGermanRepeats,
   getListenLanguageOrder,
   getListenNextCardDelayMs,
   recordListenGrade,
+  setListenBackgroundPlayback,
+  setListenCurrentItemId,
   setListenEnglishRepeats,
   setListenGermanRepeats,
   setListenLanguageOrder,
@@ -51,6 +57,23 @@ import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { LearningDirection } from "@/lib/direction";
+import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+
+type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
+
+type ListenDesktopApi = {
+  onListenMediaCommand?: (callback: (command: ListenMediaCommand) => void) => (() => void);
+  setListenMediaState?: (state: {
+    available: boolean;
+    playing: boolean;
+    title?: string;
+    subtitle?: string;
+  }) => void;
+};
+
+const desktop = typeof window !== "undefined"
+  ? (window as typeof window & { germDesktop?: ListenDesktopApi }).germDesktop
+  : undefined;
 
 const REVIEW_LEVELS: Array<{ value: ListenReviewLevel; label: string; note: string }> = [
   { value: "new", label: "New", note: "Starts over from the beginning" },
@@ -200,9 +223,11 @@ function NumberSetting({
  * remain deliberately damped; the explicit level picker is the place for a
  * strong tracker correction.
  */
-export function ListenView({ apiParts, learningDirection, profile }: {
+export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
+  active: boolean;
   apiParts: Record<string, any>;
   learningDirection: LearningDirection;
+  onOpen: () => void;
   profile: UserProfile | null;
 }) {
   const baseQueue = useMemo<ListenItem[]>(
@@ -214,8 +239,16 @@ export function ListenView({ apiParts, learningDirection, profile }: {
     () => baseQueue.filter((candidate) => !hiddenIds.has(candidate.id)),
     [baseQueue, hiddenIds]
   );
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    const storedId = getListenCurrentItemId(learningDirection, profile);
+    const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
+    return storedIndex >= 0 ? storedIndex : 0;
+  });
   const [playing, setPlaying] = useState(false);
+  const [sessionActivated, setSessionActivated] = useState(false);
+  const [backgroundPlayback, setBackgroundPlayback] = useState(
+    () => getListenBackgroundPlayback(profile)
+  );
   const [germanRepeats, setGermanRepeats] = useState(() => getListenGermanRepeats(learningDirection));
   const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
   const [languageOrder, setLanguageOrder] = useState(() => getListenLanguageOrder(learningDirection));
@@ -226,26 +259,45 @@ export function ListenView({ apiParts, learningDirection, profile }: {
   const [reviewNotice, setReviewNotice] = useState("");
   const runRef = useRef(0);
   const gradeAdvanceTimerRef = useRef<number | null>(null);
+  const mediaCommandRef = useRef<(command: ListenMediaCommand) => void>(() => {});
+  const {
+    selectedKey: selectedPetKey,
+    selectedPet,
+    speak: petSpeak,
+    visibleKeys: visiblePetKeys,
+  } = useCodexPets();
 
   const item = queue.length ? queue[index % queue.length] : null;
   const englishLang = resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = audioSettings.englishMuted || audioSettings.englishVolume <= 0;
   const germanMuted = audioSettings.germanMuted || audioSettings.germanVolume <= 0;
+  const petCaptionsAvailable = Boolean(selectedPet)
+    && selectedPetKey !== "off"
+    && visiblePetKeys.includes(selectedPetKey);
 
   useEffect(() => {
     runRef.current += 1;
     stopTts();
     setPlaying(false);
+    setSessionActivated(false);
     setGermanRepeats(getListenGermanRepeats(learningDirection));
     setEnglishRepeats(getListenEnglishRepeats(learningDirection));
     setLanguageOrder(getListenLanguageOrder(learningDirection));
+    setBackgroundPlayback(getListenBackgroundPlayback(profile));
   }, [learningDirection]);
 
   useEffect(() => {
     setHiddenIds(new Set());
-    setIndex(0);
-  }, [apiParts, profile?.id]);
+    const storedId = getListenCurrentItemId(learningDirection, profile);
+    const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
+    setIndex(storedIndex >= 0 ? storedIndex : 0);
+  }, [apiParts, baseQueue, learningDirection, profile?.id]);
+
+  useEffect(() => {
+    if (!item) return;
+    setListenCurrentItemId(item.id, learningDirection, profile);
+  }, [item?.id, learningDirection, profile?.id]);
 
   useEffect(() => {
     const sync = () => setAudioSettings(getAudioSettings());
@@ -269,13 +321,34 @@ export function ListenView({ apiParts, learningDirection, profile }: {
     };
     window.addEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
 
+    const mirrorOnPet = (text: string, voiceLang: "de-DE" | "en-US") => {
+      if (!petCaptionsAvailable) return;
+      petSpeak(text, {
+        durationMs: Math.max(2600, Math.min(7000, text.length * 72)),
+        mood: "greeting",
+        silent: true,
+        verbatim: true,
+        voiceLang,
+      });
+    };
+
     const germanSequence = Array.from(
       { length: germanRepeats },
-      () => ({ text: item.de, rate: 0.92, lang: "de-DE" })
+      () => ({
+        text: item.de,
+        rate: 0.92,
+        lang: "de-DE",
+        onStart: () => mirrorOnPet(item.de, "de-DE"),
+      })
     );
     const englishSequence = Array.from(
       { length: englishRepeats },
-      () => ({ text: item.en, rate: 0.95, lang: englishLang })
+      () => ({
+        text: item.en,
+        rate: 0.95,
+        lang: englishLang,
+        onStart: () => mirrorOnPet(item.en, "en-US"),
+      })
     );
     const sequence = languageOrder === "english-first"
       ? [...englishSequence, ...germanSequence]
@@ -299,7 +372,7 @@ export function ListenView({ apiParts, learningDirection, profile }: {
       if (advanceTimer != null) window.clearTimeout(advanceTimer);
       stopTts();
     };
-  }, [playing, index, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length]);
+  }, [playing, index, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -322,6 +395,11 @@ export function ListenView({ apiParts, learningDirection, profile }: {
     setPlaying(false);
   };
 
+  const beginPlayback = () => {
+    setSessionActivated(true);
+    setPlaying(true);
+  };
+
   const step = (direction: 1 | -1) => {
     cancelGradeAdvance();
     runRef.current += 1;
@@ -333,6 +411,82 @@ export function ListenView({ apiParts, learningDirection, profile }: {
       return (current + direction + length) % length;
     });
   };
+
+  const dismissBackgroundPlayer = () => {
+    pause();
+    setSessionActivated(false);
+  };
+
+  mediaCommandRef.current = (command) => {
+    if (command === "previous") step(-1);
+    else if (command === "next") step(1);
+    else if (command === "pause") pause();
+    else if (command === "play") beginPlayback();
+    else if (playing) pause();
+    else beginPlayback();
+  };
+
+  useEffect(() => {
+    if (active || backgroundPlayback) return;
+    pause();
+  }, [active, backgroundPlayback]);
+
+  const mediaAvailable = Boolean(item)
+    && (active || (backgroundPlayback && sessionActivated));
+
+  useEffect(() => {
+    if (!desktop?.onListenMediaCommand) return undefined;
+    return desktop.onListenMediaCommand((command) => mediaCommandRef.current(command));
+  }, []);
+
+  useEffect(() => {
+    desktop?.setListenMediaState?.({
+      available: mediaAvailable,
+      playing: mediaAvailable && playing,
+      title: item?.en,
+      subtitle: item?.de,
+    });
+  }, [item?.de, item?.en, mediaAvailable, playing]);
+
+  useEffect(() => () => {
+    desktop?.setListenMediaState?.({ available: false, playing: false });
+  }, []);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return undefined;
+    const invoke = (command: ListenMediaCommand) => () => mediaCommandRef.current(command);
+    const handlers: Array<[MediaSessionAction, MediaSessionActionHandler | null]> = [
+      ["previoustrack", invoke("previous")],
+      ["nexttrack", invoke("next")],
+      ["play", invoke("play")],
+      ["pause", invoke("pause")],
+    ];
+    handlers.forEach(([action, handler]) => {
+      try { navigator.mediaSession.setActionHandler(action, handler); } catch { /* unsupported action */ }
+    });
+    return () => {
+      handlers.forEach(([action]) => {
+        try { navigator.mediaSession.setActionHandler(action, null); } catch { /* already gone */ }
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = !mediaAvailable
+        ? "none"
+        : playing ? "playing" : "paused";
+      navigator.mediaSession.metadata = mediaAvailable && item && typeof MediaMetadata !== "undefined"
+        ? new MediaMetadata({
+            album: ui("Listen"),
+            artist: item.de,
+            artwork: [{ src: "/icon.png", sizes: "512x512", type: "image/png" }],
+            title: item.en,
+          })
+        : null;
+    } catch { /* browser media controls are an enhancement */ }
+  }, [item?.de, item?.en, mediaAvailable, playing]);
 
   const grade = (verdict: "know" | "difficult") => {
     if (!item || gradeAdvanceTimerRef.current != null) return;
@@ -385,8 +539,12 @@ export function ListenView({ apiParts, learningDirection, profile }: {
     return nextMs / 1000;
   };
 
+  const chooseBackgroundPlayback = (enabled: boolean) => {
+    setBackgroundPlayback(setListenBackgroundPlayback(enabled, profile));
+  };
+
   if (!item) {
-    return (
+    return active ? (
       <section className="card p-6 text-center">
         <Headphones className="mx-auto h-8 w-8 text-[var(--text-3)]" />
         <p className="mt-3 text-sm font-black text-[var(--text-1)]">{ui("Nothing to listen to yet")}</p>
@@ -394,6 +552,49 @@ export function ListenView({ apiParts, learningDirection, profile }: {
           {ui("Once the course content is loaded, everything you are learning becomes listenable here.")}
         </p>
       </section>
+    ) : null;
+  }
+
+  if (!active) {
+    if (!backgroundPlayback || !sessionActivated || typeof document === "undefined") return null;
+    return createPortal(
+      <aside
+        aria-label={ui("Listen player")}
+        className="listen-mini-player"
+        data-playing={playing ? "true" : "false"}
+        data-testid="listen-background-player"
+      >
+        <button className="listen-mini-player__copy" onClick={onOpen} type="button">
+          <span className="listen-mini-player__art" aria-hidden="true">
+            <Headphones />
+          </span>
+          <span className="listen-mini-player__text">
+            <small><Minimize2 /> {ui(playing ? "Playing in the background" : "Listen is paused")}</small>
+            <strong lang="de">{item.de}</strong>
+            <span lang="en">{item.en}</span>
+          </span>
+        </button>
+        <div className="listen-mini-player__controls">
+          <button aria-label={ui("Previous item")} onClick={() => step(-1)} type="button">
+            <ChevronLeft />
+          </button>
+          <button
+            aria-label={ui(playing ? "Pause" : "Play audio")}
+            className="is-primary"
+            onClick={playing ? pause : beginPlayback}
+            type="button"
+          >
+            {playing ? <Pause /> : <Play />}
+          </button>
+          <button aria-label={ui("Next item")} onClick={() => step(1)} type="button">
+            <ChevronRight />
+          </button>
+          <button aria-label={ui("Close Listen player")} onClick={dismissBackgroundPlayer} type="button">
+            <X />
+          </button>
+        </div>
+      </aside>,
+      document.body
     );
   }
 
@@ -440,7 +641,7 @@ export function ListenView({ apiParts, learningDirection, profile }: {
               <Pause className="h-4 w-4" /> {ui("Pause")}
             </button>
           ) : (
-            <button className="listen-play-button inline-flex h-11 min-w-40 items-center justify-center gap-2 px-6" onClick={() => setPlaying(true)} type="button">
+            <button className="listen-play-button inline-flex h-11 min-w-40 items-center justify-center gap-2 px-6" onClick={beginPlayback} type="button">
               <Play className="h-4 w-4" /> {ui("Play audio")}
             </button>
           )}
@@ -541,6 +742,18 @@ export function ListenView({ apiParts, learningDirection, profile }: {
                 value={nextCardDelayMs / 1000}
               />
             </div>
+            <label className="listen-background-toggle" data-testid="listen-background-toggle">
+              <input
+                checked={backgroundPlayback}
+                onChange={(event) => chooseBackgroundPlayback(event.target.checked)}
+                type="checkbox"
+              />
+              <span className="listen-background-toggle__copy">
+                <strong>{ui("Keep playing around Micheon")}</strong>
+                <small>{ui("Continue when you open Home, Practice, Settings, or another app section.")}</small>
+              </span>
+              <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
+            </label>
             <div className="mt-4 border-t border-[var(--border)] pt-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-2 text-xs font-black text-[var(--text-2)]">

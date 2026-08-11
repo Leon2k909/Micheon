@@ -22,7 +22,12 @@ import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
-import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
+import {
+  getAuthUser,
+  loadScopedJson,
+  saveScopedJson,
+  type UserProfile,
+} from "@/lib/profileStorage";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 
 /**
@@ -54,6 +59,8 @@ const GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
 const ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
 const LANGUAGE_ORDER_KEY = "gl-listen-language-order";
 const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
+const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
+const CURRENT_ITEM_KEY = "gl-listen-current-item-v1";
 const MAX_LANGUAGE_REPEATS = 10;
 const MAX_NEXT_CARD_DELAY_MS = 30_000;
 export const DEFAULT_GERMAN_REPEATS = 2;
@@ -183,6 +190,52 @@ export function getListenNextCardDelayMs(): number {
 
 export function setListenNextCardDelayMs(delayMs: number): number {
   return storeIntegerSetting(NEXT_CARD_DELAY_KEY, delayMs, 0, MAX_NEXT_CARD_DELAY_MS);
+}
+
+/**
+ * Keep the hands-free player alive while the learner visits another dashboard
+ * section. This is deliberately on by default: Listen is useful precisely
+ * because it can accompany another task, but the learner can opt out at the
+ * point where playback is configured.
+ */
+export function getListenBackgroundPlayback(
+  profile: UserProfile | null = getAuthUser()
+): boolean {
+  return loadScopedJson<boolean>(BACKGROUND_PLAYBACK_KEY, true, profile) !== false;
+}
+
+export function setListenBackgroundPlayback(
+  enabled: boolean,
+  profile: UserProfile | null = getAuthUser()
+): boolean {
+  const next = Boolean(enabled);
+  saveScopedJson(BACKGROUND_PLAYBACK_KEY, next, profile);
+  return next;
+}
+
+function currentItemStorageKey(direction: LearningDirection): string {
+  // Sentence, word, and mixed queues contain different ids. Keeping one
+  // cursor per mode means changing the Continue Learning dropdown and coming
+  // back never loses the learner's place in either queue.
+  return `${CURRENT_ITEM_KEY}:${direction}:${getLessonContent()}`;
+}
+
+export function getListenCurrentItemId(
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): string {
+  const value = loadScopedJson<unknown>(currentItemStorageKey(direction), "", profile);
+  return typeof value === "string" ? value : "";
+}
+
+export function setListenCurrentItemId(
+  itemId: string,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): string {
+  const next = typeof itemId === "string" ? itemId.slice(0, 240) : "";
+  saveScopedJson(currentItemStorageKey(direction), next, profile);
+  return next;
 }
 
 export type ListenItem = {

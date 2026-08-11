@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -70,6 +70,8 @@ compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
   buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem,
+  getListenBackgroundPlayback, setListenBackgroundPlayback,
+  getListenCurrentItemId, setListenCurrentItemId,
   getListenGermanRepeats, setListenGermanRepeats,
   getListenEnglishRepeats, setListenEnglishRepeats,
   getListenLanguageOrder, setListenLanguageOrder,
@@ -235,13 +237,33 @@ check("Listen setting writers clamp typed values to safe limits",
   && setListenEnglishRepeats(-4, "learn-de") === 1
   && setListenNextCardDelayMs(99_000) === 30_000);
 
+stored.clear();
+check("background Listen playback is on by default and remains learner-controlled",
+  getListenBackgroundPlayback(null) === true
+  && setListenBackgroundPlayback(false, null) === false
+  && getListenBackgroundPlayback(null) === false
+  && setListenBackgroundPlayback(true, null) === true);
+stored.set("gl-lesson-content", "sentences");
+setListenCurrentItemId("sentence-cursor", "learn-de", null);
+setListenCurrentItemId("english-course-cursor", "learn-en", null);
+stored.set("gl-lesson-content", "words");
+setListenCurrentItemId("word-cursor", "learn-de", null);
+check("Listen remembers a separate exact cursor for each course and content mode",
+  getListenCurrentItemId("learn-de", null) === "word-cursor"
+  && getListenCurrentItemId("learn-en", null) === ""
+  && (stored.set("gl-lesson-content", "sentences"), true)
+  && getListenCurrentItemId("learn-de", null) === "sentence-cursor"
+  && getListenCurrentItemId("learn-en", null) === "english-course-cursor");
+
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Headphones/.test(prototype));
 check("navigating to Listen loads the course catalogue",
   /\["learn", "games", "tests", "listen"\]\.includes\(view\)/.test(prototype));
-check("the Listen view is mounted behind the catalogue gate",
+check("the Listen view stays mounted behind the catalogue gate across dashboard navigation",
   prototype.includes('activeView === "listen"')
   && prototype.includes("<ListenView")
+  && prototype.includes('active={activeView === "listen"}')
+  && prototype.includes('className={activeView === "listen" ? "np-main" : "hidden"}')
   && prototype.includes('learningDirection={learningEnglish() ? "learn-en" : "learn-de"}'));
 
 const view = read("src/components/listen/ListenView.tsx");
@@ -285,6 +307,41 @@ check("a rapid grade or navigation cannot queue a second card advance",
   view.includes("gradeAdvanceTimerRef")
   && view.includes("if (!item || gradeAdvanceTimerRef.current != null) return;")
   && view.includes("cancelGradeAdvance();"));
+check("Listen restores and persists the exact card for this course and content mode",
+  view.includes("getListenCurrentItemId(")
+  && view.includes("setListenCurrentItemId(item.id"));
+check("background playback is default-on, toggleable, and exposes a compact persistent player",
+  view.includes("getListenBackgroundPlayback(")
+  && view.includes("setListenBackgroundPlayback(")
+  && view.includes('data-testid="listen-background-player"')
+  && view.includes('data-testid="listen-background-toggle"'));
+check("the active pet mirrors every spoken clip without starting a duplicate voice",
+  view.includes("onStart: () => mirrorOnPet")
+  && view.includes("silent: true")
+  && view.includes("verbatim: true"));
+
+const voice = read("src/lib/voice.ts");
+const petProvider = read("src/components/codexPets/CodexPetProvider.tsx");
+const petLayer = read("src/components/codexPets/CodexPetLayer.tsx");
+check("the shared TTS sequence exposes an exact clip-start hook for synced captions",
+  voice.includes("onStart?: () => void") && voice.includes("item.onStart?.()"));
+check("silent pet captions are kept verbatim and never interrupt Listen audio",
+  petProvider.includes("options.verbatim ? rawText")
+  && petProvider.includes("silent: options.silent === true")
+  && petLayer.includes("if (speech?.silent)"));
+
+const electronMain = read("electron/main.js");
+const electronPreload = read("electron/preload.cjs");
+check("Windows taskbar controls and keyboard media keys command the mounted player",
+  electronMain.includes("setThumbarButtons")
+  && electronMain.includes('"MediaPreviousTrack"')
+  && electronMain.includes('"MediaPlayPause"')
+  && electronMain.includes('"MediaNextTrack"')
+  && electronPreload.includes("onListenMediaCommand"));
+check("minimized Listen playback disables Chromium background throttling only while playing",
+  electronMain.includes("setBackgroundThrottling(!listenMediaState.playing)")
+  && electronMain.includes('ipcMain.on("listen-media:set-state"')
+  && electronPreload.includes("setListenMediaState"));
 
 const vocabTracker = read("src/components/lab/VocabTracker.tsx");
 const wordsTracker = read("src/components/lab/WordsTracker.tsx");
@@ -307,6 +364,13 @@ for (const key of [
   "English voice is muted and will be skipped.",
   "Quick marks stay gentle. Set level makes an exact tracker change.",
   "Play audio",
+  "Keep playing around Micheon",
+  "Continue when you open Home, Practice, Settings, or another app section.",
+  "Playing in the background",
+  "Listen is paused",
+  "Previous item",
+  "Next item",
+  "Close Listen player",
   "heard",
   "Listening counts as exposure, not mastery. These items still appear in lessons because hearing a sentence is not spelling it.",
 ]) {
