@@ -52,7 +52,9 @@ check("similar and aliased addresses stay locked", [
 ].every((email) => !hasLeonSocialPreview(email)));
 
 check("the current profile email is the single feature gate", normalizedSource.includes("const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);"));
-check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM"));
+// slice(0, 5): Listen joined the nav before Games, so Friends now splices
+// in after index 5 to keep its old after-Games position.
+check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 5), SOCIAL_NAVIGATION_ITEM"));
 check("global search includes social only when unlocked", normalizedSource.includes("...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : [])"));
 check("the social page renderer also checks the gate", normalizedSource.includes('activeView === "social" && socialPreviewUnlocked'));
 check("mobile navigation routes Leon's social preview through More", normalizedSource.includes('["social", "shop", "progress", "profile"]'));

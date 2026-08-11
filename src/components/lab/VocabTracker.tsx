@@ -897,6 +897,12 @@ export function VocabTracker({
                         const note = packMeta(item.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
                       })()}
+                    {(() => {
+                        const listens = Number(recordFor(grades, item.id, item.aliases)?.listens) || 0;
+                        return listens > 0
+                          ? <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
+                          : null;
+                      })()}
                   </p>
                   <StrengthMeter
                     record={recordFor(grades, item.id, item.aliases)}

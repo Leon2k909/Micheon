@@ -50,8 +50,10 @@ check(
 );
 check(
   "profile settings paint without waiting for the lesson catalogue",
-  prototype.includes('if (["learn", "games", "tests"].includes(view)) setPartsRequested(true)')
-    && !prototype.includes('if (["learn", "games", "tests", "profile"].includes(view))')
+  // Listen needs the catalogue (it reads every sentence aloud); profile
+  // still must not — the guard is that "profile" never joins this list.
+  prototype.includes('if (["learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true)')
+    && !prototype.includes('"profile"].includes(view)')
     && prototype.includes("onRequestCatalogue={requestParts}"),
 );
 check(

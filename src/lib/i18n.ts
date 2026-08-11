@@ -1659,6 +1659,18 @@ const DE: Record<string, string> = {
   "Nothing will show this before then.": "Vorher zeigt das nichts an.",
   "Put off": "Aufgeschoben",
 
+  // ── Listen mode ──
+  "Both languages read aloud while you do something else.": "Beide Sprachen werden vorgelesen, während du etwas anderes machst.",
+  "How often the German is spoken": "Wie oft das Deutsche gesprochen wird",
+  "Play audio": "Abspielen",
+  "Word": "Wort",
+  "Sentence": "Satz",
+  "Nothing to listen to yet": "Noch nichts zum Anhören",
+  "Once the course content is loaded, everything you are learning becomes listenable here.": "Sobald die Kursinhalte geladen sind, kannst du hier alles anhören, was du gerade lernst.",
+  "Listening counts as exposure, not mastery — these items still appear in your lessons, because hearing a sentence is not spelling it.": "Hören zählt als Kontakt, nicht als Können — diese Inhalte erscheinen weiterhin in deinen Lektionen, denn einen Satz zu hören ist nicht dasselbe, wie ihn zu schreiben.",
+  "heard": "gehört",
+  "Graded in Listen mode — exposure only, not mastery.": "Im Hörmodus bewertet — nur Kontakt, kein Können.",
+
   // ── App shell: sidebar, dashboard, search, notifications, shop, social ──
   "Read everything with the full sidebar view": "Alles in der vollen Seitenleistenansicht lesen",
   "{n}-day streak": "{n}-Tage-Serie",

@@ -17,6 +17,7 @@ import {
   Crown,
   Gamepad2,
   GraduationCap,
+  Headphones,
   Home,
   Languages,
   Leaf,
@@ -104,6 +105,7 @@ const loadGamificationPanel = () => import("@/Gamification");
 const GamificationPanel = lazy(loadGamificationPanel);
 const LearningLibraryView = lazy(() => import("@/components/lab/LearnView").then((module) => ({ default: module.LearnView })));
 const TestsView = lazy(() => import("@/components/tests/TestsView").then((module) => ({ default: module.TestsView })));
+const ListenView = lazy(() => import("@/components/listen/ListenView").then((module) => ({ default: module.ListenView })));
 const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
 const ClozeTabContent = lazy(() => import("@/lab/ClozeTabContent"));
 const GrammarTabContent = lazy(() => import("@/lab/GrammarTabContent"));
@@ -112,7 +114,7 @@ const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsVi
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
 
-type PrototypeView = "home" | "learn" | "practice" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
+type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -149,6 +151,7 @@ const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "learn", label: "Learn", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
+  { id: "listen", label: "Listen", icon: Headphones },
   { id: "games", label: "Games", icon: Gamepad2 },
   { id: "shop", label: "Shop", icon: ShoppingBag },
   { id: "more", label: "More", icon: Menu },
@@ -179,6 +182,7 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   { id: "home", title: ui("Home"), subtitle: ui("Your course, progress, lesson path, and fluency outlook."), keywords: "dashboard today continue learning" },
   { id: "learn", title: ui("Lessons"), subtitle: ui("Browse every German lesson and word-bank pack."), keywords: "learn modules packs vocabulary phrases" },
   { id: "practice", title: ui("Practice"), subtitle: ui("Choose useful phrases and review conversational German."), keywords: "review recall sentences conversation" },
+  { id: "listen", title: ui("Listen"), subtitle: ui("Both languages read aloud while you do something else."), keywords: "listen audio hear tts hands-free passive hören" },
   { id: "games", title: ui("Games"), subtitle: ui("Spelling, recall, verbs, and quick-recognition games."), keywords: "play word snake falling letters shooter minesweeper slither" },
   { id: "tests", title: ui("Tests"), subtitle: ui("Build vocabulary, phrase, mixed, or weak-spot tests."), keywords: "quiz assessment level search filters" },
   { id: "grammar", title: ui("Grammar"), subtitle: ui("Cloze practice and accessible grammar explanations."), keywords: "fill blanks rules sentence structure" },
@@ -442,8 +446,10 @@ function Sidebar({
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
+  // Friends slots in directly after Games, same relative spot it had
+  // before Listen joined the list.
   const navigationItems = socialPreviewUnlocked
-    ? [...NAVIGATION.slice(0, 4), SOCIAL_NAVIGATION_ITEM, ...NAVIGATION.slice(4)]
+    ? [...NAVIGATION.slice(0, 5), SOCIAL_NAVIGATION_ITEM, ...NAVIGATION.slice(5)]
     : NAVIGATION;
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
@@ -2292,7 +2298,7 @@ export default function NewUiPrototype({
   }, [activeView, socialPreviewUnlocked]);
 
   const navigate = (view: PrototypeView) => {
-    if (["learn", "games", "tests"].includes(view)) setPartsRequested(true);
+    if (["learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -2448,6 +2454,14 @@ export default function NewUiPrototype({
     </div>
   ) : activeView === "practice" ? (
     <PracticeHub onNavigate={navigate} />
+  ) : activeView === "listen" ? (
+    <div className="np-feature-host">
+      {partsReady ? (
+        <Suspense fallback={<FeatureLoading />}>
+          <ListenView apiParts={apiParts} profile={profile} />
+        </Suspense>
+      ) : <FeatureLoading />}
+    </div>
   ) : activeView === "games" ? (
     <div className="np-feature-host">
       {partsReady ? (

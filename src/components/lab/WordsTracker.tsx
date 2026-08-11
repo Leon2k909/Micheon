@@ -521,6 +521,12 @@ export function WordsTracker({ apiParts, user }: {
                         const note = packMeta(word.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
                       })()}
+                    {(() => {
+                        const listens = Number(grades[word.id]?.listens) || 0;
+                        return listens > 0
+                          ? <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
+                          : null;
+                      })()}
                   </p>
                   <StrengthMeter
                     record={grades[word.id]}

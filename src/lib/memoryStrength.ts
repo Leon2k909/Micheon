@@ -36,6 +36,9 @@ export type GradeRecord = {
   difficultyDebt?: number;
   lastMistakeAt?: string;
   lastAnswerAt?: string;
+  /** graded passive-listening exposures — visible in trackers, never a mastery signal */
+  listens?: number;
+  listenedAt?: string;
 };
 
 /**
