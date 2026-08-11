@@ -354,6 +354,10 @@
     tip.classList.add("micheon-visible");
   }
 
+  function tipVisible() {
+    return Boolean(tipEl && tipEl.classList.contains("micheon-visible"));
+  }
+
   function initTooltip() {
     document.addEventListener("mouseover", (e) => {
       const word = e.target?.closest?.(".micheon-gloss-word");
@@ -367,6 +371,24 @@
       if (word) showTip(word);
     }, true);
     document.addEventListener("focusout", scheduleHide, true);
+    // Watchdog: enter/leave events alone can strand the tip forever. If a
+    // React app (X, notoriously) re-renders and REMOVES the hovered word
+    // while the tip is up, the browser never fires mouseout for the removed
+    // node and nothing ever arms the hide. So while the tip is visible, any
+    // mouse movement outside the tip and outside a glossed word schedules
+    // the hide -- and any click outside the tip hides it immediately.
+    document.addEventListener("mousemove", (e) => {
+      if (!tipVisible()) return;
+      const over = e.target;
+      if (over?.closest?.(".micheon-gloss-tip") || over?.closest?.(".micheon-gloss-word")) return;
+      scheduleHide();
+    }, { capture: true, passive: true });
+    document.addEventListener("mousedown", (e) => {
+      if (!tipVisible()) return;
+      if (e.target?.closest?.(".micheon-gloss-tip")) return;
+      cancelHide();
+      tipEl.classList.remove("micheon-visible");
+    }, true);
     // A fixed-position tooltip doesn't follow its word when the page
     // scrolls out from under the cursor -- hide instead of drifting.
     window.addEventListener("scroll", () => {
@@ -465,6 +487,14 @@
         if (SKIP_TAGS.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
         if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
         if (parent.closest(".micheon-gloss-word")) return NodeFilter.FILTER_REJECT;
+        // Never rewrite text inside interactive controls. It's UI chrome,
+        // not vocabulary -- and on React apps it's actively destructive:
+        // X's "Übersetzung zeigen" button died because React tried to
+        // re-render a text node this script had already replaced, and the
+        // resulting DOM exception killed the button's update.
+        if (parent.closest("button, [role='button'], [role='tab'], [role='menuitem'], [role='option'], select, label, summary")) {
+          return NodeFilter.FILTER_REJECT;
+        }
         return NodeFilter.FILTER_ACCEPT;
       },
     });
