@@ -59,12 +59,18 @@ const GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
 const ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
 const LANGUAGE_ORDER_KEY = "gl-listen-language-order";
 const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
+const LOOP_ITEMS_KEY = "gl-listen-loop-items";
+const LOOP_PASSES_KEY = "gl-listen-loop-passes";
 const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
 const CURRENT_ITEM_KEY = "gl-listen-current-item-v1";
 const MAX_LANGUAGE_REPEATS = 10;
+const MAX_LOOP_ITEMS = 12;
+const MAX_LOOP_PASSES = 6;
 const MAX_NEXT_CARD_DELAY_MS = 30_000;
 export const DEFAULT_GERMAN_REPEATS = 2;
 export const DEFAULT_ENGLISH_REPEATS = 1;
+export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
+export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export type ListenLanguageOrder = "english-first" | "german-first";
 export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "english-first";
@@ -190,6 +196,131 @@ export function getListenNextCardDelayMs(): number {
 
 export function setListenNextCardDelayMs(delayMs: number): number {
   return storeIntegerSetting(NEXT_CARD_DELAY_KEY, delayMs, 0, MAX_NEXT_CARD_DELAY_MS);
+}
+
+/**
+ * Listen learns in small, repeated sets instead of walking the catalogue once.
+ * A 3-item / 2-pass plan produces A, B, C, A, B, C, then D, E, F… .
+ * One pass is the explicit exposure-only option for learners who do not want
+ * item-level repetition. These settings are course-specific because a learner
+ * may want more reinforcement in their newer language.
+ */
+export function getListenLoopItems(
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return readCourseIntegerSetting(
+    LOOP_ITEMS_KEY,
+    direction,
+    DEFAULT_LISTEN_LOOP_ITEMS,
+    1,
+    MAX_LOOP_ITEMS
+  );
+}
+
+export function setListenLoopItems(
+  count: number,
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return storeIntegerSetting(
+    courseSettingKey(LOOP_ITEMS_KEY, direction),
+    count,
+    1,
+    MAX_LOOP_ITEMS
+  );
+}
+
+export function getListenLoopPasses(
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return readCourseIntegerSetting(
+    LOOP_PASSES_KEY,
+    direction,
+    DEFAULT_LISTEN_LOOP_PASSES,
+    1,
+    MAX_LOOP_PASSES
+  );
+}
+
+export function setListenLoopPasses(
+  count: number,
+  direction: LearningDirection = getLearningDirection()
+): number {
+  return storeIntegerSetting(
+    courseSettingKey(LOOP_PASSES_KEY, direction),
+    count,
+    1,
+    MAX_LOOP_PASSES
+  );
+}
+
+function safeLoopInteger(value: number, fallback: number, min: number, max: number): number {
+  return Number.isFinite(value)
+    ? Math.max(min, Math.min(max, Math.round(value)))
+    : fallback;
+}
+
+/** Map the unbounded player position onto the catalogue's repeated-set order. */
+export function listenQueueIndexForPlayhead(
+  playhead: number,
+  queueLength: number,
+  itemsPerLoop: number,
+  loopPasses: number
+): number {
+  const length = safeLoopInteger(queueLength, 0, 0, Number.MAX_SAFE_INTEGER);
+  if (length === 0) return 0;
+  const size = Math.min(length, safeLoopInteger(itemsPerLoop, DEFAULT_LISTEN_LOOP_ITEMS, 1, MAX_LOOP_ITEMS));
+  const passes = safeLoopInteger(loopPasses, DEFAULT_LISTEN_LOOP_PASSES, 1, MAX_LOOP_PASSES);
+  const position = safeLoopInteger(playhead, 0, 0, Number.MAX_SAFE_INTEGER) % (length * passes);
+  const completeGroupItems = Math.floor(length / size) * size;
+  const completeGroupSteps = completeGroupItems * passes;
+  if (position < completeGroupSteps) {
+    const groupSteps = size * passes;
+    const group = Math.floor(position / groupSteps);
+    return (group * size) + ((position % groupSteps) % size);
+  }
+  const tailSize = length - completeGroupItems;
+  return tailSize > 0
+    ? completeGroupItems + ((position - completeGroupSteps) % tailSize)
+    : 0;
+}
+
+/** Restore a catalogue item at the beginning of its current learning set. */
+export function listenPlayheadForQueueIndex(
+  queueIndex: number,
+  queueLength: number,
+  itemsPerLoop: number,
+  loopPasses: number
+): number {
+  const length = safeLoopInteger(queueLength, 0, 0, Number.MAX_SAFE_INTEGER);
+  if (length === 0) return 0;
+  const size = Math.min(length, safeLoopInteger(itemsPerLoop, DEFAULT_LISTEN_LOOP_ITEMS, 1, MAX_LOOP_ITEMS));
+  const passes = safeLoopInteger(loopPasses, DEFAULT_LISTEN_LOOP_PASSES, 1, MAX_LOOP_PASSES);
+  const index = ((Math.round(queueIndex) % length) + length) % length;
+  const group = Math.floor(index / size);
+  const offset = index % size;
+  return (group * size * passes) + offset;
+}
+
+export function listenLoopPassForPlayhead(
+  playhead: number,
+  queueLength: number,
+  itemsPerLoop: number,
+  loopPasses: number
+): number {
+  const length = safeLoopInteger(queueLength, 0, 0, Number.MAX_SAFE_INTEGER);
+  if (length === 0) return 1;
+  const size = Math.min(length, safeLoopInteger(itemsPerLoop, DEFAULT_LISTEN_LOOP_ITEMS, 1, MAX_LOOP_ITEMS));
+  const passes = safeLoopInteger(loopPasses, DEFAULT_LISTEN_LOOP_PASSES, 1, MAX_LOOP_PASSES);
+  const position = safeLoopInteger(playhead, 0, 0, Number.MAX_SAFE_INTEGER) % (length * passes);
+  const completeGroupItems = Math.floor(length / size) * size;
+  const completeGroupSteps = completeGroupItems * passes;
+  if (position < completeGroupSteps) {
+    return Math.floor((position % (size * passes)) / size) + 1;
+  }
+  const tailSize = length - completeGroupItems;
+  return tailSize > 0
+    ? Math.floor((position - completeGroupSteps) / tailSize) + 1
+    : 1;
 }
 
 /**

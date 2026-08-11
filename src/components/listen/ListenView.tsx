@@ -12,6 +12,7 @@ import {
   Minimize2,
   Pause,
   Play,
+  Repeat2,
   Volume1,
   Volume2,
   VolumeX,
@@ -39,13 +40,20 @@ import {
   getListenEnglishRepeats,
   getListenGermanRepeats,
   getListenLanguageOrder,
+  getListenLoopItems,
+  getListenLoopPasses,
   getListenNextCardDelayMs,
+  listenLoopPassForPlayhead,
+  listenPlayheadForQueueIndex,
+  listenQueueIndexForPlayhead,
   recordListenGrade,
   setListenBackgroundPlayback,
   setListenCurrentItemId,
   setListenEnglishRepeats,
   setListenGermanRepeats,
   setListenLanguageOrder,
+  setListenLoopItems,
+  setListenLoopPasses,
   setListenNextCardDelayMs,
   setListenReviewLevel,
   snoozeListenItem,
@@ -210,7 +218,7 @@ function NumberSetting({
           type="number"
           value={draft}
         />
-        <span className="w-8 text-xs font-black text-[var(--text-3)]">{suffix}</span>
+        <span className="min-w-8 text-xs font-black text-[var(--text-3)]">{suffix}</span>
       </span>
     </label>
   );
@@ -218,10 +226,11 @@ function NumberSetting({
 
 /**
  * Listen is the hands-free companion to guided lessons. By default it reads
- * English once, then German twice, and advances after a configurable pause.
- * Learners can reverse that language order. Passive Know it / Struggle marks
- * remain deliberately damped; the explicit level picker is the place for a
- * strong tracker correction.
+ * English once, then German twice. Items are grouped into short learning loops
+ * and revisited before new material arrives; both the group size and number of
+ * passes are learner-controlled. Passive Know it / Struggle marks remain
+ * deliberately damped; the explicit level picker is the place for a strong
+ * tracker correction.
  */
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
@@ -239,10 +248,17 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     () => baseQueue.filter((candidate) => !hiddenIds.has(candidate.id)),
     [baseQueue, hiddenIds]
   );
-  const [index, setIndex] = useState(() => {
+  const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
+  const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
+  const [playhead, setPlayhead] = useState(() => {
     const storedId = getListenCurrentItemId(learningDirection, profile);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
-    return storedIndex >= 0 ? storedIndex : 0;
+    return listenPlayheadForQueueIndex(
+      storedIndex >= 0 ? storedIndex : 0,
+      baseQueue.length,
+      getListenLoopItems(learningDirection),
+      getListenLoopPasses(learningDirection)
+    );
   });
   const [playing, setPlaying] = useState(false);
   const [sessionActivated, setSessionActivated] = useState(false);
@@ -267,7 +283,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     visibleKeys: visiblePetKeys,
   } = useCodexPets();
 
-  const item = queue.length ? queue[index % queue.length] : null;
+  const effectiveLoopItems = Math.min(Math.max(1, queue.length), loopItems);
+  const queueIndex = listenQueueIndexForPlayhead(
+    playhead,
+    queue.length,
+    effectiveLoopItems,
+    loopPasses
+  );
+  const loopPass = listenLoopPassForPlayhead(playhead, queue.length, effectiveLoopItems, loopPasses);
+  const item = queue.length ? queue[queueIndex] : null;
   const englishLang = resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = audioSettings.englishMuted || audioSettings.englishVolume <= 0;
@@ -284,6 +308,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setGermanRepeats(getListenGermanRepeats(learningDirection));
     setEnglishRepeats(getListenEnglishRepeats(learningDirection));
     setLanguageOrder(getListenLanguageOrder(learningDirection));
+    setLoopItems(getListenLoopItems(learningDirection));
+    setLoopPasses(getListenLoopPasses(learningDirection));
     setBackgroundPlayback(getListenBackgroundPlayback(profile));
   }, [learningDirection]);
 
@@ -291,7 +317,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setHiddenIds(new Set());
     const storedId = getListenCurrentItemId(learningDirection, profile);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
-    setIndex(storedIndex >= 0 ? storedIndex : 0);
+    setPlayhead(listenPlayheadForQueueIndex(
+      storedIndex >= 0 ? storedIndex : 0,
+      baseQueue.length,
+      getListenLoopItems(learningDirection),
+      getListenLoopPasses(learningDirection)
+    ));
   }, [apiParts, baseQueue, learningDirection, profile?.id]);
 
   useEffect(() => {
@@ -363,7 +394,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       advanceTimer = window.setTimeout(() => {
         if (runRef.current !== run) return;
         setGraded(null);
-        setIndex((current) => (current + 1) % Math.max(1, queue.length));
+        setPlayhead((current) => current + 1);
       }, nextCardDelayMs);
     });
 
@@ -372,7 +403,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       if (advanceTimer != null) window.clearTimeout(advanceTimer);
       stopTts();
     };
-  }, [playing, index, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -406,9 +437,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     stopTts();
     setGraded(null);
     setReviewPanel(null);
-    setIndex((current) => {
-      const length = Math.max(1, queue.length);
-      return (current + direction + length) % length;
+    setPlayhead((current) => {
+      if (direction > 0) return current + 1;
+      if (current > 0) return current - 1;
+      return listenPlayheadForQueueIndex(
+        Math.max(0, queue.length - 1),
+        queue.length,
+        effectiveLoopItems,
+        loopPasses
+      );
     });
   };
 
@@ -497,7 +534,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     gradeAdvanceTimerRef.current = window.setTimeout(() => {
       gradeAdvanceTimerRef.current = null;
       setGraded(null);
-      setIndex((current) => (current + 1) % Math.max(1, queue.length));
+      setPlayhead((current) => current + 1);
     }, 350);
   };
 
@@ -526,6 +563,20 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const commitEnglishRepeats = (count: number) => {
     const next = setListenEnglishRepeats(count, learningDirection);
     setEnglishRepeats(next);
+    return next;
+  };
+
+  const commitLoopItems = (count: number) => {
+    const next = setListenLoopItems(count, learningDirection);
+    setLoopItems(next);
+    setPlayhead(listenPlayheadForQueueIndex(queueIndex, queue.length, next, loopPasses));
+    return next;
+  };
+
+  const commitLoopPasses = (count: number) => {
+    const next = setListenLoopPasses(count, learningDirection);
+    setLoopPasses(next);
+    setPlayhead(listenPlayheadForQueueIndex(queueIndex, queue.length, effectiveLoopItems, next));
     return next;
   };
 
@@ -609,20 +660,25 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <div>
               <h1 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Listen")}</h1>
               <p className="text-xs font-semibold text-[var(--text-3)]">
-                {ui("Both languages read aloud while you do something else.")}
+                {ui("Both languages repeat in small learning loops while you do something else.")}
               </p>
             </div>
           </div>
-          <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
-            {languageOrder === "english-first"
-              ? uiFmt("English {en}×, then German {de}×", { de: germanRepeats, en: englishRepeats })
-              : uiFmt("German {de}×, then English {en}×", { de: germanRepeats, en: englishRepeats })}
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
+            <span>
+              {languageOrder === "english-first"
+                ? uiFmt("English {en}×, then German {de}×", { de: germanRepeats, en: englishRepeats })
+                : uiFmt("German {de}×, then English {en}×", { de: germanRepeats, en: englishRepeats })}
+            </span>
+            <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
+            <span>{uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
           </div>
         </div>
 
         <div className="mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            {ui(item.kind === "word" ? "Word" : "Sentence")} · {(index % queue.length) + 1} / {queue.length}
+            {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
+            {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
           <p className="mt-4 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
             {item.de}
@@ -670,7 +726,42 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </div>
               <div>
                 <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-pattern-heading">{ui("Playback pattern")}</h2>
-                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Type how many times each language should be spoken.")}</p>
+                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Choose how often whole items return and how each card is spoken.")}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent-dim)] p-3.5">
+              <div className="flex items-start gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--accent)] shadow-sm">
+                  <Repeat2 className="h-4 w-4" />
+                </span>
+                <span>
+                  <strong className="block text-xs font-black text-[var(--text-1)]">{ui("Learning loop")}</strong>
+                  <small className="mt-0.5 block text-[11px] font-semibold leading-snug text-[var(--text-3)]">
+                    {ui("Hear a small set, then revisit the same items before moving on.")}
+                  </small>
+                </span>
+              </div>
+              <div className="mt-3 space-y-2">
+                <NumberSetting
+                  label={ui("Items in each loop")}
+                  max={12}
+                  min={1}
+                  note={ui("How many different items to hear before they return")}
+                  onCommit={commitLoopItems}
+                  suffix={ui("items")}
+                  testId="listen-loop-items"
+                  value={loopItems}
+                />
+                <NumberSetting
+                  label={ui("Passes through each loop")}
+                  max={6}
+                  min={1}
+                  note={ui("2 means every item returns once; 1 turns item repetition off")}
+                  onCommit={commitLoopPasses}
+                  suffix="×"
+                  testId="listen-loop-passes"
+                  value={loopPasses}
+                />
               </div>
             </div>
             <fieldset className="mt-4">
@@ -915,7 +1006,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         </section>
 
         <p className="mt-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--text-3)]">
-          {ui("Listening counts as exposure, not mastery. These items still appear in lessons because hearing a sentence is not spelling it.")}
+          {ui("Repeated listening builds familiarity, but it does not mark an item mastered. Lessons still check whether you can recall and spell it.")}
         </p>
       </section>
     </div>

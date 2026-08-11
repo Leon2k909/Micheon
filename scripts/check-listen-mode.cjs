@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -75,10 +75,14 @@ const {
   getListenGermanRepeats, setListenGermanRepeats,
   getListenEnglishRepeats, setListenEnglishRepeats,
   getListenLanguageOrder, setListenLanguageOrder,
+  getListenLoopItems, setListenLoopItems,
+  getListenLoopPasses, setListenLoopPasses,
+  listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead,
   getListenNextCardDelayMs, setListenNextCardDelayMs,
   DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
   DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
-  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_NEXT_CARD_DELAY_MS,
+  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
+  DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId,
   loadGradeStore, statusForId, COMPLETED_KEY,
   recordSuccess,
@@ -208,33 +212,78 @@ check("the English course defaults to German once, then English twice",
   && getListenLanguageOrder("learn-en") === "german-first");
 check("the next card waits 1.1 seconds by default",
   DEFAULT_NEXT_CARD_DELAY_MS === 1100 && getListenNextCardDelayMs() === 1100);
+check("Listen defaults to a real learning loop rather than one-pass exposure",
+  DEFAULT_LISTEN_LOOP_ITEMS === 3
+  && DEFAULT_LISTEN_LOOP_PASSES === 2
+  && getListenLoopItems("learn-de") === 3
+  && getListenLoopPasses("learn-de") === 2);
+const repeatedSet = Array.from(
+  { length: 12 },
+  (_, playhead) => listenQueueIndexForPlayhead(playhead, 20, 3, 2)
+);
+check("the learning loop revisits a small set before introducing more items",
+  repeatedSet.join(",") === "0,1,2,0,1,2,3,4,5,3,4,5");
+const exposureOnly = Array.from(
+  { length: 8 },
+  (_, playhead) => listenQueueIndexForPlayhead(playhead, 20, 3, 1)
+);
+check("one loop pass preserves the old sequential exposure behaviour",
+  exposureOnly.join(",") === "0,1,2,3,4,5,6,7");
+check("a restored item starts at the first pass of its own loop",
+  listenQueueIndexForPlayhead(
+    listenPlayheadForQueueIndex(7, 20, 3, 3),
+    20,
+    3,
+    3
+  ) === 7
+  && listenLoopPassForPlayhead(listenPlayheadForQueueIndex(7, 20, 3, 3), 20, 3, 3) === 1);
+const tailSet = Array.from(
+  { length: 15 },
+  (_, playhead) => listenQueueIndexForPlayhead(playhead, 5, 3, 2)
+);
+check("a short final set repeats without wrapping early items into it",
+  tailSet.join(",") === "0,1,2,0,1,2,3,4,3,4,0,1,2,0,1");
 setListenGermanRepeats(3, "learn-de");
 setListenEnglishRepeats(4, "learn-de");
 setListenLanguageOrder("german-first", "learn-de");
+setListenLoopItems(4, "learn-de");
+setListenLoopPasses(3, "learn-de");
 setListenGermanRepeats(5, "learn-en");
 setListenEnglishRepeats(6, "learn-en");
 setListenLanguageOrder("english-first", "learn-en");
+setListenLoopItems(6, "learn-en");
+setListenLoopPasses(4, "learn-en");
 stored.set("gl-listen-next-card-delay-ms", "2500");
-check("each course keeps its own repeat counts and language order",
+check("each course keeps its own language and learning-loop repetition plan",
   getListenGermanRepeats("learn-de") === 3
   && getListenEnglishRepeats("learn-de") === 4
   && getListenLanguageOrder("learn-de") === "german-first"
+  && getListenLoopItems("learn-de") === 4
+  && getListenLoopPasses("learn-de") === 3
   && getListenGermanRepeats("learn-en") === 5
   && getListenEnglishRepeats("learn-en") === 6
-  && getListenLanguageOrder("learn-en") === "english-first");
+  && getListenLanguageOrder("learn-en") === "english-first"
+  && getListenLoopItems("learn-en") === 6
+  && getListenLoopPasses("learn-en") === 4);
 check("the next-card delay is the learner's to change", getListenNextCardDelayMs() === 2500);
 stored.set("gl-listen-german-repeats:learn-de", "99");
 stored.set("gl-listen-english-repeats:learn-de", "0");
 stored.set("gl-listen-language-order:learn-de", "invalid");
+stored.set("gl-listen-loop-items:learn-de", "99");
+stored.set("gl-listen-loop-passes:learn-de", "0");
 stored.set("gl-listen-next-card-delay-ms", "999999");
 check("corrupt Listen settings fall back to documented defaults",
   getListenGermanRepeats("learn-de") === 2
   && getListenEnglishRepeats("learn-de") === 1
   && getListenLanguageOrder("learn-de") === "english-first"
+  && getListenLoopItems("learn-de") === 3
+  && getListenLoopPasses("learn-de") === 2
   && getListenNextCardDelayMs() === 1100);
 check("Listen setting writers clamp typed values to safe limits",
   setListenGermanRepeats(99, "learn-de") === 10
   && setListenEnglishRepeats(-4, "learn-de") === 1
+  && setListenLoopItems(99, "learn-de") === 12
+  && setListenLoopPasses(0, "learn-de") === 1
   && setListenNextCardDelayMs(99_000) === 30_000);
 
 stored.clear();
@@ -281,6 +330,12 @@ check("the playback plan, order switch, and typed repeat counts are visible",
   && view.includes('data-testid={`listen-order-${value}`}')
   && view.includes('testId="listen-german-repeats"')
   && view.includes('testId="listen-english-repeats"'));
+check("whole items return through a visible, learner-controlled learning loop",
+  view.includes("listenQueueIndexForPlayhead(")
+  && view.includes("listenPlayheadForQueueIndex(")
+  && view.includes('testId="listen-loop-items"')
+  && view.includes('testId="listen-loop-passes"')
+  && view.includes('"Learning pass {pass} of {passes}"'));
 check("the next-card delay is visible and drives auto-advance",
   view.includes('testId="listen-next-card-delay"')
   && view.includes("}, nextCardDelayMs);"));
@@ -350,9 +405,18 @@ check("both trackers surface the exposure count",
 
 const i18n = read("src/lib/i18n.ts");
 for (const key of [
-  "Both languages read aloud while you do something else.",
+  "Both languages repeat in small learning loops while you do something else.",
   "German {de}×, then English {en}×",
   "English {en}×, then German {de}×",
+  "{items}-item loop, {passes} passes",
+  "Learning pass {pass} of {passes}",
+  "Choose how often whole items return and how each card is spoken.",
+  "Learning loop",
+  "Hear a small set, then revisit the same items before moving on.",
+  "Items in each loop",
+  "How many different items to hear before they return",
+  "Passes through each loop",
+  "2 means every item returns once; 1 turns item repetition off",
   "Language order",
   "English first",
   "German first",
@@ -372,7 +436,7 @@ for (const key of [
   "Next item",
   "Close Listen player",
   "heard",
-  "Listening counts as exposure, not mastery. These items still appear in lessons because hearing a sentence is not spelling it.",
+  "Repeated listening builds familiarity, but it does not mark an item mastered. Lessons still check whether you can recall and spell it.",
 ]) {
   check(`the new UI string is translated: ${key.slice(0, 40)}…`, new RegExp(`"${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}": "`).test(i18n));
 }
