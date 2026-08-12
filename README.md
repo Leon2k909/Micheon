@@ -127,7 +127,7 @@ npm run electron
 
 Micheon includes an optional Manifest V3 extension for **Chrome, Edge, and Brave**. It is a browsing companion rather than a full-page translator: it reinforces vocabulary from Micheon's bundled word bank while leaving the page itself intact.
 
-- **Learn from normal browsing.** Known Micheon vocabulary receives a dotted underline and a translation tooltip on hover or keyboard focus. German pages show the English meaning; on other pages, recognised English words can show the German you are learning.
+- **Learn from normal browsing.** Known Micheon vocabulary receives a dotted underline and a translation tooltip on hover or keyboard focus. German pages show the English meaning; on other pages, recognised English words can show the German you are learning. Hovering can also pronounce the German; a brief settling delay and latest-word-wins playback prevent repeated or overlapping speech as the pointer moves.
 - **Find useful gaps in the curriculum.** On pages detected as German, the extension keeps a local candidate list of plausible words it does not recognise, including one real sentence where each word appeared. You can review, reset, or export that list as JSON. Candidates are never added to lessons automatically.
 - **Use German audio on YouTube.** When a video provides an official German audio track, the extension selects it and enables English captions. Videos without a German track are left unchanged.
 
@@ -140,6 +140,16 @@ Micheon includes an optional Manifest V3 extension for **Chrome, Edge, and Brave
 5. Pin **Micheon Immersion** if you want its status and candidate-word controls within easy reach.
 
 Chromium deliberately prevents apps from silently installing unpacked extensions, so the **Load unpacked** step must be confirmed in the browser. When Micheon is running outside the desktop shell, the same settings card offers a ZIP download that can be extracted and loaded instead.
+
+The version shown in Brave comes from the Micheon release that supplied the files. After a Micheon update, select **Set up for Brave** again, then press **Reload** on the existing Micheon Immersion card at `brave://extensions` and refresh pages that were already open. Brave does not automatically activate changed files for an unpacked extension.
+
+### How words and data reach the extension
+
+- Micheon's hardcoded lesson packs and bundled word bank are the source of truth. Every app build runs `npm run sync:immersion-extension`, which exports the deduplicated catalogue to `data/words.json` and rebuilds the downloadable extension archive before packaging Micheon.
+- The release build refuses to ship changed extension files unless both the extension version and Micheon app version advance, ensuring every extension update reaches Git and the desktop autoupdater together.
+- Installing or updating Micheon therefore supplies a new offline word snapshot. **Set up for Brave** copies that exact snapshot to the stable `Documents/Micheon Immersion Extension` folder; it does not download a separate or newer extension from the internet.
+- There is no hidden account or progress sync between Micheon and Chromium at present. Extension settings and discovered-word candidates live in `chrome.storage.local`; app profiles and mastery records stay in Micheon's local profile store. The extension can use Micheon's `127.0.0.1` TTS service while the desktop app is running, but that is audio playback rather than data sync.
+- New words found while browsing can be exported from the extension as JSON for review. They are deliberately not injected into lessons automatically: they only reach both products after being checked, authored, and added to Micheon's hardcoded catalogue.
 
 All vocabulary matching and language detection run on the device against the word list bundled with the extension. It does not call a translation API, require a Micheon account, or upload its candidate-word list; extension preferences and candidates stay in Chromium's local extension storage.
 

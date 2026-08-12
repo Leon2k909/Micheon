@@ -1,0 +1,171 @@
+#!/usr/bin/env node
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+const { execFileSync } = require("child_process");
+
+const root = path.resolve(__dirname, "..");
+const extension = path.join(root, "public", "micheon-immersion-extension");
+const archive = path.join(root, "public", "micheon-immersion-extension.zip");
+const read = (relativePath) => fs.readFileSync(path.join(extension, relativePath), "utf8");
+const manifest = JSON.parse(read("manifest.json"));
+const words = JSON.parse(read("data/words.json"));
+const gloss = read("src/content-gloss.js");
+const offscreen = read("src/offscreen.js");
+const background = read("src/background.js");
+const desktopMain = fs.readFileSync(path.join(root, "electron", "main.js"), "utf8");
+const desktopPreload = fs.readFileSync(path.join(root, "electron", "preload.cjs"), "utf8");
+const settingsCard = fs.readFileSync(path.join(root, "src", "components", "BrowserExtension.tsx"), "utf8");
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+
+// Every main push is an updater release. In CI, refuse to publish changed
+// extension files under an old extension or app version: otherwise Brave can
+// keep showing an indistinguishable stale unpacked build and the desktop
+// autoupdater has no newer Micheon package through which to deliver it.
+if (process.env.CI) {
+  try {
+    const parent = execFileSync("git", ["rev-parse", "HEAD^"], { cwd: root, encoding: "utf8" }).trim();
+    const changed = execFileSync(
+      "git",
+      ["diff", "--name-only", parent, "HEAD", "--", "public/micheon-immersion-extension", "public/micheon-immersion-extension.zip"],
+      { cwd: root, encoding: "utf8" }
+    ).trim();
+    if (changed) {
+      const previousManifest = JSON.parse(execFileSync(
+        "git", ["show", `${parent}:public/micheon-immersion-extension/manifest.json`],
+        { cwd: root, encoding: "utf8" }
+      ));
+      const previousPackage = JSON.parse(execFileSync(
+        "git", ["show", `${parent}:package.json`],
+        { cwd: root, encoding: "utf8" }
+      ));
+      assert.notEqual(manifest.version, previousManifest.version,
+        "extension files changed without advancing the extension version");
+      assert.notEqual(packageJson.version, previousPackage.version,
+        "extension files changed without an app release version to deliver them");
+    }
+  } catch (error) {
+    if (error instanceof assert.AssertionError) throw error;
+    console.warn(`Skipped extension release-version comparison: ${error.message}`);
+  }
+}
+
+assert(/^0\.3\.[1-9]\d*$/.test(manifest.version), "the extension version was not advanced past 0.3.0");
+for (const size of ["16", "32", "48", "128"]) {
+  const icon = manifest.icons?.[size];
+  assert(icon && fs.existsSync(path.join(extension, icon)), `missing Micheon ${size}px manifest icon`);
+  assert.equal(manifest.action?.default_icon?.[size], icon, `toolbar icon ${size}px does not use the Micheon logo`);
+}
+assert(fs.existsSync(archive) && fs.statSync(archive).size > 100_000,
+  "the downloadable Micheon Immersion archive is missing or unexpectedly small");
+const packedFile = (relativePath) => execFileSync("tar", ["-xOf", archive, relativePath], { encoding: "utf8" });
+assert.equal(packedFile("manifest.json"), read("manifest.json"),
+  "the downloadable archive contains a stale extension manifest");
+assert.equal(packedFile("data/words.json"), read("data/words.json"),
+  "the downloadable archive contains a stale word catalogue");
+
+assert(words.length >= 6200, `only ${words.length} extension glossary entries were exported`);
+assert.equal(new Set(words.map((word) => word.id)).size, words.length, "duplicate glossary ids found");
+assert.equal(new Set(words.map((word) => word.de.toLocaleLowerCase("de-DE"))).size, words.length,
+  "duplicate German lemmas found in the extension glossary");
+for (const lemma of [
+  "Bild", "folgen", "echt", "reposten", "möchten", "darüber", "Geschwister",
+  "Hitze", "irgendwie", "niemand", "schlau", "entkommen", "ernsthaft", "kaum",
+  "danke", "bisschen", "Konversation", "mitten", "schlafen", "sofort", "explizit", "weiterhin",
+  "Abschreckung", "Pressestelle", "Riss", "Verbot", "wieder", "worum",
+]) {
+  assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
+}
+
+assert(gloss.includes("HOVER_SPEAK_DELAY_MS") && gloss.includes("SAME_WORD_SPEAK_COOLDOWN_MS"),
+  "hover speech is no longer debounced and deduplicated");
+assert(gloss.includes("offset >= entry.end") && gloss.includes("getClientRects()"),
+  "adjacent word hit-testing can overlap at a range boundary");
+assert(gloss.includes("OBSERVED_FORM_TO_LEMMA") && gloss.includes('"übersetzt": "übersetzen"'),
+  "observed German forms are no longer resolved to their authored lemmas");
+assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
+  && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),
+  "overlapping TTS playback is no longer cancelled");
+assert(background.includes("latestTtsRequest") && background.includes("requestId !== latestTtsRequest")
+  && background.includes("offscreenCreation") && background.includes("lastForwardedText"),
+  "stale TTS requests can still race while the offscreen player is opening");
+assert(packageJson.scripts?.build?.startsWith("npm run sync:immersion-extension &&"),
+  "app builds no longer regenerate and pack the extension word snapshot first");
+assert(desktopMain.includes('ipcMain.handle("extension:info"')
+  && desktopMain.includes("previousVersion") && desktopMain.includes("updated:"),
+  "desktop setup no longer reports the bundled/copied extension versions");
+assert(desktopPreload.includes("getBrowserExtensionInfo")
+  && settingsCard.includes("Included with this Micheon version")
+  && settingsCard.includes("click Reload on the existing Micheon Immersion card"),
+  "the extension setup screen no longer explains versioning and Brave reloads");
+for (const noise of ["std", "min", "aug", "grok", "codex", "gemini"]) {
+  assert(new RegExp(`\\"${noise}\\"`).test(gloss), `${noise} is no longer filtered from missing-vocabulary exports`);
+}
+
+async function checkLatestAudioWins() {
+  let listener;
+  const pending = [];
+  const plays = [];
+  const browserSpeech = [];
+  let nextUrl = 0;
+
+  class FakeAudio {
+    constructor(url) { this.url = url; }
+    play() { plays.push(this.url); return Promise.resolve(); }
+    pause() {}
+    removeAttribute() {}
+    load() {}
+  }
+
+  const context = {
+    AbortController,
+    Audio: FakeAudio,
+    URL: {
+      createObjectURL: () => `blob:${++nextUrl}`,
+      revokeObjectURL: () => {},
+    },
+    SpeechSynthesisUtterance: class {
+      constructor(text) { this.text = text; }
+    },
+    chrome: {
+      runtime: { onMessage: { addListener: (callback) => { listener = callback; } } },
+    },
+    fetch: (url, options) => new Promise((resolve, reject) => {
+      const request = { url, resolve, reject, aborted: false };
+      options.signal.addEventListener("abort", () => {
+        request.aborted = true;
+        reject(new Error("aborted"));
+      });
+      pending.push(request);
+    }),
+    speechSynthesis: {
+      cancel: () => {},
+      getVoices: () => [],
+      speak: (utterance) => browserSpeech.push(utterance.text),
+      onvoiceschanged: null,
+    },
+    setTimeout,
+    clearTimeout,
+    encodeURIComponent,
+    console,
+  };
+
+  vm.runInNewContext(offscreen, context, { filename: "offscreen.js" });
+  assert.equal(typeof listener, "function", "offscreen player did not register its message listener");
+  listener({ type: "micheon-tts-play", text: "eins" });
+  listener({ type: "micheon-tts-play", text: "zwei" });
+  assert(pending[0]?.aborted, "the first local-TTS request was not cancelled");
+  pending[1].resolve({ ok: true, blob: async () => ({ text: "zwei" }) });
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(plays, ["blob:1"], "rapid hover requests produced overlapping local audio");
+  assert.deepEqual(browserSpeech, [], "a cancelled request leaked through the browser-voice fallback");
+}
+
+checkLatestAudioWins().then(() => {
+  console.log(`Immersion extension checks passed (${words.length} words, v${manifest.version}, latest audio wins).`);
+}).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -5,6 +5,7 @@ import {
   saveGradeStore,
   setCanonicalGradeRecord,
   statusForId,
+  type GradeRecord,
   type GradeStore,
 } from "@/lib/activity";
 import {
@@ -605,6 +606,22 @@ export function buildListenQueue(
 
 export type ListenGrade = "know" | "difficult";
 export type ListenReviewLevel = "new" | "struggle" | "permanent" | 1 | 2 | 3 | 4 | 5;
+export type ListenReviewChange = {
+  entries: Array<{ key: string; record: GradeRecord | null }>;
+};
+
+function snapshotListenReviewChange(
+  store: GradeStore,
+  item: Pick<ListenItem, "id" | "aliases">
+): ListenReviewChange {
+  const keys = Array.from(new Set([item.id, ...item.aliases]));
+  return {
+    entries: keys.map((key) => ({
+      key,
+      record: store[key] ? { ...store[key] } : null,
+    })),
+  };
+}
 
 /**
  * Record a listen-mode grade. See the module comment for why every branch
@@ -667,8 +684,9 @@ export function setListenReviewLevel(
   level: ListenReviewLevel,
   profile: UserProfile | null = getAuthUser(),
   now = Date.now()
-): void {
+): ListenReviewChange {
   const store = loadGradeStore(profile);
+  const change = snapshotListenReviewChange(store, item);
   const prior = progressEntryForId(store, item.id, item.aliases)?.record;
 
   if (level === "new") {
@@ -683,6 +701,20 @@ export function setListenReviewLevel(
     if (record) setCanonicalGradeRecord(store, item.id, item.aliases, record);
   }
 
+  saveGradeStore(store, profile);
+  return change;
+}
+
+/** Restore the exact tracker entries replaced by an explicit Listen action. */
+export function undoListenReviewChange(
+  change: ListenReviewChange,
+  profile: UserProfile | null = getAuthUser()
+): void {
+  const store = loadGradeStore(profile);
+  for (const { key } of change.entries) delete store[key];
+  for (const { key, record } of change.entries) {
+    if (record) store[key] = { ...record };
+  }
   saveGradeStore(store, profile);
 }
 

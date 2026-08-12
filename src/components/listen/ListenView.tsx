@@ -13,6 +13,7 @@ import {
   Pause,
   Play,
   Repeat2,
+  Undo2,
   Volume1,
   Volume2,
   VolumeX,
@@ -64,10 +65,12 @@ import {
   setListenQueueOrder,
   setListenReviewLevel,
   snoozeListenItem,
+  undoListenReviewChange,
   type ListenContentSource,
   type ListenItem,
   type ListenLanguageOrder,
   type ListenQueueOrder,
+  type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
@@ -77,6 +80,14 @@ import type { LearningDirection } from "@/lib/direction";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 
 type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
+
+type ListenReviewNotice = {
+  message: string;
+  undo?: {
+    change: ListenReviewChange;
+    item: ListenItem;
+  };
+};
 
 type ListenDesktopApi = {
   onListenMediaCommand?: (callback: (command: ListenMediaCommand) => void) => (() => void);
@@ -294,7 +305,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(getAudioSettings);
   const [graded, setGraded] = useState<"know" | "difficult" | null>(null);
   const [reviewPanel, setReviewPanel] = useState<"level" | "snooze" | null>(null);
-  const [reviewNotice, setReviewNotice] = useState("");
+  const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
+  const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
   const runRef = useRef(0);
   const gradeAdvanceTimerRef = useRef<number | null>(null);
   const mediaCommandRef = useRef<(command: ListenMediaCommand) => void>(() => {});
@@ -363,7 +375,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   useEffect(() => {
     if (!reviewNotice) return undefined;
-    const timer = window.setTimeout(() => setReviewNotice(""), 4500);
+    const timer = window.setTimeout(() => setReviewNotice(null), reviewNotice.undo ? 8000 : 4500);
     return () => window.clearTimeout(timer);
   }, [reviewNotice]);
 
@@ -453,6 +465,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   };
 
   const beginPlayback = () => {
+    setReviewPanel(null);
+    setReviewTarget(null);
     setSessionActivated(true);
     setPlaying(true);
   };
@@ -463,6 +477,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     stopTts();
     setGraded(null);
     setReviewPanel(null);
+    setReviewTarget(null);
     setPlayhead((current) => {
       if (direction > 0) return current + 1;
       if (current > 0) return current - 1;
@@ -564,28 +579,65 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     }, 350);
   };
 
-  const applyReviewLevel = (level: ListenReviewLevel, label: string) => {
+  const openReviewPanel = (panel: "level" | "snooze") => {
+    if (reviewPanel === panel) {
+      setReviewPanel(null);
+      setReviewTarget(null);
+      return;
+    }
     if (!item) return;
-    setListenReviewLevel(item, level, profile);
-    setReviewNotice(uiFmt("Set to {level}.", { level: ui(label) }));
+    // A review action must never chase autoplay onto the next card. Stop the
+    // current sequence and keep an immutable target until the menu closes.
+    cancelGradeAdvance();
+    pause();
+    setReviewTarget({ ...item, aliases: [...item.aliases] });
+    setReviewPanel(panel);
+  };
+
+  const applyReviewLevel = (level: ListenReviewLevel, label: string) => {
+    const target = reviewTarget;
+    if (!target) return;
+    const change = setListenReviewLevel(target, level, profile);
+    setReviewNotice({
+      message: uiFmt("“{item}” set to {level}.", { item: target.de, level: ui(label) }),
+      undo: { change, item: target },
+    });
     setReviewPanel(null);
+    setReviewTarget(null);
     if (level === "permanent") {
       // "Never comes back at all" starts right now, not next session:
       // drop the item from this queue too, which slides the next item into
       // place -- the same move "Put off" makes. Future sessions exclude
       // permanent items in buildListenQueue.
       cancelGradeAdvance();
-      setHiddenIds((current) => new Set(current).add(item.id));
+      setHiddenIds((current) => new Set(current).add(target.id));
     }
   };
 
+  const undoReviewLevel = () => {
+    const pending = reviewNotice?.undo;
+    if (!pending) return;
+    undoListenReviewChange(pending.change, profile);
+    setHiddenIds((current) => {
+      if (!current.has(pending.item.id)) return current;
+      const next = new Set(current);
+      next.delete(pending.item.id);
+      return next;
+    });
+    setReviewNotice({
+      message: uiFmt("Undid the level change for “{item}”.", { item: pending.item.de }),
+    });
+  };
+
   const putOff = (days: number, label: string) => {
-    if (!item) return;
+    const target = reviewTarget;
+    if (!target) return;
     cancelGradeAdvance();
-    snoozeListenItem(item, days, profile);
-    setReviewNotice(uiFmt("Put off until {when}.", { when: ui(label) }));
+    snoozeListenItem(target, days, profile);
+    setReviewNotice({ message: uiFmt("Put off until {when}.", { when: ui(label) }) });
     setReviewPanel(null);
-    setHiddenIds((current) => new Set(current).add(item.id));
+    setReviewTarget(null);
+    setHiddenIds((current) => new Set(current).add(target.id));
   };
 
   const commitGermanRepeats = (count: number) => {
@@ -785,7 +837,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <button
                 aria-expanded={reviewPanel === "level"}
                 className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => setReviewPanel((current) => current === "level" ? null : "level")}
+                onClick={() => openReviewPanel("level")}
                 type="button"
               >
                 {ui("Set level")} <ChevronDown className="h-4 w-4" />
@@ -793,7 +845,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <button
                 aria-expanded={reviewPanel === "snooze"}
                 className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => setReviewPanel((current) => current === "snooze" ? null : "snooze")}
+                onClick={() => openReviewPanel("snooze")}
                 type="button"
               >
                 <CalendarClock className="h-4 w-4" /> {ui("Put off")}
@@ -836,9 +888,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             )}
 
             {reviewNotice && (
-              <p className="mt-4 rounded-xl bg-[var(--accent-dim)] px-3 py-2 text-center text-xs font-black text-[var(--accent)]" role="status">
-                {reviewNotice}
-              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-xl bg-[var(--accent-dim)] px-3 py-2 text-center text-xs font-black text-[var(--accent)]" role="status">
+                <span>{reviewNotice.message}</span>
+                {reviewNotice.undo && (
+                  <button
+                    className="inline-flex items-center gap-1 rounded-lg border border-current/25 bg-[var(--surface)] px-2.5 py-1 text-xs font-black transition hover:-translate-y-px"
+                    onClick={undoReviewLevel}
+                    type="button"
+                  >
+                    <Undo2 className="h-3.5 w-3.5" /> {ui("Undo")}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

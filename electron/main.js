@@ -1779,16 +1779,44 @@ function pruneRemovedFiles(source, folder) {
   }
 }
 
-function copyExtensionFolder() {
+function extensionSourceFolder() {
   // fs.cpSync can't walk a folder that's still packed inside app.asar --
   // it needs the real files asarUnpack puts alongside it in
   // app.asar.unpacked, not the virtual in-archive path used everywhere
   // else in this file for simple reads.
-  const source = app.isPackaged
+  return app.isPackaged
     ? path.join(process.resourcesPath, "app.asar.unpacked", "dist", "micheon-immersion-extension")
     : path.join(__dirname, "..", "dist", "micheon-immersion-extension");
+}
+
+function extensionDestinationFolder() {
+  return path.join(app.getPath("documents"), "Micheon Immersion Extension");
+}
+
+function extensionVersion(folder) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(folder, "manifest.json"), "utf8"));
+    return typeof manifest.version === "string" ? manifest.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function extensionInfo() {
+  const source = extensionSourceFolder();
+  const destination = extensionDestinationFolder();
+  return {
+    bundledVersion: extensionVersion(source),
+    copiedVersion: extensionVersion(destination),
+    path: destination,
+  };
+}
+
+function copyExtensionFolder() {
+  const source = extensionSourceFolder();
   if (!fs.existsSync(source)) throw new Error("bundled extension is missing from this build");
-  const destination = path.join(app.getPath("documents"), "Micheon Immersion Extension");
+  const destination = extensionDestinationFolder();
+  const previousVersion = extensionVersion(destination);
   // Overwrite in place, never delete-then-recreate. By the second time a
   // learner presses this button their browser already has THIS path loaded
   // as an unpacked extension, and removing the directory (manifest.json
@@ -1799,7 +1827,14 @@ function copyExtensionFolder() {
   fs.mkdirSync(destination, { recursive: true });
   fs.cpSync(source, destination, { force: true, recursive: true });
   pruneRemovedFiles(source, destination);
-  return destination;
+  const version = extensionVersion(destination);
+  if (!version) throw new Error("copied extension manifest is missing or invalid");
+  return {
+    path: destination,
+    version,
+    previousVersion,
+    updated: Boolean(previousVersion && previousVersion !== version),
+  };
 }
 
 // The Chromium browsers this machine might have, with every install home
@@ -1850,10 +1885,15 @@ ipcMain.handle("extension:browsers", (event) => {
   return installedBrowsers().map(({ id, name }) => ({ id, name }));
 });
 
+ipcMain.handle("extension:info", (event) => {
+  if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
+  return extensionInfo();
+});
+
 ipcMain.handle("extension:install", (event, browserId) => {
   if (!eventCameFrom(event, mainWindow)) throw new Error("Untrusted extension request");
   try {
-    const destination = copyExtensionFolder();
+    const copied = copyExtensionFolder();
     // With a browser chosen, do everything a browser will allow from the
     // outside: launch it and put its extensions-page address in the
     // clipboard ready to paste. Chromium refuses scheme://extensions as a
@@ -1866,11 +1906,18 @@ ipcMain.handle("extension:install", (event, browserId) => {
       clipboard.writeText(browser.address);
       spawn(browser.exe, [], { detached: true, stdio: "ignore" }).unref();
     }
-    shell.showItemInFolder(path.join(destination, "manifest.json"));
-    return { ok: true, path: destination, address: browser?.address ?? null };
+    shell.showItemInFolder(path.join(copied.path, "manifest.json"));
+    return { ok: true, ...copied, address: browser?.address ?? null };
   } catch (e) {
     console.error("[extension] install failed:", e?.message ?? e);
-    return { ok: false, path: null, address: null };
+    return {
+      ok: false,
+      path: null,
+      address: null,
+      version: null,
+      previousVersion: null,
+      updated: false,
+    };
   }
 });
 

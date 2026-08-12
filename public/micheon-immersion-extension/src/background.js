@@ -8,6 +8,10 @@ const DEFAULT_SETTINGS = {
   ttsOnClick: true,
   youtubeAutoDub: true,
 };
+let latestTtsRequest = 0;
+let lastForwardedText = "";
+let lastForwardedAt = 0;
+let offscreenCreation = null;
 
 chrome.runtime.onInstalled.addListener(async () => {
   const existing = await chrome.storage.local.get("settings");
@@ -17,21 +21,40 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 async function ensureOffscreen() {
-  if (chrome.offscreen && !(await chrome.offscreen.hasDocument())) {
-    await chrome.offscreen.createDocument({
+  if (!chrome.offscreen || await chrome.offscreen.hasDocument()) return;
+  // Several content frames can ask for pronunciation before the first
+  // offscreen document finishes opening. Share that creation promise so we
+  // never race createDocument() and forward the same hover more than once.
+  if (!offscreenCreation) {
+    offscreenCreation = chrome.offscreen.createDocument({
       url: "src/offscreen.html",
       reasons: ["AUDIO_PLAYBACK"],
       justification: "Plays the German pronunciation of a hovered word",
-    });
+    }).finally(() => { offscreenCreation = null; });
   }
+  await offscreenCreation;
 }
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type !== "micheon-tts") return undefined;
+  const text = String(message.text || "").replace(/\s+/g, " ").trim().slice(0, 200);
+  if (!text) return undefined;
+  const now = Date.now();
+  // Content scripts can exist in more than one frame, and reactive pages
+  // occasionally render the same visible label twice. Keep this second
+  // guard at the central audio boundary so those identical hover requests
+  // still become one pronunciation even if they came from different frames.
+  if (text === lastForwardedText && now - lastForwardedAt < 1200) return undefined;
+  lastForwardedText = text;
+  lastForwardedAt = now;
+  const requestId = ++latestTtsRequest;
   void (async () => {
     try {
       await ensureOffscreen();
-      await chrome.runtime.sendMessage({ type: "micheon-tts-play", text: message.text });
+      // The pointer may have reached another word while the hidden audio
+      // page was being created. Only the newest pronunciation is useful.
+      if (requestId !== latestTtsRequest) return;
+      await chrome.runtime.sendMessage({ type: "micheon-tts-play", text });
     } catch {
       // No offscreen support or no audio path -- pronunciation is a nicety,
       // never worth an error surface.

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Micheon Immersion",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Highlights German words you're already learning in Micheon wherever you browse, logs new words it finds so the word bank can grow, and sets YouTube to its German dub + English captions when a video has one.",
   "permissions": [
     "storage",
@@ -14,9 +14,21 @@
   "background": {
     "service_worker": "src/background.js"
   },
+  "icons": {
+    "16": "icons/micheon.png",
+    "32": "icons/micheon.png",
+    "48": "icons/micheon.png",
+    "128": "icons/micheon.png"
+  },
   "action": {
     "default_popup": "src/popup.html",
-    "default_title": "Micheon Immersion"
+    "default_title": "Micheon Immersion",
+    "default_icon": {
+      "16": "icons/micheon.png",
+      "32": "icons/micheon.png",
+      "48": "icons/micheon.png",
+      "128": "icons/micheon.png"
+    }
   },
   "content_scripts": [
     {
@@ -55,7 +67,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "data/words.json"
+        "data/words.json",
+        "icons/micheon.png"
       ],
       "matches": [
         "http://*/*",

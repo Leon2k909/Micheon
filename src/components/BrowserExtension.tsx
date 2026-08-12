@@ -8,8 +8,24 @@ interface ExtensionBrowser {
   name: string;
 }
 
+interface ExtensionInfo {
+  bundledVersion: string | null;
+  copiedVersion: string | null;
+  path: string;
+}
+
+interface ExtensionInstallResult {
+  ok: boolean;
+  path: string | null;
+  address: string | null;
+  version: string | null;
+  previousVersion: string | null;
+  updated: boolean;
+}
+
 interface ExtensionDesktopApi {
-  installBrowserExtension?: (browserId?: string | null) => Promise<{ ok: boolean; path: string | null; address: string | null }>;
+  installBrowserExtension?: (browserId?: string | null) => Promise<ExtensionInstallResult>;
+  getBrowserExtensionInfo?: () => Promise<ExtensionInfo>;
   listExtensionBrowsers?: () => Promise<ExtensionBrowser[]>;
 }
 
@@ -38,12 +54,26 @@ function getExtensionApi(): ExtensionDesktopApi | undefined {
 export function BrowserExtension() {
   const desktopApi = getExtensionApi();
   const [browsers, setBrowsers] = useState<ExtensionBrowser[]>([]);
-  const [state, setState] = useState<{ status: "idle" | "working" | "done" | "error"; path?: string; address?: string; browser?: string }>({ status: "idle" });
+  const [info, setInfo] = useState<ExtensionInfo | null>(null);
+  const [state, setState] = useState<{
+    status: "idle" | "working" | "done" | "error";
+    path?: string;
+    address?: string;
+    browser?: string;
+    version?: string;
+    previousVersion?: string | null;
+    updated?: boolean;
+  }>({ status: "idle" });
 
   useEffect(() => {
     let cancelled = false;
-    void desktopApi?.listExtensionBrowsers?.().then((list) => {
-      if (!cancelled && Array.isArray(list)) setBrowsers(list);
+    void Promise.all([
+      desktopApi?.listExtensionBrowsers?.(),
+      desktopApi?.getBrowserExtensionInfo?.(),
+    ]).then(([list, extensionInfo]) => {
+      if (cancelled) return;
+      if (Array.isArray(list)) setBrowsers(list);
+      if (extensionInfo) setInfo(extensionInfo);
     }).catch(() => {});
     return () => {
       cancelled = true;
@@ -58,9 +88,20 @@ export function BrowserExtension() {
     setState({ status: "working", browser: browser?.name });
     try {
       const result = await desktopApi.installBrowserExtension(browser?.id ?? null);
-      setState(result.ok && result.path
-        ? { status: "done", path: result.path, address: result.address ?? undefined, browser: browser?.name }
+      setState(result.ok && result.path && result.version
+        ? {
+            status: "done",
+            path: result.path,
+            address: result.address ?? undefined,
+            browser: browser?.name,
+            version: result.version,
+            previousVersion: result.previousVersion,
+            updated: result.updated,
+          }
         : { status: "error" });
+      if (result.ok && result.path && result.version) {
+        setInfo({ bundledVersion: result.version, copiedVersion: result.version, path: result.path });
+      }
     } catch {
       setState({ status: "error" });
     }
@@ -71,6 +112,15 @@ export function BrowserExtension() {
       <p className="text-sm font-semibold leading-6 text-[var(--text-2)]">
         {ui("A small extension for Chrome, Edge and Brave that keeps teaching you while you browse: it highlights German words you already know on any page, quietly collects the ones it doesn't recognise (with the sentence they appeared in) so the word bank can grow from real usage, and switches YouTube to its German dub with English captions when a video has one.")}
       </p>
+
+      {info?.bundledVersion && (
+        <p className="text-xs font-bold text-[var(--text-3)]">
+          {ui("Included with this Micheon version")}: <span className="text-[var(--text-1)]">v{info.bundledVersion}</span>
+          {info.copiedVersion && (
+            <> · {ui("Extension folder")}: <span className="text-[var(--text-1)]">v{info.copiedVersion}</span></>
+          )}
+        </p>
+      )}
 
       <div className="grid gap-2 sm:grid-cols-3">
         {[
@@ -148,16 +198,20 @@ export function BrowserExtension() {
       )}
       {state.status === "done" && state.path && (
         <div className="rounded-[16px] bg-emerald-500/10 p-3 text-xs font-semibold leading-5 text-[var(--text-2)]">
+          <p className="font-black text-emerald-700 dark:text-emerald-300">
+            {ui("Micheon Immersion copied")}{state.version ? ` · v${state.version}` : ""}
+            {state.updated && state.previousVersion ? ` (${ui("updated from")} v${state.previousVersion})` : ""}
+          </p>
           {state.address ? (
-            <>
-              {ui("The folder is ready and your browser is opening. The extensions-page address is already in your clipboard — paste it into the address bar")}
+            <p className="mt-1">
+              {ui("Your browser is opening. Its extensions-page address is already in your clipboard — paste it into the address bar")}
               {" "}(<code className="font-black">{state.address}</code>),{" "}
-              {ui("turn on Developer mode, click “Load unpacked” and pick the folder that just opened.")}
-            </>
+              {ui("then use Load unpacked for a first install, or click Reload on the existing Micheon Immersion card after an update. Refresh pages that were already open.")}
+            </p>
           ) : (
-            <>
+            <p className="mt-1">
               {ui("Folder opened — ready to load")} · {ui("Saved to")} {state.path}
-            </>
+            </p>
           )}
         </div>
       )}
@@ -178,9 +232,10 @@ export function BrowserExtension() {
           <li>{ui("Turn on Developer mode.")}</li>
           <li>
             {desktopApi
-              ? ui("Click “Load unpacked” and select the folder that just opened (or that you unzipped).")
+              ? ui("For a first install, click “Load unpacked” and select the folder that just opened. After an app update, click Reload on the existing Micheon Immersion card instead.")
               : ui("Click “Load unpacked” and select the unzipped folder.")}
           </li>
+          <li>{ui("Refresh browser pages that were already open so they use the new extension files.")}</li>
         </ol>
       </div>
     </div>

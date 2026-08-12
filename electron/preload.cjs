@@ -72,8 +72,11 @@ contextBridge.exposeInMainWorld("germDesktop", {
   // id it also launches that browser and puts its extensions-page address
   // in the clipboard. Resolves { ok, path, address }; no browser lets this
   // go further (Developer mode and Load unpacked still have to be the
-  // learner's own click, by design).
+  // learner's own click, by design). The result includes the exact copied
+  // version and the version that was in the stable folder beforehand so the
+  // UI can distinguish first-time loading from Brave's required Reload step.
   installBrowserExtension: (browserId) => ipcRenderer.invoke("extension:install", browserId ?? null),
+  getBrowserExtensionInfo: () => ipcRenderer.invoke("extension:info"),
   // Which of Chrome, Edge and Brave are actually installed on this machine.
   listExtensionBrowsers: () => ipcRenderer.invoke("extension:browsers"),
   // How updates should arrive, whether they are postponed, and whether the

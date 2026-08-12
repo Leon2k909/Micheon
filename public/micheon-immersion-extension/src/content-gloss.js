@@ -29,6 +29,19 @@
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "SELECT", "OPTION", "CODE", "PRE"]);
   const MISSING_VOCAB_CAP = 3000;
   const FLUSH_DELAY_MS = 4000;
+  // Pointer movement is noisy: crossing letters, inline elements, or two
+  // copies of the same word can emit several hit-test changes in a few
+  // milliseconds. Wait for the learner to settle on a word before speaking,
+  // and do not immediately repeat the same pronunciation from a neighbouring
+  // range. Explicit clicks still replay instantly.
+  const HOVER_SPEAK_DELAY_MS = 280;
+  const SAME_WORD_SPEAK_COOLDOWN_MS = 1200;
+  const runWhenIdle = window.requestIdleCallback
+    ? window.requestIdleCallback.bind(window)
+    : (callback, options = {}) => window.setTimeout(
+        () => callback({ didTimeout: true, timeRemaining: () => 0 }),
+        Math.min(Number(options.timeout) || 50, 50),
+      );
   // Unicode-aware boundaries, not \b. JS's \b is ASCII-only, so `\büber\b`
   // can NEVER match: a space followed by "ü" is non-word followed by
   // non-word, which is not a boundary. Every umlaut-initial hint word was
@@ -212,7 +225,9 @@
     "ist", "sind", "war", "waren", "wird", "werden", "wurde", "wurden", "hat", "haben", "hatte", "hatten",
     "kann", "können", "muss", "müssen", "soll", "sollen", "will", "wollen", "darf", "dürfen", "mag", "mögen",
     "nicht", "kein", "keine", "auch", "noch", "nur", "schon", "so", "sehr", "hier", "dort", "jetzt",
-    "alle", "alles", "andere", "anderen", "jede", "jeder", "jedes", "man", "mehr",
+    "alle", "alles", "andere", "anderen", "jede", "jeder", "jedes", "jeden", "man", "mehr",
+    "was", "habe", "sei", "dir", "deine", "deiner", "deinem", "deinen", "meine", "meiner",
+    "meinem", "meinen", "seine", "dies", "diese", "dieser", "dieses", "diesen", "einige", "eure",
   ]);
 
   // Not vocabulary: names, cities, brands, web fragments and English filler
@@ -254,8 +269,8 @@
     "telekom", "temu", "tesla", "tiktok", "toyota", "twitch", "twitter", "uber", "visa", "vodafone",
     "volkswagen", "whatsapp", "wikipedia", "windows", "xbox", "youtube", "zalando", "zara",
     // web and file fragments
-    "api", "com", "html", "http", "https", "jpg", "mp3", "mp4", "net", "org", "pdf", "php", "png",
-    "url", "www",
+    "api", "aug", "com", "dev", "html", "http", "https", "jpg", "jun", "min", "mp3", "mp4", "net",
+    "org", "pdf", "php", "png", "sta", "stat", "std", "url", "www",
     // English filler that shows up inside otherwise-German sentences
     "and", "app", "apps", "are", "audio", "beginner", "best", "but", "can", "channel", "comment",
     "comments", "could", "course", "courses", "download", "english", "follow", "for", "free", "from",
@@ -265,6 +280,14 @@
     "their", "them", "then", "there", "they", "this", "time", "two", "video", "videos", "vocabulary",
     "welcome", "were", "what", "when", "where", "which", "who", "why", "with", "words", "would",
     "you", "your",
+    // additional brands, account names and English feed chrome observed in
+    // the second real-world export
+    "andy", "burnham", "choblin", "codex", "gemini", "grok", "jacobgold", "polymarket",
+    "reset", "techdevnotes", "teslanacho", "tibo", "trends",
+    "about", "after", "agents", "already", "another", "boats", "coming", "continued", "delay",
+    "does", "give", "good", "great", "instead", "meeting", "native", "never", "news", "now",
+    "paper", "planning", "politics", "prime", "pro", "really", "release", "reports", "said",
+    "small", "students", "suggested", "sunny", "testing", "told", "use", "users", "waiting", "work", "year",
   ]);
 
   function looksLikeRealGermanCandidate(token) {
@@ -341,7 +364,8 @@
     tipSpeakEl.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      speakGerman(tipEl?.dataset.micheonDe || "");
+      clearPendingHoverSpeech();
+      speakGerman(tipEl?.dataset.micheonDe || "", { force: true });
     });
     tipEl.appendChild(tipTextEl);
     tipEl.appendChild(tipSpeakEl);
@@ -369,16 +393,181 @@
   // The range entry the tip is currently showing; also the once-per-hover
   // guard for spoken audio.
   let activeEntry = null;
+  let pendingHoverSpeech = null;
+  let lastSpokenText = "";
+  let lastSpokenAt = 0;
 
-  function speakGerman(text) {
-    if (!text) return;
+  function clearPendingHoverSpeech() {
+    if (pendingHoverSpeech !== null) {
+      clearTimeout(pendingHoverSpeech);
+      pendingHoverSpeech = null;
+    }
+  }
+
+  // The extension catalogue stores dictionary forms so the app and
+  // extension share one teachable item. Real pages naturally contain
+  // conjugations, declined adjectives and plurals. These aliases came from
+  // the reviewed Immersion export and point those observed forms back to an
+  // existing lemma instead of falsely reporting each one as missing vocab.
+  // This is deliberately curated rather than a suffix guesser: German
+  // morphology has too many collisions for a confident hover definition.
+  const OBSERVED_FORM_TO_LEMMA = new Map(Object.entries({
+    "übersetzt": "übersetzen",
+    "vereinigtes": "vereinigen",
+    "bots": "Bot",
+    "sieht": "sehen",
+    "frühen": "früh",
+    "echte": "echt",
+    "echten": "echt",
+    "möchtest": "möchten",
+    "neues": "neu",
+    "repostet": "reposten",
+    "erledigter": "erledigen",
+    "tools": "Tool",
+    "aktive": "aktiv",
+    "bietet": "bieten",
+    "könnte": "können",
+    "modelle": "Modell",
+    "sagt": "sagen",
+    "gewesen": "werden",
+    "kannst": "können",
+    "versprochen": "versprechen",
+    "zusätzlichen": "zusätzlich",
+    "überschritten": "überschreiten",
+    "angesprochen": "ansprechen",
+    "behauptete": "behaupten",
+    "beträgt": "betragen",
+    "beweist": "beweisen",
+    "boote": "Boot",
+    "dinge": "Ding",
+    "eigene": "eigen",
+    "dümmer": "dumm",
+    "erzählt": "erzählen",
+    "extreme": "extrem",
+    "freizugeben": "freigeben",
+    "gegenden": "Gegend",
+    "gemeinden": "Gemeinde",
+    "gesamten": "ganz",
+    "gebiete": "Gebiet",
+    "gelöst": "lösen",
+    "geschwister": "Geschwister",
+    "hätten": "haben",
+    "kurzbefehle": "Kurzbefehl",
+    "menschen": "Mensch",
+    "monaten": "Monat",
+    "perfektes": "perfekt",
+    "passiert": "passieren",
+    "preise": "Preis",
+    "projekten": "Projekt",
+    "scheint": "scheinen",
+    "spricht": "sprechen",
+    "treffe": "treffen",
+    "unterstützten": "unterstützen",
+    "verdammte": "verdammt",
+    "veröffentlicht": "veröffentlichen",
+    "verfasst": "verfassen",
+    "verfügt": "verfügen",
+    "verärgert": "verärgern",
+    "wohlhabende": "wohlhabend",
+    "ärmsten": "arm",
+    "angezeigt": "anzeigen",
+    "anzuzeigen": "anzeigen",
+    "aufgehoben": "aufheben",
+    "außergewöhnliche": "außergewöhnlich",
+    "behoben": "beheben",
+    "benötigt": "benötigen",
+    "bestehender": "bestehen",
+    "bewertungen": "Bewertung",
+    "britischen": "britisch",
+    "empfohlen": "empfehlen",
+    "erreicht": "erreichen",
+    "grundlegende": "grundlegend",
+    "gelandet": "landen",
+    "landet": "landen",
+    "lehnt": "ablehnen",
+    "umzusteigen": "umsteigen",
+    "verliert": "verlieren",
+    "weigern": "sich weigern",
+    "wähle": "wählen",
+    "aktuelle": "aktuell",
+    "auszuprobieren": "ausprobieren",
+    "gegeben": "geben",
+    "abgesagt": "absagen",
+    "berichtet": "berichten",
+    "erstellt": "erstellen",
+    "generierter": "generieren",
+    "kleine": "klein",
+    "kleinen": "klein",
+    "plant": "planen",
+    "risse": "Riss",
+    "tage": "Tag",
+    "anmerkungen": "Anmerkung",
+    "bleibt": "bleiben",
+    "chemische": "chemisch",
+    "chinesischer": "chinesisch",
+    "dachtest": "denken",
+    "denke": "denken",
+    "dumme": "dumm",
+    "einzelnen": "einzeln",
+    "erwartungen": "Erwartung",
+    "fortschritte": "Fortschritt",
+    "gesunken": "sinken",
+    "großer": "groß",
+    "höchstes": "hoch",
+    "inhalte": "Inhalt",
+    "konversationen": "Konversation",
+    "langjährigen": "langjährig",
+    "nutzern": "Nutzer",
+    "probleme": "Problem",
+    "seines": "sein",
+    "sofortige": "sofort",
+    "starte": "starten",
+    "ständigen": "ständig",
+    "tiefen": "tief",
+    "typen": "Typ",
+    "verdammter": "verdammt",
+    "vereinigten": "vereinigen",
+    "vergangenen": "vergangen",
+    "verkäufe": "Verkauf",
+    "vorhandenen": "vorhanden",
+    "waldbrände": "Waldbrand",
+    "zweiten": "zweite",
+  }));
+
+  function findGermanEntry(token) {
+    const exact = byDeExact.get(token);
+    if (exact) return exact;
+    const lemma = OBSERVED_FORM_TO_LEMMA.get(token.toLowerCase());
+    if (!lemma) return null;
+    return byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null;
+  }
+
+  function speakGerman(text, { force = false } = {}) {
+    const spokenText = String(text || "").replace(/\s+/g, " ").trim();
+    if (!spokenText) return;
+    const now = Date.now();
+    if (!force && spokenText === lastSpokenText && now - lastSpokenAt < SAME_WORD_SPEAK_COOLDOWN_MS) {
+      return;
+    }
+    lastSpokenText = spokenText;
+    lastSpokenAt = now;
     // chrome.* throws "Extension context invalidated" in a page injected
     // before the extension was reloaded. Pronunciation is a nicety; an
     // exception here would take the whole handler down.
-    try { chrome.runtime.sendMessage({ type: "micheon-tts", text }); } catch { /* stale context */ }
+    try { chrome.runtime.sendMessage({ type: "micheon-tts", text: spokenText }); } catch { /* stale context */ }
+  }
+
+  function scheduleHoverSpeech(entry) {
+    clearPendingHoverSpeech();
+    if (!settings.ttsOnHover || !entry?.de) return;
+    pendingHoverSpeech = setTimeout(() => {
+      pendingHoverSpeech = null;
+      if (activeEntry === entry && tipVisible()) speakGerman(entry.de);
+    }, HOVER_SPEAK_DELAY_MS);
   }
 
   function hideTip() {
+    clearPendingHoverSpeech();
     anchorRect = null;
     activeEntry = null;
     paintTip(false);
@@ -405,9 +594,9 @@
     activeEntry = entry;
     paintTip(true);
     // Hearing the word is the default learning mode; the popup can turn it
-    // off. Guarded by activeEntry above so lingering on one word speaks
-    // once, not on every pixel of mouse travel.
-    if (settings.ttsOnHover) speakGerman(entry.de);
+    // off. The short settling delay prevents a sweep across several words
+    // from creating overlapping audio and repeated tooltip announcements.
+    scheduleHoverSpeech(entry);
   }
 
   function tipVisible() {
@@ -437,7 +626,7 @@
     // The union of both rects covers the gap the cursor crosses to reach
     // the speaker button; the padding keeps that crossing forgiving without
     // making the tip cling to the pointer.
-    const pad = 10;
+    const pad = 12;
     const left = Math.min(anchorRect.left, tipRect.left) - pad;
     const right = Math.max(anchorRect.right, tipRect.right) + pad;
     const top = Math.min(anchorRect.top, tipRect.top) - pad;
@@ -464,7 +653,8 @@
       const entry = glossAtPoint(e.clientX, e.clientY);
       if (entry) {
         showTipForEntry(entry);
-        speakGerman(entry.de);
+        clearPendingHoverSpeech();
+        speakGerman(entry.de, { force: true });
       }
     }, true);
     // Belt and braces for the cases a mousemove never arrives for: the
@@ -535,10 +725,15 @@
     if (!list) return null;
     const offset = caret.startOffset;
     for (const entry of list) {
-      if (offset >= entry.start && offset <= entry.end) {
-        if (entry.range.collapsed) return null; // node was replaced under us
-        return entry;
-      }
+      // DOM Range end offsets are exclusive. Treating them as inclusive made
+      // two adjacent highlighted words both eligible at their shared edge,
+      // which caused tooltip flicker and duplicate pronunciation requests.
+      if (offset < entry.start || offset >= entry.end) continue;
+      if (entry.range.collapsed) return null; // node was replaced under us
+      const overPaintedWord = Array.from(entry.range.getClientRects()).some((rect) => (
+        x >= rect.left - 1 && x <= rect.right + 1 && y >= rect.top - 1 && y <= rect.bottom + 1
+      ));
+      if (overPaintedWord) return entry;
     }
     return null;
   }
@@ -557,7 +752,7 @@
       let hit = null;
 
       if (germanMode) {
-        hit = byDeExact.get(token);
+        hit = findGermanEntry(token);
         if (!hit && /^[A-ZÄÖÜ]+$/.test(token)) {
           // All-caps discards case entirely (headlines, nav labels) -- no
           // noun/verb signal survives that to protect, so the full index
@@ -626,9 +821,9 @@
         processTextNode(nodes[i], germanMode);
         i += 1;
       }
-      if (i < nodes.length) requestIdleCallback(step, { timeout: 1000 });
+      if (i < nodes.length) runWhenIdle(step, { timeout: 1000 });
     }
-    requestIdleCallback(step, { timeout: 1000 });
+    runWhenIdle(step, { timeout: 1000 });
   }
 
   function observeNewContent() {

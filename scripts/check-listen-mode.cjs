@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -69,7 +69,7 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
 const {
-  buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, snoozeListenItem,
+  buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem,
   getListenBackgroundPlayback, setListenBackgroundPlayback,
   getListenPetBilingualCaptions, setListenPetBilingualCaptions,
   getListenContentSource, setListenContentSource,
@@ -152,12 +152,20 @@ check("the exposure count is readable back through aliases",
   listenCountForId(grades, "canonical-id") === 1);
 
 stored.clear();
-setListenReviewLevel({ id: "manual-level", aliases: [] }, 5, null, Date.now());
+seedGrades({ "legacy-manual-level": { lastGrade: "struggle", listens: 2 } });
+const reviewChange = setListenReviewLevel({ id: "manual-level", aliases: ["legacy-manual-level"] }, 5, null, Date.now());
 grades = readGrades();
 check("an explicit Listen level correction can set Mastered",
   grades["manual-level"]?.lastGrade === "know"
   && grades["manual-level"]?.successes === 5
-  && grades["manual-level"]?.intervalDays === 180);
+  && grades["manual-level"]?.intervalDays === 180
+  && grades["legacy-manual-level"] === undefined);
+undoListenReviewChange(reviewChange, null);
+grades = readGrades();
+check("an explicit Listen level correction can restore the exact prior tracker record",
+  grades["manual-level"] === undefined
+  && grades["legacy-manual-level"]?.lastGrade === "struggle"
+  && grades["legacy-manual-level"]?.listens === 2);
 setListenReviewLevel({ id: "manual-level", aliases: [] }, "new", null, Date.now());
 check("an explicit Listen level correction can reset an item to New",
   readGrades()["manual-level"] === undefined);
@@ -401,9 +409,18 @@ check("muted language state cannot silently hide from the learner",
   && view.includes('"German voice is muted and will be skipped."'));
 check("Listen exposes exact review levels and real snooze choices",
   view.includes("setListenReviewLevel(")
+  && view.includes("undoListenReviewChange(")
   && view.includes("snoozeListenItem(")
   && view.includes('ui("Set level")')
   && view.includes('ui("Put off")'));
+check("the review menu pauses autoplay, freezes the exact item, names it, and offers Undo",
+  view.includes("const openReviewPanel")
+  && view.includes("pause();")
+  && view.includes("setReviewTarget({ ...item")
+  && view.includes("setListenReviewLevel(target")
+  && view.includes('uiFmt("“{item}” set to {level}."')
+  && view.includes("undoReviewLevel")
+  && view.includes('ui("Undo")'));
 check("pausing actually stops the voice", view.includes("stopTts()"));
 check("silent playback is detected from a real start event, not a duration guess",
   view.includes("TTS_SPEAKING_EVENT")
@@ -484,6 +501,8 @@ for (const key of [
   "Voice levels",
   "English voice is muted and will be skipped.",
   "Quick marks stay gentle. Set level makes an exact tracker change.",
+  "“{item}” set to {level}.",
+  "Undid the level change for “{item}”.",
   "Play audio",
   "Keep playing around Micheon",
   "Continue when you open Home, Practice, Settings, or another app section.",

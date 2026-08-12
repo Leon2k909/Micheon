@@ -14,8 +14,9 @@ running, its own local TTS server.
    mutation -- because wrapping words in elements broke React/Polymer apps
    whose next re-render tripped over our nodes (X's translate toggle died
    three different ways before this). The tooltip is driven by caret
-   hit-testing; hovering also speaks the German (through the desktop app's
-   TTS when it runs, the browser voice otherwise) and clicking the word
+   hit-testing; hovering also speaks the German after a short settling delay
+   (through the desktop app's TTS when it runs, the browser voice otherwise)
+   and clicking the word
    replays it -- both on by default, both toggleable in the popup. On a
    German page that's an English gloss (reinforcement of what you're
    learning); on any other page it's the reverse — an English word with a
@@ -23,7 +24,8 @@ running, its own local TTS server.
    otherwise read in English still teach. The tooltip has a speaker button
    that pronounces the German: through the Micheon desktop app's own TTS
    voice when the app is running, through the browser's built-in German
-   voice when it isn't.
+   voice when it isn't. A latest-request-wins player cancels the previous
+   pronunciation when the pointer moves, so words never speak over each other.
 2. **Missing-vocabulary collection.** In German text, a real-looking German
    word that ISN'T in the list gets counted, along with one real sentence it
    appeared in. This is a *candidate* list for a human (or a future
@@ -60,15 +62,17 @@ card on that page — browsers don't re-read the files on their own.
 ## Regenerating the word list
 
 `data/words.json` is a snapshot of Micheon's real word catalogue, not hand-written.
-Re-export it after adding new packs to the app:
+Every Micheon build refreshes the snapshot and ZIP automatically. To do the same
+without running the full app build:
 
 ```
-node <path-to-export-script> <path-to-germ-repo> data/words.json
+npm run sync:immersion-extension
 ```
 
-(the export script lives with this session's scratch tooling; ask for it
-regenerated, or it can be rebuilt from `src/lib/wordSession.ts`'s
-`buildWordCatalog` the same way the app's own gates do.)
+The exporter is kept in `scripts/export-immersion-words.cjs` and uses the same
+authored catalogue and deduplication rules as Words mode. `npm run
+check:immersion-extension` then verifies the snapshot, downloadable archive,
+branding, desktop version handoff and hover-audio regressions.
 
 ## Known limitations, honestly
 
@@ -102,7 +106,7 @@ regenerated, or it can be rebuilt from `src/lib/wordSession.ts`'s
   through sentences, not as standalone entries, so flagging them just
   buries real candidates. Everything else is a candidate for review, not a
   verdict.
-- **Not a general-purpose page translator.** It can only gloss the ~4,478
+- **Not a general-purpose page translator.** It can only gloss the ~6,200
   words Micheon already teaches. It will never turn an arbitrary paragraph
   into fluent German — that needs a real translation engine, which this
   deliberately doesn't use (offline, zero cost, zero external dependency
