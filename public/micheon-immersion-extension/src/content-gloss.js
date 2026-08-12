@@ -28,6 +28,10 @@
 (() => {
   const WORD_RE = /[\p{L}\p{M}][\p{L}\p{M}'’-]*/gu;
   const GERMAN_LETTER_RE = /^[A-Za-zÄÖÜäöüß'’-]+$/;
+  // A mention, email address or URL can contain fragments that look like
+  // ordinary German words. They are identities/addresses, not vocabulary:
+  // never underline them and never export them as missing candidates.
+  const NON_VOCAB_SPAN_RE = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[A-Za-z]{2,}|@[A-Za-z0-9_]{1,64}|(?:https?:\/\/|www\.)[^\s<>"']+/giu;
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "SELECT", "OPTION", "CODE", "PRE"]);
   const MISSING_VOCAB_CAP = 3000;
   const FLUSH_DELAY_MS = 4000;
@@ -73,6 +77,10 @@
   // actually churns.
   const YT_COMMENT_SELECTOR = "#content-text";
   const X_POST_SELECTOR = 'article [data-testid="tweetText"]';
+  const X_REINFORCEMENT_SELECTORS = [
+    'header[role="banner"] nav[role="navigation"]',
+    '[data-testid="sidebarColumn"]',
+  ];
 
   let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true };
   // German capitalises every noun and nothing else, so a word's authored
@@ -100,7 +108,10 @@
   let flushTimer = null;
   let ytScanTimer = null;
   let xScanTimer = null;
-  const processed = new WeakSet();
+  // A node can first be seen in reinforcement-only site chrome and later be
+  // reused by an SPA as authored text. Keep those scans distinct so the
+  // lighter pass cannot permanently suppress collection on that node.
+  const processed = new WeakMap();
 
   // The sentence a missing word appeared in is worth more than the word
   // alone -- it's real usage, the same kind of context Micheon's own "use"
@@ -120,6 +131,39 @@
     const end = endMatch === -1 ? after.length : endMatch + 1;
     const sentence = full.slice(start === -1 ? 0 : start + 2, approxPoint + end).trim();
     return sentence.length > 4 && sentence.length <= 220 ? sentence : full.slice(0, 200);
+  }
+
+  function excludedTextRanges(text) {
+    const ranges = [];
+    NON_VOCAB_SPAN_RE.lastIndex = 0;
+    let match;
+    while ((match = NON_VOCAB_SPAN_RE.exec(text))) {
+      ranges.push({ start: match.index, end: match.index + match[0].length });
+    }
+    return ranges;
+  }
+
+  function overlapsExcludedRange(start, end, ranges) {
+    return ranges.some((range) => start < range.end && end > range.start);
+  }
+
+  function candidateAppearsOutsideExcludedText(text, candidate) {
+    const target = String(candidate || "").toLocaleLowerCase("de-DE");
+    const ranges = excludedTextRanges(text);
+    // Use a private matcher here. WORD_RE is also the iterator owned by
+    // processTextNode; resetting that shared global regex from reconciliation
+    // would make nested or future callers skip/repeat page tokens.
+    const candidateWordRe = /[\p{L}\p{M}][\p{L}\p{M}'’-]*/gu;
+    let match;
+    while ((match = candidateWordRe.exec(text))) {
+      if (match[0].toLocaleLowerCase("de-DE") !== target) continue;
+      if (!overlapsExcludedRange(match.index, match.index + match[0].length, ranges)) return true;
+    }
+    return false;
+  }
+
+  function exampleSupportsCandidate(example, candidate) {
+    return sentenceLooksGerman(example) && candidateAppearsOutsideExcludedText(example, candidate);
   }
 
   function detectGerman() {
@@ -350,7 +394,7 @@
         continue;
       }
       const priorExamples = examplesForMissing(entry);
-      const examples = priorExamples.filter(sentenceLooksGerman);
+      const examples = priorExamples.filter((example) => exampleSupportsCandidate(example, word));
       // Old extension builds sometimes collected navigation labels, account
       // names and English feed chrome. If every captured sentence fails the
       // German check, this came from noisy UI rather than useful German prose.
@@ -491,6 +535,27 @@
     "schalte": "schalten",
     "spar": "sparen",
     "statistiken": "Statistik",
+    "mitteilungen": "Mitteilung",
+    "startseite": "Startseite",
+    "premium": "Premium-Abo",
+    "kollektive": "kollektiv",
+    "anmerkungen": "Anmerkung",
+    "vorgeschlagene": "vorschlagen",
+    "booste": "boosten",
+    "bedingungen": "Bedingung",
+    "gestartet": "starten",
+    "unterstützten": "unterstützen",
+    "projekten": "Projekt",
+    "personen": "Person",
+    "folgt": "folgen",
+    "benutzt": "benutzen",
+    "läuft": "laufen",
+    "agenten": "Agent",
+    "länder": "Land",
+    "wärmeren": "warm",
+    "gartenschläuche": "Gartenschlauch",
+    "erbärmlichen": "erbärmlich",
+    "verabscheue": "verabscheuen",
     "frühen": "früh",
     "echte": "echt",
     "echten": "echt",
@@ -819,16 +884,20 @@
     return null;
   }
 
-  function processTextNode(node, germanMode) {
-    if (processed.has(node)) return;
+  function processTextNode(node, germanMode, collectMissing = true) {
+    const processedMask = processed.get(node) || 0;
+    const passMask = collectMissing ? 2 : 1;
+    if ((processedMask & passMask) !== 0) return;
     const text = node.nodeValue;
     if (!text || text.trim().length < 3) return;
-    processed.add(node);
+    processed.set(node, processedMask | passMask);
 
+    const excludedRanges = excludedTextRanges(text);
     WORD_RE.lastIndex = 0;
     let match;
     while ((match = WORD_RE.exec(text))) {
       const token = match[0];
+      if (overlapsExcludedRange(match.index, match.index + token.length, excludedRanges)) continue;
       const lower = token.toLowerCase();
       let hit = null;
 
@@ -849,7 +918,7 @@
         // "daten" (to date someone, a verb it does). A missed gloss is
         // silent; a wrong one actively teaches something false, so this
         // stays exact-case-or-nothing for ordinary Titlecase tokens.
-        if (!hit && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
+        if (!hit && collectMissing && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
           const sentence = extractSentence(node, match.index);
           // YouTube and X containers may mix languages internally, so the
           // candidate's own sentence still has to look German.
@@ -874,7 +943,7 @@
     }
   }
 
-  function walk(root, germanMode) {
+  function walk(root, germanMode, { collectMissing = true } = {}) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(n) {
         const parent = n.parentElement;
@@ -900,7 +969,7 @@
     let i = 0;
     function step(deadline) {
       while (i < nodes.length && (deadline.timeRemaining() > 0 || deadline.didTimeout)) {
-        processTextNode(nodes[i], germanMode);
+        processTextNode(nodes[i], germanMode, collectMissing);
         i += 1;
       }
       if (i < nodes.length) runWhenIdle(step, { timeout: 1000 });
@@ -1007,6 +1076,15 @@
       const germanPost = commentLooksGerman(text);
       if (germanPost) xGermanFound = true;
       walk(el, germanPost);
+    }
+    // Navigation labels are useful reinforcement (for example Mitteilungen),
+    // but repeated site chrome is not evidence that a word should enter the
+    // missing-vocabulary export. Gloss it against Micheon's catalogue while
+    // keeping collection restricted to authored post text above.
+    for (const selector of X_REINFORCEMENT_SELECTORS) {
+      for (const el of document.querySelectorAll(selector)) {
+        walk(el, true, { collectMissing: false });
+      }
     }
   }
 

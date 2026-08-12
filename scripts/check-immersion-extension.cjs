@@ -20,6 +20,19 @@ const desktopPreload = fs.readFileSync(path.join(root, "electron", "preload.cjs"
 const settingsCard = fs.readFileSync(path.join(root, "src", "components", "BrowserExtension.tsx"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 
+function loadGlossTextFilters() {
+  const start = gloss.indexOf("  const WORD_RE =");
+  const end = gloss.indexOf("  function detectGerman", start);
+  assert(start >= 0 && end > start, "could not isolate Immersion text-filter helpers");
+  const source = `${gloss.slice(start, end)}\nthis.__filters = { excludedTextRanges, overlapsExcludedRange, candidateAppearsOutsideExcludedText };`;
+  const context = {
+    window: { requestIdleCallback: null, setTimeout },
+    location: { hostname: "x.com" },
+  };
+  vm.runInNewContext(source, context, { filename: "content-gloss-text-filters.js" });
+  return context.__filters;
+}
+
 // Every main push is an updater release. In CI, refuse to publish changed
 // extension files under an old extension or app version: otherwise Brave can
 // keep showing an indistinguishable stale unpacked build and the desktop
@@ -76,6 +89,7 @@ for (const lemma of [
   "danke", "bisschen", "Konversation", "mitten", "schlafen", "sofort", "explizit", "weiterhin",
   "Abschreckung", "Pressestelle", "Riss", "Verbot", "wieder", "worum",
   "posten", "meist", "jemals", "Anwendungsfall", "Internetgeschwindigkeit", "Gartenschlauch",
+  "Mitteilung", "Startseite", "Premium-Abo", "kollektiv", "erbärmlich", "verabscheuen", "Großbritannien",
 ]) {
   assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
 }
@@ -85,8 +99,23 @@ assert(gloss.includes("HOVER_SPEAK_DELAY_MS") && gloss.includes("SAME_WORD_SPEAK
 assert(gloss.includes("X_POST_SELECTOR") && gloss.includes("initX()")
   && gloss.includes("reconcileStoredCandidates()") && gloss.includes("examplesForMissing"),
   "X collection is no longer isolated to post text or resolved candidates are not reconciled");
+assert(gloss.includes("X_REINFORCEMENT_SELECTORS") && gloss.includes("collectMissing = true")
+  && gloss.includes("{ collectMissing: false }") && !gloss.includes("|| document.body, true"),
+  "X interface vocabulary is no longer reinforced separately from authored-text collection");
+assert(gloss.includes("const processed = new WeakMap()") && gloss.includes("const passMask = collectMissing ? 2 : 1"),
+  "reinforcement-only scans can suppress a later authored-text collection pass");
 assert(gloss.includes("priorExamples.length > 0 && examples.length === 0"),
   "reconciliation no longer removes candidates backed only by non-German UI noise");
+assert(gloss.includes("NON_VOCAB_SPAN_RE") && gloss.includes("overlapsExcludedRange")
+  && gloss.includes("exampleSupportsCandidate(example, word)"),
+  "handles, email addresses or URLs can leak into glosses and missing-vocabulary exports");
+const textFilters = loadGlossTextFilters();
+assert.equal(textFilters.candidateAppearsOutsideExcludedText("Frag @Mitteilungen nach.", "Mitteilungen"), false,
+  "a word inside an X handle is still treated as vocabulary");
+assert.equal(textFilters.candidateAppearsOutsideExcludedText("Mitteilungen von @name", "Mitteilungen"), true,
+  "real text next to an X handle is incorrectly discarded");
+assert.equal(textFilters.candidateAppearsOutsideExcludedText("https://x.com/mitteilungen", "mitteilungen"), false,
+  "a URL fragment is still treated as vocabulary");
 assert(popup.includes("reconcileCurrentCatalogue()") && popup.includes("examplesForEntry")
   && popup.includes("examples }"),
   "the popup no longer reconciles taught words or exports multiple real sentence examples");
@@ -94,6 +123,9 @@ assert(gloss.includes("offset >= entry.end") && gloss.includes("getClientRects()
   "adjacent word hit-testing can overlap at a range boundary");
 assert(gloss.includes("OBSERVED_FORM_TO_LEMMA") && gloss.includes('"übersetzt": "übersetzen"'),
   "observed German forms are no longer resolved to their authored lemmas");
+assert(gloss.includes('"mitteilungen": "Mitteilung"') && gloss.includes('"booste": "boosten"')
+  && gloss.includes('"erbärmlichen": "erbärmlich"') && gloss.includes('"verabscheue": "verabscheuen"'),
+  "common inflected interface words are no longer resolved to their authored lemmas");
 assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
   && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),
   "overlapping TTS playback is no longer cancelled");
