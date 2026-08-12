@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.274",
+  "version": "1.2.275",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -48,7 +48,7 @@
     "check:startup-performance": "node scripts/check-startup-performance.cjs",
     "check:windows-settings": "node scripts/check-windows-settings.cjs",
     "check:desktop-polish": "node scripts/check-desktop-polish.cjs",
-    "check:immersion-extension": "node scripts/check-immersion-extension.cjs",
+    "check:immersion-extension": "node scripts/check-immersion-extension.cjs && node scripts/check-immersion-x-runtime.cjs",
     "export:immersion-words": "node scripts/export-immersion-words.cjs",
     "pack:immersion-extension": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pack-immersion-extension.ps1",
     "sync:immersion-extension": "npm run export:immersion-words && npm run pack:immersion-extension",

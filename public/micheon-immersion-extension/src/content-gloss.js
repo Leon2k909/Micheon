@@ -81,6 +81,7 @@
     'header[role="banner"] nav[role="navigation"]',
     '[data-testid="sidebarColumn"]',
   ];
+  const X_CHROME_SELECTOR = X_REINFORCEMENT_SELECTORS.join(", ");
 
   let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true };
   // German capitalises every noun and nothing else, so a word's authored
@@ -108,7 +109,14 @@
   let flushTimer = null;
   let ytScanTimer = null;
   let xScanTimer = null;
-  const xPendingRoots = new Set();
+  // X is a virtualised React feed. Scheduling arbitrary mutation roots lets
+  // a tiny counter/image update promote itself to the whole article (or the
+  // whole sidebar), repeatedly walking text that cannot contain vocabulary.
+  // Keep only the actual tweet/nav containers whose own text changed.
+  const xPendingPosts = new Set();
+  const xPendingChrome = new Set();
+  const xChangedTextNodes = new Set();
+  let xNeedsDetachedCleanup = false;
   // A node can first be seen in reinforcement-only site chrome and later be
   // reused by an SPA as authored text. Keep those scans distinct so the
   // lighter pass cannot permanently suppress collection on that node.
@@ -202,9 +210,14 @@
 
   function knownGermanSignalCount(sample, limit = 2) {
     const seen = new Set();
-    WORD_RE.lastIndex = 0;
+    // Never borrow WORD_RE here. This helper is called by
+    // sentenceLooksGerman() from inside processTextNode's own WORD_RE loop.
+    // Resetting/reusing that same global RegExp moves the outer iterator
+    // backwards; a tweet containing an unknown word can then revisit that
+    // word forever, pegging the X tab until it hangs or crashes.
+    const signalWordRe = /[\p{L}\p{M}][\p{L}\p{M}'’-]*/gu;
     let match;
-    while ((match = WORD_RE.exec(sample)) && seen.size < limit) {
+    while ((match = signalWordRe.exec(sample)) && seen.size < limit) {
       const token = match[0].toLowerCase();
       if (byDeLowerAny.has(token) || COMMENT_GERMAN_WORDS.has(token)) seen.add(token);
     }
@@ -811,6 +824,18 @@
     };
     document.addEventListener("mousemove", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return; // browsing the tip itself
+      // On X, almost every pointer move is over video, buttons, avatars or
+      // feed whitespace. Calling caretRangeFromPoint there still forces a
+      // layout hit-test despite there being no possible gloss. Restrict the
+      // expensive path to the two text surfaces Immersion scans.
+      if (IS_X) {
+        const insideGlossableText = Boolean(e.target?.closest?.(`${X_POST_SELECTOR}, ${X_CHROME_SELECTOR}`));
+        if (!insideGlossableText) {
+          pointerSample = null;
+          hideWhenPointerLeaves(e.clientX, e.clientY);
+          return;
+        }
+      }
       pointerSample = { x: e.clientX, y: e.clientY };
       if (!pointerFrame) pointerFrame = requestAnimationFrame(runPointerHitTest);
     }, { capture: true, passive: true });
@@ -820,6 +845,7 @@
     document.addEventListener("click", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return;
       if (!settings.ttsOnClick) return;
+      if (IS_X && !e.target?.closest?.(`${X_POST_SELECTOR}, ${X_CHROME_SELECTOR}`)) return;
       const entry = glossAtPoint(e.clientX, e.clientY);
       if (entry) {
         showTipForEntry(entry);
@@ -834,6 +860,10 @@
     document.addEventListener("mouseleave", hideTip);
     document.addEventListener("mousedown", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return;
+      if (IS_X && !e.target?.closest?.(`${X_POST_SELECTOR}, ${X_CHROME_SELECTOR}`)) {
+        hideTip();
+        return;
+      }
       if (glossAtPoint(e.clientX, e.clientY)) return; // click-to-speak keeps the tip
       hideTip();
     }, true);
@@ -871,6 +901,11 @@
   // Text node -> [{start, end, gloss, de, range}], offsets sorted, for caret
   // hit-testing. WeakMap so dead nodes take their entries with them.
   const glossIndex = new WeakMap();
+  // CSS.highlights retains its Range objects, so keep the corresponding text
+  // nodes enumerable as well. X can remove a huge virtualised article tree;
+  // pruning this small set is much cheaper than walking every removed DOM
+  // subtree just to discover that almost all of it was never glossed.
+  const glossedTextNodes = new Set();
   let glossRangeCount = 0;
 
   function registerGloss(node, start, end, gloss, de) {
@@ -885,28 +920,37 @@
     glossHighlight.add(range);
     if (!list) { list = []; glossIndex.set(node, list); }
     list.push({ start, end, gloss, de, range });
+    glossedTextNodes.add(node);
     glossRangeCount += 1;
+  }
+
+  function unregisterTextNode(node) {
+    const list = glossIndex.get(node);
+    if (!list) return;
+    if (activeEntry && list.includes(activeEntry)) hideTip();
+    for (const entry of list) glossHighlight.delete(entry.range);
+    glossRangeCount = Math.max(0, glossRangeCount - list.length);
+    glossIndex.delete(node);
+    glossedTextNodes.delete(node);
+    processed.delete(node);
+  }
+
+  function pruneDetachedGlosses() {
+    for (const node of glossedTextNodes) {
+      if (!node.isConnected) unregisterTextNode(node);
+    }
   }
 
   function unregisterGlosses(root) {
     if (!glossHighlight || !root) return;
-    const removeTextNode = (node) => {
-      const list = glossIndex.get(node);
-      if (!list) return;
-      if (activeEntry && list.includes(activeEntry)) hideTip();
-      for (const entry of list) glossHighlight.delete(entry.range);
-      glossRangeCount = Math.max(0, glossRangeCount - list.length);
-      glossIndex.delete(node);
-      processed.delete(node);
-    };
     if (root.nodeType === Node.TEXT_NODE) {
-      removeTextNode(root);
+      unregisterTextNode(root);
       return;
     }
     if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node;
-    while ((node = walker.nextNode())) removeTextNode(node);
+    while ((node = walker.nextNode())) unregisterTextNode(node);
   }
 
   function glossAtPoint(x, y) {
@@ -989,7 +1033,18 @@
     }
   }
 
-  function walk(root, germanMode, { collectMissing = true, caseInsensitiveGerman = false } = {}) {
+  function walk(root, germanMode, {
+    collectMissing = true,
+    caseInsensitiveGerman = false,
+    includeInteractive = false,
+  } = {}) {
+    if (!root) return;
+    if (root.nodeType === Node.TEXT_NODE) {
+      if (root.isConnected) processTextNode(root, germanMode, collectMissing, caseInsensitiveGerman);
+      return;
+    }
+    if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE
+      && root.nodeType !== Node.DOCUMENT_NODE) return;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(n) {
         const parent = n.parentElement;
@@ -1001,7 +1056,8 @@
         // X's "Übersetzung zeigen" button died because React tried to
         // re-render a text node this script had already replaced, and the
         // resulting DOM exception killed the button's update.
-        if (parent.closest("button, [role='button'], [role='tab'], [role='menuitem'], [role='option'], select, label, summary")) {
+        if (!includeInteractive
+          && parent.closest("button, [role='button'], [role='tab'], [role='menuitem'], [role='option'], select, label, summary")) {
           return NodeFilter.FILTER_REJECT;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -1121,75 +1177,91 @@
   // X repeats account names, trends, translated UI and timestamps all over
   // the DOM. Only tweet bodies are real authored text, so only those may
   // produce glosses or missing-vocabulary candidates.
-  function scanXRoot(root) {
+  function scanXPost(el) {
+    if (!el?.isConnected || !el.matches?.(X_POST_SELECTOR)) return;
+    const text = (el.textContent || "").trim();
+    if (text.length < 3) return;
+    const germanPost = commentLooksGerman(text);
+    if (germanPost) xGermanFound = true;
+    // X often renders one whole tweet as a single text node. Passing the
+    // container still handles inline links, but only this exact tweet body
+    // is walked—not the surrounding article with every action/counter.
+    walk(el, germanPost);
+  }
+
+  function scanXChrome(root) {
     const scope = root?.nodeType === Node.TEXT_NODE ? root.parentElement : root;
-    if (!scope?.querySelectorAll || (scope !== document && !scope.isConnected)) return;
-
-    const posts = new Set();
-    const reinforcement = new Set();
-    if (scope.nodeType === Node.ELEMENT_NODE) {
-      if (scope.matches(X_POST_SELECTOR)) posts.add(scope);
-      const containingPost = scope.closest(X_POST_SELECTOR);
-      if (containingPost) posts.add(containingPost);
-    }
-    for (const el of scope.querySelectorAll(X_POST_SELECTOR)) posts.add(el);
-
-    for (const el of posts) {
-      const text = (el.textContent || "").trim();
-      if (text.length < 3) continue;
-      const germanPost = commentLooksGerman(text);
-      if (germanPost) xGermanFound = true;
-      walk(el, germanPost);
-    }
+    if (!scope?.isConnected) return;
+    const chromeRoot = scope.matches?.(X_CHROME_SELECTOR) ? scope : scope.closest?.(X_CHROME_SELECTOR);
+    if (!chromeRoot && root.nodeType !== Node.DOCUMENT_NODE) return;
     // Navigation labels are useful reinforcement (for example Mitteilungen),
     // but repeated site chrome is not evidence that a word should enter the
     // missing-vocabulary export. Gloss it against Micheon's catalogue while
     // keeping collection restricted to authored post text above.
-    for (const selector of X_REINFORCEMENT_SELECTORS) {
-      if (scope.nodeType === Node.ELEMENT_NODE) {
-        if (scope.matches(selector)) reinforcement.add(scope);
-        else if (scope.closest(selector)) reinforcement.add(scope);
-      }
-      for (const el of scope.querySelectorAll(selector)) reinforcement.add(el);
+    walk(chromeRoot || root, true, {
+      collectMissing: false,
+      caseInsensitiveGerman: true,
+      includeInteractive: true,
+    });
+  }
+
+  function collectXTargets(root) {
+    const scope = root?.nodeType === Node.TEXT_NODE ? root.parentElement : root;
+    if (!scope) return;
+
+    if (scope.nodeType === Node.ELEMENT_NODE) {
+      const containingPost = scope.matches(X_POST_SELECTOR) ? scope : scope.closest(X_POST_SELECTOR);
+      if (containingPost) xPendingPosts.add(containingPost);
+      const containingChrome = scope.matches(X_CHROME_SELECTOR) ? scope : scope.closest(X_CHROME_SELECTOR);
+      if (containingChrome) xPendingChrome.add(containingChrome);
     }
-    for (const el of reinforcement) {
-      walk(el, true, { collectMissing: false, caseInsensitiveGerman: true });
+
+    // Added wrappers can contain several newly mounted tweets. Query only
+    // that added subtree once; never promote it to document/body/article.
+    if (scope.querySelectorAll) {
+      for (const post of scope.querySelectorAll(X_POST_SELECTOR)) xPendingPosts.add(post);
+      for (const chromeRoot of scope.querySelectorAll(X_CHROME_SELECTOR)) xPendingChrome.add(chromeRoot);
     }
   }
 
-  function scheduleXScan(root) {
-    const candidate = root?.nodeType === Node.TEXT_NODE ? root.parentElement : root;
-    if (!candidate || !candidate.isConnected) return;
-    // One React commit often reports a wrapper and several descendants.
-    // Keep only the broadest connected roots before touching the DOM.
-    for (const pending of xPendingRoots) {
-      if (pending === candidate || pending.contains?.(candidate)) return;
-      if (candidate.contains?.(pending)) xPendingRoots.delete(pending);
-    }
-    xPendingRoots.add(candidate);
+  function scheduleXFlush() {
     if (xScanTimer) return;
     xScanTimer = setTimeout(() => {
       xScanTimer = null;
-      const roots = [...xPendingRoots];
-      xPendingRoots.clear();
-      for (const pending of roots) scanXRoot(pending);
-    }, 120);
+      const changedTextNodes = [...xChangedTextNodes];
+      const shouldPruneDetached = xNeedsDetachedCleanup;
+      const posts = [...xPendingPosts];
+      const chromeRoots = [...xPendingChrome];
+      xChangedTextNodes.clear();
+      xNeedsDetachedCleanup = false;
+      xPendingPosts.clear();
+      xPendingChrome.clear();
+      // Keep all Highlight/Range work outside the mutation callback so React
+      // gets the main thread back immediately. Detached cleanup is O(glossed
+      // text nodes), not O(every node in every removed X subtree).
+      for (const node of changedTextNodes) unregisterTextNode(node);
+      if (shouldPruneDetached) pruneDetachedGlosses();
+      for (const post of posts) scanXPost(post);
+      for (const chromeRoot of chromeRoots) scanXChrome(chromeRoot);
+    }, 180);
   }
 
   function initX() {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "characterData") {
-          unregisterGlosses(mutation.target);
-          scheduleXScan(mutation.target);
+          xChangedTextNodes.add(mutation.target);
+          collectXTargets(mutation.target);
           continue;
         }
-        for (const removed of mutation.removedNodes) unregisterGlosses(removed);
-        for (const added of mutation.addedNodes) scheduleXScan(added);
+        if (mutation.removedNodes.length > 0) xNeedsDetachedCleanup = true;
+        for (const added of mutation.addedNodes) collectXTargets(added);
       }
+      scheduleXFlush();
     });
     observer.observe(document.body, { childList: true, characterData: true, subtree: true });
-    scanXRoot(document);
+    collectXTargets(document);
+    scheduleXFlush();
   }
 
   // ── popup status ──────────────────────────────────────────────────────

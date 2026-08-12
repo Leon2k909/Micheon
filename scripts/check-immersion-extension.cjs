@@ -105,14 +105,28 @@ assert(gloss.includes("X_POST_SELECTOR") && gloss.includes("initX()")
 assert(gloss.includes("X_REINFORCEMENT_SELECTORS") && gloss.includes("collectMissing = true")
   && gloss.includes("caseInsensitiveGerman: true") && !gloss.includes("|| document.body, true"),
   "X interface vocabulary is no longer reinforced separately from authored-text collection");
-assert(gloss.includes("xPendingRoots") && gloss.includes("scanXRoot(pending)")
-  && !gloss.includes("new MutationObserver(scheduleXScan)"),
-  "X mutations trigger repeated whole-page scans instead of incremental batches");
+assert(gloss.includes("xPendingPosts") && gloss.includes("xPendingChrome")
+  && gloss.includes("collectXTargets(added)") && gloss.includes("scanXPost(post)")
+  && !gloss.includes("scanXRoot") && !gloss.includes("new MutationObserver(scheduleXScan)"),
+  "X mutations trigger broad repeated scans instead of targeted tweet/nav batches");
 assert(gloss.includes("unregisterGlosses") && gloss.includes("glossHighlight.delete(entry.range)")
-  && gloss.includes("mutation.removedNodes"),
+  && gloss.includes("glossedTextNodes") && gloss.includes("pruneDetachedGlosses()"),
   "detached infinite-feed highlights are retained instead of being released");
 assert(gloss.includes("requestAnimationFrame(runPointerHitTest)"),
   "hover range hit-testing is no longer capped to one pass per animation frame");
+assert(gloss.includes("insideGlossableText") && gloss.includes("X_CHROME_SELECTOR")
+  && gloss.includes("includeInteractive: true"),
+  "X hover hit-testing is no longer confined to glossary text or navigation labels cannot be glossed");
+assert(gloss.includes("const chromeRoot = scope.matches?.(X_CHROME_SELECTOR)")
+  && gloss.includes("xPendingChrome.add(containingChrome)")
+  && gloss.includes("walk(chromeRoot || root, true"),
+  "capitalised X navigation labels such as Mehr and Entdecken are no longer sent through the safe case-folded pass");
+const signalCounter = gloss.slice(
+  gloss.indexOf("  function knownGermanSignalCount"),
+  gloss.indexOf("  function commentLooksGerman"),
+);
+assert(signalCounter.includes("const signalWordRe") && !signalCounter.includes("WORD_RE.exec"),
+  "nested German detection can corrupt the outer word iterator and hang on an unknown X word");
 assert(gloss.includes("const processed = new WeakMap()") && gloss.includes("const passMask = collectMissing ? 2 : 1"),
   "reinforcement-only scans can suppress a later authored-text collection pass");
 assert(gloss.includes("priorExamples.length > 0 && examples.length === 0"),
