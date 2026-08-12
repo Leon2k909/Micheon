@@ -207,6 +207,9 @@ check("mixed mode interleaves words among sentences rather than appending them",
     index === 0 || rows[index - 1].popularity <= item.popularity));
 
 const commonSentences = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
+check("Listen never exposes the context-only ‘Ist er heute?’ dialogue fragment",
+  !commonSentences.some((item) => item.de === "Ist er heute?" || item.en === "Is it today?")
+  && commonSentences.some((item) => item.de === "Ist der Termin heute?" && item.en === "Is the appointment today?"));
 const heardFirstFour = Object.fromEntries(commonSentences.slice(0, 4).map((item) => [
   item.id,
   { listens: 4, listenedAt: new Date().toISOString() },

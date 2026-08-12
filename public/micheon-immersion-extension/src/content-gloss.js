@@ -14,14 +14,16 @@
  *      authoring pass) to review -- never auto-added, same as every other
  *      pack in Micheon.
  *
- * YouTube is the special case. Its page chrome renders in the ACCOUNT's
+ * YouTube and X are special cases. Their page chrome renders in the ACCOUNT's
  * interface language, so page-level language detection reads a German-locale
  * YouTube as "German page" even under an English video -- that poisoned the
  * candidate list once already. But video titles and descriptions on
  * German-learning channels are exactly the vocabulary worth reading. So on
  * YouTube this script scans ONLY the watch page's title + description
  * containers, and decides German-or-not per container from that container's
- * own text, never from the page around it.
+ * own text, never from the page around it. X is similarly limited to actual
+ * tweet bodies: account names, trends, timestamps and translated interface
+ * controls are not language-learning evidence.
  */
 (() => {
   const WORD_RE = /[\p{L}\p{M}][\p{L}\p{M}'’-]*/gu;
@@ -49,6 +51,7 @@
   const GERMAN_HINT_RE = /(?<![\p{L}])(?:und|nicht|der|die|das|ist|sind|ich|du|wir|mit|für|auch|über|sei|ein|eine|zum|zur|auf|dem|den)(?![\p{L}])/gu;
 
   const IS_YOUTUBE = /(^|\.)youtube\.com$/.test(location.hostname);
+  const IS_X = /(^|\.)(?:x|twitter)\.com$/.test(location.hostname);
   // Title first, then the description in its collapsed and expanded homes.
   // YouTube reshuffles its DOM between deploys, so several selectors --
   // scanning is cheap, node-level dedup makes rescans safe.
@@ -69,6 +72,7 @@
   // survives the next rename of the wrapper, which is the part YouTube
   // actually churns.
   const YT_COMMENT_SELECTOR = "#content-text";
+  const X_POST_SELECTOR = 'article [data-testid="tweetText"]';
 
   let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true };
   // German capitalises every noun and nothing else, so a word's authored
@@ -90,10 +94,12 @@
   let byEn = new Map();   // lowercase English (first word of gloss only) -> { de, deDisplay }
   let isGermanPage = false;
   let ytGermanFound = false;
+  let xGermanFound = false;
   let missingCounts = new Map();   // word -> count
-  let missingExamples = new Map(); // word -> one real sentence it appeared in, first seen
+  let missingExamples = new Map(); // word -> up to four distinct real sentences
   let flushTimer = null;
   let ytScanTimer = null;
+  let xScanTimer = null;
   const processed = new WeakSet();
 
   // The sentence a missing word appeared in is worth more than the word
@@ -149,6 +155,17 @@
     "krass", "endlich", "immer", "heute", "warum", "danach", "deutsch", "deutsche", "lernen", "lerne",
   ]);
 
+  function knownGermanSignalCount(sample, limit = 2) {
+    const seen = new Set();
+    WORD_RE.lastIndex = 0;
+    let match;
+    while ((match = WORD_RE.exec(sample)) && seen.size < limit) {
+      const token = match[0].toLowerCase();
+      if (byDeLowerAny.has(token) || COMMENT_GERMAN_WORDS.has(token)) seen.add(token);
+    }
+    return seen.size;
+  }
+
   // Comment-sized German check. Comments are short and carry few function
   // words ("Sehr gutes Video, danke!" has no article and no umlaut), so
   // alongside the usual signals this counts words the taught list itself
@@ -158,14 +175,8 @@
   function commentLooksGerman(text) {
     const sample = text.slice(0, 600).toLowerCase();
     if ((sample.match(GERMAN_HINT_RE) || []).length >= 2) return true;
-    if (/[äöüß]/.test(sample)) return true;
-    const seen = new Set();
-    WORD_RE.lastIndex = 0;
-    let match;
-    while ((match = WORD_RE.exec(sample)) && seen.size < 2) {
-      if (byDeLowerAny.has(match[0]) || COMMENT_GERMAN_WORDS.has(match[0])) seen.add(match[0]);
-    }
-    return seen.size >= 2;
+    const knownSignals = knownGermanSignalCount(sample);
+    return knownSignals >= 2 || (/[äöüß]/.test(sample) && knownSignals >= 1);
   }
 
   // Stricter, sentence-sized version of the same check. YouTube descriptions
@@ -177,8 +188,10 @@
   // OWN sentence carries at least one German signal.
   function sentenceLooksGerman(sentence) {
     const sample = sentence.toLowerCase();
-    if ((sample.match(GERMAN_HINT_RE) || []).length >= 1) return true;
-    return /[äöüß]/.test(sample);
+    const stopHits = (sample.match(GERMAN_HINT_RE) || []).length;
+    if (stopHits >= 2) return true;
+    const knownSignals = knownGermanSignalCount(sample);
+    return knownSignals >= 2 || (stopHits >= 1 && (knownSignals >= 1 || /[äöüß]/.test(sample)));
   }
 
   function buildIndexes(words) {
@@ -282,8 +295,11 @@
     "you", "your",
     // additional brands, account names and English feed chrome observed in
     // the second real-world export
-    "andy", "burnham", "choblin", "codex", "gemini", "grok", "jacobgold", "polymarket",
-    "reset", "techdevnotes", "teslanacho", "tibo", "trends",
+    "adonis", "anakin", "ananth", "andy", "angaisb", "balogun", "basil", "blueemi", "bluedev",
+    "burnham", "choblin", "codex", "cursor", "daybreak", "elon", "farzyness", "gemini", "glm",
+    "grok", "haider", "harshith", "hqmank", "jacobgold", "jones", "linux", "lumina", "manus",
+    "marcelkargul", "musk", "notjazii", "omni", "owen", "polymarket", "qwen", "reset", "spacexai",
+    "techdevnotes", "teslanacho", "theojaffee", "tibo", "trends", "yusuf", "zia",
     "about", "after", "agents", "already", "another", "boats", "coming", "continued", "delay",
     "does", "give", "good", "great", "instead", "meeting", "native", "never", "news", "now",
     "paper", "planning", "politics", "prime", "pro", "really", "release", "reports", "said",
@@ -306,6 +322,53 @@
     return true;
   }
 
+  function examplesForMissing(entry) {
+    const candidates = [
+      ...(Array.isArray(entry?.examples) ? entry.examples : []),
+      entry?.example,
+    ];
+    return [...new Set(candidates
+      .map((value) => String(value || "").trim())
+      .filter((value) => value.length > 4 && value.length <= 220))]
+      .slice(0, 4);
+  }
+
+  function candidateAlreadyTaught(word) {
+    const lower = String(word || "").toLowerCase();
+    if (byDeLowerAny.has(lower)) return true;
+    const lemma = OBSERVED_FORM_TO_LEMMA.get(lower);
+    return Boolean(lemma && (byDeExact.has(lemma) || byDeLowerAny.has(lemma.toLowerCase())));
+  }
+
+  async function reconcileStoredCandidates() {
+    const { missingVocab = {} } = await chrome.storage.local.get("missingVocab");
+    const cleaned = {};
+    let removed = 0;
+    for (const [word, entry] of Object.entries(missingVocab)) {
+      if (!looksLikeRealGermanCandidate(word) || candidateAlreadyTaught(word)) {
+        removed += 1;
+        continue;
+      }
+      const priorExamples = examplesForMissing(entry);
+      const examples = priorExamples.filter(sentenceLooksGerman);
+      // Old extension builds sometimes collected navigation labels, account
+      // names and English feed chrome. If every captured sentence fails the
+      // German check, this came from noisy UI rather than useful German prose.
+      if (priorExamples.length > 0 && examples.length === 0) {
+        removed += 1;
+        continue;
+      }
+      cleaned[word] = {
+        count: Math.max(1, Number(entry?.count) || 1),
+        example: examples[0] || "",
+        examples,
+      };
+    }
+    const changed = removed > 0 || JSON.stringify(cleaned) !== JSON.stringify(missingVocab);
+    if (changed) await chrome.storage.local.set({ missingVocab: cleaned });
+    return { ok: true, removed, remaining: Object.keys(cleaned).length };
+  }
+
   function scheduleFlush() {
     if (flushTimer) return;
     flushTimer = setTimeout(flushMissingVocab, FLUSH_DELAY_MS);
@@ -317,9 +380,12 @@
     const { missingVocab = {} } = await chrome.storage.local.get("missingVocab");
     for (const [word, count] of missingCounts) {
       const prior = missingVocab[word];
+      const observed = missingExamples.get(word) || new Set();
+      const examples = [...new Set([...examplesForMissing(prior), ...observed])].slice(0, 4);
       missingVocab[word] = {
         count: (prior?.count || 0) + count,
-        example: prior?.example || missingExamples.get(word) || "",
+        example: examples[0] || "",
+        examples,
       };
     }
     missingCounts = new Map();
@@ -416,12 +482,27 @@
     "vereinigtes": "vereinigen",
     "bots": "Bot",
     "sieht": "sehen",
+    "sieh": "sehen",
+    "gefragt": "fragen",
+    "zieht": "ziehen",
+    "informationen": "Information",
+    "funktionen": "Funktion",
+    "antworten": "antworten",
+    "schalte": "schalten",
+    "spar": "sparen",
+    "statistiken": "Statistik",
     "frühen": "früh",
     "echte": "echt",
     "echten": "echt",
     "möchtest": "möchten",
     "neues": "neu",
     "repostet": "reposten",
+    "gepostet": "posten",
+    "gezweifelt": "zweifeln",
+    "geworden": "werden",
+    "meisten": "meist",
+    "anwendungsfälle": "Anwendungsfall",
+    "stellenabbauten": "Stellenabbau",
     "erledigter": "erledigen",
     "tools": "Tool",
     "aktive": "aktiv",
@@ -770,13 +851,14 @@
         // stays exact-case-or-nothing for ordinary Titlecase tokens.
         if (!hit && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
           const sentence = extractSentence(node, match.index);
-          // On YouTube the container was judged German as a whole, but its
-          // sentences individually may not be -- skip the ones that aren't.
-          if (!IS_YOUTUBE || sentenceLooksGerman(sentence)) {
+          // YouTube and X containers may mix languages internally, so the
+          // candidate's own sentence still has to look German.
+          if ((!IS_YOUTUBE && !IS_X) || sentenceLooksGerman(sentence)) {
             missingCounts.set(lower, (missingCounts.get(lower) || 0) + 1);
-            if (!missingExamples.has(lower)) {
-              missingExamples.set(lower, sentence);
-            }
+            const examples = missingExamples.get(lower) || new Set();
+            if (sentence) examples.add(sentence);
+            while (examples.size > 4) examples.delete(examples.values().next().value);
+            missingExamples.set(lower, examples);
             scheduleFlush();
           }
         }
@@ -914,14 +996,48 @@
     scheduleYouTubeScan();
   }
 
+  // ── X / Twitter mode ──────────────────────────────────────────────────
+  // X repeats account names, trends, translated UI and timestamps all over
+  // the DOM. Only tweet bodies are real authored text, so only those may
+  // produce glosses or missing-vocabulary candidates.
+  function scanX() {
+    for (const el of document.querySelectorAll(X_POST_SELECTOR)) {
+      const text = (el.textContent || "").trim();
+      if (text.length < 3) continue;
+      const germanPost = commentLooksGerman(text);
+      if (germanPost) xGermanFound = true;
+      walk(el, germanPost);
+    }
+  }
+
+  function scheduleXScan() {
+    if (xScanTimer) return;
+    xScanTimer = setTimeout(() => {
+      xScanTimer = null;
+      scanX();
+    }, 700);
+  }
+
+  function initX() {
+    const observer = new MutationObserver(scheduleXScan);
+    observer.observe(document.body, { childList: true, subtree: true });
+    scheduleXScan();
+  }
+
   // ── popup status ──────────────────────────────────────────────────────
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "micheon-reconcile-missing-vocab") {
+      reconcileStoredCandidates().then(sendResponse).catch((error) => {
+        sendResponse({ ok: false, error: error?.message || String(error) });
+      });
+      return true;
+    }
     if (message?.type !== "micheon-page-status") return undefined;
     sendResponse({
       ok: true,
       youtube: IS_YOUTUBE,
       watchPage: !IS_YOUTUBE || location.pathname === "/watch",
-      german: IS_YOUTUBE ? ytGermanFound : isGermanPage,
+      german: IS_YOUTUBE ? ytGermanFound : IS_X ? xGermanFound : isGermanPage,
       glossed: glossRangeCount,
     });
     return undefined;
@@ -947,10 +1063,13 @@
     const url = chrome.runtime.getURL("data/words.json");
     const words = await fetch(url).then((r) => r.json());
     buildIndexes(words);
+    await reconcileStoredCandidates();
     initTooltip();
 
     if (IS_YOUTUBE) {
       initYouTube();
+    } else if (IS_X) {
+      initX();
     } else {
       isGermanPage = detectGerman();
       walk(document.body, isGermanPage);

@@ -2046,7 +2046,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { title: "Correcting the date", lines: [
         { speaker: "A", de: "Du meintest, der Termin sei morgen.", en: "You said the appointment was tomorrow." },
         { speaker: "B", de: "Ja, aber da lag ich wohl falsch.", en: "Yes, but it looks like I was wrong." },
-        { speaker: "A", de: "Ist er heute?", en: "Is it today?" },
+        { speaker: "A", de: "Ist der Termin heute?", en: "Is the appointment today?" },
         { speaker: "B", de: "Genau. Du hattest also doch recht.", en: "Exactly. You were right after all." },
       ]},
     ],

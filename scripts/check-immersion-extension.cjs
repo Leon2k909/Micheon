@@ -12,6 +12,7 @@ const read = (relativePath) => fs.readFileSync(path.join(extension, relativePath
 const manifest = JSON.parse(read("manifest.json"));
 const words = JSON.parse(read("data/words.json"));
 const gloss = read("src/content-gloss.js");
+const popup = read("src/popup.js");
 const offscreen = read("src/offscreen.js");
 const background = read("src/background.js");
 const desktopMain = fs.readFileSync(path.join(root, "electron", "main.js"), "utf8");
@@ -74,12 +75,21 @@ for (const lemma of [
   "Hitze", "irgendwie", "niemand", "schlau", "entkommen", "ernsthaft", "kaum",
   "danke", "bisschen", "Konversation", "mitten", "schlafen", "sofort", "explizit", "weiterhin",
   "Abschreckung", "Pressestelle", "Riss", "Verbot", "wieder", "worum",
+  "posten", "meist", "jemals", "Anwendungsfall", "Internetgeschwindigkeit", "Gartenschlauch",
 ]) {
   assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
 }
 
 assert(gloss.includes("HOVER_SPEAK_DELAY_MS") && gloss.includes("SAME_WORD_SPEAK_COOLDOWN_MS"),
   "hover speech is no longer debounced and deduplicated");
+assert(gloss.includes("X_POST_SELECTOR") && gloss.includes("initX()")
+  && gloss.includes("reconcileStoredCandidates()") && gloss.includes("examplesForMissing"),
+  "X collection is no longer isolated to post text or resolved candidates are not reconciled");
+assert(gloss.includes("priorExamples.length > 0 && examples.length === 0"),
+  "reconciliation no longer removes candidates backed only by non-German UI noise");
+assert(popup.includes("reconcileCurrentCatalogue()") && popup.includes("examplesForEntry")
+  && popup.includes("examples }"),
+  "the popup no longer reconciles taught words or exports multiple real sentence examples");
 assert(gloss.includes("offset >= entry.end") && gloss.includes("getClientRects()"),
   "adjacent word hit-testing can overlap at a range boundary");
 assert(gloss.includes("OBSERVED_FORM_TO_LEMMA") && gloss.includes('"übersetzt": "übersetzen"'),

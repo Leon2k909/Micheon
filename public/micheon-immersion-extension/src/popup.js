@@ -8,7 +8,26 @@ const DEFAULT_SETTINGS = {
 
 const checkboxIds = ["glossEnabled", "collectMissingVocab", "ttsOnHover", "ttsOnClick", "youtubeAutoDub"];
 
+function examplesForEntry(entry) {
+  return [...new Set([
+    ...(Array.isArray(entry?.examples) ? entry.examples : []),
+    entry?.example,
+  ].map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+async function reconcileCurrentCatalogue() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !/^https?:/.test(tab.url || "")) return;
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "micheon-reconcile-missing-vocab" });
+  } catch {
+    // The tab may predate this extension version. Its next reload performs
+    // the same reconciliation before collecting anything new.
+  }
+}
+
 async function loadState() {
+  await reconcileCurrentCatalogue();
   const { settings, missingVocab } = await chrome.storage.local.get(["settings", "missingVocab"]);
   const merged = { ...DEFAULT_SETTINGS, ...(settings || {}) };
   for (const id of checkboxIds) {
@@ -19,7 +38,7 @@ async function loadState() {
   // Words and sentences are different numbers: many words share one
   // sentence, so counting "entries with an example" just repeated the word
   // count and read as a bug.
-  document.getElementById("sentenceCount").textContent = new Set(entries.map((e) => e?.example).filter(Boolean)).size;
+  document.getElementById("sentenceCount").textContent = new Set(entries.flatMap(examplesForEntry)).size;
 }
 
 // A bare "0" reads as "broken". Say what this extension is actually doing
@@ -84,10 +103,14 @@ function download(filename, dataObj) {
 }
 
 async function exportList() {
+  await reconcileCurrentCatalogue();
   const { missingVocab = {} } = await chrome.storage.local.get("missingVocab");
   const ranked = Object.entries(missingVocab)
     .sort((a, b) => b[1].count - a[1].count)
-    .map(([word, { count, example }]) => ({ word, count, example }));
+    .map(([word, entry]) => {
+      const examples = examplesForEntry(entry);
+      return { word, count: entry.count, example: examples[0] || "", examples };
+    });
   download(`micheon-missing-vocab-${new Date().toISOString().slice(0, 10)}.json`, ranked);
 }
 
