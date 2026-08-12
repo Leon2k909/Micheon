@@ -102,6 +102,10 @@
   let byDeLowerAny = new Map();    // lowercase German (all entries) -> { en, deDisplay }
   let byEn = new Map();   // lowercase English (first word of gloss only) -> { de, deDisplay }
   let isGermanPage = false;
+  // "strong" | "weak" | "none" -- see detectGerman. Anything short of
+  // "strong" means each passage must prove itself before its unknown words
+  // are collected.
+  let germanConfidence = "none";
   let ytGermanFound = false;
   let xGermanFound = false;
   let missingCounts = new Map();   // word -> count
@@ -175,16 +179,30 @@
     return sentenceLooksGerman(example) && candidateAppearsOutsideExcludedText(example, candidate);
   }
 
+  /**
+   * How German is this page? Three answers, not two.
+   *
+   *   "strong" -- the document says so (lang=de*): trusted wholesale.
+   *   "weak"   -- it says otherwise, or says nothing, but the text reads
+   *               German. Gloss it, but only collect from passages that are
+   *               themselves German.
+   *   "none"   -- English-to-German recall glossing only.
+   *
+   * This used to return false the instant a lang attribute said anything
+   * other than German, WITHOUT ever looking at the text -- so a German
+   * article on a site that declares lang="en" (a forum thread, a
+   * mixed-language feed) collected nothing at all, permanently and silently.
+   */
   function detectGerman() {
     const htmlLang = (document.documentElement.getAttribute("lang") || "").toLowerCase();
-    if (htmlLang.startsWith("de")) return true;
-    if (htmlLang && !htmlLang.startsWith("de")) return false;
-    // No lang attribute at all: fall back to a quick sample of the page's
-    // own text rather than guessing from the URL, which lies constantly
-    // (plenty of German sites live on .com/.io domains).
-    const sample = (document.body?.innerText || "").slice(0, 2000).toLowerCase();
+    if (htmlLang.startsWith("de")) {
+      germanConfidence = "strong";
+      return true;
+    }
+    const sample = (document.body?.innerText || "").slice(0, 4000).toLowerCase();
     const hits = (sample.match(GERMAN_HINT_RE) || []).length;
-    return hits >= 6;
+    germanConfidence = hits >= 6 ? "weak" : "none";
+    return germanConfidence === "weak";
   }
 
   // Per-container German check for YouTube. Vocabulary-list descriptions
@@ -1012,7 +1030,8 @@
           const sentence = extractSentence(node, match.index);
           // YouTube and X containers may mix languages internally, so the
           // candidate's own sentence still has to look German.
-          if ((!IS_YOUTUBE && !IS_X) || sentenceLooksGerman(sentence)) {
+          const trustPageLanguage = !IS_YOUTUBE && !IS_X && germanConfidence === "strong";
+          if (trustPageLanguage || sentenceLooksGerman(sentence)) {
             missingCounts.set(lower, (missingCounts.get(lower) || 0) + 1);
             const examples = missingExamples.get(lower) || new Set();
             if (sentence) examples.add(sentence);
@@ -1056,8 +1075,14 @@
         // X's "Übersetzung zeigen" button died because React tried to
         // re-render a text node this script had already replaced, and the
         // resulting DOM exception killed the button's update.
+        // Only the control's own label, not everything inside a clickable
+        // region: closest() walked all the way up, so a card, list item or
+        // feed post wrapped in [role="button"] -- the normal way to make a
+        // block clickable -- lost every word inside it. Measured at 6-8% of
+        // the German prose on real pages.
+        const tag = parent.tagName;
         if (!includeInteractive
-          && parent.closest("button, [role='button'], [role='tab'], [role='menuitem'], [role='option'], select, label, summary")) {
+          && (tag === "BUTTON" || tag === "LABEL" || tag === "SUMMARY" || parent.getAttribute("role") === "button")) {
           return NodeFilter.FILTER_REJECT;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -1079,24 +1104,64 @@
     runWhenIdle(step, { timeout: 1000 });
   }
 
+  // Mutations are BATCHED behind a throttle, never handled one at a time.
+  // Reacting per mutation is what made YouTube unusable when the whole page
+  // was read: its player rewrites the elapsed-time text several times a
+  // second and its feed adds nodes constantly, so a walk per mutation pegged
+  // the renderer until even `1+1` in the console timed out. A throttle (not
+  // a debounce -- a debounce never fires on a page that never goes quiet)
+  // collects everything that changed and makes one pass over it.
+  const MUTATION_PASS_MS = 400;
+  const MAX_PENDING_ROOTS = 200;
+  let pendingRoots = new Set();
+  let pendingTexts = new Set();
+  let mutationTimer = null;
+
+  function runMutationPass() {
+    mutationTimer = null;
+    const roots = pendingRoots;
+    const texts = pendingTexts;
+    pendingRoots = new Set();
+    pendingTexts = new Set();
+    for (const t of texts) {
+      if (!t.isConnected) continue;
+      processTextNode(t, isGermanPage);
+    }
+    // Past a certain churn one document-wide pass is cheaper than hundreds
+    // of subtree walks; the processed set makes the repeat nearly free.
+    if (roots.size > MAX_PENDING_ROOTS) {
+      walk(document.body, isGermanPage);
+      return;
+    }
+    for (const r of roots) {
+      if (r.isConnected) walk(r, isGermanPage);
+    }
+  }
+
+  function scheduleMutationPass() {
+    if (mutationTimer) return;
+    mutationTimer = setTimeout(runMutationPass, MUTATION_PASS_MS);
+  }
+
   function observeNewContent() {
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         if (m.type === "characterData") {
           unregisterGlosses(m.target);
-          processTextNode(m.target, isGermanPage);
+          pendingTexts.add(m.target);
           continue;
         }
         for (const removed of m.removedNodes) unregisterGlosses(removed);
         for (const added of m.addedNodes) {
           if (added.nodeType === Node.ELEMENT_NODE) {
             if (added.dataset?.micheon) continue; // our own insertion
-            walk(added, isGermanPage);
+            pendingRoots.add(added);
           } else if (added.nodeType === Node.TEXT_NODE) {
-            processTextNode(added, isGermanPage);
+            pendingTexts.add(added);
           }
         }
       }
+      if (pendingRoots.size || pendingTexts.size) scheduleMutationPass();
     });
     observer.observe(document.body, { childList: true, characterData: true, subtree: true });
   }
@@ -1107,6 +1172,8 @@
   // never scanned: the account's interface language and other people's
   // usernames aren't vocabulary.
   function scanYouTube() {
+    // The metadata containers below only exist on a video page; the rest of
+    // YouTube is covered by the whole-page walk started in initYouTube.
     if (location.pathname !== "/watch" && !location.pathname.startsWith("/shorts")) return;
     const containers = [];
     for (const sel of YT_SCAN_SELECTORS) {
@@ -1171,6 +1238,18 @@
     const observer = new MutationObserver(scheduleYouTubeScan);
     observer.observe(document.body, { childList: true, subtree: true });
     scheduleYouTubeScan();
+
+    // ...and read the rest of YouTube like any other site. The targeted scan
+    // above only runs on a video page and only covers its title and
+    // description, which measured 0% of the homepage, search, channel and
+    // subscription pages and 56% of a watch page -- the sidebar of German
+    // titles, the view counts and the chapter list were never read at all.
+    // Collection stays gated per sentence here (see processTextNode), so
+    // YouTube's German interface can't label an English video's words as
+    // German vocabulary.
+    isGermanPage = detectGerman();
+    walk(document.body, isGermanPage);
+    observeNewContent();
   }
 
   // ── X / Twitter mode ──────────────────────────────────────────────────
