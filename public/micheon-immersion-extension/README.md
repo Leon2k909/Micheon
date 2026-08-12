@@ -9,7 +9,14 @@ running, its own local TTS server.
 ## What it does
 
 1. **Word glossing, everywhere.** A word already in Micheon's word list gets
-   a dotted underline and a hover/focus tooltip with its translation. On a
+   a dotted underline and a hover tooltip with its translation. Glossing is
+   rendered through the CSS Custom Highlight API -- text RANGES, zero DOM
+   mutation -- because wrapping words in elements broke React/Polymer apps
+   whose next re-render tripped over our nodes (X's translate toggle died
+   three different ways before this). The tooltip is driven by caret
+   hit-testing; hovering also speaks the German (through the desktop app's
+   TTS when it runs, the browser voice otherwise) and clicking the word
+   replays it -- both on by default, both toggleable in the popup. On a
    German page that's an English gloss (reinforcement of what you're
    learning); on any other page it's the reverse — an English word with a
    taught German equivalent gets a German gloss on hover, so pages you'd

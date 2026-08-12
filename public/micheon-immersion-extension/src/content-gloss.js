@@ -57,7 +57,7 @@
   // actually churns.
   const YT_COMMENT_SELECTOR = "#content-text";
 
-  let settings = { glossEnabled: true, collectMissingVocab: true };
+  let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true };
   // German capitalises every noun and nothing else, so a word's authored
   // case IS its part-of-speech signal -- "Daten" (data, a noun) and "daten"
   // (to date someone, a verb) are different words that happen to share
@@ -309,18 +309,6 @@
     await chrome.storage.local.set({ missingVocab: trimmed });
   }
 
-  function makeGlossSpan(originalText, gloss, direction, germanText) {
-    const span = document.createElement("span");
-    span.className = "micheon-gloss-word";
-    span.dataset.micheon = "1";
-    span.dataset.micheonGloss = gloss;
-    span.dataset.micheonDir = direction;
-    span.dataset.micheonDe = germanText;
-    span.tabIndex = 0;
-    span.textContent = originalText;
-    return span;
-  }
-
   // ── tooltip ───────────────────────────────────────────────────────────
   // One shared element at the document root (position: fixed), placed from
   // the hovered word's viewport rect and clamped to the screen. See the
@@ -353,12 +341,7 @@
     tipSpeakEl.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const text = tipEl?.dataset.micheonDe || "";
-      if (!text) return;
-      // chrome.* throws "Extension context invalidated" in a page that was
-      // injected before the extension was reloaded. Pronunciation is a
-      // nicety; an exception here would take the whole handler down.
-      try { chrome.runtime.sendMessage({ type: "micheon-tts", text }); } catch { /* stale context */ }
+      speakGerman(tipEl?.dataset.micheonDe || "");
     });
     tipEl.appendChild(tipTextEl);
     tipEl.appendChild(tipSpeakEl);
@@ -383,23 +366,31 @@
     tipShown = visible;
   }
 
+  // The range entry the tip is currently showing; also the once-per-hover
+  // guard for spoken audio.
+  let activeEntry = null;
+
+  function speakGerman(text) {
+    if (!text) return;
+    // chrome.* throws "Extension context invalidated" in a page injected
+    // before the extension was reloaded. Pronunciation is a nicety; an
+    // exception here would take the whole handler down.
+    try { chrome.runtime.sendMessage({ type: "micheon-tts", text }); } catch { /* stale context */ }
+  }
+
   function hideTip() {
     anchorRect = null;
+    activeEntry = null;
     paintTip(false);
   }
 
-  function showTip(word) {
-    const rect = word.getBoundingClientRect();
-    const gloss = word.dataset.micheonGloss || "";
-    // A word with no gloss or no box can't anchor anything -- and leaving
-    // the previous tooltip up in that case is how it used to strand.
-    if (!gloss || (rect.width === 0 && rect.height === 0)) {
-      hideTip();
-      return;
-    }
+  function showTipForEntry(entry) {
+    if (entry === activeEntry) return;
+    const rect = entry.range.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) { hideTip(); return; }
     const tip = ensureTip();
-    tipTextEl.textContent = gloss;
-    tip.dataset.micheonDe = word.dataset.micheonDe || "";
+    tipTextEl.textContent = entry.gloss;
+    tip.dataset.micheonDe = entry.de || "";
     // Measured while hidden -- visibility:hidden keeps layout, which is why
     // it is used here rather than display:none.
     const tw = tip.offsetWidth;
@@ -411,7 +402,12 @@
     tip.style.setProperty("left", `${Math.round(left)}px`, "important");
     tip.style.setProperty("top", `${Math.round(top)}px`, "important");
     anchorRect = rect;
+    activeEntry = entry;
     paintTip(true);
+    // Hearing the word is the default learning mode; the popup can turn it
+    // off. Guarded by activeEntry above so lingering on one word speaks
+    // once, not on every pixel of mouse travel.
+    if (settings.ttsOnHover) speakGerman(entry.de);
   }
 
   function tipVisible() {
@@ -450,24 +446,35 @@
   }
 
   function initTooltip() {
-    document.addEventListener("mouseover", (e) => {
-      const word = e.target?.closest?.(".micheon-gloss-word");
-      if (word) showTip(word);
-    }, true);
-    document.addEventListener("focusin", (e) => {
-      const word = e.target?.closest?.(".micheon-gloss-word");
-      if (word) showTip(word);
-    }, true);
-    document.addEventListener("focusout", hideTip, true);
+    // One mousemove listener drives BOTH directions: hit-test the glossed
+    // ranges to show, pointer geometry to hide. No element hover events
+    // exist any more -- highlights aren't elements.
     document.addEventListener("mousemove", (e) => {
-      hideWhenPointerLeaves(e.clientX, e.clientY);
+      if (e.target?.closest?.(".micheon-gloss-tip")) return; // browsing the tip itself
+      const entry = glossAtPoint(e.clientX, e.clientY);
+      if (entry) showTipForEntry(entry);
+      else hideWhenPointerLeaves(e.clientX, e.clientY);
     }, { capture: true, passive: true });
+    // Clicking a glossed word replays its German (toggleable in the popup).
+    // Deliberately does NOT preventDefault: a glossed word inside a link
+    // must still navigate -- the page always wins ties.
+    document.addEventListener("click", (e) => {
+      if (e.target?.closest?.(".micheon-gloss-tip")) return;
+      if (!settings.ttsOnClick) return;
+      const entry = glossAtPoint(e.clientX, e.clientY);
+      if (entry) {
+        showTipForEntry(entry);
+        speakGerman(entry.de);
+      }
+    }, true);
     // Belt and braces for the cases a mousemove never arrives for: the
-    // pointer leaving the window entirely, a click, a scroll (a fixed tip
-    // does not follow its word), a tab switch, or the page being hidden.
+    // pointer leaving the window entirely, a click elsewhere, a scroll (a
+    // fixed tip does not follow its word), a tab switch, or the page being
+    // hidden.
     document.addEventListener("mouseleave", hideTip);
     document.addEventListener("mousedown", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return;
+      if (glossAtPoint(e.clientX, e.clientY)) return; // click-to-speak keeps the tip
       hideTip();
     }, true);
     window.addEventListener("scroll", hideTip, { capture: true, passive: true });
@@ -475,29 +482,79 @@
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) hideTip();
     });
-    // Keyboard escape, because a tip pinned by focus should also be
-    // dismissable without a mouse.
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") hideTip();
     }, true);
+  }
+
+  /**
+   * ── zero-mutation glossing (CSS Custom Highlight API) ─────────────────
+   *
+   * The extension used to wrap each matched word in a <span>. That REWRITES
+   * the page's DOM, and on React/Polymer apps the framework still believes
+   * it owns those nodes: the next re-render of anything we touched throws
+   * (React's removeChild on a node we replaced) and takes the feature with
+   * it. That killed X's translate toggle three separate ways -- the button
+   * label, the status label next to it, and the tweet body itself -- and
+   * skip-lists can never enumerate every element a framework might redraw.
+   *
+   * The Highlight API styles TEXT RANGES with no DOM change at all, so
+   * there is nothing for a framework to trip over. The price: no elements
+   * to hover, so the tooltip is driven by caret hit-testing on mousemove,
+   * and keyboard focus on individual glosses is gone. When a page's text
+   * node is replaced by the app, the range collapses harmlessly and the
+   * mutation observer re-walks the new node.
+   */
+  const HIGHLIGHTS_SUPPORTED = typeof Highlight !== "undefined" && typeof CSS !== "undefined" && CSS.highlights;
+  const glossHighlight = HIGHLIGHTS_SUPPORTED ? new Highlight() : null;
+  if (glossHighlight) CSS.highlights.set("micheon-gloss", glossHighlight);
+  // Text node -> [{start, end, gloss, de, range}], offsets sorted, for caret
+  // hit-testing. WeakMap so dead nodes take their entries with them.
+  const glossIndex = new WeakMap();
+  let glossRangeCount = 0;
+
+  function registerGloss(node, start, end, gloss, de) {
+    if (!glossHighlight) return;
+    const range = document.createRange();
+    try {
+      range.setStart(node, start);
+      range.setEnd(node, end);
+    } catch { return; }
+    glossHighlight.add(range);
+    let list = glossIndex.get(node);
+    if (!list) { list = []; glossIndex.set(node, list); }
+    list.push({ start, end, gloss, de, range });
+    glossRangeCount += 1;
+  }
+
+  function glossAtPoint(x, y) {
+    const caret = document.caretRangeFromPoint?.(x, y);
+    const node = caret?.startContainer;
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    const list = glossIndex.get(node);
+    if (!list) return null;
+    const offset = caret.startOffset;
+    for (const entry of list) {
+      if (offset >= entry.start && offset <= entry.end) {
+        if (entry.range.collapsed) return null; // node was replaced under us
+        return entry;
+      }
+    }
+    return null;
   }
 
   function processTextNode(node, germanMode) {
     if (processed.has(node)) return;
     const text = node.nodeValue;
     if (!text || text.trim().length < 3) return;
+    processed.add(node);
 
     WORD_RE.lastIndex = 0;
     let match;
-    let lastIndex = 0;
-    let fragment = null; // built lazily -- most text nodes match nothing
-    const plainParts = []; // our own passthrough text nodes, pre-marked processed
-
     while ((match = WORD_RE.exec(text))) {
       const token = match[0];
       const lower = token.toLowerCase();
       let hit = null;
-      let direction = null;
 
       if (germanMode) {
         hit = byDeExact.get(token);
@@ -516,7 +573,6 @@
         // "daten" (to date someone, a verb it does). A missed gloss is
         // silent; a wrong one actively teaches something false, so this
         // stays exact-case-or-nothing for ordinary Titlecase tokens.
-        direction = "de-en";
         if (!hit && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
           const sentence = extractSentence(node, match.index);
           // On YouTube the container was judged German as a whole, but its
@@ -529,38 +585,15 @@
             scheduleFlush();
           }
         }
+        if (hit) {
+          registerGloss(node, match.index, match.index + token.length, hit.en, token);
+        }
       } else {
         hit = byEn.get(lower);
-        direction = "en-de";
+        if (hit) {
+          registerGloss(node, match.index, match.index + token.length, hit.deDisplay, hit.deDisplay);
+        }
       }
-
-      if (hit) {
-        if (!fragment) fragment = document.createDocumentFragment();
-        const plain = document.createTextNode(text.slice(lastIndex, match.index));
-        plainParts.push(plain);
-        fragment.appendChild(plain);
-        fragment.appendChild(makeGlossSpan(
-          token,
-          germanMode ? hit.en : hit.deDisplay,
-          direction,
-          germanMode ? token : hit.deDisplay
-        ));
-        lastIndex = match.index + token.length;
-      }
-    }
-
-    if (fragment) {
-      const tail = document.createTextNode(text.slice(lastIndex));
-      plainParts.push(tail);
-      fragment.appendChild(tail);
-      // The passthrough text pieces were already fully scanned as part of
-      // this node -- mark them processed so a rescan of the same container
-      // (YouTube re-scans on navigation) can't double-count missing words
-      // that happened to sit next to a glossed one.
-      for (const part of plainParts) processed.add(part);
-      node.parentNode?.replaceChild(fragment, node);
-    } else {
-      processed.add(node);
     }
   }
 
@@ -571,7 +604,6 @@
         if (!parent) return NodeFilter.FILTER_REJECT;
         if (SKIP_TAGS.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
         if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
-        if (parent.closest(".micheon-gloss-word")) return NodeFilter.FILTER_REJECT;
         // Never rewrite text inside interactive controls. It's UI chrome,
         // not vocabulary -- and on React apps it's actively destructive:
         // X's "Übersetzung zeigen" button died because React tried to
@@ -695,7 +727,7 @@
       youtube: IS_YOUTUBE,
       watchPage: !IS_YOUTUBE || location.pathname === "/watch",
       german: IS_YOUTUBE ? ytGermanFound : isGermanPage,
-      glossed: document.querySelectorAll(".micheon-gloss-word").length,
+      glossed: glossRangeCount,
     });
     return undefined;
   });
@@ -704,6 +736,18 @@
     const stored = await chrome.storage.local.get("settings");
     settings = { ...settings, ...(stored.settings || {}) };
     if (!settings.glossEnabled) return;
+    // Popup toggles (sound on hover/click, collection) apply immediately,
+    // without a page reload.
+    try {
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === "local" && changes.settings?.newValue) {
+          settings = { ...settings, ...changes.settings.newValue };
+        }
+      });
+    } catch { /* stale extension context */ }
+    if (!HIGHLIGHTS_SUPPORTED) {
+      console.warn("[Micheon] this browser lacks the CSS Custom Highlight API -- words are collected but not underlined.");
+    }
 
     const url = chrome.runtime.getURL("data/words.json");
     const words = await fetch(url).then((r) => r.json());

@@ -1,10 +1,12 @@
 const DEFAULT_SETTINGS = {
   glossEnabled: true,
   collectMissingVocab: true,
+  ttsOnHover: true,
+  ttsOnClick: true,
   youtubeAutoDub: true,
 };
 
-const checkboxIds = ["glossEnabled", "collectMissingVocab", "youtubeAutoDub"];
+const checkboxIds = ["glossEnabled", "collectMissingVocab", "ttsOnHover", "ttsOnClick", "youtubeAutoDub"];
 
 async function loadState() {
   const { settings, missingVocab } = await chrome.storage.local.get(["settings", "missingVocab"]);
@@ -14,7 +16,10 @@ async function loadState() {
   }
   const entries = Object.values(missingVocab || {});
   document.getElementById("missingCount").textContent = entries.length;
-  document.getElementById("sentenceCount").textContent = entries.filter((e) => e?.example).length;
+  // Words and sentences are different numbers: many words share one
+  // sentence, so counting "entries with an example" just repeated the word
+  // count and read as a bug.
+  document.getElementById("sentenceCount").textContent = new Set(entries.map((e) => e?.example).filter(Boolean)).size;
 }
 
 // A bare "0" reads as "broken". Say what this extension is actually doing

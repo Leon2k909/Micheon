@@ -4,6 +4,8 @@
 const DEFAULT_SETTINGS = {
   glossEnabled: true,
   collectMissingVocab: true,
+  ttsOnHover: true,
+  ttsOnClick: true,
   youtubeAutoDub: true,
 };
 
