@@ -3869,7 +3869,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Aussprache", lookup: "Aussprache", fallbackEn: "pronunciation", tip: "noun", article: "die" },
       { de: "betonen", lookup: "betonen", fallbackEn: "to stress, to emphasise", tip: "verb" },
       { de: "der Muttersprachler", lookup: "Muttersprachler", fallbackEn: "native speaker", tip: "noun", article: "der" },
-      { de: "sich versprechen", lookup: "versprechen", fallbackEn: "to misspeak, to get a word wrong", tip: "verb" },
+      { de: "versprechen", lookup: "versprechen", fallbackEn: "to promise", tip: "verb", use: "without sich = to promise; sich versprechen = to misspeak or say the wrong word" },
       { de: "holprig", lookup: "holprig", fallbackEn: "bumpy, halting", tip: "adjective" },
       { de: "das Sprachgefühl", lookup: "Sprachgefühl", fallbackEn: "feel for the language", tip: "noun", article: "das" },
       { de: "der Dialekt", lookup: "Dialekt", fallbackEn: "dialect", tip: "noun", article: "der" },

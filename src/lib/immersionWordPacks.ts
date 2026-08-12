@@ -424,4 +424,27 @@ export const immersionWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Das war eine kollektive Entscheidung.", en: "That was a collective decision.", use: "Neutral wording for a decision made by a whole group; gemeinsam entschieden is more conversational.", group: "real-browsing-interface", lessonPriority: 190000 },
     ],
   },
+  part450: {
+    label: "Part 450",
+    level: "A1-B1",
+    theme: "Useful words from real browsing",
+    description: "A small, carefully filtered follow-up from the latest Immersion export: genuine German only, taught through natural sentences rather than copied post text.",
+    focus,
+    seeds: [
+      { de: "mehr", lookup: "mehr", fallbackEn: "more", tip: "adverb", use: "very common; noch mehr means even more or some more" },
+      { de: "Schweden", lookup: "Schweden", fallbackEn: "Sweden", tip: "proper noun", use: "normally used without an article: aus Schweden, in Schweden" },
+      { de: "schwedisch", lookup: "schwedisch", fallbackEn: "Swedish", tip: "adjective", use: "lowercase as an adjective; Schwedisch is capitalised when it means the language" },
+      { de: "tot", lookup: "tot", fallbackEn: "dead", tip: "adjective", use: "direct and sometimes blunt; gestorben is often gentler when talking about a person" },
+    ],
+    dialogues: [],
+    phrases: [
+      { de: "Willst du noch mehr?", en: "Do you want some more?", use: "A very common everyday use of mehr with food, drinks or anything being offered.", group: "real-browsing-follow-up", lessonPriority: -220000 },
+      { de: "Ich hab's dir versprochen.", en: "I promised you.", long: "Ich habe es dir versprochen.", use: "The natural spoken version. Without sich, versprechen means to promise; sich versprechen means to misspeak.", group: "real-browsing-follow-up", lessonPriority: -190000 },
+      { de: "Wir sammeln Geld für ein Geschenk.", en: "We're collecting money for a present.", use: "A common use of sammeln among friends, at work or in a family.", group: "real-browsing-follow-up", lessonPriority: -130000 },
+      { de: "Kommst du aus Schweden?", en: "Are you from Sweden?", use: "A simple, natural question about where someone is from.", group: "real-browsing-follow-up", lessonPriority: -120000 },
+      { de: "Das ist eine schwedische Firma.", en: "That's a Swedish company.", use: "A reusable way to describe where a company or brand comes from.", group: "real-browsing-follow-up", lessonPriority: 70000 },
+      { de: "Ist er wirklich tot?", en: "Is he really dead?", use: "Direct and appropriate when checking a fact. In a sensitive conversation, ask Ist er wirklich gestorben? instead.", group: "real-browsing-follow-up", lessonPriority: 100000 },
+      { de: "Er ist leider gestorben.", en: "He died, unfortunately.", use: "Usually gentler than Er ist tot when telling someone about a person's death.", group: "real-browsing-follow-up", lessonPriority: 110000 },
+    ],
+  },
 };

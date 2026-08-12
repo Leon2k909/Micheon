@@ -90,9 +90,12 @@ for (const lemma of [
   "Abschreckung", "Pressestelle", "Riss", "Verbot", "wieder", "worum",
   "posten", "meist", "jemals", "Anwendungsfall", "Internetgeschwindigkeit", "Gartenschlauch",
   "Mitteilung", "Startseite", "Premium-Abo", "kollektiv", "erbärmlich", "verabscheuen", "Großbritannien",
+  "mehr", "Schweden", "schwedisch", "tot",
 ]) {
   assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
 }
+assert.equal(words.find((word) => word.de === "versprechen")?.en, "to promise",
+  "versprechen still teaches the less common reflexive meaning instead of to promise");
 
 assert(gloss.includes("HOVER_SPEAK_DELAY_MS") && gloss.includes("SAME_WORD_SPEAK_COOLDOWN_MS"),
   "hover speech is no longer debounced and deduplicated");
@@ -100,8 +103,16 @@ assert(gloss.includes("X_POST_SELECTOR") && gloss.includes("initX()")
   && gloss.includes("reconcileStoredCandidates()") && gloss.includes("examplesForMissing"),
   "X collection is no longer isolated to post text or resolved candidates are not reconciled");
 assert(gloss.includes("X_REINFORCEMENT_SELECTORS") && gloss.includes("collectMissing = true")
-  && gloss.includes("{ collectMissing: false }") && !gloss.includes("|| document.body, true"),
+  && gloss.includes("caseInsensitiveGerman: true") && !gloss.includes("|| document.body, true"),
   "X interface vocabulary is no longer reinforced separately from authored-text collection");
+assert(gloss.includes("xPendingRoots") && gloss.includes("scanXRoot(pending)")
+  && !gloss.includes("new MutationObserver(scheduleXScan)"),
+  "X mutations trigger repeated whole-page scans instead of incremental batches");
+assert(gloss.includes("unregisterGlosses") && gloss.includes("glossHighlight.delete(entry.range)")
+  && gloss.includes("mutation.removedNodes"),
+  "detached infinite-feed highlights are retained instead of being released");
+assert(gloss.includes("requestAnimationFrame(runPointerHitTest)"),
+  "hover range hit-testing is no longer capped to one pass per animation frame");
 assert(gloss.includes("const processed = new WeakMap()") && gloss.includes("const passMask = collectMissing ? 2 : 1"),
   "reinforcement-only scans can suppress a later authored-text collection pass");
 assert(gloss.includes("priorExamples.length > 0 && examples.length === 0"),
@@ -124,7 +135,8 @@ assert(gloss.includes("offset >= entry.end") && gloss.includes("getClientRects()
 assert(gloss.includes("OBSERVED_FORM_TO_LEMMA") && gloss.includes('"übersetzt": "übersetzen"'),
   "observed German forms are no longer resolved to their authored lemmas");
 assert(gloss.includes('"mitteilungen": "Mitteilung"') && gloss.includes('"booste": "boosten"')
-  && gloss.includes('"erbärmlichen": "erbärmlich"') && gloss.includes('"verabscheue": "verabscheuen"'),
+  && gloss.includes('"erbärmlichen": "erbärmlich"') && gloss.includes('"verabscheue": "verabscheuen"')
+  && gloss.includes('"sammelt": "sammeln"') && gloss.includes('"schwedisches": "schwedisch"'),
   "common inflected interface words are no longer resolved to their authored lemmas");
 assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
   && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),

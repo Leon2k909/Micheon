@@ -108,6 +108,7 @@
   let flushTimer = null;
   let ytScanTimer = null;
   let xScanTimer = null;
+  const xPendingRoots = new Set();
   // A node can first be seen in reinforcement-only site chrome and later be
   // reused by an SPA as authored text. Keep those scans distinct so the
   // lighter pass cannot permanently suppress collection on that node.
@@ -578,6 +579,16 @@
     "gewesen": "werden",
     "kannst": "können",
     "versprochen": "versprechen",
+    "sammelt": "sammeln",
+    "gesammelt": "sammeln",
+    "schwedische": "schwedisch",
+    "schwedischen": "schwedisch",
+    "schwedischer": "schwedisch",
+    "schwedisches": "schwedisch",
+    "tote": "tot",
+    "toten": "tot",
+    "toter": "tot",
+    "totes": "tot",
     "zusätzlichen": "zusätzlich",
     "überschritten": "überschreiten",
     "angesprochen": "ansprechen",
@@ -680,12 +691,15 @@
     "zweiten": "zweite",
   }));
 
-  function findGermanEntry(token) {
+  function findGermanEntry(token, { allowCaseFold = false } = {}) {
     const exact = byDeExact.get(token);
     if (exact) return exact;
     const lemma = OBSERVED_FORM_TO_LEMMA.get(token.toLowerCase());
-    if (!lemma) return null;
-    return byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null;
+    if (lemma) return byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null;
+    // Navigation labels are isolated from authored prose before enabling
+    // this. Their initial capital is UI styling rather than German noun
+    // grammar, so "Entdecken" can safely resolve to the verb "entdecken".
+    return allowCaseFold ? byDeLowerAny.get(token.toLowerCase()) || null : null;
   }
 
   function speakGerman(text, { force = false } = {}) {
@@ -781,14 +795,24 @@
   }
 
   function initTooltip() {
-    // One mousemove listener drives BOTH directions: hit-test the glossed
-    // ranges to show, pointer geometry to hide. No element hover events
-    // exist any more -- highlights aren't elements.
+    // Gaming mice can emit hundreds of mousemove events per second. A caret
+    // hit-test plus Range geometry on every one is expensive on an infinite
+    // React feed, so coalesce movement to one DOM read per paint.
+    let pointerFrame = 0;
+    let pointerSample = null;
+    const runPointerHitTest = () => {
+      pointerFrame = 0;
+      const sample = pointerSample;
+      pointerSample = null;
+      if (!sample) return;
+      const entry = glossAtPoint(sample.x, sample.y);
+      if (entry) showTipForEntry(entry);
+      else hideWhenPointerLeaves(sample.x, sample.y);
+    };
     document.addEventListener("mousemove", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return; // browsing the tip itself
-      const entry = glossAtPoint(e.clientX, e.clientY);
-      if (entry) showTipForEntry(entry);
-      else hideWhenPointerLeaves(e.clientX, e.clientY);
+      pointerSample = { x: e.clientX, y: e.clientY };
+      if (!pointerFrame) pointerFrame = requestAnimationFrame(runPointerHitTest);
     }, { capture: true, passive: true });
     // Clicking a glossed word replays its German (toggleable in the popup).
     // Deliberately does NOT preventDefault: a glossed word inside a link
@@ -851,16 +875,38 @@
 
   function registerGloss(node, start, end, gloss, de) {
     if (!glossHighlight) return;
+    let list = glossIndex.get(node);
+    if (list?.some((entry) => entry.start === start && entry.end === end && entry.gloss === gloss)) return;
     const range = document.createRange();
     try {
       range.setStart(node, start);
       range.setEnd(node, end);
     } catch { return; }
     glossHighlight.add(range);
-    let list = glossIndex.get(node);
     if (!list) { list = []; glossIndex.set(node, list); }
     list.push({ start, end, gloss, de, range });
     glossRangeCount += 1;
+  }
+
+  function unregisterGlosses(root) {
+    if (!glossHighlight || !root) return;
+    const removeTextNode = (node) => {
+      const list = glossIndex.get(node);
+      if (!list) return;
+      if (activeEntry && list.includes(activeEntry)) hideTip();
+      for (const entry of list) glossHighlight.delete(entry.range);
+      glossRangeCount = Math.max(0, glossRangeCount - list.length);
+      glossIndex.delete(node);
+      processed.delete(node);
+    };
+    if (root.nodeType === Node.TEXT_NODE) {
+      removeTextNode(root);
+      return;
+    }
+    if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) removeTextNode(node);
   }
 
   function glossAtPoint(x, y) {
@@ -884,7 +930,7 @@
     return null;
   }
 
-  function processTextNode(node, germanMode, collectMissing = true) {
+  function processTextNode(node, germanMode, collectMissing = true, caseInsensitiveGerman = false) {
     const processedMask = processed.get(node) || 0;
     const passMask = collectMissing ? 2 : 1;
     if ((processedMask & passMask) !== 0) return;
@@ -902,7 +948,7 @@
       let hit = null;
 
       if (germanMode) {
-        hit = findGermanEntry(token);
+        hit = findGermanEntry(token, { allowCaseFold: caseInsensitiveGerman });
         if (!hit && /^[A-ZÄÖÜ]+$/.test(token)) {
           // All-caps discards case entirely (headlines, nav labels) -- no
           // noun/verb signal survives that to protect, so the full index
@@ -943,7 +989,7 @@
     }
   }
 
-  function walk(root, germanMode, { collectMissing = true } = {}) {
+  function walk(root, germanMode, { collectMissing = true, caseInsensitiveGerman = false } = {}) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(n) {
         const parent = n.parentElement;
@@ -969,7 +1015,7 @@
     let i = 0;
     function step(deadline) {
       while (i < nodes.length && (deadline.timeRemaining() > 0 || deadline.didTimeout)) {
-        processTextNode(nodes[i], germanMode, collectMissing);
+        if (nodes[i].isConnected) processTextNode(nodes[i], germanMode, collectMissing, caseInsensitiveGerman);
         i += 1;
       }
       if (i < nodes.length) runWhenIdle(step, { timeout: 1000 });
@@ -980,6 +1026,12 @@
   function observeNewContent() {
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
+        if (m.type === "characterData") {
+          unregisterGlosses(m.target);
+          processTextNode(m.target, isGermanPage);
+          continue;
+        }
+        for (const removed of m.removedNodes) unregisterGlosses(removed);
         for (const added of m.addedNodes) {
           if (added.nodeType === Node.ELEMENT_NODE) {
             if (added.dataset?.micheon) continue; // our own insertion
@@ -990,7 +1042,7 @@
         }
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
   }
 
   // ── YouTube mode ──────────────────────────────────────────────────────
@@ -1069,8 +1121,20 @@
   // X repeats account names, trends, translated UI and timestamps all over
   // the DOM. Only tweet bodies are real authored text, so only those may
   // produce glosses or missing-vocabulary candidates.
-  function scanX() {
-    for (const el of document.querySelectorAll(X_POST_SELECTOR)) {
+  function scanXRoot(root) {
+    const scope = root?.nodeType === Node.TEXT_NODE ? root.parentElement : root;
+    if (!scope?.querySelectorAll || (scope !== document && !scope.isConnected)) return;
+
+    const posts = new Set();
+    const reinforcement = new Set();
+    if (scope.nodeType === Node.ELEMENT_NODE) {
+      if (scope.matches(X_POST_SELECTOR)) posts.add(scope);
+      const containingPost = scope.closest(X_POST_SELECTOR);
+      if (containingPost) posts.add(containingPost);
+    }
+    for (const el of scope.querySelectorAll(X_POST_SELECTOR)) posts.add(el);
+
+    for (const el of posts) {
       const text = (el.textContent || "").trim();
       if (text.length < 3) continue;
       const germanPost = commentLooksGerman(text);
@@ -1082,24 +1146,50 @@
     // missing-vocabulary export. Gloss it against Micheon's catalogue while
     // keeping collection restricted to authored post text above.
     for (const selector of X_REINFORCEMENT_SELECTORS) {
-      for (const el of document.querySelectorAll(selector)) {
-        walk(el, true, { collectMissing: false });
+      if (scope.nodeType === Node.ELEMENT_NODE) {
+        if (scope.matches(selector)) reinforcement.add(scope);
+        else if (scope.closest(selector)) reinforcement.add(scope);
       }
+      for (const el of scope.querySelectorAll(selector)) reinforcement.add(el);
+    }
+    for (const el of reinforcement) {
+      walk(el, true, { collectMissing: false, caseInsensitiveGerman: true });
     }
   }
 
-  function scheduleXScan() {
+  function scheduleXScan(root) {
+    const candidate = root?.nodeType === Node.TEXT_NODE ? root.parentElement : root;
+    if (!candidate || !candidate.isConnected) return;
+    // One React commit often reports a wrapper and several descendants.
+    // Keep only the broadest connected roots before touching the DOM.
+    for (const pending of xPendingRoots) {
+      if (pending === candidate || pending.contains?.(candidate)) return;
+      if (candidate.contains?.(pending)) xPendingRoots.delete(pending);
+    }
+    xPendingRoots.add(candidate);
     if (xScanTimer) return;
     xScanTimer = setTimeout(() => {
       xScanTimer = null;
-      scanX();
-    }, 700);
+      const roots = [...xPendingRoots];
+      xPendingRoots.clear();
+      for (const pending of roots) scanXRoot(pending);
+    }, 120);
   }
 
   function initX() {
-    const observer = new MutationObserver(scheduleXScan);
-    observer.observe(document.body, { childList: true, subtree: true });
-    scheduleXScan();
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "characterData") {
+          unregisterGlosses(mutation.target);
+          scheduleXScan(mutation.target);
+          continue;
+        }
+        for (const removed of mutation.removedNodes) unregisterGlosses(removed);
+        for (const added of mutation.addedNodes) scheduleXScan(added);
+      }
+    });
+    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+    scanXRoot(document);
   }
 
   // ── popup status ──────────────────────────────────────────────────────
