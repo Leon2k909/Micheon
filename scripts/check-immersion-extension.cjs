@@ -15,6 +15,7 @@ const gloss = read("src/content-gloss.js");
 const popup = read("src/popup.js");
 const offscreen = read("src/offscreen.js");
 const background = read("src/background.js");
+const popupScript = read("src/popup.js");
 const desktopMain = fs.readFileSync(path.join(root, "electron", "main.js"), "utf8");
 const desktopPreload = fs.readFileSync(path.join(root, "electron", "preload.cjs"), "utf8");
 const settingsCard = fs.readFileSync(path.join(root, "src", "components", "BrowserExtension.tsx"), "utf8");
@@ -183,8 +184,15 @@ for (const observed of ["sekunden", "versandkosten", "lieferumfang", "abnehmbare
   assert(new RegExp(`"${observed}":`).test(aliasBlock), `${observed} from the shopping/device export is no longer linked to its dictionary form`);
 }
 assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
-  && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),
+  && offscreen.includes("currentFetch?.abort()"),
   "overlapping TTS playback is no longer cancelled");
+// Micheon's own voice or nothing. A system voice reciting German teaches a
+// pronunciation the learner cannot tell apart from the real model, so with
+// the desktop app closed the extension must stay silent instead.
+assert(!/speechSynthesis|SpeechSynthesisUtterance/.test(offscreen),
+  "the browser's system voice is back -- Immersion must stay silent when Micheon is closed");
+assert(/Micheon isn't running/.test(popupScript),
+  "the popup no longer explains why pronunciation is silent when Micheon is closed");
 assert(background.includes("latestTtsRequest") && background.includes("requestId !== latestTtsRequest")
   && background.includes("offscreenCreation") && background.includes("lastForwardedText"),
   "stale TTS requests can still race while the offscreen player is opening");
@@ -258,7 +266,7 @@ async function checkLatestAudioWins() {
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(plays, ["blob:1"], "rapid hover requests produced overlapping local audio");
-  assert.deepEqual(browserSpeech, [], "a cancelled request leaked through the browser-voice fallback");
+  assert.deepEqual(browserSpeech, [], "the browser-voice fallback is back -- silence is the intended behaviour with Micheon closed");
 }
 
 checkLatestAudioWins().then(() => {

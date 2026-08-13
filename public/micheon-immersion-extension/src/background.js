@@ -12,6 +12,8 @@ let latestTtsRequest = 0;
 let lastForwardedText = "";
 let lastForwardedAt = 0;
 let offscreenCreation = null;
+let lastPlaybackOk = null;
+let lastPlaybackAt = 0;
 
 chrome.runtime.onInstalled.addListener(async () => {
   const existing = await chrome.storage.local.get("settings");
@@ -35,7 +37,11 @@ async function ensureOffscreen() {
   await offscreenCreation;
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "micheon-tts-status") {
+    sendResponse({ lastPlaybackOk, lastPlaybackAt });
+    return undefined;
+  }
   if (message?.type !== "micheon-tts") return undefined;
   const text = String(message.text || "").replace(/\s+/g, " ").trim().slice(0, 200);
   if (!text) return undefined;
@@ -54,7 +60,10 @@ chrome.runtime.onMessage.addListener((message) => {
       // The pointer may have reached another word while the hidden audio
       // page was being created. Only the newest pronunciation is useful.
       if (requestId !== latestTtsRequest) return;
-      await chrome.runtime.sendMessage({ type: "micheon-tts-play", text });
+      const reply = await chrome.runtime.sendMessage({ type: "micheon-tts-play", text });
+      // Micheon's voice or nothing: record which it was, for the popup.
+      lastPlaybackOk = reply?.played === true;
+      lastPlaybackAt = Date.now();
     } catch {
       // No offscreen support or no audio path -- pronunciation is a nicety,
       // never worth an error surface.

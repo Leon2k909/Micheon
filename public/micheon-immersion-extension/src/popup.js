@@ -130,5 +130,35 @@ document.getElementById("clearBtn").addEventListener("click", clearList);
 // what the browser is running until its reload arrow is pressed.
 document.getElementById("extVersion").textContent = `v${chrome.runtime.getManifest().version}`;
 
+// Pronunciation comes from Micheon's own voice and nothing else -- there is
+// no browser-voice fallback, by design. With the app closed the extension is
+// deliberately silent, so say that rather than let the silence read as a
+// broken feature.
+async function loadVoiceStatus() {
+  const el = document.getElementById("voiceStatus");
+  const { settings } = await chrome.storage.local.get("settings");
+  const merged = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  if (!merged.ttsOnHover && !merged.ttsOnClick) {
+    el.hidden = true;
+    return;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1200);
+  let running = false;
+  try {
+    const res = await fetch("http://127.0.0.1:41730/api/health", { signal: controller.signal });
+    running = res.ok;
+  } catch {
+    running = false;
+  } finally {
+    clearTimeout(timer);
+  }
+  el.hidden = running;
+  if (!running) {
+    el.textContent = "Micheon isn't running, so words stay silent — its own voice is the only one used, never the browser's robotic one. Open Micheon to hear pronunciation.";
+  }
+}
+
 loadState();
 loadPageStatus();
+loadVoiceStatus();

@@ -15,7 +15,7 @@ running, its own local TTS server.
    whose next re-render tripped over our nodes (X's translate toggle died
    three different ways before this). The tooltip is driven by caret
    hit-testing; hovering also speaks the German after a short settling delay
-   (through the desktop app's TTS when it runs, the browser voice otherwise)
+   (through the desktop app's own TTS, and only while it is running)
    and clicking the word
    replays it -- both on by default, both toggleable in the popup. On a
    German page that's an English gloss (reinforcement of what you're
@@ -24,7 +24,9 @@ running, its own local TTS server.
    otherwise read in English still teach. The tooltip has a speaker button
    that pronounces the German: through the Micheon desktop app's own TTS
    voice when the app is running, through the browser's built-in German
-   voice when it isn't. A latest-request-wins player cancels the previous
+   voice, and only while the app is running -- there is no browser-voice
+   fallback, so with Micheon closed the extension stays silent rather than
+   teach a system voice's German. A latest-request-wins player cancels the previous
    pronunciation when the pointer moves, so words never speak over each other.
 2. **Missing-vocabulary collection.** In German text, a real-looking German
    word that ISN'T in the list gets counted, along with one real sentence it

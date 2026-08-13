@@ -1,12 +1,15 @@
 /**
- * Offscreen audio player. Two voices, tried in order:
+ * Offscreen audio player. ONE voice, on purpose: the Micheon desktop app's
+ * own TTS server -- the same premium voice the app itself uses -- reached on
+ * the app's default local port. A short timeout means "app not running"
+ * costs barely anything.
  *
- *   1. The Micheon desktop app's own TTS server (the same premium voice the
- *      app itself uses), if the app is running on this machine. The port is
- *      the app's default; a short timeout means "app not running" costs
- *      barely anything.
- *   2. The browser's built-in German speech synthesis, so pronunciation
- *      still works with the desktop app closed.
+ * There is deliberately NO fallback to the browser's built-in speech
+ * synthesis. It existed so pronunciation "still worked" with the app closed,
+ * but a system voice reciting German teaches a pronunciation the learner
+ * cannot tell apart from the real model, and practising that is worse than
+ * hearing nothing. With Micheon shut the extension stays silent and the
+ * popup explains why.
  *
  * Playing here rather than in the page keeps every website's own security
  * policy out of the picture entirely.
@@ -31,7 +34,6 @@ function stopCurrentPlayback() {
     URL.revokeObjectURL(currentUrl);
     currentUrl = null;
   }
-  speechSynthesis.cancel();
 }
 
 async function playFromMicheon(text, requestId) {
@@ -57,18 +59,7 @@ async function playFromMicheon(text, requestId) {
   }
 }
 
-function playFromBrowser(text, requestId) {
-  if (requestId !== playbackRequest) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "de-DE";
-  utterance.rate = 0.95;
-  const german = speechSynthesis.getVoices().find((v) => v.lang?.toLowerCase().startsWith("de"));
-  if (german) utterance.voice = german;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-}
-
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type !== "micheon-tts-play") return undefined;
   const text = String(message.text || "").slice(0, 200);
   if (!text) return undefined;
@@ -77,12 +68,9 @@ chrome.runtime.onMessage.addListener((message) => {
   // older local-TTS fetch, so rapid pointer movement can never layer voices.
   stopCurrentPlayback();
   void playFromMicheon(text, requestId).then((played) => {
-    if (!played) playFromBrowser(text, requestId);
+    // Report whether Micheon's voice actually answered, so the popup can say
+    // "open Micheon" instead of leaving silence looking like a fault.
+    try { sendResponse({ played }); } catch { /* channel already closed */ }
   });
-  return undefined;
+  return true; // keep the channel open for the async reply
 });
-
-// Chromium loads voices asynchronously; touching the list once warms it up
-// so the first real pronunciation doesn't fall back to a non-German voice.
-speechSynthesis.getVoices();
-speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
