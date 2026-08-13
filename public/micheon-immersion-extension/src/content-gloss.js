@@ -102,6 +102,10 @@
   let byDeLowerAny = new Map();    // lowercase German (all entries) -> { en, deDisplay }
   let byEn = new Map();   // lowercase English (first word of gloss only) -> { de, deDisplay }
   let isGermanPage = false;
+  // "strong" | "weak" | "none" -- see detectGerman. Anything short of
+  // "strong" means each passage must prove itself before its unknown words
+  // are collected.
+  let germanConfidence = "none";
   let ytGermanFound = false;
   let xGermanFound = false;
   let missingCounts = new Map();   // word -> count
@@ -175,16 +179,30 @@
     return sentenceLooksGerman(example) && candidateAppearsOutsideExcludedText(example, candidate);
   }
 
+  /**
+   * How German is this page? Three answers, not two.
+   *
+   *   "strong" -- the document says so (lang=de*): trusted wholesale.
+   *   "weak"   -- it says otherwise, or says nothing, but the text reads
+   *               German. Gloss it, but only collect from passages that are
+   *               themselves German.
+   *   "none"   -- English-to-German recall glossing only.
+   *
+   * This used to return false the instant a lang attribute said anything
+   * other than German, WITHOUT ever looking at the text -- so a German
+   * article on a site that declares lang="en" (a forum thread, a
+   * mixed-language feed) collected nothing at all, permanently and silently.
+   */
   function detectGerman() {
     const htmlLang = (document.documentElement.getAttribute("lang") || "").toLowerCase();
-    if (htmlLang.startsWith("de")) return true;
-    if (htmlLang && !htmlLang.startsWith("de")) return false;
-    // No lang attribute at all: fall back to a quick sample of the page's
-    // own text rather than guessing from the URL, which lies constantly
-    // (plenty of German sites live on .com/.io domains).
-    const sample = (document.body?.innerText || "").slice(0, 2000).toLowerCase();
+    if (htmlLang.startsWith("de")) {
+      germanConfidence = "strong";
+      return true;
+    }
+    const sample = (document.body?.innerText || "").slice(0, 4000).toLowerCase();
     const hits = (sample.match(GERMAN_HINT_RE) || []).length;
-    return hits >= 6;
+    germanConfidence = hits >= 6 ? "weak" : "none";
+    return germanConfidence === "weak";
   }
 
   // Per-container German check for YouTube. Vocabulary-list descriptions
@@ -290,15 +308,18 @@
     "der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "einen", "eines",
     "und", "oder", "aber", "doch", "denn", "sondern", "als", "wie", "wenn", "dass", "weil", "ob",
     "ich", "du", "er", "sie", "es", "wir", "ihr", "mich", "dich", "sich", "uns", "euch",
+    "mir", "ihm", "ihn", "ihnen", "wer", "wen", "wem", "wessen",
     "mein", "dein", "sein", "ihre", "unser", "euer", "ihren", "ihrer", "ihrem", "seinen", "seiner", "seinem",
-    "in", "im", "an", "am", "auf", "aus", "bei", "bis", "durch", "für", "gegen", "mit", "nach",
+    "unsere", "unserer", "unserem", "unseren", "ihres", "dessen", "deren",
+    "in", "im", "ins", "an", "am", "ans", "auf", "aufs", "aus", "bei", "beim", "bis", "durch", "für", "fürs", "gegen", "mit", "nach",
     "ohne", "seit", "um", "unter", "von", "vor", "zu", "zum", "zur", "über", "hinter", "neben", "zwischen",
     "ist", "sind", "war", "waren", "wird", "werden", "wurde", "wurden", "hat", "haben", "hatte", "hatten",
     "kann", "können", "muss", "müssen", "soll", "sollen", "will", "wollen", "darf", "dürfen", "mag", "mögen",
     "nicht", "kein", "keine", "auch", "noch", "nur", "schon", "so", "sehr", "hier", "dort", "jetzt",
-    "alle", "alles", "andere", "anderen", "jede", "jeder", "jedes", "jeden", "man", "mehr",
+    "alle", "alles", "allem", "allen", "aller", "andere", "anderen", "jede", "jeder", "jedes", "jeden", "man", "mehr",
     "was", "habe", "sei", "dir", "deine", "deiner", "deinem", "deinen", "meine", "meiner",
     "meinem", "meinen", "seine", "dies", "diese", "dieser", "dieses", "diesen", "einige", "eure",
+    "vom", "dar", "hin", "bevor", "gibt", "werde", "zwei",
   ]);
 
   // Not vocabulary: names, cities, brands, web fragments and English filler
@@ -350,7 +371,27 @@
     "sentences", "share", "should", "some", "subscribe", "than", "thank", "thanks", "that", "the",
     "their", "them", "then", "there", "they", "this", "time", "two", "video", "videos", "vocabulary",
     "welcome", "were", "what", "when", "where", "which", "who", "why", "with", "words", "would",
-    "you", "your",
+    "you", "your", "actual", "actually", "all", "anyone", "apart", "around", "attic", "away", "back",
+    "been", "being", "build", "building", "called", "catch", "change", "click", "close", "closest",
+    "companies", "conductor", "create", "creator", "critical", "days", "description", "did", "doing",
+    "done", "dressed", "dude", "dynamic", "each", "earth", "edit", "effort", "else", "even", "ever",
+    "every", "excellent", "experience", "falling", "fantasy", "feel", "feels", "finds", "flying",
+    "future", "game", "germany", "giving", "glorious", "guy", "hes", "him", "hit", "house",
+    "immediately", "important", "improvement", "input", "interface", "internal", "its", "joke", "keep",
+    "know", "label", "least", "left", "legal", "lets", "life", "listed", "long", "lot", "love",
+    "machine", "made", "may", "mean", "means", "meanwhile", "meets", "mobile", "model", "models",
+    "much", "must", "native", "need", "next", "nice", "night", "numbers", "old", "only", "our",
+    "output", "over", "owner", "page", "pay", "people", "pixel", "play", "plugin", "popular", "pretty",
+    "price", "pricing", "probably", "promoting", "purely", "putting", "ready", "reasoning", "recursive",
+    "relationship", "research", "restore", "rich", "ridiculous", "right", "role", "room", "running",
+    "scale", "seems", "self", "selling", "separate", "serve", "setup", "showing", "since", "sitting",
+    "slipped", "smart", "sounds", "spawns", "spotted", "staff", "standards", "stateless", "streams",
+    "stuff", "such", "sure", "teaser", "terminal", "terrible", "themes", "through", "throw", "tied",
+    "tips", "too", "trailer", "transcribe", "trying", "twice", "updates", "used", "useful", "vanilla",
+    "watch", "watching", "way", "web", "weeks", "while", "wife", "within", "wonderful", "workload", "worried", "wow",
+    "alignment", "allocation", "analysis", "artificial", "bench", "beta", "core", "developers", "dish", "extra",
+    "fold", "high", "his", "index", "intelligence", "iteration", "lab", "leak", "micro", "north", "per",
+    "picker", "podcasts", "pushing", "reached", "slaving", "tbh", "token", "tours", "trek", "ultra",
     // additional brands, account names and English feed chrome observed in
     // the second real-world export
     "adonis", "anakin", "ananth", "andy", "angaisb", "balogun", "basil", "blueemi", "bluedev",
@@ -362,6 +403,15 @@
     "does", "give", "good", "great", "instead", "meeting", "native", "never", "news", "now",
     "paper", "planning", "politics", "prime", "pro", "really", "release", "reports", "said",
     "small", "students", "suggested", "sunny", "testing", "told", "use", "users", "waiting", "work", "year",
+    // Model and account names observed in the 2026-08-13 X export. They are
+    // useful context on that page, but they are not reusable German words.
+    "astra", "britannia", "brin", "chimney", "copilot", "crys", "deepseek", "devon", "fable",
+    "glimmer", "gpt", "hale", "hermes", "holmes", "jarvis", "karoline", "leavitt", "leunen",
+    "loughborough", "macrohard", "moira", "moonshot", "muse", "mythos", "optimus", "opus", "prober",
+    "prosper", "puppet", "ramsay", "reuters", "ron", "sandbach", "sergey", "sherlock", "sol",
+    "apache", "atg", "baron", "celebrity", "ceuta", "dosent", "fable-", "gboard", "giga",
+    "hilarious", "londoner", "moat", "mog", "opus-", "ramada", "starlink", "stewart", "terra",
+    "thorn", "trump", "unsloth",
   ]);
 
   function looksLikeRealGermanCandidate(token) {
@@ -628,11 +678,9 @@
     "perfektes": "perfekt",
     "passiert": "passieren",
     "preise": "Preis",
-    "projekten": "Projekt",
     "scheint": "scheinen",
     "spricht": "sprechen",
     "treffe": "treffen",
-    "unterstützten": "unterstützen",
     "verdammte": "verdammt",
     "veröffentlicht": "veröffentlichen",
     "verfasst": "verfassen",
@@ -657,7 +705,7 @@
     "lehnt": "ablehnen",
     "umzusteigen": "umsteigen",
     "verliert": "verlieren",
-    "weigern": "sich weigern",
+    "weigern": "weigern",
     "wähle": "wählen",
     "aktuelle": "aktuell",
     "auszuprobieren": "ausprobieren",
@@ -671,7 +719,6 @@
     "plant": "planen",
     "risse": "Riss",
     "tage": "Tag",
-    "anmerkungen": "Anmerkung",
     "bleibt": "bleiben",
     "chemische": "chemisch",
     "chinesischer": "chinesisch",
@@ -702,6 +749,232 @@
     "vorhandenen": "vorhanden",
     "waldbrände": "Waldbrand",
     "zweiten": "zweite",
+    // Reviewed 2026-08-13 Immersion export. These are ordinary inflections
+    // of words Micheon already teaches, not 100+ genuinely missing lessons.
+    "bedeutende": "bedeutend",
+    "gleichen": "gleich",
+    "gleicher": "gleich",
+    "stellt": "darstellen",
+    "gesagt": "sagen",
+    "wäre": "sein",
+    "gewinnt": "gewinnen",
+    "großartiges": "großartig",
+    "verbesserte": "verbessern",
+    "wochen": "Woche",
+    "hinzu": "hinzufügen",
+    "fügen": "hinzufügen",
+    "fügt": "hinzufügen",
+    "kommt": "kommen",
+    "beste": "gut",
+    "ergänzenden": "ergänzen",
+    "ersten": "erste",
+    "erzielt": "erzielen",
+    "gemeinschaften": "Gemeinschaft",
+    "herausragender": "herausragend",
+    "lokalen": "lokal",
+    "lokale": "lokal",
+    "massive": "massiv",
+    "nächsten": "nächste",
+    "schließt": "schließen",
+    "sollte": "sollen",
+    "verdopple": "verdoppeln",
+    "verdoppelt": "verdoppeln",
+    "zurückgegeben": "zurückgeben",
+    "enthüllt": "enthüllen",
+    "liegt": "liegen",
+    "menschliches": "menschlich",
+    "weitere": "weiter",
+    "weiteres": "weiter",
+    "abgestimmt": "abstimmen",
+    "allgemeinen": "allgemein",
+    "aufgaben": "Aufgabe",
+    "aufruft": "aufrufen",
+    "befindet": "befinden",
+    "bezeichnet": "bezeichnen",
+    "bringt": "bringen",
+    "gehofft": "hoffen",
+    "genommen": "nehmen",
+    "große": "groß",
+    "großen": "groß",
+    "hotels": "Hotel",
+    "komplexe": "komplex",
+    "mehreren": "mehrere",
+    "nehme": "nehmen",
+    "preises": "Preis",
+    "quellen": "Quelle",
+    "schlägt": "schlagen",
+    "steck": "stecken",
+    "trifft": "treffen",
+    "versucht": "versuchen",
+    "wiederholungen": "Wiederholung",
+    "worte": "Wort",
+    "zieh": "ziehen",
+    "geringeren": "gering",
+    "hauses": "Haus",
+    "milliarden": "Milliarde",
+    "augenhöhe": "Augenhöhe",
+    "bildschirmgrößen": "Bildschirmgröße",
+    "teamkollegen": "Teamkollege",
+    "beamter": "Beamte",
+    "kritiker": "Kritiker",
+    "moderatorin": "Moderatorin",
+    "pressesprecherin": "Pressesprecherin",
+    "satellitenbilder": "Satellitenbild",
+    "zeichnungen": "Zeichnung",
+    "abgeschnitten": "abschneiden",
+    "abgeschoben": "abschieben",
+    "abzustoßen": "abstoßen",
+    "afghanischen": "afghanisch",
+    "analysiert": "analysieren",
+    "anspruchsvolle": "anspruchsvoll",
+    "anzuziehen": "anziehen",
+    "aufgefordert": "auffordern",
+    "ausgerollt": "ausrollen",
+    "ausgezeichnetes": "ausgezeichnet",
+    "bedroht": "bedrohen",
+    "beeindruckender": "beeindruckend",
+    "eingebaut": "einbauen",
+    "eingesammelt": "einsammeln",
+    "eingeschaltet": "einschalten",
+    "einmaligen": "einmalig",
+    "einschließlich": "einschließlich",
+    "entscheidender": "entscheidend",
+    "enttäuschend": "enttäuschend",
+    "festzustellen": "feststellen",
+    "freut": "freuen",
+    "führendes": "führen",
+    "gefährliche": "gefährlich",
+    "gehalten": "halten",
+    "gehasst": "hassen",
+    "geliefert": "liefern",
+    "genutzt": "nutzen",
+    "geöffnet": "öffnen",
+    "gespeichert": "speichern",
+    "mitzuhalten": "mithalten",
+    "objekte": "Objekt",
+    "öffentliche": "öffentlich",
+    "platzierte": "platzieren",
+    "routinen": "Routine",
+    "sonnige": "sonnig",
+    "spielt": "spielen",
+    "technische": "technisch",
+    "trainiert": "trainieren",
+    "überfüllte": "überfüllt",
+    "umzusetzen": "umsetzen",
+    "untergebracht": "unterbringen",
+    "unvollständige": "unvollständig",
+    "verändert": "verändern",
+    "verbleibenden": "verbleiben",
+    "verkabelt": "verkabeln",
+    "verkleinert": "verkleinern",
+    "verlegt": "verlegen",
+    "verteilt": "verteilen",
+    "verursacht": "verursachen",
+    "verzögert": "verzögern",
+    "vorgestellt": "vorstellen",
+    "wichtiger": "wichtig",
+    "wichtigsten": "wichtig",
+    "wöchentlichen": "wöchentlich",
+    "zurückgeblieben": "zurückbleiben",
+    "zurücktritt": "zurücktreten",
+    "zurückzuführen": "zurückführen",
+    "zusammengetrieben": "zusammentreiben",
+    // More forms from the same export. Keeping these as lookup aliases means
+    // the learner sees the authored dictionary entry and the exporter stops
+    // reporting normal conjugation/plural/adjective endings as new lessons.
+    "punkte": "Punkt",
+    "benchmarks": "Benchmark",
+    "initiale": "initial",
+    "migranten": "Migrant",
+    "erklärt": "erklären",
+    "mehrstufige": "mehrstufig",
+    "sag": "sagen",
+    "sage": "sagen",
+    "sagst": "sagen",
+    "typische": "typisch",
+    "illegaler": "illegal",
+    "internen": "intern",
+    "weißen": "weiß",
+    "würde": "werden",
+    "aktuellen": "aktuell",
+    "alten": "alt",
+    "ausgeführt": "ausführen",
+    "bewältigt": "bewältigen",
+    "bilder": "Bild",
+    "dokumente": "Dokument",
+    "einfachem": "einfach",
+    "einzigartige": "einzigartig",
+    "einziger": "einzig",
+    "empfehlungen": "Empfehlung",
+    "erkennt": "erkennen",
+    "erlebt": "erleben",
+    "erledigt": "erledigen",
+    "festgestellt": "feststellen",
+    "frühe": "früh",
+    "fähigkeiten": "Fähigkeit",
+    "ganzen": "ganz",
+    "gebauter": "bauen",
+    "gesehen": "sehen",
+    "gespräche": "Gespräch",
+    "grünen": "grün",
+    "gutes": "gut",
+    "hab": "haben",
+    "halte": "halten",
+    "hasst": "hassen",
+    "hast": "haben",
+    "heilige": "heilig",
+    "herzlichen": "herzlich",
+    "heutigen": "heute",
+    "hilft": "helfen",
+    "hinzugefügt": "hinzufügen",
+    "hohen": "hoch",
+    "häuser": "Haus",
+    "ideen": "Idee",
+    "intelligente": "intelligent",
+    "kinder": "Kind",
+    "kleinster": "klein",
+    "kommenden": "kommen",
+    "komplexer": "komplex",
+    "kostenlosen": "kostenlos",
+    "kritischen": "kritisch",
+    "lass": "lassen",
+    "letzten": "letzte",
+    "letzter": "letzte",
+    "liebend": "lieben",
+    "liebten": "lieben",
+    "löscht": "löschen",
+    "millionen": "Million",
+    "minuten": "Minute",
+    "modells": "Modell",
+    "musst": "müssen",
+    "männer": "Mann",
+    "naiven": "naiv",
+    "neue": "neu",
+    "neueste": "neu",
+    "niedrigsten": "niedrig",
+    "nutzt": "nutzen",
+    "probiere": "probieren",
+    "projekte": "Projekt",
+    "realen": "real",
+    "ressourcen": "Ressource",
+    "riesigen": "riesig",
+    "schaut": "schauen",
+    "schichten": "Schicht",
+    "schneidet": "schneiden",
+    "schulen": "Schule",
+    "sehe": "sehen",
+    "spaniens": "Spanien",
+    "steht": "stehen",
+    "straßen": "Straße",
+    "stunden": "Stunde",
+    "systeme": "System",
+    "szenen": "Szene",
+    "tages": "Tag",
+    "verschiedene": "verschieden",
+    "versionen": "Version",
+    "verrückter": "verrückt",
+    "wollte": "wollen",
+    "zeiten": "Zeit",
   }));
 
   function findGermanEntry(token, { allowCaseFold = false } = {}) {
@@ -1012,7 +1285,8 @@
           const sentence = extractSentence(node, match.index);
           // YouTube and X containers may mix languages internally, so the
           // candidate's own sentence still has to look German.
-          if ((!IS_YOUTUBE && !IS_X) || sentenceLooksGerman(sentence)) {
+          const trustPageLanguage = !IS_YOUTUBE && !IS_X && germanConfidence === "strong";
+          if (trustPageLanguage || sentenceLooksGerman(sentence)) {
             missingCounts.set(lower, (missingCounts.get(lower) || 0) + 1);
             const examples = missingExamples.get(lower) || new Set();
             if (sentence) examples.add(sentence);
@@ -1056,8 +1330,11 @@
         // X's "Übersetzung zeigen" button died because React tried to
         // re-render a text node this script had already replaced, and the
         // resulting DOM exception killed the button's update.
+        // Only skip the control's own label, not an entire card or feed post
+        // whose outer wrapper happens to be clickable.
+        const tag = parent.tagName;
         if (!includeInteractive
-          && parent.closest("button, [role='button'], [role='tab'], [role='menuitem'], [role='option'], select, label, summary")) {
+          && (tag === "BUTTON" || tag === "LABEL" || tag === "SUMMARY" || parent.getAttribute("role") === "button")) {
           return NodeFilter.FILTER_REJECT;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -1079,24 +1356,57 @@
     runWhenIdle(step, { timeout: 1000 });
   }
 
+  // Batch ordinary-page mutations. Busy SPAs update timers, feeds and player
+  // chrome continuously; walking every mutation synchronously causes visible
+  // jank and can starve clicks. A throttle still makes progress on pages that
+  // never become completely quiet.
+  const MUTATION_PASS_MS = 400;
+  const MAX_PENDING_ROOTS = 200;
+  let pendingRoots = new Set();
+  let pendingTexts = new Set();
+  let mutationTimer = null;
+
+  function runMutationPass() {
+    mutationTimer = null;
+    const roots = pendingRoots;
+    const texts = pendingTexts;
+    pendingRoots = new Set();
+    pendingTexts = new Set();
+    for (const textNode of texts) {
+      if (textNode.isConnected) processTextNode(textNode, isGermanPage);
+    }
+    if (roots.size > MAX_PENDING_ROOTS) {
+      walk(document.body, isGermanPage);
+      return;
+    }
+    for (const root of roots) {
+      if (root.isConnected) walk(root, isGermanPage);
+    }
+  }
+
+  function scheduleMutationPass() {
+    if (!mutationTimer) mutationTimer = setTimeout(runMutationPass, MUTATION_PASS_MS);
+  }
+
   function observeNewContent() {
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         if (m.type === "characterData") {
           unregisterGlosses(m.target);
-          processTextNode(m.target, isGermanPage);
+          pendingTexts.add(m.target);
           continue;
         }
         for (const removed of m.removedNodes) unregisterGlosses(removed);
         for (const added of m.addedNodes) {
           if (added.nodeType === Node.ELEMENT_NODE) {
             if (added.dataset?.micheon) continue; // our own insertion
-            walk(added, isGermanPage);
+            pendingRoots.add(added);
           } else if (added.nodeType === Node.TEXT_NODE) {
-            processTextNode(added, isGermanPage);
+            pendingTexts.add(added);
           }
         }
       }
+      if (pendingRoots.size || pendingTexts.size) scheduleMutationPass();
     });
     observer.observe(document.body, { childList: true, characterData: true, subtree: true });
   }
@@ -1107,6 +1417,8 @@
   // never scanned: the account's interface language and other people's
   // usernames aren't vocabulary.
   function scanYouTube() {
+    // The metadata containers below only exist on a video page; the rest of
+    // YouTube is covered by the whole-page walk started in initYouTube.
     if (location.pathname !== "/watch" && !location.pathname.startsWith("/shorts")) return;
     const containers = [];
     for (const sel of YT_SCAN_SELECTORS) {
@@ -1171,6 +1483,12 @@
     const observer = new MutationObserver(scheduleYouTubeScan);
     observer.observe(document.body, { childList: true, subtree: true });
     scheduleYouTubeScan();
+    // Read the rest of YouTube like any other site as well. Collection still
+    // requires each mixed-language passage to look German, so interface text
+    // cannot turn an English video into German vocabulary.
+    isGermanPage = detectGerman();
+    walk(document.body, isGermanPage);
+    observeNewContent();
   }
 
   // ── X / Twitter mode ──────────────────────────────────────────────────

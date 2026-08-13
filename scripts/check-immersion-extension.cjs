@@ -79,7 +79,7 @@ assert.equal(packedFile("manifest.json"), read("manifest.json"),
 assert.equal(packedFile("data/words.json"), read("data/words.json"),
   "the downloadable archive contains a stale word catalogue");
 
-assert(words.length >= 6200, `only ${words.length} extension glossary entries were exported`);
+assert(words.length >= 6340, `only ${words.length} extension glossary entries were exported`);
 assert.equal(new Set(words.map((word) => word.id)).size, words.length, "duplicate glossary ids found");
 assert.equal(new Set(words.map((word) => word.de.toLocaleLowerCase("de-DE"))).size, words.length,
   "duplicate German lemmas found in the extension glossary");
@@ -91,6 +91,10 @@ for (const lemma of [
   "posten", "meist", "jemals", "Anwendungsfall", "Internetgeschwindigkeit", "Gartenschlauch",
   "Mitteilung", "Startseite", "Premium-Abo", "kollektiv", "erbärmlich", "verabscheuen", "Großbritannien",
   "mehr", "Schweden", "schwedisch", "tot",
+  "gegenüber", "draußen", "raus", "verrückt", "nie", "niemals", "nichts", "etwas", "dafür",
+  "darauf", "jedoch", "mehrere", "weniger", "leise", "verdoppeln", "drängen", "Augenhöhe",
+  "Benchmark", "Punktzahl", "Bildschirmgröße", "Rechenleistung", "Sicherheitsproblem",
+  "Einwanderung", "Migrant", "Pressesprecherin", "Satellitenbild", "verzögern", "zurücktreten",
 ]) {
   assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
 }
@@ -152,6 +156,26 @@ assert(gloss.includes('"mitteilungen": "Mitteilung"') && gloss.includes('"booste
   && gloss.includes('"erbärmlichen": "erbärmlich"') && gloss.includes('"verabscheue": "verabscheuen"')
   && gloss.includes('"sammelt": "sammeln"') && gloss.includes('"schwedisches": "schwedisch"'),
   "common inflected interface words are no longer resolved to their authored lemmas");
+const aliasBlock = gloss.slice(
+  gloss.indexOf("  const OBSERVED_FORM_TO_LEMMA"),
+  gloss.indexOf("  function findGermanEntry"),
+);
+const glossaryLemmas = new Set(words.map((word) => word.de.toLocaleLowerCase("de-DE")));
+const brokenAliases = [];
+const aliasKeys = [];
+for (const match of aliasBlock.matchAll(/^\s*"([^"]+)":\s*"([^"]+)",?$/gm)) {
+  const [, observed, lemma] = match;
+  aliasKeys.push(observed);
+  if (!glossaryLemmas.has(lemma.toLocaleLowerCase("de-DE"))) {
+    brokenAliases.push(`${observed} -> ${lemma}`);
+  }
+}
+const duplicateAliases = [...new Set(aliasKeys.filter((alias, index) => aliasKeys.indexOf(alias) !== index))];
+assert.deepEqual(duplicateAliases, [], `Duplicate Immersion aliases: ${duplicateAliases.join(", ")}`);
+assert.deepEqual(brokenAliases, [], `Immersion aliases with missing dictionary targets: ${brokenAliases.join(", ")}`);
+for (const observed of ["bedeutende", "gleichen", "gesagt", "wäre", "gewinnt", "zurückgegeben"]) {
+  assert(new RegExp(`"${observed}":`).test(aliasBlock), `${observed} is no longer linked to its dictionary form`);
+}
 assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
   && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),
   "overlapping TTS playback is no longer cancelled");

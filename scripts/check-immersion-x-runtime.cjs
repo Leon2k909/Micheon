@@ -17,7 +17,8 @@ async function main() {
       <button id="more">Mehr</button><button>Entdecken</button><button>Mitteilungen</button>
     </nav></header>
     <main id="feed"><article><div data-testid="tweetText">
-      Willst du noch mehr? Dieses unbekanntesfeedwort darf den Scanner nicht aufhängen.
+      Willst du noch mehr? Die Punktzahl wäre gegenüber gestern besser.
+      Das wurde gesagt und später zurückgegeben. Dieses unbekanntesfeedwort darf den Scanner nicht aufhängen.
     </div></article></main>
   </body></html>`, {
     url: "https://x.com/home",
@@ -55,6 +56,9 @@ async function main() {
     assert(highlighted.includes(label), `${label} was not highlighted in X navigation`);
   }
   assert(highlighted.includes("mehr"), "lowercase mehr was not highlighted in tweet text");
+  for (const word of ["Punktzahl", "wäre", "gegenüber", "gesagt", "zurückgegeben"]) {
+    assert(highlighted.includes(word), `${word} was not resolved against the authored Immersion catalogue`);
+  }
   assert(highlighted.length < 30, `unexpected runaway range creation: ${highlighted.length}`);
 
   const feed = window.document.getElementById("feed");

@@ -1477,7 +1477,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
     seeds: [
       { de: "der Alltag", lookup: "Alltag", fallbackEn: "everyday life, daily routine", tip: "noun", article: "der" },
       { de: "die Gewohnheit", lookup: "Gewohnheit", fallbackEn: "habit", tip: "noun", article: "die" },
-      { de: "die Routine", lookup: "Routine", fallbackEn: "routine", tip: "noun", article: "die" },
+      { de: "die Routine", lookup: "Routine", fallbackEn: "daily routine, regular habit", tip: "noun", article: "die" },
       { de: "der Tagesablauf", lookup: "Tagesablauf", fallbackEn: "daily schedule, daily routine", tip: "noun", article: "der" },
       { de: "die Ausnahme", lookup: "Ausnahme", fallbackEn: "exception", tip: "noun", article: "die" },
       { de: "der Rhythmus", lookup: "Rhythmus", fallbackEn: "rhythm, routine", tip: "noun", article: "der" },
