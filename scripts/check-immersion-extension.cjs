@@ -95,6 +95,9 @@ for (const lemma of [
   "darauf", "jedoch", "mehrere", "weniger", "leise", "verdoppeln", "drängen", "Augenhöhe",
   "Benchmark", "Punktzahl", "Bildschirmgröße", "Rechenleistung", "Sicherheitsproblem",
   "Einwanderung", "Migrant", "Pressesprecherin", "Satellitenbild", "verzögern", "zurücktreten",
+  "Deutschland", "Österreich", "Schweiz", "Versandkosten", "Lieferumfang", "Ratenkauf",
+  "jederzeit", "weiterempfehlen", "kabelgebunden", "kabellos", "Schalter", "Zubehör",
+  "Helligkeit", "Latenz", "Tastenkappe", "Handballenauflage", "plattformübergreifend",
 ]) {
   assert(words.some((word) => word.de === lemma), `${lemma} is missing from the Immersion glossary`);
 }
@@ -175,6 +178,9 @@ assert.deepEqual(duplicateAliases, [], `Duplicate Immersion aliases: ${duplicate
 assert.deepEqual(brokenAliases, [], `Immersion aliases with missing dictionary targets: ${brokenAliases.join(", ")}`);
 for (const observed of ["bedeutende", "gleichen", "gesagt", "wäre", "gewinnt", "zurückgegeben"]) {
   assert(new RegExp(`"${observed}":`).test(aliasBlock), `${observed} is no longer linked to its dictionary form`);
+}
+for (const observed of ["sekunden", "versandkosten", "lieferumfang", "abnehmbare", "tastaturen", "einstellungen"]) {
+  assert(new RegExp(`"${observed}":`).test(aliasBlock), `${observed} from the shopping/device export is no longer linked to its dictionary form`);
 }
 assert(offscreen.includes("playbackRequest") && offscreen.includes("stopCurrentPlayback()")
   && offscreen.includes("currentFetch?.abort()") && offscreen.includes("speechSynthesis.cancel()"),
