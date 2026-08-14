@@ -6,9 +6,9 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Clock3,
   Gauge,
   Headphones,
+  ListMusic,
   Minimize2,
   Pause,
   Play,
@@ -938,11 +938,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <section className="rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-pattern-heading">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                <Clock3 className="h-4 w-4" />
+                <ListMusic className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-pattern-heading">{ui("Playback pattern")}</h2>
-                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Choose how often whole items return and how each card is spoken.")}</p>
+                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-pattern-heading">{ui("What you hear")}</h2>
+                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Which items Listen plays, in what order, and how often they come back.")}</p>
               </div>
             </div>
             <fieldset className="mt-4">
@@ -1060,7 +1060,85 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 />
               </div>
             </div>
-            <fieldset className="mt-4">
+            <div className="mt-4">
+              <NumberSetting
+                label={ui("Next card delay")}
+                max={30}
+                min={0}
+                note={ui("Pause after both languages finish")}
+                onCommit={commitDelaySeconds}
+                step={0.1}
+                suffix={ui("sec")}
+                testId="listen-next-card-delay"
+                value={nextCardDelayMs / 1000}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-volume-heading">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-dim)] text-[var(--accent)]">
+                <Volume2 className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-volume-heading">{ui("How it sounds")}</h2>
+                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Voice levels, speed, and how each card is spoken. Saved automatically.")}</p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <ListenVolumeRow
+                label={ui("Master volume")}
+                muteLabel={ui("Mute all audio")}
+                muted={masterMuted}
+                onChange={setMasterAudioVolume}
+                onToggleMuted={toggleAudioMuted}
+                testId="listen-master"
+                unmuteLabel={ui("Unmute all audio")}
+                value={audioSettings.masterVolume}
+              />
+              <ListenVolumeRow
+                label={ui("German voice")}
+                muteLabel={ui("Mute German voice")}
+                muted={germanMuted}
+                onChange={(value) => setTtsLanguageVolume("german", value)}
+                onToggleMuted={() => toggleTtsLanguageMuted("german")}
+                testId="listen-german"
+                unmuteLabel={ui("Unmute German voice")}
+                value={audioSettings.germanVolume}
+              />
+              <ListenVolumeRow
+                label={ui("English voice")}
+                muteLabel={ui("Mute English voice")}
+                muted={englishMuted}
+                onChange={(value) => setTtsLanguageVolume("english", value)}
+                onToggleMuted={() => toggleTtsLanguageMuted("english")}
+                testId="listen-english"
+                unmuteLabel={ui("Unmute English voice")}
+                value={audioSettings.englishVolume}
+              />
+            </div>
+            <div className="mt-4 border-t border-[var(--border)] pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-xs font-black text-[var(--text-2)]">
+                  <Gauge className="h-4 w-4 text-[var(--accent)]" /> {ui("Speech speed")}
+                </span>
+                <strong className="text-xs font-black text-[var(--text-3)]">{audioSettings.speechRate}×</strong>
+              </div>
+              <div className="audio-mixer-speed" data-testid="listen-speech-speed">
+                {TTS_SPEED_PRESETS.map((preset) => (
+                  <button
+                    aria-pressed={Math.abs(audioSettings.speechRate - preset) < 0.01}
+                    className={cn("audio-mixer-speed-chip", Math.abs(audioSettings.speechRate - preset) < 0.01 && "is-active")}
+                    key={preset}
+                    onClick={() => setTtsSpeechRate(preset)}
+                    type="button"
+                  >
+                    {preset}×
+                  </button>
+                ))}
+              </div>
+            </div>
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Language order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
                 {ui("Choose which language is spoken first.")}
@@ -1096,7 +1174,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 })}
               </div>
             </fieldset>
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-2">
               <NumberSetting
                 label={ui("German repeats")}
                 max={10}
@@ -1117,108 +1195,38 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 testId="listen-english-repeats"
                 value={englishRepeats}
               />
-              <NumberSetting
-                label={ui("Next card delay")}
-                max={30}
-                min={0}
-                note={ui("Pause after both languages finish")}
-                onCommit={commitDelaySeconds}
-                step={0.1}
-                suffix={ui("sec")}
-                testId="listen-next-card-delay"
-                value={nextCardDelayMs / 1000}
-              />
-            </div>
-            <label className="listen-background-toggle" data-testid="listen-background-toggle">
-              <input
-                checked={backgroundPlayback}
-                onChange={(event) => chooseBackgroundPlayback(event.target.checked)}
-                type="checkbox"
-              />
-              <span className="listen-background-toggle__copy">
-                <strong>{ui("Keep playing around Micheon")}</strong>
-                <small>{ui("Continue when you open Home, Practice, Settings, or another app section.")}</small>
-              </span>
-              <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
-            </label>
-            <label className="listen-background-toggle" data-testid="listen-pet-bilingual-toggle">
-              <input
-                checked={petBilingualCaptions}
-                onChange={(event) => choosePetBilingualCaptions(event.target.checked)}
-                type="checkbox"
-              />
-              <span className="listen-background-toggle__copy">
-                <strong>{ui("Show both languages on the pet")}</strong>
-                <small>{ui("Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.")}</small>
-              </span>
-              <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
-            </label>
-            <div className="mt-4 border-t border-[var(--border)] pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-black text-[var(--text-2)]">
-                  <Gauge className="h-4 w-4 text-[var(--accent)]" /> {ui("Speech speed")}
-                </span>
-                <strong className="text-xs font-black text-[var(--text-3)]">{audioSettings.speechRate}×</strong>
-              </div>
-              <div className="audio-mixer-speed" data-testid="listen-speech-speed">
-                {TTS_SPEED_PRESETS.map((preset) => (
-                  <button
-                    aria-pressed={Math.abs(audioSettings.speechRate - preset) < 0.01}
-                    className={cn("audio-mixer-speed-chip", Math.abs(audioSettings.speechRate - preset) < 0.01 && "is-active")}
-                    key={preset}
-                    onClick={() => setTtsSpeechRate(preset)}
-                    type="button"
-                  >
-                    {preset}×
-                  </button>
-                ))}
-              </div>
             </div>
           </section>
+        </div>
 
-          <section className="rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-volume-heading">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                <Volume2 className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-volume-heading">{ui("Voice levels")}</h2>
-                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Always visible here and saved automatically.")}</p>
-              </div>
-            </div>
-            <div className="mt-3">
-              <ListenVolumeRow
-                label={ui("Master volume")}
-                muteLabel={ui("Mute all audio")}
-                muted={masterMuted}
-                onChange={setMasterAudioVolume}
-                onToggleMuted={toggleAudioMuted}
-                testId="listen-master"
-                unmuteLabel={ui("Unmute all audio")}
-                value={audioSettings.masterVolume}
-              />
-              <ListenVolumeRow
-                label={ui("German voice")}
-                muteLabel={ui("Mute German voice")}
-                muted={germanMuted}
-                onChange={(value) => setTtsLanguageVolume("german", value)}
-                onToggleMuted={() => toggleTtsLanguageMuted("german")}
-                testId="listen-german"
-                unmuteLabel={ui("Unmute German voice")}
-                value={audioSettings.germanVolume}
-              />
-              <ListenVolumeRow
-                label={ui("English voice")}
-                muteLabel={ui("Mute English voice")}
-                muted={englishMuted}
-                onChange={(value) => setTtsLanguageVolume("english", value)}
-                onToggleMuted={() => toggleTtsLanguageMuted("english")}
-                testId="listen-english"
-                unmuteLabel={ui("Unmute English voice")}
-                value={audioSettings.englishVolume}
-              />
-            </div>
-          </section>
+        {/* Session-wide switches: they govern Listen as a whole rather than a
+            single card's content or voice, so they sit under both columns
+            instead of padding out whichever column had room. */}
+        <div className="listen-session-row">
+          <label className="listen-background-toggle" data-testid="listen-background-toggle">
+            <input
+              checked={backgroundPlayback}
+              onChange={(event) => chooseBackgroundPlayback(event.target.checked)}
+              type="checkbox"
+            />
+            <span className="listen-background-toggle__copy">
+              <strong>{ui("Keep playing around Micheon")}</strong>
+              <small>{ui("Continue when you open Home, Practice, Settings, or another app section.")}</small>
+            </span>
+            <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
+          </label>
+          <label className="listen-background-toggle" data-testid="listen-pet-bilingual-toggle">
+            <input
+              checked={petBilingualCaptions}
+              onChange={(event) => choosePetBilingualCaptions(event.target.checked)}
+              type="checkbox"
+            />
+            <span className="listen-background-toggle__copy">
+              <strong>{ui("Show both languages on the pet")}</strong>
+              <small>{ui("Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.")}</small>
+            </span>
+            <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
+          </label>
         </div>
 
         <p className="mt-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--text-3)]">

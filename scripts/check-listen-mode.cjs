@@ -258,6 +258,12 @@ check("a word's card teaches its primary sense, not an earlier pack's niche one"
   /standing/i.test(cardFor("stehen")?.en ?? "")
   && /sitting/i.test(cardFor("sitzen")?.en ?? "")
   && /stand something up/i.test(cardFor("stellen")?.en ?? ""));
+// English collapses two unrelated German words into "theme": das Motto is the
+// theme of a party, das Thema is a topic you discuss. A bare "theme" on either
+// card teaches a coin flip, so each has to say which one it is.
+check("Motto and Thema do not both answer to a bare “theme”",
+  /party theme/i.test(cardFor("das Motto")?.en ?? "")
+  && !/^theme$/i.test((cardFor("das Motto")?.en ?? "").trim()));
 check("liegen and lügen are taught as the different verbs they are",
   /lie/i.test(cardFor("lügen")?.en ?? "")
   && !/lying/i.test(cardFor("lügen")?.en ?? "")
@@ -533,7 +539,8 @@ for (const key of [
   "English {en}×, then German {de}×",
   "{items}-item loop, {passes} passes",
   "Learning pass {pass} of {passes}",
-  "Choose how often whole items return and how each card is spoken.",
+  "What you hear",
+  "Which items Listen plays, in what order, and how often they come back.",
   "Learning loop",
   "Hear a small set, then revisit the same items before moving on.",
   "Items in each loop",
@@ -547,7 +554,8 @@ for (const key of [
   "German repeats",
   "English repeats",
   "Next card delay",
-  "Voice levels",
+  "How it sounds",
+  "Voice levels, speed, and how each card is spoken. Saved automatically.",
   "English voice is muted and will be skipped.",
   "Quick marks stay gentle. Set level makes an exact tracker change.",
   "“{item}” set to {level}.",

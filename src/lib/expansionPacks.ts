@@ -10644,7 +10644,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Torte", lookup: "Torte", fallbackEn: "gateau, cake", tip: "noun", article: "die" },
       { de: "der Caterer", lookup: "Caterer", fallbackEn: "caterer", tip: "noun", article: "der" },
       { de: "die Rückmeldung", lookup: "Rückmeldung", fallbackEn: "reply", tip: "noun", article: "die" },
-      { de: "das Motto", lookup: "Motto", fallbackEn: "theme", tip: "noun", article: "das" },
+      { de: "das Motto", lookup: "Motto", fallbackEn: "party theme, motto", tip: "noun", article: "das", use: "the theme of a party or event. A topic you talk about is das Thema — English says 'theme' for both" },
       { de: "die Getränke", lookup: "Getränke", fallbackEn: "drinks", tip: "noun", article: "die" },
       { de: "aufteilen", lookup: "aufteilen", fallbackEn: "to divide up (tasks)", tip: "verb" },
       { de: "die Checkliste", lookup: "Checkliste", fallbackEn: "checklist", tip: "noun", article: "die" },

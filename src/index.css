@@ -383,6 +383,20 @@ button { cursor: pointer; }
   outline-offset: 3px;
 }
 
+/* The two session-wide switches, side by side under both settings columns.
+   They pair naturally at two-up and stack below 640px. The toggle carries its
+   own margin-top for when it follows a sibling inside a card; here the grid
+   gap owns the spacing, so that margin is cleared rather than doubled. */
+.listen-session-row {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.listen-session-row > .listen-background-toggle { margin-top: 0; }
+@media (min-width: 640px) {
+  .listen-session-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .listen-background-toggle {
   position: relative;
   display: grid;
