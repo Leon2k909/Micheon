@@ -383,6 +383,21 @@ button { cursor: pointer; }
   outline-offset: 3px;
 }
 
+/* Settings chrome that must not paint when it has nothing to frame.
+   In sidebar mode a SettingsCategory renders null unless it is the selected
+   one, so a wrapper keeps its background and padding around no content at all
+   (a stray rounded bar), and a section that draws a leading separator draws a
+   rule with nothing above it. Both were reported as "random fake dividers".
+   :has(> *) rather than :empty, because a whitespace text node would defeat
+   :empty while still leaving the box visually empty. */
+.settings-group:not(:has(> *)) { display: none; }
+
+.settings-rule-above { margin-top: 1.25rem; }
+.settings-rule-above:not(:first-child) {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
 /* The two session-wide switches, side by side under both settings columns.
    They pair naturally at two-up and stack below 640px. The toggle carries its
    own margin-top for when it follows a sibling inside a card; here the grid

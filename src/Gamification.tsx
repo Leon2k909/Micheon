@@ -860,7 +860,7 @@ export default function GamificationPanel({
         >
         <section className="card overflow-hidden">
           <div className="grid items-start gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
-            <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+            <div className="settings-group rounded-[24px] bg-[var(--surface-2)] p-5">
               {/* Account details used to sit above everything, permanently, while
                   the things you might actually be looking for were behind a search
                   box. It is a category like the rest now. */}
@@ -941,7 +941,11 @@ export default function GamificationPanel({
               </div>
               </SettingsCategory>
 
-              <div className="mt-5 border-t border-[var(--border)] pt-5">
+              {/* Both guards, because this wrapper fails in both directions:
+                  with another category selected every section inside it is
+                  null, so it drew a rule around nothing; and when it IS the
+                  only thing showing, the rule had nothing above it. */}
+              <div className="settings-group settings-rule-above">
                 {/* This framing ("a list of closed sections, open one") only
                     describes what search actually shows. Outside a search,
                     the sidebar already has one category open \u2014 the heading
@@ -1306,7 +1310,7 @@ export default function GamificationPanel({
               </div>
             </div>
 
-            <div className="rounded-[24px] bg-[var(--surface-2)] p-5">
+            <div className="settings-group rounded-[24px] bg-[var(--surface-2)] p-5">
               {/* Same fix as "More settings" above: this heading describes
                   a list of closed sections, which is only what's on screen
                   while searching. */}
@@ -1401,7 +1405,7 @@ export default function GamificationPanel({
               fallback={<div aria-hidden="true" className="h-[72px] rounded-[24px] bg-[var(--surface-2)] motion-safe:animate-pulse" />}
               minHeight={72}
             >
-              <div className="rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
+              <div className="settings-group rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
                 <SettingsCategory
                   description={ui("Pick a desk pet and choose how often it talks.")}
                   forceOpen={settingsTerms.length > 0}

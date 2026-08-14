@@ -82,7 +82,7 @@ export function WindowsAppSettings() {
   const available = settings?.platform === "win32";
 
   return (
-    <div className="mt-5 border-t border-[var(--border)] pt-5">
+    <div className="settings-rule-above">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--accent-dim)] text-[var(--accent)]">
           <Monitor aria-hidden="true" className="h-5 w-5" />
