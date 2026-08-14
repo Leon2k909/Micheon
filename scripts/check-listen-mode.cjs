@@ -218,6 +218,52 @@ queue = buildListenQueue(parts, heardFirstFour, { contentSource: "sentences", or
 check("least-heard order genuinely rotates material with less Listen exposure to the front",
   queue[0]?.id === commonSentences[4]?.id);
 
+// ── newly added content has to be reachable, not just present ───────────
+// The complaint this order exists for: words added from real reading were in
+// the queue but never heard. "Most common first" ranks words by the bundled
+// frequency bank, and a word the bank has never ranked sorts behind every word
+// it has — so the newest content sat ~90% of the way down a 20,000-item queue.
+// Presence is not the promise; being reached is. Assert the reach, not the
+// membership, or this regresses silently the moment ranking changes again.
+const newestWords = buildListenQueue(parts, {}, { contentSource: "words", order: "newest" });
+const commonWords = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
+const positionIn = (queue, id) => queue.findIndex((item) => item.id === id);
+// Measured, not asserted by eye: the median item of the newest-first head sits
+// past 90% of the most-common-first queue. Deliberately a median and not an
+// "every" — a newly added pack can legitimately hold a very common word, and
+// one such word ranking early under both orders is correct, not a regression.
+const newestHead = newestWords.slice(0, 50).map((item) => positionIn(commonWords, item.id)).sort((a, b) => a - b);
+check("newest-first order serves the same material, nothing dropped",
+  newestWords.length === commonWords.length && newestWords.length > 1000);
+check("newest-first genuinely front-loads what most-common-first buries",
+  newestHead.length === 50
+  && newestHead[25] > commonWords.length * 0.9
+  && newestHead.filter((position) => position > commonWords.length / 2).length >= 45);
+
+// A card titled with a bare word must teach that word. An idiom built on the
+// lemma ("an etwas liegen") used to win the card purely by sitting in an
+// earlier pack, so Listen said "liegen — to be due to something" and the verb's
+// real meaning was never spoken at all.
+const wordCards = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
+const cardFor = (german) => wordCards.find((item) => item.de === german);
+check("a bare word's card teaches the bare word, not an idiom built on it",
+  /lying|located/i.test(cardFor("liegen")?.en ?? "")
+  && /remind/i.test(cardFor("erinnern")?.en ?? "")
+  && !wordCards.some((item) => item.de === "an etwas liegen"));
+// A niche sense from an earlier pack used to win the same way an idiom did:
+// "stehen — to suit someone", "sitzen — to fit (of a garment)". Both are real
+// meanings and both packs keep teaching them in their own sentences; what the
+// card must lead with is what the word usually means.
+check("a word's card teaches its primary sense, not an earlier pack's niche one",
+  /standing/i.test(cardFor("stehen")?.en ?? "")
+  && /sitting/i.test(cardFor("sitzen")?.en ?? "")
+  && /stand something up/i.test(cardFor("stellen")?.en ?? ""));
+check("liegen and lügen are taught as the different verbs they are",
+  /lie/i.test(cardFor("lügen")?.en ?? "")
+  && !/lying/i.test(cardFor("lügen")?.en ?? "")
+  && !/\blie\b/i.test(cardFor("liegen")?.en ?? "")
+  && /lay/i.test(cardFor("legen")?.en ?? ""));
+
 const learningOptions = { contentSource: "sentences", order: "learning" };
 const probeId = buildListenQueue(parts, {}, learningOptions)[5].id;
 const dueYesterday = { ...recordSuccess(undefined, Date.now() - 2 * 864e5), dueAt: new Date(Date.now() - 864e5).toISOString() };
@@ -512,7 +558,8 @@ for (const key of [
   "Content source",
   "Choose whether Listen pulls from the sentence tracker, word tracker, or both.",
   "Queue order",
-  "Most common first teaches the phrases and words people are most likely to use.",
+  "Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.",
+  "Newest first",
   "Reviews & struggles first",
   "Least heard first",
   "Show both languages on the pet",

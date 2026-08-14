@@ -343,9 +343,18 @@ const coreGlossGroups: Array<[string, string]> = [
   ["gefällt", "is pleasing / likes"],
   ["bleibe bleibst bleibt bleiben blieb bliebst blieben bliebt geblieben", "stay / remain"],
   ["lasse lässt lasst lassen ließ ließt ließen ließt gelassen", "let / leave"],
-  ["stehe stehst steht stehen stand standest standen standet gestanden", "stand"],
-  ["liege liegst liegt liegen lag lagst lagen lagt gelegen", "lie / be located"],
-  ["sitze sitzt sitzen saß saßt saßen gesessen", "sit"],
+  // Position vs placement, plus the untruth verb English collapses into "lie".
+  // These six are the pairs learners actually mix up, so each gloss names what
+  // the OTHER one isn't: liegen/sitzen/stehen say where something already is
+  // (no object), legen/setzen/stellen put something there (they take one), and
+  // lügen has nothing to do with either — English just spells it the same.
+  ["stehe stehst steht stehen stand standest standen standet gestanden", "be standing / be upright"],
+  ["stelle stellst stellt stellen stellte stelltest stellten stelltet gestellt", "stand something up / put upright"],
+  ["liege liegst liegt liegen lag lagst lagen lagt gelegen", "be lying / be located (not tell a lie)"],
+  ["lege legst legt legen legte legtest legten legtet gelegt", "lay something down / put flat"],
+  ["lüge lügst lügt lügen log logst logen logt gelogen", "tell a lie / lie to someone"],
+  ["sitze sitzt sitzen saß saßt saßen gesessen", "be sitting / be seated"],
+  ["setze setzt setzen setzte setztest setzten setztet gesetzt", "sit someone down / put, set"],
   ["esse isst esst essen aß aßt aßen gegessen", "eat"],
   ["trinke trinkst trinkt trinken trank trankst tranken trankt getrunken", "drink"],
   ["fahre fährst fährt fahren fuhr fuhrst fuhren fuhrt gefahren", "drive / travel"],

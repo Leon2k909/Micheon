@@ -106,8 +106,8 @@
   },
   {
     "de": "stehen",
-    "en": "stand, be located",
-    "fr": "être debout",
+    "en": "be standing, be upright",
+    "fr": "être debout, se trouver",
     "tip": "verb",
     "lookup": "stehen"
   },
@@ -190,8 +190,8 @@
   },
   {
     "de": "liegen",
-    "en": "lie, be located",
-    "fr": "couché",
+    "en": "be lying, be located",
+    "fr": "être allongé, se trouver",
     "tip": "verb",
     "lookup": "liegen"
   },
@@ -288,8 +288,8 @@
   },
   {
     "de": "stellen",
-    "en": "put, place, set",
-    "fr": "placer",
+    "en": "stand something up, put upright",
+    "fr": "mettre debout, poser",
     "tip": "verb",
     "lookup": "stellen"
   },
@@ -715,8 +715,8 @@
   },
   {
     "de": "setzen",
-    "en": "put, set, place",
-    "fr": "asseoir",
+    "en": "sit someone down, set, put",
+    "fr": "asseoir, poser",
     "tip": "verb",
     "lookup": "setzen"
   },
@@ -2010,8 +2010,8 @@
   },
   {
     "de": "legen",
-    "en": "put, lay, place",
-    "fr": "mettre",
+    "en": "lay something down, put flat",
+    "fr": "poser à plat, coucher",
     "tip": "verb",
     "lookup": "legen"
   },
@@ -5181,8 +5181,8 @@
   },
   {
     "de": "sitzen",
-    "en": "sit, be seated, fit",
-    "fr": "assis",
+    "en": "be sitting, be seated, fit (of clothes)",
+    "fr": "être assis, tomber bien",
     "tip": "verb",
     "lookup": "sitzen"
   },
@@ -11411,8 +11411,8 @@
   },
   {
     "de": "hängen",
-    "en": "hang, be attached to",
-    "fr": "accrocher",
+    "en": "hang something up, be hanging",
+    "fr": "accrocher, être accroché",
     "tip": "verb",
     "lookup": "hängen"
   },
@@ -17498,5 +17498,19 @@
     "fr": "",
     "tip": "noun",
     "lookup": "Onlineshop"
+  },
+  {
+    "de": "lügen",
+    "en": "tell a lie, lie to someone",
+    "fr": "mentir",
+    "tip": "verb",
+    "lookup": "lügen"
+  },
+  {
+    "de": "die Lüge",
+    "en": "lie, untruth",
+    "fr": "mensonge",
+    "tip": "noun",
+    "lookup": "Lüge"
   }
 ]

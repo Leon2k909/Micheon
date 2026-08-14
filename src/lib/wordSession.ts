@@ -37,6 +37,8 @@ export type WordItem = {
   /** "noun" | "verb" | ... when the author said so. */
   pos?: string;
   use?: string;
+  /** Authored as the word's primary sense — see VocabSeed.core. */
+  core?: boolean;
   kind: "word";
   partKey: string;
   /** The owning pack's CEFR level — the ladder reads difficulty from it. */
@@ -58,11 +60,35 @@ export function wordProgressId(lookupOrDe: string): string {
   return WORD_ID_PREFIX + wordIdPart(lookupOrDe);
 }
 
+/** One word, article aside — "die Lüge" yes, "an etwas liegen" no. */
+const isBareLemma = (de: string): boolean =>
+  !/\s/.test(String(de ?? "").replace(/^(der|die|das)\s+/i, "").trim());
+
+/**
+ * Which of two packs' claims on one lemma should own the card.
+ *
+ * Curriculum order decides by default. It is overruled only when the later
+ * claim is plainly the better card for the word itself: a seed marked as the
+ * primary sense beats one that is not, and failing that, the bare word beats
+ * an idiom built on it. Anything else keeps the incumbent, so this can never
+ * turn into "last pack wins".
+ */
+const beatsExisting = (
+  candidate: { de: string; core: boolean },
+  existing: { de: string; core?: boolean }
+): boolean => {
+  if (candidate.core !== Boolean(existing.core)) return candidate.core;
+  const candidateIsBare = isBareLemma(candidate.de);
+  if (candidateIsBare !== isBareLemma(existing.de)) return candidateIsBare;
+  return false;
+};
+
 /**
  * Every teachable word across the given packs, most common German first.
  *
  * Deduped by lemma: the same word listed by three packs is one entry, owned by
- * the first pack in the walk order (curriculum order, so early packs win).
+ * the first pack in the walk order (curriculum order, so early packs win) —
+ * except where beatsExisting above hands the card to a better claim.
  * Words without a gloss are skipped rather than guessed at — a flashcard whose
  * back is empty teaches nothing.
  */
@@ -84,11 +110,23 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       if (bareDe === bareEn) continue;
       if (/[.!?]$/.test(de)) continue;
       const id = wordProgressId(lookup || de);
-      if (byLemma.has(id)) continue;
+      // Several packs legitimately claim one lemma, and they do not all show
+      // the word itself: a pack about causes lists "an etwas liegen", while the
+      // pack that teaches position lists plain "liegen". First-pack-wins handed
+      // the card to whichever happened to come first, so the vocabulary card
+      // titled "liegen" taught "to be due to something" and the verb's actual
+      // meaning was never shown, spoken in Listen, or exported to the
+      // extension. Fifteen lemmas were being taught by an idiom this way.
+      // A card for the bare word must teach the bare word; the idiom is already
+      // taught properly as a sentence. Replacing keeps the Map's original
+      // insertion slot, so the word stays where curriculum order put it.
+      const existing = byLemma.get(id);
+      if (existing && !beatsExisting({ de, core: Boolean(word?.core) }, existing)) continue;
       byLemma.set(id, {
         id, de, en, lookup,
         pos: word?.pos || word?.tip || undefined,
         use: word?.use || undefined,
+        core: word?.core || undefined,
         kind: "word",
         partKey,
         level: (part as any)?.level ? String((part as any).level) : undefined,

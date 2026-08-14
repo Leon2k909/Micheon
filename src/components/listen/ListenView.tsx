@@ -987,11 +987,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Most common first teaches the phrases and words people are most likely to use.")}
+                {ui("Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
-                className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-3"
+                className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-2"
                 role="radiogroup"
               >
                 {([[
@@ -1000,6 +1000,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   "learning", "Reviews & struggles first",
                 ], [
                   "least-heard", "Least heard first",
+                ], [
+                  "newest", "Newest first",
                 ]] as const).map(([value, label]) => {
                   const selected = queueOrder === value;
                   return (

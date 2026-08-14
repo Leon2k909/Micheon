@@ -82,7 +82,7 @@ export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export type ListenContentSource = "sentences" | "words" | "mixed";
-export type ListenQueueOrder = "common" | "learning" | "least-heard";
+export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest";
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
 export const DEFAULT_LISTEN_QUEUE_ORDER: ListenQueueOrder = "common";
 export type ListenLanguageOrder = "english-first" | "german-first";
@@ -229,7 +229,7 @@ export function getListenQueueOrder(
 ): ListenQueueOrder {
   try {
     const value = window.localStorage.getItem(courseSettingKey(QUEUE_ORDER_KEY, direction));
-    if (value === "common" || value === "learning" || value === "least-heard") return value;
+    if (value === "common" || value === "learning" || value === "least-heard" || value === "newest") return value;
   } catch { /* storage blocked: use the documented default */ }
   return DEFAULT_LISTEN_QUEUE_ORDER;
 }
@@ -238,7 +238,7 @@ export function setListenQueueOrder(
   order: ListenQueueOrder,
   direction: LearningDirection = getLearningDirection()
 ): ListenQueueOrder {
-  const next = order === "learning" || order === "least-heard" ? order : "common";
+  const next = order === "learning" || order === "least-heard" || order === "newest" ? order : "common";
   try {
     window.localStorage.setItem(courseSettingKey(QUEUE_ORDER_KEY, direction), next);
   } catch { /* keep Listen usable */ }
@@ -497,6 +497,22 @@ export function buildListenQueue(
   const order = options.order ?? getListenQueueOrder(direction);
   const corpusIndex = buildCorpusIndex(parts);
 
+  // Pack position doubles as "how recently was this added": curriculum order
+  // lists the curated course first and appends everything newer after it, and
+  // packs are append-only once shipped. Tatoeba is the one exception — a static
+  // bulk practice tier whose keys sort after every partN key without being new
+  // — so it is pinned behind the authored packs instead of owning "Newest".
+  const packKeys = Object.keys(parts);
+  const packRank = new Map<string, number>();
+  packKeys.forEach((key, index) => {
+    packRank.set(key, key.startsWith("tatoeba") ? index - packKeys.length : index);
+  });
+  const itemPackRank = new Map<string, number>();
+  const rememberPack = (id: string, partKey: unknown) => {
+    const rank = packRank.get(String(partKey ?? ""));
+    if (rank != null && !itemPackRank.has(id)) itemPackRank.set(id, rank);
+  };
+
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
@@ -512,6 +528,7 @@ export function buildListenQueue(
       }),
     }))
     .sort((a, b) => a.popularity - b.popularity || a.index - b.index);
+  rankedSentences.forEach(({ item }) => rememberPack(item.id, item.partKey));
   const sentences: ListenItem[] = rankedSentences
     .map(({ item }, index, ranked) => ({
       id: item.id,
@@ -527,6 +544,7 @@ export function buildListenQueue(
     }));
 
   const rankedWords = content === "sentences" ? [] : rankWordCatalog(buildWordCatalog(parts), corpusIndex);
+  rankedWords.forEach((word) => rememberPack(word.id, word.partKey));
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
       id: word.id,
@@ -581,6 +599,20 @@ export function buildListenQueue(
     .filter((entry) => entry.bucket >= 0);
 
   if (order === "common") return available.map((entry) => entry.item);
+
+  // Newest first exists because "Most common first" structurally cannot reach
+  // new content: a freshly added word is by definition one the frequency bank
+  // has never ranked, so it sorts to the very back of a queue thousands of
+  // items long and is never actually heard. This order plays the most recent
+  // packs first, most useful item within a pack first.
+  if (order === "newest") {
+    return available
+      .sort((a, b) =>
+        (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
+        || a.index - b.index
+      )
+      .map((entry) => entry.item);
+  }
 
   if (order === "least-heard") {
     return available

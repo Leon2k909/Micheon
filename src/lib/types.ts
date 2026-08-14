@@ -7,6 +7,18 @@ export interface VocabSeed {
   use?: string;
   when?: string;
   say?: string;
+  /**
+   * This seed teaches the word's primary sense, so it owns the vocabulary card
+   * even if a pack earlier in curriculum order also lists the word.
+   *
+   * Several packs legitimately teach one word in different senses: a clothes
+   * pack teaches "sitzen — to fit (of a garment)", the position pack teaches
+   * "sitzen — to be sitting". Whichever came first used to win the card, so
+   * the card, the Listen voice and the browser extension all taught a niche
+   * sense as if it were the meaning. Set this on the seed that teaches what
+   * the word usually means; leave it off everywhere else.
+   */
+  core?: boolean;
 }
 
 export interface DialogueLine {
@@ -100,6 +112,8 @@ export interface VocabItem {
   exampleFr?: string;
   /** usage note, e.g. "The word gamers actually say" — shown as a chip */
   use?: string;
+  /** see VocabSeed.core — this entry teaches the word's primary sense */
+  core?: boolean;
 }
 
 export interface ArticleQuestion {

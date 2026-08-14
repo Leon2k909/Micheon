@@ -430,6 +430,9 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
       // usage note from the seed ("The word gamers actually say") — shown as
       // a chip in lessons and the tracker.
       use: (seed as any).use,
+      // "this seed teaches the primary sense" — decides which pack owns the
+      // word's card when several teach it in different senses.
+      core: (seed as any).core,
     };
   });
 
