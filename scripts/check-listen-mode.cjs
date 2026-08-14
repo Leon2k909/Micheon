@@ -264,6 +264,65 @@ check("a word's card teaches its primary sense, not an earlier pack's niche one"
 check("Motto and Thema do not both answer to a bare “theme”",
   /party theme/i.test(cardFor("das Motto")?.en ?? "")
   && !/^theme$/i.test((cardFor("das Motto")?.en ?? "").trim()));
+
+/**
+ * Standing guarantee over every word card, not a list of words I happened to
+ * check by hand.
+ *
+ * A Listen card speaks ONE English phrase — primaryAnswer, the part before the
+ * first " / ". Two German words reaching the same spoken English is fine when
+ * they are true synonyms (deshalb / deswegen / daher really are all
+ * "therefore"). It is a mistranslation when they are not, and the machine-
+ * checkable version of "not" is that the claimants disagree about part of
+ * speech: a noun and an adjective are never interchangeable however close the
+ * gloss reads. That caught voreilig and der Ausschlag both saying "rash" —
+ * hasty versus the skin kind — and six more pairs like it.
+ *
+ * The two shape checks below are plain wrongness rather than ambiguity: a
+ * German noun whose English begins "to ...", or a verb glossed as a thing.
+ */
+const spokenGloss = (item) => String(item.en ?? "").trim().replace(/[.!?]+$/, "");
+const looksLikeNoun = (german) => /^(der|die|das)\s+/i.test(String(german ?? "").trim());
+
+const bySpoken = new Map();
+for (const card of wordCards) {
+  const key = spokenGloss(card).toLowerCase();
+  if (!key) continue;
+  if (!bySpoken.has(key)) bySpoken.set(key, []);
+  bySpoken.get(key).push(card);
+}
+const mixedPosCollisions = [...bySpoken.entries()].filter(([, cards]) =>
+  new Set(cards.map((c) => c.de.toLowerCase())).size > 1
+  && new Set(cards.map((c) => (looksLikeNoun(c.de) ? "noun" : "other"))).size > 1);
+check(
+  `no spoken gloss is shared by a noun and a non-noun (${mixedPosCollisions.length} found)`,
+  mixedPosCollisions.length === 0
+);
+if (mixedPosCollisions.length) {
+  for (const [gloss, cards] of mixedPosCollisions.slice(0, 8)) {
+    console.error(`     "${gloss}" <- ${cards.map((c) => c.de).join(" | ")}`);
+  }
+}
+
+// Part of speech has to come from the authored seed, not from the shape of the
+// English. Plenty of non-nouns are correctly glossed with an article — schade
+// is "a shame", neulich is "the other day" — so keying off the article alone
+// reports five false positives and teaches nobody anything.
+const posByGerman = new Map();
+for (const part of Object.values(parts)) {
+  for (const word of part?.vocab ?? []) {
+    const de = String(word?.de ?? "").trim();
+    if (de && !posByGerman.has(de)) posByGerman.set(de, String(word?.tip ?? word?.pos ?? ""));
+  }
+}
+const nounSpokenAsVerb = wordCards.filter((c) => looksLikeNoun(c.de) && /^to\s+\w/i.test(spokenGloss(c)));
+const verbSpokenAsNoun = wordCards.filter((c) =>
+  posByGerman.get(c.de) === "verb" && /^(a|an|the)\s+\w/i.test(spokenGloss(c)));
+check(`no noun is spoken as a verb (${nounSpokenAsVerb.length} found)`, nounSpokenAsVerb.length === 0);
+check(`no bare verb is spoken as a noun (${verbSpokenAsNoun.length} found)`, verbSpokenAsNoun.length === 0);
+for (const card of [...nounSpokenAsVerb, ...verbSpokenAsNoun].slice(0, 8)) {
+  console.error(`     ${card.de} = "${spokenGloss(card)}"`);
+}
 check("liegen and lügen are taught as the different verbs they are",
   /lie/i.test(cardFor("lügen")?.en ?? "")
   && !/lying/i.test(cardFor("lügen")?.en ?? "")

@@ -1721,7 +1721,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "der Kratzer", lookup: "Kratzer", fallbackEn: "scratch", tip: "noun", article: "der" },
       { de: "aus Holz", lookup: "Holz", fallbackEn: "made of wood", tip: "phrase" },
       { de: "aus Metall", lookup: "Metall", fallbackEn: "made of metal", tip: "phrase" },
-      { de: "rund", lookup: "rund", fallbackEn: "round", tip: "adjective" },
+      { de: "rund", lookup: "rund", fallbackEn: "circular, round in shape", tip: "adjective", use: "the shape. A round of a game is die Runde" },
       { de: "eckig", lookup: "eckig", fallbackEn: "square, angular", tip: "adjective" },
       { de: "breit", lookup: "breit", fallbackEn: "wide, broad", tip: "adjective" },
       { de: "schmal", lookup: "schmal", fallbackEn: "narrow, slim", tip: "adjective" },
@@ -1825,7 +1825,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
     focus: "High-use amount language such as Wie viel brauchst du?, Ist noch genug da?, Das müsste reichen, Wir teilen uns das, Ungefähr die Hälfte and Das kommt ungefähr hin.",
     seeds: [
       { de: "die Menge", lookup: "Menge", fallbackEn: "amount, quantity", tip: "noun", article: "die" },
-      { de: "die Hälfte", lookup: "Hälfte", fallbackEn: "half", tip: "noun", article: "die" },
+      { de: "die Hälfte", lookup: "Hälfte", fallbackEn: "one half, the half of something", tip: "noun", article: "die", use: "the noun. Half full is halb voll — halb is the modifier" },
       { de: "der Rest", lookup: "Rest", fallbackEn: "rest, remainder", tip: "noun", article: "der" },
       { de: "das Stück", lookup: "Stück", fallbackEn: "piece, item", tip: "noun", article: "das" },
       { de: "der Nachschub", lookup: "Nachschub", fallbackEn: "more supplies, refill", tip: "noun", article: "der" },
@@ -9073,7 +9073,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
     seeds: [
       { de: "die Windpocken", lookup: "Windpocken", fallbackEn: "chickenpox", tip: "noun", article: "die" },
       { de: "der Kinderarzt", lookup: "Kinderarzt", fallbackEn: "paediatrician", tip: "noun", article: "der" },
-      { de: "der Ausschlag", lookup: "Ausschlag", fallbackEn: "rash", tip: "noun", article: "der" },
+      { de: "der Ausschlag", lookup: "Ausschlag", fallbackEn: "skin rash", tip: "noun", article: "der", use: "the medical kind. A rash decision is voreilig" },
       { de: "ansteckend", lookup: "ansteckend", fallbackEn: "contagious", tip: "adjective" },
       { de: "die U-Untersuchung", lookup: "U-Untersuchung", fallbackEn: "routine child check-up", tip: "noun", article: "die" },
       { de: "das Fieberzäpfchen", lookup: "Fieberzäpfchen", fallbackEn: "fever suppository", tip: "noun", article: "das" },

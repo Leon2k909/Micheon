@@ -1161,7 +1161,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "letztlich", lookup: "letztlich", fallbackEn: "ultimately, in the end", tip: "adverb", use: "connector for summing up a concession" },
       { de: "rückblickend", lookup: "rückblickend", fallbackEn: "in retrospect, looking back", tip: "adverb", use: "sets up regret: rückblickend hätte ich ..." },
       { de: "der Vorwurf", lookup: "Vorwurf", fallbackEn: "the reproach, accusation", tip: "noun", article: "der", use: "jemandem einen Vorwurf machen – common in regret contexts" },
-      { de: "voreilig", lookup: "voreilig", fallbackEn: "rash, hasty, premature", tip: "adjective", use: "eine voreilige Entscheidung – describes a regretted choice" },
+      { de: "voreilig", lookup: "voreilig", fallbackEn: "hasty, premature, rash", tip: "adjective", use: "a rash decision. The skin kind of rash is der Ausschlag — English uses one word for both. eine voreilige Entscheidung – describes a regretted choice" },
       { de: "im Nachhinein", lookup: "Nachhinein", fallbackEn: "afterwards, with hindsight", tip: "connector", use: "im Nachhinein wäre es klüger gewesen ..." },
       { de: "die Auswirkung", lookup: "Auswirkung", fallbackEn: "effect, impact, repercussion", tip: "noun", article: "die", use: "meist im Plural: die Auswirkungen auf etwas (Akk.)" },
       { de: "abwägen", lookup: "abwägen", fallbackEn: "to weigh up, to weigh against each other", tip: "verb", use: "separable; das Für und Wider abwägen — weigh the pros and cons" },

@@ -112,7 +112,7 @@ export const b2ExpansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Bewertung", lookup: "Bewertung", fallbackEn: "evaluation, assessment, rating", tip: "noun", article: "die" },
       { de: "der Vorzug", lookup: "Vorzug", fallbackEn: "advantage, preference", tip: "noun", article: "der", use: "einer Sache den Vorzug geben = to give sth preference" },
       { de: "die Übereinstimmung", lookup: "Übereinstimmung", fallbackEn: "agreement, match, correspondence", tip: "noun", article: "die" },
-      { de: "der Pluspunkt", lookup: "Pluspunkt", fallbackEn: "plus, point in favor", tip: "noun", article: "der", use: "ein Pluspunkt für etwas sein" },
+      { de: "der Pluspunkt", lookup: "Pluspunkt", fallbackEn: "point in favour, upside", tip: "noun", article: "der", use: "ein Pluspunkt für etwas sein" },
       { de: "das Manko", lookup: "Manko", fallbackEn: "shortcoming, drawback", tip: "noun", article: "das", use: "das größte Manko an etwas" },
       { de: "die Alternative", lookup: "Alternative", fallbackEn: "alternative, option", tip: "noun", article: "die" },
       { de: "das Kriterium", lookup: "Kriterium", fallbackEn: "criterion", tip: "noun", article: "das" },

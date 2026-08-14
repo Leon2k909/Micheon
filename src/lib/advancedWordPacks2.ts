@@ -206,7 +206,7 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     noun("der", "Satzbau", "sentence structure"),
     noun("die", "Zeichensetzung", "punctuation"),
     noun("das", "Synonym", "word with the same meaning"),
-    noun("das", "Gegenteil", "opposite"),
+    noun("das", "Gegenteil", "the opposite, the reverse"),
     noun("die", "Definition", "meaning statement"),
     noun("die", "Zusammenfassung", "summary"),
     noun("die", "Literatur", "scholarly literature"),
