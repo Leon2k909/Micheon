@@ -72,6 +72,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # check-immersion-extension compares HEAD against HEAD^ to refuse
+          # shipping changed extension files under an unchanged extension
+          # version. checkout's default depth of 1 has no HEAD^, so that
+          # comparison threw, hit its catch and printed "Skipped" on every
+          # run — the guard had never once executed. Two commits is all it
+          # needs.
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
