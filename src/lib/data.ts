@@ -1896,7 +1896,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "manipulativ", lookup: "manipulativ", fallbackEn: "manipulative", tip: "adjective", use: "A serious accusation, not casual criticism." },
       { de: "Gaslighting", lookup: "Gaslighting", fallbackEn: "gaslighting", tip: "noun", article: "das", use: "Anglicism, always neuter. A heavy accusation — naming psychological abuse." },
       { de: "Ghosting", lookup: "Ghosting", fallbackEn: "ghosting (cutting off all contact)", tip: "noun", article: "das", use: "Anglicism; the verb is ghosten (jemanden ghosten, geghostet)." },
-      { de: "Beziehungsprobleme", lookup: "Beziehungsproblem", fallbackEn: "relationship problems", tip: "noun", article: "die", use: "Almost always plural. Neutral, the word you use confiding in friends." },
+      { de: "Beziehungsprobleme", lookup: "Beziehungsproblem", fallbackEn: "relationship problems", tip: "noun", use: "Almost always plural; singular das Beziehungsproblem. Neutral, the word you use confiding in friends." },
       { de: "Paartherapie", lookup: "Paartherapie", fallbackEn: "couples therapy", tip: "noun", article: "die", use: "Increasingly normal to suggest; framing it as mature, not desperate, is the point. Common collocation: eine Paartherapie machen." },
       { de: "Fernbeziehung", lookup: "Fernbeziehung", fallbackEn: "long-distance relationship", tip: "noun", article: "die", use: "Everyday word; eine Fernbeziehung führen = to be in one." },
       { de: "Vertrauen", lookup: "Vertrauen", fallbackEn: "trust", tip: "noun", article: "das", use: "Key collocations: Vertrauen aufbauen (build), Vertrauen verlieren (lose), Vertrauen zurückgewinnen (win back)." },
