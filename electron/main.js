@@ -24,7 +24,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import electronUpdater from "electron-updater";
-import { startServer } from "../server/index.js";
+import { setListenPlaying, startServer } from "../server/index.js";
 import petHistoryGeometry from "./pet-history-geometry.cjs";
 import desktopSettingsStore from "./desktop-settings.cjs";
 import zoomSteps from "./zoom-steps.cjs";
@@ -1697,6 +1697,9 @@ ipcMain.on("listen-media:set-state", (event, state) => {
     title: typeof state?.title === "string" ? state.title.slice(0, 240) : "",
   };
   syncListenMediaControls();
+  // Let the browser extension know, so its hover pronunciation stays quiet
+  // while Listen is speaking rather than the two voices overlapping.
+  setListenPlaying(listenMediaState.playing);
 });
 /**
  * How much room Micheon takes on disk.

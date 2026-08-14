@@ -5,9 +5,11 @@ import { reportSilencedPlayback } from "@/lib/audioPrompt";
 // Microsoft neural voices using edge-tts. This sounds identical in every browser
 // (Chrome, Firefox, Safari, mobile), not just Edge.
 //
-// Fallback path: if the server is unreachable (offline, not running, upstream
-// blocked), we fall back to the browser's built-in speechSynthesis so audio never
-// goes fully silent — it just won't be the premium voice.
+// There is deliberately NO fallback to the browser's built-in speechSynthesis.
+// It used to stand in whenever the server was unreachable so audio "never went
+// silent", but a system voice reciting German sounds nothing like the model
+// being taught and the learner cannot tell which one they just heard. A failed
+// clip is retried once and then passed over in silence instead.
 
 import { AUDIO_SETTINGS_EVENT, getTtsAudioVolume, getTtsSpeechRate } from "@/lib/audioMute";
 import {
@@ -312,36 +314,9 @@ if (typeof window !== "undefined") {
   });
 }
 
-function speakFallback(text: string, rate: number, lang: string): Promise<void> {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return resolve();
-    const volume = getTtsAudioVolume(lang);
-    if (volume <= 0) return resolve();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang;
-    u.rate = rate;
-    u.volume = volume;
-    const finish = () => {
-      if (currentUtterance === u) {
-        currentUtterance = null;
-        currentUtteranceResolve = null;
-        currentPlaybackLang = null;
-      }
-      resolve();
-    };
-    currentUtterance = u;
-    currentUtteranceResolve = finish;
-    currentPlaybackLang = lang;
-    u.onstart = () => {
-      emitAudioLevel(0, false);
-      emitSpeaking(true);
-    };
-    u.onend = finish;
-    u.onerror = finish;
-    window.speechSynthesis.speak(u);
-  });
-}
-
+// speakFallback was removed: the browser's system voice is never used to
+// teach German here. See playOne -- a failed clip retries once, then stays
+// silent rather than substitute a voice the learner cannot tell apart.
 async function getAudioUrl(
   text: string,
   rate: number,
@@ -356,12 +331,32 @@ async function getAudioUrl(
   if (cached) return cached;
   const qs = `text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}&rate=${rate}`
     + (voice ? `&voice=${encodeURIComponent(voice)}` : "");
-  const resp = await fetch(`/api/tts?${qs}`, { signal });
+  // Without a deadline this await is unbounded: one synthesis request that
+  // never comes back stalls the whole Listen sequence, which is exactly how
+  // a card gets stuck after its English half has already played.
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), TTS_FETCH_TIMEOUT_MS);
+  const onOuterAbort = () => deadline.abort();
+  signal?.addEventListener("abort", onOuterAbort);
+  let resp: Response;
+  try {
+    resp = await fetch(`/api/tts?${qs}`, { signal: deadline.signal });
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", onOuterAbort);
+  }
   if (!resp.ok) throw new Error(`tts http ${resp.status}`);
   const blob = await resp.blob();
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
   return cacheAudioBlob(key, blob);
 }
+
+// Deadlines for the two awaits that used to be unbounded. Generous enough
+// that a slow synthesis or a long sentence still plays in full, short enough
+// that a genuinely stuck clip never freezes a hands-free Listen session.
+const TTS_FETCH_TIMEOUT_MS = 9_000;
+const PLAYBACK_START_TIMEOUT_MS = 6_000;
+const MAX_CLIP_MS = 60_000;
 
 function playUrl(url: string, token: number, lang: string): Promise<void> {
   return new Promise((resolve) => {
@@ -371,9 +366,14 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
     const audio = new Audio(url);
     audio.volume = volume;
     let finished = false;
+    let started = false;
+    let startGuard: ReturnType<typeof setTimeout> | undefined;
+    let lengthGuard: ReturnType<typeof setTimeout> | undefined;
     const finish = () => {
       if (finished) return;
       finished = true;
+      if (startGuard) clearTimeout(startGuard);
+      if (lengthGuard) clearTimeout(lengthGuard);
       if (currentAudio === audio) {
         stopAudioAnalysis();
         currentAudio = null;
@@ -390,11 +390,21 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
     currentPlaybackLang = lang;
     audio.onended = finish;
     audio.onerror = finish;
+    // A media element that never fires `ended` or `error` -- stalled decode,
+    // a suspended element, a blob the browser quietly gives up on -- would
+    // otherwise leave this promise pending forever and freeze the sequence
+    // awaiting it. Two watchdogs: one for playback that never starts, one
+    // for a clip that outlives any plausible word or sentence.
+    startGuard = setTimeout(() => {
+      if (!started) finish();
+    }, PLAYBACK_START_TIMEOUT_MS);
+    lengthGuard = setTimeout(finish, MAX_CLIP_MS);
     void (async () => {
       const analyser = await attachAudioAnalysis(audio, token);
       if (token !== playSeq || currentAudio !== audio) return finish();
       audio.onplaying = () => {
         if (token !== playSeq || currentAudio !== audio) return;
+        started = true;
         emitSpeaking(true);
         if (analyser && currentAudioAnalyser === analyser) {
           startAudioAnalysis(audio, analyser, token);
@@ -418,15 +428,22 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
     announced = true;
     try { item.onStart?.(); } catch { /* captions must never break audio */ }
   };
-  try {
-    const url = await getAudioUrl(text, rate, lang, signal);
+  // Micheon's own voice or nothing. The browser's system voice used to stand
+  // in whenever synthesis failed, but it sounds nothing like the model being
+  // taught and the learner cannot tell which one they just heard -- so a
+  // failure is retried once and then passed over in silence rather than
+  // teaching a pronunciation this app never chose.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
-    announceStart();
-    await playUrl(url, token, lang);
-  } catch {
-    if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
-    announceStart();
-    await speakFallback(text, rate, lang);
+    try {
+      const url = await getAudioUrl(text, rate, lang, signal);
+      if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
+      announceStart();
+      await playUrl(url, token, lang);
+      return;
+    } catch {
+      if (signal?.aborted) return;
+    }
   }
 }
 

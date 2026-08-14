@@ -398,6 +398,15 @@ app.get("/api/tts/voices", (_req, res) => {
   });
 });
 
+// Whether the app's Listen mode is speaking right now. The desktop shell
+// keeps this current; the browser extension reads it so its own hover
+// pronunciation never talks over a hands-free listening session.
+let listenPlaying = false;
+export function setListenPlaying(value) {
+  listenPlaying = value === true;
+}
+app.get("/api/listen-state", (_req, res) => res.json({ playing: listenPlaying }));
+
 app.get("/api/health", (_req, res) => res.json({
   ok: true,
   cached: cache.size,

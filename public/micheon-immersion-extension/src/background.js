@@ -12,6 +12,9 @@ let latestTtsRequest = 0;
 let lastForwardedText = "";
 let lastForwardedAt = 0;
 let offscreenCreation = null;
+const MICHEON_LISTEN_STATE = "http://127.0.0.1:41730/api/listen-state";
+let listenPlayingUntil = 0;   // cheap cache: re-ask at most every second
+let listenPlayingCached = false;
 let lastPlaybackOk = null;
 let lastPlaybackAt = 0;
 
@@ -37,6 +40,27 @@ async function ensureOffscreen() {
   await offscreenCreation;
 }
 
+// Is the desktop app reading aloud right now? Hovering a word while Listen
+// is speaking would put two German voices on top of each other, so the
+// extension's own hover pronunciation defers to the app. Clicking a word is
+// an explicit request and always plays.
+async function listenModeIsSpeaking() {
+  const now = Date.now();
+  if (now < listenPlayingUntil) return listenPlayingCached;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 400);
+  try {
+    const res = await fetch(MICHEON_LISTEN_STATE, { signal: controller.signal });
+    listenPlayingCached = res.ok ? (await res.json())?.playing === true : false;
+  } catch {
+    listenPlayingCached = false; // app closed or too old to answer: nothing to clash with
+  } finally {
+    clearTimeout(timer);
+  }
+  listenPlayingUntil = Date.now() + 1000;
+  return listenPlayingCached;
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "micheon-tts-status") {
     sendResponse({ lastPlaybackOk, lastPlaybackAt });
@@ -54,8 +78,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   lastForwardedText = text;
   lastForwardedAt = now;
   const requestId = ++latestTtsRequest;
+  const reason = message.reason === "click" ? "click" : "hover";
   void (async () => {
     try {
+      if (reason === "hover" && await listenModeIsSpeaking()) return;
       await ensureOffscreen();
       // The pointer may have reached another word while the hidden audio
       // page was being created. Only the newest pronunciation is useful.

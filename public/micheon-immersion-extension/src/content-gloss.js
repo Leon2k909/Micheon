@@ -1104,7 +1104,7 @@
     return allowCaseFold ? byDeLowerAny.get(token.toLowerCase()) || null : null;
   }
 
-  function speakGerman(text, { force = false } = {}) {
+  function speakGerman(text, { force = false, reason = "hover" } = {}) {
     const spokenText = String(text || "").replace(/\s+/g, " ").trim();
     if (!spokenText) return;
     const now = Date.now();
@@ -1116,7 +1116,7 @@
     // chrome.* throws "Extension context invalidated" in a page injected
     // before the extension was reloaded. Pronunciation is a nicety; an
     // exception here would take the whole handler down.
-    try { chrome.runtime.sendMessage({ type: "micheon-tts", text: spokenText }); } catch { /* stale context */ }
+    try { chrome.runtime.sendMessage({ type: "micheon-tts", text: spokenText, reason }); } catch { /* stale context */ }
   }
 
   function scheduleHoverSpeech(entry) {
@@ -1239,7 +1239,7 @@
       if (entry) {
         showTipForEntry(entry);
         clearPendingHoverSpeech();
-        speakGerman(entry.de, { force: true });
+        speakGerman(entry.de, { force: true, reason: "click" });
       }
     }, true);
     // Belt and braces for the cases a mousemove never arrives for: the
