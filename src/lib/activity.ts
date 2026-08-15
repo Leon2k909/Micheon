@@ -28,6 +28,8 @@ export type GradeRecord = {
   successes?: number;
   intervalDays?: number;
   dueAt?: string;
+  /** explicit hold date used by review controls and Listen */
+  snoozedUntil?: string;
   permanent?: boolean;
   /** most recent optional practice rep that did not alter the review date */
   reinforcedAt?: string;

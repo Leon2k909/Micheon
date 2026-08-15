@@ -307,6 +307,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [reviewPanel, setReviewPanel] = useState<"level" | "snooze" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
   const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
+  const timedHiddenIdsRef = useRef<Set<string>>(new Set());
   const runRef = useRef(0);
   const gradeAdvanceTimerRef = useRef<number | null>(null);
   const mediaCommandRef = useRef<(command: ListenMediaCommand) => void>(() => {});
@@ -352,6 +353,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   useEffect(() => {
     setHiddenIds(new Set());
+    timedHiddenIdsRef.current.clear();
     const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
@@ -361,6 +363,30 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       getListenLoopPasses(learningDirection)
     ));
   }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder]);
+
+  useEffect(() => {
+    const releaseDueItems = () => {
+      const heldIds = timedHiddenIdsRef.current;
+      if (!heldIds.size) return;
+      const grades = loadGradeStore(profile);
+      const now = Date.now();
+      const released = [...heldIds].filter((id) => {
+        const record = grades[id];
+        const dueAt = Date.parse(record?.dueAt ?? "");
+        const snoozedUntil = Date.parse(record?.snoozedUntil ?? "");
+        return ![dueAt, snoozedUntil].some((until) => Number.isFinite(until) && now < until);
+      });
+      if (!released.length) return;
+      released.forEach((id) => heldIds.delete(id));
+      setHiddenIds((current) => {
+        const next = new Set(current);
+        released.forEach((id) => next.delete(id));
+        return next;
+      });
+    };
+    const timer = window.setInterval(releaseDueItems, 60_000);
+    return () => window.clearInterval(timer);
+  }, [profile?.id]);
 
   useEffect(() => {
     if (!item) return;
@@ -604,13 +630,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     });
     setReviewPanel(null);
     setReviewTarget(null);
-    if (level === "permanent") {
-      // "Never comes back at all" starts right now, not next session:
-      // drop the item from this queue too, which slides the next item into
-      // place -- the same move "Put off" makes. Future sessions exclude
-      // permanent items in buildListenQueue.
+    if (typeof level === "number" || level === "permanent") {
+      // Timed levels finish the current item until its scheduled review date;
+      // Never review removes it permanently. Drop either choice from this
+      // queue too, which slides the next item into place immediately. Future
+      // sessions apply the same due-date rule in buildListenQueue.
       cancelGradeAdvance();
       setHiddenIds((current) => new Set(current).add(target.id));
+      if (typeof level === "number") timedHiddenIdsRef.current.add(target.id);
     }
   };
 
@@ -618,6 +645,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const pending = reviewNotice?.undo;
     if (!pending) return;
     undoListenReviewChange(pending.change, profile);
+    timedHiddenIdsRef.current.delete(pending.item.id);
     setHiddenIds((current) => {
       if (!current.has(pending.item.id)) return current;
       const next = new Set(current);
@@ -637,6 +665,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setReviewNotice({ message: uiFmt("Put off until {when}.", { when: ui(label) }) });
     setReviewPanel(null);
     setReviewTarget(null);
+    timedHiddenIdsRef.current.add(target.id);
     setHiddenIds((current) => new Set(current).add(target.id));
   };
 

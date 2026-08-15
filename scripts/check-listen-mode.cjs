@@ -383,6 +383,25 @@ const snoozed = { snoozedUntil: new Date(Date.now() + 864e5).toISOString() };
 queue = buildListenQueue(parts, { [probeId]: snoozed }, learningOptions);
 check("a snoozed item is not read aloud", queue.every((item) => item.id !== probeId));
 
+const levelNow = Date.now();
+setListenReviewLevel({ id: probeId, aliases: [] }, 5, null, levelNow);
+const beforeMasteredReview = buildListenQueue(
+  parts,
+  readGrades(),
+  learningOptions,
+  levelNow + 179 * 864e5
+);
+check("a timed Listen level removes the item until its review date",
+  beforeMasteredReview.every((item) => item.id !== probeId));
+const atMasteredReview = buildListenQueue(
+  parts,
+  readGrades(),
+  learningOptions,
+  levelNow + 180 * 864e5 + 1
+);
+check("a timed Listen level returns the item when it is due",
+  atMasteredReview.some((item) => item.id === probeId));
+
 // ── settings and wiring, from source ────────────────────────────────────
 stored.clear();
 check("the German course defaults to English once, then German twice",

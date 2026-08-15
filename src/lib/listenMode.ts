@@ -592,12 +592,17 @@ export function buildListenQueue(
   const bucketOf = (item: ListenItem): number => {
     const record = recordFor(item);
     if (isSnoozed(record, now)) return -1;
-    // "Never review" promises "never comes back at all" -- that includes
-    // this queue. Listen deliberately plays items regardless of dueAt, but
-    // permanent is an explicit learner verdict, not a scheduling detail.
+    // An explicit review level is a scheduling decision for every learning
+    // surface, including passive Listen. Keep a known item out until its
+    // scheduled review date, while retaining the old behaviour for legacy
+    // records that have no review timestamp at all.
     if (record?.permanent) return -1;
     const status = statusForId(grades, item.id, item.aliases);
-    if (status === "known" && isDueForReview(record, now)) return 0;
+    if (status === "known") {
+      const scheduledAt = Date.parse(record?.dueAt ?? "");
+      if (Number.isFinite(scheduledAt) && now < scheduledAt) return -1;
+      if (isDueForReview(record, now)) return 0;
+    }
     if (status === "struggle") return 1;
     if (status === "new") return 2;
     return 3;
