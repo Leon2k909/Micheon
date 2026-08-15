@@ -803,6 +803,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
           </p>
+          {item.kind === "word" && item.use ? (
+            <p className="mx-auto mt-3 max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
+              {item.use}
+            </p>
+          ) : null}
 
           <div aria-labelledby="listen-review-heading" className="mt-6 border-t border-[var(--border)] pt-5" role="group">
             <h2 className="sr-only" id="listen-review-heading">{ui("Review this item")}</h2>

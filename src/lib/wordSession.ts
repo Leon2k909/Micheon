@@ -21,6 +21,7 @@ import { frequencyRank } from "@/lib/wordFrequency";
 import { wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
+import { canonicalWordSenseFor } from "@/lib/canonicalWordSenses";
 
 export type WordItem = {
   /** `vw-` + the lemma: global, not per pack, so "das Haus" is ONE word
@@ -39,6 +40,10 @@ export type WordItem = {
   use?: string;
   /** Authored as the word's primary sense — see VocabSeed.core. */
   core?: boolean;
+  /** False when contextual packs disagree and no standalone meaning has yet
+   * been reviewed. Listen omits these rather than teaching an arbitrary
+   * first-pack meaning passively. */
+  listenSafe?: boolean;
   kind: "word";
   partKey: string;
   /** The owning pack's CEFR level — the ladder reads difficulty from it. */
@@ -94,6 +99,7 @@ const beatsExisting = (
  */
 export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
   const byLemma = new Map<string, WordItem>();
+  const authoredGlosses = new Map<string, Set<string>>();
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
     for (const word of (part as any)?.vocab ?? []) {
       const de = String(word?.de ?? "").trim();
@@ -110,6 +116,9 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       if (bareDe === bareEn) continue;
       if (/[.!?]$/.test(de)) continue;
       const id = wordProgressId(lookup || de);
+      const glossKey = en.toLocaleLowerCase("en-GB").replace(/[.!?]+$/u, "").replace(/\s+/g, " ");
+      if (!authoredGlosses.has(id)) authoredGlosses.set(id, new Set());
+      authoredGlosses.get(id)?.add(glossKey);
       // Several packs legitimately claim one lemma, and they do not all show
       // the word itself: a pack about causes lists "an etwas liegen", while the
       // pack that teaches position lists plain "liegen". First-pack-wins handed
@@ -132,6 +141,22 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
         level: (part as any)?.level ? String((part as any).level) : undefined,
       });
     }
+  }
+  for (const word of byLemma.values()) {
+    const reviewed = canonicalWordSenseFor(word.lookup);
+    if (reviewed) {
+      word.de = reviewed.de;
+      word.en = reviewed.en;
+      word.use = reviewed.use;
+      word.pos = reviewed.pos ?? word.pos;
+      word.level = reviewed.level ?? word.level;
+      word.core = true;
+      word.listenSafe = true;
+      continue;
+    }
+    // A seed explicitly marked `core` has already been reviewed as the
+    // standalone sense, so contextual alternatives must not hide it.
+    word.listenSafe = Boolean(word.core) || (authoredGlosses.get(word.id)?.size ?? 0) <= 1;
   }
   return [...byLemma.values()];
 }

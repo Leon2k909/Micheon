@@ -94,10 +94,16 @@ for (const word of catalog) {
   if (!glossOwners.has(gloss)) glossOwners.set(gloss, []);
   glossOwners.get(gloss).push(word);
 }
-assert(depthWords.every((word) => glossOwners.get(word.en.trim().toLowerCase())?.length === 1),
-  "a new advanced word reuses an existing English gloss without explaining the distinction");
-assert(secondDepthWords.every((word) => glossOwners.get(word.en.trim().toLowerCase())?.length === 1),
-  "a second-batch advanced word reuses an existing English gloss without explaining the distinction");
+const reusedDepthGlosses = depthWords
+  .filter((word) => glossOwners.get(word.en.trim().toLowerCase())?.length !== 1)
+  .map((word) => `${word.de} = ${word.en}`);
+const reusedSecondDepthGlosses = secondDepthWords
+  .filter((word) => glossOwners.get(word.en.trim().toLowerCase())?.length !== 1)
+  .map((word) => `${word.de} = ${word.en}`);
+assert.equal(reusedDepthGlosses.length, 0,
+  `a new advanced word reuses an existing English gloss without explaining the distinction: ${reusedDepthGlosses.join(", ")}`);
+assert.equal(reusedSecondDepthGlosses.length, 0,
+  `a second-batch advanced word reuses an existing English gloss without explaining the distinction: ${reusedSecondDepthGlosses.join(", ")}`);
 
 // ── a sitting behaves like a sitting ──────────────────────────────────────
 const ranked = rankWordCatalog(catalog, null);

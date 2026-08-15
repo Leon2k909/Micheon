@@ -49,7 +49,7 @@ const result = esbuild.buildSync({
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { WORD_ID_PREFIX } from "./src/lib/wordSession.ts";',
+      'export { WORD_ID_PREFIX, buildWordCatalog } from "./src/lib/wordSession.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -87,7 +87,7 @@ const {
   DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE,
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
-  listenCountForId,
+  listenCountForId, buildWordCatalog,
   loadGradeStore, statusForId, COMPLETED_KEY,
   recordSuccess,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
@@ -245,10 +245,25 @@ check("newest-first genuinely front-loads what most-common-first buries",
 // earlier pack, so Listen said "liegen — to be due to something" and the verb's
 // real meaning was never spoken at all.
 const wordCards = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
+const completeWordCatalog = buildWordCatalog(parts);
+const unresolvedWordIds = new Set(completeWordCatalog
+  .filter((word) => word.listenSafe === false)
+  .map((word) => word.id));
+check("real unresolved polysemy is withheld from passive Listen, not guessed",
+  unresolvedWordIds.size > 100
+  && wordCards.length > 4000
+  && !wordCards.some((item) => unresolvedWordIds.has(item.id)));
 const cardFor = (german) => wordCards.find((item) => item.de === german);
+const cardForLookup = (lookup) => wordCards.find((item) => item.id === `vw-${String(lookup)
+  .toLocaleLowerCase("de-DE")
+  .normalize("NFKD")
+  .replace(/[̀-ͯ]/g, "")
+  .replace(/[^a-z0-9äöüß]+/gi, "-")
+  .replace(/^-+|-+$/g, "")}`);
 check("a bare word's card teaches the bare word, not an idiom built on it",
   /lying|located/i.test(cardFor("liegen")?.en ?? "")
-  && /remind/i.test(cardFor("erinnern")?.en ?? "")
+  && /remember/i.test(cardForLookup("erinnern")?.en ?? "")
+  && /remind/i.test(cardForLookup("erinnern")?.use ?? "")
   && !wordCards.some((item) => item.de === "an etwas liegen"));
 // A niche sense from an earlier pack used to win the same way an idiom did:
 // "stehen — to suit someone", "sitzen — to fit (of a garment)". Both are real
@@ -258,6 +273,31 @@ check("a word's card teaches its primary sense, not an earlier pack's niche one"
   /standing/i.test(cardFor("stehen")?.en ?? "")
   && /sitting/i.test(cardFor("sitzen")?.en ?? "")
   && /stand something up/i.test(cardFor("stellen")?.en ?? ""));
+
+// Contextual packs are allowed to teach different meanings of a polysemous
+// word. The global Listen card is not allowed to choose one by load order:
+// reviewed words get an everyday-first sense plus context, while an unresolved
+// conflict is withheld from passive playback until someone has reviewed it.
+for (const [lookup, primary, context] of [
+  ["belegen", /take a course/i, /occupy|reserve|evidence/i],
+  ["ankommen", /arrive/i, /depend/i],
+  ["stimmen", /correct/i, /vote|tune/i],
+  ["ansatz", /approach|starting point/i, /hair|roots/i],
+  ["abschließen", /finish|complete/i, /lock|contract/i],
+  ["folge", /result|consequence/i, /episode/i],
+  ["rezept", /recipe|prescription/i, /cooking|medicine/i],
+]) {
+  const reviewed = cardForLookup(lookup);
+  check(`${lookup} has a reviewed standalone meaning instead of a pack-order accident`,
+    primary.test(reviewed?.en ?? "") && context.test(reviewed?.use ?? ""));
+}
+
+const unresolvedQueue = buildListenQueue({
+  first: { level: "A1", vocab: [{ de: "prüfwort", en: "first unrelated meaning", lookup: "prüfwort" }] },
+  second: { level: "B1", vocab: [{ de: "prüfwort", en: "second unrelated meaning", lookup: "prüfwort" }] },
+}, {}, { contentSource: "words", order: "common" });
+check("an unresolved conflicting word is withheld from passive Listen playback",
+  !unresolvedQueue.some((item) => item.id === "vw-prufwort"));
 // English collapses two unrelated German words into "theme": das Motto is the
 // theme of a party, das Thema is a topic you discuss. A bare "theme" on either
 // card teaches a coin flip, so each has to say which one it is.
@@ -494,6 +534,8 @@ check("the view schedules both languages in the learner-selected order", view.in
 check("the view repeats German and English independently",
   /Array\.from\(\s*\{ length: germanRepeats \}/.test(view)
   && /Array\.from\(\s*\{ length: englishRepeats \}/.test(view));
+check("reviewed word cards explain important secondary meanings on screen",
+  view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
 check("the playback plan, order switch, and typed repeat counts are visible",
   view.includes('"English {en}×, then German {de}×"')
   && view.includes('"German {de}×, then English {en}×"')

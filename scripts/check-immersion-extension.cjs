@@ -104,6 +104,8 @@ for (const lemma of [
 }
 assert.equal(words.find((word) => word.de === "versprechen")?.en, "to promise",
   "versprechen still teaches the less common reflexive meaning instead of to promise");
+assert.equal(words.find((word) => word.de === "belegen")?.en, "to take a course",
+  "belegen still exports one specialist academic sense as though it were the whole word");
 
 assert(gloss.includes("HOVER_SPEAK_DELAY_MS") && gloss.includes("SAME_WORD_SPEAK_COOLDOWN_MS"),
   "hover speech is no longer debounced and deduplicated");

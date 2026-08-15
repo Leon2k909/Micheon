@@ -459,6 +459,7 @@ export type ListenItem = {
   aliases: string[];
   de: string;
   en: string;
+  use?: string;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -543,7 +544,14 @@ export function buildListenQueue(
       popularity: index / Math.max(1, ranked.length - 1),
     }));
 
-  const rankedWords = content === "sentences" ? [] : rankWordCatalog(buildWordCatalog(parts), corpusIndex);
+  // A lemma claimed with incompatible meanings by several contextual packs
+  // must not be read passively until its standalone card has been reviewed.
+  // The contextual lesson remains available; only the arbitrary global card
+  // is withheld. This is intentionally accuracy-first: silence teaches less
+  // than a confidently spoken mistranslation, but it does not teach it wrong.
+  const rankedWords = content === "sentences"
+    ? []
+    : rankWordCatalog(buildWordCatalog(parts).filter((word) => word.listenSafe !== false), corpusIndex);
   rankedWords.forEach((word) => rememberPack(word.id, word.partKey));
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
@@ -551,6 +559,7 @@ export function buildListenQueue(
       aliases: [],
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
+      use: word.use,
       kind: "word" as const,
       popularity: index / Math.max(1, ranked.length - 1),
     }));
