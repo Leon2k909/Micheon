@@ -116,9 +116,36 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       if (bareDe === bareEn) continue;
       if (/[.!?]$/.test(de)) continue;
       const id = wordProgressId(lookup || de);
-      const glossKey = en.toLocaleLowerCase("en-GB").replace(/[.!?]+$/u, "").replace(/\s+/g, " ");
-      if (!authoredGlosses.has(id)) authoredGlosses.set(id, new Set());
-      authoredGlosses.get(id)?.add(glossKey);
+      // Packs conflict when they disagree about the MEANING, not the wording.
+      // Comparing full gloss strings withheld 135 words whose packs agree —
+      // "to learn" vs "to learn, to study" is one sense written twice, and
+      // vielleicht sat out of Listen over exactly that. So the key is the
+      // primary sense: the part a card would speak, stripped of alternatives,
+      // parentheticals and function words. Motto-class conflicts ("theme" vs
+      // "motto") still differ after this and still withhold.
+      const primarySense = en
+        .split(" / ")[0].split(",")[0]
+        .toLocaleLowerCase("en-GB")
+        .replace(/\([^)]*\)/g, " ")
+        .replace(/^\s*(to|the|a|an)\s+/, "")
+        .replace(/[^a-zäöüß\s-]/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const glossKey = primarySense
+        || en.toLocaleLowerCase("en-GB").replace(/[.!?]+$/u, "").replace(/\s+/g, " ");
+      // Only seeds that SHOW the word vote on its standalone sense. An idiom
+      // built on the lemma can never own the card (beatsExisting), so its
+      // meaning must not veto the card either — "auf den Grund gehen" was
+      // withholding plain Grund, and "ehrlich gesagt" plain ehrlich. A
+      // reflexive form (sich kümmern) is the word shown in its real shape,
+      // so it votes; anything longer is an idiom with its own meaning.
+      const shown = de.replace(/^(der|die|das)\s+/i, "").replace(/^sich\s+/i, "").trim();
+      const showsTheWord = !/\s/.test(shown)
+        && shown.toLocaleLowerCase("de-DE") === lookup.replace(/^sich\s+/i, "").trim().toLocaleLowerCase("de-DE");
+      if (showsTheWord) {
+        if (!authoredGlosses.has(id)) authoredGlosses.set(id, new Set());
+        authoredGlosses.get(id)?.add(glossKey);
+      }
       // Several packs legitimately claim one lemma, and they do not all show
       // the word itself: a pack about causes lists "an etwas liegen", while the
       // pack that teaches position lists plain "liegen". First-pack-wins handed

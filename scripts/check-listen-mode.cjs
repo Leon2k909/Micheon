@@ -249,9 +249,13 @@ const completeWordCatalog = buildWordCatalog(parts);
 const unresolvedWordIds = new Set(completeWordCatalog
   .filter((word) => word.listenSafe === false)
   .map((word) => word.id));
+// No size floor on the withheld pool: it measured the review BACKLOG, not the
+// mechanism, and the backlog is meant to reach zero. It did — every formerly
+// withheld word now has a reviewed sense in canonicalWordSenses.ts. The
+// mechanism itself is proved below by the synthetic prüfwort conflict, which
+// must always be withheld no matter how empty the real pool gets.
 check("real unresolved polysemy is withheld from passive Listen, not guessed",
-  unresolvedWordIds.size > 100
-  && wordCards.length > 4000
+  wordCards.length > 4000
   && !wordCards.some((item) => unresolvedWordIds.has(item.id)));
 const cardFor = (german) => wordCards.find((item) => item.de === german);
 const cardForLookup = (lookup) => wordCards.find((item) => item.id === `vw-${String(lookup)
