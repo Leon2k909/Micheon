@@ -1,4 +1,20 @@
 const ALTERNATIVE_SEPARATOR = /\s+\/\s+/u;
+const PARENTHETICAL_ANNOTATION = /\s*\([^()]*\)/gu;
+
+function removeParentheticalAnnotations(value: string): string {
+  let result = value;
+  let previous = "";
+
+  // Repeat so a nested note is removed one balanced level at a time. The
+  // catalogue uses simple notes today, but leaving unmatched parentheses
+  // untouched is safer than guessing how to rewrite ordinary prose.
+  while (result !== previous) {
+    previous = result;
+    result = result.replace(PARENTHETICAL_ANNOTATION, "");
+  }
+
+  return result.replace(/\s{2,}/gu, " ").trim();
+}
 
 /**
  * Learning content can show several accepted translations separated by a
@@ -14,8 +30,9 @@ export function firstSpokenAlternative(text: string): string {
     ? value
     : value.slice(0, separatorIndex).trim();
 
-  return firstAlternative
+  return removeParentheticalAnnotations(firstAlternative)
     .replace(/\band\/or\b/giu, "and or")
     .replace(/\bund\/oder\b/giu, "und oder")
-    .replace(/(\p{L}+)\/\p{L}+/gu, "$1");
+    .replace(/(\p{L}+)\/\p{L}+/gu, "$1")
+    .trim();
 }

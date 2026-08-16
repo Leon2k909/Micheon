@@ -344,17 +344,30 @@ app.get("/api/codex-pets/:source/:id/spritesheet", (req, res) => {
   return res.sendFile(spritesheet, { dotfiles: "allow" });
 });
 
-function firstSpokenAlternative(value) {
+const PARENTHETICAL_ANNOTATION = /\s*\([^()]*\)/gu;
+
+function removeParentheticalAnnotations(value) {
+  let result = value;
+  let previous = "";
+  while (result !== previous) {
+    previous = result;
+    result = result.replace(PARENTHETICAL_ANNOTATION, "");
+  }
+  return result.replace(/\s{2,}/gu, " ").trim();
+}
+
+export function firstSpokenAlternative(value) {
   const text = String(value || "").trim();
   const separatorIndex = text.search(/\s+\/\s+/u);
   const firstAlternative = separatorIndex === -1
     ? text
     : text.slice(0, separatorIndex).trim();
 
-  return firstAlternative
+  return removeParentheticalAnnotations(firstAlternative)
     .replace(/\band\/or\b/giu, "and or")
     .replace(/\bund\/oder\b/giu, "und oder")
-    .replace(/(\p{L}+)\/\p{L}+/gu, "$1");
+    .replace(/(\p{L}+)\/\p{L}+/gu, "$1")
+    .trim();
 }
 
 app.get("/api/tts", async (req, res) => {
