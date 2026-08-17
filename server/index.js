@@ -180,6 +180,28 @@ function withSynthesisSlot(task) {
   });
 }
 
+/**
+ * Sonia can compress the unstressed syllables in an isolated "occurrence" so
+ * far that the word sounds misspelled. Edge's consumer endpoint deliberately
+ * rejects custom SSML, but it does support rate control. A small slowdown was
+ * the clearest Sonia rendering in a local en-GB recognition check. Keep this
+ * narrow so sentences, other words, other voices, and already-slower learner
+ * settings retain their requested pace.
+ */
+export function pronunciationRateFor(text, voice, requestedRate) {
+  const rate = String(requestedRate || "+0%");
+  if (
+    String(voice || "") !== "en-GB-SoniaNeural"
+    || !/^occurrences?[.!?]?$/iu.test(String(text || "").trim())
+  ) return rate;
+
+  const match = /^([+-])(\d+)%$/u.exec(rate);
+  const percentage = match
+    ? Number(match[2]) * (match[1] === "-" ? -1 : 1)
+    : 0;
+  return percentage <= -10 ? rate : "-10%";
+}
+
 function synthesizeOnce(key, text, voice, rate) {
   const pending = pendingSynthesis.get(key);
   if (pending) return pending;
@@ -414,21 +436,25 @@ app.get("/api/tts", async (req, res) => {
   const asked = String(req.query.voice || "");
   const voice = ALLOWED_VOICES.has(asked) ? asked : voiceForLang(lang);
   const rate = ratePercent(req.query.rate);
+  const synthesisRate = pronunciationRateFor(text, voice, rate);
+  const pronunciationOverride = synthesisRate === rate ? "default" : "occurrence-clarity";
 
-  const key = `${voice}|${rate}|${text}`;
+  const key = `${voice}|${synthesisRate}|${text}`;
   const cached = cacheGet(key);
   if (cached) {
     res.set("Content-Type", "audio/mpeg");
     res.set("Cache-Control", "private, no-store");
     res.set("X-TTS-Cache", "hit");
+    res.set("X-TTS-Pronunciation", pronunciationOverride);
     return res.send(cached);
   }
 
   try {
-    const buf = await synthesizeOnce(key, text, voice, rate);
+    const buf = await synthesizeOnce(key, text, voice, synthesisRate);
     res.set("Content-Type", "audio/mpeg");
     res.set("Cache-Control", "private, no-store");
     res.set("X-TTS-Cache", "miss");
+    res.set("X-TTS-Pronunciation", pronunciationOverride);
     return res.send(buf);
   } catch (err) {
     // Let the browser fall back to local speechSynthesis.

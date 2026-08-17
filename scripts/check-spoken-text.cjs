@@ -76,6 +76,23 @@ async function checkServerMirror() {
     serverModule.firstSpokenAlternative("and/or German") === "and or German"
       && serverModule.firstSpokenAlternative("Online/Offline") === "Online"
   );
+  check(
+    "Sonia slows an isolated occurrence just enough to separate its syllables",
+    serverModule.pronunciationRateFor("occurrence", "en-GB-SoniaNeural", "+0%") === "-10%"
+  );
+  check(
+    "Sonia applies the same clarity pace to an isolated plural",
+    serverModule.pronunciationRateFor("Occurrences.", "en-GB-SoniaNeural", "+20%") === "-10%"
+  );
+  check(
+    "an already slower Sonia setting stays learner-controlled",
+    serverModule.pronunciationRateFor("occurrence", "en-GB-SoniaNeural", "-20%") === "-20%"
+  );
+  check(
+    "other voices and full sentences keep their requested pace",
+    serverModule.pronunciationRateFor("occurrence", "en-GB-LibbyNeural", "+0%") === "+0%"
+      && serverModule.pronunciationRateFor("an occurrence", "en-GB-SoniaNeural", "+0%") === "+0%"
+  );
 }
 
 checkServerMirror()
