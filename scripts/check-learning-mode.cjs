@@ -92,6 +92,18 @@ const authoredPhrases = [
   ...tatoebaPhrases,
 ];
 
+const reportedSinnContextPhrase = authoredPhrases.find(
+  (phrase) => phrase?.de === "Das ergibt Sinn, jetzt verstehe ich den Zusammenhang."
+);
+check("the longer Sinn ergeben sentence still exists", Boolean(reportedSinnContextPhrase));
+check(
+  "the longer Sinn note treats both common forms accurately",
+  reportedSinnContextPhrase?.use?.includes("standard and register-neutral")
+    && reportedSinnContextPhrase?.use?.includes("also common in everyday conversation")
+    && !/not Sinn machen|careful version|purist|Denglish/i.test(reportedSinnContextPhrase.use),
+  `found ${JSON.stringify(reportedSinnContextPhrase?.use)}`
+);
+
 const reportedRepeatedWordPhrase = authoredPhrases.find(
   (phrase) => phrase?.de === "Sie müssen nicht mit, wenn Sie nicht wollen."
 );
