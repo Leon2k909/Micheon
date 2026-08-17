@@ -24,6 +24,11 @@ import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
+import {
+  WORD_PART_OF_SPEECH_FILTERS,
+  wordMatchesPartOfSpeech,
+  type WordPartOfSpeechFilter,
+} from "@/lib/wordPartOfSpeech";
 import type { Part } from "@/lib/types";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -240,6 +245,7 @@ export function WordsTracker({ apiParts, user }: {
   user: UserProfile | null;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [partOfSpeech, setPartOfSpeech] = useState<WordPartOfSpeechFilter>("all");
   const [sort, setSort] = useState<Sort>("common");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -277,6 +283,7 @@ export function WordsTracker({ apiParts, user }: {
     const needle = query.trim().toLowerCase();
     const rows = catalog.filter((word) => {
       if (filter !== "all" && statusOf(word) !== filter) return false;
+      if (!wordMatchesPartOfSpeech(word.pos, partOfSpeech)) return false;
       if (!needle) return true;
       return word.de.toLowerCase().includes(needle)
         || word.en.toLowerCase().includes(needle)
@@ -291,7 +298,7 @@ export function WordsTracker({ apiParts, user }: {
     }
     return rows; // the catalogue is already most-common-first
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catalog, filter, query, sort, grades]);
+  }, [catalog, filter, partOfSpeech, query, sort, grades]);
 
   const visible = filtered.slice(0, page * PAGE);
 
@@ -420,7 +427,19 @@ export function WordsTracker({ apiParts, user }: {
         </p>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 sm:grid-cols-3">
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Part of speech")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setPartOfSpeech(event.target.value as WordPartOfSpeechFilter); reset(); }}
+            value={partOfSpeech}
+          >
+            {WORD_PART_OF_SPEECH_FILTERS.map((option) => (
+              <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
         <label className="min-w-0">
           <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Sort by")}</span>
           <select
