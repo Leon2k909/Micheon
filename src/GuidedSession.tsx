@@ -9,10 +9,14 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   matchGermanPhrase as match,
+  matchGermanMeaning,
   matchGermanSentence,
+  matchEnglishMeaning,
   matchEnglishPhrase as matchEnglish,
   matchingVisibleKeys,
   primaryAnswer,
+  primaryEnglishMeaning,
+  primaryGermanMeaning,
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
 import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
@@ -592,7 +596,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
     case "WriteFromMemory": return "Build from memory";
     case "RecallTarget": return `Recall the ${targetLabel}`;
     case "RecallMeaning": return `Recall the ${meaningLabel}`;
-    case "RecallBoth": return "Recall both sentences";
+    case "RecallBoth": return "Recall both sides";
     case "French": return "Type the French";
     case "Memory": return "Recall both languages";
     default: return "Sentence practice";
@@ -1732,8 +1736,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // wrong box. `displayEnglish` is whichever side carries the meaning, so this
   // stays correct in both learning directions.
   const matchMeaning = React.useCallback(
-    (typed: string) => (learnEn ? matchGermanSentence : matchEnglish)(typed, displayEnglish),
-    [displayEnglish, learnEn]
+    (typed: string) => learnEn
+      ? isWordItem
+        ? matchGermanMeaning(typed, displayEnglish)
+        : matchGermanSentence(typed, displayEnglish)
+      : isWordItem
+        ? matchEnglishMeaning(typed, displayEnglish)
+        : matchEnglish(typed, displayEnglish),
+    [displayEnglish, isWordItem, learnEn]
   );
   const recallTargetResult = useMemo(
     () => matchEither(recallTargetInput),
@@ -1745,12 +1755,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   );
   // Translate phase: in learn-DE mode the answer is English; in learn-EN mode
   // the answer is German — each direction gets its own synonym/coach matcher.
-  const shownEnglish = useMemo(() => primaryAnswer(displayEnglish), [displayEnglish]);
+  const shownEnglish = useMemo(
+    () => isWordItem
+      ? learnEn ? primaryGermanMeaning(displayEnglish) : primaryEnglishMeaning(displayEnglish)
+      : primaryAnswer(displayEnglish),
+    [displayEnglish, isWordItem, learnEn]
+  );
   const meaningSelectPool = useMemo(
-    () => translationChoicePool.map((value) => primaryAnswer(
-      learnEn ? value : formatEnglishText(value, englishVariant)
-    )),
-    [translationChoicePool, learnEn, englishVariant]
+    () => translationChoicePool.map((value) => {
+      const displayValue = learnEn ? value : formatEnglishText(value, englishVariant);
+      if (!isWordItem) return primaryAnswer(displayValue);
+      return learnEn ? primaryGermanMeaning(displayValue) : primaryEnglishMeaning(displayValue);
+    }),
+    [translationChoicePool, learnEn, englishVariant, isWordItem]
   );
   const meaningSelectChoices = useMemo(
     () => buildListeningChoices(shownEnglish, meaningSelectPool, 3),
@@ -1766,16 +1783,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     ? translationPicked.map((token) => token.text).join(" ")
     : enInput;
   const enResult = useMemo(
-    () => (learnEn ? matchGermanSentence : matchEnglish)(translationAnswer, displayEnglish),
-    [translationAnswer, displayEnglish, learnEn]
+    () => matchMeaning(translationAnswer),
+    [translationAnswer, matchMeaning]
   );
   const recallMeaningResult = useMemo(
-    () => (learnEn ? matchGermanSentence : matchEnglish)(recallMeaningInput, displayEnglish),
-    [recallMeaningInput, displayEnglish, learnEn]
+    () => matchMeaning(recallMeaningInput),
+    [recallMeaningInput, matchMeaning]
   );
   const recallBothMeaningResult = useMemo(
-    () => (learnEn ? matchGermanSentence : matchEnglish)(recallBothMeaningInput, displayEnglish),
-    [recallBothMeaningInput, displayEnglish, learnEn]
+    () => matchMeaning(recallBothMeaningInput),
+    [recallBothMeaningInput, matchMeaning]
   );
   const meaningLang = learnEn
     ? "de-DE"
@@ -2672,14 +2689,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 : phase === "RecallMeaning"
                   ? ui("Use the target sentence to recall its full meaning.")
                   : phase === "RecallBoth"
-                    ? ui("No answers are shown now. Type both sentences from memory.")
+                    ? ui("No answers are shown now. Type both sides from memory.")
                     : hasFr
                       ? ui(audioMuted
                         ? "Read, choose, then type it in German and French."
                         : "Read, listen, choose, then type it in German and French.")
                       : ui(audioMuted
-                        ? "Read, choose, type, then translate."
-                        : "Read, listen, choose, type, then translate.")}
+                        ? "Read, choose, type, translate, then recall."
+                        : "Read, listen, choose, type, translate, then recall.")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -2839,7 +2856,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         ) : phase === "RecallBoth" ? (
           <div className="fs-closed-recall-cue">
             <span><EyeOff aria-hidden="true" className="h-4 w-4" /> {ui("Closed-book recall")}</span>
-            <strong>{ui("Recall the phrase you just practised in both languages.")}</strong>
+            <strong>{ui("Recall what you just practised in both languages.")}</strong>
             <small>{ui("Neither answer is shown unless you choose Hint or Show answer.")}</small>
           </div>
         ) : phase === "Order" ? (
@@ -3547,7 +3564,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <motion.div key="recall-both" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {ui("Type both versions of the phrase. Use Hint only if you genuinely cannot retrieve one.")}
+              {ui("Type both sides from memory. Use Hint only if you genuinely cannot retrieve one.")}
             </p>
             <div className="fs-recall-pair">
               <div className="fs-recall-pair-column">
@@ -3561,8 +3578,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <Input
                     ref={recallBothTargetRef}
                     className="fs-input"
-                    aria-label={ui(`Recall the ${targetLabel} sentence`)}
-                    placeholder={ui(`Type the ${targetLabel} sentence...`)}
+                    aria-label={ui(`Recall the ${targetLabel}`)}
+                    placeholder={ui(`Type in ${targetLabel}`)}
                     spellCheck={false}
                     value={recallBothTargetInput}
                     onChange={(event) => {
@@ -3630,7 +3647,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 "fs-result",
                 recallBothTargetResult.ok && recallBothMeaningResult.ok ? "is-good" : "is-bad"
               )} role="status">
-                <strong>{ui(recallBothTargetResult.ok && recallBothMeaningResult.ok ? "Both sentences are correct." : "Not quite")}</strong>
+                <strong>{ui(recallBothTargetResult.ok && recallBothMeaningResult.ok ? "Both answers are correct." : "Not quite")}</strong>
                 <span>
                   {ui(targetLabel)}: {ui(recallBothTargetResult.ok ? "Correct" : "Try again")}
                   <span aria-hidden="true"> · </span>

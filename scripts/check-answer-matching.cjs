@@ -8,7 +8,7 @@ const result = esbuild.buildSync({
     contents: `
       export { allPartBlueprints } from "./src/lib/data.ts";
       export { default as tatoebaRaw } from "./src/lib/tatoeba.de-en.json";
-      export { matchEnglishPhrase, matchGermanSentence, primaryAnswer } from "./src/lib/germanTextMatch.ts";
+      export { matchEnglishMeaning, matchEnglishPhrase, matchGermanMeaning, matchGermanSentence, primaryAnswer, primaryEnglishMeaning, primaryGermanMeaning } from "./src/lib/germanTextMatch.ts";
       export { buildBundledParts } from "./src/lib/contentBank.ts";
       export { buildApiPartFromResolved } from "./src/lib/api.ts";
       export { buildPartCatalog } from "./src/session.ts";
@@ -40,9 +40,13 @@ const {
   buildPartCatalog,
   itemDifficulty,
   itemPriority,
+  matchEnglishMeaning,
   matchEnglishPhrase,
+  matchGermanMeaning,
   matchGermanSentence,
   primaryAnswer,
+  primaryEnglishMeaning,
+  primaryGermanMeaning,
   sentenceCommonality,
   tatoebaRaw,
 } = compiled.exports;
@@ -66,6 +70,31 @@ function check(name, condition, detail = "") {
   failures += 1;
   console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
 }
+
+check(
+  "one valid vocabulary meaning passes without typing the whole gloss list",
+  matchEnglishMeaning("goal", "goal or aim").ok
+    && matchEnglishMeaning("aim", "goal or aim").ok
+    && matchEnglishMeaning("destination", "aim, destination").ok
+    && matchEnglishMeaning("to complete", "to finish or complete").ok
+);
+check(
+  "the word bank shows one answer while the matcher retains every valid sense",
+  primaryEnglishMeaning("goal or aim") === "goal"
+    && primaryEnglishMeaning("aim, destination") === "aim"
+    && !matchEnglishMeaning("journey", "goal or aim").ok
+);
+check(
+  "single valid meanings work in the reverse course direction too",
+  matchGermanMeaning("Ziel", "Ziel oder Absicht").ok
+    && matchGermanMeaning("Absicht", "Ziel oder Absicht").ok
+    && primaryGermanMeaning("Ziel oder Absicht") === "Ziel"
+    && !matchGermanMeaning("Reise", "Ziel oder Absicht").ok
+);
+check(
+  "ordinary sentence matching does not accept one side of an or-clause",
+  !matchEnglishPhrase("tea", "Do you want tea or coffee?").ok
+);
 
 check(
   "casual texting 'ik' and 'u' are accepted in an English meaning answer",

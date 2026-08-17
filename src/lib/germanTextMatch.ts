@@ -10,6 +10,62 @@ export function primaryAnswer(s: string): string {
   return String(s ?? "").split(" / ")[0].trim();
 }
 
+/**
+ * Vocabulary glosses often name several equally valid senses, for example
+ * "goal or aim" or "aim, destination". They are choices, not a phrase the
+ * learner should have to reproduce in full. Sentence answers keep using
+ * primaryAnswer()/matchEnglishPhrase(), so ordinary uses of "or" and commas
+ * in complete sentences are never split by this word-only helper.
+ */
+function splitMeaningAlternatives(value: string, separator: RegExp): string[] {
+  const original = String(value ?? "").trim();
+  if (!original) return [];
+
+  const alternatives = original
+    .split(separator)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return alternatives.length ? alternatives : [original];
+}
+
+export function englishMeaningAlternatives(value: string): string[] {
+  return splitMeaningAlternatives(value, /\s+\/\s+|[,;]|\s+or\s+/iu);
+}
+
+export function germanMeaningAlternatives(value: string): string[] {
+  return splitMeaningAlternatives(value, /\s+\/\s+|[,;]|\s+oder\s+/iu);
+}
+
+export function primaryEnglishMeaning(value: string): string {
+  return englishMeaningAlternatives(value)[0] ?? "";
+}
+
+export function primaryGermanMeaning(value: string): string {
+  return germanMeaningAlternatives(value)[0] ?? "";
+}
+
+export function matchEnglishMeaning(input: string, target: string) {
+  const whole = matchEnglishPhrase(input, target);
+  if (whole.ok) return whole;
+
+  for (const alternative of englishMeaningAlternatives(target)) {
+    const result = matchEnglishPhrase(input, alternative);
+    if (result.ok) return result;
+  }
+  return whole;
+}
+
+export function matchGermanMeaning(input: string, target: string) {
+  const whole = matchGermanSentence(input, target);
+  if (whole.ok) return whole;
+
+  for (const alternative of germanMeaningAlternatives(target)) {
+    const result = matchGermanSentence(input, alternative);
+    if (result.ok) return result;
+  }
+  return whole;
+}
+
 export type MatchingPair = { german: string; english: string };
 
 /**

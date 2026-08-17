@@ -28,6 +28,7 @@ const built = esbuild.buildSync({
       'export { recordDeclaredKnown } from "./src/lib/memoryStrength.ts";',
       'export { wordLadderRung, learnerWordRung } from "./src/lib/wordSession.ts";',
       'export { WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute } from "./src/lib/guidedLessonPhases.ts";',
+      'export { matchEnglishMeaning, primaryEnglishMeaning } from "./src/lib/germanTextMatch.ts";',
     ].join("\n"),
     resolveDir: root, sourcefile: "lesson-content-entry.ts",
   },
@@ -44,6 +45,7 @@ const {
   recordSuccess, recordStruggle, snoozeForDays,
   recordDeclaredKnown, wordLadderRung, learnerWordRung,
   WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute,
+  matchEnglishMeaning, primaryEnglishMeaning,
 } = compiled.exports;
 
 const parts = {};
@@ -56,6 +58,10 @@ const catalog = buildWordCatalog(parts);
 assert(catalog.length >= 4287, `only ${catalog.length} teachable words — the expanded word inventory has been lost`);
 assert(catalog.every((w) => w.id.startsWith(WORD_ID_PREFIX)), "a word id escaped the vw- namespace");
 assert(catalog.every((w) => w.en.trim().length > 0), "a word without a gloss is being taught");
+assert(catalog.every((word) => {
+  const primaryMeaning = primaryEnglishMeaning(word.en);
+  return primaryMeaning && matchEnglishMeaning(primaryMeaning, word.en).ok;
+}), "a word's displayed primary meaning is not accepted by its own answer checker");
 assert(catalog.every((w) => w.de.trim().split(/\s+/).length <= 6 && !/[.!?]$/.test(w.de)),
   "something sentence-shaped got into the word catalogue");
 assert(catalog.every((w) => w.de.toLowerCase().replace(/^(der|die|das) /, "") !== w.en.toLowerCase().replace(/^(der|die|das) /, "")),
@@ -186,12 +192,20 @@ assert(buildWordSitting(ranked, sentenceGraded).every((s) => !s.review),
   "a sentence grade marked a word as learned");
 
 // ── the word route is short on purpose ────────────────────────────────────
-assert.deepEqual([...WORD_PHASES], ["Read", "MeaningPick", "Type", "Translate"]);
+assert.deepEqual(
+  [...WORD_PHASES],
+  ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "Type", "Translate", "RecallBoth"]
+);
 assert.deepEqual([...MASTERED_WORD_PHASES], ["RecallTarget", "RecallMeaning"]);
 assert.deepEqual(
   buildSentencePhaseRoute({ mastered: false, bilingual: true, audioMuted: false, word: true }),
   [...WORD_PHASES],
   "a word item is being marched through the sentence route"
+);
+assert.deepEqual(
+  buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: true, word: true }),
+  WORD_PHASES.filter((phase) => phase !== "ListenPick"),
+  "muting audio removed more than the listening-only word stage"
 );
 
 // ── one record per word, tests included ───────────────────────────────────

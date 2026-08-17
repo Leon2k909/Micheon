@@ -40,18 +40,18 @@ export const MASTERED_SENTENCE_PHASES: readonly SentencePhase[] = [
 ];
 
 /**
- * A single word gets a short route. Running one word through the full
- * thirteen-stage sentence drill is not rigour, it is padding: ordering one
- * tile, gap-filling a one-word gap and writing the "sentence" from memory are
- * all the same exercise wearing different hats. Read it, pick its meaning,
- * type it, produce its meaning — four honest passes, and the spaced ladder
- * does the rest across days the way it does for sentences.
+ * A new word gets recognition in both directions, a listening check, written
+ * production in both languages, then one closed-book retrieval. Sentence-only
+ * mechanics such as word ordering and gap fill still stay out of this route.
  */
 export const WORD_PHASES: readonly SentencePhase[] = [
   "Read",
   "MeaningPick",
+  "MeaningSelect",
+  "ListenPick",
   "Type",
   "Translate",
+  "RecallBoth",
 ];
 
 /** A word the learner already holds: straight recall, both directions. */
