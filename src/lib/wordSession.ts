@@ -22,11 +22,15 @@ import { wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
 import { canonicalWordSenseFor } from "@/lib/canonicalWordSenses";
+import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 
 export type WordItem = {
   /** `vw-` + the lemma: global, not per pack, so "das Haus" is ONE word
    *  however many packs list it, and its progress follows the word. */
   id: string;
+  /** Older ids for the same visible word, retained so progress survives
+   * catalogue deduplication and is migrated on the next write. */
+  aliases?: string[];
   /** "das Haus" — the display form, article kept, always German. */
   de: string;
   /** "house" — the authored gloss. Direction handling is the session's job,
@@ -169,6 +173,8 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       });
     }
   }
+  const visibleWords = new Map<string, WordItem>();
+  const deduped: WordItem[] = [];
   for (const word of byLemma.values()) {
     const reviewed = canonicalWordSenseFor(word.lookup);
     if (reviewed) {
@@ -179,13 +185,40 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       word.level = reviewed.level ?? word.level;
       word.core = true;
       word.listenSafe = true;
+    } else {
+      // A seed explicitly marked `core` has already been reviewed as the
+      // standalone sense, so contextual alternatives must not hide it.
+      word.listenSafe = Boolean(word.core) || (authoredGlosses.get(word.id)?.size ?? 0) <= 1;
+    }
+
+    const visibleKey = sentenceIdentityKey(word.de).toLocaleLowerCase("de-DE");
+    const existing = visibleWords.get(visibleKey);
+    if (!existing) {
+      const canonical = { ...word, aliases: [...(word.aliases ?? [])] };
+      visibleWords.set(visibleKey, canonical);
+      deduped.push(canonical);
       continue;
     }
-    // A seed explicitly marked `core` has already been reviewed as the
-    // standalone sense, so contextual alternatives must not hide it.
-    word.listenSafe = Boolean(word.core) || (authoredGlosses.get(word.id)?.size ?? 0) <= 1;
+
+    const answers = [...String(existing.en).split(/\s+\/\s+/u), ...String(word.en).split(/\s+\/\s+/u)];
+    const seenAnswers = new Set<string>();
+    existing.en = answers
+      .map((answer) => answer.trim())
+      .filter((answer) => {
+        const key = sentenceIdentityKey(answer).toLocaleLowerCase("en-GB");
+        if (!key || seenAnswers.has(key)) return false;
+        seenAnswers.add(key);
+        return true;
+      })
+      .join(" / ");
+    existing.aliases = [...new Set([
+      ...(existing.aliases ?? []),
+      word.id,
+      ...(word.aliases ?? []),
+    ])].filter((id) => id && id !== existing.id);
+    existing.listenSafe = Boolean(existing.listenSafe || word.listenSafe);
   }
-  return [...byLemma.values()];
+  return deduped;
 }
 
 /** Frequency-ranked: the words people actually meet come first. */
@@ -290,7 +323,13 @@ export function buildWordSitting(
    *  slots are two WORDS whenever two teachable words exist. */
   slots?: { reviewSlots: number; freshSlots: number }
 ): WordStep[] {
-  const recordFor = (word: WordItem) => grades?.[word.id];
+  const recordFor = (word: WordItem) => {
+    for (const id of [word.id, ...(word.aliases ?? [])]) {
+      const record = grades?.[id];
+      if (record) return record;
+    }
+    return undefined;
+  };
 
   const struggles: WordItem[] = [];
   const due: WordItem[] = [];

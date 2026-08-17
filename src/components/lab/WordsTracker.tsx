@@ -6,7 +6,9 @@ import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSess
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import {
   loadGradeStore,
+  progressEntryForId,
   saveGradeStore,
+  setCanonicalGradeRecord,
   setItemStatus,
   setItemsStatus,
   statusForId,
@@ -40,9 +42,9 @@ import type { UserProfile } from "@/lib/profileStorage";
  * family. It stays a SEPARATE component on purpose: the sentence tracker
  * indexes ~16,000 sentences through priority, search and commonality
  * indexes, and folding 3,000+ words into that list was called out as a lag
- * risk before it could ship. Every function below reads/writes `WordItem.id`
- * directly — no `aliases` array — because `vw-` word ids never fan out into
- * multiple surface forms the way sentence catalog ids do.
+ * risk before it could ship. A few historical lookup spellings produce the
+ * same visible word, so their old ids travel as aliases and migrate into the
+ * surviving canonical id on the next write.
  *
  * Word progress lives under vw- ids that only vocabulary sittings and the
  * tests bank write, so marking a word Known here is the same record those
@@ -256,6 +258,8 @@ export function WordsTracker({ apiParts, user }: {
   const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
   const exampleIndex = useMemo(() => buildWordExampleIndex(apiParts), [apiParts]);
   const grades = useMemo(() => loadGradeStore(user), [user, revision]);
+  const recordFor = (word: WordItem) =>
+    progressEntryForId(grades, word.id, word.aliases)?.record;
 
   // Word grades share the same "grades-updated" event every grade write in
   // the app dispatches, so a word graded elsewhere (another tracker instance,
@@ -268,7 +272,7 @@ export function WordsTracker({ apiParts, user }: {
   }, []);
 
   const statusOf = (word: WordItem): Filter => {
-    const record = grades[word.id];
+    const record = recordFor(word);
     if (record?.lastGrade === "struggle") return "struggle";
     if (record?.lastGrade === "know") return isDueForReview(record) ? "due" : "known";
     return "new";
@@ -326,18 +330,22 @@ export function WordsTracker({ apiParts, user }: {
   const clearSelection = () => setSelected(new Set());
 
   const apply = (word: WordItem, status: ItemStatus) => {
-    setItemStatus(word.id, status, user);
+    setItemStatus(word.id, status, user, word.aliases);
     setRevision((current) => current + 1);
   };
 
   // Direct ladder override — writes the exact rung instead of climbing one
   // success at a time, so the learner can correct the tracker on the spot.
-  // WordItem has no aliases, so this is a plain load/mutate/save cycle.
+  // Any historical alias is folded into the surviving word id on write.
   const applyStrength = (word: WordItem, level: number) => {
     const store = loadGradeStore(user);
-    const prior = store[word.id];
+    const prior = progressEntryForId(store, word.id, word.aliases)?.record;
     const rec = setStrengthLevel(level, Date.now(), prior);
-    if (rec) store[word.id] = rec; else delete store[word.id];
+    if (rec) setCanonicalGradeRecord(store, word.id, word.aliases, rec);
+    else {
+      delete store[word.id];
+      for (const alias of word.aliases ?? []) delete store[alias];
+    }
     saveGradeStore(store, user);
     setRevision((r) => r + 1);
   };
@@ -345,8 +353,8 @@ export function WordsTracker({ apiParts, user }: {
   // Above Mastered: mark a word so easy it should never be reviewed again.
   const applyPermanent = (word: WordItem) => {
     const store = loadGradeStore(user);
-    const prior = store[word.id];
-    store[word.id] = recordPermanent(Date.now(), prior);
+    const prior = progressEntryForId(store, word.id, word.aliases)?.record;
+    setCanonicalGradeRecord(store, word.id, word.aliases, recordPermanent(Date.now(), prior));
     saveGradeStore(store, user);
     setRevision((r) => r + 1);
   };
@@ -355,7 +363,7 @@ export function WordsTracker({ apiParts, user }: {
   const bulkApplyStatus = (status: ItemStatus) => {
     const targets = catalog.filter((w) => selected.has(w.id));
     if (targets.length === 0) return;
-    setItemsStatus(targets.map((w) => ({ id: w.id })), status, user);
+    setItemsStatus(targets.map((w) => ({ id: w.id, aliases: w.aliases })), status, user);
     setRevision((r) => r + 1);
   };
 
@@ -363,7 +371,10 @@ export function WordsTracker({ apiParts, user }: {
     const targets = catalog.filter((w) => selected.has(w.id));
     if (targets.length === 0) return;
     const store = loadGradeStore(user);
-    for (const w of targets) store[w.id] = recordPermanent(Date.now(), store[w.id]);
+    for (const w of targets) {
+      const prior = progressEntryForId(store, w.id, w.aliases)?.record;
+      setCanonicalGradeRecord(store, w.id, w.aliases, recordPermanent(Date.now(), prior));
+    }
     saveGradeStore(store, user);
     setRevision((r) => r + 1);
   };
@@ -497,7 +508,8 @@ export function WordsTracker({ apiParts, user }: {
       >
         <div className="divide-y divide-[var(--border)]">
           {visible.map((word) => {
-            const status = statusForId(grades, word.id);
+            const status = statusForId(grades, word.id, word.aliases);
+            const record = recordFor(word);
             const primaryText = uiIsGerman() ? word.en : word.de;
             const meaningText = uiIsGerman() ? word.de : word.en;
             const frequency = frequencyInfo(word.lookup || word.de);
@@ -544,7 +556,7 @@ export function WordsTracker({ apiParts, user }: {
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
                       })()}
                     {(() => {
-                        const listens = Number(grades[word.id]?.listens) || 0;
+                        const listens = Number(record?.listens) || 0;
                         return listens > 0
                           ? <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
                           : null;
@@ -561,7 +573,7 @@ export function WordsTracker({ apiParts, user }: {
                     </p>
                   )}
                   <StrengthMeter
-                    record={grades[word.id]}
+                    record={record}
                     onSetLevel={(level) => applyStrength(word, level)}
                     onSetPermanent={() => applyPermanent(word)}
                   />

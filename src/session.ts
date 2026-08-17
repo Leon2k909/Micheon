@@ -807,6 +807,61 @@ export function buildPartCatalog(part: any, partKey: string): CatalogItem[] {
   return out;
 }
 
+const answerAlternatives = (value: string): string[] => String(value ?? "")
+  .split(/\s+\/\s+/u)
+  .map((answer) => answer.trim())
+  .filter(Boolean);
+
+const mergeAnswerAlternatives = (primary: string, duplicate: string): string => {
+  const answers: string[] = [];
+  const seen = new Set<string>();
+  for (const answer of [...answerAlternatives(primary), ...answerAlternatives(duplicate)]) {
+    const key = sentenceIdentityKey(answer).toLocaleLowerCase("en-GB");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    answers.push(answer);
+  }
+  return answers.join(" / ");
+};
+
+/**
+ * The same German sentence is authored in several packs, phrase banks and
+ * dialogues. It is one thing for a learner to remember even when two sources
+ * phrase its English gloss differently. Keep the earliest curriculum owner,
+ * retain every valid English answer, and carry every later id as an alias so
+ * existing progress follows the surviving card instead of disappearing.
+ *
+ * Words use their own lemma-aware catalogue builder; this function handles the
+ * sentence/phrase/dialogue catalogue shared by the tracker, tests, games and
+ * pet prompts.
+ */
+export function dedupeCatalogItems(items: CatalogItem[]): CatalogItem[] {
+  const out: CatalogItem[] = [];
+  const byGerman = new Map<string, CatalogItem>();
+
+  for (const item of items) {
+    const key = sentenceIdentityKey(item.de).toLocaleLowerCase("de-DE");
+    const existing = byGerman.get(key);
+    if (!key || !existing) {
+      const canonical = { ...item, aliases: [...(item.aliases ?? [])] };
+      out.push(canonical);
+      if (key) byGerman.set(key, canonical);
+      continue;
+    }
+
+    existing.en = mergeAnswerAlternatives(existing.en, item.en);
+    existing.aliases = [...new Set([
+      ...(existing.aliases ?? []),
+      item.id,
+      ...(item.aliases ?? []),
+    ])].filter((id) => id && id !== existing.id);
+    if (!existing.short && item.short) existing.short = item.short;
+    if (!existing.long && item.long) existing.long = item.long;
+  }
+
+  return out;
+}
+
 /**
  * One catalogue per parts map, shared by everyone who asks for it.
  *
@@ -833,10 +888,11 @@ export function buildCatalog(apiParts: Record<string, any>): CatalogItem[] {
     const cached = catalogCache.get(apiParts);
     if (cached && cached.mode === mode) return cached.items;
   }
-  const out: CatalogItem[] = [];
+  const raw: CatalogItem[] = [];
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
-    out.push(...buildPartCatalog({ ...part, partKey }, partKey));
+    raw.push(...buildPartCatalog({ ...part, partKey }, partKey));
   }
+  const out = dedupeCatalogItems(raw);
   if (cacheable) catalogCache.set(apiParts, { mode, items: out });
   return out;
 }

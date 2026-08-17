@@ -495,7 +495,8 @@ export default function GuidedLearningSession() {
       const candidates = swappingWord
         ? rankWordCatalog(buildWordCatalog(withoutMutedPacks(apiParts)), corpusIndex).filter((word) => {
             if (usedIds.has(word.id)) return false;
-            return statusForId(grades, word.id) === "new" && !isSnoozed(grades[word.id]);
+            const record = progressEntryForId(grades, word.id, word.aliases)?.record;
+            return statusForId(grades, word.id, word.aliases) === "new" && !isSnoozed(record);
           })
         : catalog.filter((item) => {
             if (usedIds.has(item.id) || statusForId(grades, item.id, item.aliases) !== "new") return false;

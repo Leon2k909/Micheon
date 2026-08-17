@@ -9144,7 +9144,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Leitung", lookup: "Leitung", fallbackEn: "line, connection", tip: "noun", article: "die" },
       { de: "der Techniker", lookup: "Techniker", fallbackEn: "technician", tip: "noun", article: "der" },
       { de: "das Netzwerkkabel", lookup: "Netzwerkkabel", fallbackEn: "network cable", tip: "noun", article: "das" },
-      { de: "neu starten", lookup: "neu starten", fallbackEn: "to restart", tip: "verb" },
+      { de: "sich neu verbinden", lookup: "neu verbinden", fallbackEn: "to reconnect", tip: "verb" },
       { de: "die Geschwindigkeit", lookup: "Geschwindigkeit", fallbackEn: "speed", tip: "noun", article: "die" },
       { de: "der Anschluss", lookup: "Anschluss", fallbackEn: "connection, socket", tip: "noun", article: "der" },
       { de: "die Dose", lookup: "Dose", fallbackEn: "wall socket (telecom)", tip: "noun", article: "die" },

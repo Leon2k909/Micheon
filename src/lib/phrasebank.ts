@@ -762,7 +762,7 @@ export const curatedTopics: CuratedTopic[] = [
     focus: "Modern idioms and literal translations used in the workplace.",
     phrases: [
       { de: "Ich verstehe deinen Punkt.", en: "I understand your point. / I see your point.", use: "Denglish equivalent of 'I see your point'" },
-      { de: "Das macht Sinn.", en: "That makes sense.", use: "Denglish equivalent of 'Das ergibt Sinn'" },
+      { de: "Das macht Sinn.", en: "That makes sense.", use: "Very common in conversation and informal writing; the standard, register-neutral alternative is 'Das ergibt Sinn'." },
     ],
   },
   {

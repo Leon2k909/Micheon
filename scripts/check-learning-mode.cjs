@@ -365,17 +365,26 @@ for (const expected of auditedConversationalPrimaries) {
     `found ${JSON.stringify(conversation.de)} / ${JSON.stringify(conversation.en)}`
   );
   check(
-    `Conversation mode retains and accepts the careful form: ${expected.standard}`,
+    `Conversation mode retains and accepts the standard form: ${expected.standard}`,
     conversation.long === expected.standard
       && acceptsSelectedPhrase(conversation, expected.spoken)
       && acceptsSelectedPhrase(conversation, expected.standard),
     `found long ${JSON.stringify(conversation.long)}`
   );
   check(
-    `Exam mode retains the careful target: ${expected.standard}`,
+    `Exam mode retains the standard target: ${expected.standard}`,
     exam.de === expected.standard && exam.short === expected.spoken,
     `found target ${JSON.stringify(exam.de)} and short ${JSON.stringify(exam.short)}`
   );
+  if (expected.standard === "Das ergibt Sinn.") {
+    check(
+      "usage guidance treats Sinn ergeben and Sinn machen as normal German",
+      phrase.use?.includes("Both forms are normal")
+        && phrase.use?.includes("standard, register-neutral")
+        && !/purist|Denglish/i.test(phrase.use),
+      `found ${JSON.stringify(phrase.use)}`
+    );
+  }
 }
 
 const reportedTatoebaPhrase = tatoebaPhrases.find((phrase) =>
