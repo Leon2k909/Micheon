@@ -10,11 +10,18 @@ import {
 
 export const DATA_EXPORT_FORMAT = "micheon-data-export";
 export const DATA_EXPORT_SCHEMA_VERSION = 1 as const;
-export const MAX_DATA_EXPORT_BYTES = 10 * 1024 * 1024;
+// Pet spritesheets are carried as base64 in the JSON archive. Keep this large
+// enough for several normal custom pets while the server enforces tighter
+// per-file and total sprite limits.
+export const MAX_DATA_EXPORT_BYTES = 80 * 1024 * 1024;
 
 const MAX_ITEMS = 2_000;
 const MAX_KEY_LENGTH = 512;
 const MAX_VALUE_LENGTH = MAX_DATA_EXPORT_BYTES;
+const MAX_PORTABLE_PETS = 32;
+const MAX_PORTABLE_PET_SPRITE_BYTES = 24 * 1024 * 1024;
+const MAX_PORTABLE_PET_TOTAL_SPRITE_BYTES = 48 * 1024 * 1024;
+const MAX_PORTABLE_PET_MANIFEST_BYTES = 64 * 1024;
 
 /** Settings and local records that are intentionally portable across PCs. */
 const PORTABLE_GLOBAL_KEYS = new Set([
@@ -57,6 +64,14 @@ export type DataExportProfile = Pick<
   "id" | "name" | "email" | "joinedAt" | "avatar" | "externalWordsLearned"
 >;
 
+export type PortablePetBundle = {
+  source: "custom" | "micheon-custom";
+  id: string;
+  manifest: Record<string, unknown>;
+  spritesheetName: "spritesheet.webp" | "spritesheet.png";
+  spritesheetBase64: string;
+};
+
 export type DataExportArchive = {
   format: typeof DATA_EXPORT_FORMAT;
   schemaVersion: typeof DATA_EXPORT_SCHEMA_VERSION;
@@ -64,6 +79,8 @@ export type DataExportArchive = {
   profile: DataExportProfile;
   profileItems: DataExportItem[];
   globalItems: DataExportItem[];
+  /** Optional on input for backwards compatibility with pre-pet exports. */
+  pets: PortablePetBundle[];
 };
 
 export type DataImportSummary = {
@@ -109,6 +126,71 @@ function isPortableGlobalKey(key: string): boolean {
   if (EXCLUDED_KEYS.has(key)) return false;
   if (PORTABLE_GLOBAL_KEYS.has(key)) return true;
   return PORTABLE_GLOBAL_PREFIXES.some((prefix) => key.startsWith(prefix));
+}
+
+function isSafePortablePetId(value: string): boolean {
+  return /^[a-zA-Z0-9._-]{1,128}$/.test(value);
+}
+
+function base64ByteLength(value: string): number {
+  const padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
+  return Math.floor(value.length * 3 / 4) - padding;
+}
+
+function encodedByteLength(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
+
+function validatePortablePets(value: unknown): PortablePetBundle[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_PORTABLE_PETS) {
+    throw new Error("pets is missing or too large.");
+  }
+
+  const seen = new Set<string>();
+  let totalSpriteBytes = 0;
+  return value.map((item, index) => {
+    if (!isRecord(item)
+      || (item.source !== "custom" && item.source !== "micheon-custom")
+      || typeof item.id !== "string"
+      || !isSafePortablePetId(item.id)
+      || !isRecord(item.manifest)
+      || typeof item.spritesheetName !== "string"
+      || !/^spritesheet\.(webp|png)$/iu.test(item.spritesheetName)
+      || typeof item.spritesheetBase64 !== "string") {
+      throw new Error(`pets[${index}] is invalid.`);
+    }
+
+    const key = `${item.source}:${item.id}`;
+    if (seen.has(key)) throw new Error(`pets[${index}] is duplicated.`);
+    seen.add(key);
+
+    const manifestText = JSON.stringify(item.manifest);
+    if (!manifestText || encodedByteLength(manifestText) > MAX_PORTABLE_PET_MANIFEST_BYTES) {
+      throw new Error(`pets[${index}] has a manifest that is too large.`);
+    }
+
+    const base64 = item.spritesheetBase64;
+    if (!base64 || base64.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/u.test(base64)) {
+      throw new Error(`pets[${index}] has an invalid spritesheet.`);
+    }
+    const spriteBytes = base64ByteLength(base64);
+    if (spriteBytes <= 0 || spriteBytes > MAX_PORTABLE_PET_SPRITE_BYTES) {
+      throw new Error(`pets[${index}] has a spritesheet that is too large.`);
+    }
+    totalSpriteBytes += spriteBytes;
+    if (totalSpriteBytes > MAX_PORTABLE_PET_TOTAL_SPRITE_BYTES) {
+      throw new Error("The custom pet files are too large together.");
+    }
+
+    return {
+      source: item.source,
+      id: item.id,
+      manifest: JSON.parse(manifestText) as Record<string, unknown>,
+      spritesheetName: item.spritesheetName.toLowerCase() as PortablePetBundle["spritesheetName"],
+      spritesheetBase64: base64,
+    };
+  });
 }
 
 function profileSuffix(profileId: string): string {
@@ -218,6 +300,7 @@ export function validateDataExport(value: unknown): DataExportArchive {
     seen
   );
   const globalItems = validateItemList(value.globalItems, "globalItems", rawProfile.id, "global", seen);
+  const pets = validatePortablePets(value.pets);
   const archive: DataExportArchive = {
     format: DATA_EXPORT_FORMAT,
     schemaVersion: DATA_EXPORT_SCHEMA_VERSION,
@@ -234,16 +317,17 @@ export function validateDataExport(value: unknown): DataExportArchive {
     },
     profileItems,
     globalItems,
+    pets,
   };
 
-  if (JSON.stringify(archive).length * 2 > MAX_DATA_EXPORT_BYTES) {
+  if (encodedByteLength(JSON.stringify(archive)) > MAX_DATA_EXPORT_BYTES) {
     throw new Error("The Micheon data export is too large.");
   }
   return archive;
 }
 
 export function parseDataExport(text: string): DataExportArchive {
-  if (typeof text !== "string" || text.length * 2 > MAX_DATA_EXPORT_BYTES) {
+  if (typeof text !== "string" || encodedByteLength(text) > MAX_DATA_EXPORT_BYTES) {
     throw new Error("The Micheon data export is too large.");
   }
   try {
@@ -285,18 +369,28 @@ export function collectDataExport(profile: UserProfile | null): DataExportArchiv
     profile: snapshot,
     profileItems,
     globalItems,
+    pets: [],
   });
+}
+
+export function assertDataImportMatchesProfile(
+  value: unknown,
+  targetProfile: UserProfile | null
+): DataExportArchive {
+  const archive = validateDataExport(value);
+  const target = profileSnapshot(targetProfile);
+  if (normaliseEmail(archive.profile.email) !== normaliseEmail(target.email)) {
+    throw new Error("This export belongs to a different profile.");
+  }
+  return archive;
 }
 
 export async function applyDataImport(
   value: unknown,
   targetProfile: UserProfile | null
 ): Promise<DataImportSummary> {
-  const archive = validateDataExport(value);
+  const archive = assertDataImportMatchesProfile(value, targetProfile);
   const target = profileSnapshot(targetProfile);
-  if (normaliseEmail(archive.profile.email) !== normaliseEmail(target.email)) {
-    throw new Error("This export belongs to a different profile.");
-  }
 
   const storage = requireBrowserStorage();
   const profileIds = knownProfileIds(storage);

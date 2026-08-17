@@ -122,6 +122,7 @@ function seed() {
 
 seed();
 const archive = collectDataExport(source);
+expect(Array.isArray(archive.pets) && archive.pets.length === 0, "a local export did not reserve the portable pet bundle field");
 const profileKeys = archive.profileItems.map((item) => item.key);
 const globalKeys = archive.globalItems.map((item) => item.key);
 expect(profileKeys.includes("session-completed:" + source.id), "export omitted scoped progress");
@@ -142,6 +143,17 @@ const roundTrip = parseDataExport(serializeDataExport(archive));
 expect(roundTrip.profile.id === source.id, "serialized archive changed its source profile");
 expect(roundTrip.profileItems.length === archive.profileItems.length, "serialized archive lost scoped data");
 expect(roundTrip.globalItems.length === archive.globalItems.length, "serialized archive lost global data");
+const petRoundTrip = parseDataExport(serializeDataExport({
+  ...archive,
+  pets: [{
+    source: "micheon-custom",
+    id: "gallery-cat",
+    manifest: { id: "gallery-cat", spritesheetPath: "spritesheet.webp" },
+    spritesheetName: "spritesheet.webp",
+    spritesheetBase64: Buffer.from([1, 2, 3]).toString("base64"),
+  }],
+}));
+expect(petRoundTrip.pets.length === 1 && petRoundTrip.pets[0].id === "gallery-cat", "serialized archive lost a portable pet bundle");
 
 seed();
 store.set("gl-target-only", "remove-me");
@@ -188,6 +200,7 @@ expect(JSON.stringify([...store.entries()]) === JSON.stringify(beforeRejected), 
 const ui = fs.readFileSync(path.join(root, "src/components/DataAndStorage.tsx"), "utf8");
 expect(/Export data/.test(ui) && /Import data/.test(ui), "Data & storage is missing transfer controls");
 expect(/Other profiles are untouched/.test(ui), "transfer UI does not state the profile boundary");
+expect(/collectPortablePetBundles/.test(ui) && /importPortablePetBundles/.test(ui), "Data & storage does not transfer pet bundles");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 expect(packageJson.scripts["check:data-transfer"], "package.json does not expose the transfer check");
 expect(packageJson.scripts.build.includes("check:data-transfer"), "the build does not run the transfer check");

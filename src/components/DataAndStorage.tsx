@@ -11,12 +11,14 @@ import {
 } from "@/lib/dataUsage";
 import {
   applyDataImport,
+  assertDataImportMatchesProfile,
   collectDataExport,
   MAX_DATA_EXPORT_BYTES,
   parseDataExport,
   serializeDataExport,
 } from "@/lib/dataTransfer";
 import { getAuthUser } from "@/lib/profileStorage";
+import { collectPortablePetBundles, importPortablePetBundles } from "@/lib/petTransfer";
 
 type DiskUsage = {
   installBytes: number;
@@ -79,10 +81,12 @@ export function DataAndStorage() {
         ok ? "Cache geleert." : "Cache konnte nicht geleert werden.");
   };
 
-  const exportData = () => {
+  const exportData = async () => {
     setTransferBusy("export");
     try {
-      const content = serializeDataExport(collectDataExport(getAuthUser()));
+      const archive = collectDataExport(getAuthUser());
+      const pets = await collectPortablePetBundles();
+      const content = serializeDataExport({ ...archive, pets });
       const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
       const link = document.createElement("a");
       link.href = url;
@@ -107,10 +111,11 @@ export function DataAndStorage() {
     setTransferBusy("import");
     try {
       if (file.size > MAX_DATA_EXPORT_BYTES) throw new Error("The selected file is too large.");
-      const archive = parseDataExport(await file.text());
+      const archive = assertDataImportMatchesProfile(parseDataExport(await file.text()), getAuthUser());
       const confirmed = window.confirm(ui("Import replaces this profile's saved data. Shared preferences and custom words also apply to this computer's local app. Other profiles are untouched. Continue?"));
       if (!confirmed) return;
       await applyDataImport(archive, getAuthUser());
+      await importPortablePetBundles(archive.pets);
       say("Data imported. Micheon will reload now.", "Daten importiert. Micheon wird jetzt neu geladen.");
       window.setTimeout(() => window.location.reload(), 650);
     } catch {
@@ -169,7 +174,7 @@ export function DataAndStorage() {
           <div className="min-w-0">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("Move your Micheon data")}</p>
             <p className="mt-1 max-w-2xl text-xs font-semibold leading-5 text-[var(--text-3)]">
-              {ui("Take your progress, settings, custom words and mastery to another computer with a private JSON file.")}
+              {ui("Take your progress, settings, custom words, mastery and installed pets to another computer with a private JSON file.")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">

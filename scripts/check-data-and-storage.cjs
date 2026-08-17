@@ -121,6 +121,15 @@ if (!/other profiles on this computer are untouched/.test(ui)) {
   failures.push("the screen does not say whose data it is about to delete");
 }
 
+const profile = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8");
+if (/h-\[72px\].*rounded-\[24px\]/.test(profile)) {
+  failures.push("Data & storage still has the visible deferred skeleton pill");
+}
+if (!/fallback=\{<div aria-hidden=\"true\" className=\"h-px w-full\" \/>\}/.test(profile)
+    || !/fallback=\{<div aria-hidden=\"true\" className=\"h-px w-full\" \/>}\s*\n\s*minHeight=\{1\}/.test(profile)) {
+  failures.push("Data & storage lost the nonzero invisible reveal anchor");
+}
+
 // ── and it is honest about languages ──────────────────────────────────────
 if (!/nothing to uninstall that would save you space/.test(ui)) {
   failures.push("the screen implies course content can be uninstalled to free space, which it cannot");

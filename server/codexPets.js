@@ -7,6 +7,11 @@ import { fileURLToPath } from "node:url";
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_FRAMES = 256;
 const MAX_FPS = 60;
+const MAX_TRANSFER_PETS = 32;
+const MAX_TRANSFER_SPRITE_BYTES = 24 * 1024 * 1024;
+const MAX_TRANSFER_TOTAL_SPRITE_BYTES = 48 * 1024 * 1024;
+const SAFE_TRANSFER_PET_ID = /^[a-zA-Z0-9._-]{1,128}$/;
+const PORTABLE_PET_SOURCES = new Set(["custom", "micheon-custom"]);
 const BUNDLED_PETS_ROOT = fileURLToPath(new URL("./bundled-pets", import.meta.url));
 const PET_LIST_CACHE_MS = 5000;
 let cachedPetList = null;
@@ -279,6 +284,173 @@ export function getCodexPetCatalog({ fresh = false } = {}) {
 export function resolveCodexPetSpritesheet(source, id) {
   const pet = listCodexPets().find((entry) => entry.source === source && entry.id === id);
   return pet?.spritesheetPath ?? null;
+}
+
+function portablePetRoot(source) {
+  if (!PORTABLE_PET_SOURCES.has(source)) return null;
+  return path.resolve(source === "custom"
+    ? path.join(getCodexHome(), "pets")
+    : path.join(getMicheonHome(), "pets"));
+}
+
+function safeTransferPetId(value) {
+  const id = String(value ?? "").trim();
+  return SAFE_TRANSFER_PET_ID.test(id) ? id : null;
+}
+
+function normaliseTransferManifest(manifest, id, spritesheetName) {
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new Error("pet manifest is not an object");
+  }
+  const raw = JSON.stringify(manifest);
+  if (!raw || Buffer.byteLength(raw, "utf8") > MAX_MANIFEST_BYTES) {
+    throw new Error("pet manifest is too large");
+  }
+  return {
+    ...manifest,
+    id,
+    spritesheetPath: spritesheetName,
+  };
+}
+
+function readPortablePetBundle(pet) {
+  const root = portablePetRoot(pet.source);
+  const id = safeTransferPetId(pet.id);
+  if (!root || !id) throw new Error(`pet ${pet.id || "(unnamed)"} cannot be moved between computers`);
+
+  const directory = path.resolve(path.dirname(pet.spritesheetPath));
+  if (path.dirname(directory) !== root) {
+    throw new Error(`refusing to export pet ${id} outside its pets folder`);
+  }
+  try {
+    if (!fs.lstatSync(directory).isDirectory()) throw new Error("pet directory is not a directory");
+    const manifestPath = path.join(directory, "pet.json");
+    const manifestStats = fs.lstatSync(manifestPath);
+    if (!manifestStats.isFile() || manifestStats.size > MAX_MANIFEST_BYTES) {
+      throw new Error("pet manifest is missing or too large");
+    }
+    const spritesheetName = path.basename(pet.spritesheetPath);
+    if (!/^spritesheet\.(webp|png)$/i.test(spritesheetName)) {
+      throw new Error("pet spritesheet has an unsupported name");
+    }
+    const spriteStats = fs.lstatSync(pet.spritesheetPath);
+    if (!spriteStats.isFile() || spriteStats.size <= 0 || spriteStats.size > MAX_TRANSFER_SPRITE_BYTES) {
+      throw new Error("pet spritesheet is missing or too large");
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const safeManifest = normaliseTransferManifest(manifest, id, spritesheetName);
+    const spritesheetBase64 = fs.readFileSync(pet.spritesheetPath).toString("base64");
+    return {
+      source: pet.source,
+      id,
+      manifest: safeManifest,
+      spritesheetName,
+      spritesheetBase64,
+      spriteBytes: spriteStats.size,
+    };
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error(`pet ${id} has an invalid manifest`, { cause: error });
+    throw error;
+  }
+}
+
+function portablePetEntries() {
+  return [
+    ...loadManifestPets(path.join(getMicheonHome(), "pets"), "pet.json", "micheon-custom"),
+    ...loadManifestPets(path.join(getCodexHome(), "pets"), "pet.json", "custom"),
+  ];
+}
+
+/** Return only user-managed pet files; bundled and Codex-installed defaults need no copying. */
+export function exportUserManagedPetBundles() {
+  const pets = [];
+  let totalSpriteBytes = 0;
+  for (const pet of portablePetEntries()) {
+    if (pets.length >= MAX_TRANSFER_PETS) throw new Error("too many custom pets to export");
+    const bundle = readPortablePetBundle(pet);
+    totalSpriteBytes += bundle.spriteBytes;
+    if (totalSpriteBytes > MAX_TRANSFER_TOTAL_SPRITE_BYTES) {
+      throw new Error("custom pet files are too large to export together");
+    }
+    const { spriteBytes: _spriteBytes, ...portable } = bundle;
+    pets.push(portable);
+  }
+  return { schemaVersion: 1, pets };
+}
+
+function decodeTransferSpritesheet(value) {
+  if (typeof value !== "string" || !value || value.length % 4 !== 0
+    || !/^[A-Za-z0-9+/]+={0,2}$/.test(value)) {
+    throw new Error("pet spritesheet is not valid base64");
+  }
+  const buffer = Buffer.from(value, "base64");
+  if (!buffer.length || buffer.length > MAX_TRANSFER_SPRITE_BYTES
+    || buffer.toString("base64") !== value) {
+    throw new Error("pet spritesheet is too large or invalid");
+  }
+  return buffer;
+}
+
+function validateTransferBundles(rawPets) {
+  if (rawPets === undefined) return [];
+  if (!Array.isArray(rawPets) || rawPets.length > MAX_TRANSFER_PETS) {
+    throw new Error("custom pet transfer is missing or too large");
+  }
+  const seen = new Set();
+  let totalSpriteBytes = 0;
+  return rawPets.map((raw, index) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error(`custom pet ${index + 1} is invalid`);
+    }
+    const source = String(raw.source ?? "").trim();
+    const id = safeTransferPetId(raw.id);
+    if (!PORTABLE_PET_SOURCES.has(source) || !id) {
+      throw new Error(`custom pet ${index + 1} has an invalid source or id`);
+    }
+    const key = `${source}:${id}`;
+    if (seen.has(key)) throw new Error(`custom pet ${id} is listed twice`);
+    seen.add(key);
+    const spritesheetName = String(raw.spritesheetName ?? "");
+    if (!/^spritesheet\.(webp|png)$/i.test(spritesheetName)) {
+      throw new Error(`custom pet ${id} has an invalid spritesheet name`);
+    }
+    const manifest = normaliseTransferManifest(raw.manifest, id, spritesheetName);
+    const spritesheet = decodeTransferSpritesheet(raw.spritesheetBase64);
+    totalSpriteBytes += spritesheet.byteLength;
+    if (totalSpriteBytes > MAX_TRANSFER_TOTAL_SPRITE_BYTES) {
+      throw new Error("custom pet files are too large to import together");
+    }
+    return { source, id, manifest, spritesheetName, spritesheet };
+  });
+}
+
+/** Install validated user-managed bundles without touching other pets or app data. */
+export function importUserManagedPetBundles(rawPets) {
+  const bundles = validateTransferBundles(rawPets);
+  for (const bundle of bundles) {
+    const root = portablePetRoot(bundle.source);
+    fs.mkdirSync(root, { recursive: true });
+    const target = path.resolve(root, bundle.id);
+    if (path.dirname(target) !== root) throw new Error("refusing to import outside the pets folder");
+    if (fs.existsSync(target) && fs.lstatSync(target).isSymbolicLink()) {
+      throw new Error(`refusing to replace symlinked pet ${bundle.id}`);
+    }
+
+    const stagingRoot = fs.mkdtempSync(path.join(root, ".micheon-pet-transfer-"));
+    const stagingPet = path.join(stagingRoot, bundle.id);
+    try {
+      fs.mkdirSync(stagingPet, { recursive: true });
+      fs.writeFileSync(path.join(stagingPet, "pet.json"), JSON.stringify(bundle.manifest, null, 2));
+      fs.writeFileSync(path.join(stagingPet, bundle.spritesheetName), bundle.spritesheet);
+      if (fs.existsSync(target)) fs.rmSync(target, { force: false, recursive: true });
+      fs.renameSync(stagingPet, target);
+    } finally {
+      fs.rmSync(stagingRoot, { force: true, recursive: true });
+    }
+  }
+  cachedPetList = null;
+  cachedPetListUntil = 0;
+  return { imported: bundles.length };
 }
 
 /**

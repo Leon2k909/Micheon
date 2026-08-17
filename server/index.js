@@ -17,7 +17,13 @@ import os from "os";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { EdgeTTS } from "edge-tts-universal";
-import { getCodexPetCatalog, removeUserManagedPet, resolveCodexPetSpritesheet } from "./codexPets.js";
+import {
+  exportUserManagedPetBundles,
+  getCodexPetCatalog,
+  importUserManagedPetBundles,
+  removeUserManagedPet,
+  resolveCodexPetSpritesheet,
+} from "./codexPets.js";
 import { fetchGalleryPage, installGalleryPet, installedGalleryIds, removeGalleryPet } from "./petGallery.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -194,7 +200,10 @@ function synthesizeOnce(key, text, voice, rate) {
 }
 
 const app = express();
-app.use(express.json({ limit: "1mb" }));
+// Pet spritesheets travel as base64 inside the private transfer archive. The
+// pet module applies the tighter per-file and total limits; this only prevents
+// Express from rejecting a valid multi-pet archive before that validation runs.
+app.use(express.json({ limit: "80mb" }));
 
 const appdataDir = path.join(process.env.APPDATA || os.homedir(), "germ");
 const appdataFile = path.join(appdataDir, "shared-progress.json");
@@ -296,6 +305,23 @@ app.get("/api/codex-pets", (_req, res) => {
   // immediately follow reuse that result instead of repeating the same disk
   // walk for every thumbnail.
   res.json(getCodexPetCatalog({ fresh: true }));
+});
+
+app.get("/api/codex-pets/transfer", (_req, res) => {
+  try {
+    res.set("Cache-Control", "no-store");
+    res.json(exportUserManagedPetBundles());
+  } catch (error) {
+    res.status(400).json({ error: String(error?.message ?? error) });
+  }
+});
+
+app.post("/api/codex-pets/transfer", (req, res) => {
+  try {
+    res.json(importUserManagedPetBundles(req.body?.pets));
+  } catch (error) {
+    res.status(400).json({ error: String(error?.message ?? error) });
+  }
 });
 
 // Browse and install pets from codex-pets.net. Routed through the server so

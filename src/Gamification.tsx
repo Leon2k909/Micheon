@@ -1402,8 +1402,10 @@ export default function GamificationPanel({
 
             <DeferredProfileSection
               className="lg:col-span-2"
-              fallback={null}
-              minHeight={0}
+              // Keep a 1px observer target so this group still reveals when it
+              // reaches the viewport, without bringing back the visible pill.
+              fallback={<div aria-hidden="true" className="h-px w-full" />}
+              minHeight={1}
             >
               <div className="settings-group rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
                 <SettingsCategory
