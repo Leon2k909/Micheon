@@ -313,6 +313,7 @@ const DE: Record<string, string> = {
   "Correct!": "Richtig!",
   "Grammar tip": "Grammatikhilfe",
   "Examples": "Beispiele",
+  "Example in context": "Beispiel im Kontext",
   "Tip": "Tipp",
   "Today": "Heute",
   "Learning path": "Lernpfad",

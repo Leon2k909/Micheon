@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume
 import { cn } from "@/lib/utils";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
+import { buildWordExampleIndex } from "@/lib/wordExamples";
 import {
   loadGradeStore,
   saveGradeStore,
@@ -253,6 +254,7 @@ export function WordsTracker({ apiParts, user }: {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
+  const exampleIndex = useMemo(() => buildWordExampleIndex(apiParts), [apiParts]);
   const grades = useMemo(() => loadGradeStore(user), [user, revision]);
 
   // Word grades share the same "grades-updated" event every grade write in
@@ -499,6 +501,7 @@ export function WordsTracker({ apiParts, user }: {
             const primaryText = uiIsGerman() ? word.en : word.de;
             const meaningText = uiIsGerman() ? word.de : word.en;
             const frequency = frequencyInfo(word.lookup || word.de);
+            const example = exampleIndex.exampleFor(word);
             return (
               <div key={word.id} className="flex flex-wrap items-center gap-3 py-3">
                 <SelectBox
@@ -547,6 +550,16 @@ export function WordsTracker({ apiParts, user }: {
                           : null;
                       })()}
                   </p>
+                  {example && (
+                    <p
+                      className="mt-0.5 text-xs font-semibold text-[var(--text-2)]"
+                      title={ui("Example in context")}
+                    >
+                      {/* Quote marks follow the quoted sentence's language, not the UI's. */}
+                      <span className="italic">{uiIsGerman() ? `“${example.en}”` : `„${example.de}“`}</span>
+                      <span className="font-medium text-[var(--text-3)]"> — {uiIsGerman() ? example.de : example.en}</span>
+                    </p>
+                  )}
                   <StrengthMeter
                     record={grades[word.id]}
                     onSetLevel={(level) => applyStrength(word, level)}
