@@ -382,6 +382,14 @@ function removeParentheticalAnnotations(value) {
   return result.replace(/\s{2,}/gu, " ").trim();
 }
 
+function applyPronunciationOverrides(value) {
+  // Keep display spelling intact while steering German neural voices around
+  // the doubled "st" seam that they can over-articulate in selbstständig.
+  return value.replace(/selbstständig/giu, (match) =>
+    match.startsWith("S") ? "Selbständig" : "selbständig"
+  );
+}
+
 export function firstSpokenAlternative(value) {
   const text = String(value || "").trim();
   const separatorIndex = text.search(/\s+\/\s+/u);
@@ -389,11 +397,11 @@ export function firstSpokenAlternative(value) {
     ? text
     : text.slice(0, separatorIndex).trim();
 
-  return removeParentheticalAnnotations(firstAlternative)
+  return applyPronunciationOverrides(removeParentheticalAnnotations(firstAlternative)
     .replace(/\band\/or\b/giu, "and or")
     .replace(/\bund\/oder\b/giu, "und oder")
     .replace(/(\p{L}+)\/\p{L}+/gu, "$1")
-    .trim();
+    .trim());
 }
 
 app.get("/api/tts", async (req, res) => {

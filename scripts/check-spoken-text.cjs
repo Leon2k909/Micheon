@@ -42,6 +42,8 @@ const cases = [
   ["client removes a leading parenthetical note", "(case of) emergency", "emergency"],
   ["client removes a normal parenthetical gloss", "co-payment (patient's share)", "co-payment"],
   ["client keeps ordinary text", "Just a normal sentence.", "Just a normal sentence."],
+  ["client smooths the reported selbstständig phrase for German TTS", "sich selbstständig machen", "sich selbständig machen"],
+  ["client smooths inflected selbstständig forms for German TTS", "viel selbstständiger", "viel selbständiger"],
 ];
 
 for (const [name, input, expected] of cases) {
@@ -83,7 +85,7 @@ checkServerMirror()
       process.exitCode = 1;
       return;
     }
-    console.log("\nSpeech normalization keeps annotations visible but out of TTS");
+    console.log("\nSpeech normalization keeps annotations visible and pronunciation traps out of TTS");
   })
   .catch((error) => {
     console.error(error);

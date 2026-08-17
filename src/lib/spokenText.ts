@@ -16,6 +16,16 @@ function removeParentheticalAnnotations(value: string): string {
   return result.replace(/\s{2,}/gu, " ").trim();
 }
 
+function applyPronunciationOverrides(value: string): string {
+  // Microsoft's German neural voices can over-articulate the doubled "st"
+  // seam in selbstständig. The accepted spelling selbständig has the same
+  // meaning and pronunciation, but gives the synthesiser a clean word shape.
+  // This is speech-only: learner-facing catalogue text stays untouched.
+  return value.replace(/selbstständig/giu, (match) =>
+    match.startsWith("S") ? "Selbständig" : "selbständig"
+  );
+}
+
 /**
  * Learning content can show several accepted translations separated by a
  * spaced slash. Speech should model one natural answer, not read the separator
@@ -30,9 +40,9 @@ export function firstSpokenAlternative(text: string): string {
     ? value
     : value.slice(0, separatorIndex).trim();
 
-  return removeParentheticalAnnotations(firstAlternative)
+  return applyPronunciationOverrides(removeParentheticalAnnotations(firstAlternative)
     .replace(/\band\/or\b/giu, "and or")
     .replace(/\bund\/oder\b/giu, "und oder")
     .replace(/(\p{L}+)\/\p{L}+/gu, "$1")
-    .trim();
+    .trim());
 }
