@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { HardDrive, Trash2, RefreshCw, AlertTriangle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { AlertTriangle, Download, HardDrive, RefreshCw, Trash2, Upload } from "lucide-react";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import {
   clearAllData,
@@ -9,6 +9,13 @@ import {
   type DataCategoryId,
   type DataUsage,
 } from "@/lib/dataUsage";
+import {
+  applyDataImport,
+  collectDataExport,
+  MAX_DATA_EXPORT_BYTES,
+  parseDataExport,
+  serializeDataExport,
+} from "@/lib/dataTransfer";
 import { getAuthUser } from "@/lib/profileStorage";
 
 type DiskUsage = {
@@ -34,6 +41,8 @@ export function DataAndStorage() {
   const [arming, setArming] = useState<DataCategoryId | "all" | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [transferBusy, setTransferBusy] = useState<"export" | "import" | null>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(() => {
     setUsage(measureDataUsage());
@@ -68,6 +77,47 @@ export function DataAndStorage() {
     refresh();
     say(ok ? "Cache cleared." : "Could not clear the cache.",
         ok ? "Cache geleert." : "Cache konnte nicht geleert werden.");
+  };
+
+  const exportData = () => {
+    setTransferBusy("export");
+    try {
+      const content = serializeDataExport(collectDataExport(getAuthUser()));
+      const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `micheon-data-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      say("Data exported. Keep this file somewhere safe.", "Daten exportiert. Bewahre diese Datei sicher auf.");
+    } catch {
+      say("Could not export your data.", "Deine Daten konnten nicht exportiert werden.");
+    } finally {
+      setTransferBusy(null);
+    }
+  };
+
+  const importData = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setTransferBusy("import");
+    try {
+      if (file.size > MAX_DATA_EXPORT_BYTES) throw new Error("The selected file is too large.");
+      const archive = parseDataExport(await file.text());
+      const confirmed = window.confirm(ui("Import replaces this profile's saved data. Shared preferences and custom words also apply to this computer's local app. Other profiles are untouched. Continue?"));
+      if (!confirmed) return;
+      await applyDataImport(archive, getAuthUser());
+      say("Data imported. Micheon will reload now.", "Daten importiert. Micheon wird jetzt neu geladen.");
+      window.setTimeout(() => window.location.reload(), 650);
+    } catch {
+      say("Could not import that file. Choose a Micheon data export for this profile.", "Diese Datei konnte nicht importiert werden. Wähle einen Micheon-Export für dieses Profil.");
+    } finally {
+      setTransferBusy(null);
+    }
   };
 
   return (
@@ -110,6 +160,48 @@ export function DataAndStorage() {
           {uiIsGerman()
             ? "Zu den Sprachen: Der Deutschkurs ist fest in das Programm eingebaut, nicht separat installiert — es gibt also nichts zu deinstallieren, was Platz sparen würde. Die anderen Sprachen sind noch nicht da; sie belegen keinen Platz."
             : "About languages: the German course is built into the program rather than installed separately, so there is nothing to uninstall that would save you space. The other languages are not here yet, and take up nothing."}
+        </p>
+      </div>
+
+      {/* ── move to another computer ───────────────────────────────────── */}
+      <div className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Move your Micheon data")}</p>
+            <p className="mt-1 max-w-2xl text-xs font-semibold leading-5 text-[var(--text-3)]">
+              {ui("Take your progress, settings, custom words and mastery to another computer with a private JSON file.")}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-3)] px-3 py-2 text-xs font-black text-[var(--text-1)] hover:opacity-90 disabled:opacity-50"
+              disabled={transferBusy !== null}
+              onClick={exportData}
+              type="button"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {transferBusy === "export" ? ui("Exporting…") : ui("Export data")}
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-3 py-2 text-xs font-black text-white hover:opacity-90 disabled:opacity-50"
+              disabled={transferBusy !== null}
+              onClick={() => importInputRef.current?.click()}
+              type="button"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              {transferBusy === "import" ? ui("Importing…") : ui("Import data")}
+            </button>
+            <input
+              accept="application/json,.json"
+              className="hidden"
+              onChange={importData}
+              ref={importInputRef}
+              type="file"
+            />
+          </div>
+        </div>
+        <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
+          {ui("Import replaces this profile's saved data. Shared preferences and custom words also apply to this computer's local app. Other profiles are untouched.")}
         </p>
       </div>
 

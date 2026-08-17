@@ -408,7 +408,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   Flashcards: "flashcard card side front back reveal flip order behaviour",
   "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
-  "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr",
+  "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr export import transfer backup",
   "Browser extension": "chrome edge brave extension addon plugin browser download highlight gloss youtube dub captions",
   Activity: "activity streak xp sessions week milestones progress stats statistics",
 };

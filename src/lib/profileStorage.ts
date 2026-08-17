@@ -143,6 +143,7 @@ const SHARED_SYNC_DELAY_MS = 100;
 let pendingSharedItems: Record<string, string | null> = {};
 let sharedSyncTimer: ReturnType<typeof setTimeout> | null = null;
 let sharedSyncInFlight = false;
+let sharedSyncPromise: Promise<void> | null = null;
 let sharedSyncRetryDelay = 1000;
 
 function scheduleSharedSync(delayMs = SHARED_SYNC_DELAY_MS) {
@@ -155,32 +156,44 @@ async function flushSharedItems(keepalive = false) {
     clearTimeout(sharedSyncTimer);
     sharedSyncTimer = null;
   }
-  if (sharedSyncInFlight) return;
+  if (sharedSyncPromise) {
+    await sharedSyncPromise;
+    if (Object.keys(pendingSharedItems).length > 0) await flushSharedItems(keepalive);
+    return;
+  }
   const items = pendingSharedItems;
   pendingSharedItems = {};
   if (Object.keys(items).length === 0) return;
 
   sharedSyncInFlight = true;
-  let retry = false;
-  try {
-    const response = await fetch("/api/storage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items }),
-      keepalive,
-    });
-    if (!response.ok) throw new Error(`storage sync http ${response.status}`);
-    sharedSyncRetryDelay = 1000;
-  } catch {
-    // Newer pending values win when a failed batch is returned to the queue.
-    pendingSharedItems = { ...items, ...pendingSharedItems };
-    retry = true;
-  } finally {
-    sharedSyncInFlight = false;
-    if (Object.keys(pendingSharedItems).length > 0) {
-      if (retry) sharedSyncRetryDelay = Math.min(30000, sharedSyncRetryDelay * 2);
-      scheduleSharedSync(retry ? sharedSyncRetryDelay : SHARED_SYNC_DELAY_MS);
+  const request = (async () => {
+    let retry = false;
+    try {
+      const response = await fetch("/api/storage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+        keepalive,
+      });
+      if (!response.ok) throw new Error(`storage sync http ${response.status}`);
+      sharedSyncRetryDelay = 1000;
+    } catch {
+      // Newer pending values win when a failed batch is returned to the queue.
+      pendingSharedItems = { ...items, ...pendingSharedItems };
+      retry = true;
+    } finally {
+      sharedSyncInFlight = false;
+      if (Object.keys(pendingSharedItems).length > 0) {
+        if (retry) sharedSyncRetryDelay = Math.min(30000, sharedSyncRetryDelay * 2);
+        scheduleSharedSync(retry ? sharedSyncRetryDelay : SHARED_SYNC_DELAY_MS);
+      }
     }
+  })();
+  sharedSyncPromise = request;
+  try {
+    await request;
+  } finally {
+    if (sharedSyncPromise === request) sharedSyncPromise = null;
   }
 }
 
@@ -201,6 +214,11 @@ function syncSharedItems(items: Record<string, string | null>) {
 
 export function syncLocalStorageItem(key: string, value: string | null) {
   syncSharedItems({ [key]: value });
+}
+
+/** Flush queued mirror writes before an operation reloads or exits the app. */
+export async function flushSharedStorage(keepalive = false) {
+  await flushSharedItems(keepalive);
 }
 
 export async function hydrateLocalStorageFromSharedStorage() {
