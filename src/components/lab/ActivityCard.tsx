@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { BookOpen, CalendarDays, ChevronDown, Headphones, MessageCircle } from "lucide-react";
+import { BookOpen, CalendarDays, CheckCircle2, ChevronDown, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadActivitySessions, loadGradeStore, summarizeActivity } from "@/lib/activity";
 import { ui, uiIsGerman, uiLocale } from "@/lib/i18n";
@@ -39,7 +39,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
   // Show only the most recent 7 buckets in the bar chart for readability.
   const chartBuckets = summary.buckets.slice(-7);
   const maxMinutes = Math.max(1, ...chartBuckets.map((b) => b.minutes));
-  const hasData = summary.hours > 0 || summary.itemsCount > 0;
+  const hasData = summary.hours > 0 || summary.itemsCount > 0 || summary.listenedCount > 0;
 
   const hours = summary.hours.toFixed(1);
 
@@ -145,7 +145,10 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
         <div className="mt-4 space-y-4">
           {[
             { label: ui("Lessons completed"), value: `${summary.sessionsCount} ${ui(summary.sessionsCount === 1 ? "session" : "sessions")}`, time: `${summary.hours.toFixed(1)} h`, icon: BookOpen },
-            { label: ui("Words marked known"), value: `${knownInRange} ${ui(knownInRange === 1 ? "item" : "items")}`, time: `${itemsInRange} ${ui("graded")}`, icon: Headphones },
+            { label: ui("Words marked known"), value: `${knownInRange} ${ui(knownInRange === 1 ? "item" : "items")}`, time: `${itemsInRange} ${ui("graded")}`, icon: CheckCircle2 },
+            // In-range listening counts items whose LAST listen falls in the
+            // range (grade records keep one timestamp); the ×-total is all-time.
+            { label: ui("Listening"), value: `${summary.listenedCount} ${ui(summary.listenedCount === 1 ? "item" : "items")} ${ui("heard")}`, time: `${summary.totalListens}× ${ui("heard")}`, icon: Headphones },
             { label: ui("Day streak"), value: `${progressStats.streak} ${ui(progressStats.streak === 1 ? "day" : "days")}`, time: `${summary.activeDays} ${ui("active")}`, icon: MessageCircle },
           ].map((item) => (
             <div className="flex items-center gap-3" key={item.label}>

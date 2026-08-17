@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SettingsCategory } from "@/components/SettingsCategory";
 import { ui, uiFmt } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import {
@@ -968,17 +969,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         )}
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <section className="rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-pattern-heading">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                <ListMusic className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-pattern-heading">{ui("What you hear")}</h2>
-                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Which items Listen plays, in what order, and how often they come back.")}</p>
-              </div>
-            </div>
+        {/* Both settings panels fold away behind their headers — the player is
+            the page; the knobs are a drawer you open when you want them. */}
+        <div className="mt-3 grid items-start gap-x-4 lg:grid-cols-2">
+          <SettingsCategory
+            description={ui("Which items Listen plays, in what order, and how often they come back.")}
+            icon={ListMusic}
+            title={ui("What you hear")}
+          >
             <fieldset className="mt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Content source")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
@@ -1107,18 +1105,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 value={nextCardDelayMs / 1000}
               />
             </div>
-          </section>
+          </SettingsCategory>
 
-          <section className="rounded-[22px] border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5" aria-labelledby="listen-volume-heading">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                <Volume2 className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-black text-[var(--text-1)]" id="listen-volume-heading">{ui("How it sounds")}</h2>
-                <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">{ui("Voice levels, speed, and how each card is spoken. Saved automatically.")}</p>
-              </div>
-            </div>
+          <SettingsCategory
+            description={ui("Voice levels, speed, and how each card is spoken. Saved automatically.")}
+            icon={Volume2}
+            title={ui("How it sounds")}
+          >
             <div className="mt-3">
               <ListenVolumeRow
                 label={ui("Master volume")}
@@ -1230,7 +1223,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 value={englishRepeats}
               />
             </div>
-          </section>
+          </SettingsCategory>
         </div>
 
         {/* Session-wide switches: they govern Listen as a whole rather than a

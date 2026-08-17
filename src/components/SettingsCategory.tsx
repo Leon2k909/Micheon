@@ -151,7 +151,7 @@ export function SettingsCategory({
   if (nav && !nav.listMode) {
     if (nav.selected !== id) return null;
     return (
-      <section aria-label={title}>
+      <section aria-label={title} className="settings-category">
         <header className="settings-panel-head">
           <span className="settings-panel-icon">
             <Icon aria-hidden="true" className="h-4 w-4" />
@@ -169,7 +169,7 @@ export function SettingsCategory({
   // ── the original card, used while searching ─────────────────────────────
   const isOpen = open || forceOpen;
   return (
-    <div className="mt-3">
+    <div className="settings-category mt-3">
       <button
         aria-controls={panelId}
         aria-expanded={isOpen}

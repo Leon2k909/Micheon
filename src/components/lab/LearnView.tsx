@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, CheckCircle2, Clock3, Headphones, PauseCircle, PlayCircle, Search, X } from "lucide-react";
+import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, X } from "lucide-react";
 import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
@@ -8,7 +8,7 @@ import { getAuthUser } from "@/lib/profileStorage";
 import { cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
-import { getMutedPacks, setPackMuted } from "@/lib/mutedPacks";
+import { getMutedPacks, setPackMuted, setPacksMuted } from "@/lib/mutedPacks";
 
 type LevelFilter = "all" | CefrTier;
 type KindFilter = "all" | "core" | "wordbank";
@@ -36,6 +36,42 @@ const PROGRESS_FILTERS: { id: ProgressFilter; label: string }[] = [
   { id: "done", label: "Finished" },
   { id: "paused", label: "Paused" },
 ];
+
+/** The Words tracker's checkbox toggle, in lesson-card clothes — same box,
+ *  same check/indeterminate marks, so selection reads the same app-wide. */
+function SelectBox({
+  checked,
+  indeterminate = false,
+  onClick,
+  label,
+  className,
+}: {
+  checked: boolean;
+  indeterminate?: boolean;
+  onClick: () => void;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      aria-pressed={checked}
+      aria-label={label}
+      title={label}
+      className={[
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+        checked || indeterminate
+          ? "border-[var(--accent)] bg-[var(--accent)]"
+          : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--accent)]/50",
+        className ?? "",
+      ].join(" ")}
+    >
+      {checked && <Check className="h-3.5 w-3.5 text-white" />}
+      {!checked && indeterminate && <Minus className="h-3.5 w-3.5 text-white" />}
+    </button>
+  );
+}
 
 /** Everything about a pack a search should be able to reach. */
 function searchCorpus(key: string, part: Part) {
@@ -65,9 +101,25 @@ export function LearnView({
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
   const [mutedPacks, setMutedPacks] = useState<Set<string>>(() => getMutedPacks());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const togglePaused = (key: string) => {
     setMutedPacks(new Set(setPackMuted(key, !mutedPacks.has(key))));
+  };
+
+  const toggleSelect = (key: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  // Bulk pause/resume writes every selected pack in ONE storage write and one
+  // change event (setPacksMuted), not a setPackMuted loop per pack.
+  const bulkSetPaused = (muted: boolean) => {
+    if (selected.size === 0) return;
+    setMutedPacks(new Set(setPacksMuted(selected, muted)));
   };
 
   const parts = Object.entries(apiParts);
@@ -118,6 +170,13 @@ export function LearnView({
 
   const filtering = Boolean(terms.length) || levelFilter !== "all"
     || kindFilter !== "all" || progressFilter !== "all";
+
+  // "Select all" targets every FILTERED lesson, matching the words tracker.
+  const allVisibleSelected = visible.length > 0 && visible.every(([key]) => selected.has(key));
+  const someVisibleSelected = visible.some(([key]) => selected.has(key));
+  const toggleSelectAllVisible = () => {
+    setSelected(allVisibleSelected ? new Set() : new Set(visible.map(([key]) => key)));
+  };
 
   const clearAll = () => {
     setQuery("");
@@ -237,6 +296,54 @@ export function LearnView({
               </button>
             </div>
           )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
+            <SelectBox
+              checked={allVisibleSelected}
+              indeterminate={someVisibleSelected && !allVisibleSelected}
+              onClick={toggleSelectAllVisible}
+              label={allVisibleSelected
+                ? ui("Deselect all")
+                : uiIsGerman()
+                  ? `Alle ${visible.length} angezeigten Lektionen auswählen`
+                  : `Select all ${visible.length} shown`}
+            />
+            <p className="text-xs font-bold text-[var(--text-3)]">
+              {selected.size > 0
+                ? `${selected.size} ${ui("selected")}`
+                : uiIsGerman()
+                  ? "Lektionen auswählen, um mehrere auf einmal zu pausieren"
+                  : "Select lessons to pause several at once"}
+            </p>
+            {selected.size > 0 && (
+              <div className="ml-auto flex flex-wrap items-center gap-1.5">
+                <button
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                  onClick={() => bulkSetPaused(true)}
+                  type="button"
+                >
+                  <PauseCircle className="h-3.5 w-3.5" />
+                  {ui("Pause selected")}
+                </button>
+                <button
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                  onClick={() => bulkSetPaused(false)}
+                  type="button"
+                >
+                  <PlayCircle className="h-3.5 w-3.5" />
+                  {ui("Resume selected")}
+                </button>
+                <button
+                  className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
+                  onClick={() => setSelected(new Set())}
+                  type="button"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  {ui("Clear")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -283,8 +390,16 @@ export function LearnView({
                   type="button"
                 />
                 <div className="pointer-events-none relative z-10 flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                    {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
+                  <div className="flex items-start gap-2">
+                    <SelectBox
+                      checked={selected.has(key)}
+                      className="pointer-events-auto"
+                      label={`${ui(selected.has(key) ? "Deselect" : "Select")} ${uiOr(part.theme, "Konversationsmodul")}`}
+                      onClick={() => toggleSelect(key)}
+                    />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+                      {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
+                    </div>
                   </div>
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     {paused && (

@@ -676,6 +676,16 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   flex-direction: column;
 }
 
+/* The filter and close buttons travel as one right-aligned cluster; loose in
+   the space-between heading, the filter toggle floated mid-panel. */
+.np-notification-heading-buttons {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+}
+
 .np-notification-heading strong {
   color: var(--np-text);
   font-size: 18px;
@@ -689,7 +699,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   font-weight: 650;
 }
 
-.np-notification-heading > button {
+.np-notification-heading button {
   display: grid;
   width: 36px;
   height: 36px;
@@ -708,20 +718,20 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     transform var(--np-motion-fast) ease;
 }
 
-.np-notification-heading > button svg {
+.np-notification-heading button svg {
   width: 18px;
   height: 18px;
   stroke-width: 2.6;
 }
 
-.np-notification-heading > button:hover,
-.np-notification-heading > button:focus-visible {
+.np-notification-heading button:hover,
+.np-notification-heading button:focus-visible {
   border-color: rgba(79, 189, 81, 0.4);
   color: var(--np-green-dark);
   background: var(--np-green-soft);
 }
 
-.np-notification-heading > button:active {
+.np-notification-heading button:active {
   transform: translateY(1px);
 }
 
@@ -7629,7 +7639,7 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
    learner turn off the kinds they do not care about, so what is left means
    something. */
 .np-notification-filter-toggle,
-.np-notification-heading > button {
+.np-notification-heading button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -7734,8 +7744,9 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
    it never means opening it first. */
 .np-notification-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -7743,8 +7754,8 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 11px;
+  height: 28px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--np-surface);
@@ -7779,6 +7790,10 @@ html[data-theme="dark"][data-contrast="high"] .new-ui-prototype {
   border-radius: 999px;
   background: var(--accent, #43b84c);
 }
+
+/* Read rows keep a quiet dot where the accent one sat — the running index
+   number that used to appear here read as clutter. */
+.np-notification-dot.is-read { background: var(--np-line); }
 
 .np-notification-row-actions {
   display: flex;
@@ -8261,16 +8276,16 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-profile-button:hover {
     0 12px 22px rgba(var(--accent-hover-rgb), 0.13);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-notification-heading > button:hover,
-html:not([data-theme="dark"])[data-accent="custom"] .np-notification-heading > button:focus-visible {
+html:not([data-theme="dark"])[data-accent="custom"] .np-notification-heading button:hover,
+html:not([data-theme="dark"])[data-accent="custom"] .np-notification-heading button:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.4);
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-notification-heading > button:hover {
+html[data-theme="dark"][data-accent="custom"] .np-notification-heading button:hover {
   border-color: rgba(var(--accent-rgb), 0.4);
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-notification-heading > button:focus-visible {
+html[data-theme="dark"][data-accent="custom"] .np-notification-heading button:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.4);
 }
 

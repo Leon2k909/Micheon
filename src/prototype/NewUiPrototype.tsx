@@ -149,7 +149,7 @@ type Milestone = (typeof MILESTONES)[number];
 
 const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "learn", label: "Learn", icon: BookOpen },
+  { id: "learn", label: "Lessons", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "listen", label: "Listen", icon: Headphones },
   { id: "games", label: "Games", icon: Gamepad2 },
@@ -159,7 +159,7 @@ const NAVIGATION: NavigationItem[] = [
 
 const MOBILE_NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "learn", label: "Learn", icon: BookOpen },
+  { id: "learn", label: "Lessons", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "games", label: "Games", icon: Gamepad2 },
   { id: "more", label: "More", icon: Menu },
@@ -847,18 +847,23 @@ function Header({
                         ? uiFmt("{n} unread of {total}", { n: unreadNotifications.length, total: notifications.length })
                         : uiFmt("{n} shown, all read", { n: notifications.length })}</small>
                   </div>
-                  <button
-                    aria-expanded={notificationFiltersOpen}
-                    aria-label={ui("Filter notifications")}
-                    className={`np-notification-filter-toggle${notificationFiltersOpen ? " is-open" : ""}`}
-                    onClick={() => setNotificationFiltersOpen((open) => !open)}
-                    type="button"
-                  >
-                    <SlidersHorizontal aria-hidden="true" />
-                  </button>
-                  <button aria-label={ui("Close notifications")} onClick={() => setNotificationsOpen(false)} type="button">
-                    <X aria-hidden="true" />
-                  </button>
+                  {/* One right-aligned cluster: with the heading's
+                      space-between, two loose buttons left the filter toggle
+                      floating mid-panel. */}
+                  <div className="np-notification-heading-buttons">
+                    <button
+                      aria-expanded={notificationFiltersOpen}
+                      aria-label={ui("Filter notifications")}
+                      className={`np-notification-filter-toggle${notificationFiltersOpen ? " is-open" : ""}`}
+                      onClick={() => setNotificationFiltersOpen((open) => !open)}
+                      type="button"
+                    >
+                      <SlidersHorizontal aria-hidden="true" />
+                    </button>
+                    <button aria-label={ui("Close notifications")} onClick={() => setNotificationsOpen(false)} type="button">
+                      <X aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
                 {notifications.length > 0 && (
                   <div className="np-notification-actions">
@@ -912,7 +917,7 @@ function Header({
                   </div>
                 )}
                 <div className="np-notification-list">
-                  {notifications.length > 0 ? notifications.map((notification, index) => {
+                  {notifications.length > 0 ? notifications.map((notification) => {
                     const unread = !notificationStatus.read.has(notification.id);
                     return (
                       <div className={`np-notification-row${unread ? " is-unread" : ""}`} key={notification.id}>
@@ -924,7 +929,9 @@ function Header({
                           }}
                           type="button"
                         >
-                          <span>{unread ? <span className="np-notification-dot" /> : index + 1}</span>
+                          {/* A read row keeps a quiet dot — the running number
+                              it used to show read as clutter, not information. */}
+                          <span><span className={`np-notification-dot${unread ? "" : " is-read"}`} /></span>
                           <div><strong>{ui(notification.title)}</strong><small>{ui(notification.body)}</small></div>
                           <ChevronRight />
                         </button>

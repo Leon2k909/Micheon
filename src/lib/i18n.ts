@@ -927,6 +927,8 @@ const DE: Record<string, string> = {
   // ── Pausing packs that aren't relevant yet ──
   "Pause": "Pausieren",
   "Resume": "Fortsetzen",
+  "Pause selected": "Ausgewählte pausieren",
+  "Resume selected": "Ausgewählte fortsetzen",
   "Skip this pack in lessons. Nothing is deleted — you can bring it back any time.": "Dieses Paket im Unterricht überspringen. Nichts wird gelöscht — du kannst es jederzeit zurückholen.",
   "Bring this pack back into your lessons.": "Dieses Paket wieder in deine Lektionen aufnehmen.",
   "Accessibility": "Barrierefreiheit",

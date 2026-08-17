@@ -216,7 +216,7 @@ export function setItemsStatus(
 }
 
 
-export type DayBucket = { dayStart: number; minutes: number; items: number };
+export type DayBucket = { dayStart: number; minutes: number; items: number; listened: number };
 
 export function summarizeActivity(
   sessions: ActivitySession[],
@@ -233,6 +233,7 @@ export function summarizeActivity(
     dayStart: rangeStart + i * DAY_MS,
     minutes: 0,
     items: 0,
+    listened: 0,
   }));
 
   let totalSec = 0;
@@ -247,7 +248,25 @@ export function summarizeActivity(
 
   let itemsCount = 0;
   let knownCount = 0;
+  // Listen exposures live on the same grade records but are counted apart:
+  // hearing an item is real activity, never a mastery signal, so it must not
+  // inflate the graded-items numbers. Only the LATEST listen has a timestamp
+  // (listenedAt), so the in-range figure counts items heard, while the
+  // exposure total is honest only as an all-time number.
+  let listenedCount = 0;
+  let totalListens = 0;
   for (const rec of Object.values(grades)) {
+    totalListens += Number(rec?.listens) || 0;
+    if (rec?.listenedAt) {
+      const heardAt = Date.parse(rec.listenedAt);
+      if (!Number.isNaN(heardAt)) {
+        const i = idx(heardAt);
+        if (i >= 0 && i < days) {
+          buckets[i].listened += 1;
+          listenedCount += 1;
+        }
+      }
+    }
     if (!rec?.updatedAt) continue;
     const t = Date.parse(rec.updatedAt);
     if (Number.isNaN(t)) continue;
@@ -258,13 +277,15 @@ export function summarizeActivity(
     if (rec.lastGrade === "know") knownCount += 1;
   }
 
-  const activeDays = buckets.filter((b) => b.minutes > 0 || b.items > 0).length;
+  const activeDays = buckets.filter((b) => b.minutes > 0 || b.items > 0 || b.listened > 0).length;
 
   return {
     hours: totalSec / 3600,
     sessionsCount,
     itemsCount,
     knownCount,
+    listenedCount,
+    totalListens,
     activeDays,
     buckets,
   };

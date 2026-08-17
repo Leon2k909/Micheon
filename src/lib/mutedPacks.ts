@@ -39,6 +39,22 @@ export function setPackMuted(partKey: string, muted: boolean, profile?: UserProf
   return next;
 }
 
+/** Pause or resume several packs in one write and one change event. */
+export function setPacksMuted(
+  partKeys: Iterable<string>,
+  muted: boolean,
+  profile?: UserProfile | null
+): Set<string> {
+  const next = getMutedPacks(profile);
+  for (const key of partKeys) {
+    if (muted) next.add(key);
+    else next.delete(key);
+  }
+  saveScopedJson(KEY, [...next], profile);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(MUTED_PACKS_EVENT));
+  return next;
+}
+
 export function clearMutedPacks(profile?: UserProfile | null): void {
   saveScopedJson(KEY, [], profile);
   if (typeof window !== "undefined") window.dispatchEvent(new Event(MUTED_PACKS_EVENT));
