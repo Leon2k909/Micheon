@@ -1402,8 +1402,8 @@ export default function GamificationPanel({
 
             <DeferredProfileSection
               className="lg:col-span-2"
-              fallback={<div aria-hidden="true" className="h-[72px] rounded-[24px] bg-[var(--surface-2)] motion-safe:animate-pulse" />}
-              minHeight={72}
+              fallback={null}
+              minHeight={0}
             >
               <div className="settings-group rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
                 <SettingsCategory
