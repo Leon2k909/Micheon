@@ -599,6 +599,12 @@ check("Listen exposes exact review levels and real snooze choices",
   && view.includes("snoozeListenItem(")
   && view.includes('ui("Set level")')
   && view.includes('ui("Put off")'));
+check("level and snooze controls live under the Know it hover/focus menu",
+  view.includes('data-testid="listen-know-options"')
+  && view.includes('onMouseEnter={openReviewPanel}')
+  && view.includes('data-testid="listen-review-menu"')
+  && !view.includes('openReviewPanel("level")')
+  && !view.includes('openReviewPanel("snooze")'));
 check("the review menu pauses autoplay, freezes the exact item, names it, and offers Undo",
   view.includes("const openReviewPanel")
   && view.includes("pause();")
@@ -688,7 +694,8 @@ for (const key of [
   "How it sounds",
   "Voice levels, speed, and how each card is spoken. Saved automatically.",
   "English voice is muted and will be skipped.",
-  "Quick marks stay gentle. Set level makes an exact tracker change.",
+  "Hover over Know it, or open its menu, for exact levels and Put off.",
+  "More Know it options",
   "“{item}” set to {level}.",
   "Undid the level change for “{item}”.",
   "Play audio",

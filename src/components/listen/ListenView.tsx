@@ -266,13 +266,40 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
     () => getListenQueueOrder(learningDirection)
   );
+  // Grade writes made elsewhere (the tracker's "never review" star, lesson
+  // grades) must reach this queue: it stays mounted across tab switches, so
+  // without a revision it kept playing items the learner had removed. While
+  // the view is active its own review actions already handle the live queue
+  // via hiddenIds, so foreign writes are folded in when the view is next
+  // opened instead of yanking the playhead mid-session.
+  const [gradesRevision, setGradesRevision] = useState(0);
+  const activeRef = useRef(active);
+  const gradesDirtyRef = useRef(false);
+  useEffect(() => {
+    const onGradesUpdated = () => {
+      if (activeRef.current) {
+        gradesDirtyRef.current = true;
+        return;
+      }
+      setGradesRevision((revision) => revision + 1);
+    };
+    window.addEventListener("grades-updated", onGradesUpdated);
+    return () => window.removeEventListener("grades-updated", onGradesUpdated);
+  }, []);
+  useEffect(() => {
+    activeRef.current = active;
+    if (active && gradesDirtyRef.current) {
+      gradesDirtyRef.current = false;
+      setGradesRevision((revision) => revision + 1);
+    }
+  }, [active]);
   const baseQueue = useMemo<ListenItem[]>(
     () => buildListenQueue(apiParts, loadGradeStore(profile), {
       contentSource,
       direction: learningDirection,
       order: queueOrder,
     }),
-    [apiParts, contentSource, learningDirection, profile, queueOrder]
+    [apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -305,12 +332,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [nextCardDelayMs, setNextCardDelayMs] = useState(getListenNextCardDelayMs);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(getAudioSettings);
   const [graded, setGraded] = useState<"know" | "difficult" | null>(null);
-  const [reviewPanel, setReviewPanel] = useState<"level" | "snooze" | null>(null);
+  const [reviewPanel, setReviewPanel] = useState<"menu" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
   const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
   const timedHiddenIdsRef = useRef<Set<string>>(new Set());
   const runRef = useRef(0);
   const gradeAdvanceTimerRef = useRef<number | null>(null);
+  const reviewCloseTimerRef = useRef<number | null>(null);
+  const reviewWasPlayingRef = useRef(false);
   const mediaCommandRef = useRef<(command: ListenMediaCommand) => void>(() => {});
   const {
     selectedKey: selectedPetKey,
@@ -491,9 +520,35 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setPlaying(false);
   };
 
-  const beginPlayback = () => {
+  const cancelReviewMenuClose = () => {
+    if (reviewCloseTimerRef.current == null) return;
+    window.clearTimeout(reviewCloseTimerRef.current);
+    reviewCloseTimerRef.current = null;
+  };
+
+  const closeReviewPanel = (resumePlayback = true) => {
+    cancelReviewMenuClose();
     setReviewPanel(null);
     setReviewTarget(null);
+    if (resumePlayback && reviewWasPlayingRef.current) setPlaying(true);
+    reviewWasPlayingRef.current = false;
+  };
+
+  const scheduleReviewPanelClose = () => {
+    cancelReviewMenuClose();
+    reviewCloseTimerRef.current = window.setTimeout(() => {
+      reviewCloseTimerRef.current = null;
+      closeReviewPanel();
+    }, 180);
+  };
+
+  useEffect(() => () => {
+    if (reviewCloseTimerRef.current != null) window.clearTimeout(reviewCloseTimerRef.current);
+  }, []);
+
+  const beginPlayback = () => {
+    reviewWasPlayingRef.current = false;
+    closeReviewPanel(false);
     setSessionActivated(true);
     setPlaying(true);
   };
@@ -503,8 +558,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     runRef.current += 1;
     stopTts();
     setGraded(null);
-    setReviewPanel(null);
-    setReviewTarget(null);
+    reviewWasPlayingRef.current = false;
+    closeReviewPanel(false);
     setPlayhead((current) => {
       if (direction > 0) return current + 1;
       if (current > 0) return current - 1;
@@ -595,6 +650,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   const grade = (verdict: "know" | "difficult") => {
     if (!item || gradeAdvanceTimerRef.current != null) return;
+    reviewWasPlayingRef.current = false;
+    closeReviewPanel(false);
     recordListenGrade(item, verdict, profile);
     setGraded(verdict);
     runRef.current += 1;
@@ -606,19 +663,17 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     }, 350);
   };
 
-  const openReviewPanel = (panel: "level" | "snooze") => {
-    if (reviewPanel === panel) {
-      setReviewPanel(null);
-      setReviewTarget(null);
-      return;
-    }
+  const openReviewPanel = () => {
+    cancelReviewMenuClose();
+    if (reviewPanel) return;
     if (!item) return;
     // A review action must never chase autoplay onto the next card. Stop the
     // current sequence and keep an immutable target until the menu closes.
     cancelGradeAdvance();
+    reviewWasPlayingRef.current = playing;
     pause();
     setReviewTarget({ ...item, aliases: [...item.aliases] });
-    setReviewPanel(panel);
+    setReviewPanel("menu");
   };
 
   const applyReviewLevel = (level: ListenReviewLevel, label: string) => {
@@ -629,8 +684,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       message: uiFmt("“{item}” set to {level}.", { item: target.de, level: ui(label) }),
       undo: { change, item: target },
     });
-    setReviewPanel(null);
-    setReviewTarget(null);
+    reviewWasPlayingRef.current = false;
+    closeReviewPanel(false);
     if (typeof level === "number" || level === "permanent") {
       // Timed levels finish the current item until its scheduled review date;
       // Never review removes it permanently. Drop either choice from this
@@ -664,8 +719,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     cancelGradeAdvance();
     snoozeListenItem(target, days, profile);
     setReviewNotice({ message: uiFmt("Put off until {when}.", { when: ui(label) }) });
-    setReviewPanel(null);
-    setReviewTarget(null);
+    reviewWasPlayingRef.current = false;
+    closeReviewPanel(false);
     timedHiddenIdsRef.current.add(target.id);
     setHiddenIds((current) => new Set(current).add(target.id));
   };
@@ -839,24 +894,61 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             </p>
           ) : null}
 
-          <div aria-labelledby="listen-review-heading" className="mt-6 border-t border-[var(--border)] pt-5" role="group">
+          <div
+            aria-labelledby="listen-review-heading"
+            className="mt-6 border-t border-[var(--border)] pt-5"
+            onBlurCapture={(event) => {
+              if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+              scheduleReviewPanelClose();
+            }}
+            onMouseEnter={cancelReviewMenuClose}
+            onMouseLeave={scheduleReviewPanelClose}
+            role="group"
+          >
             <h2 className="sr-only" id="listen-review-heading">{ui("Review this item")}</h2>
             <p className="text-[11px] font-semibold text-[var(--text-3)]">
-              {ui("Quick marks stay gentle. Set level makes an exact tracker change.")}
+              {ui("Hover over Know it, or open its menu, for exact levels and Put off.")}
             </p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              <button
-                className={cn(
-                  "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
-                  graded === "know"
-                    ? "border-emerald-500 bg-emerald-500 text-white"
-                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
-                )}
-                onClick={() => grade("know")}
-                type="button"
+              <div
+                className="inline-flex"
+                data-testid="listen-know-options"
+                onFocusCapture={openReviewPanel}
+                onMouseEnter={openReviewPanel}
               >
-                <Check className="h-4 w-4" /> {ui("Know it")}
-              </button>
+                <button
+                  className={cn(
+                    "inline-flex h-11 items-center gap-2 rounded-l-xl border border-r-0 px-4 text-sm font-black transition-colors",
+                    graded === "know"
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
+                  )}
+                  onClick={() => grade("know")}
+                  type="button"
+                >
+                  <Check className="h-4 w-4" /> {ui("Know it")}
+                </button>
+                <button
+                  aria-expanded={reviewPanel === "menu"}
+                  aria-haspopup="menu"
+                  aria-label={ui("More Know it options")}
+                  className={cn(
+                    "inline-grid h-11 w-9 place-items-center rounded-r-xl border text-sm font-black transition-colors",
+                    graded === "know"
+                      ? "border-emerald-500 border-l-white/30 bg-emerald-500 text-white"
+                      : "border-emerald-500/30 border-l-emerald-500/15 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
+                  )}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (reviewPanel) closeReviewPanel();
+                    else openReviewPanel();
+                  }}
+                  title={ui("More Know it options")}
+                  type="button"
+                >
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", reviewPanel && "rotate-180")} />
+                </button>
+              </div>
               <button
                 className={cn(
                   "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
@@ -869,56 +961,55 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               >
                 <X className="h-4 w-4" /> {ui("Struggle")}
               </button>
-              <button
-                aria-expanded={reviewPanel === "level"}
-                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => openReviewPanel("level")}
-                type="button"
-              >
-                {ui("Set level")} <ChevronDown className="h-4 w-4" />
-              </button>
-              <button
-                aria-expanded={reviewPanel === "snooze"}
-                className="ghost-btn inline-flex h-11 items-center gap-2 px-4 text-sm font-black"
-                onClick={() => openReviewPanel("snooze")}
-                type="button"
-              >
-                <CalendarClock className="h-4 w-4" /> {ui("Put off")}
-              </button>
             </div>
 
-            {reviewPanel === "level" && (
-              <div className="mt-4 grid gap-2 text-left sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Set review level")}>
-                {REVIEW_LEVELS.map((option) => (
-                  <button
-                    className={cn(
-                      "rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]",
-                      option.value === "struggle" && "hover:border-rose-400 hover:bg-rose-500/10"
-                    )}
-                    key={String(option.value)}
-                    onClick={() => applyReviewLevel(option.value, option.label)}
-                    type="button"
-                  >
-                    <strong className="block text-xs font-black text-[var(--text-1)]">{ui(option.label)}</strong>
-                    <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(option.note)}</small>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {reviewPanel === "snooze" && (
-              <div className="mt-4 grid gap-2 text-left sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={ui("Put off")}>
-                {SNOOZE_CHOICES.map((choice) => (
-                  <button
-                    className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]"
-                    key={choice.days}
-                    onClick={() => putOff(choice.days, choice.label)}
-                    type="button"
-                  >
-                    <strong className="block text-xs font-black text-[var(--text-1)]">{ui(choice.label)}</strong>
-                    <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(choice.note)}</small>
-                  </button>
-                ))}
+            {reviewPanel === "menu" && (
+              <div
+                aria-label={ui("More Know it options")}
+                className="mx-auto mt-3 max-w-4xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 text-left shadow-[0_12px_30px_var(--shadow)]"
+                data-testid="listen-review-menu"
+                onMouseEnter={cancelReviewMenuClose}
+                role="menu"
+              >
+                <section aria-labelledby="listen-review-level-title">
+                  <strong className="block text-xs font-black text-[var(--text-1)]" id="listen-review-level-title">{ui("Set level")}</strong>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {REVIEW_LEVELS.map((option) => (
+                      <button
+                        className={cn(
+                          "rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]",
+                          option.value === "struggle" && "hover:border-rose-400 hover:bg-rose-500/10"
+                        )}
+                        key={String(option.value)}
+                        onClick={() => applyReviewLevel(option.value, option.label)}
+                        role="menuitem"
+                        type="button"
+                      >
+                        <strong className="block text-xs font-black text-[var(--text-1)]">{ui(option.label)}</strong>
+                        <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(option.note)}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+                <section aria-labelledby="listen-review-snooze-title" className="mt-3 border-t border-[var(--border)] pt-3">
+                  <strong className="flex items-center gap-1.5 text-xs font-black text-[var(--text-1)]" id="listen-review-snooze-title">
+                    <CalendarClock className="h-3.5 w-3.5 text-[var(--accent)]" /> {ui("Put off")}
+                  </strong>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {SNOOZE_CHOICES.map((choice) => (
+                      <button
+                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-left transition hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]"
+                        key={choice.days}
+                        onClick={() => putOff(choice.days, choice.label)}
+                        role="menuitem"
+                        type="button"
+                      >
+                        <strong className="block text-xs font-black text-[var(--text-1)]">{ui(choice.label)}</strong>
+                        <small className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--text-3)]">{ui(choice.note)}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
               </div>
             )}
 

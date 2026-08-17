@@ -556,7 +556,10 @@ export function buildListenQueue(
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
       id: word.id,
-      aliases: [],
+      // Catalog dedup preserves old progress ids as aliases. Dropping them
+      // here made Listen blind to grades stored under a pre-merge id — a
+      // word marked "never review" in the tracker kept playing.
+      aliases: word.aliases ?? [],
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
       use: word.use,

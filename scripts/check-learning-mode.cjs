@@ -27,6 +27,7 @@ const result = esbuild.buildSync({
       export { getSfxAudioVolume, getTtsAudioVolume } from "./src/lib/audioMute.ts";
       export { resampleSpectrum, speechSpectrumFromFft } from "./src/lib/audioLevel.ts";
       export { germanWordGloss } from "./src/lib/germanWordGloss.ts";
+      export { englishWordGloss } from "./src/lib/englishWordGloss.ts";
     `,
     resolveDir: root,
     sourcefile: "learning-mode-check-entry.ts",
@@ -52,6 +53,7 @@ const {
   buildSentencePhaseRoute,
   buildTatoebaParts,
   curatedTopics,
+  englishWordGloss,
   germanWordGloss,
   getSfxAudioVolume,
   getTtsAudioVolume,
@@ -906,10 +908,29 @@ check(
     && germanWordGloss("müssen")?.includes("must")
     && germanWordGloss("Gedanken") === "thought"
     && germanWordGloss("unbekanntesfantasiewort") === null
-    && guidedSource.includes("const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;")
-    && guidedSource.includes("const hoverGloss = learnEn ? null : germanWordGloss(token.text);")
+    && guidedSource.includes('const hoverGloss = glossLang === "de" ? germanWordGloss(w)')
+    && guidedSource.includes(': glossLang === "en" ? englishWordGloss(w)')
+    && guidedSource.includes("const hoverGloss = learnEn ? englishWordGloss(token.text) : germanWordGloss(token.text);")
     && guidedSource.includes("data-gloss={hoverGloss ?? undefined}")
     && guidedStyles.includes("[data-gloss]:is(:hover, :focus-visible)::before")
+);
+check(
+  "English lesson words expose useful offline German hover glosses",
+  englishWordGloss("I") === "ich"
+    && englishWordGloss("the") === "der / die / das"
+    && englishWordGloss("aim")?.toLocaleLowerCase("de-DE").includes("ziel")
+    && englishWordGloss("houses")?.toLocaleLowerCase("de-DE").includes("haus")
+    && englishWordGloss("don't") === "… nicht (mit do)"
+    && englishWordGloss("head")?.toLocaleLowerCase("de-DE").includes("kopf")
+    && englishWordGloss("head")?.toLocaleLowerCase("de-DE").includes("steuern") !== true
+    && englishWordGloss("zzzunknownword") === null
+    // The popover opens in both directions: the gate is "a gloss language
+    // exists", never "the course is German".
+    && guidedSource.includes("if (!glossLang) return;")
+    && !guidedSource.includes("if (!showEnglishGloss) return;")
+    // Learn-English practice writes keep German in `de`: the gloss becomes
+    // the card's German side and the hovered English word its front.
+    && guidedSource.includes("addCustomEntries([{ de, en: face, use: text }]);")
 );
 check(
   "copying tappable lesson words produces one normally spaced sentence",

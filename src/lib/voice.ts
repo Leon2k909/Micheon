@@ -321,14 +321,17 @@ async function getAudioUrl(
   text: string,
   rate: number,
   lang: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  refresh = false
 ): Promise<string> {
   // The chosen voice is part of the cache key, or switching voice would keep
   // replaying the old one for every sentence already heard.
   const voice = voiceForLang(lang);
   const key = `${lang}|${voice}|${rate}|${text}`;
-  const cached = cachedAudioUrl(key);
-  if (cached) return cached;
+  if (!refresh) {
+    const cached = cachedAudioUrl(key);
+    if (cached) return cached;
+  }
   const qs = `text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}&rate=${rate}`
     + (voice ? `&voice=${encodeURIComponent(voice)}` : "");
   // Without a deadline this await is unbounded: one synthesis request that
@@ -348,6 +351,9 @@ async function getAudioUrl(
   if (!resp.ok) throw new Error(`tts http ${resp.status}`);
   const blob = await resp.blob();
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+  // A 200 with an empty body is a failed synthesis, not audio. Caching it
+  // would replay the silence forever — reject so the retry can refetch.
+  if (!blob.size) throw new Error("tts empty audio body");
   return cacheAudioBlob(key, blob);
 }
 
@@ -358,11 +364,14 @@ const TTS_FETCH_TIMEOUT_MS = 9_000;
 const PLAYBACK_START_TIMEOUT_MS = 6_000;
 const MAX_CLIP_MS = 60_000;
 
-function playUrl(url: string, token: number, lang: string): Promise<void> {
+/** Resolves true when the clip audibly started, false when it never played —
+ *  callers use that to retry a broken clip instead of skipping it silently.
+ *  Deliberate no-plays (interrupted sequence, muted channel) count as true. */
+function playUrl(url: string, token: number, lang: string): Promise<boolean> {
   return new Promise((resolve) => {
-    if (token !== playSeq) return resolve();
+    if (token !== playSeq) return resolve(true);
     const volume = getTtsAudioVolume(lang);
-    if (volume <= 0) return resolve();
+    if (volume <= 0) return resolve(true);
     const audio = new Audio(url);
     audio.volume = volume;
     let finished = false;
@@ -374,6 +383,11 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
       finished = true;
       if (startGuard) clearTimeout(startGuard);
       if (lengthGuard) clearTimeout(lengthGuard);
+      // A clip that never started may still begin later (stalled decode
+      // recovering after the watchdog) — silence it before the retry plays.
+      if (!started) {
+        try { audio.pause(); } catch { /* already unusable */ }
+      }
       if (currentAudio === audio) {
         stopAudioAnalysis();
         currentAudio = null;
@@ -382,7 +396,7 @@ function playUrl(url: string, token: number, lang: string): Promise<void> {
         trimUrlCache();
       }
       if (currentAudioResolve === finish) currentAudioResolve = null;
-      resolve();
+      resolve(started);
     };
     currentAudio = audio;
     currentAudioUrl = url;
@@ -436,11 +450,13 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
   for (let attempt = 0; attempt < 2; attempt += 1) {
     if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
     try {
-      const url = await getAudioUrl(text, rate, lang, signal);
+      // The second attempt bypasses the audio cache: if the first clip never
+      // produced sound, the cached blob itself may be the broken part.
+      const url = await getAudioUrl(text, rate, lang, signal, attempt > 0);
       if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
       announceStart();
-      await playUrl(url, token, lang);
-      return;
+      const spoke = await playUrl(url, token, lang);
+      if (spoke || token !== playSeq || signal?.aborted) return;
     } catch {
       if (signal?.aborted) return;
     }

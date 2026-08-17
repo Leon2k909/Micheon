@@ -1095,6 +1095,9 @@ function CourseHero({
             : ["A2", ui("Everyday speaker")];
 
   const learnsEnglish = learningEnglish();
+  // The learner's chosen English variant decides the flag: a US-English
+  // course must not wear a Union Jack.
+  const englishVariant = learnsEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
@@ -1106,7 +1109,7 @@ function CourseHero({
             {/* The chip was hardcoded to German, so someone learning English
                 was told their active course was German on every visit. */}
             <button aria-label={uiFmt("Switch course, currently {course}", { course: learnsEnglish ? ui("English") : ui("German") })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
-              <span aria-hidden="true" className={"np-language-badge" + (learnsEnglish ? " is-english" : "")}>
+              <span aria-hidden="true" className={"np-language-badge" + (learnsEnglish ? ` is-english is-${englishVariant}` : "")}>
                 {learnsEnglish ? null : <><i /><i /><i /></>}
               </span>
               <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>

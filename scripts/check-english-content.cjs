@@ -142,6 +142,7 @@ const definiteErrorPatterns = [
   ["literal tracking-number wording", /\btracking number at hand\b/i],
   ["the isolated non-native 'And I?' alternative", /(?:^|\/\s*)And I\?(?:\s*\/|$)/i],
   ["the awkward 'This is for sure' alternative", /\bThis is for sure\b/i],
+  ["literal laundry-cycle wording", /\b(?:goes in on delicates|take the underbody wash|washes most economically)\b/i],
   ["a missing apostrophe in a negative contraction", /\b(?:dont|doesnt|didnt|cant|couldnt|shouldnt|wouldnt|wont|isnt|arent|wasnt|werent|havent|hasnt|hadnt)\b/i],
   ["could/should/would of", /\b(?:could|should|would) of\b/i],
   ["a fused common phrase", /\b(?:alot|everytime|infront|atleast|aswell)\b/i],
@@ -193,6 +194,21 @@ check(
   "learner tips explain German patterns without unexplained grammar jargon",
   !unexplainedGrammarJargon,
   unexplainedGrammarJargon && `${unexplainedGrammarJargon.location}: ${unexplainedGrammarJargon.text.trim()}`
+);
+
+const awkwardEditorialEnglish = plainLanguageFiles
+  .flatMap((relativePath) => {
+    const source = fs.readFileSync(path.join(root, relativePath), "utf8");
+    return source.split(/\r?\n/).map((text, index) => ({
+      text,
+      location: `${relativePath}:${index + 1}`,
+    }));
+  })
+  .find((entry) => /\b(?:the colourful middle pile|the upsell lives from|the ironing iron)\b/i.test(entry.text));
+check(
+  "reviewed learner notes avoid literal machine-translated English",
+  !awkwardEditorialEnglish,
+  awkwardEditorialEnglish && `${awkwardEditorialEnglish.location}: ${awkwardEditorialEnglish.text.trim()}`
 );
 
 const tatoebaPhrases = Object.values(tatoebaParts).flatMap((part) => part.phrases ?? []);
@@ -272,6 +288,12 @@ const expectedCommonFirst = new Map([
   ["Ich hab mich auf die Stelle als Projektmanagerin beworben.", "I applied for the project manager position."],
   ["Die Bescherung ist bei uns nach dem Essen.", "We open the presents after dinner."],
   ["Ist hier irgendwo eine Steckdose? Mein Handy macht gleich schlapp.", "Is there a socket anywhere? My phone's about to die."],
+  ["Das Kleid kommt in die Feinwäsche, dreißig Grad.", "The dress needs a delicate wash at thirty degrees."],
+  ["Voll beladen wäscht die Maschine am sparsamsten.", "The washing machine is most efficient when it's full."],
+  ["Drinnen getrocknet riecht die Wäsche schnell muffig.", "Laundry can quickly smell musty when it dries indoors."],
+  ["Frisch bezogene Betten sind das beste Gefühl der Woche.", "Fresh sheets are the best feeling of the week."],
+  ["Bei Vogeldreck hilft die Vorwäsche.", "A pre-wash helps with bird droppings."],
+  ["Die Unterbodenwäsche nimmt man nach dem Winter.", "It's worth getting an underbody wash after winter."],
 ]);
 
 for (const [german, primaryEnglish] of expectedCommonFirst) {

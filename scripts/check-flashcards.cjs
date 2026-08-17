@@ -79,7 +79,10 @@ check(
 check(
   "sound and know-it controls do not accidentally flip the card",
   guidedSession.match(/event\.stopPropagation\(\);/g)?.length >= 4
-    && /fs-flashcard-known[\s\S]{0,220}event\.stopPropagation\(\);[\s\S]{0,80}onKnown\(card\.id\)/.test(guidedSession)
+    // The guard moved up to the grade wrapper when Know it grew its level
+    // menu: one stopPropagation now shields the picker, its menu and the
+    // fallback button alike from reaching the card's flip handler.
+    && /className="fs-flashcard-grade" onClick=\{\(event\) => event\.stopPropagation\(\)\}>[\s\S]{0,320}<ReviewLevelPicker[\s\S]{0,700}className="fs-flashcard-known"/.test(guidedSession)
 );
 check(
   "sentence clicks flip in flip mode but still speak in show-both mode",

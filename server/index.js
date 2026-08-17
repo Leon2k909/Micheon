@@ -132,8 +132,17 @@ const cache = new Map(); // key -> Buffer
 let cacheBytes = 0;
 const pendingSynthesis = new Map();
 const synthesisQueue = [];
-const MAX_CONCURRENT_SYNTHESES = 2;
+// Three slots so one slow clip cannot serialize a two-language card while the
+// immersion extension also asks for German.
+const MAX_CONCURRENT_SYNTHESES = 3;
 let activeSyntheses = 0;
+// The Edge websocket handshake can fail without ever settling the library's
+// synthesize() promise (its "open" wait has no error path). An unsettled
+// synthesis would leak its slot and poison pendingSynthesis for that phrase
+// forever — after a couple of those, only cached audio still plays and every
+// new German clip goes silent until restart. The deadline turns a hang into
+// an error the retry and the slot bookkeeping can actually see.
+const SYNTHESIS_TIMEOUT_MS = 20_000;
 
 function cacheGet(key) {
   const buf = cache.get(key);
@@ -202,14 +211,39 @@ export function pronunciationRateFor(text, voice, requestedRate) {
   return percentage <= -10 ? rate : "-10%";
 }
 
+async function synthesizeWithDeadline(text, voice, rate) {
+  // A fresh EdgeTTS per attempt means a fresh websocket and freshly minted
+  // auth token — retrying on the same dead connection can never recover.
+  const tts = new EdgeTTS(text, voice, { rate, volume: "+0%", pitch: "+0Hz" });
+  let timer;
+  try {
+    const result = await Promise.race([
+      tts.synthesize(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("tts synthesis timed out")), SYNTHESIS_TIMEOUT_MS);
+      }),
+    ]);
+    const buf = Buffer.from(await result.audio.arrayBuffer());
+    if (!buf.byteLength) throw new Error("tts returned empty audio");
+    return buf;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function synthesizeOnce(key, text, voice, rate) {
   const pending = pendingSynthesis.get(key);
   if (pending) return pending;
 
   const promise = withSynthesisSlot(async () => {
-    const tts = new EdgeTTS(text, voice, { rate, volume: "+0%", pitch: "+0Hz" });
-    const result = await tts.synthesize();
-    const buf = Buffer.from(await result.audio.arrayBuffer());
+    let buf;
+    try {
+      buf = await synthesizeWithDeadline(text, voice, rate);
+    } catch {
+      // One retry on a brand-new connection; a second failure surfaces to the
+      // route as a 502 instead of wedging the pipeline.
+      buf = await synthesizeWithDeadline(text, voice, rate);
+    }
     cacheSet(key, buf);
     return buf;
   });

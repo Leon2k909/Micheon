@@ -3936,25 +3936,76 @@ a { color: inherit; text-decoration: none; }
     var(--guided-custom-background) center / cover no-repeat;
 }
 
-/* The optional level picker uses the same quiet, tactile treatment as the
-   main grade buttons. It lets learners correct an accidental grade without
-   sending them away to the tracker. */
-.guided-session.fs-app.prototype-guided-session .grade-btn-level {
-  border-color: rgba(54, 82, 45, 0.2);
-  background: #fffefa;
-  color: #4b5147;
-}
-
-.guided-session.fs-app.prototype-guided-session .grade-btn-level:hover:not(:disabled),
-.guided-session.fs-app.prototype-guided-session .grade-btn-level:focus-visible {
-  border-color: rgba(47, 145, 59, 0.38);
-  background: #f2faec;
-  color: #216f30;
-}
-
 .fs-review-level {
   position: relative;
   z-index: 18;
+}
+
+/* Exact level and snooze choices belong to Know it. The main half keeps the
+   one-click grade; hovering/focusing the joined control, or pressing its
+   chevron on touch, opens the precise choices without another loose button. */
+.fs-known-review-trigger {
+  display: inline-flex;
+  align-items: stretch;
+  transition: transform 0.16s ease;
+}
+
+.fs-known-review-trigger > :is(.grade-btn-known, .fs-flashcard-known) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: 0 !important;
+}
+
+.fs-known-review-more {
+  display: inline-grid;
+  min-width: 31px;
+  align-self: stretch;
+  place-items: center;
+  padding: 0 7px 0 5px;
+  border: 1px solid rgb(5 150 105 / 0.38);
+  border-left-color: rgb(5 150 105 / 0.2);
+  border-radius: 0 999px 999px 0;
+  background: rgb(16 185 129 / 0.12);
+  color: rgb(4 120 87);
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.fs-known-review-more:hover,
+.fs-known-review-more:focus-visible,
+.fs-known-review:focus-within .fs-known-review-more {
+  border-color: rgb(5 150 105 / 0.56);
+  background: rgb(16 185 129 / 0.2);
+  outline: none;
+}
+
+.fs-known-review-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.fs-known-review-more svg { transition: transform 0.16s ease; }
+
+.fs-known-review:hover .fs-known-review-trigger,
+.fs-known-review:focus-within .fs-known-review-trigger { transform: translateY(-2px); }
+
+.fs-known-review-trigger > :is(.grade-btn-known, .fs-flashcard-known):hover { transform: none !important; }
+
+.fs-known-review-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-known-review-more {
+  border-color: rgba(42, 157, 87, 0.3);
+  border-left-color: rgba(42, 157, 87, 0.16);
+  background: linear-gradient(180deg, #effbee, #e2f6df);
+  color: #23874a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 3px 0 rgba(42, 157, 87, 0.17);
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-known-review-more {
+  border-color: rgb(52 211 153 / 0.46);
+  border-left-color: rgb(52 211 153 / 0.22);
+  background: #173a24;
+  color: #7fe6a0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 0 rgba(42, 157, 87, 0.17);
 }
 
 .fs-review-level-menu {
@@ -9962,9 +10013,8 @@ html[data-theme="dark"][data-accent="custom"] .fs-shortcut-altcode > strong {
   color: var(--fs-text);
 }
 
-/* 'Know it' and 'Set level' sit together at the top of a preview card. One
-   says you already have it, the other says how well — and both hand the slot
-   back so a phrase you have not met takes its place. */
+/* Know it owns its exact-level and snooze flyout at the top of a preview
+   card. Either route hands the slot back so a phrase not yet met replaces it. */
 .fs-flashcard-grade {
   display: inline-flex;
   align-items: center;

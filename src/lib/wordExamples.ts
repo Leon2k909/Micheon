@@ -14,6 +14,17 @@
  * "das Haus") — a wrong-sense or wrong-form match would teach worse than
  * no match, and this surface has no reviewer.
  *
+ * German capitalization is meaning-bearing: "steuern" (to control) and
+ * "Steuern" (taxes) are different words that share letters. Lemma tokens and
+ * their case therefore come from the card's reviewed display form (word.de,
+ * not the dictionary lookup key, whose casing is unreviewed): a lowercase
+ * lemma accepts lowercase or sentence-opening occurrences, a capitalized
+ * lemma (noun) only capitalized ones. One reviewed exception: a nominalized
+ * infinitive after a neuter trigger ("beim Entkalken") legitimately shows its
+ * verb — but only when the sentence's English shares a meaning word with the
+ * card, because "Aus dem Stillen" (the quiet one) must not serve "stillen"
+ * (to breastfeed).
+ *
  * This module only READS the catalog. It must never feed sentences back into
  * lessons or Listen — the word/sentence isolation contract in wordSession.ts
  * stays intact.
@@ -32,12 +43,78 @@ export type WordExample = {
  *  not a word — a real usage fills the slot, so they must not be required. */
 const PLACEHOLDERS = new Set(["etwas", "etw", "jemand", "jemanden", "jemandem", "jdn", "jdm", "sich"]);
 
+/** Articles inside idiom lemmas ("den Erwartungen gerecht werden") are
+ *  structural: a real sentence may use another determiner ("ihren
+ *  Erwartungen"), so they must not be required either. */
+const ARTICLES = new Set(["der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "eines"]);
+
 const tokenize = (text: string): string[] =>
   String(text ?? "")
     .toLocaleLowerCase("de-DE")
     .normalize("NFC")
     .split(/[^a-zäöüß]+/)
     .filter(Boolean);
+
+const WORD_RE = /[a-zA-ZäöüßÄÖÜẞ]+/g;
+/** Characters whose presence between two words starts a new sentence-like
+ *  unit (sentence enders and quotes). Commas, colons, dashes, hyphens,
+ *  apostrophes and parentheses do not: a capital after them is still a
+ *  mid-sentence capital ("Vor der Reparatur: Daten sichern!" is the noun). */
+const SENTENCE_BOUNDARY_RE = /[.!?…"„“”»«]/;
+
+/** Words a neuter nominalized infinitive follows ("beim Entkalken", "das
+ *  Pendeln", "als Beatmen"). Deliberately excludes non-neuter articles:
+ *  "Die Steuern" and "einen Braten" are real nouns, not nominalizations. */
+const NOMINALIZATION_TRIGGERS = new Set([
+  "beim", "zum", "am", "vom", "im", "ins", "das", "dem", "ohne", "als",
+  "mit", "nach", "vor", "durch", "für", "gegen", "übers", "ums", "aufs",
+]);
+
+export const CASE_LOWER = 1;
+export const CASE_CAP_INITIAL = 2;
+export const CASE_CAP_MID = 4;
+/** Mid-sentence capital directly after a nominalization trigger. */
+export const CASE_CAP_NOMINALIZED = 8;
+
+/**
+ * Which case forms each token of a German sentence appears in, keyed by the
+ * lowercased token. "Die Steuern fressen mich auf." reports steuern only as
+ * a mid-sentence capital — the noun — so the verb card must not use it.
+ */
+export function germanTokenCaseForms(sentence: string): Map<string, number> {
+  const text = String(sentence ?? "").normalize("NFC");
+  const forms = new Map<string, number>();
+  let lastEnd = 0;
+  let first = true;
+  let prev = "";
+  for (const match of text.matchAll(WORD_RE)) {
+    const raw = match[0];
+    const gap = text.slice(lastEnd, match.index ?? 0);
+    lastEnd = (match.index ?? 0) + raw.length;
+    const atSentenceStart = first || SENTENCE_BOUNDARY_RE.test(gap);
+    first = false;
+    let bit: number;
+    if (!/^[A-ZÄÖÜẞ]/.test(raw)) bit = CASE_LOWER;
+    else if (atSentenceStart) bit = CASE_CAP_INITIAL;
+    else bit = NOMINALIZATION_TRIGGERS.has(prev)
+      ? CASE_CAP_MID | CASE_CAP_NOMINALIZED
+      : CASE_CAP_MID;
+    const key = raw.toLocaleLowerCase("de-DE");
+    forms.set(key, (forms.get(key) ?? 0) | bit);
+    prev = key;
+  }
+  return forms;
+}
+
+/** Case forms a lemma token may always take inside a sentence: a noun
+ *  (capitalized lemma) must stay capitalized; anything else must appear
+ *  lowercase, or capitalized only because it opens the sentence. A verb's
+ *  nominalization (CASE_CAP_NOMINALIZED) is handled separately because it
+ *  additionally needs the English senses to agree. */
+export const acceptableCaseMask = (rawLemmaToken: string): number =>
+  /^[A-ZÄÖÜẞ]/.test(rawLemmaToken)
+    ? (CASE_CAP_INITIAL | CASE_CAP_MID)
+    : (CASE_LOWER | CASE_CAP_INITIAL);
 
 /** Function words create accidental matches ("court" and "dish" examples
  * both contain "a" or "the"), so only meaning-bearing English words may
@@ -58,27 +135,76 @@ const singularEnglishToken = (token: string): string => {
   return token;
 };
 
-const englishSenseTokens = (text: string): Set<string> => new Set(
+/** All shapes a token might share with a gloss written in another form:
+ *  "descaling" must meet "descale", "warmed" must meet "warm". Every
+ *  plausible base is added — matching on any one of them is enough, and a
+ *  wrong base ("teeth" from "teething") only ever adds a token nobody asks
+ *  for. */
+const englishTokenVariants = (token: string): string[] => {
+  const variants = [token];
+  const singular = singularEnglishToken(token);
+  if (singular !== token) variants.push(singular);
+  for (const [suffix, minLength] of [["ing", 6], ["ed", 5]] as const) {
+    if (token.length < minLength || !token.endsWith(suffix)) continue;
+    const base = token.slice(0, -suffix.length);
+    variants.push(base, `${base}e`);
+    if (base.length > 2 && base[base.length - 1] === base[base.length - 2]) {
+      variants.push(base.slice(0, -1));
+    }
+  }
+  return variants;
+};
+
+export const englishSenseTokens = (text: string): Set<string> => new Set(
   String(text ?? "")
     .toLocaleLowerCase("en-GB")
     .normalize("NFC")
     .split(/[^a-z]+/)
     .filter(Boolean)
     .filter((token) => !ENGLISH_STOPWORDS.has(token))
-    .map(singularEnglishToken)
+    .flatMap(englishTokenVariants)
 );
 
-/** The lemma as it would appear inside a sentence: article and reflexive
- *  marker dropped, placeholder slot-words dropped. */
-const lemmaTokens = (word: Pick<WordItem, "de" | "lookup">): string[] =>
-  tokenize(
-    String(word.lookup || word.de).replace(/^(der|die|das)\s+/i, "")
-  ).filter((token) => !PLACEHOLDERS.has(token));
+/** The lemma's tokens in their ORIGINAL case, from the card's REVIEWED
+ *  display form (article and placeholder slot-words dropped). The dictionary
+ *  lookup key is deliberately not used here: its casing is unreviewed
+ *  ("aufwärmen" ships lookup "Aufwärmen"), and idiom cards carry lookup keys
+ *  like "Acht" whose lone token would match sentences that have nothing to
+ *  do with the idiom ("Es ist halb acht."). */
+export const rawLemmaTokens = (word: Pick<WordItem, "de" | "lookup">): string[] => {
+  const base = String(word.de || word.lookup)
+    .normalize("NFC")
+    .replace(/^(der|die|das)\s+/i, "");
+  const raws: string[] = [];
+  for (const match of base.matchAll(WORD_RE)) {
+    const lower = match[0].toLocaleLowerCase("de-DE");
+    if (!PLACEHOLDERS.has(lower) && !ARTICLES.has(lower)) raws.push(match[0]);
+  }
+  return raws;
+};
+
+/** Reviewed same-case sense clashes. For these cards a sentence sharing no
+ *  meaning word with the gloss is the OTHER sense — "Das ist der Hammer!"
+ *  (that's amazing) must not serve the tool card, a cinema showing must not
+ *  serve "die Vorstellung = idea". Sense overlap is required, so these cards
+ *  show nothing rather than the wrong meaning. Keyed by lowercased lookup. */
+const REQUIRES_SENSE_OVERLAP = new Set([
+  "hammer", "abhängen", "abstimmen", "melden", "nüchtern", "zocken",
+  "ausfallen", "folge", "verlängerung", "anlage", "verlegen", "ansatz",
+  "erstatten", "stand", "stimmen", "anwendung", "träger", "eingehen",
+  "prozess", "vorstellung",
+]);
+
+/** True when this card must not accept a zero-overlap example. */
+export const exampleRequiresSenseOverlap = (word: Pick<WordItem, "de" | "lookup">): boolean =>
+  REQUIRES_SENSE_OVERLAP.has(String(word.lookup || word.de).toLocaleLowerCase("de-DE").trim());
 
 type Candidate = {
   de: string;
   en: string;
   tokens: Set<string>;
+  /** Case forms each token appears in — see germanTokenCaseForms. */
+  caseForms: Map<string, number>;
   /** Meaning-bearing words from the reviewed English translation. */
   senseTokens: Set<string>;
   /** Word count of the German sentence. */
@@ -156,6 +282,7 @@ export function buildWordExampleIndex(apiParts: Record<string, any>): WordExampl
       de,
       en,
       tokens: new Set(tokens),
+      caseForms: germanTokenCaseForms(de),
       senseTokens: englishSenseTokens(en),
       count: tokens.length,
       order,
@@ -189,8 +316,11 @@ export function buildWordExampleIndex(apiParts: Record<string, any>): WordExampl
     if (cached !== undefined) return cached ?? undefined;
 
     const wantedSense = englishSenseTokens(word.en);
-    const own = bestForSense(authored.get(lookupKey) ?? [], wantedSense);
-    const tokens = lemmaTokens(word);
+    const requiresOverlap = exampleRequiresSenseOverlap(word);
+    const ownBest = bestForSense(authored.get(lookupKey) ?? [], wantedSense);
+    const own = ownBest && (!requiresOverlap || ownBest.overlap > 0) ? ownBest : undefined;
+    const rawTokens = rawLemmaTokens(word);
+    const tokens = rawTokens.map((raw) => raw.toLocaleLowerCase("de-DE"));
     let found: WordExample | null = own
       ? { de: own.candidate.de, en: own.candidate.en }
       : null;
@@ -210,9 +340,27 @@ export function buildWordExampleIndex(apiParts: Record<string, any>): WordExampl
         if (candidate.count <= tokens.length) continue; // adds no context
         if (candidate.de.toLocaleLowerCase("de-DE").trim() === wordFace) continue;
         if (!tokens.every((token) => candidate.tokens.has(token))) continue;
+        // "steuern" must not be served by "Die Steuern …": every lemma token
+        // has to appear in a case form the lemma itself could take. The one
+        // exception is a nominalized infinitive ("beim Entkalken" for
+        // entkalken), accepted only when the English senses also agree —
+        // otherwise "Aus dem Stillen" (the quiet one) would pass as the
+        // nominalization of breastfeeding.
+        const caseOk = rawTokens.every((raw, at) =>
+          ((candidate.caseForms.get(tokens[at]) ?? 0) & acceptableCaseMask(raw)) !== 0
+        );
+        if (!caseOk) {
+          const nominalizedOk = rawTokens.every((raw, at) => {
+            const forms = candidate.caseForms.get(tokens[at]) ?? 0;
+            if ((forms & acceptableCaseMask(raw)) !== 0) return true;
+            return raw === tokens[at] && raw.endsWith("n") && (forms & CASE_CAP_NOMINALIZED) !== 0;
+          });
+          if (!nominalizedOk || senseOverlap(candidate, wantedSense) === 0) continue;
+        }
         matching.push(candidate);
       }
-      const phrase = bestForSense(matching, wantedSense);
+      const phraseBest = bestForSense(matching, wantedSense);
+      const phrase = phraseBest && (!requiresOverlap || phraseBest.overlap > 0) ? phraseBest : undefined;
       // An authored example still wins when it matches this meaning. If the
       // authored source belongs to another sense, a semantically matching
       // reviewed sentence is safer (Gericht = court must not show a dish).

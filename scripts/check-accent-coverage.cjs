@@ -53,7 +53,10 @@ const isBrandGreen = ([r, g, b]) => g > 28 && g - Math.max(r, b) > 10;
  */
 // "Locked"/"not started" mean NOT YET EARNED, which is meaning, not brand:
 // painting them the accent made locked achievements look unlocked.
-const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|is-right|is-locked|--locked|is-unearned|not-started|is-disabled|fs-result|fs-feedback|fs-verdict/i;
+// fs-known-review is the Know it pill's attached level-menu trigger — the
+// other rounded half of the same control, so it keeps Know it's semantic
+// green in every accent rather than splitting the pill into two colours.
+const SEMANTIC = /is-good|is-correct|--correct|answer--correct|flashcard-known|grade-btn-known|fs-known-review|is-right|is-locked|--locked|is-unearned|not-started|is-disabled|fs-result|fs-feedback|fs-verdict/i;
 
 const failures = [];
 let checked = 0;

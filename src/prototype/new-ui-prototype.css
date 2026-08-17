@@ -1425,6 +1425,22 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     linear-gradient(0deg, transparent calc(50% - 5px), #fff calc(50% - 5px) calc(50% + 5px), transparent calc(50% + 5px)),
     #00247d;
 }
+
+/* English (US) wears the stars and stripes instead — the variant the learner
+   picked decides the flag, exactly like the in-lesson prompt badge. */
+.np-language-badge.is-american {
+  position: relative;
+  background: repeating-linear-gradient(180deg, #b22234 0 4.4px, #fff 4.4px 8.8px);
+}
+.np-language-badge.is-american::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 46%;
+  background: #3c3b6e;
+}
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }

@@ -32,6 +32,11 @@ import {
   wordMatchesPartOfSpeech,
   type WordPartOfSpeechFilter,
 } from "@/lib/wordPartOfSpeech";
+import {
+  sortWordTrackerRows,
+  WORD_TRACKER_SORTS,
+  type WordTrackerSort,
+} from "@/lib/wordTrackerSort";
 import type { Part } from "@/lib/types";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -61,7 +66,6 @@ import type { UserProfile } from "@/lib/profileStorage";
 const PAGE = 40;
 
 type Filter = "all" | "known" | "due" | "struggle" | "new";
-type Sort = "common" | "alpha" | "status";
 
 const FILTERS: Array<{ key: Filter; label: string }> = [
   { key: "all", label: "All" },
@@ -69,12 +73,6 @@ const FILTERS: Array<{ key: Filter; label: string }> = [
   { key: "due", label: "Due review" },
   { key: "struggle", label: "Struggling" },
   { key: "new", label: "To learn" },
-];
-
-const SORTS: Array<{ key: Sort; label: string }> = [
-  { key: "common", label: "Most common first" },
-  { key: "alpha", label: "Alphabetical" },
-  { key: "status", label: "Needs attention first" },
 ];
 
 /**
@@ -249,13 +247,18 @@ export function WordsTracker({ apiParts, user }: {
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [partOfSpeech, setPartOfSpeech] = useState<WordPartOfSpeechFilter>("all");
-  const [sort, setSort] = useState<Sort>("common");
+  const [sort, setSort] = useState<WordTrackerSort>("common");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const alphabetLanguage = uiIsGerman() ? "en" : "de";
 
   const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
+  const commonRanks = useMemo(
+    () => new Map(catalog.map((word, index) => [word.id, index])),
+    [catalog]
+  );
   const exampleIndex = useMemo(() => buildWordExampleIndex(apiParts), [apiParts]);
   const grades = useMemo(() => loadGradeStore(user), [user, revision]);
   const recordFor = (word: WordItem) =>
@@ -295,16 +298,15 @@ export function WordsTracker({ apiParts, user }: {
         || word.en.toLowerCase().includes(needle)
         || word.lookup.toLowerCase().includes(needle);
     });
-    if (sort === "alpha") {
-      return [...rows].sort((a, b) => a.de.localeCompare(b.de, "de"));
-    }
-    if (sort === "status") {
-      const rank: Record<Filter, number> = { struggle: 0, due: 1, new: 2, known: 3, all: 4 };
-      return [...rows].sort((a, b) => rank[statusOf(a)] - rank[statusOf(b)]);
-    }
-    return rows; // the catalogue is already most-common-first
+    return sortWordTrackerRows(
+      rows,
+      sort,
+      recordFor,
+      commonRanks,
+      alphabetLanguage
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catalog, filter, partOfSpeech, query, sort, grades]);
+  }, [alphabetLanguage, catalog, commonRanks, filter, partOfSpeech, query, sort, grades]);
 
   const visible = filtered.slice(0, page * PAGE);
 
@@ -457,10 +459,10 @@ export function WordsTracker({ apiParts, user }: {
           <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Sort by")}</span>
           <select
             className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-            onChange={(event) => { setSort(event.target.value as Sort); reset(); }}
+            onChange={(event) => { setSort(event.target.value as WordTrackerSort); reset(); }}
             value={sort}
           >
-            {SORTS.map((option) => (
+            {WORD_TRACKER_SORTS.map((option) => (
               <option key={option.key} value={option.key}>{ui(option.label)}</option>
             ))}
           </select>

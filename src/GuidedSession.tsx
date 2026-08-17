@@ -65,6 +65,7 @@ import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { germanWordGloss } from "@/lib/germanWordGloss";
+import { englishWordGloss } from "@/lib/englishWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { getCodexPetFrequency } from "@/lib/codexPetCoaching";
 import { pronounNote } from "@/lib/pronounNotes";
@@ -609,7 +610,13 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
 // words, so a tricky spelling like Postfiliale can be drilled on its own later.
 function TappableSentence({ text, lang, meaningText }: { text: string; lang: string; meaningText?: string }) {
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
-  const showEnglishGloss = lang.toLowerCase().startsWith("de");
+  // Hover glosses translate toward the learner's helper language: German
+  // text shows English meanings, and English text (learn-English mode) shows
+  // German ones — the popover must not be a German-course-only feature.
+  const glossLang = lang.toLowerCase().startsWith("de") ? ("de" as const)
+    : lang.toLowerCase().startsWith("en") ? ("en" as const)
+      : null;
+  const showEnglishGloss = glossLang === "de";
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const playingTimer = useRef<number | undefined>(undefined);
   const [popoverIndex, setPopoverIndex] = useState<number | null>(null);
@@ -626,6 +633,14 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
   const bareWord = (word: string) => word.replace(/[.,!?;:"«»„“()]/g, "");
 
   const wordIsSaved = (word: string) => {
+    // Custom entries keep German in `de` in both directions, so an English
+    // word saved from learn-English mode lives on the `en` side.
+    if (glossLang === "en") {
+      const key = bareWord(word).toLocaleLowerCase("en-GB");
+      return getCustomPacks().some((pack) =>
+        pack.entries.some((entry) => entry.en.toLocaleLowerCase("en-GB") === key)
+      );
+    }
     const key = bareWord(word).toLocaleLowerCase("de-DE");
     return getCustomPacks().some((pack) =>
       pack.entries.some((entry) => entry.de.toLocaleLowerCase("de-DE") === key)
@@ -639,7 +654,7 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
   };
 
   const scheduleOpen = (index: number) => {
-    if (!showEnglishGloss) return;
+    if (!glossLang) return;
     if (openTimer.current) window.clearTimeout(openTimer.current);
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     openTimer.current = window.setTimeout(() => openPopover(index), 320);
@@ -655,11 +670,22 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
   };
 
   const practiseWord = (word: string) => {
-    const de = bareWord(word);
-    const gloss = germanWordGloss(de);
-    const en = gloss || meaningText || "";
-    if (!de || !en) return;
-    addCustomEntries([{ de, en, use: text }]);
+    const face = bareWord(word);
+    if (!face) return;
+    if (glossLang === "en") {
+      // Learn-English mode: the hovered word is English, so the German gloss
+      // fills `de` — the store keeps German in `de` in both directions, and
+      // the lesson-direction swap flips the card back at practice time. Only
+      // the first gloss alternative becomes the card's German side; without a
+      // reviewed translation nothing is saved.
+      const de = (englishWordGloss(face) || "").split(" / ")[0].trim();
+      if (!de) return;
+      addCustomEntries([{ de, en: face, use: text }]);
+    } else {
+      const en = germanWordGloss(face) || meaningText || "";
+      if (!en) return;
+      addCustomEntries([{ de: face, en, use: text }]);
+    }
     setPopoverSaved(true);
   };
 
@@ -706,9 +732,13 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
   return (
     <span className="fs-tappable-sentence" onCopy={copySelectionWithSpaces}>
       {words.map((w, i) => {
-        const hoverGloss = showEnglishGloss ? germanWordGloss(w) : null;
+        const hoverGloss = glossLang === "de" ? germanWordGloss(w)
+          : glossLang === "en" ? englishWordGloss(w)
+            : null;
         const popoverOpen = popoverIndex === i;
-        const practiceMeaning = hoverGloss || meaningText || "";
+        // In learn-English mode the sentence meaning is German prose — it can
+        // caption the popover but must never become a one-word card's back.
+        const practiceMeaning = glossLang === "en" ? (hoverGloss || "") : (hoverGloss || meaningText || "");
         return (
           <React.Fragment key={`${w}-${i}`}>
             {i > 0 && " "}
@@ -731,7 +761,7 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
                   playWord(w, i);
                 }}
                 onContextMenu={(event) => {
-                  if (!showEnglishGloss) return;
+                  if (!glossLang) return;
                   event.preventDefault();
                   openPopover(i);
                 }}
@@ -1323,12 +1353,45 @@ const GUIDED_SNOOZE_CHOICES: Array<{ days: number; label: string; note: string }
   { days: 30, label: "In a month", note: "Held back until then" },
 ];
 
-function ReviewLevelPicker({ onSelect, onSnooze }: {
+function ReviewLevelPicker({
+  onKnown,
+  onSelect,
+  onSnooze,
+  disabled = false,
+  knownAriaLabel,
+  showShortcut = false,
+  variant = "grade",
+}: {
+  onKnown: () => void;
   onSelect: (level: GuidedReviewLevel) => void;
   onSnooze?: (days: number) => void;
+  disabled?: boolean;
+  knownAriaLabel?: string;
+  showShortcut?: boolean;
+  variant?: "grade" | "flashcard";
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimerRef.current == null) return;
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+  };
+  const openMenu = () => {
+    cancelClose();
+    if (!disabled) setOpen(true);
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setOpen(false);
+    }, 180);
+  };
+
+  useEffect(() => () => cancelClose(), []);
 
   useEffect(() => {
     if (!open) return;
@@ -1348,17 +1411,46 @@ function ReviewLevelPicker({ onSelect, onSnooze }: {
   }, [open]);
 
   return (
-    <div className="fs-review-level" ref={menuRef}>
-      <button
-        type="button"
-        className="grade-btn grade-btn-level"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((current) => !current)}
-      >
-        {ui("Set level")}
-        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
+    <div
+      className={cn("fs-review-level fs-known-review", variant === "flashcard" && "is-flashcard")}
+      onBlurCapture={(event) => {
+        if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+        scheduleClose();
+      }}
+      onFocusCapture={openMenu}
+      onMouseEnter={openMenu}
+      onMouseLeave={scheduleClose}
+      ref={menuRef}
+    >
+      <div className="fs-known-review-trigger">
+        <button
+          aria-label={knownAriaLabel}
+          className={variant === "flashcard" ? "fs-flashcard-known" : "grade-btn grade-btn-known"}
+          disabled={disabled}
+          onClick={onKnown}
+          type="button"
+        >
+          {variant === "flashcard" && <CheckCircle2 className="h-4 w-4" />}
+          {ui("Know it")}
+          {showShortcut && <kbd className="grade-kbd">Alt K</kbd>}
+        </button>
+        <button
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-label={ui("More Know it options")}
+          className="fs-known-review-more"
+          disabled={disabled}
+          onClick={(event) => {
+            event.stopPropagation();
+            cancelClose();
+            setOpen((current) => !current);
+          }}
+          title={ui("More Know it options")}
+          type="button"
+        >
+          <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
       {open && (
         <div className="fs-review-level-menu" role="menu" aria-label={ui("Set review level")}>
           <div className="fs-review-level-menu-head">
@@ -2700,16 +2792,27 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-            <button
-              aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
-              className="grade-btn grade-btn-known"
-              onClick={markKnown}
-              disabled={recallTransitionPending || recallCompletionScheduledRef.current}
-              type="button"
-            >
-              {ui("Know it")}
-              <kbd className="grade-kbd">Alt K</kbd>
-            </button>
+            {onReviewLevel ? (
+              <ReviewLevelPicker
+                disabled={recallTransitionPending || recallCompletionScheduledRef.current}
+                knownAriaLabel={ui("Mark known and skip to the next item. Shortcut Alt K")}
+                onKnown={markKnown}
+                onSelect={onReviewLevel}
+                onSnooze={onSnooze}
+                showShortcut
+              />
+            ) : (
+              <button
+                aria-label={ui("Mark known and skip to the next item. Shortcut Alt K")}
+                className="grade-btn grade-btn-known"
+                onClick={markKnown}
+                disabled={recallTransitionPending || recallCompletionScheduledRef.current}
+                type="button"
+              >
+                {ui("Know it")}
+                <kbd className="grade-kbd">Alt K</kbd>
+              </button>
+            )}
             <button
               aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
               className="grade-btn grade-btn-struggle"
@@ -2720,7 +2823,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {ui("Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
-            {onReviewLevel && <ReviewLevelPicker onSelect={onReviewLevel} onSnooze={onSnooze} />}
             {phase !== "MeaningPick"
               && phase !== "ListenPick"
               && phase !== "MissingWord"
@@ -4018,7 +4120,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 aria-label={ui(learnEn ? "English words to arrange" : "German words to arrange")}
               >
                 {orderTokens.map((token, tokenIndex) => {
-                  const hoverGloss = learnEn ? null : germanWordGloss(token.text);
+                  const hoverGloss = learnEn ? englishWordGloss(token.text) : germanWordGloss(token.text);
                   return (
                     <button
                       key={token.id}
@@ -4439,15 +4541,25 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
         </Badge>
         <div className="text-xs font-black tracking-wide text-zinc-500">{lineIdx + 1} / {lines.length}</div>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
-          <button
-            aria-label="Mark known and skip this line. Shortcut Alt K"
-            className="grade-btn grade-btn-known"
-            onClick={markKnown}
-            type="button"
-          >
-            {ui("Know it")}
-            <kbd className="grade-kbd">Alt K</kbd>
-          </button>
+          {onReviewLevel ? (
+            <ReviewLevelPicker
+              knownAriaLabel="Mark known and skip this line. Shortcut Alt K"
+              onKnown={markKnown}
+              onSelect={(level) => onReviewLevel(lineGradeId, level)}
+              onSnooze={onSnooze && ((days) => onSnooze(lineGradeId, days))}
+              showShortcut
+            />
+          ) : (
+            <button
+              aria-label="Mark known and skip this line. Shortcut Alt K"
+              className="grade-btn grade-btn-known"
+              onClick={markKnown}
+              type="button"
+            >
+              {ui("Know it")}
+              <kbd className="grade-kbd">Alt K</kbd>
+            </button>
+          )}
           <button
             aria-label="Mark this line as a struggle. Shortcut Alt S"
             className="grade-btn grade-btn-struggle"
@@ -4457,7 +4569,6 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
             {ui("Struggle")}
             <kbd className="grade-kbd">Alt S</kbd>
           </button>
-          {onReviewLevel && <ReviewLevelPicker onSelect={(level) => onReviewLevel(lineGradeId, level)} onSnooze={onSnooze && ((days) => onSnooze(lineGradeId, days))} />}
         </div>
       </div>
 
@@ -5187,19 +5298,22 @@ function SessionFlashcardPreview({
             {/* Both of these stop the click reaching the card, which would
                 otherwise flip it while you were choosing. */}
             <span className="fs-flashcard-grade" onClick={(event) => event.stopPropagation()}>
-              <button
-                type="button"
-                className="fs-flashcard-known"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onKnown(card.id);
-                }}
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                {ui("Know it")}
-              </button>
-              {onReviewLevel && (
-                <ReviewLevelPicker onSelect={(level) => onReviewLevel(card.id, level)} onSnooze={onSnooze && ((days) => onSnooze(card.id, days))} />
+              {onReviewLevel ? (
+                <ReviewLevelPicker
+                  onKnown={() => onKnown(card.id)}
+                  onSelect={(level) => onReviewLevel(card.id, level)}
+                  onSnooze={onSnooze && ((days) => onSnooze(card.id, days))}
+                  variant="flashcard"
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="fs-flashcard-known"
+                  onClick={() => onKnown(card.id)}
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {ui("Know it")}
+                </button>
               )}
             </span>
           </div>

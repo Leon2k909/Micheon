@@ -26,6 +26,17 @@ function check(name, condition, detail = "") {
   console.error(`FAIL ${name}${detail ? ` — ${detail}` : ""}`);
 }
 
+// Exact level and snooze choices are secondary to the common one-click grade.
+// They must stay attached to Know it instead of returning as loose buttons.
+check(
+  "all guided review pickers combine Know it with its exact options",
+  (source.match(/<ReviewLevelPicker\b/g) ?? []).length === 3
+    && source.includes("fs-known-review-trigger")
+    && source.includes("onMouseEnter={openMenu}")
+    && source.includes('ui("More Know it options")')
+    && !source.includes("grade-btn grade-btn-level")
+);
+
 // ── which levels finish the item ───────────────────────────────────────────
 const finishesFn = source.match(/function reviewLevelFinishesItem[\s\S]*?\n}/);
 check("there is a single rule for which levels finish an item", Boolean(finishesFn));
@@ -109,6 +120,104 @@ check(
   "several dialogue lines marked together are summarised, not listed",
   /found\.length === 1 \? found\[0\] : `\$\{found\.length\} lines`/.test(source)
 );
+
+// ── the level must reach Listen, wherever it was set ──────────────────────
+// "Never review" in the tracker is a scheduling decision for every surface.
+// Listen stays mounted across tab switches, so its queue must rebuild on
+// grade writes, and word items must keep their merged-progress aliases or a
+// record stored under a pre-merge id stays invisible.
+const listenView = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+check(
+  "Listen rebuilds its queue when grades change elsewhere",
+  listenView.includes('window.addEventListener("grades-updated", onGradesUpdated)')
+    && listenView.includes("setGradesRevision")
+    && /useMemo<ListenItem\[\]>\(\s*\(\) => buildListenQueue\([\s\S]*?\[apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder\]/.test(listenView)
+);
+const listenMode = fs.readFileSync(path.join(root, "src/lib/listenMode.ts"), "utf8");
+check(
+  "Listen word items keep their merged-progress aliases",
+  listenMode.includes("aliases: word.aliases ?? []")
+);
+
+// Behavioral: a permanent record stored under an ALIAS id must keep the word
+// out of the queue.
+const Module = require("module");
+const esbuild = require("esbuild");
+const built = esbuild.buildSync({
+  stdin: {
+    contents: 'export { buildListenQueue } from "./src/lib/listenMode.ts";',
+    resolveDir: root,
+    sourcefile: "review-level-listen-entry.ts",
+  },
+  alias: { "@": path.join(root, "src") },
+  bundle: true,
+  format: "cjs",
+  platform: "node",
+  target: "node20",
+  write: false,
+  logLevel: "silent",
+});
+const compiled = new Module("review-level-listen", module);
+compiled.filename = path.join(root, ".review-level-listen.cjs");
+compiled.paths = Module._nodeModulePaths(root);
+compiled._compile(built.outputFiles[0].text, compiled.filename);
+const { buildListenQueue } = compiled.exports;
+
+// Two packs teach the same visible word, so the catalog merges them and the
+// losing card's id survives as an alias — exactly the state dedup left real
+// profiles in.
+const listenParts = {
+  "unit-1": {
+    theme: "Test unit",
+    level: "A1",
+    vocab: [
+      { de: "der Hund", en: "dog", lookup: "Hund", pos: "noun" },
+      { de: "die Katze", en: "cat", lookup: "Katze", pos: "noun" },
+    ],
+    phrases: [],
+    dialogues: [],
+  },
+  "unit-2": {
+    theme: "Test unit repeat",
+    level: "A1",
+    vocab: [
+      // Same visible word under an inconsistent lookup spelling — the exact
+      // shape catalogue dedup merges, leaving the losing id as an alias.
+      { de: "der Hund", en: "dog", lookup: "Hunde", pos: "noun" },
+    ],
+    phrases: [],
+    dialogues: [],
+  },
+};
+const emptyQueue = buildListenQueue(listenParts, {}, { contentSource: "words", direction: "de", order: "common" });
+const hundItem = emptyQueue.find((item) => item.de.includes("Hund"));
+check("the word queue contains the merged test word before any grading", Boolean(hundItem));
+if (hundItem) {
+  check(
+    "the merged word carries its losing card's id as an alias",
+    hundItem.aliases.length > 0,
+    `aliases: ${JSON.stringify(hundItem.aliases)}`
+  );
+  const aliasId = hundItem.aliases[0];
+  const aliasedQueue = buildListenQueue(
+    listenParts,
+    { [aliasId]: { permanent: true } },
+    { contentSource: "words", direction: "de", order: "common" }
+  );
+  check(
+    "a permanent record under a merged alias keeps the word out of Listen",
+    Boolean(aliasId) && !aliasedQueue.some((item) => item.id === hundItem.id)
+  );
+  const directQueue = buildListenQueue(
+    listenParts,
+    { [hundItem.id]: { permanent: true } },
+    { contentSource: "words", direction: "de", order: "common" }
+  );
+  check(
+    "a permanent record under the word's own id keeps it out of Listen",
+    !directQueue.some((item) => item.id === hundItem.id)
+  );
+}
 check(
   "the notice names the phrase, and so does the Undo control",
   source.includes("lastManualReviewChange.subject ? <> — “{lastManualReviewChange.subject}”</> : null")

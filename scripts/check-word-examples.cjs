@@ -52,6 +52,21 @@ const parts = {
       // Same German spelling, two unrelated meanings. The English gloss must
       // choose the matching reviewed sentence, irrespective of cache order.
       { de: "das Gericht", en: "court", lookup: "Gericht", pos: "noun" },
+      // Verb whose spelling doubles as a noun: German case decides.
+      { de: "steuern", en: "to control", lookup: "steuern", pos: "verb" },
+      // Noun card must not accept the lowercase verb.
+      { de: "der Braten", en: "roast", lookup: "Braten", pos: "noun" },
+      // Nominalized infinitive after a neuter trigger, senses agreeing.
+      { de: "entkalken", en: "to descale", lookup: "entkalken", pos: "verb" },
+      // Trigger matches but the English sense does not — must stay empty.
+      { de: "stillen", en: "to breastfeed", lookup: "stillen", pos: "verb" },
+      // The lookup key ships with unreviewed casing; word.de is authoritative.
+      { de: "aufwärmen", en: "to warm up", lookup: "Aufwärmen", pos: "verb" },
+      // Reviewed same-case sense clash: zero-overlap sentences must not serve.
+      { de: "der Hammer", en: "hammer, mallet", lookup: "Hammer", pos: "noun" },
+      // Idiom with an embedded article: a real usage may use another
+      // determiner, so the article must not be required verbatim.
+      { de: "den Erwartungen gerecht werden", en: "to live up to expectations", lookup: "gerecht werden", pos: "verb phrase" },
     ],
     phrases: [
       { de: "Das Haus ist groß.", en: "The house is big." },
@@ -60,6 +75,14 @@ const parts = {
       { de: "Das kann an dem Wetter liegen.", en: "That may be due to the weather." },
       { de: "Ein Gericht fehlt.", en: "A dish is missing." },
       { de: "Wir gehen vor Gericht.", en: "We are going to court." },
+      { de: "Die Steuern fressen mich auf.", en: "Taxes are eating me alive." },
+      { de: "Niemand kann alles steuern.", en: "Nobody can control everything." },
+      { de: "Sonntags braten wir Kartoffeln.", en: "On Sundays we fry potatoes." },
+      { de: "Zum Entkalken nimmst du Essig.", en: "For descaling you use vinegar." },
+      { de: "Aus dem Stillen von damals wurde der Lustigste im Raum.", en: "The quiet one from back then became the funniest in the room." },
+      { de: "Ich muss mich erst aufwärmen.", en: "I need to warm up first." },
+      { de: "Das ist der Hammer!", en: "That's amazing!" },
+      { de: "Ich kann ihren Erwartungen nie gerecht werden.", en: "I can never live up to her expectations." },
     ],
     dialogues: [],
   },
@@ -116,7 +139,62 @@ assert.deepEqual(
   "food Gericht must not reuse the cached legal example"
 );
 
-// 8. The tracker actually renders the index.
+// 8. German capitalization separates homographs. The verb card must use the
+//    lowercase-verb sentence, never the mid-sentence capital (the noun).
+assert.deepEqual(
+  example("steuern", "to control", "steuern"),
+  { de: "Niemand kann alles steuern.", en: "Nobody can control everything." },
+  "the verb steuern must use the verb sentence, not the taxes noun"
+);
+
+// 9. The noun card equally must not accept a lowercase verb occurrence.
+assert.equal(
+  example("der Braten", "roast", "Braten"),
+  undefined,
+  "the noun Braten must not be served by the lowercase verb braten"
+);
+
+// 10. A nominalized infinitive after a neuter trigger serves its verb when
+//     the English senses agree ("Zum Entkalken" → to descale) …
+assert.deepEqual(
+  example("entkalken", "to descale", "entkalken"),
+  { de: "Zum Entkalken nimmst du Essig.", en: "For descaling you use vinegar." },
+  "the nominalization Zum Entkalken must serve the verb entkalken"
+);
+
+// 11. … but not when they disagree: "Aus dem Stillen" is the quiet one, not
+//     breastfeeding — the trigger alone must not be enough.
+assert.equal(
+  example("stillen", "to breastfeed", "stillen"),
+  undefined,
+  "a trigger-matching nominalization with a foreign sense must not serve"
+);
+
+// 12. The display form's casing is authoritative — a capitalized lookup key
+//     must not stop the lowercase verb from matching its verb sentence.
+assert.deepEqual(
+  example("aufwärmen", "to warm up", "Aufwärmen"),
+  { de: "Ich muss mich erst aufwärmen.", en: "I need to warm up first." },
+  "unreviewed lookup casing must not override the display form"
+);
+
+// 13. Reviewed sense-clash words refuse zero-overlap sentences: the idiom
+//     "Das ist der Hammer!" is not an example of the tool.
+assert.equal(
+  example("der Hammer", "hammer, mallet", "Hammer"),
+  undefined,
+  "the amazement idiom must not serve the tool card"
+);
+
+// 14. Articles inside idiom lemmas are structural: "ihren Erwartungen" still
+//     satisfies "den Erwartungen gerecht werden".
+assert.deepEqual(
+  example("den Erwartungen gerecht werden", "to live up to expectations", "gerecht werden"),
+  { de: "Ich kann ihren Erwartungen nie gerecht werden.", en: "I can never live up to her expectations." },
+  "an embedded article must not be required verbatim"
+);
+
+// 15. The tracker actually renders the index.
 const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
 assert(tracker.includes("buildWordExampleIndex"), "WordsTracker does not build the example index");
 assert(tracker.includes("exampleIndex.exampleFor(word)"), "WordsTracker does not look up per-word examples");
