@@ -18,6 +18,34 @@ export type CanonicalWordSense = {
 };
 
 const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
+  bus: {
+    de: "der Bus",
+    en: "bus or coach",
+    use: "Everyday meaning: der Bus = bus. In a Fortnite context, the same word can refer to the Battle Bus, but that game-specific meaning is not part of this answer.",
+    level: "A1",
+    pos: "noun",
+  },
+  literatur: {
+    de: "die Literatur",
+    en: "literature",
+    use: "Everyday meaning: books and written works. In university or research contexts, wissenschaftliche Literatur means academic literature.",
+    level: "A2",
+    pos: "noun",
+  },
+  milliarde: {
+    de: "die Milliarde",
+    en: "billion",
+    use: "Scale bridge: German Million = English million = 1,000,000; German Milliarde = English billion = 1,000,000,000; German Billion = English trillion = 1,000,000,000,000. Translate English billion as Milliarde, never Billion.",
+    level: "A2",
+    pos: "noun",
+  },
+  gericht: {
+    de: "das Gericht",
+    en: "court",
+    use: "This card teaches the legal sense: vor Gericht = in court. In a food context, das Gericht means a dish or meal; that is a separate meaning and is not part of this answer.",
+    level: "B1",
+    pos: "noun",
+  },
   leistung: {
     de: "die Leistung",
     en: "performance or achievement",

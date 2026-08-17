@@ -49,12 +49,17 @@ const parts = {
       { de: "genau", en: "exactly", lookup: "genau", pos: "adverb" },
       // Idiom lemma with a placeholder slot-word.
       { de: "an etwas liegen", en: "to be due to something", lookup: "an etwas liegen", pos: "verb phrase" },
+      // Same German spelling, two unrelated meanings. The English gloss must
+      // choose the matching reviewed sentence, irrespective of cache order.
+      { de: "das Gericht", en: "court", lookup: "Gericht", pos: "noun" },
     ],
     phrases: [
       { de: "Das Haus ist groß.", en: "The house is big." },
       { de: "Mein Hund schläft gern.", en: "My dog likes to sleep." },
       { de: "Genau!", en: "Exactly!" },
       { de: "Das kann an dem Wetter liegen.", en: "That may be due to the weather." },
+      { de: "Ein Gericht fehlt.", en: "A dish is missing." },
+      { de: "Wir gehen vor Gericht.", en: "We are going to court." },
     ],
     dialogues: [],
   },
@@ -98,13 +103,26 @@ assert.equal(
   "a lemma absent from every sentence must stay example-free"
 );
 
-// 7. The tracker actually renders the index.
+// 7. Homonyms use the sentence for the requested English meaning. The second
+//    lookup also proves the cache is keyed by sense, not German spelling alone.
+assert.deepEqual(
+  example("das Gericht", "court", "Gericht"),
+  { de: "Wir gehen vor Gericht.", en: "We are going to court." },
+  "legal Gericht must not receive the food example"
+);
+assert.deepEqual(
+  example("das Gericht", "dish", "Gericht"),
+  { de: "Ein Gericht fehlt.", en: "A dish is missing." },
+  "food Gericht must not reuse the cached legal example"
+);
+
+// 8. The tracker actually renders the index.
 const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
 assert(tracker.includes("buildWordExampleIndex"), "WordsTracker does not build the example index");
 assert(tracker.includes("exampleIndex.exampleFor(word)"), "WordsTracker does not look up per-word examples");
 assert(tracker.includes('ui("Example in context")'), "WordsTracker is missing the translated example label");
 
-// 8. The label is translated.
+// 9. The label is translated.
 const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
 assert(i18n.includes('"Example in context": "Beispiel im Kontext"'), "missing German translation for the example label");
 

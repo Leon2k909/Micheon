@@ -8055,7 +8055,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "der Anwalt", lookup: "Anwalt", fallbackEn: "lawyer", tip: "noun", article: "der" },
       { de: "die Schlichtungsstelle", lookup: "Schlichtungsstelle", fallbackEn: "arbitration body", tip: "noun", article: "die" },
       { de: "die Klage", lookup: "Klage", fallbackEn: "lawsuit, claim", tip: "noun", article: "die" },
-      { de: "das Gericht", lookup: "Gericht", fallbackEn: "court (also: dish)", tip: "noun", article: "das" },
+      { de: "das Gericht", lookup: "Gericht", fallbackEn: "court", tip: "noun", article: "das", use: "Legal sense: vor Gericht = in court. Food uses the separate sense dish or meal." },
       { de: "sich einigen", lookup: "einigen", fallbackEn: "to come to an agreement", tip: "verb" },
       { de: "der Vergleich", lookup: "Vergleich", fallbackEn: "settlement, comparison", tip: "noun", article: "der" },
       { de: "die Rechtsschutzversicherung", lookup: "Rechtsschutzversicherung", fallbackEn: "legal expenses insurance", tip: "noun", article: "die" },
@@ -14045,7 +14045,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
     seeds: [
       { de: "das Material", lookup: "Material", fallbackEn: "materials, mats", tip: "noun", article: "das" },
       { de: "bauen", lookup: "bauen", fallbackEn: "to build", tip: "verb" },
-      { de: "der Bus", lookup: "Bus", fallbackEn: "the battle bus", tip: "noun", article: "der" },
+      { de: "der Bus", lookup: "Bus", fallbackEn: "bus or coach", tip: "noun", article: "der", use: "In this Fortnite pack, it refers to the Battle Bus; the ordinary word means bus." },
       { de: "die Insel", lookup: "Insel", fallbackEn: "island", tip: "noun", article: "die" },
       { de: "landen", lookup: "landen", fallbackEn: "to land", tip: "verb" },
       { de: "der Sieg", lookup: "Sieg", fallbackEn: "victory", tip: "noun", article: "der" },

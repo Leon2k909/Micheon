@@ -1029,8 +1029,8 @@ export const curatedTopics: CuratedTopic[] = [
     label: "Letters & Numbers",
     level: "A1",
     theme: "Letters & Numbers",
-    description: "Master the German alphabet, spell names out loud, count from zero to millions, and use ordinal numbers in daily life.",
-    focus: "Spelling, pronouncing letters, counting, and simple math terms.",
+    description: "Master the German alphabet, spell names out loud, count from zero to trillions, and use ordinal numbers in daily life.",
+    focus: "Spelling, pronouncing letters, counting, simple maths, and the different German/English large-number scales.",
     phrases: [
       { de: "Können Sie das bitte buchstabieren?", en: "Could you please spell that?", use: "buchstabieren = to spell (polite request)" },
       { de: "Wie schreibt man deinen Namen?", en: "How do you write your name? / How is your name spelled?", use: "schreiben = to write / spell (informal)" },
@@ -1045,8 +1045,10 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Wir brauchen die doppelte Menge.", en: "We need double the amount.", use: "doppelt = double / twice" },
       { de: "Drei plus vier ist sieben.", en: "Three plus four is seven.", use: "plus = plus" },
       { de: "Zehn geteilt durch zwei ist fünf.", en: "Ten divided by two is five.", use: "geteilt durch = divided by" },
-      { de: "Einhundert, eintausend, eine Million.", en: "One hundred, one thousand, one million.", use: "Big numbers" },
+      { de: "Einhundert, eintausend, eine Million.", en: "One hundred, one thousand, one million.", use: "Scale ladder: 100; 1,000; 1,000,000" },
       { de: "Schreiben Sie das mit einem großen oder kleinen Buchstaben?", en: "Do you write that with a capital or lowercase letter?", use: "Capitalization is crucial in German nouns" },
+      { de: "Eine Milliarde entspricht tausend Millionen.", en: "One billion equals one thousand million.", use: "German Milliarde = English billion = 1,000,000,000." },
+      { de: "Eine Billion entspricht tausend Milliarden.", en: "One trillion equals one thousand billion.", use: "German Billion = English trillion = 1,000,000,000,000 — never English billion." },
     ],
   },
   {

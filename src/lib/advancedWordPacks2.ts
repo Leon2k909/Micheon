@@ -209,7 +209,7 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     noun("das", "Gegenteil", "the opposite, the reverse"),
     noun("die", "Definition", "meaning statement"),
     noun("die", "Zusammenfassung", "summary"),
-    noun("die", "Literatur", "scholarly literature"),
+    noun("die", "Literatur", "academic literature"),
     noun("die", "Umfrage", "survey"),
     noun("die", "Methode", "method"),
     noun("die", "Analyse", "analysis"),
