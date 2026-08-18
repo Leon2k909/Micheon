@@ -23,7 +23,12 @@ export const FLUENCY_STAGES: FluencyStage[] = [
   { label: "Everyday survival", min: 500, blurb: "Getting by in shops, directions, and small talk." },
   { label: "Conversational", min: 1200, blurb: "Following and joining everyday conversations." },
   { label: "Confident", min: 2500, blurb: "Understanding most speech and giving opinions freely." },
-  { label: "Fluent", min: 5000, blurb: "Keeping up with real natives at full speed." },
+  // 5,000 used to be the top of the ladder. Leon raised the bar after looking
+  // at what native speakers actually hold — an educated native's ACTIVE
+  // vocabulary runs to 12,000-16,000 words — so 5,000 became a stage on the
+  // way and Fluent now demands the five-figure inventory real fluency takes.
+  { label: "Near fluent", min: 5000, blurb: "Comfortable in almost any conversation, rarely searching for words." },
+  { label: "Fluent", min: 10000, blurb: "Keeping up with real natives at full speed." },
 ];
 
 export const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;

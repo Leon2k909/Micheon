@@ -23,7 +23,7 @@ import {
   REVIEW_INTERVALS_DAYS,
   type GradeRecord,
 } from "@/lib/memoryStrength";
-import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
+import { frequencyInfo } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
 import { learningEnglish, targetLangTag } from "@/lib/direction";
@@ -521,7 +521,6 @@ export function WordsTracker({ apiParts, user }: {
             const record = recordFor(word);
             const primaryText = learnsEnglish ? word.en : word.de;
             const meaningText = learnsEnglish ? word.de : word.en;
-            const frequency = frequencyInfo(word.lookup || word.de);
             const example = exampleIndex.exampleFor(word);
             return (
               <div key={word.id} className="flex flex-wrap items-center gap-3 py-3">
@@ -539,27 +538,16 @@ export function WordsTracker({ apiParts, user }: {
                   <Volume2 className="h-4 w-4" />
                 </button>
                 <div className="min-w-0 flex-1">
+                  {/* No frequency badge here: commonality ORDERS the list and
+                      feeds the sort/filter controls, but as a chip on every row
+                      it was noise — Leon: "a thing behind the scenes". */}
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <p className="min-w-0 flex-1 truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
-                    {frequency && (
-                      <span
-                        className="shrink-0 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-sky-600"
-                        title={ui(frequency.hint)}
-                      >
-                        {ui(frequency.label)}
-                      </span>
-                    )}
                   </div>
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
                     {!uiIsGerman() && word.use ? ` · ${ui(word.use)}` : ""}
-                    {!uiIsGerman() && (() => {
-                        const syn = synonymNote(word.lookup);
-                        if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
-                        const f = frequencyInfo(word.lookup);
-                        return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
-                      })()}
                     {!uiIsGerman() && (() => {
                         const note = packMeta(word.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;

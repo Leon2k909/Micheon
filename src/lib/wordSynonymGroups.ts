@@ -197,6 +197,107 @@ export const KEEP_APART: string[][] = [
   ["ast"],               // a tree branch is not a Filiale (shop branch)
   ["trikot"],            // a sports jersey is not a Hemd (dress shirt)
   ["krankenschwester"],  // the nurse keeps her own card; Pflegekraft is broader
+  // The frequency-bank wave (part476+): 1,300 of the most common German
+  // words joined at once, and the most common words are exactly the ones
+  // English glosses most ambiguously. Every row below is a group read and
+  // refused by hand — one English word, two German meanings, or a pair the
+  // course teaches apart.
+  ["rechts"],            // the direction — not richtig (correct)
+  ["visier"],            // a gun sight/visor — not a Sehenswürdigkeit
+  ["linie"],             // a route/stroke of a line — not a queue
+  ["stab"],              // a rod (and military staff) — not das Personal
+  ["trinkgeld"],         // a tip you leave — not a Spitze (a point)
+  ["erst"],              // the "not until" particle — not einzig (sole)
+  ["zins"],              // interest a bank pays — not Interesse
+  ["speicher"],          // computer storage/attic — not an Erinnerung
+  ["rat"],               // the advice itself (and a council) — not a Beratung
+  ["date"],              // the romantic kind — not a Datum
+  ["sammlung"],          // a stamp collection — not the bin collection
+  ["grad"],              // degrees of temperature — not an Abschluss
+  ["etappe"],            // a leg of a journey — not a Bühne (stage)
+  ["hart"],              // physically hard — not schwierig (difficult)
+  ["zäh"],               // tough meat, tough person — not difficult
+  ["zustand"],           // a state something is in — not a Bedingung (requirement)
+  ["niveau"],            // a quality level — not an Ebene (a plane)
+  ["eintreten"],         // walking in / joining — not typing data in
+  ["füllen"],            // filling a glass — not filler paste (spachteln)
+  ["buchstabe"],         // a letter of the alphabet — not a Brief
+  ["rang"],              // a theatre balcony/rank — not a Kreis (circle)
+  ["lauten"],            // how a sentence is worded — not lesen (to read)
+  ["ansiedeln"],         // settling a place — not settling a claim
+  ["regulieren"],        // handling a claim — not settling a place
+  ["bezug"],             // relation (and a duvet cover) — not a Referenz
+  ["reisebus"],          // the vehicle coach — not a Trainer
+  ["raten"],             // to guess — beraten is the advising
+  ["ordnung"],           // tidiness and order — not an Auftrag (an order placed)
+  ["studiengang"],       // a degree programme — not a Kurs (a class)
+  ["biegsam"],           // physically bendable — not flexibel (schedules)
+  ["weisen"],            // to point — not richten (to aim/judge)
+  ["lenken"],            // to steer — not richten
+  ["dann"],              // the adverb "then" — not damalig (of that time)
+  ["hitze"],             // intense heat — not ordinary Wärme
+  ["hinweg"],            // the over/away particle — not entfernt (distant)
+  ["retten"],            // to rescue — not sparen (to save money)
+  ["aufheben"],          // to keep an object (also to pick up) — not sparen
+  ["erlebnis"],          // an experience you have — not Erfahrung you gain
+  ["erleben"],           // to live through — erfahren is to find out
+  ["fläche"],            // a surface area — not a Gegend (a region)
+  ["probe"],             // a rehearsal/sample — not a Test
+  ["eingang"],           // the physical entrance — not an Einstieg (getting in)
+  ["bereiten"],          // to prepare (Freude bereiten) — not verursachen
+  ["jahreszeit"],        // the season of the year — not a Saison
+  ["staffel"],           // the TV season (and a relay) — never Saison
+  ["verlängerung"],      // a deadline extension/extra time — not an Ausbau
+  ["antreten"],          // to line up/compete — not beginnen
+  ["vermissen"],         // missing a person — verpassen is missing a train
+  ["trainieren"],        // the gym — not erarbeiten (working something out)
+  ["aufhören"],          // to stop doing — aufhalten is to hold up
+  ["volk"],              // a nation/folk — not die Leute
+  ["stufe"],             // a stair/tier — not a Schritt (a step you take)
+  ["sonstig"],           // miscellaneous — not weiter (further)
+  ["arbeitsplatz"],      // the workplace/position — not the Beruf
+  ["anfordern"],         // requesting materials — auffordern is calling on someone
+  ["einführen"],         // introducing a rule/import — not introducing yourself
+  ["zurückgehen"],       // going back/declining — not reduzieren (cutting)
+  ["eindämmen"],         // stemming/limiting — not enthalten (containing)
+  ["bedürfnis"],         // a personal need — not the Bedarf (demand)
+  ["zuletzt"],           // the adverb "last" — not letzte (the last one)
+  ["hinauslaufen"],      // boiling down to — not betragen (summing to)
+  ["hinterlassen"],      // leaving a trace behind — not verlassen (leaving)
+  ["ausweisen"],         // expelling (and identifying yourself) — not abschieben's pair
+  ["establishment"],     // the ruling elite only — not a Gründung
+  ["satt"],              // full after eating — voll is a full container (or drunk)
+  ["handel"],            // trade/commerce — not a company
+  ["sicher"],            // safe/sure — not bestimmt (definite)
+  ["nummer"],            // an identifying number — not a Zahl (a quantity)
+  ["verfolgen"],         // to chase/persecute — not folgen (to follow)
+  ["nachgehen"],         // to look into — not folgen
+  ["rufen"],             // to shout/call out — not nennen (to name)
+  ["aufrufen"],          // to call up/on — not nennen
+  ["anrufen"],           // to phone — not nennen
+  ["begriff"],           // a term/word — not a Konzept
+  ["einbeziehen"],       // to involve someone — not umfassen (to comprise)
+  ["vergeben"],          // to forgive (and award) — not auszeichnen
+  ["status"],            // a status — not der Staat (the state)
+  ["bedienen"],          // to serve/operate a machine — not betreiben (to run)
+  ["umfeld"],            // your personal surroundings — not die Umwelt
+  ["büro"],              // the office you sit in — das Amt is the authority
+  ["essen"],             // food and eating — Lebensmittel are groceries
+  ["speise"],            // a dish — not groceries either
+  ["burg"],              // a fortress — a Schloss is a palace (and a lock)
+  ["akteur"],            // an actor/player in events — not a Spieler in a game
+  ["ausfüllen"],         // filling in a form — absolvieren is completing a degree
+  ["zuhause"],           // your home — Heimat is the homeland
+  ["tabelle"],           // a data table — not the furniture Tisch
+  ["bereitstellung"],    // supplying — not a Bestimmung (a regulation)
+  ["fremd"],             // strange/unfamiliar — not ausländisch (foreign nationality)
+  ["akademisch"],        // university-level — schulisch is school-level
+  ["erreichbar"],        // reachable (a person, a place) — not barrier-free
+  ["quartal"],           // the fiscal quarter — not a Viertel (a district)
+  ["entstehung"],        // how something formed — not Herkunft (descent)
+  ["bord"],              // on board, and a shelf — not a Gremium (a board)
+  ["hinsicht"],          // "in this respect" — not Respekt (esteem)
+  ["steuern"],           // to steer/control — its card also fences off die Steuer (tax)
 ];
 
 const KEEP_APART_WORDS = new Set(

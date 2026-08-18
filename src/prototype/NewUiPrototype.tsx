@@ -73,7 +73,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
-import { countFadingVocab, countKnownVocab, getFluency } from "@/lib/fluency";
+import { countFadingVocab, countKnownVocab, FLUENT_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
 import {
@@ -1396,7 +1396,9 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         </div>
         <div className="np-fluency-footnote">
           <span>{fluency.toFluent.toLocaleString()} words and phrases to go</span>
-          <span>Fluent target: 5,000</span>
+          {/* Read from the ladder, never hardcoded — the target moved once
+              (5,000 → 10,000) and this label silently lied until it did. */}
+          <span>Fluent target: {FLUENT_TARGET.toLocaleString()}</span>
         </div>
         {fading > 0 && (
           <p className="np-fluency-fading">

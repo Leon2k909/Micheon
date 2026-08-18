@@ -232,20 +232,29 @@ const positionIn = (queue, id) => queue.findIndex((item) => item.id === id);
 // past 90% of the most-common-first queue. Deliberately a median and not an
 // "every" — a newly added pack can legitimately hold a very common word, and
 // one such word ranking early under both orders is correct, not a regression.
-// A 100-item head, not 50: the everyday packs (part461+) put genuinely
-// common words (Eis, Schnee, damals) at the very top of newest-first, and
-// those are served early under BOTH orders — which is correct, not a
-// regression. Over 100 items the property is back: if newest-first ever
-// degenerated into most-common-first again, these positions would sit near
-// the front and every threshold below would fail at once.
-const newestHead = newestWords.slice(0, 100).map((item) => positionIn(commonWords, item.id)).sort((a, b) => a - b);
+// Measured from the buried side, not the newest side. Earlier versions
+// asserted "the newest words sit deep in the most-common order" — true when
+// new packs held niche words, inverted the day the frequency-bank packs
+// (part476+) arrived, because the newest content became the MOST common
+// words. The promise was never about the newest words being obscure; it is
+// that material most-common-first buries is still actually reached. So:
+// take everything in the back 10% of the common order and assert newest-first
+// serves it from the front half. If newest-first ever degenerates into
+// most-common-first, buried material keeps its >90% position and every
+// threshold fails at once.
+const newestPositions = new Map(newestWords.map((item, index) => [item.id, index]));
+const buriedByCommon = commonWords
+  .map((item, position) => ({ item, position }))
+  .filter(({ position }) => position > commonWords.length * 0.9)
+  .map(({ item }) => newestPositions.get(item.id))
+  .filter((position) => position !== undefined)
+  .sort((a, b) => a - b);
 check("newest-first order serves the same material, nothing dropped",
   newestWords.length === commonWords.length && newestWords.length > 1000);
 check("newest-first genuinely front-loads what most-common-first buries",
-  newestHead.length === 100
-  && newestHead[50] > commonWords.length * 0.9
-  && newestHead.filter((position) => position > commonWords.length * 0.9).length >= 45
-  && newestHead.filter((position) => position > commonWords.length / 2).length >= 55);
+  buriedByCommon.length > 300
+  && buriedByCommon[Math.floor(buriedByCommon.length / 2)] < newestWords.length * 0.4
+  && buriedByCommon.filter((position) => position < newestWords.length / 2).length / buriedByCommon.length >= 0.9);
 
 // A card titled with a bare word must teach that word. An idiom built on the
 // lemma ("an etwas liegen") used to win the card purely by sitting in an
