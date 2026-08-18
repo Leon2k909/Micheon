@@ -26,7 +26,7 @@ import {
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
-import { targetLangTag } from "@/lib/direction";
+import { learningEnglish, targetLangTag } from "@/lib/direction";
 import {
   WORD_PART_OF_SPEECH_FILTERS,
   wordMatchesPartOfSpeech,
@@ -252,7 +252,8 @@ export function WordsTracker({ apiParts, user }: {
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const alphabetLanguage = uiIsGerman() ? "en" : "de";
+  const learnsEnglish = learningEnglish();
+  const alphabetLanguage = learnsEnglish ? "en" : "de";
 
   const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
   const commonRanks = useMemo(
@@ -512,8 +513,8 @@ export function WordsTracker({ apiParts, user }: {
           {visible.map((word) => {
             const status = statusForId(grades, word.id, word.aliases);
             const record = recordFor(word);
-            const primaryText = uiIsGerman() ? word.en : word.de;
-            const meaningText = uiIsGerman() ? word.de : word.en;
+            const primaryText = learnsEnglish ? word.en : word.de;
+            const meaningText = learnsEnglish ? word.de : word.en;
             const frequency = frequencyInfo(word.lookup || word.de);
             const example = exampleIndex.exampleFor(word);
             return (
@@ -525,8 +526,8 @@ export function WordsTracker({ apiParts, user }: {
                 />
                 <button
                   type="button"
-                  onClick={() => tts(uiIsGerman() ? word.en : word.de, 0.9, targetLangTag())}
-                  aria-label={ui(uiIsGerman() ? "Play English audio" : "Play German audio")}
+                  onClick={() => tts(primaryText, 0.9, targetLangTag())}
+                  aria-label={ui(learnsEnglish ? "Play English audio" : "Play German audio")}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
                 >
                   <Volume2 className="h-4 w-4" />
@@ -570,8 +571,8 @@ export function WordsTracker({ apiParts, user }: {
                       title={ui("Example in context")}
                     >
                       {/* Quote marks follow the quoted sentence's language, not the UI's. */}
-                      <span className="italic">{uiIsGerman() ? `“${example.en}”` : `„${example.de}“`}</span>
-                      <span className="font-medium text-[var(--text-3)]"> — {uiIsGerman() ? example.de : example.en}</span>
+                      <span className="italic">{learnsEnglish ? `“${example.en}”` : `„${example.de}“`}</span>
+                      <span className="font-medium text-[var(--text-3)]"> — {learnsEnglish ? example.de : example.en}</span>
                     </p>
                   )}
                   <StrengthMeter

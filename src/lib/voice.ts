@@ -30,9 +30,9 @@ type SeqItem = {
 
 const DEFAULT_RATE = 0.88;
 
-/** Each clip's own pace times the learner's speech-speed setting, kept sane. */
-function effectiveRate(rate: number): number {
-  return Math.min(2, Math.max(0.3, rate * getTtsSpeechRate()));
+/** Each clip's own authored pace times that language's learner setting. */
+function effectiveRate(rate: number, lang: string): number {
+  return Math.min(2, Math.max(0.3, rate * getTtsSpeechRate(lang)));
 }
 
 /** Fired on window with detail=true when speech starts and detail=false when it
@@ -434,7 +434,7 @@ function playUrl(url: string, token: number, lang: string): Promise<boolean> {
 async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Promise<void> {
   const { lang } = item;
   const text = firstSpokenAlternative(item.text);
-  const rate = effectiveRate(item.rate ?? DEFAULT_RATE);
+  const rate = effectiveRate(item.rate ?? DEFAULT_RATE, lang);
   if (!text || getTtsAudioVolume(lang) <= 0) return;
   let announced = false;
   const announceStart = () => {
@@ -513,5 +513,5 @@ export function preloadTts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): v
   const spokenText = firstSpokenAlternative(text);
   if (!spokenText) return;
   // Same multiplier as playback so the warmed cache entry is the one used.
-  getAudioUrl(spokenText, effectiveRate(rate), lang).catch(() => {});
+  getAudioUrl(spokenText, effectiveRate(rate, lang), lang).catch(() => {});
 }

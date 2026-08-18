@@ -17,15 +17,14 @@ import {
   setMasterAudioVolume,
   setSfxAudioVolume,
   setTtsLanguageVolume,
-  setTtsSpeechRate,
   toggleAudioMuted,
   toggleSfxMuted,
   toggleTtsLanguageMuted,
-  TTS_SPEED_PRESETS,
   type AudioSettings,
   type TtsAudioLanguage,
 } from "@/lib/audioMute";
 import { ui } from "@/lib/i18n";
+import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 
 type MixerPosition = { left: number; top: number };
 
@@ -288,25 +287,7 @@ export function MuteButton({
         value={settings.germanVolume}
       />
       <div className="audio-mixer-divider" />
-      <div className="audio-mixer-row">
-        <div className="audio-mixer-rowhead">
-          <span>{ui("Speech speed")}</span>
-          <strong>{settings.speechRate}×</strong>
-        </div>
-        <div aria-label={ui("Speech speed")} className="audio-mixer-speed" data-testid="speech-speed" role="group">
-          {TTS_SPEED_PRESETS.map((preset) => (
-            <button
-              aria-pressed={Math.abs(settings.speechRate - preset) < 0.01}
-              className={cn("audio-mixer-speed-chip", Math.abs(settings.speechRate - preset) < 0.01 && "is-active")}
-              key={preset}
-              onClick={() => setTtsSpeechRate(preset)}
-              type="button"
-            >
-              {preset}×
-            </button>
-          ))}
-        </div>
-      </div>
+      <SpeechSpeedControl className="audio-mixer-row" testId="speech-speed" />
       <p className="audio-mixer-footnote">{ui("Sound effects control correct and incorrect answer sounds. Voice controls apply to all spoken audio, including lessons, games, and pet speech.")}</p>
     </div>,
     document.body

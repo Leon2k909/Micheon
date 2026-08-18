@@ -51,14 +51,24 @@ check("similar and aliased addresses stay locked", [
   undefined,
 ].every((email) => !hasLeonSocialPreview(email)));
 
-check("the current profile email is the single feature gate", normalizedSource.includes("const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);"));
-// slice(0, 5): Listen joined the nav before Games, so Friends now splices
-// in after index 5 to keep its old after-Games position.
-check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("socialPreviewUnlocked\n    ? [...NAVIGATION.slice(0, 5), SOCIAL_NAVIGATION_ITEM"));
+check("the current profile email is the single private-feature gate", normalizedSource.includes("const leonOnlyFeaturesUnlocked = hasLeonSocialPreview(profile?.email);"));
+check("the Friends sidebar item is inserted only when unlocked", normalizedSource.includes("...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : [])"));
 check("global search includes social only when unlocked", normalizedSource.includes("...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : [])"));
 check("the social page renderer also checks the gate", normalizedSource.includes('activeView === "social" && socialPreviewUnlocked'));
 check("mobile navigation routes Leon's social preview through More", normalizedSource.includes('["social", "shop", "progress", "profile"]'));
 check("the account menu exposes the gated destination", normalizedSource.includes("{socialPreviewUnlocked && (") && normalizedSource.includes("Your private social preview"));
+
+const navigationStart = normalizedSource.indexOf("const NAVIGATION:");
+const navigationEnd = normalizedSource.indexOf("const MOBILE_NAVIGATION", navigationStart);
+const baseNavigationSource = normalizedSource.slice(navigationStart, navigationEnd);
+check("the shared navigation never contains Shop", !baseNavigationSource.includes('id: "shop"'));
+check("Shop uses the same exact Leon-only gate", normalizedSource.includes("const shopUnlocked = leonOnlyFeaturesUnlocked;"));
+check("the Shop sidebar item is inserted only for Leon", normalizedSource.includes("...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : [])"));
+check("global search includes Shop only for Leon", normalizedSource.includes("...(shopUnlocked ? [LEON_SHOP_SEARCH_PAGE] : [])"));
+check("More hides the Shop card from every other account", normalizedSource.includes('...(shopUnlocked ? [{ title: ui("Reward shop")'));
+check("direct Shop navigation is rejected when locked", normalizedSource.includes('view === "shop" && !shopUnlocked'));
+check("the Shop renderer also checks the gate", normalizedSource.includes('activeView === "shop" && shopUnlocked'));
+check("non-Leon profiles cannot display an equipped Shop badge", normalizedSource.includes("equippedBadge={shopUnlocked ? equippedShopBadge : null}"));
 
 const socialStart = normalizedSource.indexOf("function SocialView");
 const socialEnd = normalizedSource.indexOf("function MoreView", socialStart);

@@ -17,6 +17,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const guided = read("src/GuidedSession.tsx");
 const css = read("src/index.css");
 const audio = read("src/lib/audioMute.ts");
+const speedControl = read("src/components/SpeechSpeedControl.tsx");
 const server = read("server/index.js");
 
 let failures = 0;
@@ -111,7 +112,28 @@ check(
 check(
   "the layouts size themselves from the preset list rather than a fixed four",
   css.includes("grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));")
-    && /\.fs-speed-menu \{[\s\S]{0,220}?flex-wrap: wrap;/.test(css)
+    && speedControl.includes("TTS_SPEED_PRESETS.map")
+    && guided.includes("<SpeechSpeedControl")
+    && !guided.includes("fs-speed-option")
+);
+
+// ── 4. final bilingual recall is a two-step keyboard flow ─────────────────
+check(
+  "Recall both checks the learning language before opening the meaning",
+  guided.includes("const checkRecallBothTarget = () =>")
+    && guided.includes('disabled={!recallBothTargetReady || recallCompletionScheduledRef.current}')
+    && guided.includes('disabled={recallBothTargetReady || recallCompletionScheduledRef.current}')
+);
+check(
+  "a correct first answer moves focus to the second language",
+  guided.includes("window.setTimeout(() => recallBothMeaningRef.current?.focus(), 50)")
+    && guided.includes('useStickyFocus(recallBothTargetRef, phase === "RecallBoth" && !recallBothTargetReady)')
+    && guided.includes('phase === "RecallBoth" && recallBothTargetReady && !recallBothChecked')
+);
+check(
+  "the target-first order follows the selected learning direction",
+  guided.includes('? "Start with English. A correct answer moves you to German."')
+    && guided.includes(': "Start with German. A correct answer moves you to English."')
 );
 
 if (failures) {

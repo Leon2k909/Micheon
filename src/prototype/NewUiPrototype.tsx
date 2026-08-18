@@ -153,7 +153,6 @@ const NAVIGATION: NavigationItem[] = [
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "listen", label: "Listen", icon: Headphones },
   { id: "games", label: "Games", icon: Gamepad2 },
-  { id: "shop", label: "Shop", icon: ShoppingBag },
   { id: "more", label: "More", icon: Menu },
 ];
 
@@ -166,6 +165,7 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
 ];
 
 const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends", icon: UsersRound };
+const SHOP_NAVIGATION_ITEM: NavigationItem = { id: "shop", label: "Shop", icon: ShoppingBag };
 
 const PROTOTYPE_SIDEBAR_MIN = 188;
 const PROTOTYPE_SIDEBAR_MAX = 330;
@@ -179,17 +179,16 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   subtitle: string;
   keywords: string;
 }> = [
-  { id: "home", title: ui("Home"), subtitle: ui("Your course, progress, lesson path, and fluency outlook."), keywords: "dashboard today continue learning" },
-  { id: "learn", title: ui("Lessons"), subtitle: ui("Browse every German lesson and word-bank pack."), keywords: "learn modules packs vocabulary phrases" },
-  { id: "practice", title: ui("Practice"), subtitle: ui("Choose useful phrases and review conversational German."), keywords: "review recall sentences conversation" },
-  { id: "listen", title: ui("Listen"), subtitle: ui("Both languages read aloud while you do something else."), keywords: "listen audio hear tts hands-free passive hören" },
-  { id: "games", title: ui("Games"), subtitle: ui("Spelling, recall, verbs, and quick-recognition games."), keywords: "play word snake falling letters shooter minesweeper slither" },
-  { id: "tests", title: ui("Tests"), subtitle: ui("Build vocabulary, phrase, mixed, or weak-spot tests."), keywords: "quiz assessment level search filters" },
-  { id: "grammar", title: ui("Grammar"), subtitle: ui("Cloze practice and accessible grammar explanations."), keywords: "fill blanks rules sentence structure" },
-  { id: "shop", title: ui("Shop"), subtitle: ui("Unlock and equip profile badges with earned coins."), keywords: "rewards coins badge cosmetics" },
-  { id: "progress", title: ui("Progress and achievements"), subtitle: ui("Levels, streaks, XP, milestones, and activity."), keywords: "stats achievements streak level xp" },
-  { id: "profile", title: ui("Profile and settings"), subtitle: ui("Account, learning direction, sound, and preferences."), keywords: "account settings language sound preferences" },
-  { id: "more", title: ui("More"), subtitle: ui("Course switching and the rest of Micheon's tools."), keywords: "courses switch full app options" },
+  { id: "home", title: "Home", subtitle: "Your course, progress, lesson path, and fluency outlook.", keywords: "dashboard today continue learning" },
+  { id: "learn", title: "Lessons", subtitle: "Browse every German lesson and word-bank pack.", keywords: "learn modules packs vocabulary phrases" },
+  { id: "practice", title: "Practice", subtitle: "Choose useful phrases and review conversational German.", keywords: "review recall sentences conversation" },
+  { id: "listen", title: "Listen", subtitle: "Both languages read aloud while you do something else.", keywords: "listen audio hear tts hands-free passive hören" },
+  { id: "games", title: "Games", subtitle: "Spelling, recall, verbs, and quick-recognition games.", keywords: "play word snake falling letters shooter minesweeper slither" },
+  { id: "tests", title: "Tests", subtitle: "Build vocabulary, phrase, mixed, or weak-spot tests.", keywords: "quiz assessment level search filters" },
+  { id: "grammar", title: "Grammar", subtitle: "Cloze practice and accessible grammar explanations.", keywords: "fill blanks rules sentence structure" },
+  { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
+  { id: "profile", title: "Profile and settings", subtitle: "Account, learning direction, sound, and preferences.", keywords: "account settings language sound preferences" },
+  { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
 ];
 
 const LEON_SOCIAL_SEARCH_PAGE = {
@@ -197,6 +196,13 @@ const LEON_SOCIAL_SEARCH_PAGE = {
   title: "Friends and leaderboard",
   subtitle: "See friend activity, weekly XP, streaks, and the private friends league preview.",
   keywords: "friends social leaderboard league add friend invite challenge weekly xp",
+};
+
+const LEON_SHOP_SEARCH_PAGE = {
+  id: "shop" as const,
+  title: "Shop",
+  subtitle: "Unlock and equip profile badges with earned coins.",
+  keywords: "rewards coins badge cosmetics",
 };
 
 const PROTOTYPE_SEARCH_GAMES = [
@@ -436,21 +442,26 @@ function Sidebar({
   activeView,
   onNavigate,
   onResize,
+  shopUnlocked,
   socialPreviewUnlocked,
   width,
 }: {
   activeView: PrototypeView;
   onNavigate: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
+  shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
   // Friends slots in directly after Games, same relative spot it had
   // before Listen joined the list.
-  const navigationItems = socialPreviewUnlocked
-    ? [...NAVIGATION.slice(0, 5), SOCIAL_NAVIGATION_ITEM, ...NAVIGATION.slice(5)]
-    : NAVIGATION;
+  const navigationItems = [
+    ...NAVIGATION.slice(0, 5),
+    ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
+    ...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : []),
+    ...NAVIGATION.slice(5),
+  ];
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
     : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
@@ -2052,10 +2063,12 @@ function SocialView({ userName }: { userName: string }) {
 function MoreView({
   onNavigate,
   onSwitchCourse,
+  shopUnlocked,
   socialPreviewUnlocked,
 }: {
   onNavigate: (view: PrototypeView) => void;
   onSwitchCourse: () => void;
+  shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
 }) {
   const features: Array<{
@@ -2073,7 +2086,7 @@ function MoreView({
       action: () => onNavigate("social"),
     }] : []),
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
-    { title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") },
+    ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
     { title: ui("Courses and packs"), description: ui("Switch courses or browse every hardcoded lesson and phrase pack."), icon: Languages, tone: "blue", action: onSwitchCourse },
     { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
@@ -2223,7 +2236,9 @@ export default function NewUiPrototype({
   const requestParts = useCallback(() => setPartsRequested(true), []);
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
-  const socialPreviewUnlocked = hasLeonSocialPreview(profile?.email);
+  const leonOnlyFeaturesUnlocked = hasLeonSocialPreview(profile?.email);
+  const socialPreviewUnlocked = leonOnlyFeaturesUnlocked;
+  const shopUnlocked = leonOnlyFeaturesUnlocked;
   const activeCourse = getCourse(activeCourseId) ?? getCourse("german");
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
@@ -2305,9 +2320,14 @@ export default function NewUiPrototype({
 
   useEffect(() => {
     if (!socialPreviewUnlocked && activeView === "social") setActiveView("home");
-  }, [activeView, socialPreviewUnlocked]);
+    if (!shopUnlocked && activeView === "shop") setActiveView("home");
+  }, [activeView, shopUnlocked, socialPreviewUnlocked]);
 
   const navigate = (view: PrototypeView) => {
+    if ((view === "social" && !socialPreviewUnlocked) || (view === "shop" && !shopUnlocked)) {
+      setActiveView("home");
+      return;
+    }
     if (["learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
@@ -2380,6 +2400,7 @@ export default function NewUiPrototype({
   };
 
   const chooseShopBadge = (id: ShopBadgeId) => {
+    if (!shopUnlocked) return;
     const item = SHOP_ITEMS.find((candidate) => candidate.id === id);
     if (!item) return;
 
@@ -2398,13 +2419,14 @@ export default function NewUiPrototype({
     ...[
       ...PROTOTYPE_SEARCH_PAGES,
       ...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : []),
+      ...(shopUnlocked ? [LEON_SHOP_SEARCH_PAGE] : []),
     ].map((page) => ({
       id: `page-${page.id}`,
-      title: page.title,
-      subtitle: page.subtitle,
+      title: ui(page.title),
+      subtitle: ui(page.subtitle),
       group: "Page" as const,
       actionLabel: "Open" as const,
-      searchText: buildCatalogSearchText([page.title, page.subtitle, page.keywords]),
+      searchText: buildCatalogSearchText([page.title, page.subtitle, ui(page.title), ui(page.subtitle), page.keywords]),
       onSelect: () => navigate(page.id),
     })),
     ...searchableLessons.map((lesson) => ({
@@ -2493,7 +2515,7 @@ export default function NewUiPrototype({
         <GrammarTabContent />
       </Suspense>
     </div>
-  ) : activeView === "shop" ? (
+  ) : activeView === "shop" && shopUnlocked ? (
     <ShopView
       availableCoins={availableShopCoins}
       equippedBadge={equippedShopBadge}
@@ -2523,6 +2545,7 @@ export default function NewUiPrototype({
     <MoreView
       onNavigate={navigate}
       onSwitchCourse={() => setCourseSwitcherOpen(true)}
+      shopUnlocked={shopUnlocked}
       socialPreviewUnlocked={socialPreviewUnlocked}
     />
   );
@@ -2540,6 +2563,7 @@ export default function NewUiPrototype({
             activeView={activeView}
             onNavigate={navigate}
             onResize={resizeSidebar}
+            shopUnlocked={shopUnlocked}
             socialPreviewUnlocked={socialPreviewUnlocked}
             width={sidebarWidth}
           />
@@ -2547,7 +2571,7 @@ export default function NewUiPrototype({
             <Header
               avatar={profile?.avatar}
               onSignOut={signOutOfPrototype}
-              equippedBadge={equippedShopBadge}
+              equippedBadge={shopUnlocked ? equippedShopBadge : null}
               onNavigate={navigate}
               onProfileIntent={() => { void loadGamificationPanel(); }}
               onSearchOpen={requestParts}

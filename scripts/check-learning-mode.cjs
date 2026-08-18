@@ -918,6 +918,7 @@ check(
   "English lesson words expose useful offline German hover glosses",
   englishWordGloss("I") === "ich"
     && englishWordGloss("the") === "der / die / das"
+    && englishWordGloss("until") === "bis"
     && englishWordGloss("aim")?.toLocaleLowerCase("de-DE").includes("ziel")
     && englishWordGloss("houses")?.toLocaleLowerCase("de-DE").includes("haus")
     && englishWordGloss("don't") === "… nicht (mit do)"
@@ -963,6 +964,29 @@ check(
   "offline hover glosses cover at least 90% of words used in the lesson catalog",
   glossaryCoverage >= 0.90,
   `${Math.round(glossaryCoverage * 100)}% covered; frequent gaps: ${frequentMissingGlosses.join(", ")}`
+);
+const englishGlossaryTokens = authoredPhrases.flatMap((phrase) =>
+  [phrase?.en]
+    .filter(Boolean)
+    .flatMap((sentence) => String(sentence).split(/\s+/).filter((token) => /[A-Za-z]/u.test(token)))
+);
+const missingEnglishGlossTokens = englishGlossaryTokens.filter((token) => !englishWordGloss(token));
+const englishGlossaryCoverage = englishGlossaryTokens.length
+  ? 1 - (missingEnglishGlossTokens.length / englishGlossaryTokens.length)
+  : 0;
+const missingEnglishGlossCounts = missingEnglishGlossTokens.reduce((counts, token) => {
+  const key = token.toLocaleLowerCase("en-GB").replace(/^[\s.,!?;:()"'“”]+|[\s.,!?;:()"'“”]+$/gu, "");
+  if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+  return counts;
+}, new Map());
+const frequentMissingEnglishGlosses = [...missingEnglishGlossCounts.entries()]
+  .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], "en"))
+  .slice(0, 80)
+  .map(([token, count]) => `${token} (${count})`);
+check(
+  "offline German glosses cover at least 90% of English lesson words",
+  englishGlossaryCoverage >= 0.90,
+  `${Math.round(englishGlossaryCoverage * 100)}% covered; frequent gaps: ${frequentMissingEnglishGlosses.join(", ")}`
 );
 check(
   "stage-route fallback uses the shared defined phase lists",

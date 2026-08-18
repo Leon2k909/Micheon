@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Gauge,
   Headphones,
   ListMusic,
   Minimize2,
@@ -29,12 +28,11 @@ import {
   isMasterAudioSilent,
   setMasterAudioVolume,
   setTtsLanguageVolume,
-  setTtsSpeechRate,
   toggleAudioMuted,
   toggleTtsLanguageMuted,
-  TTS_SPEED_PRESETS,
   type AudioSettings,
 } from "@/lib/audioMute";
+import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 import {
   buildListenQueue,
   formatListenPetCaption,
@@ -149,7 +147,7 @@ function ListenVolumeRow({
 }) {
   const percent = Math.round(value * 100);
   return (
-    <div className="audio-mixer-row !px-0">
+    <div className="audio-mixer-row">
       <div className="audio-mixer-rowhead">
         <span>{label}</span>
         <strong>{muted ? ui("Muted") : `${percent}%`}</strong>
@@ -1203,7 +1201,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             icon={Volume2}
             title={ui("How it sounds")}
           >
-            <div className="mt-3">
+            <div className="listen-audio-stack">
               <ListenVolumeRow
                 label={ui("Master volume")}
                 muteLabel={ui("Mute all audio")}
@@ -1235,26 +1233,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 value={audioSettings.englishVolume}
               />
             </div>
-            <div className="mt-4 border-t border-[var(--border)] pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-black text-[var(--text-2)]">
-                  <Gauge className="h-4 w-4 text-[var(--accent)]" /> {ui("Speech speed")}
-                </span>
-                <strong className="text-xs font-black text-[var(--text-3)]">{audioSettings.speechRate}×</strong>
-              </div>
-              <div className="audio-mixer-speed" data-testid="listen-speech-speed">
-                {TTS_SPEED_PRESETS.map((preset) => (
-                  <button
-                    aria-pressed={Math.abs(audioSettings.speechRate - preset) < 0.01}
-                    className={cn("audio-mixer-speed-chip", Math.abs(audioSettings.speechRate - preset) < 0.01 && "is-active")}
-                    key={preset}
-                    onClick={() => setTtsSpeechRate(preset)}
-                    type="button"
-                  >
-                    {preset}×
-                  </button>
-                ))}
-              </div>
+            <div className="listen-speech-speed-card">
+              <SpeechSpeedControl
+                description={ui("Set both voices together or tune English and German separately.")}
+                testId="listen-speech-speed"
+              />
             </div>
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Language order")}</legend>

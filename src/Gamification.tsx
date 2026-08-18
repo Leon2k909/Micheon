@@ -87,7 +87,7 @@ import { FlashcardModePicker } from "@/components/FlashcardModePicker";
 import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
 import { ActivityCard } from "@/components/lab/ActivityCard";
 import { cn } from "@/lib/utils";
-import { AUDIO_SETTINGS_EVENT, getTtsSpeechRate, setTtsSpeechRate, TTS_SPEED_PRESETS } from "@/lib/audioMute";
+import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 import { getLearningMode, setLearningMode, type LearningMode } from "@/lib/learningMode";
 import {
   clearGuidedCustomBackground,
@@ -569,7 +569,6 @@ export default function GamificationPanel({
   const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
-  const [speechRate, setSpeechRateState] = useState<number>(() => getTtsSpeechRate());
   const [settingsQuery, setSettingsQuery] = useState("");
   const settingsSearchRef = useRef<HTMLInputElement | null>(null);
   const settingsTerms = useMemo(
@@ -628,11 +627,6 @@ export default function GamificationPanel({
   const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
   const [guidedBackgroundError, setGuidedBackgroundError] = useState("");
 
-  useEffect(() => {
-    const sync = () => setSpeechRateState(getTtsSpeechRate());
-    window.addEventListener(AUDIO_SETTINGS_EVENT, sync);
-    return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, sync);
-  }, []);
   const resolvedEnglishVariant = resolveEnglishVariant(englishVariant);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const guidedBackgroundInputRef = useRef<HTMLInputElement | null>(null);
@@ -1233,35 +1227,10 @@ export default function GamificationPanel({
                   </button>
 
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Speech speed")}</p>
-                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                          {ui("How fast lessons, games, and the companion speak. You can also change this from the speaker menu or by right-clicking Hear it.")}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-                        {speechRate}×
-                      </span>
-                    </div>
-                    <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-label={ui("Speech speed")}>
-                      {TTS_SPEED_PRESETS.map((preset) => (
-                        <button
-                          aria-pressed={Math.abs(speechRate - preset) < 0.01}
-                          className={cn(
-                            "h-11 rounded-xl border text-sm font-bold transition-colors",
-                            Math.abs(speechRate - preset) < 0.01
-                              ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
-                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]"
-                          )}
-                          key={preset}
-                          onClick={() => { setSpeechRateState(preset); setTtsSpeechRate(preset); }}
-                          type="button"
-                        >
-                          {preset}×
-                        </button>
-                      ))}
-                    </div>
+                    <SpeechSpeedControl
+                      description={ui("Set both voices together or tune English and German separately. Changes also apply to lessons, games, and the companion.")}
+                      testId="accessibility-speech-speed"
+                    />
                   </div>
                 </SettingsCategory>
 
@@ -1698,35 +1667,10 @@ export default function GamificationPanel({
             </div>
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-black text-[var(--text-1)]">{ui("Speech speed")}</p>
-                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    {ui("How fast lessons, games, and the companion speak. You can also change this from the speaker menu or by right-clicking Hear it.")}
-                  </p>
-                </div>
-                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
-                  {speechRate}×
-                </span>
-              </div>
-              <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-label={ui("Speech speed")}>
-                {TTS_SPEED_PRESETS.map((preset) => (
-                  <button
-                    aria-pressed={Math.abs(speechRate - preset) < 0.01}
-                    className={cn(
-                      "h-11 rounded-xl border text-sm font-bold transition-colors",
-                      Math.abs(speechRate - preset) < 0.01
-                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
-                        : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]"
-                    )}
-                    key={preset}
-                    onClick={() => { setSpeechRateState(preset); setTtsSpeechRate(preset); }}
-                    type="button"
-                  >
-                    {preset}×
-                  </button>
-                ))}
-              </div>
+              <SpeechSpeedControl
+                description={ui("Set both voices together or tune English and German separately. Changes also apply to lessons, games, and the companion.")}
+                testId="language-speech-speed"
+              />
             </div>
 
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">

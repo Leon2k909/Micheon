@@ -17,7 +17,10 @@ export interface AudioSettings {
   sfxMuted: boolean;
   englishMuted: boolean;
   germanMuted: boolean;
+  /** Legacy shared value retained so older profiles migrate without a reset. */
   speechRate: number;
+  englishSpeechRate: number;
+  germanSpeechRate: number;
 }
 
 type StoredAudioSettings = Omit<AudioSettings, "muted">;
@@ -31,6 +34,8 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   englishMuted: false,
   germanMuted: false,
   speechRate: 1,
+  englishSpeechRate: 1,
+  germanSpeechRate: 1,
 };
 
 /** Selectable speech-speed multipliers, applied on top of each clip's own pace. */
@@ -58,6 +63,9 @@ function readStoredSettings(): StoredAudioSettings {
     if (!raw) return { ...DEFAULT_SETTINGS };
     const parsed = JSON.parse(raw) as Partial<StoredAudioSettings> | null;
     if (!parsed || typeof parsed !== "object") return { ...DEFAULT_SETTINGS };
+    // Profiles saved before per-language speed existed carry one speechRate.
+    // Use it for both voices on first read so upgrading changes no audio.
+    const legacySpeechRate = clampSpeechRate(parsed.speechRate, DEFAULT_SETTINGS.speechRate);
     return {
       masterVolume: clampVolume(parsed.masterVolume, DEFAULT_SETTINGS.masterVolume),
       sfxVolume: clampVolume(parsed.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -66,7 +74,9 @@ function readStoredSettings(): StoredAudioSettings {
       sfxMuted: parsed.sfxMuted === true,
       englishMuted: parsed.englishMuted === true,
       germanMuted: parsed.germanMuted === true,
-      speechRate: clampSpeechRate(parsed.speechRate, DEFAULT_SETTINGS.speechRate),
+      speechRate: legacySpeechRate,
+      englishSpeechRate: clampSpeechRate(parsed.englishSpeechRate, legacySpeechRate),
+      germanSpeechRate: clampSpeechRate(parsed.germanSpeechRate, legacySpeechRate),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -180,14 +190,51 @@ export function getSfxAudioVolume(settings: AudioSettings = getAudioSettings()):
   return settings.masterVolume * settings.sfxVolume;
 }
 
-/** Global speech-speed multiplier for all spoken audio (0.5-1.5, default 1). */
-export function getTtsSpeechRate(): number {
-  return readStoredSettings().speechRate;
+/** The shared value while both voices match, otherwise there is no single rate. */
+export function getMasterTtsSpeechRate(settings: AudioSettings = getAudioSettings()): number | null {
+  return Math.abs(settings.englishSpeechRate - settings.germanSpeechRate) < 0.01
+    ? settings.englishSpeechRate
+    : null;
 }
 
+/** Absolute speech speed for one voice. Without a language, return the shared
+ * rate when there is one and the legacy master value while the voices differ. */
+export function getTtsSpeechRate(lang?: string | TtsAudioLanguage): number {
+  const settings = getAudioSettings();
+  const language = lang === "english" || lang === "german"
+    ? lang
+    : audioLanguageFromTag(lang ?? "");
+  if (language === "english") return settings.englishSpeechRate;
+  if (language === "german") return settings.germanSpeechRate;
+  return getMasterTtsSpeechRate(settings) ?? settings.speechRate;
+}
+
+/** Master is a batch control, not another multiplier: both voices become the
+ * selected absolute speed, so 1.25x never turns into a surprising 1.56x. */
 export function setTtsSpeechRate(rate: number) {
   const stored = readStoredSettings();
-  writeStoredSettings({ ...stored, speechRate: clampSpeechRate(rate) });
+  const nextRate = clampSpeechRate(rate);
+  writeStoredSettings({
+    ...stored,
+    speechRate: nextRate,
+    englishSpeechRate: nextRate,
+    germanSpeechRate: nextRate,
+  });
+  emitAudioSettingsChanged();
+}
+
+export function setTtsLanguageSpeechRate(language: TtsAudioLanguage, rate: number) {
+  const stored = readStoredSettings();
+  const nextRate = clampSpeechRate(rate);
+  const next = language === "english"
+    ? { ...stored, englishSpeechRate: nextRate }
+    : { ...stored, germanSpeechRate: nextRate };
+  // Keep the old shared field useful to older builds whenever both channels
+  // have been brought back to the same value manually.
+  if (Math.abs(next.englishSpeechRate - next.germanSpeechRate) < 0.01) {
+    next.speechRate = nextRate;
+  }
+  writeStoredSettings(next);
   emitAudioSettingsChanged();
 }
 

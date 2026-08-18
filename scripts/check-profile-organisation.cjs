@@ -201,7 +201,8 @@ check(
   profile.includes('title={ui("Accessibility")}')
     && profile.indexOf('ui("High contrast")') > profile.indexOf('title={ui("Accessibility")}')
     && profile.indexOf('ui("Reduce effects")') > profile.indexOf('title={ui("Accessibility")}')
-    && profile.indexOf('ui("Speech speed")') > profile.indexOf('title={ui("Accessibility")}')
+    && profile.indexOf('testId="accessibility-speech-speed"') > profile.indexOf('title={ui("Accessibility")}')
+    && profile.includes("<SpeechSpeedControl")
     && profile.includes("aria-pressed={highContrast}")
 );
 
