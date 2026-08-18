@@ -117,23 +117,33 @@ check(
     && !guided.includes("fs-speed-option")
 );
 
-// ── 4. final bilingual recall is a two-step keyboard flow ─────────────────
+// ── 4. final bilingual recall prefers the target without locking either box ─
 check(
-  "Recall both checks the learning language before opening the meaning",
+  "Recall both focuses the learning language but keeps both boxes available",
   guided.includes("const checkRecallBothTarget = () =>")
-    && guided.includes('disabled={!recallBothTargetReady || recallCompletionScheduledRef.current}')
-    && guided.includes('disabled={recallBothTargetReady || recallCompletionScheduledRef.current}')
+    && guided.includes("autoFocus")
+    && (guided.match(/disabled=\{recallCompletionScheduledRef\.current\}/g) || []).length >= 2
+    && !guided.includes('disabled={!recallBothTargetReady || recallCompletionScheduledRef.current}')
+    && !guided.includes('disabled={recallBothTargetReady || recallCompletionScheduledRef.current}')
+    && !guided.includes('!recallBothTargetReady && "is-waiting"')
 );
 check(
   "a correct first answer moves focus to the second language",
   guided.includes("window.setTimeout(() => recallBothMeaningRef.current?.focus(), 50)")
     && guided.includes('useStickyFocus(recallBothTargetRef, phase === "RecallBoth" && !recallBothTargetReady)')
-    && guided.includes('phase === "RecallBoth" && recallBothTargetReady && !recallBothChecked')
+    && guided.includes("window.setTimeout(() => recallBothTargetRef.current?.focus(), 50)")
 );
 check(
   "the target-first order follows the selected learning direction",
-  guided.includes('? "Start with English. A correct answer moves you to German."')
-    && guided.includes(': "Start with German. A correct answer moves you to English."')
+  guided.includes('? "English is ready to type. You can answer either box first; a correct English answer moves focus to German."')
+    && guided.includes(': "German is ready to type. You can answer either box first; a correct German answer moves focus to English."')
+);
+check(
+  "two correct recall answers advance without a Check both click",
+  guided.includes('phase !== "RecallBoth"')
+    && guided.includes("recallCompletionScheduledRef.current = true")
+    && guided.includes("if (recallCompletionScheduledRef.current) onNext()")
+    && guided.includes('this effect is their single')
 );
 
 if (failures) {

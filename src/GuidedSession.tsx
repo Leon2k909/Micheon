@@ -2302,14 +2302,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useEffect(() => {
     if (
       phase === "RecallBoth"
-      && recallBothTargetReady
       && !recallBothChecked
       && recallBothMeaningInput.trim()
       && recallBothMeaningResult.ok
       && !recallBothMeaningResult.spellingNote
     ) checkRecallBoth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recallBothMeaningInput, recallBothTargetReady]);
+  }, [recallBothMeaningInput, recallBothChecked]);
   useEffect(() => {
     if (
       phase === "Order"
@@ -2670,7 +2669,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setWrongLanguageNotice(null);
     setRecallBothTargetChecked(true);
     if (recallBothTargetResult.ok) {
-      window.setTimeout(() => recallBothMeaningRef.current?.focus(), 50);
+      if (!(recallBothChecked && recallBothMeaningResult.ok)) {
+        window.setTimeout(() => recallBothMeaningRef.current?.focus(), 50);
+      }
       return;
     }
     reactToAnswer(false);
@@ -2679,29 +2680,44 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const checkRecallBoth = () => {
     if (
-      !recallBothTargetReady
-      || !recallBothMeaningInput.trim()
+      !recallBothMeaningInput.trim()
       || recallBothChecked
       || recallCompletionScheduledRef.current
     ) return;
     if (
-      (!recallBothTargetResult.ok && answeredOtherSide(recallBothTargetInput, "target"))
-      || (!recallBothMeaningResult.ok && answeredOtherSide(recallBothMeaningInput, "meaning"))
-    ) { flagWrongLanguage(recallBothTargetResult.ok ? "meaning" : "target"); return; }
+      !recallBothMeaningResult.ok
+      && answeredOtherSide(recallBothMeaningInput, "meaning")
+    ) { flagWrongLanguage("meaning"); return; }
     setWrongLanguageNotice(null);
     setRecallBothChecked(true);
-    const bothOk = recallBothTargetResult.ok && recallBothMeaningResult.ok;
-    reactToAnswer(bothOk);
-    if (bothOk) {
-      recallCompletionScheduledRef.current = true;
-      recallCompletionTimerRef.current = window.setTimeout(() => {
-        recallCompletionTimerRef.current = null;
-        if (recallCompletionScheduledRef.current) onNext();
-      }, 700);
-    } else {
-      noteRecallStruggle();
+    if (recallBothMeaningResult.ok) {
+      if (!recallBothTargetReady) {
+        window.setTimeout(() => recallBothTargetRef.current?.focus(), 50);
+      }
+      return;
     }
+    reactToAnswer(false);
+    noteRecallStruggle();
   };
+  useEffect(() => {
+    if (
+      phase !== "RecallBoth"
+      || recallCompletionScheduledRef.current
+      || !recallBothTargetReady
+      || !recallBothChecked
+      || !recallBothMeaningResult.ok
+    ) return;
+    setWrongLanguageNotice(null);
+    reactToAnswer(true);
+    recallCompletionScheduledRef.current = true;
+    recallCompletionTimerRef.current = window.setTimeout(() => {
+      recallCompletionTimerRef.current = null;
+      if (recallCompletionScheduledRef.current) onNext();
+    }, 700);
+    // Both sides are checked independently; this effect is their single
+    // completion point so no extra "Check both" click can be required.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, recallBothTargetReady, recallBothChecked, recallBothMeaningResult.ok]);
   const retryRecallBoth = () => {
     if (recallCompletionTimerRef.current !== null) {
       window.clearTimeout(recallCompletionTimerRef.current);
@@ -3703,8 +3719,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <p className="text-center text-sm font-semibold text-zinc-500">
               {ui(
                 learnEn
-                  ? "Start with English. A correct answer moves you to German."
-                  : "Start with German. A correct answer moves you to English."
+                  ? "English is ready to type. You can answer either box first; a correct English answer moves focus to German."
+                  : "German is ready to type. You can answer either box first; a correct German answer moves focus to English."
               )}
             </p>
             <div className="fs-recall-pair">
@@ -3718,6 +3734,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <div className="fs-prompt"><PromptLanguageBadge label={targetLabel} /><strong>{ui(`Type in ${targetLabel}`)}</strong></div>
                   <Input
                     ref={recallBothTargetRef}
+                    autoFocus
                     className="fs-input"
                     aria-label={ui(`Recall the ${targetLabel}`)}
                     placeholder={ui(`Type in ${targetLabel}`)}
@@ -3726,7 +3743,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     onChange={(event) => {
                       setRecallBothTargetInput(event.target.value);
                       if (recallBothTargetChecked) setRecallBothTargetChecked(false);
-                      if (recallBothChecked) setRecallBothChecked(false);
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter") {
@@ -3734,7 +3750,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                         checkRecallBothTarget();
                       }
                     }}
-                    disabled={recallBothTargetReady || recallCompletionScheduledRef.current}
+                    disabled={recallCompletionScheduledRef.current}
                   />
                 </div>
                 <div className="fs-recall-char-slot">
@@ -3754,7 +3770,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <span className="fs-recall-language">{ui(meaningLabel)}</span>
                 <div className={cn(
                   "fs-panel",
-                  !recallBothTargetReady && "is-waiting",
                   recallBothChecked && recallBothMeaningResult.ok && "is-good",
                   recallBothChecked && !recallBothMeaningResult.ok && "is-bad"
                 )}>
@@ -3776,13 +3791,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                         checkRecallBoth();
                       }
                     }}
-                    disabled={!recallBothTargetReady || recallCompletionScheduledRef.current}
+                    disabled={recallCompletionScheduledRef.current}
                   />
                 </div>
                 <div className="fs-recall-char-slot">
                   {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} /></div>}
                 </div>
-                {recallBothTargetReady && !(recallBothChecked && recallBothMeaningResult.ok) && (
+                {!(recallBothChecked && recallBothMeaningResult.ok) && (
                   <RecallHelp
                     key={`${item.id}-recall-both-meaning`}
                     answer={displayEnglish}
@@ -3793,7 +3808,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
             </div>
 
-            {recallBothChecked && (
+            {recallBothTargetChecked && recallBothChecked && (
               <div className={cn(
                 "fs-result",
                 recallBothTargetResult.ok && recallBothMeaningResult.ok ? "is-good" : "is-bad"
@@ -3808,7 +3823,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
             )}
 
-            {recallBothChecked && !(recallBothTargetResult.ok && recallBothMeaningResult.ok) ? (
+            {recallBothTargetChecked && recallBothChecked && !(recallBothTargetResult.ok && recallBothMeaningResult.ok) ? (
               <Button onClick={retryRecallBoth} variant="outline"
                 className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                 <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
