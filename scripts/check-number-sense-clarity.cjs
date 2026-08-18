@@ -66,7 +66,7 @@ const byLookup = (lookup) => words.find(
 // synonyms. A reviewed-sense regression still moves this number; the fold
 // alone cannot.
 const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.length ?? 0), 0);
-assert.equal(taughtWords, 7112, "the reviewed sense fixes changed the standalone word count");
+assert.equal(taughtWords, 7237, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

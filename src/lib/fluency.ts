@@ -33,6 +33,55 @@ export const FLUENCY_STAGES: FluencyStage[] = [
 
 export const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;
 
+/**
+ * The 10,000-item Fluent target, split into what it is actually made of.
+ *
+ * One raw "7,778 to go" reads like 7,778 hard new words and made the card
+ * look, in Leon's words, too hard for people. It never was: about 4,000
+ * ACTIVE words is what vocabulary research puts behind comfortable
+ * near-native conversation (the 12-16k native figure counts every word a
+ * native holds, most of it passive), and the rest of the distance is
+ * phrases — whole sentences a learner banks several at a sitting. Showing
+ * the two lanes separately is both kinder and more truthful than one
+ * mountain of a number.
+ */
+export const FLUENT_WORD_TARGET = 4000;
+export const FLUENT_PHRASE_TARGET = FLUENT_TARGET - FLUENT_WORD_TARGET;
+
+/**
+ * The known count, split into its two lanes. Word progress lives under the
+ * `vw-` id namespace (WORD_ID_PREFIX in wordSession.ts — hardcoded here to
+ * keep this module free of the session graph); everything else in the store
+ * is a sentence or phrase. Hand-mastered game words and self-tracked
+ * external words are words by definition. Same recall decay as
+ * countKnownVocab, so the lanes always sum to the headline number.
+ */
+export function countKnownSplit(
+  user: UserProfile | null = getAuthUser(),
+  externalWords = 0
+): { words: number; phrases: number } {
+  let words = 0;
+  let phrases = 0;
+  try {
+    const raw = loadScopedJson<any>(REVIEW_KEY, {}, user);
+    if (Array.isArray(raw)) {
+      phrases = raw.length; // legacy array form predates word ids entirely
+    } else if (raw && typeof raw === "object") {
+      for (const [id, rec] of Object.entries(raw)) {
+        const weight = recallWeight(rec as GradeRecord);
+        if (String(id).startsWith("vw-")) words += weight;
+        else phrases += weight;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return {
+    words: Math.round(words) + getMasteredCount() + Math.max(0, externalWords || 0),
+    phrases: Math.round(phrases),
+  };
+}
+
 /** Distinct things the learner actually knows, across lessons, games and external tracking. */
 /**
  * How much German you actually know: distinct items you can currently

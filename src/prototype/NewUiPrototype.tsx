@@ -73,7 +73,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
-import { countFadingVocab, countKnownVocab, FLUENT_TARGET, getFluency } from "@/lib/fluency";
+import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
 import {
@@ -1356,6 +1356,13 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
   const fluency = getFluency(vocab);
   // Recomputed with the revision counter, so finishing a lesson updates it.
   const fading = useMemo(() => countFadingVocab(profile), [profile, revision]);
+  // The two lanes of the Fluent target: ~4,000 active words is the
+  // research-backed core, and the rest of the road is phrases banked
+  // several at a sitting. One undifferentiated "7,778 to go" read as
+  // 7,778 hard words and looked unclimbable — the split is the truth.
+  const split = useMemo(() => countKnownSplit(profile), [profile, revision]);
+  const wordsToGo = Math.max(0, FLUENT_WORD_TARGET - split.words);
+  const phrasesToGo = Math.max(0, FLUENT_PHRASE_TARGET - split.phrases);
 
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1);
@@ -1367,9 +1374,14 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
     };
   }, []);
 
+  // Hours to the NEXT stage, not to the far end of the ladder. A learner at
+  // "Conversational" was shown one straight-line extrapolation all the way
+  // to Fluent — hundreds of hours, always growing with the target, and less
+  // accurate the further it reached. The next milestone is the honest span
+  // this estimator can actually speak to.
   const estimate = useMemo(
-    () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
-    [fluency.toFluent, profile, revision]
+    () => estimateFluencyHours(fluency.toNext || fluency.toFluent, loadLearningTimeStats(profile)),
+    [fluency.toNext, fluency.toFluent, profile, revision]
   );
   const estimateNote = estimate.confidence === "personalized"
     ? ui("Based on your active lesson pace.")
@@ -1395,14 +1407,14 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           <span style={{ width: `${fluency.overallPct}%` }} />
         </div>
         <div className="np-fluency-footnote">
-          {/* Leon's call: the 10,000 target comes from native WORD counts, but
-              every phrase you can recall counts toward it too — so the road is
-              shorter than "10,000 words to go" would suggest, and the card
-              should not pretend otherwise. */}
-          <span>{fluency.toFluent.toLocaleString()} to go — every word and phrase counts</span>
+          <span>
+            {wordsToGo > 0 || phrasesToGo > 0
+              ? `${wordsToGo.toLocaleString()} more words · ${phrasesToGo.toLocaleString()} more phrases`
+              : "Both lanes complete — keep them fresh"}
+          </span>
           {/* Read from the ladder, never hardcoded — the target moved once
               (5,000 → 10,000) and this label silently lied until it did. */}
-          <span>Fluent target: {FLUENT_TARGET.toLocaleString()}</span>
+          <span>Fluent = {FLUENT_WORD_TARGET.toLocaleString()} words + {FLUENT_PHRASE_TARGET.toLocaleString()} phrases</span>
         </div>
         {fading > 0 && (
           <p className="np-fluency-fading">
@@ -1413,7 +1425,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
       <div className="np-fluency-hours">
         <span aria-hidden="true"><Clock3 /></span>
         <small>{ui("Estimated active study left")}</small>
-        <strong>About {estimate.hoursRemaining.toLocaleString()} hours</strong>
+        <strong>About {estimate.hoursRemaining.toLocaleString()} hours{fluency.next ? ` to ${ui(fluency.next.label)}` : ""}</strong>
         <p>{estimateNote}</p>
       </div>
     </section>

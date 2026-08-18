@@ -302,6 +302,14 @@ export const KEEP_APART: string[][] = [
   ["anbrennen"],         // food catching on the pan — not brennen (a fire)
   ["schulhof"],          // the school yard — not a Spielplatz (playground)
   ["zusammenlegen"],     // folding laundry (and pooling money) — not falten
+  ["lauf"],              // a gun barrel (and a run) — not a Fass (keg)
+  ["gips"],              // a plaster cast — not a Pflaster (sticking plaster)
+  ["eisen"],             // the metal — not the Bügeleisen that presses shirts
+  ["fläschchen"],        // the baby bottle keeps its own card, not fronting Flasche
+  ["gebrochen"],         // a broken bone — not kaputt (a broken gadget)
+  ["verschluss"],        // a bottle cap/fastener — not a Kappe (a hat)
+  ["gummi"],             // the material — not a Radiergummi (an eraser)
+  ["ledig"],             // unmarried — not einzeln (individual, separate)
 ];
 
 const KEEP_APART_WORDS = new Set(
