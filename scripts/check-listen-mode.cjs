@@ -724,6 +724,20 @@ for (const key of [
 delete global.window;
 delete global.localStorage;
 
+// ── the page leads with the display face ────────────────────────────────
+// The prototype shell sends every <p>/<small> to Segoe UI Variable Text,
+// which caps at weight 700 — Listen's hero word and card copy rendered thin
+// while every other tab kept the rounded game lettering. The listen-view
+// scope must keep out-ranking that base rule.
+const listenView = read("src/components/listen/ListenView.tsx");
+const css = read("src/index.css");
+check(
+  "the Listen page opts into the rounded display face",
+  listenView.includes('className="listen-view mx-auto w-full max-w-7xl space-y-4"')
+    && /\.new-ui-prototype \.listen-view p,\s*\.new-ui-prototype \.listen-view small,\s*\.listen-view p,\s*\.listen-view small \{\s*font-family: var\(--np-font-display/.test(css)
+    && /\.listen-view \.font-semibold \{\s*font-weight: 700;/.test(css)
+);
+
 if (failures > 0) {
   console.error(`\n${failures} listen-mode check(s) failed`);
   process.exit(1);
