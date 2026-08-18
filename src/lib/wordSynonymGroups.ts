@@ -311,6 +311,7 @@ export const KEEP_APART: string[][] = [
   ["gummi"],             // the material — not a Radiergummi (an eraser)
   ["ledig"],             // unmarried — not einzeln (individual, separate)
   ["türkei"],            // the country — case-folding made it a Truthahn (turkey)
+  ["weite"],             // vastness and a loose fit — not the measured Breite
 ];
 
 const KEEP_APART_WORDS = new Set(

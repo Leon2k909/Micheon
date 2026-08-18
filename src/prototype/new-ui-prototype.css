@@ -89,17 +89,18 @@
   cursor: pointer;
 }
 
-/* Honest label on unfinished territory: the Games tab wears it on the one
-   account (Leon's) that can still see the tab at all. */
-.np-nav-beta {
-  margin-left: auto;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--np-violet-soft);
+/* Honest label on unfinished territory: Games, Friends and Shop sit under
+   this divider on the one account (Leon's) that sees them at all. */
+.np-nav-section {
+  display: block;
+  margin: 14px 12px 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--np-line);
   color: var(--np-violet);
+  font-family: var(--np-font-display);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 

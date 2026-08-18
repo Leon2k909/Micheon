@@ -456,17 +456,16 @@ function Sidebar({
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
-  // Friends slots in directly after Games, same relative spot it had
-  // before Listen joined the list.
-  // Games ride the same Leon-only gate as Shop and Friends: too many of
-  // them are half-built for Michelle's account, so hers hides the tab
-  // entirely and Leon's wears a Beta chip as the honest label.
-  const navigationItems = [
-    ...NAVIGATION.slice(0, 5),
+  // The finished app and the building site, kept visibly apart. Games,
+  // Friends and Shop all have rough edges, so together they form a labelled
+  // Beta section at the foot of the nav — and only on Leon's account. Every
+  // other account gets the main navigation and nothing half-built.
+  const navigationItems = NAVIGATION.filter((item) => item.id !== "games");
+  const betaItems = [
+    ...(gamesUnlocked ? [NAVIGATION.find((item) => item.id === "games")!] : []),
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
     ...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : []),
-    ...NAVIGATION.slice(5),
-  ].filter((item) => item.id !== "games" || gamesUnlocked);
+  ];
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
     : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
@@ -530,10 +529,33 @@ function Sidebar({
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{ui(item.label)}</span>
-              {item.id === "games" && <span className="np-nav-beta">Beta</span>}
             </button>
           );
         })}
+        {betaItems.length > 0 && (
+          <>
+            <span aria-hidden="true" className="np-nav-section">
+              Beta
+            </span>
+            {betaItems.map((item) => {
+              const Icon = item.icon;
+              const active = item.id === activeView;
+              return (
+                <button
+                  aria-current={active ? "page" : undefined}
+                  className={active ? "is-active" : ""}
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  title={ui("Still in testing — expect rough edges.")}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
+                  <span>{ui(item.label)}</span>
+                </button>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       <div className="np-sidebar-spacer" />
@@ -1432,6 +1454,11 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <small>{ui("Estimated active study left")}</small>
         <strong>About {estimate.hoursRemaining.toLocaleString()} hours to Fluent</strong>
         <p>{estimateNote}</p>
+        {/* 330 hours read as "330 hours before I can talk to Germans" and
+            alarmed exactly the person it was built for. Fluent is the
+            keeping-up-with-natives bar at the TOP of the ladder; comfortable
+            conversation is stages earlier, and the card should say so. */}
+        <p>Counts hands-on lesson time only. Comfortable everyday conversation arrives stages earlier — this is the keeping-up-with-natives bar.</p>
       </div>
     </section>
   );

@@ -1399,6 +1399,7 @@ const DE: Record<string, string> = {
   // Combined synonym cards: one entry per meaning, most common word first.
   "put off until": "zurückgestellt bis",
   "Games are coming soon": "Spiele kommen bald",
+  "Still in testing — expect rough edges.": "Noch im Test — mit Ecken und Kanten ist zu rechnen.",
   "Learning games are still being built and tested. They will appear here once they are ready.": "Die Lernspiele werden noch gebaut und getestet. Sobald sie fertig sind, erscheinen sie hier.",
   "Put off — it returns to lessons, Listen and reviews on this date.": "Zurückgestellt — ab diesem Datum erscheint es wieder in Lektionen, im Hören und in Wiederholungen.",
   "Also": "Auch",
