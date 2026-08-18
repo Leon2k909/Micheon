@@ -18,6 +18,7 @@ import {
   setStrengthLevel,
   snoozeForDays,
 } from "@/lib/memoryStrength";
+import { frequencyInfo } from "@/lib/wordFrequency";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
@@ -460,6 +461,11 @@ export type ListenItem = {
   de: string;
   en: string;
   use?: string;
+  /** Less common same-meaning words folded into this card (see wordSynonymGroups.ts).
+   * Shown on the card so the group stays visible; only the common face is spoken.
+   * `label` is the word's own frequency tier — absent when the bank does not
+   * rank it, so the card never claims "less common" on no evidence. */
+  synonyms?: Array<{ de: string; en: string; label?: string }>;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -563,6 +569,13 @@ export function buildListenQueue(
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
       use: word.use,
+      // The combined card is one queue slot: the common face is what the
+      // voice says, and the folded synonyms stay visible on the card.
+      synonyms: word.synonyms?.map((syn) => ({
+        de: syn.de,
+        en: primaryAnswer(syn.en),
+        label: frequencyInfo(syn.lookup || syn.de)?.label,
+      })),
       kind: "word" as const,
       popularity: index / Math.max(1, ranked.length - 1),
     }));

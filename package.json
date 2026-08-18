@@ -19,7 +19,7 @@
     "check:answer-matching": "node scripts/check-answer-matching.cjs",
     "check:crash-visibility": "node scripts/check-crash-visibility.cjs",
     "check:lesson-content": "node scripts/check-lesson-content.cjs",
-    "check:synonyms": "node scripts/check-synonyms.cjs",
+    "check:synonyms": "node scripts/check-synonyms.cjs && node scripts/check-synonym-cards.cjs",
     "check:undefined-names": "node scripts/check-undefined-names.cjs",
     "check:word-part-of-speech": "node scripts/check-word-part-of-speech.cjs",
     "check:word-sorting": "node scripts/check-word-sorting.cjs",

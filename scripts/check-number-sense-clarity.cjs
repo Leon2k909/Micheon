@@ -61,7 +61,12 @@ const byLookup = (lookup) => words.find(
   (word) => String(word.lookup).toLocaleLowerCase("de-DE") === lookup.toLocaleLowerCase("de-DE")
 );
 
-assert.equal(words.length, 5160, "the reviewed sense fixes changed the standalone word-card count");
+// Combined synonym cards (wordSynonymGroups.ts) fold same-meaning words into
+// one entry, so the canary counts WORDS TAUGHT — faces plus absorbed
+// synonyms. A reviewed-sense regression still moves this number; the fold
+// alone cannot.
+const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.length ?? 0), 0);
+assert.equal(taughtWords, 5160, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

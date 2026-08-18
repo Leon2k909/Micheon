@@ -1396,6 +1396,10 @@ const DE: Record<string, string> = {
   "Everyday core German — you'll hear this constantly": "Grundwortschatz im Alltag — das hörst du ständig",
   "Solid everyday vocabulary": "Nützlicher Alltagswortschatz",
   "Useful, but Germans reach for it less often": "Nützlich, wird aber im Deutschen seltener verwendet",
+  // Combined synonym cards: one entry per meaning, most common word first.
+  "Also": "Auch",
+  "Same meaning as “{word}” — used less often.": "Gleiche Bedeutung wie „{word}“ — wird seltener verwendet.",
+  "Same meaning — the most common word leads this card.": "Gleiche Bedeutung — das häufigste Wort steht vorn.",
 
   // ── Curriculum labels shown as interface metadata ──
   "Starter basics": "Erste Grundlagen",

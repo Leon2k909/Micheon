@@ -18,11 +18,19 @@
  * their own.
  */
 import { frequencyRank } from "@/lib/wordFrequency";
+import { packMeta } from "@/lib/curriculum";
 import { wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
 import { canonicalWordSenseFor } from "@/lib/canonicalWordSenses";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
+import {
+  extraSynonymGroupKey,
+  keepApartTag,
+  primaryWordSense,
+  wordMeaningKey,
+  type WordSynonym,
+} from "@/lib/wordSynonymGroups";
 
 export type WordItem = {
   /** `vw-` + the lemma: global, not per pack, so "das Haus" is ONE word
@@ -48,6 +56,9 @@ export type WordItem = {
    * been reviewed. Listen omits these rather than teaching an arbitrary
    * first-pack meaning passively. */
   listenSafe?: boolean;
+  /** Less common same-meaning words folded into this card, most common first.
+   * Their progress ids ride in `aliases`; see wordSynonymGroups.ts. */
+  synonyms?: WordSynonym[];
   kind: "word";
   partKey: string;
   /** The owning pack's CEFR level — the ladder reads difficulty from it. */
@@ -126,15 +137,10 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       // vielleicht sat out of Listen over exactly that. So the key is the
       // primary sense: the part a card would speak, stripped of alternatives,
       // parentheticals and function words. Motto-class conflicts ("theme" vs
-      // "motto") still differ after this and still withhold.
-      const primarySense = en
-        .split(" / ")[0].split(",")[0]
-        .toLocaleLowerCase("en-GB")
-        .replace(/\([^)]*\)/g, " ")
-        .replace(/^\s*(to|the|a|an)\s+/, "")
-        .replace(/[^a-zäöüß\s-]/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+      // "motto") still differ after this and still withhold. The same
+      // normalisation decides synonym-card grouping in wordSynonymGroups.ts,
+      // which is why it lives there.
+      const primarySense = primaryWordSense(en);
       const glossKey = primarySense
         || en.toLocaleLowerCase("en-GB").replace(/[.!?]+$/u, "").replace(/\s+/g, " ");
       // Only seeds that SHOW the word vote on its standalone sense. An idiom
@@ -218,7 +224,106 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
     ])].filter((id) => id && id !== existing.id);
     existing.listenSafe = Boolean(existing.listenSafe || word.listenSafe);
   }
-  return deduped;
+  return consolidateSynonymGroups(deduped);
+}
+
+/** Every English alternative once, first spelling wins — the same join the visible-word dedup uses. */
+const mergeEnglishAlternatives = (values: string[]): string => {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const answer of values.flatMap((value) => String(value ?? "").split(/\s+\/\s+/u))) {
+    const trimmed = answer.trim();
+    const key = sentenceIdentityKey(trimmed).toLocaleLowerCase("en-GB");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(trimmed);
+  }
+  return merged.join(" / ");
+};
+
+/**
+ * Combine same-meaning words into one card: the most common word fronts it,
+ * the rest stay visible as its `synonyms`, most common first, and every
+ * merged progress id becomes an alias so grades survive the fold. The rules
+ * for what counts as "same meaning" — and the words deliberately kept apart —
+ * live in wordSynonymGroups.ts.
+ *
+ * The combined card takes the EARLIEST member's slot, so curriculum order
+ * still decides when the meaning is first met; within the group, frequency
+ * rank decides who fronts the card (curriculum order breaks ties).
+ */
+function consolidateSynonymGroups(words: WordItem[]): WordItem[] {
+  const groupKeyFor = (word: WordItem): string | null => {
+    const extra = extraSynonymGroupKey(word.lookup || word.de);
+    if (extra) return extra;
+    // Only words shown as themselves merge; an idiom keeps its own card.
+    const shown = word.de.replace(/^(der|die|das)\s+/i, "").replace(/^sich\s+/i, "").trim();
+    if (!shown || /\s/.test(shown)) return null;
+    const key = wordMeaningKey(word.en, word.de);
+    if (!key) return null;
+    const apart = keepApartTag(word.lookup || word.de);
+    return apart ? `${key} ${apart}` : key;
+  };
+
+  const groups = new Map<string, number[]>();
+  words.forEach((word, index) => {
+    const key = groupKeyFor(word);
+    if (!key) return;
+    const members = groups.get(key) ?? [];
+    members.push(index);
+    groups.set(key, members);
+  });
+
+  const dropped = new Set<number>();
+  const combinedAt = new Map<number, WordItem>();
+  // Neutral everyday German fronts the card. The frequency bank decides, but
+  // it does not rank slang — and the slang packs sit EARLY in the curriculum,
+  // so curriculum order alone put "pennen" in front of "schlafen". A word
+  // from a tier-note pack (niche/casual — always labelled) must never front
+  // a standard word it happens to tie with.
+  const tierNoted = (word: WordItem): number => (packMeta(word.partKey).note ? 1 : 0);
+  for (const indexes of groups.values()) {
+    if (indexes.length < 2) continue;
+    const ordered = [...indexes].sort((a, b) =>
+      frequencyRank(words[a].lookup || words[a].de) - frequencyRank(words[b].lookup || words[b].de)
+      || tierNoted(words[a]) - tierNoted(words[b])
+      || a - b
+    );
+    const face = words[ordered[0]];
+    const rest = ordered.slice(1).map((index) => words[index]);
+    const combined: WordItem = {
+      ...face,
+      en: mergeEnglishAlternatives([face.en, ...rest.map((word) => word.en)]),
+      aliases: [...new Set([
+        ...(face.aliases ?? []),
+        ...rest.flatMap((word) => [word.id, ...(word.aliases ?? [])]),
+      ])].filter((id) => id && id !== face.id),
+      synonyms: [
+        ...(face.synonyms ?? []),
+        ...rest.map((word): WordSynonym => ({
+          id: word.id,
+          de: word.de,
+          en: word.en,
+          lookup: word.lookup,
+          pos: word.pos,
+          use: word.use,
+          partKey: word.partKey,
+          level: word.level,
+        })),
+      ],
+    };
+    const slot = Math.min(...indexes);
+    for (const index of indexes) {
+      if (index !== slot) dropped.add(index);
+    }
+    combinedAt.set(slot, combined);
+  }
+  if (!combinedAt.size) return words;
+  return words.flatMap((word, index) => {
+    const combined = combinedAt.get(index);
+    if (combined) return [combined];
+    return dropped.has(index) ? [] : [word];
+  });
 }
 
 /** Frequency-ranked: the words people actually meet come first. */

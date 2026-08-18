@@ -136,10 +136,16 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, long }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string }) {
+function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, long, synonyms }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string; synonyms?: Array<{ de: string; lookup?: string }> }) {
   const register = detectRegister(de);
   const freq = frequencyInfo(lookup);
-  const syn = synonymNote(lookup);
+  // A combined synonym card names its own siblings below, which says
+  // everything the pairwise note would — the note stays for cards without
+  // a group (sentences whose key word has a taught sibling).
+  // Hidden with the usage note during Translate: in the learn-English course
+  // the meaning IS German, so a German synonym chip would hand the answer over.
+  const groupSynonyms = hideUse ? [] : synonyms ?? [];
+  const syn = groupSynonyms.length ? null : synonymNote(lookup);
   const isWarning = use && (
     use.toLowerCase().includes("uncommon") ||
     use.toLowerCase().includes("warning") ||
@@ -171,7 +177,7 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
   const longIsSpokenForm = Boolean(
     long && toSpokenGerman(long).trim().toLowerCase() === de.trim().toLowerCase()
   );
-  if (!register && !freq && !syn && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
+  if (!register && !freq && !syn && !groupSynonyms.length && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Niche/casual pack note — uncommon German is always labelled */}
@@ -218,6 +224,23 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
           {ui(freq.label)}
         </span>
       )}
+      {/* The rest of a combined synonym card: same meaning, named and tiered,
+          so the learner sees the words Germans reach for less often without
+          being dealt a separate card for each one. */}
+      {groupSynonyms.map((entry) => {
+        // Unranked words (slang, function words) get no tier claim — being
+        // listed after the face already says who leads.
+        const tier = frequencyInfo(entry.lookup || entry.de);
+        return (
+          <span
+            key={entry.de}
+            title={ui("Same meaning — the most common word leads this card.")}
+            className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
+          >
+            {ui("Also")}: {entry.de}{tier ? <> · {ui(tier.label)}</> : null}
+          </span>
+        );
+      })}
       {use && (!hideUse || isWarning || isSlang) && (
         <span className={cn(
           "rounded-full px-2.5 py-1 text-[11px] font-bold border",
@@ -1811,11 +1834,24 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const matchEither = React.useCallback(
     (typed: string) => {
       const primary = matchTarget(typed, item.de);
-      if (primary.ok || !item.long) return primary;
-      const alt = matchTarget(typed, item.long);
-      return alt.ok ? alt : primary;
+      if (primary.ok) return primary;
+      if (item.long) {
+        const alt = matchTarget(typed, item.long);
+        if (alt.ok) return alt;
+      }
+      // A combined synonym card lists its siblings as the same meaning, so
+      // typing one of them is a right answer, not a near miss. German-course
+      // only: in the English course the target is English, where the merged
+      // " / " alternatives already do this job.
+      if (!learnEn && item.kind === "word") {
+        for (const entry of item.synonyms ?? []) {
+          const alt = matchTarget(typed, entry.de);
+          if (alt.ok) return alt;
+        }
+      }
+      return primary;
     },
-    [item.de, item.long, matchTarget]
+    [item.de, item.long, item.kind, item.synonyms, learnEn, matchTarget]
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
@@ -1823,14 +1859,25 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // wrong box. `displayEnglish` is whichever side carries the meaning, so this
   // stays correct in both learning directions.
   const matchMeaning = React.useCallback(
-    (typed: string) => learnEn
-      ? isWordItem
-        ? matchGermanMeaning(typed, displayEnglish)
-        : matchGermanSentence(typed, displayEnglish)
-      : isWordItem
-        ? matchEnglishMeaning(typed, displayEnglish)
-        : matchEnglish(typed, displayEnglish),
-    [displayEnglish, isWordItem, learnEn]
+    (typed: string) => {
+      if (learnEn && isWordItem) {
+        const primary = matchGermanMeaning(typed, displayEnglish);
+        if (primary.ok) return primary;
+        // English course, combined synonym card: the meaning side is German,
+        // and any word of the group is that meaning.
+        for (const entry of item.synonyms ?? []) {
+          const alt = matchGermanMeaning(typed, entry.de);
+          if (alt.ok) return alt;
+        }
+        return primary;
+      }
+      return learnEn
+        ? matchGermanSentence(typed, displayEnglish)
+        : isWordItem
+          ? matchEnglishMeaning(typed, displayEnglish)
+          : matchEnglish(typed, displayEnglish);
+    },
+    [displayEnglish, isWordItem, item.synonyms, learnEn]
   );
   const recallTargetResult = useMemo(
     () => matchEither(recallTargetInput),
@@ -2932,6 +2979,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             shortLabel={learnEn ? undefined : item.shortLabel}
             long={learnEn || phase === "Read" ? undefined : item.long}
             hideUse={phase === "Translate" || phase === "TranslateAgain"}
+            synonyms={item.synonyms}
           />
         )}
 

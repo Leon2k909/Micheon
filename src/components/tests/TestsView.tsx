@@ -946,7 +946,15 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   for (const word of buildWordCatalog(apiParts)) {
     const part = apiParts[word.partKey];
     const level = part?.level ?? "";
-    const aliases = legacyTestIds.get(word.id) ?? [];
+    // Catalogue merges (spelling variants, combined synonym cards) leave the
+    // absorbed words' vw- ids on the survivor as aliases. Those ids — and any
+    // legacy per-pack test ids that pointed at them — must keep reading here,
+    // or a word already known under a pre-merge id would test as new.
+    const aliases = [...new Set([
+      ...(word.aliases ?? []),
+      ...(legacyTestIds.get(word.id) ?? []),
+      ...(word.aliases ?? []).flatMap((alias) => legacyTestIds.get(alias) ?? []),
+    ])];
     const letters = normalizeKey(word.de).replace(/[^a-zäöüß]/gi, "").length;
     const longWord = letters >= 13;
     add({

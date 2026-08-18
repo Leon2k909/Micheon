@@ -55,7 +55,13 @@ for (const [key, bp] of Object.entries(allPartBlueprints)) {
 
 // ── the words exist and are teachable ─────────────────────────────────────
 const catalog = buildWordCatalog(parts);
-assert(catalog.length >= 4287, `only ${catalog.length} teachable words — the expanded word inventory has been lost`);
+// Combined synonym cards fold same-meaning words into one entry (see
+// wordSynonymGroups.ts), so the inventory is counted in WORDS TAUGHT — card
+// faces plus the synonyms they absorbed — never in cards, or the fold could
+// quietly hide a lost word behind a smaller catalogue.
+const absorbedSynonyms = catalog.flatMap((word) => word.synonyms ?? []);
+const taughtWordCount = catalog.length + absorbedSynonyms.length;
+assert(taughtWordCount >= 4287, `only ${taughtWordCount} taught words — the expanded word inventory has been lost`);
 assert(catalog.every((w) => w.id.startsWith(WORD_ID_PREFIX)), "a word id escaped the vw- namespace");
 assert(catalog.every((w) => w.en.trim().length > 0), "a word without a gloss is being taught");
 assert(catalog.every((word) => {
@@ -72,24 +78,37 @@ assert(catalog.every((w) => w.de.toLowerCase().replace(/^(der|die|das) /, "") !=
 // double the B2+ inventory with authored verbs, adjectives and modern topic
 // vocabulary. Pin both raw pack size and catalogue ownership: a duplicate
 // lemma or same-language gloss would otherwise make a seed silently vanish.
+// Taught-from-pack counts a pack's card faces AND its words absorbed into a
+// combined synonym card elsewhere — absorbed is still taught, just not a row.
+const taughtFromPack = (key) =>
+  catalog.filter((word) => word.partKey === key).length
+  + absorbedSynonyms.filter((syn) => syn.partKey === key).length;
 const depthPackKeys = Array.from({ length: 10 }, (_, index) => `part${411 + index}`);
 const depthPackKeySet = new Set(depthPackKeys);
-const depthWords = catalog.filter((word) => depthPackKeySet.has(word.partKey));
-assert.equal(depthWords.length, 400, "the advanced word expansion no longer contributes 400 unique cards");
+const depthCards = catalog.filter((word) => depthPackKeySet.has(word.partKey));
+const depthWords = [
+  ...depthCards,
+  ...absorbedSynonyms.filter((syn) => depthPackKeySet.has(syn.partKey)),
+];
+assert.equal(depthWords.length, 400, "the advanced word expansion no longer contributes 400 taught words");
 for (const key of depthPackKeys) {
   assert.equal((parts[key]?.vocab ?? []).length, 40, `${key} lost one of its forty authored words`);
-  assert.equal(catalog.filter((word) => word.partKey === key).length, 40,
+  assert.equal(taughtFromPack(key), 40,
     `${key} contains a duplicate or unusable word that vanished from Words mode`);
 }
 assert(depthWords.filter((word) => word.pos === "verb" || word.pos === "verb phrase" || word.pos === "adjective").length >= 210,
   "the advanced expansion has fallen back to padding the catalogue with nouns");
 const secondDepthPackKeys = Array.from({ length: 10 }, (_, index) => `part${421 + index}`);
 const secondDepthPackKeySet = new Set(secondDepthPackKeys);
-const secondDepthWords = catalog.filter((word) => secondDepthPackKeySet.has(word.partKey));
-assert.equal(secondDepthWords.length, 400, "the second advanced expansion no longer contributes 400 unique cards");
+const secondDepthCards = catalog.filter((word) => secondDepthPackKeySet.has(word.partKey));
+const secondDepthWords = [
+  ...secondDepthCards,
+  ...absorbedSynonyms.filter((syn) => secondDepthPackKeySet.has(syn.partKey)),
+];
+assert.equal(secondDepthWords.length, 400, "the second advanced expansion no longer contributes 400 taught words");
 for (const key of secondDepthPackKeys) {
   assert.equal((parts[key]?.vocab ?? []).length, 40, `${key} lost one of its forty authored words`);
-  assert.equal(catalog.filter((word) => word.partKey === key).length, 40,
+  assert.equal(taughtFromPack(key), 40,
     `${key} contains a duplicate or unusable word that vanished from Words mode`);
 }
 assert(secondDepthWords.filter((word) => ["verb", "verb phrase", "adjective", "adverb"].includes(word.pos)).length >= 235,
@@ -100,10 +119,13 @@ for (const word of catalog) {
   if (!glossOwners.has(gloss)) glossOwners.set(gloss, []);
   glossOwners.get(gloss).push(word);
 }
-const reusedDepthGlosses = depthWords
+// Cards only: a depth word ABSORBED into a combined synonym card shares its
+// gloss by design — that card names the distinction, which is the explaining
+// this check demands.
+const reusedDepthGlosses = depthCards
   .filter((word) => glossOwners.get(word.en.trim().toLowerCase())?.length !== 1)
   .map((word) => `${word.de} = ${word.en}`);
-const reusedSecondDepthGlosses = secondDepthWords
+const reusedSecondDepthGlosses = secondDepthCards
   .filter((word) => glossOwners.get(word.en.trim().toLowerCase())?.length !== 1)
   .map((word) => `${word.de} = ${word.en}`);
 assert.equal(reusedDepthGlosses.length, 0,
@@ -138,8 +160,11 @@ assert.equal(buildWordSitting(ranked, grades, Date.now(), { reviewSlots: 1, fres
 // words should get harder and harder" — and later, "it should still go back
 // to doing the beginning stuff we skipped out". Both halves are behaviour,
 // so both are run rather than read.
-assert(catalog.filter((w) => wordLadderRung(w) >= 4).length >= 1188,
-  "the advanced word inventory has shrunk — part401-430 may be missing");
+assert(
+  catalog.filter((w) => wordLadderRung(w) >= 4).length
+    + absorbedSynonyms.filter((syn) => wordLadderRung(syn) >= 4).length >= 1188,
+  "the advanced word inventory has shrunk — part401-430 may be missing"
+);
 for (const key of ["part401", "part405", "part410"]) {
   assert((parts[key]?.vocab ?? []).length === 40, `${key} lost its forty words`);
 }
@@ -251,4 +276,4 @@ for (const gone of ["src/lib/betaMode.ts", "src/lib/conversationBeta.ts", "src/l
 assert(!read("src/GuidedSession.tsx").includes("ConversationExercise"), "the beta exercise is back");
 assert(!home.includes("np-beta-button"), "the beta button is back");
 
-console.log(`check-lesson-content: ${catalog.length} words teachable under their own ids, sittings of six with snooze and reviews honoured, zero leakage into sentence sessions in either direction, one record per word across sittings/tests/tracker, and the beta stays removed`);
+console.log(`check-lesson-content: ${taughtWordCount} words taught across ${catalog.length} cards (synonyms combined), sittings of six with snooze and reviews honoured, zero leakage into sentence sessions in either direction, one record per word across sittings/tests/tracker, and the beta stays removed`);

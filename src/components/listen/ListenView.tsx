@@ -891,6 +891,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               {item.use}
             </p>
           ) : null}
+          {item.kind === "word" && (item.synonyms?.length ?? 0) > 0 ? (
+            <p
+              className="mx-auto mt-3 max-w-3xl text-sm font-semibold leading-relaxed text-[var(--text-3)]"
+              title={ui("Same meaning — the most common word leads this card.")}
+            >
+              <span className="font-black text-sky-600">{ui("Also")}: </span>
+              {(item.synonyms ?? []).map((syn, index) => (
+                <span key={syn.de}>
+                  {index > 0 && <span aria-hidden="true"> · </span>}
+                  <span className="font-bold text-[var(--text-2)]" lang="de">{syn.de}</span>
+                  {syn.label && <span> ({ui(syn.label)})</span>}
+                </span>
+              ))}
+            </p>
+          ) : null}
 
           <div
             aria-labelledby="listen-review-heading"

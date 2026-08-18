@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiFmt, uiIsGerman } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import {
@@ -295,9 +295,15 @@ export function WordsTracker({ apiParts, user }: {
       if (filter !== "all" && statusOf(word) !== filter) return false;
       if (!wordMatchesPartOfSpeech(word.pos, partOfSpeech)) return false;
       if (!needle) return true;
+      // A combined card answers for every word in it: searching a less common
+      // synonym has to find the card that now carries it.
       return word.de.toLowerCase().includes(needle)
         || word.en.toLowerCase().includes(needle)
-        || word.lookup.toLowerCase().includes(needle);
+        || word.lookup.toLowerCase().includes(needle)
+        || (word.synonyms ?? []).some((syn) =>
+          syn.de.toLowerCase().includes(needle)
+          || syn.en.toLowerCase().includes(needle)
+          || syn.lookup.toLowerCase().includes(needle));
     });
     return sortWordTrackerRows(
       rows,
@@ -565,6 +571,29 @@ export function WordsTracker({ apiParts, user }: {
                           : null;
                       })()}
                   </p>
+                  {(word.synonyms?.length ?? 0) > 0 && (
+                    <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">
+                      <span className="font-black text-sky-600">{ui("Also")}: </span>
+                      {(word.synonyms ?? []).map((syn, index) => {
+                        // The bank does not rank slang or function words, so an
+                        // unranked synonym is listed without a tier rather than
+                        // being called "less common" on no evidence.
+                        const tier = frequencyInfo(syn.lookup || syn.de);
+                        return (
+                          <span
+                            key={syn.id}
+                            title={tier
+                              ? uiFmt("Same meaning as “{word}” — used less often.", { word: word.de })
+                              : ui("Same meaning — the most common word leads this card.")}
+                          >
+                            {index > 0 && <span aria-hidden="true"> · </span>}
+                            <span className="font-bold text-[var(--text-2)]">{syn.de}</span>
+                            {tier && <span className="font-black text-amber-600"> ({ui(tier.label)})</span>}
+                          </span>
+                        );
+                      })}
+                    </p>
+                  )}
                   {example && (
                     <p
                       className="mt-0.5 text-xs font-semibold text-[var(--text-2)]"

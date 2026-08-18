@@ -57,7 +57,12 @@ const idPart = (value) => String(value ?? "")
 
 const seen = new Set();
 const rows = [];
-const catalogWords = buildWordCatalog(parts);
+// Combined synonym cards fold "der Wagen" into "das Auto" for lessons and the
+// tracker, but a hover glossary must still explain whichever word the page
+// actually used — so every absorbed synonym is flattened back into its own
+// entry here.
+const catalogWords = buildWordCatalog(parts)
+  .flatMap((word) => [word, ...(word.synonyms ?? [])]);
 const supplementalWords = supplementalWordBank.map((word) => ({
   lookup: word.lookup || word.de,
   de: word.de,
