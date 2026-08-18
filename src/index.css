@@ -423,23 +423,31 @@ button { cursor: pointer; }
   color: var(--accent);
 }
 
-/* The Listen page is assembled from utility classes inside the prototype
-   shell, whose base rules send every <p> and <small> to Segoe UI Variable
-   Text. That face caps at weight 700, so even font-black copy rendered as
-   plain bold and the page lost the rounded lettering every other tab leads
-   with. Listen's hero word, glosses and card copy ARE its interface, so the
-   whole page takes the display face, and its semibold copy steps up to bold
-   to hold its own in the muted text colours. */
-.listen-view,
+/* Listen leads with the display face exactly where the dashboard does —
+   headings, buttons, chips, and the hero pair (the spoken word and its
+   meaning, the two language-tagged lines) — and nowhere else. The first cut
+   of this rule sent EVERY <p> and <small> on the page to the rounded face,
+   which on Windows resolves to Arial Rounded/Trebuchet and looks clunky at
+   the 11-13px captions and descriptions; Leon compared them to the
+   dashboard's and said they still looked wrong. The shell's text face is
+   tuned for Windows at small sizes, so small copy goes back to it, matching
+   the dashboard letter for letter. The doubled selectors keep out-ranking
+   the shell's own p/small base rule regardless of stylesheet order. */
+.listen-view {
+  font-family: var(--np-font-display, ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif);
+}
+
 .new-ui-prototype .listen-view p,
 .new-ui-prototype .listen-view small,
 .listen-view p,
 .listen-view small {
-  font-family: var(--np-font-display, ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif);
+  font-family: var(--np-font-text, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  letter-spacing: 0.005em;
 }
 
-.listen-view .font-semibold {
-  font-weight: 700;
+.new-ui-prototype .listen-view p[lang],
+.listen-view p[lang] {
+  font-family: var(--np-font-display, ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif);
 }
 
 /* Listen's expanded audio settings need a real inset between the rounded edge

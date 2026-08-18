@@ -731,18 +731,19 @@ for (const key of [
 delete global.window;
 delete global.localStorage;
 
-// ── the page leads with the display face ────────────────────────────────
-// The prototype shell sends every <p>/<small> to Segoe UI Variable Text,
-// which caps at weight 700 — Listen's hero word and card copy rendered thin
-// while every other tab kept the rounded game lettering. The listen-view
-// scope must keep out-ranking that base rule.
+// ── the page leads with the display face where the dashboard does ───────
+// Rounded lettering on the hero pair only (the language-tagged word and its
+// meaning); captions and descriptions match the dashboard's small-size text
+// face. Blanket-rounding every <p>/<small> was tried and looked clunky at
+// 11-13px on Windows — this pins the split so neither half regresses.
 const listenView = read("src/components/listen/ListenView.tsx");
 const css = read("src/index.css");
 check(
-  "the Listen page opts into the rounded display face",
+  "Listen rounds the hero pair and keeps small copy on the dashboard's text face",
   listenView.includes('className="listen-view mx-auto w-full max-w-7xl space-y-4"')
-    && /\.new-ui-prototype \.listen-view p,\s*\.new-ui-prototype \.listen-view small,\s*\.listen-view p,\s*\.listen-view small \{\s*font-family: var\(--np-font-display/.test(css)
-    && /\.listen-view \.font-semibold \{\s*font-weight: 700;/.test(css)
+    && listenView.includes('lang="de"')
+    && /\.new-ui-prototype \.listen-view p,\s*\.new-ui-prototype \.listen-view small,\s*\.listen-view p,\s*\.listen-view small \{\s*font-family: var\(--np-font-text/.test(css)
+    && /\.new-ui-prototype \.listen-view p\[lang\],\s*\.listen-view p\[lang\] \{\s*font-family: var\(--np-font-display/.test(css)
 );
 
 if (failures > 0) {
