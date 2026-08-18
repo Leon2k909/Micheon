@@ -310,6 +310,7 @@ export const KEEP_APART: string[][] = [
   ["verschluss"],        // a bottle cap/fastener — not a Kappe (a hat)
   ["gummi"],             // the material — not a Radiergummi (an eraser)
   ["ledig"],             // unmarried — not einzeln (individual, separate)
+  ["türkei"],            // the country — case-folding made it a Truthahn (turkey)
 ];
 
 const KEEP_APART_WORDS = new Set(

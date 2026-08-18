@@ -12,7 +12,6 @@ import {
   Target,
   X,
 } from "lucide-react";
-import { MasteryCard } from "@/components/lab/MasteryCard";
 import { GameContentProvider } from "@/games/gameContent";
 import { ui } from "@/lib/i18n";
 
@@ -76,13 +75,13 @@ const GAMES = [
   },
 ];
 
+// The Vocabulary mastery card used to live here; it moved to Profile &
+// settings (Gamification.tsx), where the rest of the progress story lives —
+// Games is Leon-only beta territory now and must not hold anyone's stats.
 export function GamesView({
   apiParts,
-  vocab = 0,
 }: {
   apiParts: Record<string, unknown>;
-  /** Distinct German you can currently produce — see countKnownVocab. */
-  vocab?: number;
 }) {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,7 +162,6 @@ export function GamesView({
                 )}
               </div>
             </section>
-            <MasteryCard vocab={vocab} />
           </div>
 
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

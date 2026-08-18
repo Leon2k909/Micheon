@@ -89,6 +89,20 @@
   cursor: pointer;
 }
 
+/* Honest label on unfinished territory: the Games tab wears it on the one
+   account (Leon's) that can still see the tab at all. */
+.np-nav-beta {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--np-violet-soft);
+  color: var(--np-violet);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .new-ui-prototype button:focus-visible,
 .new-ui-prototype input:focus-visible,
 .new-ui-prototype textarea:focus-visible,

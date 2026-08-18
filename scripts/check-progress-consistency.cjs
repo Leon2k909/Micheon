@@ -29,13 +29,15 @@ if (/totalReviews/.test(mastery)) {
   failures.push("MasteryCard must not reach for totalReviews — that is a practice tally, not a word count");
 }
 
-// 2. Games passes it through rather than re-deriving one.
+// 2. The card lives on the profile page now (Games is Leon-only beta), and
+//    the profile hands it the same shared count as everything else. Games
+//    must not quietly grow its own vocabulary number back.
 const games = read("src/games/GamesView.tsx");
-if (/totalReviews|gameMasteryCount/.test(games)) {
-  failures.push("GamesView must not rebuild a vocabulary number from totalReviews");
+if (/totalReviews|gameMasteryCount|MasteryCard/.test(games)) {
+  failures.push("GamesView must not hold a vocabulary count — the mastery card moved to Profile & settings");
 }
-if (!/<MasteryCard vocab=\{vocab\}/.test(games)) {
-  failures.push("GamesView should hand MasteryCard the shared vocab count");
+if (!/<MasteryCard vocab=\{vocab\} \/>/.test(read("src/Gamification.tsx"))) {
+  failures.push("the profile page should mount MasteryCard with the shared vocab count");
 }
 
 // 3. The profile shows one number, not two side by side.

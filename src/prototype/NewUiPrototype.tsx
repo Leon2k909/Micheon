@@ -440,6 +440,7 @@ function BrandMark() {
 
 function Sidebar({
   activeView,
+  gamesUnlocked,
   onNavigate,
   onResize,
   shopUnlocked,
@@ -447,6 +448,7 @@ function Sidebar({
   width,
 }: {
   activeView: PrototypeView;
+  gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
   shopUnlocked: boolean;
@@ -456,12 +458,15 @@ function Sidebar({
   const resizeCleanupRef = useRef<(() => void) | null>(null);
   // Friends slots in directly after Games, same relative spot it had
   // before Listen joined the list.
+  // Games ride the same Leon-only gate as Shop and Friends: too many of
+  // them are half-built for Michelle's account, so hers hides the tab
+  // entirely and Leon's wears a Beta chip as the honest label.
   const navigationItems = [
     ...NAVIGATION.slice(0, 5),
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
     ...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : []),
     ...NAVIGATION.slice(5),
-  ];
+  ].filter((item) => item.id !== "games" || gamesUnlocked);
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
     : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
@@ -525,6 +530,7 @@ function Sidebar({
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{ui(item.label)}</span>
+              {item.id === "games" && <span className="np-nav-beta">Beta</span>}
             </button>
           );
         })}
@@ -1374,14 +1380,13 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
     };
   }, []);
 
-  // Hours to the NEXT stage, not to the far end of the ladder. A learner at
-  // "Conversational" was shown one straight-line extrapolation all the way
-  // to Fluent — hundreds of hours, always growing with the target, and less
-  // accurate the further it reached. The next milestone is the honest span
-  // this estimator can actually speak to.
+  // Hours to FLUENT — the whole road. A next-stage estimate was tried and
+  // Leon overruled it: the number he wants on the card is the real distance
+  // to fluency, straight-line extrapolation and all. The label names the
+  // destination so nobody mistakes the span.
   const estimate = useMemo(
-    () => estimateFluencyHours(fluency.toNext || fluency.toFluent, loadLearningTimeStats(profile)),
-    [fluency.toNext, fluency.toFluent, profile, revision]
+    () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
+    [fluency.toFluent, profile, revision]
   );
   const estimateNote = estimate.confidence === "personalized"
     ? ui("Based on your active lesson pace.")
@@ -1425,7 +1430,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
       <div className="np-fluency-hours">
         <span aria-hidden="true"><Clock3 /></span>
         <small>{ui("Estimated active study left")}</small>
-        <strong>About {estimate.hoursRemaining.toLocaleString()} hours{fluency.next ? ` to ${ui(fluency.next.label)}` : ""}</strong>
+        <strong>About {estimate.hoursRemaining.toLocaleString()} hours to Fluent</strong>
         <p>{estimateNote}</p>
       </div>
     </section>
@@ -2189,10 +2194,10 @@ function usePrototypeParts(requested: boolean) {
   return apiParts;
 }
 
-function MobileNav({ activeView, onNavigate }: { activeView: PrototypeView; onNavigate: (view: PrototypeView) => void }) {
+function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: PrototypeView; gamesUnlocked: boolean; onNavigate: (view: PrototypeView) => void }) {
   return (
     <nav aria-label={ui("Mobile prototype navigation")} className="np-mobile-nav">
-      {MOBILE_NAVIGATION.map((item) => {
+      {MOBILE_NAVIGATION.filter((item) => item.id !== "games" || gamesUnlocked).map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView
           || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
@@ -2257,6 +2262,10 @@ export default function NewUiPrototype({
   const leonOnlyFeaturesUnlocked = hasLeonSocialPreview(profile?.email);
   const socialPreviewUnlocked = leonOnlyFeaturesUnlocked;
   const shopUnlocked = leonOnlyFeaturesUnlocked;
+  // Games are a build lab right now — several don't work. Leon's account
+  // keeps them (badged Beta); every other account sees no Games tab and a
+  // coming-soon card if it lands on the view another way.
+  const gamesUnlocked = leonOnlyFeaturesUnlocked;
   const activeCourse = getCourse(activeCourseId) ?? getCourse("german");
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
@@ -2435,7 +2444,7 @@ export default function NewUiPrototype({
 
   const searchItems: PrototypeSearchItem[] = [
     ...[
-      ...PROTOTYPE_SEARCH_PAGES,
+      ...PROTOTYPE_SEARCH_PAGES.filter((page) => page.id !== "games" || gamesUnlocked),
       ...(socialPreviewUnlocked ? [LEON_SOCIAL_SEARCH_PAGE] : []),
       ...(shopUnlocked ? [LEON_SHOP_SEARCH_PAGE] : []),
     ].map((page) => ({
@@ -2453,7 +2462,8 @@ export default function NewUiPrototype({
       actionLabel: "Start" as const,
       onSelect: () => openGuidedLesson(lesson.id),
     })),
-    ...PROTOTYPE_SEARCH_GAMES.map(([title, subtitle]) => ({
+    // Games only surface in search on the account that can open them.
+    ...(gamesUnlocked ? PROTOTYPE_SEARCH_GAMES.map(([title, subtitle]) => ({
       id: `game-${title.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
       title,
       subtitle,
@@ -2461,7 +2471,7 @@ export default function NewUiPrototype({
       actionLabel: "Open" as const,
       searchText: buildCatalogSearchText([title, subtitle, "practice play"]),
       onSelect: () => navigate("games"),
-    })),
+    })) : []),
   ];
 
   const mainView = activeView === "home" ? (
@@ -2508,14 +2518,24 @@ export default function NewUiPrototype({
     <div className="np-feature-host">
       <FeatureLoading />
     </div>
-  ) : activeView === "games" ? (
+  ) : activeView === "games" && gamesUnlocked ? (
     <div className="np-feature-host">
       {partsReady ? (
         <Suspense fallback={<FeatureLoading />}>
-          <GamesView apiParts={apiParts} vocab={countKnownVocab(profile, stats.externalWords)} />
+          <GamesView apiParts={apiParts} />
         </Suspense>
       ) : <FeatureLoading />}
     </div>
+  ) : activeView === "games" ? (
+    <section className="np-page-card">
+      <div className="np-page-intro">
+        <span className="np-page-icon"><Gamepad2 /></span>
+        <div>
+          <h1>{ui("Games are coming soon")}</h1>
+          <p>{ui("Learning games are still being built and tested. They will appear here once they are ready.")}</p>
+        </div>
+      </div>
+    </section>
   ) : activeView === "social" && socialPreviewUnlocked ? (
     <SocialView userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "tests" ? (
@@ -2579,6 +2599,7 @@ export default function NewUiPrototype({
         >
           <Sidebar
             activeView={activeView}
+            gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
             onResize={resizeSidebar}
             shopUnlocked={shopUnlocked}
@@ -2641,7 +2662,7 @@ export default function NewUiPrototype({
             </div>
           </div>
         </div>
-        <MobileNav activeView={activeView} onNavigate={navigate} />
+        <MobileNav activeView={activeView} gamesUnlocked={gamesUnlocked} onNavigate={navigate} />
         <CourseSwitcher
           activeCourseId={activeCourseId}
           onClose={() => setCourseSwitcherOpen(false)}

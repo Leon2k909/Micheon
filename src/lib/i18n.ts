@@ -1398,6 +1398,8 @@ const DE: Record<string, string> = {
   "Useful, but Germans reach for it less often": "Nützlich, wird aber im Deutschen seltener verwendet",
   // Combined synonym cards: one entry per meaning, most common word first.
   "put off until": "zurückgestellt bis",
+  "Games are coming soon": "Spiele kommen bald",
+  "Learning games are still being built and tested. They will appear here once they are ready.": "Die Lernspiele werden noch gebaut und getestet. Sobald sie fertig sind, erscheinen sie hier.",
   "Put off — it returns to lessons, Listen and reviews on this date.": "Zurückgestellt — ab diesem Datum erscheint es wieder in Lektionen, im Hören und in Wiederholungen.",
   "Also": "Auch",
   "Same meaning as “{word}” — used less often.": "Gleiche Bedeutung wie „{word}“ — wird seltener verwendet.",

@@ -240,9 +240,10 @@ check(
 check(
   "the dashboard visibly opts into the study-hours estimate",
   dashboardSource.includes("function FluencyOutlook")
-    // Hours reach only to the NEXT stage — a straight line to the far end of
-    // the ladder was hundreds of hours and less accurate the further it went.
-    && dashboardSource.includes("estimateFluencyHours(fluency.toNext || fluency.toFluent")
+    // Hours reach all the way to Fluent, and the label says so — Leon's call
+    // after a next-stage-only estimate was tried and rejected.
+    && dashboardSource.includes("estimateFluencyHours(fluency.toFluent")
+    && dashboardSource.includes("hours to Fluent")
     && dashboardSource.includes("Estimated active study left")
     && dashboardSource.includes('window.addEventListener("activity-updated", refresh)')
     && meterSource.includes('ui("study hours left")')

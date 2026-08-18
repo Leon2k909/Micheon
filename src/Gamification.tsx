@@ -58,6 +58,7 @@ async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
 }
 import { detectEnglishVariant, englishVariantLabel, getEnglishVariant, resolveEnglishVariant, setEnglishVariant, type EnglishVariant } from "@/lib/englishVariant";
 import { FluencyMeter } from "@/components/FluencyMeter";
+import { MasteryCard } from "@/components/lab/MasteryCard";
 import { getFluency, countKnownVocab } from "@/lib/fluency";
 import { THEME_CHANGE_EVENT, getThemePreference, setTheme, systemTheme, type ThemePreference } from "@/lib/theme";
 import {
@@ -1432,6 +1433,12 @@ export default function GamificationPanel({
           <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
           <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
         </section>
+
+        {/* Moved here from Games: mastery is part of the progress story, and
+            Games is Leon-only beta territory now. Same countKnownVocab number
+            the tracker, dashboard outlook and fluency meter share, so all four
+            surfaces always agree. */}
+        <MasteryCard vocab={vocab} />
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />

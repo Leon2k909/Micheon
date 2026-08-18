@@ -232,7 +232,7 @@ function BulkActionButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-full border bg-[var(--surface)] px-3 text-[11px] font-black transition-colors",
+        "inline-flex h-8 items-center gap-1.5 rounded-full border bg-[var(--surface)] px-3 text-xs font-black tracking-[0.01em] transition-colors",
         tones[tone]
       )}
     >
@@ -666,13 +666,13 @@ function WordStatusButton({
   const tones: Record<string, string> = {
     known: active
       ? "bg-[var(--success-bg)] text-[var(--success-text)] border-transparent"
-      : "border-[var(--border)] text-[var(--text-3)] hover:text-[var(--success-text)]",
+      : "border-[var(--border)] text-[var(--text-2)] hover:text-[var(--success-text)]",
     struggle: active
       ? "bg-amber-500/15 text-amber-600 border-transparent"
-      : "border-[var(--border)] text-[var(--text-3)] hover:text-amber-600",
+      : "border-[var(--border)] text-[var(--text-2)] hover:text-amber-600",
     new: active
       ? "bg-[var(--surface-3)] text-[var(--text-1)] border-transparent"
-      : "border-[var(--border)] text-[var(--text-3)] hover:text-[var(--text-1)]",
+      : "border-[var(--border)] text-[var(--text-2)] hover:text-[var(--text-1)]",
   };
   return (
     <button
@@ -680,7 +680,7 @@ function WordStatusButton({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[11px] font-black transition-colors",
+        "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-black tracking-[0.01em] transition-colors",
         tones[tone]
       )}
     >
