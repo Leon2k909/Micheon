@@ -189,6 +189,14 @@ export const KEEP_APART: string[][] = [
   ["anschaffen"],        // deliberately acquiring is not bekommen (receiving)
   ["abmachen"],          // settling a deal is not zustimmen (consenting)
   ["immerhin"],          // the silver-lining "at least" — not mindestens/zumindest
+  // Traps the everyday packs (part461+) would otherwise spring.
+  ["fackel"],            // a flaming torch is not a Taschenlampe
+  ["truhe"],             // a treasure chest is not the Brust
+  ["stiefel"],           // footwear — not the Kofferraum kind of boot
+  ["dattel"],            // the fruit is not a romantic Date
+  ["ast"],               // a tree branch is not a Filiale (shop branch)
+  ["trikot"],            // a sports jersey is not a Hemd (dress shirt)
+  ["krankenschwester"],  // the nurse keeps her own card; Pflegekraft is broader
 ];
 
 const KEEP_APART_WORDS = new Set(

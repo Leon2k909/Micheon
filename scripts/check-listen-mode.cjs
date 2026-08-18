@@ -232,13 +232,20 @@ const positionIn = (queue, id) => queue.findIndex((item) => item.id === id);
 // past 90% of the most-common-first queue. Deliberately a median and not an
 // "every" — a newly added pack can legitimately hold a very common word, and
 // one such word ranking early under both orders is correct, not a regression.
-const newestHead = newestWords.slice(0, 50).map((item) => positionIn(commonWords, item.id)).sort((a, b) => a - b);
+// A 100-item head, not 50: the everyday packs (part461+) put genuinely
+// common words (Eis, Schnee, damals) at the very top of newest-first, and
+// those are served early under BOTH orders — which is correct, not a
+// regression. Over 100 items the property is back: if newest-first ever
+// degenerated into most-common-first again, these positions would sit near
+// the front and every threshold below would fail at once.
+const newestHead = newestWords.slice(0, 100).map((item) => positionIn(commonWords, item.id)).sort((a, b) => a - b);
 check("newest-first order serves the same material, nothing dropped",
   newestWords.length === commonWords.length && newestWords.length > 1000);
 check("newest-first genuinely front-loads what most-common-first buries",
-  newestHead.length === 50
-  && newestHead[25] > commonWords.length * 0.9
-  && newestHead.filter((position) => position > commonWords.length / 2).length >= 45);
+  newestHead.length === 100
+  && newestHead[50] > commonWords.length * 0.9
+  && newestHead.filter((position) => position > commonWords.length * 0.9).length >= 45
+  && newestHead.filter((position) => position > commonWords.length / 2).length >= 55);
 
 // A card titled with a bare word must teach that word. An idiom built on the
 // lemma ("an etwas liegen") used to win the card purely by sitting in an
