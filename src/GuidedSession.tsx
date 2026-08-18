@@ -2143,7 +2143,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useEffect(() => {
     if (phase !== "ListenPick") return;
     const handleChoiceKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || listeningChecked) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      if (isTextEntryTarget(event.target)) return;
+      if (listeningChecked) {
+        // After a miss, Space / R / → replay the phrase and reopen the round —
+        // the keyboard version of "Hear it and try again". Registered in the
+        // capture phase so → wins over the bubble-phase stage-nav arrows,
+        // which skip events that are already defaultPrevented.
+        if (listeningCorrect) return;
+        if (event.key === " " || event.key === "r" || event.key === "R" || event.key === "ArrowRight") {
+          event.preventDefault();
+          retryListening();
+        }
+        return;
+      }
       const optionIndex = Number(event.key) - 1;
       const option = listeningChoices[optionIndex];
       if (!option) return;
@@ -2154,14 +2167,24 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       reactToAnswer(ok);
       if (ok) window.setTimeout(advanceOrFinish, 900);
     };
-    window.addEventListener("keydown", handleChoiceKey);
-    return () => window.removeEventListener("keydown", handleChoiceKey);
-  }, [phase, listeningChecked, listeningChoices, item.de]);
+    window.addEventListener("keydown", handleChoiceKey, true);
+    return () => window.removeEventListener("keydown", handleChoiceKey, true);
+  }, [phase, listeningChecked, listeningCorrect, listeningChoices, item.de, targetLang]);
 
   useEffect(() => {
     if (phase !== "MissingWord") return;
     const handleChoiceKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || missingWordChecked) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      if (isTextEntryTarget(event.target)) return;
+      if (missingWordChecked) {
+        // Same retry keys as the listening round: Space / R / → reopen it.
+        if (missingWordCorrect) return;
+        if (event.key === " " || event.key === "r" || event.key === "R" || event.key === "ArrowRight") {
+          event.preventDefault();
+          retryMissingWord();
+        }
+        return;
+      }
       const option = missingWordChoices[Number(event.key) - 1];
       if (!option) return;
       event.preventDefault();
@@ -2175,9 +2198,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         window.setTimeout(advanceOrFinish, 900);
       }
     };
-    window.addEventListener("keydown", handleChoiceKey);
-    return () => window.removeEventListener("keydown", handleChoiceKey);
-  }, [phase, missingWordChecked, missingWordChoices, missingWord.answer, item.de, targetLang]);
+    window.addEventListener("keydown", handleChoiceKey, true);
+    return () => window.removeEventListener("keydown", handleChoiceKey, true);
+  }, [phase, missingWordChecked, missingWordCorrect, missingWordChoices, missingWord.answer, item.de, targetLang]);
 
   const goBack = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
@@ -3387,14 +3410,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </AnimatePresence>
 
             {!listeningCorrect && listeningChecked && (
-              <Button
-                type="button"
-                onClick={retryListening}
-                className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                {ui("Hear it and try again")}
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  onClick={retryListening}
+                  className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {ui("Hear it and try again")}
+                </Button>
+                <div className="fs-hint">
+                  <kbd>{ui("Space")}</kbd> <kbd>R</kbd> <kbd>→</kbd> {ui("Try again")}
+                </div>
+              </>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
               {ui("← Back")}
@@ -3483,14 +3511,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </AnimatePresence>
 
             {!missingWordCorrect && missingWordChecked && (
-              <Button
-                type="button"
-                onClick={retryMissingWord}
-                className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                {ui("Listen and try again")}
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  onClick={retryMissingWord}
+                  className="h-12 w-full rounded-2xl bg-zinc-100 font-black text-zinc-700 hover:bg-zinc-200"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {ui("Listen and try again")}
+                </Button>
+                <div className="fs-hint">
+                  <kbd>{ui("Space")}</kbd> <kbd>R</kbd> <kbd>→</kbd> {ui("Try again")}
+                </div>
+              </>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">
               {ui("← Back")}

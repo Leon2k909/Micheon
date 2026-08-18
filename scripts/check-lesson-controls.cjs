@@ -90,6 +90,33 @@ check(
     && guided.includes('event.key === "ArrowRight"')
 );
 
+// ── 2c. a missed listening round retries from the keyboard ─────────────────
+// Space, R and → are the "hear it and try again" button without the mouse.
+// They ride the same per-phase choice-key handler, in the CAPTURE phase so →
+// beats the bubble-phase stage-nav arrows (which skip defaultPrevented events).
+check(
+  "Space, R and ArrowRight retry a missed listening or missing-word round",
+  (guided.match(/event\.key === " " \|\| event\.key === "r" \|\| event\.key === "R" \|\| event\.key === "ArrowRight"/g) || []).length >= 2
+    && guided.includes("retryListening();")
+    && guided.includes("retryMissingWord();")
+);
+check(
+  "the retry keys outrank the stage-nav arrows",
+  (guided.match(/window\.addEventListener\("keydown", handleChoiceKey, true\)/g) || []).length >= 2
+);
+check(
+  "the retry keys are shown next to the button",
+  (guided.match(/<kbd>\{ui\("Space"\)\}<\/kbd> <kbd>R<\/kbd> <kbd>→<\/kbd>/g) || []).length >= 2
+);
+// The light-theme cream .bg-zinc-100 override carries !important; the dark
+// remap must match its weight or the retry buttons render cream with light
+// text in dark mode — unreadable both ways.
+check(
+  "dark mode wins the retry surface back from the cream !important override",
+  /html\[data-theme="dark"\] \.guided-session\.fs-app\.prototype-guided-session \.bg-zinc-100 \{\s*background: #232a35 !important;/.test(css)
+    && /html\[data-theme="dark"\] \.guided-session\.fs-app\.prototype-guided-session :is\( \.hover\\:bg-zinc-50,\.hover\\:bg-zinc-100,\.hover\\:bg-zinc-200 \):hover \{\s*background: #173a24 !important;/.test(css)
+);
+
 // ── 3. the speed range matches what the voice can render ───────────────────
 const presets = JSON.parse(
   (audio.match(/TTS_SPEED_PRESETS = (\[[^\]]+\])/) ?? [])[1].replace(/\s+/g, "")

@@ -6683,12 +6683,15 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-miss
   background: #173a24;
 }
 
+/* !important because the light-theme .bg-zinc-100 override above carries it —
+   without matching weight this dark remap silently loses and the "try again"
+   buttons render cream with light remapped text: unreadable both ways. */
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .bg-zinc-100 {
-  background: #232a35;
+  background: #232a35 !important;
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,.hover\:bg-zinc-100,.hover\:bg-zinc-200 ):hover {
-  background: #173a24;
+  background: #173a24 !important;
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stagebar {
@@ -9615,7 +9618,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session :is( .hover\:bg-zinc-50,.hover\:bg-zinc-100,.hover\:bg-zinc-200 ):hover {
-  background: var(--accent-pressed, var(--np-green-dark));
+  background: var(--accent-pressed, var(--np-green-dark)) !important;
 }
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-shortcut-trigger:hover,

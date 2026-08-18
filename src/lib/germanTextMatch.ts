@@ -537,6 +537,9 @@ const TEXT_SPEAK: [RegExp, string][] = [
   [/\bthx\b/g, "thanks"], [/\bty\b/g, "thank you"],
   [/\bsmth\b/g, "something"], [/\bsth\b/g, "something"],
   [/\bb4\b/g, "before"], [/\bw\/\b/g, "with"],
+  // Everyday clipped shorthand for "government" — a learner answering
+  // "gov agency" for die Behörde has understood the German.
+  [/\bgovt\b/g, "government"], [/\bgov\b/g, "government"],
 
   // apostrophe-less question contractions — unambiguous tokens
   [/\bwhats\b/g, "what is"], [/\bwhens\b/g, "when is"], [/\bwheres\b/g, "where is"],
@@ -683,6 +686,12 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bpardon( me)?\b/g, "excuse me")
     .replace(/\bloan\b/g, "lend")
     .replace(/\b(cash machine|cashpoint|cash point)\b/g, "atm")
+    // die Behörde is glossed "agency, authority", and people naturally write
+    // "government agency" / "government authority" for it — the modifier adds
+    // nothing the German didn't already say. Deliberately NOT "government
+    // department": bare "department" must keep failing for
+    // "ministry, government department" (das Ministerium is not die Abteilung).
+    .replace(/\bgovernment (agenc(?:y|ies)|authorit(?:y|ies))\b/g, "$1")
     .replace(/\btake (out money|money out)\b/g, "withdraw money")
     .replace(/\bmy treat\b/g, "on me")
     .replace(/\bmore slowly\b/g, "slower")

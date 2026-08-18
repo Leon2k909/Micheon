@@ -482,6 +482,24 @@ for (const ability of ["easy", "medium", "hard", "expert"]) {
   );
 }
 
+// die Behörde is glossed "agency, authority"; the everyday answers are
+// "government agency" and its clipped spellings. The fold that accepts them
+// must stay narrow: bare "government" is die Regierung, and bare "department"
+// must keep failing for das Ministerium.
+check(
+  "clipped government shorthand passes for die Behörde's gloss",
+  matchEnglishMeaning("gov agency", "agency, authority").ok
+    && matchEnglishMeaning("govt agency", "agency, authority").ok
+    && matchEnglishMeaning("government agency", "agency, authority").ok
+    && matchEnglishMeaning("authority", "agency, authority").ok
+);
+check(
+  "the government fold stays narrow",
+  !matchEnglishMeaning("government", "agency, authority").ok
+    && !matchEnglishMeaning("department", "ministry, government department").ok
+    && matchEnglishMeaning("government department", "ministry, government department").ok
+);
+
 if (failures) {
   console.error(`\n${failures} answer-matching regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

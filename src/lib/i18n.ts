@@ -198,6 +198,7 @@ const DE: Record<string, string> = {
   "Listening choices": "Hörauswahl",
   "You matched the spoken phrase.": "Du hast den gesprochenen Satz richtig erkannt.",
   "Hear it and try again": "Noch einmal hören und erneut versuchen",
+  "Space": "Leertaste",
   "Choose the sound that completes the sentence": "Wähle den Klang, der den Satz vervollständigt",
   "Listen to each option and choose the word that completes the sentence.": "Höre dir jede Option an und wähle das Wort, das den Satz vervollständigt.",
   "Missing-word audio choices": "Audioauswahl für das fehlende Wort",
