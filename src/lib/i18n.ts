@@ -1397,6 +1397,8 @@ const DE: Record<string, string> = {
   "Solid everyday vocabulary": "Nützlicher Alltagswortschatz",
   "Useful, but Germans reach for it less often": "Nützlich, wird aber im Deutschen seltener verwendet",
   // Combined synonym cards: one entry per meaning, most common word first.
+  "put off until": "zurückgestellt bis",
+  "Put off — it returns to lessons, Listen and reviews on this date.": "Zurückgestellt — ab diesem Datum erscheint es wieder in Lektionen, im Hören und in Wiederholungen.",
   "Also": "Auch",
   "Same meaning as “{word}” — used less often.": "Gleiche Bedeutung wie „{word}“ — wird seltener verwendet.",
   "Same meaning — the most common word leads this card.": "Gleiche Bedeutung — das häufigste Wort steht vorn.",

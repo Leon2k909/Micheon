@@ -16,6 +16,7 @@ import {
 } from "@/lib/activity";
 import {
   isDueForReview,
+  isSnoozed,
   recordPermanent,
   setStrengthLevel,
   strengthInfo,
@@ -558,6 +559,16 @@ export function WordsTracker({ apiParts, user }: {
                           ? <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
                           : null;
                       })()}
+                    {/* A word put off in Listen or a lesson was invisible here —
+                        it silently skipped sittings and the queue while the
+                        tracker still called it due. Now the delay shows, with
+                        its end date, wherever the word is listed. */}
+                    {isSnoozed(record) && record?.snoozedUntil && (
+                      <span
+                        className="font-black text-violet-500"
+                        title={ui("Put off — it returns to lessons, Listen and reviews on this date.")}
+                      > · {ui("put off until")} {new Date(record.snoozedUntil).toLocaleDateString(uiIsGerman() ? "de-DE" : "en-GB", { day: "numeric", month: "short" })}</span>
+                    )}
                   </p>
                   {(word.synonyms?.length ?? 0) > 0 && (
                     <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">

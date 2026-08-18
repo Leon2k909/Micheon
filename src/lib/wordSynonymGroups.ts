@@ -298,6 +298,10 @@ export const KEEP_APART: string[][] = [
   ["bord"],              // on board, and a shelf — not a Gremium (a board)
   ["hinsicht"],          // "in this respect" — not Respekt (esteem)
   ["steuern"],           // to steer/control — its card also fences off die Steuer (tax)
+  ["erwischen"],         // catching someone red-handed — not fangen (a ball)
+  ["anbrennen"],         // food catching on the pan — not brennen (a fire)
+  ["schulhof"],          // the school yard — not a Spielplatz (playground)
+  ["zusammenlegen"],     // folding laundry (and pooling money) — not falten
 ];
 
 const KEEP_APART_WORDS = new Set(

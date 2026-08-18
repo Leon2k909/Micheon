@@ -1395,7 +1395,11 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           <span style={{ width: `${fluency.overallPct}%` }} />
         </div>
         <div className="np-fluency-footnote">
-          <span>{fluency.toFluent.toLocaleString()} words and phrases to go</span>
+          {/* Leon's call: the 10,000 target comes from native WORD counts, but
+              every phrase you can recall counts toward it too — so the road is
+              shorter than "10,000 words to go" would suggest, and the card
+              should not pretend otherwise. */}
+          <span>{fluency.toFluent.toLocaleString()} to go — every word and phrase counts</span>
           {/* Read from the ladder, never hardcoded — the target moved once
               (5,000 → 10,000) and this label silently lied until it did. */}
           <span>Fluent target: {FLUENT_TARGET.toLocaleString()}</span>

@@ -7374,7 +7374,12 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
-.settings-search__input::placeholder { color: var(--text-3); font-weight: 600; }
+/* Narrow sidebars clip "Search settings…" mid-word ("Search settin"), which
+   reads as broken. An ellipsis makes the cut deliberate, and while the field
+   is empty the clear-button gutter is reclaimed — the button only exists once
+   there is something to clear. */
+.settings-search__input::placeholder { color: var(--text-3); font-weight: 600; text-overflow: ellipsis; }
+.settings-search__input:placeholder-shown { padding-right: 16px; }
 
 /* One focus indicator, not two: the border IS the indicator here, so the
    global input ring is suppressed rather than drawn around it. */
