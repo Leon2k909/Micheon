@@ -499,7 +499,11 @@ export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string>
 export function deriveImplicitChains<T extends { de?: string; originalDe?: string; buildsOn?: string }>(
   rows: T[]
 ): void {
-  const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+  // The question mark is stripped for CHAIN matching only. Identity keys
+  // keep it (a statement and a question are different sentences), but for
+  // ordering, "Wie geht es?" is plainly the base "Wie geht es dir?" grows
+  // from — and with the ? in the key, no question could ever be a base.
+  const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase().replace(/\?+$/, "").trim();
   const deByKey = new Map<string, string>();
   for (const row of rows) {
     for (const text of [row.de, row.originalDe]) {

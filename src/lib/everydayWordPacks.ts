@@ -1075,6 +1075,31 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     adjective("heiter", "bright and dry, fair skies", "of people: cheerful; aus heiterem Himmel = out of the blue"),
   ]),
 
+  part533: {
+    label: "Part 533",
+    level: "A1",
+    theme: "Building blocks",
+    description: "Short complete sentences that longer course sentences grow from — learn the core, then meet it again with one more idea attached.",
+    focus: "Leon's repetition principle: learn the smallest sentence that makes sense on its own, then extend it. Every phrase here is a verbatim prefix of longer course sentences, so the chain machinery serves the pair together.",
+    seeds: [],
+    dialogues: [],
+    phrases: [
+      { de: "Wie geht es?", en: "How's it going?", use: "The bare frame; with a person it becomes Wie geht es dir/Ihnen?" },
+      { de: "Wie sagt man das?", en: "How do you say that?", use: "Add auf Deutsch to ask for the German word." },
+      { de: "Ein bisschen langsamer.", en: "A little slower.", use: "Softer with bitte on the end." },
+      { de: "Wie lange machst du das?", en: "How long are you doing that for?", use: "With schon it asks how long ALREADY: Wie lange machst du das schon?" },
+      { de: "Ich brauch das.", en: "I need that.", use: "Spoken form; written German keeps the -e: Ich brauche das." },
+      { de: "Was machst du?", en: "What are you doing?", use: "With beruflich it asks about work; with genau it asks for detail." },
+      { de: "Ich arbeite.", en: "I'm working.", use: "Grows naturally: in der Stadt, als Lehrer, von zu Hause." },
+      { de: "Passt das?", en: "Does that work?", use: "Checking a time or plan; für dich makes it personal." },
+      { de: "Wie heißt das?", en: "What's that called?", use: "Point at anything. Wie heißt das Ding da? for the thing over there." },
+      { de: "Verstehst du?", en: "Do you understand?", use: "Casual check-in mid-explanation." },
+      { de: "Das kann ich.", en: "I can do that.", use: "Confident and short; the verb arrives later: Das kann ich verstehen." },
+      { de: "Das geht.", en: "That works.", use: "Also 'that's acceptable'; Das geht nicht = that won't do." },
+      { de: "Das kenn ich.", en: "I know that one.", use: "For things familiar to you — kennen, not wissen." },
+    ],
+  },
+
   part475: pack("Part 475", "A2", "Weather, seasons and spans of time", "Weather worth remarking on, and the words for stretches of time bigger than a week.", [
     noun("der", "Frühling", "spring (season)", "also das Frühjahr"),
     adjective("sommerlich", "summery"),

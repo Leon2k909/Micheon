@@ -1405,10 +1405,16 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
   // Hours to FLUENT — the whole road. A next-stage estimate was tried and
   // Leon overruled it: the number he wants on the card is the real distance
   // to fluency, straight-line extrapolation and all. The label names the
-  // destination so nobody mistakes the span.
+  // destination so nobody mistakes the span — and the next milestone rides
+  // underneath, so 300-odd hours to a native-scale bar stops reading as the
+  // distance to the first rewarding conversation.
   const estimate = useMemo(
     () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
     [fluency.toFluent, profile, revision]
+  );
+  const nextEstimate = useMemo(
+    () => (fluency.next ? estimateFluencyHours(fluency.toNext, loadLearningTimeStats(profile)) : null),
+    [fluency.next, fluency.toNext, profile, revision]
   );
   const estimateNote = estimate.confidence === "personalized"
     ? ui("Based on your active lesson pace.")
@@ -1453,6 +1459,9 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <span aria-hidden="true"><Clock3 /></span>
         <small>{ui("Estimated active study left")}</small>
         <strong>About {estimate.hoursRemaining.toLocaleString()} hours to Fluent</strong>
+        {nextEstimate && fluency.next && nextEstimate.hoursRemaining > 0 && (
+          <p>≈ {nextEstimate.hoursRemaining.toLocaleString()} hours to {ui(fluency.next.label)}, the next milestone</p>
+        )}
         <p>{estimateNote}</p>
         {/* 330 hours read as "330 hours before I can talk to Germans" and
             alarmed exactly the person it was built for. Fluent is the
