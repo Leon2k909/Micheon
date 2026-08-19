@@ -15,8 +15,17 @@ contextBridge.exposeInMainWorld("germDesktop", {
     ipcRenderer.invoke("windows-settings:set-close-behavior", behavior),
   // Remembers the resolved theme so the next launch opens the native window
   // in the right colour instead of flashing white at a dark-mode learner.
+  //
+  // Swallows its own rejection, and it has to. The mascot overlay is a second
+  // renderer running the same bundle, so it applies the theme too and calls
+  // this from a window the main process rightly refuses — the settings
+  // channels only answer the main window. The caller already treats this as
+  // best-effort and wraps it in try/catch, but invoke() rejects a PROMISE and
+  // a synchronous catch never sees it, so every launch filed an "Untrusted
+  // settings request" in the crash log. Nineteen of them were sitting on top
+  // of the one real crash that mattered.
   setDesktopTheme: (theme) =>
-    ipcRenderer.invoke("windows-settings:set-theme", theme),
+    ipcRenderer.invoke("windows-settings:set-theme", theme).catch(() => undefined),
   // Main-window zoom. All changes route through the main process so every
   // path (these calls, Ctrl+=/-/0, Ctrl+wheel) walks the same ladder and the
   // mascot windows are re-pinned. Each resolves to the applied factor.
