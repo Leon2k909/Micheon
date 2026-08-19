@@ -1059,12 +1059,22 @@ export default function GuidedLearningSession() {
       // has a chained follow-up waiting, the pair claims a second fresh slot
       // and hands one back to the review half, so the sitting is still six.
       const chainKey = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
-      const followUp = rankedCandidates[1]?.step?.item;
-      const leadItem = rankedCandidates[0]?.step?.item;
-      const leadHasFollowUp = Boolean(followUp?.buildsOn) && Boolean(leadItem)
-        && [chainKey(leadItem.de), chainKey(leadItem.originalDe ?? leadItem.de)]
-          .includes(chainKey(followUp.buildsOn));
-      if (leadHasFollowUp && sittingMix.freshSlots < 2 && sittingMix.reviewSlots > 1) {
+      // True when the candidate at `index` extends the one before it — the
+      // pair straddling the edge of the fresh half.
+      const extendsPrevious = (index: number) => {
+        const base = rankedCandidates[index - 1]?.step?.item;
+        const next = rankedCandidates[index]?.step?.item;
+        if (!base || !next?.buildsOn) return false;
+        return [chainKey(base.de), chainKey(base.originalDe ?? base.de)]
+          .includes(chainKey(next.buildsOn));
+      };
+      // A base that lands in the LAST fresh slot is served without its
+      // extension — the pairing broken at the boundary rather than by the
+      // backlog. It happened to "Passt das?" sitting third of three. Borrow a
+      // review slot so the pair completes, at most twice so a long chain can
+      // finish without the sitting turning into one sentence's family tree.
+      for (let borrowed = 0; borrowed < 2; borrowed += 1) {
+        if (sittingMix.reviewSlots <= 1 || !extendsPrevious(sittingMix.freshSlots)) break;
         sittingMix.freshSlots += 1;
         sittingMix.reviewSlots -= 1;
       }
