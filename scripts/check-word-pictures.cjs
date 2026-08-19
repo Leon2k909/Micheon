@@ -334,12 +334,9 @@ assert.ok(
 
 const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
 assert.ok(
-  tracker.includes("const picture = wordPicture(word.en, word.pos);"),
-  "the words tracker shows the same picture as the lesson"
-);
-assert.ok(
-  tracker.includes('className="word-picture w-5 shrink-0"'),
-  "the tracker reserves the slot on every row so the list keeps a straight edge"
+  !tracker.includes("wordPictureAsset") && !tracker.includes("word-picture"),
+  "the words tracker is showing pictures again — they belong on the lesson card, "
+  + "where they are big enough to be an illustration rather than clutter"
 );
 
 const css = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
@@ -351,10 +348,6 @@ const css = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 assert.ok(
   /\.fs-picture img \{[^}]*width: 44px[^}]*height: 44px/.test(css),
   "the lesson board's picture has no explicit size"
-);
-assert.ok(
-  /\.word-picture img \{[^}]*width: 18px[^}]*height: 18px/.test(css),
-  "the tracker row's picture has no explicit size"
 );
 
 console.log(

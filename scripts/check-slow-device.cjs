@@ -304,7 +304,7 @@ check(
 );
 check(
   "...and the index is warmed on focus, not on the first letter typed",
-  /onFocus=\{\(\) => warmSearchIndex\(\)\}/.test(tracker)
+  tracker.includes("onFocus={() => { if (!indexedSearch) warmSearchIndex(); }}")
 );
 
 // The mascot is meant to stay ON SCREEN over a game — Leon asked for that
@@ -363,6 +363,26 @@ check(
 check(
   "...and breaks where a German dictionary would when it must break at all",
   petLayer.includes('lang="de"') && petLayer.includes('hyphens: "auto"')
+);
+
+// The first keystroke was still slow after the index went in, because until
+// the database answered the tracker fell back to the in-memory search — whose
+// first run builds a search string for all 16,308 items, ~770ms, for an answer
+// superseded a millisecond later. Two guarantees fix that and both have to
+// hold: don't build an index nothing will consult, and don't compute a list
+// that is about to be replaced.
+check(
+  "no in-memory search index is built when the shipped one is available",
+  tracker.includes("onFocus={() => { if (!indexedSearch) warmSearchIndex(); }}")
+);
+check(
+  "the list holds steady while the index answers instead of scanning in JS",
+  tracker.includes("if (q && indexedSearch && !indexed && lastShownRef.current) {")
+);
+check(
+  "...and what it holds is whatever was genuinely last shown",
+  tracker.includes("lastShownRef.current = ordered;")
+    && tracker.includes("lastShownRef.current = commonOrder;")
 );
 
 if (failures) {

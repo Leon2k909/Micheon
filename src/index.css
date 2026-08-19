@@ -2920,8 +2920,8 @@ a { color: inherit; text-decoration: none; }
 }
 /* The artwork is square SVG, so it is sized rather than typeset. */
 .fs-picture img { width: 44px; height: 44px; display: block; }
-.word-picture { display: flex; align-items: center; justify-content: center; }
-.word-picture img { width: 18px; height: 18px; display: block; }
+/* .word-picture was the tracker's slot for a picture; the tracker no longer
+   shows one. The lesson board's .fs-picture above is the only surface left. */
 
 /* Tracker rows: in the DOM, but only drawn when they can be seen.
  *

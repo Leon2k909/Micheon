@@ -675,23 +675,32 @@ export function VocabTracker({
    * main process answers null rather than an empty list when it has no
    * database — an empty list is a real answer meaning "nothing matched".
    */
+  /** The desktop app ships the index; a browser does not. */
+  const indexedSearch = useMemo(() => {
+    const bridge = typeof window === "undefined" ? undefined : (window as any).germDesktop;
+    return typeof bridge?.searchCatalogue === "function"
+      ? (query: string) => Promise.resolve(bridge.searchCatalogue(query))
+      : null;
+  }, []);
+
   const [indexedMatches, setIndexedMatches] = useState<{ ids: Set<string>; query: string } | null>(null);
+  /** The last list actually shown, held while a newer one is a few ms away. */
+  const lastShownRef = useRef<CatalogItem[] | null>(null);
   useEffect(() => {
     const wanted = filterQuery.trim();
-    const search = (typeof window === "undefined" ? undefined : (window as any).germDesktop)?.searchCatalogue;
-    if (!wanted || typeof search !== "function") {
+    if (!wanted || !indexedSearch) {
       setIndexedMatches(null);
       return undefined;
     }
     let cancelled = false;
-    void Promise.resolve(search(wanted))
+    void indexedSearch(wanted)
       .then((rows: Array<{ id: string }> | null) => {
         if (cancelled) return;
         setIndexedMatches(rows ? { ids: new Set(rows.map((row) => row.id)), query: wanted } : null);
       })
       .catch(() => { if (!cancelled) setIndexedMatches(null); });
     return () => { cancelled = true; };
-  }, [filterQuery]);
+  }, [filterQuery, indexedSearch]);
 
   const warmingRef = useRef(false);
   const warmSearchIndex = React.useCallback(() => {
@@ -725,6 +734,7 @@ export function VocabTracker({
       && usefulnessFilter === "all"
       && sort === "common"
     ) {
+      lastShownRef.current = commonOrder;
       return commonOrder;
     }
     // Order matters more than it looks. This runs over all 16,308 items on
@@ -740,6 +750,20 @@ export function VocabTracker({
     const indexed = indexedMatches && indexedMatches.query === filterQuery.trim()
       ? indexedMatches.ids
       : null;
+    // The first keystroke was still slow, and this was why. The database
+    // answers in about a millisecond, but until it does the code below fell
+    // back to the in-memory search — which on its first run builds a search
+    // string for all 16,308 items, about 770ms of work, for an answer that was
+    // superseded before it finished. Leon: "search still is a little laggy at
+    // first when i start typing".
+    //
+    // So when the index is going to answer, wait for it and keep showing what
+    // is already on screen. The wait is milliseconds; the work avoided is most
+    // of a second. Without an index (a browser) nothing changes and the
+    // in-memory search runs as before.
+    if (q && indexedSearch && !indexed && lastShownRef.current) {
+      return lastShownRef.current;
+    }
     const matches = catalog.filter((item) => {
       if (q) {
         if (indexed) { if (!indexed.has(item.id)) return false; }
@@ -795,12 +819,14 @@ export function VocabTracker({
       recent: (a, b) => b.practisedAt - a.practisedAt || byText(a, b),
     };
     keyed.sort(compare[sort]);
-    return keyed.map((entry) => entry.item);
+    const ordered = keyed.map((entry) => entry.item);
+    lastShownRef.current = ordered;
+    return ordered;
   // filterQuery, not query: depending on the immediate value made this run
   // once at urgent priority with the OLD deferred query before running again
   // with the new one, which is exactly the work useDeferredValue was added to
   // move off the keystroke.
-  }, [catalog, commonOrder, grades, filter, indexedMatches, itemTypeFilter, learnsEnglish, priorityIndex, filterQuery, searchIndex, sort, usefulnessFilter]);
+  }, [catalog, commonOrder, grades, filter, indexedMatches, indexedSearch, itemTypeFilter, learnsEnglish, priorityIndex, filterQuery, searchIndex, sort, usefulnessFilter]);
 
   const visible = filtered.slice(0, limit);
 
@@ -1019,7 +1045,7 @@ export function VocabTracker({
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
             <input
               value={query}
-              onFocus={() => warmSearchIndex()}
+              onFocus={() => { if (!indexedSearch) warmSearchIndex(); }}
               onChange={(e) => { setQuery(e.target.value); resetList(); }}
               placeholder={ui("German or English…")}
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
