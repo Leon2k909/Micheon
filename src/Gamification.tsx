@@ -83,6 +83,7 @@ import { BROWSER_EXTENSION_ICON, BrowserExtension } from "@/components/BrowserEx
 import { AppZoomControl } from "@/components/AppZoomControl";
 import { applyHighContrast, getHighContrast } from "@/lib/highContrast";
 import { WindowsAppSettings } from "@/components/WindowsAppSettings";
+import { CreditsCard } from "@/components/CreditsCard";
 import { LearningModePicker } from "@/components/LearningModePicker";
 import { FlashcardModePicker } from "@/components/FlashcardModePicker";
 import { getFlashcardFace, getFlashcardMode, setFlashcardFace, setFlashcardMode, type FlashcardFace, type FlashcardMode } from "@/lib/flashcardMode";
@@ -1549,18 +1550,7 @@ export default function GamificationPanel({
           </button>
         </section>
 
-        <p className="px-1 pb-1 text-center text-[11px] font-medium leading-relaxed text-[var(--text-3)]">
-          {ui("Some real-sentence practice is sourced from the")}{" "}
-          <a
-            href="https://tatoeba.org"
-            target="_blank"
-            rel="noreferrer"
-            className="underline transition-colors hover:text-[var(--text-1)]"
-          >
-            Tatoeba
-          </a>{" "}
-          {ui("project, used under CC BY 2.0 FR.")}
-        </p>
+        <CreditsCard />
       </div>
     );
   }

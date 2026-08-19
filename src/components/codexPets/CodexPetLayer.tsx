@@ -90,6 +90,9 @@ const PET_MENU_ESTIMATED_HEIGHT = 600;
  * pixels ran out.
  */
 const PET_BUBBLE_WIDTH = 320;
+// ...and that is the widest it may get, not the width it always is. Sizing the
+// box to its content keeps "Nice work!" small while still giving
+// "die Haftpflichtversicherung" somewhere to fit.
 // A click opens history, but only after the browser has had time to tell us it
 // was actually the first half of a double-click. Opening immediately unmounts
 // the desktop pet, so the second click must cancel the queued independent
@@ -1960,7 +1963,8 @@ export function CodexPetLayer() {
               bottom: bubbleBottom,
               left: bubbleLeft,
               maxHeight: bubbleMaxHeight,
-              width: bubbleWidth,
+              maxWidth: bubbleWidth,
+              width: "max-content",
               willChange: dragging ? "translate" : undefined,
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}

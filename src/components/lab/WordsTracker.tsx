@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { wordPicture } from "@/lib/wordPictures";
+import { wordPictureAsset } from "@/lib/wordPictureAssets";
 import { ui, uiFmt, uiIsGerman } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
@@ -548,7 +549,9 @@ export function WordsTracker({ apiParts, user }: {
                       feeds the sort/filter controls, but as a chip on every row
                       it was noise — Leon: "a thing behind the scenes". */}
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="word-picture w-5 shrink-0 text-center text-sm leading-none" aria-hidden="true">{picture}</span>
+                    <span className="word-picture w-5 shrink-0" aria-hidden="true">
+                      {picture && <img alt="" draggable={false} src={wordPictureAsset(picture) ?? undefined} />}
+                    </span>
                     <p className="min-w-0 flex-1 truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
                   </div>
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">

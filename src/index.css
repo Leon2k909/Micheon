@@ -2916,9 +2916,12 @@ a { color: inherit; text-decoration: none; }
   width: 78px; height: 78px; margin: 10px auto -6px;
   border-radius: 999px;
   background: rgba(189,168,237,0.13);
-  font-family: var(--emoji-font); font-size: 42px; line-height: 1;
+  line-height: 1;
 }
-.word-picture { font-family: var(--emoji-font); }
+/* The artwork is square SVG, so it is sized rather than typeset. */
+.fs-picture img { width: 44px; height: 44px; display: block; }
+.word-picture { display: flex; align-items: center; justify-content: center; }
+.word-picture img { width: 18px; height: 18px; display: block; }
 
 /* Tracker rows: in the DOM, but only drawn when they can be seen.
  *

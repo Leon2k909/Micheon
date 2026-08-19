@@ -57,6 +57,7 @@ import {
 } from "@/lib/guidedLessonPhases";
 import { wordOrderTokensMatchSentence } from "@/lib/wordOrder";
 import { wordPicture } from "@/lib/wordPictures";
+import { wordPictureAsset } from "@/lib/wordPictureAssets";
 import { MuteButton } from "@/components/MuteButton";
 import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
@@ -3088,7 +3089,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 /* Decorative: the word and its meaning are both already in
                    the accessibility tree, and a screen reader announcing
                    "red apple" would hand over the answer. */
-                <div className="fs-picture" aria-hidden="true">{picture}</div>
+                /* Twemoji artwork rather than the system emoji font: the
+                   Windows glyphs are flat and two-tone and looked nothing like
+                   the illustrated set this was meant to be. The character is
+                   still the key; the SVG is what gets drawn. */
+                <div className="fs-picture" aria-hidden="true">
+                  <img alt="" draggable={false} src={wordPictureAsset(picture) ?? undefined} />
+                </div>
               )}
               <div className={cn(
                 "fs-line transition-all duration-300",
