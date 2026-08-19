@@ -10,7 +10,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
-import { buildCatalog, buildSession, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
@@ -909,6 +909,16 @@ export default function GuidedLearningSession() {
           },
         });
       });
+      // Fill in the chains nobody authored (a sentence that is a word-boundary
+      // prefix of another) BEFORE scores resolve, so "Ich habe ein Fahrrad"
+      // rides directly behind "Ich habe" exactly like a hand-marked chain —
+      // written onto the items themselves so the lead-chain and pinning logic
+      // below see the same links.
+      deriveImplicitChains(
+        candidates.map((candidate) => candidate.step.item).filter(Boolean) as Array<{
+          de?: string; originalDe?: string; buildsOn?: string;
+        }>
+      );
       resolveChainScores(
         candidates.map((candidate) => {
           const proxy = {

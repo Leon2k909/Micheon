@@ -274,9 +274,44 @@ for (const id of plannedIds) {
   }
 }
 
+// ── 4. the chains nobody authored — Leon's "I, I have, I have a bike" ─────
+{
+  const { deriveImplicitChains } = load(
+    `export { deriveImplicitChains } from "./src/session.ts";`, "chains-e");
+  const rows = [
+    { de: "Ich habe." },
+    { de: "Ich habe ein Fahrrad." },
+    { de: "Ich habe ein Fahrrad, aber es ist kaputt und ich brauche dringend ein Werkzeug." },
+    { de: "Ich habe ein rotes Fahrrad." },
+    { de: "Ich habe ein neues Fahrrad." },
+    { de: "Ich habe ein altes blaues Fahrrad." },
+    { de: "Ich habe ein sehr schönes grünes Fahrrad." },
+    { de: "Ich habe Hunger.", buildsOn: "Etwas ganz anderes." },
+  ];
+  deriveImplicitChains(rows);
+  if (rows[1].buildsOn !== "Ich habe.") {
+    failures.push("a word-boundary prefix sentence is not derived as the base of its extension");
+  }
+  if (rows[2].buildsOn) {
+    failures.push("an extension adding more than four words was chained anyway — that is a different sentence");
+  }
+  if (rows[7].buildsOn !== "Etwas ganz anderes.") {
+    failures.push("an authored buildsOn was overwritten by the derived chains");
+  }
+  const fahrradExtensions = rows.slice(3, 7).filter((row) => row.buildsOn === "Ich habe.").length
+    + (rows[1].buildsOn === "Ich habe." ? 1 : 0);
+  if (fahrradExtensions > 3) {
+    failures.push(`a base carries ${fahrradExtensions} derived extensions — the three-per-base cap has died`);
+  }
+  const guided = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
+  if (!guided.includes("deriveImplicitChains(")) {
+    failures.push("Continue Learning no longer derives the unauthored chains");
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-phrase-chains");
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
-console.log(`check-phrase-chains: ${chained.length} chained phrases all resolve, worst base→extension gap ${worstGap}, and lessons serve pairs adjacently`);
+console.log(`check-phrase-chains: ${chained.length} chained phrases all resolve, worst base→extension gap ${worstGap}, lessons serve pairs adjacently, and prefix sentences chain themselves (capped at three per base)`);

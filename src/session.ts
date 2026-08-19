@@ -475,6 +475,75 @@ export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string>
  * rewrite one but not the other). Chains resolve up to three links deep; an
  * unresolvable buildsOn leaves the row's own score untouched.
  */
+/**
+ * Derive the chains nobody authored.
+ *
+ * `buildsOn` was hand-written onto a few dozen phrases, but the course is
+ * full of unmarked chains — Leon's example: "Ich", then "Ich habe", then
+ * "Ich habe ein Fahrrad", each a complete thought on its own. When one
+ * unseen sentence is a word-boundary prefix of another, the longer one IS
+ * an extension of the shorter, and serving them together teaches the growth
+ * of the sentence the same way the authored chains do.
+ *
+ * Rules, conservative on purpose:
+ *  - authored buildsOn always wins; this only fills blanks;
+ *  - the base must be PRESENT in the same unseen pool — chaining onto a
+ *    sentence learned long ago would let thousands of extensions inherit an
+ *    old low score and flood the queue;
+ *  - the longest present prefix wins, so three-step chains resolve link by
+ *    link exactly like authored ones;
+ *  - the extension may add at most four words. "Ich habe" growing into
+ *    "Ich habe ein Fahrrad" is a teaching step; growing into a fourteen-word
+ *    subordinate clause is a different sentence that must earn its own rank.
+ */
+export function deriveImplicitChains<T extends { de?: string; originalDe?: string; buildsOn?: string }>(
+  rows: T[]
+): void {
+  const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+  const deByKey = new Map<string, string>();
+  for (const row of rows) {
+    for (const text of [row.de, row.originalDe]) {
+      const key = keyOf(text);
+      if (key.length >= 2 && !deByKey.has(key)) deByKey.set(key, String(text));
+    }
+  }
+  const implicit: Array<{ row: T; baseDe: string; extraTokens: number }> = [];
+  for (const row of rows) {
+    if (row.buildsOn) continue;
+    const rowKey = keyOf(row.de);
+    const tokens = rowKey.split(/\s+/);
+    if (tokens.length < 2) continue;
+    // Longest prefix first; stop at the four-words-added bound.
+    for (let cut = tokens.length - 1; cut >= Math.max(1, tokens.length - 4); cut -= 1) {
+      const prefix = tokens.slice(0, cut).join(" ")
+        // A base ending mid-clause carries its comma in the identity key
+        // ("ich weiß nicht," …) — strip trailing punctuation the way the
+        // key itself strips it at sentence end.
+        .replace(/[,;:]+$/, "");
+      const baseDe = deByKey.get(prefix);
+      if (baseDe !== undefined && prefix !== rowKey) {
+        implicit.push({ row, baseDe, extraTokens: tokens.length - cut });
+        break;
+      }
+    }
+  }
+  // At most three derived extensions per base, closest steps first. "Ich
+  // weiß nicht." is the prefix of NINETY-FIVE course sentences; gluing them
+  // all behind it would turn the course into a wall of one opening. The
+  // shortest continuations are the teaching steps; the rest keep their own
+  // rank and arrive when they earn it.
+  const perBase = new Map<string, Array<{ row: T; baseDe: string; extraTokens: number }>>();
+  for (const link of implicit) {
+    const list = perBase.get(link.baseDe) ?? [];
+    list.push(link);
+    perBase.set(link.baseDe, list);
+  }
+  for (const list of perBase.values()) {
+    list.sort((a, b) => a.extraTokens - b.extraTokens);
+    for (const link of list.slice(0, 3)) link.row.buildsOn = link.baseDe;
+  }
+}
+
 export function resolveChainScores(
   rows: Array<{ score: number; de?: string; originalDe?: string; buildsOn?: string }>,
   externalBaseScores?: Map<string, number>
