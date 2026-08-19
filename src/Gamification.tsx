@@ -454,16 +454,25 @@ function ProgressSummaryCard({
             {ui("Practice Lv")} {cur.level}
           </span>
         </div>
+        {/* One card, not two. "Your German progress" and "Vocabulary mastery"
+            sat side by side answering the same question with the same number,
+            so they are merged — and it is Mastery, not VOCABULARY mastery,
+            because the count has always included sentences and phrases as
+            well as words. */}
         <h1 className="mt-5 text-3xl font-black leading-tight tracking-tight text-[var(--text-1)]">
-          {ui(uiIsGerman() ? "Your English progress" : "Your German progress")}
+          {ui("Your mastery")}
         </h1>
         <p className="mt-3 text-sm font-semibold leading-6 text-[var(--text-2)]">
-          {ui("Your level, next target, and practice momentum in one place.")}
+          {ui("Every word, phrase and sentence you can recall — your whole fluency level in one place.")}
         </p>
       </div>
 
       <div className="mt-6">
         <FluencyMeter vocab={vocab} />
+      </div>
+
+      <div className="mt-5">
+        <MasteryCard vocab={vocab} embedded />
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
@@ -1433,12 +1442,6 @@ export default function GamificationPanel({
           <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
           <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
         </section>
-
-        {/* Moved here from Games: mastery is part of the progress story, and
-            Games is Leon-only beta territory now. Same countKnownVocab number
-            the tracker, dashboard outlook and fluency meter share, so all four
-            surfaces always agree. */}
-        <MasteryCard vocab={vocab} />
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />

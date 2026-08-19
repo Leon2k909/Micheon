@@ -22,7 +22,9 @@ const failures = [];
 
 // 1. The mastery ring takes the shared count and nothing else.
 const mastery = read("src/components/lab/MasteryCard.tsx");
-if (!/export function MasteryCard\(\{\s*vocab\s*\}/.test(mastery)) {
+// One count in, nothing derived: `embedded` only drops the chrome for the
+// merged profile card and must never become a second source of numbers.
+if (!/export function MasteryCard\(\{\s*vocab,\s*embedded[^}]*\}/.test(mastery)) {
   failures.push("MasteryCard should take a single `vocab` count (the shared countKnownVocab number)");
 }
 if (/totalReviews/.test(mastery)) {
@@ -36,8 +38,10 @@ const games = read("src/games/GamesView.tsx");
 if (/totalReviews|gameMasteryCount|MasteryCard/.test(games)) {
   failures.push("GamesView must not hold a vocabulary count — the mastery card moved to Profile & settings");
 }
-if (!/<MasteryCard vocab=\{vocab\} \/>/.test(read("src/Gamification.tsx"))) {
-  failures.push("the profile page should mount MasteryCard with the shared vocab count");
+// Merged into the profile's single Mastery card (2026-08-19): "Your German
+// progress" and "Vocabulary mastery" answered the same question side by side.
+if (!/<MasteryCard vocab=\{vocab\} embedded \/>/.test(read("src/Gamification.tsx"))) {
+  failures.push("the profile's Mastery card should embed MasteryCard with the shared vocab count");
 }
 
 // 3. The profile shows one number, not two side by side.

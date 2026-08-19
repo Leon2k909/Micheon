@@ -90,20 +90,26 @@ function Ring({ value, size = 100, stroke = 8 }: { value: number; size?: number;
   );
 }
 
-export function MasteryCard({ vocab }: { vocab: number }) {
+export function MasteryCard({ vocab, embedded = false }: { vocab: number; embedded?: boolean }) {
   // The same count the dashboard outlook and the profile fluency meter show.
   // This card used to add up review events instead, so a learner could see
   // three different "how many words do I know" answers on three screens.
+  //
+  // `embedded` drops the card chrome and the heading: on the profile this
+  // now lives INSIDE the Mastery card rather than beside it as a second card
+  // asking the same question.
   const mastered = vocab;
   const vocabPct = Math.min(100, Math.round((mastered / VOCAB_TARGET) * 100));
   const nextMilestone = VOCAB_MILESTONES.find((m) => mastered < m.value);
   const currentMilestone = [...VOCAB_MILESTONES].reverse().find((m) => mastered >= m.value);
 
   return (
-    <div className="card mastery-card p-5 sm:p-6">
+    <div className={embedded ? "mastery-card" : "card mastery-card p-5 sm:p-6"}>
       <div className="mastery-card__header flex flex-wrap items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="mastery-card__title text-sm font-black text-[var(--text-1)]">{ui("Vocabulary mastery")}</p>
+          {!embedded && (
+            <p className="mastery-card__title text-sm font-black text-[var(--text-1)]">{ui("Your mastery")}</p>
+          )}
           <p className="mastery-card__count mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
             {mastered.toLocaleString()}
             <span className="text-base font-bold text-[var(--text-3)]"> / {VOCAB_TARGET.toLocaleString()}</span>
@@ -123,16 +129,18 @@ export function MasteryCard({ vocab }: { vocab: number }) {
           {/* Next milestone */}
           {nextMilestone && (
             <p className="mastery-card__next mt-1 text-xs text-[var(--text-3)]">
+              {/* Items, not words: this count has always included phrases and
+                  whole sentences, and the card now says so in its name. */}
               {uiIsGerman() ? (
                 <>
-                  <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} Wörter</span>
+                  <span className="text-[var(--text-2)]">{(nextMilestone.value - mastered).toLocaleString()} Einträge</span>
                   {" bis "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
                   {": "}{ui(nextMilestone.detail)}
                 </>
               ) : (
                 <>
-                  <span className="text-[var(--text-2)]">{nextMilestone.value - mastered} words</span> to{" "}
+                  <span className="text-[var(--text-2)]">{(nextMilestone.value - mastered).toLocaleString()} items</span> to{" "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
                   {": "}{nextMilestone.detail}
                 </>

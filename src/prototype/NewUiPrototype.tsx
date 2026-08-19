@@ -75,7 +75,7 @@ import {
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
-import { activePackProgress, type PackProgress } from "@/lib/packProgress";
+import { activePackProgress, upcomingPackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
 import {
   NOTIFICATION_KINDS,
@@ -234,45 +234,6 @@ const PREVIEW_PROFILE: UserProfile = {
   externalWordsLearned: 0,
 };
 
-const LESSONS = [
-  {
-    number: 12,
-    title: "Keep the conversation going",
-    detail: "Everyday phrases",
-    reward: "heart",
-    tone: "mint",
-    status: "current",
-    category: "everyday",
-  },
-  {
-    number: 13,
-    title: "Opinions and reactions",
-    detail: "Useful sentences",
-    reward: "star",
-    tone: "yellow",
-    status: "open",
-    category: "everyday",
-  },
-  {
-    number: 14,
-    title: "Travel plans and invitations",
-    detail: "Common questions",
-    reward: "backpack",
-    tone: "violet",
-    status: "open",
-    category: "travel",
-  },
-  {
-    number: 15,
-    title: "Sorting out a problem",
-    detail: "Natural responses",
-    reward: "flame",
-    tone: "blue",
-    status: "locked",
-    category: "work",
-  },
-] as const;
-
 const SHOP_PURCHASES_KEY = "prototypeShopPurchases";
 const SHOP_EQUIPPED_KEY = "prototypeShopEquippedBadge";
 
@@ -284,7 +245,6 @@ type CoinPack = {
   note: string;
   featured?: boolean;
 };
-
 const COIN_PACKS: readonly CoinPack[] = [
   { id: "pocket", coins: 500, price: "£1.99", label: "Pocket pack", note: "A small boost for profile rewards." },
   { id: "popular", coins: 1_200, price: "£3.99", label: "Popular pack", note: "Enough for several pins and future rewards.", featured: true },
@@ -1353,7 +1313,32 @@ function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void
   );
 }
 
-function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
+/**
+ * The packs the course will actually serve next.
+ *
+ * These three rows used to be hardcoded: lesson "12 — Keep the conversation
+ * going", numbers and titles that matched nothing the learner would ever be
+ * taught, and a View all button wired to nothing at all. Both were exactly
+ * the mock data Leon asked to be rid of. The rows are now the real upcoming
+ * packs with their real names and real progress, and View all opens the
+ * lessons library where the rest of them live.
+ */
+const LESSON_ROW_TONES = ["mint", "violet", "blue"] as const;
+const LESSON_ROW_REWARDS = ["heart", "star", "trophy"] as const;
+
+function LessonPath({
+  onOpenLesson,
+  onViewAll,
+  packs,
+  ready,
+}: {
+  onOpenLesson: () => void;
+  onViewAll: () => void;
+  packs: PackProgress[];
+  /** False until the catalogue has loaded — "finished" and "still loading"
+   *  must never look the same. */
+  ready: boolean;
+}) {
   return (
     <section className="np-lesson-path">
       <div className="np-list-heading">
@@ -1361,16 +1346,39 @@ function LessonPath({ onOpenLesson }: { onOpenLesson: () => void }) {
           <h2>{ui("Your lesson path")}</h2>
           <p>{ui("Common sentences and phrases come first.")}</p>
         </div>
-        <button type="button">{ui("View all")} <ChevronRight /></button>
+        <button onClick={onViewAll} type="button">{ui("View all")} <ChevronRight /></button>
       </div>
       <div className="np-lesson-list">
-        {LESSONS.slice(0, 3).map((lesson) => (
-          <button className={`np-lesson-row np-lesson-row--${lesson.tone}`} key={lesson.number} onClick={onOpenLesson} type="button">
-            <span className="np-lesson-illustration"><RewardIcon kind={lesson.reward} /></span>
-            <span className="np-lesson-number">{lesson.number}</span>
+        {!ready ? (
+          [0, 1, 2].map((row) => (
+            <div className="np-lesson-row np-lesson-row--loading" key={row}>
+              <span className="np-lesson-illustration skeleton" />
+              <span className="np-lesson-copy">
+                <span className="skeleton np-lesson-skeleton-line" />
+                <span className="skeleton np-lesson-skeleton-line np-lesson-skeleton-line--short" />
+              </span>
+            </div>
+          ))
+        ) : packs.length === 0 ? (
+          <p className="np-lesson-empty">{ui("Every pack is finished. Reviews keep it all fresh.")}</p>
+        ) : packs.map((pack, index) => (
+          <button
+            className={`np-lesson-row np-lesson-row--${LESSON_ROW_TONES[index % LESSON_ROW_TONES.length]}`}
+            key={pack.key}
+            onClick={onOpenLesson}
+            type="button"
+          >
+            <span className="np-lesson-illustration"><RewardIcon kind={LESSON_ROW_REWARDS[index % LESSON_ROW_REWARDS.length]} /></span>
+            <span className="np-lesson-number">{pack.percent}%</span>
             <span className="np-lesson-copy">
-              <strong>{ui(lesson.title)}</strong>
-              <small>{ui(lesson.detail)}</small>
+              <strong>{ui(pack.title)}</strong>
+              <small>
+                {uiFmt("{done} of {total} learned · {sittings} sittings left", {
+                  done: pack.done.toLocaleString(),
+                  total: pack.total.toLocaleString(),
+                  sittings: pack.sittingsLeft.toLocaleString(),
+                })}
+              </small>
             </span>
             <ChevronRight className="np-lesson-chevron" />
           </button>
@@ -1619,6 +1627,8 @@ function ProgressPanel({
 function HomeView({
   apiParts,
   onPractice,
+  onRequestCatalogue,
+  onViewAllLessons,
   profile,
   onSwitchCourse,
   stats,
@@ -1626,14 +1636,36 @@ function HomeView({
 }: {
   apiParts: Record<string, Part>;
   onPractice: () => void;
+  onRequestCatalogue: () => void;
+  onViewAllLessons: () => void;
   profile: UserProfile | null;
   onSwitchCourse: () => void;
   stats: PrototypeStats;
   vocab: number;
 }) {
+  const catalogueReady = Object.keys(apiParts).length > 0;
+  // The lesson path and the hero's "how much longer" both need the real
+  // catalogue. It stays off the first-paint path — startup performance is
+  // gated — and is fetched once the browser is idle instead, so the
+  // dashboard shows real packs a moment later rather than inventing rows.
+  useEffect(() => {
+    if (catalogueReady) return undefined;
+    const request = () => onRequestCatalogue();
+    const idle = (window as typeof window & {
+      requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    }).requestIdleCallback;
+    if (typeof idle === "function") {
+      const handle = idle(request, { timeout: 2_000 });
+      return () => (window as typeof window & { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback?.(handle);
+    }
+    const timer = window.setTimeout(request, 800);
+    return () => window.clearTimeout(timer);
+  }, [catalogueReady, onRequestCatalogue]);
   // Recomputed when the catalogue arrives or a lesson lands, so the hero's
   // "how much longer" tracks what was just learned.
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
+  const upcomingPacks = useMemo(() => upcomingPackProgress(apiParts, profile, 3), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
   // The menu closes the way every menu should: outside click or Escape.
@@ -1746,7 +1778,7 @@ function HomeView({
       </div>
       </div>
       <FluencyOutlook profile={profile} vocab={vocab} />
-      <LessonPath onOpenLesson={onPractice} />
+      <LessonPath onOpenLesson={onPractice} onViewAll={onViewAllLessons} packs={upcomingPacks} ready={catalogueReady} />
     </div>
   );
 }
@@ -2537,6 +2569,8 @@ export default function NewUiPrototype({
       <HomeView
         apiParts={apiParts}
         onPractice={openGuidedSession}
+        onRequestCatalogue={requestParts}
+        onViewAllLessons={() => navigate("learn")}
         profile={profile}
         onSwitchCourse={() => setCourseSwitcherOpen(true)}
         stats={stats}

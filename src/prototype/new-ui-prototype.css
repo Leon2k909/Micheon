@@ -91,6 +91,34 @@
 
 /* Honest label on unfinished territory: Games, Friends and Shop sit under
    this divider on the one account (Leon's) that sees them at all. */
+/* The lesson path while the catalogue loads: real rows are a moment away,
+   so the space holds its shape instead of collapsing or claiming the course
+   is finished. */
+.np-lesson-row--loading {
+  pointer-events: none;
+}
+
+.np-lesson-skeleton-line {
+  display: block;
+  height: 11px;
+  border-radius: 999px;
+}
+
+.np-lesson-skeleton-line + .np-lesson-skeleton-line {
+  width: 55%;
+  margin-top: 7px;
+  height: 9px;
+}
+
+.np-lesson-empty {
+  margin: 0;
+  padding: 18px 4px;
+  color: var(--np-muted);
+  font-size: var(--np-type-caption);
+  font-weight: 650;
+  text-align: center;
+}
+
 .np-nav-section {
   display: block;
   margin: 14px 12px 4px;

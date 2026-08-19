@@ -31,6 +31,55 @@ export type PackProgress = {
  * which matches the order lessons are served in. Returns null before the
  * catalogue has loaded, or once everything is finished.
  */
+/**
+ * The next few packs the course will actually serve, in curriculum order.
+ *
+ * The dashboard's "Your lesson path" used to render three hardcoded rows —
+ * invented numbers and invented titles that matched nothing the learner
+ * would be taught. This returns the real thing: the packs with work left,
+ * their real names, and their real progress.
+ */
+export function upcomingPackProgress(
+  apiParts: Record<string, any>,
+  user: UserProfile | null = getAuthUser(),
+  limit = 3
+): PackProgress[] {
+  try {
+    if (!apiParts || !Object.keys(apiParts).length) return [];
+    const catalog = buildCatalog(apiParts);
+    if (!catalog.length) return [];
+    const grades = loadGradeStore(user);
+
+    const counts = new Map<string, { done: number; total: number }>();
+    for (const item of catalog) {
+      if (!item.partKey) continue;
+      const row = counts.get(item.partKey) ?? { done: 0, total: 0 };
+      row.total += 1;
+      if (statusForId(grades, item.id, item.aliases) === "known") row.done += 1;
+      counts.set(item.partKey, row);
+    }
+
+    const out: PackProgress[] = [];
+    for (const key of Object.keys(orderParts(apiParts))) {
+      if (out.length >= limit) break;
+      const row = counts.get(key);
+      if (!row || row.total === 0 || row.done >= row.total) continue;
+      const remaining = row.total - row.done;
+      out.push({
+        key,
+        title: String(apiParts[key]?.theme || apiParts[key]?.label || key),
+        done: row.done,
+        total: row.total,
+        percent: Math.round((row.done / row.total) * 100),
+        sittingsLeft: Math.max(1, Math.ceil(remaining / NEW_PER_SITTING)),
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export function activePackProgress(
   apiParts: Record<string, any>,
   user: UserProfile | null = getAuthUser(),
