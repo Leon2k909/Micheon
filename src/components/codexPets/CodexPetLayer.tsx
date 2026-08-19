@@ -1779,6 +1779,23 @@ export function CodexPetLayer() {
                 <p className="min-h-8 px-1 pt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
                   {ui(PET_DISPLAY_OPTIONS.find((option) => option.value === petDisplayMode)?.description ?? "")}
                 </p>
+                {/* The mascot is a topmost see-through window, and Windows will
+                    not give a fullscreen game the screen to itself while one is
+                    up — the game's frames go through the desktop compositor
+                    instead, which is felt as input lag. There is no way to ask
+                    Windows whether a game is running without a native module,
+                    so this is a switch rather than a sensor. It is a global
+                    shortcut precisely so it can be used from inside the game,
+                    which is the only place it is any use. */}
+                <p className="px-1 pt-1 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                  {ui("Gaming? Press")}{" "}
+                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">Ctrl</kbd>
+                  {" + "}
+                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">Alt</kbd>
+                  {" + "}
+                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">P</kbd>{" "}
+                  {ui("from anywhere to put the mascot away. An overlay on screen costs a fullscreen game a frame of input lag, even one you cannot see behind it.")}
+                </p>
               </section>
               {/* Actions for the pet that was actually right-clicked. Hiding
                   the speaker promotes another visible pet when possible. */}

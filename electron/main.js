@@ -1327,7 +1327,57 @@ function setPetOverlayDisplayMode(mode) {
   if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
 }
 
+/**
+ * Get the mascot off the screen for a game, from inside the game.
+ *
+ * The overlay is a topmost layered window. Windows will not give a fullscreen
+ * game the screen to itself while one of those is up, so the game's frames go
+ * through the desktop compositor instead of straight to the display, and the
+ * player pays a frame of latency for a mascot they cannot even see behind
+ * CS2. Leon, twice: "when im gaming its like adding input delay to my game bc
+ * of it being an overlay", then "still have input delay, i think because of
+ * the pet overlay in cs2". He was right both times.
+ *
+ * There is no way to ask Windows "is a fullscreen game running?" from Electron
+ * without a native module, so this is a switch rather than a sensor — but it
+ * is a switch that works from inside the game, which is the only place it is
+ * any use. Suspending destroys the window rather than hiding it, so the
+ * topmost surface is genuinely gone rather than merely invisible.
+ *
+ * The suspension is deliberately NOT persisted: forgetting it is on and
+ * wondering where your pet went is worse than pressing the key again.
+ */
+let petOverlaySuspended = false;
+let petOverlayWantedVisible = false;
+const PET_SUSPEND_SHORTCUT = "CommandOrControl+Alt+P";
+
+function setPetOverlaySuspended(next) {
+  const value = Boolean(next);
+  if (petOverlaySuspended === value) return;
+  petOverlaySuspended = value;
+  applyPetOverlayVisibility();
+  for (const window of [mainWindow, petWindow, petHistoryWindow]) {
+    if (!window || window.isDestroyed() || window.webContents.isDestroyed()) continue;
+    window.webContents.send("pet-overlay:suspended", petOverlaySuspended);
+  }
+}
+
+function registerPetSuspendShortcut() {
+  if (globalShortcut.isRegistered(PET_SUSPEND_SHORTCUT)) return;
+  try {
+    globalShortcut.register(PET_SUSPEND_SHORTCUT, () => {
+      setPetOverlaySuspended(!petOverlaySuspended);
+    });
+  } catch { /* another app already owns the combination */ }
+}
+
 function setPetOverlayVisible(visible) {
+  petOverlayWantedVisible = Boolean(visible);
+  applyPetOverlayVisibility();
+}
+
+function applyPetOverlayVisibility() {
+  const visible = petOverlayWantedVisible && !petOverlaySuspended;
   if (!visible || petDisplayMode === "app") {
     closePetHistoryWindow();
     finishPetOverlayDrag();
@@ -2196,6 +2246,8 @@ ipcMain.on("pet-overlay:speak", (event, payload) => {
 if (hasSingleInstanceLock) {
   app.whenReady().then(async () => {
     await createWindow();
+    // Works from inside a fullscreen game, which is the only place it helps.
+    registerPetSuspendShortcut();
     screen.on("display-added", syncPetDesktopSurfaces);
     screen.on("display-removed", syncPetDesktopSurfaces);
     screen.on("display-metrics-changed", syncPetDesktopSurfaces);

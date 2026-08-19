@@ -22,6 +22,8 @@ const wordsTracker = read("src/components/lab/WordsTracker.tsx");
 const appStyles = read("src/index.css");
 const voice = read("src/lib/voice.ts");
 const guided = read("src/GuidedSession.tsx");
+const electronMainSource = read("electron/main.js");
+const petLayer = read("src/components/codexPets/CodexPetLayer.tsx");
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -256,6 +258,37 @@ check(
 check(
   "...and the games option says what it costs",
   read("src/components/codexPets/CodexPetLayer.tsx").includes("This can add input lag to the game.")
+);
+
+// The mascot overlay is a topmost LAYERED window, and Windows will not hand a
+// fullscreen game the screen to itself while one of those is up: the game's
+// frames go through the desktop compositor and the player pays a frame of
+// latency for a mascot hidden behind CS2. Confirmed on Leon's machine by
+// enumerating the app's windows — vis=True TOPMOST=True layered=True.
+//
+// Windows cannot be asked "is a fullscreen game running?" from Electron
+// without a native module, so the answer is a switch, and it has to be a
+// GLOBAL one or it cannot be reached from inside the game.
+check(
+  "the mascot can be put away with a global shortcut",
+  /const PET_SUSPEND_SHORTCUT = "CommandOrControl\+Alt\+P";/.test(electronMainSource)
+    && /globalShortcut\.register\(PET_SUSPEND_SHORTCUT/.test(electronMainSource)
+);
+check(
+  "...registered at startup, not only once a pet is shown",
+  /await createWindow\(\);[\s\S]{0,200}registerPetSuspendShortcut\(\);/.test(electronMainSource)
+);
+check(
+  "suspending outranks whatever the app last asked for",
+  /const visible = petOverlayWantedVisible && !petOverlaySuspended;/.test(electronMainSource)
+);
+check(
+  "...and the suspension is not persisted, so a pet cannot go missing for ever",
+  !/petOverlaySuspended[\s\S]{0,120}(localStorage|writeDesktopSettings|setDesktopSettings)/.test(electronMainSource)
+);
+check(
+  "the shortcut is discoverable where the display mode is chosen",
+  petLayer.includes("from anywhere to put the mascot away")
 );
 
 if (failures) {
