@@ -1051,33 +1051,8 @@ export default function GuidedLearningSession() {
       // slots for review slots (5+1 when loaded) rather than growing the
       // session — extended material waits for the next Continue Learning.
       const sittingMix = lessonMixForBacklog(requiredReviews.length + globalReviews.length);
-      // A base and its extension teach as a PAIR, and the backlog was cutting
-      // the pair in half. With hundreds of items due the fresh half shrinks to
-      // a single slot, so a lesson led by "Ich arbeite." served that sentence
-      // alone and left "Ich arbeite als Lehrer." for another day — which is
-      // exactly the progression this chaining exists to create. When the lead
-      // has a chained follow-up waiting, the pair claims a second fresh slot
-      // and hands one back to the review half, so the sitting is still six.
-      const chainKey = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
-      // True when the candidate at `index` extends the one before it — the
-      // pair straddling the edge of the fresh half.
-      const extendsPrevious = (index: number) => {
-        const base = rankedCandidates[index - 1]?.step?.item;
-        const next = rankedCandidates[index]?.step?.item;
-        if (!base || !next?.buildsOn) return false;
-        return [chainKey(base.de), chainKey(base.originalDe ?? base.de)]
-          .includes(chainKey(next.buildsOn));
-      };
-      // A base that lands in the LAST fresh slot is served without its
-      // extension — the pairing broken at the boundary rather than by the
-      // backlog. It happened to "Passt das?" sitting third of three. Borrow a
-      // review slot so the pair completes, at most twice so a long chain can
-      // finish without the sitting turning into one sentence's family tree.
-      for (let borrowed = 0; borrowed < 2; borrowed += 1) {
-        if (sittingMix.reviewSlots <= 1 || !extendsPrevious(sittingMix.freshSlots)) break;
-        sittingMix.freshSlots += 1;
-        sittingMix.reviewSlots -= 1;
-      }
+      const chainKey = (text: unknown) =>
+        sentenceIdentityKey(String(text ?? "")).toLowerCase().replace(/\?+$/, "").trim();
       // "Both": one sitting, still six — four sentence slots, two word
       // slots. The sentence mix keeps its backlog behaviour, scaled: a due
       // sentence backlog still trades new-sentence slots for review slots
@@ -1103,6 +1078,43 @@ export default function GuidedLearningSession() {
         reinforcementReviews,
         learningEnglish() ? "en" : "de"
       );
+      // Every base served gets its extension in the very next slot.
+      //
+      // Slot arithmetic kept failing this because it reasoned about candidate
+      // POSITIONS, while the picker skips candidates that collide in Quick
+      // Match — so the base that actually landed last was never the one the
+      // arithmetic protected. "Passt das?" ended a sitting three times over
+      // that way. This works on the cards that were really chosen: walk them,
+      // and where one has an unlearned extension waiting, put it immediately
+      // behind its base. Leon's rule for what it displaces: the extension
+      // takes the next slot and whatever sat there moves to the next sitting.
+      const pairedFresh: any[] = [];
+      const sittingKeys = new Set<string>(
+        [...fresh, ...reviews].map((step: any) => chainKey(step?.item?.de)).filter(Boolean)
+      );
+      for (const step of fresh) {
+        pairedFresh.push(step);
+        const item = (step as any)?.item;
+        if (!item) continue;
+        const baseKeys = [chainKey(item.de), chainKey(item.originalDe ?? item.de)].filter(Boolean);
+        const extension = rankedCandidates.find((candidate) => {
+          const other = candidate.step?.item;
+          if (!other?.buildsOn) return false;
+          if (sittingKeys.has(chainKey(other.de))) return false;
+          return baseKeys.includes(chainKey(other.buildsOn));
+        });
+        if (!extension) continue;
+        sittingKeys.add(chainKey(extension.step.item.de));
+        extension.step.item.chainedFromLesson = true;
+        pairedFresh.push(extension.step);
+      }
+      fresh.length = 0;
+      fresh.push(...pairedFresh);
+      // The sitting stays six: the cards the pairs displaced are the tail of
+      // the review half, and they are first in line next time.
+      const sittingRoom = Math.max(1, 6 - fresh.length - mixedWords.length);
+      reviews.length = Math.min(reviews.length, sittingRoom);
+
       const firstFresh = fresh[0];
       const freshId = rankedCandidates.find((candidate) => candidate.step === firstFresh)?.pId;
       const servedFreshDe = new Set(

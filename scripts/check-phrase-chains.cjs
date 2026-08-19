@@ -310,8 +310,17 @@ for (const id of plannedIds) {
   // A heavy review backlog cuts the fresh half to ONE slot, which serves a
   // base and drops its extension — the pair is the whole point, so it claims
   // a second slot from the review half rather than being split.
-  if (!/extendsPrevious\(sittingMix\.freshSlots\)[\s\S]{0,120}sittingMix\.freshSlots \+= 1;[\s\S]{0,80}sittingMix\.reviewSlots -= 1;/.test(guided)) {
-    failures.push("a base in the last fresh slot no longer borrows a slot for its extension");
+  // Pairing happens on the cards ACTUALLY chosen, not on candidate positions:
+  // the picker skips collisions, so position arithmetic protected the wrong
+  // base and left the real last one unpaired three sittings running.
+  if (!/for \(const step of fresh\)[\s\S]{0,700}pairedFresh\.push\(extension\.step\)/.test(guided)) {
+    failures.push("extensions are no longer inserted directly behind the served base");
+  }
+  if (!/reviews\.length = Math\.min\(reviews\.length, sittingRoom\)/.test(guided)) {
+    failures.push("the sitting no longer stays six when a pair displaces a card");
+  }
+  if (/extendsPrevious\(sittingMix\.freshSlots\)/.test(guided)) {
+    failures.push("the unreliable candidate-position slot borrow is back");
   }
 
   // The extension takes a SHORTER route: its words were just taught, so the
