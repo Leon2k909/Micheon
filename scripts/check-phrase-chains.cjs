@@ -374,6 +374,55 @@ for (const id of plannedIds) {
   }
 }
 
+// A chain can only exist between sentences the course actually teaches, so
+// the machinery working is not the same as a learner meeting a base first.
+// Leon met two long sentences cold and named the bases he wanted before them:
+// "surely before [Ich geh gerne ins Kino] we could have [we cant] and [i like
+// going] first". Those bases are cards now; this is the pin that they stay
+// cards, and that the deriver still pairs them.
+{
+  const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts, buildTatoebaParts, deriveImplicitChains } = load(
+    [
+      'export { allPartBlueprints } from "./src/lib/data.ts";',
+      'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
+      'export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";',
+      'export { deriveImplicitChains } from "./src/session.ts";',
+    ].join("\n"),
+    "chains-catalogue"
+  );
+  const resolved = Object.fromEntries(
+    Object.entries(allPartBlueprints).map(([key, blueprint]) => [key, buildApiPartFromResolved(blueprint, {})])
+  );
+  const parts = { ...resolved, ...buildBundledParts(), ...buildTatoebaParts() };
+  const rows = [];
+  for (const [partKey, part] of Object.entries(parts)) {
+    for (const [index, item] of (part.phrases || []).entries()) {
+      if (item && item.de) rows.push({ id: partKey + "-" + index, de: String(item.de), score: rows.length });
+    }
+  }
+  deriveImplicitChains(rows);
+
+  const WANT = [
+    ["Wir können das nicht tun.", "Wir können das nicht."],
+    ["Ich gehe gerne ins Kino.", "Ich gehe gerne."],
+  ];
+  for (const [extension, base] of WANT) {
+    const row = rows.find((r) => r.de === extension);
+    if (!row) {
+      failures.push('"' + extension + '" is no longer in the course, so its chain cannot be checked');
+    } else if (row.buildsOn !== base) {
+      failures.push('"' + extension + '" should be taught after "' + base + '", not cold (got ' + (row.buildsOn ? '"' + row.buildsOn + '"' : "no base") + ")");
+    }
+  }
+
+  // The building blocks earn their place by what they carry. If this collapses,
+  // someone has removed bases rather than broken the deriver.
+  const carried = rows.filter((r) => r.buildsOn).length;
+  if (carried < 200) {
+    failures.push("only " + carried + " sentences have a base to learn first; the building-block pack used to give over 200");
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-phrase-chains");
   failures.forEach((line) => console.error("  " + line));

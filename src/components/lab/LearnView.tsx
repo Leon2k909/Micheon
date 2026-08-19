@@ -426,7 +426,7 @@ export function LearnView({
                   {uiOr(part.description, "Praktische Sätze und Wörter für natürliche Gespräche zu diesem Thema.")}
                 </p>
 
-                <div className="relative z-10 mt-6 flex items-center justify-between gap-3">
+                <div className="pointer-events-none relative z-10 mt-6 flex items-center justify-between gap-3">
                   <div className="pointer-events-none flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-2)]">
                       <Clock3 className="h-4 w-4" />
@@ -443,7 +443,7 @@ export function LearnView({
                   <div className="flex items-center gap-2">
                     <button
                       aria-pressed={paused}
-                      className="flex h-10 items-center gap-1.5 rounded-full bg-[var(--surface-2)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      className="pointer-events-auto flex h-10 items-center gap-1.5 rounded-full bg-[var(--surface-2)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       onClick={() => togglePaused(key)}
                       title={ui(paused
                         ? "Bring this pack back into your lessons."
@@ -453,7 +453,7 @@ export function LearnView({
                       {paused ? <PlayCircle className="h-4 w-4" /> : <PauseCircle className="h-4 w-4" />}
                       {ui(paused ? "Resume" : "Pause")}
                     </button>
-                    <div className="pointer-events-none flex h-10 w-10 items-center justify-center rounded-full bg-[#070707] text-white">
+                    <div aria-hidden="true" className="pointer-events-none flex h-10 w-10 items-center justify-center rounded-full bg-[#070707] text-white">
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </div>

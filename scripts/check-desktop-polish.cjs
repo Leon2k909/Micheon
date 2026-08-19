@@ -165,6 +165,25 @@ check("all showcase screenshots are real, full-size PNGs", screenshotPaths.every
   return size && size.width >= 1200 && size.height >= 700 && size.bytes > 100_000;
 }));
 
+// A pack card opens its lesson through an overlay button at z-0, so anything
+// painted over that overlay has to let clicks through or it becomes a dead
+// patch that still looks pressable. Leon: "this button on lesson cards does
+// nothing, it should prob open the lesson" — the footer strip was capturing
+// every click in it, arrow included, and dropping them on the floor.
+const learnFooter = (/<div className="[^"]*relative z-10 mt-6 flex items-center justify-between[^"]*"/.exec(learnView) || [""])[0];
+check(
+  "the pack card's footer strip lets clicks reach the card's own open-lesson target",
+  learnFooter.includes("pointer-events-none")
+);
+check(
+  "...while Pause, the one real control in that strip, still takes its own clicks",
+  /aria-pressed=\{paused\}\s*\n\s*className="pointer-events-auto/.test(learnView)
+);
+check(
+  "the decorative arrow is hidden from screen readers so the card is announced once",
+  /<div aria-hidden="true" className="pointer-events-none flex h-10 w-10[^"]*rounded-full bg-\[#070707\]/.test(learnView)
+);
+
 // The lesson-content chip sits ON the Continue learning button, so it
 // intercepts the pointer before the button's own :hover can fire. Leon:
 // "hovering this words button doesnt move the [continue learning] button with

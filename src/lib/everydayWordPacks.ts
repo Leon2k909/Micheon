@@ -1088,7 +1088,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Wie sagt man das?", en: "How do you say that?", use: "Add auf Deutsch to ask for the German word." },
       { de: "Ein bisschen langsamer.", en: "A little slower.", use: "Softer with bitte on the end." },
       { de: "Wie lange machst du das?", en: "How long are you doing that for?", use: "With schon it asks how long ALREADY: Wie lange machst du das schon?" },
-      { de: "Ich brauch das.", en: "I need that.", long: "Ich brauche das.", use: "Spoken form; written German keeps the -e: Ich brauche das." },
+      { de: "Ich brauche das.", en: "I need that.", short: "Ich brauch das.", shortEn: "I need that.", use: "In speech the -e drops: Ich brauch das." },
       { de: "Was machst du?", en: "What are you doing?", use: "With beruflich it asks about work; with genau it asks for detail." },
       { de: "Ich arbeite.", en: "I'm working.", use: "Grows naturally: in der Stadt, als Lehrer, von zu Hause." },
       { de: "Passt das?", en: "Does that work?", use: "Checking a time or plan; für dich makes it personal." },
@@ -1097,6 +1097,59 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Das kann ich.", en: "I can do that.", use: "Confident and short; the verb arrives later: Das kann ich verstehen." },
       { de: "Das geht.", en: "That works.", use: "Also 'that's acceptable'; Das geht nicht = that won't do." },
       { de: "Das kenn ich.", en: "I know that one.", long: "Das kenne ich.", use: "For things familiar to you — kennen, not wissen." },
+
+      /* The second batch, chosen by counting what the catalogue actually grows
+         from rather than by guessing. "Ich weiß." alone is the opening of 140
+         longer sentences, "Ich kann." of 122 — every one of those is a lesson
+         where the words are already half known. Leon asked for two of these by
+         name after meeting the long forms cold: "surely before [Ich geh gerne
+         ins Kino] we could have [Wir können das nicht] and [I like going]". */
+
+      // Knowing, thinking, hoping
+      { de: "Ich weiß.", en: "I know.", use: "For facts. Knowing a person or a place is kennen: Ich kenne ihn." },
+      { de: "Ich verstehe.", en: "I see.", use: "Says you followed it, not that you agree." },
+      { de: "Ich verstehe nicht.", en: "I don't understand.", use: "Add das to point at the specific thing: Ich verstehe das nicht." },
+      { de: "Ich glaube.", en: "I think so.", use: "On its own it answers a question. With a comma it carries the thought: Ich glaube, das stimmt." },
+      { de: "Ich denke.", en: "I'm thinking.", use: "Ich denke, ... opens an opinion; denken an means to think ABOUT someone." },
+      { de: "Ich hoffe.", en: "I hope so.", use: "Usually Ich hoffe es as a bare reply; with a comma comes the wish." },
+      { de: "Ich sehe das.", en: "I see it that way.", use: "Not eyesight — this is how you view something. Ich sehe das anders = I disagree." },
+
+      // Can, must, want
+      { de: "Ich kann.", en: "I can.", use: "A complete answer to Kannst du? The verb is left off once it is obvious." },
+      { de: "Ich kann nicht.", en: "I can't.", use: "The blunt refusal. Ich kann nicht mehr = I've had enough." },
+      { de: "Ich kann das nicht.", en: "I can't do that.", use: "Now it is THAT you can't do, not everything." },
+      { de: "Wir können das nicht.", en: "We can't do that.", use: "Same sentence, shared: können is the wir form of kann." },
+      { de: "Ich muss.", en: "I have to.", use: "German drops the obvious verb; English needs 'to'." },
+      { de: "Ich muss noch.", en: "I've still got things to do.", use: "noch = still, yet. The jobs themselves follow." },
+      { de: "Ich will nicht.", en: "I don't want to.", use: "Blunt. Ich möchte nicht is the polite version." },
+      { de: "Ich will das nicht.", en: "I don't want that.", use: "Pointing at the thing you are refusing." },
+      { de: "Ich möchte das.", en: "I'd like that.", use: "möchte is the polite want — what you order with." },
+      { de: "Ich möchte nicht.", en: "I'd rather not.", use: "Softer refusal than Ich will nicht." },
+
+      // Having and doing
+      { de: "Ich habe das.", en: "I've got that.", use: "Answers Hast du das? Spoken you'll hear Ich hab das." },
+      { de: "Ich habe es.", en: "I've got it.", use: "es for something already named; das for something pointed at." },
+      { de: "Ich mache das.", en: "I'll do that.", use: "Taking the job on. Ich mache das gleich = I'll do it right away." },
+      { de: "Ich mache das nicht.", en: "I'm not doing that.", use: "A refusal of the task, not of the person." },
+      { de: "Wir haben das.", en: "We have that.", use: "In a shop it means it's in stock." },
+      { de: "Wir gehen.", en: "We're going.", use: "German present tense covers 'we go' and 'we are going'." },
+      { de: "Ich gehe gerne.", en: "I like going.", use: "gerne after the verb turns doing into liking to do. Spoken: Ich geh gerne." },
+
+      // Naming the thing in front of you
+      { de: "Das ist es.", en: "That's it.", use: "The moment something is right. Das ist es nicht = that's not it." },
+      { de: "Das ist gut.", en: "That's good.", use: "Plain approval — of a plan, a meal, anything." },
+      { de: "Es ist gut.", en: "It's fine.", use: "Closer to 'that'll do' than to praise." },
+      { de: "Es geht.", en: "It's OK.", use: "The honest answer to Wie geht's? — not great, not bad." },
+
+      // Asking
+      { de: "Hast du das?", en: "Have you got that?", use: "du for a friend; Haben Sie das? in a shop." },
+      { de: "Kann ich das?", en: "Can I do that?", use: "Asking permission or ability — German does not separate them here." },
+      { de: "Können Sie das?", en: "Can you do that?", use: "The Sie form, for anyone you would not call du." },
+      { de: "Willst du das?", en: "Do you want that?", use: "Direct. Möchtest du das? is the polite one." },
+      { de: "Was ist das?", en: "What's that?", use: "The single most useful question there is. Point and ask." },
+      { de: "Wo ist das?", en: "Where is that?", use: "For a place you cannot find. Wo ist das Fundbüro? = where's lost property?" },
+      { de: "Gibt es das?", en: "Is there such a thing?", use: "es gibt = there is / there are, whatever follows." },
+      { de: "Ist das alles?", en: "Is that all?", use: "At a counter it asks whether you want anything else." },
     ],
   },
 
