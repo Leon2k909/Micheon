@@ -1011,6 +1011,23 @@ export default function GuidedLearningSession() {
       // slots for review slots (5+1 when loaded) rather than growing the
       // session — extended material waits for the next Continue Learning.
       const sittingMix = lessonMixForBacklog(requiredReviews.length + globalReviews.length);
+      // A base and its extension teach as a PAIR, and the backlog was cutting
+      // the pair in half. With hundreds of items due the fresh half shrinks to
+      // a single slot, so a lesson led by "Ich arbeite." served that sentence
+      // alone and left "Ich arbeite als Lehrer." for another day — which is
+      // exactly the progression this chaining exists to create. When the lead
+      // has a chained follow-up waiting, the pair claims a second fresh slot
+      // and hands one back to the review half, so the sitting is still six.
+      const chainKey = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase();
+      const followUp = rankedCandidates[1]?.step?.item;
+      const leadItem = rankedCandidates[0]?.step?.item;
+      const leadHasFollowUp = Boolean(followUp?.buildsOn) && Boolean(leadItem)
+        && [chainKey(leadItem.de), chainKey(leadItem.originalDe ?? leadItem.de)]
+          .includes(chainKey(followUp.buildsOn));
+      if (leadHasFollowUp && sittingMix.freshSlots < 2 && sittingMix.reviewSlots > 1) {
+        sittingMix.freshSlots += 1;
+        sittingMix.reviewSlots -= 1;
+      }
       // "Both": one sitting, still six — four sentence slots, two word
       // slots. The sentence mix keeps its backlog behaviour, scaled: a due
       // sentence backlog still trades new-sentence slots for review slots

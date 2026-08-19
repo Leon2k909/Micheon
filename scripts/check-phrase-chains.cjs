@@ -307,6 +307,12 @@ for (const id of plannedIds) {
   if (!guided.includes("deriveImplicitChains(")) {
     failures.push("Continue Learning no longer derives the unauthored chains");
   }
+  // A heavy review backlog cuts the fresh half to ONE slot, which serves a
+  // base and drops its extension — the pair is the whole point, so it claims
+  // a second slot from the review half rather than being split.
+  if (!/leadHasFollowUp[\s\S]{0,200}sittingMix\.freshSlots \+= 1;[\s\S]{0,80}sittingMix\.reviewSlots -= 1;/.test(guided)) {
+    failures.push("a chained pair no longer claims two fresh slots under a review backlog");
+  }
 }
 
 if (failures.length) {
