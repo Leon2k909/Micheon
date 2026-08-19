@@ -342,6 +342,15 @@ for (const id of plannedIds) {
   if (!guided.includes("item.chainedFromLesson = true") || !guided.includes("servedKeys.has(base)")) {
     failures.push("the short route is no longer limited to extensions whose base is in the same sitting");
   }
+
+  // "Know it" on a base is a request for MORE of that sentence: the freed
+  // preview slot goes to its extension before the general ranking is asked.
+  if (!/chainedReplacement\s*\?\?\s*pickPreviewReplacement\(/.test(guided)) {
+    failures.push("mastering a preview card no longer offers that card's own extension first");
+  }
+  if (!/chainedReplacement \? \{ chainedFromLesson: true \}/.test(guided)) {
+    failures.push("an extension swapped in after Know it should take the short route too");
+  }
 }
 
 if (failures.length) {

@@ -506,7 +506,44 @@ export default function GuidedLearningSession() {
             if (isSnoozed(record)) return false;
             return !isAttemptedPracticeEligible(record);
           });
-      const replacement = pickPreviewReplacement(
+      // Pressing "Know it" on a base is a request for more of it, not a
+      // request for something unrelated. If the card being replaced has an
+      // extension waiting — "Passt das?" → "Passt das für dich?" — that
+      // extension takes the freed slot before the general ranking gets a say.
+      // The same prefix rule the lesson builder uses decides what counts,
+      // applied to throwaway rows so the shared catalogue is never mutated.
+      const outgoingItem = outgoing?.item;
+      const chainKeyOf = (text: unknown) =>
+        sentenceIdentityKey(String(text ?? "")).toLowerCase().replace(/\?+$/, "").trim();
+      let chainedReplacement: any = null;
+      if (!swappingWord && outgoingItem) {
+        const baseKeys = new Set([
+          chainKeyOf(outgoingItem.de),
+          chainKeyOf(outgoingItem.originalDe ?? outgoingItem.de),
+        ].filter(Boolean));
+        const blockedText = new Set(blockedPairs.map((pair) => chainKeyOf(pair.de)));
+        const rows: Array<{ de: string; originalDe?: string; buildsOn?: string; ref: any }> = [
+          {
+            de: String(outgoingItem.de ?? ""),
+            originalDe: outgoingItem.originalDe ? String(outgoingItem.originalDe) : undefined,
+            ref: null,
+          },
+          ...(candidates as any[]).map((candidate) => ({
+            de: String(candidate.de ?? ""),
+            originalDe: candidate.originalDe ? String(candidate.originalDe) : undefined,
+            buildsOn: candidate.buildsOn ? String(candidate.buildsOn) : undefined,
+            ref: candidate,
+          })),
+        ];
+        deriveImplicitChains(rows);
+        chainedReplacement = rows.find((row) =>
+          row.ref
+          && row.buildsOn
+          && baseKeys.has(chainKeyOf(row.buildsOn))
+          && !blockedText.has(chainKeyOf(row.de))
+        )?.ref ?? null;
+      }
+      const replacement = chainedReplacement ?? pickPreviewReplacement(
         candidates,
         blockedPairs,
         activePart
@@ -535,6 +572,9 @@ export default function GuidedLearningSession() {
           group: replacement.group,
           tierNote: replacement.tierNote,
           coachingLanguage: replacement.coachingLanguage,
+          // An extension arriving because its base was just marked known runs
+          // the short route: those words were taught seconds ago.
+          ...(chainedReplacement ? { chainedFromLesson: true } : {}),
         },
       };
       if (learningEnglish()) replacementStep = swapStepForEnglish(replacementStep);
