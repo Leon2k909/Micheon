@@ -312,6 +312,10 @@ export const KEEP_APART: string[][] = [
   ["ledig"],             // unmarried — not einzeln (individual, separate)
   ["türkei"],            // the country — case-folding made it a Truthahn (turkey)
   ["weite"],             // vastness and a loose fit — not the measured Breite
+  ["servieren"],         // serving food — dienen serves a purpose or a master
+  ["oberhalb"],          // the genitive preposition — not the adverb oben
+  ["unterhalb"],         // the genitive preposition — not the adverb unten
+  ["einparken"],         // parking INTO a space — plain parken keeps its card
 ];
 
 const KEEP_APART_WORDS = new Set(
