@@ -56,6 +56,7 @@ import {
   type SentencePhase as Phase,
 } from "@/lib/guidedLessonPhases";
 import { wordOrderTokensMatchSentence } from "@/lib/wordOrder";
+import { wordPicture } from "@/lib/wordPictures";
 import { MuteButton } from "@/components/MuteButton";
 import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
@@ -1727,6 +1728,17 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // swapped the fields, so item.de IS the English target — we just need the right
   // TTS/speech language and labels.
   const learnEn = useMemo(() => learningEnglish(), []);
+  // A picture of the word, where we have an honest one. It is a cue to the
+  // MEANING, so any stage whose job is to produce or choose the meaning has to
+  // go without: an apple beside "der Apfel" answers Translate before the
+  // question is asked. Two thirds of the catalogue is abstract and comes back
+  // empty — see wordPictures.ts for why that is deliberate.
+  //
+  // Learning English swaps de and en on the step, as the note above says, so
+  // the gloss this is keyed on moves to item.de.
+  const picture = isWordItem
+    ? wordPicture(learnEn ? item?.de : item?.en, item?.pos)
+    : null;
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.
@@ -3054,6 +3066,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <span>{ui(targetLabel)}</span>
                 <small>{ui("Tap a word to hear it")}</small>
               </div>
+              {picture && phase !== "Translate" && phase !== "TranslateAgain" && (
+                /* Decorative: the word and its meaning are both already in
+                   the accessibility tree, and a screen reader announcing
+                   "red apple" would hand over the answer. */
+                <div className="fs-picture" aria-hidden="true">{picture}</div>
+              )}
               <div className={cn(
                 "fs-line transition-all duration-300",
                 phase === "WriteFromMemory" && sayChecked && sayResult.ok ? "is-good" : "",

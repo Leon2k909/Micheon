@@ -2,6 +2,9 @@
 
 :root {
   color-scheme: light;
+  /* Colour emoji, never a text face’s flat substitute: the word pictures
+     are the one place the app renders emoji as content. */
+  --emoji-font: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
   /* Matches the app shell, so nothing flashes another palette before the
      themed tree has rendered. */
   --bg: #eff0ed;
@@ -2903,6 +2906,19 @@ a { color: inherit; text-decoration: none; }
   /* Instructional text needs gentler tracking so ä, ö and ü stay unmistakable. */
   color: #fafafd; font-size: clamp(28px, 3.4vw, 44px); font-weight: 860; line-height: 1.12; letter-spacing: -0.018em;
 }
+/* A picture of the word, sitting above the word itself. Only concrete
+   vocabulary has one — see wordPictures.ts — so the board is designed to look
+   finished with it and without it, which is why the disc carries the weight
+   rather than a caption or a frame. The emoji-only font stack keeps a text
+   face from substituting its own flat glyph for the colour one. */
+.fs-picture {
+  display: flex; align-items: center; justify-content: center;
+  width: 78px; height: 78px; margin: 10px auto -6px;
+  border-radius: 999px;
+  background: rgba(189,168,237,0.13);
+  font-family: var(--emoji-font); font-size: 42px; line-height: 1;
+}
+.word-picture { font-family: var(--emoji-font); }
 .fs-tappable-sentence { display: contents; }
 .guided-session .fs-word {
   position: relative; display: inline-block; border: 0; border-radius: 0.24em; padding: 0.1em 0.08em 0.14em;
@@ -4441,6 +4457,14 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-know
   color: #777d73;
   font-size: 11px;
   font-weight: 720;
+}
+
+.guided-session.fs-app.prototype-guided-session .fs-picture {
+  /* Built from the accent channels rather than the brand green, so the disc
+     follows a custom accent instead of stranding one green ring on a red
+     theme. */
+  background: rgba(var(--accent-rgb), 0.09);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.14);
 }
 
 .guided-session.fs-app.prototype-guided-session .fs-line {
