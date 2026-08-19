@@ -304,7 +304,7 @@ check(
 );
 check(
   "...and the index is warmed on focus, not on the first letter typed",
-  /onFocus=\{\(\) => \{[\s\S]{0,400}searchTextFor\(item\)/.test(tracker)
+  /onFocus=\{\(\) => warmSearchIndex\(\)\}/.test(tracker)
 );
 
 // The mascot is meant to stay ON SCREEN over a game — Leon asked for that
@@ -329,6 +329,39 @@ check(
 check(
   "a freshly created overlay is told the current focus, not left animating",
   /overlay\.webContents\.once\("did-finish-load"[\s\S]{0,220}pet-overlay:app-focused/.test(electronMainSource)
+);
+
+// The search predicate runs over all 16,308 items on every query. It used to
+// work out a grade status for every one of them BEFORE the text test that
+// rejects almost all of them — and even when the status filter was "All" and
+// the answer was thrown away. Order is the whole optimisation here, so it is
+// the thing worth pinning.
+check(
+  "the search test runs before the per-item lookups it would make pointless",
+  /const matches = catalog\.filter\(\(item\) => \{\s*if \(q && !catalogItemMatchesQuery/.test(tracker)
+);
+check(
+  "...and no grade status is computed when nothing is filtering by status",
+  tracker.includes("const needsStatus = filter !== \"all\";")
+    && tracker.includes("if (!needsStatus) return true;")
+);
+check(
+  "warming the index yields between slices instead of blocking on focus",
+  /const warmSearchIndex = React\.useCallback/.test(tracker)
+    && /done < 400/.test(tracker)
+    && /timeRemaining\(\) > 4/.test(tracker)
+);
+
+// German compounds do not fit in 140px. The mascot's bubble was splitting
+// "Haftpflichtversicherung" mid-syllable — Leon: "maybe the box needs bigger
+// or something when there is longer words or phrases".
+check(
+  "the mascot's bubble is wide enough for a German compound",
+  /const PET_BUBBLE_WIDTH = 320;/.test(petLayer)
+);
+check(
+  "...and breaks where a German dictionary would when it must break at all",
+  petLayer.includes('lang="de"') && petLayer.includes('hyphens: "auto"')
 );
 
 if (failures) {

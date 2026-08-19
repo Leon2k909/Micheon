@@ -649,6 +649,40 @@ export function VocabTracker({
     return { known, counting: Math.round(counting), fading, struggle, new: fresh, due, total: catalog.length };
   }, [catalog, grades]);
 
+  /**
+   * Build the search text for the whole catalogue without blocking anything.
+   *
+   * It is roughly half a second of work for 16,308 items, which is why it is
+   * not done at startup (see check-slow-device). Doing it in one lump when the
+   * box is focused only moved the stall from the first keystroke to the click,
+   * so it goes out in slices instead: a few hundred items per idle callback,
+   * yielding between each, and stopping the moment it has caught up. Typing
+   * before it finishes still works — searchTextFor builds what it needs on
+   * demand — it is just doing less of it.
+   */
+  const warmingRef = useRef(false);
+  const warmSearchIndex = React.useCallback(() => {
+    if (warmingRef.current) return;
+    warmingRef.current = true;
+    let index = 0;
+    const idle = (window as typeof window & {
+      requestIdleCallback?: (cb: (deadline: { timeRemaining: () => number }) => void, options?: { timeout: number }) => number;
+    }).requestIdleCallback;
+    const step = (deadline?: { timeRemaining: () => number }) => {
+      const budgetLeft = () => (deadline ? deadline.timeRemaining() > 4 : true);
+      let done = 0;
+      while (index < catalog.length && done < 400 && budgetLeft()) {
+        searchTextFor(catalog[index]);
+        index += 1;
+        done += 1;
+      }
+      if (index < catalog.length) {
+        if (idle) idle(step, { timeout: 500 }); else window.setTimeout(() => step(), 0);
+      }
+    };
+    if (idle) idle(step, { timeout: 500 }); else window.setTimeout(() => step(), 0);
+  }, [catalog]);
+
   const filtered = useMemo(() => {
     const q = normalizeCatalogSearchText(filterQuery);
     if (
@@ -660,20 +694,27 @@ export function VocabTracker({
     ) {
       return commonOrder;
     }
+    // Order matters more than it looks. This runs over all 16,308 items on
+    // every search, and it used to work out a grade status for every one of
+    // them FIRST — before the text test that rejects the overwhelming majority,
+    // and even when the status filter was "All" and the answer was thrown away.
+    // Typing is the common case, so the query goes first and the expensive
+    // per-item lookups only run for the handful that survive it.
+    const needsStatus = filter !== "all";
     const matches = catalog.filter((item) => {
+      if (q && !catalogItemMatchesQuery(item, q, searchTextFor(item))) return false;
+      if (itemTypeFilter === "phrases" && item.kind === "vocab") return false;
+      if (itemTypeFilter === "vocab" && item.kind !== "vocab") return false;
+      if (usefulnessFilter !== "all" && priorityIndex.get(item)?.info.key !== usefulnessFilter) return false;
+      if (!needsStatus) return true;
       const status = statusForId(grades, item.id, item.aliases);
       // Fading is a slice of Known rather than a status of its own — these are
       // items you did learn, sorted so the most faded lead.
       if (filter === "fading") {
         if (status !== "known") return false;
-        if (!recallDetail(recordFor(grades, item.id, item.aliases)).fading) return false;
-      } else if (filter !== "all" && status !== filter) return false;
-      if (itemTypeFilter === "phrases" && item.kind === "vocab") return false;
-      if (itemTypeFilter === "vocab" && item.kind !== "vocab") return false;
-      const usefulness = priorityIndex.get(item)?.info.key;
-      if (usefulnessFilter !== "all" && usefulness !== usefulnessFilter) return false;
-      if (!q) return true;
-      return catalogItemMatchesQuery(item, q, searchTextFor(item));
+        return recallDetail(recordFor(grades, item.id, item.aliases)).fading;
+      }
+      return status === filter;
     });
     // "Most common" is conversation-first: authored usefulness category,
     // curriculum order, phrase-vs-vocabulary intent, then corpus frequency.
@@ -932,13 +973,7 @@ export function VocabTracker({
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
             <input
               value={query}
-              onFocus={() => {
-                const idle = (window as typeof window & {
-                  requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => void;
-                }).requestIdleCallback;
-                const warm = () => { for (const item of catalog) searchTextFor(item); };
-                if (idle) idle(warm, { timeout: 1000 }); else window.setTimeout(warm, 0);
-              }}
+              onFocus={() => warmSearchIndex()}
               onChange={(e) => { setQuery(e.target.value); resetList(); }}
               placeholder={ui("German or English…")}
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"

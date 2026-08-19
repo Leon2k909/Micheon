@@ -77,7 +77,19 @@ const PET_HEIGHT_RATIO = 104 / 96;
 const PET_GROUP_GAP = 8;
 const PET_MENU_WIDTH = 280;
 const PET_MENU_ESTIMATED_HEIGHT = 600;
-const PET_BUBBLE_WIDTH = 240;
+/**
+ * Wide enough for a German noun.
+ *
+ * 240 left about 140px for text once the two buttons had their share, and
+ * German does not deal in 140px words: "die Haftpflichtversicherung" came out
+ * as "Haftpflichtversicher / ung", split mid-syllable in the middle of the
+ * word. Leon: "maybe the box needs bigger or something when there is longer
+ * words or phrases". The compounds are not going to get shorter, so the box
+ * gets wider — and where one still has to break, it now breaks where a German
+ * dictionary would (see hyphens on the message text) rather than wherever the
+ * pixels ran out.
+ */
+const PET_BUBBLE_WIDTH = 320;
 // A click opens history, but only after the browser has had time to tell us it
 // was actually the first half of a double-click. Opening immediately unmounts
 // the desktop pet, so the second click must cancel the queued independent
@@ -1954,7 +1966,17 @@ export function CodexPetLayer() {
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex min-h-0 flex-auto items-start gap-2">
-              <p className="min-w-0 flex-1 whitespace-pre-line overflow-y-auto break-words pr-1">{speech.text}</p>
+              {/* lang is what makes hyphens:auto work: without it the engine
+                  has no dictionary to break by and falls back to breaking
+                  anywhere. German is right here even for the English gloss
+                  underneath — the long words needing a break are the German
+                  ones, and break-words is still the backstop for anything the
+                  dictionary cannot place. */}
+              <p
+                className="min-w-0 flex-1 whitespace-pre-line overflow-y-auto break-words pr-1"
+                lang="de"
+                style={{ hyphens: "auto" }}
+              >{speech.text}</p>
               <div className="flex shrink-0 items-center gap-0.5">
                 <button
                   aria-label={ui("Open message history")}
