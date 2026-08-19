@@ -184,7 +184,7 @@ check(
   !/applyEffects\("lite", true\)/.test(runtime) && !runtime.includes("setEffects("),
   "a machine that is only busy today should be back to normal tomorrow"
 );
-
+
 // Both trackers keep every matching row mounted, because the filters, the
 // search, select-all and the counts are promises about the whole catalogue —
 // Leon: "i want all the data available". Sixteen thousand rows is only
@@ -338,7 +338,8 @@ check(
 // the thing worth pinning.
 check(
   "the search test runs before the per-item lookups it would make pointless",
-  /const matches = catalog\.filter\(\(item\) => \{\s*if \(q && !catalogItemMatchesQuery/.test(tracker)
+  /const matches = catalog\.filter\(\(item\) => \{\s*if \(q\) \{/.test(tracker)
+    && tracker.includes("if (indexed) { if (!indexed.has(item.id)) return false; }")
 );
 check(
   "...and no grade status is computed when nothing is filtering by status",

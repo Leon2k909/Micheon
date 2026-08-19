@@ -96,6 +96,9 @@ contextBridge.exposeInMainWorld("germDesktop", {
     return () => ipcRenderer.removeListener("pet-overlay:display-mode", handler);
   },
   setPetOverlayVisible: (visible) => ipcRenderer.send("pet-overlay:set-visible", Boolean(visible)),
+  /** Rows matching a search, or null when the database is unavailable and
+    *  the renderer should fall back to searching in memory. */
+  searchCatalogue: (query) => ipcRenderer.invoke("catalogue:search", query),
   onPetAppFocusChange: (cb) => {
     const handler = (_event, focused) => cb(Boolean(focused));
     ipcRenderer.on("pet-overlay:app-focused", handler);
