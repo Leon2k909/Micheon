@@ -24,6 +24,8 @@ const voice = read("src/lib/voice.ts");
 const guided = read("src/GuidedSession.tsx");
 const electronMainSource = read("electron/main.js");
 const petLayer = read("src/components/codexPets/CodexPetLayer.tsx");
+const petSprite = read("src/components/codexPets/CodexPetSprite.tsx");
+const preloadSource = read("electron/preload.cjs");
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -289,6 +291,44 @@ check(
 check(
   "the shortcut is discoverable where the display mode is chosen",
   petLayer.includes("from anywhere to put the mascot away")
+);
+
+// Typing in the tracker's search box re-filtered all 16,308 items on every
+// keystroke, and the first keystroke also built the search text for every one
+// of them — so "test" did that work four times and the box itself stuttered
+// while it happened. Leon: "the app is also a bit laggy when i use the search".
+check(
+  "the search box types at full speed while the filter runs behind it",
+  /const filterQuery = React\.useDeferredValue\(query\);/.test(tracker)
+    && /normalizeCatalogSearchText\(filterQuery\)/.test(tracker)
+);
+check(
+  "...and the index is warmed on focus, not on the first letter typed",
+  /onFocus=\{\(\) => \{[\s\S]{0,400}searchTextFor\(item\)/.test(tracker)
+);
+
+// The mascot is meant to stay ON SCREEN over a game — Leon asked for that
+// explicitly — but a repainting overlay makes the compositor redraw the screen
+// over the top of whatever is under it. Holding the frame while another app is
+// in front keeps the pet visible and stops it costing anything to sit there.
+check(
+  "the mascot holds its frame while another app is in front",
+  /function useAppFocused\(\): boolean/.test(petSprite)
+    && /const shouldRun = \(\) => !document\.hidden && appFocused;/.test(petSprite)
+);
+check(
+  "...told so by the main process, which is the only side that knows",
+  /function broadcastPetAppFocus\(focused\)/.test(electronMainSource)
+    && /app\.on\("browser-window-focus"/.test(electronMainSource)
+    && /app\.on\("browser-window-blur"/.test(electronMainSource)
+);
+check(
+  "...over a bridge the overlay renderer can actually reach",
+  /onPetAppFocusChange:/.test(preloadSource)
+);
+check(
+  "a freshly created overlay is told the current focus, not left animating",
+  /overlay\.webContents\.once\("did-finish-load"[\s\S]{0,220}pet-overlay:app-focused/.test(electronMainSource)
 );
 
 if (failures) {

@@ -1225,6 +1225,78 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     ],
   },
 
+
+  /* Four packs of everyday things the course turned out not to name, found by
+     testing a hundred candidate words against the whole catalogue rather than
+     guessing at gaps. Tools and office vocabulary came back fully covered and
+     are not repeated here; what was missing was scattered — the bathroom, the
+     things you pack, small children, and the odds and ends in a drawer. */
+
+  part535: pack("Part 535", "A1", "The bathroom and the bedroom", "The room you start the day in and the room you end it in.", [
+    noun("das", "Shampoo", "shampoo"),
+    noun("das", "Duschgel", "shower gel"),
+    noun("das", "Waschbecken", "washbasin", "the kitchen one is die Spüle"),
+    noun("die", "Dusche", "shower", "duschen = to have a shower"),
+    noun("die", "Badewanne", "bathtub"),
+    noun("die", "Toilette", "toilet", "das Klo in relaxed speech"),
+    noun("das", "Deo", "deodorant", "short for das Deodorant"),
+    noun("die", "Creme", "cream", "for skin; whipped cream is die Sahne"),
+    noun("die", "Nagelschere", "nail scissors"),
+    noun("die", "Pinzette", "tweezers"),
+    noun("der", "Nachttisch", "bedside table"),
+    noun("der", "Teppich", "carpet", "a small one is der Läufer"),
+    noun("die", "Lampe", "lamp"),
+    noun("der", "Sessel", "armchair", "the sofa is das Sofa or die Couch"),
+    noun("der", "Hocker", "stool", "no back — that is what makes it a Hocker"),
+    noun("das", "Fensterbrett", "windowsill"),
+  ]),
+
+  part536: pack("Part 536", "A2", "Getting out and getting there", "What you pack, what you catch, and the signs you want to have read before you need them.", [
+    noun("der", "Koffer", "suitcase"),
+    noun("das", "Gepäck", "luggage", "no plural — always singular in German"),
+    noun("das", "Hotel", "hotel"),
+    noun("die", "Sonnencreme", "sun cream"),
+    noun("der", "Reiseführer", "guidebook", "also the human guide"),
+    noun("der", "Sitzplatz", "seat", "the reserved kind; a chair is der Stuhl"),
+    noun("der", "Abflug", "departure", "of a plane; a train leaving is die Abfahrt"),
+    noun("der", "Fahrplan", "timetable", "for trains and buses"),
+    noun("die", "Rückfahrkarte", "return ticket", "one-way is die einfache Fahrt"),
+    noun("die", "Brieftasche", "wallet", "das Portemonnaie is just as common"),
+    noun("der", "Schlüsselbund", "keyring"),
+    noun("der", "Rauch", "smoke", "rauchen = to smoke"),
+    noun("die", "Warnung", "warning"),
+    noun("der", "Notausgang", "emergency exit", "die Not = emergency, distress"),
+    noun("der", "Feuerlöscher", "fire extinguisher", "löschen = to put out"),
+    noun("der", "Schatten", "shade", "the same word does shadow"),
+    noun("der", "Sonnenschein", "sunshine"),
+    noun("der", "Windstoß", "gust of wind"),
+  ]),
+
+  part537: pack("Part 537", "A2", "Little ones and their things", "The vocabulary of a house with a small child in it.", [
+    noun("der", "Schnuller", "dummy", "pacifier in American English"),
+    noun("der", "Kinderwagen", "pram", "the buggy kind is der Buggy"),
+    noun("die", "Rassel", "rattle"),
+    noun("die", "Wiege", "cradle"),
+    noun("das", "Spielzeug", "toy", "usually singular for toys in general"),
+    noun("der", "Hochstuhl", "high chair"),
+    noun("der", "Buntstift", "coloured pencil", "bunt = colourful"),
+    noun("die", "Knete", "play dough", "kneten = to knead"),
+    noun("das", "Schaukelpferd", "rocking horse", "schaukeln = to swing, to rock"),
+  ]),
+
+  part538: pack("Part 538", "A2", "Small things around the house", "The drawer things — nameable, forgettable, and awkward to mime.", [
+    noun("der", "Strohhalm", "drinking straw", "das Stroh = straw, the stuff"),
+    noun("der", "Untersetzer", "coaster"),
+    noun("der", "Eiswürfel", "ice cube", "der Würfel = cube, and also dice"),
+    noun("die", "Zuckerdose", "sugar bowl"),
+    noun("das", "Gewürz", "spice"),
+    noun("das", "Backpulver", "baking powder"),
+    noun("der", "Puderzucker", "icing sugar"),
+    noun("der", "Fäustling", "mitten", "die Faust = fist; usually worn in pairs"),
+    noun("der", "Aschenbecher", "ashtray", "die Asche = ash"),
+    noun("das", "Notizbuch", "notebook", "the paper kind"),
+  ]),
+
   part475: pack("Part 475", "A2", "Weather, seasons and spans of time", "Weather worth remarking on, and the words for stretches of time bigger than a week.", [
     noun("der", "Frühling", "spring (season)", "also das Frühjahr"),
     adjective("sommerlich", "summery"),

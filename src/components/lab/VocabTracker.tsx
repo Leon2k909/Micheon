@@ -579,6 +579,21 @@ export function VocabTracker({
   const [usefulnessFilter, setUsefulnessFilter] = useState<UsefulnessFilter>("all");
   const [sort, setSort] = useState<SortKey>("common");
   const [query, setQuery] = useState("");
+  /**
+   * What the LIST filters on, which is allowed to lag behind what the box
+   * shows.
+   *
+   * Every keystroke re-filtered all 16,308 items, and the very first one also
+   * built the search text for every one of them, so typing "test" did that
+   * work four times over and the box itself stuttered while it happened —
+   * Leon: "the app is also a bit laggy when i use the search".
+   *
+   * useDeferredValue keeps the typing at full priority and lets React run the
+   * filter behind it, dropping intermediate queries when they arrive faster
+   * than the work finishes. The box is instant; the results land a moment
+   * later, which is the correct trade for a list this size.
+   */
+  const filterQuery = React.useDeferredValue(query);
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const learnsEnglish = learningEnglish();
@@ -635,7 +650,7 @@ export function VocabTracker({
   }, [catalog, grades]);
 
   const filtered = useMemo(() => {
-    const q = normalizeCatalogSearchText(query);
+    const q = normalizeCatalogSearchText(filterQuery);
     if (
       !q
       && filter === "all"
@@ -917,6 +932,13 @@ export function VocabTracker({
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
             <input
               value={query}
+              onFocus={() => {
+                const idle = (window as typeof window & {
+                  requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => void;
+                }).requestIdleCallback;
+                const warm = () => { for (const item of catalog) searchTextFor(item); };
+                if (idle) idle(warm, { timeout: 1000 }); else window.setTimeout(warm, 0);
+              }}
               onChange={(e) => { setQuery(e.target.value); resetList(); }}
               placeholder={ui("German or English…")}
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"

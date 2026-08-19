@@ -989,6 +989,11 @@ function createPetOverlayWindow() {
   });
 
   petWindow = overlay;
+  overlay.webContents.once("did-finish-load", () => {
+    if (!overlay.isDestroyed() && !overlay.webContents.isDestroyed()) {
+      overlay.webContents.send("pet-overlay:app-focused", petAppFocused);
+    }
+  });
   keepPetSurfaceOnTop(overlay);
   overlay.setIgnoreMouseEvents(true, { forward: true });
   overlay.on("move", () => {
@@ -1361,6 +1366,27 @@ function setPetOverlaySuspended(next) {
     window.webContents.send("pet-overlay:suspended", petOverlaySuspended);
   }
 }
+
+/**
+ * Hold the mascot still while you are in something else.
+ *
+ * Leon wants the pet ON SCREEN over CS2 — hiding it is not the answer he
+ * asked for — but a mascot that repaints keeps making the desktop compositor
+ * redraw the screen over the top of the game, and that is the part of the
+ * cost that is actually avoidable. The window has to stay where it is; the
+ * animation does not.
+ *
+ * Micheon being the foreground app is the signal. It costs nothing, needs no
+ * native module, and is right for the case that matters: while you are in a
+ * game, Micheon is by definition not in front. The pet keeps its current
+ * frame, so it is still visibly there.
+ */
+function broadcastPetAppFocus(focused) {
+  petAppFocused = Boolean(focused);
+  if (!petWindow || petWindow.isDestroyed() || petWindow.webContents.isDestroyed()) return;
+  petWindow.webContents.send("pet-overlay:app-focused", petAppFocused);
+}
+let petAppFocused = true;
 
 function registerPetSuspendShortcut() {
   if (globalShortcut.isRegistered(PET_SUSPEND_SHORTCUT)) return;
@@ -2248,6 +2274,16 @@ if (hasSingleInstanceLock) {
     await createWindow();
     // Works from inside a fullscreen game, which is the only place it helps.
     registerPetSuspendShortcut();
+    // The mascot holds still while another app is in front — see
+    // broadcastPetAppFocus. blur/focus fire for every Micheon window, and the
+    // overlay itself is focusable:false, so this only ever tracks real windows.
+    app.on("browser-window-focus", () => broadcastPetAppFocus(true));
+    app.on("browser-window-blur", () => {
+      // A blur with nothing of ours focused means the user left for another
+      // app; a blur that immediately precedes another of our windows focusing
+      // is just a hand-off between them.
+      setTimeout(() => broadcastPetAppFocus(Boolean(BrowserWindow.getFocusedWindow())), 120);
+    });
     screen.on("display-added", syncPetDesktopSurfaces);
     screen.on("display-removed", syncPetDesktopSurfaces);
     screen.on("display-metrics-changed", syncPetDesktopSurfaces);

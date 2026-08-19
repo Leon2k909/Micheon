@@ -354,8 +354,14 @@ check(
     && !/observer\.observe\(document\.body, \{[\s\S]*?attributes:\s*true/.test(layer)
 );
 check(
+  // Hidden is no longer the only reason to stop: the mascot also holds its
+  // frame while another app is in front, so that an overlay sitting over a
+  // game costs nothing to be there. Both conditions run through shouldRun(),
+  // and the guarantee this check has always made — a renderer nobody can see
+  // runs no timers — is the "!document.hidden" half of it.
   "pet animation timers pause whenever the renderer is hidden",
-  sprite.includes("const onVisibility = () => (document.hidden ? stop() : start());")
+  sprite.includes("const shouldRun = () => !document.hidden && appFocused;")
+    && sprite.includes("const onVisibility = () => (shouldRun() ? start() : stop());")
     && sprite.includes('document.addEventListener("visibilitychange", onVisibility);')
     && sprite.includes('document.removeEventListener("visibilitychange", onVisibility);')
 );

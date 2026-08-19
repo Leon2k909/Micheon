@@ -2,6 +2,25 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 
 import type { CodexPet } from "@/lib/codexPets";
 
+const desktopBridge = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
+
+/**
+ * True while Micheon is the app in front. The mascot animates only then.
+ *
+ * A repainting overlay makes the compositor redraw the screen over whatever is
+ * underneath it, which over a fullscreen game is felt as input lag. Holding
+ * the current frame while you are elsewhere keeps the pet visible — which is
+ * what Leon asked for — without it costing anything to sit there.
+ */
+function useAppFocused(): boolean {
+  const [focused, setFocused] = useState(true);
+  useEffect(() => {
+    if (!desktopBridge?.onPetAppFocusChange) return undefined;
+    return desktopBridge.onPetAppFocusChange(setFocused);
+  }, []);
+  return focused;
+}
+
 type CodexPetSpriteProps = {
   animation?: string;
   animated?: boolean;
@@ -139,6 +158,9 @@ export function CodexPetSprite({
   playbackKey = 0,
   size = 96,
 }: CodexPetSpriteProps) {
+  // The mascot holds its frame while another app is in front, so an overlay
+  // over a game costs nothing to sit there. See useAppFocused.
+  const appFocused = useAppFocused();
   const visibleBoundsCallback = useRef(onVisibleBounds);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [atlas, setAtlas] = useState<HTMLImageElement | null>(null);
@@ -206,15 +228,16 @@ export function CodexPetSprite({
       window.clearInterval(interval);
       interval = 0;
     };
-    const onVisibility = () => (document.hidden ? stop() : start());
+    const shouldRun = () => !document.hidden && appFocused;
+    const onVisibility = () => (shouldRun() ? start() : stop());
 
-    if (!document.hidden) start();
+    if (shouldRun()) start(); else stop();
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       stop();
     };
-  }, [activeAnimation, animated, definition.fallback, definition.fps, definition.loop, frames.length, pet.animations]);
+  }, [activeAnimation, animated, appFocused, definition.fallback, definition.fps, definition.loop, frames.length, pet.animations]);
 
   const frame = frames[Math.min(frameIndex, frames.length - 1)] ?? 0;
   const column = frame % pet.frame.columns;
