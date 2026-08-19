@@ -18,6 +18,8 @@ const effectsSource = read("src/lib/effects.ts");
 const mainSource = read("src/main.tsx");
 const gamification = read("src/Gamification.tsx");
 const tracker = read("src/components/lab/VocabTracker.tsx");
+const wordsTracker = read("src/components/lab/WordsTracker.tsx");
+const appStyles = read("src/index.css");
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -175,6 +177,41 @@ check(
   "what it decides is not written to storage",
   !/applyEffects\("lite", true\)/.test(runtime) && !runtime.includes("setEffects("),
   "a machine that is only busy today should be back to normal tomorrow"
+);
+
+// Both trackers keep every matching row mounted, because the filters, the
+// search, select-all and the counts are promises about the whole catalogue —
+// Leon: "i want all the data available". Sixteen thousand rows is only
+// survivable if the browser skips the ones nobody can see, and if grading one
+// item does not re-render all of them. Measured on this machine: 4,000 rows of
+// comparable markup took 566 ms to lay out without content-visibility and
+// 35 ms with it.
+check(
+  "tracker rows opt out of layout and paint while off-screen",
+  /\.tracker-row \{[^}]*content-visibility: auto/s.test(appStyles)
+);
+check(
+  "...with an intrinsic size, so the scrollbar is not a lie",
+  /\.tracker-row \{[^}]*contain-intrinsic-size:/s.test(appStyles)
+);
+check(
+  "both trackers actually carry the class",
+  tracker.includes('className="tracker-row') && wordsTracker.includes('className="tracker-row')
+);
+check(
+  "the sentence tracker row is memoised, so grading one item re-renders one row",
+  /const TrackerRow = React\.memo\(/.test(tracker)
+);
+check(
+  "...compared on the record's VALUE, since the store hands back new objects each save",
+  tracker.includes("a.recordSignature === b.recordSignature")
+);
+check(
+  "...and its callbacks are stable, or that comparison never holds",
+  /const apply = React\.useCallback\(/.test(tracker)
+    && /const toggleSelect = React\.useCallback\(/.test(tracker)
+    && /const applyStrength = React\.useCallback\(/.test(tracker)
+    && /const applyPermanent = React\.useCallback\(/.test(tracker)
 );
 
 if (failures) {

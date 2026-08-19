@@ -1153,6 +1153,78 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     ],
   },
 
+  /**
+   * Leon asked for this one directly: "I often ask my gf how she is, what
+   * she's doing etc." The course already had the greeting version of this —
+   * Wie geht's dir?, Alles klar? — but almost nothing for the rest of the
+   * day: the midday text, the are-you-eating question, the one you send when
+   * she has gone quiet. Everything here is du, because that is who it is for.
+   */
+  part534: {
+    label: "Part 534",
+    level: "A1",
+    theme: "Checking in on each other",
+    description: "The messages you send someone you love during the day — what are you doing, how did it go, have you eaten, are you okay.",
+    focus: "Asking after someone across a whole day rather than only greeting them. Grouped by the moment you would send it: right now, the day, how she is, looking after her, and the replies to expect back.",
+    seeds: [],
+    dialogues: [],
+    phrases: [
+      // Right now
+      { de: "Was machst du gerade?", en: "What are you doing right now?", use: "gerade = right now. Probably the most-sent message in German." },
+      { de: "Was machst du so?", en: "What are you up to?", use: "so makes it idle curiosity rather than an interrogation." },
+      { de: "Bist du wach?", en: "Are you awake?", use: "The first message of the morning." },
+      { de: "Bist du noch wach?", en: "Are you still awake?", use: "noch = still. The late-night version." },
+      { de: "Störe ich?", en: "Am I interrupting?", use: "Literally 'am I disturbing'. Opens a call she might not have time for." },
+      { de: "Hast du kurz Zeit?", en: "Have you got a minute?", use: "kurz does a lot of work here — it promises you won't take long." },
+      { de: "Soll ich dich anrufen?", en: "Shall I call you?", use: "soll ich = shall I. Offering, not asking permission." },
+      { de: "Bist du beschäftigt?", en: "Are you busy?", use: "Störe ich? is the softer way to ask the same thing." },
+
+      // How the day is going
+      { de: "Wie läuft dein Tag?", en: "How's your day going?", use: "laufen for how something is going — no running involved." },
+      { de: "Wie war dein Tag bisher?", en: "How's your day been so far?", use: "bisher = so far, up to now." },
+      { de: "Was hast du heute gemacht?", en: "What did you do today?", use: "The evening question. Perfect tense, formed with haben." },
+      { de: "Was machst du heute Abend?", en: "What are you doing this evening?", use: "heute Abend is one unit — today-evening." },
+      { de: "Wann bist du fertig?", en: "When do you finish?", use: "fertig = done — with work, with a job, with anything." },
+      { de: "Wann kommst du nach Hause?", en: "When are you coming home?", use: "nach Hause for going home; zu Hause for being there." },
+      { de: "Bist du schon zu Hause?", en: "Are you home yet?", use: "schon = yet. zu Hause here, because she'd already be there." },
+      { de: "Kommst du gut durch den Tag?", en: "Are you getting through the day okay?", use: "For a day you both knew was going to be hard." },
+      { de: "Wie war's?", en: "How was it?", long: "Wie war es?", use: "Ask it straight after anything — the evening, the appointment, the call." },
+      { de: "Wie ist es gelaufen?", en: "How did it go?", use: "For something with an outcome: an exam, an interview, a difficult talk." },
+      { de: "Wie war dein Termin?", en: "How was your appointment?", use: "der Termin is any booked slot — doctor, hairdresser, meeting." },
+
+      // How she actually is
+      { de: "Wie fühlst du dich?", en: "How are you feeling?", use: "Asks about her state. Wie geht's dir? is closer to a greeting." },
+      { de: "Geht's dir besser?", en: "Are you feeling better?", long: "Geht es dir besser?", use: "After illness, or after a day that went badly." },
+      { de: "Hast du gut geschlafen?", en: "Did you sleep well?", use: "Once you're both up it shortens to Gut geschlafen?" },
+      { de: "Bist du müde?", en: "Are you tired?", use: "Müde covers sleepy and worn out both." },
+      { de: "Du klingst müde.", en: "You sound tired.", use: "klingen = to sound. On the phone; Du siehst müde aus for how she looks." },
+      { de: "Du bist so still heute.", en: "You're so quiet today.", use: "An opening, not an accusation. It leaves room for her to say why." },
+      { de: "Alles in Ordnung?", en: "Everything alright?", use: "A shade more serious than Alles klar? — you've noticed something." },
+      { de: "Stimmt was nicht?", en: "Is something wrong?", long: "Stimmt etwas nicht?", use: "Gentler than Was ist los? — it asks rather than demands." },
+      { de: "Willst du drüber reden?", en: "Do you want to talk about it?", long: "Willst du darüber reden?", use: "Spoken German shortens darüber to drüber constantly." },
+      { de: "Erzähl mal.", en: "Tell me about it.", use: "mal takes the edge off an imperative — an invitation, not an order." },
+
+      // Looking after her
+      { de: "Hast du schon gegessen?", en: "Have you eaten yet?", use: "Asked far more often in German than the English is in English." },
+      { de: "Hast du genug getrunken?", en: "Have you had enough to drink?", use: "Germans genuinely do ask each other this." },
+      { de: "Brauchst du was?", en: "Do you need anything?", long: "Brauchst du etwas?", use: "was is the everyday spoken form of etwas." },
+      { de: "Ruh dich aus.", en: "Get some rest.", use: "sich ausruhen is reflexive — the dich is not optional." },
+      { de: "Schlaf gut.", en: "Sleep well.", use: "Schlaf schön is just as common and a shade warmer." },
+      { de: "Ich hab an dich gedacht.", en: "I was thinking about you.", long: "Ich habe an dich gedacht.", use: "denken AN someone — the an is what makes it about a person. Often the whole reason for the message." },
+      { de: "Ich wollte nur hören, wie's dir geht.", en: "I just wanted to hear how you're doing.", use: "The reason for the message, said out loud. wollte = wanted." },
+      { de: "Melde dich, wenn du reden willst.", en: "Get in touch if you want to talk.", use: "sich melden = to get in touch, and it always needs its dich." },
+      { de: "Schreib mir, wenn du da bist.", en: "Text me when you get there.", use: "schreiben covers texting. da = there, wherever she's heading." },
+      { de: "Sag Bescheid, wenn du losfährst.", en: "Let me know when you set off.", use: "Bescheid sagen = to let someone know; losfahren = to set off by car or train." },
+
+      // What comes back
+      { de: "Mir geht's gut.", en: "I'm good.", long: "Mir geht es gut.", use: "mir, not ich — German says it goes well TO me." },
+      { de: "Mir geht's nicht so gut.", en: "I'm not doing great.", use: "nicht so gut is understatement; it can mean quite bad." },
+      { de: "Alles gut, und bei dir?", en: "All good, and you?", use: "bei dir = at your end. Hands the question straight back." },
+      { de: "Bin unterwegs.", en: "I'm on my way.", long: "Ich bin unterwegs.", use: "Dropping the ich is normal in texts." },
+      { de: "Bin gleich da.", en: "I'll be there in a minute.", long: "Ich bin gleich da.", use: "gleich = in a moment, shortly." },
+    ],
+  },
+
   part475: pack("Part 475", "A2", "Weather, seasons and spans of time", "Weather worth remarking on, and the words for stretches of time bigger than a week.", [
     noun("der", "Frühling", "spring (season)", "also das Frühjahr"),
     adjective("sommerlich", "summery"),

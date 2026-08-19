@@ -23,6 +23,7 @@ export const CONVERSATION_ESSENTIAL_PACKS = [
   "cb-shortreplies",
   "part158",
   "part160",
+  "part534",
   "part161",
   "part169",
   "part171",

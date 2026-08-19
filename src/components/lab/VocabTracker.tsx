@@ -169,6 +169,122 @@ function recordFor(grades: GradeStore, id: string, aliases: string[] = []): Grad
  * this cold, put me at Solid" or "I clicked too far, back to Learning")
  * instead of having to replay the item in a lesson to climb the ladder.
  */
+
+/**
+ * One tracker row, re-rendered only when something it draws has changed.
+ *
+ * The tracker keeps every matching item mounted so filters, search, select-all
+ * and the counts all speak for the whole catalogue rather than for whatever is
+ * on screen — Leon: "i want all the data available". The cost of keeping that
+ * promise is a very long list, and two separate things made it hurt.
+ *
+ * This is the first: grading an item rewrites the whole store, so EVERY
+ * mounted row re-rendered on every click. At a few thousand rows that is
+ * thousands of subtree renders to move one tick. The row is compared on the
+ * values it actually draws, so now a click re-renders the row you clicked.
+ * The record is compared by value, not identity, because the store is re-read
+ * from storage on each change and hands back new objects for items that never
+ * moved. The second problem — the browser laying out and painting rows nobody
+ * can see — is answered in CSS, on .tracker-row.
+ */
+type TrackerRowProps = {
+  item: CatalogItem;
+  status: ItemStatus;
+  record: GradeRecord | undefined;
+  /** Everything of the record that matters here, flattened so it can be
+   *  compared cheaply. Over-reporting a change only costs one render; missing
+   *  one would leave a stale row, so this deliberately errs the safe way. */
+  recordSignature: string;
+  selected: boolean;
+  learnsEnglish: boolean;
+  germanUi: boolean;
+  onToggleSelect: (id: string) => void;
+  onApply: (item: CatalogItem, status: ItemStatus) => void;
+  onSetStrength: (item: CatalogItem, level: number) => void;
+  onSetPermanent: (item: CatalogItem) => void;
+};
+
+const TrackerRow = React.memo(
+  function TrackerRow({
+    item, status, record, selected, learnsEnglish, germanUi,
+    onToggleSelect, onApply, onSetStrength, onSetPermanent,
+  }: TrackerRowProps) {
+    const primaryText = learnsEnglish ? item.en : item.de;
+    const meaningText = learnsEnglish ? item.de : item.en;
+    const listens = Number(record?.listens) || 0;
+    return (
+      <div className="tracker-row flex flex-wrap items-center gap-3 py-3">
+        <SelectBox
+          checked={selected}
+          onClick={() => onToggleSelect(item.id)}
+          label={`${selected ? ui("Deselect") : ui("Select")} ${primaryText}`}
+        />
+        <button
+          type="button"
+          onClick={() => speak(primaryText)}
+          aria-label={ui(learnsEnglish ? "Play English audio" : "Play German audio")}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
+        >
+          <Volume2 className="h-4 w-4" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
+          <p className="truncate text-xs font-semibold text-[var(--text-3)]">
+            {meaningText} · {ui(item.partLabel)}
+            {!germanUi && item.use ? ` · ${ui(item.use)}` : ""}
+            {!germanUi && (() => {
+                const syn = synonymNote(item.lookup);
+                if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
+                const f = frequencyInfo(item.lookup);
+                return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
+              })()}
+            {!germanUi && (() => {
+                const note = packMeta(item.partKey).note;
+                return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
+              })()}
+            {listens > 0 && (
+              <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
+            )}
+          </p>
+          <StrengthMeter
+            record={record}
+            onSetLevel={(level) => onSetStrength(item, level)}
+            onSetPermanent={() => onSetPermanent(item)}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusButton
+            tone="known" icon={CheckCircle2} label={ui("Known")}
+            active={status === "known"}
+            onClick={() => onApply(item, status === "known" ? "new" : "known")}
+          />
+          <StatusButton
+            tone="struggle" icon={AlertTriangle} label={ui("Struggle")}
+            active={status === "struggle"}
+            onClick={() => onApply(item, status === "struggle" ? "new" : "struggle")}
+          />
+          <StatusButton
+            tone="new" icon={Circle} label={ui("To learn")}
+            active={status === "new"}
+            onClick={() => onApply(item, "new")}
+          />
+        </div>
+      </div>
+    );
+  },
+  (a, b) =>
+    a.item === b.item
+    && a.status === b.status
+    && a.selected === b.selected
+    && a.learnsEnglish === b.learnsEnglish
+    && a.germanUi === b.germanUi
+    && a.recordSignature === b.recordSignature
+    && a.onToggleSelect === b.onToggleSelect
+    && a.onApply === b.onApply
+    && a.onSetStrength === b.onSetStrength
+    && a.onSetPermanent === b.onSetPermanent
+);
+
 function StrengthMeter({
   record,
   onSetLevel,
@@ -613,13 +729,13 @@ export function VocabTracker({
   const allFilteredSelected = filtered.length > 0 && filtered.every((i) => selected.has(i.id));
   const someFilteredSelected = filtered.some((i) => selected.has(i.id));
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = React.useCallback((id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  };
+  }, []);
 
   const toggleSelectAllFiltered = () => {
     setSelected(allFilteredSelected ? new Set() : new Set(filtered.map((i) => i.id)));
@@ -627,14 +743,14 @@ export function VocabTracker({
 
   const clearSelection = () => setSelected(new Set());
 
-  const apply = (item: CatalogItem, status: ItemStatus) => {
+  const apply = React.useCallback((item: CatalogItem, status: ItemStatus) => {
     const next = setItemStatus(item.id, status, user, item.aliases);
     setGrades({ ...next });
-  };
+  }, [user]);
 
   // Direct ladder override — writes the exact rung instead of climbing one
   // success at a time, so the learner can correct the tracker on the spot.
-  const applyStrength = (item: CatalogItem, level: number) => {
+  const applyStrength = React.useCallback((item: CatalogItem, level: number) => {
     const store = loadGradeStore(user);
     const prior = progressEntryForId(store, item.id, item.aliases)?.record;
     for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
@@ -642,17 +758,17 @@ export function VocabTracker({
     if (rec) store[item.id] = rec; else delete store[item.id];
     saveGradeStore(store, user);
     setGrades({ ...store });
-  };
+  }, [user]);
 
   // Above Mastered: mark a word so easy it should never be reviewed again.
-  const applyPermanent = (item: CatalogItem) => {
+  const applyPermanent = React.useCallback((item: CatalogItem) => {
     const store = loadGradeStore(user);
     const prior = progressEntryForId(store, item.id, item.aliases)?.record;
     for (const alias of item.aliases ?? []) if (alias !== item.id) delete store[alias];
     store[item.id] = recordPermanent(Date.now(), prior);
     saveGradeStore(store, user);
     setGrades({ ...store });
-  };
+  }, [user]);
 
   // Bulk actions apply to every selected item in one load/save cycle.
   const bulkApplyStatus = (status: ItemStatus) => {
@@ -845,70 +961,22 @@ export function VocabTracker({
       >
         <div className="divide-y divide-[var(--border)]">
           {visible.map((item) => {
-            const status = statusForId(grades, item.id, item.aliases);
-            const primaryText = learnsEnglish ? item.en : item.de;
-            const meaningText = learnsEnglish ? item.de : item.en;
+            const record = recordFor(grades, item.id, item.aliases);
             return (
-              <div key={item.id} className="flex flex-wrap items-center gap-3 py-3">
-                <SelectBox
-                  checked={selected.has(item.id)}
-                  onClick={() => toggleSelect(item.id)}
-                  label={`${selected.has(item.id) ? ui("Deselect") : ui("Select")} ${primaryText}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => speak(primaryText)}
-                  aria-label={ui(learnsEnglish ? "Play English audio" : "Play German audio")}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
-                >
-                  <Volume2 className="h-4 w-4" />
-                </button>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
-                  <p className="truncate text-xs font-semibold text-[var(--text-3)]">
-                    {meaningText} · {ui(item.partLabel)}
-                    {!uiIsGerman() && item.use ? ` · ${ui(item.use)}` : ""}
-                    {!uiIsGerman() && (() => {
-                        const syn = synonymNote(item.lookup);
-                        if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
-                        const f = frequencyInfo(item.lookup);
-                        return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
-                      })()}
-                    {!uiIsGerman() && (() => {
-                        const note = packMeta(item.partKey).note;
-                        return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
-                      })()}
-                    {(() => {
-                        const listens = Number(recordFor(grades, item.id, item.aliases)?.listens) || 0;
-                        return listens > 0
-                          ? <span className="font-black text-teal-600" title={ui("Graded in Listen mode — exposure only, not mastery.")}> · {listens}× {ui("heard")}</span>
-                          : null;
-                      })()}
-                  </p>
-                  <StrengthMeter
-                    record={recordFor(grades, item.id, item.aliases)}
-                    onSetLevel={(level) => applyStrength(item, level)}
-                    onSetPermanent={() => applyPermanent(item)}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <StatusButton
-                    tone="known" icon={CheckCircle2} label={ui("Known")}
-                    active={status === "known"}
-                    onClick={() => apply(item, status === "known" ? "new" : "known")}
-                  />
-                  <StatusButton
-                    tone="struggle" icon={AlertTriangle} label={ui("Struggle")}
-                    active={status === "struggle"}
-                    onClick={() => apply(item, status === "struggle" ? "new" : "struggle")}
-                  />
-                  <StatusButton
-                    tone="new" icon={Circle} label={ui("To learn")}
-                    active={status === "new"}
-                    onClick={() => apply(item, "new")}
-                  />
-                </div>
-              </div>
+              <TrackerRow
+                key={item.id}
+                item={item}
+                status={statusForId(grades, item.id, item.aliases)}
+                record={record}
+                recordSignature={record ? JSON.stringify(record) : ""}
+                selected={selected.has(item.id)}
+                learnsEnglish={learnsEnglish}
+                germanUi={uiIsGerman()}
+                onToggleSelect={toggleSelect}
+                onApply={apply}
+                onSetStrength={applyStrength}
+                onSetPermanent={applyPermanent}
+              />
             );
           })}
         </div>

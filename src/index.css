@@ -2919,6 +2919,26 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--emoji-font); font-size: 42px; line-height: 1;
 }
 .word-picture { font-family: var(--emoji-font); }
+
+/* Tracker rows: in the DOM, but only drawn when they can be seen.
+ *
+ * Both trackers keep every matching item mounted, because the filters, the
+ * search, select-all and the counts are all promises about the WHOLE
+ * catalogue rather than about whatever is on screen — Leon: "i want all the
+ * data available". Sixteen thousand rows of four icons and a strength meter
+ * is far more than a browser will lay out and paint smoothly, so this hands
+ * the skipping to the engine: off-screen rows cost nothing to style, lay out
+ * or paint, and come back the moment they approach the viewport.
+ *
+ * contain-intrinsic-size gives the scrollbar an honest guess at the height of
+ * what has not been drawn yet. "auto" makes the browser remember each row's
+ * real height once it has been seen, so the bar stops drifting after the
+ * first pass. The 76px is a measured single-line row; rows that wrap simply
+ * correct themselves on first paint. */
+.tracker-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
 .fs-tappable-sentence { display: contents; }
 .guided-session .fs-word {
   position: relative; display: inline-block; border: 0; border-radius: 0.24em; padding: 0.1em 0.08em 0.14em;

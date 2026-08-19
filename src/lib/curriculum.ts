@@ -25,6 +25,7 @@ export const CURRICULUM_ORDER: string[] = [
   "part1",            // Starter basics
   "part150",          // I can do it: ability, help and encouragement
   "part533",          // Building blocks — the short bases longer sentences chain from
+  "part534",          // Checking in on each other — asking after someone all day, not just hello
   "part57",           // Talking about learning German (& other skills)
   "part141",          // Typing German characters on an English Windows keyboard
   "cb-conversation-repair",

@@ -529,7 +529,7 @@ export function WordsTracker({ apiParts, user }: {
             // otherwise leave the list with a ragged left edge.
             const picture = wordPicture(word.en, word.pos);
             return (
-              <div key={word.id} className="flex flex-wrap items-center gap-3 py-3">
+              <div key={word.id} className="tracker-row flex flex-wrap items-center gap-3 py-3">
                 <SelectBox
                   checked={selected.has(word.id)}
                   onClick={() => toggleSelect(word.id)}
