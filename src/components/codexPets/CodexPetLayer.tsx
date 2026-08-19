@@ -109,7 +109,11 @@ const PET_DISPLAY_OPTIONS: Array<{
     value: "desktop",
   },
   {
-    description: "Also try to stay visible over fullscreen games.",
+    // Say the cost out loud. Staying above a fullscreen game means the
+    // desktop compositor keeps the screen, and the game gives up a frame of
+    // latency to it — which is felt as input lag long before anyone thinks to
+    // blame the mascot sitting in the corner.
+    description: "Also stay over fullscreen games. This can add input lag to the game.",
     icon: Gamepad2,
     label: "Games",
     value: "games",

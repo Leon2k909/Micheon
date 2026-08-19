@@ -92,12 +92,29 @@ function getAudioCtx(): AudioContext | null {
     return _audioCtx;
   } catch { return null; }
 }
+/** The sound-effect context sleeps between dings for the same reason the
+ *  voice one does — see AUDIO_IDLE_SUSPEND_MS in lib/voice.ts. A tone lasts a
+ *  fifth of a second; the context used to stay awake for the whole session
+ *  after the first one, keeping the renderer exempt from throttling. */
+const SFX_IDLE_SUSPEND_MS = 4000;
+let sfxIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleSfxIdleSuspend() {
+  if (typeof window === "undefined") return;
+  if (sfxIdleTimer !== null) clearTimeout(sfxIdleTimer);
+  sfxIdleTimer = setTimeout(() => {
+    sfxIdleTimer = null;
+    if (_audioCtx && _audioCtx.state === "running") void _audioCtx.suspend().catch(() => {});
+  }, SFX_IDLE_SUSPEND_MS);
+}
+
 function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", gain = 0.05) {
   const sfxVolume = getSfxAudioVolume();
   if (sfxVolume <= 0) return;
   const ctx = getAudioCtx();
   if (!ctx) return;
   try {
+    if (sfxIdleTimer !== null) { clearTimeout(sfxIdleTimer); sfxIdleTimer = null; }
     if (ctx.state === "suspended") ctx.resume();
     const now = ctx.currentTime;
     freqs.forEach((f, i) => {
@@ -112,6 +129,7 @@ function playTone(freqs: number[], dur = 0.12, type: OscillatorType = "sine", ga
       osc.connect(g); g.connect(ctx.destination);
       osc.start(start); osc.stop(start + dur);
     });
+    scheduleSfxIdleSuspend();
   } catch { /* ignore */ }
 }
 const playCorrect = () => playTone([523.25, 783.99], 0.12, "sine", 0.045);   // C5 → G5 ding

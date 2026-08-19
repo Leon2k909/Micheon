@@ -20,6 +20,8 @@ const gamification = read("src/Gamification.tsx");
 const tracker = read("src/components/lab/VocabTracker.tsx");
 const wordsTracker = read("src/components/lab/WordsTracker.tsx");
 const appStyles = read("src/index.css");
+const voice = read("src/lib/voice.ts");
+const guided = read("src/GuidedSession.tsx");
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -212,6 +214,48 @@ check(
     && /const toggleSelect = React\.useCallback\(/.test(tracker)
     && /const applyStrength = React\.useCallback\(/.test(tracker)
     && /const applyPermanent = React\.useCallback\(/.test(tracker)
+);
+
+// A running AudioContext is the most expensive thing an idle Electron app can
+// hold. Its thread wakes hundreds of times a second with nothing connected, it
+// keeps the audio service process alive, and it makes Chromium treat the page
+// as playing audio — which exempts the WHOLE renderer from background
+// throttling. Measured before this: 5.8% of a core and 279 MB with the window
+// minimised, i.e. the app took the same from the machine whether or not anyone
+// was looking at it. Both contexts must go back to sleep between sounds.
+check(
+  "the voice context is suspended once playback has been over for a moment",
+  /function scheduleAudioIdleSuspend\(\)/.test(voice)
+    && /context\.suspend\(\)/.test(voice)
+    && voice.includes("scheduleAudioIdleSuspend();")
+);
+check(
+  "...and every path that plays something wakes it first",
+  /function getSharedAudioContext\(\): AudioContext \| null \{\s*cancelAudioIdleSuspend\(\);/.test(voice)
+);
+check(
+  "the sound-effect context sleeps between dings too",
+  /function scheduleSfxIdleSuspend\(\)/.test(guided)
+    && /_audioCtx\.suspend\(\)/.test(guided)
+    && guided.includes("scheduleSfxIdleSuspend();")
+);
+check(
+  "...and a new tone cancels the pending sleep rather than racing it",
+  guided.includes("if (sfxIdleTimer !== null) { clearTimeout(sfxIdleTimer); sfxIdleTimer = null; }")
+);
+
+// The mascot overlay defaults to the desktop band, not the screen-saver band.
+// Games mode asks Windows to keep the overlay above fullscreen games, which
+// stops a game handing its frames straight to the display — felt as input lag.
+// It stays available; it is just no longer what you get without choosing.
+check(
+  "the mascot does not default to overlaying fullscreen games",
+  read("src/lib/petDisplayMode.ts").includes('DEFAULT_PET_DISPLAY_MODE: PetDisplayMode = "desktop"')
+    && read("electron/main.js").includes('let petDisplayMode = "desktop";')
+);
+check(
+  "...and the games option says what it costs",
+  read("src/components/codexPets/CodexPetLayer.tsx").includes("This can add input lag to the game.")
 );
 
 if (failures) {

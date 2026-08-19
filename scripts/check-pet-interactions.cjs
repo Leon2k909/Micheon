@@ -152,7 +152,7 @@ check(
   "pet display mode persists as one of three explicit choices with game mode preserving current behaviour",
   displayMode.includes('CODEX_PET_DISPLAY_MODE_KEY = "gl-codex-pet-display-mode-v1"')
     && displayMode.includes('value === "app" || value === "desktop" || value === "games"')
-    && displayMode.includes('DEFAULT_PET_DISPLAY_MODE: PetDisplayMode = "games"')
+    && displayMode.includes('DEFAULT_PET_DISPLAY_MODE: PetDisplayMode = "desktop"')
     && displayMode.includes("syncLocalStorageItem(CODEX_PET_DISPLAY_MODE_KEY, mode)")
 );
 check(

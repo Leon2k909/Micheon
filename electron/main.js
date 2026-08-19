@@ -63,7 +63,7 @@ let petOverlayGeometrySignature = null;
 let petOverlayGeometryRevision = 0;
 let petOverlayPendingGeometryRevision = 0;
 let petOverlayGeometryTransitionTimer = null;
-let petDisplayMode = "games";
+let petDisplayMode = "desktop";
 let serverStarted = false;
 let desktopSettings = null;
 let tray = null;
@@ -225,7 +225,7 @@ const PET_GAME_TOP_LEVEL = process.platform === "win32" ? "screen-saver" : "floa
 const PET_DISPLAY_MODES = new Set(["app", "desktop", "games"]);
 
 function normalizePetDisplayMode(value) {
-  return PET_DISPLAY_MODES.has(value) ? value : "games";
+  return PET_DISPLAY_MODES.has(value) ? value : "desktop";
 }
 
 function keepPetSurfaceOnTop(window, moveToFront = false) {

@@ -136,7 +136,47 @@ function clearUrlCache() {
   urlCacheBytes = 0;
 }
 
+/**
+ * Let the audio hardware go back to sleep between clips.
+ *
+ * A running AudioContext is never free. Its thread wakes ~375 times a second
+ * whether or not anything is connected to it, it holds the browser's audio
+ * service process open, and — the expensive part — it makes Chromium treat
+ * the page as PLAYING AUDIO, which exempts the whole renderer from background
+ * throttling. The app therefore kept working at full tilt while minimised:
+ * measured at 5.8% of a core and 279 MB with the window not even on screen.
+ * That is exactly the sort of thing you feel as input lag in a game you are
+ * playing over the top of it. Leon: "when im gaming its like adding input
+ * delay to my game".
+ *
+ * So the context is suspended once playback has been over for a moment.
+ * Suspending is cheap and reversible; every path that plays anything resumes
+ * it first. The delay matters — a lesson plays clips a second or two apart,
+ * and thrashing suspend/resume between them would cost more than it saves.
+ */
+const AUDIO_IDLE_SUSPEND_MS = 4000;
+let audioIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function cancelAudioIdleSuspend() {
+  if (audioIdleTimer === null) return;
+  clearTimeout(audioIdleTimer);
+  audioIdleTimer = null;
+}
+
+/** Called when playback stops. The context sleeps unless something else starts. */
+function scheduleAudioIdleSuspend() {
+  if (typeof window === "undefined") return;
+  cancelAudioIdleSuspend();
+  audioIdleTimer = setTimeout(() => {
+    audioIdleTimer = null;
+    const context = sharedAudioContext;
+    if (!context || context.state !== "running") return;
+    void context.suspend().catch(() => {});
+  }, AUDIO_IDLE_SUSPEND_MS);
+}
+
 function getSharedAudioContext(): AudioContext | null {
+  cancelAudioIdleSuspend();
   if (typeof window === "undefined") return null;
   const AudioContextClass = window.AudioContext
     ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -150,6 +190,7 @@ function getSharedAudioContext(): AudioContext | null {
 }
 
 function stopAudioAnalysis(reset = true) {
+  scheduleAudioIdleSuspend();
   if (currentAudioLevelFrame !== null && typeof window !== "undefined") {
     window.cancelAnimationFrame(currentAudioLevelFrame);
   }
@@ -308,6 +349,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("pagehide", () => {
     stopTts();
     clearUrlCache();
+    cancelAudioIdleSuspend();
     const context = sharedAudioContext;
     sharedAudioContext = null;
     if (context && context.state !== "closed") void context.close().catch(() => {});
