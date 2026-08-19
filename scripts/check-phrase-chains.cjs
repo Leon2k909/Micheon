@@ -307,6 +307,18 @@ for (const id of plannedIds) {
   if (!guided.includes("deriveImplicitChains(")) {
     failures.push("Continue Learning no longer derives the unauthored chains");
   }
+  // Derived over the WHOLE catalogue, before chainTargetKeys is seeded.
+  // Deriving from the unseen pool alone undid the feature the moment it
+  // worked: once a base was learned it dropped out of the pool, so nothing
+  // carried its extension forward and the extension fell back to its own
+  // (usually terrible) rank — 42,038,145 for "Passt das alles ins Auto?"
+  // against the 638,003 it inherits from "Passt das?".
+  if (!/deriveImplicitChains\(derivedRows\)[\s\S]{0,600}const chainTargetKeys/.test(guided)) {
+    failures.push("chains are no longer derived over the whole catalogue before the base scores are collected");
+  }
+  if (!/chainTargetKeys\.add\(sentenceIdentityKey\(String\(buildsOn\)\)/.test(guided)) {
+    failures.push("derived chains no longer contribute their bases to the score-inheritance lookup");
+  }
   // A heavy review backlog cuts the fresh half to ONE slot, which serves a
   // base and drops its extension — the pair is the whole point, so it claims
   // a second slot from the review half rather than being split.

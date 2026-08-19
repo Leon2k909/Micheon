@@ -859,12 +859,46 @@ export default function GuidedLearningSession() {
         reviewPartByStep.set(step, pId);
       });
 
+      // Derive the unauthored chains across the WHOLE catalogue, before
+      // anything else looks at them.
+      //
+      // They used to be derived from the unseen pool alone, which quietly
+      // undid the feature the moment it worked: learn "Passt das?" today and
+      // tomorrow its extension is just another sentence from a late pack,
+      // because the chain that would have carried it forward only existed
+      // among cards nobody had learned yet. The score-inheritance below
+      // exists precisely so an extension can follow a base that is already
+      // known — it just never knew about these chains. Now it does.
+      //
+      // Derived onto throwaway rows, never onto the shared catalogue: that
+      // object is cached and read by the tracker, tests and games too.
+      const derivedRows = catalog.map((item) => ({
+        id: item.id,
+        de: String(item.de ?? ""),
+        originalDe: item.originalDe ? String(item.originalDe) : undefined,
+        buildsOn: item.buildsOn ? String(item.buildsOn) : undefined,
+        score: conversationPriorityScore({
+          partKey: item.partKey,
+          kind: item.kind,
+          commonality: sentenceCommonality(String(item.de ?? ""), corpusIndex),
+          lessonPriority: item.lessonPriority,
+        }),
+      }));
+      deriveImplicitChains(derivedRows);
+      const derivedBuildsOn = new Map<string, string>();
+      for (const row of derivedRows) {
+        if (row.buildsOn) derivedBuildsOn.set(row.id, row.buildsOn);
+      }
+      const buildsOnFor = (item: { id?: string; buildsOn?: string }) =>
+        item?.buildsOn ?? (item?.id ? derivedBuildsOn.get(item.id) : undefined);
+
       // Score every unseen sentence in the course, then take the best few.
       // Chained phrases need their base's score even when the base is already
       // learned, so those are looked up first and captured during the walk.
       const chainTargetKeys = new Set<string>();
       catalog.forEach((item) => {
-        if (item.buildsOn) chainTargetKeys.add(sentenceIdentityKey(String(item.buildsOn)).toLowerCase());
+        const buildsOn = buildsOnFor(item);
+        if (buildsOn) chainTargetKeys.add(sentenceIdentityKey(String(buildsOn)).toLowerCase());
       });
       const chainBaseScores = new Map<string, number>();
       const candidates: { pId: string; index: number; score: number; step: any }[] = [];
@@ -942,29 +976,16 @@ export default function GuidedLearningSession() {
               long: item.long,
               group: item.group,
               level: item.level,
-              buildsOn: item.buildsOn,
+              buildsOn: buildsOnFor(item),
               originalDe: item.originalDe,
               mastery: "new",
             },
           },
         });
       });
-      // Fill in the chains nobody authored (a sentence that is a word-boundary
-      // prefix of another) BEFORE scores resolve, so "Ich habe ein Fahrrad"
-      // rides directly behind "Ich habe" exactly like a hand-marked chain —
-      // written onto the items themselves so the lead-chain and pinning logic
-      // below see the same links.
-      deriveImplicitChains(
-        candidates
-          .filter((candidate) => candidate.step.item)
-          .map((candidate) => ({
-            de: candidate.step.item.de as string | undefined,
-            originalDe: candidate.step.item.originalDe as string | undefined,
-            score: candidate.score as number,
-            get buildsOn() { return candidate.step.item.buildsOn as string | undefined; },
-            set buildsOn(value: string | undefined) { candidate.step.item.buildsOn = value; },
-          }))
-      );
+      // The chains are already on the candidates: they were derived over the
+      // whole catalogue above, so a base that is only learned — not queued —
+      // still passes its place to what extends it.
       resolveChainScores(
         candidates.map((candidate) => {
           const proxy = {
