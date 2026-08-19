@@ -5279,17 +5279,38 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     transform: translateX(2px);
   }
 
-  .np-mobile-course-button:hover {
+  /* The chip is a sibling of the button and sits ON it, so pointing AT the
+     chip never reached the button's own :hover — the chip rose and the button
+     stayed put, which is the one thing that tells you they are two controls
+     rather than one. The wrapper drives the lift, so whichever half the
+     pointer is over, both halves move.
+
+     Only the lift is shared. The sheen, the scaling play icon and the sliding
+     chevron stay on direct button hover, because those say "press me" and the
+     chip is not the thing you would be pressing. */
+  .np-mobile-course-button:hover,
+  .np-course-launch:hover .np-mobile-course-button {
     transform: translateY(-3px);
   }
 
-  /* The picker chip is a sibling of the button, not a child of it, so its own
-     translateY(-50%) centring never picked up the button's hover lift — it
-     read as a separate thing floating over the button rather than part of
-     it. Hovering anywhere in the shared wrapper keeps both in sync, so the
-     lift doesn't reverse the moment the pointer crosses onto the chip. */
   .np-course-launch:hover .np-lesson-content-picker {
     transform: translateY(calc(-50% - 3px));
+  }
+
+  /* ...and down together. The wrapper cannot own :active — opening the menu
+     would depress a button nobody pressed — so the chip follows the button's
+     press instead of hanging in mid-air above it. This has to out-specify the
+     shared hover rule above, or the lift would win for the whole press. */
+  .np-course-launch .np-mobile-course-button:active {
+    transform: translateY(3px);
+  }
+
+  .np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker {
+    transform: translateY(calc(-50% + 3px));
+  }
+
+  .np-lesson-content-picker {
+    transition: transform var(--np-motion-base) var(--np-ease-out);
   }
 
   .np-mobile-course-button:hover::before {
@@ -9959,6 +9980,10 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .np-course-launch:hover .np-lesson-content-picker {
       transform: translateY(-3px);
+    }
+
+    .np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker {
+      transform: translateY(3px);
     }
   }
 }

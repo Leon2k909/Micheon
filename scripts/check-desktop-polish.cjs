@@ -165,6 +165,36 @@ check("all showcase screenshots are real, full-size PNGs", screenshotPaths.every
   return size && size.width >= 1200 && size.height >= 700 && size.bytes > 100_000;
 }));
 
+// The lesson-content chip sits ON the Continue learning button, so it
+// intercepts the pointer before the button's own :hover can fire. Leon:
+// "hovering this words button doesnt move the [continue learning] button with
+// it, so it doesnt feel connected". The wrapper has to drive the lift for both
+// halves, both halves have to follow the press back down, and the chip needs
+// the button's transition or it teleports while the button eases there.
+const tightStyles = styles.replace(/\s+/g, " ");
+const styleHas = (snippet) => tightStyles.includes(snippet.replace(/\s+/g, " ").trim());
+
+check(
+  "hovering the lesson-content chip lifts the Continue learning button too",
+  styleHas(".np-mobile-course-button:hover, .np-course-launch:hover .np-mobile-course-button { transform: translateY(-3px); }")
+);
+check(
+  "the chip rides that lift with the button",
+  styleHas(".np-course-launch:hover .np-lesson-content-picker { transform: translateY(calc(-50% - 3px)); }")
+);
+check(
+  "the chip follows the button back down on press instead of hanging above it",
+  styleHas(".np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker")
+);
+check(
+  "the button's press still out-specifies the shared hover lift",
+  styleHas(".np-course-launch .np-mobile-course-button:active { transform: translateY(3px); }")
+);
+check(
+  "the chip eases on the same curve as the button rather than jumping to it",
+  styleHas(".np-lesson-content-picker { transition: transform var(--np-motion-base) var(--np-ease-out); }")
+);
+
 const socialPreview = pngSize("docs/micheon-social-preview.png");
 check("the GitHub social preview uses the recommended 1280x640 canvas", socialPreview?.width === 1280 && socialPreview?.height === 640);
 check("the GitHub social preview stays below GitHub's 1 MB limit", Boolean(socialPreview && socialPreview.bytes < 1_000_000));
