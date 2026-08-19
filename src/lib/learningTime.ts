@@ -234,7 +234,13 @@ export function estimateFluencyHours(
   const remaining = boundedInteger(remainingUnits);
   const baseline = Math.max(0.1, finiteNumber(options.baselineUnitsPerHour, 12));
   const minRate = Math.max(0.1, finiteNumber(options.minUnitsPerHour, 4));
-  const maxRate = Math.max(minRate, finiteNumber(options.maxUnitsPerHour, 24));
+  // The ceiling was 24/hour and Leon's real pace sat pinned against it, so
+  // "About 330 hours" was the CAP talking, not his history. A learner who
+  // moves fast — Kann-ich declarations, words banked six a sitting, Listen
+  // pre-exposure making lessons quicker — earns the number their pace
+  // implies; the two-hour baseline prior in the blend still keeps one
+  // freak-fast lesson from swinging the estimate.
+  const maxRate = Math.max(minRate, finiteNumber(options.maxUnitsPerHour, 60));
   const priorHours = Math.max(0.25, finiteNumber(options.priorHours, 2));
 
   const activeMs = stats.samples.reduce((sum, sample) => sum + sample.activeMs, 0);
