@@ -496,7 +496,7 @@ export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string>
  *    "Ich habe ein Fahrrad" is a teaching step; growing into a fourteen-word
  *    subordinate clause is a different sentence that must earn its own rank.
  */
-export function deriveImplicitChains<T extends { de?: string; originalDe?: string; buildsOn?: string }>(
+export function deriveImplicitChains<T extends { de?: string; originalDe?: string; buildsOn?: string; score?: number }>(
   rows: T[]
 ): void {
   // The question mark is stripped for CHAIN matching only. Identity keys
@@ -504,11 +504,15 @@ export function deriveImplicitChains<T extends { de?: string; originalDe?: strin
   // ordering, "Wie geht es?" is plainly the base "Wie geht es dir?" grows
   // from — and with the ? in the key, no question could ever be a base.
   const keyOf = (text: unknown) => sentenceIdentityKey(String(text ?? "")).toLowerCase().replace(/\?+$/, "").trim();
-  const deByKey = new Map<string, string>();
+  const deByKey = new Map<string, { de: string; score?: number }>();
   for (const row of rows) {
     for (const text of [row.de, row.originalDe]) {
       const key = keyOf(text);
-      if (key.length >= 2 && !deByKey.has(key)) deByKey.set(key, String(text));
+      if (key.length < 2) continue;
+      const existing = deByKey.get(key);
+      if (!existing || (row.score != null && (existing.score == null || row.score < existing.score))) {
+        deByKey.set(key, { de: String(text), score: row.score });
+      }
     }
   }
   const implicit: Array<{ row: T; baseDe: string; extraTokens: number }> = [];
@@ -524,9 +528,13 @@ export function deriveImplicitChains<T extends { de?: string; originalDe?: strin
         // ("ich weiß nicht," …) — strip trailing punctuation the way the
         // key itself strips it at sentence end.
         .replace(/[,;:]+$/, "");
-      const baseDe = deByKey.get(prefix);
-      if (baseDe !== undefined && prefix !== rowKey) {
-        implicit.push({ row, baseDe, extraTokens: tokens.length - cut });
+      const base = deByKey.get(prefix);
+      // A chain pulls its extension BACK to a base served earlier — it must
+      // never push a well-ranked sentence later. If the base scores worse
+      // than the extension (chain inheritance would demote it), no link.
+      if (base !== undefined && prefix !== rowKey
+        && !(base.score != null && row.score != null && base.score > row.score)) {
+        implicit.push({ row, baseDe: base.de, extraTokens: tokens.length - cut });
         break;
       }
     }

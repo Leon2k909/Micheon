@@ -1413,15 +1413,6 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
     () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
     [fluency.toFluent, profile, revision]
   );
-  const nextEstimate = useMemo(
-    () => (fluency.next ? estimateFluencyHours(fluency.toNext, loadLearningTimeStats(profile)) : null),
-    [fluency.next, fluency.toNext, profile, revision]
-  );
-  const estimateNote = estimate.confidence === "personalized"
-    ? ui("Based on your active lesson pace.")
-    : estimate.confidence === "developing"
-      ? ui("Becomes more accurate as you complete lessons.")
-      : ui("Starting estimate. Complete a timed lesson to personalise it.");
 
   return (
     <section className="np-fluency-outlook">
@@ -1484,16 +1475,10 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
       <div className="np-fluency-hours">
         <span aria-hidden="true"><Clock3 /></span>
         <small>{ui("Estimated active study left")}</small>
+        {/* Just the number. The explainer lines that used to sit here (next
+            milestone, pace note, hands-on-time caveat) were all cut on Leon's
+            call — the milestone stepper on the left now tells that story. */}
         <strong>About {estimate.hoursRemaining.toLocaleString()} hours to Fluent</strong>
-        {nextEstimate && fluency.next && nextEstimate.hoursRemaining > 0 && (
-          <p>≈ {nextEstimate.hoursRemaining.toLocaleString()} hours to {ui(fluency.next.label)}, the next milestone</p>
-        )}
-        <p>{estimateNote}</p>
-        {/* 330 hours read as "330 hours before I can talk to Germans" and
-            alarmed exactly the person it was built for. Fluent is the
-            keeping-up-with-natives bar at the TOP of the ladder; comfortable
-            conversation is stages earlier, and the card should say so. */}
-        <p>Counts hands-on lesson time only. Comfortable everyday conversation arrives stages earlier — this is the keeping-up-with-natives bar.</p>
       </div>
     </section>
   );

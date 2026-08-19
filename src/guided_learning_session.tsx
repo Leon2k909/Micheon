@@ -915,9 +915,15 @@ export default function GuidedLearningSession() {
       // written onto the items themselves so the lead-chain and pinning logic
       // below see the same links.
       deriveImplicitChains(
-        candidates.map((candidate) => candidate.step.item).filter(Boolean) as Array<{
-          de?: string; originalDe?: string; buildsOn?: string;
-        }>
+        candidates
+          .filter((candidate) => candidate.step.item)
+          .map((candidate) => ({
+            de: candidate.step.item.de as string | undefined,
+            originalDe: candidate.step.item.originalDe as string | undefined,
+            score: candidate.score as number,
+            get buildsOn() { return candidate.step.item.buildsOn as string | undefined; },
+            set buildsOn(value: string | undefined) { candidate.step.item.buildsOn = value; },
+          }))
       );
       resolveChainScores(
         candidates.map((candidate) => {
