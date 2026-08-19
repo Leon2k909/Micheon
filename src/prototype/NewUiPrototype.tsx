@@ -1410,8 +1410,8 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
   // underneath, so 300-odd hours to a native-scale bar stops reading as the
   // distance to the first rewarding conversation.
   const estimate = useMemo(
-    () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile)),
-    [fluency.toFluent, profile, revision]
+    () => estimateFluencyHours(fluency.toFluent, loadLearningTimeStats(profile), { knownUnits: fluency.vocab }),
+    [fluency.toFluent, fluency.vocab, profile, revision]
   );
 
   return (

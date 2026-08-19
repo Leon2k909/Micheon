@@ -61,10 +61,10 @@ check(
   !guided.includes("HearItButton") && !guided.includes('ui("Tap to replay")')
 );
 check(
-  "the lesson header still hosts the speech-speed menu the button used to carry",
-  guided.includes("function SpeechSpeedMenuButton")
-    && guided.includes("<SpeechSpeedMenuButton lang=")
-    && guided.includes('testId="lesson-speech-speed"')
+  "the lesson keeps exactly one audio control, the mixer",
+  !guided.includes("SpeechSpeedMenuButton")
+    && !guided.includes('testId="lesson-speech-speed"')
+    && guided.includes("<MuteButton")
 );
 
 // ── 2b. word order is presented as a focused reorder exercise ─────────────
@@ -137,7 +137,8 @@ check(
   "the layouts size themselves from the preset list rather than a fixed four",
   css.includes("grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));")
     && speedControl.includes("TTS_SPEED_PRESETS.map")
-    && guided.includes("<SpeechSpeedControl")
+    // The lesson no longer hosts a speed control of its own (the mixer owns
+    // it), and it must never hand-roll speed buttons instead.
     && !guided.includes("fs-speed-option")
 );
 

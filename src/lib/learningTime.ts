@@ -61,6 +61,13 @@ export type FluencyEstimateOptions = {
   maxUnitsPerHour?: number;
   /** Prior weight prevents one unusually quick lesson distorting the result. */
   priorHours?: number;
+  /**
+   * Items the learner already knows. Raises the starting pace, because
+   * someone who already knows a lot of German demonstrably acquires the
+   * rest faster than a beginner — and tracker declarations, which is how
+   * much of that knowledge is recorded, leave no timing samples behind.
+   */
+  knownUnits?: number;
 };
 
 function finiteNumber(value: unknown, fallback = 0) {
@@ -232,7 +239,22 @@ export function estimateFluencyHours(
 ): FluencyTimeEstimate {
   const stats = normalizeLearningTimeStats(statsValue);
   const remaining = boundedInteger(remainingUnits);
-  const baseline = Math.max(0.1, finiteNumber(options.baselineUnitsPerHour, 12));
+  // What the learner already knows is evidence about how fast they learn.
+  //
+  // Michelle has marked a large part of the tracker as known and was still
+  // quoted 210 hours, because knowing things produces no TIMED lesson
+  // samples — declarations are instant — so her pace stayed pinned to the
+  // absolute-beginner prior of 12 items an hour. That prior is right for
+  // someone meeting German cold and wrong for someone who already reads
+  // most of a sentence: their remaining items are largely confirmations,
+  // not first encounters.
+  //
+  // So the prior itself scales with demonstrated knowledge. The slope is
+  // calibrated, not invented: at Leon's ~2,300 known it predicts ~25 items
+  // an hour, which is what his timed lessons actually measure. It stays a
+  // PRIOR — real timing history still outweighs it as samples accumulate.
+  const knowledgeBoost = Math.min(28, Math.max(0, finiteNumber(options.knownUnits, 0)) / 180);
+  const baseline = Math.max(0.1, finiteNumber(options.baselineUnitsPerHour, 12) + knowledgeBoost);
   const minRate = Math.max(0.1, finiteNumber(options.minUnitsPerHour, 4));
   // The ceiling was 24/hour and Leon's real pace sat pinned against it, so
   // "About 330 hours" was the CAP talking, not his history. A learner who

@@ -96,7 +96,14 @@ for (const scope of ["master", "english", "german"]) {
 assert(mute.includes("<SpeechSpeedControl"), "global audio mixer lacks scoped speed");
 assert(listen.includes("<SpeechSpeedControl"), "Listen lacks scoped speed");
 assert((profile.match(/<SpeechSpeedControl/g) || []).length >= 2, "profile speed surfaces are not shared");
-assert(guided.includes("<SpeechSpeedControl"), "Hear it menu lacks scoped speed");
+// The lesson has no speed control of its own any more — first the Hear it
+// button carried it, then a header gauge, and Leon removed both as doors to
+// a room the audio mixer already opens. Speed must still be reachable
+// mid-lesson, so the lesson mounts that mixer.
+assert(
+  !guided.includes("<SpeechSpeedControl") && /<MuteButton[\s\S]{0,200}panelClassName="prototype-audio-mixer"/.test(guided),
+  "the lesson lost its route to speech speed — the audio mixer must stay in its header"
+);
 assert(voice.includes("rate * getTtsSpeechRate(lang)"), "playback ignores the clip language's speed");
 
 console.log("per-language speech speed, legacy migration, Master batching, and all speed surfaces passed");

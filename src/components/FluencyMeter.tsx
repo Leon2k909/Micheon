@@ -4,7 +4,7 @@ import { getFluency, FLUENCY_STAGES } from "@/lib/fluency";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { estimateFluencyHours, loadLearningTimeStats } from "@/lib/learningTime";
 
-function CompactStudyTimeEstimate({ remainingUnits }: { remainingUnits: number }) {
+function CompactStudyTimeEstimate({ knownUnits, remainingUnits }: { knownUnits: number; remainingUnits: number }) {
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function FluencyMeter({
           <p className="text-sm font-black text-[var(--text-1)]">{ui(f.cur.label)}</p>
           <div className="shrink-0 text-right">
             <p className="text-xs font-black text-[var(--text-3)]">{f.overallPct}% {ui("to fluent")}</p>
-            {showStudyTimeEstimate && f.next && <CompactStudyTimeEstimate remainingUnits={f.toFluent} />}
+            {showStudyTimeEstimate && f.next && <CompactStudyTimeEstimate knownUnits={f.vocab} remainingUnits={f.toFluent} />}
           </div>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--surface)]">

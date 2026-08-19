@@ -502,50 +502,48 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   font-weight: 650;
 }
 
-/* One quiet capsule instead of three boxed cards. The old chips each carried
-   their own border, drop shadow AND a bordered icon tile inside — triple
-   framing that Leon called the part of the app that looked most out of
-   place. The stats now share a single soft pill, icons inline and unboxed,
-   thin dividers between them. */
+/* No containers at all. These three numbers are habit signals, not a
+   dashboard — the product's first principle keeps gamification chrome quiet,
+   and its anti-references rule out metric worship. Boxing them (first as
+   three framed cards with framed icon tiles inside, then as one pill) made
+   chrome the loudest thing in the header, and the pill stretched across its
+   grid column with the content marooned in the middle.
+
+   So the illustrated reward art anchors each stat, tight to its number, and
+   generous space between the three does the grouping that borders were
+   doing badly. Nothing to stretch, nothing to frame. */
 .np-header-stats {
   display: flex;
   flex-wrap: wrap;
   min-width: 0;
+  align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 5px 6px;
-  border: 1px solid var(--np-line);
-  border-radius: 22px;
-  background: var(--np-surface);
-  box-shadow: 0 3px 0 rgba(98, 82, 65, 0.06);
+  gap: 12px 34px;
 }
 
 .np-stat-chip {
   display: grid;
   min-width: 0;
   flex: 0 1 auto;
-  grid-template-columns: 30px 1fr;
+  grid-template-columns: 38px 1fr;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-}
-
-.np-stat-chip + .np-stat-chip {
-  border-left: 1px solid var(--np-line);
+  gap: 11px;
 }
 
 .np-stat-chip__art {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   place-items: center;
 }
 
 .np-stat-chip__art .np-reward-icon {
-  width: 27px;
-  height: 27px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(95, 70, 34, 0.13));
+  /* The art now carries the depth the tiles used to: real offset, real blur,
+     warm rather than neutral so it belongs to the cream world. */
+  filter: drop-shadow(0 3px 4px rgba(95, 70, 34, 0.22));
 }
 
 .np-stat-chip > div {
@@ -570,13 +568,18 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 .np-stat-chip strong {
   color: #2c2926;
-  font-size: 17px;
+  font-family: var(--np-font-display);
+  font-size: 18px;
   font-weight: 950;
+  /* A counter that climbs must not reshuffle its own width: proportional
+     figures make 18.410 XP jitter on every gain. */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
   line-height: 1.05;
 }
 
 .np-stat-chip small {
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--np-muted);
   font-size: var(--np-type-caption);
   font-weight: 650;
@@ -4263,21 +4266,15 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   }
 
   .np-header-stats {
-    gap: 9px;
+    gap: 10px 24px;
   }
 
   .np-stat-chip {
-    min-width: 116px;
-    grid-template-columns: 44px 1fr;
-    padding-right: 8px;
+    grid-template-columns: 34px 1fr;
+    gap: 9px;
   }
 
-  .np-stat-chip__art {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-  }
-
+  .np-stat-chip__art,
   .np-stat-chip__art .np-reward-icon {
     width: 34px;
     height: 34px;
@@ -4398,11 +4395,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   }
 
   .np-header-stats {
-    display: grid;
     grid-column: 1 / -1;
     grid-row: 2;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 10px 26px;
   }
 
   .np-stat-chip {
@@ -4499,40 +4495,32 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   }
 
   .np-header-stats {
-    display: grid;
     grid-column: 1 / -1;
     grid-row: 2;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: stretch;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 8px 22px;
   }
 
+  /* Phone width keeps streak and XP; the lesson count is the one a learner
+     can always find on the progress page. */
   .np-header-stats .np-stat-chip:nth-child(3) {
     display: none;
   }
 
   .np-stat-chip {
     min-width: 0;
-    min-height: 82px;
-    grid-template-columns: 58px 1fr;
-    gap: 4px;
-    padding: 8px 14px 8px 7px;
-    border-radius: 20px;
+    grid-template-columns: 32px 1fr;
+    gap: 9px;
   }
 
-  .np-stat-chip__art {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-  }
-
+  .np-stat-chip__art,
   .np-stat-chip__art .np-reward-icon {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
   }
 
   .np-stat-chip strong {
-    font-size: 21px;
+    font-size: 17px;
   }
 
   .np-stat-chip small {
@@ -5466,18 +5454,36 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   box-shadow: 0 0 0 4px rgba(56, 170, 69, 0.2), inset 0 -2px 1px rgba(29, 121, 42, 0.2);
 }
 
+/* Seven names do not fit under seven circles: at this card width the stops
+   sit ~55px apart and the labels measured 76px, so every neighbouring pair
+   overlapped by about 21px — invisible only because the collisions happened
+   to land in the gaps between words. The circles already carry the ladder,
+   so only the two that answer a question stay written: where you are, and
+   where the road ends. Every stop keeps its name in the title tooltip. */
 .np-fluency-steps__stop em {
   position: absolute;
   top: 18px;
   left: 50%;
-  width: 76px;
+  display: none;
   transform: translateX(-50%);
   color: var(--np-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-style: normal;
   font-weight: 750;
   line-height: 1.15;
   text-align: center;
+  white-space: nowrap;
+}
+
+.np-fluency-steps__stop.is-current em,
+.np-fluency-steps__stop:last-child em {
+  display: block;
+}
+
+/* One stage from the end, "you are here" and "the end" would collide; the
+   one you are standing on wins. */
+.np-fluency-steps__stop.is-current + .np-fluency-steps__bar + .np-fluency-steps__stop:last-child em {
+  display: none;
 }
 
 .np-fluency-steps__stop.is-current em {
@@ -5499,6 +5505,9 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #38aa45, #69d265);
+  /* Width, deliberately: this 6px fill moves only when the learner's total
+     changes — not on scroll, hover or a loop — and scaleX/clip-path would
+     flatten the rounded cap that makes it read as a filling bar. */
   transition: width var(--np-motion-slow) var(--np-ease-out);
 }
 
@@ -5735,7 +5744,6 @@ html[data-theme="dark"] .np-side-nav button.is-active {
     0 9px 20px rgba(0, 0, 0, 0.24);
 }
 
-html[data-theme="dark"] .np-stat-chip,
 html[data-theme="dark"] .np-icon-button,
 html[data-theme="dark"] .np-profile-button {
   background: var(--np-surface);
@@ -9987,9 +9995,10 @@ html[data-theme="dark"][data-accent="custom"] .np-social-empty > button {
   text-shadow: none;
 }
 
-html[data-theme="dark"] .np-stat-chip__art {
-  background: transparent;
-  box-shadow: none;
+/* A warm cream-world shadow disappears on a dark surface; the art keeps its
+   lift from a darker, slightly deeper one. */
+html[data-theme="dark"] .np-stat-chip__art .np-reward-icon {
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.45));
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card__title {

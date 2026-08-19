@@ -83,12 +83,29 @@ check("the mastery percentage uses its real progress ring on a light tile", /\.n
 check("dark custom mastery cards use neutral readable surfaces instead of accent-on-accent text", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-feature-host \.mastery-card__milestone\.is-reached\s*\{[^}]*background:\s*rgba\(var\(--accent-rgb\), 0\.14\);/s.test(styles) && /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-feature-host \.mastery-ring__value\s*\{[^}]*color:\s*var\(--text-1\);/s.test(styles));
 check("dark custom search and social actions keep readable accent ink", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-search-result-action\s*\{[^}]*color:\s*var\(--accent-ink\);/s.test(styles) && /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-side-card > small,[\s\S]*?color:\s*var\(--accent-ink\);/s.test(styles));
 check("dark custom active navigation uses the foreground derived for its accent fill", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-side-nav button\.is-active\s*\{[^}]*color:\s*var\(--accent-text\);[^}]*background:\s*var\(--accent\);/s.test(styles));
-// Redesigned on Leon's call (2026-08-19): the three separately-boxed chips
-// with bordered icon tiles read as the most out-of-place part of the app.
-// The stats now share ONE soft capsule with inline, unboxed icons — this
-// pins the capsule and the inline icon scale so neither the triple-framing
-// nor a stray redesign creeps back.
-check("header stats share one capsule with inline unboxed icons", prototype.includes("np-stat-chip__art np-stat-chip__art--${kind}") && /\.np-header-stats\s*\{[^}]*border-radius:\s*22px;/s.test(styles) && /\.np-stat-chip \+ \.np-stat-chip\s*\{[^}]*border-left:/s.test(styles) && /\.np-stat-chip__art \.np-reward-icon\s*\{[^}]*width:\s*27px;[^}]*height:\s*27px;/s.test(styles));
+// Redesigned on Leon's call (2026-08-19). Twice: three separately-boxed
+// chips with bordered icon tiles inside, then one capsule that stretched
+// across its grid column with the stats marooned mid-pill. The header stats
+// now wear NO container at all — the illustrated reward art anchors each
+// number and spacing does the grouping, which is what the product's
+// "gamification chrome stays quiet" principle actually asks for.
+//
+// Pinned: the art still renders per kind, nothing reintroduces a frame
+// (border/background/box-shadow on the group or the chips), and the climbing
+// counters keep tabular figures so they cannot jitter as they grow.
+{
+  const statBlocks = (styles.match(/(?:^|\n)\s*\.np-(?:header-stats|stat-chip)(?:[^{\n]*)\{[^}]*\}/g) || []).join("\n");
+  const framed = /(?:^|\n)\s*(?:border|background|box-shadow):/m.test(
+    statBlocks.replace(/border-radius:[^;]*;/g, "")
+  );
+  check(
+    "header stats stay unframed, art-led, and tabular",
+    prototype.includes("np-stat-chip__art np-stat-chip__art--${kind}")
+      && !framed
+      && /\.np-stat-chip strong\s*\{[^}]*font-variant-numeric:\s*tabular-nums;/s.test(styles)
+      && /\.np-stat-chip__art \.np-reward-icon\s*\{[^}]*filter:\s*drop-shadow/s.test(styles)
+  );
+}
 check("the prototype title bar is one uninterrupted surface", appStyles.includes("background: #fffaf1;") && appStyles.includes(".titlebar--prototype::after") && appStyles.includes("content: none;"));
 check("the prototype title bar carries no separator shadow", /\.titlebar--prototype\s*\{[^}]*box-shadow:\s*none;/s.test(appStyles));
 check("the Electron window uses Micheon's custom frameless chrome", electronMain.includes("frame: false") && app.includes('<TitleBar variant="prototype" />'));

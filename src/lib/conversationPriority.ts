@@ -13,6 +13,11 @@ export const CONVERSATION_ESSENTIAL_PACKS = [
   "cb-greetings",
   "cb-introductions",
   "part1",
+  // The building blocks longer sentences grow from. Being in tier 1 of
+  // CURRICULUM_ORDER was not enough: the band comes from THIS list, and
+  // without an entry here the bases scored band 4 — ranked below the very
+  // sentences they are supposed to introduce, so the chains never surfaced.
+  "part533",
   "cb-conversation-repair",
   "cb-reactions",
   "cb-shortreplies",

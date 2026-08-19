@@ -44,12 +44,9 @@ import { learningEnglish } from "@/lib/direction";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
-  audioLanguageFromTag,
   getSfxAudioVolume,
   getTtsAudioVolume,
-  getTtsSpeechRate,
 } from "@/lib/audioMute";
-import { SpeechSpeedControl, type TtsSpeechScope } from "@/components/SpeechSpeedControl";
 import {
   BILINGUAL_SENTENCE_PHASES,
   buildSentencePhaseRoute,
@@ -74,7 +71,7 @@ import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr, uiFmt } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
-  BookOpen, ArrowRight, Gauge,
+  BookOpen, ArrowRight,
   MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
   Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward, Square, Download, LoaderCircle
 } from "lucide-react";
@@ -285,72 +282,6 @@ const FRENCH_ALT_CODES: Record<string, string> = {
   "é": "0233", "è": "0232", "ê": "0234", "à": "0224", "â": "0226",
   "ç": "0231", "î": "0238", "ô": "0244", "û": "0251", "œ": "0156",
 };
-
-/**
- * The replay button plus a right-click speed menu. Every speed surface exposes
- * Master, English and German so a quick lesson adjustment never traps the
- * learner in a global-only setting.
- */
-/**
- * The lesson's speech-speed menu, now a small header control. It used to
- * live behind right-click on a "Hear it" replay button — but tapping any
- * word already speaks it, so the big button was a second door to the same
- * room and Leon had it removed. The speed menu it hosted survives here.
- */
-function SpeechSpeedMenuButton({ lang }: { lang: string }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [speechRate, setSpeechRate] = useState(() => getTtsSpeechRate(lang));
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const defaultScope: TtsSpeechScope = audioLanguageFromTag(lang) ?? "master";
-
-  useEffect(() => {
-    const sync = () => setSpeechRate(getTtsSpeechRate(lang));
-    window.addEventListener(AUDIO_SETTINGS_EVENT, sync);
-    return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, sync);
-  }, [lang]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = (event: PointerEvent) => {
-      if (event.target instanceof Node && wrapRef.current?.contains(event.target)) return;
-      setMenuOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", close);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
-
-  return (
-    <div className="fs-listen-wrap" ref={wrapRef}>
-      <button
-        aria-haspopup="dialog"
-        aria-expanded={menuOpen}
-        aria-label={`${ui("Speech speed")} (${speechRate}×)`}
-        className="fs-iconbtn shrink-0"
-        onClick={() => setMenuOpen((current) => !current)}
-        title={`${ui("Speech speed")} (${speechRate}×)`}
-        type="button"
-      >
-        <Gauge className="h-4 w-4" />
-      </button>
-      {menuOpen && (
-        <div aria-label={ui("Speech speed")} className="fs-speed-menu" role="dialog">
-          <SpeechSpeedControl
-            defaultScope={defaultScope}
-            onRateChange={() => setMenuOpen(false)}
-            testId="lesson-speech-speed"
-          />
-        </div>
-      )}
-    </div>
-  );
-}
 
 function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
@@ -6330,7 +6261,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               <kbd>Alt →</kbd>
             </Button>
           )}
-          <SpeechSpeedMenuButton lang={guidedTargetLanguageTag()} />
           <MuteButton
             className="fs-iconbtn shrink-0"
             iconClassName="h-4 w-4"
