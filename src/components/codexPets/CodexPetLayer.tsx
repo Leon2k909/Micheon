@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AppWindow,
   Check,
+  ChevronDown,
   EyeOff,
   Gamepad2,
   History,
@@ -99,6 +100,45 @@ const PET_BUBBLE_WIDTH = 320;
 // history window before it can be mistaken for a completed single click.
 const PET_SINGLE_CLICK_DELAY_MS = 400;
 const desktop = typeof window !== "undefined" ? (window as any).germDesktop : undefined;
+
+/**
+ * One collapsible group in the mascot's menu.
+ *
+ * The menu grew a section at a time — size, where pets appear, this pet,
+ * messages and voice, layout — until opening it was a wall of controls.
+ * Leon: "categorise these under dropdowns or something its getting quite
+ * big". Everything is collapsed to start with, so the menu opens as a short
+ * list of headings and expands only the one you came for.
+ */
+function PetMenuSection({
+  children,
+  id,
+  title,
+}: {
+  children: React.ReactNode;
+  id: string;
+  title: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section aria-labelledby={id} className="mt-1.5">
+      <button
+        aria-expanded={open}
+        className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
+        id={id}
+        onClick={() => setOpen((value) => !value)}
+        type="button"
+      >
+        <span className="text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]">{title}</span>
+        <ChevronDown
+          aria-hidden="true"
+          className={"h-4 w-4 shrink-0 text-[var(--text-3)] transition-transform duration-150 " + (open ? "rotate-180" : "")}
+        />
+      </button>
+      {open && <div className="pt-1">{children}</div>}
+    </section>
+  );
+}
 const isDesktopPetOverlay = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("pet-overlay") === "1";
 const PET_POSITION_STORAGE_KEY = isDesktopPetOverlay
@@ -1597,6 +1637,17 @@ export function CodexPetLayer() {
   // Never wider than the screen it has to fit on. On a 225%-scaled display the
   // usable width in points is less than half the panel's pixels, so a bubble
   // sized by a constant could be wider than the whole desktop.
+  /**
+   * The bubble's own controls stay out of the way until you go for them.
+   *
+   * A dismiss cross and a history button sitting permanently on every
+   * message made a two-word "Nice work!" look like a dialog box. They are
+   * revealed by pointing at either the mascot or the bubble — the two things
+   * you would already be reaching for — and by keyboard focus, so they stay
+   * reachable without a pointer at all.
+   */
+  const [petHovered, setPetHovered] = useState(false);
+
   const bubbleWidth = Math.min(PET_BUBBLE_WIDTH, Math.max(160, viewport.width - PET_MARGIN * 2));
   const bubbleLeft = Math.min(
     Math.max(
@@ -1749,13 +1800,7 @@ export function CodexPetLayer() {
                 </div>
               </section>
 
-              <section aria-labelledby="codex-pet-visibility-label" className="mt-3">
-                <p
-                  className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
-                  id="codex-pet-visibility-label"
-                >
-                  {ui("Where pets appear")}
-                </p>
+              <PetMenuSection id="codex-pet-visibility-label" title={ui("Where pets appear")}>
                 <div
                   aria-label={ui("Where pets appear")}
                   className="grid grid-cols-3 gap-1.5"
@@ -1794,34 +1839,11 @@ export function CodexPetLayer() {
                 <p className="min-h-8 px-1 pt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
                   {ui(PET_DISPLAY_OPTIONS.find((option) => option.value === petDisplayMode)?.description ?? "")}
                 </p>
-                {/* The mascot is a topmost see-through window, and Windows will
-                    not give a fullscreen game the screen to itself while one is
-                    up — the game's frames go through the desktop compositor
-                    instead, which is felt as input lag. There is no way to ask
-                    Windows whether a game is running without a native module,
-                    so this is a switch rather than a sensor. It is a global
-                    shortcut precisely so it can be used from inside the game,
-                    which is the only place it is any use. */}
-                <p className="px-1 pt-1 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
-                  {ui("Gaming? Press")}{" "}
-                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">Ctrl</kbd>
-                  {" + "}
-                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">Alt</kbd>
-                  {" + "}
-                  <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-black text-[var(--text-2)]">P</kbd>{" "}
-                  {ui("from anywhere to put the mascot away. An overlay on screen costs a fullscreen game a frame of input lag, even one you cannot see behind it.")}
-                </p>
-              </section>
+              </PetMenuSection>
               {/* Actions for the pet that was actually right-clicked. Hiding
                   the speaker promotes another visible pet when possible. */}
               {menuPet && (
-                <section aria-labelledby="codex-pet-actions-label" className="mt-3">
-                  <p
-                    className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
-                    id="codex-pet-actions-label"
-                  >
-                    {ui("This pet")}
-                  </p>
+                <PetMenuSection id="codex-pet-actions-label" title={ui("This pet")}>
                   {!menuPetIsSpeaker && (
                     <button
                       className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
@@ -1847,15 +1869,9 @@ export function CodexPetLayer() {
                     <EyeOff aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
                     {ui("Hide this pet")}
                   </button>
-                </section>
+                </PetMenuSection>
               )}
-              <section aria-labelledby="codex-pet-chat-label" className="mt-3">
-                <p
-                  className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
-                  id="codex-pet-chat-label"
-                >
-                  {ui("Messages & voice")}
-                </p>
+              <PetMenuSection id="codex-pet-chat-label" title={ui("Messages & voice")}>
                 <div className="space-y-1">
                   <button
                     aria-checked={messagesMuted}
@@ -1897,16 +1913,10 @@ export function CodexPetLayer() {
                     {ui("Message history")}
                   </button>
                 </div>
-              </section>
+              </PetMenuSection>
               {/* Only worth offering once there is more than one pet on screen. */}
               {allVisiblePets.length > 1 && (
-                <section aria-labelledby="codex-pet-layout-label" className="mt-3">
-                  <p
-                    className="px-1 pb-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--text-3)]"
-                    id="codex-pet-layout-label"
-                  >
-                    {ui("Layout")}
-                  </p>
+                <PetMenuSection id="codex-pet-layout-label" title={ui("Layout")}>
                   <div className="space-y-1">
                     <button
                       className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold leading-5 text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
@@ -1935,7 +1945,7 @@ export function CodexPetLayer() {
                       {ui("Close all pets")}
                     </button>
                   </div>
-                </section>
+                </PetMenuSection>
               )}
             </motion.div>
           </>
@@ -1957,6 +1967,8 @@ export function CodexPetLayer() {
             data-pet-interactive="true"
             data-pet-motion-part="speech"
             onPointerDown={(event) => event.stopPropagation()}
+            onPointerEnter={() => setPetHovered(true)}
+            onPointerLeave={() => setPetHovered(false)}
             ref={speechMotionRef}
             role={speech.question ? "group" : "status"}
             style={{
@@ -1981,7 +1993,10 @@ export function CodexPetLayer() {
                 lang="de"
                 style={{ hyphens: "auto" }}
               >{speech.text}</p>
-              <div className="flex shrink-0 items-center gap-0.5">
+              <div
+                className={"flex shrink-0 items-center gap-0.5 transition-opacity duration-150 focus-within:opacity-100 "
+                  + (petHovered ? "opacity-100" : "opacity-0")}
+              >
                 <button
                   aria-label={ui("Open message history")}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
@@ -2053,6 +2068,8 @@ export function CodexPetLayer() {
         data-pet-interactive="true"
         onClick={handleClick}
         onContextMenu={showContextMenu}
+        onPointerEnter={() => setPetHovered(true)}
+        onPointerLeave={() => setPetHovered(false)}
         onLostPointerCapture={handleLostCapture}
         onPointerCancel={finishDrag}
         onPointerDown={handlePointerDown}

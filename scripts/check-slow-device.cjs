@@ -263,34 +263,21 @@ check(
 );
 
 // The mascot overlay is a topmost LAYERED window, and Windows will not hand a
-// fullscreen game the screen to itself while one of those is up: the game's
-// frames go through the desktop compositor and the player pays a frame of
-// latency for a mascot hidden behind CS2. Confirmed on Leon's machine by
-// enumerating the app's windows — vis=True TOPMOST=True layered=True.
-//
-// Windows cannot be asked "is a fullscreen game running?" from Electron
-// without a native module, so the answer is a switch, and it has to be a
-// GLOBAL one or it cannot be reached from inside the game.
+// fullscreen game the screen to itself while one of those is up. Nothing can
+// change that short of drawing inside the game's own frame, which against an
+// anti-cheat is not an option — so what is guarded here is the part that IS
+// avoidable: the overlay must not also repaint while another app is in front.
+// (A Ctrl+Alt+P shortcut used to hide it outright. Removed: "Hide this pet"
+// in the mascot's own menu already did that, without claiming a global key
+// combination a game might want for itself.)
 check(
-  "the mascot can be put away with a global shortcut",
-  /const PET_SUSPEND_SHORTCUT = "CommandOrControl\+Alt\+P";/.test(electronMainSource)
-    && /globalShortcut\.register\(PET_SUSPEND_SHORTCUT/.test(electronMainSource)
+  "the mascot defaults to the desktop band, not the screen-saver one",
+  read("src/lib/petDisplayMode.ts").includes('DEFAULT_PET_DISPLAY_MODE: PetDisplayMode = "desktop"')
+    && electronMainSource.includes('let petDisplayMode = "desktop";')
 );
 check(
-  "...registered at startup, not only once a pet is shown",
-  /await createWindow\(\);[\s\S]{0,200}registerPetSuspendShortcut\(\);/.test(electronMainSource)
-);
-check(
-  "suspending outranks whatever the app last asked for",
-  /const visible = petOverlayWantedVisible && !petOverlaySuspended;/.test(electronMainSource)
-);
-check(
-  "...and the suspension is not persisted, so a pet cannot go missing for ever",
-  !/petOverlaySuspended[\s\S]{0,120}(localStorage|writeDesktopSettings|setDesktopSettings)/.test(electronMainSource)
-);
-check(
-  "the shortcut is discoverable where the display mode is chosen",
-  petLayer.includes("from anywhere to put the mascot away")
+  "...and the games option still says what it costs",
+  petLayer.includes("This can add input lag to the game.")
 );
 
 // Typing in the tracker's search box re-filtered all 16,308 items on every
