@@ -1228,6 +1228,21 @@ export function CodexPetLayer() {
     if (isDesktopPetOverlay && drag?.nativeStarted) desktop?.endPetOverlayDrag?.();
   }, [cancelPendingPetClick]);
 
+  /**
+   * The bubble's own controls stay out of the way until you go for them.
+   *
+   * A dismiss cross and a history button on every message made a two-word
+   * "Nice work!" look like a dialog box. They are revealed by pointing at
+   * either the mascot or the bubble, and by keyboard focus so they stay
+   * reachable without a pointer.
+   *
+   * ABOVE the early return, and it has to stay there. Below it this hook
+   * ran only when a pet was selected, so the hook count changed between
+   * renders and React threw #310 — which is what took the app down in
+   * 1.2.346.
+   */
+  const [petHovered, setPetHovered] = useState(false);
+
   if (!selectedPet) return null;
 
   const movePetDuringDrag = (drag: DragState, nextPosition: PetPosition) => {
@@ -1637,17 +1652,6 @@ export function CodexPetLayer() {
   // Never wider than the screen it has to fit on. On a 225%-scaled display the
   // usable width in points is less than half the panel's pixels, so a bubble
   // sized by a constant could be wider than the whole desktop.
-  /**
-   * The bubble's own controls stay out of the way until you go for them.
-   *
-   * A dismiss cross and a history button sitting permanently on every
-   * message made a two-word "Nice work!" look like a dialog box. They are
-   * revealed by pointing at either the mascot or the bubble — the two things
-   * you would already be reaching for — and by keyboard focus, so they stay
-   * reachable without a pointer at all.
-   */
-  const [petHovered, setPetHovered] = useState(false);
-
   const bubbleWidth = Math.min(PET_BUBBLE_WIDTH, Math.max(160, viewport.width - PET_MARGIN * 2));
   const bubbleLeft = Math.min(
     Math.max(
