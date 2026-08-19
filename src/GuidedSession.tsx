@@ -1624,6 +1624,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     audioMuted: audioMutedRef.current,
     word: isWordItem,
     orderable: isOrderable,
+    // Set by the lesson builder when this sentence extends one served a few
+    // cards earlier: the introduce-from-cold stages are already spent.
+    chained: Boolean(item?.chainedFromLesson),
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);

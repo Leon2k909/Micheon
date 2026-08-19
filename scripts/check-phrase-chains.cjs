@@ -313,6 +313,35 @@ for (const id of plannedIds) {
   if (!/leadHasFollowUp[\s\S]{0,200}sittingMix\.freshSlots \+= 1;[\s\S]{0,80}sittingMix\.reviewSlots -= 1;/.test(guided)) {
     failures.push("a chained pair no longer claims two fresh slots under a review backlog");
   }
+
+  // The extension takes a SHORTER route: its words were just taught, so the
+  // introduce-from-cold recognition stages are spent. Only an extension whose
+  // base is in the same sitting earns it.
+  const { CHAINED_SENTENCE_PHASES, SENTENCE_PHASES, buildSentencePhaseRoute } = load(
+    `export { CHAINED_SENTENCE_PHASES, SENTENCE_PHASES, buildSentencePhaseRoute } from "./src/lib/guidedLessonPhases.ts";`,
+    "chains-f"
+  );
+  if (!(CHAINED_SENTENCE_PHASES.length < SENTENCE_PHASES.length)) {
+    failures.push("the chained route is no shorter than meeting a sentence cold");
+  }
+  for (const spent of ["MeaningPick", "MeaningSelect", "ListenPick", "MissingWord"]) {
+    if (CHAINED_SENTENCE_PHASES.includes(spent)) {
+      failures.push(`the chained route repeats ${spent}, which its base already taught`);
+    }
+  }
+  for (const kept of ["Read", "Type", "RecallBoth"]) {
+    if (!CHAINED_SENTENCE_PHASES.includes(kept)) {
+      failures.push(`the chained route dropped ${kept} — it must still produce and recall the fuller sentence`);
+    }
+  }
+  const chainedRoute = buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: false, chained: true });
+  const coldRoute = buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: false });
+  if (chainedRoute.length >= coldRoute.length) {
+    failures.push(`the built chained route is not shorter (${chainedRoute.length} vs ${coldRoute.length})`);
+  }
+  if (!guided.includes("item.chainedFromLesson = true") || !guided.includes("servedKeys.has(base)")) {
+    failures.push("the short route is no longer limited to extensions whose base is in the same sitting");
+  }
 }
 
 if (failures.length) {

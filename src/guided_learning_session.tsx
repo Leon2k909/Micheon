@@ -1064,6 +1064,18 @@ export default function GuidedLearningSession() {
           )
         : [];
       const freshSteps = [...fresh, ...dialogues];
+      // Mark the extensions whose base is actually in THIS sitting. Only those
+      // earn the short route: a chained sentence met on its own, weeks after
+      // its base, still needs the full introduction.
+      const servedKeys = new Set<string>();
+      for (const step of freshSteps) {
+        const item = (step as any)?.item;
+        if (!item) continue;
+        const base = item.buildsOn ? chainKey(item.buildsOn) : "";
+        if (base && servedKeys.has(base)) item.chainedFromLesson = true;
+        servedKeys.add(chainKey(item.de));
+        if (item.originalDe) servedKeys.add(chainKey(item.originalDe));
+      }
 
       if (reviews.length > 0 || freshSteps.length > 0 || mixedWords.length > 0) {
         const id = freshId ?? reviewPartByStep.get(reviews[0]) ?? keys[0];

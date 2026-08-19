@@ -60,6 +60,24 @@ export const MASTERED_WORD_PHASES: readonly SentencePhase[] = [
   "RecallMeaning",
 ];
 
+/**
+ * An extension of a sentence taught minutes earlier in the same sitting:
+ * "Ich arbeite." then "Ich arbeite heute im Homeoffice."
+ *
+ * The recognition scaffolding — pick the meaning, pick it back, pick what you
+ * heard, fill the missing word — exists to introduce material the learner has
+ * never seen. Here every word but the new tail was just learned, so repeating
+ * that whole march teaches nothing and makes the pair feel like a punishment
+ * for the app's own idea. The route keeps reading it, producing it in both
+ * languages, and one closed-book recall.
+ */
+export const CHAINED_SENTENCE_PHASES: readonly SentencePhase[] = [
+  "Read",
+  "Type",
+  "Translate",
+  "RecallBoth",
+];
+
 /** These stages cannot be completed fairly without hearing the target audio. */
 export const AUDIO_REQUIRED_SENTENCE_PHASES: readonly SentencePhase[] = [
   "ListenPick",
@@ -78,6 +96,9 @@ export interface SentencePhaseRouteOptions {
    *  one possible swap, so the stage tests nothing and is dropped from the
    *  route entirely rather than shown as a one-move formality. */
   orderable?: boolean;
+  /** True when this sentence extends one taught earlier in the same sitting,
+   *  so the introduce-it-from-cold stages are already spent. */
+  chained?: boolean;
 }
 
 export function buildSentencePhaseRoute({
@@ -86,14 +107,17 @@ export function buildSentencePhaseRoute({
   audioMuted,
   word = false,
   orderable = true,
+  chained = false,
 }: SentencePhaseRouteOptions): SentencePhase[] {
   const route: readonly SentencePhase[] = word
     ? (mastered ? MASTERED_WORD_PHASES : WORD_PHASES)
     : mastered
     ? MASTERED_SENTENCE_PHASES
-    : bilingual
-      ? BILINGUAL_SENTENCE_PHASES
-      : SENTENCE_PHASES;
+    : chained
+      ? CHAINED_SENTENCE_PHASES
+      : bilingual
+        ? BILINGUAL_SENTENCE_PHASES
+        : SENTENCE_PHASES;
 
   return route.filter((phase) => {
     if (audioMuted && AUDIO_REQUIRED_PHASE_SET.has(phase)) return false;
