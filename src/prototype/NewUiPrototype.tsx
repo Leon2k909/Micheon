@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import {
   lazy,
+  Fragment,
   Suspense,
   useCallback,
   useEffect,
@@ -73,7 +74,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { loadActivitySessions } from "@/lib/activity";
-import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
+import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
 import {
@@ -1436,8 +1437,33 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           <div><strong>{ui(fluency.cur.label)}</strong><small>{fluency.vocab.toLocaleString()} useful items known</small></div>
           <span>{fluency.overallPct}% to fluent</span>
         </div>
-        <div aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })} className="np-fluency-track">
-          <span style={{ width: `${fluency.overallPct}%` }} />
+        {/* The ladder itself, drawn: a circle per stage, bars filling toward
+            the next. One plain percentage bar hid the fact that the road has
+            rest stops — Leon asked for the milestones to be visible. */}
+        <div aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })} className="np-fluency-steps" role="img">
+          {FLUENCY_STAGES.map((stage, index) => (
+            <Fragment key={stage.label}>
+              {index > 0 && (
+                <span aria-hidden="true" className="np-fluency-steps__bar">
+                  <span
+                    style={{
+                      width: index <= fluency.index
+                        ? "100%"
+                        : index === fluency.index + 1 ? `${fluency.pctToNext}%` : "0%",
+                    }}
+                  />
+                </span>
+              )}
+              <span
+                aria-hidden="true"
+                className={`np-fluency-steps__stop${index <= fluency.index ? " is-reached" : ""}${index === fluency.index ? " is-current" : ""}`}
+                title={`${ui(stage.label)} · ${stage.min.toLocaleString()}`}
+              >
+                <i />
+                <em>{ui(stage.label)}</em>
+              </span>
+            </Fragment>
+          ))}
         </div>
         <div className="np-fluency-footnote">
           <span>

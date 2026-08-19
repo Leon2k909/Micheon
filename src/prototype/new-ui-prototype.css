@@ -5431,21 +5431,82 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   font-weight: 700;
 }
 
-.np-fluency-track {
-  height: 10px;
-  margin-top: 9px;
+/* The ladder as a stepper: a circle per stage, connecting bars that fill on
+   the way to the next circle. Replaces the single anonymous progress bar —
+   Leon asked to SEE the milestones. Labels ride under the circles and
+   disappear on narrow layouts rather than colliding. */
+.np-fluency-steps {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding-bottom: 24px;
+}
+
+.np-fluency-steps__stop {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+}
+
+.np-fluency-steps__stop i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--np-line);
+  border-radius: 999px;
+  background: var(--np-surface-soft);
+  box-shadow: inset 0 2px 3px rgba(73, 62, 49, 0.09);
+}
+
+.np-fluency-steps__stop.is-reached i {
+  border-color: transparent;
+  background: linear-gradient(135deg, #38aa45, #69d265);
+  box-shadow: inset 0 -2px 1px rgba(29, 121, 42, 0.2);
+}
+
+.np-fluency-steps__stop.is-current i {
+  box-shadow: 0 0 0 4px rgba(56, 170, 69, 0.2), inset 0 -2px 1px rgba(29, 121, 42, 0.2);
+}
+
+.np-fluency-steps__stop em {
+  position: absolute;
+  top: 18px;
+  width: 76px;
+  color: var(--np-muted);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.np-fluency-steps__stop.is-current em {
+  color: var(--np-green-dark);
+}
+
+.np-fluency-steps__bar {
+  flex: 1;
+  height: 6px;
+  margin: 4px 3px 0;
   overflow: hidden;
   border-radius: 999px;
   background: var(--np-surface-soft);
   box-shadow: inset 0 2px 3px rgba(73, 62, 49, 0.09);
 }
 
-.np-fluency-track > span {
+.np-fluency-steps__bar > span {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #38aa45, #69d265);
-  box-shadow: inset 0 -2px 1px rgba(29, 121, 42, 0.2);
+  transition: width var(--np-motion-slow) var(--np-ease-out);
+}
+
+@media (max-width: 760px) {
+  .np-fluency-steps { padding-bottom: 4px; }
+  .np-fluency-steps__stop em { display: none; }
 }
 
 .np-fluency-footnote {
@@ -9063,14 +9124,20 @@ html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > span {
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.11);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-track > span {
+html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-steps__bar > span,
+html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-steps__stop.is-reached i {
   background: linear-gradient(90deg, var(--np-green), var(--np-green-soft, var(--accent-dim)));
   box-shadow: inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-fluency-track > span {
+html[data-theme="dark"][data-accent="custom"] .np-fluency-steps__bar > span,
+html[data-theme="dark"][data-accent="custom"] .np-fluency-steps__stop.is-reached i {
   background: linear-gradient(90deg, var(--np-green), var(--np-green-soft, var(--accent-dim)));
   box-shadow: inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
+}
+
+html[data-accent="custom"] .np-fluency-steps__stop.is-current i {
+  box-shadow: 0 0 0 4px rgba(var(--accent-hover-rgb), 0.2), inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours {

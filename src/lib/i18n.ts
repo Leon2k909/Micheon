@@ -1094,6 +1094,8 @@ const DE: Record<string, string> = {
   "Following and joining everyday conversations.": "Alltagsgesprächen folgen und daran teilnehmen.",
   "Confident": "Souverän",
   "Understanding most speech and giving opinions freely.": "Das meiste Gesprochene verstehen und frei die eigene Meinung äußern.",
+  "Near fluent": "Fast fließend",
+  "Comfortable in almost any conversation, rarely searching for words.": "In fast jedem Gespräch sicher, nur selten auf Wortsuche.",
   "Fluent": "Fließend",
   "Keeping up with real natives at full speed.": "Mit Muttersprachlern in normalem Tempo mithalten.",
   "more to go until you're fully fluent": "fehlen noch bis du wirklich fließend bist",
