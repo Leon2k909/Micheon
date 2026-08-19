@@ -5421,9 +5421,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   display: flex;
   align-items: flex-start;
   margin-top: 12px;
-  /* Inset from the card edges so the first circle and its label sit inside
-     the reading column instead of hugging the left border. */
-  padding: 0 30px 24px;
+  /* Flush with the text above and below: the ladder is part of the same
+     reading column, so an inset made it look nudged out of alignment. The
+     end labels handle their own edges below. */
+  padding: 0 0 24px;
 }
 
 .np-fluency-steps__stop {
@@ -5478,6 +5479,21 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-fluency-steps__stop.is-current em,
 .np-fluency-steps__stop:last-child em {
   display: block;
+}
+
+/* The end labels anchor to their own edge rather than centring past it, so
+   the row can sit flush with the text columns without overhanging. */
+.np-fluency-steps__stop:first-child em {
+  left: 0;
+  transform: none;
+  text-align: left;
+}
+
+.np-fluency-steps__stop:last-child em {
+  left: auto;
+  right: 0;
+  transform: none;
+  text-align: right;
 }
 
 /* One stage from the end, "you are here" and "the end" would collide; the

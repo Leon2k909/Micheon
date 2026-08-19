@@ -157,7 +157,20 @@ check("safe totals are rebuilt from valid samples", normalized.totalActiveMs ===
 check("progress gain is rebuilt when an old sample omitted it", normalized.totalProgressGained === 3);
 
 const baselineEstimate = estimateFluencyHours(3_040, {});
-check("a stable baseline estimate is available before timing history exists", baselineEstimate.hoursRemaining === 260);
+// 160, not the old 260: the estimate now walks the road instead of freezing
+// today's pace across all of it. A learner gets faster as they learn — that
+// is the whole premise of the knowledge-scaled prior — so pricing the last
+// item at the beginner's rate overstated every journey.
+check("a stable baseline estimate is available before timing history exists", baselineEstimate.hoursRemaining === 160);
+// The acceleration must be real but bounded: knowing more always shortens
+// the road, and never to nothing.
+const knowledgeable = estimateFluencyHours(6_100, {}, { knownUnits: 3_900 });
+const beginner = estimateFluencyHours(6_100, {}, { knownUnits: 0 });
+check(
+  "what the learner already knows shortens the estimate",
+  knowledgeable.hoursRemaining < beginner.hoursRemaining && knowledgeable.hoursRemaining > 0,
+  `known ${knowledgeable.hoursRemaining}h vs cold ${beginner.hoursRemaining}h`
+);
 check("untimed estimate is clearly labelled baseline", baselineEstimate.confidence === "baseline");
 
 const personalizedEstimate = estimateFluencyHours(3_040, {

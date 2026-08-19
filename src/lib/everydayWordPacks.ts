@@ -1084,11 +1084,11 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     seeds: [],
     dialogues: [],
     phrases: [
-      { de: "Wie geht es?", en: "How's it going?", use: "The bare frame; with a person it becomes Wie geht es dir/Ihnen?" },
+      { de: "Wie geht es?", en: "How's it going?", short: "Wie geht's?", shortEn: "How's it going?", use: "The bare frame; with a person it becomes Wie geht es dir/Ihnen?" },
       { de: "Wie sagt man das?", en: "How do you say that?", use: "Add auf Deutsch to ask for the German word." },
       { de: "Ein bisschen langsamer.", en: "A little slower.", use: "Softer with bitte on the end." },
       { de: "Wie lange machst du das?", en: "How long are you doing that for?", use: "With schon it asks how long ALREADY: Wie lange machst du das schon?" },
-      { de: "Ich brauch das.", en: "I need that.", use: "Spoken form; written German keeps the -e: Ich brauche das." },
+      { de: "Ich brauch das.", en: "I need that.", long: "Ich brauche das.", use: "Spoken form; written German keeps the -e: Ich brauche das." },
       { de: "Was machst du?", en: "What are you doing?", use: "With beruflich it asks about work; with genau it asks for detail." },
       { de: "Ich arbeite.", en: "I'm working.", use: "Grows naturally: in der Stadt, als Lehrer, von zu Hause." },
       { de: "Passt das?", en: "Does that work?", use: "Checking a time or plan; für dich makes it personal." },
@@ -1096,7 +1096,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Verstehst du?", en: "Do you understand?", use: "Casual check-in mid-explanation." },
       { de: "Das kann ich.", en: "I can do that.", use: "Confident and short; the verb arrives later: Das kann ich verstehen." },
       { de: "Das geht.", en: "That works.", use: "Also 'that's acceptable'; Das geht nicht = that won't do." },
-      { de: "Das kenn ich.", en: "I know that one.", use: "For things familiar to you — kennen, not wissen." },
+      { de: "Das kenn ich.", en: "I know that one.", long: "Das kenne ich.", use: "For things familiar to you — kennen, not wissen." },
     ],
   },
 

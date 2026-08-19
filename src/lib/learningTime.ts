@@ -221,6 +221,15 @@ export function recordCompletedLearningSession(
   }
 }
 
+/**
+ * How much one more known item raises the learner's pace, and where that
+ * stops helping. Calibrated against Leon's timed lessons: at his ~2,300
+ * known items the curve predicts ~25 items an hour, which is what he
+ * actually measures.
+ */
+const KNOWLEDGE_SLOPE = 180;
+const KNOWLEDGE_BOOST_CAP = 28;
+
 function roundPlanningHours(hours: number) {
   if (hours <= 10) return Math.ceil(hours * 2) / 2;
   if (hours <= 100) return Math.ceil(hours / 5) * 5;
@@ -253,8 +262,11 @@ export function estimateFluencyHours(
   // calibrated, not invented: at Leon's ~2,300 known it predicts ~25 items
   // an hour, which is what his timed lessons actually measure. It stays a
   // PRIOR — real timing history still outweighs it as samples accumulate.
-  const knowledgeBoost = Math.min(28, Math.max(0, finiteNumber(options.knownUnits, 0)) / 180);
-  const baseline = Math.max(0.1, finiteNumber(options.baselineUnitsPerHour, 12) + knowledgeBoost);
+  const known = Math.max(0, finiteNumber(options.knownUnits, 0));
+  const paceAtKnowledge = (units: number) =>
+    finiteNumber(options.baselineUnitsPerHour, 12)
+    + Math.min(KNOWLEDGE_BOOST_CAP, Math.max(0, units) / KNOWLEDGE_SLOPE);
+  const baseline = Math.max(0.1, paceAtKnowledge(known));
   const minRate = Math.max(0.1, finiteNumber(options.minUnitsPerHour, 4));
   // The ceiling was 24/hour and Leon's real pace sat pinned against it, so
   // "About 330 hours" was the CAP talking, not his history. A learner who
@@ -279,8 +291,29 @@ export function estimateFluencyHours(
       ? "personalized"
       : "developing";
 
+  // The pace is not a constant, so the estimate must not treat it as one.
+  //
+  // Michelle knows a large part of the tracker and was still quoted 190
+  // hours, because the remaining items were all priced at TODAY'S pace —
+  // when by the time she reaches the last of them she will be far quicker,
+  // for exactly the reason the prior above scales with knowledge. Applying
+  // one frozen rate to the whole journey systematically overestimates it.
+  //
+  // So walk the road instead: step through the remaining items and price
+  // each stretch at the pace the learner will actually have by then. The
+  // curve is anchored to their measured pace today (`scale`), so a fast
+  // learner stays fast and personalisation is preserved.
+  const scale = unitsPerHour / Math.max(0.1, paceAtKnowledge(known));
+  const STEP = 25;
+  let hours = 0;
+  for (let reached = known; reached < known + remaining; reached += STEP) {
+    const stretch = Math.min(STEP, known + remaining - reached);
+    const pace = Math.max(minRate, Math.min(maxRate, scale * paceAtKnowledge(reached)));
+    hours += stretch / pace;
+  }
+
   return {
-    hoursRemaining: remaining === 0 ? 0 : roundPlanningHours(remaining / unitsPerHour),
+    hoursRemaining: remaining === 0 ? 0 : roundPlanningHours(hours),
     unitsPerHour,
     observedUnitsPerHour,
     timedHours,
