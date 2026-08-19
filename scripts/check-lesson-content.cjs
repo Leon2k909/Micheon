@@ -29,6 +29,7 @@ const built = esbuild.buildSync({
       'export { wordLadderRung, learnerWordRung } from "./src/lib/wordSession.ts";',
       'export { WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute } from "./src/lib/guidedLessonPhases.ts";',
       'export { matchEnglishMeaning, primaryEnglishMeaning } from "./src/lib/germanTextMatch.ts";',
+      'export { frequencyRank } from "./src/lib/wordFrequency.ts";',
     ].join("\n"),
     resolveDir: root, sourcefile: "lesson-content-entry.ts",
   },
@@ -45,7 +46,7 @@ const {
   recordSuccess, recordStruggle, snoozeForDays,
   recordDeclaredKnown, wordLadderRung, learnerWordRung,
   WORD_PHASES, MASTERED_WORD_PHASES, buildSentencePhaseRoute,
-  matchEnglishMeaning, primaryEnglishMeaning,
+  matchEnglishMeaning, primaryEnglishMeaning, frequencyRank,
 } = compiled.exports;
 
 const parts = {};
@@ -177,8 +178,18 @@ assert(buildWordSitting(ranked, {}).every((s) => wordLadderRung(s.item) === 1),
 const climbGrades = {};
 for (const w of ranked.slice(0, 26)) climbGrades[w.id] = recordDeclaredKnown(undefined);
 assert(learnerWordRung(climbGrades) >= 6, "25 Kann-ich presses no longer reach the top rung — the climb rate has regressed");
-assert(buildWordSitting(ranked, climbGrades).filter((s) => !s.review).every((s) => wordLadderRung(s.item) >= 4),
-  "a climbed learner is still being served basics");
+// Leon's second ruling (2026-08-19), after "erneuerbar" arrived before Hund:
+// an unknown word in the everyday core (frequency rank <= 1200) is never
+// beneath anyone, so a climbed learner is served unknown core words alongside
+// the hard tiers rather than after them. Everything OUTSIDE the core still
+// hardens with the rung, which is the half of the promise from 2026-08's
+// first ruling that survives.
+const climbedFresh = buildWordSitting(ranked, climbGrades).filter((s) => !s.review);
+assert(climbedFresh.every((s) =>
+  wordLadderRung(s.item) >= 4 || frequencyRank(s.item.lookup || s.item.de) <= 1200
+), "a climbed learner is being served uncommon basics");
+assert(climbedFresh.some((s) => frequencyRank(s.item.lookup || s.item.de) <= 1200),
+  "a climbed learner no longer meets unknown everyday-core words at all");
 // Struggles pull it back down.
 const strugglingGrades = { ...climbGrades };
 for (const w of ranked.slice(200, 215)) strugglingGrades[w.id] = recordStruggle(Date.now(), undefined);

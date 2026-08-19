@@ -74,7 +74,7 @@ import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { ui, uiIsGerman, uiOr, uiFmt } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
-  BookOpen, ArrowRight,
+  BookOpen, ArrowRight, Gauge,
   MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
   Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward, Square, Download, LoaderCircle
 } from "lucide-react";
@@ -138,7 +138,6 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  */
 function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, long, synonyms }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string; synonyms?: Array<{ de: string; lookup?: string }> }) {
   const register = detectRegister(de);
-  const freq = frequencyInfo(lookup);
   // A combined synonym card names its own siblings below, which says
   // everything the pairwise note would — the note stays for cards without
   // a group (sentences whose key word has a taught sibling).
@@ -177,7 +176,7 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
   const longIsSpokenForm = Boolean(
     long && toSpokenGerman(long).trim().toLowerCase() === de.trim().toLowerCase()
   );
-  if (!register && !freq && !syn && !groupSynonyms.length && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
+  if (!register && !syn && !groupSynonyms.length && !tierNote && !showShort && !showLong && (!use || (hideUse && !isWarning && !isSlang))) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Niche/casual pack note — uncommon German is always labelled */}
@@ -216,14 +215,13 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
         >
           {uiOr(syn.label, "Hinweis zur Wortwahl")}
         </span>
-      ) : freq && (
-        <span
-          title={ui(freq.hint)}
-          className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
-        >
-          {ui(freq.label)}
-        </span>
-      )}
+      ) : null}
+      {/* No bare frequency-tier chip here any more. "less common" with no
+          referent read as a dangling comparison ("less common than WHAT?"),
+          and Leon ruled commonality is backstage information — it orders and
+          filters, it does not badge. The chips that survive all NAME their
+          reference: the pairwise note above, the combined-card synonyms
+          below. */}
       {/* The rest of a combined synonym card: same meaning, named and tiered,
           so the learner sees the words Germans reach for less often without
           being dealt a separate card for each one. */}
@@ -293,7 +291,13 @@ const FRENCH_ALT_CODES: Record<string, string> = {
  * Master, English and German so a quick lesson adjustment never traps the
  * learner in a global-only setting.
  */
-function HearItButton({ speaking, onPlay, lang }: { speaking: boolean; onPlay: () => void; lang: string }) {
+/**
+ * The lesson's speech-speed menu, now a small header control. It used to
+ * live behind right-click on a "Hear it" replay button — but tapping any
+ * word already speaks it, so the big button was a second door to the same
+ * room and Leon had it removed. The speed menu it hosted survives here.
+ */
+function SpeechSpeedMenuButton({ lang }: { lang: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [speechRate, setSpeechRate] = useState(() => getTtsSpeechRate(lang));
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -327,23 +331,19 @@ function HearItButton({ speaking, onPlay, lang }: { speaking: boolean; onPlay: (
       <button
         aria-haspopup="dialog"
         aria-expanded={menuOpen}
-        className={cn("fs-listen", speaking && "is-speaking")}
-        onClick={onPlay}
-        onContextMenu={(event) => { event.preventDefault(); setMenuOpen((current) => !current); }}
-        title={`${ui("Hear it")} · ${ui("Right-click to change speed")} (${speechRate}×)`}
+        aria-label={`${ui("Speech speed")} (${speechRate}×)`}
+        className="fs-iconbtn shrink-0"
+        onClick={() => setMenuOpen((current) => !current)}
+        title={`${ui("Speech speed")} (${speechRate}×)`}
         type="button"
       >
-        <span className="fs-listen-icon"><Volume2 className="h-5 w-5" /></span>
-        <span>
-          <strong>{ui("Hear it")}</strong>
-          <small>{speechRate !== 1 ? `${speechRate}× · ${ui("Tap to replay")}` : ui("Tap to replay")}</small>
-        </span>
+        <Gauge className="h-4 w-4" />
       </button>
       {menuOpen && (
         <div aria-label={ui("Speech speed")} className="fs-speed-menu" role="dialog">
           <SpeechSpeedControl
             defaultScope={defaultScope}
-            onRateChange={() => { setMenuOpen(false); onPlay(); }}
+            onRateChange={() => setMenuOpen(false)}
             testId="lesson-speech-speed"
           />
         </div>
@@ -2944,14 +2944,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {ui("Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
-            {phase !== "MeaningPick"
-              && phase !== "ListenPick"
-              && phase !== "MissingWord"
-              && phase !== "RecallTarget"
-              && phase !== "RecallBoth"
-              && (
-              <HearItButton lang={targetLang} speaking={ttsOn} onPlay={() => tts(item.de, 0.82, targetLang)} />
-            )}
+            {/* No replay button here any more: tapping any word in the
+                sentence speaks it, and two doors to the same audio confused
+                more than they helped — Leon had the second one removed. The
+                speed menu it used to carry lives in the lesson header now. */}
           </div>
         </div>
 
@@ -6334,6 +6330,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               <kbd>Alt →</kbd>
             </Button>
           )}
+          <SpeechSpeedMenuButton lang={guidedTargetLanguageTag()} />
           <MuteButton
             className="fs-iconbtn shrink-0"
             iconClassName="h-4 w-4"

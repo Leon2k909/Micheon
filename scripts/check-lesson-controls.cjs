@@ -4,8 +4,9 @@
 //     when those were <button>s a mousedown started a press rather than a
 //     selection — so dragging across them to highlight the sentence fought the
 //     browser the whole way.
-//  2. "Hear it" is a button and should look like the buttons beside it. It was
-//     listed with the boards and panels, which gave it their deeper 5px lip.
+//  2. There is no separate "Hear it" replay button: tapping any word speaks
+//     it, and Leon had the second door to the same audio removed. The speed
+//     menu it used to host survives as a header control.
 //  3. The speed presets stop where the voice actually stops. The server turns
 //     the rate into an edge-tts "+N%" and clamps at +100%, so offering more
 //     than 2x would promise something that silently comes back at 2x.
@@ -52,22 +53,18 @@ check(
     && guided.includes('querySelectorAll<HTMLElement>(".fs-word")')
 );
 
-// ── 2. "Hear it" matches its neighbours ────────────────────────────────────
-const panelGroup = css.slice(css.indexOf(".fs-match-direction,"), css.indexOf(".fs-recall-board\n)"));
+// ── 2. one door to the audio, speed still reachable ───────────────────────
 check(
-  '"Hear it" is not styled as a board or panel',
-  !/^\s*\.fs-listen,\s*$/m.test(panelGroup),
-  "fs-listen is still inside the panel :is() group"
+  "the Hear it replay button stays removed — tapping a word is how you hear it",
+  // "Hear it" the PHRASE survives as the tap-a-word labels; the BUTTON and
+  // its "Tap to replay" subtitle are what must stay gone.
+  !guided.includes("HearItButton") && !guided.includes('ui("Tap to replay")')
 );
-const listenRule = css.slice(css.indexOf(".guided-session.fs-app.prototype-guided-session .fs-listen {"));
-const listenBlock = listenRule.slice(0, listenRule.indexOf("}"));
-const gradeRule = css.slice(css.indexOf(".guided-session.fs-app.prototype-guided-session .grade-btn {"));
-const gradeBlock = gradeRule.slice(0, gradeRule.indexOf("}"));
-const lip = (block) => (block.match(/0 (\d+)px 0 rgba\(([^)]+)\)/) ?? []).slice(1).join("/");
 check(
-  "it sits on the same bottom lip as the buttons beside it",
-  lip(listenBlock) === lip(gradeBlock) && lip(listenBlock) !== "",
-  `Hear it ${lip(listenBlock) || "none"} vs grade-btn ${lip(gradeBlock) || "none"}`
+  "the lesson header still hosts the speech-speed menu the button used to carry",
+  guided.includes("function SpeechSpeedMenuButton")
+    && guided.includes("<SpeechSpeedMenuButton lang=")
+    && guided.includes('testId="lesson-speech-speed"')
 );
 
 // ── 2b. word order is presented as a focused reorder exercise ─────────────

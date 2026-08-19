@@ -384,19 +384,31 @@ export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">):
   return level.startsWith("A1") ? 1 : level.startsWith("A2") ? 2 : 3;
 }
 
-/** Where the learner currently stands, read from their word grades alone. */
+/**
+ * Where the learner currently stands — read from DECLARED knowns only.
+ *
+ * The rung used to count every known word, so simply learning a lot put a
+ * learner on the top rung and their sittings turned into a C1 gauntlet
+ * while unknown everyday words waited below. Leon's ruling, verbatim:
+ * "knowing a lot of words shouldnt put me in a top rung. only repeatedly
+ * pressing know it on words in guidedsession should do that because the
+ * lessons are clearly too easy." A declaration says the material is beneath
+ * you; an earned know only says you learned it. Only the first is a climb
+ * signal — and a struggle still pulls down twice as hard, whatever kind of
+ * knowns sit above it.
+ */
 export function learnerWordRung(
   grades: Record<string, GradeRecord | undefined>,
   now = Date.now()
 ): number {
-  let known = 0;
+  let declaredKnown = 0;
   let struggling = 0;
   for (const [id, record] of Object.entries(grades ?? {})) {
     if (!id.startsWith(WORD_ID_PREFIX) || !record) continue;
-    if (record.lastGrade === "know") known += 1;
+    if (record.lastGrade === "know" && record.declared) declaredKnown += 1;
     else if (record.lastGrade === "struggle" && !isSnoozed(record, now)) struggling += 1;
   }
-  const score = known - struggling * 2;
+  const score = declaredKnown - struggling * 2;
   return Math.max(1, Math.min(6, 1 + Math.floor(score / 5)));
 }
 
@@ -455,9 +467,24 @@ export function buildWordSitting(
   // first, most common first within a rung — then wrap DOWN to whatever was
   // skipped, so finishing the hard tiers brings the easy ones back. Stable
   // sort over the frequency-ranked input keeps in-rung order.
+  //
+  // With one carve-out, from Leon watching "erneuerbar" arrive before words
+  // like Hund existed in his sittings: a word in the everyday core (top
+  // ~1,200 of the frequency bank) is NEVER beneath anyone. The rung count
+  // climbs on knowns, so a learner with thousands of known items sat on the
+  // top rung while unknown core words waited behind every C1 word for the
+  // wrap-down. An unknown core word now counts as at-rung wherever the
+  // learner stands — Michelle's boredom fix survives (a core word she truly
+  // knows is one Kann-ich from gone for ever), and the rungs still govern
+  // everything outside the core.
+  const CORE_FREQUENCY_RANK = 1200;
   const rung = learnerWordRung(grades, now);
   fresh = fresh
-    .map((word, index) => ({ word, index, wordRung: wordLadderRung(word) }))
+    .map((word, index) => {
+      const naturalRung = wordLadderRung(word);
+      const core = frequencyRank(word.lookup || word.de) <= CORE_FREQUENCY_RANK;
+      return { word, index, wordRung: core ? Math.max(naturalRung, rung) : naturalRung };
+    })
     .sort((a, b) =>
       (a.wordRung >= rung ? 0 : 1) - (b.wordRung >= rung ? 0 : 1)
       || Math.abs(a.wordRung - rung) - Math.abs(b.wordRung - rung)

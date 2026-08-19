@@ -26,6 +26,15 @@ export type GradeRecord = {
   snoozedUntil?: string;
   /** never schedule a review again — the tier above Mastered */
   permanent?: boolean;
+  /**
+   * This know came from a DECLARATION ("Know it" / Kann ich, or a tracker
+   * Known press) rather than from working through the exercises. The
+   * difficulty ladder climbs on declarations only — Leon: "knowing a lot of
+   * words shouldnt put me in a top rung. only repeatedly pressing know it
+   * ... because the lessons are clearly too easy." A word later recalled
+   * through a real exercise loses the stamp: it has been earned.
+   */
+  declared?: boolean;
   /** last extra practice rep; does not move the spaced-review ladder */
   reinforcedAt?: string;
   /** answer checks accumulated across completed/abandoned sentence routes */
@@ -75,6 +84,7 @@ export function recordSuccess(prior: GradeRecord | undefined, now = Date.now()):
   return {
     ...prior,
     permanent: false,
+    declared: false,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes,
@@ -102,6 +112,7 @@ export function recordDeclaredKnown(prior: GradeRecord | undefined, now = Date.n
   return {
     ...prior,
     permanent: false,
+    declared: true,
     lastGrade: "know",
     updatedAt: new Date(now).toISOString(),
     successes,
