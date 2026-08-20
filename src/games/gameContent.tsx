@@ -17,6 +17,7 @@ import {
 } from "@/lib/direction";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
+import { buildWordCatalog } from "@/lib/wordSession";
 import { useLearningMode } from "@/lib/learningMode";
 
 const FALLBACK_ITEMS: CatalogItem[] = [
@@ -55,8 +56,36 @@ export type GameContentEntry = CatalogItem & {
   targetLocale: "de-DE" | "en-GB" | "en-US";
 };
 
+/**
+ * A single vocabulary word, for the games that ask you to spell one.
+ *
+ * These do NOT come from buildCatalog. That is the phrase course, and of its
+ * 16,308 entries exactly 47 are a single word — all of them interjections
+ * ("Mist!", "Verdammt!"). A game that draws a "word" from there draws a
+ * sentence, which is how Word Snake ended up asking learners to spell
+ * "Selbstverständlich. Sollen wir uns auf ein Safeword einigen?" one letter at
+ * a time. The vocabulary lives in part.vocab and buildWordCatalog reads it:
+ * 7,006 cards, of which 6,796 are spellable.
+ */
+export type GameWordEntry = {
+  id: string;
+  /** What you spell — the article split off, so the toggle can add it back. */
+  spelling: string;
+  /** der/die/das, present on 4,257 of them. */
+  article?: string;
+  /** The other language, shown as the clue. */
+  clue: string;
+  clueLanguage: "de" | "en";
+  letters: string[];
+  /** The catalogue's own form ("der Apfel"), which is what progress is keyed on. */
+  de: string;
+  target: string;
+  targetLocale: "de-DE" | "en-GB" | "en-US";
+};
+
 type GameContentContextValue = {
   entries: GameContentEntry[];
+  words: GameWordEntry[];
   learningDirection: LearningDirection;
 };
 
@@ -113,6 +142,66 @@ function buildGameEntries(
   return entries;
 }
 
+const LEADING_ARTICLE = /^(der|die|das)\s+/i;
+const LEADING_INFINITIVE = /^to\s+/i;
+
+/**
+ * The longest word worth spelling on a twenty-column board.
+ *
+ * The catalogue's tail is real German but a poor round: it tops out at
+ * Mietschuldenfreiheitsbescheinigung, thirty-four letters. Capping at twenty
+ * costs 23 words out of 6,819 and keeps every one anybody would call a word.
+ */
+const MAX_SPELLING_LETTERS = 20;
+
+export function buildGameWords(
+  apiParts: Record<string, unknown>,
+  learningDirection: LearningDirection
+): GameWordEntry[] {
+  const learnsEnglish = learningDirection === "learn-en";
+  const seen = new Set<string>();
+  const words: GameWordEntry[] = [];
+
+  for (const word of buildWordCatalog(apiParts as Record<string, unknown>)) {
+    const de = String((word as { de?: unknown })?.de ?? "").trim();
+    const en = primaryVariant(String((word as { en?: unknown })?.en ?? ""));
+    if (!de || !en) continue;
+
+    const article = LEADING_ARTICLE.exec(de);
+    const bareDe = article ? de.slice(article[0].length).trim() : de;
+    // "to go" is one word wearing an infinitive marker; the marker is English
+    // grammar, not part of the spelling.
+    const bareEn = en.replace(LEADING_INFINITIVE, "").trim();
+
+    const target = learnsEnglish ? bareEn : bareDe;
+    const clue = learnsEnglish ? de : en;
+
+    // One token only. "sich freuen" spelled SICHFREUEN reads as a typo rather
+    // than a word, and the space is gone by the time it reaches the board.
+    if (!target || /\s/.test(target)) continue;
+    const letters = gameLetters(target);
+    if (letters.length < 2 || letters.length > MAX_SPELLING_LETTERS) continue;
+
+    const key = target.toLocaleLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    words.push({
+      id: String((word as { id?: unknown })?.id ?? key),
+      spelling: target,
+      article: !learnsEnglish && article ? article[1].toLowerCase() : undefined,
+      clue,
+      clueLanguage: learnsEnglish ? "de" : "en",
+      letters,
+      de,
+      target,
+      targetLocale: learnsEnglish ? englishVoiceLang() : "de-DE",
+    });
+  }
+
+  return words;
+}
+
 export function GameContentProvider({
   apiParts,
   children,
@@ -136,9 +225,13 @@ export function GameContentProvider({
     () => buildGameEntries(apiParts, learningDirection),
     [apiParts, learningDirection, learningMode]
   );
+  const words = useMemo(
+    () => buildGameWords(apiParts, learningDirection),
+    [apiParts, learningDirection]
+  );
   const value = useMemo(
-    () => ({ entries, learningDirection }),
-    [entries, learningDirection]
+    () => ({ entries, words, learningDirection }),
+    [entries, words, learningDirection]
   );
 
   return <GameContentContext.Provider value={value}>{children}</GameContentContext.Provider>;
@@ -216,6 +309,47 @@ export function useGameDeck(mode: GameDeckMode = "all") {
   };
 }
 
-export function speakGameTarget(entry: GameContentEntry) {
+/**
+ * The same shuffled queue as useGameDeck, over vocabulary instead of phrases.
+ *
+ * For a game that asks you to spell something letter by letter this is the
+ * only correct source. useGameDeck("words") filters the PHRASE catalogue for
+ * entries without a space and finds 47 of them, all interjections — it looks
+ * like it does this job and does not.
+ */
+export function useGameWordDeck() {
+  const { words, learningDirection } = useGameContent();
+  const eligibleRef = useRef(words);
+  const queueRef = useRef<GameWordEntry[]>([]);
+  const lastIdRef = useRef("");
+
+  useEffect(() => {
+    eligibleRef.current = words;
+    queueRef.current = [];
+    lastIdRef.current = "";
+  }, [words]);
+
+  const refill = useCallback(() => {
+    const next = shuffle(eligibleRef.current);
+    if (next.length > 1 && next[next.length - 1]?.id === lastIdRef.current) {
+      [next[0], next[next.length - 1]] = [next[next.length - 1], next[0]];
+    }
+    queueRef.current = next;
+  }, []);
+
+  const next = useCallback(() => {
+    if (queueRef.current.length === 0) refill();
+    const resolved = queueRef.current.pop() ?? eligibleRef.current[0];
+    if (!resolved) throw new Error("No game vocabulary is available");
+    lastIdRef.current = resolved.id;
+    return resolved;
+  }, [refill]);
+
+  return { count: words.length, entries: words, learningDirection, next };
+}
+
+// Narrowed to what it actually reads, so a GameWordEntry can be spoken too
+// without pretending to be a full catalogue item.
+export function speakGameTarget(entry: Pick<GameContentEntry, "target" | "targetLocale">) {
   return tts(entry.target, 0.9, entry.targetLocale);
 }

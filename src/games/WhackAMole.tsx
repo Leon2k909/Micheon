@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2 } from "lucide-react";
 import {
   speakGameTarget,
-  useGameDeck,
+  useGameWordDeck,
   type GameContentEntry,
 } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
@@ -23,7 +23,7 @@ interface Mole {
 
 let moleId = 0;
 
-function pickLetter(entry: GameContentEntry, nextIdx: number, isCorrect: boolean) {
+function pickLetter(entry: Pick<GameContentEntry, "letters">, nextIdx: number, isCorrect: boolean) {
   const needed = entry.letters[nextIdx];
   if (isCorrect) return needed;
   const decoys = WRONG_LETTERS.filter((letter) => letter !== needed);
@@ -31,7 +31,7 @@ function pickLetter(entry: GameContentEntry, nextIdx: number, isCorrect: boolean
 }
 
 export default function WhackAMole() {
-  const { next: nextEntry } = useGameDeck("letters");
+  const { next: nextEntry } = useGameWordDeck();
   const [entry, setEntry] = useState(() => nextEntry());
   const [nextIdx, setNextIdx] = useState(0);
   const [spelled, setSpelled] = useState("");

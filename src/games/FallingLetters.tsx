@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, Volume2, ArrowLeft, ArrowRight } from "lucide-react";
 import {
   speakGameTarget,
-  useGameDeck,
+  useGameWordDeck,
   type GameContentEntry,
 } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
@@ -34,7 +34,7 @@ function randomCol(exclude: number[] = []) {
 const WRONG_LETTERS = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜẞ");
 
 function makeTile(
-  entry: GameContentEntry,
+  entry: Pick<GameContentEntry, "letters">,
   nextIdx: number,
   col: number,
   forceCorrect = false
@@ -53,7 +53,7 @@ function makeTile(
 }
 
 export default function FallingLetters() {
-  const { next: nextEntry } = useGameDeck("letters");
+  const { next: nextEntry } = useGameWordDeck();
   const [entry, setEntry] = useState(() => nextEntry());
   const [nextIdx, setNextIdx] = useState(0);
   const [spelled, setSpelled] = useState("");

@@ -7,6 +7,7 @@ import {
   speakGameTarget,
   useGameContent,
   type GameContentEntry,
+  type GameWordEntry,
 } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui } from "@/lib/i18n";
@@ -128,7 +129,7 @@ const EXTENDED_WORDS: { de: string; en: string }[] = [
 ];
 
 // article is stored separately so showArticle toggle works
-type WordEntry = { de: string; en: string; article?: string; source?: GameContentEntry };
+type WordEntry = { de: string; en: string; article?: string; source?: GameWordEntry };
 
 function buildWordBank(): WordEntry[] {
   const seen = new Set<string>();
@@ -298,15 +299,65 @@ function spawnTiles(word: string, nextIdx: number, snake: Pos[], existing: Tile[
   return tiles;
 }
 
+/**
+ * One settings row, five times over.
+ *
+ * These were five copies of the same twelve lines of JSX, each with its own
+ * hand-written toggle track and knob offset, which is how the panel drifted to
+ * the size it did. A real <button> rather than a div with onClick also makes
+ * them reachable by keyboard, which they were not.
+ */
+function SettingToggle({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      className="flex w-full items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2 text-left transition-colors hover:bg-white/10"
+    >
+      <span className="min-w-0">
+        <span className="block text-[13px] font-semibold leading-tight">{label}</span>
+        <span className="mt-0.5 block text-[11px] leading-snug text-[var(--text-3)]">{description}</span>
+      </span>
+      <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? "bg-accent" : "bg-slate-700"}`}>
+        <span
+          className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`}
+        />
+      </span>
+    </button>
+  );
+}
+
 export default function SnakeGame() {
-  const { entries: trackerEntries } = useGameContent();
+  const { entries: trackerEntries, words: wordCatalogue } = useGameContent();
+  // Words come from the vocabulary, sentences from the phrase course.
+  //
+  // This used to map trackerEntries — the PHRASE catalogue — into the word
+  // bank, and gameLetters() strips spaces, so a sentence did not arrive here
+  // looking like one. It arrived as a single unbroken run of letters.
+  // "Selbstverständlich. Sollen wir uns auf ein Safeword einigen?" became a
+  // 42-tile row across the top of the board with Sentence Mode switched off,
+  // and the worst of them ran to 134 tiles. Only 47 of those 16,308 entries
+  // were ever a single word, and every one of those is an interjection.
   const wordBank = React.useMemo<WordEntry[]>(
-    () => trackerEntries.map((entry) => ({
+    () => wordCatalogue.map((entry) => ({
       de: entry.letters.join(""),
       en: entry.clue,
+      article: entry.article,
       source: entry,
     })),
-    [trackerEntries]
+    [wordCatalogue]
   );
   const sentenceBank = React.useMemo<SentenceEntry[]>(
     () => trackerEntries.map((entry) => ({
@@ -665,80 +716,77 @@ export default function SnakeGame() {
       {/* Settings Panel */}
       <AnimatePresence>
         {showSettings && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="card relative z-50 p-6 border-accent/30 shadow-2xl"
+          /*
+            A modal, not a block in the flow.
+
+            This used to sit inline above the board at the full width of the
+            content column — a narrow list of toggles stretched across sixteen
+            hundred pixels, which also pushed the game itself off the bottom of
+            the screen every time it was opened. Fixed positioning keeps the
+            board where it is, and the width cap keeps the panel the size of
+            its contents. It sits above the fullscreen layer (z-100) so it
+            still works there.
+          */
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => setShowSettings(false)}
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold flex items-center gap-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ duration: 0.15 }}
+            onClick={(event) => event.stopPropagation()}
+            className="card relative z-[111] w-full max-w-sm max-h-[80vh] overflow-y-auto p-4 border-accent/30 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold flex items-center gap-2 text-sm">
                 <Settings className="w-4 h-4 text-accent" />
                 {ui("Game Settings")}
               </h3>
-              <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-white/5 rounded-lg">
+              <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-white/5 rounded-lg" aria-label={ui("Close")}>
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                   onClick={() => setShowArticle(!showArticle)}>
-                <div>
-                  <p className="text-sm font-semibold">{ui("Include Articles")}</p>
-                  <p className="text-xs text-[var(--text-3)]">{ui('E.g. "Der Apfel" instead of "Apfel"')}</p>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors relative ${showArticle ? 'bg-accent' : 'bg-slate-700'}`}>
-                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${showArticle ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <SettingToggle
+                label={ui("Include Articles")}
+                description={ui('E.g. "Der Apfel" instead of "Apfel"')}
+                checked={showArticle}
+                onChange={() => setShowArticle(!showArticle)}
+              />
+              <SettingToggle
+                label={ui("Classic Mode")}
+                description={ui("No decoy letters. Just 1 tile on board.")}
+                checked={classicMode}
+                onChange={() => setClassicMode(!classicMode)}
+              />
+              <SettingToggle
+                label={ui("Infinite Mode")}
+                description={ui("Words load automatically one after another.")}
+                checked={isInfinite}
+                onChange={() => setIsInfinite(!isInfinite)}
+              />
+              <SettingToggle
+                label={ui("Grid Expansion")}
+                description={ui("Grid grows every 3 words — more room to breathe.")}
+                checked={gridExpansion}
+                onChange={() => setGridExpansion(!gridExpansion)}
+              />
+              <SettingToggle
+                label={ui("Sentence Mode")}
+                description={ui("Eat word-blocks to build a full German sentence.")}
+                checked={sentenceMode}
+                onChange={() => setSentenceMode(!sentenceMode)}
+              />
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                   onClick={() => setClassicMode(!classicMode)}>
-                <div>
-                  <p className="text-sm font-semibold">{ui("Classic Mode")}</p>
-                  <p className="text-xs text-[var(--text-3)]">{ui("No decoy letters. Just 1 tile on board.")}</p>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors relative ${classicMode ? 'bg-accent' : 'bg-slate-700'}`}>
-                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${classicMode ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                   onClick={() => setIsInfinite(!isInfinite)}>
-                <div>
-                  <p className="text-sm font-semibold">{ui("Infinite Mode")}</p>
-                  <p className="text-xs text-[var(--text-3)]">{ui("Words load automatically one after another.")}</p>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors relative ${isInfinite ? 'bg-accent' : 'bg-slate-700'}`}>
-                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${isInfinite ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                   onClick={() => setGridExpansion(!gridExpansion)}>
-                <div>
-                  <p className="text-sm font-semibold">{ui("Grid Expansion")}</p>
-                  <p className="text-xs text-[var(--text-3)]">{ui("Grid grows every 3 words — more room to breathe.")}</p>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors relative ${gridExpansion ? 'bg-accent' : 'bg-slate-700'}`}>
-                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${gridExpansion ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                   onClick={() => setSentenceMode(!sentenceMode)}>
-                <div>
-                  <p className="text-sm font-semibold">{ui("Sentence Mode")}</p>
-                  <p className="text-xs text-[var(--text-3)]">{ui("Eat word-blocks to build a full German sentence.")}</p>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors relative ${sentenceMode ? 'bg-accent' : 'bg-slate-700'}`}>
-                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${sentenceMode ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/5 space-y-2">
+              <div className="px-3 py-2 rounded-xl bg-white/5 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">{ui("Grid Size")}</p>
+                  <p className="text-[13px] font-semibold">{ui("Grid Size")}</p>
                   <p className="text-xs font-mono" style={{ color: "var(--accent)" }}>{COLS}×{ROWS}</p>
                 </div>
                 <input
@@ -755,10 +803,11 @@ export default function SnakeGame() {
             </div>
             <button
               onClick={() => { setShowSettings(false); newGame(); }}
-              className="w-full mt-4 py-2 bg-[var(--accent)] text-[var(--accent-text)] font-bold rounded-xl text-sm hover:brightness-110 transition-all active:scale-95 shadow-[0_0_20px_rgba(88,230,217,0.2)]"
+              className="w-full mt-3 py-2 bg-[var(--accent)] text-[var(--accent-text)] font-bold rounded-xl text-sm hover:brightness-110 transition-all active:scale-95 shadow-[0_0_20px_rgba(88,230,217,0.2)]"
             >
               {ui("Apply & Restart")}
             </button>
+          </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
