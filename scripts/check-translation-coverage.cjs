@@ -68,7 +68,7 @@ assert.ok(entries.length > 20000, `only found ${entries.length} taught entries â
  * is a failure rather than a silent zero.
  */
 const FLOORS = {
-  fr: 26.5,
+  fr: 33,
 };
 
 /**
