@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Gauge,
   Brain,
   Check,
   CheckCircle2,
@@ -28,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { loadGradeStore, setItemStatus, setItemsStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
+import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
@@ -1148,6 +1150,7 @@ export function TestsView({
   onLearnItems?: (items: { de: string; en: string; id?: string }[]) => void;
 }) {
   const [gradeRevision, setGradeRevision] = useState(0);
+  const [placementOpen, setPlacementOpen] = useState(false);
   const learningMode = useLearningMode();
   const bank = useMemo(
     () => buildTestBank(apiParts, profile),
@@ -1856,6 +1859,17 @@ export function TestsView({
     );
   }
 
+  if (placementOpen) {
+    return (
+      <div className="mx-auto max-w-[720px]" data-testid="tests-view">
+        <PlacementLadder
+          apiParts={apiParts}
+          onClose={() => { setPlacementOpen(false); setGradeRevision((value) => value + 1); }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[1240px]" data-testid="tests-view">
       <section className="rounded-[24px] border border-[var(--border)] bg-[var(--surface)] px-5 py-5 shadow-[0_18px_45px_var(--shadow)] sm:px-6 sm:py-6">
@@ -1974,6 +1988,26 @@ export function TestsView({
         </section>
 
         <aside className="h-fit rounded-[24px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_18px_45px_var(--shadow)] xl:sticky xl:top-[112px]">
+          {/* Placement sits above the setup because it changes what every
+              other test and lesson will serve — it is a decision about the
+              whole course, not another test to take. */}
+          <button
+            className="mb-5 flex w-full items-center gap-3 rounded-[16px] border border-[var(--accent)] bg-[var(--accent-dim)] p-3.5 text-left transition-colors hover:brightness-105"
+            onClick={() => setPlacementOpen(true)}
+            type="button"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[var(--accent)] text-[var(--accent-text)]">
+              <Gauge className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-xs font-black text-[var(--text-1)]">{ui("Placement test")}</span>
+              <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                {ui("Climbs while you keep passing. Do well and Continue learning starts harder.")}
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-[var(--accent)]" />
+          </button>
+
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[var(--accent-dim)] text-[var(--accent)]">
               <ClipboardCheck className="h-5 w-5" />
