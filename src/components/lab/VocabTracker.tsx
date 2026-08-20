@@ -11,7 +11,7 @@ import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
 import { learningEnglish, targetLangTag } from "@/lib/direction";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getLearningMode, useLearningMode } from "@/lib/learningMode";
@@ -407,8 +407,8 @@ function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFadi
         {fading > 0 && (
           <p className="text-xs font-bold text-[var(--text-2)]">
             {uiIsGerman()
-              ? `${fading.toLocaleString()} ${fading === 1 ? "Eintrag verblasst" : "Einträge verblassen"} gerade.`
-              : `${fading.toLocaleString()} ${fading === 1 ? "item is" : "items are"} fading right now.`}
+              ? `${uiNumber(fading)} ${fading === 1 ? "Eintrag verblasst" : "Einträge verblassen"} gerade.`
+              : `${uiNumber(fading)} ${fading === 1 ? "item is" : "items are"} fading right now.`}
             {" "}
             <button type="button" onClick={onShowFading} className="font-black text-[var(--accent)] underline underline-offset-2">
               {ui("Show them")}
@@ -939,16 +939,16 @@ export function VocabTracker({
         </div>
         <div className="flex flex-wrap gap-2 text-center">
           <div className="rounded-2xl bg-[var(--success-bg)] px-3 py-2">
-            <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.counting.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-[var(--success-text)]">{uiNumber(counts.counting)}</p>
             <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">{ui("counting now")}</p>
             {counts.counting !== counts.known && (
               <p className="mt-0.5 text-[10px] font-bold text-[var(--success-text)] opacity-60">
-                {ui("of")} {counts.known.toLocaleString()} {ui("learned")}
+                {ui("of")} {uiNumber(counts.known)} {ui("learned")}
               </p>
             )}
           </div>
           <div className="rounded-2xl bg-amber-500/10 px-3 py-2">
-            <p className="text-lg font-black leading-none text-amber-600">{counts.fading.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-amber-600">{uiNumber(counts.fading)}</p>
             <p className="mt-1 text-[10px] font-black text-amber-600 opacity-80">{ui("fading")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--accent-dim)] px-3 py-2">
@@ -998,7 +998,7 @@ export function VocabTracker({
           </button>
         ))}
         <p className="ml-auto text-xs font-bold text-[var(--text-3)]">
-          {filtered.length.toLocaleString()} {ui("of")} {catalog.length.toLocaleString()} {ui("items")}
+          {uiNumber(filtered.length)} {ui("of")} {uiNumber(catalog.length)} {ui("items")}
         </p>
       </div>
 

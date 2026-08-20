@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui, uiFmt, uiIsGerman } from "@/lib/i18n";
+import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import {
@@ -400,19 +400,19 @@ export function WordsTracker({ apiParts, user }: {
         </div>
         <div className="flex flex-wrap gap-2 text-center">
           <div className="rounded-2xl bg-[var(--success-bg)] px-3 py-2">
-            <p className="text-lg font-black leading-none text-[var(--success-text)]">{counts.known.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-[var(--success-text)]">{uiNumber(counts.known)}</p>
             <p className="mt-1 text-[10px] font-black text-[var(--success-text)] opacity-80">{ui("known")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--accent-dim)] px-3 py-2">
-            <p className="text-lg font-black leading-none text-[var(--accent)]">{counts.due.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-[var(--accent)]">{uiNumber(counts.due)}</p>
             <p className="mt-1 text-[10px] font-black text-[var(--accent)] opacity-80">{ui("due review")}</p>
           </div>
           <div className="rounded-2xl bg-amber-500/15 px-3 py-2">
-            <p className="text-lg font-black leading-none text-amber-600">{counts.struggle.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-amber-600">{uiNumber(counts.struggle)}</p>
             <p className="mt-1 text-[10px] font-black text-amber-600 opacity-80">{ui("struggling")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--surface-2)] px-3 py-2">
-            <p className="text-lg font-black leading-none text-[var(--text-1)]">{counts.new.toLocaleString()}</p>
+            <p className="text-lg font-black leading-none text-[var(--text-1)]">{uiNumber(counts.new)}</p>
             <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">{ui("to learn")}</p>
           </div>
         </div>
@@ -446,7 +446,7 @@ export function WordsTracker({ apiParts, user }: {
           </button>
         ))}
         <p className="ml-auto text-xs font-bold text-[var(--text-3)]">
-          {filtered.length.toLocaleString()} {ui("of")} {catalog.length.toLocaleString()} {ui("items")}
+          {uiNumber(filtered.length)} {ui("of")} {uiNumber(catalog.length)} {ui("items")}
         </p>
       </div>
 
@@ -641,7 +641,7 @@ export function WordsTracker({ apiParts, user }: {
             onClick={() => setPage((current) => current + 1)}
             className="my-3 flex h-10 w-full items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-xs font-black text-[var(--text-2)] hover:bg-[var(--surface-3)]"
           >
-            {ui("Show more")} ({visible.length.toLocaleString()} / {filtered.length.toLocaleString()})
+            {ui("Show more")} ({uiNumber(visible.length)} / {uiNumber(filtered.length)})
           </button>
         )}
       </div>

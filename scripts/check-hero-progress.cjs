@@ -80,7 +80,9 @@ if (!/packProgress\s*\?\s*packProgress\.percent\s*:\s*pct/.test(proto)) {
   failures.push("the bar still fills from XP rather than from the pack");
 }
 // The fallback has to survive: before the catalogue loads there is no pack.
-if (!/of \$\{needed\.toLocaleString\(\)\} XP/.test(proto)) {
+// Formatted through uiNumber now — a bare toLocaleString followed the
+// machine's locale, so an English dashboard wrote its totals the German way.
+if (!/of \$\{uiNumber\(needed\)\} XP/.test(proto)) {
   failures.push("the XP fallback was removed, so the hero shows nothing at all before the catalogue loads");
 }
 

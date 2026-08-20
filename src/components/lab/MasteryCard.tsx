@@ -2,7 +2,7 @@ import React, { useId, useEffect } from "react";
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { VOCAB_MILESTONES } from "@/lib/data";
 import { effectsReduced } from "@/lib/effects";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
 
 const VOCAB_TARGET = 16000;
 
@@ -111,8 +111,8 @@ export function MasteryCard({ vocab, embedded = false }: { vocab: number; embedd
             <p className="mastery-card__title text-sm font-black text-[var(--text-1)]">{ui("Your mastery")}</p>
           )}
           <p className="mastery-card__count mt-2 text-3xl font-black tracking-tight text-[var(--text-1)]">
-            {mastered.toLocaleString()}
-            <span className="text-base font-bold text-[var(--text-3)]"> / {VOCAB_TARGET.toLocaleString()}</span>
+            {uiNumber(mastered)}
+            <span className="text-base font-bold text-[var(--text-3)]"> / {uiNumber(VOCAB_TARGET)}</span>
           </p>
 
           {/* Current level badge */}
@@ -133,14 +133,14 @@ export function MasteryCard({ vocab, embedded = false }: { vocab: number; embedd
                   whole sentences, and the card now says so in its name. */}
               {uiIsGerman() ? (
                 <>
-                  <span className="text-[var(--text-2)]">{(nextMilestone.value - mastered).toLocaleString()} Einträge</span>
+                  <span className="text-[var(--text-2)]">{uiNumber((nextMilestone.value - mastered))} Einträge</span>
                   {" bis "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
                   {": "}{ui(nextMilestone.detail)}
                 </>
               ) : (
                 <>
-                  <span className="text-[var(--text-2)]">{(nextMilestone.value - mastered).toLocaleString()} items</span> to{" "}
+                  <span className="text-[var(--text-2)]">{uiNumber((nextMilestone.value - mastered))} items</span> to{" "}
                   <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
                   {": "}{nextMilestone.detail}
                 </>
@@ -180,8 +180,8 @@ export function MasteryCard({ vocab, embedded = false }: { vocab: number; embedd
           })}
         </div>
         <div className="mastery-progress__legend mt-1.5 flex justify-between text-[10px] text-[var(--text-3)]">
-          <span>{mastered.toLocaleString()} {ui("learned")}</span>
-          <span>{(VOCAB_TARGET - mastered).toLocaleString()} {ui("remaining")}</span>
+          <span>{uiNumber(mastered)} {ui("learned")}</span>
+          <span>{uiNumber((VOCAB_TARGET - mastered))} {ui("remaining")}</span>
         </div>
       </div>
 

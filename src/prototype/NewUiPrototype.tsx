@@ -1,4 +1,4 @@
-import { ui, uiFmt } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BarChart3,
@@ -931,9 +931,9 @@ function Header({
         <span>{ui("Ready to learn today?")}</span>
       </div>
       <div className="np-header-stats">
-        <StatChip kind="flame" label={ui("Day streak")} value={stats.streak.toLocaleString()} />
-        <StatChip kind="star" label={ui("Total XP")} value={`${stats.totalXp.toLocaleString()} XP`} />
-        <StatChip kind="trophy" label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
+        <StatChip kind="flame" label={ui("Day streak")} value={uiNumber(stats.streak)} />
+        <StatChip kind="star" label={ui("Total XP")} value={`${uiNumber(stats.totalXp)} XP`} />
+        <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
       </div>
       <div className="np-header-actions">
         <div className="np-search-wrap" ref={searchWrapRef}>
@@ -1353,7 +1353,7 @@ function CourseHero({
                   ? ui("One quick choice before your first lesson")
                   : packProgress
                     ? `${packProgress.done} of ${packProgress.total} phrases · about ${packProgress.sittingsLeft} more ${packProgress.sittingsLeft === 1 ? "sitting" : "sittings"} to finish`
-                    : nxt ? `${into.toLocaleString()} of ${needed.toLocaleString()} XP` : ui("Maximum level")}
+                    : nxt ? `${uiNumber(into)} of ${uiNumber(needed)} XP` : ui("Maximum level")}
               </small>
             </div>
             <div
@@ -1590,9 +1590,9 @@ function LessonPath({
               <strong>{ui(pack.title)}</strong>
               <small>
                 {uiFmt("{done} of {total} learned · {sittings} sittings left", {
-                  done: pack.done.toLocaleString(),
-                  total: pack.total.toLocaleString(),
-                  sittings: pack.sittingsLeft.toLocaleString(),
+                  done: uiNumber(pack.done),
+                  total: uiNumber(pack.total),
+                  sittings: uiNumber(pack.sittingsLeft),
                 })}
               </small>
             </span>
@@ -1649,7 +1649,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           </div>
         </div>
         <div className="np-fluency-status">
-          <div><strong>{ui(fluency.cur.label)}</strong><small>{fluency.vocab.toLocaleString()} useful items known</small></div>
+          <div><strong>{ui(fluency.cur.label)}</strong><small>{uiNumber(fluency.vocab)} useful items known</small></div>
           <span>{fluency.overallPct}% to fluent</span>
         </div>
         {/* The ladder itself, drawn: a circle per stage, bars filling toward
@@ -1672,7 +1672,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
               <span
                 aria-hidden="true"
                 className={`np-fluency-steps__stop${index <= fluency.index ? " is-reached" : ""}${index === fluency.index ? " is-current" : ""}`}
-                title={`${ui(stage.label)} · ${stage.min.toLocaleString()}`}
+                title={`${ui(stage.label)} · ${uiNumber(stage.min)}`}
               >
                 <i />
                 <em>{ui(stage.label)}</em>
@@ -1683,16 +1683,16 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <div className="np-fluency-footnote">
           <span>
             {wordsToGo > 0 || phrasesToGo > 0
-              ? `${wordsToGo.toLocaleString()} more words · ${phrasesToGo.toLocaleString()} more phrases`
+              ? `${uiNumber(wordsToGo)} more words · ${uiNumber(phrasesToGo)} more phrases`
               : "Both lanes complete — keep them fresh"}
           </span>
           {/* Read from the ladder, never hardcoded — the target moved once
               (5,000 → 10,000) and this label silently lied until it did. */}
-          <span>Fluent = {FLUENT_WORD_TARGET.toLocaleString()} words + {FLUENT_PHRASE_TARGET.toLocaleString()} phrases</span>
+          <span>Fluent = {uiNumber(FLUENT_WORD_TARGET)} words + {uiNumber(FLUENT_PHRASE_TARGET)} phrases</span>
         </div>
         {fading > 0 && (
           <p className="np-fluency-fading">
-            {fading.toLocaleString()} {fading === 1 ? "item is" : "items are"} fading. A review brings {fading === 1 ? "it" : "them"} back.
+            {uiNumber(fading)} {fading === 1 ? "item is" : "items are"} fading. A review brings {fading === 1 ? "it" : "them"} back.
           </p>
         )}
       </div>
@@ -1702,7 +1702,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         {/* Just the number. The explainer lines that used to sit here (next
             milestone, pace note, hands-on-time caveat) were all cut on Leon's
             call — the milestone stepper on the left now tells that story. */}
-        <strong>About {estimate.hoursRemaining.toLocaleString()} hours to Fluent</strong>
+        <strong>About {uiNumber(estimate.hoursRemaining)} hours to Fluent</strong>
       </div>
     </section>
   );
@@ -1783,16 +1783,18 @@ function ProgressPanel({
         <span className="np-level-badge">L{cur.level}</span>
         <div className="np-level-copy">
           <strong>{ui(cur.label)}</strong>
-          <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: nxt.xpRequired - stats.totalXp, level: nxt.level }) : ui("Highest level reached")}</small>
+          {/* Formatted like every other count — a raw 4065 beside 18,935 XP
+              two lines above reads as a different kind of number. */}
+          <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: uiNumber(nxt.xpRequired - stats.totalXp), level: nxt.level }) : ui("Highest level reached")}</small>
           <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
         </div>
-        <small>{stats.totalXp.toLocaleString()} total XP</small>
+        <small>{uiNumber(stats.totalXp)} total XP</small>
       </div>
 
       <div className="np-progress-stats">
-        <div><AchievementArt id="xp_500" /><strong>{stats.totalXp.toLocaleString()}</strong><small>{ui("Total XP")}</small></div>
-        <div><AchievementArt id="streak_3" /><strong>{stats.streak.toLocaleString()}</strong><small>{ui("Day streak")}</small></div>
-        <div><AchievementArt id="first_session" /><strong>{stats.sessionsCompleted.toLocaleString()}</strong><small>{ui("Lessons done")}</small></div>
+        <div><AchievementArt id="xp_500" /><strong>{uiNumber(stats.totalXp)}</strong><small>{ui("Total XP")}</small></div>
+        <div><AchievementArt id="streak_3" /><strong>{uiNumber(stats.streak)}</strong><small>{ui("Day streak")}</small></div>
+        <div><AchievementArt id="first_session" /><strong>{uiNumber(stats.sessionsCompleted)}</strong><small>{ui("Lessons done")}</small></div>
       </div>
 
       <div className="np-badges-block">
@@ -2058,7 +2060,7 @@ function ShopView({
         </div>
         <div aria-live="polite" className="np-shop-balance">
           <Coins />
-          <div><strong>{availableCoins.toLocaleString()}</strong><small>{ui("Micheon coins")}</small></div>
+          <div><strong>{uiNumber(availableCoins)}</strong><small>{ui("Micheon coins")}</small></div>
         </div>
       </div>
 
@@ -2108,12 +2110,12 @@ function ShopView({
               <div className="np-coin-pack-icon"><Coins /></div>
               <div className="np-coin-pack-copy">
                 <small>{pack.featured ? ui("Most popular") : pack.label}</small>
-                <h3>{pack.coins.toLocaleString()} coins</h3>
+                <h3>{uiNumber(pack.coins)} coins</h3>
                 <p>{ui(pack.note)}</p>
               </div>
               <button
                 data-testid={`shop-coin-pack-${pack.coins}`}
-                onClick={() => previewPurchase(`${pack.coins.toLocaleString()} coins are not charged or added yet. Checkout will be connected later.`)}
+                onClick={() => previewPurchase(`${uiNumber(pack.coins)} coins are not charged or added yet. Checkout will be connected later.`)}
                 type="button"
               >
                 <span>{packPrice(pack.tier, currency)}</span>
@@ -2311,7 +2313,7 @@ function SocialView({ userName }: { userName: string }) {
                   </div>
                   <div className="np-friend-stat">
                     <RewardIcon kind="star" />
-                    <span><strong>{friend.weeklyXp.toLocaleString()} XP</strong><small>{ui("This week")}</small></span>
+                    <span><strong>{uiNumber(friend.weeklyXp)} XP</strong><small>{ui("This week")}</small></span>
                   </div>
                   <button className="np-social-secondary-button" onClick={() => showPreviewNotice(uiFmt("Message {name}", { name: friend.name }))} type="button">
                     <MessageCircleMore aria-hidden="true" /><span>{ui("Message")}</span>
@@ -2362,7 +2364,7 @@ function SocialView({ userName }: { userName: string }) {
                     <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
                     <SocialAvatar initials={entry.initials} tone={entry.tone} />
                     <strong>{entry.name}</strong>
-                    <small>{entry.weeklyXp.toLocaleString()} XP</small>
+                    <small>{uiNumber(entry.weeklyXp)} XP</small>
                     <i aria-hidden="true" />
                   </div>
                 );
@@ -2375,7 +2377,7 @@ function SocialView({ userName }: { userName: string }) {
                   <strong className="np-leaderboard-rank">{index + 1}</strong>
                   <SocialAvatar initials={entry.initials} tone={entry.tone} />
                   <span className="np-leaderboard-person"><strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong><small>{entry.streak}-day streak</small></span>
-                  <span className="np-leaderboard-xp"><strong>{entry.weeklyXp.toLocaleString()} XP</strong><small>{entry.movement} this week</small></span>
+                  <span className="np-leaderboard-xp"><strong>{uiNumber(entry.weeklyXp)} XP</strong><small>{entry.movement} this week</small></span>
                 </article>
               ))}
             </div>

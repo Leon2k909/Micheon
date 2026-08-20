@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { getFluency, FLUENCY_STAGES } from "@/lib/fluency";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
 import { estimateFluencyHours, loadLearningTimeStats } from "@/lib/learningTime";
 
 function CompactStudyTimeEstimate({ knownUnits, remainingUnits }: { knownUnits: number; remainingUnits: number }) {
@@ -31,7 +31,7 @@ function CompactStudyTimeEstimate({ knownUnits, remainingUnits }: { knownUnits: 
       <Clock3 className="mt-0.5 h-3 w-3 shrink-0 text-[var(--accent)]" />
       <div>
         <p className="text-[11px] font-black leading-4 text-[var(--text-2)]">
-          ≈ {estimate.hoursRemaining.toLocaleString()} {ui("study hours left")}
+          ≈ {uiNumber(estimate.hoursRemaining)} {ui("study hours left")}
         </p>
         <p className="text-[9px] font-semibold leading-3 text-[var(--text-3)]">{explanation}</p>
       </div>
@@ -71,7 +71,7 @@ export function FluencyMeter({
         </div>
         <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
           {f.next
-            ? <><span className="font-black text-[var(--text-2)]">{f.toFluent.toLocaleString()}</span> {ui("more to go until you're fully fluent")}</>
+            ? <><span className="font-black text-[var(--text-2)]">{uiNumber(f.toFluent)}</span> {ui("more to go until you're fully fluent")}</>
             : ui("You've reached fluent — keep it sharp.")}
         </p>
       </div>
@@ -109,13 +109,13 @@ export function FluencyMeter({
           <>
             {uiIsGerman() ? (
               <>
-                Noch <span className="font-black text-[var(--text-1)]">{f.toFluent.toLocaleString()}</span> Wörter und Sätze
+                Noch <span className="font-black text-[var(--text-1)]">{uiNumber(f.toFluent)}</span> Wörter und Sätze
                 bis du <span className="font-black text-[var(--text-2)]">wirklich fließend</span> mit Muttersprachlern
                 mithalten kannst. Nächste Stufe: „{ui(f.next.label)}“.
               </>
             ) : (
               <>
-                <span className="font-black text-[var(--text-1)]">{f.toFluent.toLocaleString()}</span> more words &amp; phrases
+                <span className="font-black text-[var(--text-1)]">{uiNumber(f.toFluent)}</span> more words &amp; phrases
                 until you're <span className="font-black text-[var(--text-2)]">fully fluent</span> — able to keep up with real
                 natives. Next stage: “{f.next.label}”.
               </>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Download, Loader2, RefreshCw, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui } from "@/lib/i18n";
+import { ui, uiNumber } from "@/lib/i18n";
 
 /**
  * Browse codex-pets.net and install a pet with one click.
@@ -172,7 +172,7 @@ export function PetGallery({ onInstalled }: { onInstalled: () => void }) {
           <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Get more pets")}</h3>
           <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">
             {total > 0
-              ? `${total.toLocaleString()} ${ui("pets shared on codex-pets.net")}`
+              ? `${uiNumber(total)} ${ui("pets shared on codex-pets.net")}`
               : ui("Browse pets shared on codex-pets.net")}
           </p>
         </div>

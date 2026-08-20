@@ -22,9 +22,12 @@ function check(name, condition) {
 }
 
 check(
+  // Formatted through uiNumber now rather than a bare toLocaleString, which
+  // followed the machine's locale and wrote an English dashboard's totals the
+  // German way — "18.935 XP" where an English reader expects "18,935".
   "the dashboard names the streak rather than showing an unexplained day count",
   dashboard.includes('label={ui("Day streak")}')
-    && dashboard.includes("stats.streak.toLocaleString()")
+    && dashboard.includes("uiNumber(stats.streak)")
 );
 check(
   "the retired schedule is absent from the main dashboard",

@@ -99,7 +99,7 @@ import {
   setGuidedBackground as saveGuidedBackground,
   type GuidedBackground,
 } from "@/lib/guidedBackground";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
   .then((module) => ({ default: module.CodexPetPicker })));
@@ -478,8 +478,8 @@ function ProgressSummaryCard({
 
       <div className="mt-4 grid grid-cols-3 gap-3">
         {[
-          { label: "XP", value: stats.totalXp.toLocaleString() },
-          { label: ui("Words"), value: words.toLocaleString() },
+          { label: "XP", value: uiNumber(stats.totalXp) },
+          { label: ui("Words"), value: uiNumber(words) },
           { label: ui("Milestones"), value: `${earned}/6` },
         ].map((item) => (
           <div className="rounded-[18px] bg-[var(--surface-2)] p-3" key={item.label}>
@@ -540,7 +540,7 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
 
       <div className="mt-4 rounded-[20px] p-4 text-white" style={{ background: "var(--feature-gradient)" }}>
         <p className="text-xs font-bold opacity-70">{ui("Words tracked")}</p>
-        <p className="mt-1 text-3xl font-black tracking-tight">{words.toLocaleString()}</p>
+        <p className="mt-1 text-3xl font-black tracking-tight">{uiNumber(words)}</p>
         <p className="mt-3 text-xs font-semibold opacity-75">
           {ui("Keep short daily blocks going before adding longer review sessions.")}
         </p>
@@ -1450,10 +1450,10 @@ export default function GamificationPanel({
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
-          <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
-          <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
-          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
+          <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+          <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+          <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
+          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
         </section>
 
         {/* Collapsed, like its twin on the profile page: worth having, not
@@ -1701,10 +1701,10 @@ export default function GamificationPanel({
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={stats.totalXp.toLocaleString()} />
-        <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={stats.sessionsCompleted.toLocaleString()} />
-        <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={stats.streak.toLocaleString()} />
-        <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={vocab.toLocaleString()} />
+        <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+        <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+        <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
+        <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
       </section>
 
       {/* Collapsed by default. Milestones are a nice-to-have, not something

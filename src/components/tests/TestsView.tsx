@@ -31,7 +31,7 @@ import { loadGradeStore, setItemStatus, setItemsStatus, statusForId, type ItemSt
 import { learningEnglish } from "@/lib/direction";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
@@ -1133,7 +1133,7 @@ function PresetCard({
       <h3 className="mt-2 text-lg font-black tracking-tight text-[var(--text-1)]">{ui(preset.title)}</h3>
       <p className="mt-1.5 text-sm font-semibold leading-5 text-[var(--text-3)]">{ui(preset.description)}</p>
       <p className="mt-4 text-xs font-black text-[var(--text-2)]">
-        {count.toLocaleString()} {ui(count === 1 ? "question available" : "questions available")}
+        {uiNumber(count)} {ui(count === 1 ? "question available" : "questions available")}
       </p>
     </button>
   );
@@ -1890,19 +1890,19 @@ export function TestsView({
           </div>
           <div className="grid w-full grid-cols-2 divide-x divide-y divide-[var(--border)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface-2)] sm:grid-cols-4 sm:divide-y-0 lg:w-auto">
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
-              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "vocabulary").length.toLocaleString()}</p>
+              <p className="text-lg font-black text-[var(--text-1)]">{uiNumber(bank.filter((item) => item.kind === "vocabulary").length)}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Words")}</p>
             </div>
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
-              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "phrase").length.toLocaleString()}</p>
+              <p className="text-lg font-black text-[var(--text-1)]">{uiNumber(bank.filter((item) => item.kind === "phrase").length)}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Phrases")}</p>
             </div>
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
-              <p className="text-lg font-black text-[var(--text-1)]">{bank.filter((item) => item.kind === "paragraph").length.toLocaleString()}</p>
+              <p className="text-lg font-black text-[var(--text-1)]">{uiNumber(bank.filter((item) => item.kind === "paragraph").length)}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Paragraphs")}</p>
             </div>
             <div className="min-w-0 px-3 py-3 sm:min-w-[104px] sm:px-4">
-              <p className="text-lg font-black text-[var(--text-1)]">{presetCounts["weak-spots"].toLocaleString()}</p>
+              <p className="text-lg font-black text-[var(--text-1)]">{uiNumber(presetCounts["weak-spots"])}</p>
               <p className="mt-0.5 text-[10px] font-bold uppercase text-[var(--text-3)]">{ui("Weak spots")}</p>
             </div>
           </div>
@@ -2046,7 +2046,7 @@ export function TestsView({
                         type="button"
                       >
                         <span className="text-sm font-black">{ui(band.label)}</span>
-                        <span className="text-xs font-bold tabular-nums opacity-70">{count.toLocaleString()}</span>
+                        <span className="text-xs font-bold tabular-nums opacity-70">{uiNumber(count)}</span>
                       </button>
                     );
                   })}
@@ -2127,7 +2127,7 @@ export function TestsView({
             <div className="mt-2 flex items-center justify-between gap-3">
               <span className="text-sm font-bold text-[var(--text-3)]">{ui("Available")}</span>
               <strong className="text-sm font-black text-[var(--text-1)]">
-                {selectedPool.length.toLocaleString()}
+                {uiNumber(selectedPool.length)}
               </strong>
             </div>
           </div>

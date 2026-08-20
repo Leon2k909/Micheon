@@ -2312,3 +2312,25 @@ export function uiIsGerman(): boolean {
 export function uiLocale(): string {
   return uiIsGerman() ? "de-DE" : "en-GB";
 }
+
+/**
+ * A number, written the way the INTERFACE language writes numbers.
+ *
+ * Number.toLocaleString() with no argument follows the machine, not the app.
+ * On a German-region Windows every count in Micheon came out with German
+ * separators regardless of the language the app was set to, so Leon's English
+ * dashboard read "18.935 XP" — which an English reader parses as eighteen
+ * point nine three five. Sixty-seven call sites did this.
+ *
+ * uiLocale() has existed for exactly this since it was written; it just had
+ * to be reachable in one call so nobody has to remember to pass it.
+ */
+export function uiNumber(value: number, options?: Intl.NumberFormatOptions): string {
+  if (!Number.isFinite(value)) return "0";
+  try {
+    return value.toLocaleString(uiLocale(), options);
+  } catch {
+    // A runtime without full ICU data still has to show the number.
+    return String(value);
+  }
+}

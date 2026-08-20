@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Check, CheckSquare, Layers, Plus, Search, SlidersHorizontal, Square, X } from "lucide-react";
-import { ui } from "@/lib/i18n";
+import { ui, uiNumber } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import { cn } from "@/lib/utils";
 import {
@@ -188,7 +188,7 @@ export function CatalogueImport({
                     filters.kind === value ? "text-[var(--accent)]" : "text-[var(--text-1)]"
                   )}>
                     {ui(label)}
-                    <span className="ml-1.5 font-bold text-[var(--text-3)]">{count.toLocaleString()}</span>
+                    <span className="ml-1.5 font-bold text-[var(--text-3)]">{uiNumber(count)}</span>
                   </span>
                   <span className="mt-0.5 block text-[10px] font-semibold leading-4 text-[var(--text-3)]">
                     {ui(blurb)}
@@ -238,7 +238,7 @@ export function CatalogueImport({
                 {ui("Common words only")}
               </span>
               <span className="block text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("The most frequent")} {COMMON_RANK_LIMIT.toLocaleString()} {ui("in everyday German.")}
+                {ui("The most frequent")} {uiNumber(COMMON_RANK_LIMIT)} {ui("in everyday German.")}
               </span>
             </span>
             {filters.commonOnly && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
@@ -322,7 +322,7 @@ export function CatalogueImport({
         <>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-black text-[var(--text-3)]">
-              {results.length.toLocaleString()} {ui("of")} {pool.length.toLocaleString()} {ui("match")}
+              {uiNumber(results.length)} {ui("of")} {uiNumber(pool.length)} {ui("match")}
             </p>
             {ticked.size > 0 && (
               <button
