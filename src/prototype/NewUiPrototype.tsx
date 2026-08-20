@@ -17,6 +17,8 @@ import {
   Crown,
   Gamepad2,
   Route,
+  EyeOff,
+  Eye,
   GraduationCap,
   Headphones,
   Home,
@@ -82,6 +84,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
+import { HIDDEN_NAV_EVENT, canHideNavItem, hideNavItem, loadHiddenNav, showAllNavItems, showNavItem } from "@/lib/navPreferences";
 import {
   CURRENCY_AUTO,
   CURRENCY_CODES,
@@ -205,10 +208,24 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
 ];
 
 const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends", icon: UsersRound };
+
 const SHOP_NAVIGATION_ITEM: NavigationItem = { id: "shop", label: "Shop", icon: ShoppingBag };
 // Create sits with the other beta entries: it is the newest thing here and
 // the two accounts that can see beta are the two people using the app.
 const CREATE_NAVIGATION_ITEM: NavigationItem = { id: "create", label: "Create", icon: PlusSquare };
+
+/**
+ * Every destination that can appear in a nav, for looking a hidden one up.
+ *
+ * The restore list only has ids to work from, and an id it cannot name would
+ * render as "life-in-uk" — which is not what the row said when it was hidden,
+ * and so not something anybody would recognise as the thing they put away.
+ */
+const ALL_NAV_ITEMS: NavigationItem[] = [
+  ...NAVIGATION,
+  SOCIAL_NAVIGATION_ITEM,
+  SHOP_NAVIGATION_ITEM,
+];
 
 const LIFE_IN_THE_UK_COURSE_ID = "life-in-the-uk";
 
@@ -498,6 +515,24 @@ function Sidebar({
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
+
+  /**
+   * Destinations the learner has put away.
+   *
+   * Kept in state and re-read on the event rather than on every render,
+   * because the mobile bar reads the same preference and the two have to agree
+   * the moment one of them changes it.
+   */
+  const [hidden, setHidden] = useState<string[]>(() => loadHiddenNav());
+  const [restoreOpen, setRestoreOpen] = useState(false);
+  useEffect(() => {
+    const sync = () => setHidden(loadHiddenNav());
+    window.addEventListener(HIDDEN_NAV_EVENT, sync);
+    return () => window.removeEventListener(HIDDEN_NAV_EVENT, sync);
+  }, []);
+
+  const isHidden = (id: string) => hidden.includes(id);
+
   // The finished app and the building site, kept visibly apart. Games,
   // Friends and Shop all have rough edges, so together they form a labelled
   // Beta section at the foot of the nav — and only on Leon's account. Every
@@ -557,7 +592,7 @@ function Sidebar({
     <aside className={`np-sidebar${brandLayoutClass}`} ref={sidebarRef}>
       <BrandMark />
       <nav aria-label={ui("Prototype navigation")} className="np-side-nav">
-        {navigationItems.map((item) => {
+        {navigationItems.filter((item) => !isHidden(item.id)).map((item) => {
           const Icon = item.icon;
           const active = item.id === activeView
             || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
@@ -574,15 +609,38 @@ function Sidebar({
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{ui(item.label)}</span>
+              {/* Hiding lives on the row it hides, revealed by hovering it.
+                  A permanent cross on eleven rows would be eleven invitations
+                  to dismantle the nav; nested inside the button it would be a
+                  button inside a button, which is invalid and which screen
+                  readers flatten. So it is a sibling, positioned over the row,
+                  and it stops the click from also navigating. */}
+              {canHideNavItem(item.id) && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label={uiFmt("Hide {label}", { label: ui(item.label) })}
+                  className="np-nav-hide"
+                  onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(item.id)); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" && event.key !== " ") return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setHidden(hideNavItem(item.id));
+                  }}
+                >
+                  <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                </span>
+              )}
             </button>
           );
         })}
-        {betaItems.length > 0 && (
+        {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
           <>
             <span aria-hidden="true" className="np-nav-section">
               Beta
             </span>
-            {betaItems.map((item) => {
+            {betaItems.filter((item) => !isHidden(item.id)).map((item) => {
               const Icon = item.icon;
               const active = item.id === activeView;
               return (
@@ -598,9 +656,75 @@ function Sidebar({
                 >
                   <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
                   <span>{ui(item.label)}</span>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label={uiFmt("Hide {label}", { label: ui(item.label) })}
+                    className="np-nav-hide"
+                    onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(item.id)); }}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setHidden(hideNavItem(item.id));
+                    }}
+                  >
+                    <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                  </span>
                 </button>
               );
             })}
+          </>
+        )}
+
+        {/*
+          The way back.
+
+          Hiding something with no visible route to undo it is how a nav ends
+          up permanently missing an entry nobody can find again. This appears
+          only once something is hidden, says how many, and lists them with a
+          Show beside each — so the feature explains its own reversal rather
+          than sending anyone to Settings to look for it.
+        */}
+        {hidden.length > 0 && (
+          <>
+            <button
+              aria-expanded={restoreOpen}
+              className="np-nav-hidden-toggle"
+              onClick={() => setRestoreOpen((open) => !open)}
+              type="button"
+            >
+              <span aria-hidden="true" className="np-nav-visual"><Eye className="np-nav-icon" /></span>
+              <span>{uiFmt("Hidden ({n})", { n: hidden.length })}</span>
+            </button>
+            {restoreOpen && (
+              <div className="np-nav-hidden-list">
+                {hidden.map((id) => {
+                  const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
+                  const label = item ? ui(item.label) : id;
+                  return (
+                    <button
+                      className="np-nav-hidden-row"
+                      key={id}
+                      onClick={() => setHidden(showNavItem(id))}
+                      type="button"
+                    >
+                      <span className="truncate">{label}</span>
+                      <span className="np-nav-hidden-show">{ui("Show")}</span>
+                    </button>
+                  );
+                })}
+                {hidden.length > 1 && (
+                  <button
+                    className="np-nav-hidden-row is-all"
+                    onClick={() => setHidden(showAllNavItems())}
+                    type="button"
+                  >
+                    {ui("Show all")}
+                  </button>
+                )}
+              </div>
+            )}
           </>
         )}
       </nav>
@@ -2389,9 +2513,18 @@ function usePrototypeParts(requested: boolean) {
 }
 
 function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: PrototypeView; gamesUnlocked: boolean; onNavigate: (view: PrototypeView) => void }) {
+  // Same preference as the sidebar, so hiding something on the desktop does
+  // not leave it sitting in the phone bar. There is no hide control here — a
+  // five-item bar has no room for one, and More still reaches everything.
+  const [hidden, setHidden] = useState<string[]>(() => loadHiddenNav());
+  useEffect(() => {
+    const sync = () => setHidden(loadHiddenNav());
+    window.addEventListener(HIDDEN_NAV_EVENT, sync);
+    return () => window.removeEventListener(HIDDEN_NAV_EVENT, sync);
+  }, []);
   return (
     <nav aria-label={ui("Mobile prototype navigation")} className="np-mobile-nav">
-      {MOBILE_NAVIGATION.filter((item) => item.id !== "games" || gamesUnlocked).map((item) => {
+      {MOBILE_NAVIGATION.filter((item) => (item.id !== "games" || gamesUnlocked) && !hidden.includes(item.id)).map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView
           || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))

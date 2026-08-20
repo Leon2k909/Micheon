@@ -399,6 +399,100 @@
   color: var(--np-green-dark);
 }
 
+/* ── Hiding a destination ───────────────────────────────────────────────────
+   The nav button is a two-column grid, so the hide control cannot be a third
+   child — it would wrap onto its own row and double the height. It is laid
+   over the right-hand end of the row instead, out of the grid entirely.
+
+   Invisible until the row is hovered or the control itself is focused. A
+   permanent cross on every row would read as eleven invitations to dismantle
+   the nav, which is the opposite of what a preference for tidiness should
+   look like. */
+.np-side-nav button { position: relative; }
+
+.np-nav-hide {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  transform: translateY(-50%);
+  border-radius: 9px;
+  color: #8b877f;
+  background: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity var(--np-motion-fast) ease,
+    color var(--np-motion-fast) ease,
+    background var(--np-motion-fast) ease;
+}
+
+.np-side-nav button:hover .np-nav-hide,
+.np-nav-hide:focus-visible {
+  opacity: 1;
+}
+
+.np-nav-hide:hover {
+  color: #b4443c;
+  background: rgba(255, 226, 224, 0.95);
+}
+
+.np-nav-hide:focus-visible {
+  outline: 2px solid var(--np-green-dark);
+  outline-offset: 2px;
+}
+
+/* The way back. Quieter than a destination, because it is a control rather
+   than somewhere to go — and shorter, so it never competes with the rows
+   above it for the eye. */
+.np-nav-hidden-toggle.np-nav-hidden-toggle {
+  min-height: 44px;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 760;
+  opacity: 0.78;
+}
+
+.np-nav-hidden-toggle .np-nav-visual {
+  width: 30px;
+  height: 30px;
+}
+
+.np-nav-hidden-list {
+  display: grid;
+  gap: 2px;
+  padding: 2px 0 0 6px;
+}
+
+.np-side-nav .np-nav-hidden-list button {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 9px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.np-nav-hidden-show {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.72;
+}
+
+.np-side-nav .np-nav-hidden-list button.is-all {
+  justify-content: flex-start;
+  opacity: 0.72;
+}
+
 .np-side-nav button:active {
   transform: translateY(2px);
 }
@@ -5811,6 +5905,19 @@ html[data-theme="dark"] .np-side-nav button.is-active {
   box-shadow:
     0 3px 0 rgba(0, 0, 0, 0.28),
     0 9px 20px rgba(0, 0, 0, 0.24);
+}
+
+/* The hide control sits over the row, so in dark mode it needs the row's own
+   surface behind it rather than the light one — otherwise it reads as a white
+   chip punched through the sidebar. */
+html[data-theme="dark"] .np-nav-hide {
+  color: #9aa197;
+  background: rgba(31, 35, 42, 0.92);
+}
+
+html[data-theme="dark"] .np-nav-hide:hover {
+  color: #ff9c93;
+  background: rgba(74, 34, 32, 0.95);
 }
 
 html[data-theme="dark"] .np-icon-button,

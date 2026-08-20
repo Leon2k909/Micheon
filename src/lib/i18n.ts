@@ -2108,6 +2108,8 @@ const DE: Record<string, string> = {
   "Recently completed": "Zuletzt abgeschlossen",
   "Resets Monday": "Setzt montags zurück",
   "Resize sidebar": "Seitenleiste anpassen",
+  "Hide {label}": "{label} ausblenden",
+  "Hidden ({n})": "Ausgeblendet ({n})",
   "Revisit a few useful phrases while they are still fresh.": "Sieh dir ein paar nützliche Sätze an, solange sie frisch sind.",
   "Reward shop": "Belohnungsshop",
   "Search by level or topic, then build a focused test from words, phrases, or weak spots.": "Nach Stufe oder Thema suchen und daraus einen gezielten Test aus Wörtern, Sätzen oder Schwachstellen bauen.",
