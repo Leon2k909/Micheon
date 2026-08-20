@@ -127,9 +127,18 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
       // ("das Haar in der Suppe" = "Haar in der Suppe"), and full sentences
       // parked in a vocab array. A card whose back repeats its front teaches
       // nothing, and sentences belong to the sentence course.
+      //
+      // Only when the German is more than one word, though. English and
+      // German share a great many words outright, and this threw away every
+      // single one of them: das Ticket, der Plan, der Computer, der Film, das
+      // Problem, das Update, das Feedback, der Podcast, das Meeting — 106
+      // seeds, none of them the lazy copy this was written to catch, which no
+      // longer occurs in the content at all. And a card is not empty just
+      // because the two languages agree on the word: der Film still has to
+      // teach that it is DER, and the gender is the hard part.
       const bareDe = de.toLowerCase().replace(/^(der|die|das)\s+/, "").replace(/[.!?]+$/, "");
       const bareEn = en.toLowerCase().replace(/^(der|die|das)\s+/, "").replace(/[.!?]+$/, "");
-      if (bareDe === bareEn) continue;
+      if (bareDe === bareEn && /\s/.test(bareDe)) continue;
       if (/[.!?]$/.test(de)) continue;
       const id = wordProgressId(lookup || de);
       // Packs conflict when they disagree about the MEANING, not the wording.

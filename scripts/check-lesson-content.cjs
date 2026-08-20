@@ -71,8 +71,24 @@ assert(catalog.every((word) => {
 }), "a word's displayed primary meaning is not accepted by its own answer checker");
 assert(catalog.every((w) => w.de.trim().split(/\s+/).length <= 6 && !/[.!?]$/.test(w.de)),
   "something sentence-shaped got into the word catalogue");
-assert(catalog.every((w) => w.de.toLowerCase().replace(/^(der|die|das) /, "") !== w.en.toLowerCase().replace(/^(der|die|das) /, "")),
-  "a card whose gloss repeats its German is being taught");
+// A gloss that just restates a German PHRASE is a seed nobody finished
+// ("das Haar in der Suppe" = "Haar in der Suppe"). A gloss that matches a
+// single German word is usually not a mistake at all: English and German
+// share der Film, das Ticket, der Computer, das Problem, das Update and a
+// hundred more. Refusing those threw 106 seeds out of the catalogue, which
+// is why the course taught der Autoscooter and never das Auto — and a card
+// for der Film still has work to do, because the gender is the hard part.
+const bareFace = (value) => String(value).toLowerCase().replace(/^(der|die|das) /, "");
+assert(catalog.every((w) => {
+  const face = bareFace(w.de);
+  return face !== bareFace(w.en) || !/\s/.test(face);
+}), "a card whose gloss repeats its German PHRASE is being taught");
+const cognates = catalog.filter((w) => bareFace(w.de) === bareFace(w.en));
+assert(cognates.length >= 90,
+  `only ${cognates.length} shared German/English words are taught — the cognate cards have been dropped again`);
+for (const word of ["der Film", "das Ticket", "der Computer", "das Problem", "das Update"]) {
+  assert(catalog.some((w) => w.de === word), `${word} is authored but not taught`);
+}
 
 // Leon asked for genuine depth in the dedicated Words mode, especially for
 // an English learner who already knows the basics. These packs deliberately

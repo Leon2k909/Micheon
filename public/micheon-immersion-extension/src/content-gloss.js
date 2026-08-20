@@ -1385,9 +1385,13 @@
       if (joined) return joined;
     }
 
-    // A verb only resolves to an infinitive.
+    // A verb only resolves to an infinitive. The bare -n infinitive belongs
+    // to verbs whose stem ends in l or r — sammeln, ändern — and letting any
+    // stem try it made "neuen" resolve to "neun", the number nine, the day
+    // counting was finally taught.
     for (const stem of stems) {
-      for (const infinitive of [`${stem}en`, `${stem}n`]) {
+      const candidates = /[lr]$/.test(stem) ? [`${stem}en`, `${stem}n`] : [`${stem}en`];
+      for (const infinitive of candidates) {
         const hit = held(infinitive);
         if (hit) return hit;
       }

@@ -72,7 +72,17 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // first natural-English review then restored two previously excluded phrase
 // cards. The wider authored-gloss audit restored another 51 genuine English
 // backs that had previously repeated the German and been silently filtered.
-assert.equal(taughtWords, 7517, "the reviewed sense fixes changed the standalone word count");
+// 7517 -> 7593 in one pass with two causes. 106 seeds were being dropped for
+// glossing a German word with the identical English one — der Film, das
+// Ticket, der Computer, das Problem, das Update — a rule meant for unfinished
+// phrase glosses that instead deleted every word the two languages share; the
+// restored cards land as 51 new faces once folds and duplicates settle. And
+// parts 539-542 teach 157 words found by two audits: the 137 words of the
+// frequency bank that no pack taught (der Euro at rank 29, das Auto at 339),
+// and the closed sets with holes in them — twelve of the fourteen counting
+// words, Oma, Opa, Onkel, Tante, Cousin, brown, grey and purple. The bank is
+// now taught to 2,495 of its 2,502 words, up from 2,351.
+assert.equal(taughtWords, 7753, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

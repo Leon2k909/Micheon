@@ -784,6 +784,13 @@ checkLatestAudioWins().then(() => {
   // corrupted its own fixtures and then reported the code broken.
   for (const [form, lemma] of [
     ["neuen", "neu"],
+    // Teaching the numbers put "neun" in the glossary, and the bare -n
+    // infinitive rule promptly resolved "neuen" to nine.
+    // The bare -n infinitive belongs to verbs whose stem ends in l or r.
+    // Letting any stem try it made "neuen" resolve to "neun", the number
+    // nine, the day counting was finally taught.
+    ["sammelte", "sammeln"],
+    ["änderte", "ändern"],
     ["geladen", "laden"],
     ["geteilt", "teilen"],
     ["sollten", "sollen"],
@@ -797,6 +804,12 @@ checkLatestAudioWins().then(() => {
 
   // An umlaut in the stem still has to reach the infinitive.
   assert.equal(resolve("w\u00e4chst"), "wachsen", "a stem-vowel change must still resolve");
+
+  // And the numbers are actually there to be hovered \u2014 the course taught
+  // three and eight and none of the rest until parts 500-503.
+  for (const number of ["eins", "zwei", "neun", "zehn", "zw\u00f6lf"]) {
+    assert.ok(words.some((word) => word.de === number), `${number} is missing from the glossary`);
+  }
 
   // A separable verb hides its ge in the middle, and a participle used as an
   // adjective wears two endings. Both were reported as unknown vocabulary.
