@@ -505,6 +505,15 @@ check(
     && !labSource.includes("window.setTimeout(() => startSession(activePart)")
 );
 check(
+  "lesson completion counts down against its existing auto-finish delay without extending it",
+  guidedSource.includes("const AUTO_FINISH_DELAY_MS = 2600")
+    && guidedSource.includes("const deadline = Date.now() + AUTO_FINISH_DELAY_MS")
+    && guidedSource.includes("setTimeout(finish, AUTO_FINISH_DELAY_MS)")
+    && guidedSource.includes("setInterval(updateCountdown, 100)")
+    && guidedSource.includes("clearInterval(countdownTimer)")
+    && guidedSource.includes('uiFmt("Starting your next lesson in {seconds}…", { seconds: secondsRemaining })')
+);
+check(
   "lesson completion goes straight to its success screen without an in-lesson memory check",
   !guidedSource.includes("LessonMemoryCheck")
     && !guidedSource.includes("onMemoryGrade")

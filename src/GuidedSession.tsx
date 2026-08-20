@@ -4918,19 +4918,29 @@ function RegisterCheck({ question, onAnswer, onNext }: any) {
   );
 }
 
+const AUTO_FINISH_DELAY_MS = 2600;
+
 function CompleteScreen({ onNext }: { onNext: () => void }) {
   // Auto-finish: the celebration plays, then the lesson closes itself and the
-  // next one is queued up — no "Finish" press needed. Any key/click skips the
-  // wait, and the button stays for anyone who reaches for it.
+  // next one is queued up after the 2.6-second celebration — no "Finish"
+  // press needed. Any key/click skips the wait, and the button stays for
+  // anyone who reaches for it.
   const done = useRef(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(() => Math.ceil(AUTO_FINISH_DELAY_MS / 1000));
   const finish = () => { if (!done.current) { done.current = true; onNext(); } };
   useEffect(() => {
-    const t = setTimeout(finish, 2600);
-    const skip = () => { clearTimeout(t); finish(); };
+    const deadline = Date.now() + AUTO_FINISH_DELAY_MS;
+    const updateCountdown = () => {
+      setSecondsRemaining(Math.max(1, Math.ceil((deadline - Date.now()) / 1000)));
+    };
+    const t = setTimeout(finish, AUTO_FINISH_DELAY_MS);
+    const countdownTimer = window.setInterval(updateCountdown, 100);
+    const skip = () => { clearTimeout(t); clearInterval(countdownTimer); finish(); };
     window.addEventListener("keydown", skip);
     window.addEventListener("mousedown", skip);
     return () => {
       clearTimeout(t);
+      clearInterval(countdownTimer);
       window.removeEventListener("keydown", skip);
       window.removeEventListener("mousedown", skip);
     };
@@ -4988,6 +4998,9 @@ function CompleteScreen({ onNext }: { onNext: () => void }) {
         >
           Nice work — that's another one in the bank. 🎉
         </motion.div>
+        <div className="text-xs font-semibold text-zinc-500" aria-live="polite" aria-atomic="true">
+          {uiFmt("Starting your next lesson in {seconds}…", { seconds: secondsRemaining })}
+        </div>
       </div>
 
       <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
