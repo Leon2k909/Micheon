@@ -44,6 +44,35 @@ export function primaryGermanMeaning(value: string): string {
   return germanMeaningAlternatives(value)[0] ?? "";
 }
 
+/**
+ * What to SHOW, as opposed to what to accept.
+ *
+ * The alternatives split above treats a comma as "or", which is right for a
+ * vocabulary gloss — "to learn, to study" really is two ways of saying one
+ * thing — and catastrophic for a sentence, because German puts a comma before
+ * every subordinate clause. Run over the catalogue it truncated 3,458 German
+ * entries and 2,256 English ones:
+ *
+ *     "Nein, danke."                     shown as "Nein"
+ *     "Entschuldigung, wo ist der Bahnhof?"  shown as "Entschuldigung"
+ *     "Ich möchte einen Kaffee, bitte."  shown as "Ich möchte einen Kaffee"
+ *
+ * One question in five in the quick path was offering a fragment as an answer.
+ * A slash is an explicit "either of these" written by an author; a comma is
+ * grammar. So display splits on the slash alone and leaves punctuation where
+ * the author put it.
+ *
+ * Matching still uses the comma-aware split, deliberately: accepting "Nein"
+ * for "Nein, danke." is generous to a learner rather than wrong, and that
+ * leniency is worth keeping.
+ */
+export function displayMeaning(value: string): string {
+  const original = String(value ?? "").trim();
+  if (!original) return "";
+  const [first] = original.split(/\s+\/\s+/).map((part) => part.trim()).filter(Boolean);
+  return first ?? original;
+}
+
 export function matchEnglishMeaning(input: string, target: string) {
   const whole = matchEnglishPhrase(input, target);
   if (whole.ok) return whole;

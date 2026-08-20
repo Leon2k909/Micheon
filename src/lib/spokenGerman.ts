@@ -151,6 +151,14 @@ const DASS_LESS_COMMA = new RegExp(
  * Display only. Every comparison in the app strips punctuation before it
  * compares, so an answer typed with commas and an answer typed without are
  * already the same answer — this changes what is shown, never what is right.
+ *
+ * NOTE, for whoever reads this next and reaches for the obvious "fix": the
+ * comma before dass/weil/wenn is mandatory in German orthography, and this
+ * drops it on purpose. That is Michelle's call — she is German, she read
+ * "Ich glaub, wir haben alles, was wir brauchen." and said there were too
+ * many commas, and check-spoken-forms pins the result. Exam mode keeps every
+ * comma. If this should change, it is a decision about which register the
+ * default mode teaches, not a bug to be quietly corrected.
  */
 export function toTextedGerman(sentence: string): string {
   const text = String(sentence ?? "");

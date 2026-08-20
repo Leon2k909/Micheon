@@ -1,7 +1,7 @@
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
-import { matchGermanMeaning, primaryEnglishMeaning, primaryGermanMeaning } from "@/lib/germanTextMatch";
+import { displayMeaning, matchGermanMeaning } from "@/lib/germanTextMatch";
 
 /**
  * A short, fast lesson made of mixed exercises — the other half of the path.
@@ -101,7 +101,7 @@ export function duoDistractors(
   random: () => number,
   count = 3
 ): string[] {
-  const right = side === "en" ? primaryEnglishMeaning(item.en) : primaryGermanMeaning(item.de);
+  const right = side === "en" ? displayMeaning(item.en) : displayMeaning(item.de);
   const seen = new Set([right.toLocaleLowerCase()]);
   const out: string[] = [];
   const samePack = pool.filter((entry) => entry.partKey === item.partKey && entry.id !== item.id);
@@ -109,7 +109,7 @@ export function duoDistractors(
 
   for (const candidate of [...shuffle(samePack, random), ...shuffle(rest, random)]) {
     if (out.length >= count) break;
-    const text = side === "en" ? primaryEnglishMeaning(candidate.en) : primaryGermanMeaning(candidate.de);
+    const text = side === "en" ? displayMeaning(candidate.en) : displayMeaning(candidate.de);
     const key = text.toLocaleLowerCase();
     if (!text || seen.has(key)) continue;
     seen.add(key);
@@ -133,8 +133,8 @@ export function buildDuoLesson(
   if (items.length === 0) return [];
 
   return items.map((item, index) => {
-    const german = primaryGermanMeaning(item.de);
-    const english = primaryEnglishMeaning(item.en);
+    const german = displayMeaning(item.de);
+    const english = displayMeaning(item.en);
     const words = duoTiles(german);
 
     // The shape rotates rather than being chosen at random, so a lesson can

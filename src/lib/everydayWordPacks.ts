@@ -1109,9 +1109,9 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich weiß.", en: "I know.", use: "For facts. Knowing a person or a place is kennen: Ich kenne ihn." },
       { de: "Ich verstehe.", en: "I see.", use: "Says you followed it, not that you agree." },
       { de: "Ich verstehe nicht.", en: "I don't understand.", use: "Add das to point at the specific thing: Ich verstehe das nicht." },
-      { de: "Ich glaube.", en: "I think so.", use: "On its own it answers a question. With a comma it carries the thought: Ich glaube, das stimmt." },
-      { de: "Ich denke.", en: "I'm thinking.", use: "Ich denke, ... opens an opinion; denken an means to think ABOUT someone." },
-      { de: "Ich hoffe.", en: "I hope so.", use: "Usually Ich hoffe es as a bare reply; with a comma comes the wish." },
+      { de: "Ich denke schon.", en: "I think so.", use: "schon is what completes it — bare 'Ich denke' or 'Ich glaube' trails off. With a comma it carries the thought instead: Ich denke, das stimmt." },
+      { de: "Ich denke nach.", en: "I'm thinking about it.", use: "nachdenken is thinking something OVER. Bare 'Ich denke' does not mean this — it opens an opinion: Ich denke, das stimmt." },
+      { de: "Ich hoffe es.", en: "I hope so.", use: "The es is what makes it a complete reply. With a comma comes the wish instead: Ich hoffe, es klappt." },
       { de: "Ich sehe das.", en: "I see it that way.", use: "Not eyesight — this is how you view something. Ich sehe das anders = I disagree." },
 
       // Can, must, want
@@ -1120,7 +1120,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich kann das nicht.", en: "I can't do that.", use: "Now it is THAT you can't do, not everything." },
       { de: "Wir können das nicht.", en: "We can't do that.", use: "Same sentence, shared: können is the wir form of kann." },
       { de: "Ich muss.", en: "I have to.", use: "German drops the obvious verb; English needs 'to'." },
-      { de: "Ich muss noch.", en: "I've still got things to do.", use: "noch = still, yet. The jobs themselves follow." },
+      { de: "Ich muss noch was erledigen.", en: "I've still got things to do.", use: "etwas erledigen = to get things done. Bare 'Ich muss noch' stops mid-thought and needs what follows." },
       { de: "Ich will nicht.", en: "I don't want to.", use: "Blunt. Ich möchte nicht is the polite version." },
       { de: "Ich will das nicht.", en: "I don't want that.", use: "Pointing at the thing you are refusing." },
       { de: "Ich möchte das.", en: "I'd like that.", use: "möchte is the polite want — what you order with." },
