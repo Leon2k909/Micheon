@@ -34,6 +34,11 @@ tsconfig.tsbuildinfo
 release/
 release-audit/
 release-verify/
+# Left behind by a packaging run that could not rename its temp directory —
+# the Claude desktop app holds a watcher handle on files under the project, so
+# electron-builder now writes outside it. Ignored so 117 MB of build output
+# cannot be swept in by git add -A while the folder is still locked.
+release-363/
 
 # Local scratch / recovery files (not part of the app)
 sbox-docs/
