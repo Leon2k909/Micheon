@@ -112,6 +112,28 @@ function lemmaCandidates(key: string): string[] {
  * The best score across the word's plausible lemmas wins — an inflected form is
  * exactly as common as the word it belongs to.
  */
+/**
+ * How often the course actually says this word, pooled across its forms.
+ *
+ * wordCommonality answers "how widely used" from the pack spread, and rounds
+ * that onto the curated scale — which for the 4,915 words the curated list
+ * never reached means about forty distinct values for all of them. Everything
+ * inside one of those values then ties, and a tie falls through to the order
+ * the packs happened to be written in.
+ *
+ * The occurrence count was being built alongside the spread and thrown away.
+ * It is the finer signal: der Teller is said fifteen times across the course
+ * and der Saal twice, and that is the difference between them.
+ */
+export function corpusUses(word: string, index: CorpusIndex | null): number {
+  if (!index) return 0;
+  const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");
+  if (!key) return 0;
+  let uses = 0;
+  for (const candidate of lemmaCandidates(key)) uses = Math.max(uses, index.count.get(candidate) ?? 0);
+  return uses;
+}
+
 export function wordCommonality(word: string, index: CorpusIndex | null): number {
   const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");
   if (!key) return 5000;

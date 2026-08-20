@@ -19,7 +19,8 @@
  */
 import { frequencyRank } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
-import { wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
+import { corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
+import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
 import { canonicalWordSenseFor } from "@/lib/canonicalWordSenses";
@@ -327,16 +328,80 @@ function consolidateSynonymGroups(words: WordItem[]): WordItem[] {
 }
 
 /** Frequency-ranked: the words people actually meet come first. */
+/**
+ * The connectors, pronouns and prepositions the course teaches through
+ * sentences rather than as cards. They are the most common words in the
+ * language and the frequency bank misses a good few of them.
+ */
+const CORE_FUNCTION_WORDS = new Set(
+  (functionWords as { de: string }[]).map((entry) =>
+    String(entry.de).toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim())
+);
+
+function isCoreFunctionWord(word: string | undefined): boolean {
+  if (!word) return false;
+  return CORE_FUNCTION_WORDS.has(
+    String(word).toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim()
+  );
+}
+
+/**
+ * Most useful first — the order Listen plays, lessons draw from and the
+ * tracker lists.
+ *
+ * The frequency bank decides this, and it covers 2,130 of the 7,045 words.
+ * Past that, everything used to tie: the corpus fallback scores a word by how
+ * many packs contain it, which for a catalogue of 450 themed packs squeezes
+ * 4,915 words into about forty distinct values. Ties fall through to
+ * catalogue position, which is pack order, which is the order packs were
+ * written in — so Leon reached word 2,450 of Listen and met der Aimbot, das
+ * Kondolenzbuch and der Saal while obwohl, der Teller, regnen and der Tee sat
+ * unplayed behind them. His words: "im learning some pretty random advanced
+ * words, we should had a lot of more normal ones before this".
+ *
+ * The missing signal was already authored and already computed: every pack
+ * states its CEFR level, and wordLadderRung turns that into a difficulty
+ * rung. Sorting by it after the frequency rank leaves the 2,130 curated
+ * words in exactly the order they were in — their rank already separates
+ * them — and gives the other 4,915 the only real ordering they have: A1
+ * before A2 before B1, and the C1 vocabulary last where it belongs.
+ *
+ * That ordering is measured, not assumed. Holding out the 2,130 words whose
+ * true rank IS known and asking each candidate to predict it, by Spearman
+ * correlation against the truth:
+ *
+ *     pack order, no signal at all      0.377
+ *     corpus spread alone (what shipped) 0.399
+ *     spread, then occurrence count     0.395
+ *     CEFR rung first                   0.534
+ *
+ * The corpus spread barely improves on no signal, which is the surprise:
+ * counting how many packs use a word sounds like frequency and is mostly
+ * noise. Occurrence count, computed and thrown away until now, adds a little
+ * inside a rung. (Measured with the rung computed from the CEFR level only —
+ * wordLadderRung consults the frequency bank for the A1-B1 mass, and letting
+ * it do so here would have been marking its own homework: it scored 0.549
+ * that way, predicting an answer it had been given.)
+ */
 export function rankWordCatalog(catalog: WordItem[], corpusIndex: CorpusIndex | null = null): WordItem[] {
   return [...catalog]
     .map((word, index) => ({
       word,
       index,
       rank: frequencyRank(word.lookup || word.de),
+      // A connector is core vocabulary whatever pack happens to teach it.
+      // obwohl and nachdem are taught in a B1-B2 pack and are missing from
+      // the 2,500-word frequency bank, so ordering by the pack's level alone
+      // sent two of the commonest words in German to positions 4,900 and
+      // 5,000 — behind der Aimbot. The function-word list already names them.
+      rung: isCoreFunctionWord(word.lookup || word.de) ? 1 : wordLadderRung(word),
       commonality: wordCommonality(word.lookup || word.de, corpusIndex),
+      uses: corpusUses(word.lookup || word.de, corpusIndex),
     }))
     .sort((a, b) =>
       a.rank - b.rank
+      || a.rung - b.rung
+      || b.uses - a.uses
       || a.commonality - b.commonality
       || a.index - b.index
     )

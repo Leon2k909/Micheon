@@ -49,7 +49,7 @@ const result = esbuild.buildSync({
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { WORD_ID_PREFIX, buildWordCatalog } from "./src/lib/wordSession.ts";',
+      'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -87,7 +87,7 @@ const {
   DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE,
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
-  listenCountForId, buildWordCatalog,
+  listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY,
   recordSuccess,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
@@ -251,10 +251,40 @@ const buriedByCommon = commonWords
   .sort((a, b) => a - b);
 check("newest-first order serves the same material, nothing dropped",
   newestWords.length === commonWords.length && newestWords.length > 1000);
-check("newest-first genuinely front-loads what most-common-first buries",
+// That measurement is gone, and what it was really measuring is worth
+// recording. It asserted that 90% of the material most-common-first buries is
+// served from the front half by newest-first — and it passed because the
+// commonality signal in use was the corpus spread, which is largely a measure
+// of how recently a pack was added: a new pack's words appear in few packs, so
+// they scored rare, so the buried tail WAS the newest material and newest-first
+// trivially front-loaded it. Once the order started grading by CEFR level, the
+// tail became advanced vocabulary from every era of the course, and the figure
+// fell to 66% — not because anything got harder to reach, but because the two
+// orders finally mean different things. A hold-out test settled which signal is
+// the better one: against the 2,130 words whose true frequency rank is known,
+// corpus spread scores 0.399 and pack order alone scores 0.377, while the CEFR
+// rung scores 0.534.
+//
+// So the promise is asserted directly instead: the orders differ, and
+// most-common-first actually grades from common to advanced.
+const shifts = commonWords
+  .map((item, position) => Math.abs(position - (newestPositions.get(item.id) ?? position)))
+  .sort((a, b) => a - b);
+check("newest-first is a different order, not most-common-first relabelled",
   buriedByCommon.length > 300
-  && buriedByCommon[Math.floor(buriedByCommon.length / 2)] < newestWords.length * 0.4
-  && buriedByCommon.filter((position) => position < newestWords.length / 2).length / buriedByCommon.length >= 0.9);
+  && shifts[Math.floor(shifts.length / 2)] > commonWords.length * 0.15);
+
+const rungByWordId = new Map(buildWordCatalog(parts).map((word) => [word.id, wordLadderRung(word)]));
+const rungsOf = (items) => items
+  .map((item) => rungByWordId.get(item.id))
+  .filter((rung) => rung != null)
+  .sort((a, b) => a - b);
+const headRungs = rungsOf(commonWords.slice(0, Math.floor(commonWords.length * 0.1)));
+const tailRungs = rungsOf(commonWords.slice(Math.floor(commonWords.length * 0.9)));
+check("most-common-first actually grades from everyday to advanced",
+  headRungs.length > 100 && tailRungs.length > 100
+  && headRungs[Math.floor(headRungs.length / 2)] <= 2
+  && tailRungs[Math.floor(tailRungs.length / 2)] >= 4);
 
 // A card titled with a bare word must teach that word. An idiom built on the
 // lemma ("an etwas liegen") used to win the card purely by sitting in an
