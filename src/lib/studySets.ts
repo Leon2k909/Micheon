@@ -375,3 +375,76 @@ export function checkTypedAnswer(expected: string, given: string): boolean {
     return expectedArticle === givenArticle;
   });
 }
+
+// ── Sharing ─────────────────────────────────────────────────────────────────
+
+/**
+ * A set as plain text, so it can be sent to somebody.
+ *
+ * Deliberately not JSON. Leon and Michelle share things by pasting them into
+ * a chat, and a wall of braces is not something you paste to a person. This
+ * is the same tab-separated shape the paste importer already reads, with the
+ * title and settings as comment lines — so a set exported here can be pasted
+ * straight back into the paste box even by someone who does not know it came
+ * from an export.
+ */
+export function exportSetToText(set: StudySet): string {
+  const lines = [`# ${set.title}`];
+  if (set.description) lines.push(`# ${set.description}`);
+  lines.push(`# stages: ${set.stages.join(", ")}`);
+  lines.push("");
+  for (const card of set.cards) {
+    if (!card.term.trim()) continue;
+    lines.push(card.hint
+      ? `${card.term}\t${card.definition}\t${card.hint}`
+      : `${card.term}\t${card.definition}`);
+  }
+  return lines.join("\n");
+}
+
+export type ImportedSet = { title: string | null; description: string | null; cards: StudyCard[]; stages: StudyStage[] | null };
+
+/**
+ * Read back what exportSetToText wrote — and anything close enough.
+ *
+ * The comment lines are optional. Somebody pasting a plain two-column list
+ * with no header gets a set of cards and no title, which is the right answer
+ * rather than an error.
+ */
+export function importSetFromText(text: string, now = 0): ImportedSet {
+  const lines = text.split(/\r?\n/);
+  let title: string | null = null;
+  let description: string | null = null;
+  let stages: StudyStage[] | null = null;
+  const body: string[] = [];
+
+  for (const line of lines) {
+    const comment = /^#\s*(.*)$/.exec(line.trim());
+    if (!comment) { body.push(line); continue; }
+    const value = comment[1].trim();
+    const stageLine = /^stages:\s*(.+)$/i.exec(value);
+    if (stageLine) {
+      const parsed = stageLine[1]
+        .split(/\s*,\s*/)
+        .map((entry) => entry.trim())
+        .filter((entry): entry is StudyStage => (ALL_STAGES as string[]).includes(entry));
+      if (parsed.length > 0) stages = parsed;
+      continue;
+    }
+    if (title === null) title = value;
+    else if (description === null) description = value;
+  }
+
+  // The third column is the hint, which parsePastedCards does not know about.
+  const cards: StudyCard[] = [];
+  for (const line of body) {
+    const parts = line.split("\t");
+    if (parts.length >= 3 && parts[0].trim()) {
+      cards.push(makeCard(parts[0], parts[1], { hint: parts.slice(2).join(" "), source: "paste", now }));
+      continue;
+    }
+    cards.push(...parsePastedCards(line, now));
+  }
+
+  return { title, description, cards, stages };
+}

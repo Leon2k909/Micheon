@@ -1,6 +1,7 @@
 import { buildCatalog } from "@/session";
 import { buildWordCatalog } from "@/lib/wordSession";
 import { frequencyRank } from "@/lib/wordFrequency";
+import { statusForId, type GradeStore } from "@/lib/activity";
 
 /**
  * Everything the app knows, in one list you can filter.
@@ -21,6 +22,9 @@ export type ImportKind = "word" | "phrase";
 
 export type ImportItem = {
   id: string;
+  /** The catalogue id without the w:/p: prefix, which is how grades are keyed. */
+  rawId: string;
+  aliases?: string[];
   de: string;
   en: string;
   kind: ImportKind;
@@ -87,6 +91,8 @@ export function buildImportPool(apiParts: Record<string, unknown>): ImportItem[]
     if (!entry.de || !entry.en) continue;
     pool.push({
       id: `w:${entry.id}`,
+      rawId: entry.id,
+      aliases: (word as { aliases?: string[] }).aliases,
       de: entry.de,
       en: entry.en,
       kind: "word",
@@ -103,6 +109,8 @@ export function buildImportPool(apiParts: Record<string, unknown>): ImportItem[]
     if (!item.de || !item.en) continue;
     pool.push({
       id: `p:${item.id}`,
+      rawId: item.id,
+      aliases: item.aliases,
       de: item.de,
       en: item.en,
       kind: "phrase",
@@ -125,6 +133,8 @@ export type ImportFilters = {
   pos: string | "all";
   pack: string | "all";
   commonOnly: boolean;
+  /** Only things the tracker says you get wrong. */
+  strugglingOnly: boolean;
 };
 
 export const EMPTY_FILTERS: ImportFilters = {
@@ -134,6 +144,7 @@ export const EMPTY_FILTERS: ImportFilters = {
   pos: "all",
   pack: "all",
   commonOnly: false,
+  strugglingOnly: false,
 };
 
 export function filtersAreEmpty(filters: ImportFilters): boolean {
@@ -144,7 +155,26 @@ export function filtersAreEmpty(filters: ImportFilters): boolean {
     && filters.pos === "all"
     && filters.pack === "all"
     && !filters.commonOnly
+    && !filters.strugglingOnly
   );
+}
+
+/**
+ * Is this something the learner already struggles with?
+ *
+ * The tracker knows. "struggle" is its own verdict; answerMistakes and
+ * difficultyDebt catch the ones that are technically still "known" but keep
+ * going wrong. Building a set out of these is the most useful thing this
+ * screen can do with our data — it is the difference between "make me some
+ * flashcards" and "make me flashcards of the words I keep failing".
+ */
+export function isStruggling(item: ImportItem, grades: GradeStore): boolean {
+  const record = grades[item.rawId];
+  if (record) {
+    if ((record.answerMistakes ?? 0) > 0) return true;
+    if ((record.difficultyDebt ?? 0) > 0) return true;
+  }
+  return statusForId(grades, item.rawId, item.aliases ?? []) === "struggle";
 }
 
 /**
@@ -154,7 +184,11 @@ export function filtersAreEmpty(filters: ImportFilters): boolean {
  * actually wants: "the A1 nouns" should start with the A1 nouns they will
  * meet first, not alphabetically at Abend.
  */
-export function filterImportPool(pool: ImportItem[], filters: ImportFilters): ImportItem[] {
+export function filterImportPool(
+  pool: ImportItem[],
+  filters: ImportFilters,
+  grades: GradeStore = {}
+): ImportItem[] {
   const needle = filters.query.trim().toLocaleLowerCase();
   const posGroup = IMPORT_POS_GROUPS.find((group) => group.id === filters.pos);
 
@@ -164,6 +198,7 @@ export function filterImportPool(pool: ImportItem[], filters: ImportFilters): Im
     if (filters.commonOnly && item.rank > COMMON_RANK_LIMIT) return false;
     if (posGroup && !posGroup.match.test(item.pos ?? "")) return false;
     if (filters.pack !== "all" && item.packKey !== filters.pack) return false;
+    if (filters.strugglingOnly && !isStruggling(item, grades)) return false;
     if (needle && !item.search.includes(needle)) return false;
     return true;
   });

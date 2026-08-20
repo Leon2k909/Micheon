@@ -1,6 +1,7 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { Check, Layers, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, CheckSquare, Layers, Plus, Search, SlidersHorizontal, Square, X } from "lucide-react";
 import { ui } from "@/lib/i18n";
+import { loadGradeStore } from "@/lib/activity";
 import { cn } from "@/lib/utils";
 import {
   ADD_ALL_LIMIT,
@@ -41,6 +42,11 @@ export function CatalogueImport({
   const [filters, setFilters] = useState<ImportFilters>(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(true);
   const [packQuery, setPackQuery] = useState("");
+  // Read once: the tracker verdicts do not change while this tab is open.
+  const [grades] = useState(() => loadGradeStore());
+  // Ticking individual results, for when "add all" is too blunt and one at a
+  // time is too slow — which is most of the time.
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
   const deferred = useDeferredValue(filters);
 
   // Both catalogues together are a lot of work, so it happens once, when the
@@ -64,6 +70,14 @@ export function CatalogueImport({
     return () => { cancelled = true; };
   }, [pool, apiParts]);
 
+  // Sizes of each catalogue, so the picker can state them rather than
+  // leaving the split to be inferred.
+  const counts = useMemo(() => ({
+    all: pool?.length ?? 0,
+    word: pool?.filter((item) => item.kind === "word").length ?? 0,
+    phrase: pool?.filter((item) => item.kind === "phrase").length ?? 0,
+  }), [pool]);
+
   const packs = useMemo(() => (pool ? importPacks(pool) : []), [pool]);
   const visiblePacks = useMemo(() => {
     const needle = packQuery.trim().toLocaleLowerCase();
@@ -74,8 +88,8 @@ export function CatalogueImport({
   }, [packs, packQuery]);
 
   const results = useMemo(
-    () => (pool ? filterImportPool(pool, deferred) : []),
-    [pool, deferred]
+    () => (pool ? filterImportPool(pool, deferred, grades) : []),
+    [pool, deferred, grades]
   );
   const shown = results.slice(0, 80);
   const addable = results.filter((item) => !alreadyAdded.has(item.id)).slice(0, ADD_ALL_LIMIT);
@@ -139,12 +153,48 @@ export function CatalogueImport({
 
       {showFilters && (
         <div className="mt-3 space-y-3 rounded-2xl bg-[var(--surface-2)] p-4">
+          {/*
+            These really are two separate catalogues, and saying so matters.
+            The vocabulary and the phrase course are built and stored apart,
+            and someone searching for a noun in the phrase catalogue finds
+            sentences containing it and no card to add — which is exactly what
+            this screen used to do. Naming both, with their sizes, makes the
+            distinction visible instead of something you deduce from results.
+          */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Type")}</p>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              <Chip active={filters.kind === "all"} onClick={() => set("kind", "all")}>{ui("Everything")}</Chip>
-              <Chip active={filters.kind === "word"} onClick={() => set("kind", "word")}>{ui("Words")}</Chip>
-              <Chip active={filters.kind === "phrase"} onClick={() => set("kind", "phrase")}>{ui("Phrases")}</Chip>
+            <p className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {ui("Which catalogue")}
+            </p>
+            <div className="mt-1.5 grid gap-1.5 sm:grid-cols-3">
+              {([
+                ["all", "Both", counts.all, "Everything the app knows"],
+                ["word", "Vocabulary", counts.word, "Single words, with gender and part of speech"],
+                ["phrase", "Phrases", counts.phrase, "Full sentences from the course"],
+              ] as const).map(([value, label, count, blurb]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("kind", value as ImportFilters["kind"])}
+                  aria-pressed={filters.kind === value}
+                  className={cn(
+                    "rounded-xl border p-2.5 text-left transition-colors",
+                    filters.kind === value
+                      ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                      : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  <span className={cn(
+                    "block text-xs font-black",
+                    filters.kind === value ? "text-[var(--accent)]" : "text-[var(--text-1)]"
+                  )}>
+                    {ui(label)}
+                    <span className="ml-1.5 font-bold text-[var(--text-3)]">{count.toLocaleString()}</span>
+                  </span>
+                  <span className="mt-0.5 block text-[10px] font-semibold leading-4 text-[var(--text-3)]">
+                    {ui(blurb)}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -192,6 +242,34 @@ export function CatalogueImport({
               </span>
             </span>
             {filters.commonOnly && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
+          </button>
+
+          {/*
+            The most useful thing this screen can do with our data. The rest of
+            the app already knows which words you miss and which keep going
+            wrong; this turns that into a set instead of leaving it in a
+            tracker you have to read.
+          */}
+          <button
+            type="button"
+            onClick={() => set("strugglingOnly", !filters.strugglingOnly)}
+            aria-pressed={filters.strugglingOnly}
+            className={cn(
+              "flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-colors",
+              filters.strugglingOnly
+                ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+                : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-3)]"
+            )}
+          >
+            <span>
+              <span className={cn("block text-xs font-black", filters.strugglingOnly ? "text-[var(--accent)]" : "text-[var(--text-1)]")}>
+                {ui("Only what I get wrong")}
+              </span>
+              <span className="block text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("From your tracker — things you have missed or keep failing.")}
+              </span>
+            </span>
+            {filters.strugglingOnly && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
           </button>
 
           <div>
@@ -246,6 +324,19 @@ export function CatalogueImport({
             <p className="text-xs font-black text-[var(--text-3)]">
               {results.length.toLocaleString()} {ui("of")} {pool.length.toLocaleString()} {ui("match")}
             </p>
+            {ticked.size > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  onAddMany(results.filter((item) => ticked.has(item.id) && !alreadyAdded.has(item.id)));
+                  setTicked(new Set());
+                }}
+                className="accent-btn inline-flex h-9 items-center gap-2 px-4 text-xs"
+              >
+                <Check className="h-3.5 w-3.5" />
+                {ui("Add selected")} {ticked.size}
+              </button>
+            )}
             {addable.length > 0 && (
               <button
                 type="button"
@@ -267,14 +358,37 @@ export function CatalogueImport({
             <div className="mt-3 space-y-2">
               {shown.map((item) => {
                 const added = alreadyAdded.has(item.id);
+                const isTicked = ticked.has(item.id);
                 return (
+                  <div key={item.id} className="flex items-stretch gap-2">
+                    {/* Ticking is separate from adding: one press to queue a
+                        card, a different one to add it there and then. */}
+                    <button
+                      type="button"
+                      disabled={added}
+                      onClick={() => setTicked((current) => {
+                        const next = new Set(current);
+                        if (next.has(item.id)) next.delete(item.id);
+                        else next.add(item.id);
+                        return next;
+                      })}
+                      aria-pressed={isTicked}
+                      aria-label={ui("Select this one")}
+                      className={cn(
+                        "flex w-9 shrink-0 items-center justify-center rounded-2xl transition-colors",
+                        added ? "opacity-40" : "hover:bg-[var(--surface-3)]"
+                      )}
+                    >
+                      {isTicked
+                        ? <CheckSquare className="h-4 w-4 text-[var(--accent)]" />
+                        : <Square className="h-4 w-4 text-[var(--text-3)] opacity-50" />}
+                    </button>
                   <button
-                    key={item.id}
                     type="button"
                     disabled={added}
                     onClick={() => onAdd(item)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-2xl p-3.5 text-left transition-colors",
+                      "flex min-w-0 flex-1 items-center gap-3 rounded-2xl p-3.5 text-left transition-colors",
                       added ? "cursor-default bg-[var(--surface-2)] opacity-55" : "bg-[var(--surface-2)] hover:bg-[var(--surface-3)]"
                     )}
                   >
@@ -296,6 +410,7 @@ export function CatalogueImport({
                       ? <Check className="h-4 w-4 shrink-0 text-[var(--text-3)]" />
                       : <Plus className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
                   </button>
+                  </div>
                 );
               })}
               {results.length > shown.length && (

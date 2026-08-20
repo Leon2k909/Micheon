@@ -6,8 +6,10 @@ import {
   Layers,
   Pencil,
   Plus,
+  CheckSquare,
   Search,
   Sparkles,
+  Square,
   Trash2,
 } from "lucide-react";
 import { ui } from "@/lib/i18n";
@@ -50,6 +52,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   const [screen, setScreen] = useState<Screen>({ name: "list" });
   const [query, setQuery] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  // Selecting sets, for when several want deleting at once.
+  const [picked, setPicked] = useState<Set<string>>(new Set());
 
   const persist = useCallback((next: StudySet[]) => {
     setSets(next);
@@ -91,6 +95,21 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     persist(sets.filter((entry) => entry.id !== id));
     setConfirmDelete(null);
   }, [persist, sets]);
+
+  const togglePicked = useCallback((id: string) => {
+    setPicked((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const deletePicked = useCallback(() => {
+    picked.forEach((id) => resetStudyProgress(id));
+    persist(sets.filter((entry) => !picked.has(entry.id)));
+    setPicked(new Set());
+  }, [persist, picked, sets]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -178,13 +197,65 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
           )}
         </section>
       ) : (
+        <>
+        {filtered.length > 1 && (
+          <section className="card flex flex-wrap items-center gap-2 p-4">
+            <button
+              type="button"
+              onClick={() => setPicked(
+                picked.size === filtered.length ? new Set() : new Set(filtered.map((entry) => entry.id))
+              )}
+              className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+            >
+              {picked.size === filtered.length
+                ? <CheckSquare className="h-3.5 w-3.5" />
+                : <Square className="h-3.5 w-3.5" />}
+              {ui(picked.size === filtered.length ? "Select none" : "Select all")}
+            </button>
+            {picked.size > 0 && (
+              <>
+                <span className="text-xs font-black text-[var(--accent)]">
+                  {picked.size} {ui("selected")}
+                </span>
+                <button
+                  type="button"
+                  onClick={deletePicked}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--danger-bg)] px-3 text-xs font-black text-[var(--danger-text)] transition-colors hover:brightness-110"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {ui("Delete")} {picked.size} {ui("sets and their progress")}
+                </button>
+              </>
+            )}
+          </section>
+        )}
+
         <section className="grid gap-3 sm:grid-cols-2">
           {filtered.map((set) => {
             const progress = loadStudyProgress(set.id);
             const summary = summariseProgress(set, progress);
             const ready = setIsStudiable(set);
             return (
-              <div key={set.id} className="card flex flex-col p-5">
+              <div
+                key={set.id}
+                className={cn(
+                  "card flex flex-col p-5 transition-shadow",
+                  picked.has(set.id) && "ring-1 ring-[var(--accent)]"
+                )}
+              >
+                {filtered.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => togglePicked(set.id)}
+                    aria-pressed={picked.has(set.id)}
+                    aria-label={ui("Select set")}
+                    className="mb-2 self-start"
+                  >
+                    {picked.has(set.id)
+                      ? <CheckSquare className="h-4 w-4 text-[var(--accent)]" />
+                      : <Square className="h-4 w-4 text-[var(--text-3)] opacity-50" />}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => (ready ? setScreen({ name: "study", setId: set.id }) : setScreen({ name: "edit", setId: set.id }))}
@@ -224,7 +295,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                     )}
                   >
                     <BookOpen className="h-3.5 w-3.5" />
-                    {ui("Study")}
+                    {ui("Practice")}
                   </button>
                   <button
                     type="button"
@@ -280,6 +351,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
             );
           })}
         </section>
+        </>
       )}
 
       {sets.length > 0 && (

@@ -128,11 +128,39 @@ export function SetStudy({
   if (mode === "test") return <>{header}<TestMode cards={cards} set={set} /></>;
   if (mode === "match") return <>{header}<MatchMode cards={cards} /></>;
 
-  const MODES: { id: Mode; title: string; blurb: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: "learn", title: "Learn", blurb: "Walks each card up the stages you set. This is the one that tracks progress.", icon: Target },
-    { id: "flashcards", title: "Flashcards", blurb: "Flip through at your own pace. Nothing is graded.", icon: Layers },
-    { id: "test", title: "Test", blurb: "A graded run over the whole set — multiple choice and typing.", icon: Trophy },
-    { id: "match", title: "Match", blurb: "Pair terms against definitions, against the clock.", icon: Timer },
+  /**
+   * Practise, then test. Two things, not four.
+   *
+   * A flat list of Learn / Flashcards / Test / Match made four equal choices
+   * out of one real decision: am I still learning this, or am I checking
+   * whether I know it? Grouping says which is which, and says out loud that
+   * only practice moves your progress — a test tells you where you stand
+   * without quietly promoting anything.
+   */
+  const GROUPS: {
+    key: "practice" | "test";
+    title: string;
+    blurb: string;
+    modes: { id: Mode; title: string; blurb: string; icon: React.ComponentType<{ className?: string }> }[];
+  }[] = [
+    {
+      key: "practice",
+      title: "Practice",
+      blurb: "Builds the set into your memory. Progress only moves here.",
+      modes: [
+        { id: "learn", title: "Learn", blurb: "Walks each card up the stages you set. The one that tracks progress.", icon: Target },
+        { id: "flashcards", title: "Flashcards", blurb: "Flip through at your own pace. Nothing is graded.", icon: Layers },
+        { id: "match", title: "Match", blurb: "Pair terms against definitions, against the clock.", icon: Timer },
+      ],
+    },
+    {
+      key: "test",
+      title: "Test",
+      blurb: "Checks where you stand. Graded, and it changes nothing.",
+      modes: [
+        { id: "test", title: "Written test", blurb: "Answer the whole set, then see a score and every correction.", icon: Trophy },
+      ],
+    },
   ];
 
   return (
@@ -166,24 +194,41 @@ export function SetStudy({
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        {MODES.map((entry) => (
-          <button
-            key={entry.id}
-            type="button"
-            onClick={() => setMode(entry.id)}
-            className="card card-hover flex items-start gap-3 p-5 text-left"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-              <entry.icon className="h-5 w-5" />
+      {GROUPS.map((group) => (
+        <section key={group.key} className="card p-5 sm:p-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-base font-black tracking-tight text-[var(--text-1)]">{ui(group.title)}</h3>
+            <span className={cn(
+              "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide",
+              group.key === "practice"
+                ? "bg-[var(--accent-dim)] text-[var(--accent)]"
+                : "bg-[var(--surface-2)] text-[var(--text-3)]"
+            )}>
+              {ui(group.key === "practice" ? "tracks progress" : "no effect on progress")}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-black text-[var(--text-1)]">{ui(entry.title)}</span>
-              <span className="mt-0.5 block text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(entry.blurb)}</span>
-            </span>
-          </button>
-        ))}
-      </section>
+          </div>
+          <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">{ui(group.blurb)}</p>
+
+          <div className={cn("mt-4 grid gap-2.5", group.modes.length > 1 && "sm:grid-cols-3")}>
+            {group.modes.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setMode(entry.id)}
+                className="flex items-start gap-3 rounded-2xl bg-[var(--surface-2)] p-4 text-left transition-colors hover:bg-[var(--surface-3)]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+                  <entry.icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-black text-[var(--text-1)]">{ui(entry.title)}</span>
+                  <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">{ui(entry.blurb)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

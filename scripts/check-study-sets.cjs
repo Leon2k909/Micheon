@@ -237,7 +237,7 @@ console.log(
 const imp = (() => {
   const b = esbuild.buildSync({
     stdin: {
-      contents: 'export { levelMatches, filterImportPool, filtersAreEmpty, importPacks, EMPTY_FILTERS, CEFR_LEVELS, IMPORT_POS_GROUPS, ADD_ALL_LIMIT, COMMON_RANK_LIMIT } from "./src/lib/studyImport.ts";',
+      contents: 'export { levelMatches, filterImportPool, filtersAreEmpty, importPacks, isStruggling, EMPTY_FILTERS, CEFR_LEVELS, IMPORT_POS_GROUPS, ADD_ALL_LIMIT, COMMON_RANK_LIMIT } from "./src/lib/studyImport.ts";',
       resolveDir: root,
       sourcefile: "import-entry.ts",
     },
@@ -318,3 +318,155 @@ console.log(
   `check-study-sets: import filters narrow by kind, level, part of speech, pack and frequency, `
   + `combine correctly, and sort most-common-first`
 );
+
+// ── sharing a set ───────────────────────────────────────────────────────────
+// Leon and Michelle share things by pasting them into a chat, so the export
+// has to survive that: what comes out must go back in and give the same cards.
+const shared = M.makeSet("Kitchen words", 2000);
+shared.description = "Things in a German kitchen";
+shared.stages = ["flashcard", "typed"];
+shared.cards = [
+  M.makeCard("der Löffel", "spoon", { now: 1 }),
+  M.makeCard("die Gabel", "fork", { hint: "die Gabeln in the plural", now: 2 }),
+  M.makeCard("das Messer", "knife", { now: 3 }),
+];
+
+const text = M.exportSetToText(shared);
+assert.ok(text.includes("# Kitchen words"), "the title should survive an export");
+assert.ok(text.includes("der Löffel\tspoon"), "cards are exported tab-separated");
+
+const back = M.importSetFromText(text, 3000);
+assert.strictEqual(back.title, "Kitchen words");
+assert.strictEqual(back.description, "Things in a German kitchen");
+assert.deepStrictEqual(back.stages, ["flashcard", "typed"], "the ladder travels with the set");
+assert.strictEqual(back.cards.length, 3, `round trip lost cards: got ${back.cards.length}`);
+assert.strictEqual(back.cards[0].term, "der Löffel");
+assert.strictEqual(back.cards[0].definition, "spoon");
+assert.strictEqual(back.cards[1].hint, "die Gabeln in the plural", "the hint column survives too");
+
+// Somebody pasting a plain list with no header gets cards and no title, which
+// is the right answer rather than an error.
+const bare = M.importSetFromText("der Hund - dog\ndie Katze - cat");
+assert.strictEqual(bare.title, null);
+assert.strictEqual(bare.stages, null);
+assert.strictEqual(bare.cards.length, 2);
+
+// A junk stage name in a shared set is ignored rather than adopted.
+const junk = M.importSetFromText("# X\n# stages: flashcard, wobble\nder Hund\tdog");
+assert.deepStrictEqual(junk.stages, ["flashcard"], "unknown stage names must be dropped, not kept");
+
+// ── the struggling filter ───────────────────────────────────────────────────
+// The most useful thing this screen does with our data: build a set out of
+// the words the tracker already knows you get wrong.
+const graded = [
+  { id: "w:a", rawId: "a", de: "der Hund", en: "dog", kind: "word", rank: 1, search: "der hund dog" },
+  { id: "w:b", rawId: "b", de: "die Katze", en: "cat", kind: "word", rank: 2, search: "die katze cat" },
+  { id: "w:c", rawId: "c", de: "das Pferd", en: "horse", kind: "word", rank: 3, search: "das pferd horse" },
+];
+const grades = {
+  a: { answerMistakes: 3 },
+  b: { difficultyDebt: 2 },
+  // c has nothing recorded — never attempted is not the same as struggling.
+};
+const struggling = imp.filterImportPool(
+  graded,
+  { ...imp.EMPTY_FILTERS, strugglingOnly: true },
+  grades
+).map((item) => item.id);
+assert.deepStrictEqual(struggling.sort(), ["w:a", "w:b"], "only recorded mistakes count as struggling");
+assert.ok(imp.isStruggling(graded[0], grades), "an answer mistake means struggling");
+assert.ok(!imp.isStruggling(graded[2], grades), "an untouched item is not struggling");
+assert.ok(!imp.isStruggling(graded[2], {}), "and neither is anything with no grades at all");
+assert.strictEqual(
+  imp.filterImportPool(graded, { ...imp.EMPTY_FILTERS, strugglingOnly: true }, {}).length,
+  0,
+  "with an empty grade store nothing is struggling"
+);
+// It combines with the rest, so "the A1 nouns I keep failing" is one filter set.
+assert.deepStrictEqual(
+  imp.filterImportPool(graded, { ...imp.EMPTY_FILTERS, strugglingOnly: true, query: "katze" }, grades).map((i) => i.id),
+  ["w:b"],
+  "the struggling filter stacks with the others"
+);
+assert.ok(!imp.filtersAreEmpty({ ...imp.EMPTY_FILTERS, strugglingOnly: true }));
+
+console.log(
+  "check-study-sets: a shared set round-trips through plain text, and the tracker's "
+  + "mistakes can be filtered into a set"
+);
+
+// ── the three things Leon asked to be clearer ───────────────────────────────
+const editorSource = fs.readFileSync(path.join(root, "src/components/create/SetEditor.tsx"), "utf8");
+const importSource2 = fs.readFileSync(path.join(root, "src/components/create/CatalogueImport.tsx"), "utf8");
+const studySource = fs.readFileSync(path.join(root, "src/components/create/SetStudy.tsx"), "utf8");
+
+// 1. Renaming has to look possible before you touch it. A borderless input
+//    looks exactly like a heading, which is why nobody found it.
+assert.ok(editorSource.includes("<Pencil"), "the set title needs a pencil so it reads as editable");
+assert.ok(
+  /aria-label=\{ui\("Set title — click to rename"\)\}/.test(editorSource),
+  "the title input needs a label that says it can be renamed"
+);
+
+// 2. The two catalogues are separate and the picker must say so, with sizes,
+//    rather than leaving it to be inferred from the results.
+assert.ok(importSource2.includes('ui("Which catalogue")'), "the catalogue picker must name itself");
+for (const label of ["Vocabulary", "Phrases", "Both"]) {
+  assert.ok(importSource2.includes(`"${label}"`), `the picker should offer "${label}"`);
+}
+assert.ok(
+  /counts\.word/.test(importSource2) && /counts\.phrase/.test(importSource2),
+  "each catalogue should show its own size"
+);
+
+// 3. Practice and test are two different things and the menu must group them.
+assert.ok(/key: "practice"/.test(studySource), "there must be a practice group");
+assert.ok(/key: "test"/.test(studySource), "there must be a test group");
+assert.ok(
+  studySource.includes('ui(group.key === "practice" ? "tracks progress" : "no effect on progress")'),
+  "the grouping must say which one moves progress — that is the whole distinction"
+);
+
+console.log(
+  "check-study-sets: the title reads as renameable, the two catalogues are named with their "
+  + "sizes, and practice is separated from test"
+);
+
+// ── bulk selection ──────────────────────────────────────────────────────────
+// Importing 250 cards and pruning them one at a time is worse than not
+// importing them, so selection exists in all three places it is needed.
+const createSource = fs.readFileSync(path.join(root, "src/components/create/CreateView.tsx"), "utf8");
+
+// Cards: select, select-all, delete, reorder, and a shortcut to the broken ones.
+assert.ok(editorSource.includes("const [selected, setSelected]"), "the editor needs card selection");
+assert.ok(editorSource.includes("const removeSelected"), "selected cards must be deletable in bulk");
+assert.ok(editorSource.includes("const moveSelected"), "selected cards must be movable in bulk");
+assert.ok(/"Select none" : "Select all"/.test(editorSource), "there must be a select-all toggle");
+assert.ok(
+  editorSource.includes("setSelected(new Set(incomplete.map((card) => card.id)))"),
+  "selecting just the incomplete cards is the common case after a big import"
+);
+// Selection has to key on card ids, not indexes: an index-based selection
+// silently points at whatever slid into the slot after a delete or a reorder.
+assert.ok(
+  /useState<Set<string>>\(new Set\(\)\)/.test(editorSource),
+  "selection must be by id, not by index"
+);
+
+// Sets: select several and delete them together, progress included.
+assert.ok(createSource.includes("const [picked, setPicked]"), "the set list needs selection");
+assert.ok(createSource.includes("const deletePicked"), "selected sets must be deletable in bulk");
+assert.ok(
+  createSource.includes("picked.forEach((id) => resetStudyProgress(id))"),
+  "deleting sets in bulk must take their progress with them, as single deletion does"
+);
+
+// Import: tick some results and add only those.
+assert.ok(importSource2.includes("const [ticked, setTicked]"), "results must be tickable");
+assert.ok(importSource2.includes("Add selected"), "there must be an add-selected");
+assert.ok(
+  importSource2.includes("onAddMany(results.filter((item) => ticked.has(item.id) && !alreadyAdded.has(item.id)))"),
+  "add-selected must skip anything already in the set"
+);
+
+console.log("check-study-sets: cards, sets and search results can all be selected and managed in bulk");

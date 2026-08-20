@@ -6,9 +6,14 @@ import {
   ArrowUp,
   BookOpen,
   ClipboardPaste,
+  Check,
+  Share2,
   Database,
   GripVertical,
+  CheckSquare,
+  Pencil,
   Plus,
+  Square,
   Search,
   Trash2,
   X,
@@ -19,9 +24,12 @@ import { CatalogueImport } from "@/components/create/CatalogueImport";
 import type { ImportItem } from "@/lib/studyImport";
 import {
   ALL_STAGES,
+  DEFAULT_STAGES,
   STUDY_STAGE_BLURBS,
   STUDY_STAGE_LABELS,
   duplicateTerms,
+  exportSetToText,
+  importSetFromText,
   incompleteCards,
   makeCard,
   parsePastedCards,
@@ -31,7 +39,7 @@ import {
   type StudyStage,
 } from "@/lib/studySets";
 
-type Tab = "cards" | "catalogue" | "paste" | "settings";
+type Tab = "cards" | "catalogue" | "paste" | "settings" | "share";
 
 /**
  * The editor.
@@ -60,6 +68,16 @@ export function SetEditor({
 }) {
   const [tab, setTab] = useState<Tab>("cards");
   const [pasteText, setPasteText] = useState("");
+  const [shareText, setShareText] = useState("");
+  const [copied, setCopied] = useState(false);
+  /**
+   * Bulk selection.
+   *
+   * Importing 250 cards and then pruning them one at a time is worse than not
+   * importing them. Ids rather than indexes, so a selection survives reorder
+   * and deletion instead of silently pointing at whatever moved into the slot.
+   */
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const patch = useCallback((changes: Partial<StudySet>) => {
     onChange({ ...set, ...changes, updatedAt: new Date().toISOString() });
@@ -80,6 +98,26 @@ export function SetEditor({
     [next[index], next[target]] = [next[target], next[index]];
     patch({ cards: next });
   }, [patch, set.cards]);
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const removeSelected = useCallback(() => {
+    patch({ cards: set.cards.filter((card) => !selected.has(card.id)) });
+    setSelected(new Set());
+  }, [patch, selected, set.cards]);
+
+  const moveSelected = useCallback((toTop: boolean) => {
+    const picked = set.cards.filter((card) => selected.has(card.id));
+    const rest = set.cards.filter((card) => !selected.has(card.id));
+    patch({ cards: toTop ? [...picked, ...rest] : [...rest, ...picked] });
+  }, [patch, selected, set.cards]);
 
   const addBlank = useCallback(() => {
     patch({ cards: [...set.cards, makeCard("", "", { now: Date.now() })] });
@@ -142,6 +180,7 @@ export function SetEditor({
     ["catalogue", "From catalogue", Database],
     ["paste", "Paste a list", ClipboardPaste],
     ["settings", "How it is studied", GripVertical],
+    ["share", "Share", Share2],
   ];
 
   return (
@@ -172,18 +211,32 @@ export function SetEditor({
           </button>
         </div>
 
-        <input
-          value={set.title}
-          onChange={(event) => patch({ title: event.target.value })}
-          placeholder={ui("Set title")}
-          className="mt-4 w-full border-0 bg-transparent p-0 text-2xl font-black tracking-tight text-[var(--text-1)] outline-none placeholder:text-[var(--text-3)]"
-        />
-        <input
-          value={set.description}
-          onChange={(event) => patch({ description: event.target.value })}
-          placeholder={ui("Add a description (optional)")}
-          className="mt-1.5 w-full border-0 bg-transparent p-0 text-sm font-semibold text-[var(--text-3)] outline-none placeholder:text-[var(--text-3)]"
-        />
+        {/*
+          The title was a borderless input, which looks exactly like a heading
+          and so nobody knew it could be renamed. It now carries a pencil and a
+          box that shows itself on hover and focus — the affordance has to be
+          visible before you touch it, or it may as well not exist.
+        */}
+        <label className="group mt-4 flex items-center gap-2 rounded-xl border border-transparent px-2 py-1 transition-colors hover:border-[var(--border)] hover:bg-[var(--surface-2)] focus-within:border-[var(--accent)] focus-within:bg-[var(--surface-2)]">
+          <Pencil className="h-4 w-4 shrink-0 text-[var(--text-3)] opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:text-[var(--accent)] group-focus-within:opacity-100" />
+          <input
+            value={set.title}
+            onChange={(event) => patch({ title: event.target.value })}
+            placeholder={ui("Set title")}
+            aria-label={ui("Set title — click to rename")}
+            className="w-full border-0 bg-transparent p-0 text-2xl font-black tracking-tight text-[var(--text-1)] outline-none placeholder:text-[var(--text-3)]"
+          />
+        </label>
+        <label className="group flex items-center gap-2 rounded-xl border border-transparent px-2 py-1 transition-colors hover:border-[var(--border)] hover:bg-[var(--surface-2)] focus-within:border-[var(--accent)] focus-within:bg-[var(--surface-2)]">
+          <Pencil className="h-3 w-3 shrink-0 text-[var(--text-3)] opacity-0 transition-opacity group-hover:opacity-70 group-focus-within:opacity-100" />
+          <input
+            value={set.description}
+            onChange={(event) => patch({ description: event.target.value })}
+            placeholder={ui("Add a description (optional)")}
+            aria-label={ui("Set description")}
+            className="w-full border-0 bg-transparent p-0 text-sm font-semibold text-[var(--text-3)] outline-none placeholder:text-[var(--text-3)]"
+          />
+        </label>
 
         {(incomplete.length > 0 || duplicates.length > 0) && (
           <div className="mt-4 space-y-2">
@@ -225,6 +278,68 @@ export function SetEditor({
 
       {tab === "cards" && (
         <section className="card p-5 sm:p-6">
+          {set.cards.length > 1 && (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelected(
+                  selected.size === set.cards.length ? new Set() : new Set(set.cards.map((card) => card.id))
+                )}
+                className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+              >
+                {selected.size === set.cards.length
+                  ? <CheckSquare className="h-3.5 w-3.5" />
+                  : <Square className="h-3.5 w-3.5" />}
+                {ui(selected.size === set.cards.length ? "Select none" : "Select all")}
+              </button>
+
+              {selected.size > 0 && (
+                <>
+                  <span className="text-xs font-black text-[var(--accent)]">
+                    {selected.size} {ui("selected")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => moveSelected(true)}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                    {ui("To top")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSelected(false)}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                    {ui("To bottom")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={removeSelected}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--danger-bg)] px-3 text-xs font-black text-[var(--danger-text)] transition-colors hover:brightness-110"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {ui("Delete")} {selected.size}
+                  </button>
+                </>
+              )}
+
+              {/* Selecting only the broken ones is the common case after a
+                  big paste or import, so it gets its own button. */}
+              {incomplete.length > 0 && selected.size === 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelected(new Set(incomplete.map((card) => card.id)))}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-3)] transition-colors hover:text-[var(--text-1)]"
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  {ui("Select the")} {incomplete.length} {ui("incomplete")}
+                </button>
+              )}
+            </div>
+          )}
+
           {set.cards.length === 0 ? (
             <p className="rounded-2xl bg-[var(--surface-2)] p-6 text-center text-sm font-bold text-[var(--text-3)]">
               {ui("No cards yet. Add one below, pull them from the catalogue, or paste a list.")}
@@ -232,11 +347,26 @@ export function SetEditor({
           ) : (
             <div className="space-y-2.5">
               {set.cards.map((card, index) => (
-                <div key={card.id} className="rounded-2xl bg-[var(--surface-2)] p-3.5">
+                <div
+                  key={card.id}
+                  className={cn(
+                    "rounded-2xl p-3.5 transition-colors",
+                    selected.has(card.id) ? "bg-[var(--accent-dim)] ring-1 ring-[var(--accent)]" : "bg-[var(--surface-2)]"
+                  )}
+                >
                   <div className="flex items-start gap-2">
-                    <span className="mt-2.5 w-6 shrink-0 text-center text-[11px] font-black text-[var(--text-3)]">
-                      {index + 1}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleSelected(card.id)}
+                      aria-pressed={selected.has(card.id)}
+                      aria-label={`${ui("Select card")} ${index + 1}`}
+                      className="mt-1.5 flex w-7 shrink-0 flex-col items-center gap-0.5"
+                    >
+                      {selected.has(card.id)
+                        ? <CheckSquare className="h-4 w-4 text-[var(--accent)]" />
+                        : <Square className="h-4 w-4 text-[var(--text-3)] opacity-50" />}
+                      <span className="text-[10px] font-black text-[var(--text-3)]">{index + 1}</span>
+                    </button>
                     <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2">
                       <input
                         value={card.term}
@@ -366,6 +496,81 @@ export function SetEditor({
             <Plus className="h-4 w-4" />
             {ui("Add")} {parsedPreview.length > 0 ? parsedPreview.length : ""} {ui("cards")}
           </button>
+        </section>
+      )}
+
+      {tab === "share" && (
+        <section className="card p-5 sm:p-6">
+          <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Send this set to someone")}</h3>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+            {ui("Copy the text below and paste it into a message. Whoever receives it pastes it back in here — it is the same format the paste box already reads.")}
+          </p>
+          <textarea
+            readOnly
+            value={exportSetToText(set)}
+            rows={8}
+            onFocus={(event) => event.currentTarget.select()}
+            className="mt-3 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5 font-mono text-xs font-semibold text-[var(--text-2)] outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const text = exportSetToText(set);
+              void navigator.clipboard?.writeText(text)
+                .then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1800); })
+                .catch(() => undefined);
+            }}
+            className="accent-btn mt-3 inline-flex h-11 w-full items-center justify-center gap-2 text-sm"
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+            {ui(copied ? "Copied" : "Copy to clipboard")}
+          </button>
+
+          <h3 className="mt-6 text-sm font-black text-[var(--text-1)]">{ui("Receive a set")}</h3>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+            {ui("Paste a shared set here to add its cards to this one. The title and description stay as they are.")}
+          </p>
+          <textarea
+            value={shareText}
+            onChange={(event) => setShareText(event.target.value)}
+            rows={6}
+            placeholder={"# Kitchen words\nder Löffel\tspoon\ndie Gabel\tfork"}
+            className="mt-3 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5 font-mono text-xs font-semibold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+          />
+          {(() => {
+            const parsed = shareText.trim() ? importSetFromText(shareText, Date.now()) : null;
+            const usable = parsed?.cards.filter((card) => card.term.trim()) ?? [];
+            return (
+              <button
+                type="button"
+                disabled={usable.length === 0}
+                onClick={() => {
+                  if (!parsed) return;
+                  patch({
+                    cards: [...set.cards, ...usable],
+                    // A received set may name its own ladder. Adopt it only if
+                    // this set is still on the default, or the sender would
+                    // silently overwrite a ladder you chose on purpose.
+                    stages: parsed.stages && set.stages.join() === DEFAULT_STAGES.join()
+                      ? parsed.stages
+                      : set.stages,
+                  });
+                  setShareText("");
+                  setTab("cards");
+                }}
+                className={cn(
+                  "mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black transition-colors",
+                  usable.length > 0
+                    ? "bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110"
+                    : "cursor-not-allowed bg-[var(--surface-2)] text-[var(--text-3)]"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                {ui("Add")} {usable.length > 0 ? usable.length : ""} {ui("cards")}
+                {parsed?.title ? ` ${ui("from")} “${parsed.title}”` : ""}
+              </button>
+            );
+          })()}
         </section>
       )}
 
