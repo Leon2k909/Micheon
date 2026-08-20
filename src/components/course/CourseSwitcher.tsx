@@ -12,6 +12,10 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   spanish: "es espanol español spain spanisch espagnol",
   french: "fr francais français france franzosisch französisch",
   csharp: "c# c sharp dotnet .net programming coding sandbox sbox s&box",
+  // Searching a variant by name still reaches it, even though the two share
+  // one row: "american" narrows to the US card, "english" keeps them merged.
+  "english-uk": "english britisch british uk gb england colour practise timetable englisch",
+  "english-us": "english amerikanisch american us usa color practice schedule englisch",
   "life-in-the-uk": "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
@@ -88,7 +92,17 @@ export function CourseSwitcher({
       return normalizedQuery.split(/\s+/).every((term) => folded.includes(term));
     });
   }, [normalizedQuery]);
-  const languages = visibleCourses.filter((c) => c.kind === "language");
+  const allLanguages = visibleCourses.filter((c) => c.kind === "language");
+  // The two English rows are folded into one card — see EnglishCard. They are
+  // pulled out here rather than filtered inside the list so the count above
+  // the section stays honest about how many rows are actually drawn.
+  const englishUk = allLanguages.find((c) => c.id === "english-uk");
+  const englishUs = allLanguages.find((c) => c.id === "english-us");
+  const mergedEnglish = englishUk && englishUs ? { uk: englishUk, us: englishUs } : null;
+  const languages = mergedEnglish
+    ? allLanguages.filter((c) => c.id !== "english-uk" && c.id !== "english-us")
+    : allLanguages;
+  const languageRowCount = languages.length + (mergedEnglish ? 1 : 0);
   const programming = visibleCourses.filter((c) => c.kind === "programming");
   const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
 
@@ -142,6 +156,84 @@ export function CourseSwitcher({
           <Lock className="h-4 w-4 shrink-0 text-[var(--text-3)]" />
         ) : null}
       </button>
+    );
+  };
+
+  /**
+   * English, once, with the two spellings side by side.
+   *
+   * These were two rows in the list — "English (UK)" and "English (US)" —
+   * which read as two languages to learn and made switching between them a
+   * hunt down the list. They are not two courses: selectCourse already treats
+   * them as one, setting the same learn-en direction and only differing in
+   * which spelling and accent it stores. So the picker now says that too, and
+   * the two variants sit next to each other where swapping is one tap.
+   *
+   * It still calls onSelect with the real course id, so nothing downstream
+   * has to know this row is a merge.
+   */
+  const EnglishCard = ({ uk, us }: { uk: (typeof COURSES)[number]; us: (typeof COURSES)[number] }) => {
+    const activeVariant = activeCourseId === uk.id ? "uk" : activeCourseId === us.id ? "us" : null;
+    const variants = [
+      { key: "uk" as const, course: uk, label: "UK", detail: "colour, practise" },
+      { key: "us" as const, course: us, label: "US", detail: "color, practice" },
+    ];
+    return (
+      <div
+        className={cn(
+          "rounded-2xl border p-4 transition-all",
+          activeVariant
+            ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+            : "border-[var(--border)] bg-[var(--surface-2)]"
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)] shadow-[inset_0_0_0_1px_var(--border)]">
+            <CourseArtwork id={uk.id} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <span className="text-sm font-black text-[var(--text-1)]">{ui("English")}</span>
+              <span className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                {ui("Built-in")}
+              </span>
+            </span>
+            <span className="mt-1 block text-[13px] font-bold leading-5 text-[var(--text-3)]">
+              {ui("Same course, two spellings and accents. Pick one — you can swap any time.")}
+            </span>
+          </span>
+          {activeVariant && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {variants.map((variant) => {
+            const selected = activeVariant === variant.key;
+            return (
+              <button
+                key={variant.key}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => { onSelect(variant.course.id); onClose(); }}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all",
+                  selected
+                    ? "border-[var(--accent)] bg-[var(--surface)]"
+                    : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]"
+                )}
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                  <CourseArtwork id={variant.course.id} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-black text-[var(--text-1)]">{variant.label}</span>
+                  <span className="block truncate text-[11px] font-bold text-[var(--text-3)]">{ui(variant.detail)}</span>
+                </span>
+                {selected && <Check className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     );
   };
 
@@ -205,15 +297,19 @@ export function CourseSwitcher({
             </label>
 
             <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
-              {languages.length > 0 && (
+              {languageRowCount > 0 && (
                 <>
                   <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
                     {ui("Languages")}
                     <span className="ml-2 font-bold normal-case tracking-normal opacity-70">
-                      {languages.length}
+                      {languageRowCount}
                     </span>
                   </p>
                   <div className="mt-2 grid gap-2">
+                    {/* English sits at the top of the list: it is the one a
+                        German speaker here is most likely to want, and the
+                        merged card is taller than the rest. */}
+                    {mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
                     {languages.map((c) => <Card key={c.id} {...c} />)}
                   </div>
                 </>
