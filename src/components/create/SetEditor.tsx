@@ -1,4 +1,4 @@
-import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowDown,
@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { buildCatalog, type CatalogItem } from "@/session";
-import { catalogItemMatchesQuery, buildCatalogSearchText } from "@/lib/catalogSearch";
+import { CatalogueImport } from "@/components/create/CatalogueImport";
+import type { ImportItem } from "@/lib/studyImport";
 import {
   ALL_STAGES,
   STUDY_STAGE_BLURBS,
@@ -60,9 +60,6 @@ export function SetEditor({
 }) {
   const [tab, setTab] = useState<Tab>("cards");
   const [pasteText, setPasteText] = useState("");
-  const [query, setQuery] = useState("");
-  const deferredQuery = useDeferredValue(query);
-  const [catalogue, setCatalogue] = useState<CatalogItem[] | null>(null);
 
   const patch = useCallback((changes: Partial<StudySet>) => {
     onChange({ ...set, ...changes, updatedAt: new Date().toISOString() });
@@ -88,62 +85,27 @@ export function SetEditor({
     patch({ cards: [...set.cards, makeCard("", "", { now: Date.now() })] });
   }, [patch, set.cards]);
 
-  // The catalogue is big and only needed on this tab, so it is built the
-  // first time someone opens it rather than on the way in.
-  useEffect(() => {
-    if (tab !== "catalogue" || catalogue || !apiParts) return;
-    let cancelled = false;
-    const build = () => {
-      if (cancelled) return;
-      try {
-        setCatalogue(buildCatalog(apiParts as Record<string, never>));
-      } catch {
-        setCatalogue([]);
-      }
-    };
-    const idle = (window as typeof window & {
-      requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
-    }).requestIdleCallback;
-    if (typeof idle === "function") idle(build, { timeout: 1200 });
-    else window.setTimeout(build, 60);
-    return () => { cancelled = true; };
-  }, [tab, catalogue, apiParts]);
-
+  // Cards keep the id the importer gave them, so a set knows what it already
+  // holds even across the two catalogues, whose ids can collide.
   const alreadyAdded = useMemo(
     () => new Set(set.cards.map((card) => card.catalogueId).filter(Boolean) as string[]),
     [set.cards]
   );
 
-  const matches = useMemo(() => {
-    const needle = deferredQuery.trim().toLocaleLowerCase();
-    if (!catalogue || needle.length < 2) return [];
-    const found: CatalogItem[] = [];
-    for (const item of catalogue) {
-      if (catalogItemMatchesQuery(item, needle, buildCatalogSearchText(item))) {
-        found.push(item);
-        if (found.length >= 60) break;
-      }
-    }
-    return found;
-  }, [catalogue, deferredQuery]);
+  const cardFromImport = useCallback((item: ImportItem) => makeCard(item.de, item.en, {
+    hint: item.hint,
+    source: "catalogue" as const,
+    catalogueId: item.id,
+    now: Date.now(),
+  }), []);
 
-  const addFromCatalogue = useCallback((item: CatalogItem) => {
-    // The gloss and the usage note come across with it. That is the whole
-    // reason to import rather than type: we already know the gender, the
-    // article and when the phrase is used.
-    patch({
-      cards: [
-        ...set.cards,
-        makeCard(item.de, item.en, {
-          hint: item.use || item.when || undefined,
-          source: "catalogue",
-          catalogueId: item.id,
-          now: Date.now(),
-        }),
-      ],
-    });
-  }, [patch, set.cards]);
+  const addFromCatalogue = useCallback((item: ImportItem) => {
+    patch({ cards: [...set.cards, cardFromImport(item)] });
+  }, [cardFromImport, patch, set.cards]);
 
+  const addManyFromCatalogue = useCallback((items: ImportItem[]) => {
+    patch({ cards: [...set.cards, ...items.map(cardFromImport)] });
+  }, [cardFromImport, patch, set.cards]);
   const commitPaste = useCallback(() => {
     const parsed = parsePastedCards(pasteText, Date.now());
     if (parsed.length === 0) return;
@@ -348,74 +310,13 @@ export function SetEditor({
       )}
 
       {tab === "catalogue" && (
-        <section className="card p-5 sm:p-6">
-          <label className="relative block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={ui("Search every word and phrase we have")}
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-4 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
-              type="search"
-            />
-          </label>
-
-          {!apiParts ? (
-            <p className="mt-4 rounded-2xl bg-[var(--surface-2)] p-5 text-center text-sm font-bold text-[var(--text-3)]">
-              {ui("The catalogue is still loading. Try again in a moment.")}
-            </p>
-          ) : !catalogue ? (
-            <p className="mt-4 rounded-2xl bg-[var(--surface-2)] p-5 text-center text-sm font-bold text-[var(--text-3)]">
-              {ui("Preparing the catalogue…")}
-            </p>
-          ) : query.trim().length < 2 ? (
-            <p className="mt-4 rounded-2xl bg-[var(--surface-2)] p-5 text-center text-sm font-bold text-[var(--text-3)]">
-              {catalogue.length.toLocaleString()} {ui("words and phrases. Type at least two letters to search.")}
-            </p>
-          ) : matches.length === 0 ? (
-            <p className="mt-4 rounded-2xl bg-[var(--surface-2)] p-5 text-center text-sm font-bold text-[var(--text-3)]">
-              {ui("Nothing matches that.")}
-            </p>
-          ) : (
-            <div className="mt-4 space-y-2">
-              {matches.map((item) => {
-                const added = alreadyAdded.has(item.id);
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    disabled={added}
-                    onClick={() => addFromCatalogue(item)}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-2xl p-3.5 text-left transition-colors",
-                      added
-                        ? "cursor-default bg-[var(--surface-2)] opacity-55"
-                        : "bg-[var(--surface-2)] hover:bg-[var(--surface-3)]"
-                    )}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-black text-[var(--text-1)]">{item.de}</span>
-                      <span className="block truncate text-xs font-semibold text-[var(--text-3)]">
-                        {item.en}
-                        {item.use ? ` · ${item.use}` : ""}
-                      </span>
-                    </span>
-                    <span className="shrink-0 rounded-full bg-[var(--surface)] px-2 py-1 text-[10px] font-black uppercase text-[var(--text-3)]">
-                      {item.kind === "vocab" ? ui("word") : ui("phrase")}
-                    </span>
-                    {added ? (
-                      <span className="shrink-0 text-[11px] font-black text-[var(--text-3)]">{ui("added")}</span>
-                    ) : (
-                      <Plus className="h-4 w-4 shrink-0 text-[var(--accent)]" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        <CatalogueImport
+          apiParts={apiParts}
+          alreadyAdded={alreadyAdded}
+          onAdd={(item) => addFromCatalogue(item)}
+          onAddMany={(items) => addManyFromCatalogue(items)}
+        />
       )}
-
       {tab === "paste" && (
         <section className="card p-5 sm:p-6">
           <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Paste a list")}</h3>

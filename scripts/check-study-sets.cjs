@@ -229,3 +229,92 @@ console.log(
   `check-study-sets: ${M.ALL_STAGES.length} stages, ladder promotes on ${M.MASTERY_TARGET} in a row and demotes on a miss, `
   + "paste keeps every line, and Create is wired into the beta nav"
 );
+
+// ── the import filters ──────────────────────────────────────────────────────
+// Picking cards one at a time out of 23,000 is a chore, so the filters are
+// the feature. They are checked against a stand-in pool rather than the real
+// catalogue: what matters is that each filter narrows the way it claims to.
+const imp = (() => {
+  const b = esbuild.buildSync({
+    stdin: {
+      contents: 'export { levelMatches, filterImportPool, filtersAreEmpty, importPacks, EMPTY_FILTERS, CEFR_LEVELS, IMPORT_POS_GROUPS, ADD_ALL_LIMIT, COMMON_RANK_LIMIT } from "./src/lib/studyImport.ts";',
+      resolveDir: root,
+      sourcefile: "import-entry.ts",
+    },
+    alias: { "@": path.join(root, "src") },
+    bundle: true, format: "cjs", platform: "node", target: "node20", write: false, logLevel: "silent",
+  });
+  const mod = new Module("study-import", module);
+  mod.filename = path.join(root, ".study-import.cjs");
+  mod.paths = Module._nodeModulePaths(root);
+  mod._compile(b.outputFiles[0].text, mod.filename);
+  return mod.exports;
+})();
+
+// A stated range must satisfy every level inside it. Nine catalogue entries
+// carry one, and dropping them from an A2 filter would quietly hide material
+// the learner asked for.
+assert.ok(imp.levelMatches("A2", "A2"));
+assert.ok(imp.levelMatches("a2", "A2"), "level matching is case-insensitive");
+assert.ok(imp.levelMatches("A2-B2", "B1"), "a range must include the levels between its ends");
+assert.ok(imp.levelMatches("A2-B2", "A2"), "and its lower end");
+assert.ok(imp.levelMatches("A2-B2", "B2"), "and its upper end");
+assert.ok(!imp.levelMatches("A2-B2", "C1"), "but not levels outside it");
+assert.ok(!imp.levelMatches("B1", "A1"));
+assert.ok(!imp.levelMatches(undefined, "A1"), "an item with no level matches no level filter");
+
+const pool = [
+  { id: "w:1", de: "der Hund", en: "dog", kind: "word", level: "A1", pos: "noun", packKey: "p1", packLabel: "Animals", rank: 300, search: "der hund dog" },
+  { id: "w:2", de: "laufen", en: "to run", kind: "word", level: "A2", pos: "verb", packKey: "p1", packLabel: "Animals", rank: 800, search: "laufen to run" },
+  { id: "w:3", de: "schnell", en: "fast", kind: "word", level: "A1", pos: "adjective", packKey: "p2", packLabel: "Describing", rank: 5000, search: "schnell fast" },
+  { id: "w:4", de: "dennoch", en: "nevertheless", kind: "word", level: "C1", pos: "adverb", packKey: "p2", packLabel: "Describing", rank: 9000, search: "dennoch nevertheless" },
+  { id: "p:1", de: "Wie geht es dir?", en: "How are you?", kind: "phrase", level: "A1", packKey: "p3", packLabel: "Greetings", rank: Infinity, search: "wie geht es dir how are you" },
+];
+
+const only = (filters) => imp.filterImportPool(pool, { ...imp.EMPTY_FILTERS, ...filters }).map((item) => item.id);
+
+assert.deepStrictEqual(only({}).length, 5, "no filters means everything");
+assert.deepStrictEqual(only({ kind: "word" }).sort(), ["w:1", "w:2", "w:3", "w:4"], "the word filter must exclude phrases");
+assert.deepStrictEqual(only({ kind: "phrase" }), ["p:1"], "and the phrase filter must exclude words");
+assert.deepStrictEqual(only({ level: "A1" }).sort(), ["p:1", "w:1", "w:3"], "the A1 filter must take A1 of both kinds");
+assert.deepStrictEqual(only({ pos: "noun" }), ["w:1"]);
+assert.deepStrictEqual(only({ pos: "verb" }), ["w:2"], "the verb filter must not sweep in adverbs");
+assert.deepStrictEqual(only({ pos: "adverb" }), ["w:4"], "adverbs are their own group, not verbs");
+assert.deepStrictEqual(only({ pack: "p1" }).sort(), ["w:1", "w:2"], "the pack filter narrows to one theme");
+assert.deepStrictEqual(only({ commonOnly: true }).sort(), ["w:1", "w:2"], "common means inside the frequency limit");
+assert.deepStrictEqual(only({ query: "dog" }), ["w:1"], "search still works alongside the filters");
+
+// Filters combine rather than replace one another.
+assert.deepStrictEqual(only({ kind: "word", level: "A1", pos: "noun" }), ["w:1"], "filters must stack");
+assert.deepStrictEqual(only({ level: "A1", commonOnly: true }), ["w:1"], "A1 and common together");
+assert.deepStrictEqual(only({ level: "C1", commonOnly: true }), [], "a combination with no members returns nothing");
+
+// Most common first, because someone building "the A1 nouns" wants the ones
+// they will meet first, not an alphabetical list starting at Abend.
+const ordered = imp.filterImportPool(pool, { ...imp.EMPTY_FILTERS, kind: "word" }).map((item) => item.rank);
+assert.deepStrictEqual(ordered, [...ordered].sort((a, b) => a - b), "results must be ordered most common first");
+
+assert.ok(imp.filtersAreEmpty(imp.EMPTY_FILTERS), "the default filters count as empty");
+assert.ok(!imp.filtersAreEmpty({ ...imp.EMPTY_FILTERS, level: "A1" }), "a set level is not empty");
+assert.ok(!imp.filtersAreEmpty({ ...imp.EMPTY_FILTERS, query: "hund" }), "nor is a query");
+
+const packs = imp.importPacks(pool);
+assert.strictEqual(packs.length, 3, "every pack in the pool should be offered");
+assert.strictEqual(packs[0].count, 2, "packs are listed biggest first");
+assert.strictEqual(packs[0].label, "Animals");
+
+assert.ok(imp.ADD_ALL_LIMIT >= 100 && imp.ADD_ALL_LIMIT <= 1000, "add-all needs a sane cap");
+assert.strictEqual(imp.CEFR_LEVELS.length, 6, "A1 through C2");
+assert.ok(imp.IMPORT_POS_GROUPS.length >= 4, "there should be a real choice of parts of speech");
+
+// The importer must reach BOTH catalogues. buildCatalog alone is phrases
+// only — someone looking for a noun would find sentences containing it and no
+// way to add the word itself, which is how this shipped the first time.
+const importSource = fs.readFileSync(path.join(root, "src/lib/studyImport.ts"), "utf8");
+assert.ok(importSource.includes("buildWordCatalog"), "the import pool must include the vocabulary");
+assert.ok(importSource.includes("buildCatalog"), "and the phrases");
+
+console.log(
+  `check-study-sets: import filters narrow by kind, level, part of speech, pack and frequency, `
+  + `combine correctly, and sort most-common-first`
+);
