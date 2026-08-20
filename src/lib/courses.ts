@@ -60,7 +60,7 @@ export function resolveLessonForBackground(lesson: Lesson, bg: CodeBackground | 
   return { ...lesson, blocks };
 }
 
-export type CourseKind = "language" | "programming";
+export type CourseKind = "language" | "programming" | "citizenship";
 
 export type Course = {
   id: string;

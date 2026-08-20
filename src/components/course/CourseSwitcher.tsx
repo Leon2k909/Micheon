@@ -12,6 +12,7 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   spanish: "es espanol español spain spanisch espagnol",
   french: "fr francais français france franzosisch französisch",
   csharp: "c# c sharp dotnet .net programming coding sandbox sbox s&box",
+  "life-in-the-uk": "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
   ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),
@@ -89,6 +90,7 @@ export function CourseSwitcher({
   }, [normalizedQuery]);
   const languages = visibleCourses.filter((c) => c.kind === "language");
   const programming = visibleCourses.filter((c) => c.kind === "programming");
+  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
 
   useEffect(() => {
     if (!open) return;
@@ -164,7 +166,7 @@ export function CourseSwitcher({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Switch course")}</h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language or a programming track.")}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language, a programming track or the Life in the UK course.")}</p>
               </div>
               <button
                 type="button"
@@ -222,6 +224,15 @@ export function CourseSwitcher({
                   <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Programming")}</p>
                   <div className="mt-2 grid gap-2">
                     {programming.map((c) => <Card key={c.id} {...c} />)}
+                  </div>
+                </>
+              )}
+
+              {citizenship.length > 0 && (
+                <>
+                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Living in the UK")}</p>
+                  <div className="mt-2 grid gap-2">
+                    {citizenship.map((c) => <Card key={c.id} {...c} />)}
                   </div>
                 </>
               )}
