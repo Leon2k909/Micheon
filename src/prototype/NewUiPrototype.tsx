@@ -112,6 +112,7 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
+import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
 import heroImage from "./assets/micheon-hero-v3.webp";
@@ -135,13 +136,14 @@ const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboa
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
+const CreateView = lazy(() => import("@/components/create/CreateView").then((module) => ({ default: module.CreateView })));
 const DuoPathView = lazy(() => import("@/components/duo/DuoPathView").then((module) => ({ default: module.DuoPathView })));
 const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
 const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then((module) => ({ default: module.UkTestView })));
 const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
 const UkSearchView = lazy(() => import("@/components/lifeInTheUk/UkSearchView").then((module) => ({ default: module.UkSearchView })));
 
-type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
+type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk" | "create";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -204,6 +206,9 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
 
 const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends", icon: UsersRound };
 const SHOP_NAVIGATION_ITEM: NavigationItem = { id: "shop", label: "Shop", icon: ShoppingBag };
+// Create sits with the other beta entries: it is the newest thing here and
+// the two accounts that can see beta are the two people using the app.
+const CREATE_NAVIGATION_ITEM: NavigationItem = { id: "create", label: "Create", icon: PlusSquare };
 
 const LIFE_IN_THE_UK_COURSE_ID = "life-in-the-uk";
 
@@ -472,6 +477,7 @@ const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
 const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "listen"];
 
 function Sidebar({
+  createUnlocked,
   activeView,
   gamesUnlocked,
   onNavigate,
@@ -482,6 +488,7 @@ function Sidebar({
   width,
 }: {
   activeView: PrototypeView;
+  createUnlocked: boolean;
   gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
   onPrefetch: (view: PrototypeView) => void;
@@ -497,6 +504,7 @@ function Sidebar({
   // other account gets the main navigation and nothing half-built.
   const navigationItems = NAVIGATION.filter((item) => item.id !== "games");
   const betaItems = [
+    ...(createUnlocked ? [CREATE_NAVIGATION_ITEM] : []),
     ...(gamesUnlocked ? [NAVIGATION.find((item) => item.id === "games")!] : []),
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
     ...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : []),
@@ -2466,6 +2474,7 @@ export default function NewUiPrototype({
   // keeps them (badged Beta); every other account sees no Games tab and a
   // coming-soon card if it lands on the view another way.
   const gamesUnlocked = leonOnlyFeaturesUnlocked;
+  const createUnlocked = leonOnlyFeaturesUnlocked;
   const activeCourse = getCourse(activeCourseId) ?? getCourse("german");
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
@@ -2834,6 +2843,12 @@ export default function NewUiPrototype({
         </Suspense>
       </div>
     ) : <AccountGate onRequestSignIn={onRequestSignIn} />
+  ) : activeView === "create" ? (
+    <div className="np-feature-host">
+      <Suspense fallback={<FeatureLoading />}>
+        <CreateView apiParts={apiParts} />
+      </Suspense>
+    </div>
   ) : activeView === "life-in-uk" ? (
     <div className="np-feature-host">
       {ukCourse ? (
@@ -2952,6 +2967,7 @@ export default function NewUiPrototype({
         >
           <Sidebar
             activeView={activeView}
+            createUnlocked={createUnlocked}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
             onPrefetch={prefetchView}

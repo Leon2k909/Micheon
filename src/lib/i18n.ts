@@ -414,6 +414,7 @@ const DE: Record<string, string> = {
   "Today": "Heute",
   "Learning path": "Lernpfad",
   "Games": "Spiele",
+  "Create": "Erstellen",
   "Preferences": "Einstellungen",
   "Account": "Konto",
   "day streak · switch": "Tage in Folge · wechseln",
