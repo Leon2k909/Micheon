@@ -10,7 +10,10 @@ import {
   Search,
   Sparkles,
   Square,
+  Target,
+  Timer,
   Trash2,
+  Trophy,
 } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -27,12 +30,32 @@ import {
   type StudySet,
 } from "@/lib/studySets";
 import { SetEditor } from "@/components/create/SetEditor";
-import { SetStudy } from "@/components/create/SetStudy";
+import { SetStudy, type StudyMode } from "@/components/create/SetStudy";
 
 type Screen =
   | { name: "list" }
   | { name: "edit"; setId: string }
-  | { name: "study"; setId: string };
+  | { name: "study"; setId: string; mode?: StudyMode };
+
+/**
+ * The four ways to study a set, on the set itself.
+ *
+ * Learn first and in the accent colour, because it is the only one that moves
+ * your progress; the other three are chosen for a reason and should not be
+ * dressed as the default.
+ */
+const STUDY_LAUNCHERS: {
+  mode: StudyMode;
+  label: string;
+  blurb: string;
+  icon: React.ComponentType<{ className?: string }>;
+  primary?: boolean;
+}[] = [
+  { mode: "learn", label: "Learn", blurb: "Walks each card up the stages you set. The one that tracks progress.", icon: Target, primary: true },
+  { mode: "flashcards", label: "Cards", blurb: "Flip through at your own pace. Nothing is graded.", icon: Layers },
+  { mode: "test", label: "Test", blurb: "Answer the whole set, then see a score and every correction.", icon: Trophy },
+  { mode: "match", label: "Match", blurb: "Pair terms against definitions, against the clock.", icon: Timer },
+];
 
 /**
  * Create — your own sets, studied with our engine.
@@ -140,6 +163,9 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     return (
       <SetStudy
         set={active}
+        // Picked on the card, so the mode menu is skipped rather than shown
+        // and immediately dismissed. Back still lands on it.
+        initialMode={screen.mode}
         onBack={() => setScreen({ name: "list" })}
         onEdit={() => setScreen({ name: "edit", setId: active.id })}
       />
@@ -282,65 +308,95 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                   )}
                 </button>
 
-                <div className="mt-4 flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={!ready}
-                    onClick={() => setScreen({ name: "study", setId: set.id })}
-                    className={cn(
-                      "inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-colors",
-                      ready
-                        ? "bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110"
-                        : "cursor-not-allowed bg-[var(--surface-2)] text-[var(--text-3)]"
-                    )}
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                    {ui("Practice")}
-                  </button>
+                {/*
+                  Every way to study, on the card.
+                  A single "Practice" button hid Flashcards, Learn, Test and
+                  Match behind a menu nobody had a reason to open — Leon: "i
+                  only see practice button, not tests like quizlet". They are
+                  four different intentions, so they are four buttons, and
+                  Learn leads because it is the one that moves progress.
+                */}
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {STUDY_LAUNCHERS.map((launcher) => (
+                    <button
+                      key={launcher.mode}
+                      type="button"
+                      disabled={!ready}
+                      title={ui(launcher.blurb)}
+                      onClick={() => setScreen({ name: "study", setId: set.id, mode: launcher.mode })}
+                      className={cn(
+                        "inline-flex h-10 items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-colors",
+                        !ready && "cursor-not-allowed bg-[var(--surface-2)] text-[var(--text-3)]",
+                        ready && launcher.primary && "bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110",
+                        ready && !launcher.primary
+                          && "bg-[var(--surface-2)] text-[var(--text-1)] hover:bg-[var(--surface-3)]"
+                      )}
+                    >
+                      <launcher.icon className="h-3.5 w-3.5" />
+                      {ui(launcher.label)}
+                    </button>
+                  ))}
+                </div>
+
+                {/*
+                  And the three that were icons alone: "it should be more
+                  clear what these buttons do". A pencil, two squares and a
+                  bin are a guessing game, so they say what they are.
+                */}
+                <div className="mt-2 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setScreen({ name: "edit", setId: set.id })}
-                    aria-label={ui("Edit set")}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
                   >
                     <Pencil className="h-3.5 w-3.5" />
+                    {ui("Edit")}
                   </button>
                   <button
                     type="button"
                     onClick={() => duplicateSet(set)}
-                    aria-label={ui("Duplicate set")}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
                   >
                     <Copy className="h-3.5 w-3.5" />
+                    {ui("Duplicate")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(set.id)}
-                    aria-label={ui("Delete set")}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--text-3)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-3)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
+                    {ui("Delete")}
                   </button>
                 </div>
 
-                {/* Deleting takes the progress with it, so it asks first. */}
+                {/*
+                  Deleting takes the progress with it, so it asks first — and
+                  the asking has to look like a choice. It rendered as two
+                  lines of bare text on a panel the same colour as the card,
+                  because --danger-bg and --danger-text were never defined in
+                  any theme; they are now, beside the --success pair they were
+                  written to match.
+                */}
                 {confirmDelete === set.id && (
-                  <div className="mt-3 rounded-2xl bg-[var(--danger-bg)] p-3.5">
-                    <p className="text-xs font-black text-[var(--danger-text)]">
+                  <div className="mt-3 rounded-2xl border border-[var(--danger-border)] bg-[var(--danger-bg)] p-3.5">
+                    <p className="flex items-center gap-2 text-xs font-black text-[var(--danger-text)]">
+                      <Trash2 className="h-3.5 w-3.5 shrink-0" />
                       {ui("Delete this set and its progress?")}
                     </p>
                     <div className="mt-2.5 flex gap-2">
                       <button
                         type="button"
                         onClick={() => deleteSet(set.id)}
-                        className="h-8 flex-1 rounded-lg bg-[var(--danger-text)] text-xs font-black text-white"
+                        className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--danger-text)] text-xs font-black text-[var(--surface)] transition-transform hover:brightness-110 active:scale-[0.98]"
                       >
+                        <Trash2 className="h-3.5 w-3.5" />
                         {ui("Delete")}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(null)}
-                        className="h-8 flex-1 rounded-lg bg-[var(--surface)] text-xs font-black text-[var(--text-2)]"
+                        className="inline-flex h-9 flex-1 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-black text-[var(--text-1)] transition-colors hover:bg-[var(--surface-2)]"
                       >
                         {ui("Keep")}
                       </button>

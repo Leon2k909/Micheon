@@ -28,6 +28,12 @@
   --ink-text: #ffffff;
   --success-bg: #dcfff1;
   --success-text: #139a62;
+  --danger-bg: #ffe4e9;
+  --danger-text: #c0304c;
+  --danger-border: #f3b9c4;
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--text-1));
+  --surface-1: var(--surface);
+  --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
   --info-bg: #dbeeff;
   --info-text: #2374c7;
   --activity-green-soft-bg: #e7f7df;
@@ -65,6 +71,12 @@ html[data-theme="light"] {
   --ink-text: #ffffff;
   --success-bg: #dcfff1;
   --success-text: #139a62;
+  --danger-bg: #ffe4e9;
+  --danger-text: #c0304c;
+  --danger-border: #f3b9c4;
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--text-1));
+  --surface-1: var(--surface);
+  --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
   --info-bg: #dbeeff;
   --info-text: #2374c7;
   --shadow: rgba(25, 27, 38, 0.06);
@@ -94,6 +106,12 @@ html[data-theme="dark"] {
   --ink-text: #11121a;
   --success-bg: #173f32;
   --success-text: #7ff0ba;
+  --danger-bg: #3a2026;
+  --danger-text: #ff8a9b;
+  --danger-border: #7a3344;
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--text-1));
+  --surface-1: var(--surface);
+  --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
   --info-bg: #1c3453;
   --info-text: #8fc6ff;
   --activity-green-soft-bg: #1d4027;
@@ -608,7 +626,8 @@ button { cursor: pointer; }
   right: clamp(16px, 2.2vw, 34px);
   bottom: clamp(16px, 2.2vw, 30px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* A grip column in front of the copy, so the bar looks draggable. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   width: min(680px, calc(100vw - 40px));
@@ -622,6 +641,41 @@ button { cursor: pointer; }
     inset 0 1px 0 color-mix(in srgb, white 42%, transparent);
   backdrop-filter: blur(18px) saturate(1.12);
   animation: listen-mini-enter 220ms cubic-bezier(.2,.8,.2,1) both;
+}
+/*
+ * Dragging.
+ *
+ * The player used to be nailed to the bottom right, on top of whatever the
+ * page had put there. touch-action: none stops a touchscreen scrolling the
+ * page out from under a drag, and the cursor is the only affordance most
+ * people will look for.
+ */
+.listen-mini-player__grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 2px;
+  color: var(--text-3);
+  cursor: grab;
+  touch-action: none;
+}
+.listen-mini-player__grip svg {
+  width: 16px;
+  height: 16px;
+}
+.listen-mini-player[data-dragging="true"] {
+  animation: none;
+  cursor: grabbing;
+  user-select: none;
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--border-strong) 48%, transparent),
+    0 26px 60px color-mix(in srgb, var(--text-1) 26%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 42%, transparent);
+}
+.listen-mini-player[data-dragging="true"] .listen-mini-player__grip {
+  cursor: grabbing;
+  color: var(--accent);
 }
 .listen-mini-player__copy {
   display: grid;
@@ -730,9 +784,12 @@ button { cursor: pointer; }
   .listen-mini-player {
     right: 10px;
     bottom: 78px;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     width: calc(100vw - 20px);
   }
+  /* A full-width bar has nowhere to be dragged to, and the grip would only
+     eat room the German line needs. */
+  .listen-mini-player__grip { display: none; }
   .listen-mini-player__text > span { display: none; }
   .listen-mini-player__step,
   .listen-mini-player__volume { display: none; }
@@ -3704,6 +3761,12 @@ a { color: inherit; text-decoration: none; }
   --ink-text: #fff;
   --success-bg: #e3f6dc;
   --success-text: #1f7d30;
+  --danger-bg: #fdeaee;
+  --danger-text: #b02a45;
+  --danger-border: #e7a9b6;
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--text-1));
+  --surface-1: var(--surface);
+  --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
   --shadow: rgba(56, 81, 47, 0.08);
   --shadow-strong: rgba(56, 81, 47, 0.18);
   --fs-bg: #fffaf1;
@@ -6327,6 +6390,12 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session {
   --ink-text: #0b0e13;
   --success-bg: #12301f;
   --success-text: #7fe6a0;
+  --danger-bg: #33191f;
+  --danger-text: #ff9aa8;
+  --danger-border: #6f2f3c;
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--text-1));
+  --surface-1: var(--surface);
+  --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
   --shadow: rgba(0, 0, 0, 0.34);
   --shadow-strong: rgba(0, 0, 0, 0.5);
   --fs-bg: #0b0e13;

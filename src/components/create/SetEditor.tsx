@@ -24,6 +24,8 @@ import { CatalogueImport } from "@/components/create/CatalogueImport";
 import type { ImportItem } from "@/lib/studyImport";
 import {
   ALL_STAGES,
+  MASTERY_TARGET_RANGE,
+  ROUND_SIZE_CHOICES,
   DEFAULT_STAGES,
   STUDY_STAGE_BLURBS,
   STUDY_STAGE_LABELS,
@@ -578,7 +580,7 @@ export function SetEditor({
         <section className="card p-5 sm:p-6">
           <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Stages")}</h3>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-            {ui("A Learn session walks each card up this ladder. Two right in a row promotes it; getting it wrong drops it back one. Reorder or switch off whichever you like.")}
+            {ui("A Learn session walks each card up this ladder. Reorder or switch off whichever you like; what it takes to climb is set below.")}
           </p>
 
           <div className="mt-3 space-y-2">
@@ -640,6 +642,87 @@ export function SetEditor({
               </div>
             </div>
           )}
+
+          {/*
+            Choosing the stages settles what a card is asked. These settle how
+            hard it is to get past them, which is the other half of "the
+            stages should be more customisable".
+          */}
+          <h3 className="mt-6 text-sm font-black text-[var(--text-1)]">{ui("How the ladder is climbed")}</h3>
+
+          <div className="mt-3 rounded-2xl bg-[var(--surface-2)] p-3.5">
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Right answers to promote")}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+              {ui("How many in a row before a card moves up a stage. One is quick; four makes you prove it.")}
+            </p>
+            <div className="mt-2.5 flex gap-2">
+              {Array.from({ length: MASTERY_TARGET_RANGE.max - MASTERY_TARGET_RANGE.min + 1 }, (_, index) =>
+                MASTERY_TARGET_RANGE.min + index).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => patch({ masteryTarget: value })}
+                  aria-pressed={set.masteryTarget === value}
+                  className={cn(
+                    "h-9 flex-1 rounded-xl text-xs font-black transition-colors",
+                    set.masteryTarget === value
+                      ? "bg-[var(--accent)] text-[var(--accent-text)]"
+                      : "bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-2 rounded-2xl bg-[var(--surface-2)] p-3.5">
+            <p className="text-sm font-black text-[var(--text-1)]">{ui("Cards per round")}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+              {ui("How many a Learn session asks before it stops and shows you where you got to.")}
+            </p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {ROUND_SIZE_CHOICES.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => patch({ roundSize: value })}
+                  aria-pressed={set.roundSize === value}
+                  className={cn(
+                    "h-9 min-w-[3rem] flex-1 rounded-xl text-xs font-black transition-colors",
+                    set.roundSize === value
+                      ? "bg-[var(--accent)] text-[var(--accent-text)]"
+                      : "bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => patch({ demoteOnWrong: !set.demoteOnWrong })}
+            aria-pressed={set.demoteOnWrong}
+            className="mt-2 flex w-full items-center gap-3 rounded-2xl bg-[var(--surface-2)] p-3.5 text-left transition-colors hover:bg-[var(--surface-3)]"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-black text-[var(--text-1)]">{ui("A mistake costs a stage")}</span>
+              <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                {ui("On: getting one wrong drops the card back down the ladder. Off: it only resets the streak, so a slip never undoes work.")}
+              </span>
+            </span>
+            <span className={cn(
+              "flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors",
+              set.demoteOnWrong ? "bg-[var(--accent)]" : "bg-[var(--surface-3)]"
+            )}>
+              <span className={cn(
+                "h-5 w-5 rounded-full bg-white transition-transform",
+                set.demoteOnWrong && "translate-x-5"
+              )} />
+            </span>
+          </button>
 
           <h3 className="mt-6 text-sm font-black text-[var(--text-1)]">{ui("Which side is asked")}</h3>
           <div className="mt-2 grid grid-cols-2 gap-2">

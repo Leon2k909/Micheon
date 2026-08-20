@@ -52,6 +52,17 @@ export type StudySet = {
   speak: boolean;
   /** Which stages a Learn session walks through, in order. */
   stages: StudyStage[];
+  /**
+   * How the ladder is climbed, not just what is on it.
+   *
+   * Choosing the stages settled what a card is asked; these settle how hard
+   * it is to get past them. Leon: "the stages should be more customisable" —
+   * so the number of right answers a promotion costs, the size of a round,
+   * and whether a mistake knocks a card back down are the set's to decide.
+   */
+  masteryTarget: number;
+  roundSize: number;
+  demoteOnWrong: boolean;
 };
 
 /**
@@ -81,8 +92,27 @@ export const STUDY_STAGE_BLURBS: Record<StudyStage, string> = {
 export const DEFAULT_STAGES: StudyStage[] = ["flashcard", "choice", "typed"];
 export const ALL_STAGES: StudyStage[] = ["flashcard", "choice", "typed", "reverse"];
 
-/** How many correct answers in a row retire a card from a Learn session. */
+/** How many correct answers in a row promote a card, when a set says nothing. */
 export const MASTERY_TARGET = 2;
+
+/** How many cards a Learn round asks about, when a set says nothing. */
+export const DEFAULT_ROUND_SIZE = 10;
+
+/** The ends of each dial, so the editor and the loader agree on them. */
+export const MASTERY_TARGET_RANGE = { min: 1, max: 5 } as const;
+export const ROUND_SIZE_CHOICES = [5, 7, 10, 15, 20, 30, 50] as const;
+
+const clampMastery = (value: unknown): number => {
+  const number = Math.round(Number(value));
+  if (!Number.isFinite(number)) return MASTERY_TARGET;
+  return Math.min(MASTERY_TARGET_RANGE.max, Math.max(MASTERY_TARGET_RANGE.min, number));
+};
+
+const clampRoundSize = (value: unknown): number => {
+  const number = Math.round(Number(value));
+  if (!Number.isFinite(number)) return DEFAULT_ROUND_SIZE;
+  return Math.min(100, Math.max(3, number));
+};
 
 export type StudyCardProgress = {
   /** Consecutive correct answers at the current stage. */
@@ -110,6 +140,9 @@ export function loadStudySets(profile: UserProfile | null = getAuthUser()): Stud
     speak: set.speak !== false,
     stages: Array.isArray(set.stages) && set.stages.length > 0 ? set.stages : DEFAULT_STAGES,
     description: set.description ?? "",
+    masteryTarget: clampMastery(set.masteryTarget),
+    roundSize: clampRoundSize(set.roundSize),
+    demoteOnWrong: set.demoteOnWrong !== false,
   }));
 }
 
@@ -170,6 +203,9 @@ export function makeSet(title: string, now: number): StudySet {
     promptSide: "term",
     speak: true,
     stages: [...DEFAULT_STAGES],
+    masteryTarget: MASTERY_TARGET,
+    roundSize: DEFAULT_ROUND_SIZE,
+    demoteOnWrong: true,
   };
 }
 
@@ -273,28 +309,35 @@ export function summariseProgress(set: StudySet, progress: StudySetProgress): St
 /**
  * Fold one answer into a card's progress.
  *
- * A right answer advances the streak, and MASTERY_TARGET in a row promotes
- * the card to the next stage — or retires it if that was the last. A wrong
- * answer resets the streak and drops the card back a stage, because getting
- * it wrong at typing means recognition was not as solid as it looked.
+ * A right answer advances the streak, and enough in a row promotes the card
+ * to the next stage — or retires it if that was the last. A wrong answer
+ * resets the streak and drops the card back a stage, because getting it wrong
+ * at typing means recognition was not as solid as it looked.
+ *
+ * How many is "enough", and whether a mistake really costs a stage, are the
+ * set's to choose. The defaults are what a set written before those dials
+ * existed silently used, so nobody's progress shifts under them.
  */
 export function applyAnswer(
   current: StudyCardProgress | undefined,
   correct: boolean,
-  stageCount: number
+  stageCount: number,
+  rules: { masteryTarget?: number; demoteOnWrong?: boolean } = {}
 ): StudyCardProgress {
+  const target = clampMastery(rules.masteryTarget ?? MASTERY_TARGET);
+  const demote = rules.demoteOnWrong !== false;
   const entry = current ?? emptyProgress();
   if (!correct) {
     return {
       ...entry,
       streak: 0,
       wrong: entry.wrong + 1,
-      stage: Math.max(0, entry.stage - 1),
+      stage: demote ? Math.max(0, entry.stage - 1) : entry.stage,
       mastered: false,
     };
   }
   const streak = entry.streak + 1;
-  if (streak < MASTERY_TARGET) {
+  if (streak < target) {
     return { ...entry, streak, correct: entry.correct + 1, mastered: false };
   }
   const nextStage = entry.stage + 1;
@@ -318,7 +361,7 @@ export function applyAnswer(
 export function buildLearnRound(
   set: StudySet,
   progress: StudySetProgress,
-  size = 10
+  size = clampRoundSize(set.roundSize)
 ): { card: StudyCard; stage: StudyStage }[] {
   const stages = set.stages.length > 0 ? set.stages : DEFAULT_STAGES;
   const pending = studiableCards(set)

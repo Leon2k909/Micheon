@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   CalendarClock,
@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  GripVertical,
   Headphones,
   ListMusic,
   Minimize2,
@@ -75,6 +76,13 @@ import {
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
+import {
+  loadMiniPlayerPosition,
+  miniPlayerFraction,
+  miniPlayerPixels,
+  saveMiniPlayerPosition,
+  type MiniPlayerPosition,
+} from "@/lib/miniPlayerPosition";
 import type { LearningDirection } from "@/lib/direction";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 
@@ -324,6 +332,17 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [petBilingualCaptions, setPetBilingualCaptions] = useState(
     () => getListenPetBilingualCaptions(profile)
   );
+  // Where the background player has been dragged to. The saved value is a
+  // fraction of the viewport; dragPixels is the live position during a drag
+  // and is cleared on resize so the fraction takes over again.
+  const miniPlayerRef = useRef<HTMLElement | null>(null);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const [miniPlayerPosition, setMiniPlayerPosition] = useState<MiniPlayerPosition | null>(
+    () => loadMiniPlayerPosition(profile)
+  );
+  const [dragPixels, setDragPixels] = useState<{ left: number; top: number } | null>(null);
+  const [dragSize, setDragSize] = useState<{ width: number; height: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [germanRepeats, setGermanRepeats] = useState(() => getListenGermanRepeats(learningDirection));
   const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
   const [languageOrder, setLanguageOrder] = useState(() => getListenLanguageOrder(learningDirection));
@@ -575,6 +594,97 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setSessionActivated(false);
   };
 
+  /**
+   * Dragging the background player.
+   *
+   * Pointer events rather than mouse events, so a touchscreen and a pen work
+   * without a second code path, and setPointerCapture keeps the drag alive
+   * when the cursor outruns the element. The grab offset is taken once at
+   * pointer-down so the player does not jump its own corner under the cursor.
+   */
+  const beginDrag = (event: React.PointerEvent<HTMLElement>) => {
+    // The controls are the point of the player; only the shell drags.
+    if ((event.target as HTMLElement).closest("button, input, a, [role='slider']")) return;
+    const element = miniPlayerRef.current;
+    if (!element || event.button !== 0) return;
+    const box = element.getBoundingClientRect();
+    dragOffsetRef.current = { x: event.clientX - box.left, y: event.clientY - box.top };
+    setDragSize({ width: box.width, height: box.height });
+    // Where it already is, in pixels, so the first move continues from there
+    // rather than from wherever the stored fraction rounds to.
+    setDragPixels({ left: box.left, top: box.top });
+    setDragging(true);
+    element.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  useEffect(() => {
+    if (!dragging) return undefined;
+    const element = miniPlayerRef.current;
+    if (!element) return undefined;
+
+    const move = (event: PointerEvent) => {
+      const size = dragSize ?? { width: element.offsetWidth, height: element.offsetHeight };
+      const maxLeft = Math.max(0, window.innerWidth - size.width);
+      const maxTop = Math.max(0, window.innerHeight - size.height);
+      setDragPixels({
+        left: Math.min(maxLeft, Math.max(0, event.clientX - dragOffsetRef.current.x)),
+        top: Math.min(maxTop, Math.max(0, event.clientY - dragOffsetRef.current.y)),
+      });
+    };
+    const end = () => {
+      setDragging(false);
+      const size = dragSize ?? { width: element.offsetWidth, height: element.offsetHeight };
+      setDragPixels((pixels) => {
+        if (pixels) {
+          const fraction = miniPlayerFraction(
+            pixels,
+            size,
+            { width: window.innerWidth, height: window.innerHeight }
+          );
+          setMiniPlayerPosition(fraction);
+          saveMiniPlayerPosition(fraction, profile);
+        }
+        return pixels;
+      });
+    };
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
+  }, [dragging, dragSize, profile]);
+
+  // A resized window must not strand the player off the edge, so the stored
+  // fraction is re-read against the new viewport rather than kept in pixels.
+  useEffect(() => {
+    if (dragging) return undefined;
+    const settle = () => setDragPixels(null);
+    window.addEventListener("resize", settle);
+    return () => window.removeEventListener("resize", settle);
+  }, [dragging]);
+
+  const miniPlayerStyle = (() => {
+    if (dragPixels) {
+      return { left: `${dragPixels.left}px`, top: `${dragPixels.top}px`, right: "auto", bottom: "auto" } as const;
+    }
+    if (!miniPlayerPosition) return undefined;
+    const element = miniPlayerRef.current;
+    const size = {
+      width: element?.offsetWidth || 680,
+      height: element?.offsetHeight || 96,
+    };
+    const { left, top } = miniPlayerPixels(miniPlayerPosition, size, {
+      width: typeof window === "undefined" ? 1280 : window.innerWidth,
+      height: typeof window === "undefined" ? 800 : window.innerHeight,
+    });
+    return { left: `${left}px`, top: `${top}px`, right: "auto", bottom: "auto" } as const;
+  })();
+
   mediaCommandRef.current = (command) => {
     if (command === "previous") step(-1);
     else if (command === "next") step(1);
@@ -791,11 +901,27 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     if (!backgroundPlayback || !sessionActivated || typeof document === "undefined") return null;
     return createPortal(
       <aside
+        ref={miniPlayerRef}
         aria-label={ui("Listen player")}
         className="listen-mini-player"
+        data-dragging={dragging ? "true" : "false"}
         data-playing={playing ? "true" : "false"}
         data-testid="listen-background-player"
+        onPointerDown={beginDrag}
+        style={miniPlayerStyle}
       >
+        {/*
+          A handle, so the player looks draggable before anybody tries it.
+          Dragging works anywhere on the shell too — beginDrag ignores the
+          controls — but a grip is the part people reach for.
+        */}
+        <span
+          aria-hidden="true"
+          className="listen-mini-player__grip"
+          title={ui("Drag to move")}
+        >
+          <GripVertical />
+        </span>
         <button className="listen-mini-player__copy" onClick={onOpen} type="button">
           <span className="listen-mini-player__art" aria-hidden="true">
             <Headphones />

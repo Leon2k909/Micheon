@@ -37,6 +37,9 @@ import {
 
 type Mode = "menu" | "flashcards" | "learn" | "test" | "match";
 
+/** The modes a set card can launch straight into, skipping the menu. */
+export type StudyMode = Exclude<Mode, "menu">;
+
 function shuffled<T>(items: T[]): T[] {
   const next = [...items];
   for (let index = next.length - 1; index > 0; index -= 1) {
@@ -62,12 +65,15 @@ export function SetStudy({
   set,
   onBack,
   onEdit,
+  initialMode,
 }: {
   set: StudySet;
   onBack: () => void;
   onEdit: () => void;
+  /** Chosen on the set card; the menu is still one Back away. */
+  initialMode?: StudyMode;
 }) {
-  const [mode, setMode] = useState<Mode>("menu");
+  const [mode, setMode] = useState<Mode>(initialMode ?? "menu");
   const [progress, setProgress] = useState<StudySetProgress>(() => loadStudyProgress(set.id));
 
   const cards = useMemo(() => studiableCards(set), [set]);
@@ -77,12 +83,15 @@ export function SetStudy({
     setProgress((current) => {
       const next = {
         ...current,
-        [cardId]: applyAnswer(current[cardId], correct, set.stages.length),
+        [cardId]: applyAnswer(current[cardId], correct, set.stages.length, {
+          masteryTarget: set.masteryTarget,
+          demoteOnWrong: set.demoteOnWrong,
+        }),
       };
       saveStudyProgress(set.id, next);
       return next;
     });
-  }, [set.id, set.stages.length]);
+  }, [set.id, set.stages.length, set.masteryTarget, set.demoteOnWrong]);
 
   const reset = useCallback(() => {
     resetStudyProgress(set.id);
@@ -349,7 +358,8 @@ function Learn({
 }) {
   // The round is built once and held, so answering does not reshuffle the
   // questions under the learner mid-round.
-  const [round] = useState(() => buildLearnRound(set, progress, 10));
+  // The round is as long as the set says; ten was a constant nobody could reach.
+  const [round] = useState(() => buildLearnRound(set, progress, set.roundSize));
   const [index, setIndex] = useState(0);
   const [typed, setTyped] = useState("");
   const [verdict, setVerdict] = useState<null | { correct: boolean; expected: string }>(null);

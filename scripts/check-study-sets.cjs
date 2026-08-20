@@ -39,6 +39,29 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const M = compiled.exports;
 
+/** Any other module, compiled the same way, so a check runs the real thing. */
+function loadModule(relativePath, _names) {
+  const bundle = esbuild.buildSync({
+    stdin: {
+      contents: `export * from "./${relativePath.replace(/\.tsx?$/, "")}";`,
+      resolveDir: root,
+      sourcefile: "extra-entry.ts",
+    },
+    alias: { "@": path.join(root, "src") },
+    bundle: true,
+    format: "cjs",
+    platform: "node",
+    target: "node20",
+    write: false,
+    logLevel: "silent",
+  });
+  const loaded = new Module(relativePath, module);
+  loaded.filename = path.join(root, `.${path.basename(relativePath)}.cjs`);
+  loaded.paths = Module._nodeModulePaths(root);
+  loaded._compile(bundle.outputFiles[0].text, loaded.filename);
+  return loaded.exports;
+}
+
 // ── typed answers ───────────────────────────────────────────────────────────
 // Forgiving about what is not being tested, strict about what is.
 for (const [expected, given, why] of [
@@ -527,7 +550,98 @@ assert.ok(
   "a restored position must be clamped to the desktop that exists now"
 );
 
+// ── the ladder is the set's to tune ─────────────────────────────────────────
+// Leon: "the stages should be more customisable". Choosing which stages run
+// settled what a card is asked; these settle how hard it is to get past them.
+{
+  const ladder = { ...M.makeSet("Dials", 1000), stages: ["flashcard", "choice", "typed"] };
+
+  // One right answer promotes when the set says one.
+  let quick = M.applyAnswer(undefined, true, 3, { masteryTarget: 1 });
+  assert.strictEqual(quick.stage, 1, "masteryTarget 1 should promote on the first right answer");
+
+  // Four does not, until the fourth.
+  let slow = undefined;
+  for (let i = 0; i < 3; i += 1) slow = M.applyAnswer(slow, true, 3, { masteryTarget: 4 });
+  assert.strictEqual(slow.stage, 0, "masteryTarget 4 must not promote on three right answers");
+  slow = M.applyAnswer(slow, true, 3, { masteryTarget: 4 });
+  assert.strictEqual(slow.stage, 1, "the fourth right answer should promote");
+
+  // A mistake costs a stage, unless the set says it does not.
+  const climbed = M.applyAnswer(M.applyAnswer(undefined, true, 3), true, 3);
+  assert.strictEqual(climbed.stage, 1, "two right answers promote by default");
+  assert.strictEqual(
+    M.applyAnswer(climbed, false, 3, { demoteOnWrong: false }).stage, 1,
+    "with demotion off, a mistake must not drop the card down the ladder"
+  );
+  assert.strictEqual(
+    M.applyAnswer(climbed, false, 3, { demoteOnWrong: false }).streak, 0,
+    "it still resets the streak — a mistake is never free"
+  );
+  assert.strictEqual(M.applyAnswer(climbed, false, 3).stage, 0,
+    "and the default is still to drop a stage");
+
+  // A round is as long as the set says.
+  const many = { ...ladder, roundSize: 4, cards: Array.from({ length: 20 }, (_, i) =>
+    M.makeCard(`Wort ${i}`, `word ${i}`, { now: i })) };
+  assert.strictEqual(M.buildLearnRound(many, {}).length, 4,
+    "a Learn round should be as long as the set's roundSize, not a constant");
+  assert.strictEqual(M.buildLearnRound({ ...many, roundSize: 15 }, {}).length, 15,
+    "and it should follow when that changes");
+
+  // A set written before the dials existed still opens, on the old behaviour.
+  const old = M.makeSet("Old", 1000);
+  assert.strictEqual(old.masteryTarget, M.MASTERY_TARGET, "a new set uses the documented default");
+  assert.ok(old.demoteOnWrong, "and demotion stays on unless it is turned off");
+}
+
+// ── every way to study, on the card ─────────────────────────────────────────
+// "i only see practice button, not tests like quizlet". Four intentions, four
+// buttons — and the three icon-only actions beside them say what they do.
+{
+  const view = fs.readFileSync(path.join(root, "src/components/create/CreateView.tsx"), "utf8");
+  for (const mode of ["learn", "flashcards", "test", "match"]) {
+    assert.ok(view.includes(`mode: "${mode}"`), `the set card cannot launch ${mode} directly`);
+  }
+  assert.ok(view.includes("STUDY_LAUNCHERS.map"), "the launchers are not rendered on the card");
+  for (const label of ["Edit", "Duplicate", "Delete"]) {
+    assert.ok(view.includes(`{ui("${label}")}`), `the ${label} action is still an unlabelled icon`);
+  }
+  const study = fs.readFileSync(path.join(root, "src/components/create/SetStudy.tsx"), "utf8");
+  assert.ok(study.includes("initialMode ?? \"menu\""),
+    "a mode chosen on the card must open directly rather than showing the menu again");
+}
+
+// ── the background player goes where it is put ──────────────────────────────
+// "this should be moveable around the window the playing in the background
+// thing" — and stay there, which means a stored position, clamped.
+{
+  const listen = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+  assert.ok(listen.includes("onPointerDown={beginDrag}"), "the mini player is not draggable");
+  assert.ok(listen.includes("setPointerCapture"),
+    "a drag must survive the cursor leaving the element");
+  assert.ok(/closest\("button, input, a/.test(listen),
+    "dragging must not fire when the controls are pressed");
+  assert.ok(listen.includes("saveMiniPlayerPosition"),
+    "where it was dragged to has to outlive the session");
+
+  const geometry = fs.readFileSync(path.join(root, "src/lib/miniPlayerPosition.ts"), "utf8");
+  assert.ok(geometry.includes("viewport.width - size.width"),
+    "the position must be clamped so a narrower window cannot strand the player off-screen");
+  const M2 = loadModule("src/lib/miniPlayerPosition.ts", ["loadMiniPlayerPosition", "miniPlayerPixels", "miniPlayerFraction"]);
+  const size = { width: 680, height: 96 };
+  const wide = { width: 1920, height: 1080 };
+  const narrow = { width: 800, height: 600 };
+  const parked = M2.miniPlayerFraction({ left: 1240, top: 984 }, size, wide);
+  assert.ok(parked.x > 0.99 && parked.y > 0.99, "the far corner should store as the far corner");
+  const onNarrow = M2.miniPlayerPixels(parked, size, narrow);
+  assert.ok(onNarrow.left + size.width <= narrow.width,
+    "the same corner on a smaller window must still fit on screen");
+  assert.ok(onNarrow.top + size.height <= narrow.height, "vertically too");
+}
+
 console.log(
-  "check-study-sets: Learn sits under beta with Create, and the mascot's window "
-  + "position survives a restart"
+  "check-study-sets: Learn sits under beta with Create, the mascot's window "
+  + "position survives a restart, the ladder is the set's to tune, and the "
+  + "background player goes where it is put"
 );
