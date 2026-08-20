@@ -51,16 +51,32 @@ jobs:
 
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             ASSET_COUNT="$(gh release view "$TAG" --json assets --jq '.assets | length' --repo "$GITHUB_REPOSITORY")"
-            echo "Release $TAG already exists with $ASSET_COUNT assets"
-            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$ASSET_COUNT" -lt 2 ]; then
+            IS_DRAFT="$(gh release view "$TAG" --json isDraft --jq '.isDraft' --repo "$GITHUB_REPOSITORY")"
+            echo "Release $TAG already exists with $ASSET_COUNT assets (draft: $IS_DRAFT)"
+            # A draft left over from a failed or cancelled run has to be built
+            # again, otherwise it stays a draft for ever and never ships.
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$ASSET_COUNT" -lt 2 ] || [ "$IS_DRAFT" = "true" ]; then
               echo "should_build=true" >> "$GITHUB_OUTPUT"
             else
               echo "should_build=false" >> "$GITHUB_OUTPUT"
             fi
           else
+            # Created as a DRAFT, published only once the installer is attached.
+            #
+            # electron-updater asks for /releases/latest and reads latest.yml
+            # from whatever comes back. Publishing the release before the build
+            # runs meant that for the five minutes of every build — and for ever
+            # after a failed one — the newest release was an empty shell with no
+            # latest.yml. That is not "no update available" to the updater, it is
+            # a dead feed, and it also hides the previous release that does work.
+            # Michelle sat on 1.2.352 for hours because of exactly this.
+            #
+            # Drafts are invisible to /releases/latest, so the last good release
+            # stays current until a new one is genuinely ready to replace it.
             gh release create "$TAG" \
               --target "$GITHUB_SHA" \
               --generate-notes \
+              --draft \
               --title "Micheon $TAG" \
               --repo "$GITHUB_REPOSITORY"
             echo "should_build=true" >> "$GITHUB_OUTPUT"
@@ -118,3 +134,13 @@ jobs:
         run: |
           gh release upload "$TAG" release/*.exe release/latest.yml \
             --clobber --repo "$GITHUB_REPOSITORY"
+
+          # Only now does this become the release the updater will find. The
+          # upload above is what makes it real; publishing before it would put
+          # an empty release at the front of the feed. --latest is explicit
+          # because GitHub otherwise picks by date, and a rebuild of an older
+          # tag must not demote a newer one.
+          gh release edit "$TAG" \
+            --draft=false \
+            --latest \
+            --repo "$GITHUB_REPOSITORY"
