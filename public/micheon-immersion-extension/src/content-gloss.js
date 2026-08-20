@@ -307,6 +307,86 @@
         }
       }
     }
+
+    // Second pass: the other names for the same word. One German word is one
+    // entry, so when the course calls die Nutzung "use" and the pages Leon
+    // reads call it "usage", only the first spelling used to arrive anywhere.
+    // These fill keys nothing else claimed, so an authored gloss always wins.
+    for (const w of words) {
+      for (const alternative of w.enAlt || []) {
+        const enKey = alternative.toLowerCase();
+        if (!/^[a-z' -]+$/.test(enKey) || /^to\s/.test(enKey) || enKey.split(/\s+/).length > 2) continue;
+        if (byEn.has(enKey)) continue;
+        byEn.set(enKey, {
+          de: w.de,
+          deDisplay: w.deDisplay,
+          isNoun: /^(der|die|das)\s/.test(w.deDisplay),
+          isCore: w.core === 1,
+        });
+      }
+    }
+
+    // Third pass: verbs, at last, and only into keys nothing else wants.
+    // Excluding them outright is what made "read", "send", "reply" and
+    // "decide" silent on an English page — most of the English verbs anybody
+    // writes. The original objection stands and is now enforced rather than
+    // approximated: "date" is claimed by das Datum before this runs, so it
+    // cannot become daten, and any word with a noun sense we teach keeps it.
+    for (const w of words) {
+      const enFirst = w.en.split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
+      const verb = /^to\s+(.+)$/i.exec(enFirst);
+      if (!verb) continue;
+      const enKey = verb[1].toLowerCase().trim();
+      if (!/^[a-z' -]+$/.test(enKey) || enKey.split(/\s+/).length > 2) continue;
+      const record = { de: w.de, deDisplay: w.deDisplay, isNoun: false, isCore: w.core === 1, isVerb: true };
+      if (!byEn.has(enKey)) byEn.set(enKey, record);
+      // An -ed or -ing form is a verb and nothing else, so it may be indexed
+      // even when the bare word belongs to a noun: "change" stays die
+      // Änderung while "changed" reaches ändern. This is where "decided",
+      // "created", "managed" and "shared" were disappearing.
+      const head = enKey.split(" ")[0];
+      if (head.length < 2 || head.includes("'")) continue;
+      const forms = [];
+      if (head.endsWith("e")) forms.push(`${head}d`, `${head.slice(0, -1)}ing`);
+      else if (/[^aeiou]y$/.test(head)) forms.push(`${head.slice(0, -1)}ied`, `${head}ing`);
+      else if (/[^aeiou][aeiou][bdglmnprt]$/.test(head)) {
+        forms.push(`${head}ed`, `${head + head.slice(-1)}ed`, `${head + head.slice(-1)}ing`, `${head}ing`);
+      } else forms.push(`${head}ed`, `${head}ing`);
+      for (const form of forms) {
+        if (!byEn.has(form)) byEn.set(form, record);
+      }
+    }
+  }
+
+  /**
+   * English words a plural rule must never touch: they end in s and are not
+   * plurals of anything, and "its" resolving to es taught the wrong word.
+   */
+  const ENGLISH_S_WORDS = new Set([
+    "its", "as", "was", "has", "is", "this", "his", "us", "yes", "does",
+    "always", "perhaps", "unless", "news", "gas", "bus", "plus", "less",
+    "else", "thus", "series", "species", "means", "goes", "says", "wants",
+  ]);
+
+  /**
+   * An English plural, pointed at the singular the glossary stores.
+   *
+   * The reverse direction matched exactly, so "plugins", "customers",
+   * "workflows" and fifty more found nothing while their singulars sat in
+   * the glossary. A dictionary answers the plural with the dictionary form,
+   * which is what a hover card shows anyway.
+   */
+  function englishSingularEntry(lower) {
+    if (ENGLISH_S_WORDS.has(lower) || !lower.endsWith("s")) return null;
+    const shapes = [];
+    if (/[^aeiou]ies$/.test(lower) && lower.length > 4) shapes.push(`${lower.slice(0, -3)}y`);
+    if (/(ch|sh|s|x|z)es$/.test(lower) && lower.length > 4) shapes.push(lower.slice(0, -2));
+    if (/[^sui]s$/.test(lower) && lower.length > 3) shapes.push(lower.slice(0, -1));
+    for (const shape of shapes) {
+      const hit = byEn.get(shape);
+      if (hit) return hit;
+    }
+    return null;
   }
 
   // Articles, pronouns, conjunctions, prepositions and auxiliary-verb forms:
@@ -619,6 +699,41 @@
   // This is deliberately curated rather than a suffix guesser: German
   // morphology has too many collisions for a confident hover definition.
   const OBSERVED_FORM_TO_LEMMA = new Map(Object.entries({
+    // The closed classes, written out, because no suffix rule reaches them:
+    // "bist" does not contain "sein" and "jedem" does not contain "jeder".
+    // These are among the commonest words on any German page — jedem alone
+    // turned up eighteen times in one export — and every one of them was
+    // being reported as unknown vocabulary.
+    "bin": "sein", "bist": "sein", "ist": "sein", "sind": "sein", "seid": "sein",
+    "war": "sein", "warst": "sein", "waren": "sein", "wart": "sein",
+    "wäre": "sein", "wären": "sein", "gewesen": "sein", "sei": "sein", "seien": "sein",
+    "habe": "haben", "hast": "haben", "hat": "haben", "habt": "haben",
+    "hatte": "haben", "hattest": "haben", "hatten": "haben", "hättest": "haben",
+    "hätte": "haben", "hätten": "haben", "gehabt": "haben",
+    "werde": "werden", "wirst": "werden", "wird": "werden", "werdet": "werden",
+    "wurde": "werden", "wurden": "werden", "würde": "werden", "würden": "werden",
+    "kann": "können", "kannst": "können", "könnt": "können", "konnte": "können",
+    "konnten": "können", "könnte": "können", "könnten": "können", "gekonnt": "können",
+    "muss": "müssen", "musst": "müssen", "müsst": "müssen", "musste": "müssen",
+    "mussten": "müssen", "müsste": "müssen", "gemusst": "müssen",
+    "will": "wollen", "willst": "wollen", "wollt": "wollen", "wollte": "wollen",
+    "wollten": "wollen", "gewollt": "wollen",
+    "soll": "sollen", "sollst": "sollen", "sollt": "sollen", "sollte": "sollen",
+    "sollten": "sollen", "gesollt": "sollen",
+    "darf": "dürfen", "darfst": "dürfen", "dürft": "dürfen", "durfte": "dürfen",
+    "durften": "dürfen", "dürfte": "dürfen",
+    "mag": "mögen", "magst": "mögen", "mögt": "mögen", "mochte": "mögen",
+    "jeder": "jeder", "jede": "jeder", "jedes": "jeder", "jedem": "jeder",
+    "jeden": "jeder", "jedwede": "jeder",
+    "dieser": "dieser", "diese": "dieser", "dieses": "dieser", "diesem": "dieser",
+    "diesen": "dieser",
+    "welcher": "welcher", "welche": "welcher", "welches": "welcher",
+    "welchem": "welcher", "welchen": "welcher",
+    "mancher": "manche", "manche": "manche", "manches": "manche",
+    "manchem": "manche", "manchen": "manche",
+    "modi": "Modus", "modus": "Modus",
+    "eigener": "eigen", "eigene": "eigen", "eigenes": "eigen",
+    "eigenem": "eigen", "eigenen": "eigen",
     "übersetzt": "übersetzen",
     "vereinigtes": "vereinigen",
     "bots": "Bot",
@@ -1129,8 +1244,64 @@
    * "dachen" is not a word we hold, so the guess is thrown away and the
    * reader gets nothing rather than something wrong.
    */
+  /**
+   * English words that must never be guessed at as German.
+   *
+   * German pages are full of English — every X timeline mixes them — and the
+   * de-inflection rules are suffix rules, so they will happily turn "were"
+   * into wer, "under" into und, "want" into wann and "better" into das Bett.
+   * Each of those is a confident wrong answer on a word the reader already
+   * knows, which is worse than the silence it replaced.
+   *
+   * A German word that happens to be spelled like an English one is not
+   * affected: findGermanEntry looks the word up exactly, and consults its
+   * alias list, before any of this runs. This only refuses to GUESS.
+   */
+  const ENGLISH_NEVER_GUESS = new Set((
+    "the of and to in is you that it he was for on are as with his they be at "
+    + "have this from or had by but some what there we can out other were all "
+    + "your when up use word how said an each she which do their time if will "
+    + "way about many then them would write like so these her long make thing "
+    + "see him two has look more day could go come did my sound no most who "
+    + "over know water than call first people may down side been now find any "
+    + "new work part take get place made live where after back little only "
+    + "round year came show every good me give our under name very through "
+    + "just form much great think say help low line before turn cause same "
+    + "mean differ move right boy old too does tell sentence set three want "
+    + "air well also play small end put home read hand port large spell add "
+    + "even land here must big high such follow act why ask men change went "
+    + "light kind off need house picture try us again animal point mother "
+    + "world near build self earth father head stand own page should country "
+    + "found answer school grow study still learn plant cover food sun four "
+    + "thought let keep eye never last door between city tree cross since "
+    + "hard start might story saw far sea draw left late run while press "
+    + "close night real life few north open seem together next white children "
+    + "begin got walk example ease paper often always music those both mark "
+    + "book letter until mile river car feet care second group carry took "
+    + "rain eat room friend began idea fish mountain stop once base hear "
+    + "horse cut sure watch color face wood main enough plain girl usual "
+    + "young ready above ever red list though feel talk bird soon body dog "
+    + "family direct pose leave song measure state product black short class "
+    + "wind question happen complete ship area half rock order fire south "
+    + "problem piece told knew pass farm top whole king size heard best hour "
+    + "better true during hundred five remember step early hold west ground "
+    + "interest reach fast verb sing listen six table travel less morning ten "
+    + "simple several vowel toward war lay against pattern slow center love "
+    + "person money serve appear road map science rule govern pull cold "
+    + "notice voice fall power town fine certain fly unit lead cry dark "
+    + "machine note wait plan figure star box noun field rest correct able "
+    + "pound done beauty drive stood contain front teach week final gave "
+    + "green quick develop sleep warm free minute strong special mind behind "
+    + "clear tail produce fact street inch lot nothing course stay wheel full "
+    + "force blue object decide surface deep moon island foot yet busy test "
+    + "record boat common gold possible plane age dry wonder laugh thousand "
+    + "ago ran check game shape yes miss brought heat snow bed bring sit "
+    + "perhaps fill east weight language among share thread post send reply"
+  ).split(" "));
+
   function inflectedGermanEntry(token) {
     const lower = token.toLowerCase();
+    if (ENGLISH_NEVER_GUESS.has(lower)) return null;
     const held = (candidate) => byDeLowerAny.get(candidate) || null;
     // Reversing an umlaut covers wächst → wachsen and läuft → laufen.
     const plain = lower.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u");
@@ -1140,14 +1311,29 @@
       // ge-...-t and ge-...-en participles: geteilt, geladen.
       const participle = /^ge(.{2,})(t|en)$/.exec(word);
       if (participle) stems.add(participle[1]);
+      // A separable verb buries its ge in the middle: eingelöst is einlösen,
+      // angerufen is anrufen. Without this the prefix hides the whole verb.
+      const separated = /^(ab|an|auf|aus|bei|ein|los|mit|nach|vor|weg|zu|zurück|über|um|durch|hoch|her|hin)ge(.{2,})(t|en)$/
+        .exec(word);
+      if (separated) stems.add(separated[1] + separated[2]);
       for (const ending of ["est", "eten", "ete", "et", "ten", "te", "st", "en", "t", "e"]) {
         if (word.length > ending.length + 2 && word.endsWith(ending)) {
           stems.add(word.slice(0, -ending.length));
         }
       }
+      // Treating the bare token as a stem would catch imperatives — "mach"
+      // is machen — and it was tried and removed. Against three hundred
+      // common English words it invented fourteen German ones: back became
+      // backen, off became offen, such became suchen, less became lesen. Two
+      // imperatives are not worth ten confident wrong answers.
     };
     addVerbStems(lower);
     if (plain !== lower) addVerbStems(plain);
+
+    // A present participle declines like an adjective, so "funktionierenden"
+    // has to lose two endings, not one, before the verb underneath shows.
+    const participle = /^(.{3,})end(e|en|es|er|em)?$/.exec(lower);
+    if (participle) stems.add(participle[1]);
 
     // A verb only resolves to an infinitive.
     for (const stem of stems) {
@@ -1159,12 +1345,32 @@
 
     // Adjective and noun endings resolve to a base that must already exist,
     // and must not itself be an infinitive, or every verb would match here.
+    const bases = [];
     for (const ending of ["sten", "ste", "eren", "ere", "en", "er", "es", "em", "e", "n", "s"]) {
       if (lower.length <= ending.length + 2 || !lower.endsWith(ending)) continue;
       const base = lower.slice(0, -ending.length);
+      bases.push(base);
       if (/(en|ln|rn)$/.test(base)) continue;
       const hit = held(base);
       if (hit) return hit;
+    }
+
+    // A participle used as an adjective wears two endings, and only the outer
+    // one is adjectival: "veröffentlichtes" is veröffentlicht is
+    // veröffentlichen, "geführte" is geführt is führen. Strip the adjective
+    // ending first, then ask the verb rules about what is left.
+    const deeper = new Set();
+    const outer = stems;
+    for (const base of bases) {
+      const before = new Set(outer);
+      addVerbStems(base);
+      for (const stem of outer) if (!before.has(stem)) deeper.add(stem);
+    }
+    for (const stem of deeper) {
+      for (const infinitive of [`${stem}en`, `${stem}n`]) {
+        const hit = held(infinitive);
+        if (hit) return hit;
+      }
     }
 
     return null;
@@ -1510,7 +1716,7 @@
           registerGloss(node, match.index, match.index + token.length, hit.en, token, hit.ex, hit.exEn, hit.exSrc);
         }
       } else {
-        hit = byEn.get(lower);
+        hit = byEn.get(lower) || englishSingularEntry(lower);
         if (hit) {
           registerGloss(node, match.index, match.index + token.length, hit.deDisplay, hit.deDisplay);
         }

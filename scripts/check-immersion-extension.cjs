@@ -22,6 +22,38 @@ const desktopPreload = fs.readFileSync(path.join(root, "electron", "preload.cjs"
 const settingsCard = fs.readFileSync(path.join(root, "src", "components", "BrowserExtension.tsx"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 
+/**
+ * The reverse index, built by running the extension's own builder.
+ *
+ * There were two hand-written copies of these rules in this file. A copy of
+ * the rules is a test of the copy: both drifted the moment the real index
+ * learned about plurals, alternative names and verbs, and kept passing.
+ */
+function buildReverseIndex(glossary) {
+  const cut = (from, to) => {
+    const at = gloss.indexOf(from);
+    const end = gloss.indexOf(to, at);
+    assert.ok(at >= 0 && end > at, `could not isolate ${from.trim()}`);
+    return gloss.slice(at, end);
+  };
+  const context = { byEn: new Map(), byDeExact: new Map(), byDeLowerAny: new Map() };
+  vm.runInNewContext(
+    cut("  function buildIndexes(words) {", "  const ENGLISH_S_WORDS")
+    + cut("  const ENGLISH_S_WORDS = new Set([", "  const STOPWORDS")
+    + "\nthis.build = buildIndexes;\nthis.singular = englishSingularEntry;",
+    context,
+    { filename: "content-gloss-reverse.js" }
+  );
+  context.build(glossary);
+  return {
+    byEn: context.byEn,
+    reaches(english) {
+      const hit = context.byEn.get(english) || context.singular(english);
+      return hit ? hit.deDisplay : null;
+    },
+  };
+}
+
 function loadGlossTextFilters() {
   const start = gloss.indexOf("  const WORD_RE =");
   const end = gloss.indexOf("  function detectGerman", start);
@@ -560,30 +592,49 @@ checkLatestAudioWins().then(() => {
     assert.ok(meaning.test(entry.en), `"${word}" glosses as "${entry.en}", which is not its meaning`);
   }
 
-  // The reverse index, rebuilt the way content-gloss builds it, so this checks
-  // what a reader on an English page would actually get.
-  const byEn = new Map();
-  for (const entry of glossary) {
-    const first = String(entry.en).split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
-    if (!/^[A-Za-z' -]+$/.test(first) || /^to\s/i.test(first) || first.split(/\s+/).length > 2) continue;
-    const key = first.toLowerCase();
-    const isNoun = /^(der|die|das)\s/.test(entry.deDisplay);
-    const isCore = entry.core === 1;
-    const existing = byEn.get(key);
-    if (!existing || (isCore && !existing.isCore) || (isNoun && !existing.isNoun && !existing.isCore)) {
-      byEn.set(key, { de: entry.deDisplay, isNoun, isCore });
-    }
+  const { byEn, reaches } = buildReverseIndex(glossary);
+
+  // The plural, the other name, and the verb: three ways a word reached
+  // nothing at all. "plugins" is in every release note Leon reads, "usage"
+  // is what his pages call die Nutzung, and "decide" is a verb, which the
+  // reverse index used to refuse outright.
+  for (const [english, german, why] of [
+    ["plugins", "das Plug-in", "an English plural must find its singular"],
+    ["customers", "der Kunde", "likewise"],
+    ["memories", "die Erinnerung", "and -ies must become -y"],
+    ["usage", "die Verwendung", "an authored gloss still wins the key it claims"],
+    ["history", "der Verlauf", "the other name for a word we already teach"],
+    ["fridge", "der Kühlschrank", "a word added from Leon's own export"],
+    ["decide", "entscheiden", "a verb is still a word somebody hovers"],
+    ["decided", "entscheiden", "and its past tense is unambiguously that verb"],
+  ]) {
+    assert.strictEqual(reaches(english), german, `"${english}" should reach ${german} — ${why}`);
   }
+  // The reason verbs were excluded in the first place, still holding: a noun
+  // sense we teach must keep the key. Stripping "to " blindly made the
+  // English word "date" gloss as daten, to date somebody.
+  assert.ok(!(byEn.get("date") || {}).isVerb, "the noun sense of \"date\" must outrank the verb");
+
   for (const [english, german] of [
     ["and", "und"], ["you", "du"], ["but", "aber"], ["not", "nicht"],
     ["with", "mit"], ["very", "sehr"], ["always", "immer"], ["maybe", "vielleicht"],
   ]) {
     const hit = byEn.get(english);
     assert.ok(hit, `"${english}" has no German on the reverse side`);
-    assert.strictEqual(hit.de, german,
-      `"${english}" reaches "${hit.de}" rather than "${german}" — the everyday word should win`);
+    assert.strictEqual(hit.deDisplay, german,
+      `"${english}" reaches "${hit.deDisplay}" rather than "${german}" — the everyday word should win`);
   }
   assert.ok(byEn.size >= 5000, `only ${byEn.size} reverse entries`);
+
+  // A glossary is looked up by the word. Sixty-six entries were keyed "die
+  // Korrektur", article and all, so hovering Korrektur on a page found
+  // nothing while the entry sat there looking present.
+  const articled = glossary.filter((entry) => /^(der|die|das)\s/i.test(entry.de));
+  assert.deepStrictEqual(articled.map((entry) => entry.de), [],
+    "a glossary entry must be keyed on the word, not on the word with its article");
+  for (const noun of ["Korrektur", "Kühlschrank", "Nutzung", "Abonnement"]) {
+    assert.ok(glossary.some((entry) => entry.de === noun), `${noun} cannot be looked up in German`);
+  }
 
   // A qualifier in brackets is a note to the reader, not part of the word.
   // Leaving it in took weil, denn and 170 others out of the reverse direction.
@@ -627,9 +678,11 @@ checkLatestAudioWins().then(() => {
 // condition is the one that matters: it is what stops the past tense of
 // denken resolving to the noun Dach.
 {
-  const start = gloss.indexOf("  function inflectedGermanEntry(token) {");
+  const start = gloss.indexOf("  const ENGLISH_NEVER_GUESS");
   const stop = gloss.indexOf("  function findGermanEntry(token,", start);
   assert(start >= 0 && stop > start, "could not isolate the de-inflection helper");
+  assert(gloss.indexOf("  function inflectedGermanEntry(token) {") > start,
+    "the English guard must be defined before the helper that consults it");
 
   const byDeLowerAny = new Map();
   for (const entry of words) {
@@ -666,6 +719,19 @@ checkLatestAudioWins().then(() => {
   // An umlaut in the stem still has to reach the infinitive.
   assert.equal(resolve("w\u00e4chst"), "wachsen", "a stem-vowel change must still resolve");
 
+  // A separable verb hides its ge in the middle, and a participle used as an
+  // adjective wears two endings. Both were reported as unknown vocabulary.
+  for (const [form, lemma] of [
+    ["eingelöst", "einlösen"],
+    ["angerufen", "anrufen"],
+    ["veröffentlichtes", "veröffentlichen"],
+    ["geführte", "führen"],
+    ["funktionierenden", "funktionieren"],
+  ].map(([form, lemma]) => [form, lemma.toLowerCase()])) {
+    assert.equal(resolve(form), lemma,
+      `"${form}" should resolve to "${lemma}" — a reader hovering it gets nothing otherwise`);
+  }
+
   // And the guesses that must never be made. A wrong gloss is worse than
   // none: it teaches a word the page never used.
   for (const [form, why] of [
@@ -675,6 +741,19 @@ checkLatestAudioWins().then(() => {
     ["usage", "nor is this"],
   ]) {
     assert.equal(resolve(form), null, `"${form}" must resolve to nothing — ${why}`);
+  }
+
+  // German pages are full of English, and suffix rules will invent German out
+  // of it if allowed to: back became backen, off became offen, under became
+  // und, better became das Bett. Every one of these was a confident wrong
+  // answer on a word the reader already knew.
+  for (const english of [
+    "were", "under", "same", "want", "went", "plant", "often", "main", "best",
+    "better", "interest", "listen", "figure", "plane", "back", "off", "such",
+    "turn", "far", "begin", "red", "pass", "west", "less", "end", "find",
+  ]) {
+    assert.equal(resolve(english), null,
+      `"${english}" is an English word and must not be guessed at as German`);
   }
 
   console.log("check-immersion-extension: inflected forms reach their dictionary entry, and bad guesses are refused");
@@ -687,18 +766,7 @@ checkLatestAudioWins().then(() => {
 // immersionGaps.json exists because it actually turned up on a page he read
 // and the app had no German for it.
 {
-  const byEn = new Map();
-  for (const entry of words) {
-    const first = String(entry.en).split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
-    if (!/^[A-Za-z' -]+$/.test(first) || /^to\s/i.test(first) || first.split(/\s+/).length > 2) continue;
-    const key = first.toLowerCase();
-    const isNoun = /^(der|die|das)\s/.test(entry.deDisplay);
-    const isCore = entry.core === 1;
-    const existing = byEn.get(key);
-    if (!existing || (isCore && !existing.isCore) || (isNoun && !existing.isNoun && !existing.isCore)) {
-      byEn.set(key, { de: entry.deDisplay, isNoun, isCore });
-    }
-  }
+  const { reaches } = buildReverseIndex(words);
 
   // Straight from the export, most-seen first. If any of these stops
   // resolving, a word he demonstrably reads has gone silent again.
@@ -708,9 +776,9 @@ checkLatestAudioWins().then(() => {
     "tutorial", "vendor", "purchase", "available", "glad", "finally",
     "absolutely", "incredible", "entire", "various", "fridge", "yesterday",
   ]) {
-    const hit = byEn.get(english);
-    assert.ok(hit, `"${english}" has no German — it came off a page Leon actually read`);
-    assert.ok(/[A-Za-zÄÖÜäöüß]/.test(hit.de), `"${english}" resolves to something empty`);
+    const german = reaches(english);
+    assert.ok(german, `"${english}" has no German — it came off a page Leon actually read`);
+    assert.ok(/[A-Za-zÄÖÜäöüß]/.test(german), `"${english}" resolves to something empty`);
   }
 
   // Every noun states its gender, since a German noun without one is half a
@@ -719,7 +787,10 @@ checkLatestAudioWins().then(() => {
   assert.ok(gaps.length >= 100, `only ${gaps.length} gap words; the export gave us more than that`);
   for (const entry of gaps) {
     assert.ok(entry.de && entry.en, "a gap word is missing a side");
-    const looksLikeNoun = /^[A-ZÄÖÜ]/.test(entry.de.replace(/^(der|die|das)\s+/, ""));
+    // A place name takes no article — Europa, China — and says so in the
+    // data rather than being guessed at from its shape.
+    const looksLikeNoun = !entry.noArticle
+      && /^[A-ZÄÖÜ]/.test(entry.de.replace(/^(der|die|das)\s+/, ""));
     if (looksLikeNoun) {
       assert.ok(/^(der|die|das)\s/.test(entry.de),
         `"${entry.de}" is a noun with no article — the gender is the hard part`);
@@ -729,6 +800,6 @@ checkLatestAudioWins().then(() => {
 
   console.log(
     `check-immersion-extension: ${gaps.length} words the collector asked for now have German, `
-    + `and ${byEn.size.toLocaleString()} English words reach it`
+    + `and ${buildReverseIndex(words).byEn.size.toLocaleString()} English words reach it`
   );
 }

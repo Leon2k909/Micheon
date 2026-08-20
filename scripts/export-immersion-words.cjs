@@ -221,16 +221,45 @@ for (const word of glossaryWords) {
 }
 const knows = (value) => known.has(value);
 
+/**
+ * A glossary is looked up by the word, not by the word with its article.
+ *
+ * The catalogue knows this and ships bare lookup keys. The hand-written
+ * lists — function words, and the gap list built from Leon's exports — write
+ * "die Korrektur" because that is how you teach a noun, and that string went
+ * in as the key. Hovering "Korrektur" on a page then found nothing, while
+ * "die Nutzung" sat in the file as a second entry beside the catalogue's own
+ * "Nutzung". Sixty-six words were unreachable in German that way.
+ */
+const ARTICLE = /^(der|die|das)\s+/i;
+const byKey = new Map();
+
 for (const word of glossaryWords) {
-  const de = String(word.lookup || word.de).trim();
+  const de = String(word.lookup || word.de).trim().replace(ARTICLE, "");
   const key = de.toLocaleLowerCase("de-DE");
-  if (!de || seen.has(key)) continue;
+  if (!de) continue;
+  if (seen.has(key)) {
+    // The catalogue's authored gloss wins — it was written for this course.
+    // But the other name for the same thing is why a reader hovered, so it
+    // still has to reach the German: the catalogue calls die Nutzung "use",
+    // Leon's pages call it "usage", and both should arrive here.
+    const held = byKey.get(key);
+    const alternative = String(word.en).split("/")[0].trim();
+    if (held && alternative && alternative.toLocaleLowerCase("en") !== held.en.toLocaleLowerCase("en")) {
+      const alts = held.enAlt ?? (held.enAlt = []);
+      if (!alts.some((value) => value.toLocaleLowerCase("en") === alternative.toLocaleLowerCase("en"))
+        && alts.length < 4) {
+        alts.push(alternative);
+      }
+    }
+    continue;
+  }
   seen.add(key);
   // A hover card needs one clean meaning, not an answer-alternative list —
   // but the alternatives it drops are still meanings this word has, and an
   // example showing one of those is a good deal better than one showing none.
   const cardGloss = String(word.en).split("/")[0].trim();
-  rows.push({
+  const row = {
     id: `vw-${idPart(de)}`,
     de,
     deDisplay: String(word.de).trim(),
@@ -239,7 +268,14 @@ for (const word of glossaryWords) {
     // direction can prefer immer over stets when both gloss as "always".
     ...(word.core ? { core: 1 } : {}),
     ...chooseExample(key, cardGloss, String(word.en), de),
-  });
+  };
+  rows.push(row);
+  byKey.set(key, row);
+}
+// enAlt is written after the row is built, so it has to be appended last or
+// it would not survive the spread above.
+for (const row of rows) {
+  if (row.enAlt && row.enAlt.length === 0) delete row.enAlt;
 }
 
 const withExample = rows.filter((row) => row.ex).length;
