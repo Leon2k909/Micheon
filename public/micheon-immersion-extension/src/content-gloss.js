@@ -558,11 +558,28 @@
       .slice(0, 4);
   }
 
+  /**
+   * Is this collected word one we can now answer?
+   *
+   * Reconciliation runs on every page load, so an updated glossary should
+   * clear the words it has learned without anybody pressing anything. It was
+   * only asking two questions though — is this word in the glossary exactly,
+   * and is it in the hand-written alias list — while the hover card had grown
+   * two more ways to answer: the de-inflection rules, and the German we hold
+   * for an English word. So a word stayed on the list after the very release
+   * that taught it, and turned up again in the next export.
+   *
+   * This asks exactly what a hover asks. If the card would say something,
+   * the word is not missing any more.
+   */
   function candidateAlreadyTaught(word) {
     const lower = String(word || "").toLowerCase();
-    if (byDeLowerAny.has(lower)) return true;
-    const lemma = OBSERVED_FORM_TO_LEMMA.get(lower);
-    return Boolean(lemma && (byDeExact.has(lemma) || byDeLowerAny.has(lemma.toLowerCase())));
+    if (findGermanEntry(word, { allowCaseFold: true })) return true;
+    if (findGermanEntry(lower, { allowCaseFold: true })) return true;
+    if (!ENGLISH_NEVER_GUESS.has(lower) && /^[a-z][a-z'-]{2,}$/.test(lower)) {
+      if (byEn.get(lower) || englishSingularEntry(lower)) return true;
+    }
+    return false;
   }
 
   async function reconcileStoredCandidates() {

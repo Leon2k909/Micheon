@@ -651,6 +651,19 @@ checkLatestAudioWins().then(() => {
     && gloss.includes("byEn.get(lower) || englishSingularEntry(lower)"),
     "English inside German text no longer falls back to the German we know for it"
   );
+
+  // Reconciliation runs on every page load, and has to ask what a hover asks.
+  // Checking only for an exact glossary match left words on the collected list
+  // after the very release that taught them — so Leon exported the same words
+  // twice and had to clear the list by hand.
+  const reconcile = gloss.slice(
+    gloss.indexOf("function candidateAlreadyTaught"),
+    gloss.indexOf("async function reconcileStoredCandidates")
+  );
+  assert.ok(reconcile.includes("findGermanEntry("),
+    "reconciliation ignores the de-inflection rules, so an inflected form is never cleared");
+  assert.ok(reconcile.includes("byEn.get(lower) || englishSingularEntry(lower)"),
+    "reconciliation ignores the English side, so a word we can now translate is never cleared");
   for (const [english, expected] of [
     ["fake", "gefälscht"], ["retention", "die Speicherung"], ["capacity", "die Kapazität"],
   ]) {
