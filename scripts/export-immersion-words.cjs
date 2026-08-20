@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const Module = require("module");
 const esbuild = require("esbuild");
+const { exampleRank } = require("./gloss-support.cjs");
 
 const root = path.resolve(__dirname, "..");
 const destination = path.join(root, "public", "micheon-immersion-extension", "data", "words.json");
@@ -18,6 +19,7 @@ const built = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
+      'export { exampleRequiresSenseOverlap } from "./src/lib/wordExamples.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "immersion-word-export.ts",
@@ -35,7 +37,10 @@ const compiled = new Module("immersion-word-export", module);
 compiled.filename = path.join(root, ".immersion-word-export.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { allPartBlueprints, buildApiPartFromResolved, buildWordCatalog, buildCatalog } = compiled.exports;
+const {
+  allPartBlueprints, buildApiPartFromResolved, buildWordCatalog, buildCatalog,
+  exampleRequiresSenseOverlap,
+} = compiled.exports;
 const supplementalWordBank = JSON.parse(
   fs.readFileSync(path.join(root, "src", "lib", "bundledWordBank.json"), "utf8")
 );
@@ -66,13 +71,14 @@ const idPart = (value) => String(value ?? "")
  * The sentences come from our own catalogue, not an external corpus. That is
  * deliberate: this content has been through the orthography, punctuation and
  * quality gates, and a wrong example is worse than none because it teaches a
- * construction that is not German. Roughly half the glossary is covered, and
- * the half that is not simply carries no example rather than a doubtful one.
+ * construction that is not German.
  *
- * Shortest match wins. A hover card has room for one line, and "Das ist mein
- * Haus." teaches das Haus better than a subordinate clause that happens to
- * contain it.
-*/
+ * Every sentence containing the word is kept, not just the first, because the
+ * choice between them is the whole game: shortest-wins gave Leon a card that
+ * read "profile — Wie sieht das Profil aus? / How does the tread look?", when
+ * three of our six Profil sentences are about actual profiles. The shortest
+ * sentence is only the best one among those that show the right meaning.
+ */
 const examplesByWord = new Map();
 for (const item of buildCatalog(parts)) {
   const de = String(item.de || "").trim();
@@ -80,8 +86,9 @@ for (const item of buildCatalog(parts)) {
   if (!de || !en || de.length > 90) continue;
   for (const token of de.toLocaleLowerCase("de-DE").split(/[^\p{L}\p{N}ß]+/u)) {
     if (token.length < 2) continue;
-    const current = examplesByWord.get(token);
-    if (!current || de.length < current.de.length) examplesByWord.set(token, { de, en });
+    let candidates = examplesByWord.get(token);
+    if (!candidates) examplesByWord.set(token, (candidates = []));
+    candidates.push({ de, en });
   }
 }
 
@@ -134,6 +141,60 @@ const functionWords = JSON.parse(
 
 const seen = new Set();
 const rows = [];
+/**
+ * Which example a card gets.
+ *
+ * Ranked on whether the English side actually shows the meaning the card
+ * prints, because a card that glosses a word one way and illustrates it
+ * another teaches nothing and confuses the reader who trusted it. Our own
+ * sentences win ties, being the ones written for this course and gated as
+ * such, but a Tatoeba sentence that demonstrates the word beats one of ours
+ * that does not. Shortest wins after that: a hover card has one line.
+ *
+ * Rank 3 — the sentence is really about a separable verb that merely contains
+ * this one — is never shipped. There is no version of "toasting the new job"
+ * that teaches stoßen, so that card goes out with no example at all.
+ */
+function chooseExample(key, cardGloss, fullGloss, headword) {
+  const options = [];
+  for (const candidate of examplesByWord.get(key) ?? []) {
+    options.push({ de: candidate.de, en: candidate.en, ours: true });
+  }
+  const borrowed = tatoeba.get(key);
+  if (borrowed) options.push({ de: borrowed.ex, en: borrowed.exEn, ours: false, id: borrowed.id });
+
+  let best = null;
+  for (const option of options) {
+    const rank = exampleRank({
+      cardGloss,
+      fullGloss,
+      de: option.de,
+      en: option.en,
+      headword,
+      knows,
+    });
+    if (rank === 3) continue;
+    const scored = { ...option, rank };
+    if (!best) { best = scored; continue; }
+    if (scored.rank !== best.rank) { if (scored.rank < best.rank) best = scored; continue; }
+    if (scored.ours !== best.ours) { if (scored.ours) best = scored; continue; }
+    if (scored.de.length < best.de.length) best = scored;
+  }
+  // Some words are known to have two meanings that share every letter, and
+  // the Words tracker already refuses to illustrate those from a sentence
+  // whose English agrees with nothing on the card — a cinema showing must not
+  // serve "die Vorstellung = idea", "Das ist voll der Hammer" must not serve
+  // the tool. That list is authored, reviewed and sitting in the app; the
+  // hover card is the same promise to the same reader, so it obeys it too.
+  if (best && best.rank === 2 && exampleRequiresSenseOverlap({ de: key, lookup: key })) return {};
+  if (!best) return {};
+  return best.ours
+    ? { ex: best.de, exEn: best.en }
+    // "t" means Tatoeba. The hover card credits it, and the id makes any
+    // complaint traceable to one sentence rather than to a corpus.
+    : { ex: best.de, exEn: best.en, exSrc: "t", exId: best.id };
+}
+
 // Combined synonym cards fold "der Wagen" into "das Auto" for lessons and the
 // tracker, but a hover glossary must still explain whichever word the page
 // actually used — so every absorbed synonym is flattened back into its own
@@ -147,34 +208,47 @@ const supplementalWords = supplementalWordBank.map((word) => ({
 }));
 // Function words go LAST, so anything the catalogue already teaches keeps its
 // authored gloss and only the genuine gaps are filled.
-for (const word of [...catalogWords, ...supplementalWords, ...functionWords, ...gapWords]) {
+const glossaryWords = [...catalogWords, ...supplementalWords, ...functionWords, ...gapWords];
+
+/**
+ * Every word this glossary holds, which is how a guess at a separable verb
+ * gets checked: anstoßen is a real word we teach, ansitzen is not.
+ */
+const known = new Set();
+for (const word of glossaryWords) {
+  const value = String(word.lookup || word.de).trim().toLocaleLowerCase("de-DE");
+  if (value) known.add(value.replace(/^(der|die|das)\s+/, ""));
+}
+const knows = (value) => known.has(value);
+
+for (const word of glossaryWords) {
   const de = String(word.lookup || word.de).trim();
   const key = de.toLocaleLowerCase("de-DE");
   if (!de || seen.has(key)) continue;
   seen.add(key);
+  // A hover card needs one clean meaning, not an answer-alternative list —
+  // but the alternatives it drops are still meanings this word has, and an
+  // example showing one of those is a good deal better than one showing none.
+  const cardGloss = String(word.en).split("/")[0].trim();
   rows.push({
     id: `vw-${idPart(de)}`,
     de,
     deDisplay: String(word.de).trim(),
-    // A hover card needs one clean meaning, not an answer-alternative list.
-    en: String(word.en).split("/")[0].trim(),
+    en: cardGloss,
     // "core" marks the everyday word for a meaning, so the English-to-German
     // direction can prefer immer over stets when both gloss as "always".
     ...(word.core ? { core: 1 } : {}),
-    ...(examplesByWord.has(key)
-      ? { ex: examplesByWord.get(key).de, exEn: examplesByWord.get(key).en }
-      : tatoeba.has(key)
-        ? {
-          ex: tatoeba.get(key).ex,
-          exEn: tatoeba.get(key).exEn,
-          // "t" means Tatoeba. The hover card credits it, and the id makes
-          // any complaint traceable to one sentence rather than to a corpus.
-          exSrc: "t",
-          exId: tatoeba.get(key).id,
-        }
-        : {}),
+    ...chooseExample(key, cardGloss, String(word.en), de),
   });
 }
+
+const withExample = rows.filter((row) => row.ex).length;
+const borrowedExamples = rows.filter((row) => row.exSrc === "t").length;
+console.log(
+  `${withExample} of ${rows.length} entries carry an example `
+  + `(${borrowedExamples} from Tatoeba), each one chosen because its English `
+  + "shows the meaning the card prints."
+);
 
 const serialized = JSON.stringify(rows);
 if (fs.existsSync(destination) && fs.readFileSync(destination, "utf8") === serialized) {

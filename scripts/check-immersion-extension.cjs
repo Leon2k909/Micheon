@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { execFileSync } = require("child_process");
+const { exampleRank } = require("./gloss-support.cjs");
 
 const root = path.resolve(__dirname, "..");
 const extension = path.join(root, "public", "micheon-immersion-extension");
@@ -327,6 +328,132 @@ checkLatestAudioWins().then(() => {
   console.log(
     `check-immersion-extension: ${withExample.length.toLocaleString()} of ${glossary.length.toLocaleString()} `
     + "glossary entries carry a vetted example sentence that contains the word"
+  );
+}
+
+// ── and the example has to show the meaning the card prints ─────────────────
+// Leon hovered "profile" on x.com and got:
+//
+//     profile
+//     Wie sieht das Profil aus? — How does the tread look?
+//
+// Both halves true, the card nonsense. Containing the word is not enough: the
+// picker took the SHORTEST sentence holding "Profil" and three of the six we
+// have are about tyres. So the English side is read now, and these are the
+// words that used to get it wrong.
+{
+  const glossary = JSON.parse(
+    fs.readFileSync(path.join(root, "public/micheon-immersion-extension/data/words.json"), "utf8")
+  );
+  const byWord = new Map(glossary.map((entry) => [entry.de.toLocaleLowerCase("de-DE"), entry]));
+
+  // The rules themselves, on the sentences that taught us we needed them.
+  const rankOf = (cardGloss, de, en, headword) => exampleRank({
+    cardGloss, fullGloss: cardGloss, de, en, headword, knows: (value) => value === "anstoßen",
+  });
+  assert.strictEqual(rankOf("profile", "Wie sieht das Profil aus?", "How does the tread look?"), 2,
+    "the tread sentence must not count as showing what a profile is");
+  assert.strictEqual(rankOf("profile", "Wechsel mal aufs andere Profil.", "Switch to the other profile."), 0,
+    "a sentence whose English says profile must count");
+  assert.strictEqual(rankOf("to push", "Wann stoßen wir auf den Job an?", "When are we toasting the job?", "stoßen"), 3,
+    "a separated prefix after the verb makes it a different verb");
+  assert.strictEqual(rankOf("to drive", "Lass uns an den See fahren.", "Let's drive to the lake.", "fahren"), 0,
+    "a preposition BEFORE the verb is not a separated prefix");
+  assert.strictEqual(rankOf("to generalise", "Ich würde das nicht verallgemeinern.", "I wouldn't generalize it."), 0,
+    "British and American spellings of the same word must meet");
+  assert.strictEqual(rankOf("to forget", "Ich hab's vergessen.", "I forgot."), 0,
+    "irregular English verbs must reach their base form");
+  assert.strictEqual(rankOf("child", "Wie heißt dein Kind?", "What's your child's name?"), 0,
+    "a possessive 's must not hide the word");
+  assert.strictEqual(rankOf("female friend", "Ich geh mit einer Freundin ins Kino.", "I'm going with a friend."), 0,
+    "an English compound is shown by its head word");
+  assert.strictEqual(rankOf("to come across", "Wir kommen gleich.", "We're coming right away."), 2,
+    "a two-word verb needs its particle, not just its verb");
+
+  // word → what its example's English has to say for the card to make sense.
+  const mustShow = {
+    profil: "profile",
+    glauben: "believ",
+    alter: "age",
+    freund: "friend",
+    freundin: "friend",
+    lauf: "barrel",
+    rechnung: "bill",
+    termin: "appointment",
+    fahren: "driv",
+    stadt: "city",
+    wichtig: "important",
+    zusammen: "together",
+    freundlich: "friendly",
+    gemütlich: "cosy",
+    waffe: "weapon",
+    feierabend: "day",
+  };
+  for (const [word, needle] of Object.entries(mustShow)) {
+    const entry = byWord.get(word);
+    assert.ok(entry, `${word} is missing from the glossary`);
+    assert.ok(entry.ex, `${word}: no example at all`);
+    assert.ok(
+      entry.exEn.toLocaleLowerCase("en").includes(needle),
+      `${word} is glossed "${entry.en}" and illustrated with "${entry.exEn}" — `
+      + `the English never says "${needle}", so the card teaches the wrong sense`
+    );
+  }
+
+  // Nothing may ship at rank 3: a sentence whose German is really a separable
+  // verb that only contains this one. "Wann stoßen wir auf den neuen Job an?"
+  // is anstoßen, and no gloss of stoßen makes that card honest.
+  const known = new Set(glossary.map((entry) => entry.de.toLocaleLowerCase("de-DE")));
+  const knows = (value) => known.has(value);
+  const ranks = [0, 0, 0, 0];
+  const impostors = [];
+  for (const entry of glossary) {
+    if (!entry.ex) continue;
+    const rank = exampleRank({
+      cardGloss: entry.en,
+      fullGloss: entry.en,
+      de: entry.ex,
+      en: entry.exEn,
+      headword: entry.de,
+      knows,
+    });
+    ranks[rank] += 1;
+    if (rank === 3) impostors.push(`${entry.de}: "${entry.ex}"`);
+  }
+  assert.deepStrictEqual(impostors, [], "these examples are really about a different, separable verb");
+
+  // Words with two meanings in the same spelling obey the app's reviewed
+  // list rather than a second policy invented here: no example at all beats
+  // one whose English agrees with nothing on the card. Read out of the app's
+  // own source so the two surfaces cannot drift apart.
+  const wordExamples = fs.readFileSync(path.join(root, "src/lib/wordExamples.ts"), "utf8");
+  const listed = /const REQUIRES_SENSE_OVERLAP = new Set\(\[([\s\S]*?)\]\)/.exec(wordExamples);
+  assert.ok(listed, "could not find the app's reviewed sense-clash list");
+  const clashes = [...listed[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(clashes.length >= 15, `only ${clashes.length} reviewed sense-clash words found`);
+  for (const clash of clashes) {
+    const entry = byWord.get(clash);
+    if (!entry || !entry.ex) continue;
+    assert.ok(
+      exampleRank({ cardGloss: entry.en, fullGloss: entry.en, de: entry.ex, en: entry.exEn }) < 2,
+      `${entry.de} has two meanings sharing a spelling, and "${entry.exEn}" shows neither `
+      + `the card's "${entry.en}" nor anything like it — the app refuses this example, so must the card`
+    );
+  }
+
+  // A floor, not a target. Most of the rest are honest translations that
+  // reach for a synonym — "midday" illustrated by "lunchtime" — and dropping
+  // those would cost two good cards for every bad one. What this catches is
+  // the picker regressing to shortest-wins, which would move hundreds at once.
+  const showsTheGloss = ranks[0] + ranks[1];
+  const total = ranks.reduce((sum, count) => sum + count, 0);
+  assert.ok(
+    showsTheGloss / total >= 0.7,
+    `only ${showsTheGloss} of ${total} examples show the meaning their card prints (want 70%+)`
+  );
+  console.log(
+    `check-immersion-extension: ${showsTheGloss.toLocaleString()} of ${total.toLocaleString()} `
+    + `examples show the meaning the card prints (${Math.round((showsTheGloss / total) * 100)}%)`
   );
 }
 
