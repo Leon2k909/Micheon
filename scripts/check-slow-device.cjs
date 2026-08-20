@@ -343,9 +343,18 @@ check(
 // German compounds do not fit in 140px. The mascot's bubble was splitting
 // "Haftpflichtversicherung" mid-syllable — Leon: "maybe the box needs bigger
 // or something when there is longer words or phrases".
+//
+// This used to pin `PET_BUBBLE_WIDTH = 320`, which was the wrong thing to
+// hold still: it made EVERY message wide, and a four-word question in a
+// two-paragraph box reads as a dialog. The width is decided per message now,
+// so what is pinned here is that both sizes still exist. The behaviour —
+// which message gets which — is checked properly in check-pet-bubble, against
+// real captions rather than against a number in the source.
 check(
-  "the mascot's bubble is wide enough for a German compound",
-  /const PET_BUBBLE_WIDTH = 320;/.test(petLayer)
+  "the mascot's bubble still has a wide size for a German compound",
+  /const PET_BUBBLE_WIDTH_WIDE = 320;/.test(petLayer)
+    && /const PET_BUBBLE_WIDTH = 240;/.test(petLayer)
+    && /petBubbleMaxWidth/.test(petLayer)
 );
 check(
   "...and breaks where a German dictionary would when it must break at all",

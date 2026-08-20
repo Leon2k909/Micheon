@@ -1031,7 +1031,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     adverb("dazwischen", "in between", "literally 'there-between'"),
     adverb("oberhalb", "above, upstream of", "takes genitive: oberhalb der Tür"),
     adverb("unterhalb", "below, beneath", "takes genitive: unterhalb des Fensters"),
-    adjective("quer", "crosswise, at an angle", "quer durch die Stadt = right across town"),
+    adjective("quer", "across, sideways", "quer durch die Stadt = right across town"),
     adjective("senkrecht", "vertical, upright"),
     adjective("waagerecht", "horizontal, level", "die Waage = the scales"),
   ]),

@@ -108,6 +108,7 @@ for (const [german, expectedEnglish] of [
   ["freundlich, aber bestimmt", "friendly but firm"],
   ["den Bildschirm teilen", "to share the screen"],
   ["der letzte Preis", "final price"],
+  ["quer", "across"],
 ]) {
   const word = byGerman.get(normalise(german));
   check(

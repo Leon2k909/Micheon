@@ -90,7 +90,44 @@ const PET_MENU_ESTIMATED_HEIGHT = 600;
  * dictionary would (see hyphens on the message text) rather than wherever the
  * pixels ran out.
  */
-const PET_BUBBLE_WIDTH = 320;
+const PET_BUBBLE_WIDTH = 240;
+const PET_BUBBLE_WIDTH_WIDE = 320;
+/**
+ * Roughly where a word stops fitting the narrow bubble.
+ *
+ * At text-sm the narrow box leaves about 142px for the message once px-3.5
+ * either side and the two 32px controls are taken out — call it 18 characters
+ * of bold 14px text.
+ */
+const PET_BUBBLE_LONG_WORD = 18;
+
+/**
+ * How wide THIS message is allowed to make the bubble.
+ *
+ * The box went to 320 for every message and it should not have. The ask was
+ * for Listen's bilingual caption — the German line, a blank line, then the
+ * English, which formatListenPetCaption builds as `de\n\nen` — and widening
+ * the constant gave that width to "Do you remember what "Ihr könnt das."
+ * means?" as well. A one-line question in a box sized for two paragraphs
+ * stops reading as a remark and starts reading as a dialog.
+ *
+ * So a message now earns the width instead of being given it:
+ *   - a newline is Listen's two-language caption, which wants the room;
+ *   - a word too long for the narrow column is a German compound, which is
+ *     what widened this in the first place — die Haftpflichtversicherung came
+ *     out as "Haftpflichtversicher / ung" at the old 240.
+ *
+ * Everything else keeps the everyday size, and width:max-content still pulls
+ * the box in tighter than that whenever the text is shorter again.
+ */
+export function petBubbleMaxWidth(text: string): number {
+  if (!text) return PET_BUBBLE_WIDTH;
+  if (text.includes("\n")) return PET_BUBBLE_WIDTH_WIDE;
+  for (const word of text.split(/\s+/)) {
+    if (word.length >= PET_BUBBLE_LONG_WORD) return PET_BUBBLE_WIDTH_WIDE;
+  }
+  return PET_BUBBLE_WIDTH;
+}
 // ...and that is the widest it may get, not the width it always is. Sizing the
 // box to its content keeps "Nice work!" small while still giving
 // "die Haftpflichtversicherung" somewhere to fit.
@@ -1652,7 +1689,13 @@ export function CodexPetLayer() {
   // Never wider than the screen it has to fit on. On a 225%-scaled display the
   // usable width in points is less than half the panel's pixels, so a bubble
   // sized by a constant could be wider than the whole desktop.
-  const bubbleWidth = Math.min(PET_BUBBLE_WIDTH, Math.max(160, viewport.width - PET_MARGIN * 2));
+  // Per message, not per app — see petBubbleMaxWidth. Plain arithmetic rather
+  // than a memo on purpose: this sits below the `!selectedPet` early return,
+  // and a hook here is exactly what took the app down in 1.2.346.
+  const bubbleWidth = Math.min(
+    petBubbleMaxWidth(speech?.text ?? ""),
+    Math.max(160, viewport.width - PET_MARGIN * 2)
+  );
   const bubbleLeft = Math.min(
     Math.max(
       PET_MARGIN,
