@@ -10157,3 +10157,44 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
   color: var(--accent-text, #fff);
   background: var(--accent);
 }
+
+/* The translation picker sits with the Learn/Practice tabs rather than in
+   settings: it is only meaningful while a lesson is on screen, and it is the
+   kind of thing you want to switch mid-read. */
+.np-uk-translation {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 0 14px 0 12px;
+  border-radius: 999px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.np-uk-translation svg {
+  width: 14px;
+  height: 14px;
+}
+
+.np-uk-translation select {
+  padding: 9px 2px;
+  border: 0;
+  color: var(--text-1);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.np-uk-translation select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .np-uk-translation span { display: none; }
+  .np-uk-translation { margin-left: 0; }
+}

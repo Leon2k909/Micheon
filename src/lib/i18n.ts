@@ -2102,6 +2102,17 @@ const DE: Record<string, string> = {
   "Your weekly goal": "Dein Wochenziel",
   "per month, preview price": "pro Monat, Vorschaupreis",
 
+  "Not quite — the correct answer is highlighted above.":
+    "Nicht ganz – die richtige Antwort ist oben hervorgehoben.",
+
+  // ── Life in the UK: card translations ──
+  "Tap a card for": "Karte antippen für",
+  "Translation language": "Übersetzungssprache",
+  "No translation": "Keine Übersetzung",
+  "Tap for the translation": "Antippen für die Übersetzung",
+  "Tap to hide the translation": "Antippen, um die Übersetzung auszublenden",
+  "No translation for this part yet.": "Für diesen Teil gibt es noch keine Übersetzung.",
+
   // ── Life in the UK: practice ──
   // The questions and explanations themselves stay in English — the test is
   // sat in English. Only the surrounding controls are translated.

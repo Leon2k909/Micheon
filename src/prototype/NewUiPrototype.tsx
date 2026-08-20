@@ -59,6 +59,12 @@ import {
 } from "react";
 
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
+import {
+  TRANSLATION_LANGUAGES,
+  setTranslationLanguage,
+  useTranslationLanguage,
+  type TranslationLanguage,
+} from "@/lib/courseTranslation";
 import { learningEnglish, setLearningDirection } from "@/lib/direction";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -2340,6 +2346,7 @@ export default function NewUiPrototype({
   // Learn a topic, then answer questions on it. Two halves of one destination
   // rather than two nav entries, because they are the same activity.
   const [ukTab, setUkTab] = useState<"learn" | "practice">("learn");
+  const translationLanguage = useTranslationLanguage();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const fallback = defaultPrototypeSidebarWidth();
     const stored = Number(loadScopedJson(PROTOTYPE_SIDEBAR_KEY, fallback, profile));
@@ -2719,6 +2726,23 @@ export default function NewUiPrototype({
             >
               {ui("Practice")}
             </button>
+            {ukTab === "learn" && (
+              <label className="np-uk-translation">
+                <Languages aria-hidden="true" />
+                <span>{ui("Tap a card for")}</span>
+                <select
+                  aria-label={ui("Translation language")}
+                  onChange={(event) => setTranslationLanguage(event.target.value as TranslationLanguage)}
+                  value={translationLanguage}
+                >
+                  {TRANSLATION_LANGUAGES.map((language) => (
+                    <option key={language.id} value={language.id}>
+                      {language.id === "off" ? ui("No translation") : language.endonym}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
           {ukTab === "learn" ? (
             <CourseLessonsView

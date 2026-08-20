@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Block, CalloutVariant, QuizOption } from "@/lib/courses";
+import { translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
+import { ui } from "@/lib/i18n";
 
 // Render text with `inline code` spans.
 function RichText({ text }: { text: string }) {
@@ -23,10 +26,109 @@ function RichText({ text }: { text: string }) {
   );
 }
 
+/**
+ * One card, which turns over to show its translation.
+ *
+ * Only becomes a button when a translation actually exists — a card that looks
+ * tappable and then does nothing is worse than one that never invited the tap.
+ * With the setting off, or with nothing translated yet, this renders exactly
+ * the plain card it always did.
+ */
+function LessonCard({ h4, p }: { h4: string; p: string }) {
+  const language = useTranslationLanguage();
+  const [open, setOpen] = useState(false);
+  const titleDe = translateCourseText(h4, language);
+  const bodyDe = translateCourseText(p, language);
+  const hasTranslation = Boolean(titleDe || bodyDe);
+
+  if (!hasTranslation) {
+    return (
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5">
+        <h4 className="text-sm font-black text-[var(--text-1)]">{h4}</h4>
+        <p className="mt-1 text-[13px] leading-5 text-[var(--text-2)]">
+          <RichText text={p} />
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      aria-expanded={open}
+      className={cn(
+        "group relative rounded-xl border p-3.5 text-left transition-colors",
+        open
+          ? "border-[var(--accent)] bg-[var(--accent-dim)]"
+          : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]"
+      )}
+      onClick={() => setOpen((value) => !value)}
+      title={open ? ui("Tap to hide the translation") : ui("Tap for the translation")}
+      type="button"
+    >
+      <Languages
+        aria-hidden="true"
+        className={cn(
+          "absolute right-3 top-3 h-3.5 w-3.5 transition-opacity",
+          open ? "text-[var(--accent)] opacity-100" : "text-[var(--text-3)] opacity-45 group-hover:opacity-90"
+        )}
+      />
+      <h4 className="pr-6 text-sm font-black text-[var(--text-1)]">{h4}</h4>
+      <p className="mt-1 text-[13px] leading-5 text-[var(--text-2)]">
+        <RichText text={p} />
+      </p>
+      {open && (
+        <div className="mt-3 border-t border-[var(--border-2)] pt-2.5">
+          {titleDe ? <p className="text-[13px] font-black text-[var(--accent)]">{titleDe}</p> : null}
+          {bodyDe ? (
+            <p className="mt-1 text-[13px] leading-5 text-[var(--text-2)]">{bodyDe}</p>
+          ) : (
+            <p className="mt-1 text-[12px] font-semibold italic text-[var(--text-3)]">
+              {ui("No translation for this part yet.")}
+            </p>
+          )}
+        </div>
+      )}
+    </button>
+  );
+}
+
+/** A section heading that reveals its translation when tapped. */
+function LessonHeading({ text }: { text: string }) {
+  const language = useTranslationLanguage();
+  const [open, setOpen] = useState(false);
+  const translated = translateCourseText(text, language);
+
+  if (!translated) {
+    return <h3 className="mt-6 mb-2 text-lg font-black text-[var(--text-1)]">{text}</h3>;
+  }
+
+  return (
+    <div className="mt-6 mb-2">
+      <button
+        aria-expanded={open}
+        className="group inline-flex items-center gap-2 text-left"
+        onClick={() => setOpen((value) => !value)}
+        title={open ? ui("Tap to hide the translation") : ui("Tap for the translation")}
+        type="button"
+      >
+        <h3 className="text-lg font-black text-[var(--text-1)]">{text}</h3>
+        <Languages
+          aria-hidden="true"
+          className={cn(
+            "h-3.5 w-3.5 shrink-0 transition-opacity",
+            open ? "text-[var(--accent)] opacity-100" : "text-[var(--text-3)] opacity-45 group-hover:opacity-90"
+          )}
+        />
+      </button>
+      {open && <p className="mt-0.5 text-sm font-bold text-[var(--accent)]">{translated}</p>}
+    </div>
+  );
+}
+
 const CALLOUT_STYLES: Record<CalloutVariant, string> = {
   why: "bg-[var(--info-bg)] text-[var(--info-text)]",
-  warn: "bg-[var(--red-bg,#3a2026)] text-[var(--red-text,#ff8a9b)]",
-  sbox: "bg-[var(--orange-bg,#3a2e18)] text-[var(--orange-text,#f0b860)]",
+  warn: "bg-[var(--red-bg)] text-[var(--red-text)]",
+  sbox: "bg-[var(--orange-bg)] text-[var(--orange-text)]",
   python: "bg-[var(--surface-2)] text-[var(--text-2)] border-l-4 border-[var(--border-2)]",
   analogy: "bg-[var(--surface-2)] text-[var(--text-2)] border-l-4 border-[var(--border-2)]",
 };
@@ -73,9 +175,9 @@ function Quiz({ q, options, explanation, onCorrect }: { q: string; options: Quiz
               className={cn(
                 "rounded-lg border px-3.5 py-2.5 text-left text-sm font-semibold transition-colors",
                 showCorrect
-                  ? "border-[var(--success-border,#2d6b4f)] bg-[var(--success-bg)] text-[var(--success-text)]"
+                  ? "border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]"
                   : showWrong
-                    ? "border-[var(--red-border,#7a3344)] bg-[var(--red-bg,#3a2026)] text-[var(--red-text,#ff8a9b)]"
+                    ? "border-[var(--red-border)] bg-[var(--red-bg)] text-[var(--red-text)]"
                     : "border-[var(--border-2)] text-[var(--text-1)] hover:bg-[var(--surface-3)] disabled:opacity-70"
               )}
             >
@@ -90,10 +192,10 @@ function Quiz({ q, options, explanation, onCorrect }: { q: string; options: Quiz
             "mt-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold",
             options[picked!].correct
               ? "bg-[var(--success-bg)] text-[var(--success-text)]"
-              : "bg-[var(--red-bg,#3a2026)] text-[var(--red-text,#ff8a9b)]"
+              : "bg-[var(--red-bg)] text-[var(--red-text)]"
           )}
         >
-          {options[picked!].correct ? "Correct!" : "Not quite — correct answer highlighted above."}
+          {options[picked!].correct ? ui("Correct!") : ui("Not quite — the correct answer is highlighted above.")}
         </div>
       )}
       {answered && (
@@ -123,11 +225,7 @@ export function LessonBlocks({
               </p>
             );
           case "h3":
-            return (
-              <h3 key={i} className="mt-6 text-base font-black text-[var(--text-1)]">
-                {block.text}
-              </h3>
-            );
+            return <LessonHeading key={i} text={block.text} />;
           case "code":
             return <CodeBlock key={i} code={block.code} />;
           case "callout":
@@ -156,12 +254,7 @@ export function LessonBlocks({
             return (
               <div key={i} className="my-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                 {block.items.map((card, j) => (
-                  <div key={j} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5">
-                    <h4 className="text-sm font-black text-[var(--text-1)]">{card.h4}</h4>
-                    <p className="mt-1 text-[13px] leading-5 text-[var(--text-2)]">
-                      <RichText text={card.p} />
-                    </p>
-                  </div>
+                  <LessonCard h4={card.h4} key={j} p={card.p} />
                 ))}
               </div>
             );
