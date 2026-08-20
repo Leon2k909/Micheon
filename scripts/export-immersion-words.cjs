@@ -116,6 +116,18 @@ if (fs.existsSync(tatoebaPath)) {
  * "und" 168). content-gloss keeps its own STOPWORDS for that. This is only
  * about being able to look one up.
  */
+/**
+ * Words the extension reported it could not identify.
+ *
+ * Leon exports the collected list and the English half of it is not noise —
+ * it is the point. Those are words he is reading on real pages that Micheon
+ * had no German for, so hovering them said nothing. Each one here exists
+ * because it actually turned up.
+ */
+const gapWords = JSON.parse(
+  fs.readFileSync(path.join(root, "src", "data", "immersionGaps.json"), "utf8")
+);
+
 const functionWords = JSON.parse(
   fs.readFileSync(path.join(root, "src", "data", "functionWords.json"), "utf8")
 );
@@ -135,7 +147,7 @@ const supplementalWords = supplementalWordBank.map((word) => ({
 }));
 // Function words go LAST, so anything the catalogue already teaches keeps its
 // authored gloss and only the genuine gaps are filled.
-for (const word of [...catalogWords, ...supplementalWords, ...functionWords]) {
+for (const word of [...catalogWords, ...supplementalWords, ...functionWords, ...gapWords]) {
   const de = String(word.lookup || word.de).trim();
   const key = de.toLocaleLowerCase("de-DE");
   if (!de || seen.has(key)) continue;

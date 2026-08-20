@@ -552,3 +552,56 @@ checkLatestAudioWins().then(() => {
 
   console.log("check-immersion-extension: inflected forms reach their dictionary entry, and bad guesses are refused");
 }
+
+// ── words the collector reported, now answerable ────────────────────────────
+// Leon: "what english isnt a leak, its telling you words that im seeing on
+// websites that need to be translated to improve our apps". He is right — the
+// English half of an export is the feature working. Each entry in
+// immersionGaps.json exists because it actually turned up on a page he read
+// and the app had no German for it.
+{
+  const byEn = new Map();
+  for (const entry of words) {
+    const first = String(entry.en).split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
+    if (!/^[A-Za-z' -]+$/.test(first) || /^to\s/i.test(first) || first.split(/\s+/).length > 2) continue;
+    const key = first.toLowerCase();
+    const isNoun = /^(der|die|das)\s/.test(entry.deDisplay);
+    const isCore = entry.core === 1;
+    const existing = byEn.get(key);
+    if (!existing || (isCore && !existing.isCore) || (isNoun && !existing.isNoun && !existing.isCore)) {
+      byEn.set(key, { de: entry.deDisplay, isNoun, isCore });
+    }
+  }
+
+  // Straight from the export, most-seen first. If any of these stops
+  // resolving, a word he demonstrably reads has gone silent again.
+  for (const english of [
+    "usage", "history", "cheaper", "customer", "website", "access", "limit",
+    "activity", "leadership", "workflow", "subscription", "enterprise",
+    "tutorial", "vendor", "purchase", "available", "glad", "finally",
+    "absolutely", "incredible", "entire", "various", "fridge", "yesterday",
+  ]) {
+    const hit = byEn.get(english);
+    assert.ok(hit, `"${english}" has no German — it came off a page Leon actually read`);
+    assert.ok(/[A-Za-zÄÖÜäöüß]/.test(hit.de), `"${english}" resolves to something empty`);
+  }
+
+  // Every noun states its gender, since a German noun without one is half a
+  // card and the glossary is where a learner would look for it.
+  const gaps = JSON.parse(fs.readFileSync(path.join(root, "src", "data", "immersionGaps.json"), "utf8"));
+  assert.ok(gaps.length >= 100, `only ${gaps.length} gap words; the export gave us more than that`);
+  for (const entry of gaps) {
+    assert.ok(entry.de && entry.en, "a gap word is missing a side");
+    const looksLikeNoun = /^[A-ZÄÖÜ]/.test(entry.de.replace(/^(der|die|das)\s+/, ""));
+    if (looksLikeNoun) {
+      assert.ok(/^(der|die|das)\s/.test(entry.de),
+        `"${entry.de}" is a noun with no article — the gender is the hard part`);
+    }
+    assert.ok(!/[.!?]$/.test(entry.de), `"${entry.de}" is a sentence, not a word`);
+  }
+
+  console.log(
+    `check-immersion-extension: ${gaps.length} words the collector asked for now have German, `
+    + `and ${byEn.size.toLocaleString()} English words reach it`
+  );
+}
