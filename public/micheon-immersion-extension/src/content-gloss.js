@@ -1111,11 +1111,72 @@
     "abtastrate": "Abtastrate",
   }));
 
+  /**
+   * German words are inflected, and a glossary holds dictionary forms.
+   *
+   * OBSERVED_FORM_TO_LEMMA above is a hand-written list of forms somebody
+   * noticed and added one at a time. It does not scale: Leon's export of
+   * words the extension could not identify was 276 entries, and 47 of them
+   * were plain inflections of words already in the glossary — fühlt for
+   * fühlen, neuen for neu, geladen for laden, sollten for sollen. Hovering
+   * any of those did nothing, and every one was logged as a word he did not
+   * know.
+   *
+   * The rules below are deliberately timid. Each one proposes a lemma and is
+   * only believed if that lemma is ALREADY an entry, and verb rules further
+   * demand that the result be an infinitive. That second condition is what
+   * stops "dachte" — past tense of denken — resolving to the noun "Dach":
+   * "dachen" is not a word we hold, so the guess is thrown away and the
+   * reader gets nothing rather than something wrong.
+   */
+  function inflectedGermanEntry(token) {
+    const lower = token.toLowerCase();
+    const held = (candidate) => byDeLowerAny.get(candidate) || null;
+    // Reversing an umlaut covers wächst → wachsen and läuft → laufen.
+    const plain = lower.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u");
+    const stems = new Set();
+
+    const addVerbStems = (word) => {
+      // ge-...-t and ge-...-en participles: geteilt, geladen.
+      const participle = /^ge(.{2,})(t|en)$/.exec(word);
+      if (participle) stems.add(participle[1]);
+      for (const ending of ["est", "eten", "ete", "et", "ten", "te", "st", "en", "t", "e"]) {
+        if (word.length > ending.length + 2 && word.endsWith(ending)) {
+          stems.add(word.slice(0, -ending.length));
+        }
+      }
+    };
+    addVerbStems(lower);
+    if (plain !== lower) addVerbStems(plain);
+
+    // A verb only resolves to an infinitive.
+    for (const stem of stems) {
+      for (const infinitive of [`${stem}en`, `${stem}n`]) {
+        const hit = held(infinitive);
+        if (hit) return hit;
+      }
+    }
+
+    // Adjective and noun endings resolve to a base that must already exist,
+    // and must not itself be an infinitive, or every verb would match here.
+    for (const ending of ["sten", "ste", "eren", "ere", "en", "er", "es", "em", "e", "n", "s"]) {
+      if (lower.length <= ending.length + 2 || !lower.endsWith(ending)) continue;
+      const base = lower.slice(0, -ending.length);
+      if (/(en|ln|rn)$/.test(base)) continue;
+      const hit = held(base);
+      if (hit) return hit;
+    }
+
+    return null;
+  }
+
   function findGermanEntry(token, { allowCaseFold = false } = {}) {
     const exact = byDeExact.get(token);
     if (exact) return exact;
     const lemma = OBSERVED_FORM_TO_LEMMA.get(token.toLowerCase());
     if (lemma) return byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null;
+    const inflected = inflectedGermanEntry(token);
+    if (inflected) return inflected;
     // Navigation labels are isolated from authored prose before enabling
     // this. Their initial capital is UI styling rather than German noun
     // grammar, so "Entdecken" can safely resolve to the verb "entdecken".

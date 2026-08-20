@@ -488,3 +488,67 @@ checkLatestAudioWins().then(() => {
     + "function words included, and the popup is grouped and resizable"
   );
 }
+
+// ── inflected forms ─────────────────────────────────────────────────────────
+// German is inflected and a glossary holds dictionary forms. Leon exported the
+// words the extension could not identify: 276 entries, 47 of them plain
+// inflections of words already in the glossary. Hovering "fuehlt" did nothing
+// and it was logged as a word he did not know.
+//
+// The rules are only allowed to guess when the guess lands on an entry we
+// already hold, and verb rules must land on an infinitive. That second
+// condition is the one that matters: it is what stops the past tense of
+// denken resolving to the noun Dach.
+{
+  const start = gloss.indexOf("  function inflectedGermanEntry(token) {");
+  const stop = gloss.indexOf("  function findGermanEntry(token,", start);
+  assert(start >= 0 && stop > start, "could not isolate the de-inflection helper");
+
+  const byDeLowerAny = new Map();
+  for (const entry of words) {
+    const key = String(entry.de).toLowerCase();
+    if (!byDeLowerAny.has(key)) byDeLowerAny.set(key, entry);
+  }
+  const context = { byDeLowerAny };
+  vm.runInNewContext(
+    gloss.slice(start, stop) + "\nthis.resolve = inflectedGermanEntry;",
+    context,
+    { filename: "content-gloss-inflection.js" }
+  );
+  const resolve = (form) => {
+    const hit = context.resolve(form);
+    return hit ? String(hit.de).toLowerCase() : null;
+  };
+
+  // Written with real umlauts. An earlier version spelled them "ae"/"ue" and
+  // converted, which turned the test word "neuen" into "ne\u00fcn" \u2014 the helper
+  // corrupted its own fixtures and then reported the code broken.
+  for (const [form, lemma] of [
+    ["neuen", "neu"],
+    ["geladen", "laden"],
+    ["geteilt", "teilen"],
+    ["sollten", "sollen"],
+    ["aktivit\u00e4ten", "Aktivit\u00e4t"],
+    ["vorbestellt", "vorbestellen"],
+    ["best\u00e4tigt", "best\u00e4tigen"],
+  ].map(([form, lemma]) => [form, lemma.toLowerCase()])) {
+    assert.equal(resolve(form), lemma,
+      `"${form}" should resolve to "${lemma}" — a reader hovering it gets nothing otherwise`);
+  }
+
+  // An umlaut in the stem still has to reach the infinitive.
+  assert.equal(resolve("w\u00e4chst"), "wachsen", "a stem-vowel change must still resolve");
+
+  // And the guesses that must never be made. A wrong gloss is worse than
+  // none: it teaches a word the page never used.
+  for (const [form, why] of [
+    ["dachte", "the past of denken is not the noun Dach"],
+    ["warfare", "English text is not German"],
+    ["history", "nor is this"],
+    ["usage", "nor is this"],
+  ]) {
+    assert.equal(resolve(form), null, `"${form}" must resolve to nothing — ${why}`);
+  }
+
+  console.log("check-immersion-extension: inflected forms reach their dictionary entry, and bad guesses are refused");
+}
