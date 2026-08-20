@@ -156,19 +156,23 @@ type Exercise = {
 
 type Milestone = (typeof MILESTONES)[number];
 
-// Life in the UK sits at the foot of the nav rather than inside the course
-// switcher. It is a course you revise alongside German, not instead of it, so
-// burying it behind "switch course" made it both hard to find and wrong in
-// kind — picking it there swaps the whole app over. Its own destination keeps
-// German exactly where it is.
+// Life in the UK sits in the nav rather than inside the course switcher. It
+// is a course you revise alongside German, not instead of it, so burying it
+// behind "switch course" made it both hard to find and wrong in kind —
+// picking it there swaps the whole app over. Its own destination keeps German
+// exactly where it is.
+//
+// It sits ABOVE "More", not below. "More" is the overflow drawer and reads as
+// the end of the list; anything under it looks like a stray rather than a
+// destination of its own.
 const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "learn", label: "Lessons", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "listen", label: "Listen", icon: Headphones },
   { id: "games", label: "Games", icon: Gamepad2 },
-  { id: "more", label: "More", icon: Menu },
   { id: "life-in-uk", label: "Life in UK", icon: Landmark },
+  { id: "more", label: "More", icon: Menu },
 ];
 
 const MOBILE_NAVIGATION: NavigationItem[] = [
@@ -416,10 +420,39 @@ function BrandMark() {
   );
 }
 
+/**
+ * Start the work while the pointer is still travelling.
+ *
+ * Games felt slow to open and the click was never the problem: navigate()
+ * already asks for the catalogue the moment it runs. The problem is what
+ * "asking" costs. The catalogue is a 3.9 MB chunk that is deliberately kept
+ * off the first-paint path and requested on idle with a two-second timeout,
+ * and building it means resolving 485 blueprints. Measured on the production
+ * build, the chunk starts at ~2.4 s and the parts are ready at ~3.3 s. Click
+ * Games inside that window and you wait for the remainder; click after it and
+ * the view opens in 384 ms.
+ *
+ * Hovering a nav item precedes clicking it by a few hundred milliseconds, and
+ * that time is otherwise spent doing nothing. So intent — pointer over, or
+ * keyboard focus — starts the catalogue and pulls the view's chunk down. It
+ * costs nothing at startup because it only fires when somebody is already on
+ * their way there.
+ */
+const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
+  games: () => { void import("@/games/GamesView"); },
+  listen: () => { void import("@/components/listen/ListenView"); },
+  tests: () => { void import("@/components/tests/TestsView"); },
+  "life-in-uk": () => { void import("@/components/course/CourseLessonsView"); },
+};
+
+/** Views whose content needs the full catalogue before they can render. */
+const NEEDS_CATALOGUE: PrototypeView[] = ["learn", "games", "tests", "listen"];
+
 function Sidebar({
   activeView,
   gamesUnlocked,
   onNavigate,
+  onPrefetch,
   onResize,
   shopUnlocked,
   socialPreviewUnlocked,
@@ -428,6 +461,7 @@ function Sidebar({
   activeView: PrototypeView;
   gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
+  onPrefetch: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
   shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
@@ -503,6 +537,8 @@ function Sidebar({
               className={active ? "is-active" : ""}
               key={item.id}
               onClick={() => onNavigate(item.id)}
+              onFocus={() => onPrefetch(item.id)}
+              onPointerEnter={() => onPrefetch(item.id)}
               type="button"
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
@@ -524,6 +560,8 @@ function Sidebar({
                   className={active ? "is-active" : ""}
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
+                  onFocus={() => onPrefetch(item.id)}
+                  onPointerEnter={() => onPrefetch(item.id)}
                   title={ui("Still in testing — expect rough edges.")}
                   type="button"
                 >
@@ -2465,6 +2503,20 @@ export default function NewUiPrototype({
     if (!shopUnlocked && activeView === "shop") setActiveView("home");
   }, [activeView, shopUnlocked, socialPreviewUnlocked]);
 
+  // Pointer over a nav item, or keyboard focus on it, is intent. Start the
+  // catalogue and pull the chunk now rather than at the click. Both calls are
+  // idempotent: setPartsRequested is a boolean already true after the first,
+  // and a repeated dynamic import resolves from the module cache.
+  const prefetchView = (view: PrototypeView) => {
+    // Not before the page has finished loading. The catalogue is kept off the
+    // first-paint path on purpose, and a pointer that merely happens to be
+    // resting over the sidebar while the app boots would otherwise drag 3.9 MB
+    // straight back into it — undoing the deferral by accident.
+    if (document.readyState !== "complete") return;
+    if (NEEDS_CATALOGUE.includes(view)) setPartsRequested(true);
+    VIEW_PREFETCH[view]?.();
+  };
+
   const navigate = (view: PrototypeView) => {
     if ((view === "social" && !socialPreviewUnlocked) || (view === "shop" && !shopUnlocked)) {
       setActiveView("home");
@@ -2644,11 +2696,11 @@ export default function NewUiPrototype({
     </div>
   ) : activeView === "games" && gamesUnlocked ? (
     <div className="np-feature-host">
-      {partsReady ? (
-        <Suspense fallback={<FeatureLoading />}>
-          <GamesView apiParts={apiParts} />
-        </Suspense>
-      ) : <FeatureLoading />}
+      {/* No partsReady gate: the games library is a list of titles and needs
+          no catalogue. GamesView waits for one only once a game is opened. */}
+      <Suspense fallback={<FeatureLoading />}>
+        <GamesView apiParts={apiParts} catalogueReady={partsReady} />
+      </Suspense>
     </div>
   ) : activeView === "games" ? (
     <section className="np-page-card">
@@ -2781,6 +2833,7 @@ export default function NewUiPrototype({
             activeView={activeView}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
+            onPrefetch={prefetchView}
             onResize={resizeSidebar}
             shopUnlocked={shopUnlocked}
             socialPreviewUnlocked={socialPreviewUnlocked}

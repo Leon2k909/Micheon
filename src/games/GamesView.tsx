@@ -78,10 +78,27 @@ const GAMES = [
 // The Vocabulary mastery card used to live here; it moved to Profile &
 // settings (Gamification.tsx), where the rest of the progress story lives —
 // Games is Leon-only beta territory now and must not hold anyone's stats.
+/**
+ * The library opens immediately; only a game waits for words.
+ *
+ * apiParts is used in exactly one place below — inside GameContentProvider,
+ * which wraps the SELECTED game. The grid of cards never touches it. It was
+ * nonetheless gated on the whole catalogue upstream, so clicking Games sat on
+ * a loading state while a 3.9 MB chunk downloaded and 485 blueprints
+ * resolved: measured at ~2.4 s to start and ~3.3 s to finish on the
+ * production build, for a list of titles that needs none of it.
+ *
+ * So the gate moved down here, to the only thing that genuinely cannot start
+ * without vocabulary. `catalogueReady` false with no game open costs nothing;
+ * false with a game open shows the same "Loading practice game" card the lazy
+ * chunk already uses, which is the honest place to wait.
+ */
 export function GamesView({
   apiParts,
+  catalogueReady = true,
 }: {
   apiParts: Record<string, unknown>;
+  catalogueReady?: boolean;
 }) {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,9 +138,21 @@ export function GamesView({
               </div>
             }
           >
-            <GameContentProvider apiParts={apiParts}>
-              <game.component />
-            </GameContentProvider>
+            {catalogueReady ? (
+              <GameContentProvider apiParts={apiParts}>
+                <game.component />
+              </GameContentProvider>
+            ) : (
+              // Without this the provider would build a catalogue from an
+              // empty parts map, fall through to the three-item FALLBACK_ITEMS
+              // and start a spelling game with almost nothing in it.
+              <div className="card flex min-h-[360px] items-center justify-center p-8 text-center">
+                <div>
+                  <div className="mx-auto h-14 w-14 rounded-2xl skeleton" />
+                  <p className="mt-4 text-sm font-black text-[var(--text-1)]">{ui("Loading practice game")}</p>
+                </div>
+              </div>
+            )}
           </Suspense>
         </motion.div>
       ) : (
