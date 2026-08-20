@@ -116,6 +116,27 @@ const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
     level: "A2",
     pos: "noun",
   },
+  mitteilung: {
+    de: "die Mitteilung",
+    en: "notification",
+    use: "What X and most apps call their notifications tab: die Mitteilungen. Also a notice or formal communication — the everyday word for a message you send someone is die Nachricht.",
+    level: "A2",
+    pos: "noun",
+  },
+  meldung: {
+    de: "die Meldung",
+    en: "report",
+    use: "A news bulletin, an official report, or a system message: die Fehlermeldung = error message. Reporting a post uses the verb melden.",
+    level: "B1",
+    pos: "noun",
+  },
+  verlauf: {
+    de: "der Verlauf",
+    en: "history or course",
+    use: "In a browser or app, der Verlauf is your history. Elsewhere it is how something unfolded: im Verlauf des Abends = over the course of the evening.",
+    level: "B1",
+    pos: "noun",
+  },
   erinnern: {
     de: "sich erinnern",
     en: "to remember",
@@ -258,8 +279,8 @@ const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
   },
   beitrag: {
     de: "der Beitrag",
-    en: "contribution",
-    use: "Beitrag can also mean a fee, a social-media post, or a broadcast or article.",
+    en: "contribution or post",
+    use: "On social media, ein Beitrag is a post. Elsewhere a contribution, a membership fee, or a broadcast article.",
     level: "B1",
     pos: "noun",
   },

@@ -291,21 +291,31 @@
       // and taking weil and denn out of the reverse direction entirely, along
       // with every other gloss the course had bothered to explain.
       const enFirst = w.en.split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
-      if (/^[A-Za-z' -]+$/.test(enFirst) && !/^to\s/i.test(enFirst) && enFirst.split(/\s+/).length <= 2) {
-        const enKey = enFirst.toLowerCase();
+      // A gloss written "bill or invoice" names two meanings, and taking it
+      // as one three-word phrase kept 118 words out of this index entirely:
+      // hovering "bill" found nothing while die Rechnung sat in the
+      // glossary. Each side of the "or" is a claim in its own right — the
+      // first with full standing, the rest only where nothing else objects.
+      const claims = enFirst.split(/\s+or\s+/i);
+      claims.forEach((claim, position) => {
+        const cleaned = claim.trim();
+        if (!/^[A-Za-z' -]+$/.test(cleaned) || /^to\s/i.test(cleaned) || cleaned.split(/\s+/).length > 2) return;
+        const enKey = cleaned.toLowerCase();
         const isNoun = /^(der|die|das)\s/.test(w.deDisplay);
         const isCore = w.core === 1;
         const existing = byEn.get(enKey);
         // A word marked core is the everyday one for that meaning, and it
         // wins outright: "always" used to land on stets, because stets
         // happened to be indexed first, when the word a reader wants is immer.
-        const better = !existing
-          || (isCore && !existing.isCore)
-          || (isNoun && !existing.isNoun && !existing.isCore);
+        const better = position === 0
+          ? (!existing
+            || (isCore && !existing.isCore)
+            || (isNoun && !existing.isNoun && !existing.isCore))
+          : !existing;
         if (better) {
           byEn.set(enKey, { de: w.de, deDisplay: w.deDisplay, isNoun, isCore });
         }
-      }
+      });
     }
 
     // Second pass: the other names for the same word. One German word is one
@@ -336,7 +346,8 @@
       const enFirst = w.en.split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
       const verb = /^to\s+(.+)$/i.exec(enFirst);
       if (!verb) continue;
-      const enKey = verb[1].toLowerCase().trim();
+      // "to believe or think" claims both verbs, first one first.
+      const enKey = verb[1].split(/\s+or\s+(?:to\s+)?/i)[0].toLowerCase().trim();
       if (!/^[a-z' -]+$/.test(enKey) || enKey.split(/\s+/).length > 2) continue;
       const record = { de: w.de, deDisplay: w.deDisplay, isNoun: false, isCore: w.core === 1, isVerb: true };
       if (!byEn.has(enKey)) byEn.set(enKey, record);

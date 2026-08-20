@@ -607,8 +607,31 @@ checkLatestAudioWins().then(() => {
     ["fridge", "der Kühlschrank", "a word added from Leon's own export"],
     ["decide", "entscheiden", "a verb is still a word somebody hovers"],
     ["decided", "entscheiden", "and its past tense is unambiguously that verb"],
+    ["message", "die Nachricht", "the everyday word, not die Meldung"],
+    ["notification", "die Benachrichtigung", "the app word"],
+    ["bill", "die Rechnung", "each side of an \"A or B\" gloss is a claim"],
+    ["invoice", "die Rechnung", "including the second side"],
+    ["believe", "glauben", "and the same for \"to A or B\" verbs"],
   ]) {
     assert.strictEqual(reaches(english), german, `"${english}" should reach ${german} — ${why}`);
+  }
+
+  // Leon hovered X's Mitteilungen tab and the card said "message" — the
+  // wrong sense to lead with, and the same for its neighbours. The canonical
+  // senses file owns these; this pins what the card actually leads with.
+  for (const [word, leads] of [
+    ["Mitteilung", /^notification/],
+    ["Meldung", /^report/],
+    ["Verlauf", /^history/],
+    ["Beitrag", /^contribution or post/],
+    ["Nachricht", /^message/],
+    ["Benachrichtigung", /^notification/],
+    ["Impressum", /^legal notice/],
+  ]) {
+    const entry = glossary.find((candidate) => candidate.de === word);
+    assert.ok(entry, `${word} is missing from the glossary`);
+    assert.ok(leads.test(entry.en),
+      `${word} leads with "${entry.en}" — a reader in a German UI needs it to lead with ${leads}`);
   }
   // The reason verbs were excluded in the first place, still holding: a noun
   // sense we teach must keep the key. Stripping "to " blindly made the

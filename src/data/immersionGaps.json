@@ -186,5 +186,7 @@
   {"de": "führen", "en": "to lead", "core": 1},
   {"de": "halten", "en": "to hold", "core": 1},
   {"de": "die Zusammenfassung", "en": "summary", "core": 1},
-  {"de": "der Entwurf", "en": "draft", "core": 1}
+  {"de": "der Entwurf", "en": "draft", "core": 1},
+  {"de": "das Impressum", "en": "legal notice", "core": 1},
+  {"de": "die Neuigkeit", "en": "piece of news"}
 ]
