@@ -1,7 +1,7 @@
 {
   "name": "germ",
   "private": true,
-  "version": "1.2.371",
+  "version": "1.2.372",
   "description": "Micheon — offline lessons with premium voice, spaced repetition, and gaming vocabulary.",
   "author": "Leon",
   "type": "module",
@@ -120,7 +120,8 @@
     "check:settings-spacing": "node scripts/check-settings-spacing.cjs",
     "check:nav-hiding": "node scripts/check-nav-hiding.cjs",
     "check:study-sets": "node scripts/check-study-sets.cjs",
-    "check:translation-coverage": "node scripts/check-translation-coverage.cjs"
+    "check:translation-coverage": "node scripts/check-translation-coverage.cjs",
+    "check:french-coverage": "npm run check:translation-coverage"
   },
   "build": {
     "appId": "com.germ.germanlab",

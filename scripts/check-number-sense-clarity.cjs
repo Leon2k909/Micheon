@@ -68,8 +68,9 @@ const byLookup = (lookup) => words.find(
 const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.length ?? 0), 0);
 // 7413 -> 7464 when parts 535-538 added 53 everyday nouns the catalogue had
 // no name for (bathroom, packing, small children, the drawer things). Two of
-// the 53 folded into existing synonym cards rather than standing alone.
-assert.equal(taughtWords, 7464, "the reviewed sense fixes changed the standalone word count");
+// the 53 folded into existing synonym cards rather than standing alone. The
+// natural-English review then restored two previously excluded phrase cards.
+assert.equal(taughtWords, 7466, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
