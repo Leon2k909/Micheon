@@ -19,15 +19,6 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "Equality: the nine protected characteristics": "Gleichheit: die neun geschützten Merkmale",
   "Rights and responsibilities": "Rechte und Pflichten",
   "The citizenship ceremony": "Die Einbürgerungszeremonie",
-  "Where": "Wo",
-  "At a registered test centre, booked online. You must book at least 3 days ahead and bring the same ID you booked with.":
-    "In einem registrierten Testzentrum, online gebucht. Du musst mindestens 3 Tage im Voraus buchen und denselben Ausweis mitbringen, mit dem du gebucht hast.",
-  "Who": "Wer",
-  "Usually required if you are aged 18 to 64. There are exemptions for some long-term medical conditions.":
-    "In der Regel erforderlich, wenn du zwischen 18 und 64 Jahre alt bist. Bei bestimmten langfristigen Erkrankungen gibt es Ausnahmen.",
-  "Result": "Ergebnis",
-  "You find out on the day. If you fail you can retake it, but you must wait 7 days between attempts.":
-    "Du erfährst es noch am selben Tag. Wenn du durchfällst, kannst du wiederholen, musst aber 7 Tage zwischen den Versuchen warten.",
   "Democracy": "Demokratie",
   "Government by the people, through representatives you elect and can vote out.":
     "Herrschaft durch das Volk, über Abgeordnete, die du wählst und auch wieder abwählen kannst.",
@@ -905,4 +896,480 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "Dentists and opticians": "Zahnärzte und Optiker",
   "NHS treatment is available but usually carries a charge.":
     "NHS-Behandlung ist möglich, meist aber gegen Gebühr.",
+
+  // ── Lernbereich-Überschriften, in jeder Lektion gleich ──────────────────
+  "What you must know": "Das musst du wissen",
+  "Key names": "Wichtige Namen",
+  "Key dates and numbers": "Wichtige Jahreszahlen und Zahlen",
+  "Key terms": "Wichtige Begriffe",
+  "Now answer these": "Jetzt beantworte diese Fragen",
+
+  // ── 1. British Values & Principles: Fließtext ───────────────────────────
+  "The Life in the UK Test is a requirement for both settlement (indefinite leave to remain) and citizenship. It is **24 multiple-choice questions in 45 minutes**, and the pass mark is **18 out of 24** — 75%.":
+    "Der Life-in-the-UK-Test ist Voraussetzung für die Niederlassung (indefinite leave to remain) und für die Einbürgerung. Er besteht aus **24 Multiple-Choice-Fragen in 45 Minuten**, und die Bestehensgrenze liegt bei **18 von 24** – also 75 %.",
+  "Why this lesson first: the test does not only ask facts. Several questions ask what British society expects of you, and those answers come straight from the values below.":
+    "Warum diese Lektion zuerst kommt: Der Test fragt nicht nur Fakten ab. Mehrere Fragen zielen darauf, was die britische Gesellschaft von dir erwartet – und diese Antworten stehen direkt in den Werten unten.",
+  "The UK sets out a short list of shared values. Learn them as a list — questions often ask you to pick which one is *not* included.":
+    "Das Vereinigte Königreich benennt eine kurze Liste gemeinsamer Werte. Lerne sie als Liste – oft wird gefragt, welcher Punkt *nicht* dazugehört.",
+  "It is unlawful to discriminate against someone on any of these grounds: **age, disability, gender reassignment, marriage and civil partnership, pregnancy and maternity, race, religion or belief, sex, and sexual orientation**.":
+    "Diskriminierung aus einem dieser Gründe ist rechtswidrig: **Alter, Behinderung, Geschlechtsangleichung, Ehe und eingetragene Partnerschaft, Schwangerschaft und Mutterschaft, ethnische Herkunft, Religion oder Weltanschauung, Geschlecht und sexuelle Orientierung**.",
+  "The values cut both ways. Living in the UK gives you rights, and each one carries a matching duty.":
+    "Die Werte gelten in beide Richtungen. Das Leben im Vereinigten Königreich gibt dir Rechte, und zu jedem gehört eine passende Pflicht.",
+  "Freedom of speech is not unlimited. Speech that incites violence or racial hatred is a criminal offence. The test does ask about that boundary.":
+    "Die Meinungsfreiheit ist nicht grenzenlos. Äußerungen, die zu Gewalt oder Rassenhass aufstacheln, sind eine Straftat. Nach dieser Grenze wird im Test tatsächlich gefragt.",
+  "If your application succeeds you attend a ceremony, usually run by your local council, within three months. There you swear an **oath of allegiance** (or make an **affirmation** if you prefer not to swear by God) and give a **pledge** to respect the UK's rights, freedoms and laws.":
+    "Wenn dein Antrag erfolgreich ist, nimmst du innerhalb von drei Monaten an einer Zeremonie teil, meist ausgerichtet von deiner Gemeinde. Dort leistest du einen **Treueeid** (oder gibst eine **Bekräftigung** ab, wenn du nicht bei Gott schwören möchtest) und ein **Gelöbnis**, die Rechte, Freiheiten und Gesetze des Landes zu achten.",
+  "No people to learn here — this lesson is about principles, not personalities.":
+    "Hier gibt es keine Personen zu lernen – in dieser Lektion geht es um Prinzipien, nicht um Persönlichkeiten.",
+  "24 questions, 45 minutes, 18 to pass (75%). Ages 18–64. 7 days between attempts. Ceremony within 3 months. Equality Act 2010.":
+    "24 Fragen, 45 Minuten, 18 zum Bestehen (75 %). Alter 18–64. 7 Tage zwischen den Versuchen. Zeremonie innerhalb von 3 Monaten. Equality Act 2010.",
+  "Rule of law · individual liberty · tolerance · protected characteristics · oath of allegiance · affirmation · pledge · settlement (indefinite leave to remain).":
+    "Rule of law · persönliche Freiheit · Toleranz · geschützte Merkmale · Treueeid · Bekräftigung · Gelöbnis · Niederlassung (indefinite leave to remain).",
+  "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty. 18 of 24 passes.":
+    "In einem Satz: Die Werte sind eine Liste, die du vervollständigen oder in der du eine Lücke erkennen sollst – und zu jedem Recht gehört eine Pflicht. 18 von 24 bestehen.",
+
+  // ── 2. The UK & Geography: Fließtext ────────────────────────────────────
+  "This trips people up constantly, and the test knows it. **The United Kingdom** is England, Scotland, Wales and Northern Ireland. **Great Britain** is only England, Scotland and Wales — it is the island, so Northern Ireland is not part of it.":
+    "Daran scheitern ständig Leute, und der Test weiß das. **Das Vereinigte Königreich** besteht aus England, Schottland, Wales und Nordirland. **Großbritannien** umfasst nur England, Schottland und Wales – es ist die Insel, Nordirland gehört also nicht dazu.",
+  "The Channel Islands and the Isle of Man are Crown Dependencies. They are NOT part of the UK. They have their own governments and are linked to the Crown, not to Parliament in Westminster.":
+    "Die Kanalinseln und die Isle of Man sind Crown Dependencies. Sie gehören NICHT zum Vereinigten Königreich. Sie haben eigene Regierungen und sind mit der Krone verbunden, nicht mit dem Parlament in Westminster.",
+  "England is divided into **counties** — Kent, Yorkshire, Cornwall, Devon, Lancashire and dozens more — and into broader regions such as the **South East, the Midlands, the North West and East Anglia**. Scotland has council areas and historic regions such as the **Highlands, the Lowlands and the Borders**. Northern Ireland has six counties: Antrim, Armagh, Down, Fermanagh, Londonderry and Tyrone.":
+    "England ist in **Grafschaften (counties)** gegliedert – Kent, Yorkshire, Cornwall, Devon, Lancashire und Dutzende mehr – sowie in größere Regionen wie **South East, Midlands, North West und East Anglia**. Schottland hat Verwaltungsbezirke und historische Regionen wie die **Highlands, die Lowlands und die Borders**. Nordirland hat sechs Grafschaften: Antrim, Armagh, Down, Fermanagh, Londonderry und Tyrone.",
+  "**Lough Neagh** in Northern Ireland is the largest freshwater lake in the whole UK by area. **Loch Ness** and **Loch Lomond** are the best-known Scottish lochs — Loch Lomond is the largest by surface area in Great Britain, while Loch Ness holds the most water. **Windermere** in the Lake District is the largest lake in England.":
+    "**Lough Neagh** in Nordirland ist der flächenmäßig größte Süßwassersee im gesamten Vereinigten Königreich. **Loch Ness** und **Loch Lomond** sind die bekanntesten schottischen Lochs – Loch Lomond ist der flächengrößte in Großbritannien, Loch Ness enthält das meiste Wasser. **Windermere** im Lake District ist der größte See Englands.",
+  "There are **15 National Parks** across the UK. The best known are the **Lake District, Snowdonia (Eryri), the Peak District, the Yorkshire Dales, Dartmoor, the Cairngorms** and **Loch Lomond and the Trossachs**. Landmarks the test may mention include **Stonehenge**, **Hadrian's Wall**, the **Giant's Causeway** in County Antrim, the **Tower of London**, **Edinburgh Castle** and the **Lake District**.":
+    "Im Vereinigten Königreich gibt es **15 Nationalparks**. Die bekanntesten sind der **Lake District, Snowdonia (Eryri), der Peak District, die Yorkshire Dales, Dartmoor, die Cairngorms** und **Loch Lomond and the Trossachs**. Wahrzeichen, die im Test vorkommen können: **Stonehenge**, der **Hadrianswall**, der **Giant's Causeway** in der Grafschaft Antrim, der **Tower of London**, **Edinburgh Castle** und der **Lake District**.",
+  "English is spoken throughout. **Welsh** is an official language in Wales and is taught in schools there. **Gaelic** is spoken in parts of Scotland, and **Irish** is spoken in Northern Ireland. Scots and Ulster Scots are also recognised.":
+    "Englisch wird überall gesprochen. **Walisisch** ist in Wales Amtssprache und wird dort in der Schule unterrichtet. **Gälisch** spricht man in Teilen Schottlands, **Irisch** in Nordirland. Auch Scots und Ulster Scots sind anerkannt.",
+  "In one line: Great Britain is the island — three nations. The UK is four. The Isle of Man and the Channel Islands are in neither.":
+    "In einem Satz: Großbritannien ist die Insel – drei Nationen. Das Vereinigte Königreich hat vier. Die Isle of Man und die Kanalinseln gehören zu keinem von beiden.",
+
+  // ── 3. National Identity & Symbols: Fließtext ───────────────────────────
+  "Every nation of the UK carries its own saint, flower, flag and symbol — and the Union brings three of the four together in one flag. The test asks which belongs to which, so learn them as four sets rather than as one long list.":
+    "Jede Nation des Vereinigten Königreichs hat ihren eigenen Heiligen, ihre Blume, Flagge und ihr Symbol – und die Union vereint drei der vier in einer Flagge. Im Test wird gefragt, was wozu gehört: Lerne sie deshalb als vier Sets statt als eine lange Liste.",
+  "The **Union Flag** — often called the **Union Jack** — combines three crosses: the red cross of **St George** on white for England, the white diagonal cross (saltire) of **St Andrew** on blue for Scotland, and the red diagonal cross of **St Patrick** on white for Ireland.":
+    "Die **Union Flag** – oft **Union Jack** genannt – vereint drei Kreuze: das rote Kreuz des **St George** auf Weiß für England, das weiße Schrägkreuz (saltire) des **St Andrew** auf Blau für Schottland und das rote Schrägkreuz des **St Patrick** auf Weiß für Irland.",
+  "Why Wales is missing: when the first Union Flag was designed in 1606, Wales had already been joined to England, so it was not treated as a separate kingdom. The Welsh dragon flies on its own flag instead.":
+    "Warum Wales fehlt: Als die erste Union Flag 1606 entworfen wurde, war Wales bereits mit England vereinigt und galt daher nicht als eigenes Königreich. Der walisische Drache fliegt stattdessen auf einer eigenen Flagge.",
+  "Four saints, four dates. Two fall in March, and that is the pair people mix up.":
+    "Vier Heilige, vier Daten. Zwei fallen in den März – und genau dieses Paar wird verwechselt.",
+  "England.": "England.",
+  "The **Welsh Dragon** appears on the flag of Wales. The **lion** and the **unicorn** support the Royal Coat of Arms — the lion for England, the unicorn for Scotland. The **oak tree** is a long-standing English symbol, and the **poppy** is worn nationally for Remembrance.":
+    "Der **walisische Drache** erscheint auf der Flagge von Wales. **Löwe** und **Einhorn** tragen das königliche Wappen – der Löwe für England, das Einhorn für Schottland. Die **Eiche** ist ein altes englisches Symbol, und die **Mohnblume** wird landesweit zum Gedenken getragen.",
+  "The national anthem of the UK is **God Save the King** (God Save the Queen during a queen's reign). It is played at state occasions and when the monarch appears in public. In sport each nation may use its own song — **Flower of Scotland** for Scotland, **Hen Wlad Fy Nhadau (Land of My Fathers)** for Wales, and **Jerusalem** or the national anthem for England.":
+    "Die Nationalhymne des Vereinigten Königreichs ist **God Save the King** (God Save the Queen, wenn eine Königin regiert). Sie wird bei Staatsanlässen gespielt und wenn der Monarch öffentlich auftritt. Im Sport nutzt jede Nation ihr eigenes Lied – **Flower of Scotland** für Schottland, **Hen Wlad Fy Nhadau (Land of My Fathers)** für Wales und **Jerusalem** oder die Nationalhymne für England.",
+  "Why the words change: they follow the monarch's gender, not the country. Nothing else in the song changes.":
+    "Warum sich der Text ändert: Er richtet sich nach dem Geschlecht des Monarchen, nicht nach dem Land. Sonst ändert sich am Lied nichts.",
+  "In one line: Four saints, four flowers, four dates — and only three crosses in the flag, because Wales was already joined to England.":
+    "In einem Satz: Vier Heilige, vier Blumen, vier Daten – und nur drei Kreuze in der Flagge, weil Wales schon mit England vereinigt war.",
+
+  // ── 4. Early British History: Fließtext ─────────────────────────────────
+  "For most of prehistory Britain was not an island. It was joined to the continent by land, and people walked here. Around **10,000 years ago** the land bridge flooded and Britain was cut off.":
+    "Den größten Teil der Vorgeschichte über war Britannien keine Insel. Es war über Land mit dem Kontinent verbunden, und die Menschen kamen zu Fuß. Vor rund **10.000 Jahren** wurde die Landbrücke überflutet und Britannien abgeschnitten.",
+  "The **Celts** spoke languages from which modern **Welsh, Gaelic and Irish** descend. **Stonehenge** in Wiltshire is the most famous prehistoric monument in Britain and is still a World Heritage Site.":
+    "Die **Kelten** sprachen Sprachen, von denen das heutige **Walisisch, Gälisch und Irisch** abstammen. **Stonehenge** in Wiltshire ist das berühmteste vorgeschichtliche Denkmal Britanniens und bis heute Weltkulturerbe.",
+  "**Julius Caesar** led an expedition in **55 BC** and it failed — he did not conquer Britain. The successful invasion came almost a century later, under the Emperor **Claudius in AD 43**.":
+    "**Julius Caesar** führte **55 v. Chr.** einen Feldzug – und er scheiterte: Er eroberte Britannien nicht. Die erfolgreiche Invasion kam fast ein Jahrhundert später unter Kaiser **Claudius im Jahr 43 n. Chr.**",
+  "55 BC and AD 43 are the pair the test loves. Caesar came and left; Claudius came and stayed. Do not swap them.":
+    "55 v. Chr. und 43 n. Chr. sind das Lieblingspaar des Tests. Caesar kam und ging; Claudius kam und blieb. Verwechsle sie nicht.",
+  "**Boudicca**, queen of the Iceni in what is now East Anglia, led a famous revolt against Roman rule. Her statue stands on Westminster Bridge in London. The Romans never conquered what is now Scotland, and the Emperor **Hadrian** built **Hadrian's Wall** across the north of England to keep out the tribes he called the Picts. The Romans left Britain in **AD 410** to defend Rome itself.":
+    "**Boudicca**, Königin der Icener im heutigen East Anglia, führte einen berühmten Aufstand gegen die römische Herrschaft an. Ihre Statue steht auf der Westminster Bridge in London. Das heutige Schottland eroberten die Römer nie, und Kaiser **Hadrian** ließ quer durch Nordengland den **Hadrianswall** errichten, um die Stämme fernzuhalten, die er Pikten nannte. **410 n. Chr.** verließen die Römer Britannien, um Rom selbst zu verteidigen.",
+  "After the Romans left, tribes from northern Europe — the **Angles, Saxons and Jutes** — settled in Britain. Their language became the basis of modern English, and the country took its name from the Angles: *Angle-land*, England. The burial ship at **Sutton Hoo** in Suffolk dates from this period.":
+    "Nach dem Abzug der Römer siedelten Stämme aus Nordeuropa – die **Angeln, Sachsen und Jüten** – in Britannien. Ihre Sprache wurde zur Grundlage des heutigen Englisch, und das Land erhielt seinen Namen von den Angeln: *Angle-land*, England. Das Grabschiff von **Sutton Hoo** in Suffolk stammt aus dieser Zeit.",
+  "Christian missionaries arrived to convert the Anglo-Saxons — **St Augustine** in the south, who became the first Archbishop of Canterbury, and **St Columba** in Scotland, who founded a monastery on **Iona**.":
+    "Christliche Missionare kamen, um die Angelsachsen zu bekehren – **St Augustine** im Süden, der erster Archbishop of Canterbury wurde, und **St Columba** in Schottland, der auf **Iona** ein Kloster gründete.",
+  "Vikings from Denmark and Norway first raided in **AD 789** and later settled. **Alfred the Great**, King of Wessex, defeated them and agreed a boundary: the north and east of England became the **Danelaw**, under Danish law, while Wessex remained English.":
+    "Wikinger aus Dänemark und Norwegen überfielen das Land erstmals **789 n. Chr.** und siedelten später. **Alfred der Große**, König von Wessex, besiegte sie und vereinbarte eine Grenze: Der Norden und Osten Englands wurde zum **Danelaw** unter dänischem Recht, während Wessex englisch blieb.",
+  "In **1066** **William, Duke of Normandy**, defeated King Harold at the **Battle of Hastings** and became William I — William the Conqueror. It is the last time Britain was successfully invaded, and the date every schoolchild in Britain knows.":
+    "**1066** besiegte **Wilhelm, Herzog der Normandie**, König Harold in der **Schlacht von Hastings** und wurde Wilhelm I. – Wilhelm der Eroberer. Es ist das letzte Mal, dass Britannien erfolgreich erobert wurde, und das Datum, das jedes britische Schulkind kennt.",
+  "In one line: Caesar came and left in 55 BC; Claudius came and stayed in AD 43. That pair is the trap this chapter is built around.":
+    "In einem Satz: Caesar kam und ging 55 v. Chr.; Claudius kam und blieb 43 n. Chr. Um dieses Paar herum ist dieses Kapitel gebaut.",
+
+  // ── 5. Medieval Britain: Fließtext ──────────────────────────────────────
+  "The Middle Ages run from the Norman Conquest to the Tudors. Two themes carry most of the test questions: the slow limiting of the king's power, and the long wars with Wales, Scotland and France.":
+    "Das Mittelalter reicht von der normannischen Eroberung bis zu den Tudors. Zwei Themen tragen die meisten Testfragen: die allmähliche Beschränkung der Königsmacht und die langen Kriege mit Wales, Schottland und Frankreich.",
+  "**King John** was forced by his barons to agree to **Magna Carta** — the Great Charter — in **1215** at Runnymede. It established that the king was **not above the law** and could not tax as he pleased. It is the foundation of the rule of law in Britain.":
+    "**König Johann** wurde **1215** in Runnymede von seinen Baronen gezwungen, der **Magna Carta** – der Großen Urkunde – zuzustimmen. Sie hielt fest, dass der König **nicht über dem Gesetz steht** und nicht nach Belieben Steuern erheben darf. Sie ist die Grundlage der Rechtsstaatlichkeit in Großbritannien.",
+  "Why Magna Carta still matters: it is the first written statement that a ruler is bound by law. The principle behind it is one of the fundamental values you learned in lesson 1.":
+    "Warum die Magna Carta bis heute zählt: Sie ist die erste schriftliche Festlegung, dass ein Herrscher an das Recht gebunden ist. Das dahinterstehende Prinzip ist einer der Grundwerte aus Lektion 1.",
+  "**Henry II** reformed the courts and quarrelled with **Thomas Becket**, Archbishop of Canterbury, who was murdered in Canterbury Cathedral in 1170. **Richard I**, the Lionheart, spent almost his whole reign abroad on crusade.":
+    "**Heinrich II.** reformierte die Gerichte und stritt mit **Thomas Becket**, dem Archbishop of Canterbury, der 1170 in der Kathedrale von Canterbury ermordet wurde. **Richard I.**, Löwenherz, verbrachte fast seine gesamte Regierungszeit auf Kreuzzügen im Ausland.",
+  "**Edward I** conquered **Wales** and built a ring of castles there; the **Statute of Rhuddlan (1284)** annexed Wales to the English Crown. He tried the same in **Scotland** and failed.":
+    "**Eduard I.** eroberte **Wales** und ließ dort einen Ring von Burgen errichten; das **Statute of Rhuddlan (1284)** gliederte Wales der englischen Krone an. In **Schottland** versuchte er dasselbe und scheiterte.",
+  "England and France fought on and off from **1337 to 1453**. The English won famous victories at **Crécy (1346)** and **Agincourt (1415)** under **Henry V**, but by the end had lost all their French lands except Calais.":
+    "England und Frankreich kämpften mit Unterbrechungen von **1337 bis 1453**. Die Engländer errangen berühmte Siege bei **Crécy (1346)** und **Azincourt (1415)** unter **Heinrich V.**, verloren am Ende aber alle französischen Besitzungen außer Calais.",
+  "The **Black Death** reached Britain in **1348** and killed roughly a third of the population. So few labourers were left that survivors could demand better pay — the feudal system began to break down. When a poll tax was imposed, the **Peasants Revolt of 1381** broke out, led by **Wat Tyler**.":
+    "Der **Schwarze Tod** erreichte Britannien **1348** und tötete etwa ein Drittel der Bevölkerung. Es blieben so wenige Arbeitskräfte, dass die Überlebenden bessere Bezahlung fordern konnten – das Feudalsystem begann zu zerfallen. Als eine Kopfsteuer erhoben wurde, brach **1381 der Bauernaufstand** unter **Wat Tyler** aus.",
+  "A civil war between the **House of Lancaster** (red rose) and the **House of York** (white rose), ending at the **Battle of Bosworth Field in 1485**. Richard III was killed, Henry Tudor won, and the **Tudor rose** — red and white together — was the emblem of the peace that followed.":
+    "Ein Bürgerkrieg zwischen dem **Haus Lancaster** (rote Rose) und dem **Haus York** (weiße Rose), der **1485 in der Schlacht von Bosworth Field** endete. Richard III. fiel, Heinrich Tudor siegte, und die **Tudor-Rose** – Rot und Weiß zusammen – wurde zum Sinnbild des folgenden Friedens.",
+  "William the Conqueror · Henry II · Thomas Becket · Richard I · King John · Edward I · William Wallace · Robert the Bruce · Henry V · Wat Tyler.":
+    "Wilhelm der Eroberer · Heinrich II. · Thomas Becket · Richard I. · König Johann · Eduard I. · William Wallace · Robert the Bruce · Heinrich V. · Wat Tyler.",
+  "1066 Hastings · 1086 Domesday Book · 1215 Magna Carta · 1284 Statute of Rhuddlan · 1314 Bannockburn · 1337–1453 Hundred Years War · 1348 Black Death · 1381 Peasants' Revolt · 1415 Agincourt · 1485 Bosworth Field.":
+    "1066 Hastings · 1086 Domesday Book · 1215 Magna Carta · 1284 Statute of Rhuddlan · 1314 Bannockburn · 1337–1453 Hundertjähriger Krieg · 1348 Schwarzer Tod · 1381 Bauernaufstand · 1415 Azincourt · 1485 Bosworth Field.",
+  "Feudal system · Magna Carta · Domesday Book · Wars of the Roses · poll tax · barons.":
+    "Feudalsystem · Magna Carta · Domesday Book · Rosenkriege · Kopfsteuer · Barone.",
+  "In one line: Magna Carta in 1215 is the first written statement that a ruler is bound by law — the root of the rule of law you learned in lesson 1.":
+    "In einem Satz: Die Magna Carta von 1215 ist die erste schriftliche Festlegung, dass ein Herrscher an das Recht gebunden ist – die Wurzel der Rechtsstaatlichkeit aus Lektion 1.",
+
+  // ── 6. The Tudors: Fließtext ────────────────────────────────────────────
+  "Five Tudor monarchs in 118 years, and between them they broke with Rome, changed the country's religion three times, and turned England into a naval power.":
+    "Fünf Tudor-Monarchen in 118 Jahren – zusammen brachen sie mit Rom, änderten dreimal die Religion des Landes und machten England zur Seemacht.",
+  "**Henry VII** ended the Wars of the Roses and founded the dynasty. His son **Henry VIII** is remembered for his **six wives** and for breaking with the Pope.":
+    "**Heinrich VII.** beendete die Rosenkriege und begründete die Dynastie. Sein Sohn **Heinrich VIII.** ist für seine **sechs Ehefrauen** und den Bruch mit dem Papst bekannt.",
+  "The rhyme British children learn: divorced, beheaded, died; divorced, beheaded, survived. It is the fastest way to keep the six in order.":
+    "Der Merkspruch britischer Kinder: geschieden, enthauptet, gestorben; geschieden, enthauptet, überlebt. Das ist der schnellste Weg, die sechs in der richtigen Reihenfolge zu behalten.",
+  "When the Pope refused to annul his first marriage, Henry VIII broke with Rome and made himself **Head of the Church of England**. The **Dissolution of the Monasteries** followed: monasteries were closed and their wealth taken by the Crown. Wales was formally united with England by law during his reign.":
+    "Als der Papst sich weigerte, seine erste Ehe zu annullieren, brach Heinrich VIII. mit Rom und machte sich selbst zum **Oberhaupt der Church of England**. Es folgte die **Dissolution of the Monasteries**: Klöster wurden geschlossen und ihr Vermögen von der Krone eingezogen. In seiner Regierungszeit wurde Wales per Gesetz förmlich mit England vereinigt.",
+  "In **1588** Catholic Spain sent a great fleet, the **Armada**, to invade England. It was defeated by the English navy and scattered by storms. The victory made Elizabeth's reputation and established England as a serious naval power.":
+    "**1588** schickte das katholische Spanien eine große Flotte, die **Armada**, um England zu erobern. Sie wurde von der englischen Marine besiegt und von Stürmen zerstreut. Der Sieg begründete Elisabeths Ruf und machte England zu einer ernstzunehmenden Seemacht.",
+  "**William Shakespeare (1564–1616)** was born in **Stratford-upon-Avon**. He wrote plays and poetry, worked at the **Globe Theatre** in London, and shaped the English language more than any other writer. Famous works include *Hamlet*, *Macbeth*, *Romeo and Juliet* and *A Midsummer Night's Dream*.":
+    "**William Shakespeare (1564–1616)** wurde in **Stratford-upon-Avon** geboren. Er schrieb Dramen und Gedichte, wirkte am **Globe Theatre** in London und prägte die englische Sprache stärker als jeder andere Autor. Bekannte Werke sind *Hamlet*, *Macbeth*, *Romeo and Juliet* und *A Midsummer Night's Dream*.",
+  "Also in this period: **Mary, Queen of Scots**, a Catholic cousin of Elizabeth, fled to England, was imprisoned for years and eventually executed in 1587. Her son became James VI of Scotland — and then James I of England.":
+    "Ebenfalls in dieser Zeit: **Maria Stuart**, eine katholische Cousine Elisabeths, floh nach England, war jahrelang gefangen und wurde 1587 hingerichtet. Ihr Sohn wurde Jakob VI. von Schottland – und später Jakob I. von England.",
+  "Henry VII · Henry VIII · his six wives · Edward VI · Mary I · Elizabeth I · Mary, Queen of Scots · William Shakespeare.":
+    "Heinrich VII. · Heinrich VIII. · seine sechs Ehefrauen · Eduard VI. · Maria I. · Elisabeth I. · Maria Stuart · William Shakespeare.",
+  "1485 Tudors begin · 1534 break with Rome · 1587 Mary, Queen of Scots executed · 1588 Spanish Armada · 1564–1616 Shakespeare.":
+    "1485 Beginn der Tudors · 1534 Bruch mit Rom · 1587 Hinrichtung Maria Stuarts · 1588 Spanische Armada · 1564–1616 Shakespeare.",
+  "Reformation · Church of England · Dissolution of the Monasteries · annulment · Armada · the Globe Theatre.":
+    "Reformation · Church of England · Dissolution of the Monasteries · Annullierung · Armada · das Globe Theatre.",
+  "In one line: Divorced, beheaded, died; divorced, beheaded, survived. The break with Rome started as a marriage dispute, not a change of belief.":
+    "In einem Satz: Geschieden, enthauptet, gestorben; geschieden, enthauptet, überlebt. Der Bruch mit Rom begann als Ehestreit, nicht als Glaubenswechsel.",
+
+  // ── 7. Stuarts & Civil War: Fließtext ───────────────────────────────────
+  "The seventeenth century is where Parliament wins. A king is executed, a republic is tried and abandoned, and by 1689 it is settled law that the Crown rules with Parliament, not over it.":
+    "Im 17. Jahrhundert setzt sich das Parlament durch. Ein König wird hingerichtet, eine Republik wird erprobt und aufgegeben, und ab 1689 gilt als geltendes Recht: Die Krone regiert mit dem Parlament, nicht über es.",
+  "When Elizabeth I died childless in 1603, **James VI of Scotland** became **James I of England** — the same man wearing two crowns, though the countries stayed separate. He ordered the **King James Bible**, still the best-known English translation.":
+    "Als Elisabeth I. 1603 kinderlos starb, wurde **Jakob VI. von Schottland** zu **Jakob I. von England** – derselbe Mann mit zwei Kronen, während die Länder getrennt blieben. Er gab die **King James Bible** in Auftrag, bis heute die bekannteste englische Übersetzung.",
+  "In **1605** a group of Catholics led by **Guy Fawkes** tried to blow up Parliament and the King. The **Gunpowder Plot** failed, and the country still marks it on **5 November** with bonfires and fireworks.":
+    "**1605** versuchte eine Gruppe von Katholiken unter **Guy Fawkes**, das Parlament und den König in die Luft zu sprengen. Das **Schießpulver-Attentat** scheiterte, und das Land erinnert bis heute am **5. November** mit Feuern und Feuerwerk daran.",
+  "**Charles I** believed in the **divine right of kings** — that his authority came from God and Parliament could not limit it. He ruled for eleven years without calling Parliament at all. The quarrel became war in **1642**.":
+    "**Karl I.** glaubte an das **Gottesgnadentum** – dass seine Macht von Gott komme und das Parlament sie nicht beschränken könne. Elf Jahre lang regierte er, ohne das Parlament überhaupt einzuberufen. **1642** wurde aus dem Streit ein Krieg.",
+  "England became a republic, the **Commonwealth**, with **Oliver Cromwell** as **Lord Protector**. His rule was strict and puritan — theatres closed, Christmas celebrations discouraged. He also campaigned brutally in Ireland. When he died his son could not hold the country together.":
+    "England wurde zur Republik, dem **Commonwealth**, mit **Oliver Cromwell** als **Lord Protector**. Seine Herrschaft war streng und puritanisch – Theater wurden geschlossen, Weihnachtsfeiern missbilligt. In Irland führte er zudem brutale Feldzüge. Nach seinem Tod konnte sein Sohn das Land nicht zusammenhalten.",
+  "In **1660** Parliament invited **Charles II** back to the throne — the **Restoration**. His reign saw the **Great Plague of 1665** and the **Great Fire of London in 1666**, and the founding of the **Royal Society**, Britain's oldest scientific institution.":
+    "**1660** rief das Parlament **Karl II.** auf den Thron zurück – die **Restauration**. In seine Zeit fallen die **große Pest von 1665**, der **Große Brand von London 1666** und die Gründung der **Royal Society**, der ältesten wissenschaftlichen Institution Großbritanniens.",
+  "**James II** was Catholic, and Protestant leaders feared where he would take the country. They invited his Protestant daughter **Mary** and her Dutch husband **William of Orange** to take the throne. William landed in 1688 and James fled without a battle — hence **Glorious Revolution**, a revolution with almost no bloodshed in England.":
+    "**Jakob II.** war Katholik, und protestantische Führer fürchteten, wohin er das Land bringen würde. Sie luden seine protestantische Tochter **Maria** und deren niederländischen Mann **Wilhelm von Oranien** auf den Thron. Wilhelm landete 1688, und Jakob floh ohne Schlacht – daher **Glorious Revolution**, eine Revolution fast ohne Blutvergießen in England.",
+  "**William III and Mary II** ruled jointly. In **1689** the **Bill of Rights** settled the terms: the monarch may not raise taxes or keep an army without Parliament, Parliament must meet regularly, and elections must be free.":
+    "**Wilhelm III. und Maria II.** regierten gemeinsam. **1689** legte die **Bill of Rights** die Bedingungen fest: Der Monarch darf ohne Parlament weder Steuern erheben noch ein Heer unterhalten, das Parlament muss regelmäßig zusammentreten, und Wahlen müssen frei sein.",
+  "Why 1689 is the hinge: everything after it is a constitutional monarchy. The monarch reigns, Parliament governs — the arrangement Britain still has.":
+    "Warum 1689 der Wendepunkt ist: Alles danach ist eine konstitutionelle Monarchie. Der Monarch herrscht repräsentativ, das Parlament regiert – so ist es bis heute.",
+  "James I · Guy Fawkes · Charles I · Oliver Cromwell · Charles II · James II · William III · Mary II.":
+    "Jakob I. · Guy Fawkes · Karl I. · Oliver Cromwell · Karl II. · Jakob II. · Wilhelm III. · Maria II.",
+  "1603 James I · 1605 Gunpowder Plot · 1642–1651 Civil War · 1649 Charles I executed · 1660 Restoration · 1665 Plague · 1666 Great Fire · 1688 Glorious Revolution · 1689 Bill of Rights.":
+    "1603 Jakob I. · 1605 Schießpulver-Attentat · 1642–1651 Bürgerkrieg · 1649 Hinrichtung Karls I. · 1660 Restauration · 1665 Pest · 1666 Großer Brand · 1688 Glorious Revolution · 1689 Bill of Rights.",
+  "Divine right of kings · Cavaliers · Roundheads · Commonwealth · Lord Protector · Restoration · Bill of Rights.":
+    "Gottesgnadentum · Cavaliers · Roundheads · Commonwealth · Lord Protector · Restauration · Bill of Rights.",
+  "In one line: 1689 is the hinge: after the Bill of Rights the monarch reigns and Parliament governs. Everything since is a constitutional monarchy.":
+    "In einem Satz: 1689 ist der Wendepunkt – nach der Bill of Rights herrscht der Monarch repräsentativ und das Parlament regiert. Seither ist es eine konstitutionelle Monarchie.",
+
+  // ── 8. Britain 1700–1900: Fließtext ─────────────────────────────────────
+  "Two centuries in which Britain becomes one kingdom, then the first industrial nation, then the largest empire in history — and in which a long argument about slavery and about the vote begins to be won.":
+    "Zwei Jahrhunderte, in denen Großbritannien erst ein Königreich, dann die erste Industrienation und schließlich das größte Weltreich der Geschichte wird – und in denen ein langer Streit über Sklaverei und über das Wahlrecht allmählich gewonnen wird.",
+  "The **Act of Union in 1707** joined the parliaments of England and Scotland into the **Kingdom of Great Britain**, governed from Westminster. A second **Act of Union in 1801** added Ireland, creating the United Kingdom.":
+    "Der **Act of Union von 1707** vereinte die Parlamente Englands und Schottlands zum **Königreich Großbritannien**, regiert von Westminster aus. Ein zweiter **Act of Union 1801** fügte Irland hinzu und schuf das Vereinigte Königreich.",
+  "The **Jacobites** wanted the Stuart line restored. **Bonnie Prince Charlie** — Charles Edward Stuart — landed in Scotland in 1745, raised an army, and was crushed at the **Battle of Culloden in 1746**, the last battle fought on British soil.":
+    "Die **Jakobiten** wollten die Stuart-Linie zurück auf den Thron. **Bonnie Prince Charlie** – Charles Edward Stuart – landete 1745 in Schottland, stellte ein Heer auf und wurde **1746 in der Schlacht von Culloden** vernichtend geschlagen, der letzten Schlacht auf britischem Boden.",
+  "Britain was the first country to industrialise. Machines replaced hand tools, factories replaced workshops, and people moved from the countryside into fast-growing cities such as Manchester, Birmingham and Glasgow.":
+    "Großbritannien industrialisierte sich als erstes Land. Maschinen ersetzten Handwerkzeug, Fabriken ersetzten Werkstätten, und die Menschen zogen vom Land in rasch wachsende Städte wie Manchester, Birmingham und Glasgow.",
+  "The **British Empire** grew until it covered around a quarter of the world. Its wealth came partly from the **slave trade**, in which British ships carried enslaved Africans to the colonies.":
+    "Das **British Empire** wuchs, bis es rund ein Viertel der Welt umfasste. Sein Reichtum stammte zum Teil aus dem **Sklavenhandel**, bei dem britische Schiffe versklavte Afrikaner in die Kolonien brachten.",
+  "Two dates, often confused. **1807** abolished the slave TRADE — carrying and selling. **1833** abolished SLAVERY itself throughout the Empire. The Abolition Act freed those already enslaved.":
+    "Zwei Daten, die oft verwechselt werden. **1807** wurde der SKLAVENHANDEL abgeschafft – Transport und Verkauf. **1833** wurde die SKLAVEREI selbst im gesamten Empire abgeschafft. Der Abolition Act befreite die bereits Versklavten.",
+  "**William Wilberforce** led the parliamentary campaign against the trade, and the Quakers were prominent among the campaigners.":
+    "**William Wilberforce** führte die parlamentarische Kampagne gegen den Handel an; unter den Aktivisten waren die Quäker besonders prominent.",
+  "**Queen Victoria** reigned from **1837 to 1901** — 64 years, the second longest reign in British history. Britain was at the height of its industrial and imperial power. The **Great Exhibition of 1851** in the Crystal Palace displayed it to the world.":
+    "**Königin Victoria** regierte von **1837 bis 1901** – 64 Jahre, die zweitlängste Regierungszeit der britischen Geschichte. Großbritannien stand auf dem Höhepunkt seiner industriellen und imperialen Macht. Die **Weltausstellung von 1851** im Crystal Palace führte das der Welt vor.",
+  "The **Reform Act of 1832** began widening the vote, and further acts in 1867 and 1884 extended it — though at the end of Victoria's reign no woman could vote and many working men still could not. Laws limited working hours and child labour, and free primary schooling was introduced.":
+    "Der **Reform Act von 1832** begann das Wahlrecht auszuweiten, weitere Gesetze 1867 und 1884 führten das fort – am Ende von Victorias Regierungszeit durfte allerdings keine Frau wählen, und viele Arbeiter ebenfalls nicht. Gesetze begrenzten Arbeitszeiten und Kinderarbeit, und die kostenlose Grundschule wurde eingeführt.",
+  "Bonnie Prince Charlie · James Watt · George Stephenson · Isambard Kingdom Brunel · William Wilberforce · Admiral Nelson · the Duke of Wellington · Queen Victoria · Florence Nightingale · Charles Darwin.":
+    "Bonnie Prince Charlie · James Watt · George Stephenson · Isambard Kingdom Brunel · William Wilberforce · Admiral Nelson · der Duke of Wellington · Königin Victoria · Florence Nightingale · Charles Darwin.",
+  "1707 Act of Union · 1746 Culloden · 1776 American independence · 1801 Union with Ireland · 1805 Trafalgar · 1807 slave trade abolished · 1815 Waterloo · 1832 Reform Act · 1833 slavery abolished · 1837–1901 Victoria · 1851 Great Exhibition · 1859 Origin of Species.":
+    "1707 Act of Union · 1746 Culloden · 1776 amerikanische Unabhängigkeit · 1801 Union mit Irland · 1805 Trafalgar · 1807 Abschaffung des Sklavenhandels · 1815 Waterloo · 1832 Reform Act · 1833 Abschaffung der Sklaverei · 1837–1901 Victoria · 1851 Weltausstellung · 1859 Origin of Species.",
+  "Jacobites · Industrial Revolution · British Empire · abolition · Reform Act · Crystal Palace.":
+    "Jakobiten · Industrielle Revolution · British Empire · Abschaffung der Sklaverei · Reform Act · Crystal Palace.",
+  "In one line: 1807 ended the trade in people; 1833 ended slavery itself. Two dates, twenty-six years apart, and the test asks which is which.":
+    "In einem Satz: 1807 endete der Handel mit Menschen; 1833 endete die Sklaverei selbst. Zwei Daten, 26 Jahre auseinander – und der Test fragt, welches wofür steht.",
+
+  // ── 9. Britain 1900–Present: Fließtext ──────────────────────────────────
+  "Two world wars, votes for women, the founding of the NHS, the end of empire and the arrival of the Britain you live in now.":
+    "Zwei Weltkriege, das Frauenwahlrecht, die Gründung des NHS, das Ende des Empire – und die Entstehung des Großbritanniens, in dem du heute lebst.",
+  "Britain entered the war in **1914** and it ended on **11 November 1918**. Around a million from Britain and its Empire were killed. That date is why **Remembrance Day** falls on 11 November and why poppies are worn.":
+    "Großbritannien trat **1914** in den Krieg ein, der am **11. November 1918** endete. Rund eine Million Menschen aus Großbritannien und seinem Empire fielen. Wegen dieses Datums liegt der **Remembrance Day** auf dem 11. November, und deshalb trägt man Mohnblumen.",
+  "The **suffragettes**, led by **Emmeline Pankhurst**, campaigned for the vote — with protests, hunger strikes and imprisonment.":
+    "Die **Suffragetten** unter **Emmeline Pankhurst** kämpften für das Wahlrecht – mit Protesten, Hungerstreiks und Gefängnisaufenthalten.",
+  "Two dates again. **1918**: women over 30 who met a property qualification got the vote. **1928**: women got the vote on the same terms as men, at 21. The gap of ten years is a favourite question.":
+    "Wieder zwei Daten. **1918**: Frauen über 30 mit Grundbesitz erhielten das Wahlrecht. **1928**: Frauen erhielten es zu denselben Bedingungen wie Männer, ab 21. Der Abstand von zehn Jahren ist eine beliebte Frage.",
+  "Britain declared war on Germany in **1939** after the invasion of Poland. **Winston Churchill** became Prime Minister in 1940 and led the country through it.":
+    "Großbritannien erklärte Deutschland **1939** nach dem Überfall auf Polen den Krieg. **Winston Churchill** wurde 1940 Premierminister und führte das Land hindurch.",
+  "The war in Europe ended on **VE Day, 8 May 1945**; the war against Japan ended that August. **Alan Turing** and the codebreakers at **Bletchley Park** broke German ciphers and shortened the war.":
+    "Der Krieg in Europa endete am **VE Day, dem 8. Mai 1945**; der Krieg gegen Japan im August desselben Jahres. **Alan Turing** und die Codeknacker von **Bletchley Park** entschlüsselten deutsche Funksprüche und verkürzten den Krieg.",
+  "The **Beveridge Report of 1942** set out a plan to tackle what it called the five giants — want, disease, ignorance, squalor and idleness. After the war the Labour government built the **welfare state**, and in **1948 Aneurin Bevan** founded the **National Health Service**, free at the point of use.":
+    "Der **Beveridge Report von 1942** entwarf einen Plan gegen die sogenannten fünf Riesen – Not, Krankheit, Unwissenheit, Verwahrlosung und Müßiggang. Nach dem Krieg baute die Labour-Regierung den **Sozialstaat** auf, und **1948** gründete **Aneurin Bevan** den **National Health Service**, kostenlos bei Inanspruchnahme.",
+  "After 1945 the colonies became independent, one after another — this is **decolonisation**. **India and Pakistan in 1947** came first, then most of Africa and the Caribbean. Many of the new countries joined the **Commonwealth**, a voluntary association of independent states, now around 56 members. The monarch is its Head, but the Commonwealth has no power over its members.":
+    "Nach 1945 wurden die Kolonien eine nach der anderen unabhängig – das ist die **Dekolonisierung**. **Indien und Pakistan 1947** kamen zuerst, dann der Großteil Afrikas und der Karibik. Viele der neuen Staaten traten dem **Commonwealth** bei, einem freiwilligen Zusammenschluss unabhängiger Staaten mit heute rund 56 Mitgliedern. Der Monarch ist sein Oberhaupt, doch das Commonwealth hat keine Macht über seine Mitglieder.",
+  "Britain invited workers from the Caribbean, India, Pakistan and elsewhere to help rebuild after the war — the ship **Empire Windrush** arrived in **1948** and gave its name to that generation. Later arrivals came from Uganda, Eastern Europe and around the world. Britain today is a diverse, multi-faith society.":
+    "Großbritannien holte nach dem Krieg Arbeitskräfte aus der Karibik, Indien, Pakistan und anderswo zum Wiederaufbau – das Schiff **Empire Windrush** traf **1948** ein und gab dieser Generation ihren Namen. Später kamen Menschen aus Uganda, Osteuropa und aus aller Welt. Großbritannien ist heute eine vielfältige Gesellschaft vieler Religionen.",
+  "The UK joined the **European Economic Community in 1973**, which became the **European Union**. In a referendum in **June 2016** the UK voted to leave, and it formally left on **31 January 2020**.":
+    "Das Vereinigte Königreich trat **1973** der **Europäischen Wirtschaftsgemeinschaft** bei, aus der die **Europäische Union** wurde. In einem Referendum im **Juni 2016** stimmte es für den Austritt und verließ die EU offiziell am **31. Januar 2020**.",
+  "Other landmarks: **Margaret Thatcher** became the first woman Prime Minister in **1979**; the **Good Friday Agreement of 1998** brought peace to Northern Ireland; devolved parliaments opened in Scotland and Wales in **1999**; London hosted the **Olympic Games in 2012**; **Queen Elizabeth II** died in **2022** after 70 years, and **King Charles III** succeeded her.":
+    "Weitere Eckpunkte: **Margaret Thatcher** wurde **1979** die erste Premierministerin; das **Karfreitagsabkommen von 1998** brachte Nordirland Frieden; **1999** nahmen die Regionalparlamente in Schottland und Wales ihre Arbeit auf; London richtete **2012** die **Olympischen Spiele** aus; **Königin Elisabeth II.** starb **2022** nach 70 Jahren, und **König Charles III.** folgte ihr nach.",
+  "Emmeline Pankhurst · Winston Churchill · Clement Attlee · William Beveridge · Aneurin Bevan · Alan Turing · Margaret Thatcher · Elizabeth II · Charles III.":
+    "Emmeline Pankhurst · Winston Churchill · Clement Attlee · William Beveridge · Aneurin Bevan · Alan Turing · Margaret Thatcher · Elisabeth II. · Charles III.",
+  "1914–1918 First World War · 1918 and 1928 votes for women · 1939–1945 Second World War · 1940 Battle of Britain · 6 June 1944 D-Day · 8 May 1945 VE Day · 1947 India and Pakistan · 1948 NHS and Windrush · 1973 joined EEC · 1979 Thatcher · 1998 Good Friday Agreement · 1999 devolution · 2012 Olympics · 2016 referendum · 31 January 2020 left the EU · 2022 Charles III.":
+    "1914–1918 Erster Weltkrieg · 1918 und 1928 Frauenwahlrecht · 1939–1945 Zweiter Weltkrieg · 1940 Luftschlacht um England · 6. Juni 1944 D-Day · 8. Mai 1945 VE Day · 1947 Indien und Pakistan · 1948 NHS und Windrush · 1973 EWG-Beitritt · 1979 Thatcher · 1998 Karfreitagsabkommen · 1999 Devolution · 2012 Olympische Spiele · 2016 Referendum · 31. Januar 2020 EU-Austritt · 2022 Charles III.",
+  "Suffragettes · the Blitz · welfare state · NHS · Commonwealth · decolonisation · Brexit.":
+    "Suffragetten · der Blitz · Sozialstaat · NHS · Commonwealth · Dekolonisierung · Brexit.",
+  "In one line: 1918 gave the vote to women over 30 with property; 1928 made it equal at 21. Ten years apart, and a favourite question.":
+    "In einem Satz: 1918 erhielten Frauen über 30 mit Grundbesitz das Wahlrecht; 1928 wurde es ab 21 gleichgestellt. Zehn Jahre Abstand – eine beliebte Frage.",
+
+  // ── 10. Important Dates & Timeline: Fließtext ───────────────────────────
+  "Every date in the six history lessons, in one place and in order. Read this last, and then read it again the night before the test — most history questions are really date questions wearing a costume.":
+    "Alle Daten aus den sechs Geschichtslektionen an einem Ort und in der richtigen Reihenfolge. Lies das zuletzt – und dann noch einmal am Abend vor dem Test. Die meisten Geschichtsfragen sind in Wahrheit Datumsfragen in Verkleidung.",
+  "Why a timeline earns its own lesson: the test rarely asks what happened. It asks WHEN, or which of two similar events came first. Order is the thing worth drilling.":
+    "Warum eine Zeitleiste eine eigene Lektion verdient: Der Test fragt selten, was geschah. Er fragt WANN – oder welches von zwei ähnlichen Ereignissen zuerst kam. Die Reihenfolge ist das, was sich zu üben lohnt.",
+  "Every name in the six history lessons appears here in date order rather than by topic.":
+    "Jeder Name aus den sechs Geschichtslektionen erscheint hier nach Datum geordnet statt nach Thema.",
+  "The whole course in order: c. 2500 BC Stonehenge · 55 BC · AD 43 · AD 410 · 1066 · 1215 · 1314 · 1348 · 1485 · 1588 · 1649 · 1689 · 1707 · 1805 · 1833 · 1918 · 1928 · 1945 · 1948 · 2020 · 2022.":
+    "Der ganze Kurs in der richtigen Reihenfolge: ca. 2500 v. Chr. Stonehenge · 55 v. Chr. · 43 n. Chr. · 410 n. Chr. · 1066 · 1215 · 1314 · 1348 · 1485 · 1588 · 1649 · 1689 · 1707 · 1805 · 1833 · 1918 · 1928 · 1945 · 1948 · 2020 · 2022.",
+  "Chronology · century · BC and AD · reign · era.":
+    "Chronologie · Jahrhundert · v. Chr. und n. Chr. · Regierungszeit · Epoche.",
+  "In one line: Most history questions are really date questions. Learn the order and the 'which came first' questions answer themselves.":
+    "In einem Satz: Die meisten Geschichtsfragen sind Datumsfragen. Lerne die Reihenfolge, dann beantworten sich die „Was kam zuerst?“-Fragen von selbst.",
+
+  // ── 11. The Monarchy: Fließtext ─────────────────────────────────────────
+  "The UK is a **constitutional monarchy**. The monarch is **Head of State**, but does not govern. Parliament makes the law and the Prime Minister runs the government. The monarch's role is formal, ceremonial and strictly non-political.":
+    "Das Vereinigte Königreich ist eine **konstitutionelle Monarchie**. Der Monarch ist **Staatsoberhaupt**, regiert aber nicht. Das Parlament macht die Gesetze, der Premierminister führt die Regierung. Die Rolle des Monarchen ist formal, zeremoniell und streng unpolitisch.",
+  "The monarch must be politically neutral. They do not vote, do not express political opinions in public, and act on the advice of ministers. That neutrality is the whole point of the office.":
+    "Der Monarch muss politisch neutral sein. Er wählt nicht, äußert öffentlich keine politischen Ansichten und handelt auf Rat der Minister. Genau diese Neutralität ist der Sinn des Amtes.",
+  "The throne passes by **hereditary succession**. Since a change in the law in 2013, the eldest child inherits regardless of sex — an older sister is no longer passed over for a younger brother. A **coronation** is the ceremony that crowns a new monarch; it takes place at **Westminster Abbey** and is conducted by the **Archbishop of Canterbury**. The monarch succeeds immediately on the death of the previous one — the coronation comes later.":
+    "Der Thron geht durch **Erbfolge** über. Seit einer Gesetzesänderung 2013 erbt das älteste Kind unabhängig vom Geschlecht – eine ältere Schwester wird nicht mehr zugunsten eines jüngeren Bruders übergangen. Eine **Krönung** ist die Zeremonie, die einen neuen Monarchen krönt; sie findet in der **Westminster Abbey** statt und wird vom **Archbishop of Canterbury** geleitet. Der Monarch folgt unmittelbar mit dem Tod des Vorgängers nach – die Krönung kommt später.",
+  "**King Charles III** became monarch in **September 2022** on the death of his mother, **Queen Elizabeth II**, who had reigned for **70 years** — the longest in British history. The heir to the throne is **Prince William, Prince of Wales**. Members of the Royal Family carry out public duties and support charities.":
+    "**König Charles III.** wurde im **September 2022** Monarch, nach dem Tod seiner Mutter **Königin Elisabeth II.**, die **70 Jahre** regiert hatte – am längsten in der britischen Geschichte. Thronfolger ist **Prinz William, Prince of Wales**. Mitglieder der königlichen Familie nehmen öffentliche Aufgaben wahr und unterstützen wohltätige Zwecke.",
+  "Elizabeth II · Charles III · Prince William · the Archbishop of Canterbury.":
+    "Elisabeth II. · Charles III. · Prinz William · der Archbishop of Canterbury.",
+  "Elizabeth II reigned 1952–2022, 70 years. Charles III from September 2022. Royal Assent last refused 1708. Succession law changed 2013.":
+    "Elisabeth II. regierte 1952–2022, 70 Jahre. Charles III. seit September 2022. Royal Assent zuletzt 1708 verweigert. Thronfolgerecht 2013 geändert.",
+  "Constitutional monarchy · Head of State · Royal Assent · State Opening of Parliament · coronation · hereditary succession · Head of the Commonwealth.":
+    "Konstitutionelle Monarchie · Staatsoberhaupt · Royal Assent · State Opening of Parliament · Krönung · Erbfolge · Oberhaupt des Commonwealth.",
+  "In one line: The monarch reigns but does not govern, and must stay politically neutral. Royal Assent is a formality, not a veto.":
+    "In einem Satz: Der Monarch herrscht, regiert aber nicht, und muss politisch neutral bleiben. Royal Assent ist eine Formsache, kein Vetorecht.",
+
+  // ── 12. Government & Parliament: Fließtext ──────────────────────────────
+  "Parliament sits at the **Palace of Westminster** in London. It has two chambers — the House of Commons and the House of Lords — and the monarch. Almost every test question about government comes down to knowing which of the two chambers does what.":
+    "Das Parlament tagt im **Palace of Westminster** in London. Es besteht aus zwei Kammern – dem House of Commons und dem House of Lords – sowie dem Monarchen. Fast jede Testfrage zur Regierung läuft darauf hinaus, zu wissen, welche der beiden Kammern was tut.",
+  "A **general election** must be held at least every **five years**. The UK is divided into **constituencies**, and each elects one MP by **first past the post** — whoever gets the most votes wins the seat.":
+    "Eine **Parlamentswahl** muss mindestens alle **fünf Jahre** stattfinden. Das Land ist in **Wahlkreise** eingeteilt, und jeder wählt einen Abgeordneten nach dem Prinzip **first past the post** – wer die meisten Stimmen hat, gewinnt den Sitz.",
+  "A proposal is a **bill**. It is debated and voted on in the Commons, then in the Lords, then returns to the Commons if the Lords amended it. Once both agree, it goes to the monarch for **Royal Assent** and becomes an **Act of Parliament**.":
+    "Ein Vorschlag heißt **bill**. Er wird im Unterhaus debattiert und abgestimmt, dann im Oberhaus, und kehrt ins Unterhaus zurück, wenn die Lords ihn geändert haben. Sind beide einig, geht er zum Monarchen für den **Royal Assent** und wird zum **Act of Parliament**.",
+  "**Councils** run local services — schools, refuse collection, housing, roads, libraries and planning. Councillors are elected, usually for four years, and councils are funded by **council tax** and by central government. Many areas also elect a **mayor**.":
+    "**Gemeinderäte** betreiben die örtlichen Dienste – Schulen, Müllabfuhr, Wohnungswesen, Straßen, Büchereien und Bauplanung. Ratsmitglieder werden gewählt, meist für vier Jahre, und die Räte finanzieren sich über die **council tax** und Mittel der Zentralregierung. Viele Gebiete wählen zusätzlich eine **Bürgermeisterin oder einen Bürgermeister**.",
+  "Why the civil service is separate: civil servants carry out government policy but are politically neutral and stay in post when the government changes. Ministers come and go; the machine does not.":
+    "Warum der öffentliche Dienst getrennt ist: Beamte setzen die Regierungspolitik um, sind aber politisch neutral und bleiben im Amt, wenn die Regierung wechselt. Minister kommen und gehen; der Apparat bleibt.",
+  "The Prime Minister · the Chancellor of the Exchequer · the Home Secretary · the Speaker · the Leader of the Opposition.":
+    "Der Premierminister · der Chancellor of the Exchequer · der Home Secretary · der Speaker · der Leader of the Opposition.",
+  "650 MPs. General elections at least every 5 years. Voting age 18. Councillors usually elected for 4 years.":
+    "650 Abgeordnete. Parlamentswahlen mindestens alle 5 Jahre. Wahlalter 18. Ratsmitglieder meist für 4 Jahre gewählt.",
+  "House of Commons · House of Lords · constituency · first past the post · by-election · Cabinet · shadow cabinet · bill · Act of Parliament · civil service · council tax.":
+    "House of Commons · House of Lords · Wahlkreis · first past the post · Nachwahl · Kabinett · Schattenkabinett · Gesetzentwurf · Act of Parliament · öffentlicher Dienst · council tax.",
+  "In one line: The Commons is elected and holds the power; the Lords is appointed and can only revise and delay. That split answers most questions here.":
+    "In einem Satz: Das Unterhaus ist gewählt und hat die Macht; das Oberhaus ist ernannt und kann nur überarbeiten und verzögern. Diese Trennung beantwortet die meisten Fragen hier.",
+
+  // ── 13. Devolution: Fließtext ───────────────────────────────────────────
+  "**Devolution** means powers handed from the UK Parliament in Westminster to elected bodies in Scotland, Wales and Northern Ireland. It began after referendums in the late 1990s, and the three bodies first sat in **1999**.":
+    "**Devolution** bedeutet, dass Befugnisse vom UK Parliament in Westminster an gewählte Vertretungen in Schottland, Wales und Nordirland übergeben werden. Sie begann nach Referenden Ende der 1990er, und die drei Körperschaften traten **1999** erstmals zusammen.",
+  "Broadly the same list in each nation: **health, education, housing, transport, policing (in Scotland and Northern Ireland), the environment, agriculture** and local government. This is why the NHS, schools and university fees genuinely differ between the four nations.":
+    "In jeder Nation weitgehend dieselbe Liste: **Gesundheit, Bildung, Wohnen, Verkehr, Polizei (in Schottland und Nordirland), Umwelt, Landwirtschaft** und Kommunalverwaltung. Deshalb unterscheiden sich NHS, Schulen und Studiengebühren zwischen den vier Nationen tatsächlich.",
+  "Westminster keeps the matters that must be decided for the whole country — these are called **reserved matters**: **defence, foreign policy, immigration and nationality, the currency, most taxation, and national security**.":
+    "Westminster behält die Themen, die für das ganze Land entschieden werden müssen – sie heißen **reserved matters**: **Verteidigung, Außenpolitik, Einwanderung und Staatsangehörigkeit, Währung, die meisten Steuern und nationale Sicherheit**.",
+  "England has no devolved parliament of its own. English matters are decided by the UK Parliament, which is why the two are easy to confuse.":
+    "England hat kein eigenes Regionalparlament. Englische Angelegenheiten entscheidet das UK Parliament – deshalb werden die beiden leicht verwechselt.",
+  "Holyrood · the Senedd · Stormont.": "Holyrood · die Senedd · Stormont.",
+  "Referendums 1997. All three bodies first sat in 1999. Good Friday Agreement 1998. Senedd renamed 2020.":
+    "Referenden 1997. Alle drei Körperschaften traten 1999 erstmals zusammen. Karfreitagsabkommen 1998. Senedd 2020 umbenannt.",
+  "Devolution · devolved matter · reserved matter · MSP · MS · MLA · power sharing.":
+    "Devolution · übertragene Zuständigkeit · vorbehaltene Zuständigkeit · MSP · MS · MLA · Machtteilung.",
+  "In one line: Health, education and housing are devolved; defence, foreign policy, immigration and the currency are reserved to Westminster. England has no devolved parliament.":
+    "In einem Satz: Gesundheit, Bildung und Wohnen sind übertragen; Verteidigung, Außenpolitik, Einwanderung und Währung bleiben bei Westminster. England hat kein eigenes Regionalparlament.",
+
+  // ── 14. Law & Justice: Fließtext ────────────────────────────────────────
+  "The **rule of law** means everyone is subject to the law — including the government, the police and the monarch's ministers. Judges are independent of government, and no one may be punished except by a court.":
+    "Die **Rechtsstaatlichkeit** bedeutet, dass alle dem Gesetz unterliegen – auch die Regierung, die Polizei und die Minister der Krone. Richter sind von der Regierung unabhängig, und niemand darf außer durch ein Gericht bestraft werden.",
+  "If you are on the electoral register and aged **18 to 70**, you may be summoned for **jury service**. It is a duty, not a request — you must attend unless you are excused. A jury decides the facts: whether the accused is guilty or not guilty. The judge decides the law and the sentence.":
+    "Wenn du im Wählerverzeichnis stehst und zwischen **18 und 70** bist, kannst du zum **Schöffendienst** geladen werden. Das ist eine Pflicht, keine Bitte – du musst erscheinen, sofern du nicht befreit wirst. Die Jury entscheidet über die Tatsachen: ob die angeklagte Person schuldig ist oder nicht. Der Richter entscheidet über das Recht und das Strafmaß.",
+  "**Legal aid** is public funding that pays for legal advice or representation for people who cannot afford it. It exists so that the right to a fair trial is real rather than theoretical.":
+    "**Legal aid** ist öffentliche Finanzierung für Rechtsberatung oder Vertretung von Menschen, die sie sich nicht leisten können. Es gibt sie, damit das Recht auf ein faires Verfahren real und nicht bloß theoretisch ist.",
+  "Why juries are drawn at random: a jury of ordinary people, chosen by lot rather than appointed, is what stops the state deciding guilt on its own. That is the rule of law in practice.":
+    "Warum Jurys ausgelost werden: Eine Jury aus gewöhnlichen Menschen, per Los bestimmt statt ernannt, verhindert, dass der Staat allein über Schuld entscheidet. Das ist Rechtsstaatlichkeit in der Praxis.",
+  "Magistrates · judges · solicitors · barristers · the Supreme Court.":
+    "Magistrates · Richter · Solicitors · Barristers · der Supreme Court.",
+  "Jury of 12 in England, Wales and Northern Ireland; 15 in Scotland. Jury service 18–70. Supreme Court took over from the Lords in 2009. Age of criminal responsibility 12 in Scotland, 10 elsewhere.":
+    "Jury mit 12 Mitgliedern in England, Wales und Nordirland; 15 in Schottland. Schöffendienst 18–70. Der Supreme Court löste 2009 das Oberhaus ab. Strafmündigkeit mit 12 in Schottland, sonst mit 10.",
+  "Rule of law · criminal law · civil law · Magistrates' Court · Crown Court · County Court · legal aid · jury service.":
+    "Rechtsstaatlichkeit · Strafrecht · Zivilrecht · Magistrates' Court · Crown Court · County Court · legal aid · Schöffendienst.",
+  "In one line: The jury decides the facts, the judge decides the law and the sentence — and everyone, including the government, is subject to both.":
+    "In einem Satz: Die Jury entscheidet über die Tatsachen, der Richter über Recht und Strafmaß – und alle, auch die Regierung, unterliegen beidem.",
+
+  // ── 15. Rights & Responsibilities: Fließtext ────────────────────────────
+  "Lesson 1 introduced the values. This one is the practical side: what you are entitled to, and what is expected of you in return.":
+    "Lektion 1 hat die Werte eingeführt. Hier geht es um die praktische Seite: worauf du Anspruch hast und was im Gegenzug von dir erwartet wird.",
+  "Most people pay income tax through **PAYE** — deducted by an employer before wages are paid. The self-employed complete a **Self Assessment** tax return each year. Tax funds the NHS, schools, roads, defence and the police. **HM Revenue and Customs (HMRC)** collects it.":
+    "Die meisten zahlen Einkommensteuer über **PAYE** – der Arbeitgeber zieht sie vor der Lohnzahlung ab. Selbstständige geben jedes Jahr eine **Self-Assessment**-Steuererklärung ab. Steuern finanzieren NHS, Schulen, Straßen, Verteidigung und Polizei. Eingezogen werden sie von **HM Revenue and Customs (HMRC)**.",
+  "Volunteering, joining a school governing body, helping a charity, standing as a councillor, or simply voting — participation is treated as part of citizenship rather than an optional extra.":
+    "Ehrenamt, Mitarbeit im Schulbeirat, Hilfe für eine Wohltätigkeitsorganisation, Kandidatur als Ratsmitglied oder einfach wählen gehen – Teilhabe gilt als Teil der Staatsbürgerschaft, nicht als freiwilliges Extra.",
+  "HM Revenue and Customs (HMRC).": "HM Revenue and Customs (HMRC) – die britische Steuerbehörde.",
+  "Vote at 18. Jury service 18–70. Human Rights Act 1998. Equality Act 2010.":
+    "Wahlrecht ab 18. Schöffendienst 18–70. Human Rights Act 1998. Equality Act 2010.",
+  "PAYE · Self Assessment · National Insurance · income tax · secret ballot · human rights · protected characteristics.":
+    "PAYE · Self Assessment · National Insurance · Einkommensteuer · geheime Wahl · Menschenrechte · geschützte Merkmale.",
+  "In one line: Every right carries a duty: the vote and the electoral register, the NHS and your taxes, a fair trial and jury service.":
+    "In einem Satz: Zu jedem Recht gehört eine Pflicht – Wahlrecht und Wählerverzeichnis, NHS und Steuern, faires Verfahren und Schöffendienst.",
+
+  // ── 16. British Society & Culture: Fließtext ────────────────────────────
+  "The UK is a diverse society of around **67 million** people. England is much the largest of the four nations. Roughly a fifth of people belong to a minority ethnic group, and the largest cities are the most diverse.":
+    "Das Vereinigte Königreich ist eine vielfältige Gesellschaft mit rund **67 Millionen** Menschen. England ist mit Abstand die größte der vier Nationen. Etwa ein Fünftel gehört einer ethnischen Minderheit an, und die größten Städte sind am vielfältigsten.",
+  "Most households are small. Both parents commonly work, and children usually leave home in their late teens or twenties. Older relatives often live independently rather than with their children.":
+    "Die meisten Haushalte sind klein. Üblicherweise arbeiten beide Elternteile, und Kinder ziehen meist mit Ende der Teenagerjahre oder in den Zwanzigern aus. Ältere Angehörige leben oft eigenständig statt bei ihren Kindern.",
+  "Volunteering is widespread and highly regarded — charity shops, food banks, sports clubs, school governors, the National Trust, hospital and mountain rescue volunteers. Charities are a large part of British life, and giving time is seen as valuable as giving money.":
+    "Ehrenamt ist weit verbreitet und hoch angesehen – Second-Hand-Läden für gute Zwecke, Tafeln, Sportvereine, Schulbeiräte, der National Trust, Helfer in Krankenhäusern und in der Bergrettung. Wohltätigkeit ist ein großer Teil des britischen Lebens, und Zeit zu geben gilt als ebenso wertvoll wie Geld zu geben.",
+  "Queuing, punctuality, saying please and thank you, and apologising readily are all noticed. Politeness matters more than formality, and small talk about the weather is genuinely a social convention rather than a joke about one.":
+    "Anstehen, Pünktlichkeit, bitte und danke sagen und sich rasch entschuldigen – all das fällt auf. Höflichkeit zählt mehr als Förmlichkeit, und Small Talk über das Wetter ist wirklich eine gesellschaftliche Konvention und nicht bloß ein Witz darüber.",
+  "No names to memorise — this lesson is about how people live rather than who they were.":
+    "Keine Namen zum Auswendiglernen – in dieser Lektion geht es darum, wie Menschen leben, nicht darum, wer sie waren.",
+  "Population around 67 million. Same-sex marriage 2014 in England, Wales and Scotland; 2020 in Northern Ireland. Marriage age raised to 18 in England and Wales in 2023.":
+    "Bevölkerung rund 67 Millionen. Gleichgeschlechtliche Ehe 2014 in England, Wales und Schottland; 2020 in Nordirland. Heiratsalter 2023 in England und Wales auf 18 angehoben.",
+  "Civil partnership · forced marriage · arranged marriage · volunteering · community · diversity.":
+    "Eingetragene Partnerschaft · Zwangsheirat · arrangierte Ehe · Ehrenamt · Gemeinschaft · Vielfalt.",
+  "In one line: An arranged marriage both people freely accept is lawful. A forced marriage is a crime. Consent is the whole distinction.":
+    "In einem Satz: Eine arrangierte Ehe, der beide frei zustimmen, ist zulässig. Eine Zwangsheirat ist eine Straftat. Die Zustimmung macht den ganzen Unterschied.",
+
+  // ── 17. Religion & Beliefs: Fließtext ───────────────────────────────────
+  "The UK is historically Christian but is now a multi-faith society, and a large and growing share of people report no religion at all. **Freedom of religion** is a legal right: you may practise any faith or none, and change your faith.":
+    "Das Vereinigte Königreich ist historisch christlich, heute aber eine Gesellschaft vieler Religionen – und ein großer, wachsender Teil der Menschen gibt gar keine Religion an. **Religionsfreiheit** ist ein Rechtsanspruch: Du darfst jeden Glauben oder keinen praktizieren und deinen Glauben wechseln.",
+  "Religious tolerance is one of the fundamental values. It protects believers of every faith **and** those with none, and it is unlawful to discriminate against someone for their religion or belief. Places of worship for all major faiths are found across the UK.":
+    "Religiöse Toleranz ist einer der Grundwerte. Sie schützt Gläubige jeder Religion **und** Menschen ohne Glauben, und Diskriminierung wegen Religion oder Weltanschauung ist rechtswidrig. Gebetsstätten aller großen Religionen gibt es im ganzen Land.",
+  "The Archbishop of Canterbury · Guru Nanak · the Church of England · the Church of Scotland.":
+    "Der Archbishop of Canterbury · Guru Nanak · die Church of England · die Church of Scotland.",
+  "Church of England established since Henry VIII's break with Rome in the 1530s.":
+    "Die Church of England ist seit Heinrichs VIII. Bruch mit Rom in den 1530er-Jahren Staatskirche.",
+  "Established church · Supreme Governor · Anglican · Presbyterian · religious tolerance · freedom of belief.":
+    "Staatskirche · Supreme Governor · anglikanisch · presbyterianisch · religiöse Toleranz · Glaubensfreiheit.",
+  "In one line: England has an established church with the monarch at its head; Scotland's is Presbyterian; Wales and Northern Ireland have none.":
+    "In einem Satz: England hat eine Staatskirche mit dem Monarchen an der Spitze; Schottlands ist presbyterianisch; Wales und Nordirland haben keine.",
+
+  // ── 18. British Traditions & Celebrations: Fließtext ────────────────────
+  "Some of these are public holidays, some are simply widely marked. The test asks which is which, and it asks dates — so learn the date alongside the name.":
+    "Einige davon sind gesetzliche Feiertage, andere werden einfach breit begangen. Der Test fragt, was wovon ist – und er fragt Daten ab. Lerne das Datum also zusammen mit dem Namen.",
+  "**St David's Day, 1 March** (Wales); **St Patrick's Day, 17 March** (Northern Ireland); **St George's Day, 23 April** (England); **St Andrew's Day, 30 November** (Scotland). Only St Patrick's Day in Northern Ireland and St Andrew's Day in Scotland are public holidays.":
+    "**St David's Day, 1. März** (Wales); **St Patrick's Day, 17. März** (Nordirland); **St George's Day, 23. April** (England); **St Andrew's Day, 30. November** (Schottland). Nur der St Patrick's Day in Nordirland und der St Andrew's Day in Schottland sind gesetzliche Feiertage.",
+  "**Bank holidays** are public holidays when most businesses close. They differ between the four nations — Scotland and Northern Ireland each have days the others do not. Besides Christmas and Easter there are holidays in early May, late May and August.":
+    "**Bank holidays** sind gesetzliche Feiertage, an denen die meisten Betriebe schließen. Sie unterscheiden sich zwischen den vier Nationen – Schottland und Nordirland haben jeweils Tage, die die anderen nicht haben. Neben Weihnachten und Ostern gibt es Feiertage Anfang Mai, Ende Mai und im August.",
+  "Guy Fawkes · Robert Burns · the four patron saints.":
+    "Guy Fawkes · Robert Burns · die vier Schutzheiligen.",
+  "1 January · 25 January Burns Night · 1 March · 17 March · 23 April · 31 October · 5 November · 11 November · 30 November · 25 and 26 December. Gunpowder Plot 1605. Armistice 1918.":
+    "1. Januar · 25. Januar Burns Night · 1. März · 17. März · 23. April · 31. Oktober · 5. November · 11. November · 30. November · 25. und 26. Dezember. Schießpulver-Attentat 1605. Waffenstillstand 1918.",
+  "Bank holiday · Hogmanay · Shrove Tuesday · Remembrance · Boxing Day.":
+    "Gesetzlicher Feiertag · Hogmanay · Faschingsdienstag · Gedenken · Boxing Day.",
+  "In one line: Only St Patrick's Day in Northern Ireland and St Andrew's Day in Scotland are public holidays. The other two saints' days are not.":
+    "In einem Satz: Nur der St Patrick's Day in Nordirland und der St Andrew's Day in Schottland sind gesetzliche Feiertage. Die beiden anderen Heiligentage nicht.",
+
+  // ── 19. Sports & Leisure: Fließtext ─────────────────────────────────────
+  "Britain invented or codified a remarkable number of the world's sports, and the test asks about the events as much as the games — which tournament is played where.":
+    "Großbritannien hat bemerkenswert viele Sportarten der Welt erfunden oder ihre Regeln festgelegt, und der Test fragt ebenso nach den Veranstaltungen wie nach den Sportarten – welches Turnier wo stattfindet.",
+  "Gardening, walking, going to the pub, watching television and following a team are all common. The **National Trust** cares for historic houses, gardens and coastline, and public footpaths give a legal right of way across much of the countryside.":
+    "Gärtnern, Spazierengehen, in den Pub gehen, fernsehen und einer Mannschaft folgen sind alle verbreitet. Der **National Trust** kümmert sich um historische Häuser, Gärten und Küstenabschnitte, und öffentliche Fußwege gewähren ein gesetzliches Wegerecht über weite Teile des Landes.",
+  "Wimbledon · Lord's · St Andrews · Aintree · Ascot · the National Trust.":
+    "Wimbledon · Lord's · St Andrews · Aintree · Ascot · der National Trust.",
+  "London hosted the Olympics in 1908, 1948 and 2012. Commonwealth Games every four years.":
+    "London richtete die Olympischen Spiele 1908, 1948 und 2012 aus. Commonwealth Games alle vier Jahre.",
+  "The Ashes · Six Nations · FA Cup · Grand National · rugby union and rugby league · Paralympics.":
+    "The Ashes · Six Nations · FA Cup · Grand National · Rugby Union und Rugby League · Paralympics.",
+  "In one line: Golf is Scottish, cricket and rugby are English, and at the Commonwealth Games the four nations compete separately rather than as one team.":
+    "In einem Satz: Golf ist schottisch, Cricket und Rugby sind englisch, und bei den Commonwealth Games treten die vier Nationen einzeln an, nicht als ein Team.",
+
+  // ── 20. Literature, Art & Music: Fließtext ──────────────────────────────
+  "Names and one fact each. The test does not expect you to have read the books — it expects you to know who wrote what, and which nation claims them.":
+    "Namen und je ein Fakt. Der Test erwartet nicht, dass du die Bücher gelesen hast – sondern dass du weißt, wer was geschrieben hat und welche Nation die Person für sich beansprucht.",
+  "**The Beatles** — John Lennon, Paul McCartney, George Harrison and Ringo Starr — came from **Liverpool** and are the most successful British band ever. Also from Britain: the Rolling Stones, Queen, David Bowie, Elton John and Adele.":
+    "**The Beatles** – John Lennon, Paul McCartney, George Harrison und Ringo Starr – kamen aus **Liverpool** und sind die erfolgreichste britische Band aller Zeiten. Ebenfalls aus Großbritannien: die Rolling Stones, Queen, David Bowie, Elton John und Adele.",
+  "In classical music, **Henry Purcell**, **Edward Elgar**, **Gustav Holst**, **Ralph Vaughan Williams** and **Benjamin Britten**. The **Proms** — a summer season of concerts at the Royal Albert Hall, ending with the Last Night — has run since 1895.":
+    "In der klassischen Musik **Henry Purcell**, **Edward Elgar**, **Gustav Holst**, **Ralph Vaughan Williams** und **Benjamin Britten**. Die **Proms** – eine sommerliche Konzertreihe in der Royal Albert Hall, die mit der Last Night endet – gibt es seit 1895.",
+  "Chaucer · Shakespeare · Jane Austen · Charles Dickens · Robert Burns · Turner · Constable · Gainsborough · Henry Moore · The Beatles · Elgar.":
+    "Chaucer · Shakespeare · Jane Austen · Charles Dickens · Robert Burns · Turner · Constable · Gainsborough · Henry Moore · The Beatles · Elgar.",
+  "Shakespeare 1564–1616. British Museum founded 1753. The Proms since 1895. Burns Night 25 January.":
+    "Shakespeare 1564–1616. British Museum 1753 gegründet. Die Proms seit 1895. Burns Night am 25. Januar.",
+  "The Globe Theatre · the Turner Prize · the National Gallery · the British Museum · the Last Night of the Proms.":
+    "Das Globe Theatre · der Turner Prize · die National Gallery · das British Museum · die Last Night of the Proms.",
+  "In one line: One name, one fact. Chaucer came before Shakespeare, Burns is Scotland's poet, and The Beatles came from Liverpool.":
+    "In einem Satz: Ein Name, ein Fakt. Chaucer kam vor Shakespeare, Burns ist Schottlands Dichter, und die Beatles kamen aus Liverpool.",
+
+  // ── 21. Science & Inventions: Fließtext ─────────────────────────────────
+  "British science shows up repeatedly in the test, usually as one name attached to one discovery. Learn the pairs.":
+    "Britische Wissenschaft taucht im Test immer wieder auf, meist als ein Name zu einer Entdeckung. Lerne die Paare.",
+  "**Alan Turing** laid the foundations of computer science and broke German codes at Bletchley Park. The first successful **IVF** birth took place in England in 1978. The **Royal Society**, founded in the 1660s, is the oldest scientific institution still in existence. **Dolly the sheep**, the first cloned mammal, was created in Scotland in 1996.":
+    "**Alan Turing** legte die Grundlagen der Informatik und knackte in Bletchley Park deutsche Codes. Die erste erfolgreiche **künstliche Befruchtung (IVF)** führte 1978 in England zu einer Geburt. Die **Royal Society**, in den 1660er-Jahren gegründet, ist die älteste noch bestehende wissenschaftliche Institution. **Das Schaf Dolly**, das erste geklonte Säugetier, entstand 1996 in Schottland.",
+  "Isaac Newton · Charles Darwin · Alexander Fleming · Michael Faraday · Ernest Rutherford · Rosalind Franklin · James Watt · George Stephenson · Brunel · Alexander Graham Bell · John Logie Baird · Alan Turing · Tim Berners-Lee.":
+    "Isaac Newton · Charles Darwin · Alexander Fleming · Michael Faraday · Ernest Rutherford · Rosalind Franklin · James Watt · George Stephenson · Brunel · Alexander Graham Bell · John Logie Baird · Alan Turing · Tim Berners-Lee.",
+  "Origin of Species 1859 · penicillin 1928 · first IVF birth 1978 · World Wide Web 1989 · Dolly the sheep 1996. Royal Society founded in the 1660s.":
+    "Origin of Species 1859 · Penicillin 1928 · erste IVF-Geburt 1978 · World Wide Web 1989 · das Schaf Dolly 1996. Royal Society in den 1660er-Jahren gegründet.",
+  "Natural selection · antibiotic · electromagnetic induction · DNA · the World Wide Web · cloning.":
+    "Natürliche Auslese · Antibiotikum · elektromagnetische Induktion · DNA · das World Wide Web · Klonen.",
+  "In one line: Learn these as pairs — one person, one discovery. That is exactly how the test asks about them.":
+    "In einem Satz: Lerne sie als Paare – eine Person, eine Entdeckung. Genau so fragt der Test danach.",
+
+  // ── 22. Famous British People: Fließtext ────────────────────────────────
+  "One place to revise every name in the course, sorted by what they are known for. If a name here is unfamiliar, go back to the lesson it came from.":
+    "Ein Ort, um alle Namen des Kurses zu wiederholen, sortiert danach, wofür sie bekannt sind. Ist dir ein Name hier fremd, geh zurück zu der Lektion, aus der er stammt.",
+  "**Admiral Nelson** at Trafalgar in 1805, the **Duke of Wellington** at Waterloo in 1815, **Boudicca** against the Romans, **William Wallace** and **Robert the Bruce** for Scotland, and **Captain James Cook**, whose voyages mapped much of the Pacific.":
+    "**Admiral Nelson** bei Trafalgar 1805, der **Duke of Wellington** bei Waterloo 1815, **Boudicca** gegen die Römer, **William Wallace** und **Robert the Bruce** für Schottland und **Captain James Cook**, dessen Reisen weite Teile des Pazifiks kartierten.",
+  "Every name in the course, grouped by what they are known for — monarchs, politicians, scientists, writers, artists and reformers.":
+    "Alle Namen des Kurses, gruppiert nach dem, wofür sie bekannt sind – Monarchen, Politiker, Wissenschaftler, Schriftsteller, Künstler und Reformer.",
+  "The dates belong to the lessons these people came from; this one is for matching the person to the achievement.":
+    "Die Jahreszahlen gehören zu den Lektionen, aus denen diese Personen stammen; hier geht es darum, Person und Leistung einander zuzuordnen.",
+  "Monarch · Prime Minister · reformer · abolitionist · suffragette · engineer · physicist.":
+    "Monarch · Premierminister · Reformer · Abolitionist · Suffragette · Ingenieur · Physiker.",
+  "In one line: If a name here is unfamiliar, go back to the lesson it came from rather than trying to learn it in isolation.":
+    "In einem Satz: Ist dir hier ein Name fremd, geh zurück zu seiner Lektion, statt ihn isoliert lernen zu wollen.",
+
+  // ── 23. Education & Healthcare: Fließtext ───────────────────────────────
+  "Two things you will use, and two things the test asks about in practical terms: how school works, and how to get medical help.":
+    "Zwei Dinge, die du brauchen wirst, und zwei, nach denen der Test ganz praktisch fragt: wie die Schule funktioniert und wie man ärztliche Hilfe bekommt.",
+  "Education is **compulsory** for children aged **5 to 16** (4 to 16 in Northern Ireland). In England, young people must stay in education or training until 18. State schooling is free.":
+    "Schulpflicht besteht für Kinder von **5 bis 16 Jahren** (4 bis 16 in Nordirland). In England müssen Jugendliche bis 18 in Ausbildung oder Schule bleiben. Der Besuch staatlicher Schulen ist kostenlos.",
+  "Parents must make sure their children attend. Schools have **governing bodies** that parents can join, and there is a national curriculum in England.":
+    "Eltern müssen dafür sorgen, dass ihre Kinder zur Schule gehen. Schulen haben **Schulbeiräte**, in denen Eltern mitwirken können, und in England gibt es einen nationalen Lehrplan.",
+  "The **National Health Service** was founded in **1948** by **Aneurin Bevan**. Its principle is care **free at the point of use**, paid for through taxation, based on need rather than ability to pay.":
+    "Der **National Health Service** wurde **1948** von **Aneurin Bevan** gegründet. Sein Grundsatz ist Versorgung, die **bei Inanspruchnahme kostenlos** ist, finanziert über Steuern und ausgerichtet am Bedarf statt an der Zahlungsfähigkeit.",
+  "Dial **999** or **112** for police, ambulance, fire or coastguard. Both numbers are free from any phone. For urgent but non-life-threatening medical help call **111**; for non-emergency police matters call **101**.":
+    "Wähle **999** oder **112** für Polizei, Rettungsdienst, Feuerwehr oder Küstenwache. Beide Nummern sind von jedem Telefon aus kostenlos. Für dringende, aber nicht lebensbedrohliche medizinische Hilfe wähle **111**; für Polizeiangelegenheiten ohne Notfall **101**.",
+  "999 is for emergencies only — a life at risk, a serious injury, a crime in progress or a fire. Misusing it is an offence, and 111 exists for everything urgent that is not an emergency.":
+    "999 ist ausschließlich für Notfälle – Lebensgefahr, schwere Verletzung, eine laufende Straftat oder ein Feuer. Missbrauch ist eine Straftat, und für alles Dringende, das kein Notfall ist, gibt es die 111.",
+  "Aneurin Bevan · your GP · Oxford and Cambridge.":
+    "Aneurin Bevan · deine Hausarztpraxis · Oxford und Cambridge.",
+  "School compulsory 5–16 (4–16 in Northern Ireland); education or training to 18 in England. NHS founded 1948. Emergency 999 or 112; urgent advice 111; non-emergency police 101.":
+    "Schulpflicht 5–16 (4–16 in Nordirland); Schule oder Ausbildung bis 18 in England. NHS 1948 gegründet. Notruf 999 oder 112; dringende Beratung 111; Polizei ohne Notfall 101.",
+  "GCSE · A level · Highers · National Qualifications · further education · higher education · GP · free at the point of use · prescription charge.":
+    "GCSE · A level · Highers · National Qualifications · weiterführende Bildung · Hochschulbildung · Hausarztpraxis · kostenlos bei Inanspruchnahme · Rezeptgebühr.",
+  "In one line: 999 is for emergencies only and misusing it is an offence. 111 is the number for everything urgent that is not one.":
+    "In einem Satz: 999 ist nur für Notfälle, und Missbrauch ist strafbar. 111 ist die Nummer für alles Dringende, das kein Notfall ist.",
+
+  // ── Restliche Lernbereich-Listen aus den Lektionen 2 bis 4 ──────────────
+  "Ben Nevis · Snowdon (Yr Wyddfa) · Scafell Pike · Slieve Donard · Severn · Thames · Lough Neagh · Loch Lomond · Windermere.":
+    "Ben Nevis · Snowdon (Yr Wyddfa) · Scafell Pike · Slieve Donard · Severn · Themse · Lough Neagh · Loch Lomond · Windermere.",
+  "Channel Tunnel opened 1994. 15 National Parks. Northern Ireland has 6 counties.":
+    "Kanaltunnel 1994 eröffnet. 15 Nationalparks. Nordirland hat 6 Grafschaften.",
+  "United Kingdom vs Great Britain · Crown Dependency · county · region · saltire · devolved capital.":
+    "Vereinigtes Königreich vs. Großbritannien · Crown Dependency · Grafschaft · Region · Saltire · Hauptstadt mit eigenem Parlament.",
+  "St David · St Patrick · St George · St Andrew · Y Ddraig Goch (the Red Dragon).":
+    "St David · St Patrick · St George · St Andrew · Y Ddraig Goch (der Rote Drache).",
+  "St David 1 March · St Patrick 17 March · St George 23 April · St Andrew 30 November. First Union Flag 1606.":
+    "St David 1. März · St Patrick 17. März · St George 23. April · St Andrew 30. November. Erste Union Flag 1606.",
+  "Union Flag / Union Jack · saltire · patron saint · Tudor rose · thistle · daffodil · leek · shamrock.":
+    "Union Flag / Union Jack · Saltire · Schutzheiliger · Tudor-Rose · Distel · Osterglocke · Lauch · Kleeblatt.",
+  "Julius Caesar · Claudius · Hadrian · Boudicca · Alfred the Great · St Augustine · St Columba · William of Normandy.":
+    "Julius Caesar · Claudius · Hadrian · Boudicca · Alfred der Große · St Augustine · St Columba · Wilhelm von der Normandie.",
+  "55 BC Caesar fails · AD 43 Claudius invades · AD 122 Hadrian's Wall · AD 410 Romans leave · AD 789 first Viking raids · 1066 Hastings.":
+    "55 v. Chr. Caesar scheitert · 43 n. Chr. Claudius fällt ein · 122 n. Chr. Hadrianswall · 410 n. Chr. Abzug der Römer · 789 n. Chr. erste Wikingerüberfälle · 1066 Hastings.",
+  "Celts · Danelaw · Anglo-Saxons · Iceni · Picts · Norman Conquest.":
+    "Kelten · Danelaw · Angelsachsen · Icener · Pikten · normannische Eroberung.",
 };

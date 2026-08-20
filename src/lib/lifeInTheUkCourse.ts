@@ -36,11 +36,12 @@ export const lifeInTheUkCourse: Course = {
       badge: "lesson 1",
       blocks: [
         { type: "p", text: "The Life in the UK Test is a requirement for both settlement (indefinite leave to remain) and citizenship. It is **24 multiple-choice questions in 45 minutes**, and the pass mark is **18 out of 24** — 75%." },
-        { type: "cards", items: [
-          { h4: "Where", p: "At a registered test centre, booked online. You must book at least 3 days ahead and bring the same ID you booked with." },
-          { h4: "Who", p: "Usually required if you are aged 18 to 64. There are exemptions for some long-term medical conditions." },
-          { h4: "Result", p: "You find out on the day. If you fail you can retake it, but you must wait 7 days between attempts." },
-        ] },
+        // The Where / Who / Result cards were removed on Michelle's call: they
+        // are admin — where to book, who must sit it, when the result comes —
+        // not syllabus. Nothing examinable was lost with them: the ages, the
+        // 7-day wait and the 3-month ceremony window are all still in the
+        // "Key dates and numbers" card at the foot of this lesson, which is
+        // where a revision pass looks for them anyway.
         { type: "callout", variant: "why", text: "Why this lesson first: the test does not only ask facts. Several questions ask what British society expects of you, and those answers come straight from the values below." },
         { type: "h3", text: "The fundamental principles" },
         { type: "p", text: "The UK sets out a short list of shared values. Learn them as a list — questions often ask you to pick which one is *not* included." },

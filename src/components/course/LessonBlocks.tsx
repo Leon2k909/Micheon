@@ -5,23 +5,44 @@ import type { Block, CalloutVariant, QuizOption } from "@/lib/courses";
 import { translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
 import { ui } from "@/lib/i18n";
 
-// Render text with `inline code` spans.
+/**
+ * Render `inline code`, **bold** and *italic*.
+ *
+ * Only backticks were handled, but the course is written in all three — the
+ * Life in the UK lessons lean on bold for the fact a question will actually
+ * ask for, "**18 out of 24**", and on italics for the trap, "which one is
+ * *not* included". Unhandled, those markers reached the screen as literal
+ * asterisks: the emphasis was lost AND the text read as broken.
+ *
+ * Bold is matched before italic, or `**x**` would be eaten as an italic `*`
+ * wrapping `*x*`. The character class excludes `*` so the match cannot run
+ * past its own closing marker into the next one.
+ */
+const RICH_TEXT = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+
 function RichText({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`)/g);
+  const parts = text.split(RICH_TEXT);
   return (
     <>
-      {parts.map((part, i) =>
-        part.startsWith("`") && part.endsWith("`") ? (
-          <code
-            key={i}
-            className="rounded bg-[var(--surface-3)] px-1.5 py-0.5 font-mono text-[0.85em] text-[var(--accent)]"
-          >
-            {part.slice(1, -1)}
-          </code>
-        ) : (
-          <React.Fragment key={i}>{part}</React.Fragment>
-        )
-      )}
+      {parts.map((part, i) => {
+        if (part.startsWith("`") && part.endsWith("`")) {
+          return (
+            <code
+              key={i}
+              className="rounded bg-[var(--surface-3)] px-1.5 py-0.5 font-mono text-[0.85em] text-[var(--accent)]"
+            >
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+          return <strong key={i} className="font-black text-[var(--text-1)]">{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+          return <em key={i}>{part.slice(1, -1)}</em>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
     </>
   );
 }
@@ -89,6 +110,53 @@ function LessonCard({ h4, p }: { h4: string; p: string }) {
         </div>
       )}
     </button>
+  );
+}
+
+/**
+ * A paragraph or callout that reveals its translation when tapped.
+ *
+ * Not a <button>: a paragraph is several lines of prose, and wrapping it in a
+ * button would hand a screen reader one enormous control and take the text
+ * selection away from everyone else — you could no longer drag over a sentence
+ * to copy it. The tap target is the small marker instead, which is also the
+ * only part that looks tappable.
+ */
+function TranslatableText({ text, className }: { text: string; className?: string }) {
+  const language = useTranslationLanguage();
+  const [open, setOpen] = useState(false);
+  const translated = translateCourseText(text, language);
+
+  if (!translated) {
+    return (
+      <div className={className}>
+        <RichText text={text} />
+      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      <RichText text={text} />{" "}
+      <button
+        aria-expanded={open}
+        aria-label={open ? ui("Tap to hide the translation") : ui("Tap for the translation")}
+        className={cn(
+          "ml-0.5 inline-flex translate-y-[2px] items-center transition-opacity",
+          open ? "opacity-100" : "opacity-45 hover:opacity-90"
+        )}
+        onClick={() => setOpen((value) => !value)}
+        title={open ? ui("Tap to hide the translation") : ui("Tap for the translation")}
+        type="button"
+      >
+        <Languages className={cn("h-3.5 w-3.5", open ? "text-[var(--accent)]" : "text-[var(--text-3)]")} />
+      </button>
+      {open && (
+        <span className="mt-1.5 block border-l-2 border-[var(--accent)] pl-3 text-[var(--text-2)]">
+          <RichText text={translated} />
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -220,9 +288,11 @@ export function LessonBlocks({
         switch (block.type) {
           case "p":
             return (
-              <p key={i} className="text-[15px] leading-7 text-[var(--text-2)]">
-                <RichText text={block.text} />
-              </p>
+              <TranslatableText
+                className="text-[15px] leading-7 text-[var(--text-2)]"
+                key={i}
+                text={block.text}
+              />
             );
           case "h3":
             return <LessonHeading key={i} text={block.text} />;
@@ -230,12 +300,11 @@ export function LessonBlocks({
             return <CodeBlock key={i} code={block.code} />;
           case "callout":
             return (
-              <div
-                key={i}
+              <TranslatableText
                 className={cn("my-3 rounded-lg px-4 py-3 text-sm leading-relaxed", CALLOUT_STYLES[block.variant])}
-              >
-                <RichText text={block.text} />
-              </div>
+                key={i}
+                text={block.text}
+              />
             );
           case "twocol":
             return (

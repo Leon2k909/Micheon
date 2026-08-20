@@ -43,11 +43,15 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE } = compiled.exports;
 
-// Every English string a card or heading can show.
+// Every English string the lesson body can offer a translation for. Paragraphs
+// and callouts are included because they are tappable too — the marker only
+// appears where a translation exists, so this is what "everything" means.
 const translatable = new Set();
 for (const lesson of lifeInTheUkCourse.lessons ?? []) {
   for (const block of lesson.blocks ?? []) {
-    if (block.type === "h3") translatable.add(block.text);
+    if (block.type === "h3" || block.type === "p" || block.type === "callout") {
+      translatable.add(block.text);
+    }
     if (block.type === "cards") {
       for (const item of block.items ?? []) {
         translatable.add(item.h4);
@@ -72,7 +76,17 @@ if (orphans.length) {
 // Tyne" are supposed to survive unchanged, and so are bare years. Only a
 // SENTENCE that came back identical is suspicious, so this looks for final
 // punctuation or real length rather than for a space.
-const looksLikeSentence = (text) => /[.!?]$/.test(text.trim()) || text.trim().split(/\s+/).length > 6;
+// A single word keeping its full stop is still a name: the card body "England."
+// is "England." in German too. A sentence needs more than one word.
+const looksLikeSentence = (text) => {
+  const trimmed = text.trim();
+  // A "Name · Name · Name" list is a list of proper nouns. "Chaucer ·
+  // Shakespeare · Jane Austen" is the same in German, and demanding a
+  // difference would only invite a worse translation. Prose is the target.
+  if (trimmed.includes(" · ")) return false;
+  const words = trimmed.split(/\s+/).length;
+  return (words > 1 && /[.!?]$/.test(trimmed)) || words > 6;
+};
 const untranslated = Object.entries(LIFE_IN_THE_UK_DE)
   .filter(([key, value]) => key === value && looksLikeSentence(key));
 if (untranslated.length > 0) {
