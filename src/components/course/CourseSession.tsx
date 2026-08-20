@@ -4,10 +4,36 @@ import { ArrowLeft, ArrowRight, Check, ChevronRight, Code2, RotateCcw, X, Eye, E
 import { cn } from "@/lib/utils";
 import { resolveLessonForBackground, type Course, type Lesson } from "@/lib/courses";
 import { getCodeBackground } from "@/lib/codeBackground";
-import { buildLessonSession, checkCode, type SessionStep } from "@/lib/courseSession";
+import { buildLessonSession, checkCode, type QuizStep, type SessionStep } from "@/lib/courseSession";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 import { HighlightedCode } from "@/components/course/highlight";
 import { useScrollLock } from "@/lib/scrollLock";
+import { ukQuestionsForLesson } from "@/lib/ukQuestionBank";
+import { recordUkAnswer } from "@/lib/ukQuizProgress";
+
+const LIFE_IN_THE_UK_ID = "life-in-the-uk";
+
+/**
+ * The practice-bank questions for one topic, as session steps.
+ *
+ * Ordered easy → medium → hard so a lesson does not open its questions with
+ * its hardest trap. The correct answer is rebuilt as a flag on each option,
+ * because the session's quiz step wants {text, correct} while the bank stores
+ * an index.
+ */
+function ukSessionQuizzes(lessonId: string): QuizStep[] {
+  const order = { easy: 0, medium: 1, hard: 2 } as const;
+  return ukQuestionsForLesson(lessonId)
+    .slice()
+    .sort((a, b) => order[a.level] - order[b.level])
+    .map((question) => ({
+      type: "quiz" as const,
+      q: question.q,
+      options: question.options.map((text, index) => ({ text, correct: index === question.answer })),
+      explanation: question.explanation,
+      questionId: question.id,
+    }));
+}
 
 // ── IDE-style editor: transparent textarea over highlighted code ──
 function CodeEditor({
@@ -292,13 +318,14 @@ function ConceptStepView({ blocks, onNext }: { blocks: SessionStep extends never
 }
 
 // ── Quiz step ─────────────────────────────────────────────────
-function QuizStepView({ q, options, explanation, onNext }: { q: string; options: { text: string; correct: boolean }[]; explanation: string; onNext: () => void }) {
+function QuizStepView({ q, options, explanation, onNext, onAnswered }: { q: string; options: { text: string; correct: boolean }[]; explanation: string; onNext: () => void; onAnswered?: (correct: boolean, chosen: number) => void }) {
   const [picked, setPicked] = useState<number | null>(null);
   const answered = picked !== null;
   const correctIdx = options.findIndex((o) => o.correct);
   const chooseOption = (index: number) => {
     if (answered) return;
     setPicked(index);
+    onAnswered?.(Boolean(options[index]?.correct), index);
     if (options[index]?.correct) window.setTimeout(onNext, 900);
   };
 
@@ -359,8 +386,15 @@ export function CourseSession({
   // at once. The lock counts, and only lifts when the last one closes.
   useScrollLock();
   const steps = useMemo<SessionStep[]>(
-    () => buildLessonSession(resolveLessonForBackground(lesson, getCodeBackground())),
-    [lesson]
+    () => buildLessonSession(
+      resolveLessonForBackground(lesson, getCodeBackground()),
+      // Life in the UK keeps 6–16 questions per topic in the practice bank
+      // against the 2–3 written into each lesson. Feeding them in here is what
+      // gives each stretch of reading a real set of questions after it,
+      // without writing a second version of the same material.
+      course.id === LIFE_IN_THE_UK_ID ? ukSessionQuizzes(lesson.id) : []
+    ),
+    [lesson, course.id]
   );
   const [index, setIndex] = useState(0);
   const [codeDrafts, setCodeDrafts] = useState<Record<number, string>>({});
@@ -430,7 +464,20 @@ export function CourseSession({
               />
             )}
             {step.type === "quiz" && (
-              <QuizStepView q={step.q} options={step.options} explanation={step.explanation} onNext={next} />
+              <QuizStepView
+                explanation={step.explanation}
+                onAnswered={(correct, chosen) => {
+                  // Bank questions carry an id, so answering one while reading
+                  // feeds the same mistakes list and weak-area figures as the
+                  // practice tab. Lesson-only questions have no id and are not
+                  // recorded — there is nothing in the bank to record them
+                  // against.
+                  if (step.questionId) recordUkAnswer(step.questionId, chosen, correct);
+                }}
+                onNext={next}
+                options={step.options}
+                q={step.q}
+              />
             )}
             {step.type === "complete" && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl space-y-6 py-10 text-center">

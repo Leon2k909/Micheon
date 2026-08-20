@@ -94,7 +94,18 @@ export function checkCode(input: string, target: string): CodeCheck {
 // ── Lesson → guided steps ─────────────────────────────────────
 export type ConceptStep = { type: "concept"; title: string; blocks: Block[] };
 export type CodeStep = { type: "code"; prompt: string; target: string; hintComments: string[] };
-export type QuizStep = { type: "quiz"; q: string; options: { text: string; correct: boolean }[]; explanation: string };
+export type QuizStep = {
+  type: "quiz";
+  q: string;
+  options: { text: string; correct: boolean }[];
+  explanation: string;
+  /**
+   * Set when the question came from the practice bank rather than the lesson.
+   * Answering it then counts towards mistakes, weak areas and progress, so a
+   * question met while reading is not forgotten by the practice tab.
+   */
+  questionId?: string;
+};
 export type CompleteStep = { type: "complete" };
 export type SessionStep = ConceptStep | CodeStep | QuizStep | CompleteStep;
 
@@ -133,9 +144,34 @@ function isTypeable(code: string): boolean {
   return codeChars >= 12 && lines.length <= 16;
 }
 
-export function buildLessonSession(lesson: Lesson): SessionStep[] {
+/**
+ * Turn a lesson into the sequence of screens a session walks through.
+ *
+ * `extraQuizzes` lets a caller add questions the lesson itself does not carry.
+ * The Life in the UK course uses it to pull from the practice bank, which
+ * holds 6–16 questions per topic against the 2–3 written into each lesson —
+ * Michelle asked for more to answer after each thing she reads, and inventing
+ * a second set alongside a bank that already covers the same ground would have
+ * been duplication, not depth.
+ *
+ * They are spread across the lesson's existing question points rather than
+ * dumped at the end, so each stretch of reading is followed by a handful of
+ * questions about what was just read. Any left over follow the last one.
+ */
+export function buildLessonSession(lesson: Lesson, extraQuizzes: QuizStep[] = []): SessionStep[] {
   const steps: SessionStep[] = [];
   let conceptBuffer: Block[] = [];
+
+  const quizPoints = lesson.blocks.filter((block) => block.type === "quiz").length;
+  const perPoint = quizPoints > 0 ? Math.ceil(extraQuizzes.length / quizPoints) : 0;
+  let extraIndex = 0;
+
+  const drainExtras = (limit: number) => {
+    for (let taken = 0; taken < limit && extraIndex < extraQuizzes.length; taken += 1) {
+      steps.push(extraQuizzes[extraIndex]);
+      extraIndex += 1;
+    }
+  };
 
   const flushConcept = () => {
     if (conceptBuffer.length > 0) {
@@ -181,6 +217,7 @@ export function buildLessonSession(lesson: Lesson): SessionStep[] {
       case "quiz":
         flushConcept();
         steps.push({ type: "quiz", q: block.q, options: block.options, explanation: block.explanation });
+        drainExtras(perPoint);
         break;
       case "cta":
         conceptBuffer.push(block as Block);
@@ -189,6 +226,9 @@ export function buildLessonSession(lesson: Lesson): SessionStep[] {
   }
 
   flushConcept();
+  // Whatever the per-point rounding left over, plus everything when the lesson
+  // had no question points of its own to hang them on.
+  drainExtras(extraQuizzes.length);
   steps.push({ type: "complete" });
   return steps;
 }
