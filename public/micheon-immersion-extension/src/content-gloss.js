@@ -272,7 +272,7 @@
 
   function buildIndexes(words) {
     for (const w of words) {
-      const entry = { en: w.en, deDisplay: w.deDisplay, ex: w.ex, exEn: w.exEn };
+      const entry = { en: w.en, deDisplay: w.deDisplay, ex: w.ex, exEn: w.exEn, exSrc: w.exSrc };
       if (!byDeExact.has(w.de)) byDeExact.set(w.de, entry);
       const lowerKey = w.de.toLowerCase();
       if (!byDeLowerAny.has(lowerKey)) byDeLowerAny.set(lowerKey, entry);
@@ -1152,7 +1152,11 @@
     // than an invented one.
     if (tipExampleEl) {
       if (entry.ex) {
-        tipExampleEl.textContent = entry.exEn ? entry.ex + " — " + entry.exEn : entry.ex;
+        // CC BY obliges us to say where a borrowed sentence came from, and
+        // it is also useful: our own examples were written for this course,
+        // a Tatoeba one was not, and the reader can weigh it accordingly.
+        const credit = entry.exSrc === "t" ? "  · Tatoeba (CC BY)" : "";
+        tipExampleEl.textContent = (entry.exEn ? entry.ex + " — " + entry.exEn : entry.ex) + credit;
         tipExampleEl.style.display = "";
       } else {
         tipExampleEl.textContent = "";
@@ -1315,7 +1319,7 @@
   const glossedTextNodes = new Set();
   let glossRangeCount = 0;
 
-  function registerGloss(node, start, end, gloss, de, ex, exEn) {
+  function registerGloss(node, start, end, gloss, de, ex, exEn, exSrc) {
     if (!glossHighlight) return;
     let list = glossIndex.get(node);
     if (list?.some((entry) => entry.start === start && entry.end === end && entry.gloss === gloss)) return;
@@ -1326,7 +1330,7 @@
     } catch { return; }
     glossHighlight.add(range);
     if (!list) { list = []; glossIndex.set(node, list); }
-    list.push({ start, end, gloss, de, ex, exEn, range });
+    list.push({ start, end, gloss, de, ex, exEn, exSrc, range });
     glossedTextNodes.add(node);
     glossRangeCount += 1;
   }
@@ -1430,7 +1434,7 @@
           }
         }
         if (hit) {
-          registerGloss(node, match.index, match.index + token.length, hit.en, token, hit.ex, hit.exEn);
+          registerGloss(node, match.index, match.index + token.length, hit.en, token, hit.ex, hit.exEn, hit.exSrc);
         }
       } else {
         hit = byEn.get(lower);

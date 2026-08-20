@@ -74,7 +74,14 @@ for (const size of ["16", "32", "48", "128"]) {
 }
 assert(fs.existsSync(archive) && fs.statSync(archive).size > 100_000,
   "the downloadable Micheon Immersion archive is missing or unexpectedly small");
-const packedFile = (relativePath) => execFileSync("tar", ["-xOf", archive, relativePath], { encoding: "utf8" });
+// maxBuffer, because words.json outgrew the 1 MB default the moment example
+// sentences were added to it. Without this the check dies with a spawnSync
+// ENOBUFS that says nothing about the glossary at all.
+const packedFile = (relativePath) => execFileSync(
+  "tar",
+  ["-xOf", archive, relativePath],
+  { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+);
 assert.equal(packedFile("manifest.json"), read("manifest.json"),
   "the downloadable archive contains a stale extension manifest");
 assert.equal(packedFile("data/words.json"), read("data/words.json"),
@@ -320,5 +327,74 @@ checkLatestAudioWins().then(() => {
   console.log(
     `check-immersion-extension: ${withExample.length.toLocaleString()} of ${glossary.length.toLocaleString()} `
     + "glossary entries carry a vetted example sentence that contains the word"
+  );
+}
+
+// ── the Tatoeba fill, and why it is allowed near a learner ──────────────────
+// Micheon used Tatoeba once before with no filtering at all and shipped 65
+// sentences spelling "die Einzige" as "die einzige". These are the guards
+// that make a second attempt defensible, checked on the shipped data rather
+// than trusted from the build script.
+{
+  const glossary = JSON.parse(
+    fs.readFileSync(path.join(root, "public/micheon-immersion-extension/data/words.json"), "utf8")
+  );
+  const borrowed = glossary.filter((entry) => entry.exSrc === "t");
+  const ours = glossary.filter((entry) => entry.ex && !entry.exSrc);
+
+  assert.ok(ours.length >= 3000, `only ${ours.length} examples from our own catalogue`);
+  assert.ok(borrowed.length >= 1500, `only ${borrowed.length} Tatoeba examples; expected 1,500+`);
+
+  // Our own sentences must always win. Tatoeba fills gaps; it never replaces
+  // material written for this course.
+  const overlap = glossary.filter((entry) => entry.exSrc === "t" && entry.exId == null);
+  assert.strictEqual(overlap.length, 0, "a borrowed example must carry the id it came from");
+
+  for (const entry of borrowed) {
+    assert.ok(Number.isInteger(entry.exId) && entry.exId > 0,
+      `${entry.de}: no traceable Tatoeba sentence id`);
+    assert.ok(entry.exEn && entry.exEn.trim(), `${entry.de}: borrowed example has no translation`);
+    assert.ok(entry.ex.length <= 90, `${entry.de}: borrowed example too long — "${entry.ex}"`);
+    assert.ok(
+      entry.ex.toLocaleLowerCase("de-DE").includes(entry.de.toLocaleLowerCase("de-DE")),
+      `${entry.de}: borrowed example does not contain the word — "${entry.ex}"`
+    );
+    // Every rule our own content is held to. A stranger's approval is not a
+    // reason to teach from a sentence that would fail our gates.
+    assert.ok(
+      !/\b\w*(?:daß|muß|gewiß|bewußt|Schluß|Fluß|Kuß|häßlich|läßt|paßt)\w*\b/.test(entry.ex),
+      `${entry.de}: pre-1996 spelling — "${entry.ex}"`
+    );
+    assert.ok(
+      !/\b\w*(?:strasse|heiss|weiss|schmeiss|spass|fuss|gruss|draussen|aussen|dreissig)\w*\b/i.test(entry.ex),
+      `${entry.de}: ss where German takes ß — "${entry.ex}"`
+    );
+    assert.ok(
+      !/\b(der|die|das|dem|den|ein|eine|einer|eines|einem|einen)\s+einzige[nrs]?\b(?!\s+[A-ZÄÖÜ])/.test(entry.ex),
+      `${entry.de}: the exact error that shipped last time — "${entry.ex}"`
+    );
+    assert.ok(/[.!?…"'”»]$/.test(entry.ex.trim()), `${entry.de}: no final punctuation — "${entry.ex}"`);
+    assert.ok(!/\s{2,}/.test(entry.ex), `${entry.de}: double space — "${entry.ex}"`);
+  }
+
+  // Tatoeba's house style names everybody Tom. Not wrong, but a glossary full
+  // of one man's errands reads badly, so the picker prefers alternatives.
+  const placeholders = borrowed.filter((entry) => /\b(Tom|Maria|Mary)\b/.test(entry.ex)).length;
+  assert.ok(
+    placeholders / borrowed.length < 0.1,
+    `${Math.round((placeholders / borrowed.length) * 100)}% of borrowed examples use a placeholder name; expected under 10%`
+  );
+
+  // CC BY obliges attribution wherever a borrowed sentence is shown.
+  const content = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.js"), "utf8");
+  assert.ok(
+    content.includes('entry.exSrc === "t" ? "  · Tatoeba (CC BY)"'),
+    "a borrowed sentence must be credited on the card it appears on"
+  );
+
+  console.log(
+    `check-immersion-extension: ${(ours.length + borrowed.length).toLocaleString()} of ${glossary.length.toLocaleString()} `
+    + `entries have an example — ${ours.length.toLocaleString()} ours, ${borrowed.length.toLocaleString()} from Tatoeba, `
+    + "every borrowed one traceable, credited and through our own German rules"
   );
 }

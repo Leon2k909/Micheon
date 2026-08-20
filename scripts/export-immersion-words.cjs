@@ -85,6 +85,23 @@ for (const item of buildCatalog(parts)) {
   }
 }
 
+/**
+ * Tatoeba, for the words our own catalogue cannot illustrate.
+ *
+ * Built separately by build-tatoeba-examples.cjs, which needs 300 MB of
+ * exports, so the result is committed and read from here. Our own sentences
+ * always win: they are the ones written for this course. Tatoeba only fills
+ * gaps, and every entry it fills is marked so the attribution is honest and
+ * so a bad one can be traced back to its sentence id.
+ */
+const tatoebaPath = path.join(root, "src", "data", "tatoebaExamples.json");
+const tatoeba = new Map();
+if (fs.existsSync(tatoebaPath)) {
+  for (const row of JSON.parse(fs.readFileSync(tatoebaPath, "utf8"))) {
+    tatoeba.set(row.w, row);
+  }
+}
+
 const seen = new Set();
 const rows = [];
 // Combined synonym cards fold "der Wagen" into "das Auto" for lessons and the
@@ -111,7 +128,16 @@ for (const word of [...catalogWords, ...supplementalWords]) {
     en: String(word.en).split("/")[0].trim(),
     ...(examplesByWord.has(key)
       ? { ex: examplesByWord.get(key).de, exEn: examplesByWord.get(key).en }
-      : {}),
+      : tatoeba.has(key)
+        ? {
+          ex: tatoeba.get(key).ex,
+          exEn: tatoeba.get(key).exEn,
+          // "t" means Tatoeba. The hover card credits it, and the id makes
+          // any complaint traceable to one sentence rather than to a corpus.
+          exSrc: "t",
+          exId: tatoeba.get(key).id,
+        }
+        : {}),
   });
 }
 
