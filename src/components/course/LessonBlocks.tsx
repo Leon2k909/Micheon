@@ -278,13 +278,29 @@ function Quiz({ q, options, explanation, onCorrect }: { q: string; options: Quiz
 export function LessonBlocks({
   blocks,
   onQuizCorrect,
+  readingOnly = false,
 }: {
   blocks: Block[];
   onQuizCorrect?: () => void;
+  /**
+   * Drop the questions and the heading that introduces them.
+   *
+   * The reader is one long page, so questions there sat directly under the
+   * text that answered them — you scrolled past the answer on your way to the
+   * question. The stepped session already puts each question behind Continue,
+   * which is where answering belongs. Michelle: "auf der ersten seite soll
+   * wirklich nur das sein was zu lesen ist."
+   *
+   * The blocks stay in the lesson data; only this view skips them.
+   */
+  readingOnly?: boolean;
 }) {
+  const visible = readingOnly
+    ? blocks.filter((block) => block.type !== "quiz" && !(block.type === "h3" && block.text === "Now answer these"))
+    : blocks;
   return (
     <div className="space-y-1">
-      {blocks.map((block, i) => {
+      {visible.map((block, i) => {
         switch (block.type) {
           case "p":
             return (

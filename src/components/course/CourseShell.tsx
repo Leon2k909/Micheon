@@ -134,7 +134,7 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
             </div>
 
             <div className="mt-4">
-              <LessonBlocks blocks={resolveLessonForBackground(lesson, getCodeBackground()).blocks} onQuizCorrect={() => markComplete(lesson.id)} />
+              <LessonBlocks blocks={resolveLessonForBackground(lesson, getCodeBackground()).blocks} readingOnly />
             </div>
 
             <div className="mt-8 flex items-center justify-between border-t border-[var(--border)] pt-5">
@@ -146,10 +146,14 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
               >
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
+              {/* Reaching the end of a lesson is what completes it here.
+                  It used to be answering a question correctly, but the reader
+                  no longer shows questions — without this the progress counter
+                  at the top would sit at 0/23 however much you read. */}
               {nextLesson ? (
                 <button
                   type="button"
-                  onClick={() => go(nextLesson.id)}
+                  onClick={() => { markComplete(lesson.id); go(nextLesson.id); }}
                   className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-black text-white transition-opacity hover:opacity-90"
                 >
                   Next: {nextLesson.title} <ArrowRight className="h-4 w-4" />
@@ -157,7 +161,7 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
               ) : (
                 <button
                   type="button"
-                  onClick={onExit}
+                  onClick={() => { markComplete(lesson.id); onExit(); }}
                   className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-black text-white"
                 >
                   Finish <Check className="h-4 w-4" />

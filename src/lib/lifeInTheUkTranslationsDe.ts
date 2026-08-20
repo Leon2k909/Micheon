@@ -1370,4 +1370,5 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
     "Rule of law · persönliche Freiheit · Toleranz · geschützte Merkmale · Diskriminierung · Rechte und Pflichten.",
   "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty.":
     "In einem Satz: Die Werte sind eine Liste, die du vervollständigen oder in der du eine Lücke erkennen sollst – und zu jedem Recht gehört eine Pflicht.",
+  "Now answer these": "Jetzt beantworte diese Fragen",
 };
