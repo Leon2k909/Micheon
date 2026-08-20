@@ -52,9 +52,20 @@ check(
   "profile settings paint without waiting for the lesson catalogue",
   // Listen needs the catalogue (it reads every sentence aloud); profile
   // still must not — the guard is that "profile" never joins this list.
-  prototype.includes('if (["learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true)')
-    && !prototype.includes('"profile"].includes(view)')
-    && prototype.includes("onRequestCatalogue={requestParts}"),
+  //
+  // Checked by reading the list rather than matching it verbatim. Pinning the
+  // exact literal meant that adding any new catalogue-backed view failed this
+  // check, which is about profile and has no opinion on how many other views
+  // there are.
+  (() => {
+    const gate = /if \(\[([^\]]+)\]\.includes\(view\)\) setPartsRequested\(true\);/.exec(prototype);
+    if (!gate) return false;
+    const views = gate[1].split(",").map((entry) => entry.trim().replace(/"/g, ""));
+    return !views.includes("profile")
+      && !views.includes("home")
+      && views.includes("listen")
+      && prototype.includes("onRequestCatalogue={requestParts}");
+  })(),
 );
 check(
   "profile settings prewarm after startup and on pointer intent",

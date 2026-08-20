@@ -16,6 +16,7 @@ import {
   Coins,
   Crown,
   Gamepad2,
+  Route,
   GraduationCap,
   Headphones,
   Home,
@@ -122,12 +123,13 @@ const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboa
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
+const DuoPathView = lazy(() => import("@/components/duo/DuoPathView").then((module) => ({ default: module.DuoPathView })));
 const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
 const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then((module) => ({ default: module.UkTestView })));
 const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
 const UkSearchView = lazy(() => import("@/components/lifeInTheUk/UkSearchView").then((module) => ({ default: module.UkSearchView })));
 
-type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
+type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -171,6 +173,7 @@ type Milestone = (typeof MILESTONES)[number];
 // destination of its own.
 const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
+  { id: "path", label: "Learn", icon: Route },
   { id: "learn", label: "Lessons", icon: BookOpen },
   { id: "practice", label: "Practice", icon: MessageSquareText },
   { id: "listen", label: "Listen", icon: Headphones },
@@ -443,6 +446,7 @@ function BrandMark() {
  * their way there.
  */
 const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
+  path: () => { void import("@/components/duo/DuoPathView"); },
   games: () => { void import("@/games/GamesView"); },
   listen: () => { void import("@/components/listen/ListenView"); },
   tests: () => { void import("@/components/tests/TestsView"); },
@@ -450,7 +454,7 @@ const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
 };
 
 /** Views whose content needs the full catalogue before they can render. */
-const NEEDS_CATALOGUE: PrototypeView[] = ["learn", "games", "tests", "listen"];
+const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "listen"];
 
 function Sidebar({
   activeView,
@@ -2526,7 +2530,7 @@ export default function NewUiPrototype({
       setActiveView("home");
       return;
     }
-    if (["learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
+    if (["path", "learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -2694,6 +2698,18 @@ export default function NewUiPrototype({
         vocab={knownVocab}
       />
     )
+  ) : activeView === "path" ? (
+    // Both ways in, on one screen. The guided session button is the same call
+    // the dashboard hero makes; nothing about that route changed.
+    <div className="np-feature-host">
+      <Suspense fallback={<FeatureLoading />}>
+        <DuoPathView
+          apiParts={apiParts}
+          lessonsCompleted={stats.sessionsCompleted}
+          onGuidedSession={openGuidedSession}
+        />
+      </Suspense>
+    </div>
   ) : activeView === "learn" ? (
     <div className="np-feature-host">
       {courseHasReader && activeCourse ? (

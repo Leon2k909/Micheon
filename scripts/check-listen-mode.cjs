@@ -562,8 +562,13 @@ check("Listen remembers a separate exact cursor for each course, content mode, a
 
 const prototype = read("src/prototype/NewUiPrototype.tsx");
 check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Headphones/.test(prototype));
+// Pinned by behaviour, not by the exact array literal. This first matched
+// ["learn", "games", "tests", "listen"] verbatim, which meant adding a fifth
+// view that also needs the catalogue broke a Listen check for no Listen
+// reason. What matters is that navigating to Listen asks for the catalogue.
+const navigateGate = /if \(\[([^\]]+)\]\.includes\(view\)\) setPartsRequested\(true\);/.exec(prototype);
 check("navigating to Listen loads the course catalogue",
-  /\["learn", "games", "tests", "listen"\]\.includes\(view\)/.test(prototype));
+  Boolean(navigateGate) && navigateGate[1].includes('"listen"'));
 check("the Listen view stays mounted behind the catalogue gate across dashboard navigation",
   prototype.includes('activeView === "listen"')
   && prototype.includes("<ListenView")
