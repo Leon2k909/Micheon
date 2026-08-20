@@ -1112,7 +1112,7 @@ export const curatedTopics: CuratedTopic[] = [
       { de: "Mülltrennung ist in Deutschland Pflicht.", en: "Waste sorting is mandatory in Germany. / Waste separation is compulsory in Germany.", use: "Mülltrennung = waste separation" },
       { de: "Ab zweiundzwanzig Uhr gilt die gesetzliche Nachtruhe.", en: "From 10 PM, the statutory quiet hours apply. / Quiet hours apply starting at ten PM.", use: "Nachtruhe = quiet hours (usually 10 PM - 6 AM)" },
       { de: "Am Sonntag darf man keinen Lärm machen.", en: "You are not allowed to make noise on Sundays. / One must not make noise on Sunday.", use: "Sonntagsruhe = Sunday peace" },
-      { de: "Zweimal täglich stoßlüften beugt Schimmel vor.", en: "Air-airing twice daily prevents mold. / Shock-ventilating twice a day prevents mold.", use: "stoßen + lüften = open windows fully for 5-10 mins" },
+      { de: "Zweimal täglich stoßlüften beugt Schimmel vor.", en: "Opening the windows wide twice a day prevents mould.", use: "stoßen + lüften = open windows fully for 5-10 mins" },
       { de: "Geh nicht auf dem Radweg!", en: "Don't walk on the bike path! / Do not walk on the bicycle lane!", use: "Walkers on bike lanes will be yelled at" },
       { de: "Sonntags haben fast alle Geschäfte geschlossen.", en: "On Sundays, almost all shops are closed. / Sundays almost all stores are closed.", use: "Ladenöffnungsgesetz = shop opening hours law" },
       { de: "Jeder Haushalt muss den Rundfunkbeitrag zahlen.", en: "Every household must pay the broadcasting license fee.", use: "Rundfunkbeitrag = public broadcasting fee (formerly GEZ)" },
