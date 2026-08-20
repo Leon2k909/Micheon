@@ -80,6 +80,7 @@ import {
   setActiveCourseId as persistActiveCourseId,
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
+import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, upcomingPackProgress, type PackProgress } from "@/lib/packProgress";
@@ -122,6 +123,9 @@ const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsVi
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
 const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
+const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then((module) => ({ default: module.UkTestView })));
+const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
+const UkSearchView = lazy(() => import("@/components/lifeInTheUk/UkSearchView").then((module) => ({ default: module.UkSearchView })));
 
 type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
@@ -133,7 +137,7 @@ type PrototypeSearchItem = {
   id: string;
   title: string;
   subtitle: string;
-  group: "Page" | "Lesson" | "Word bank" | "Game";
+  group: "Page" | "Lesson" | "Word bank" | "Game" | "Life in the UK";
   actionLabel: "Open" | "Start";
   searchText: string;
   onSelect: () => void;
@@ -2244,7 +2248,7 @@ function MoreView({
     }] : []),
     // The mobile bar is a fixed five columns, so this is where a narrow window
     // reaches the citizenship course.
-    { title: ui("Life in the UK"), description: ui("Everything the Life in the UK Test asks, in fourteen lessons."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
+    { title: ui("Life in the UK"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
@@ -2383,7 +2387,7 @@ export default function NewUiPrototype({
   const [ukReaderOpen, setUkReaderOpen] = useState(false);
   // Learn a topic, then answer questions on it. Two halves of one destination
   // rather than two nav entries, because they are the same activity.
-  const [ukTab, setUkTab] = useState<"learn" | "practice">("learn");
+  const [ukTab, setUkTab] = useState<"learn" | "practice" | "exam" | "timeline" | "search">("learn");
   const translationLanguage = useTranslationLanguage();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const fallback = defaultPrototypeSidebarWidth();
@@ -2630,6 +2634,24 @@ export default function NewUiPrototype({
       searchText: buildCatalogSearchText([page.title, page.subtitle, ui(page.title), ui(page.subtitle), page.keywords]),
       onSelect: () => navigate(page.id),
     })),
+    // The timeline in the global search box, so a date typed anywhere in the
+    // app reaches the event. Only the 42 events, not all 230 questions —
+    // searching "the" should not return a third of the citizenship course.
+    ...UK_TIMELINE.map((entry) => ({
+      id: `uk-event-${entry.id}`,
+      title: entry.title,
+      subtitle: `${entry.displayYear} · ${ui("Life in the UK")}`,
+      group: "Life in the UK" as const,
+      actionLabel: "Open" as const,
+      searchText: buildCatalogSearchText([
+        entry.title,
+        entry.summary,
+        entry.displayYear,
+        String(entry.year),
+        ...entry.tags,
+      ]),
+      onSelect: () => { setUkTab("timeline"); navigate("life-in-uk"); },
+    })),
     ...searchableLessons.map((lesson) => ({
       ...lesson,
       id: `lesson-${lesson.id}`,
@@ -2758,6 +2780,7 @@ export default function NewUiPrototype({
   ) : activeView === "life-in-uk" ? (
     <div className="np-feature-host">
       {ukCourse ? (
+
         <Suspense fallback={<FeatureLoading />}>
           <div className="np-uk-tabs" role="tablist" aria-label={ui("Life in the UK sections")}>
             <button
@@ -2795,18 +2818,54 @@ export default function NewUiPrototype({
                 </select>
               </label>
             )}
-          </div>
+            {/* Learn → practise → find the gaps → sit the exam. The three new
+                tabs continue the same left-to-right order someone revising
+                actually moves through, and reuse this tab bar rather than
+                introducing a second style of one. */}
+            <button
+              aria-selected={ukTab === "exam"}
+              className={ukTab === "exam" ? "is-active" : ""}
+              onClick={() => setUkTab("exam")}
+              role="tab"
+              type="button"
+            >
+              {ui("Exam")}
+            </button>
+            <button
+              aria-selected={ukTab === "timeline"}
+              className={ukTab === "timeline" ? "is-active" : ""}
+              onClick={() => setUkTab("timeline")}
+              role="tab"
+              type="button"
+            >
+              {ui("Timeline")}
+            </button>
+            <button
+              aria-selected={ukTab === "search"}
+              className={ukTab === "search" ? "is-active" : ""}
+              onClick={() => setUkTab("search")}
+              role="tab"
+              type="button"
+            >
+              {ui("Search")}
+            </button>          </div>
           {ukTab === "learn" ? (
             <CourseLessonsView
               course={ukCourse}
               onOpenLesson={(lessonId) => setUkLessonId(lessonId)}
               onOpenReader={() => setUkReaderOpen(true)}
             />
-          ) : (
+          ) : ukTab === "practice" ? (
             <UkPracticeView
               onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
               profile={profile}
             />
+          ) : ukTab === "exam" ? (
+            <UkTestView onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }} />
+          ) : ukTab === "timeline" ? (
+            <UkTimelineView />
+          ) : (
+            <UkSearchView onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }} />
           )}
         </Suspense>
       ) : <FeatureLoading />}

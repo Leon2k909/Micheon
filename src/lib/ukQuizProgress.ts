@@ -44,6 +44,23 @@ export type UkTestResult = {
   total: number;
   /** Lesson id, chapter name, or a mode name like "daily" / "review". */
   scope: string;
+  // ── Added for the exam simulation, and optional on purpose ──────────────
+  // Every existing caller writes {at, score, total, scope} and keeps working;
+  // results already saved before this existed still load. The history list
+  // falls back to score/total when these are absent, so an old row shows a
+  // score without claiming a pass it never recorded.
+  /** Which of the seven modes produced this. */
+  mode?: string;
+  /** Rounded percentage, stored rather than recomputed so history is stable. */
+  percent?: number;
+  /** Whether this run reached its pass mark. */
+  passed?: boolean;
+  /** How many right answers this particular test needed. */
+  passMark?: number;
+  /** Milliseconds spent, for the history row. */
+  elapsedMs?: number;
+  /** Per-question record, so a finished exam can still be reviewed. */
+  answers?: { questionId: string; chosen: number | null; correct: boolean }[];
 };
 
 export type UkDailyState = {
