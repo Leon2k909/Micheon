@@ -2913,13 +2913,17 @@ a { color: inherit; text-decoration: none; }
    face from substituting its own flat glyph for the colour one. */
 .fs-picture {
   display: flex; align-items: center; justify-content: center;
-  width: 78px; height: 78px; margin: 10px auto -6px;
+  width: 88px; height: 88px; margin: 10px auto -6px;
   border-radius: 999px;
   background: rgba(189,168,237,0.13);
   line-height: 1;
 }
-/* The artwork is square SVG, so it is sized rather than typeset. */
-.fs-picture img { width: 44px; height: 44px; display: block; }
+/* The artwork is square SVG, so it is sized rather than typeset.
+   It was 44px inside a 78px disc — 56% fill, which left a wide empty ring and
+   made the picture read as a small flat icon beside a 45px word. Twemoji is
+   vector and cannot pixelate, so "low res" was never possible; it was simply
+   too small to show the drawing. 64 in 88 is 73% fill. */
+.fs-picture img { width: 64px; height: 64px; display: block; }
 /* .word-picture was the tracker's slot for a picture; the tracker no longer
    shows one. The lesson board's .fs-picture above is the only surface left. */
 

@@ -345,9 +345,30 @@ const css = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 // Twemoji file is 36x36 — close enough to look deliberate on the tracker row
 // and badly wrong on the lesson board, which is exactly the kind of thing
 // nobody notices until it ships.
+//
+// The size itself is not pinned to a number. This first said "44px", which
+// held the wrong thing still: 44 inside a 78px disc is 56% fill, and Leon's
+// reaction to it was that the artwork looked "low res" — it is vector and
+// cannot be, it was just too small to show the drawing. What matters is that
+// a size is set at all, and that it is comfortably clear of the 36px
+// intrinsic fallback so the picture reads as an illustration.
+const pictureSize = /\.fs-picture img \{[^}]*width:\s*(\d+)px[^}]*height:\s*(\d+)px/.exec(css);
+assert.ok(pictureSize, "the lesson board's picture has no explicit size");
+assert.strictEqual(
+  pictureSize[1],
+  pictureSize[2],
+  `the picture is not square: ${pictureSize[1]}x${pictureSize[2]}`
+);
 assert.ok(
-  /\.fs-picture img \{[^}]*width: 44px[^}]*height: 44px/.test(css),
-  "the lesson board's picture has no explicit size"
+  Number(pictureSize[1]) >= 48,
+  `the lesson picture is ${pictureSize[1]}px — too close to the 36px intrinsic size to look intentional`
+);
+// ...and it has to fit the disc it sits in, with the disc still visible round it.
+const discSize = /\.fs-picture \{[^}]*width:\s*(\d+)px/.exec(css);
+assert.ok(discSize, "the lesson board's picture disc has no explicit size");
+assert.ok(
+  Number(pictureSize[1]) < Number(discSize[1]),
+  `the picture (${pictureSize[1]}px) does not fit its disc (${discSize[1]}px)`
 );
 
 console.log(
