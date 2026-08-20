@@ -901,7 +901,6 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "Key names": "Wichtige Namen",
   "Key dates and numbers": "Wichtige Jahreszahlen und Zahlen",
   "Key terms": "Wichtige Begriffe",
-  "Now answer these": "Jetzt beantworte diese Fragen",
 
   // ── 1. British Values & Principles: Fließtext ───────────────────────────
   "Why this lesson first: the test does not only ask facts. Several questions ask what British society expects of you, and those answers come straight from the values below.":

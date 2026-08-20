@@ -18,7 +18,10 @@ const esbuild = require("esbuild");
 const root = path.resolve(__dirname, "..");
 const built = esbuild.buildSync({
   stdin: {
-    contents: 'export { COURSES } from "./src/lib/courseRegistry.ts";',
+    contents: [
+      'export { COURSES } from "./src/lib/courseRegistry.ts";',
+      'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";',
+    ].join("\n"),
     resolveDir: root,
     sourcefile: "courses-entry.ts",
   },
@@ -36,7 +39,7 @@ const compiled = new Module("courses-check", module);
 compiled.filename = path.join(root, ".courses-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { COURSES } = compiled.exports;
+const { COURSES, UK_QUESTIONS } = compiled.exports;
 
 const problems = [];
 let quizzes = 0;
@@ -130,10 +133,20 @@ for (const required of [
 ]) {
   assert.ok(sections.has(required), `the syllabus chapter "${required}" has no lessons`);
 }
-const ukQuizzes = (uk.lessons || [])
-  .flatMap((lesson) => lesson.blocks)
-  .filter((block) => block.type === "quiz").length;
-assert.ok(ukQuizzes >= 20, `only ${ukQuizzes} practice questions; the real test asks 24`);
+// This used to require 20+ quiz blocks inside the Life in the UK lessons,
+// written when those blocks were the only practice that existed. They are not
+// any more: the practice bank holds 240+ questions with difficulty levels,
+// spaced repetition and a mistakes list, and Michelle asked for the quizzes to
+// come out of the lessons so reading a topic stays reading a topic.
+//
+// The requirement itself is still worth keeping — a citizenship course with
+// nothing to answer is no use — so it now counts the bank, which is where the
+// questions actually live. check-uk-questions pins their shape; this pins that
+// enough of them exist at all.
+assert.ok(
+  UK_QUESTIONS.length >= 100,
+  `only ${UK_QUESTIONS.length} practice questions in the bank; the real test asks 24 and a bank that small would repeat`
+);
 
 if (problems.length) {
   console.error("FAIL check-courses");
