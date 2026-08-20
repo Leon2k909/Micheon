@@ -72,7 +72,16 @@ export function DuoLesson({
     onFinished?.({ correct: finalCorrect, total: exercises.length, xp, heartsLeft });
   }, [exercises.length, onFinished]);
 
-  const submit = useCallback(() => {
+  /**
+   * `choice` is passed in when a multiple-choice option is tapped.
+   *
+   * Tapping an option grades it there and then, so the answer is one action
+   * rather than two — picking a line and then reaching for Check underneath
+   * it was a second press that never told us anything the first had not.
+   * The state setter is asynchronous, so the tapped index has to travel as an
+   * argument; reading `picked` here would grade the PREVIOUS selection.
+   */
+  const submit = useCallback((choice?: number) => {
     if (!exercise || verdict) return;
     let ok = false;
     let note: string | null = null;
@@ -87,7 +96,12 @@ export function DuoLesson({
       note = result.note;
       expected = exercise.target ?? "";
     } else {
-      ok = picked != null && picked === exercise.answerIndex;
+      const chosen = choice ?? picked;
+      // Nothing chosen is not a wrong answer. The Check button was disabled
+      // in that state but the Enter handler was not, so a stray Return on a
+      // question you had not answered marked it wrong and took a heart.
+      if (chosen == null) return;
+      ok = chosen === exercise.answerIndex;
       expected = exercise.options?.[exercise.answerIndex ?? 0] ?? "";
     }
 
@@ -251,7 +265,7 @@ export function DuoLesson({
                   key={optionIndex}
                   type="button"
                   disabled={Boolean(verdict)}
-                  onClick={() => setPicked(optionIndex)}
+                  onClick={() => { setPicked(optionIndex); submit(optionIndex); }}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition-all",
                     verdict && optionIndex === exercise.answerIndex
@@ -375,12 +389,21 @@ export function DuoLesson({
         )}
       </AnimatePresence>
 
-      {!verdict && (
+      {/* Only where there is still something to submit. A multiple-choice
+          question grades itself the moment an option is tapped, so a Check
+          button under it would demand a second press to confirm a decision
+          already made.
+
+          Keyed on whether the exercise HAS options rather than on its kind:
+          a listening exercise comes both ways, with options to pick and as a
+          box to type into, and keying on the kind would leave the typed
+          variety with no way to submit at all. */}
+      {!verdict && !exercise.options && (
         <button
           type="button"
           disabled={!canSubmit}
-          onClick={submit}
-          className="accent-btn h-12 w-full text-sm disabled:opacity-40"
+          onClick={() => submit()}
+          className="np-check-3d w-full"
         >
           {ui("Check")}
         </button>
