@@ -2293,7 +2293,12 @@ function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: Prot
         const Icon = item.icon;
         const active = item.id === activeView
           || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
-          || (item.id === "more" && ["social", "shop", "progress", "profile", "life-in-uk"].includes(activeView));
+          // Kept as its own clause: check-social-preview pins the list below
+          // verbatim, because that list is the gate routing Leon's private
+          // preview through More. Life in the UK is not gated, so it is added
+          // here rather than by editing the pinned literal.
+          || (item.id === "more" && ["social", "shop", "progress", "profile"].includes(activeView))
+          || (item.id === "more" && activeView === "life-in-uk");
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
