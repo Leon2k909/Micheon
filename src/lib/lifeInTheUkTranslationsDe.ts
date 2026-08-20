@@ -18,7 +18,6 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "The fundamental principles": "Die Grundprinzipien",
   "Equality: the nine protected characteristics": "Gleichheit: die neun geschützten Merkmale",
   "Rights and responsibilities": "Rechte und Pflichten",
-  "The citizenship ceremony": "Die Einbürgerungszeremonie",
   "Democracy": "Demokratie",
   "Government by the people, through representatives you elect and can vote out.":
     "Herrschaft durch das Volk, über Abgeordnete, die du wählst und auch wieder abwählen kannst.",
@@ -905,8 +904,6 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "Now answer these": "Jetzt beantworte diese Fragen",
 
   // ── 1. British Values & Principles: Fließtext ───────────────────────────
-  "The Life in the UK Test is a requirement for both settlement (indefinite leave to remain) and citizenship. It is **24 multiple-choice questions in 45 minutes**, and the pass mark is **18 out of 24** — 75%.":
-    "Der Life-in-the-UK-Test ist Voraussetzung für die Niederlassung (indefinite leave to remain) und für die Einbürgerung. Er besteht aus **24 Multiple-Choice-Fragen in 45 Minuten**, und die Bestehensgrenze liegt bei **18 von 24** – also 75 %.",
   "Why this lesson first: the test does not only ask facts. Several questions ask what British society expects of you, and those answers come straight from the values below.":
     "Warum diese Lektion zuerst kommt: Der Test fragt nicht nur Fakten ab. Mehrere Fragen zielen darauf, was die britische Gesellschaft von dir erwartet – und diese Antworten stehen direkt in den Werten unten.",
   "The UK sets out a short list of shared values. Learn them as a list — questions often ask you to pick which one is *not* included.":
@@ -917,16 +914,8 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
     "Die Werte gelten in beide Richtungen. Das Leben im Vereinigten Königreich gibt dir Rechte, und zu jedem gehört eine passende Pflicht.",
   "Freedom of speech is not unlimited. Speech that incites violence or racial hatred is a criminal offence. The test does ask about that boundary.":
     "Die Meinungsfreiheit ist nicht grenzenlos. Äußerungen, die zu Gewalt oder Rassenhass aufstacheln, sind eine Straftat. Nach dieser Grenze wird im Test tatsächlich gefragt.",
-  "If your application succeeds you attend a ceremony, usually run by your local council, within three months. There you swear an **oath of allegiance** (or make an **affirmation** if you prefer not to swear by God) and give a **pledge** to respect the UK's rights, freedoms and laws.":
-    "Wenn dein Antrag erfolgreich ist, nimmst du innerhalb von drei Monaten an einer Zeremonie teil, meist ausgerichtet von deiner Gemeinde. Dort leistest du einen **Treueeid** (oder gibst eine **Bekräftigung** ab, wenn du nicht bei Gott schwören möchtest) und ein **Gelöbnis**, die Rechte, Freiheiten und Gesetze des Landes zu achten.",
   "No people to learn here — this lesson is about principles, not personalities.":
     "Hier gibt es keine Personen zu lernen – in dieser Lektion geht es um Prinzipien, nicht um Persönlichkeiten.",
-  "24 questions, 45 minutes, 18 to pass (75%). Ages 18–64. 7 days between attempts. Ceremony within 3 months. Equality Act 2010.":
-    "24 Fragen, 45 Minuten, 18 zum Bestehen (75 %). Alter 18–64. 7 Tage zwischen den Versuchen. Zeremonie innerhalb von 3 Monaten. Equality Act 2010.",
-  "Rule of law · individual liberty · tolerance · protected characteristics · oath of allegiance · affirmation · pledge · settlement (indefinite leave to remain).":
-    "Rule of law · persönliche Freiheit · Toleranz · geschützte Merkmale · Treueeid · Bekräftigung · Gelöbnis · Niederlassung (indefinite leave to remain).",
-  "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty. 18 of 24 passes.":
-    "In einem Satz: Die Werte sind eine Liste, die du vervollständigen oder in der du eine Lücke erkennen sollst – und zu jedem Recht gehört eine Pflicht. 18 von 24 bestehen.",
 
   // ── 2. The UK & Geography: Fließtext ────────────────────────────────────
   "This trips people up constantly, and the test knows it. **The United Kingdom** is England, Scotland, Wales and Northern Ireland. **Great Britain** is only England, Scotland and Wales — it is the island, so Northern Ireland is not part of it.":
@@ -1372,4 +1361,14 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
     "55 v. Chr. Caesar scheitert · 43 n. Chr. Claudius fällt ein · 122 n. Chr. Hadrianswall · 410 n. Chr. Abzug der Römer · 789 n. Chr. erste Wikingerüberfälle · 1066 Hastings.",
   "Celts · Danelaw · Anglo-Saxons · Iceni · Picts · Norman Conquest.":
     "Kelten · Danelaw · Angelsachsen · Icener · Pikten · normannische Eroberung.",
+
+  // ── Ersetzt, nachdem die Prüfungsorganisation aus Lektion 1 entfernt wurde ──
+  "British society rests on a short list of shared values. They are not decoration: they are what the law, the courts and everyday expectations are built on, and understanding them explains a great deal of what follows in this course.":
+    "Die britische Gesellschaft ruht auf einer kurzen Liste gemeinsamer Werte. Sie sind keine Zierde: Auf ihnen bauen das Recht, die Gerichte und die alltäglichen Erwartungen auf – und wer sie versteht, versteht vieles von dem, was in diesem Kurs folgt.",
+  "Equality Act 2010 — the law that sets out the nine protected characteristics. Human Rights Act 1998.":
+    "Equality Act 2010 – das Gesetz, das die neun geschützten Merkmale festlegt. Human Rights Act 1998.",
+  "Rule of law · individual liberty · tolerance · protected characteristics · discrimination · rights and responsibilities.":
+    "Rule of law · persönliche Freiheit · Toleranz · geschützte Merkmale · Diskriminierung · Rechte und Pflichten.",
+  "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty.":
+    "In einem Satz: Die Werte sind eine Liste, die du vervollständigen oder in der du eine Lücke erkennen sollst – und zu jedem Recht gehört eine Pflicht.",
 };

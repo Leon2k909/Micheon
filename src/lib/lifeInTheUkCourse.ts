@@ -3,8 +3,15 @@ import type { Course } from "@/lib/courses";
 /**
  * Life in the UK.
  *
- * The official test is 24 questions in 45 minutes and you need 18 right — 75%.
- * It is drawn from the Home Office handbook, which is Crown copyright, and the
+ * This course teaches the SUBJECT, not the exam process. On Michelle's call
+ * there is nothing here about how long the test is, where you book it, what ID
+ * to bring, how long you wait before a retake, or what happens at the ceremony
+ * afterwards. That is paperwork, and it is not why anyone opens a course about
+ * a country. Anything removed for that reason was procedure; nothing about
+ * Britain itself was cut.
+ *
+ * The material is drawn from the Home Office handbook, which is Crown
+ * copyright, and the
  * commercial question banks are their publishers' copyright. Neither is
  * reproduced here. What follows is written from scratch against the published
  * syllabus: the same five chapters, the same facts, in our own words. Dates,
@@ -35,13 +42,16 @@ export const lifeInTheUkCourse: Course = {
       section: "Values and principles",
       badge: "lesson 1",
       blocks: [
-        { type: "p", text: "The Life in the UK Test is a requirement for both settlement (indefinite leave to remain) and citizenship. It is **24 multiple-choice questions in 45 minutes**, and the pass mark is **18 out of 24** — 75%." },
-        // The Where / Who / Result cards were removed on Michelle's call: they
-        // are admin — where to book, who must sit it, when the result comes —
-        // not syllabus. Nothing examinable was lost with them: the ages, the
-        // 7-day wait and the 3-month ceremony window are all still in the
-        // "Key dates and numbers" card at the foot of this lesson, which is
-        // where a revision pass looks for them anyway.
+        // No exam admin in this course, on Michelle's call. How long the test
+        // is, where you book it, what ID to bring, how long you wait to retake
+        // it, and what happens at the ceremony afterwards are all gone: they
+        // are procedure, and she is here to learn the country, not the
+        // paperwork. The Where / Who / Result cards went the same way.
+        //
+        // Everything removed was about the PROCESS. Nothing about Britain —
+        // the values, the nine protected characteristics, rights and duties —
+        // was touched.
+        { type: "p", text: "British society rests on a short list of shared values. They are not decoration: they are what the law, the courts and everyday expectations are built on, and understanding them explains a great deal of what follows in this course." },
         { type: "callout", variant: "why", text: "Why this lesson first: the test does not only ask facts. Several questions ask what British society expects of you, and those answers come straight from the values below." },
         { type: "h3", text: "The fundamental principles" },
         { type: "p", text: "The UK sets out a short list of shared values. Learn them as a list — questions often ask you to pick which one is *not* included." },
@@ -63,34 +73,32 @@ export const lifeInTheUkCourse: Course = {
           { h4: "Your responsibilities", p: "Obey the law. Pay tax and National Insurance. Serve on a jury when called. Respect the rights of others. Look after the area you live in." },
         ] },
         { type: "callout", variant: "warn", text: "Freedom of speech is not unlimited. Speech that incites violence or racial hatred is a criminal offence. The test does ask about that boundary." },
-        { type: "h3", text: "The citizenship ceremony" },
-        { type: "p", text: "If your application succeeds you attend a ceremony, usually run by your local council, within three months. There you swear an **oath of allegiance** (or make an **affirmation** if you prefer not to swear by God) and give a **pledge** to respect the UK's rights, freedoms and laws." },
         { type: "h3", text: "What you must know" },
         { type: "cards", items: [
           { h4: "Key names", p: "No people to learn here — this lesson is about principles, not personalities." },
-          { h4: "Key dates and numbers", p: "24 questions, 45 minutes, 18 to pass (75%). Ages 18–64. 7 days between attempts. Ceremony within 3 months. Equality Act 2010." },
-          { h4: "Key terms", p: "Rule of law · individual liberty · tolerance · protected characteristics · oath of allegiance · affirmation · pledge · settlement (indefinite leave to remain)." },
+          { h4: "Key dates and numbers", p: "Equality Act 2010 — the law that sets out the nine protected characteristics. Human Rights Act 1998." },
+          { h4: "Key terms", p: "Rule of law · individual liberty · tolerance · protected characteristics · discrimination · rights and responsibilities." },
         ] },
-        { type: "callout", variant: "why", text: "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty. 18 of 24 passes." },
+        { type: "callout", variant: "why", text: "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty." },
         { type: "h3", text: "Now answer these" },
         { type: "quiz",
-          q: "How many questions must you answer correctly to pass the Life in the UK Test?",
+          q: "Which of these is one of the UK's fundamental values?",
           options: [
-            { text: "16 out of 24", correct: false },
-            { text: "18 out of 24", correct: true },
-            { text: "20 out of 24", correct: false },
-            { text: "24 out of 24", correct: false },
+            { text: "Loyalty to a political party", correct: false },
+            { text: "The rule of law", correct: true },
+            { text: "Compulsory military service", correct: false },
+            { text: "Membership of an established church", correct: false },
           ],
-          explanation: "The pass mark is 75% — 18 of the 24 questions, in 45 minutes." },
+          explanation: "The rule of law means everyone is subject to the law, including those who govern. The other three are not British values at all." },
         { type: "quiz",
-          q: "At a citizenship ceremony, what is the alternative for someone who does not wish to swear by God?",
+          q: "What does 'individual liberty' mean as a British value?",
           options: [
-            { text: "They are excused the oath entirely", correct: false },
-            { text: "They make an affirmation instead", correct: true },
-            { text: "They swear on a different holy book", correct: false },
-            { text: "They sign a written declaration only", correct: false },
+            { text: "Freedom to do anything at all", correct: false },
+            { text: "Freedom to live as you choose, within the law", correct: true },
+            { text: "Freedom from paying tax", correct: false },
+            { text: "Freedom to ignore laws you disagree with", correct: false },
           ],
-          explanation: "An affirmation carries exactly the same legal weight as the oath. This reflects the value of tolerance — including tolerance of those with no religious belief." },
+          explanation: "Liberty operates inside the law, not outside it. You change laws you disagree with by campaigning and voting." },
         { type: "quiz",
           q: "Which of these is NOT one of the nine protected characteristics under the Equality Act 2010?",
           options: [

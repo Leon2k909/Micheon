@@ -111,5 +111,7 @@ const covered = Object.keys(LIFE_IN_THE_UK_DE).length;
 const total = translatable.size;
 console.log(
   `check-uk-translations: ${covered} of ${total} translatable strings have German ` +
-    `(${Math.round((covered / total) * 100)}%), and every key matches real course text`
+    // Floor, not round: 820 of 824 is not "100%", and reporting it as such is
+    // how the last few strings stay missing for ever.
+    `(${Math.floor((covered / total) * 100)}%), and every key matches real course text`
 );
