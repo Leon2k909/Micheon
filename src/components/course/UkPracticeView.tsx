@@ -78,7 +78,7 @@ type Session = {
 function percentClass(percent: number): string {
   if (percent >= 80) return "text-[var(--success-text)]";
   if (percent >= 60) return "text-[var(--text-1)]";
-  return "text-[var(--red-text,#c2566d)]";
+  return "text-[var(--red-text)]";
 }
 
 function StatTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -172,7 +172,7 @@ export function UkPracticeView({
       const percent = Math.round((session.correctCount / session.questions.length) * 100);
       const passed = percent >= 75;
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 np-uk-practice">
           <section className="card p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <h1 className="text-2xl font-black tracking-tight text-[var(--text-1)]">{ui("Session complete")}</h1>
@@ -218,7 +218,7 @@ export function UkPracticeView({
                   <div className="flex items-start gap-3">
                     <span
                       className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                        correct ? "bg-[var(--success-bg)] text-[var(--success-text)]" : "bg-[var(--red-bg,#3a2029)] text-[var(--red-text,#c2566d)]"
+                        correct ? "bg-[var(--success-bg)] text-[var(--success-text)]" : "bg-[var(--red-bg)] text-[var(--red-text)]"
                       }`}
                     >
                       {correct ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
@@ -226,7 +226,7 @@ export function UkPracticeView({
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-black text-[var(--text-1)]">{question.q}</p>
                       {!correct && (
-                        <p className="mt-1 text-xs font-semibold text-[var(--red-text,#c2566d)]">
+                        <p className="mt-1 text-xs font-semibold text-[var(--red-text)]">
                           {uiFmt("Your answer: {answer}", { answer: question.options[chosen] })}
                         </p>
                       )}
@@ -250,7 +250,7 @@ export function UkPracticeView({
     const progress = Math.round((session.index / session.questions.length) * 100);
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 np-uk-practice">
         <section className="card p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <button
@@ -277,7 +277,7 @@ export function UkPracticeView({
                 {ui(LEVEL_LABEL[question.level])}
               </span>
               {stat.wrong > 0 && (
-                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--red-text,#c2566d)]">
+                <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--red-text)]">
                   {uiFmt("Wrong {n}x before", { n: stat.wrong })}
                 </span>
               )}
@@ -304,8 +304,8 @@ export function UkPracticeView({
               const isChosen = chosen === index;
               let cls = "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]";
               if (chosen !== null) {
-                if (isAnswer) cls = "border-[var(--success-border,#2d6b4f)] bg-[var(--success-bg)]";
-                else if (isChosen) cls = "border-[var(--red-border,#7a3344)] bg-[var(--red-bg,#3a2029)]";
+                if (isAnswer) cls = "border-[var(--success-border)] bg-[var(--success-bg)]";
+                else if (isChosen) cls = "border-[var(--red-border)] bg-[var(--red-bg)]";
                 else cls = "border-[var(--border)] bg-[var(--surface-2)] opacity-60";
               }
               return (
@@ -321,7 +321,7 @@ export function UkPracticeView({
                   </span>
                   <span className="min-w-0 flex-1 text-sm font-bold text-[var(--text-1)]">{option}</span>
                   {chosen !== null && isAnswer && <Check className="h-4 w-4 shrink-0 text-[var(--success-text)]" />}
-                  {chosen !== null && isChosen && !isAnswer && <X className="h-4 w-4 shrink-0 text-[var(--red-text,#c2566d)]" />}
+                  {chosen !== null && isChosen && !isAnswer && <X className="h-4 w-4 shrink-0 text-[var(--red-text)]" />}
                 </button>
               );
             })}
@@ -329,7 +329,7 @@ export function UkPracticeView({
 
           {session.chosen !== null && (
             <div className="mt-5 rounded-2xl bg-[var(--surface-2)] p-4">
-              <p className={`text-sm font-black ${session.chosen === question.answer ? "text-[var(--success-text)]" : "text-[var(--red-text,#c2566d)]"}`}>
+              <p className={`text-sm font-black ${session.chosen === question.answer ? "text-[var(--success-text)]" : "text-[var(--red-text)]"}`}>
                 {session.chosen === question.answer ? ui("Correct") : ui("Not quite")}
               </p>
               <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--text-2)]">{question.explanation}</p>
@@ -361,7 +361,7 @@ export function UkPracticeView({
   const dailyAnswered = Object.keys(state.daily.answered).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 np-uk-practice">
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -397,7 +397,7 @@ export function UkPracticeView({
               aria-current={mode === tab.id ? "page" : undefined}
               className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-colors ${
                 mode === tab.id
-                  ? "bg-[var(--accent)] text-[var(--accent-text,#fff)]"
+                  ? "bg-[var(--accent)] text-[var(--accent-text)]"
                   : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
               }`}
               key={tab.id}
@@ -546,7 +546,7 @@ export function UkPracticeView({
                 <button
                   className={`rounded-full px-4 py-2 text-xs font-black transition-colors ${
                     levels.includes(level)
-                      ? "bg-[var(--accent)] text-[var(--accent-text,#fff)]"
+                      ? "bg-[var(--accent)] text-[var(--accent-text)]"
                       : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
                   }`}
                   key={level}
@@ -570,7 +570,7 @@ export function UkPracticeView({
             <div className="mt-2 flex flex-wrap gap-2">
               <button
                 className={`rounded-full px-4 py-2 text-xs font-black transition-colors ${
-                  chapterFilter === "" ? "bg-[var(--accent)] text-[var(--accent-text,#fff)]" : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                  chapterFilter === "" ? "bg-[var(--accent)] text-[var(--accent-text)]" : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
                 }`}
                 onClick={() => setChapterFilter("")}
                 type="button"
@@ -580,7 +580,7 @@ export function UkPracticeView({
               {chapters.map((chapter) => (
                 <button
                   className={`rounded-full px-4 py-2 text-xs font-black transition-colors ${
-                    chapterFilter === chapter ? "bg-[var(--accent)] text-[var(--accent-text,#fff)]" : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                    chapterFilter === chapter ? "bg-[var(--accent)] text-[var(--accent-text)]" : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
                   }`}
                   key={chapter}
                   onClick={() => setChapterFilter(chapter)}
@@ -692,7 +692,7 @@ export function UkPracticeView({
                     <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-[11px] font-black text-[var(--text-2)]">
                       {strengths.find((s) => s.id === question.lesson)?.title ?? question.lesson}
                     </span>
-                    <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-[11px] font-black text-[var(--red-text,#c2566d)]">
+                    <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-[11px] font-black text-[var(--red-text)]">
                       {uiFmt("Wrong {n}x", { n: wrongCount })}
                     </span>
                     <span className="rounded-full bg-[var(--accent-dim)] px-3 py-1 text-[11px] font-black text-[var(--accent)]">
@@ -701,7 +701,7 @@ export function UkPracticeView({
                   </div>
                   <p className="mt-3 text-sm font-black text-[var(--text-1)]">{question.q}</p>
                   {yourAnswer >= 0 && question.options[yourAnswer] && (
-                    <p className="mt-2 text-xs font-semibold text-[var(--red-text,#c2566d)]">
+                    <p className="mt-2 text-xs font-semibold text-[var(--red-text)]">
                       {uiFmt("Your answer: {answer}", { answer: question.options[yourAnswer] })}
                     </p>
                   )}

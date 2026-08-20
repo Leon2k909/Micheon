@@ -10795,3 +10795,48 @@ html[data-theme="dark"] .fs-review-level-option strong {
   color: var(--accent-ink, var(--fs-text)) !important;
 }
 
+
+/* ── Wrong-answer colours, which never existed ─────────────────────────────
+   Twenty-two places across the course, tests and settings painted wrong
+   answers as var(--red-bg,#3a2026) — a variable that was never declared, with
+   a dark-theme literal as its fallback. Two things followed. In light mode a
+   wrong answer got a near-black panel, and worse, Tailwind does not emit a
+   utility for an arbitrary value containing a comma, so bg-[var(--red-bg,#…)]
+   produced no rule at all: right and wrong answers rendered identically. You
+   could not see whether you had got it right.
+
+   Declaring the tokens here fixes the theme half; dropping the commas at the
+   call sites is what makes Tailwind emit the rule. --success-border was
+   missing for the same reason and is included so the right answer gets its
+   outline back. */
+:root {
+  --red-bg: #fdeaee;
+  --red-text: #b02a45;
+  --red-border: #e7a9b6;
+  --orange-bg: #fdf1dc;
+  --orange-text: #8a5a10;
+  --success-border: #7fc898;
+}
+
+html[data-theme="dark"] {
+  --red-bg: #3a2026;
+  --red-text: #ff8a9b;
+  --red-border: #7a3344;
+  --orange-bg: #3a2e18;
+  --orange-text: #f0b860;
+  --success-border: #2d6b4f;
+}
+
+/* Life in the UK practice: primary actions carry the chosen accent.
+   The shared .accent-btn paints itself --ink, which is right for the rest of
+   the shell but leaves this screen's main buttons neutral while its tabs,
+   icons and progress bars follow the accent. Scoped to this view so nothing
+   else changes. */
+.np-uk-practice .accent-btn {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.np-uk-practice .accent-btn:hover {
+  background: var(--accent-hover);
+}

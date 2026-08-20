@@ -1012,7 +1012,7 @@ export default function GamificationPanel({
                           >
                             <span className={cn(
                               "block text-sm font-black",
-                              active ? "text-[var(--accent-strong,var(--accent))]" : "text-[var(--text-1)]"
+                              active ? "text-[var(--accent-strong)]" : "text-[var(--text-1)]"
                             )}>
                               {ui(label)}
                             </span>
@@ -1544,7 +1544,7 @@ export default function GamificationPanel({
           <button
             type="button"
             onClick={signOut}
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--red-bg,#3a2026)] px-4 py-2.5 text-sm font-black text-[var(--red-text,#ff8a9b)] transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--red-bg)] px-4 py-2.5 text-sm font-black text-[var(--red-text)] transition-opacity hover:opacity-90"
           >
             <LogOut className="h-4 w-4" /> {ui("Sign out")}
           </button>

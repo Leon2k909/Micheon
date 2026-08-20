@@ -34,8 +34,8 @@ function CodeEditor({
   };
 
   const borderCls =
-    state === "ok" ? "border-[var(--success-border,#2d6b4f)]" :
-    state === "bad" ? "border-[var(--red-border,#7a3344)]" :
+    state === "ok" ? "border-[var(--success-border)]" :
+    state === "bad" ? "border-[var(--red-border)]" :
     "border-[var(--border)] focus-within:border-[var(--accent)]";
 
   return (
@@ -228,7 +228,7 @@ function CodeStepView({
                 "rounded-xl px-4 py-3 text-sm font-bold",
                 result.ok
                   ? "bg-[var(--success-bg)] text-[var(--success-text)]"
-                  : "bg-[var(--red-bg,#3a2026)] text-[var(--red-text,#ff8a9b)]"
+                  : "bg-[var(--red-bg)] text-[var(--red-text)]"
               )}
             >
               {result.ok
@@ -317,8 +317,8 @@ function QuizStepView({ q, options, explanation, onNext }: { q: string; options:
                 onClick={() => chooseOption(i)}
                 className={cn(
                   "rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors",
-                  showCorrect ? "border-[var(--success-border,#2d6b4f)] bg-[var(--success-bg)] text-[var(--success-text)]"
-                  : showWrong ? "border-[var(--red-border,#7a3344)] bg-[var(--red-bg,#3a2026)] text-[var(--red-text,#ff8a9b)]"
+                  showCorrect ? "border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]"
+                  : showWrong ? "border-[var(--red-border)] bg-[var(--red-bg)] text-[var(--red-text)]"
                   : "border-[var(--border-2)] text-[var(--text-1)] hover:bg-[var(--surface-3)] disabled:opacity-70"
                 )}
               >

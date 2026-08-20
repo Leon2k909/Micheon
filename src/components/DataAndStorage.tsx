@@ -241,7 +241,7 @@ export function DataAndStorage() {
                     <span className="text-xs font-black text-[var(--text-2)]">{formatBytes(row.bytes)}</span>
                     <button
                       className={arming === row.id
-                        ? "rounded-full bg-[var(--red-bg,#3a2026)] px-3 py-1.5 text-xs font-black text-[var(--red-text,#ff8a9b)]"
+                        ? "rounded-full bg-[var(--red-bg)] px-3 py-1.5 text-xs font-black text-[var(--red-text)]"
                         : "rounded-full bg-[var(--surface-3)] px-3 py-1.5 text-xs font-black text-[var(--text-2)] hover:opacity-90"}
                       onClick={() => remove(row.id)}
                       type="button"
@@ -266,7 +266,7 @@ export function DataAndStorage() {
           </div>
           <button
             className={arming === "all"
-              ? "inline-flex items-center gap-2 rounded-full bg-[var(--red-bg,#3a2026)] px-4 py-2.5 text-sm font-black text-[var(--red-text,#ff8a9b)]"
+              ? "inline-flex items-center gap-2 rounded-full bg-[var(--red-bg)] px-4 py-2.5 text-sm font-black text-[var(--red-text)]"
               : "inline-flex items-center gap-2 rounded-full bg-[var(--surface-3)] px-4 py-2.5 text-sm font-black text-[var(--text-1)] hover:opacity-90"}
             onClick={() => remove("all")}
             type="button"
