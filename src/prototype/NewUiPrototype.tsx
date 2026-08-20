@@ -115,6 +115,7 @@ const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboa
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
+const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
 
 type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
@@ -2336,6 +2337,9 @@ export default function NewUiPrototype({
   // would have meant that opening it switched you off German.
   const [ukLessonId, setUkLessonId] = useState<string | undefined>(undefined);
   const [ukReaderOpen, setUkReaderOpen] = useState(false);
+  // Learn a topic, then answer questions on it. Two halves of one destination
+  // rather than two nav entries, because they are the same activity.
+  const [ukTab, setUkTab] = useState<"learn" | "practice">("learn");
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const fallback = defaultPrototypeSidebarWidth();
     const stored = Number(loadScopedJson(PROTOTYPE_SIDEBAR_KEY, fallback, profile));
@@ -2696,11 +2700,38 @@ export default function NewUiPrototype({
     <div className="np-feature-host">
       {ukCourse ? (
         <Suspense fallback={<FeatureLoading />}>
-          <CourseLessonsView
-            course={ukCourse}
-            onOpenLesson={(lessonId) => setUkLessonId(lessonId)}
-            onOpenReader={() => setUkReaderOpen(true)}
-          />
+          <div className="np-uk-tabs" role="tablist" aria-label={ui("Life in the UK sections")}>
+            <button
+              aria-selected={ukTab === "learn"}
+              className={ukTab === "learn" ? "is-active" : ""}
+              onClick={() => setUkTab("learn")}
+              role="tab"
+              type="button"
+            >
+              {ui("Learn")}
+            </button>
+            <button
+              aria-selected={ukTab === "practice"}
+              className={ukTab === "practice" ? "is-active" : ""}
+              onClick={() => setUkTab("practice")}
+              role="tab"
+              type="button"
+            >
+              {ui("Practice")}
+            </button>
+          </div>
+          {ukTab === "learn" ? (
+            <CourseLessonsView
+              course={ukCourse}
+              onOpenLesson={(lessonId) => setUkLessonId(lessonId)}
+              onOpenReader={() => setUkReaderOpen(true)}
+            />
+          ) : (
+            <UkPracticeView
+              onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
+              profile={profile}
+            />
+          )}
         </Suspense>
       ) : <FeatureLoading />}
     </div>

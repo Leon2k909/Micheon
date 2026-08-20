@@ -2101,6 +2101,78 @@ const DE: Record<string, string> = {
   "Your vocabulary total and next milestone are on your profile.": "Dein Wortschatzstand und der nächste Meilenstein stehen in deinem Profil.",
   "Your weekly goal": "Dein Wochenziel",
   "per month, preview price": "pro Monat, Vorschaupreis",
+
+  // ── Life in the UK: practice ──
+  // The questions and explanations themselves stay in English — the test is
+  // sat in English. Only the surrounding controls are translated.
+  "Life in the UK sections": "Life-in-the-UK-Bereiche",
+  "Learn first": "Erst lernen",
+  "Overview": "Übersicht",
+  "By topic": "Nach Thema",
+  "My mistakes": "Meine Fehler",
+  "Favourites": "Favoriten",
+  "Practice sections": "Übungsbereiche",
+  "Smart review": "Intelligente Wiederholung",
+  "Mock test": "Übungstest",
+  "Mock test — 24 questions": "Übungstest – 24 Fragen",
+  "Daily quiz": "Tagesquiz",
+  "Start the daily quiz": "Tagesquiz starten",
+  "Review today's quiz": "Heutiges Quiz ansehen",
+  "Done for today. A fresh set arrives tomorrow.": "Für heute erledigt. Morgen gibt es neue Fragen.",
+  "{n} questions, new every day.": "{n} Fragen, jeden Tag neu.",
+  "Overall": "Gesamt",
+  "Success rate": "Erfolgsquote",
+  "Wrong": "Falsch",
+  "Questions seen": "Gesehene Fragen",
+  "Topics learned": "Gelernte Themen",
+  "Categories complete": "Abgeschlossene Kategorien",
+  "Tests taken": "Absolvierte Tests",
+  "Best test": "Bestes Ergebnis",
+  "Average test": "Durchschnitt",
+  "Mistakes saved": "Gespeicherte Fehler",
+  "Where you are weakest": "Deine Schwächen",
+  "Answer a few questions in each topic and the weak spots will show up here.":
+    "Beantworte ein paar Fragen pro Thema, dann erscheinen hier deine Schwachstellen.",
+  "Below 75% — these are the topics to revise first.":
+    "Unter 75 % – diese Themen solltest du zuerst wiederholen.",
+  "{correct} right, {wrong} wrong": "{correct} richtig, {wrong} falsch",
+  "Revise": "Wiederholen",
+  "Every topic": "Alle Themen",
+  "{seen}/{total} seen": "{seen}/{total} gesehen",
+  "Filters": "Filter",
+  "Chapter": "Kapitel",
+  "All chapters": "Alle Kapitel",
+  "Practise the whole chapter": "Ganzes Kapitel üben",
+  "Practise": "Üben",
+  "Practise these": "Diese üben",
+  "{n} questions · {chapter}": "{n} Fragen · {chapter}",
+  "{n} questions across {c} topics. Learn a topic, then answer questions on it.":
+    "{n} Fragen zu {c} Themen. Lerne ein Thema und beantworte danach Fragen dazu.",
+  "Every question you have got wrong, kept until you get it right.":
+    "Jede Frage, die du falsch beantwortet hast – bis du sie richtig hast.",
+  "Nothing here yet. Wrong answers are collected automatically.":
+    "Noch nichts hier. Falsche Antworten werden automatisch gesammelt.",
+  "Star a question during a session to keep it here.":
+    "Markiere eine Frage während einer Runde mit dem Stern, dann liegt sie hier.",
+  "No favourites yet.": "Noch keine Favoriten.",
+  "Save to favourites": "Zu Favoriten hinzufügen",
+  "Remove from favourites": "Aus Favoriten entfernen",
+  "Leave session": "Runde verlassen",
+  "Question {n} of {total}": "Frage {n} von {total}",
+  "Wrong {n}x": "{n}× falsch",
+  "Wrong {n}x before": "Vorher {n}× falsch",
+  "See your result": "Ergebnis ansehen",
+  "Session complete": "Runde abgeschlossen",
+  "{correct} of {total} correct in {label}.": "{correct} von {total} richtig in {label}.",
+  "That is above the 75% pass mark for the real test.":
+    "Das liegt über der Bestehensgrenze von 75 % im echten Test.",
+  "The real test needs 75%. Work through the ones you missed.":
+    "Der echte Test verlangt 75 %. Arbeite die Fehler noch einmal durch.",
+  "Back to practice": "Zurück zur Übung",
+  "Try the same set again": "Dieselben Fragen noch einmal",
+  "Every answer, with the explanation": "Alle Antworten mit Erklärung",
+  "Your answer: {answer}": "Deine Antwort: {answer}",
+  "Correct answer: {answer}": "Richtige Antwort: {answer}",
 };
 
 /** Translate a UI string into the learner's interface language. */

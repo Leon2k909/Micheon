@@ -10127,3 +10127,33 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__la
 html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress__track {
   background: var(--surface-3);
 }
+
+/* Life in the UK: Learn / Practice.
+   Inside .np-feature-host, so it inherits that scope's palette tokens and
+   follows the theme without a second set of dark-mode rules. */
+.np-uk-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.np-uk-tabs button {
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.np-uk-tabs button:hover {
+  background: var(--surface-3);
+}
+
+.np-uk-tabs button.is-active {
+  color: var(--accent-text, #fff);
+  background: var(--accent);
+}

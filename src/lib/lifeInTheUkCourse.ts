@@ -64,6 +64,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "callout", variant: "warn", text: "Freedom of speech is not unlimited. Speech that incites violence or racial hatred is a criminal offence. The test does ask about that boundary." },
         { type: "h3", text: "The citizenship ceremony" },
         { type: "p", text: "If your application succeeds you attend a ceremony, usually run by your local council, within three months. There you swear an **oath of allegiance** (or make an **affirmation** if you prefer not to swear by God) and give a **pledge** to respect the UK's rights, freedoms and laws." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "No people to learn here — this lesson is about principles, not personalities." },
+          { h4: "Key dates and numbers", p: "24 questions, 45 minutes, 18 to pass (75%). Ages 18–64. 7 days between attempts. Ceremony within 3 months. Equality Act 2010." },
+          { h4: "Key terms", p: "Rule of law · individual liberty · tolerance · protected characteristics · oath of allegiance · affirmation · pledge · settlement (indefinite leave to remain)." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty. 18 of 24 passes." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "How many questions must you answer correctly to pass the Life in the UK Test?",
           options: [
@@ -146,6 +154,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "There are **15 National Parks** across the UK. The best known are the **Lake District, Snowdonia (Eryri), the Peak District, the Yorkshire Dales, Dartmoor, the Cairngorms** and **Loch Lomond and the Trossachs**. Landmarks the test may mention include **Stonehenge**, **Hadrian's Wall**, the **Giant's Causeway** in County Antrim, the **Tower of London**, **Edinburgh Castle** and the **Lake District**." },
         { type: "h3", text: "Languages" },
         { type: "p", text: "English is spoken throughout. **Welsh** is an official language in Wales and is taught in schools there. **Gaelic** is spoken in parts of Scotland, and **Irish** is spoken in Northern Ireland. Scots and Ulster Scots are also recognised." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Ben Nevis · Snowdon (Yr Wyddfa) · Scafell Pike · Slieve Donard · Severn · Thames · Lough Neagh · Loch Lomond · Windermere." },
+          { h4: "Key dates and numbers", p: "Channel Tunnel opened 1994. 15 National Parks. Northern Ireland has 6 counties." },
+          { h4: "Key terms", p: "United Kingdom vs Great Britain · Crown Dependency · county · region · saltire · devolved capital." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Great Britain is the island — three nations. The UK is four. The Isle of Man and the Channel Islands are in neither." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Which of these is in the UK but NOT in Great Britain?",
           options: [
@@ -213,6 +229,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "National anthem" },
         { type: "p", text: "The national anthem of the UK is **God Save the King** (God Save the Queen during a queen's reign). It is played at state occasions and when the monarch appears in public. In sport each nation may use its own song — **Flower of Scotland** for Scotland, **Hen Wlad Fy Nhadau (Land of My Fathers)** for Wales, and **Jerusalem** or the national anthem for England." },
         { type: "callout", variant: "why", text: "Why the words change: they follow the monarch's gender, not the country. Nothing else in the song changes." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "St David · St Patrick · St George · St Andrew · Y Ddraig Goch (the Red Dragon)." },
+          { h4: "Key dates and numbers", p: "St David 1 March · St Patrick 17 March · St George 23 April · St Andrew 30 November. First Union Flag 1606." },
+          { h4: "Key terms", p: "Union Flag / Union Jack · saltire · patron saint · Tudor rose · thistle · daffodil · leek · shamrock." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Four saints, four flowers, four dates — and only three crosses in the flag, because Wales was already joined to England." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Which national flower belongs to Wales?",
           options: [
@@ -260,6 +284,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "Vikings from Denmark and Norway first raided in **AD 789** and later settled. **Alfred the Great**, King of Wessex, defeated them and agreed a boundary: the north and east of England became the **Danelaw**, under Danish law, while Wessex remained English." },
         { type: "h3", text: "The Norman Conquest" },
         { type: "p", text: "In **1066** **William, Duke of Normandy**, defeated King Harold at the **Battle of Hastings** and became William I — William the Conqueror. It is the last time Britain was successfully invaded, and the date every schoolchild in Britain knows." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Julius Caesar · Claudius · Hadrian · Boudicca · Alfred the Great · St Augustine · St Columba · William of Normandy." },
+          { h4: "Key dates and numbers", p: "55 BC Caesar fails · AD 43 Claudius invades · AD 122 Hadrian's Wall · AD 410 Romans leave · AD 789 first Viking raids · 1066 Hastings." },
+          { h4: "Key terms", p: "Celts · Danelaw · Anglo-Saxons · Iceni · Picts · Norman Conquest." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Caesar came and left in 55 BC; Claudius came and stayed in AD 43. That pair is the trap this chapter is built around." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Which Roman leader successfully began the conquest of Britain?",
           options: [
@@ -320,6 +352,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "The **Black Death** reached Britain in **1348** and killed roughly a third of the population. So few labourers were left that survivors could demand better pay — the feudal system began to break down. When a poll tax was imposed, the **Peasants Revolt of 1381** broke out, led by **Wat Tyler**." },
         { type: "h3", text: "The Wars of the Roses" },
         { type: "p", text: "A civil war between the **House of Lancaster** (red rose) and the **House of York** (white rose), ending at the **Battle of Bosworth Field in 1485**. Richard III was killed, Henry Tudor won, and the **Tudor rose** — red and white together — was the emblem of the peace that followed." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "William the Conqueror · Henry II · Thomas Becket · Richard I · King John · Edward I · William Wallace · Robert the Bruce · Henry V · Wat Tyler." },
+          { h4: "Key dates and numbers", p: "1066 Hastings · 1086 Domesday Book · 1215 Magna Carta · 1284 Statute of Rhuddlan · 1314 Bannockburn · 1337–1453 Hundred Years War · 1348 Black Death · 1381 Peasants' Revolt · 1415 Agincourt · 1485 Bosworth Field." },
+          { h4: "Key terms", p: "Feudal system · Magna Carta · Domesday Book · Wars of the Roses · poll tax · barons." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Magna Carta in 1215 is the first written statement that a ruler is bound by law — the root of the rule of law you learned in lesson 1." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "What did Magna Carta establish in 1215?",
           options: [
@@ -381,6 +421,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Shakespeare" },
         { type: "p", text: "**William Shakespeare (1564–1616)** was born in **Stratford-upon-Avon**. He wrote plays and poetry, worked at the **Globe Theatre** in London, and shaped the English language more than any other writer. Famous works include *Hamlet*, *Macbeth*, *Romeo and Juliet* and *A Midsummer Night's Dream*." },
         { type: "p", text: "Also in this period: **Mary, Queen of Scots**, a Catholic cousin of Elizabeth, fled to England, was imprisoned for years and eventually executed in 1587. Her son became James VI of Scotland — and then James I of England." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Henry VII · Henry VIII · his six wives · Edward VI · Mary I · Elizabeth I · Mary, Queen of Scots · William Shakespeare." },
+          { h4: "Key dates and numbers", p: "1485 Tudors begin · 1534 break with Rome · 1587 Mary, Queen of Scots executed · 1588 Spanish Armada · 1564–1616 Shakespeare." },
+          { h4: "Key terms", p: "Reformation · Church of England · Dissolution of the Monasteries · annulment · Armada · the Globe Theatre." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Divorced, beheaded, died; divorced, beheaded, survived. The break with Rome started as a marriage dispute, not a change of belief." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Why did Henry VIII break with the Roman Catholic Church?",
           options: [
@@ -436,6 +484,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "**James II** was Catholic, and Protestant leaders feared where he would take the country. They invited his Protestant daughter **Mary** and her Dutch husband **William of Orange** to take the throne. William landed in 1688 and James fled without a battle — hence **Glorious Revolution**, a revolution with almost no bloodshed in England." },
         { type: "p", text: "**William III and Mary II** ruled jointly. In **1689** the **Bill of Rights** settled the terms: the monarch may not raise taxes or keep an army without Parliament, Parliament must meet regularly, and elections must be free." },
         { type: "callout", variant: "why", text: "Why 1689 is the hinge: everything after it is a constitutional monarchy. The monarch reigns, Parliament governs — the arrangement Britain still has." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "James I · Guy Fawkes · Charles I · Oliver Cromwell · Charles II · James II · William III · Mary II." },
+          { h4: "Key dates and numbers", p: "1603 James I · 1605 Gunpowder Plot · 1642–1651 Civil War · 1649 Charles I executed · 1660 Restoration · 1665 Plague · 1666 Great Fire · 1688 Glorious Revolution · 1689 Bill of Rights." },
+          { h4: "Key terms", p: "Divine right of kings · Cavaliers · Roundheads · Commonwealth · Lord Protector · Restoration · Bill of Rights." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: 1689 is the hinge: after the Bill of Rights the monarch reigns and Parliament governs. Everything since is a constitutional monarchy." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Who were the Roundheads in the English Civil War?",
           options: [
@@ -505,6 +561,14 @@ export const lifeInTheUkCourse: Course = {
           { h4: "Charles Dickens", p: "Novelist whose books — *Oliver Twist*, *Great Expectations* — exposed the poverty of industrial Britain." },
           { h4: "Emmeline Pankhurst", p: "Later in the century she began organising the campaign that became the suffragette movement." },
         ] },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Bonnie Prince Charlie · James Watt · George Stephenson · Isambard Kingdom Brunel · William Wilberforce · Admiral Nelson · the Duke of Wellington · Queen Victoria · Florence Nightingale · Charles Darwin." },
+          { h4: "Key dates and numbers", p: "1707 Act of Union · 1746 Culloden · 1776 American independence · 1801 Union with Ireland · 1805 Trafalgar · 1807 slave trade abolished · 1815 Waterloo · 1832 Reform Act · 1833 slavery abolished · 1837–1901 Victoria · 1851 Great Exhibition · 1859 Origin of Species." },
+          { h4: "Key terms", p: "Jacobites · Industrial Revolution · British Empire · abolition · Reform Act · Crystal Palace." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: 1807 ended the trade in people; 1833 ended slavery itself. Two dates, twenty-six years apart, and the test asks which is which." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Which Act abolished slavery itself throughout the British Empire?",
           options: [
@@ -565,6 +629,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Europe and Brexit" },
         { type: "p", text: "The UK joined the **European Economic Community in 1973**, which became the **European Union**. In a referendum in **June 2016** the UK voted to leave, and it formally left on **31 January 2020**." },
         { type: "p", text: "Other landmarks: **Margaret Thatcher** became the first woman Prime Minister in **1979**; the **Good Friday Agreement of 1998** brought peace to Northern Ireland; devolved parliaments opened in Scotland and Wales in **1999**; London hosted the **Olympic Games in 2012**; **Queen Elizabeth II** died in **2022** after 70 years, and **King Charles III** succeeded her." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Emmeline Pankhurst · Winston Churchill · Clement Attlee · William Beveridge · Aneurin Bevan · Alan Turing · Margaret Thatcher · Elizabeth II · Charles III." },
+          { h4: "Key dates and numbers", p: "1914–1918 First World War · 1918 and 1928 votes for women · 1939–1945 Second World War · 1940 Battle of Britain · 6 June 1944 D-Day · 8 May 1945 VE Day · 1947 India and Pakistan · 1948 NHS and Windrush · 1973 joined EEC · 1979 Thatcher · 1998 Good Friday Agreement · 1999 devolution · 2012 Olympics · 2016 referendum · 31 January 2020 left the EU · 2022 Charles III." },
+          { h4: "Key terms", p: "Suffragettes · the Blitz · welfare state · NHS · Commonwealth · decolonisation · Brexit." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: 1918 gave the vote to women over 30 with property; 1928 made it equal at 21. Ten years apart, and a favourite question." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "In which year did all women in the UK get the vote on the same terms as men?",
           options: [
@@ -674,6 +746,14 @@ export const lifeInTheUkCourse: Course = {
           { h4: "2020", p: "The UK formally leaves the EU on 31 January." },
           { h4: "2022", p: "Queen Elizabeth II dies; King Charles III succeeds." },
         ] },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Every name in the six history lessons appears here in date order rather than by topic." },
+          { h4: "Key dates and numbers", p: "The whole course in order: c. 2500 BC Stonehenge · 55 BC · AD 43 · AD 410 · 1066 · 1215 · 1314 · 1348 · 1485 · 1588 · 1649 · 1689 · 1707 · 1805 · 1833 · 1918 · 1928 · 1945 · 1948 · 2020 · 2022." },
+          { h4: "Key terms", p: "Chronology · century · BC and AD · reign · era." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Most history questions are really date questions. Learn the order and the 'which came first' questions answer themselves." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Put these in order: Magna Carta, the Battle of Hastings, the Spanish Armada.",
           options: [
@@ -733,6 +813,14 @@ export const lifeInTheUkCourse: Course = {
           { h4: "Victoria", p: "1837–1901, the height of empire." },
           { h4: "Elizabeth II", p: "1952–2022, the longest reign in British history." },
         ] },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Elizabeth II · Charles III · Prince William · the Archbishop of Canterbury." },
+          { h4: "Key dates and numbers", p: "Elizabeth II reigned 1952–2022, 70 years. Charles III from September 2022. Royal Assent last refused 1708. Succession law changed 2013." },
+          { h4: "Key terms", p: "Constitutional monarchy · Head of State · Royal Assent · State Opening of Parliament · coronation · hereditary succession · Head of the Commonwealth." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: The monarch reigns but does not govern, and must stay politically neutral. Royal Assent is a formality, not a veto." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "What is Royal Assent?",
           options: [
@@ -786,6 +874,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Local government" },
         { type: "p", text: "**Councils** run local services — schools, refuse collection, housing, roads, libraries and planning. Councillors are elected, usually for four years, and councils are funded by **council tax** and by central government. Many areas also elect a **mayor**." },
         { type: "callout", variant: "why", text: "Why the civil service is separate: civil servants carry out government policy but are politically neutral and stay in post when the government changes. Ministers come and go; the machine does not." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "The Prime Minister · the Chancellor of the Exchequer · the Home Secretary · the Speaker · the Leader of the Opposition." },
+          { h4: "Key dates and numbers", p: "650 MPs. General elections at least every 5 years. Voting age 18. Councillors usually elected for 4 years." },
+          { h4: "Key terms", p: "House of Commons · House of Lords · constituency · first past the post · by-election · Cabinet · shadow cabinet · bill · Act of Parliament · civil service · council tax." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: The Commons is elected and holds the power; the Lords is appointed and can only revise and delay. That split answers most questions here." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "How many MPs are there in the House of Commons?",
           options: [
@@ -834,6 +930,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "What stays with the UK Parliament" },
         { type: "p", text: "Westminster keeps the matters that must be decided for the whole country — these are called **reserved matters**: **defence, foreign policy, immigration and nationality, the currency, most taxation, and national security**." },
         { type: "callout", variant: "warn", text: "England has no devolved parliament of its own. English matters are decided by the UK Parliament, which is why the two are easy to confuse." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Holyrood · the Senedd · Stormont." },
+          { h4: "Key dates and numbers", p: "Referendums 1997. All three bodies first sat in 1999. Good Friday Agreement 1998. Senedd renamed 2020." },
+          { h4: "Key terms", p: "Devolution · devolved matter · reserved matter · MSP · MS · MLA · power sharing." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Health, education and housing are devolved; defence, foreign policy, immigration and the currency are reserved to Westminster. England has no devolved parliament." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Which of these is a reserved matter, kept by the UK Parliament rather than devolved?",
           options: [
@@ -886,6 +990,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Legal aid" },
         { type: "p", text: "**Legal aid** is public funding that pays for legal advice or representation for people who cannot afford it. It exists so that the right to a fair trial is real rather than theoretical." },
         { type: "callout", variant: "why", text: "Why juries are drawn at random: a jury of ordinary people, chosen by lot rather than appointed, is what stops the state deciding guilt on its own. That is the rule of law in practice." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Magistrates · judges · solicitors · barristers · the Supreme Court." },
+          { h4: "Key dates and numbers", p: "Jury of 12 in England, Wales and Northern Ireland; 15 in Scotland. Jury service 18–70. Supreme Court took over from the Lords in 2009. Age of criminal responsibility 12 in Scotland, 10 elsewhere." },
+          { h4: "Key terms", p: "Rule of law · criminal law · civil law · Magistrates' Court · Crown Court · County Court · legal aid · jury service." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: The jury decides the facts, the judge decides the law and the sentence — and everyone, including the government, is subject to both." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "How many people sit on a jury in a Crown Court in England and Wales?",
           options: [
@@ -944,6 +1056,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "Most people pay income tax through **PAYE** — deducted by an employer before wages are paid. The self-employed complete a **Self Assessment** tax return each year. Tax funds the NHS, schools, roads, defence and the police. **HM Revenue and Customs (HMRC)** collects it." },
         { type: "h3", text: "Taking part" },
         { type: "p", text: "Volunteering, joining a school governing body, helping a charity, standing as a councillor, or simply voting — participation is treated as part of citizenship rather than an optional extra." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "HM Revenue and Customs (HMRC)." },
+          { h4: "Key dates and numbers", p: "Vote at 18. Jury service 18–70. Human Rights Act 1998. Equality Act 2010." },
+          { h4: "Key terms", p: "PAYE · Self Assessment · National Insurance · income tax · secret ballot · human rights · protected characteristics." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Every right carries a duty: the vote and the electoral register, the NHS and your taxes, a fair trial and jury service." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "From what age must you attend jury service if summoned?",
           options: [
@@ -986,6 +1106,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "Volunteering is widespread and highly regarded — charity shops, food banks, sports clubs, school governors, the National Trust, hospital and mountain rescue volunteers. Charities are a large part of British life, and giving time is seen as valuable as giving money." },
         { type: "h3", text: "Everyday social values" },
         { type: "p", text: "Queuing, punctuality, saying please and thank you, and apologising readily are all noticed. Politeness matters more than formality, and small talk about the weather is genuinely a social convention rather than a joke about one." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "No names to memorise — this lesson is about how people live rather than who they were." },
+          { h4: "Key dates and numbers", p: "Population around 67 million. Same-sex marriage 2014 in England, Wales and Scotland; 2020 in Northern Ireland. Marriage age raised to 18 in England and Wales in 2023." },
+          { h4: "Key terms", p: "Civil partnership · forced marriage · arranged marriage · volunteering · community · diversity." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: An arranged marriage both people freely accept is lawful. A forced marriage is a crime. Consent is the whole distinction." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "What is the legal position on forced marriage in the UK?",
           options: [
@@ -1031,6 +1159,14 @@ export const lifeInTheUkCourse: Course = {
         ] },
         { type: "h3", text: "Tolerance in practice" },
         { type: "p", text: "Religious tolerance is one of the fundamental values. It protects believers of every faith **and** those with none, and it is unlawful to discriminate against someone for their religion or belief. Places of worship for all major faiths are found across the UK." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "The Archbishop of Canterbury · Guru Nanak · the Church of England · the Church of Scotland." },
+          { h4: "Key dates and numbers", p: "Church of England established since Henry VIII's break with Rome in the 1530s." },
+          { h4: "Key terms", p: "Established church · Supreme Governor · Anglican · Presbyterian · religious tolerance · freedom of belief." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: England has an established church with the monarch at its head; Scotland's is Presbyterian; Wales and Northern Ireland have none." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Who is the Supreme Governor of the Church of England?",
           options: [
@@ -1080,6 +1216,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "p", text: "**St David's Day, 1 March** (Wales); **St Patrick's Day, 17 March** (Northern Ireland); **St George's Day, 23 April** (England); **St Andrew's Day, 30 November** (Scotland). Only St Patrick's Day in Northern Ireland and St Andrew's Day in Scotland are public holidays." },
         { type: "h3", text: "Bank holidays" },
         { type: "p", text: "**Bank holidays** are public holidays when most businesses close. They differ between the four nations — Scotland and Northern Ireland each have days the others do not. Besides Christmas and Easter there are holidays in early May, late May and August." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Guy Fawkes · Robert Burns · the four patron saints." },
+          { h4: "Key dates and numbers", p: "1 January · 25 January Burns Night · 1 March · 17 March · 23 April · 31 October · 5 November · 11 November · 30 November · 25 and 26 December. Gunpowder Plot 1605. Armistice 1918." },
+          { h4: "Key terms", p: "Bank holiday · Hogmanay · Shrove Tuesday · Remembrance · Boxing Day." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Only St Patrick's Day in Northern Ireland and St Andrew's Day in Scotland are public holidays. The other two saints' days are not." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "What does Bonfire Night on 5 November commemorate?",
           options: [
@@ -1133,6 +1277,14 @@ export const lifeInTheUkCourse: Course = {
         ] },
         { type: "h3", text: "Leisure" },
         { type: "p", text: "Gardening, walking, going to the pub, watching television and following a team are all common. The **National Trust** cares for historic houses, gardens and coastline, and public footpaths give a legal right of way across much of the countryside." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Wimbledon · Lord's · St Andrews · Aintree · Ascot · the National Trust." },
+          { h4: "Key dates and numbers", p: "London hosted the Olympics in 1908, 1948 and 2012. Commonwealth Games every four years." },
+          { h4: "Key terms", p: "The Ashes · Six Nations · FA Cup · Grand National · rugby union and rugby league · Paralympics." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Golf is Scottish, cricket and rugby are English, and at the Commonwealth Games the four nations compete separately rather than as one team." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Where is the Wimbledon tennis tournament held?",
           options: [
@@ -1189,6 +1341,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Music" },
         { type: "p", text: "**The Beatles** — John Lennon, Paul McCartney, George Harrison and Ringo Starr — came from **Liverpool** and are the most successful British band ever. Also from Britain: the Rolling Stones, Queen, David Bowie, Elton John and Adele." },
         { type: "p", text: "In classical music, **Henry Purcell**, **Edward Elgar**, **Gustav Holst**, **Ralph Vaughan Williams** and **Benjamin Britten**. The **Proms** — a summer season of concerts at the Royal Albert Hall, ending with the Last Night — has run since 1895." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Chaucer · Shakespeare · Jane Austen · Charles Dickens · Robert Burns · Turner · Constable · Gainsborough · Henry Moore · The Beatles · Elgar." },
+          { h4: "Key dates and numbers", p: "Shakespeare 1564–1616. British Museum founded 1753. The Proms since 1895. Burns Night 25 January." },
+          { h4: "Key terms", p: "The Globe Theatre · the Turner Prize · the National Gallery · the British Museum · the Last Night of the Proms." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: One name, one fact. Chaucer came before Shakespeare, Burns is Scotland's poet, and The Beatles came from Liverpool." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Who wrote The Canterbury Tales?",
           options: [
@@ -1246,6 +1406,14 @@ export const lifeInTheUkCourse: Course = {
         ] },
         { type: "h3", text: "Other British firsts" },
         { type: "p", text: "**Alan Turing** laid the foundations of computer science and broke German codes at Bletchley Park. The first successful **IVF** birth took place in England in 1978. The **Royal Society**, founded in the 1660s, is the oldest scientific institution still in existence. **Dolly the sheep**, the first cloned mammal, was created in Scotland in 1996." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Isaac Newton · Charles Darwin · Alexander Fleming · Michael Faraday · Ernest Rutherford · Rosalind Franklin · James Watt · George Stephenson · Brunel · Alexander Graham Bell · John Logie Baird · Alan Turing · Tim Berners-Lee." },
+          { h4: "Key dates and numbers", p: "Origin of Species 1859 · penicillin 1928 · first IVF birth 1978 · World Wide Web 1989 · Dolly the sheep 1996. Royal Society founded in the 1660s." },
+          { h4: "Key terms", p: "Natural selection · antibiotic · electromagnetic induction · DNA · the World Wide Web · cloning." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: Learn these as pairs — one person, one discovery. That is exactly how the test asks about them." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Who discovered penicillin?",
           options: [
@@ -1312,6 +1480,14 @@ export const lifeInTheUkCourse: Course = {
         ] },
         { type: "h3", text: "Military and exploration" },
         { type: "p", text: "**Admiral Nelson** at Trafalgar in 1805, the **Duke of Wellington** at Waterloo in 1815, **Boudicca** against the Romans, **William Wallace** and **Robert the Bruce** for Scotland, and **Captain James Cook**, whose voyages mapped much of the Pacific." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Every name in the course, grouped by what they are known for — monarchs, politicians, scientists, writers, artists and reformers." },
+          { h4: "Key dates and numbers", p: "The dates belong to the lessons these people came from; this one is for matching the person to the achievement." },
+          { h4: "Key terms", p: "Monarch · Prime Minister · reformer · abolitionist · suffragette · engineer · physicist." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: If a name here is unfamiliar, go back to the lesson it came from rather than trying to learn it in isolation." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Who was the first woman Prime Minister of the UK?",
           options: [
@@ -1360,6 +1536,14 @@ export const lifeInTheUkCourse: Course = {
         { type: "h3", text: "Emergency services" },
         { type: "p", text: "Dial **999** or **112** for police, ambulance, fire or coastguard. Both numbers are free from any phone. For urgent but non-life-threatening medical help call **111**; for non-emergency police matters call **101**." },
         { type: "callout", variant: "warn", text: "999 is for emergencies only — a life at risk, a serious injury, a crime in progress or a fire. Misusing it is an offence, and 111 exists for everything urgent that is not an emergency." },
+        { type: "h3", text: "What you must know" },
+        { type: "cards", items: [
+          { h4: "Key names", p: "Aneurin Bevan · your GP · Oxford and Cambridge." },
+          { h4: "Key dates and numbers", p: "School compulsory 5–16 (4–16 in Northern Ireland); education or training to 18 in England. NHS founded 1948. Emergency 999 or 112; urgent advice 111; non-emergency police 101." },
+          { h4: "Key terms", p: "GCSE · A level · Highers · National Qualifications · further education · higher education · GP · free at the point of use · prescription charge." },
+        ] },
+        { type: "callout", variant: "why", text: "In one line: 999 is for emergencies only and misusing it is an offence. 111 is the number for everything urgent that is not one." },
+        { type: "h3", text: "Now answer these" },
         { type: "quiz",
           q: "Between which ages is education compulsory in England?",
           options: [
