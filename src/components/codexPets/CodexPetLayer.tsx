@@ -58,13 +58,19 @@ import {
   setPetLayoutMode,
   type PetLayoutMode,
 } from "@/lib/petLayout";
+import {
+  DESKTOP_PET_POSITION_KEY,
+  PET_POSITION_KEY,
+  readStoredPetPosition,
+  savePetPosition,
+  type PetPosition,
+} from "@/lib/petPosition";
+import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { learningEnglish } from "@/lib/direction";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { stopTts, tts } from "@/lib/voice";
 
-const PET_POSITION_KEY = "gl-codex-pet-position-v1";
-const DESKTOP_PET_POSITION_KEY = "gl-codex-pet-desktop-position-v2";
 const PET_SIZE_KEY = "gl-codex-pet-size-v1";
 const PET_SIZES_KEY = "gl-codex-pet-sizes-v2";
 const PET_MARGIN = 8;
@@ -272,11 +278,6 @@ const ENGLISH_PET_TIPS = [
   "English tip: use “haven't” with I, you, we, or they, and “hasn't” with he, she, or it — “I haven't seen it yet”.",
 ];
 
-type PetPosition = {
-  x: number;
-  y: number;
-};
-
 type PetBounds = {
   bottom: number;
   left: number;
@@ -426,22 +427,17 @@ function defaultPosition(petWidth: number, petHeight: number) {
   );
 }
 
+/** The stored spot, clamped into the window it is about to be drawn in. */
 function storedPosition(petWidth: number, petHeight: number, storageKey = PET_POSITION_KEY) {
   if (typeof window === "undefined") return defaultPosition(petWidth, petHeight);
-  try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey) ?? "");
-    if (Number.isFinite(parsed?.x) && Number.isFinite(parsed?.y)) {
-      const viewport = viewportSize();
-      return clampPosition(parsed, viewport.width, viewport.height, petWidth, petHeight);
-    }
-  } catch {
-    // A corrupt position should never strand the mascot off-screen.
-  }
-  return defaultPosition(petWidth, petHeight);
+  const stored = readStoredPetPosition(storageKey);
+  if (!stored) return defaultPosition(petWidth, petHeight);
+  const viewport = viewportSize();
+  return clampPosition(stored, viewport.width, viewport.height, petWidth, petHeight);
 }
 
 function savePosition(position: PetPosition, storageKey = PET_POSITION_KEY) {
-  localStorage.setItem(storageKey, JSON.stringify(position));
+  savePetPosition(position, storageKey);
 }
 
 function storedLegacyPetSize() {
@@ -473,6 +469,10 @@ function storedPetSizes(): PetSizeMap {
 
 function savePetSizes(sizes: PetSizeMap) {
   localStorage.setItem(PET_SIZES_KEY, JSON.stringify(sizes));
+  // Local storage on its own is forgotten at the next start, when the shared
+  // mirror is restored over it. A size that never reached the mirror came back
+  // as the old one, and a different size moves the pet with it.
+  syncLocalStorageItem(PET_SIZES_KEY, JSON.stringify(sizes));
 }
 
 export function CodexPetLayer() {
@@ -569,6 +569,9 @@ export function CodexPetLayer() {
   const [position, setPosition] = useState<PetPosition>(
     () => storedPosition(petGroupWidth, petHeight, PET_POSITION_STORAGE_KEY)
   );
+  const [storedDesiredPosition] = useState(
+    () => readStoredPetPosition(PET_POSITION_STORAGE_KEY)
+  );
   const [viewport, setViewport] = useState(viewportSize);
   const [overlayGeometry, setOverlayGeometry] = useState(readPetOverlayGeometry);
   const overlayGeometryRef = useRef(overlayGeometry);
@@ -585,6 +588,17 @@ export function CodexPetLayer() {
   /** Set by the hit-region effect so state changes can request a re-sync. */
   const hitRegionSyncRef = useRef<(() => void) | null>(null);
   const positionRef = useRef(position);
+  /**
+   * Where the pet BELONGS, as opposed to where it currently fits.
+   *
+   * The two differ whenever the window is smaller than it was when the pet was
+   * put there — which is every start of the app window, since it opens at
+   * 1200x820 however large it was left. Clamping used to overwrite the stored
+   * spot, so one launch at a smaller size lost the corner the learner had
+   * chosen for good. Now the clamp only decides where to draw, and the pet
+   * goes back to its own place as soon as the room is there again.
+   */
+  const desiredPositionRef = useRef(storedDesiredPosition ?? position);
   const speechRef = useRef(speech);
   const activePetTtsId = useRef("");
   const spokenSpeechId = useRef("");
@@ -603,6 +617,20 @@ export function CodexPetLayer() {
     if (pendingPetClick.current === null) return;
     window.clearTimeout(pendingPetClick.current);
     pendingPetClick.current = null;
+  }, []);
+
+  /**
+   * Move the pet AND remember that this is where it lives from now on.
+   *
+   * Only a deliberate move writes the stored spot: a drop, or making room for
+   * a speech bubble. Fitting the pet into a window that happens to be smaller
+   * this time is not one — see desiredPositionRef.
+   */
+  const commitPosition = useCallback((next: PetPosition) => {
+    desiredPositionRef.current = next;
+    positionRef.current = next;
+    setPosition(next);
+    savePosition(next, PET_POSITION_STORAGE_KEY);
   }, []);
 
   const currentPetHistoryAnchor = useCallback(() => ({
@@ -1093,7 +1121,7 @@ export function CodexPetLayer() {
       if (dragState.current) return;
       const nextViewport = viewportSize();
       const nextPosition = clampPosition(
-        positionRef.current,
+        desiredPositionRef.current,
         nextViewport.width,
         nextViewport.height,
         petGroupWidth,
@@ -1103,7 +1131,6 @@ export function CodexPetLayer() {
       positionRef.current = nextPosition;
       setViewport(nextViewport);
       setPosition(nextPosition);
-      savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
     };
 
     window.addEventListener("resize", handleResize);
@@ -1125,7 +1152,7 @@ export function CodexPetLayer() {
   useEffect(() => {
     if (dragState.current) return;
     const nextPosition = clampPosition(
-      positionRef.current,
+      desiredPositionRef.current,
       viewport.width,
       viewport.height,
       petGroupWidth,
@@ -1138,7 +1165,6 @@ export function CodexPetLayer() {
     ) return;
     positionRef.current = nextPosition;
     setPosition(nextPosition);
-    savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
   }, [
     petGroupVisibleBounds.bottom,
     petGroupVisibleBounds.left,
@@ -1180,10 +1206,9 @@ export function CodexPetLayer() {
       petHeight,
       petGroupVisibleBounds
     );
-    positionRef.current = next;
-    setPosition(next);
-    savePosition(next, PET_POSITION_STORAGE_KEY);
+    commitPosition(next);
   }, [
+    commitPosition,
     messagesMuted,
     petGroupVisibleBounds.bottom,
     petGroupVisibleBounds.left,
@@ -1414,8 +1439,7 @@ export function CodexPetLayer() {
         savePosition(next, petPositionKey(PET_POSITION_STORAGE_KEY, key));
       }
     } else {
-      setPosition({ ...positionRef.current });
-      savePosition(positionRef.current, PET_POSITION_STORAGE_KEY);
+      commitPosition({ ...positionRef.current });
     }
     setDragging(false);
     requestHitRegionSync();
@@ -1648,7 +1672,7 @@ export function CodexPetLayer() {
       visibleBoundsByPet
     );
     const nextPosition = clampPosition(
-      positionRef.current,
+      desiredPositionRef.current,
       viewport.width,
       viewport.height,
       nextGroup.width,
@@ -1657,7 +1681,6 @@ export function CodexPetLayer() {
     );
     positionRef.current = nextPosition;
     setPosition(nextPosition);
-    savePosition(nextPosition, PET_POSITION_STORAGE_KEY);
   };
 
   // Right-clicking a pet opens the menu for THAT pet. Without the key the menu

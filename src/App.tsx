@@ -20,6 +20,7 @@ import {
   watchStoredThemePreferences,
   watchSystemTheme,
 } from "./lib/theme";
+import { mirrorStoredPetPositions } from "./lib/petPosition";
 import { isElectronApp } from "./lib/platform";
 import { MotionConfig } from "framer-motion";
 import { EFFECTS_CHANGE_EVENT, getEffects, type Effects } from "./lib/effects";
@@ -89,6 +90,9 @@ function useMicheonProfile() {
     let cancelled = false;
 
     async function hydrateProfile() {
+      // Where the pets are is restored from the shared mirror below, so this
+      // machine's own spots have to be in it first — see mirrorStoredPetPositions.
+      await mirrorStoredPetPositions();
       await hydrateLocalStorageFromSharedStorage();
       if (cancelled) return;
       migrateToDarkThemeDefault();
