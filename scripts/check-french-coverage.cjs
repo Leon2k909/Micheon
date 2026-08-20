@@ -71,7 +71,7 @@ const percent = (translated.length / entries.length) * 100;
 // ── the floor ───────────────────────────────────────────────────────────────
 // Raise this as coverage climbs. It exists so a refactor cannot quietly drop
 // translations, and so "get the number up" is a number rather than a feeling.
-const FLOOR_PERCENT = 25.0;
+const FLOOR_PERCENT = 26.5;
 assert.ok(
   percent >= FLOOR_PERCENT,
   `French coverage fell to ${percent.toFixed(1)}% — the floor is ${FLOOR_PERCENT}%`
