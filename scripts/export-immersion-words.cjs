@@ -20,6 +20,7 @@ const built = esbuild.buildSync({
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { exampleRequiresSenseOverlap } from "./src/lib/wordExamples.ts";',
+      'export { REVIEWED_CANONICAL_WORDS } from "./src/lib/canonicalWordSenses.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "immersion-word-export.ts",
@@ -39,7 +40,7 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const {
   allPartBlueprints, buildApiPartFromResolved, buildWordCatalog, buildCatalog,
-  exampleRequiresSenseOverlap,
+  exampleRequiresSenseOverlap, REVIEWED_CANONICAL_WORDS,
 } = compiled.exports;
 const supplementalWordBank = JSON.parse(
   fs.readFileSync(path.join(root, "src", "lib", "bundledWordBank.json"), "utf8")
@@ -139,6 +140,10 @@ const functionWords = JSON.parse(
   fs.readFileSync(path.join(root, "src", "data", "functionWords.json"), "utf8")
 );
 
+/** Every word with a reviewed everyday-first meaning — i.e. every word we
+ *  have already decided is polysemous enough to need one. */
+const CANONICAL_WORDS = new Set(REVIEWED_CANONICAL_WORDS);
+
 const seen = new Set();
 const rows = [];
 /**
@@ -163,6 +168,19 @@ function chooseExample(key, cardGloss, fullGloss, headword) {
   const borrowed = tatoeba.get(key);
   if (borrowed) options.push({ de: borrowed.ex, en: borrowed.exEn, ours: false, id: borrowed.id });
 
+  /**
+   * A sentence that defines the word with itself teaches nothing.
+   * "Feierabend ist mehr als nur Feierabend." says the word twice and its
+   * English leaves it untranslated — and being four words long, shortest-wins
+   * preferred it to "Ich mach für heute Feierabend bis morgen!". Not
+   * disqualifying, because for some words it is all there is; just last.
+   */
+  const circular = (option) => {
+    const needle = key.toLocaleLowerCase("de-DE");
+    const inGerman = option.de.toLocaleLowerCase("de-DE").split(needle).length - 1;
+    return inGerman > 1 || option.en.toLocaleLowerCase("de-DE").includes(needle);
+  };
+
   let best = null;
   for (const option of options) {
     const rank = exampleRank({
@@ -174,9 +192,10 @@ function chooseExample(key, cardGloss, fullGloss, headword) {
       knows,
     });
     if (rank === 3) continue;
-    const scored = { ...option, rank };
+    const scored = { ...option, rank, circular: circular(option) };
     if (!best) { best = scored; continue; }
     if (scored.rank !== best.rank) { if (scored.rank < best.rank) best = scored; continue; }
+    if (scored.circular !== best.circular) { if (!scored.circular) best = scored; continue; }
     if (scored.ours !== best.ours) { if (scored.ours) best = scored; continue; }
     if (scored.de.length < best.de.length) best = scored;
   }
@@ -186,7 +205,15 @@ function chooseExample(key, cardGloss, fullGloss, headword) {
   // serve "die Vorstellung = idea", "Das ist voll der Hammer" must not serve
   // the tool. That list is authored, reviewed and sitting in the app; the
   // hover card is the same promise to the same reader, so it obeys it too.
-  if (best && best.rank === 2 && exampleRequiresSenseOverlap({ de: key, lookup: key })) return {};
+  //
+  // The canonical-senses file is the other half of that list, and for the
+  // same reason: a word is in it precisely BECAUSE it means more than one
+  // thing and somebody chose which meaning the card leads with. Leon hovered
+  // die Mitteilung, read "notification", and got "What did the note say?";
+  // der Verlauf said "history" and was illustrated with "Don't get lost",
+  // which is the verb sich verlaufen and not the noun at all.
+  if (best && best.rank === 2
+    && (exampleRequiresSenseOverlap({ de: key, lookup: key }) || CANONICAL_WORDS.has(key))) return {};
   if (!best) return {};
   return best.ours
     ? { ex: best.de, exEn: best.en }

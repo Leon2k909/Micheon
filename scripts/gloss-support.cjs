@@ -223,6 +223,18 @@ function wordShapes(word) {
     add(`${doubled}ed`);
     add(`${doubled}er`);
   }
+  // English hyphenates as it pleases: a gloss writes "make-up" and the
+  // sentence writes "makeup".
+  if (word.includes("-")) {
+    add(word.replace(/-/g, ""));
+    for (const piece of word.split("-")) add(piece);
+  }
+  // dependence and dependency are the same noun with two endings, and the
+  // gloss and the sentence rarely agree on which.
+  if (word.endsWith("ence")) add(`${word.slice(0, -4)}ency`);
+  if (word.endsWith("ency")) add(`${word.slice(0, -4)}ence`);
+  if (word.endsWith("ance")) add(`${word.slice(0, -4)}ancy`);
+  if (word.endsWith("ancy")) add(`${word.slice(0, -4)}ance`);
   // And the same journey backwards, so a plural gloss meets a singular
   // sentence: "shoes" is shown by "shoe".
   if (word.endsWith("ies")) add(`${word.slice(0, -3)}y`);
@@ -282,11 +294,25 @@ const PARTICLES = new Set([
 ]);
 
 /**
+ * Verbs so general that matching one proves nothing. "to take a course" is
+ * not shown by a sentence that merely says "take".
+ */
+const WEAK_HEADS = new Set([
+  "take", "get", "make", "put", "have", "be", "do", "go", "come", "give",
+  "keep", "let", "set", "run", "turn", "look", "feel", "become", "hold",
+  "thing", "way", "one", "kind", "sort", "bit",
+]);
+
+/**
  * Does this English sentence show any of these senses?
  *
  * English compounds put the meaning last — a "female friend" is a friend, a
- * "tax return" is a return — so the head word is what has to appear, and the
- * words in front of it are free to be dropped by a natural translation.
+ * "tax return" is a return — so the head word is what usually has to appear.
+ * But the modifier carries it often enough that the head alone is too strict:
+ * "penalty kick" is shown by "that was a clear penalty", "to leave an
+ * organisation" by "you can leave at the registry office". So the first word
+ * counts too, unless it is one of the do-everything verbs that would match
+ * any sentence at all.
  */
 function sentenceShowsSense(senses, englishSentence) {
   const present = englishTokens(englishSentence);
@@ -299,11 +325,19 @@ function sentenceShowsSense(senses, englishSentence) {
       if (shows(sense[0])) return true;
       continue;
     }
+    // A particle at the end is sometimes the whole meaning and sometimes
+    // just emphasis. "come across" is a different verb from "come", but "to
+    // charge up" is what "charge my phone" does. The difference is whether
+    // the verb in front carries meaning on its own: the do-everything verbs
+    // need their particle, the specific ones do not.
     if (PARTICLES.has(sense[sense.length - 1])) {
       if (sense.every(shows)) return true;
+      if (WEAK_HEADS.has(sense[0])) continue;
+      if (sense.filter((word) => !PARTICLES.has(word)).every(shows)) return true;
       continue;
     }
     if (shows(sense[sense.length - 1])) return true;
+    if (!WEAK_HEADS.has(sense[0]) && shows(sense[0])) return true;
   }
   return false;
 }

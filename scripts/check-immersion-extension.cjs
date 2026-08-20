@@ -432,6 +432,32 @@ checkLatestAudioWins().then(() => {
     );
   }
 
+  // A word with a reviewed everyday-first meaning is, by definition, one we
+  // decided is polysemous — so its example has to show the meaning the card
+  // leads with, or carry no example at all. Leon read "notification" on die
+  // Mitteilung and was shown "What did the note say?"; der Verlauf said
+  // "history" and was illustrated with "Don't get lost", which is the verb
+  // sich verlaufen and not the noun.
+  const canonicalSource = fs.readFileSync(path.join(root, "src/lib/canonicalWordSenses.ts"), "utf8");
+  const canonicalKeys = [...canonicalSource.matchAll(/^ {2}([a-zäöüß]+): \{$/gm)].map((match) => match[1]);
+  assert.ok(canonicalKeys.length >= 200, `only ${canonicalKeys.length} canonical senses found`);
+  const mismatched = [];
+  for (const key of canonicalKeys) {
+    const entry = byWord.get(key);
+    if (!entry || !entry.ex) continue;
+    if (exampleRank({ cardGloss: entry.en, fullGloss: entry.en, de: entry.ex, en: entry.exEn }) >= 2) {
+      mismatched.push(`${entry.deDisplay} = ${entry.en} — "${entry.exEn}"`);
+    }
+  }
+  assert.deepStrictEqual(mismatched, [],
+    "these words have a reviewed meaning and an example that shows a different one");
+  for (const [word, sentence] of [["Mitteilung", /notification/i], ["Verlauf", /history/i]]) {
+    const entry = byWord.get(word.toLowerCase());
+    assert.ok(entry && entry.ex, `${word} lost its example entirely`);
+    assert.ok(sentence.test(entry.exEn),
+      `${word} is illustrated with "${entry.exEn}", which does not show what the card says`);
+  }
+
   // Nothing may ship at rank 3: a sentence whose German is really a separable
   // verb that only contains this one. "Wann stoßen wir auf den neuen Job an?"
   // is anstoßen, and no gloss of stoßen makes that card honest.
@@ -637,6 +663,7 @@ checkLatestAudioWins().then(() => {
   // senses file owns these; this pins what the card actually leads with.
   for (const [word, leads] of [
     ["Mitteilung", /^notification/],
+    ["Benachrichtigung", /^notification/],
     ["Meldung", /^report/],
     ["Verlauf", /^history/],
     ["Beitrag", /^contribution or post/],
