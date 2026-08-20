@@ -68,8 +68,8 @@ const GAMES = [
   },
   {
     id: "hole",
-    title: "Object Collector",
-    description: "Collect objects and learn their names in your target language.",
+    title: "Hole",
+    description: "Swallow a German city. Everything you eat teaches you its name.",
     icon: Blocks,
     component: HoleGame,
   },

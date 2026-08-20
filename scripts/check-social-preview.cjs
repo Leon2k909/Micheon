@@ -27,7 +27,12 @@ compiled.filename = path.join(root, ".social-preview-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(result.outputFiles[0].text, compiled.filename);
 
-const { LEON_SOCIAL_PREVIEW_EMAIL, hasLeonSocialPreview } = compiled.exports;
+const {
+  LEON_SOCIAL_PREVIEW_EMAIL,
+  MICHELLE_SOCIAL_PREVIEW_EMAIL,
+  SOCIAL_PREVIEW_EMAILS,
+  hasLeonSocialPreview,
+} = compiled.exports;
 let failures = 0;
 
 function check(name, condition) {
@@ -42,11 +47,20 @@ function check(name, condition) {
 check("the preview is assigned to Leon's requested login", LEON_SOCIAL_PREVIEW_EMAIL === "leon@ordifydirect.com");
 check("the exact Leon email unlocks social UI", hasLeonSocialPreview("leon@ordifydirect.com"));
 check("email matching tolerates casing and surrounding spaces", hasLeonSocialPreview("  LEON@ORDIFYDIRECT.COM  "));
+// Michelle asked for everything Leon has. She is on the list, not an
+// exception to it, so this is pinned the same way his is.
+check("the preview is also assigned to Michelle", MICHELLE_SOCIAL_PREVIEW_EMAIL === "sozialmichelle@gmail.com");
+check("Michelle unlocks the same social UI", hasLeonSocialPreview("sozialmichelle@gmail.com"));
+check("Michelle's address tolerates casing and spaces too", hasLeonSocialPreview("  SozialMichelle@Gmail.com "));
+check("both accounts are on the list and nothing else is", Array.isArray(SOCIAL_PREVIEW_EMAILS) && SOCIAL_PREVIEW_EMAILS.length === 2);
 check("the logged-out prototype account stays locked", !hasLeonSocialPreview("preview@micheon.app"));
 check("similar and aliased addresses stay locked", [
   "leon+friends@ordifydirect.com",
   "leon@ordifydirect.co",
   "other@ordifydirect.com",
+  "michelle@gmail.com",
+  "sozialmichelle@gmail.co",
+  "sozialmichelle+extra@gmail.com",
   null,
   undefined,
 ].every((email) => !hasLeonSocialPreview(email)));

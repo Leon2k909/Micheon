@@ -1,760 +1,828 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Trophy, Maximize, Minimize, ChevronRight, Sparkles, Map, Target } from 'lucide-react';
-import { recordWordMastery } from '@/lib/mastery';
-import { useGameContent } from '@/games/gameContent';
-import { ui } from '@/lib/i18n';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Clock, Maximize, Minimize, RotateCcw, Trophy } from "lucide-react";
+import { recordWordMastery } from "@/lib/mastery";
+import { useGameContent } from "@/games/gameContent";
+import { ui } from "@/lib/i18n";
+import {
+  areaForRadius,
+  buildCity,
+  canSwallow,
+  makeRandom,
+  propPoints,
+  radiusForArea,
+  zoomForRadius,
+  type CityProp,
+} from "@/games/holeCity";
 
-// --- Game Constants ---
-const WORLD_SIZE = 3000;
-const INITIAL_RADIUS = 28;
-const MAX_RADIUS = 400;
-const BOT_COUNT = 8;
-const ITEM_COUNT = 340;
-const PLAYER_SPEED = 135;
-const BOT_SPEED = 72;
-const EAT_DURATION_SECONDS = 0.55;
-const POINTER_DEADZONE = 28;
+/**
+ * Hole — the one that is supposed to feel like hole.io.
+ *
+ * The old version had the physics roughly right and the FEEL entirely wrong,
+ * for three reasons, all of them here on purpose now:
+ *
+ * 1. THE CAMERA ZOOMS. It used to follow at 1:1 forever, so a hole at its
+ *    maximum radius was 800 pixels across on a 900 pixel canvas and you could
+ *    not see anything you were about to eat. Zoom is what makes growing
+ *    legible: the hole stays roughly the same size on screen and the world
+ *    gets smaller around it.
+ *
+ * 2. THINGS FALL IN. They used to shrink and fade where they stood, drawn ON
+ *    TOP of the hole, so they evaporated above a black disc. Now they tip,
+ *    slide toward the middle, spin, and are drawn CLIPPED INSIDE the hole so
+ *    they disappear under its rim. That one detail is most of the game.
+ *
+ * 3. IT IS A CITY. Roads, blocks, pavements and traffic, generated in
+ *    holeCity.ts, instead of props sprinkled over infinite graph paper.
+ *
+ * Plus the thing that makes it a game rather than a toy: a two minute clock
+ * and a live leaderboard, so there is something to lose.
+ */
 
-interface GameObject {
-  id: number;
-  x: number;
-  y: number;
-  type: 'ball' | 'bench' | 'bicycle' | 'bottle' | 'bus' | 'car' | 'chair' | 'house' | 'lamp' | 'mailbox' | 'person' | 'table' | 'tree';
-  size: number;
-  points: number;
-  color: string;
-  label: string;
-  labelEn: string;
-  masteryKey: string;
-  isBeingEaten: boolean;
-  eatenProgress: number; // 0 to 1
-}
+const WORLD_SIZE = 4200;
+const ROAD_STEP = 340;
+const ROAD_WIDTH = 96;
+const START_RADIUS = 22;
+const MAX_RADIUS = 460;
+const ROUND_SECONDS = 120;
+const BOT_COUNT = 5;
+const PLAYER_SPEED = 210;
+const BOT_SPEED = 150;
+const POINTER_DEADZONE = 22;
+/** How many pixels of hole we want on screen, whatever the world radius is. */
+const TARGET_SCREEN_RADIUS = 62;
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 1.9;
+const FALL_SECONDS = 0.42;
 
-interface Hole {
+type Hole = {
   id: number;
   x: number;
   y: number;
   radius: number;
-  color: string;
-  name: string;
+  area: number;
   score: number;
-  targetAngle: number;
+  name: string;
+  colour: string;
+  isPlayer: boolean;
   angle: number;
-  isDead: boolean;
-  nextTurnAt: number;
-}
+  /** Bots steer toward a target and re-pick when they arrive or time out. */
+  targetX: number;
+  targetY: number;
+  repickAt: number;
+};
 
-const PROP_TYPES = [
-  { type: 'bottle', size: 7, points: 4, color: '#22c55e', label: 'die Flasche', en: 'bottle' },
-  { type: 'ball', size: 9, points: 5, color: '#fb7185', label: 'der Ball', en: 'ball' },
-  { type: 'person', size: 12, points: 8, color: '#fca5a5', label: 'die Person', en: 'person' },
-  { type: 'lamp', size: 14, points: 10, color: '#fbbf24', label: 'die Lampe', en: 'lamp' },
-  { type: 'mailbox', size: 18, points: 12, color: '#ef4444', label: 'der Briefkasten', en: 'mailbox' },
-  { type: 'chair', size: 20, points: 14, color: '#a78bfa', label: 'der Stuhl', en: 'chair' },
-  { type: 'bench', size: 24, points: 18, color: '#94a3b8', label: 'die Bank', en: 'bench' },
-  { type: 'bicycle', size: 28, points: 22, color: '#06b6d4', label: 'das Fahrrad', en: 'bicycle' },
-  { type: 'table', size: 32, points: 26, color: '#a16207', label: 'der Tisch', en: 'table' },
-  { type: 'car', size: 42, points: 42, color: '#3b82f6', label: 'das Auto', en: 'car' },
-  { type: 'tree', size: 50, points: 55, color: '#10b981', label: 'der Baum', en: 'tree' },
-  { type: 'bus', size: 70, points: 85, color: '#f97316', label: 'der Bus', en: 'bus' },
-  { type: 'house', size: 120, points: 180, color: '#6366f1', label: 'das Haus', en: 'house' },
-];
+const BOT_NAMES = ["Loch", "Krater", "Abgrund", "Schlund", "Grube"];
+const BOT_COLOURS = ["#7c3aed", "#0891b2", "#be123c", "#15803d", "#b45309"];
 
 export default function HoleGame() {
   const { learningDirection } = useGameContent();
   const learnsEnglish = learningDirection === "learn-en";
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Game State
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameOver'>('idle');
+
+  const [phase, setPhase] = useState<"idle" | "playing" | "over">("idle");
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(() => {
-    try { return parseInt(localStorage.getItem('hole-hs') ?? '0', 10); } catch { return 0; }
-  });
-  const [isPaused, setIsPaused] = useState(false);
+  const [rank, setRank] = useState(1);
+  const [secondsLeft, setSecondsLeft] = useState(ROUND_SECONDS);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastCollected, setLastCollected] = useState<{ target: string; meaning: string } | null>(null);
-  
-  // Refs for performance
-  const playerRef = useRef<Hole>({
-    id: 0, x: WORLD_SIZE / 2, y: WORLD_SIZE / 2, radius: INITIAL_RADIUS, color: '#000000', name: 'You', score: 0, targetAngle: 0, angle: 0, isDead: false, nextTurnAt: 0
+  const [lastEaten, setLastEaten] = useState<{ de: string; en: string } | null>(null);
+  const [board, setBoard] = useState<{ name: string; score: number; isPlayer: boolean; colour: string }[]>([]);
+  const [best, setBest] = useState(() => {
+    try { return parseInt(localStorage.getItem("hole-hs") ?? "0", 10) || 0; } catch { return 0; }
   });
-  const botsRef = useRef<Hole[]>([]);
-  const itemsRef = useRef<GameObject[]>([]);
-  const cameraRef = useRef({ x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 });
-  const viewportRef = useRef({ w: 0, h: 0 });
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const pointerActiveRef = useRef(false);
+
+  const propsRef = useRef<CityProp[]>([]);
+  const holesRef = useRef<Hole[]>([]);
+  const cameraRef = useRef({ x: WORLD_SIZE / 2, y: WORLD_SIZE / 2, zoom: 1 });
+  const viewRef = useRef({ w: 900, h: 600, dpr: 1 });
+  const pointerRef = useRef({ x: 0, y: 0, active: false });
   const keysRef = useRef(new Set<string>());
+  const frameRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
+  const endsAtRef = useRef(0);
+  const hudRef = useRef({ seconds: -1, rank: -1, boardAt: 0 });
   const scoreRef = useRef(0);
-  const highScoreRef = useRef(highScore);
-  const requestRef = useRef<number>(null);
 
-  const addScore = (points: number) => {
-    scoreRef.current += points;
-    setScore(scoreRef.current);
-  };
+  // ── Setup ────────────────────────────────────────────────────────────────
+  const reset = useCallback(() => {
+    const seed = Math.floor(Math.random() * 1_000_000);
+    const city = buildCity({ size: WORLD_SIZE, roadStep: ROAD_STEP, roadWidth: ROAD_WIDTH, seed });
+    propsRef.current = city.props;
 
-  const finishGame = () => {
-    const finalScore = scoreRef.current;
-    if (finalScore > highScoreRef.current) {
-      highScoreRef.current = finalScore;
-      setHighScore(finalScore);
-      try { localStorage.setItem('hole-hs', String(finalScore)); } catch {}
-    }
-    setGameState('gameOver');
-  };
-
-  // --- Initialization ---
-  const initGame = () => {
-    const startX = WORLD_SIZE / 2;
-    const startY = WORLD_SIZE / 2;
-
-    playerRef.current = {
-      id: 0, x: startX, y: startY, radius: INITIAL_RADIUS, color: '#000000', name: 'You', score: 0, targetAngle: 0, angle: 0, isDead: false, nextTurnAt: 0
+    const random = makeRandom(seed ^ 0x5f3a);
+    const player: Hole = {
+      id: 0,
+      x: WORLD_SIZE / 2,
+      y: WORLD_SIZE / 2,
+      radius: START_RADIUS,
+      area: areaForRadius(START_RADIUS),
+      score: 0,
+      name: "Du",
+      colour: "#0f172a",
+      isPlayer: true,
+      angle: 0,
+      targetX: 0,
+      targetY: 0,
+      repickAt: 0,
     };
+    const bots: Hole[] = Array.from({ length: BOT_COUNT }, (_, index) => {
+      const angle = (index / BOT_COUNT) * Math.PI * 2;
+      const distance = WORLD_SIZE * 0.3;
+      return {
+        id: index + 1,
+        x: WORLD_SIZE / 2 + Math.cos(angle) * distance,
+        y: WORLD_SIZE / 2 + Math.sin(angle) * distance,
+        radius: START_RADIUS * (0.9 + random() * 0.35),
+        area: areaForRadius(START_RADIUS),
+        score: 0,
+        name: BOT_NAMES[index % BOT_NAMES.length],
+        colour: BOT_COLOURS[index % BOT_COLOURS.length],
+        isPlayer: false,
+        angle: 0,
+        targetX: WORLD_SIZE / 2,
+        targetY: WORLD_SIZE / 2,
+        repickAt: 0,
+      };
+    });
+    bots.forEach((bot) => { bot.area = areaForRadius(bot.radius); });
 
-    const initialItems: GameObject[] = [];
-    for (let i = 0; i < ITEM_COUNT; i++) {
-      const starter = i < 52;
-      initialItems.push(spawnItem(starter ? { x: startX, y: startY, radius: 520, smallOnly: true } : undefined));
-    }
-    itemsRef.current = initialItems;
-
-    const initialBots: Hole[] = [];
-    for (let i = 0; i < BOT_COUNT; i++) {
-      initialBots.push(spawnBot({ x: startX, y: startY }, 700, i + 1));
-    }
-    botsRef.current = initialBots;
-
-    cameraRef.current = { x: startX, y: startY };
-    mouseRef.current = { x: viewportRef.current.w / 2, y: viewportRef.current.h / 2 };
-    pointerActiveRef.current = false;
-    keysRef.current.clear();
-    lastFrameRef.current = 0;
+    holesRef.current = [player, ...bots];
+    cameraRef.current = { x: player.x, y: player.y, zoom: zoomForRadius(START_RADIUS, TARGET_SCREEN_RADIUS, MIN_ZOOM, MAX_ZOOM) };
     scoreRef.current = 0;
     setScore(0);
-    setLastCollected(null);
-    setIsPaused(false);
-    setGameState('playing');
-  };
+    setRank(1);
+    setLastEaten(null);
+    setSecondsLeft(ROUND_SECONDS);
+    endsAtRef.current = performance.now() + ROUND_SECONDS * 1000;
+  }, []);
 
-  const spawnItem = (near?: { x: number; y: number; radius: number; smallOnly?: boolean }): GameObject => {
-      const choices = near?.smallOnly ? PROP_TYPES.slice(0, 7) : PROP_TYPES;
-      const prop = choices[Math.floor(Math.random() * choices.length)];
-      const angle = Math.random() * Math.PI * 2;
-      const distance = near ? 80 + Math.random() * Math.max(80, near.radius - 80) : 0;
-      const x = near
-        ? Math.max(50, Math.min(WORLD_SIZE - 50, near.x + Math.cos(angle) * distance))
-        : 50 + Math.random() * (WORLD_SIZE - 100);
-      const y = near
-        ? Math.max(50, Math.min(WORLD_SIZE - 50, near.y + Math.sin(angle) * distance))
-        : 50 + Math.random() * (WORLD_SIZE - 100);
-      return {
-          id: Math.random(),
-          x,
-          y,
-          type: prop.type as any,
-          size: prop.size,
-          points: prop.points,
-          color: prop.color,
-          label: learnsEnglish ? prop.en : prop.label,
-          labelEn: learnsEnglish ? prop.label : prop.en,
-          masteryKey: prop.label,
-          isBeingEaten: false,
-          eatenProgress: 0
-      };
-  };
+  const start = useCallback(() => {
+    reset();
+    lastFrameRef.current = performance.now();
+    setPhase("playing");
+  }, [reset]);
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-        containerRef.current.requestFullscreen().catch(e => console.error(e));
-    } else {
-        document.exitFullscreen();
+  // ── Canvas sizing ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return undefined;
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      viewRef.current = { w: rect.width, h: rect.height, dpr };
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  // ── Input ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+        event.preventDefault();
+        keysRef.current.add(key);
+      }
+    };
+    const up = (event: KeyboardEvent) => keysRef.current.delete(event.key.toLowerCase());
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    const move = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointerRef.current = { x: event.clientX - rect.left, y: event.clientY - rect.top, active: true };
+    };
+    const leave = () => { pointerRef.current.active = false; };
+    canvas.addEventListener("pointermove", move);
+    canvas.addEventListener("pointerleave", leave);
+    return () => {
+      canvas.removeEventListener("pointermove", move);
+      canvas.removeEventListener("pointerleave", leave);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    if (!document.fullscreenElement) void container.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => undefined);
+    else void document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // ── The loop ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== "playing") return undefined;
+
+    const step = (now: number) => {
+      const delta = Math.min(0.05, (now - lastFrameRef.current) / 1000);
+      lastFrameRef.current = now;
+      update(delta, now);
+      render();
+      frameRef.current = requestAnimationFrame(step);
+    };
+    frameRef.current = requestAnimationFrame(step);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    // update/render read refs, so they do not need to be dependencies.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  const finish = useCallback(() => {
+    setPhase("over");
+    const final = scoreRef.current;
+    setBest((current) => {
+      if (final <= current) return current;
+      try { localStorage.setItem("hole-hs", String(final)); } catch { /* private mode */ }
+      return final;
+    });
+  }, []);
+
+  function update(delta: number, now: number) {
+    const holes = holesRef.current;
+    const player = holes[0];
+    if (!player) return;
+
+    const remaining = Math.max(0, endsAtRef.current - now);
+    const seconds = Math.ceil(remaining / 1000);
+    if (seconds !== hudRef.current.seconds) {
+      hudRef.current.seconds = seconds;
+      setSecondsLeft(seconds);
     }
-  };
+    if (remaining <= 0) { finish(); return; }
 
-  const update = (timestamp: number) => {
-    if (gameState !== 'playing') return;
-
-    const player = playerRef.current;
-    const { w, h } = viewportRef.current;
-    const previousFrame = lastFrameRef.current || timestamp;
-    const deltaSeconds = Math.min(0.04, Math.max(0, (timestamp - previousFrame) / 1000));
-    lastFrameRef.current = timestamp;
-    
-    // Position-based steering with a broad deadzone for precise movement.
-    const sx = player.x - cameraRef.current.x + w / 2;
-    const sy = player.y - cameraRef.current.y + h / 2;
-
-    let dx = 0;
-    let dy = 0;
-    let inputStrength = 0;
+    // ── Player steering ────────────────────────────────────────────────────
+    const view = viewRef.current;
     const keys = keysRef.current;
+    let dirX = 0;
+    let dirY = 0;
+    let strength = 0;
+
     if (keys.size > 0) {
-      dx = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0);
-      dy = (keys.has('s') || keys.has('arrowdown') ? 1 : 0) - (keys.has('w') || keys.has('arrowup') ? 1 : 0);
-      inputStrength = dx !== 0 || dy !== 0 ? 1 : 0;
-    } else if (pointerActiveRef.current) {
-      dx = mouseRef.current.x - sx;
-      dy = mouseRef.current.y - sy;
-      const pointerDistance = Math.sqrt(dx * dx + dy * dy);
-      inputStrength = Math.max(0, Math.min(1, (pointerDistance - POINTER_DEADZONE) / 170));
+      dirX = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
+      dirY = (keys.has("s") || keys.has("arrowdown") ? 1 : 0) - (keys.has("w") || keys.has("arrowup") ? 1 : 0);
+      strength = dirX !== 0 || dirY !== 0 ? 1 : 0;
+    } else if (pointerRef.current.active) {
+      dirX = pointerRef.current.x - view.w / 2;
+      dirY = pointerRef.current.y - view.h / 2;
+      const distance = Math.hypot(dirX, dirY);
+      strength = Math.max(0, Math.min(1, (distance - POINTER_DEADZONE) / 150));
     }
 
-    const inputDistance = Math.sqrt(dx * dx + dy * dy);
-    if (inputStrength > 0 && inputDistance > 0) {
-      const desiredAngle = Math.atan2(dy, dx);
-      let angleDelta = desiredAngle - player.angle;
-      while (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
-      while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
-      player.angle += angleDelta * (1 - Math.exp(-9 * deltaSeconds));
-      const sizeSlowdown = Math.max(0.55, Math.sqrt(INITIAL_RADIUS / player.radius));
-      const step = PLAYER_SPEED * inputStrength * sizeSlowdown * deltaSeconds;
-      player.x += Math.cos(player.angle) * step;
-      player.y += Math.sin(player.angle) * step;
+    if (strength > 0) {
+      const length = Math.hypot(dirX, dirY) || 1;
+      // Bigger holes are slower, but only mildly — hole.io stays playable at
+      // full size, and a hole that crawls is just a punishment for winning.
+      const drag = Math.max(0.62, Math.sqrt(START_RADIUS / player.radius) * 1.25);
+      const move = PLAYER_SPEED * strength * drag * delta;
+      player.x += (dirX / length) * move;
+      player.y += (dirY / length) * move;
+    }
+    player.x = Math.max(player.radius, Math.min(WORLD_SIZE - player.radius, player.x));
+    player.y = Math.max(player.radius, Math.min(WORLD_SIZE - player.radius, player.y));
+
+    // ── Bots ───────────────────────────────────────────────────────────────
+    for (const bot of holes) {
+      if (bot.isPlayer) continue;
+      if (now > bot.repickAt) {
+        // Head for something it can actually eat, so bots visibly work the
+        // map instead of wandering.
+        const edible = propsRef.current.filter((prop) => prop.fall === 0 && canSwallow(bot.radius, prop.spec.size));
+        const target = edible.length
+          ? edible[Math.floor(Math.random() * Math.min(edible.length, 40))]
+          : null;
+        bot.targetX = target ? target.x : Math.random() * WORLD_SIZE;
+        bot.targetY = target ? target.y : Math.random() * WORLD_SIZE;
+        bot.repickAt = now + 1800 + Math.random() * 2200;
+      }
+      const toX = bot.targetX - bot.x;
+      const toY = bot.targetY - bot.y;
+      const distance = Math.hypot(toX, toY) || 1;
+      if (distance < 12) bot.repickAt = 0;
+      const drag = Math.max(0.62, Math.sqrt(START_RADIUS / bot.radius) * 1.25);
+      const move = BOT_SPEED * drag * delta;
+      bot.x = Math.max(bot.radius, Math.min(WORLD_SIZE - bot.radius, bot.x + (toX / distance) * move));
+      bot.y = Math.max(bot.radius, Math.min(WORLD_SIZE - bot.radius, bot.y + (toY / distance) * move));
     }
 
-    // Bounds
-    player.x = Math.max(0, Math.min(WORLD_SIZE, player.x));
-    player.y = Math.max(0, Math.min(WORLD_SIZE, player.y));
-
-    // Smooth Camera Following
-    const cameraFollow = 1 - Math.exp(-7 * deltaSeconds);
-    cameraRef.current.x += (player.x - cameraRef.current.x) * cameraFollow;
-    cameraRef.current.y += (player.y - cameraRef.current.y) * cameraFollow;
-
-    // --- ITEM PHYSICS ---
-    itemsRef.current = itemsRef.current.filter(item => {
-        // Check if inside player
-        const dx = player.x - item.x;
-        const dy = player.y - item.y;
-        const distSq = dx*dx + dy*dy;
-        
-        if (distSq < Math.pow(player.radius, 2)) {
-            if (player.radius > item.size * 1.12) { // Only eat if hole is big enough
-                item.isBeingEaten = true;
-                item.eatenProgress += deltaSeconds / EAT_DURATION_SECONDS;
-                if (item.eatenProgress >= 1) {
-                    player.radius = Math.min(MAX_RADIUS, player.radius + Math.max(0.45, item.points * 0.045));
-                    addScore(item.points);
-                    setLastCollected({ target: item.label, meaning: item.labelEn });
-                    recordWordMastery(item.masteryKey);
-                    return false;
-                }
-            }
-        } else {
-            // Check bots
-            for (const bot of botsRef.current) {
-                const bdx = bot.x - item.x;
-                const bdy = bot.y - item.y;
-                const bdSq = bdx*bdx + bdy*bdy;
-                if (bdSq < Math.pow(bot.radius * 0.8, 2)) {
-                    if (bot.radius > item.size * 1.12) {
-                        bot.radius = Math.min(MAX_RADIUS, bot.radius + Math.max(0.3, item.points * 0.025));
-                        return false;
-                    }
-                }
-            }
-            item.isBeingEaten = false;
-            item.eatenProgress = 0;
+    // ── Swallowing ─────────────────────────────────────────────────────────
+    const survivors: CityProp[] = [];
+    for (const prop of propsRef.current) {
+      if (prop.fall > 0 && prop.claimedBy != null) {
+        const owner = holes.find((hole) => hole.id === prop.claimedBy);
+        if (!owner) { prop.fall = 0; prop.claimedBy = null; survivors.push(prop); continue; }
+        prop.fall += delta / FALL_SECONDS;
+        // Drawn as sliding toward the centre; the render reads prop.fall.
+        prop.x += (owner.x - prop.x) * Math.min(1, delta * 9);
+        prop.y += (owner.y - prop.y) * Math.min(1, delta * 9);
+        if (prop.fall >= 1) {
+          owner.area += Math.PI * Math.pow(prop.spec.size / 2, 2) * 0.34;
+          owner.radius = Math.min(MAX_RADIUS, radiusForArea(owner.area));
+          owner.score += propPoints(prop.spec);
+          if (owner.isPlayer) {
+            scoreRef.current = owner.score;
+            setScore(owner.score);
+            setLastEaten({ de: prop.spec.de, en: prop.spec.en });
+            recordWordMastery(prop.spec.de);
+          }
+          continue; // swallowed — drop it
         }
-        return true;
-    });
+        survivors.push(prop);
+        continue;
+      }
 
-    // Respawn missing items
-    while (itemsRef.current.length < ITEM_COUNT) {
-        itemsRef.current.push(spawnItem());
-    }
-
-    // --- BOT AI ---
-    botsRef.current.forEach(bot => {
-        if (timestamp >= bot.nextTurnAt) {
-          bot.targetAngle += (Math.random() - 0.5) * Math.PI;
-          bot.nextTurnAt = timestamp + 700 + Math.random() * 1800;
-        }
-        let turnDelta = bot.targetAngle - bot.angle;
-        while (turnDelta < -Math.PI) turnDelta += Math.PI * 2;
-        while (turnDelta > Math.PI) turnDelta -= Math.PI * 2;
-        bot.angle += turnDelta * (1 - Math.exp(-2.8 * deltaSeconds));
-        bot.x += Math.cos(bot.angle) * BOT_SPEED * deltaSeconds;
-        bot.y += Math.sin(bot.angle) * BOT_SPEED * deltaSeconds;
-        
-        // Bounce off walls
-        if (bot.x < 0 || bot.x > WORLD_SIZE) bot.targetAngle = Math.PI - bot.targetAngle;
-        if (bot.y < 0 || bot.y > WORLD_SIZE) bot.targetAngle = -bot.targetAngle;
-        
-        // Bot vs Player collision
-        const dx = player.x - bot.x;
-        const dy = player.y - bot.y;
-        const dSq = dx*dx + dy*dy;
-        if (dSq < Math.pow(player.radius, 2) && player.radius > bot.radius * 1.3) {
-            bot.isDead = true;
-            player.radius = Math.min(MAX_RADIUS, player.radius + bot.radius * 0.18);
-            addScore(500);
-        } else if (dSq < Math.pow(bot.radius, 2) && bot.radius > player.radius * 1.3) {
-            finishGame();
-        }
-    });
-    botsRef.current = botsRef.current.filter(b => !b.isDead);
-    while (botsRef.current.length < BOT_COUNT) {
-        botsRef.current.push(spawnBot({ x: player.x, y: player.y }, 650));
-    }
-
-    draw();
-    requestRef.current = requestAnimationFrame(update);
-  };
-
-  const spawnBot = (avoid?: { x: number; y: number }, minimumDistance = 0, id = Math.random()): Hole => {
-    let x = Math.random() * WORLD_SIZE;
-    let y = Math.random() * WORLD_SIZE;
-    if (avoid && minimumDistance > 0) {
-      for (let attempt = 0; attempt < 20; attempt += 1) {
-        const candidateX = Math.random() * WORLD_SIZE;
-        const candidateY = Math.random() * WORLD_SIZE;
-        if (Math.hypot(candidateX - avoid.x, candidateY - avoid.y) >= minimumDistance) {
-          x = candidateX;
-          y = candidateY;
+      // Not falling yet: does any hole have its mouth over it?
+      let claimed = false;
+      for (const hole of holes) {
+        const distance = Math.hypot(hole.x - prop.x, hole.y - prop.y);
+        if (distance < hole.radius && canSwallow(hole.radius, prop.spec.size)) {
+          prop.fall = 0.001;
+          prop.claimedBy = hole.id;
+          claimed = true;
           break;
         }
+        // A gentle pull at the rim, which is what makes the hole feel like a
+        // hole rather than a moving delete button.
+        if (distance < hole.radius * 1.5 && canSwallow(hole.radius, prop.spec.size)) {
+          const pull = (1 - distance / (hole.radius * 1.5)) * 26 * delta;
+          prop.x += ((hole.x - prop.x) / (distance || 1)) * pull;
+          prop.y += ((hole.y - prop.y) / (distance || 1)) * pull;
+        }
+      }
+      survivors.push(prop);
+      if (claimed) { /* kept, now falling */ }
+    }
+    propsRef.current = survivors;
+
+    // ── Holes eating holes ─────────────────────────────────────────────────
+    for (const hole of holes) {
+      for (const other of holes) {
+        if (hole === other) continue;
+        const distance = Math.hypot(hole.x - other.x, hole.y - other.y);
+        if (distance < hole.radius && hole.radius > other.radius * 1.25) {
+          hole.area += other.area * 0.5;
+          hole.radius = Math.min(MAX_RADIUS, radiusForArea(hole.area));
+          hole.score += Math.round(other.score * 0.5) + 40;
+          if (hole.isPlayer) {
+            scoreRef.current = hole.score;
+            setScore(hole.score);
+          }
+          if (other.isPlayer) { finish(); return; }
+          // The eaten bot restarts small somewhere else, so the map keeps
+          // its competition instead of emptying out.
+          other.radius = START_RADIUS;
+          other.area = areaForRadius(START_RADIUS);
+          other.score = Math.round(other.score * 0.4);
+          other.x = Math.random() * WORLD_SIZE;
+          other.y = Math.random() * WORLD_SIZE;
+        }
       }
     }
-    const angle = Math.random() * Math.PI * 2;
-    const botColors = ['#dc2626', '#16a34a', '#2563eb', '#9333ea', '#ea580c'];
-    return {
-        id,
-        x, y,
-        radius: INITIAL_RADIUS + Math.random() * 30,
-        color: botColors[Math.floor(Math.random() * botColors.length)],
-        name: 'Bot',
-        score: 0,
-        targetAngle: angle,
-        angle,
-        isDead: false,
-        nextTurnAt: performance.now() + 500 + Math.random() * 1500,
-    };
-  };
 
-  const draw = () => {
+    // ── Camera: follow, and zoom to keep the hole a constant size ──────────
+    const camera = cameraRef.current;
+    const follow = 1 - Math.exp(-8 * delta);
+    camera.x += (player.x - camera.x) * follow;
+    camera.y += (player.y - camera.y) * follow;
+    const wantZoom = zoomForRadius(player.radius, TARGET_SCREEN_RADIUS, MIN_ZOOM, MAX_ZOOM);
+    camera.zoom += (wantZoom - camera.zoom) * (1 - Math.exp(-3.2 * delta));
+
+    // ── Leaderboard ────────────────────────────────────────────────────────
+    const ranked = [...holes].sort((a, b) => b.score - a.score);
+    const place = ranked.findIndex((hole) => hole.isPlayer) + 1;
+    if (place !== hudRef.current.rank) {
+      hudRef.current.rank = place;
+      setRank(place);
+    }
+    // The board is four numbers that change constantly and matter loosely, so
+    // it refreshes on a timer rather than on every frame.
+    if (now - hudRef.current.boardAt > 250) {
+      hudRef.current.boardAt = now;
+      setBoard(ranked.map((hole) => ({ name: hole.name, score: hole.score, isPlayer: hole.isPlayer, colour: hole.colour })));
+    }
+  }
+
+  // ── Rendering ────────────────────────────────────────────────────────────
+  function render() {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
 
-    const { w, h } = viewportRef.current;
-    const cam = cameraRef.current;
+    const { w, h, dpr } = viewRef.current;
+    const camera = cameraRef.current;
+    const zoom = camera.zoom;
 
-    // Background
-    ctx.fillStyle = '#f8fafc';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    // Ground
+    ctx.fillStyle = "#7cb267";
     ctx.fillRect(0, 0, w, h);
 
-    // City Grid
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
-    const gridSize = 200;
-    const startX = (w / 2 - cam.x) % gridSize;
-    const startY = (h / 2 - cam.y) % gridSize;
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-camera.x, -camera.y);
+
+    const halfW = w / 2 / zoom;
+    const halfH = h / 2 / zoom;
+    const left = camera.x - halfW;
+    const right = camera.x + halfW;
+    const top = camera.y - halfH;
+    const bottom = camera.y + halfH;
+
+    // Blocks: a paler slab inside each road square, so the city reads as
+    // buildings-on-plots rather than props floating on grass.
+    ctx.fillStyle = "#8cc47a";
+    const firstBlockX = Math.floor(left / ROAD_STEP) * ROAD_STEP;
+    const firstBlockY = Math.floor(top / ROAD_STEP) * ROAD_STEP;
+    for (let x = firstBlockX; x < right; x += ROAD_STEP) {
+      for (let y = firstBlockY; y < bottom; y += ROAD_STEP) {
+        ctx.fillRect(x + ROAD_WIDTH / 2, y + ROAD_WIDTH / 2, ROAD_STEP - ROAD_WIDTH, ROAD_STEP - ROAD_WIDTH);
+      }
+    }
+
+    // Roads with a dashed centre line.
+    ctx.fillStyle = "#57606f";
+    for (let x = firstBlockX; x < right + ROAD_STEP; x += ROAD_STEP) {
+      ctx.fillRect(x - ROAD_WIDTH / 2, top, ROAD_WIDTH, bottom - top);
+    }
+    for (let y = firstBlockY; y < bottom + ROAD_STEP; y += ROAD_STEP) {
+      ctx.fillRect(left, y - ROAD_WIDTH / 2, right - left, ROAD_WIDTH);
+    }
+    if (zoom > 0.45) {
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([22, 20]);
+      ctx.beginPath();
+      for (let x = firstBlockX; x < right + ROAD_STEP; x += ROAD_STEP) {
+        ctx.moveTo(x, top); ctx.lineTo(x, bottom);
+      }
+      for (let y = firstBlockY; y < bottom + ROAD_STEP; y += ROAD_STEP) {
+        ctx.moveTo(left, y); ctx.lineTo(right, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // World edge
+    ctx.strokeStyle = "rgba(15,23,42,0.35)";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+    const visible = propsRef.current.filter((prop) =>
+      prop.x > left - 200 && prop.x < right + 200 && prop.y > top - 200 && prop.y < bottom + 200);
+
+    const standing = visible.filter((prop) => prop.fall === 0);
+    const falling = visible.filter((prop) => prop.fall > 0);
+
+    // Standing props first, back to front so the taller things overlap
+    // correctly and the street has depth.
+    standing.sort((a, b) => a.y - b.y);
+    for (const prop of standing) drawProp(ctx, prop, 1, zoom);
+
+    // Then the holes themselves.
+    for (const hole of holesRef.current) drawHole(ctx, hole, zoom);
+
+    // Then whatever is falling — CLIPPED to its hole, so it slides under the
+    // rim instead of hovering over the void. This is the whole trick.
+    for (const prop of falling) {
+      const owner = holesRef.current.find((hole) => hole.id === prop.claimedBy);
+      if (!owner) continue;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(owner.x, owner.y, owner.radius, 0, Math.PI * 2);
+      ctx.clip();
+      const sink = prop.fall;
+      ctx.globalAlpha = 1 - sink * 0.35;
+      drawProp(ctx, prop, 1 - sink * 0.55, zoom, prop.rotation + prop.spin * sink, sink * owner.radius * 0.55);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function drawHole(ctx: CanvasRenderingContext2D, hole: Hole, zoom: number) {
+    // Rim shadow on the ground, then the void, then a highlight on the far
+    // edge so it reads as a hole rather than a black sticker.
+    const glow = ctx.createRadialGradient(hole.x, hole.y, hole.radius * 0.7, hole.x, hole.y, hole.radius * 1.35);
+    glow.addColorStop(0, "rgba(0,0,0,0.45)");
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    for (let x = startX; x < w; x += gridSize) {
-        ctx.moveTo(x, 0); ctx.lineTo(x, h);
-    }
-    for (let y = startY; y < h; y += gridSize) {
-        ctx.moveTo(0, y); ctx.lineTo(w, y);
-    }
+    ctx.arc(hole.x, hole.y, hole.radius * 1.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    const void_ = ctx.createRadialGradient(
+      hole.x, hole.y - hole.radius * 0.15, hole.radius * 0.1,
+      hole.x, hole.y, hole.radius
+    );
+    void_.addColorStop(0, "#000000");
+    void_.addColorStop(0.75, hole.isPlayer ? "#05070c" : "#0b0b14");
+    void_.addColorStop(1, hole.isPlayer ? "#111827" : hole.colour);
+    ctx.fillStyle = void_;
+    ctx.beginPath();
+    ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = hole.isPlayer ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.2)";
+    ctx.lineWidth = Math.max(1.5, 3 / zoom);
+    ctx.beginPath();
+    ctx.arc(hole.x, hole.y, hole.radius * 0.97, Math.PI * 1.05, Math.PI * 1.95);
     ctx.stroke();
 
-    // --- DRAW HOLES (Beneath items) ---
-    const drawHole = (hole: Hole, isPlayer = false) => {
-        const sx = hole.x - cam.x + w / 2;
-        const sy = hole.y - cam.y + h / 2;
-        
-        // Outer Shadow
-        const grad = ctx.createRadialGradient(sx, sy, hole.radius * 0.8, sx, sy, hole.radius * 1.2);
-        grad.addColorStop(0, 'rgba(0,0,0,0.8)');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(sx, sy, hole.radius * 1.2, 0, Math.PI * 2); ctx.fill();
-
-        // Inner Void
-        ctx.fillStyle = isPlayer ? '#000000' : hole.color;
-        ctx.beginPath(); ctx.arc(sx, sy, hole.radius, 0, Math.PI * 2); ctx.fill();
-        
-        // Depth Ring
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(sx, sy, hole.radius - 2, 0, Math.PI * 2); ctx.stroke();
-
-        // Name
-        ctx.fillStyle = isPlayer ? '#1e293b' : hole.color;
-        ctx.font = 'bold 14px "Outfit", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(hole.name, sx, sy - hole.radius - 10);
-    };
-
-    botsRef.current.forEach(b => drawHole(b));
-    drawHole(playerRef.current, true);
-
-    // --- DRAW ITEMS ---
-    itemsRef.current.forEach(item => {
-        const sx = item.x - cam.x + w / 2;
-        const sy = item.y - cam.y + h / 2;
-        
-        // Culling
-        if (sx < -200 || sx > w + 200 || sy < -200 || sy > h + 200) return;
-
-        const scale = item.isBeingEaten ? (1 - item.eatenProgress) : 1;
-        const opacity = item.isBeingEaten ? (1 - item.eatenProgress) : 1;
-
-        ctx.save();
-        ctx.translate(sx, sy);
-        ctx.scale(scale, scale);
-        ctx.globalAlpha = opacity;
-
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.fillRect(-item.size/2 + 4, item.size/2 - 2, item.size, 4);
-
-        // Object Body
-        ctx.fillStyle = item.color;
-        if (item.type === 'car') {
-            ctx.fillRect(-item.size/2, -item.size/5, item.size, item.size * 0.45);
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.fillRect(-item.size/3, -item.size/3, item.size * 0.52, item.size/4);
-            ctx.fillStyle = '#172033';
-            ctx.beginPath();
-            ctx.arc(-item.size * 0.28, item.size * 0.28, item.size * 0.12, 0, Math.PI * 2);
-            ctx.arc(item.size * 0.28, item.size * 0.28, item.size * 0.12, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (item.type === 'bus') {
-            ctx.fillRect(-item.size/2, -item.size/3, item.size, item.size * 0.62);
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            for (let windowIndex = 0; windowIndex < 4; windowIndex += 1) {
-              ctx.fillRect(-item.size * 0.4 + windowIndex * item.size * 0.22, -item.size * 0.23, item.size * 0.16, item.size * 0.18);
-            }
-            ctx.fillStyle = '#172033';
-            ctx.beginPath();
-            ctx.arc(-item.size * 0.3, item.size * 0.32, item.size * 0.1, 0, Math.PI * 2);
-            ctx.arc(item.size * 0.3, item.size * 0.32, item.size * 0.1, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (item.type === 'house') {
-            ctx.fillRect(-item.size/2, -item.size/2, item.size, item.size);
-            ctx.fillStyle = '#4338ca'; // Roof
-            ctx.beginPath();
-            ctx.moveTo(-item.size/2, -item.size/2);
-            ctx.lineTo(0, -item.size*0.8);
-            ctx.lineTo(item.size/2, -item.size/2);
-            ctx.fill();
-            ctx.fillStyle = '#f8fafc';
-            ctx.fillRect(-item.size * 0.12, item.size * 0.08, item.size * 0.24, item.size * 0.42);
-        } else if (item.type === 'tree') {
-            ctx.fillStyle = '#8b5a2b';
-            ctx.fillRect(-item.size * 0.1, 0, item.size * 0.2, item.size * 0.48);
-            ctx.fillStyle = item.color;
-            ctx.beginPath();
-            ctx.arc(0, -item.size * 0.08, item.size * 0.45, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (item.type === 'person') {
-            ctx.beginPath();
-            ctx.arc(0, -item.size * 0.28, item.size * 0.2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillRect(-item.size * 0.16, -item.size * 0.05, item.size * 0.32, item.size * 0.5);
-        } else if (item.type === 'lamp') {
-            ctx.fillRect(-item.size * 0.08, -item.size * 0.3, item.size * 0.16, item.size * 0.75);
-            ctx.beginPath();
-            ctx.arc(0, -item.size * 0.34, item.size * 0.25, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (item.type === 'mailbox') {
-            ctx.fillRect(-item.size * 0.08, 0, item.size * 0.16, item.size * 0.5);
-            ctx.fillRect(-item.size * 0.4, -item.size * 0.42, item.size * 0.8, item.size * 0.55);
-        } else if (item.type === 'bench') {
-            ctx.fillRect(-item.size/2, -item.size * 0.25, item.size, item.size * 0.22);
-            ctx.fillRect(-item.size/2, item.size * 0.08, item.size, item.size * 0.16);
-            ctx.fillRect(-item.size * 0.38, item.size * 0.18, item.size * 0.12, item.size * 0.34);
-            ctx.fillRect(item.size * 0.26, item.size * 0.18, item.size * 0.12, item.size * 0.34);
-        } else if (item.type === 'chair') {
-            ctx.fillRect(-item.size * 0.32, -item.size * 0.38, item.size * 0.16, item.size * 0.75);
-            ctx.fillRect(-item.size * 0.32, 0, item.size * 0.64, item.size * 0.16);
-            ctx.fillRect(item.size * 0.18, item.size * 0.08, item.size * 0.12, item.size * 0.38);
-        } else if (item.type === 'table') {
-            ctx.fillRect(-item.size/2, -item.size * 0.15, item.size, item.size * 0.22);
-            ctx.fillRect(-item.size * 0.35, 0, item.size * 0.12, item.size * 0.45);
-            ctx.fillRect(item.size * 0.23, 0, item.size * 0.12, item.size * 0.45);
-        } else if (item.type === 'bicycle') {
-            ctx.lineWidth = Math.max(2, item.size * 0.08);
-            ctx.strokeStyle = item.color;
-            ctx.beginPath();
-            ctx.arc(-item.size * 0.3, item.size * 0.18, item.size * 0.22, 0, Math.PI * 2);
-            ctx.arc(item.size * 0.3, item.size * 0.18, item.size * 0.22, 0, Math.PI * 2);
-            ctx.moveTo(-item.size * 0.3, item.size * 0.18);
-            ctx.lineTo(0, -item.size * 0.15);
-            ctx.lineTo(item.size * 0.3, item.size * 0.18);
-            ctx.lineTo(-item.size * 0.08, item.size * 0.18);
-            ctx.closePath();
-            ctx.stroke();
-        } else if (item.type === 'bottle') {
-            ctx.fillRect(-item.size * 0.25, -item.size * 0.28, item.size * 0.5, item.size * 0.75);
-            ctx.fillRect(-item.size * 0.12, -item.size * 0.48, item.size * 0.24, item.size * 0.24);
-        } else {
-            ctx.beginPath(); ctx.arc(0, 0, item.size/2, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // Labels (DE/EN)
-        ctx.globalAlpha = 0.6 * opacity;
-        ctx.fillStyle = '#475569';
-        ctx.font = 'bold 12px "Outfit", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(item.label, 0, -item.size/2 - 15);
-        ctx.font = 'normal 10px "Outfit", sans-serif';
-        ctx.fillText(`(${item.labelEn})`, 0, -item.size/2 - 4);
-
-        ctx.restore();
-    });
-  };
-
-  // --- Effects ---
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current && canvasRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        viewportRef.current = { w: clientWidth, h: clientHeight };
-        canvasRef.current.width = clientWidth;
-        canvasRef.current.height = clientHeight;
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    const handleMouseMove = (e: MouseEvent) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const isInside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-        if (!isInside) {
-          pointerActiveRef.current = false;
-          return;
-        }
-        mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        pointerActiveRef.current = true;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            if (gameState === 'playing') setIsPaused(p => !p);
-            return;
-        }
-        const key = e.key.toLowerCase();
-        if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-          e.preventDefault();
-          keysRef.current.add(key);
-        }
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keysRef.current.delete(e.key.toLowerCase());
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    const fullscreenHandler = () => {
-        setIsFullscreen(!!document.fullscreenElement);
-        setTimeout(handleResize, 100);
-    };
-    document.addEventListener('fullscreenchange', fullscreenHandler);
-
-    return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-        document.removeEventListener('fullscreenchange', fullscreenHandler);
-    };
-  }, [gameState]);
-
-  useEffect(() => {
-    if (gameState === 'playing' && !isPaused) {
-      lastFrameRef.current = 0;
-      requestRef.current = requestAnimationFrame(update);
+    if (!hole.isPlayer && zoom > 0.28) {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = `bold ${Math.round(14 / zoom)}px "Outfit", system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(hole.name, hole.x, hole.y - hole.radius - 10 / zoom);
     }
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, [gameState, isPaused]);
+  }
+
+  function drawProp(
+    ctx: CanvasRenderingContext2D,
+    prop: CityProp,
+    scale: number,
+    zoom: number,
+    rotation = prop.rotation,
+    dropY = 0
+  ) {
+    const { spec } = prop;
+    const size = spec.size * scale;
+    ctx.save();
+    ctx.translate(prop.x, prop.y + dropY);
+    ctx.rotate(rotation);
+
+    // Contact shadow — cheap, and it is what stops everything looking like
+    // stickers on a flat plane.
+    if (dropY === 0) {
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.beginPath();
+      ctx.ellipse(size * 0.08, size * 0.12, size * 0.5, size * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const half = size / 2;
+    const detail = zoom > 0.34;
+
+    switch (spec.kind) {
+      case "tower":
+      case "house":
+      case "shop": {
+        // A footprint with a lighter roof, offset slightly, for a hint of height.
+        ctx.fillStyle = spec.roof ?? spec.color;
+        ctx.fillRect(-half, -half, size, size);
+        ctx.fillStyle = spec.color;
+        ctx.fillRect(-half * 0.86, -half * 0.86 - size * 0.06, size * 0.86, size * 0.86);
+        if (detail) {
+          ctx.fillStyle = "rgba(255,255,255,0.55)";
+          const windows = spec.kind === "tower" ? 4 : 2;
+          const gap = size * 0.72 / windows;
+          for (let row = 0; row < windows; row += 1) {
+            for (let col = 0; col < windows; col += 1) {
+              ctx.fillRect(-half * 0.7 + col * gap, -half * 0.72 + row * gap, gap * 0.5, gap * 0.5);
+            }
+          }
+        }
+        break;
+      }
+      case "tree": {
+        ctx.fillStyle = "#7a5230";
+        ctx.fillRect(-size * 0.07, -size * 0.05, size * 0.14, size * 0.3);
+        ctx.fillStyle = spec.color;
+        ctx.beginPath(); ctx.arc(0, -size * 0.08, half * 0.72, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.16)";
+        ctx.beginPath(); ctx.arc(-half * 0.2, -size * 0.22, half * 0.3, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      case "bus":
+      case "truck":
+      case "van":
+      case "car":
+      case "taxi": {
+        const width = size;
+        const height = size * 0.46;
+        ctx.fillStyle = spec.color;
+        roundRect(ctx, -width / 2, -height / 2, width, height, height * 0.28);
+        ctx.fill();
+        if (detail) {
+          ctx.fillStyle = "rgba(15,23,42,0.55)";
+          roundRect(ctx, -width * 0.22, -height * 0.34, width * 0.44, height * 0.68, height * 0.2);
+          ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.fillRect(width * 0.34, -height * 0.24, width * 0.1, height * 0.18);
+        }
+        break;
+      }
+      case "bike":
+      case "scooter": {
+        ctx.strokeStyle = spec.color;
+        ctx.lineWidth = Math.max(1.4, size * 0.09);
+        ctx.beginPath();
+        ctx.arc(-size * 0.26, 0, size * 0.2, 0, Math.PI * 2);
+        ctx.moveTo(size * 0.26 + size * 0.2, 0);
+        ctx.arc(size * 0.26, 0, size * 0.2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.26, 0); ctx.lineTo(0, -size * 0.2); ctx.lineTo(size * 0.26, 0);
+        ctx.stroke();
+        break;
+      }
+      case "person": {
+        ctx.fillStyle = spec.color;
+        ctx.beginPath(); ctx.arc(0, -size * 0.2, size * 0.2, 0, Math.PI * 2); ctx.fill();
+        roundRect(ctx, -size * 0.18, -size * 0.02, size * 0.36, size * 0.46, size * 0.14);
+        ctx.fill();
+        break;
+      }
+      case "lamp": {
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(-size * 0.05, -size * 0.1, size * 0.1, size * 0.5);
+        ctx.fillStyle = spec.color;
+        ctx.beginPath(); ctx.arc(0, -size * 0.2, size * 0.2, 0, Math.PI * 2); ctx.fill();
+        break;
+      }
+      case "cone": {
+        ctx.fillStyle = spec.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -half); ctx.lineTo(half * 0.7, half * 0.6); ctx.lineTo(-half * 0.7, half * 0.6);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        ctx.fillRect(-half * 0.42, -half * 0.05, half * 0.84, half * 0.2);
+        break;
+      }
+      default: {
+        // Bins, benches, signs, bottles, litter — a rounded slab reads well
+        // at every zoom and stays cheap when there are hundreds on screen.
+        ctx.fillStyle = spec.color;
+        roundRect(ctx, -half * 0.8, -half * 0.8, size * 0.8, size * 0.8, size * 0.18);
+        ctx.fill();
+        if (detail) {
+          ctx.fillStyle = "rgba(255,255,255,0.28)";
+          ctx.fillRect(-half * 0.6, -half * 0.6, size * 0.6, size * 0.16);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  const showOverlay = phase !== "playing";
+  const timeLow = secondsLeft <= 15;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-3xl font-black text-white flex items-center gap-3 italic">
-            HOLE.DE <Sparkles className="h-6 w-6 text-amber-400" />
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">{ui("Consume the city to grow. Use your mouse to steer!")}</p>
-        </div>
-        <div className="flex gap-3">
-            <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Size")}</p>
-              <p className="text-2xl font-black text-white">{Math.round(playerRef.current.radius)}m</p>
-            </div>
-            <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
-              <p className="text-2xl font-black text-white">{score}</p>
-            </div>
-            <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl text-center shadow-xl">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Best")}</p>
-              <p className="text-2xl font-black text-white">{highScore}</p>
-            </div>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-[var(--text-1)]">{ui("Hole")}</h2>
+        <p className="mt-0.5 text-sm text-[var(--text-3)]">
+          {ui("Swallow the city. Everything smaller than your hole goes in — and everything you eat teaches you its name.")}
+        </p>
       </div>
 
-      <div 
-        ref={containerRef}
-        className="relative w-full aspect-video rounded-[2.5rem] overflow-hidden border border-slate-700/50 shadow-2xl bg-slate-900 group"
-        onMouseLeave={() => { pointerActiveRef.current = false; }}
-      >
-        <canvas ref={canvasRef} className="block w-full h-full cursor-none" />
-
-        {/* Fullscreen Toggle */}
-        <button 
+      <div className="card relative flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+        <div className="flex flex-wrap items-center gap-5">
+          <div>
+            <p className="text-xs text-[var(--text-3)]">{ui("Score")}</p>
+            <p className="text-2xl font-black tabular-nums text-[var(--text-1)]">{score}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-3)]">{ui("Best")}</p>
+            <p className="text-2xl font-black tabular-nums text-[var(--text-1)]">{best}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-3)]">{ui("Rank")}</p>
+            <p className="text-2xl font-black tabular-nums text-[var(--text-1)]">#{rank}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--text-3)]">{ui("Time")}</p>
+            <p className={`flex items-center gap-1.5 text-2xl font-black tabular-nums ${timeLow ? "text-rose-500" : "text-[var(--text-1)]"}`}>
+              <Clock className="h-4 w-4" />
+              {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+            </p>
+          </div>
+        </div>
+        <button
           onClick={toggleFullscreen}
-          className="absolute top-8 right-8 z-20 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
-          title={ui(isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen")}
+          className="rounded-xl p-2 text-[var(--text-3)] opacity-60 transition-opacity hover:bg-white/5 hover:opacity-100"
+          title={ui(isFullscreen ? "Exit fullscreen" : "Enter fullscreen")}
+          type="button"
         >
-          {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
         </button>
+      </div>
 
-        {/* Fullscreen Score HUD */}
-        {isFullscreen && gameState === 'playing' && (
-            <div className="absolute top-8 left-8 flex gap-4 pointer-events-none">
-                <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Size")}</p>
-                    <p className="text-2xl font-black text-white">{Math.round(playerRef.current.radius)}m</p>
-                </div>
-                <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 px-6 py-3 rounded-2xl text-center shadow-xl">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-0.5">{ui("Score")}</p>
-                    <p className="text-2xl font-black text-white">{score}</p>
-                </div>
-            </div>
+      <div
+        ref={containerRef}
+        className="relative w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[#7cb267]"
+        style={{ height: isFullscreen ? "100vh" : "min(64vh, 620px)" }}
+      >
+        <canvas ref={canvasRef} className="block h-full w-full touch-none" />
+
+        {/* Live leaderboard, which is what gives the clock something to mean. */}
+        {phase === "playing" && board.length > 0 && (
+          <div className="pointer-events-none absolute right-3 top-3 w-40 rounded-xl bg-black/45 p-2.5 backdrop-blur-sm">
+            {board.slice(0, 6).map((entry, index) => (
+              <div key={entry.name + index} className="flex items-center gap-2 py-0.5">
+                <span className="w-4 text-[11px] font-black text-white/60">{index + 1}</span>
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: entry.colour }} />
+                <span className={`flex-1 truncate text-[11px] font-bold ${entry.isPlayer ? "text-white" : "text-white/70"}`}>
+                  {entry.name}
+                </span>
+                <span className="text-[11px] font-black tabular-nums text-white/90">{entry.score}</span>
+              </div>
+            ))}
+          </div>
         )}
 
+        {/* The word you just ate. */}
         <AnimatePresence>
-          {lastCollected && gameState === 'playing' && (
+          {phase === "playing" && lastEaten && (
             <motion.div
+              key={lastEaten.de + score}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="pointer-events-none absolute bottom-7 left-1/2 z-20 -translate-x-1/2 rounded-2xl border border-white/15 bg-slate-950/88 px-5 py-3 text-center shadow-2xl backdrop-blur-xl"
-              exit={{ opacity: 0, y: 8 }}
-              initial={{ opacity: 0, y: 8 }}
-              key={`${lastCollected.target}-${score}`}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-2xl bg-black/60 px-4 py-2.5 text-center backdrop-blur-sm"
             >
-              <p className="text-sm font-black text-white">{lastCollected.target}</p>
-              <p className="mt-0.5 text-xs font-semibold text-slate-400">{lastCollected.meaning}</p>
+              <p className="text-base font-black text-white">{learnsEnglish ? lastEaten.en : lastEaten.de}</p>
+              <p className="text-[11px] font-bold text-white/70">{learnsEnglish ? lastEaten.de : lastEaten.en}</p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* HUD Overlay */}
-        <AnimatePresence>
-          {gameState === 'idle' && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
-            >
-              <div className="max-w-md">
-                <div className="w-24 h-24 bg-black rounded-full mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)] border-4 border-white/10" />
-                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">{ui("Object Collector")}</h3>
-                <p className="text-slate-400 mb-10 leading-relaxed">
-                  {ui(learnsEnglish
-                    ? "Collect city objects while learning their English names. Start small, grow steadily, and avoid larger rivals."
-                    : "You are a black hole in a German city. Eat small objects to grow. Once you're big enough, you can consume cars, trees, and even houses!")}
-                </p>
-                <div className="flex flex-col gap-4">
-                    <button 
-                    onClick={initGame}
-                    className="bg-white text-slate-950 px-12 py-5 rounded-2xl font-black text-xl hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
-                    >
-                    {ui("Start consuming")} <ChevronRight className="h-6 w-6" />
-                    </button>
-                    <p className="text-xs text-slate-500">{ui("Press ESC to pause · Mouse or WASD to steer")}</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {isPaused && gameState === 'playing' && (
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center"
-            >
-                <div className="bg-slate-900/90 border border-slate-700/50 p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6">
-                    <h3 className="text-6xl font-black text-white tracking-widest uppercase italic">{ui("Paused")}</h3>
-                    <p className="text-slate-400">{ui("German city life is on hold. Press ESC to resume.")}</p>
-                    <button 
-                        onClick={() => setIsPaused(false)}
-                        className="bg-white text-slate-950 px-10 py-4 rounded-2xl font-black text-lg hover:bg-slate-100 transition-colors shadow-xl active:scale-95 flex items-center gap-2"
-                    >
-                        {ui("Resume mission")}
-                    </button>
-                    <button 
-                        onClick={() => { setGameState('idle'); setIsPaused(false); }}
-                        className="text-slate-500 hover:text-white transition-colors text-sm font-medium"
-                    >
-                        {ui("Quit to Menu")}
-                    </button>
-                </div>
-            </motion.div>
-          )}
-
-          {gameState === 'gameOver' && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-rose-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center"
-            >
-              <h3 className="text-6xl font-black text-white mb-2 uppercase italic tracking-tighter">{ui("Consumed!")}</h3>
-              <p className="text-rose-200/60 mb-12">{ui("A larger hole has swallowed you.")}</p>
-              
-              <div className="bg-white/10 border border-white/10 px-12 py-8 rounded-[2rem] mb-12">
-                <p className="text-xs text-rose-300 font-bold uppercase tracking-widest mb-2">{ui("Final Score")}</p>
-                <p className="text-7xl font-black text-white">{score}</p>
-              </div>
-
-              <button 
-                onClick={initGame}
-                className="bg-white text-slate-950 px-12 py-5 rounded-2xl font-black text-xl hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
+        {showOverlay && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/55 backdrop-blur-sm">
+            <div className="mx-4 max-w-sm rounded-3xl bg-[var(--surface)] p-6 text-center shadow-2xl">
+              {phase === "over" ? (
+                <>
+                  <Trophy className="mx-auto h-9 w-9 text-[var(--accent)]" />
+                  <h3 className="mt-3 text-2xl font-black text-[var(--text-1)]">{ui("Time")}</h3>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
+                    {ui("You finished")} #{rank} {ui("with")} {score} {ui("points")}.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-black text-[var(--text-1)]">{ui("Hole")}</h3>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-[var(--text-3)]">
+                    {ui("Two minutes. Start with litter, end with tower blocks. Move with the mouse or WASD.")}
+                  </p>
+                </>
+              )}
+              <button
+                onClick={start}
+                className="accent-btn mt-5 inline-flex h-11 items-center gap-2 px-6 text-sm"
+                type="button"
               >
-                <RotateCcw className="h-6 w-6" /> {ui("Try again")}
+                {phase === "over" ? <RotateCcw className="h-4 w-4" /> : null}
+                {ui(phase === "over" ? "Play again" : "Start game")}
               </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        )}
       </div>
-      
-      {/* City Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
-              <Map className="h-8 w-8 text-blue-400" />
-              <div>
-                  <p className="text-white font-bold">{ui("World Size")}</p>
-                  <p className="text-slate-500 text-sm">{ui("3000m x 3000m City")}</p>
-              </div>
-          </div>
-          <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
-              <Target className="h-8 w-8 text-emerald-400" />
-              <div>
-                  <p className="text-white font-bold">{ui("Growth Tier")}</p>
-                  <p className="text-slate-500 text-sm">{ui("Houses unlock at 150m")}</p>
-              </div>
-          </div>
-          <div className="bg-slate-800/40 p-6 rounded-3xl border border-slate-700/30 flex items-center gap-4">
-              <Sparkles className="h-8 w-8 text-amber-400" />
-              <div>
-                  <p className="text-white font-bold">{ui("Vocabulary")}</p>
-                  <p className="text-slate-300 text-sm">{ui("13 city objects")}</p>
-              </div>
-          </div>
-      </div>
+
+      <p className="text-center text-xs font-semibold text-[var(--text-3)]">
+        {ui("Mouse or WASD to move · you can only swallow what is smaller than your hole")}
+      </p>
     </div>
   );
 }
 
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
