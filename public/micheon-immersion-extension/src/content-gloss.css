@@ -26,6 +26,11 @@
   position: fixed !important;
   display: flex !important;
   align-items: center !important;
+  /* Wrap, so the example sentence gets a line of its own.
+     Without this the tip was a single nowrap row and a third child demanding
+     full width squeezed the gloss into its own ellipsis — "Mitteilungen"
+     rendered as the single letter "r". */
+  flex-wrap: wrap !important;
   gap: 7px !important;
   background: #1b1d24 !important;
   color: #f4f6f5 !important;
@@ -43,6 +48,8 @@
 
 .micheon-gloss-tip-text {
   all: unset !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
@@ -68,7 +75,8 @@
    this mean" at a glance and the sentence is there for whoever wants it. */
 .micheon-gloss-tip-example {
   display: block !important;
-  flex-basis: 100% !important;
+  flex: 0 0 100% !important;
+  white-space: normal !important;
   margin-top: 4px !important;
   font-size: 11px !important;
   font-weight: 500 !important;

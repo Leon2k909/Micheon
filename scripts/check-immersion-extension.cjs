@@ -387,15 +387,27 @@ checkLatestAudioWins().then(() => {
 
   // CC BY obliges attribution wherever a borrowed sentence is shown.
   const content = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.js"), "utf8");
+  // Attribution lives on the credits page, not on every hover card: CC BY
+  // asks for credit reasonable to the medium, and a tooltip is not it. What
+  // the card MUST do is lay out — the example needs its own row, or a third
+  // child in a nowrap flex row squeezes the gloss into an ellipsis and
+  // "Mitteilungen" renders as the letter "r".
   assert.ok(
-    content.includes('entry.exSrc === "t" ? "  · Tatoeba (CC BY)"'),
-    "a borrowed sentence must be credited on the card it appears on"
+    !content.includes("Tatoeba (CC BY)"),
+    "the hover card should not carry a licence notice; the credits page does"
   );
+  const tipCss = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.css"), "utf8");
+  assert.ok(/.micheon-gloss-tip {[^}]*flex-wrap: wrap/.test(tipCss),
+    "the tip must wrap, or the example crushes the gloss");
+  assert.ok(/.micheon-gloss-tip-example {[^}]*flex: 0 0 100%/.test(tipCss),
+    "the example needs a row of its own");
+  assert.ok(/.micheon-gloss-tip-example {[^}]*white-space: normal/.test(tipCss),
+    "the example must wrap as prose rather than inherit the tip nowrap");
 
   console.log(
     `check-immersion-extension: ${(ours.length + borrowed.length).toLocaleString()} of ${glossary.length.toLocaleString()} `
     + `entries have an example — ${ours.length.toLocaleString()} ours, ${borrowed.length.toLocaleString()} from Tatoeba, `
-    + "every borrowed one traceable, credited and through our own German rules"
+    + "every borrowed one traceable and through our own German rules"
   );
 }
 

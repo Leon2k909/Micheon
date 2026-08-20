@@ -1163,11 +1163,12 @@
     // than an invented one.
     if (tipExampleEl) {
       if (entry.ex) {
-        // CC BY obliges us to say where a borrowed sentence came from, and
-        // it is also useful: our own examples were written for this course,
-        // a Tatoeba one was not, and the reader can weigh it accordingly.
-        const credit = entry.exSrc === "t" ? "  · Tatoeba (CC BY)" : "";
-        tipExampleEl.textContent = (entry.exEn ? entry.ex + " — " + entry.exEn : entry.ex) + credit;
+        // No source credit on the card itself. CC BY wants attribution
+        // "reasonable to the medium", and a hover tooltip is not it: the app's
+        // credits page names Tatoeba, which is where a reader would look. The
+        // sentence id still travels with the entry, so a bad one stays
+        // traceable without putting a licence notice on every word.
+        tipExampleEl.textContent = entry.exEn ? entry.ex + " — " + entry.exEn : entry.ex;
         tipExampleEl.style.display = "";
       } else {
         tipExampleEl.textContent = "";
