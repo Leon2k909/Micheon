@@ -17,6 +17,7 @@ const built = esbuild.buildSync({
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
+      'export { buildCatalog } from "./src/session.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "immersion-word-export.ts",
@@ -34,7 +35,7 @@ const compiled = new Module("immersion-word-export", module);
 compiled.filename = path.join(root, ".immersion-word-export.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { allPartBlueprints, buildApiPartFromResolved, buildWordCatalog } = compiled.exports;
+const { allPartBlueprints, buildApiPartFromResolved, buildWordCatalog, buildCatalog } = compiled.exports;
 const supplementalWordBank = JSON.parse(
   fs.readFileSync(path.join(root, "src", "lib", "bundledWordBank.json"), "utf8")
 );
@@ -54,6 +55,35 @@ const idPart = (value) => String(value ?? "")
   .toLocaleLowerCase("de-DE")
   .replace(/[^a-z0-9äöüß]+/gi, "-")
   .replace(/^-+|-+$/g, "") || "word";
+
+/**
+ * An example sentence for every word we have one for.
+ *
+ * The glossary shipped as bare word-to-gloss pairs, which tells you what a
+ * word means and nothing about how it is used — and "how is it used" is the
+ * whole reason to hover a word on a German page rather than look it up.
+ *
+ * The sentences come from our own catalogue, not an external corpus. That is
+ * deliberate: this content has been through the orthography, punctuation and
+ * quality gates, and a wrong example is worse than none because it teaches a
+ * construction that is not German. Roughly half the glossary is covered, and
+ * the half that is not simply carries no example rather than a doubtful one.
+ *
+ * Shortest match wins. A hover card has room for one line, and "Das ist mein
+ * Haus." teaches das Haus better than a subordinate clause that happens to
+ * contain it.
+*/
+const examplesByWord = new Map();
+for (const item of buildCatalog(parts)) {
+  const de = String(item.de || "").trim();
+  const en = String(item.en || "").split(" / ")[0].trim();
+  if (!de || !en || de.length > 90) continue;
+  for (const token of de.toLocaleLowerCase("de-DE").split(/[^\p{L}\p{N}ß]+/u)) {
+    if (token.length < 2) continue;
+    const current = examplesByWord.get(token);
+    if (!current || de.length < current.de.length) examplesByWord.set(token, { de, en });
+  }
+}
 
 const seen = new Set();
 const rows = [];
@@ -79,6 +109,9 @@ for (const word of [...catalogWords, ...supplementalWords]) {
     deDisplay: String(word.de).trim(),
     // A hover card needs one clean meaning, not an answer-alternative list.
     en: String(word.en).split("/")[0].trim(),
+    ...(examplesByWord.has(key)
+      ? { ex: examplesByWord.get(key).de, exEn: examplesByWord.get(key).en }
+      : {}),
   });
 }
 

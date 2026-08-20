@@ -470,3 +470,64 @@ assert.ok(
 );
 
 console.log("check-study-sets: cards, sets and search results can all be selected and managed in bulk");
+
+// ── the beta section, and where the mascot wakes up ─────────────────────────
+const protoSource = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
+
+// Learn is unfinished, so it sits with the other beta entries rather than in
+// the navigation every account sees.
+assert.ok(
+  protoSource.includes("const LEARN_PATH_NAVIGATION_ITEM"),
+  "Learn needs its own beta navigation entry"
+);
+assert.ok(
+  protoSource.includes("...(learnPathUnlocked ? [LEARN_PATH_NAVIGATION_ITEM] : [])"),
+  "Learn belongs in the beta list"
+);
+assert.ok(
+  /NAVIGATION\.filter\(\(item\) => item\.id !== "games" && item\.id !== "path"\)/.test(protoSource),
+  "Learn must be taken OUT of the main navigation, or it appears twice"
+);
+assert.ok(
+  protoSource.includes("const learnPathUnlocked = leonOnlyFeaturesUnlocked;"),
+  "Learn uses the same gate as the rest of beta — Leon and Michelle"
+);
+// A view that has just been gated away must not strand whoever was on it.
+assert.ok(
+  protoSource.includes('if (!learnPathUnlocked && activeView === "path") setActiveView("home");'),
+  "an account without Learn must be moved off it rather than left there"
+);
+assert.ok(
+  protoSource.includes('if (!createUnlocked && activeView === "create") setActiveView("home");'),
+  "the same for Create"
+);
+
+// The mascot goes back where it was left. The renderer already saved its
+// position inside the overlay; the WINDOW was recreated bottom-right every
+// launch, so the saved coordinate was measured against a window that had
+// moved out from under it.
+const mainSource = fs.readFileSync(path.join(root, "electron/main.js"), "utf8");
+assert.ok(mainSource.includes("function savePetOverlayBounds"), "the overlay's window position must be saved");
+assert.ok(
+  /const saved = getDesktopSettings\(\)\.petOverlayBounds;/.test(mainSource),
+  "and read back when the overlay is created"
+);
+assert.ok(
+  /savePetOverlayBounds\(\);\n\}/.test(mainSource.replace(/\r\n/g, "\n")),
+  "a finished drag is the moment the mascot has been deliberately moved"
+);
+assert.ok(
+  /appIsQuitting = true;\s*\n\s*savePetOverlayBounds\(\);/.test(mainSource.replace(/\r\n/g, "\n")),
+  "and quitting is the last chance to record it"
+);
+// Clamped on read, or a monitor unplugged since would strand the mascot at
+// coordinates nothing can display.
+assert.ok(
+  /Math\.max\(desktopBounds\.x, saved\.x\)/.test(mainSource),
+  "a restored position must be clamped to the desktop that exists now"
+);
+
+console.log(
+  "check-study-sets: Learn sits under beta with Create, and the mascot's window "
+  + "position survives a restart"
+);

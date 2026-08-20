@@ -277,3 +277,48 @@ checkLatestAudioWins().then(() => {
   console.error(error);
   process.exitCode = 1;
 });
+
+// ── example sentences ───────────────────────────────────────────────────────
+// A bare word-to-gloss pair says what a word means and nothing about how it is
+// used, which is the reason to hover a word on a German page in the first
+// place. Roughly half the glossary now carries a real sentence.
+//
+// The sentences come from OUR catalogue, not an external corpus, and that is
+// the point: this content has been through the orthography, punctuation and
+// quality gates. A wrong example is worse than none, because it teaches a
+// construction that is not German — which is exactly what an unfiltered
+// Tatoeba import did to the sentence course.
+{
+  const glossary = JSON.parse(
+    fs.readFileSync(path.join(root, "public/micheon-immersion-extension/data/words.json"), "utf8")
+  );
+  const withExample = glossary.filter((entry) => entry.ex);
+  assert.ok(
+    withExample.length >= 3000,
+    `only ${withExample.length} glossary entries carry an example; expected 3,000+`
+  );
+  for (const entry of withExample) {
+    assert.ok(entry.ex.trim().length > 3, `${entry.de}: example is empty`);
+    assert.ok(entry.ex.length <= 90, `${entry.de}: example too long for a hover card — "${entry.ex}"`);
+    assert.ok(entry.exEn && entry.exEn.trim(), `${entry.de}: example has no translation`);
+    // The example must actually contain the word, or it teaches nothing about it.
+    assert.ok(
+      entry.ex.toLocaleLowerCase("de-DE").includes(entry.de.toLocaleLowerCase("de-DE")),
+      `${entry.de}: the example does not contain the word — "${entry.ex}"`
+    );
+  }
+  // And the card has to be able to show it.
+  const content = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.js"), "utf8");
+  assert.ok(content.includes("tipExampleEl"), "the hover card must have somewhere to put the example");
+  assert.ok(
+    content.includes("if (entry.ex) {"),
+    "an entry with no example must show nothing rather than an empty line"
+  );
+  const css = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.css"), "utf8");
+  assert.ok(css.includes(".micheon-gloss-tip-example"), "the example needs styling of its own");
+
+  console.log(
+    `check-immersion-extension: ${withExample.length.toLocaleString()} of ${glossary.length.toLocaleString()} `
+    + "glossary entries carry a vetted example sentence that contains the word"
+  );
+}

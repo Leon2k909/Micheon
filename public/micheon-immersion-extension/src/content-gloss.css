@@ -62,3 +62,17 @@
 .micheon-gloss-tip-speak:hover {
   background: rgba(255, 255, 255, 0.16) !important;
 }
+
+/* The example sentence, under the gloss.
+   Its own line and a quieter weight, so the card still answers "what does
+   this mean" at a glance and the sentence is there for whoever wants it. */
+.micheon-gloss-tip-example {
+  display: block !important;
+  flex-basis: 100% !important;
+  margin-top: 4px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  opacity: 0.72 !important;
+  max-width: 280px !important;
+}

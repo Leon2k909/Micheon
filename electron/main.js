@@ -418,11 +418,60 @@ function virtualDesktopBounds() {
   };
 }
 
+/**
+ * Remember where the mascot was left.
+ *
+ * The renderer already saved its position inside the overlay window, but the
+ * WINDOW itself was recreated bottom-right of the primary display on every
+ * launch — so dragging the pet somewhere and restarting put it back in the
+ * corner, and the saved coordinate was measured against a window that had
+ * moved out from under it.
+ *
+ * Stored in desktop-settings.json rather than localStorage because it is a
+ * property of the window, which the main process owns and the renderer cannot
+ * see. Clamped on read: a monitor that has been unplugged since must not
+ * strand the mascot at coordinates nothing can display.
+ */
+function savePetOverlayBounds() {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  const bounds = petWindow.getBounds();
+  const current = getDesktopSettings().petOverlayBounds;
+  if (
+    current
+    && current.x === bounds.x && current.y === bounds.y
+    && current.width === bounds.width && current.height === bounds.height
+  ) return;
+  saveDesktopSettings({ petOverlayBounds: bounds });
+}
+
 function initialPetOverlayBounds() {
   const desktopBounds = virtualDesktopBounds();
   const primary = screen.getPrimaryDisplay().workArea;
   const width = Math.min(PET_OVERLAY_INITIAL_WIDTH, desktopBounds.width);
   const height = Math.min(PET_OVERLAY_INITIAL_HEIGHT, desktopBounds.height);
+
+  const saved = getDesktopSettings().petOverlayBounds;
+  if (
+    saved
+    && Number.isFinite(saved.x) && Number.isFinite(saved.y)
+    && Number.isFinite(saved.width) && Number.isFinite(saved.height)
+  ) {
+    const savedWidth = Math.min(Math.max(120, saved.width), desktopBounds.width);
+    const savedHeight = Math.min(Math.max(120, saved.height), desktopBounds.height);
+    return {
+      x: Math.min(
+        Math.max(desktopBounds.x, saved.x),
+        desktopBounds.x + desktopBounds.width - savedWidth
+      ),
+      y: Math.min(
+        Math.max(desktopBounds.y, saved.y),
+        desktopBounds.y + desktopBounds.height - savedHeight
+      ),
+      width: savedWidth,
+      height: savedHeight,
+    };
+  }
+
   return {
     x: Math.min(
       desktopBounds.x + desktopBounds.width - width,
@@ -795,6 +844,8 @@ function finishPetOverlayDrag() {
     // behind it.
     petWindow.webContents.send("pet-overlay:resync");
   }
+  // Where the mascot was dropped is where it should be next launch.
+  savePetOverlayBounds();
 }
 
 function startPetOverlayDragWatchdog() {
@@ -2339,6 +2390,7 @@ if (hasSingleInstanceLock) {
 
 app.on("before-quit", () => {
   appIsQuitting = true;
+  savePetOverlayBounds();
   clearListenMediaControls();
   destroyTray();
 });

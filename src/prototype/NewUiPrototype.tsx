@@ -213,6 +213,9 @@ const SHOP_NAVIGATION_ITEM: NavigationItem = { id: "shop", label: "Shop", icon: 
 // Create sits with the other beta entries: it is the newest thing here and
 // the two accounts that can see beta are the two people using the app.
 const CREATE_NAVIGATION_ITEM: NavigationItem = { id: "create", label: "Create", icon: PlusSquare };
+// Learn is the lesson path, and it is still being worked on, so it sits with
+// the other beta entries rather than in the main navigation everyone sees.
+const LEARN_PATH_NAVIGATION_ITEM: NavigationItem = { id: "path", label: "Learn", icon: Route };
 
 /**
  * Every destination that can appear in a nav, for looking a hidden one up.
@@ -495,6 +498,7 @@ const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "li
 
 function Sidebar({
   createUnlocked,
+  learnPathUnlocked,
   activeView,
   gamesUnlocked,
   onNavigate,
@@ -506,6 +510,7 @@ function Sidebar({
 }: {
   activeView: PrototypeView;
   createUnlocked: boolean;
+  learnPathUnlocked: boolean;
   gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
   onPrefetch: (view: PrototypeView) => void;
@@ -537,8 +542,9 @@ function Sidebar({
   // Friends and Shop all have rough edges, so together they form a labelled
   // Beta section at the foot of the nav — and only on Leon's account. Every
   // other account gets the main navigation and nothing half-built.
-  const navigationItems = NAVIGATION.filter((item) => item.id !== "games");
+  const navigationItems = NAVIGATION.filter((item) => item.id !== "games" && item.id !== "path");
   const betaItems = [
+    ...(learnPathUnlocked ? [LEARN_PATH_NAVIGATION_ITEM] : []),
     ...(createUnlocked ? [CREATE_NAVIGATION_ITEM] : []),
     ...(gamesUnlocked ? [NAVIGATION.find((item) => item.id === "games")!] : []),
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
@@ -2608,6 +2614,7 @@ export default function NewUiPrototype({
   // coming-soon card if it lands on the view another way.
   const gamesUnlocked = leonOnlyFeaturesUnlocked;
   const createUnlocked = leonOnlyFeaturesUnlocked;
+  const learnPathUnlocked = leonOnlyFeaturesUnlocked;
   const activeCourse = getCourse(activeCourseId) ?? getCourse("german");
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
@@ -2692,7 +2699,11 @@ export default function NewUiPrototype({
   useEffect(() => {
     if (!socialPreviewUnlocked && activeView === "social") setActiveView("home");
     if (!shopUnlocked && activeView === "shop") setActiveView("home");
-  }, [activeView, shopUnlocked, socialPreviewUnlocked]);
+    // Learn moved into beta, so an account without it must not be left sitting
+    // on a view that no longer has a way back to itself.
+    if (!learnPathUnlocked && activeView === "path") setActiveView("home");
+    if (!createUnlocked && activeView === "create") setActiveView("home");
+  }, [activeView, createUnlocked, learnPathUnlocked, shopUnlocked, socialPreviewUnlocked]);
 
   // Pointer over a nav item, or keyboard focus on it, is intent. Start the
   // catalogue and pull the chunk now rather than at the click. Both calls are
@@ -3101,6 +3112,7 @@ export default function NewUiPrototype({
           <Sidebar
             activeView={activeView}
             createUnlocked={createUnlocked}
+            learnPathUnlocked={learnPathUnlocked}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
             onPrefetch={prefetchView}

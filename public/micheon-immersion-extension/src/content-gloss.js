@@ -272,7 +272,7 @@
 
   function buildIndexes(words) {
     for (const w of words) {
-      const entry = { en: w.en, deDisplay: w.deDisplay };
+      const entry = { en: w.en, deDisplay: w.deDisplay, ex: w.ex, exEn: w.exEn };
       if (!byDeExact.has(w.de)) byDeExact.set(w.de, entry);
       const lowerKey = w.de.toLowerCase();
       if (!byDeLowerAny.has(lowerKey)) byDeLowerAny.set(lowerKey, entry);
@@ -530,6 +530,7 @@
   // they transform the root element.
   let tipEl = null;
   let tipTextEl = null;
+  let tipExampleEl = null;
   let tipSpeakEl = null;
   // Viewport rect of the word the tip currently belongs to, captured when
   // it was shown. Kept as a plain rectangle rather than an element
@@ -556,8 +557,14 @@
       clearPendingHoverSpeech();
       speakGerman(tipEl?.dataset.micheonDe || "", { force: true });
     });
+    // The example sits under the gloss, not beside it: a hover card that
+    // says only "house" tells you what the word means and nothing about how
+    // it is used, which is the reason to hover a word on a German page at all.
+    tipExampleEl = document.createElement("span");
+    tipExampleEl.className = "micheon-gloss-tip-example";
     tipEl.appendChild(tipTextEl);
     tipEl.appendChild(tipSpeakEl);
+    tipEl.appendChild(tipExampleEl);
     document.documentElement.appendChild(tipEl);
     return tipEl;
   }
@@ -1141,6 +1148,17 @@
     if (rect.width === 0 && rect.height === 0) { hideTip(); return; }
     const tip = ensureTip();
     tipTextEl.textContent = entry.gloss;
+    // About half the glossary has an example; the rest shows nothing rather
+    // than an invented one.
+    if (tipExampleEl) {
+      if (entry.ex) {
+        tipExampleEl.textContent = entry.exEn ? entry.ex + " — " + entry.exEn : entry.ex;
+        tipExampleEl.style.display = "";
+      } else {
+        tipExampleEl.textContent = "";
+        tipExampleEl.style.display = "none";
+      }
+    }
     tip.dataset.micheonDe = entry.de || "";
     // Measured while hidden -- visibility:hidden keeps layout, which is why
     // it is used here rather than display:none.
@@ -1297,7 +1315,7 @@
   const glossedTextNodes = new Set();
   let glossRangeCount = 0;
 
-  function registerGloss(node, start, end, gloss, de) {
+  function registerGloss(node, start, end, gloss, de, ex, exEn) {
     if (!glossHighlight) return;
     let list = glossIndex.get(node);
     if (list?.some((entry) => entry.start === start && entry.end === end && entry.gloss === gloss)) return;
@@ -1308,7 +1326,7 @@
     } catch { return; }
     glossHighlight.add(range);
     if (!list) { list = []; glossIndex.set(node, list); }
-    list.push({ start, end, gloss, de, range });
+    list.push({ start, end, gloss, de, ex, exEn, range });
     glossedTextNodes.add(node);
     glossRangeCount += 1;
   }
@@ -1412,7 +1430,7 @@
           }
         }
         if (hit) {
-          registerGloss(node, match.index, match.index + token.length, hit.en, token);
+          registerGloss(node, match.index, match.index + token.length, hit.en, token, hit.ex, hit.exEn);
         }
       } else {
         hit = byEn.get(lower);
