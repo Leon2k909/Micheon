@@ -769,9 +769,30 @@ html[data-theme="dark"] { --shell-top: #0c1017; --shell-bottom: #070910; --card-
 html.is-electron { --titlebar-h: 38px; --app-h: calc(100dvh - 38px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
-   whole viewport from top:0, which would slide under the desktop title bar.
-   In the Electron build, start them just below the bar instead. */
-html.is-electron .app-overlay { top: var(--titlebar-h); }
+   whole viewport from top:0, which would slide their CONTENT under the desktop
+   title bar.
+   This used to start the whole overlay at top:38px, which left a 38px strip the
+   overlay never painted. The title bar is only `position: sticky`, so scrolling
+   the page behind the overlay carried it out of that strip and the page showed
+   through the gap — from inside a lesson you could watch the Practice menu slide
+   past above the header.
+   The fix separates the two jobs: the BOX covers the viewport from the top so
+   nothing can appear through it, and PADDING keeps the content below the bar,
+   exactly where top:38px used to put it. The bar itself stays visible and
+   draggable on z-index 10000, well above any overlay. */
+html.is-electron .app-overlay {
+  top: 0;
+  padding-top: var(--titlebar-h);
+}
+
+/* An overlay is modal: the page underneath must not scroll while it is open.
+   Without this the background still moves under a stationary overlay, which
+   reads as the app scrolling something invisible, and it is what dragged the
+   sticky title bar out of place in the first place. */
+html:has(.app-overlay),
+html:has(.app-overlay) body {
+  overflow: hidden;
+}
 
 .titlebar {
   height: var(--titlebar-h);
