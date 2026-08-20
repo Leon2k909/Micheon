@@ -50,6 +50,9 @@ const parts = orderParts({
   ...buildBundledParts(),
   ...buildTatoebaParts(),
 });
+const authoredWords = Object.entries(resolvedBlueprints).flatMap(([partKey, part]) =>
+  (part?.vocab ?? []).map((word) => ({ ...word, partKey }))
+);
 const words = buildWordCatalog(parts);
 
 const normalise = (value) => String(value ?? "")
@@ -85,7 +88,9 @@ const looksLikeGermanCopy = (de, en) => {
   return enTokens.length >= 2 && shared / enTokens.length >= 0.8;
 };
 
+const authoredBad = authoredWords.filter((word) => looksLikeGermanCopy(word.de, word.en));
 const bad = words.filter((word) => looksLikeGermanCopy(word.de, word.en));
+const authoredByGerman = new Map(authoredWords.map((word) => [normalise(word.de), word]));
 const byGerman = new Map(words.map((word) => [normalise(word.de), word]));
 
 let failures = 0;
@@ -96,6 +101,26 @@ function check(name, condition, detail = "") {
   }
   failures += 1;
   console.error(`FAIL ${name}${detail ? ` - ${detail}` : ""}`);
+}
+
+check(
+  "authored vocabulary has no multi-word German copy on its English side",
+  authoredBad.length === 0,
+  authoredBad.slice(0, 30).map((word) => `${word.de} => ${word.en} (${word.partKey})`).join(" | ")
+);
+
+for (const [german, expectedEnglish] of [
+  ["gleichfalls", "same to you"],
+  ["ebenso", "likewise"],
+  ["Meinetwegen.", "all right then"],
+  ["anbei", "attached"],
+]) {
+  const word = authoredByGerman.get(normalise(german));
+  check(
+    `authored ${german} gloss is translated before catalogue filtering`,
+    Boolean(word) && normalise(word.en).includes(normalise(expectedEnglish)),
+    word ? word.en : "missing authored word"
+  );
 }
 
 check(

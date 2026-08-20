@@ -375,7 +375,7 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     adverb("dementsprechend", "accordingly, in line with that"),
     adverb("andernfalls", "otherwise, if not"),
     adverb("ebenfalls", "likewise, also"),
-    adverb("ebenso", "just as, likewise"),
+    adverb("ebenso", "likewise, similarly"),
     adverb("zugleich", "at the same time"),
     adverb("zunächst", "initially, first of all"),
     adverb("bislang", "up to this point"),
