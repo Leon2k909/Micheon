@@ -82,6 +82,18 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
+import {
+  CURRENCY_AUTO,
+  CURRENCY_CODES,
+  currencyIsAutomatic,
+  currencyLabel,
+  loadCurrency,
+  packPrice,
+  premiumPrice,
+  saveCurrency,
+  type CurrencyCode,
+  type PriceTier,
+} from "@/lib/currency";
 import { loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, upcomingPackProgress, type PackProgress } from "@/lib/packProgress";
@@ -268,16 +280,19 @@ const SHOP_EQUIPPED_KEY = "prototypeShopEquippedBadge";
 type CoinPack = {
   id: string;
   coins: number;
-  price: string;
+  /** Index into the price points for whichever currency is showing — the
+      packs no longer carry "£1.99" as a string, because only one learner in
+      the world reads prices that way. */
+  tier: PriceTier;
   label: string;
   note: string;
   featured?: boolean;
 };
 const COIN_PACKS: readonly CoinPack[] = [
-  { id: "pocket", coins: 500, price: "£1.99", label: "Pocket pack", note: "A small boost for profile rewards." },
-  { id: "popular", coins: 1_200, price: "£3.99", label: "Popular pack", note: "Enough for several pins and future rewards.", featured: true },
-  { id: "power", coins: 3_000, price: "£7.99", label: "Power pack", note: "A bigger balance for regular learners." },
-  { id: "vault", coins: 6_500, price: "£14.99", label: "Coin vault", note: "The largest preview bundle in the shop." },
+  { id: "pocket", coins: 500, tier: 0, label: "Pocket pack", note: "A small boost for profile rewards." },
+  { id: "popular", coins: 1_200, tier: 1, label: "Popular pack", note: "Enough for several pins and future rewards.", featured: true },
+  { id: "power", coins: 3_000, tier: 2, label: "Power pack", note: "A bigger balance for regular learners." },
+  { id: "vault", coins: 6_500, tier: 3, label: "Coin vault", note: "The largest preview bundle in the shop." },
 ];
 
 const SHOP_ITEMS: ReadonlyArray<{
@@ -1882,6 +1897,11 @@ function ShopView({
   ownedBadges: ShopBadgeId[];
 }) {
   const [previewMessage, setPreviewMessage] = useState("");
+  // Guessed from the locale on first visit, remembered once chosen. Held in
+  // state rather than read per render so the whole shop repricing is one
+  // update rather than one per price.
+  const [currency, setCurrency] = useState<CurrencyCode>(() => loadCurrency());
+  const [currencyAuto, setCurrencyAuto] = useState(() => currencyIsAutomatic());
 
   const previewPurchase = (message: string) => {
     setPreviewMessage(message);
@@ -1920,7 +1940,28 @@ function ShopView({
       <section aria-labelledby="coin-packs-heading" className="np-shop-purchase-section">
         <div className="np-shop-section-heading">
           <div><h2 id="coin-packs-heading">{ui("Buy Micheon coins")}</h2><p>{ui("Choose a coin pack for profile pins and future shop rewards.")}</p></div>
-          <span>{ui("Checkout preview")}</span>
+          <div className="np-shop-heading-actions">
+            <label className="np-currency-picker">
+              <span>{ui("Currency")}</span>
+              <select
+                aria-label={ui("Display currency")}
+                data-testid="shop-currency"
+                onChange={(event) => {
+                  const next = event.target.value as CurrencyCode | typeof CURRENCY_AUTO;
+                  saveCurrency(next);
+                  setCurrencyAuto(next === CURRENCY_AUTO);
+                  setCurrency(loadCurrency());
+                }}
+                value={currencyAuto ? CURRENCY_AUTO : currency}
+              >
+                <option value={CURRENCY_AUTO}>{ui("Automatic")} ({currency})</option>
+                {CURRENCY_CODES.map((code) => (
+                  <option key={code} value={code}>{code} — {ui(currencyLabel(code))}</option>
+                ))}
+              </select>
+            </label>
+            <span>{ui("Checkout preview")}</span>
+          </div>
         </div>
 
         <div className="np-coin-pack-grid">
@@ -1937,7 +1978,7 @@ function ShopView({
                 onClick={() => previewPurchase(`${pack.coins.toLocaleString()} coins are not charged or added yet. Checkout will be connected later.`)}
                 type="button"
               >
-                <span>{pack.price}</span>
+                <span>{packPrice(pack.tier, currency)}</span>
                 {ui("Buy coins")}
               </button>
             </article>
@@ -1961,7 +2002,7 @@ function ShopView({
           <span><MessageCircleMore /><strong>{ui("Learn together")}</strong></span>
         </div>
         <div className="np-premium-action">
-          <div><strong>£5.99</strong><span>{ui("per month, preview price")}</span></div>
+          <div><strong>{premiumPrice(currency)}</strong><span>{ui("per month, preview price")}</span></div>
           <button
             data-testid="shop-premium-buy"
             onClick={() => previewPurchase(ui("Premium checkout and its social features are not connected yet."))}

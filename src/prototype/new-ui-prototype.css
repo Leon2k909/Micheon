@@ -3834,11 +3834,15 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   box-shadow: 0 1px 0 #2b9139;
 }
 
+/* This line tells you your card will not be charged, which is the one thing
+   on the page nobody should have to squint at. It was 11px in --np-muted,
+   the dimmest text token there is, centred under a dark card — the weakest
+   contrast in the shop carrying the most important sentence. */
 .np-shop-checkout-note {
   margin: 0;
   color: var(--np-muted);
-  font-size: 11px;
-  font-weight: 720;
+  font-size: 12px;
+  font-weight: 760;
   text-align: center;
 }
 
@@ -6381,9 +6385,16 @@ html[data-theme="dark"] .np-coin-pack.is-featured {
     #1c2027;
 }
 
+/* A translucent gold wash rather than a solid brown block.
+   #483a18 is an opaque muddy brown that sat on the card like a sticker and
+   fought every accent that was not green. A tint of the gold itself picks up
+   whatever surface is behind it, so the disc reads as gold on this card in
+   any theme and at any accent, while the coin keeps its colour — coins being
+   gold is worth keeping; the brown tile around them was not. */
 html[data-theme="dark"] .np-coin-pack-icon {
   color: #f6cb64;
-  background: #483a18;
+  background: rgba(246, 203, 100, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(246, 203, 100, 0.16);
 }
 
 html[data-theme="dark"] .np-coin-pack.is-featured .np-coin-pack-copy small {
@@ -8189,6 +8200,14 @@ html[data-accent="custom"] .np-shop-heading small {
   color: var(--accent-pressed, var(--np-green));
 }
 
+/* ...except in dark, where the hero's own background IS --accent-pressed, so
+   this painted the eyebrow in the background colour and "REWARD SHOP"
+   disappeared entirely. Same root cause as the strapline below it: text on
+   the accent needs the on-accent token. */
+html[data-theme="dark"][data-accent="custom"] .np-shop-heading small {
+  color: var(--accent-text, #ffffff);
+}
+
 html[data-accent="custom"] .np-coin-pack > button {
   box-shadow: 0 4px 0 var(--np-green);
 }
@@ -9346,8 +9365,14 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-hero {
     linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)) 0%, var(--accent-pressed, var(--np-green-dark)) 58%, var(--accent-pressed, var(--np-green-dark)) 100%);
 }
 
+/* The shop hero fills its own background with the accent, so text on it needs
+   the on-accent token, not the on-surface one. --accent-ink is tuned by
+   readableInk() to clear 4.5:1 against the page surface (#161b23); the hero
+   is not that surface, it is the accent itself, so accent-ink landed as a
+   tinted grey on a saturated field and the strapline went hard to read.
+   --accent-text is the token that exists for this. */
 html[data-theme="dark"][data-accent="custom"] .np-shop-heading p {
-  color: var(--accent-ink, var(--np-green));
+  color: var(--accent-text, #ffffff);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-equipped {
@@ -10201,4 +10226,105 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
 @media (max-width: 700px) {
   .np-uk-translation span { display: none; }
   .np-uk-translation { margin-left: 0; }
+}
+
+
+/* ══ Shop: text on accent-coloured fills ═════════════════════════════════
+   Measured on a custom accent (#7f96ee), thirteen elements in the shop fell
+   below 4.5:1 and two were effectively invisible. One cause throughout: the
+   shop picks its ink for a green palette, where the accent is dark and white
+   sits on it happily. A light accent turns that inside out.
+
+     white on --accent .............. 2.80  ✗   (Buy coins, prices, Buy and equip)
+     white on --accent-pressed ...... 3.96  ✗   (the Premium card)
+     --accent-text on --accent-dim .. 1.73  ✗   (Checkout preview, "0 of 7 owned")
+     --accent-ink on white .......... 2.38  ✗   (Get Premium)
+
+   accentColour.ts already computes the right ink for each surface; the shop
+   was simply not asking for it. --accent-text is built to sit ON the accent
+   fill, and --accent-dim in dark mode is a deep navy that wants light ink,
+   not the near-black --accent-text.
+
+     --accent-text on --accent ...... 6.90  ✓
+     --accent-text on --accent-pressed 4.89  ✓
+     white on --accent-dim .......... 11.16 ✓
+     --accent-text on --accent (CTA)  6.90  ✓
+
+   Scoped to [data-accent="custom"] so the shipped green palette is untouched. */
+
+html[data-accent="custom"] .np-coin-pack > button,
+html[data-accent="custom"] .np-coin-pack > button span,
+html[data-accent="custom"] .np-shop-item-footer > button {
+  color: var(--accent-text);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-shop-section-heading > span {
+  color: #ffffff;
+}
+
+/* The Premium card is filled with --accent-pressed, so everything written on
+   it needs the on-accent ink. The opacities stay — they are hierarchy, and at
+   4.89:1 base there is room for them. */
+html[data-theme="dark"][data-accent="custom"] .np-premium-copy small,
+html[data-theme="dark"][data-accent="custom"] .np-premium-copy p,
+html[data-theme="dark"][data-accent="custom"] .np-premium-benefits strong,
+html[data-theme="dark"][data-accent="custom"] .np-premium-action > div span,
+html[data-theme="dark"][data-accent="custom"] .np-premium-action > small {
+  color: var(--accent-text);
+}
+
+/* "Get Premium" was accent ink on a near-white button — the one place the
+   inverse treatment was used, and the only place it failed both ways round.
+   It becomes an accent button like every other call to action in the shop,
+   which is both legible and consistent. */
+html[data-accent="custom"] .np-premium-action > button,
+html:not([data-theme="dark"])[data-accent="custom"] .np-premium-action > button,
+html[data-theme="dark"][data-accent="custom"] .np-premium-action > button {
+  color: var(--accent-text);
+  background: var(--accent);
+}
+
+/* The currency picker, beside the checkout-preview pill.
+   Sized to the label rather than stretched, so it reads as a setting on this
+   section and not as another call to action competing with "Buy coins". */
+.np-shop-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.np-currency-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--np-line, rgba(255, 255, 255, 0.1));
+  border-radius: 999px;
+  background: var(--np-surface-soft, rgba(255, 255, 255, 0.04));
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.np-currency-picker > span {
+  color: var(--np-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.np-currency-picker select {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--np-text);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* The options list is painted by the OS, so it needs a real background of its
+   own — on a dark theme an unstyled option renders dark-on-dark in Chromium. */
+.np-currency-picker option {
+  color: var(--np-text);
+  background: var(--np-surface);
 }
