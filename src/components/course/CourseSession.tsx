@@ -7,6 +7,7 @@ import { getCodeBackground } from "@/lib/codeBackground";
 import { buildLessonSession, checkCode, type SessionStep } from "@/lib/courseSession";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 import { HighlightedCode } from "@/components/course/highlight";
+import { useScrollLock } from "@/lib/scrollLock";
 
 // ── IDE-style editor: transparent textarea over highlighted code ──
 function CodeEditor({
@@ -354,6 +355,9 @@ export function CourseSession({
   onComplete: () => void;
   onExit: () => void;
 }) {
+  // A session can be opened from inside the reader, so two overlays are live
+  // at once. The lock counts, and only lifts when the last one closes.
+  useScrollLock();
   const steps = useMemo<SessionStep[]>(
     () => buildLessonSession(resolveLessonForBackground(lesson, getCodeBackground())),
     [lesson]

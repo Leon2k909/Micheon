@@ -6,8 +6,12 @@ import { loadCourseProgress, resolveLessonForBackground, saveCourseProgress } fr
 import { getCodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
+import { useScrollLock } from "@/lib/scrollLock";
 
 export function CourseShell({ course, onExit, initialLessonId }: { course: Course; onExit: () => void; initialLessonId?: string }) {
+  // The shell underneath is still scrollable, which is where the second
+  // scrollbar came from. Before any early return, so the hook count is stable.
+  useScrollLock();
   const user = getAuthUser();
   const lessons = course.lessons ?? [];
   const [activeId, setActiveId] = useState(initialLessonId ?? lessons[0]?.id ?? "");
