@@ -1,6 +1,6 @@
 import { ui } from "@/lib/i18n";
 import React from "react";
-import { ArrowRight, BookOpen, Check, Code2, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Code2, Landmark, Trophy } from "lucide-react";
 import type { Course } from "@/lib/courses";
 import { loadCourseProgress } from "@/lib/courses";
 import { getAuthUser } from "@/lib/profileStorage";
@@ -23,6 +23,15 @@ export function CourseDashboardView({
 
   const nextLesson = lessons.find((l) => !completed.has(l.id)) ?? lessons[0];
 
+  // This card was written for the C# course and said so out loud: every course
+  // that reached it opened on "variables, types, then build up to s&box game
+  // code", including the citizenship one. The lesson icon was a pair of code
+  // brackets for the same reason.
+  const LessonIcon = course.kind === "programming" ? Code2 : Landmark;
+  const openingLine = course.kind === "programming"
+    ? "Start from the top — variables, types, then build up to s&box game code."
+    : `Start from the top. ${lessons.length} lessons, and the first one explains the test itself.`;
+
   return (
     <div className="space-y-4">
       {/* Hero */}
@@ -41,7 +50,7 @@ export function CourseDashboardView({
           </h2>
           <p className="course-feature-copy mt-2 max-w-md text-sm leading-6">
             {doneCount === 0
-              ? "Start from the top — variables, types, then build up to s&box game code."
+              ? openingLine
               : nextLesson
                 ? `Pick up where you left off. ${doneCount} of ${lessons.length} lessons done.`
                 : "You've completed every lesson. Revisit any topic from the course material."}
@@ -78,7 +87,7 @@ export function CourseDashboardView({
           className="card card-hover flex items-center gap-4 p-5 text-left"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-            <Code2 className="h-5 w-5" />
+            <LessonIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("Browse lessons")}</p>
@@ -120,7 +129,7 @@ export function CourseDashboardView({
                 className="flex w-full items-center gap-3 rounded-2xl bg-[var(--surface-2)] p-3.5 text-left transition-colors hover:bg-[var(--surface-3)]"
               >
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${done ? "bg-[var(--success-bg)] text-[var(--success-text)]" : "bg-[var(--surface)] text-[var(--text-3)]"}`}>
-                  {done ? <Check className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
+                  {done ? <Check className="h-4 w-4" /> : <LessonIcon className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-black text-[var(--text-1)]">{lesson.title}</p>

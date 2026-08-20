@@ -1954,6 +1954,12 @@ const DE: Record<string, string> = {
   "Learning German": "Deutsch lernen",
   "Leon is currently second. A short lesson could close the gap.": "Leon ist gerade Zweiter. Eine kurze Lektion könnte den Abstand schließen.",
   "Leon only": "Nur Leon",
+  // "Life in the UK" is the name of a Home Office test, so it keeps its English
+  // name on a German interface the same way "Micheon Premium" does.
+  "Life in UK": "Life in UK",
+  "Life in the UK": "Life in the UK",
+  "The citizenship test course: history, government, law and traditions.": "Der Kurs für den Einbürgerungstest: Geschichte, Regierung, Recht und Traditionen.",
+  "Everything the Life in the UK Test asks, in fourteen lessons.": "Alles, was der Life-in-the-UK-Test abfragt, in vierzehn Lektionen.",
   "Level progress": "Stufenfortschritt",
   "Levels, achievements, and activity": "Stufen, Erfolge und Aktivität",
   "Levels, streaks, XP, milestones, and activity.": "Stufen, Serien, XP, Meilensteine und Aktivität.",

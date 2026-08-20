@@ -19,6 +19,7 @@ import {
   GraduationCap,
   Headphones,
   Home,
+  Landmark,
   Languages,
   Leaf,
   LockKeyhole,
@@ -115,7 +116,7 @@ const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsVi
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
 
-type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more";
+type PrototypeView = "home" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -148,6 +149,11 @@ type Exercise = {
 
 type Milestone = (typeof MILESTONES)[number];
 
+// Life in the UK sits at the foot of the nav rather than inside the course
+// switcher. It is a course you revise alongside German, not instead of it, so
+// burying it behind "switch course" made it both hard to find and wrong in
+// kind — picking it there swaps the whole app over. Its own destination keeps
+// German exactly where it is.
 const NAVIGATION: NavigationItem[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "learn", label: "Lessons", icon: BookOpen },
@@ -155,6 +161,7 @@ const NAVIGATION: NavigationItem[] = [
   { id: "listen", label: "Listen", icon: Headphones },
   { id: "games", label: "Games", icon: Gamepad2 },
   { id: "more", label: "More", icon: Menu },
+  { id: "life-in-uk", label: "Life in UK", icon: Landmark },
 ];
 
 const MOBILE_NAVIGATION: NavigationItem[] = [
@@ -167,6 +174,8 @@ const MOBILE_NAVIGATION: NavigationItem[] = [
 
 const SOCIAL_NAVIGATION_ITEM: NavigationItem = { id: "social", label: "Friends", icon: UsersRound };
 const SHOP_NAVIGATION_ITEM: NavigationItem = { id: "shop", label: "Shop", icon: ShoppingBag };
+
+const LIFE_IN_THE_UK_COURSE_ID = "life-in-the-uk";
 
 const PROTOTYPE_SIDEBAR_MIN = 188;
 const PROTOTYPE_SIDEBAR_MAX = 330;
@@ -190,6 +199,7 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
   { id: "profile", title: "Profile and settings", subtitle: "Account, learning direction, sound, and preferences.", keywords: "account settings language sound preferences" },
   { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
+  { id: "life-in-uk", title: "Life in UK", subtitle: "The citizenship test course: history, government, law and traditions.", keywords: "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office einbürgerung" },
 ];
 
 const LEON_SOCIAL_SEARCH_PAGE = {
@@ -2187,6 +2197,9 @@ function MoreView({
       tone: "mint",
       action: () => onNavigate("social"),
     }] : []),
+    // The mobile bar is a fixed five columns, so this is where a narrow window
+    // reaches the citizenship course.
+    { title: ui("Life in the UK"), description: ui("Everything the Life in the UK Test asks, in fourteen lessons."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
@@ -2280,7 +2293,7 @@ function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: Prot
         const Icon = item.icon;
         const active = item.id === activeView
           || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
-          || (item.id === "more" && ["social", "shop", "progress", "profile"].includes(activeView));
+          || (item.id === "more" && ["social", "shop", "progress", "profile", "life-in-uk"].includes(activeView));
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
@@ -2313,6 +2326,11 @@ export default function NewUiPrototype({
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
   const [courseSessionLesson, setCourseSessionLesson] = useState<string | undefined>(undefined);
+  // Life in the UK runs beside the language course instead of replacing it, so
+  // it carries its own lesson and reader state. Reusing the active-course state
+  // would have meant that opening it switched you off German.
+  const [ukLessonId, setUkLessonId] = useState<string | undefined>(undefined);
+  const [ukReaderOpen, setUkReaderOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const fallback = defaultPrototypeSidebarWidth();
     const stored = Number(loadScopedJson(PROTOTYPE_SIDEBAR_KEY, fallback, profile));
@@ -2349,6 +2367,8 @@ export default function NewUiPrototype({
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
   const sessionLesson = activeCourse?.lessons?.find((lesson) => lesson.id === courseSessionLesson);
+  const ukCourse = getCourse(LIFE_IN_THE_UK_COURSE_ID);
+  const ukLesson = ukCourse?.lessons?.find((lesson) => lesson.id === ukLessonId);
   const partsReady = Object.keys(apiParts).length > 0;
   const earnedShopCoins = 80
     + Math.floor(stats.totalXp / 100)
@@ -2503,6 +2523,13 @@ export default function NewUiPrototype({
     if (!done.includes(lessonId)) saveCourseProgress(activeCourseId, [...done, lessonId], profile);
     updateStats({ streak: recordStreakDay(profile) });
     setCourseSessionLesson(undefined);
+  };
+
+  const completeUkLesson = (lessonId: string) => {
+    const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile);
+    if (!done.includes(lessonId)) saveCourseProgress(LIFE_IN_THE_UK_COURSE_ID, [...done, lessonId], profile);
+    updateStats({ streak: recordStreakDay(profile) });
+    setUkLessonId(undefined);
   };
 
   const chooseShopBadge = (id: ShopBadgeId) => {
@@ -2660,6 +2687,18 @@ export default function NewUiPrototype({
         </Suspense>
       </div>
     ) : <AccountGate onRequestSignIn={onRequestSignIn} />
+  ) : activeView === "life-in-uk" ? (
+    <div className="np-feature-host">
+      {ukCourse ? (
+        <Suspense fallback={<FeatureLoading />}>
+          <CourseLessonsView
+            course={ukCourse}
+            onOpenLesson={(lessonId) => setUkLessonId(lessonId)}
+            onOpenReader={() => setUkReaderOpen(true)}
+          />
+        </Suspense>
+      ) : <FeatureLoading />}
+    </div>
   ) : (
     <MoreView
       onNavigate={navigate}
@@ -2766,6 +2805,21 @@ export default function NewUiPrototype({
               lesson={sessionLesson}
               onComplete={() => completeCourseLesson(sessionLesson.id)}
               onExit={() => setCourseSessionLesson(undefined)}
+            />
+          </Suspense>
+        )}
+        {ukReaderOpen && ukCourse && (
+          <Suspense fallback={<FeatureLoading />}>
+            <CourseShell course={ukCourse} onExit={() => setUkReaderOpen(false)} />
+          </Suspense>
+        )}
+        {ukLesson && ukCourse && (
+          <Suspense fallback={<FeatureLoading />}>
+            <CourseSession
+              course={ukCourse}
+              lesson={ukLesson}
+              onComplete={() => completeUkLesson(ukLesson.id)}
+              onExit={() => setUkLessonId(undefined)}
             />
           </Suspense>
         )}

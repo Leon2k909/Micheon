@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, Code2, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Code2, Landmark, Sparkles } from "lucide-react";
 import type { Course } from "@/lib/courses";
 import { loadCourseProgress } from "@/lib/courses";
 import { CODE_BACKGROUND_LABEL, getCodeBackground, setCodeBackground, type CodeBackground } from "@/lib/codeBackground";
@@ -33,6 +33,9 @@ export function CourseLessonsView({
   const [background, setBackgroundState] = useState<CodeBackground | null>(getCodeBackground);
   const [pickingBackground, setPickingBackground] = useState(false);
   const isProgramming = course.kind === "programming";
+  // Every lesson card carried a pair of code brackets, which is right for C#
+  // and wrong for the citizenship course sitting next to it in the nav.
+  const LessonIcon = isProgramming ? Code2 : Landmark;
   const showPicker = isProgramming && (background === null || pickingBackground);
 
   const pickBackground = (bg: CodeBackground) => {
@@ -140,7 +143,7 @@ export function CourseLessonsView({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
-                      <Code2 className="h-5 w-5" />
+                      <LessonIcon className="h-5 w-5" />
                     </div>
                     {done ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success-bg)] px-2.5 py-1 text-[11px] font-black text-[var(--success-text)]">
