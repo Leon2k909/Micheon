@@ -102,6 +102,24 @@ if (fs.existsSync(tatoebaPath)) {
   }
 }
 
+/**
+ * Function words, which the course never made into vocabulary cards.
+ *
+ * Micheon teaches und, du, nicht and the rest through the sentences they
+ * appear in rather than as standalone flashcards, so they were never in the
+ * word catalogue — and therefore never in the glossary. Hovering "und" on a
+ * German page did nothing, and "and" on an English page found no German at
+ * all, because the reverse index is built from the same list.
+ *
+ * They stay out of the COLLECTION list, which is a different thing: as
+ * unknown-word candidates they buried everything else ("die" 165 times,
+ * "und" 168). content-gloss keeps its own STOPWORDS for that. This is only
+ * about being able to look one up.
+ */
+const functionWords = JSON.parse(
+  fs.readFileSync(path.join(root, "src", "data", "functionWords.json"), "utf8")
+);
+
 const seen = new Set();
 const rows = [];
 // Combined synonym cards fold "der Wagen" into "das Auto" for lessons and the
@@ -115,7 +133,9 @@ const supplementalWords = supplementalWordBank.map((word) => ({
   de: word.de,
   en: word.en,
 }));
-for (const word of [...catalogWords, ...supplementalWords]) {
+// Function words go LAST, so anything the catalogue already teaches keeps its
+// authored gloss and only the genuine gaps are filled.
+for (const word of [...catalogWords, ...supplementalWords, ...functionWords]) {
   const de = String(word.lookup || word.de).trim();
   const key = de.toLocaleLowerCase("de-DE");
   if (!de || seen.has(key)) continue;
@@ -126,6 +146,9 @@ for (const word of [...catalogWords, ...supplementalWords]) {
     deDisplay: String(word.de).trim(),
     // A hover card needs one clean meaning, not an answer-alternative list.
     en: String(word.en).split("/")[0].trim(),
+    // "core" marks the everyday word for a meaning, so the English-to-German
+    // direction can prefer immer over stets when both gloss as "always".
+    ...(word.core ? { core: 1 } : {}),
     ...(examplesByWord.has(key)
       ? { ex: examplesByWord.get(key).de, exEn: examplesByWord.get(key).en }
       : tatoeba.has(key)

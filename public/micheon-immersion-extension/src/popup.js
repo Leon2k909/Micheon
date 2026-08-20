@@ -162,3 +162,35 @@ async function loadVoiceStatus() {
 loadState();
 loadPageStatus();
 loadVoiceStatus();
+
+/**
+ * Panel size.
+ *
+ * A browser will not let an extension resize its own popup by dragging, and
+ * 300px is tight once the panel carries more than a few toggles. So the width
+ * is a stored setting with three steps — and it is remembered, because being
+ * asked to pick it on every open would be worse than the fixed size it
+ * replaces.
+ */
+const PANEL_WIDTHS = { s: 300, m: 380, l: 460 };
+const sizeButtons = [...document.querySelectorAll(".sizer button")];
+
+function applyPanelSize(size) {
+  const width = PANEL_WIDTHS[size] ?? PANEL_WIDTHS.s;
+  document.body.style.setProperty("--panel-width", `${width}px`);
+  for (const button of sizeButtons) {
+    button.setAttribute("aria-pressed", String(button.dataset.size === size));
+  }
+}
+
+chrome.storage.local.get("panelSize").then(({ panelSize }) => {
+  applyPanelSize(PANEL_WIDTHS[panelSize] ? panelSize : "s");
+});
+
+for (const button of sizeButtons) {
+  button.addEventListener("click", () => {
+    const size = button.dataset.size;
+    applyPanelSize(size);
+    void chrome.storage.local.set({ panelSize: size });
+  });
+}

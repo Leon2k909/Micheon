@@ -1,5 +1,5 @@
 body {
-  width: 300px;
+  width: var(--panel-width, 300px);
   margin: 0;
   padding: 14px 16px 12px;
   font: 13px/1.4 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -122,4 +122,49 @@ footer {
   font-size: 10.5px;
   color: #8a8f98;
   line-height: 1.4;
+}
+
+/* Section headings.
+   Five flat toggles meant reading all five to find the one you wanted.
+   Reading, Speech and Video are three different jobs. */
+h2.group {
+  margin: 14px 0 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a808f;
+}
+h2.group:first-of-type { margin-top: 8px; }
+
+/* Panel size.
+   A browser gives an extension no way to let you drag its popup bigger, so
+   the width is a setting instead — remembered, because picking it every time
+   would be worse than the fixed size it replaces. */
+.sizer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a808f;
+}
+.sizer span { margin-right: auto; }
+.sizer button {
+  min-width: 26px;
+  padding: 3px 7px;
+  border: 1px solid #d8dce6;
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  color: #4a5060;
+  cursor: pointer;
+}
+.sizer button:hover { background: #f2f4f8; }
+.sizer button[aria-pressed="true"] {
+  border-color: #2f6df6;
+  background: #eaf0ff;
+  color: #2f6df6;
 }

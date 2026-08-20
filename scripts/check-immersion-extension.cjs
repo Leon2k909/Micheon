@@ -398,3 +398,81 @@ checkLatestAudioWins().then(() => {
     + "every borrowed one traceable, credited and through our own German rules"
   );
 }
+
+// ── function words, and the reverse direction ───────────────────────────────
+// Leon, reading an English page: "there is stuff on this page that i know we
+// have in our app's translator but not showing, for example and/und and
+// you/du". They were not showing because they were not there: the course
+// teaches und, du and nicht through sentences rather than as vocabulary
+// cards, so they never reached the word catalogue the glossary is built from.
+{
+  const glossary = JSON.parse(
+    fs.readFileSync(path.join(root, "public/micheon-immersion-extension/data/words.json"), "utf8")
+  );
+  const byDe = new Map(glossary.map((entry) => [String(entry.de).toLocaleLowerCase("de-DE"), entry]));
+
+  for (const [word, meaning] of [
+    ["und", /and/i], ["du", /you/i], ["ich", /\bI\b/], ["nicht", /not/i],
+    ["mit", /with/i], ["aber", /but/i], ["oder", /or/i], ["auch", /also/i],
+    ["sehr", /very/i], ["wo", /where/i], ["warum", /why/i], ["kein", /no/i],
+  ]) {
+    const entry = byDe.get(word);
+    assert.ok(entry, `"${word}" is missing from the glossary — hovering it would do nothing`);
+    assert.ok(meaning.test(entry.en), `"${word}" glosses as "${entry.en}", which is not its meaning`);
+  }
+
+  // The reverse index, rebuilt the way content-gloss builds it, so this checks
+  // what a reader on an English page would actually get.
+  const byEn = new Map();
+  for (const entry of glossary) {
+    const first = String(entry.en).split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
+    if (!/^[A-Za-z' -]+$/.test(first) || /^to\s/i.test(first) || first.split(/\s+/).length > 2) continue;
+    const key = first.toLowerCase();
+    const isNoun = /^(der|die|das)\s/.test(entry.deDisplay);
+    const isCore = entry.core === 1;
+    const existing = byEn.get(key);
+    if (!existing || (isCore && !existing.isCore) || (isNoun && !existing.isNoun && !existing.isCore)) {
+      byEn.set(key, { de: entry.deDisplay, isNoun, isCore });
+    }
+  }
+  for (const [english, german] of [
+    ["and", "und"], ["you", "du"], ["but", "aber"], ["not", "nicht"],
+    ["with", "mit"], ["very", "sehr"], ["always", "immer"], ["maybe", "vielleicht"],
+  ]) {
+    const hit = byEn.get(english);
+    assert.ok(hit, `"${english}" has no German on the reverse side`);
+    assert.strictEqual(hit.de, german,
+      `"${english}" reaches "${hit.de}" rather than "${german}" — the everyday word should win`);
+  }
+  assert.ok(byEn.size >= 5000, `only ${byEn.size} reverse entries`);
+
+  // A qualifier in brackets is a note to the reader, not part of the word.
+  // Leaving it in took weil, denn and 170 others out of the reverse direction.
+  const content = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/content-gloss.js"), "utf8");
+  // Matched by shape rather than by an exact literal: an assertion that has
+  // to hand-escape a regex to describe a regex is one backslash away from
+  // silently passing, which is the failure this whole file exists to prevent.
+  assert.ok(
+    /const enFirst = [^\n]*\.replace\([^\n]*\)\s*\.trim\(\)/.test(content),
+    "a trailing qualifier must be stripped before the reverse key is built"
+  );
+  assert.ok(content.includes("isCore && !existing.isCore"),
+    "the everyday word must win the reverse direction over a rarer synonym");
+
+  // The popup: grouped, and resizable, since a browser will not let an
+  // extension drag its own popup wider.
+  const popupHtml = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/popup.html"), "utf8");
+  for (const group of ["Reading", "Speech", "Video"]) {
+    assert.ok(popupHtml.includes(`<h2 class="group">${group}</h2>`), `the popup has no "${group}" group`);
+  }
+  assert.ok(popupHtml.includes('id="sizeL"'), "the popup needs a size control");
+  const popupJs = fs.readFileSync(path.join(root, "public/micheon-immersion-extension/src/popup.js"), "utf8");
+  assert.ok(popupJs.includes("PANEL_WIDTHS"), "the size control needs widths to apply");
+  assert.ok(popupJs.includes('chrome.storage.local.set({ panelSize: size })'),
+    "the chosen size must be remembered, or picking it every time is worse than a fixed one");
+
+  console.log(
+    `check-immersion-extension: ${byEn.size.toLocaleString()} English words reach German, `
+    + "function words included, and the popup is grouped and resizable"
+  );
+}

@@ -272,7 +272,7 @@
 
   function buildIndexes(words) {
     for (const w of words) {
-      const entry = { en: w.en, deDisplay: w.deDisplay, ex: w.ex, exEn: w.exEn, exSrc: w.exSrc };
+      const entry = { en: w.en, deDisplay: w.deDisplay, ex: w.ex, exEn: w.exEn, exSrc: w.exSrc, core: w.core };
       if (!byDeExact.has(w.de)) byDeExact.set(w.de, entry);
       const lowerKey = w.de.toLowerCase();
       if (!byDeLowerAny.has(lowerKey)) byDeLowerAny.set(lowerKey, entry);
@@ -286,13 +286,24 @@
       // wrong one isn't. On genuine collisions between the remaining
       // entries, a noun (der/die/das) beats anything else: it's the
       // concrete, dictionary-shaped sense a hover should teach.
-      const enFirst = w.en.split(",")[0].trim();
+      // A trailing qualifier is a note to the reader, not part of the word.
+      // "because (keeps normal word order)" was failing the letters-only test
+      // and taking weil and denn out of the reverse direction entirely, along
+      // with every other gloss the course had bothered to explain.
+      const enFirst = w.en.split(",")[0].replace(/\s*\([^)]*\)\s*$/, "").trim();
       if (/^[A-Za-z' -]+$/.test(enFirst) && !/^to\s/i.test(enFirst) && enFirst.split(/\s+/).length <= 2) {
         const enKey = enFirst.toLowerCase();
         const isNoun = /^(der|die|das)\s/.test(w.deDisplay);
+        const isCore = w.core === 1;
         const existing = byEn.get(enKey);
-        if (!existing || (isNoun && !existing.isNoun)) {
-          byEn.set(enKey, { de: w.de, deDisplay: w.deDisplay, isNoun });
+        // A word marked core is the everyday one for that meaning, and it
+        // wins outright: "always" used to land on stets, because stets
+        // happened to be indexed first, when the word a reader wants is immer.
+        const better = !existing
+          || (isCore && !existing.isCore)
+          || (isNoun && !existing.isNoun && !existing.isCore);
+        if (better) {
+          byEn.set(enKey, { de: w.de, deDisplay: w.deDisplay, isNoun, isCore });
         }
       }
     }
