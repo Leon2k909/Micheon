@@ -2801,23 +2801,6 @@ export default function NewUiPrototype({
             >
               {ui("Practice")}
             </button>
-            {ukTab === "learn" && (
-              <label className="np-uk-translation">
-                <Languages aria-hidden="true" />
-                <span>{ui("Tap a card for")}</span>
-                <select
-                  aria-label={ui("Translation language")}
-                  onChange={(event) => setTranslationLanguage(event.target.value as TranslationLanguage)}
-                  value={translationLanguage}
-                >
-                  {TRANSLATION_LANGUAGES.map((language) => (
-                    <option key={language.id} value={language.id}>
-                      {language.id === "off" ? ui("No translation") : language.endonym}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
             {/* Learn → practise → find the gaps → sit the exam. The three new
                 tabs continue the same left-to-right order someone revising
                 actually moves through, and reuse this tab bar rather than
@@ -2848,7 +2831,29 @@ export default function NewUiPrototype({
               type="button"
             >
               {ui("Search")}
-            </button>          </div>
+            </button>
+            {/* Last, and pushed to the far right by margin-left:auto. It sat
+                between two tabs before, where it read as a broken tab rather
+                than a control — Michelle could not find it. Only on Learn,
+                because it is the only tab showing cards to translate. */}
+            {ukTab === "learn" && (
+              <label className="np-uk-translation">
+                <Languages aria-hidden="true" />
+                <span>{ui("Tap a card for")}</span>
+                <select
+                  aria-label={ui("Translation language")}
+                  onChange={(event) => setTranslationLanguage(event.target.value as TranslationLanguage)}
+                  value={translationLanguage}
+                >
+                  {TRANSLATION_LANGUAGES.map((language) => (
+                    <option key={language.id} value={language.id}>
+                      {language.id === "off" ? ui("No translation") : language.endonym}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
           {ukTab === "learn" ? (
             <CourseLessonsView
               course={ukCourse}

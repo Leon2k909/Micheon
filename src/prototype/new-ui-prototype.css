@@ -10133,6 +10133,10 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
    follows the theme without a second set of dark-mode rules. */
 .np-uk-tabs {
   display: flex;
+  /* Five tabs plus the translation picker overflow a narrow window. Wrapping
+     keeps every tab reachable instead of pushing the last ones off the edge. */
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }
