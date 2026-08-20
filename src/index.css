@@ -10508,9 +10508,24 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   display: flex;
   align-items: center;
   gap: 11px;
-  margin-bottom: 4px;
-  padding: 12px 2px 10px;
+  /* The gap under a category header belongs to the header, and is set once. */
+  margin-bottom: 14px;
+  padding: 12px 2px 0;
 }
+
+/* One gap under every category header.
+ *
+ * These categories were written before the sidebar layout existed, back when
+ * each was a card that set its own spacing, and they still carried it: mt-3 in
+ * Appearance, mt-5 in Learning options, nothing at all in the ones whose body
+ * is a component like <DataAndStorage />. Stacked on the header's own margin
+ * that produced 26px, 34px and 14px under three identical headers, which is
+ * exactly as arbitrary as it looks when you click between them.
+ *
+ * The container owns it now. Scoped to `section` so it only applies in sidebar
+ * mode — the search results still render the older card, where the body does
+ * need its own gap from the button above it. */
+section.settings-category > div > :first-child { margin-top: 0; }
 
 .settings-panel-icon {
   display: inline-flex;

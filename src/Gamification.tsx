@@ -876,9 +876,13 @@ export default function GamificationPanel({
                 icon={UserRound}
                 title={ui("Account details")}
               >
-              <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Account details")}</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Your photo, display name, and login email.")}</p>
-              <div className="mt-5 flex items-center gap-4">
+              {/* No heading here. SettingsCategory draws the title and the
+                  description itself; these two lines were left behind when
+                  this stopped being a permanent block above the page and
+                  became a category like the rest, so the panel said "Account
+                  details — your photo, display name, and login email" twice
+                  in a row. */}
+              <div className="flex items-center gap-4">
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
@@ -1313,6 +1317,7 @@ export default function GamificationPanel({
                     mode={flashcardMode}
                     onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
                     onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
+                    titled={false}
                   />
                 </SettingsCategory>
 

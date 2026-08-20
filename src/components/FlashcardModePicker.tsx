@@ -14,11 +14,14 @@ export function FlashcardModePicker({
   mode,
   onFaceChange,
   onModeChange,
+  titled = true,
 }: {
   face: FlashcardFace;
   mode: FlashcardMode;
   onFaceChange: (face: FlashcardFace) => void;
   onModeChange: (mode: FlashcardMode) => void;
+  /** Off inside a settings category, which already draws the title above it. */
+  titled?: boolean;
 }) {
   const options: { id: FlashcardMode; icon: typeof Layers; label: string; blurb: string }[] = [
     {
@@ -37,10 +40,18 @@ export function FlashcardModePicker({
 
   return (
     <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
-      <p className="text-sm font-black text-[var(--text-1)]">{ui("Flashcards")}</p>
-      <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
-        {ui("How today's phrases are shown before sentence practice.")}
-      </p>
+      {/* The settings category draws this heading itself, so inside one this
+          would print "Flashcards" twice. It stays for the other use, where
+          the picker follows LearningModePicker inside a plain card and needs
+          to say which of the two it is. */}
+      {titled && (
+        <>
+          <p className="text-sm font-black text-[var(--text-1)]">{ui("Flashcards")}</p>
+          <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
+            {ui("How today's phrases are shown before sentence practice.")}
+          </p>
+        </>
+      )}
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {options.map((option) => {
