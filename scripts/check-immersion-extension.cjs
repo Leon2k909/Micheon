@@ -616,6 +616,22 @@ checkLatestAudioWins().then(() => {
     assert.strictEqual(reaches(english), german, `"${english}" should reach ${german} — ${why}`);
   }
 
+  // A German page is full of English, and the reader is there to learn
+  // German. A word that is not German but whose German we know now shows
+  // that — but only for content words, or half an English sentence would be
+  // underlined to teach "the" is "der".
+  assert.ok(
+    gloss.includes("if (!hit && !ENGLISH_NEVER_GUESS.has(lower)")
+    && gloss.includes("byEn.get(lower) || englishSingularEntry(lower)"),
+    "English inside German text no longer falls back to the German we know for it"
+  );
+  for (const [english, expected] of [
+    ["fake", "gefälscht"], ["retention", "die Speicherung"], ["capacity", "die Kapazität"],
+  ]) {
+    assert.strictEqual(reaches(english), expected,
+      `"${english}" turns up in German posts and should show ${expected}`);
+  }
+
   // Leon hovered X's Mitteilungen tab and the card said "message" — the
   // wrong sense to lead with, and the same for its neighbours. The canonical
   // senses file owns these; this pins what the card actually leads with.
@@ -747,9 +763,14 @@ checkLatestAudioWins().then(() => {
   for (const [form, lemma] of [
     ["eingelöst", "einlösen"],
     ["angerufen", "anrufen"],
+    ["herausgekommen", "herauskommen"],
     ["veröffentlichtes", "veröffentlichen"],
     ["geführte", "führen"],
     ["funktionierenden", "funktionieren"],
+    // German puts zu inside a separable verb, and nothing about the word
+    // survives a suffix rule: bereitzustellen is bereitstellen.
+    ["bereitzustellen", "bereitstellen"],
+    ["herauszufinden", "herausfinden"],
   ].map(([form, lemma]) => [form, lemma.toLowerCase()])) {
     assert.equal(resolve(form), lemma,
       `"${form}" should resolve to "${lemma}" — a reader hovering it gets nothing otherwise`);

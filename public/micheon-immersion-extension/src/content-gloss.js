@@ -1310,6 +1310,23 @@
     + "perhaps fill east weight language among share thread post send reply"
   ).split(" "));
 
+  /**
+   * The prefixes a separable verb splits off. Written once and used by both
+   * the participle rule (angerufen) and the zu-infinitive one
+   * (bereitzustellen), because a prefix missing from either list is a whole
+   * family of words going silent — "heraus" was, and herausgekommen with it.
+   */
+  const SEPARABLE_PREFIX = "ab|an|auf|aus|bei|durch|ein|fest|frei|her|heraus|herein|herunter"
+    + "|hin|hinaus|hinein|hoch|los|mit|nach|statt|über|um|vor|voran|vorbei|weg|zu|zurück|zusammen";
+  const SEPARATED_PARTICIPLE = new RegExp(`^(${SEPARABLE_PREFIX})ge(.{2,})(t|en)$`);
+  /**
+   * German also puts zu INSIDE a separable verb: "bereitzustellen" is
+   * bereitstellen, "herauszufinden" is herausfinden. No suffix rule reaches
+   * that, and no prefix list is needed either — putting the two halves back
+   * together has to produce a verb we already hold, which is guard enough.
+   */
+  const ZU_INFIX = /^([a-zäöüß]{2,})zu([a-zäöüß]{2,}e?n)$/;
+
   function inflectedGermanEntry(token) {
     const lower = token.toLowerCase();
     if (ENGLISH_NEVER_GUESS.has(lower)) return null;
@@ -1324,8 +1341,7 @@
       if (participle) stems.add(participle[1]);
       // A separable verb buries its ge in the middle: eingelöst is einlösen,
       // angerufen is anrufen. Without this the prefix hides the whole verb.
-      const separated = /^(ab|an|auf|aus|bei|ein|los|mit|nach|vor|weg|zu|zurück|über|um|durch|hoch|her|hin)ge(.{2,})(t|en)$/
-        .exec(word);
+      const separated = SEPARATED_PARTICIPLE.exec(word);
       if (separated) stems.add(separated[1] + separated[2]);
       for (const ending of ["est", "eten", "ete", "et", "ten", "te", "st", "en", "t", "e"]) {
         if (word.length > ending.length + 2 && word.endsWith(ending)) {
@@ -1345,6 +1361,12 @@
     // has to lose two endings, not one, before the verb underneath shows.
     const participle = /^(.{3,})end(e|en|es|er|em)?$/.exec(lower);
     if (participle) stems.add(participle[1]);
+
+    const zuInfix = ZU_INFIX.exec(lower);
+    if (zuInfix) {
+      const joined = held(zuInfix[1] + zuInfix[2]);
+      if (joined) return joined;
+    }
 
     // A verb only resolves to an infinitive.
     for (const stem of stems) {
@@ -1709,6 +1731,23 @@
         // "daten" (to date someone, a verb it does). A missed gloss is
         // silent; a wrong one actively teaches something false, so this
         // stays exact-case-or-nothing for ordinary Titlecase tokens.
+        // A German page is full of English — every tech timeline is — and the
+        // reader is here to learn German. If the word is not German but we
+        // know the German FOR it, that is the more useful card, and it is
+        // the direction this extension already offers on English pages.
+        //
+        // Only content words. The reverse index holds "the", "is" and "make"
+        // too, and glossing those would underline half an English sentence to
+        // teach nothing; ENGLISH_NEVER_GUESS is already the list of words too
+        // common to be worth it.
+        if (!hit && !ENGLISH_NEVER_GUESS.has(lower) && /^[a-z][a-z'-]{2,}$/.test(lower)) {
+          const german = byEn.get(lower) || englishSingularEntry(lower);
+          if (german) {
+            registerGloss(node, match.index, match.index + token.length,
+              german.deDisplay, german.deDisplay);
+            continue;
+          }
+        }
         if (!hit && collectMissing && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
           const sentence = extractSentence(node, match.index);
           // YouTube and X containers may mix languages internally, so the
