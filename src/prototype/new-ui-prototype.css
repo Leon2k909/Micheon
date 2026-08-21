@@ -837,20 +837,17 @@
   touch-action: none;
 }
 
-.np-sidebar-resizer::before,
+/* The handle draws its grip and nothing else. It used to draw a full-height
+   1px line here too, in the same colour as .np-sidebar's border-right and one
+   pixel to the left of it, so the edge rendered two pixels thick. The border
+   defines the edge and is present whether or not a handle is, so the
+   duplicate line was the one to go. */
 .np-sidebar-resizer::after {
   position: absolute;
   left: 50%;
   content: "";
   transform: translateX(-50%);
   transition: width 150ms ease, background 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
-}
-
-.np-sidebar-resizer::before {
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background: var(--np-line);
 }
 
 .np-sidebar-resizer::after {
