@@ -478,10 +478,12 @@
 
 .np-side-nav .np-nav-group-head > span:nth-of-type(2),
 .np-side-nav .np-nav-group-items button > span:nth-of-type(2),
-.np-side-nav .np-nav-hidden-toggle > span:nth-of-type(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.np-side-nav .np-nav-hidden-toggle > span:nth-of-type(2),
+.np-side-nav > button > span:nth-of-type(2) {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.2;
 }
 
 .np-side-nav .np-nav-hidden-toggle {
@@ -563,6 +565,100 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.np-sidebar.is-brand-compact .np-nav-group-items {
+  margin-left: 12px;
+  padding-left: 8px;
+}
+
+.np-sidebar.is-brand-compact .np-side-nav button {
+  min-height: 54px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  font-size: 15px;
+}
+
+.np-sidebar.is-brand-compact .np-side-nav .np-nav-group-head,
+.np-sidebar.is-brand-compact .np-side-nav .np-nav-hidden-toggle {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.np-sidebar.is-brand-compact .np-nav-visual {
+  width: 34px;
+  height: 34px;
+}
+
+.np-sidebar.is-brand-compact .np-nav-flag,
+.np-sidebar.is-brand-compact .np-nav-flag > span {
+  width: 28px;
+  height: 28px;
+}
+
+.np-sidebar.is-brand-compact .np-side-nav .np-nav-group-items button {
+  min-height: 42px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 14px;
+}
+
+.np-sidebar.is-brand-compact .np-side-nav .np-nav-group-items .np-nav-visual {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+}
+
+/* Narrower still: the indent goes almost entirely, because at this width it
+   is the difference between a word fitting and not. The line down the left
+   still says which heading these rows belong to. */
+.np-sidebar.is-brand-stacked .np-nav-group-items {
+  margin-left: 6px;
+  padding-left: 7px;
+}
+
+.np-sidebar.is-brand-stacked .np-side-nav button {
+  min-height: 50px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 14px;
+}
+
+.np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-head,
+.np-sidebar.is-brand-stacked .np-side-nav .np-nav-hidden-toggle {
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 7px;
+  font-size: 14px;
+}
+
+.np-sidebar.is-brand-stacked .np-nav-visual {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.np-sidebar.is-brand-stacked .np-nav-flag,
+.np-sidebar.is-brand-stacked .np-nav-flag > span {
+  width: 24px;
+  height: 24px;
+}
+
+.np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-items button {
+  min-height: 40px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 7px;
+  font-size: 13px;
+}
+
+.np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-items .np-nav-visual {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+.np-sidebar.is-brand-stacked .np-nav-group-chevron {
+  width: 14px;
+  height: 14px;
 }
 
 .np-nav-section-badge {

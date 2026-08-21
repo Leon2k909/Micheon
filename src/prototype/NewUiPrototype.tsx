@@ -909,8 +909,10 @@ function Sidebar({
 
         {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
           <>
+            {/* The badge is the heading. It used to be labelled as well,
+                and "KATEGORIE BETA" beside a BETA pill said it twice — at the
+                rail's narrow end it wrapped onto two lines to do it. */}
             <span aria-hidden="true" className="np-nav-section">
-              {ui("Beta category")}
               <b className="np-nav-section-badge">Beta</b>
             </span>
             {betaItems.filter((item) => !isHidden(item.id)).map((item) => {

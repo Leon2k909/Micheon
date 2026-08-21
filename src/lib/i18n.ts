@@ -2007,7 +2007,6 @@ const DE: Record<string, string> = {
   "Not built yet.": "Gibt es noch nicht.",
   "Soon": "Bald",
   "Country studies": "Landeskunde",
-  "Beta category": "Kategorie Beta",
   "Hidden apps": "Ausgeblendete Apps",
   "Nothing is hidden.": "Es ist nichts ausgeblendet.",
   "Choose the phrase": "Wähle den Satz",

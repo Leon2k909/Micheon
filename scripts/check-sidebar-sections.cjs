@@ -63,7 +63,7 @@ assert.ok(
   /ui\("Language learning"\)/.test(shell) && /ui\("Country studies"\)/.test(shell),
   "both headings are translated, so they follow the app language"
 );
-for (const key of ["Language learning", "Country studies", "Beta category", "Hidden apps"]) {
+for (const key of ["Language learning", "Country studies", "Hidden apps"]) {
   assert.ok(
     i18n.includes(`"${key}":`),
     `"${key}" needs German, or the heading shows in English on a German app`
@@ -104,8 +104,8 @@ assert.ok(
 // ── Beta stays flat, and the way back stays at the foot ────────────────────
 
 assert.ok(
-  /ui\("Beta category"\)[\s\S]{0,120}np-nav-section-badge/.test(shell),
-  "Beta is a labelled heading with its badge, not a third folding section"
+  /np-nav-section-badge">Beta</.test(shell) && !shell.includes("Beta category"),
+  "Beta is marked by its badge alone — a heading beside a BETA pill said it twice"
 );
 assert.ok(
   !/groups\.beta/.test(shell),
