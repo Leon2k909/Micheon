@@ -371,7 +371,56 @@ assert.ok(
   `the picture (${pictureSize[1]}px) does not fit its disc (${discSize[1]}px)`
 );
 
+
+// ── a picture, not an interface control ─────────────────────────────────────
+//
+// Leon, on "ersetzen" drawn as a blue repeat button: "i want really good
+// quality emoji/images, this one looks bad for example". He was right, and it
+// was not a resolution problem — the artwork is SVG and cannot pixelate, and
+// the size was already raised to 73% of its disc. It was the choice.
+//
+// Twemoji draws a UI control as a coloured tile with an abstract white glyph.
+// Beside a word that reads as an app icon nobody replaced, and it teaches
+// nothing: no arrangement of two arrows says "replace". This file's own rule
+// already covers the case — two thirds of the catalogue is abstract and comes
+// back empty on purpose — so an abstract action gets NO picture rather than a
+// worse one.
+//
+// A control glyph is allowed only where the glyph IS the thing named: the
+// FREE tile for "free", the abc tile for "alphabet", a down arrow for
+// "download". Those are listed, and nothing else may use one.
+{
+  const source = fs.readFileSync(path.join(root, "src/lib/wordPictures.ts"), "utf8");
+  const CONTROL_GLYPHS = new Set([
+    "\u{1F500}", "\u{1F501}", "\u{1F502}", "\u{1F503}", "\u{1F504}",
+    "\u{1F53C}", "\u{1F53D}", "\u23EB", "\u23EC", "\u23EA", "\u23E9",
+    "\u25B6\uFE0F", "\u25C0\uFE0F", "\u{1F520}", "\u{1F521}", "\u{1F524}",
+    "\u{1F523}", "\u{1F522}", "\u{1F51F}", "\u27A1\uFE0F", "\u2B05\uFE0F",
+    "\u2B06\uFE0F", "\u2B07\uFE0F", "\u{1F519}", "\u{1F51A}", "\u{1F51B}",
+    "\u{1F51C}", "\u{1F51D}", "\u{1F198}", "\u{1F532}", "\u{1F533}",
+  ]);
+  // The glyph really is the referent for these, so they keep it.
+  const NAMES_ITS_OWN_GLYPH = new Set([
+    "download", "upload", "number", "numbers", "mathematics", "maths",
+    "alphabet", "letter of the alphabet", "capital letter", "rectangle",
+    "free", "free of charge", "cost-free", "button", "square",
+  ]);
+
+  const chrome = [];
+  const entry = /(?:"([^"]+)"|([A-Za-z_$][\w$]*))\s*:\s*"([^"\x00-\x7F][^"]*)"/g;
+  for (const match of source.matchAll(entry)) {
+    const word = match[1] || match[2];
+    const glyph = match[3].trim();
+    if (!CONTROL_GLYPHS.has(glyph)) continue;
+    if (NAMES_ITS_OWN_GLYPH.has(word)) continue;
+    chrome.push(`${word} -> ${glyph}`);
+  }
+  assert.deepStrictEqual(chrome, [],
+    "these words are drawn with an interface control rather than a picture — "
+    + "an abstract action is better with no picture at all");
+}
+
 console.log(
   `word pictures OK — ${WORD_PICTURE_COUNT} entries cover ${withPicture.length}/${catalog.length} cards `
-  + `(${(share * 100).toFixed(1)}%), nouns ${(nounShare * 100).toFixed(1)}%`
+  + `(${(share * 100).toFixed(1)}%), nouns ${(nounShare * 100).toFixed(1)}%, none of them interface chrome`
 );

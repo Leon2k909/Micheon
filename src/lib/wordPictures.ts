@@ -227,9 +227,7 @@ const NOUNS: Record<string, string> = {
   birthday: "🎂", anniversary: "🎉", holiday: "🏖️",
   vacation: "🏖️", alarm: "⏰", "alarm clock": "⏰",
   timetable: "🗓️", schedule: "🗓️", deadline: "⏳",
-  stopwatch: "⏱️", hourglass: "⏳", future: "🔮", past: "⏪",
-
-  // ── Home and household ────────────────────────────────────────────────
+  stopwatch: "⏱️", hourglass: "⏳", future: "🔮", // ── Home and household ────────────────────────────────────────────────
   house: "🏠", home: "🏠", flat: "🏢", apartment: "🏢",
   room: "🚪", kitchen: "🍳", bathroom: "🛁", bedroom: "🛏️",
   "living room": "🛋️", hall: "🚪", corridor: "🚪",
@@ -493,19 +491,17 @@ const NOUNS: Record<string, string> = {
   research: "🔬", science: "🔬", experiment: "🔬",
   mathematics: "🔢", biology: "🧬", chemistry: "🧪",
   physics: "⚛️", history: "📜", geography: "🗺️",
-  language: "🗣️", word: "🔤",
-  "letter of the alphabet": "🔤", sentence: "🔤",
-  alphabet: "🔤", number: "🔢", "job application": "📄",
+  language: "🗣️", "letter of the alphabet": "🔤", alphabet: "🔤", number: "🔢", "job application": "📄",
 
   // ── Abstractions with a genuinely specific symbol ─────────────────────
   idea: "💡", solution: "💡", warning: "⚠️", danger: "⚠️",
-  risk: "⚠️", help: "🆘", love: "❤️", luck: "🍀",
+  risk: "⚠️", love: "❤️", luck: "🍀",
   peace: "☮️", war: "⚔️", weapon: "⚔️", sword: "⚔️",
   gun: "🔫", bomb: "💣", law: "⚖️", justice: "⚖️",
   freedom: "🕊️", secret: "🤫", thought: "💭",
   weight: "⚖️", energy: "⚡", electricity: "⚡",
   noise: "🔊", silence: "🤫", smell: "👃",
-  touch: "✋", beginning: "▶️", start: "▶️", end: "⏹️",
+  touch: "✋", end: "⏹️",
   victory: "🏆", success: "🎉", prize: "🏆",
   winner: "🏆", fear: "😨", anger: "😠",
   surprise: "😲", laughter: "😄", smile: "🙂",
@@ -580,7 +576,7 @@ const NOUNS: Record<string, string> = {
   "half-brother": "👦", "half-sister": "👧", fiance: "💍",
   fiancee: "💍", sandpit: "🏖️", sandbox: "🏖️",
   "pedestrian zone": "🚶", "zebra crossing": "🚸",
-  roundabout: "🔄", "high-rise": "🏙️", "tower block": "🏙️",
+  "high-rise": "🏙️", "tower block": "🏙️",
   "shopping centre": "🏬", mall: "🏬", bookshop: "📚",
   bookstore: "📚", launderette: "🧺", laundromat: "🧺",
   "dry cleaner's": "🧺", barracks: "🪖",
@@ -605,7 +601,7 @@ const NOUNS: Record<string, string> = {
 
   // ── Odds and ends with an exact symbol ────────────────────────────────
   loudspeaker: "🔊", "news broadcast": "📺", "small change": "🪙",
-  savings: "🐖", dozen: "🔢", watermark: "💧", lighting: "💡",
+  savings: "🐖", watermark: "💧", lighting: "💡",
   illumination: "💡", brightness: "☀️", keycap: "⌨️",
   keystroke: "⌨️", accessories: "🎒", electronics: "🔌",
   acoustics: "🔊", millennium: "📅", eternity: "⏳",
@@ -622,11 +618,10 @@ const VERBS: Record<string, string> = {
   jump: "🦘", crawl: "🐛", dance: "💃", stand: "🧍",
   "be standing": "🧍", sit: "🪑", "sit down": "🪑",
   "be sitting": "🪑", "be lying": "🛏️", "let go": "🤲",
-  kneel: "🧎", fall: "⬇️", slip: "⬇️", sink: "⬇️", "tell a lie": "🤥",
+  kneel: "🧎", "tell a lie": "🤥",
   rise: "📈", land: "🛬", "take off": "🛫",
   travel: "🧳", arrive: "🛬", leave: "🛫", enter: "🚪",
-  "go out": "🚪", return: "🔄", turn: "🔄",
-  follow: "👣", approach: "➡️", escape: "🏃",
+  "go out": "🚪", follow: "👣", escape: "🏃",
   hurry: "💨",
 
   // Hands
@@ -640,9 +635,7 @@ const VERBS: Record<string, string> = {
   repair: "🔧", fix: "🔧", hammer: "🔨", drill: "🪛",
   saw: "🪚", paint: "🎨", draw: "✏️", write: "✍️",
   sign: "✍️", type: "⌨️", click: "🖱️", weigh: "⚖️",
-  measure: "📏", count: "🔢",
-
-  // The senses and the head
+  measure: "📏", // The senses and the head
   see: "👁️", look: "👀", "look at": "👀", watch: "👀",
   observe: "👀", notice: "👀", hear: "👂", listen: "👂",
   smell: "👃", taste: "👅", feel: "🫀", sleep: "😴",
@@ -703,11 +696,9 @@ const VERBS: Record<string, string> = {
   protect: "🛡️", "look after": "🤲", help: "🤝",
   meet: "🤝", cooperate: "🤝", vote: "🗳️",
   forbid: "🚫", prevent: "🚫", avoid: "🚫",
-  stop: "⏹️", wait: "⏳", begin: "▶️",
-  continue: "▶️", finish: "🏁", hurt: "🤕",
+  stop: "⏹️", wait: "⏳", finish: "🏁", hurt: "🤕",
   heal: "🩹", train: "🏋️", practise: "🎯",
-  aim: "🎯", swap: "🔁", exchange: "🔁",
-  replace: "🔁", repeat: "🔁", mix: "🥣",
+  aim: "🎯", mix: "🥣",
   divide: "➗", add: "➕", subtract: "➖",
   fish: "🎣", hunt: "🏹", rain: "🌧️", snow: "❄️",
   shine: "☀️", blow: "💨", flow: "🌊",
@@ -751,8 +742,8 @@ const VERBS: Record<string, string> = {
   "look forward to": "😊", vow: "🤝",
 
   // On a screen
-  post: "📮", "post online": "📱", repost: "🔁", debug: "🐛", launch: "🚀",
-  synchronise: "🔁", upgrade: "⬆️", "make progress": "📈",
+  post: "📮", "post online": "📱", debug: "🐛", launch: "🚀",
+  "make progress": "📈",
   boost: "📈",
   destroy: "💥", break: "💥", crash: "💥",
 };
@@ -825,11 +816,10 @@ const ADJECTIVES: Record<string, string> = {
   disgusting: "🤢", disgusted: "🤢",
 
   // How a thing looks
-  thin: "📏", slim: "📏", striped: "🦓", checked: "🔲",
-  "polka-dotted": "⚪", pale: "🤍", rusty: "🟫",
+  thin: "📏", slim: "📏", striped: "🦓", "polka-dotted": "⚪", pale: "🤍", rusty: "🟫",
   wireless: "📶", wired: "🔌", magnetic: "🧲",
   mechanical: "⚙️", vertical: "↕️", horizontal: "↔️",
-  square: "🔲", angular: "🔲", round_shape: "⭕",
+  square: "🔲", round_shape: "⭕",
 
   // How someone is, part two
   awake: "👀", asleep: "😴", dead: "💀", alive: "💚",
