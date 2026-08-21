@@ -2159,17 +2159,30 @@ html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span
   gap: 14px;
   margin-top: 21px;
   padding: 10px 15px 10px 7px;
+  border: 1px solid var(--border);
   border-radius: 22px;
+  background: var(--surface-2);
 }
 
+/*
+ * Right and wrong are signals, so they keep their own colours whatever the
+ * accent — but as a tinted card with a coloured edge and heading, not as a
+ * slab of colour. It used to be a full-width block of green, hardcoded, and
+ * a separate rule painted the heading in the accent on top of it: on a pink
+ * accent that was pink lettering on a green field, which Michelle reported
+ * as "sieht schrecklich aus". The tint is mixed into the card surface, so it
+ * belongs to the theme instead of fighting it.
+ */
 .np-feedback.is-correct {
-  color: #1b702b;
-  background: linear-gradient(90deg, #e9f8d6, #dcf5cd);
+  color: color-mix(in srgb, var(--success-text) 70%, var(--text-1));
+  border-color: color-mix(in srgb, var(--success-text) 34%, transparent);
+  background: color-mix(in srgb, var(--success-bg) 62%, var(--surface-2));
 }
 
 .np-feedback.is-wrong {
-  color: #973d3d;
-  background: #fff0ee;
+  color: color-mix(in srgb, var(--red-text) 70%, var(--text-1));
+  border-color: color-mix(in srgb, var(--red-text) 30%, transparent);
+  background: color-mix(in srgb, var(--red-bg) 62%, var(--surface-2));
 }
 
 .np-feedback .np-reward-icon {
@@ -2188,7 +2201,7 @@ html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span
   color: currentColor;
   font-size: 13px;
   font-weight: 700;
-  opacity: 0.84;
+  opacity: 0.9;
 }
 
 .np-feedback-next,
@@ -6054,16 +6067,6 @@ html[data-theme="dark"] .np-answer--wrong {
   background: #3b2424;
 }
 
-html[data-theme="dark"] .np-feedback.is-correct {
-  color: #a5edaa;
-  background: linear-gradient(90deg, #213923, #1e3421);
-}
-
-html[data-theme="dark"] .np-feedback.is-wrong {
-  color: #ffb0b0;
-  background: #3b2424;
-}
-
 html[data-theme="dark"] .np-lesson-row--mint {
   border-color: rgba(88, 199, 95, 0.32);
   background: #12301d;
@@ -8255,10 +8258,6 @@ html[data-accent="custom"] .np-mini-progress i {
 }
 
 html[data-accent="custom"] .np-answer--correct {
-  color: var(--accent-pressed, var(--np-green));
-}
-
-html[data-accent="custom"] .np-feedback.is-correct {
   color: var(--accent-pressed, var(--np-green));
 }
 
