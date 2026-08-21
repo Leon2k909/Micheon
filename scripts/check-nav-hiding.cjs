@@ -89,9 +89,24 @@ assert.deepStrictEqual(M.loadHiddenNav(), [], "a corrupt preference should read 
 
 // ── the way back is rendered ────────────────────────────────────────────────
 const prototype = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
+//
+// This used to require the control to appear only once something was hidden.
+// Michelle asked for it as a permanent entry at the foot of the nav — "Ganz
+// unten in der Navigation soll 'Ausgeblendete Apps' stehen ... Optisch von den
+// darüberliegenden Bereichen getrennt" — so what is guaranteed here is now
+// stronger than what it replaces: the way back is always on screen, and says
+// how many are waiting behind it.
 assert.ok(
-  /\{hidden\.length > 0 && \(/.test(prototype),
-  "the Hidden control must appear whenever something is hidden — it is the only way back"
+  /className="np-nav-hidden-toggle"/.test(prototype) && /ui\("Hidden apps"\)/.test(prototype),
+  "the way back must be a permanent row at the foot of the nav"
+);
+assert.ok(
+  /\{hidden\.length > 0 && <b className="np-nav-hidden-count">/.test(prototype),
+  "that row must say how many are put away, or nobody knows there is anything to restore"
+);
+assert.ok(
+  /np-nav-footer/.test(prototype),
+  "and it must sit in the separated footer rather than in the list it restores into"
 );
 assert.ok(
   /Hidden \(\{n\}\)/.test(prototype),

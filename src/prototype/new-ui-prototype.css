@@ -120,7 +120,10 @@
 }
 
 .np-nav-section {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 14px 12px 4px;
   padding-top: 10px;
   border-top: 1px solid var(--np-line);
@@ -348,7 +351,7 @@
 .np-side-nav button {
   display: grid;
   min-height: 62px;
-  grid-template-columns: 42px 1fr;
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 0 11px;
@@ -448,6 +451,139 @@
 /* The way back. Quieter than a destination, because it is a control rather
    than somewhere to go — and shorter, so it never competes with the rows
    above it for the eye. */
+/*
+ * A folding section: a heading that is itself a nav row, and its rows below.
+ *
+ * The heading looks like every other row on purpose — same height, same
+ * hover, same active state — because it is the thing you press to reach the
+ * course, and a chooser that looks unlike its neighbours reads as a control
+ * for something else. What marks it out is the flag on the left and the
+ * chevron on the right.
+ */
+.np-nav-group {
+  display: grid;
+  gap: 4px;
+}
+
+.np-nav-group + .np-nav-group {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--np-line);
+}
+
+.np-side-nav .np-nav-group-head {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.np-side-nav .np-nav-group-head > span:nth-of-type(2),
+.np-side-nav .np-nav-group-items button > span:nth-of-type(2),
+.np-side-nav .np-nav-hidden-toggle > span:nth-of-type(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-side-nav .np-nav-hidden-toggle {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.np-nav-flag {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+}
+
+/* FlagRoundel is drawn at 32px for the course picker; the nav wants it at
+   the size of the icon tiles it sits in a column with. */
+.np-nav-flag > span {
+  width: 30px;
+  height: 30px;
+}
+
+.np-nav-group-chevron {
+  width: 17px;
+  height: 17px;
+  opacity: 0.6;
+  transition: transform var(--np-motion-fast) ease;
+}
+
+.np-nav-group.is-open .np-nav-group-chevron {
+  transform: rotate(180deg);
+}
+
+/* Indented, and hung off a line, so the rows read as belonging to the
+   heading above them rather than as more top-level destinations. */
+.np-nav-group-items {
+  display: grid;
+  gap: 4px;
+  margin-left: 21px;
+  padding-left: 10px;
+  border-left: 1px solid var(--np-line);
+}
+
+.np-side-nav .np-nav-group-items button {
+  min-height: 46px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 15px;
+}
+
+.np-side-nav .np-nav-group-items .np-nav-visual {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.np-side-nav .np-nav-group-items .np-nav-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.np-nav-section-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--np-violet);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+/* The put-away drawer sits below a rule, on its own. */
+.np-nav-footer {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--np-line);
+}
+
+.np-nav-hidden-count {
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--np-violet);
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.np-nav-hidden-empty {
+  margin: 0;
+  padding: 6px 9px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.np-side-nav .np-nav-hidden-toggle {
+  grid-template-columns: 42px 1fr auto;
+}
+
 .np-nav-hidden-toggle.np-nav-hidden-toggle {
   min-height: 44px;
   margin-top: 2px;

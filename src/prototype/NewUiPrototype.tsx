@@ -30,6 +30,7 @@ import {
   LogOut,
   Menu,
   MessageCircleMore,
+  Pencil,
   MessageSquareText,
   Play,
   Search,
@@ -97,6 +98,7 @@ import {
   setActiveCourseId as persistActiveCourseId,
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
+import { FlagRoundel } from "@/components/course/FlagRoundel";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import { HIDDEN_NAV_EVENT, canHideNavItem, hideNavItem, loadHiddenNav, showAllNavItems, showNavItem } from "@/lib/navPreferences";
 import { isNavDrag, readNavDrag, startNavDrag, type NavDragOrigin } from "@/lib/navDrag";
@@ -237,6 +239,59 @@ const ALL_NAV_ITEMS: NavigationItem[] = [
 ];
 
 const LIFE_IN_THE_UK_COURSE_ID = "life-in-the-uk";
+
+/** Which half of the Life in the UK course a nav row opens. */
+type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
+
+/**
+ * The sidebar's two collapsible sections.
+ *
+ * Michelle asked for the nav to read as what it is: one heading per thing
+ * being studied, with the flag of what is being studied on it, and the ways
+ * into it folded underneath — "[Flagge] Sprachen lernen ▾". Three settings
+ * feed it and they stay separate: the app language names everything, the
+ * course being learned picks the first flag, and the country picks the
+ * second.
+ *
+ * Only the labels and the arrangement live here. Every row still navigates to
+ * the destination it always did.
+ */
+const LANGUAGE_SECTION_IDS: PrototypeView[] = ["learn", "practice", "listen"];
+
+/** Practice is a pencil in the sidebar; a speech bubble everywhere else. */
+const NAV_GROUP_ICONS: Partial<Record<PrototypeView, ComponentType<{ className?: string }>>> = {
+  practice: Pencil,
+};
+
+const UK_SECTIONS: Array<{ icon: ComponentType<{ className?: string }>; label: string; tab: UkTab }> = [
+  { icon: BookOpen, label: "Lessons", tab: "learn" },
+  { icon: Pencil, label: "Practice", tab: "practice" },
+  { icon: ClipboardCheck, label: "Tests", tab: "exam" },
+  { icon: Clock3, label: "Timeline", tab: "timeline" },
+];
+
+/**
+ * Country studies has one country in it, and the flag says which.
+ *
+ * Picking another one is Michelle's own next piece of work — "ich kümmere
+ * mich später separat darum" — so this names the country the course already
+ * covers rather than inventing a chooser for it. english-uk is the union
+ * flag; there is no separate life-in-the-uk artwork to reuse.
+ */
+const COUNTRY_STUDIES_FLAG_ID = "english-uk";
+
+const NAV_GROUPS_KEY = "gl-nav-groups-v1";
+
+type NavGroupState = { country: boolean; languages: boolean };
+
+/** Both sections start open, which is how the nav looked before it folded. */
+function loadNavGroups(profile: UserProfile | null): NavGroupState {
+  const stored = loadScopedJson<Partial<NavGroupState>>(NAV_GROUPS_KEY, {}, profile);
+  return {
+    country: stored?.country !== false,
+    languages: stored?.languages !== false,
+  };
+}
 
 const PROTOTYPE_SIDEBAR_MIN = 188;
 const PROTOTYPE_SIDEBAR_MAX = 330;
@@ -470,26 +525,36 @@ const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
 const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "listen"];
 
 function Sidebar({
+  courseFlagId,
   createUnlocked,
   learnPathUnlocked,
   activeView,
   gamesUnlocked,
   onNavigate,
+  onOpenUkSection,
   onPrefetch,
   onResize,
+  profile,
   shopUnlocked,
   socialPreviewUnlocked,
+  ukTab,
   width,
 }: {
   activeView: PrototypeView;
+  /** The course being learned — decides the first flag, nothing else. */
+  courseFlagId: string;
   createUnlocked: boolean;
   learnPathUnlocked: boolean;
   gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
+  /** Opens Life in the UK on one of its halves, the way search already does. */
+  onOpenUkSection: (tab: UkTab) => void;
   onPrefetch: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
+  profile: UserProfile | null;
   shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
+  ukTab: UkTab;
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
@@ -503,6 +568,15 @@ function Sidebar({
    */
   const [hidden, setHidden] = useState<string[]>(() => loadHiddenNav());
   const [restoreOpen, setRestoreOpen] = useState(false);
+  /** Which sections are folded open. Remembered per profile. */
+  const [groups, setGroups] = useState<NavGroupState>(() => loadNavGroups(profile));
+  const toggleGroup = (id: keyof NavGroupState) => {
+    setGroups((current) => {
+      const next = { ...current, [id]: !current[id] };
+      saveScopedJson(NAV_GROUPS_KEY, next, profile);
+      return next;
+    });
+  };
   useEffect(() => {
     const sync = () => setHidden(loadHiddenNav());
     window.addEventListener(HIDDEN_NAV_EVENT, sync);
@@ -564,6 +638,12 @@ function Sidebar({
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
     ...(shopUnlocked ? [SHOP_NAVIGATION_ITEM] : []),
   ];
+  const visibleNavigation = navigationItems.filter((item) => !isHidden(item.id));
+  const languageItems = LANGUAGE_SECTION_IDS
+    .map((id) => visibleNavigation.find((item) => item.id === id))
+    .filter((item): item is NavigationItem => Boolean(item));
+  const countryItem = visibleNavigation.find((item) => item.id === "life-in-uk") ?? null;
+  const moreItem = visibleNavigation.find((item) => item.id === "more") ?? null;
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
     : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
@@ -616,59 +696,154 @@ function Sidebar({
         className={`np-side-nav${dropTarget === "nav" ? " is-drop-target" : ""}`}
         {...acceptDrop("nav", "more", (id) => setHidden(showNavItem(id)))}
       >
-        {navigationItems.filter((item) => !isHidden(item.id)).map((item) => {
+        {/*
+          One heading per thing being studied, with what is being studied on
+          it. Michelle asked for the two courses to fold — "[Flagge] Sprachen
+          lernen ▾" — with Home above them, Beta listed flat below, and the
+          put-away drawer on its own at the foot. Nothing here changes where a
+          row goes; it changes which rows sit together.
+        */}
+        {navigationItems.filter((item) => !isHidden(item.id)).map((item) => item).filter((item) => item.id === "home").map((item) => {
           const Icon = item.icon;
-          const active = item.id === activeView
-            || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
-            || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
-          // More is where a dragged entry goes, so it is also the one row
-          // that accepts a drop rather than starting one.
-          const isMore = item.id === "more";
           return (
             <button
-              aria-current={active ? "page" : undefined}
-              className={`${active ? "is-active" : ""}${isMore && dropTarget === "more" ? " is-drop-target" : ""}`}
+              aria-current={activeView === item.id ? "page" : undefined}
+              className={activeView === item.id ? "is-active" : ""}
               key={item.id}
               onClick={() => onNavigate(item.id)}
               onFocus={() => onPrefetch(item.id)}
               onPointerEnter={() => onPrefetch(item.id)}
               type="button"
-              {...(isMore
-                ? acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))
-                : dragProps(item.id))}
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{ui(item.label)}</span>
-              {/* Hiding lives on the row it hides, revealed by hovering it.
-                  A permanent cross on eleven rows would be eleven invitations
-                  to dismantle the nav; nested inside the button it would be a
-                  button inside a button, which is invalid and which screen
-                  readers flatten. So it is a sibling, positioned over the row,
-                  and it stops the click from also navigating. */}
-              {canHideNavItem(item.id) && (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label={uiFmt("Hide {label}", { label: ui(item.label) })}
-                  className="np-nav-hide"
-                  onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(item.id)); }}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Enter" && event.key !== " ") return;
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setHidden(hideNavItem(item.id));
-                  }}
-                >
-                  <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
-                </span>
-              )}
             </button>
           );
         })}
+
+        {languageItems.length > 0 && (
+          <div className={`np-nav-group${groups.languages ? " is-open" : ""}`}>
+            <button
+              aria-expanded={groups.languages}
+              className={`np-nav-group-head${!groups.languages && languageItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
+              onClick={() => toggleGroup("languages")}
+              type="button"
+            >
+              <span aria-hidden="true" className="np-nav-flag"><FlagRoundel id={courseFlagId} /></span>
+              <span>{ui("Language learning")}</span>
+              <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
+            </button>
+            {groups.languages && (
+              <div className="np-nav-group-items">
+                {languageItems.map((item) => {
+                  const Icon = NAV_GROUP_ICONS[item.id] ?? item.icon;
+                  const active = item.id === activeView
+                    || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"));
+                  return (
+                    <button
+                      aria-current={active ? "page" : undefined}
+                      className={active ? "is-active" : ""}
+                      key={item.id}
+                      onClick={() => onNavigate(item.id)}
+                      onFocus={() => onPrefetch(item.id)}
+                      onPointerEnter={() => onPrefetch(item.id)}
+                      type="button"
+                      {...dragProps(item.id)}
+                    >
+                      <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
+                      <span>{ui(item.label)}</span>
+                      {/* Hiding lives on the row it hides, revealed by hovering it.
+                          A permanent cross on eleven rows would be eleven invitations
+                          to dismantle the nav; nested inside the button it would be a
+                          button inside a button, which is invalid and which screen
+                          readers flatten. So it is a sibling, positioned over the row,
+                          and it stops the click from also navigating. */}
+                      {canHideNavItem(item.id) && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          aria-label={uiFmt("Hide {label}", { label: ui(item.label) })}
+                          className="np-nav-hide"
+                          onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(item.id)); }}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter" && event.key !== " ") return;
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setHidden(hideNavItem(item.id));
+                          }}
+                        >
+                          <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {countryItem && (
+          <div className={`np-nav-group${groups.country ? " is-open" : ""}`}>
+            <button
+              aria-expanded={groups.country}
+              className={`np-nav-group-head${!groups.country && activeView === "life-in-uk" ? " is-active" : ""}`}
+              onClick={() => toggleGroup("country")}
+              type="button"
+              {...dragProps(countryItem.id)}
+            >
+              <span aria-hidden="true" className="np-nav-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
+              <span>{ui("Country studies")}</span>
+              <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={uiFmt("Hide {label}", { label: ui("Country studies") })}
+                className="np-nav-hide"
+                onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(countryItem.id)); }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setHidden(hideNavItem(countryItem.id));
+                }}
+              >
+                <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+              </span>
+            </button>
+            {groups.country && (
+              <div className="np-nav-group-items">
+                {/* The same four halves the course's own tab bar has, reached
+                    from the nav instead of from inside the view. Search
+                    already opens the timeline this way. */}
+                {UK_SECTIONS.map((section) => {
+                  const Icon = section.icon;
+                  const active = activeView === "life-in-uk" && ukTab === section.tab;
+                  return (
+                    <button
+                      aria-current={active ? "page" : undefined}
+                      className={active ? "is-active" : ""}
+                      key={section.tab}
+                      onClick={() => onOpenUkSection(section.tab)}
+                      onFocus={() => onPrefetch("life-in-uk")}
+                      onPointerEnter={() => onPrefetch("life-in-uk")}
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
+                      <span>{ui(section.label)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
           <>
             <span aria-hidden="true" className="np-nav-section">
-              Beta
+              {ui("Beta category")}
+              <b className="np-nav-section-badge">Beta</b>
             </span>
             {betaItems.filter((item) => !isHidden(item.id)).map((item) => {
               const Icon = item.icon;
@@ -709,55 +884,72 @@ function Sidebar({
         )}
 
         {/*
-          The way back.
+          The foot of the nav: the overflow drawer, and the way back.
 
           Hiding something with no visible route to undo it is how a nav ends
-          up permanently missing an entry nobody can find again. This appears
-          only once something is hidden, says how many, and lists them with a
-          Show beside each — so the feature explains its own reversal rather
-          than sending anyone to Settings to look for it.
+          up permanently missing an entry nobody can find again. The put-away
+          list used to appear only once something was in it; it is a permanent
+          row now, separated from the sections above, because Michelle asked
+          for it to sit at the bottom as one entry of its own.
         */}
-        {hidden.length > 0 && (
-          <>
+        <div className="np-nav-footer">
+          {moreItem && (
             <button
-              aria-expanded={restoreOpen}
-              className="np-nav-hidden-toggle"
-              onClick={() => setRestoreOpen((open) => !open)}
+              aria-current={activeView === "more" || activeView === "progress" || activeView === "profile" ? "page" : undefined}
+              className={`${activeView === "more" || activeView === "progress" || activeView === "profile" ? "is-active" : ""}${dropTarget === "more" ? " is-drop-target" : ""}`}
+              onClick={() => onNavigate(moreItem.id)}
+              onFocus={() => onPrefetch(moreItem.id)}
+              onPointerEnter={() => onPrefetch(moreItem.id)}
               type="button"
+              {...acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))}
             >
-              <span aria-hidden="true" className="np-nav-visual"><Eye className="np-nav-icon" /></span>
-              <span>{uiFmt("Hidden ({n})", { n: hidden.length })}</span>
+              <span aria-hidden="true" className="np-nav-visual"><Menu className="np-nav-icon" /></span>
+              <span>{ui(moreItem.label)}</span>
             </button>
-            {restoreOpen && (
-              <div className="np-nav-hidden-list">
-                {hidden.map((id) => {
-                  const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
-                  const label = item ? ui(item.label) : id;
-                  return (
-                    <button
-                      className="np-nav-hidden-row"
-                      key={id}
-                      onClick={() => setHidden(showNavItem(id))}
-                      type="button"
-                    >
-                      <span className="truncate">{label}</span>
-                      <span className="np-nav-hidden-show">{ui("Show")}</span>
-                    </button>
-                  );
-                })}
-                {hidden.length > 1 && (
+          )}
+          <button
+            aria-expanded={restoreOpen}
+            aria-label={hidden.length > 0 ? uiFmt("Hidden ({n})", { n: hidden.length }) : undefined}
+            className="np-nav-hidden-toggle"
+            onClick={() => setRestoreOpen((open) => !open)}
+            type="button"
+          >
+            <span aria-hidden="true" className="np-nav-visual"><EyeOff className="np-nav-icon" /></span>
+            <span>{ui("Hidden apps")}</span>
+            {hidden.length > 0 && <b className="np-nav-hidden-count">{hidden.length}</b>}
+          </button>
+          {restoreOpen && (
+            <div className="np-nav-hidden-list">
+              {hidden.length === 0 && (
+                <p className="np-nav-hidden-empty">{ui("Nothing is hidden.")}</p>
+              )}
+              {hidden.map((id) => {
+                const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
+                const label = item ? ui(item.label) : id;
+                return (
                   <button
-                    className="np-nav-hidden-row is-all"
-                    onClick={() => setHidden(showAllNavItems())}
+                    className="np-nav-hidden-row"
+                    key={id}
+                    onClick={() => setHidden(showNavItem(id))}
                     type="button"
                   >
-                    {ui("Show all")}
+                    <span className="truncate">{label}</span>
+                    <span className="np-nav-hidden-show">{ui("Show")}</span>
                   </button>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                );
+              })}
+              {hidden.length > 1 && (
+                <button
+                  className="np-nav-hidden-row is-all"
+                  onClick={() => setHidden(showAllNavItems())}
+                  type="button"
+                >
+                  {ui("Show all")}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="np-sidebar-spacer" />
@@ -3392,14 +3584,18 @@ export default function NewUiPrototype({
         >
           <Sidebar
             activeView={activeView}
+            courseFlagId={activeCourseId}
             createUnlocked={createUnlocked}
             learnPathUnlocked={learnPathUnlocked}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
+            onOpenUkSection={(tab) => { setUkTab(tab); navigate("life-in-uk"); }}
             onPrefetch={prefetchView}
             onResize={resizeSidebar}
+            profile={profile}
             shopUnlocked={shopUnlocked}
             socialPreviewUnlocked={socialPreviewUnlocked}
+            ukTab={ukTab}
             width={sidebarWidth}
           />
           <div className="np-app-area">

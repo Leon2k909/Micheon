@@ -2000,6 +2000,12 @@ const DE: Record<string, string> = {
   "Checkout preview": "Kassen-Vorschau",
   "Choose a coin pack for profile pins and future shop rewards.": "Wähle ein Münzpaket für Profil-Pins und künftige Shop-Belohnungen.",
   "Choose pets, adjust coaching, and set how flashcards flip.": "Tiere auswählen, Coaching anpassen und einstellen, wie Karteikarten umdrehen.",
+  // ── The sidebar's folding sections ──
+  "Language learning": "Sprachen lernen",
+  "Country studies": "Landeskunde",
+  "Beta category": "Kategorie Beta",
+  "Hidden apps": "Ausgeblendete Apps",
+  "Nothing is hidden.": "Es ist nichts ausgeblendet.",
   "Choose the phrase": "Wähle den Satz",
   "Getting the next phrases ready…": "Die nächsten Sätze werden vorbereitet …",
   "{n} in a row": "{n} richtig in Folge",
