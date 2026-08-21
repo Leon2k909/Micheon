@@ -47,7 +47,7 @@ import {
   UsersRound,
   Volume2,
   X,
-} from "lucide-react";
+  ScrollText,} from "lucide-react";
 import {
   lazy,
   Fragment,
@@ -153,6 +153,7 @@ const ListenView = lazy(() => import("@/components/listen/ListenView").then((mod
 const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
 const ClozeTabContent = lazy(() => import("@/lab/ClozeTabContent"));
 const GrammarTabContent = lazy(() => import("@/lab/GrammarTabContent"));
+const PassagesView = lazy(() => import("@/components/passages/PassagesView").then((module) => ({ default: module.PassagesView })));
 const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboardView").then((module) => ({ default: module.CourseDashboardView })));
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
@@ -164,7 +165,7 @@ const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then
 const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
 const UkSearchView = lazy(() => import("@/components/lifeInTheUk/UkSearchView").then((module) => ({ default: module.UkSearchView })));
 
-type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "shop" | "progress" | "profile" | "more" | "life-in-uk" | "create";
+type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "passages" | "shop" | "progress" | "profile" | "more" | "life-in-uk" | "create";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -894,7 +895,7 @@ function Sidebar({
                   if (!item) return null;
                   const Icon = NAV_GROUP_ICONS[item.id] ?? item.icon;
                   const active = item.id === activeView
-                    || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"));
+                    || (item.id === "practice" && (activeView === "tests" || activeView === "grammar" || activeView === "passages"));
                   return (
                     <button
                       aria-current={active ? "page" : undefined}
@@ -1985,6 +1986,14 @@ function PracticeHub({
       meta: ui("Patterns in context"),
       tone: "yellow",
       view: "grammar" as const,
+    },
+    {
+      description: ui("Real messages and notes in German. Read the whole thing, then put it into English — hover any word you do not know."),
+      icon: ScrollText,
+      label: ui("Passages"),
+      meta: ui("Read and translate"),
+      tone: "violet",
+      view: "passages" as const,
     },
   ];
 
@@ -3198,7 +3207,7 @@ function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: Prot
       {MOBILE_NAVIGATION.filter((item) => (item.id !== "games" || gamesUnlocked) && !hidden.includes(item.id)).map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView
-          || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
+          || (item.id === "practice" && (activeView === "tests" || activeView === "grammar" || activeView === "passages"))
           // Kept as its own clause: check-social-preview pins the list below
           // verbatim, because that list is the gate routing Leon's private
           // preview through More. Life in the UK is not gated, so it is added
@@ -3618,6 +3627,12 @@ export default function NewUiPrototype({
           <TestsView apiParts={apiParts} profile={effectiveProfile} />
         </Suspense>
       ) : <FeatureLoading />}
+    </div>
+  ) : activeView === "passages" ? (
+    <div className="np-feature-host">
+      <Suspense fallback={<FeatureLoading />}>
+        <PassagesView />
+      </Suspense>
     </div>
   ) : activeView === "grammar" ? (
     <div className="np-feature-host guided-session np-grammar-view">

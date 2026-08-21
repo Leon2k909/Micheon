@@ -11039,3 +11039,55 @@ html[data-theme="dark"] {
     transition: background 0.17s ease;
   }
 }
+
+/*
+ * A hoverable word in a passage.
+ *
+ * The gloss sits in a data attribute and comes out as a tooltip, the same
+ * shape the lesson's word tokens use — dotted underline to say "there is
+ * something here", and nothing at all when the word has no gloss, because an
+ * underline that leads nowhere is worse than a plain word.
+ */
+.passage-word.has-gloss {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.passage-word.has-gloss:hover,
+.passage-word.has-gloss:focus-visible {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: 4px;
+  outline: none;
+}
+.passage-word.has-gloss::after {
+  content: attr(data-gloss);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 30;
+  transform: translateX(-50%) translateY(3px);
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+  max-width: min(320px, 70vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--text-1) 18%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.passage-word.has-gloss:hover::after,
+.passage-word.has-gloss:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .passage-word.has-gloss::after { transition: none; }
+}
