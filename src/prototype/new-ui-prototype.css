@@ -679,6 +679,20 @@
   height: 14px;
 }
 
+/* Beta's heading is its badge: nothing else needs saying, and the rail is
+   too narrow to say it twice. */
+.np-side-nav .np-nav-group-head--beta {
+  min-height: 46px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.np-nav-group--beta {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--np-line);
+}
+
 .np-nav-section-badge {
   padding: 3px 8px;
   border-radius: 999px;

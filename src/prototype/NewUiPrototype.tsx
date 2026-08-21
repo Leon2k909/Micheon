@@ -373,12 +373,13 @@ function loadProgressSections(profile: UserProfile | null): ProgressSectionState
   };
 }
 
-type NavGroupState = { country: boolean; languages: boolean };
+type NavGroupState = { beta: boolean; country: boolean; languages: boolean };
 
 /** Both sections start open, which is how the nav looked before it folded. */
 function loadNavGroups(profile: UserProfile | null): NavGroupState {
   const stored = loadScopedJson<Partial<NavGroupState>>(NAV_GROUPS_KEY, {}, profile);
   return {
+    beta: stored?.beta !== false,
     country: stored?.country !== false,
     languages: stored?.languages !== false,
   };
@@ -998,13 +999,25 @@ function Sidebar({
         )}
 
         {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
-          <>
-            {/* The badge is the heading. It used to be labelled as well,
-                and "KATEGORIE BETA" beside a BETA pill said it twice — at the
-                rail's narrow end it wrapped onto two lines to do it. */}
-            <span aria-hidden="true" className="np-nav-section">
+          <div className={`np-nav-group np-nav-group--beta${groups.beta ? " is-open" : ""}`}>
+            {/* The badge is the heading, and now the control as well. The
+                first brief said Beta should not fold "vorerst"; that was
+                lifted — "kannst du das auch als drop down menü machen?" — so
+                it folds like the two above it. It used to be labelled too,
+                and "KATEGORIE BETA" beside a BETA pill said it twice. */}
+            <button
+              aria-expanded={groups.beta}
+              aria-label="Beta"
+              className={`np-nav-group-head np-nav-group-head--beta${!groups.beta && betaItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
+              onClick={() => toggleGroup("beta")}
+              type="button"
+            >
               <b className="np-nav-section-badge">Beta</b>
-            </span>
+              <span />
+              <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
+            </button>
+            {groups.beta && (
+              <div className="np-nav-group-items">
             {betaItems.filter((item) => !isHidden(item.id)).map((item) => {
               const Icon = item.icon;
               const active = item.id === activeView;
@@ -1040,7 +1053,9 @@ function Sidebar({
                 </button>
               );
             })}
-          </>
+              </div>
+            )}
+          </div>
         )}
 
         {/*

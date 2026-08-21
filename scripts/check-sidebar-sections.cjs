@@ -221,15 +221,28 @@ assert.ok(
   "a folded section still shows that the page you are on is inside it"
 );
 
-// ── Beta stays flat, and the way back stays at the foot ────────────────────
+// ── Beta folds too, and the way back stays at the foot ─────────────────────
 
 assert.ok(
   /np-nav-section-badge">Beta</.test(shell) && !shell.includes("Beta category"),
   "Beta is marked by its badge alone — a heading beside a BETA pill said it twice"
 );
+// The first brief said Beta should not fold "vorerst". That was lifted —
+// "kannst du das auch als drop down menü machen?" — so all three sections
+// fold now, and the badge that marked the section is the control.
 assert.ok(
-  !/groups\.beta/.test(shell),
-  "Beta does not fold — Michelle asked for its entries to stay visible"
+  /aria-expanded=\{groups\.beta\}/.test(shell)
+    && /np-nav-group-head--beta/.test(shell)
+    && /\{groups\.beta && \(/.test(shell),
+  "Beta folds from its badge like the two sections above it"
+);
+assert.ok(
+  /stored\?\.beta !== false/.test(shell),
+  "and starts open, remembered per profile like the others"
+);
+assert.ok(
+  /!groups\.beta && betaItems\.some\(\(item\) => item\.id === activeView\)/.test(shell),
+  "a folded Beta still shows that the page you are on is inside it"
 );
 assert.ok(
   /np-nav-footer[\s\S]*?ui\("Hidden apps"\)/.test(shell),
