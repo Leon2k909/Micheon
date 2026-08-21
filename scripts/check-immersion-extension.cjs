@@ -824,6 +824,18 @@ checkLatestAudioWins().then(() => {
     // survives a suffix rule: bereitzustellen is bereitstellen.
     ["bereitzustellen", "bereitstellen"],
     ["herauszufinden", "herausfinden"],
+    // A verb in -eln or -ern drops the schwa in the ich form, so stripping
+    // the -e and adding -en spells "bezweiflen", which is not a word.
+    ["bezweifle", "bezweifeln"],
+    ["sammle", "sammeln"],
+    // A plural umlauts the stem as well as adding an ending, and the
+    // umlaut-reversed spelling was reaching only the verb rules.
+    ["häuser", "Haus"],
+    ["städte", "Stadt"],
+    ["hintergründe", "Hintergrund"],
+    // Some plurals are nothing but the umlaut, with no ending to strip.
+    ["mängel", "Mangel"],
+    ["äpfel", "Apfel"],
   ].map(([form, lemma]) => [form, lemma.toLowerCase()])) {
     assert.equal(resolve(form), lemma,
       `"${form}" should resolve to "${lemma}" — a reader hovering it gets nothing otherwise`);
@@ -832,6 +844,10 @@ checkLatestAudioWins().then(() => {
   // And the guesses that must never be made. A wrong gloss is worse than
   // none: it teaches a word the page never used.
   for (const [form, why] of [
+    // dachte stays here: the SUFFIX rules must still refuse it, because what
+    // they would reach for is the noun Dach. It is answered instead by the
+    // reviewed alias list, which is asserted separately below — a written
+    // answer is not a guess.
     ["dachte", "the past of denken is not the noun Dach"],
     ["warfare", "English text is not German"],
     ["history", "nor is this"],
@@ -852,6 +868,36 @@ checkLatestAudioWins().then(() => {
     assert.equal(resolve(english), null,
       `"${english}" is an English word and must not be guessed at as German`);
   }
+
+  // The strong verbs, which no suffix rule can undo, are written down instead.
+  const aliasBlock = gloss.slice(
+    gloss.indexOf("const OBSERVED_FORM_TO_LEMMA"),
+    gloss.indexOf("function inflectedGermanEntry")
+  );
+  for (const [form, lemma] of [
+    ["dachte", "denken"],
+    ["eingebrochen", "einbrechen"],
+    ["teilnimmt", "teilnehmen"],
+    ["anderem", "andere"],
+  ]) {
+    assert.ok(
+      // Two backslashes: this is a template literal, and a single one would
+      // be resolved by the string before the regex ever saw it.
+      new RegExp(`"${form}":\\s*"${lemma}"`).test(aliasBlock),
+      `"${form}" is a strong form no rule can reach, and the alias list does not name it`
+    );
+    assert.ok(words.some((word) => word.de.toLocaleLowerCase("de-DE") === lemma.toLowerCase()),
+      `"${form}" is aliased to "${lemma}", which is not in the glossary`);
+  }
+
+  // The commonest English words are not German vocabulary, and collecting
+  // them only fills the export Leon reads with had, let, other and stood.
+  const collector = gloss.slice(
+    gloss.indexOf("function looksLikeRealGermanCandidate"),
+    gloss.indexOf("function examplesForMissing")
+  );
+  assert.ok(collector.includes("ENGLISH_NEVER_GUESS.has(token.toLowerCase())"),
+    "the collector still reports common English words as missing German vocabulary");
 
   console.log("check-immersion-extension: inflected forms reach their dictionary entry, and bad guesses are refused");
 }

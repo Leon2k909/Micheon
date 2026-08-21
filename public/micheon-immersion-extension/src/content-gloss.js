@@ -544,6 +544,11 @@
     if (/['’]/.test(token)) return false;
     if (STOPWORDS.has(token.toLowerCase())) return false;
     if (NOT_VOCAB.has(token.toLowerCase())) return false;
+    // The commonest English words are not German vocabulary, and a German
+    // page is full of them. The de-inflection rules already refuse to guess
+    // at this list; collecting the same words as "missing German" only fills
+    // the export Leon reads with had, let, other, everyone and stood.
+    if (ENGLISH_NEVER_GUESS.has(token.toLowerCase())) return false;
     return true;
   }
 
@@ -759,6 +764,16 @@
     "welchem": "welcher", "welchen": "welcher",
     "mancher": "manche", "manche": "manche", "manches": "manche",
     "manchem": "manche", "manchen": "manche",
+    // Strong verbs change their stem vowel, which no suffix rule can undo:
+    // dachte is denken, eingebrochen is einbrechen, teilnimmt is teilnehmen.
+    // These were reaching nothing, and the one thing worse would be a guess —
+    // the suffix rules would happily read "dachte" as the noun Dach.
+    "dachte": "denken", "dachten": "denken", "gedacht": "denken",
+    "eingebrochen": "einbrechen", "einbrach": "einbrechen",
+    "teilnimmt": "teilnehmen", "teilnimm": "teilnehmen",
+    "hereingebrochen": "hereinbrechen",
+    "anderem": "andere", "anderen": "andere", "anderer": "andere", "anderes": "andere",
+    "besonderem": "besonders", "besonderen": "besonders", "besonderer": "besonders",
     "modi": "Modus", "modus": "Modus",
     "eigener": "eigen", "eigene": "eigen", "eigenes": "eigen",
     "eigenem": "eigen", "eigenen": "eigen",
@@ -1350,6 +1365,13 @@
     const held = (candidate) => byDeLowerAny.get(candidate) || null;
     // Reversing an umlaut covers wächst → wachsen and läuft → laufen.
     const plain = lower.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u");
+    // Some plurals are nothing BUT the umlaut — Mangel/Mängel, Apfel/Äpfel,
+    // Vater/Väter, Tochter/Töchter — so there is no ending to strip and the
+    // reversed spelling is already the word.
+    if (plain !== lower) {
+      const unumlauted = held(plain);
+      if (unumlauted) return unumlauted;
+    }
     const stems = new Set();
 
     const addVerbStems = (word) => {
@@ -1371,6 +1393,15 @@
       // backen, off became offen, such became suchen, less became lesen. Two
       // imperatives are not worth ten confident wrong answers.
     };
+    // Verbs in -eln and -ern drop the schwa in the ich form: ich bezweifle is
+    // bezweifeln, ich sammle is sammeln, ich ändre is ändern. Stripping the
+    // -e and adding -en gives "bezweiflen", which is not a word, so the whole
+    // class resolved to nothing however common the verb.
+    const schwa = /^(.{2,})([lr])e$/.exec(lower);
+    if (schwa) {
+      const hit = held(`${schwa[1]}e${schwa[2]}n`);
+      if (hit) return hit;
+    }
     addVerbStems(lower);
     if (plain !== lower) addVerbStems(plain);
 
@@ -1399,14 +1430,20 @@
 
     // Adjective and noun endings resolve to a base that must already exist,
     // and must not itself be an infinitive, or every verb would match here.
+    // German plurals umlaut the stem as well as adding the ending — Hintergrund
+    // becomes Hintergründe, Haus becomes Häuser, Stadt becomes Städte — and the
+    // umlaut-reversed spelling was being computed and then handed only to the
+    // verb rules. Every plural of that shape resolved to nothing.
     const bases = [];
-    for (const ending of ["sten", "ste", "eren", "ere", "en", "er", "es", "em", "e", "n", "s"]) {
-      if (lower.length <= ending.length + 2 || !lower.endsWith(ending)) continue;
-      const base = lower.slice(0, -ending.length);
-      bases.push(base);
-      if (/(en|ln|rn)$/.test(base)) continue;
-      const hit = held(base);
-      if (hit) return hit;
+    for (const word of plain === lower ? [lower] : [lower, plain]) {
+      for (const ending of ["sten", "ste", "eren", "ere", "en", "er", "es", "em", "e", "n", "s"]) {
+        if (word.length <= ending.length + 2 || !word.endsWith(ending)) continue;
+        const base = word.slice(0, -ending.length);
+        bases.push(base);
+        if (/(en|ln|rn)$/.test(base)) continue;
+        const hit = held(base);
+        if (hit) return hit;
+      }
     }
 
     // A participle used as an adjective wears two endings, and only the outer

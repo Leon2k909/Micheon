@@ -33,6 +33,7 @@ tsconfig.tsbuildinfo
 *.sw?
 release/
 release-audit/
+release-fr/
 release-verify/
 # Left behind by a packaging run that could not rename its temp directory —
 # the Claude desktop app holds a watcher handle on files under the project, so
