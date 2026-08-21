@@ -117,7 +117,9 @@ check("an empty answer is never correct",
 // the real source with two edits: export the exercise, and pin the opening
 // phase (and, for the second pass, the opening mode) so the branch under test
 // is the one that mounts. Everything else is the shipped code.
-const componentSource = read("src/GuidedSession.tsx");
+// Normalised, because git checks this file out with CRLF on Windows and every
+// pin below spans more than one line.
+const componentSource = read("src/GuidedSession.tsx").replace(/\r\n?/gu, "\n");
 const tempFile = path.join(root, "src", "__listening-dictation-check.tsx");
 
 function renderStage(mode) {
@@ -217,7 +219,7 @@ check("entering the stage resets it to dictation, so the next card is not stuck 
   /if \(phase === "ListenPick"\) \{[\s\S]{0,300}?setListeningMode\("type"\)/.test(componentSource));
 
 // ── and that both controls are visible ──────────────────────────────────
-const styles = read("src/index.css");
+const styles = read("src/index.css").replace(/\r\n?/gu, "\n");
 check("the swap control is styled rather than falling back to unstyled text",
   /\.guided-session \.fs-listening-switch \{/.test(styles));
 check("and it reacts to hover, so it reads as a control",
