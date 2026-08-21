@@ -2088,6 +2088,9 @@ const DE: Record<string, string> = {
   "today": "heute",
   "Discover the history, culture and society of the country you are studying.":
     "Entdecke die Geschichte, Kultur und Gesellschaft des Landes, das du lernst.",
+  "Learn a new language step by step and build your skills.": "Lerne eine neue Sprache Schritt für Schritt und verbessere deine Fähigkeiten.",
+  "Current language": "Aktuelle Sprache",
+  "Everyday essentials": "Alltagssituationen",
   "Selected country": "Ausgewähltes Land",
   "United Kingdom": "Großbritannien",
   "Lesson {n}": "Lektion {n}",

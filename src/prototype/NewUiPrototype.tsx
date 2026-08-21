@@ -18,6 +18,7 @@ import {
   Coins,
   Crown,
   Gamepad2,
+  Globe,
   Route,
   EyeOff,
   Eye,
@@ -1828,7 +1829,89 @@ function HomeBanner() {
  * inventing a picker for it. Its progress is the real count of lessons
  * completed in that course.
  */
-function CountryCard({ onOpen, profile }: { onOpen: () => void; profile: UserProfile | null }) {
+/**
+ * The language half of "What would you like to learn today?".
+ *
+ * Deliberately the same shape as CountryCard below: her reference draws the
+ * two as a pair — badge, title, a line of description, a panel naming what is
+ * selected with a Change beside it, a progress panel, one Continue button.
+ * The course hero that used to sit here was a different object altogether,
+ * and beside the country card it read as two unrelated things.
+ *
+ * Which language is being learnt is not chosen here — the Change button opens
+ * the existing course picker, exactly as the flag in the rail does.
+ */
+function LanguageCard({
+  onOpen,
+  onSwitchCourse,
+  packProgress,
+  profile,
+  stats,
+}: {
+  onOpen: () => void;
+  onSwitchCourse: () => void;
+  packProgress: PackProgress | null;
+  profile: UserProfile | null;
+  stats: PrototypeStats;
+}) {
+  const learnsEnglish = learningEnglish();
+  // Same rule as the rail: the German/English pair is told apart by which way
+  // round the learner is going, not by the stored course id — both accounts
+  // store "german" and Leon was shown the wrong flag because of it.
+  const courseFlagId = learningFlagId(getActiveCourseId(profile));
+  const percent = packProgress ? packProgress.percent : 0;
+
+  return (
+    <article className="np-home-choice np-home-choice--language">
+      <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
+      <div aria-hidden="true" className="np-home-choice-wash" />
+      <div className="np-home-choice-body">
+        <span aria-hidden="true" className="np-home-choice-flag np-home-choice-flag--globe"><Globe /></span>
+        <h2>{ui("Language learning")}</h2>
+        <p>{ui("Learn a new language step by step and build your skills.")}</p>
+
+        <div className="np-home-choice-panel">
+          <small>{ui("Current language")}</small>
+          <span className="np-home-choice-value">
+            <FlagRoundel id={courseFlagId} />
+            <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
+            <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
+              {ui("Change")}
+            </button>
+          </span>
+        </div>
+
+        <div className="np-home-choice-panel np-home-choice-panel--progress">
+          <small>{ui("Your progress")}</small>
+          <div className="np-home-choice-row">
+            <span aria-hidden="true" className="np-home-choice-icon"><BookOpen /></span>
+            <span className="np-home-choice-lesson">
+              <strong>{packProgress ? ui(packProgress.title) : ui("Everyday essentials")}</strong>
+              <small>{uiFmt("Lesson {n}", { n: uiNumber(stats.sessionsCompleted + 1) })}</small>
+            </span>
+            <b>{percent}&nbsp;%</b>
+          </div>
+          <div
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={percent}
+            className="np-progress-track"
+            role="progressbar"
+          >
+            <span style={{ width: `${percent}%` }} />
+          </div>
+        </div>
+
+        <button className="np-home-choice-cta" onClick={onOpen} type="button">
+          {ui("Continue learning")}
+          <ArrowRight aria-hidden="true" />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function CountryCard({ onOpen, onSwitchCountry, profile }: { onOpen: () => void; onSwitchCountry: () => void; profile: UserProfile | null }) {
   const course = getCourse(LIFE_IN_THE_UK_COURSE_ID);
   const lessons = course?.lessons ?? [];
   const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).length;
@@ -1849,6 +1932,9 @@ function CountryCard({ onOpen, profile }: { onOpen: () => void; profile: UserPro
           <span className="np-home-choice-value">
             <FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />
             <strong>{ui("United Kingdom")}</strong>
+            <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
+              {ui("Change")}
+            </button>
           </span>
         </div>
 
@@ -2690,15 +2776,18 @@ function HomeView({
       </h2>
 
       <div className="np-home-choices">
-        <article className="np-home-choice np-home-choice--language">
-          <CourseHero
-            packProgress={packProgress}
-            needsStartingPoint={needsStartingPoint}
-            onSwitchCourse={onSwitchCourse}
-            placementPart={placementPart}
-            stats={stats}
-          />
-          <div className="np-course-launch">
+        <LanguageCard
+          onOpen={onPractice}
+          onSwitchCourse={onSwitchCourse}
+          packProgress={packProgress}
+          profile={profile}
+          stats={stats}
+        />
+
+        <CountryCard onOpen={onOpenCountryCourse} onSwitchCountry={onSwitchCourse} profile={profile} />
+      </div>
+
+      <div className="np-course-launch">
       <button
         aria-label={needsStartingPoint
           ? ui("Choose your starting point. Tell us if you are a total beginner.")
@@ -2766,10 +2855,6 @@ function HomeView({
           </div>
         )}
       </div>
-      </div>
-        </article>
-
-        <CountryCard onOpen={onOpenCountryCourse} profile={profile} />
       </div>
 
       <HomeStats stats={stats} />
