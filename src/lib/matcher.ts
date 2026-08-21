@@ -1,7 +1,13 @@
 import { buildListenQueue, type ListenItem } from "@/lib/listenMode";
 import { takeMatchingSafe } from "@/lib/germanTextMatch";
 import { loadGradeStore } from "@/lib/activity";
-import type { UserProfile } from "@/lib/profileStorage";
+import {
+  getAuthUser,
+  loadScopedJson,
+  saveScopedJson,
+  type UserProfile,
+} from "@/lib/profileStorage";
+import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 
 /**
  * Matcher: the whole course, in pairs, forever.
@@ -94,6 +100,79 @@ export function matcherDifficulty(knownStreak: number): {
 /** What a miss does to the run. Steeper than the climb, deliberately. */
 export function matcherStreakAfterMiss(knownStreak: number): number {
   return Math.max(0, Math.floor(knownStreak) - MATCHER_BOARD_SIZE);
+}
+
+/* ── where you got to ───────────────────────────────────────────────────
+ *
+ * Leon: "this is supposed to be like continue learning where it remembers
+ * what ive already done, the same stuff can come back for review but i dont
+ * wanna start from the beginning every time".
+ *
+ * A position alone will not do it. The queue is rebuilt from the grade store
+ * every visit, and everything graded here leaves it — so the index that meant
+ * "1,200 words in" yesterday means something else today, and after a run of
+ * Know its it means somewhere earlier than where you actually were.
+ *
+ * A single item id will not do it either, for the same reason: the most
+ * likely id to be missing is the one you were last looking at, because you
+ * probably pressed Know it on it.
+ *
+ * So the cursor is the whole board's ids plus the number as a backstop. Resume
+ * lands on the first of those still in the queue; if every one of them has
+ * been graded away, the number puts you back at roughly the same depth rather
+ * than at the very beginning. Coming back round for review is what the wrap is
+ * for, not what losing your place is for.
+ */
+const MATCHER_CURSOR_KEY = "gl-matcher-cursor-v1";
+
+export type MatcherCursor = { ids: string[]; approx: number };
+
+/** Words and sentences are different queues, and each course has its own. */
+function cursorStorageKey(kind: MatcherKind, direction: LearningDirection): string {
+  return `${MATCHER_CURSOR_KEY}:${direction}:${kind}`;
+}
+
+export function getMatcherCursor(
+  kind: MatcherKind,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): MatcherCursor {
+  const stored = loadScopedJson<unknown>(cursorStorageKey(kind, direction), null, profile);
+  if (!stored || typeof stored !== "object") return { ids: [], approx: 0 };
+  const raw = stored as Partial<MatcherCursor>;
+  const ids = Array.isArray(raw.ids)
+    ? raw.ids.filter((id): id is string => typeof id === "string" && Boolean(id)).slice(0, 16)
+    : [];
+  const approx = Number.isFinite(raw.approx) ? Math.max(0, Math.floor(Number(raw.approx))) : 0;
+  return { ids, approx };
+}
+
+export function setMatcherCursor(
+  cursor: MatcherCursor,
+  kind: MatcherKind,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): MatcherCursor {
+  const next: MatcherCursor = {
+    ids: cursor.ids.filter(Boolean).slice(0, 16),
+    approx: Math.max(0, Math.floor(cursor.approx) || 0),
+  };
+  saveScopedJson(cursorStorageKey(kind, direction), next, profile);
+  return next;
+}
+
+/** Where in THIS queue the stored cursor lands. */
+export function matcherResumeFrom(queue: MatcherPair[], cursor: MatcherCursor): number {
+  if (queue.length === 0) return 0;
+  const at = new Map<string, number>();
+  queue.forEach((pair, index) => { if (!at.has(pair.id)) at.set(pair.id, index); });
+  for (const id of cursor.ids) {
+    const index = at.get(id);
+    if (index !== undefined) return index;
+  }
+  // Everything from that board has been graded away — a good sign, not a
+  // reason to start over. Land at the same depth in the queue that is left.
+  return Math.min(Math.max(0, cursor.approx), Math.max(0, queue.length - 1));
 }
 
 /**

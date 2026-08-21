@@ -28,7 +28,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP } from "./src/lib/matcher.ts";',
+      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss, getMatcherCursor, setMatcherCursor, matcherResumeFrom, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP } from "./src/lib/matcher.ts";',
       'export { matchingVisibleKey } from "./src/lib/germanTextMatch.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -64,6 +64,7 @@ compiled._compile(built.outputFiles[0].text, compiled.filename);
 const {
   allPartBlueprints, buildApiPartFromResolved,
   buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss,
+  getMatcherCursor, setMatcherCursor, matcherResumeFrom,
   MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP,
   matchingVisibleKey,
 } = compiled.exports;
@@ -262,6 +263,78 @@ for (const kind of ["words", "sentences"]) {
     "not one pair in the whole queue has an alias — the field is being dropped");
 }
 
+// ── it remembers where you got to ───────────────────────────────────────
+// Leon: "this is supposed to be like continue learning where it remembers
+// what ive already done ... i dont wanna start from the beginning every time".
+//
+// The hard case is the ordinary one: everything graded here LEAVES the queue,
+// so the board you were last looking at is exactly the board most likely to
+// have gone. A cursor that is only a number drifts; a cursor that is only the
+// current item's id fails the moment you press Know it on it.
+{
+  const queue = buildMatcherQueue(parts, "words", null);
+  const board = buildMatcherBoard(queue, 0);
+  const later = buildMatcherBoard(queue, 400);
+
+  // Nothing stored: the front of the list, as a first visit should be.
+  assert.strictEqual(matcherResumeFrom(queue, { ids: [], approx: 0 }), 0,
+    "a first visit does not start at the beginning");
+  assert.strictEqual(matcherResumeFrom([], { ids: ["x"], approx: 9 }), 0,
+    "an empty queue resolves to something other than zero");
+
+  // The plain case: the board is still there, so resume on it.
+  const at = matcherResumeFrom(queue, { ids: later.pairs.map((p) => p.id), approx: 400 });
+  assert.strictEqual(queue[at].id, later.pairs[0].id,
+    "resuming does not land on the board that was left");
+  assert.ok(at > 0, "resuming a board 400 items in came back to the start");
+
+  // The real case: the first few of that board have been graded away. It must
+  // land on the survivors, not at the front.
+  const thinned = queue.filter((pair) => pair.id !== later.pairs[0].id && pair.id !== later.pairs[1].id);
+  const afterGrading = matcherResumeFrom(thinned, { ids: later.pairs.map((p) => p.id), approx: 400 });
+  assert.strictEqual(thinned[afterGrading].id, later.pairs[2].id,
+    "grading the first cards of a board loses the place instead of moving to the next one");
+
+  // The pathological case: the whole board is gone. Land at the same depth,
+  // never back at the beginning — that is the complaint being fixed.
+  const gone = queue.filter((pair) => !later.pairs.some((p) => p.id === pair.id));
+  const deep = matcherResumeFrom(gone, { ids: later.pairs.map((p) => p.id), approx: 400 });
+  assert.ok(deep >= 390 && deep <= 400,
+    `a fully graded board resumed at ${deep}, not near the 400 it was at`);
+  assert.strictEqual(matcherResumeFrom(board.pairs, { ids: ["nothing"], approx: 10_000 }), board.pairs.length - 1,
+    "a cursor past the end of a shrunken queue is not clamped into it");
+
+  // Round trip through storage, including the shapes a hand-edited or
+  // half-written value can take.
+  const written = setMatcherCursor({ ids: later.pairs.map((p) => p.id), approx: 400 }, "words", "learn-de", null);
+  assert.strictEqual(written.approx, 400, "the cursor was not written as given");
+  const read = getMatcherCursor("words", "learn-de", null);
+  assert.deepStrictEqual(read.ids, later.pairs.map((p) => p.id), "the cursor did not survive storage");
+  assert.strictEqual(read.approx, 400, "the backstop position did not survive storage");
+
+  // Words and sentences are separate lists and must keep separate places.
+  const sentenceCursor = getMatcherCursor("sentences", "learn-de", null);
+  assert.deepStrictEqual(sentenceCursor, { ids: [], approx: 0 },
+    "the words cursor is answering for sentences too");
+
+  // Nothing stored, or something broken stored, must never throw.
+  assert.deepStrictEqual(getMatcherCursor("words", "learn-en", null), { ids: [], approx: 0 },
+    "an unvisited course does not start clean");
+
+  // The view has to actually use it, and resolve it on the first render rather
+  // than dealing from the top and swapping — that flash says "starting again",
+  // which is the thing being fixed.
+  const view = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView.tsx"), "utf8");
+  assert.ok(/useState\(\s*\(\) => matcherResumeFrom\(queue, getMatcherCursor\(kind, direction, profile\)\)\s*\)/.test(view),
+    "the board's starting position is not resolved from the stored cursor on the first render");
+  assert.ok(/setMatcherCursor\(\s*\{ ids: board\.pairs\.map\(\(pair\) => pair\.id\), approx: at \}/.test(view),
+    "the board on screen is not what gets remembered");
+  assert.ok(!/setKind\(next\);\s*\n\s*setFrom\(0\)/.test(view),
+    "switching between words and sentences throws that list's place away");
+  assert.ok(/const startOver = useCallback\(/.test(view) && /Start over/.test(view),
+    "there is no way back to the front of the list once you are deep in it");
+}
+
 // ── the controls have to be on the board, not just in the file ──────────
 // Everything above reads source. This renders the real component against the
 // real queue and looks at what comes out, because a control that is wired
@@ -352,6 +425,11 @@ for (const kind of ["words", "sentences"]) {
 
 console.log(
   `check-matcher: both queues ordered like the course, 40 boards each solvable `
-  + `and advancing, the deal stable, matching still unscored, the step rising `
-  + `and falling with the run of Know its, and every pair rendering its controls`
+  + `and advancing, the deal stable, the place kept across visits, matching still `
+  + `unscored, the step rising and falling with the run of Know its, and every `
+  + `pair rendering its controls`
 );
+// Writing a cursor schedules the shared-items sync, which outside a browser
+// fails and retries on a growing delay — it would keep the build waiting for
+// ever. The check is finished; say so rather than letting the loop decide.
+process.exit(0);

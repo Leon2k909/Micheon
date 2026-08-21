@@ -249,8 +249,12 @@ const DE: Record<string, string> = {
   "Know all {n}": "Alle {n} gekonnt",
   "Step {step}: {size} pairs, deeper in": "Stufe {step}: {size} Paare, weiter hinten",
   "{days}d": "{days} T",
-  "Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.":
-    "Tippe auf eine Karte, um sie zu hören – in der Lautstärke, die du für diese Sprache eingestellt hast. Das Zuordnen selbst ändert nichts: Beide Antworten stehen auf dem Bildschirm, es ist also Wiedererkennen. „Gekonnt“ und das Stufenmenü schreiben mit, wie überall sonst, und wer immer weiter „Gekonnt“ drückt, bekommt größere Bretter aus tieferen Bereichen der Liste.",
+  "at {at} of {n}": "bei {at} von {n}",
+  "Start over": "Von vorn beginnen",
+  "Back to the start of the list.": "Zurück zum Anfang der Liste.",
+  "Picked up where you left off — {n} in.": "Dort weitergemacht, wo du aufgehört hast – {n} Einträge weit.",
+  "It remembers where you got to, so opening it again carries on rather than starting over — words and sentences each keep their own place, and the list comes back round for review when you reach the end. Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.":
+    "Es merkt sich, wo du warst: Beim nächsten Öffnen geht es weiter statt von vorn – Wörter und Sätze behalten jeweils ihre eigene Stelle, und am Ende beginnt die Liste zur Wiederholung wieder von vorn. Tippe auf eine Karte, um sie zu hören – in der Lautstärke, die du für diese Sprache eingestellt hast. Das Zuordnen selbst ändert nichts: Beide Antworten stehen auf dem Bildschirm, es ist also Wiedererkennen. „Gekonnt“ und das Stufenmenü schreiben mit, wie überall sonst, und wer immer weiter „Gekonnt“ drückt, bekommt größere Bretter aus tieferen Bereichen der Liste.",
   // Listening stage: write down what you heard, options only on request.
   "Hear & write": "Hören & schreiben",
   "Write what you hear": "Schreib, was du hörst",

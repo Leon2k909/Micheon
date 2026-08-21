@@ -7,11 +7,15 @@ import {
   buildMatcherBoard,
   buildMatcherQueue,
   dealColumns,
+  getMatcherCursor,
   matcherDifficulty,
+  matcherResumeFrom,
   matcherStreakAfterMiss,
+  setMatcherCursor,
   type MatcherKind,
   type MatcherPair,
 } from "@/lib/matcher";
+import { getLearningDirection } from "@/lib/direction";
 import {
   setListenReviewLevel,
   snoozeListenItem,
@@ -62,7 +66,6 @@ export function MatcherView({
   onExit: () => void;
 }) {
   const [kind, setKind] = useState<MatcherKind>("words");
-  const [from, setFrom] = useState(0);
   const [picked, setPicked] = useState<{ side: "de" | "en"; id: string } | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
@@ -99,6 +102,30 @@ export function MatcherView({
     [apiParts, kind, profile]
   );
 
+  const direction = useMemo(() => getLearningDirection(), []);
+
+  /**
+   * Where you got to, not where the list starts.
+   *
+   * Resolved on the first render rather than in an effect, so the board is
+   * never dealt from the top and then swapped — the flash of sein/werden/haben
+   * would say "you are starting again" every single time, which is the thing
+   * being fixed.
+   */
+  const [from, setFrom] = useState(
+    () => matcherResumeFrom(queue, getMatcherCursor(kind, direction, profile))
+  );
+  const [resumedAt] = useState(() => from);
+
+  // Switching Words <-> Sentences resumes THAT list where it was left, since
+  // each one keeps its own cursor.
+  const lastKind = useRef(kind);
+  useEffect(() => {
+    if (lastKind.current === kind) return;
+    lastKind.current = kind;
+    setFrom(matcherResumeFrom(queue, getMatcherCursor(kind, direction, profile)));
+  }, [kind, queue, direction, profile]);
+
   const difficulty = useMemo(() => matcherDifficulty(knownStreak), [knownStreak]);
   const board = useMemo(
     () => buildMatcherBoard(queue, from, difficulty.boardSize),
@@ -115,6 +142,29 @@ export function MatcherView({
   }, [notice]);
 
   useEffect(() => () => stopTts(), []);
+
+  // Say it once, on arrival: the list is not starting again.
+  useEffect(() => {
+    if (resumedAt <= 0) return;
+    setNotice({ message: uiFmt("Picked up where you left off — {n} in.", { n: uiNumber(resumedAt) }) });
+  }, [resumedAt]);
+
+  /**
+   * Remember the board, not just the number. Everything graded here leaves the
+   * queue, so the position that meant "1,200 words in" is worth less every
+   * visit; the ids of what is actually on screen survive that, and the number
+   * is only the backstop for when the whole board has been graded away.
+   */
+  useEffect(() => {
+    if (board.pairs.length === 0 || queue.length === 0) return;
+    const at = ((from % queue.length) + queue.length) % queue.length;
+    setMatcherCursor(
+      { ids: board.pairs.map((pair) => pair.id), approx: at },
+      kind,
+      direction,
+      profile
+    );
+  }, [board.pairs, from, queue.length, kind, direction, profile]);
 
   const dealNext = useCallback(() => {
     setSolved(new Set());
@@ -133,14 +183,25 @@ export function MatcherView({
     return () => window.clearTimeout(timer);
   }, [solved, board.pairs.length, dealNext]);
 
-  // Switching between words and sentences starts a fresh queue.
+  // Switching between words and sentences swaps the queue; the effect above
+  // puts the new one back where it was left rather than at its start.
   const chooseKind = useCallback((next: MatcherKind) => {
     setKind(next);
-    setFrom(0);
     setSolved(new Set());
     setMenuFor(null);
     arm(null);
   }, [arm]);
+
+  /** Back to the head of the queue, for when the point is the easy words. */
+  const startOver = useCallback(() => {
+    setMatcherCursor({ ids: [], approx: 0 }, kind, direction, profile);
+    setFrom(0);
+    setSolved(new Set());
+    setKnownStreak(0);
+    setMenuFor(null);
+    arm(null);
+    setNotice({ message: ui("Back to the start of the list.") });
+  }, [arm, direction, kind, profile]);
 
   const speak = useCallback((pair: MatcherPair, side: "de" | "en") => {
     // tts() is already the one door to the mixer: it checks the master and
@@ -332,6 +393,7 @@ export function MatcherView({
   };
 
   const remaining = board.pairs.filter((pair) => !solved.has(pair.id)).length;
+  const position = queue.length === 0 ? 0 : ((from % queue.length) + queue.length) % queue.length;
 
   return (
     <div className="space-y-4" onPointerDown={(event) => {
@@ -383,7 +445,20 @@ export function MatcherView({
             missed: uiNumber(missed),
           })}
           {" · "}
-          {uiFmt("{n} in the queue", { n: uiNumber(queue.length) })}
+          {/* Where you are, because "7,243 in the queue" alone reads like a
+              list you have never touched. */}
+          {uiFmt("at {at} of {n}", {
+            at: uiNumber(Math.min(position + 1, queue.length)),
+            n: uiNumber(queue.length),
+          })}
+          {position > 0 && (
+            <>
+              {" · "}
+              <button type="button" onClick={startOver} className="matcher-restart">
+                {ui("Start over")}
+              </button>
+            </>
+          )}
           {difficulty.step > 0 && (
             <>
               {" · "}
@@ -436,7 +511,7 @@ export function MatcherView({
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
         <p className="text-xs font-semibold leading-5 text-[var(--text-3)]">
           <Volume2 className="mr-1 inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" />
-          {ui("Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.")}
+          {ui("It remembers where you got to, so opening it again carries on rather than starting over — words and sentences each keep their own place, and the list comes back round for review when you reach the end. Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.")}
         </p>
       </section>
     </div>

@@ -11235,3 +11235,18 @@ html[data-theme="dark"] {
   .matcher-tile-menu-days > button,
   .matcher-notice > button { transition: none; }
 }
+
+/* Back to the head of the queue. A quiet link, because the whole point is
+   that you do not normally want it. */
+.matcher-restart {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.matcher-restart:hover { color: var(--accent-hover, var(--accent)); }
