@@ -7,11 +7,18 @@
  * app in German mode read English on every screen the moment they left a
  * lesson. That is the bug this guards.
  *
- * Two things have to hold, and the second is the one that rots quietly:
- *   1. copy goes through ui() / uiFmt() rather than being written inline, and
+ * Three things have to hold, and the last two rot quietly:
+ *   1. copy goes through ui() / uiFmt() rather than being written inline,
  *   2. every key those calls use actually HAS a German translation. A missing
  *      key is silent — ui() returns the English string untouched — so without
- *      this check the interface degrades one new string at a time.
+ *      this check the interface degrades one new string at a time, and
+ *   3. copy written AROUND a value counts as copy. This is the hole the first
+ *      version left: it only looked for a JSX node made of plain words, so
+ *      "{n} useful items known", "{x} of {y} achievements unlocked", and
+ *      "About {h} hours to Fluent" all sailed past it and a German dashboard
+ *      read English wherever it showed a number. A sentence with a number in
+ *      it needs the WHOLE sentence as one key — German puts the number
+ *      somewhere else — so text beside an expression is always a bug.
  */
 const fs = require("fs");
 const path = require("path");
@@ -63,6 +70,65 @@ const bare = [];
 for (const m of shell.matchAll(/>\s*([A-Z][a-z]+(?: [a-z]+){1,})\s*</g)) bare.push(m[1]);
 if (bare.length) {
   failures.push(`markup still writes English inline: ${bare.slice(0, 4).map((t) => JSON.stringify(t)).join(", ")}`);
+}
+
+// ── nor English written around a value ────────────────────────────────────
+//
+// Comments are prose about the code and would otherwise trip every one of
+// these patterns, so they come out first.
+function withoutComments(source) {
+  let out = "";
+  let index = 0;
+  let inBlock = false;
+  while (index < source.length) {
+    if (inBlock) {
+      const end = source.indexOf("*/", index);
+      if (end === -1) break;
+      inBlock = false;
+      index = end + 2;
+      continue;
+    }
+    const block = source.indexOf("/*", index);
+    const line = source.indexOf("//", index);
+    const newline = source.indexOf("\n", index);
+    if (line !== -1 && (block === -1 || line < block) && (newline === -1 || line < newline)) {
+      out += source.slice(index, line);
+      index = newline === -1 ? source.length : newline;
+      continue;
+    }
+    if (block !== -1) {
+      out += source.slice(index, block);
+      inBlock = true;
+      index = block + 2;
+      continue;
+    }
+    out += source.slice(index);
+    break;
+  }
+  return out;
+}
+
+// A key like "{xp} XP to level {level}" is a translated pattern, not loose
+// copy — blank the keys out so the patterns below cannot read them back as
+// English sitting beside a value.
+const code = withoutComments(shell).replace(/\bui(?:Fmt|Or)?\("(?:[^"\\]|\\.)*"/g, "ui(KEY");
+const beside = [];
+// "…} useful items known<", ">About {…" — two or more words touching a value.
+for (const m of code.matchAll(/\}\s*([A-Za-z]{2,}(?:[ ,.'-]+[A-Za-z]{2,})+)\s*[<{]/g)) beside.push(m[1]);
+for (const m of code.matchAll(/>\s*([A-Za-z]{2,}(?:[ ,.'-]+[A-Za-z]{2,})+)\s*\{/g)) beside.push(m[1]);
+// aria-label={`… ${value} …`} — read aloud, so it is copy as much as the
+// rest. Templates that call ui() have already been blanked to ui(KEY above,
+// which is what separates a translated label from a hand-written one.
+for (const m of code.matchAll(/(?:aria-label|title)=\{`([^`]*)`\}/g)) {
+  if (m[1].includes("ui(")) continue;
+  const words = m[1].replace(/\$\{[^{}]*\}/g, " ").match(/[A-Za-z]{2,}(?:[ ,.'-]+[A-Za-z]{2,})+/g);
+  if (words) beside.push(...words);
+}
+if (beside.length) {
+  failures.push(
+    `${beside.length} phrase(s) are written beside a value instead of going through uiFmt(): ` +
+    [...new Set(beside)].slice(0, 4).map((t) => JSON.stringify(t)).join(", ")
+  );
 }
 
 // ── translations are looked up at render, not at import ───────────────────

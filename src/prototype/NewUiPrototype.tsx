@@ -1,4 +1,4 @@
-import { ui, uiFmt, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiLocale, uiNumber } from "@/lib/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BarChart3,
@@ -1346,13 +1346,22 @@ function CourseHero({
                   asked. Falls back to the level bar only when there is no pack
                   in progress to report on. */}
               <span>
-                {needsStartingPoint ? ui("Starting point") : packProgress ? packProgress.title : ui("Level progress")}
+                {needsStartingPoint ? ui("Starting point") : packProgress ? ui(packProgress.title) : ui("Level progress")}
               </span>
               <small>
                 {needsStartingPoint
                   ? ui("One quick choice before your first lesson")
                   : packProgress
-                    ? `${packProgress.done} of ${packProgress.total} phrases · about ${packProgress.sittingsLeft} more ${packProgress.sittingsLeft === 1 ? "sitting" : "sittings"} to finish`
+                    ? uiFmt(
+                      packProgress.sittingsLeft === 1
+                        ? "{done} of {total} phrases · about 1 more sitting to finish"
+                        : "{done} of {total} phrases · about {sittings} more sittings to finish",
+                      {
+                        done: uiNumber(packProgress.done),
+                        sittings: uiNumber(packProgress.sittingsLeft),
+                        total: uiNumber(packProgress.total),
+                      }
+                    )
                     : nxt ? `${uiNumber(into)} of ${uiNumber(needed)} XP` : ui("Maximum level")}
               </small>
             </div>
@@ -1360,7 +1369,7 @@ function CourseHero({
               aria-label={needsStartingPoint
         ? ui("Starting point not chosen")
         : packProgress
-          ? uiFmt("{pct}% through {pack}", { pct: packProgress.percent, pack: packProgress.title })
+          ? uiFmt("{pct}% through {pack}", { pct: packProgress.percent, pack: ui(packProgress.title) })
           : uiFmt("{pct}% progress to the next level", { pct })}
               aria-valuemax={100}
               aria-valuemin={0}
@@ -1589,11 +1598,16 @@ function LessonPath({
             <span className="np-lesson-copy">
               <strong>{ui(pack.title)}</strong>
               <small>
-                {uiFmt("{done} of {total} learned · {sittings} sittings left", {
-                  done: uiNumber(pack.done),
-                  total: uiNumber(pack.total),
-                  sittings: uiNumber(pack.sittingsLeft),
-                })}
+                {uiFmt(
+                  pack.sittingsLeft === 1
+                    ? "{done} of {total} learned · 1 sitting left"
+                    : "{done} of {total} learned · {sittings} sittings left",
+                  {
+                    done: uiNumber(pack.done),
+                    total: uiNumber(pack.total),
+                    sittings: uiNumber(pack.sittingsLeft),
+                  }
+                )}
               </small>
             </span>
             <ChevronRight className="np-lesson-chevron" />
@@ -1649,8 +1663,11 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
           </div>
         </div>
         <div className="np-fluency-status">
-          <div><strong>{ui(fluency.cur.label)}</strong><small>{uiNumber(fluency.vocab)} useful items known</small></div>
-          <span>{fluency.overallPct}% to fluent</span>
+          <div>
+            <strong>{ui(fluency.cur.label)}</strong>
+            <small>{uiFmt("{count} useful items known", { count: uiNumber(fluency.vocab) })}</small>
+          </div>
+          <span>{uiFmt("{pct}% to fluent", { pct: fluency.overallPct })}</span>
         </div>
         {/* The ladder itself, drawn: a circle per stage, bars filling toward
             the next. One plain percentage bar hid the fact that the road has
@@ -1683,16 +1700,28 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <div className="np-fluency-footnote">
           <span>
             {wordsToGo > 0 || phrasesToGo > 0
-              ? `${uiNumber(wordsToGo)} more words · ${uiNumber(phrasesToGo)} more phrases`
-              : "Both lanes complete — keep them fresh"}
+              ? uiFmt("{words} more words · {phrases} more phrases", {
+                phrases: uiNumber(phrasesToGo),
+                words: uiNumber(wordsToGo),
+              })
+              : ui("Both lanes complete — keep them fresh")}
           </span>
           {/* Read from the ladder, never hardcoded — the target moved once
               (5,000 → 10,000) and this label silently lied until it did. */}
-          <span>Fluent = {uiNumber(FLUENT_WORD_TARGET)} words + {uiNumber(FLUENT_PHRASE_TARGET)} phrases</span>
+          <span>
+            {uiFmt("Fluent = {words} words + {phrases} phrases", {
+              phrases: uiNumber(FLUENT_PHRASE_TARGET),
+              words: uiNumber(FLUENT_WORD_TARGET),
+            })}
+          </span>
         </div>
         {fading > 0 && (
           <p className="np-fluency-fading">
-            {uiNumber(fading)} {fading === 1 ? "item is" : "items are"} fading. A review brings {fading === 1 ? "it" : "them"} back.
+            {fading === 1
+              ? ui("1 item is fading. A review brings it back.")
+              : uiFmt("{count} items are fading. A review brings them back.", {
+                count: uiNumber(fading),
+              })}
           </p>
         )}
       </div>
@@ -1702,7 +1731,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         {/* Just the number. The explainer lines that used to sit here (next
             milestone, pace note, hands-on-time caveat) were all cut on Leon's
             call — the milestone stepper on the left now tells that story. */}
-        <strong>About {uiNumber(estimate.hoursRemaining)} hours to Fluent</strong>
+        <strong>{uiFmt("About {hours} hours to Fluent", { hours: uiNumber(estimate.hoursRemaining) })}</strong>
       </div>
     </section>
   );
@@ -1714,7 +1743,13 @@ function AchievementBadge({ achievement, standalone, stats }: { achievement: Mil
 
   return (
     <div
-      aria-label={`${ui(achievement.label)}. ${unlocked ? "Unlocked" : `${progress} of ${achievement.target} ${achievement.unit}`}. ${ui(achievement.desc)}`}
+      aria-label={`${ui(achievement.label)}. ${unlocked
+        ? ui("Unlocked")
+        : uiFmt("{progress} of {target} {unit}", {
+          progress,
+          target: achievement.target,
+          unit: ui(achievement.unit),
+        })}. ${ui(achievement.desc)}`}
       className={`np-achievement${unlocked ? " is-unlocked" : " is-locked"}`}
     >
       <span className="np-achievement-visual">
@@ -1737,9 +1772,27 @@ function describeSessionDay(ts: number): string {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const diff = startOfToday.getTime() - ts;
-  if (diff < 0) return "Today";
-  if (diff < day) return "Yesterday";
-  return new Date(ts).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  if (diff < 0) return ui("Today");
+  if (diff < day) return ui("Yesterday");
+  return new Date(ts).toLocaleDateString(uiLocale(), { day: "numeric", month: "short" });
+}
+
+/**
+ * "3 sentences, 1 conversation" — in the reader's language.
+ *
+ * Written out here rather than inline because German needs both halves as
+ * whole keys: the singular and the plural are different words, and a sentence
+ * assembled from fragments would only ever come out in English word order.
+ */
+function describeSessionContent(sentences: number, dialogues: number): string {
+  const sentenceLabel = sentences === 1
+    ? ui("1 sentence")
+    : uiFmt("{count} sentences", { count: uiNumber(sentences) });
+  if (dialogues <= 0) return sentenceLabel;
+  const dialogueLabel = dialogues === 1
+    ? ui("1 conversation")
+    : uiFmt("{count} conversations", { count: uiNumber(dialogues) });
+  return `${sentenceLabel}, ${dialogueLabel}`;
 }
 
 function ProgressPanel({
@@ -1774,7 +1827,13 @@ function ProgressPanel({
       <div className="np-progress-title">
         <div>
           <h2>{ui("Your progress")}</h2>
-          <p>{earnedAchievements} of {MILESTONES.length} achievements unlocked, {firstName}.</p>
+          <p>
+            {uiFmt("{earned} of {total} achievements unlocked, {name}.", {
+              earned: earnedAchievements,
+              name: firstName,
+              total: MILESTONES.length,
+            })}
+          </p>
         </div>
         <AchievementArt id="week" />
       </div>
@@ -1788,7 +1847,7 @@ function ProgressPanel({
           <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: uiNumber(nxt.xpRequired - stats.totalXp), level: nxt.level }) : ui("Highest level reached")}</small>
           <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
         </div>
-        <small>{uiNumber(stats.totalXp)} total XP</small>
+        <small>{uiFmt("{xp} total XP", { xp: uiNumber(stats.totalXp) })}</small>
       </div>
 
       <div className="np-progress-stats">
@@ -1816,9 +1875,9 @@ function ProgressPanel({
       <div className="np-goal-card">
         <div>
           <strong>{nextAchievement ? ui("Next achievement") : ui("All achievements unlocked")}</strong>
-          <small>{nextAchievement?.label ?? ui("You reached every current milestone.")}</small>
+          <small>{nextAchievement ? ui(nextAchievement.label) : ui("You reached every current milestone.")}</small>
           <div className="np-progress-track"><span style={{ width: `${nextAchievement ? nextProgressPercent : 100}%` }} /></div>
-          <p>{nextAchievement ? `${nextProgress} / ${nextTarget} ${nextAchievement.unit}` : "Complete"}</p>
+          <p>{nextAchievement ? `${nextProgress} / ${nextTarget} ${ui(nextAchievement.unit)}` : ui("Complete")}</p>
         </div>
         <AchievementArt id={nextAchievement?.id ?? "week"} />
       </div>
@@ -1831,7 +1890,7 @@ function ProgressPanel({
               <CheckCircle2 />
               <span>
                 <strong>{describeSessionDay(session.ts)}</strong>
-                <small>{session.sentences} {session.sentences === 1 ? "sentence" : "sentences"}{session.dialogues > 0 ? `, ${session.dialogues} ${session.dialogues === 1 ? "conversation" : "conversations"}` : ""}</small>
+                <small>{describeSessionContent(session.sentences, session.dialogues)}</small>
               </span>
               <b>{Math.max(1, Math.round(session.durationSec / 60))} min</b>
             </div>
@@ -2110,12 +2169,15 @@ function ShopView({
               <div className="np-coin-pack-icon"><Coins /></div>
               <div className="np-coin-pack-copy">
                 <small>{pack.featured ? ui("Most popular") : pack.label}</small>
-                <h3>{uiNumber(pack.coins)} coins</h3>
+                <h3>{uiFmt("{coins} coins", { coins: uiNumber(pack.coins) })}</h3>
                 <p>{ui(pack.note)}</p>
               </div>
               <button
                 data-testid={`shop-coin-pack-${pack.coins}`}
-                onClick={() => previewPurchase(`${uiNumber(pack.coins)} coins are not charged or added yet. Checkout will be connected later.`)}
+                onClick={() => previewPurchase(uiFmt(
+                  "{coins} coins are not charged or added yet. Checkout will be connected later.",
+                  { coins: uiNumber(pack.coins) }
+                ))}
                 type="button"
               >
                 <span>{packPrice(pack.tier, currency)}</span>
@@ -2376,8 +2438,14 @@ function SocialView({ userName }: { userName: string }) {
                 <article className={entry.current ? "is-current" : ""} key={entry.id}>
                   <strong className="np-leaderboard-rank">{index + 1}</strong>
                   <SocialAvatar initials={entry.initials} tone={entry.tone} />
-                  <span className="np-leaderboard-person"><strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong><small>{entry.streak}-day streak</small></span>
-                  <span className="np-leaderboard-xp"><strong>{uiNumber(entry.weeklyXp)} XP</strong><small>{entry.movement} this week</small></span>
+                  <span className="np-leaderboard-person">
+                    <strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong>
+                    <small>{uiFmt("{days}-day streak", { days: entry.streak })}</small>
+                  </span>
+                  <span className="np-leaderboard-xp">
+                    <strong>{uiNumber(entry.weeklyXp)} XP</strong>
+                    <small>{uiFmt("{movement} this week", { movement: entry.movement })}</small>
+                  </span>
                 </article>
               ))}
             </div>

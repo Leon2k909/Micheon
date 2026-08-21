@@ -230,7 +230,7 @@ const LEVELS: Level[] = [
   { level: 17, label: "Reading between the lines", xpRequired: 41000 },
   { level: 18, label: "Rarely surprised", xpRequired: 49000 },
   { level: 19, label: "Near-native", xpRequired: 58000 },
-  { level: 20, label: "Muttersprachler-Niveau", xpRequired: 70000 },
+  { level: 20, label: "Native level", xpRequired: 70000 },
 ];
 
 export const MILESTONES = [

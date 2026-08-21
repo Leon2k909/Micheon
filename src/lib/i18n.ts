@@ -412,6 +412,7 @@ const DE: Record<string, string> = {
   "Example in context": "Beispiel im Kontext",
   "Tip": "Tipp",
   "Today": "Heute",
+  "Yesterday": "Gestern",
   "Learning path": "Lernpfad",
   "Games": "Spiele",
   "Create": "Erstellen",
@@ -1741,7 +1742,9 @@ const DE: Record<string, string> = {
   "Could not import that file. Choose a Micheon data export for this profile.": "Diese Datei konnte nicht importiert werden. Wähle einen Micheon-Export für dieses Profil.",
   "Manage your name, learning preferences, and words learned outside Micheon.": "Verwalte deinen Namen, deine Lerneinstellungen und Wörter, die du außerhalb von Micheon gelernt hast.",
   "Pick any colour": "Beliebige Farbe wählen",
+  "Read full course": "Ganzen Kurs lesen",
   "Reset to green": "Auf Grün zurücksetzen",
+  "{n} sections": "{n} Abschnitte",
   "Search settings": "Einstellungen durchsuchen",
   "Search settings…": "Einstellungen durchsuchen…",
   "Space used, and deleting what Micheon has saved.": "Belegter Speicher und das Löschen dessen, was Micheon gespeichert hat.",
@@ -2272,6 +2275,64 @@ const DE: Record<string, string> = {
   "Every answer, with the explanation": "Alle Antworten mit Erklärung",
   "Your answer: {answer}": "Deine Antwort: {answer}",
   "Correct answer: {answer}": "Richtige Antwort: {answer}",
+  // ── Dashboard figures ──
+  // Copy with a number in it needs the whole sentence as one key: German puts
+  // the count somewhere else, and wrapping only the words around it would
+  // freeze English word order. These were written inline and so read English
+  // on a German dashboard however the interface was set.
+  "{count} useful items known": "{count} nützliche Einträge sicher",
+  "{words} more words · {phrases} more phrases": "noch {words} Wörter · noch {phrases} Sätze",
+  "Both lanes complete — keep them fresh": "Beides geschafft — jetzt frisch halten",
+  "Fluent = {words} words + {phrases} phrases": "Fließend = {words} Wörter + {phrases} Sätze",
+  "1 item is fading. A review brings it back.": "1 Eintrag verblasst. Eine Wiederholung holt ihn zurück.",
+  "{count} items are fading. A review brings them back.":
+    "{count} Einträge verblassen. Eine Wiederholung holt sie zurück.",
+  "About {hours} hours to Fluent": "Noch etwa {hours} Stunden bis fließend",
+  "{earned} of {total} achievements unlocked, {name}.": "{earned} von {total} Erfolgen freigeschaltet, {name}.",
+  "{xp} total XP": "{xp} XP insgesamt",
+  "{progress} of {target} {unit}": "{progress} von {target} {unit}",
+  "Unlocked": "Freigeschaltet",
+  "Complete": "Geschafft",
+  "1 sentence": "1 Satz",
+  "{count} sentences": "{count} Sätze",
+  "1 conversation": "1 Gespräch",
+  "{count} conversations": "{count} Gespräche",
+  "{done} of {total} phrases · about 1 more sitting to finish":
+    "{done} von {total} Sätzen · noch etwa eine Einheit",
+  "{done} of {total} phrases · about {sittings} more sittings to finish":
+    "{done} von {total} Sätzen · noch etwa {sittings} Einheiten",
+  // "noch 1 Einheiten" is what one shared plural gives you.
+  "{done} of {total} learned · 1 sitting left": "{done} von {total} gelernt · noch eine Einheit",
+  // ── Levels ──
+  // Rendered through ui(cur.label); the ones with no German simply showed in
+  // English beside a German level bar.
+  "Fluent in the making": "Auf dem Weg zum Fließenden",
+  "Holding your own": "Du hältst mit",
+  "Comfortable": "Sicher unterwegs",
+  "Quick on your feet": "Schlagfertig",
+  "Thinking in German": "Denken auf Deutsch",
+  "Hard to catch out": "Schwer zu überraschen",
+  "At home in the language": "In der Sprache zu Hause",
+  "Reading between the lines": "Zwischen den Zeilen lesen",
+  "Rarely surprised": "Selten überrascht",
+  "Near-native": "Fast muttersprachlich",
+  "Native level": "Muttersprachler-Niveau",
+  "reviews": "Wiederholungen",
+  // ── Social ──
+  "{days}-day streak": "{days} Tage in Folge",
+  "{movement} this week": "{movement} diese Woche",
+  // ── Shop ──
+  "{coins} coins": "{coins} Münzen",
+  "{coins} coins are not charged or added yet. Checkout will be connected later.":
+    "{coins} Münzen werden noch nicht abgebucht oder gutgeschrieben. Die Bezahlung wird später angebunden.",
+  // ── Games, as the search panel describes them ──
+  "Spell German words by steering through letters.": "Buchstabiere deutsche Wörter, indem du durch die Buchstaben steuerst.",
+  "Choose the right verb form before time runs out.": "Wähle die richtige Verbform, bevor die Zeit abläuft.",
+  "Translate carefully and avoid wrong picks.": "Übersetze sorgfältig und vermeide die falschen Felder.",
+  "Match target words while keeping the run alive.": "Sammle die gesuchten Wörter und bleib dabei im Spiel.",
+  // ── Course packs whose names reach the dashboard ──
+  "Building blocks": "Grundbausteine",
+  "Checking in on each other": "Nachfragen, wie es geht",
 };
 
 /** Translate a UI string into the learner's interface language. */
