@@ -6314,6 +6314,15 @@ html[data-theme="dark"] .np-feature-directory > button {
     0 14px 25px rgba(0, 0, 0, 0.2);
 }
 
+html[data-theme="dark"] .np-more-stash {
+  background: rgba(22, 27, 35, 0.55);
+}
+
+html[data-theme="dark"] .np-more-stash-item {
+  color: var(--np-text);
+  background: rgba(22, 27, 35, 0.98);
+}
+
 html[data-theme="dark"] .np-shop-item.is-equipped {
   background: linear-gradient(145deg, #1b1f26, #213924);
 }
@@ -10434,4 +10443,98 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-action > button {
 .np-currency-picker option {
   color: var(--np-text);
   background: var(--np-surface);
+}
+
+/* ── dragging a destination between the sidebar and More ──────────────────
+   Leon: "i should be able to drag menu items out of stuff on the left into
+   more and out". The drop targets have to be visible while a drag is in
+   flight and invisible the rest of the time, or the nav grows a permanent
+   dashed box nobody asked for. */
+.np-side-nav > button[draggable="true"] {
+  cursor: grab;
+}
+
+.np-side-nav > button[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.np-side-nav.is-drop-target {
+  border-radius: 18px;
+  outline: 2px dashed rgba(var(--accent-rgb, 79, 189, 81), 0.55);
+  outline-offset: 3px;
+}
+
+.np-side-nav > button.is-drop-target {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.65);
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.14);
+  box-shadow: inset 0 0 0 2px rgba(var(--accent-rgb, 79, 189, 81), 0.45);
+}
+
+.np-more-stash {
+  margin-top: 24px;
+  padding: 15px 17px;
+  border: 1px dashed var(--np-line);
+  border-radius: 21px;
+  background: rgba(255, 253, 250, 0.6);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.np-more-stash.is-drop-target {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.65);
+  border-style: solid;
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.1);
+}
+
+.np-more-stash-title {
+  font-weight: 900;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--np-muted);
+}
+
+.np-more-stash-hint {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--np-muted);
+}
+
+.np-more-stash-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.np-more-stash-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--np-line);
+  border-radius: 999px;
+  background: #fffdfa;
+  color: var(--np-text);
+  font-weight: 800;
+  font-size: 0.86rem;
+  cursor: grab;
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+
+.np-more-stash-item:hover {
+  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.45);
+  transform: translateY(-1px);
+}
+
+.np-more-stash-item:active {
+  cursor: grabbing;
+}
+
+@media (max-width: 720px) {
+  /* Touch has no drag-and-drop here, so the hint would be a lie. The cards
+     still restore on tap, which is what a phone can actually do. */
+  .np-more-stash-hint {
+    display: none;
+  }
 }

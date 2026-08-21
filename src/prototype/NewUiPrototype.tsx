@@ -85,6 +85,7 @@ import {
 import { getCourse } from "@/lib/courseRegistry";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import { HIDDEN_NAV_EVENT, canHideNavItem, hideNavItem, loadHiddenNav, showAllNavItems, showNavItem } from "@/lib/navPreferences";
+import { isNavDrag, readNavDrag, startNavDrag, type NavDragOrigin } from "@/lib/navDrag";
 import {
   CURRENCY_AUTO,
   CURRENCY_CODES,
@@ -538,6 +539,47 @@ function Sidebar({
 
   const isHidden = (id: string) => hidden.includes(id);
 
+  /**
+   * Dragging a row onto More puts it away; dragging one out of More brings
+   * it back. Both ends write the same preference the cross and the restore
+   * list write, so the keyboard route is untouched — drag is an addition,
+   * never the only way in.
+   */
+  const [dropTarget, setDropTarget] = useState<"more" | "nav" | null>(null);
+  const dragProps = (id: string) => ({
+    draggable: canHideNavItem(id),
+    onDragStart: (event: React.DragEvent) => startNavDrag(event.dataTransfer, id, "sidebar"),
+    onDragEnd: () => setDropTarget(null),
+  });
+  /**
+   * Each zone takes one direction only. dragover bubbles out of the More row
+   * into the sidebar around it, so without this both would claim the drag and
+   * whichever fired last would win the highlight — which was the sidebar,
+   * every time, leaving the row you were actually aiming at unmarked.
+   */
+  const acceptDrop = (
+    zone: "more" | "nav",
+    from: NavDragOrigin,
+    apply: (id: string) => void
+  ) => ({
+    onDragOver: (event: React.DragEvent) => {
+      if (!isNavDrag(event.dataTransfer, from)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.dataTransfer.dropEffect = "move";
+      setDropTarget(zone);
+    },
+    onDragLeave: () => setDropTarget((current) => (current === zone ? null : current)),
+    onDrop: (event: React.DragEvent) => {
+      const id = readNavDrag(event.dataTransfer, from);
+      setDropTarget(null);
+      if (!id) return;
+      event.preventDefault();
+      event.stopPropagation();
+      apply(id);
+    },
+  });
+
   // The finished app and the building site, kept visibly apart. Games,
   // Friends and Shop all have rough edges, so together they form a labelled
   // Beta section at the foot of the nav — and only on Leon's account. Every
@@ -597,21 +639,31 @@ function Sidebar({
   return (
     <aside className={`np-sidebar${brandLayoutClass}`} ref={sidebarRef}>
       <BrandMark />
-      <nav aria-label={ui("Prototype navigation")} className="np-side-nav">
+      <nav
+        aria-label={ui("Prototype navigation")}
+        className={`np-side-nav${dropTarget === "nav" ? " is-drop-target" : ""}`}
+        {...acceptDrop("nav", "more", (id) => setHidden(showNavItem(id)))}
+      >
         {navigationItems.filter((item) => !isHidden(item.id)).map((item) => {
           const Icon = item.icon;
           const active = item.id === activeView
             || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
             || (item.id === "more" && (activeView === "progress" || activeView === "profile"));
+          // More is where a dragged entry goes, so it is also the one row
+          // that accepts a drop rather than starting one.
+          const isMore = item.id === "more";
           return (
             <button
               aria-current={active ? "page" : undefined}
-              className={active ? "is-active" : ""}
+              className={`${active ? "is-active" : ""}${isMore && dropTarget === "more" ? " is-drop-target" : ""}`}
               key={item.id}
               onClick={() => onNavigate(item.id)}
               onFocus={() => onPrefetch(item.id)}
               onPointerEnter={() => onPrefetch(item.id)}
               type="button"
+              {...(isMore
+                ? acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))
+                : dragProps(item.id))}
             >
               <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
               <span>{ui(item.label)}</span>
@@ -659,6 +711,7 @@ function Sidebar({
                   onPointerEnter={() => onPrefetch(item.id)}
                   title={ui("Still in testing — expect rough edges.")}
                   type="button"
+                  {...dragProps(item.id)}
                 >
                   <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
                   <span>{ui(item.label)}</span>
@@ -2485,6 +2538,16 @@ function MoreView({
   shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
 }) {
+  // The same preference the sidebar reads, kept in step through the same
+  // event, because either end can change it.
+  const [hiddenNav, setHiddenNav] = useState<string[]>(() => loadHiddenNav());
+  const [stashActive, setStashActive] = useState(false);
+  useEffect(() => {
+    const sync = () => setHiddenNav(loadHiddenNav());
+    window.addEventListener(HIDDEN_NAV_EVENT, sync);
+    return () => window.removeEventListener(HIDDEN_NAV_EVENT, sync);
+  }, []);
+
   const features: Array<{
     title: string;
     description: string;
@@ -2515,6 +2578,65 @@ function MoreView({
         <span className="np-page-icon"><Menu /></span>
         <div><h1>{ui("Everything in one place")}</h1><p>{ui("Courses, pets, flashcards, rewards, progress, and account settings all live inside Micheon.")}</p></div>
       </div>
+
+      {/*
+        The other end of the drag.
+
+        A sidebar row dropped on More lands here, and dragging one of these
+        back onto the sidebar returns it. The zone is always visible, even
+        with nothing in it, because a drop target nobody can see is a feature
+        nobody finds — and clicking a card restores it too, so the whole
+        thing works without ever dragging anything.
+      */}
+      <div
+        className={`np-more-stash${stashActive ? " is-drop-target" : ""}`}
+        onDragOver={(event) => {
+          if (!isNavDrag(event.dataTransfer, "sidebar")) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          setStashActive(true);
+        }}
+        onDragLeave={() => setStashActive(false)}
+        onDrop={(event) => {
+          const id = readNavDrag(event.dataTransfer, "sidebar");
+          setStashActive(false);
+          if (!id) return;
+          event.preventDefault();
+          setHiddenNav(hideNavItem(id));
+        }}
+      >
+        <p className="np-more-stash-title">
+          {hiddenNav.length > 0
+            ? uiFmt("Put away ({n})", { n: hiddenNav.length })
+            : ui("Put away")}
+        </p>
+        <p className="np-more-stash-hint">
+          {ui("Drag anything out of the sidebar to park it here, and drag it back when you want it. Clicking one puts it back too.")}
+        </p>
+        {hiddenNav.length > 0 && (
+          <div className="np-more-stash-items">
+            {hiddenNav.map((id) => {
+              const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
+              const Icon = item?.icon ?? Menu;
+              return (
+                <button
+                  className="np-more-stash-item"
+                  draggable
+                  key={id}
+                  onClick={() => setHiddenNav(showNavItem(id))}
+                  onDragStart={(event) => startNavDrag(event.dataTransfer, id, "more")}
+                  title={ui("Put back in the sidebar")}
+                  type="button"
+                >
+                  <Icon aria-hidden="true" className="h-4 w-4" />
+                  <span>{item ? ui(item.label) : id}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <div className="np-feature-directory">
         {features.map((feature) => {
           const Icon = feature.icon;
