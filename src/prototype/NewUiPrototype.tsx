@@ -277,7 +277,47 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "nav", id: "practice" },
   { kind: "nav", id: "listen" },
   { kind: "soon", icon: MessageCircleMore, label: "Speaking" },
+  { kind: "view", icon: Languages, label: "Vocabulary library", view: "profile" },
 ];
+
+/**
+ * Land on the vocabulary tracker, not at the top of the page holding it.
+ *
+ * The tracker — Sätze and Wörter — has always lived on the profile page, and
+ * the row that opened it dropped you at the top of a long settings page to
+ * find it yourself. Michelle took the row out when she saw that: "hier muss
+ * das wortschatz weg." Her brief asks for it, so it is back, arriving at the
+ * card instead of near it. The section loads when it is scrolled to, which is
+ * why this keeps looking for a few seconds rather than once.
+ */
+function scrollToVocabularyLibrary() {
+  if (typeof window === "undefined") return;
+  let waited = 0;
+  let corrections = 0;
+  const land = () => {
+    const target = document.querySelector(".np-vocabulary-anchor");
+    if (!target) {
+      // The page is lazy twice over — the profile view, then the sections
+      // inside it — and the tracker is near the bottom of a long one, so the
+      // card can be several seconds behind the click.
+      if (waited++ < 200) window.setTimeout(land, 50);
+      return;
+    }
+    const box = target.getBoundingClientRect();
+    // Landed: near the top of the window, and staying there.
+    if (box.top >= 0 && box.top < 160) return;
+    // "auto", not "smooth": a smooth scroll issued while the view is still
+  // being built never started here — eleven of them in a row left the page at
+  // the top, measured with window.scrollTo hooked. A jump also matches what
+  // navigating does everywhere else in the shell.
+    window.scrollTo({ behavior: "auto", top: box.top + window.scrollY - 24 });
+    // Everything above the card is still loading and still growing, so one
+    // scroll lands short — measured at 2,154px short the first time. Correct
+    // for a couple of seconds, then leave the page alone whatever happened.
+    if (corrections++ < 10) window.setTimeout(land, 300);
+  };
+  window.setTimeout(land, 60);
+}
 
 const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
   .flatMap((row) => (row.kind === "nav" ? [row.id] : []));
@@ -840,7 +880,7 @@ function Sidebar({
                         aria-current={viewActive ? "page" : undefined}
                         className={viewActive ? "is-active" : ""}
                         key={row.label}
-                        onClick={() => onNavigate(row.view)}
+                        onClick={() => { onNavigate(row.view); scrollToVocabularyLibrary(); }}
                         onFocus={() => onPrefetch(row.view)}
                         onPointerEnter={() => onPrefetch(row.view)}
                         title={ui("Your vocabulary library, on the profile page.")}

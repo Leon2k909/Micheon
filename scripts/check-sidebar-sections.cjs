@@ -27,22 +27,29 @@ const i18n = read("src/lib/i18n.ts");
 
 // ── two folding sections, each with its own flag ───────────────────────────
 
-// The rows Michelle asked for, in her order: three destinations the nav
-// already had, then Speaking, which has nothing behind it yet and says so
-// rather than being quietly left out of the section.
+// The five rows Michelle listed, in her order: three destinations the nav
+// already had, Speaking, which has nothing behind it yet and says so rather
+// than being quietly left out, and Vocabulary.
 //
-// Four rows, where the first brief listed five. Vocabulary was built, shipped,
-// and then taken back out on her word — "hier muss das wortschatz weg" — after
-// she saw it: the tracker it opened lives on the profile page, which is where
-// it already was. Recorded here, with the quote, so a later reader finds a
-// decision rather than an omission and puts it back by accident.
+// Vocabulary went in, came out — "hier muss das wortschatz weg" — and is back,
+// because her standing brief for this section asks for it. What she saw the
+// first time was a row that dropped her at the top of a long settings page to
+// go looking for the tracker; it lands on the tracker itself now. Written down
+// with the quote so the round trip is legible rather than looking like
+// somebody could not make up their mind.
 const languageBlock = /const LANGUAGE_SECTION_ROWS: LanguageRow\[\] = \[([\s\S]*?)\n\];/.exec(shell)?.[1] ?? "";
 const languageOrder = [...languageBlock.matchAll(/kind: "(nav|view|soon)"[^\n]*?(?:id|label): "([^"]+)"/g)]
   .map((match) => match[2]);
 assert.deepStrictEqual(
   languageOrder,
-  ["learn", "practice", "listen", "Speaking"],
-  "language learning lists lessons, practice, listening and speaking, in that order"
+  ["learn", "practice", "listen", "Speaking", "Vocabulary library"],
+  "language learning lists lessons, practice, listening, speaking and vocabulary, in that order"
+);
+assert.ok(
+  /kind: "view", icon: Languages, label: "Vocabulary library", view: "profile"/.test(languageBlock)
+    && /onNavigate\(row\.view\); scrollToVocabularyLibrary\(\)/.test(shell)
+    && /className="np-vocabulary-anchor"/.test(read("src/Gamification.tsx")),
+  "vocabulary opens the tracker that already exists, and lands on it rather than near it"
 );
 assert.ok(
   /kind: "soon", icon: MessageCircleMore, label: "Speaking"/.test(languageBlock)

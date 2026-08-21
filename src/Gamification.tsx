@@ -1595,7 +1595,11 @@ export default function GamificationPanel({
           </div>
         </SettingsCategory>
 
+        {/* Named so the sidebar's Vocabulary row can land on the tracker
+            rather than at the top of a long settings page. The class is the
+            handle; nothing about the section itself changes. */}
         <DeferredProfileSection
+          className="np-vocabulary-anchor"
           fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
           minHeight={360}
           onReveal={requestVocabTracker}
