@@ -256,7 +256,31 @@ type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
  * Only the labels and the arrangement live here. Every row still navigates to
  * the destination it always did.
  */
-const LANGUAGE_SECTION_IDS: PrototypeView[] = ["learn", "practice", "listen"];
+/**
+ * The five rows under "Sprachen lernen", in the order Michelle listed them.
+ *
+ * Three are destinations the nav already had. Vocabulary is the tracker that
+ * has always lived on the profile page — "Sätze" and "Wörter" — reached from
+ * here rather than by scrolling to find it. Speaking has nothing behind it
+ * yet: the row is shown because the section is incomplete without it, and it
+ * says so rather than pretending, because inventing the feature is not what
+ * was asked for.
+ */
+type LanguageRow =
+  | { kind: "nav"; id: PrototypeView }
+  | { kind: "view"; icon: ComponentType<{ className?: string }>; label: string; view: PrototypeView }
+  | { kind: "soon"; icon: ComponentType<{ className?: string }>; label: string };
+
+const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
+  { kind: "nav", id: "learn" },
+  { kind: "nav", id: "practice" },
+  { kind: "nav", id: "listen" },
+  { kind: "soon", icon: MessageCircleMore, label: "Speaking" },
+  { kind: "view", icon: Languages, label: "Vocabulary library", view: "profile" },
+];
+
+const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
+  .flatMap((row) => (row.kind === "nav" ? [row.id] : []));
 
 /** Practice is a pencil in the sidebar; a speech bubble everywhere else. */
 const NAV_GROUP_ICONS: Partial<Record<PrototypeView, ComponentType<{ className?: string }>>> = {
@@ -642,8 +666,13 @@ function Sidebar({
   const languageItems = LANGUAGE_SECTION_IDS
     .map((id) => visibleNavigation.find((item) => item.id === id))
     .filter((item): item is NavigationItem => Boolean(item));
+  const languageRows: Array<{ item: NavigationItem | null; row: LanguageRow }> =
+    LANGUAGE_SECTION_ROWS.flatMap((row): Array<{ item: NavigationItem | null; row: LanguageRow }> => {
+      if (row.kind !== "nav") return [{ item: null, row }];
+      const item = visibleNavigation.find((entry) => entry.id === row.id);
+      return item ? [{ item, row }] : [];
+    });
   const countryItem = visibleNavigation.find((item) => item.id === "life-in-uk") ?? null;
-  const moreItem = visibleNavigation.find((item) => item.id === "more") ?? null;
   const brandLayoutClass = width <= PROTOTYPE_SIDEBAR_STACKED_BRAND_MAX
     ? " is-brand-stacked"
     : width <= PROTOTYPE_SIDEBAR_COMPACT_BRAND_MAX
@@ -721,7 +750,7 @@ function Sidebar({
           );
         })}
 
-        {languageItems.length > 0 && (
+        {languageRows.length > 0 && (
           <div className={`np-nav-group${groups.languages ? " is-open" : ""}`}>
             <button
               aria-expanded={groups.languages}
@@ -735,7 +764,46 @@ function Sidebar({
             </button>
             {groups.languages && (
               <div className="np-nav-group-items">
-                {languageItems.map((item) => {
+                {languageRows.map(({ item, row }) => {
+                  if (row.kind === "soon") {
+                    // Shown, and honest about it. The section reads wrong
+                    // without the row, and worse with a row that goes nowhere
+                    // without saying so.
+                    const SoonIcon = row.icon;
+                    return (
+                      <button
+                        className="is-soon"
+                        disabled
+                        key={row.label}
+                        title={ui("Not built yet.")}
+                        type="button"
+                      >
+                        <span aria-hidden="true" className="np-nav-visual"><SoonIcon className="np-nav-icon" /></span>
+                        <span>{ui(row.label)}</span>
+                        <b className="np-nav-soon">{ui("Soon")}</b>
+                      </button>
+                    );
+                  }
+                  if (row.kind === "view") {
+                    const ViewIcon = row.icon;
+                    const viewActive = activeView === row.view;
+                    return (
+                      <button
+                        aria-current={viewActive ? "page" : undefined}
+                        className={viewActive ? "is-active" : ""}
+                        key={row.label}
+                        onClick={() => onNavigate(row.view)}
+                        onFocus={() => onPrefetch(row.view)}
+                        onPointerEnter={() => onPrefetch(row.view)}
+                        title={ui("Your vocabulary library, on the profile page.")}
+                        type="button"
+                      >
+                        <span aria-hidden="true" className="np-nav-visual"><ViewIcon className="np-nav-icon" /></span>
+                        <span>{ui(row.label)}</span>
+                      </button>
+                    );
+                  }
+                  if (!item) return null;
                   const Icon = NAV_GROUP_ICONS[item.id] ?? item.icon;
                   const active = item.id === activeView
                     || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"));
@@ -893,26 +961,17 @@ function Sidebar({
           for it to sit at the bottom as one entry of its own.
         */}
         <div className="np-nav-footer">
-          {moreItem && (
-            <button
-              aria-current={activeView === "more" || activeView === "progress" || activeView === "profile" ? "page" : undefined}
-              className={`${activeView === "more" || activeView === "progress" || activeView === "profile" ? "is-active" : ""}${dropTarget === "more" ? " is-drop-target" : ""}`}
-              onClick={() => onNavigate(moreItem.id)}
-              onFocus={() => onPrefetch(moreItem.id)}
-              onPointerEnter={() => onPrefetch(moreItem.id)}
-              type="button"
-              {...acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))}
-            >
-              <span aria-hidden="true" className="np-nav-visual"><Menu className="np-nav-icon" /></span>
-              <span>{ui(moreItem.label)}</span>
-            </button>
-          )}
+          {/* Dragging a row here puts it away, which is where a row dragged
+              off the nav was already going — it used to be dropped on More,
+              and the row it landed on is the one that lists it afterwards.
+              The zone keeps its name so both ends of the drag still agree. */}
           <button
             aria-expanded={restoreOpen}
             aria-label={hidden.length > 0 ? uiFmt("Hidden ({n})", { n: hidden.length }) : undefined}
-            className="np-nav-hidden-toggle"
+            className={`np-nav-hidden-toggle${dropTarget === "more" ? " is-drop-target" : ""}`}
             onClick={() => setRestoreOpen((open) => !open)}
             type="button"
+            {...acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))}
           >
             <span aria-hidden="true" className="np-nav-visual"><EyeOff className="np-nav-icon" /></span>
             <span>{ui("Hidden apps")}</span>

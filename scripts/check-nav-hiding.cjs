@@ -97,7 +97,7 @@ const prototype = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.
 // stronger than what it replaces: the way back is always on screen, and says
 // how many are waiting behind it.
 assert.ok(
-  /className="np-nav-hidden-toggle"/.test(prototype) && /ui\("Hidden apps"\)/.test(prototype),
+  /np-nav-hidden-toggle/.test(prototype) && /ui\("Hidden apps"\)/.test(prototype),
   "the way back must be a permanent row at the foot of the nav"
 );
 assert.ok(

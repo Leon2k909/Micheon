@@ -542,6 +542,29 @@
   height: 17px;
 }
 
+.np-side-nav .np-nav-group-items button.is-soon {
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  opacity: 0.5;
+  cursor: default;
+}
+
+.np-side-nav .np-nav-group-items button.is-soon:hover {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.np-nav-soon {
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .np-nav-section-badge {
   padding: 3px 8px;
   border-radius: 999px;

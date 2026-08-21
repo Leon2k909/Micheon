@@ -2002,6 +2002,10 @@ const DE: Record<string, string> = {
   "Choose pets, adjust coaching, and set how flashcards flip.": "Tiere auswählen, Coaching anpassen und einstellen, wie Karteikarten umdrehen.",
   // ── The sidebar's folding sections ──
   "Language learning": "Sprachen lernen",
+  "Vocabulary library": "Wortschatz",
+  "Your vocabulary library, on the profile page.": "Deine Wortschatz-Bibliothek auf der Profilseite.",
+  "Not built yet.": "Gibt es noch nicht.",
+  "Soon": "Bald",
   "Country studies": "Landeskunde",
   "Beta category": "Kategorie Beta",
   "Hidden apps": "Ausgeblendete Apps",

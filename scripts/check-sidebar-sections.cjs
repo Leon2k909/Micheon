@@ -25,9 +25,26 @@ const i18n = read("src/lib/i18n.ts");
 
 // ── two folding sections, each with its own flag ───────────────────────────
 
+// The five rows Michelle listed, in her order. Three are destinations the nav
+// already had; Vocabulary reaches the tracker that has always been on the
+// profile page; Speaking has nothing behind it yet and says so rather than
+// being quietly left out of the section.
+const languageBlock = /const LANGUAGE_SECTION_ROWS: LanguageRow\[\] = \[([\s\S]*?)\n\];/.exec(shell)?.[1] ?? "";
+const languageOrder = [...languageBlock.matchAll(/kind: "(nav|view|soon)"[^\n]*?(?:id|label): "([^"]+)"/g)]
+  .map((match) => match[2]);
+assert.deepStrictEqual(
+  languageOrder,
+  ["learn", "practice", "listen", "Speaking", "Vocabulary library"],
+  "language learning lists lessons, practice, listening, speaking and vocabulary, in that order"
+);
 assert.ok(
-  /const LANGUAGE_SECTION_IDS: PrototypeView\[\] = \["learn", "practice", "listen"\]/.test(shell),
-  "language learning holds the lessons, practice and listening destinations"
+  /kind: "view", icon: Languages, label: "Vocabulary library", view: "profile"/.test(languageBlock),
+  "vocabulary opens the page the tracker already lives on rather than a new one"
+);
+assert.ok(
+  /kind: "soon", icon: MessageCircleMore, label: "Speaking"/.test(languageBlock)
+    && /className="is-soon"[\s\S]{0,220}ui\("Not built yet\."\)/.test(shell),
+  "speaking is shown as not built yet, not wired to something it is not"
 );
 assert.ok(
   shell.includes(`<FlagRoundel id={courseFlagId} />`),
@@ -97,6 +114,17 @@ assert.ok(
 assert.ok(
   /np-nav-footer[\s\S]*?ui\("Hidden apps"\)/.test(shell),
   "hidden apps sit in the separated footer"
+);
+// More is not one of the entries Michelle listed, so it is not in the rail —
+// which leaves the drag that used to land on it needing somewhere to go. It
+// lands on the row that lists what it put away, which is where it was headed.
+assert.ok(
+  !/onNavigate\(moreItem\.id\)/.test(shell) && !/const moreItem =/.test(shell),
+  "the rail lists what Michelle asked for and nothing else"
+);
+assert.ok(
+  /className=\{`np-nav-hidden-toggle\${dropTarget === "more" \? " is-drop-target" : ""}`\}/.test(shell),
+  "dragging a destination onto Hidden apps must show that it will land there"
 );
 
 // ── it fits the rail it lives in ───────────────────────────────────────────
