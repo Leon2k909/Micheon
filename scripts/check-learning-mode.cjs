@@ -908,9 +908,13 @@ check(
     && germanWordGloss("müssen")?.includes("must")
     && germanWordGloss("Gedanken") === "thought"
     && germanWordGloss("unbekanntesfantasiewort") === null
-    && guidedSource.includes('const hoverGloss = glossLang === "de" ? germanWordGloss(w)')
+    // Both directions still resolve a gloss; the German side now also tells
+    // the lookup where the word sits, so a mid-sentence capital gets the noun
+    // rather than its lowercase verb twin (see check-word-hovers).
+    && guidedSource.includes("germanWordGloss(w, { midSentenceCapital:")
     && guidedSource.includes(': glossLang === "en" ? englishWordGloss(w)')
-    && guidedSource.includes("const hoverGloss = learnEn ? englishWordGloss(token.text) : germanWordGloss(token.text);")
+    && guidedSource.includes("? englishWordGloss(token.text)")
+    && guidedSource.includes("germanWordGloss(token.text, {")
     && guidedSource.includes("data-gloss={hoverGloss ?? undefined}")
     && guidedStyles.includes("[data-gloss]:is(:hover, :focus-visible)::before")
 );

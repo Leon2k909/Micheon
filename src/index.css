@@ -1867,6 +1867,32 @@ a { color: inherit; text-decoration: none; }
   border-color: rgb(225 29 72 / 0.56);
 }
 
+/* Marked. The button is the record of the decision, not just the way to make
+   it — it stays filled after the undo notice has gone, and pressing it again
+   takes the mark off. */
+.grade-btn-struggle.is-marked,
+[data-theme="dark"] .grade-btn-struggle.is-marked {
+  border-color: rgb(225 29 72);
+  background: rgb(225 29 72);
+  color: #fff;
+}
+
+.grade-btn-struggle.is-marked:hover,
+[data-theme="dark"] .grade-btn-struggle.is-marked:hover {
+  border-color: rgb(190 18 60);
+  background: rgb(190 18 60);
+  color: #fff;
+}
+
+/* The chip sits on the solid rose fill, not on the page, so it wants the same
+   translucent white in both themes — stated twice rather than left to a
+   default, because a light value with no dark rule is normally a bug. */
+.grade-btn.is-marked .grade-kbd,
+[data-theme="dark"] .grade-btn.is-marked .grade-kbd {
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
+}
+
 .grade-kbd {
   display: inline-flex;
   height: 18px;
@@ -3010,7 +3036,14 @@ a { color: inherit; text-decoration: none; }
 .guided-session .grade-btn:hover { transform: translateY(-2px); color: #fff; }
 .guided-session .grade-btn-known:hover { border-color: rgba(105,225,173,0.4); background: rgba(105,225,173,0.08); }
 .guided-session .grade-btn-struggle:hover { border-color: rgba(255,140,160,0.4); background: rgba(255,140,160,0.08); }
+/* The session skin makes both pills neutral until hovered, so a mark made
+   here would be invisible without saying so again in this scope. */
+.guided-session .grade-btn-struggle.is-marked,
+.guided-session .grade-btn-struggle.is-marked:hover {
+  border-color: rgba(255,140,160,0.85); background: rgba(255,90,120,0.9); color: #fff;
+}
 .guided-session .grade-kbd { border: 1px solid var(--fs-line); border-radius: 6px; padding: 1px 5px; font-size: 9px; color: var(--fs-muted); background: rgba(255,255,255,0.03); }
+.guided-session .grade-btn.is-marked .grade-kbd { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.2); color: #fff; }
 
 /* ── sentence board ── */
 .fs-board {
@@ -11105,25 +11138,25 @@ html[data-theme="dark"] {
 }
 
 /*
- * A hoverable word in a passage.
+ * A hoverable word — in a passage, in a Listen card, anywhere German is shown to be read.
  *
  * The gloss sits in a data attribute and comes out as a tooltip, the same
  * shape the lesson's word tokens use — dotted underline to say "there is
  * something here", and nothing at all when the word has no gloss, because an
  * underline that leads nowhere is worse than a plain word.
  */
-.passage-word.has-gloss {
+.gloss-word.has-gloss {
   position: relative;
   cursor: help;
   border-bottom: 1px dotted color-mix(in srgb, var(--accent) 60%, transparent);
 }
-.passage-word.has-gloss:hover,
-.passage-word.has-gloss:focus-visible {
+.gloss-word.has-gloss:hover,
+.gloss-word.has-gloss:focus-visible {
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   border-radius: 4px;
   outline: none;
 }
-.passage-word.has-gloss::after {
+.gloss-word.has-gloss::after {
   content: attr(data-gloss);
   position: absolute;
   bottom: calc(100% + 6px);
@@ -11147,11 +11180,11 @@ html[data-theme="dark"] {
   pointer-events: none;
   transition: opacity 120ms ease, transform 120ms ease;
 }
-.passage-word.has-gloss:hover::after,
-.passage-word.has-gloss:focus-visible::after {
+.gloss-word.has-gloss:hover::after,
+.gloss-word.has-gloss:focus-visible::after {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .passage-word.has-gloss::after { transition: none; }
+  .gloss-word.has-gloss::after { transition: none; }
 }

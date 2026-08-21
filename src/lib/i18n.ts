@@ -230,6 +230,15 @@ const DE: Record<string, string> = {
   "Listening choices": "Hörauswahl",
   "You matched the spoken phrase.": "Du hast den gesprochenen Satz richtig erkannt.",
   "Hear it and try again": "Noch einmal hören und erneut versuchen",
+  // A mark you have made, shown on the button that made it. ("Struggling" and
+  // "Known" are already in this table as tracker statuses — same words, and
+  // the button means the same thing, so they are not repeated here.)
+  "Marked as a struggle. Press to take the mark off.": "Als schwierig markiert. Zum Entfernen erneut drücken.",
+  "Marked as known. Press to take the mark off.": "Als gekonnt markiert. Zum Entfernen erneut drücken.",
+  "Marked as a struggle. Press to take the mark off. Shortcut Alt S": "Als schwierig markiert. Zum Entfernen erneut drücken. Kürzel Alt S",
+  "Mark this line as a struggle. Shortcut Alt S": "Diese Zeile als schwierig markieren. Kürzel Alt S",
+  "“{item}” marked as {verdict}.": "„{item}“ als {verdict} markiert.",
+  "Took the mark off “{item}”.": "Markierung von „{item}“ entfernt.",
   // Listening stage: write down what you heard, options only on request.
   "Hear & write": "Hören & schreiben",
   "Write what you hear": "Schreib, was du hörst",

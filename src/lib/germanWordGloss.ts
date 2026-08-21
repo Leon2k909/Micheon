@@ -679,10 +679,28 @@ const nounGloss = (word: string, key: string) => {
  * Returns a short English gloss for a visible German word. The lookup is
  * entirely offline: curated high-frequency forms plus the bundled hardcoded
  * word bank. Unknown words stay unlabelled instead of guessing from a server.
+ *
+ * `midSentenceCapital` says the word was capitalised somewhere other than the
+ * start of its sentence, which in German all but names it a noun. Without it
+ * the curated particle and verb entries answer first, and "Das letzte Mal"
+ * glosses Mal as "just / sometime" — the softener in "sag mal", not the
+ * occasion the sentence means. Same trap for Essen (food, not eat), Weiß
+ * (white, not knows), Fest (party, not firm) and Laut (sound, not loud).
+ *
+ * It is a hint, not an override: if nothing in the noun bank matches, the
+ * ordinary lookup answers exactly as before. Callers that cannot see where
+ * the word sits should leave it off rather than guess.
  */
-export function germanWordGloss(word: string): string | null {
+export function germanWordGloss(
+  word: string,
+  options?: { midSentenceCapital?: boolean }
+): string | null {
   const key = wordKey(word);
   if (!key) return null;
+  if (options?.midSentenceCapital) {
+    const noun = nounGloss(word, key);
+    if (noun) return noun;
+  }
   return exactGlosses.get(key)
     ?? verbFormGlosses.get(key)
     ?? adjectiveFormGlosses.get(key)

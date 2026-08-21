@@ -76,6 +76,7 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
+import { GlossedGerman } from "@/components/shared/GlossedGerman";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
@@ -354,6 +355,16 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [yourTurn, setYourTurn] = useState(false);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(getAudioSettings);
   const [graded, setGraded] = useState<"know" | "difficult" | null>(null);
+  /**
+   * Which items this sitting has marked, and what the record looked like
+   * first. Two jobs: the buttons stay lit for a mark you made, so stepping
+   * back to a card shows what you decided about it rather than a blank pair
+   * of buttons; and pressing a lit one takes the mark off again, which is
+   * the same restore the Undo link performs.
+   */
+  const [sessionMarks, setSessionMarks] = useState<Map<string, { verdict: "know" | "difficult"; undo: ListenReviewChange }>>(
+    () => new Map()
+  );
   const [reviewPanel, setReviewPanel] = useState<"menu" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
   const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
@@ -785,11 +796,52 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     } catch { /* browser media controls are an enhancement */ }
   }, [item?.de, item?.en, mediaAvailable, playing]);
 
+  /** The mark this sitting has on the item currently on screen, if any. */
+  const itemMark = item ? sessionMarks.get(item.id)?.verdict ?? null : null;
+
+  const clearMark = (target: ListenItem) => {
+    const existing = sessionMarks.get(target.id);
+    if (!existing) return;
+    undoListenReviewChange(existing.undo, profile);
+    setSessionMarks((current) => {
+      const next = new Map(current);
+      next.delete(target.id);
+      return next;
+    });
+    setReviewNotice({
+      message: uiFmt("Took the mark off “{item}”.", { item: target.de }),
+    });
+  };
+
   const grade = (verdict: "know" | "difficult") => {
     if (!item || gradeAdvanceTimerRef.current != null) return;
     reviewWasPlayingRef.current = false;
     closeReviewPanel(false);
-    recordListenGrade(item, verdict, profile);
+    // Pressing the mark that is already on takes it off, and stays on the
+    // card — the point of an unmark is that you did not mean to move on.
+    if (sessionMarks.get(item.id)?.verdict === verdict) {
+      setGraded(null);
+      clearMark(item);
+      return;
+    }
+    const fresh = recordListenGrade(item, verdict, profile);
+    // Re-marking an item keeps the ORIGINAL snapshot, not the one taken after
+    // the first mark — otherwise Undo restores the earlier mark instead of
+    // the state before any of this.
+    const undo = sessionMarks.get(item.id)?.undo ?? fresh;
+    const target = { ...item, aliases: [...item.aliases] };
+    setSessionMarks((current) => {
+      const next = new Map(current);
+      next.set(item.id, { verdict, undo });
+      return next;
+    });
+    setReviewNotice({
+      message: uiFmt("“{item}” marked as {verdict}.", {
+        item: item.de,
+        verdict: ui(verdict === "know" ? "Know it" : "Struggle"),
+      }),
+      undo: { change: undo, item: target },
+    });
     setGraded(verdict);
     runRef.current += 1;
     stopTts();
@@ -838,6 +890,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const pending = reviewNotice?.undo;
     if (!pending) return;
     undoListenReviewChange(pending.change, profile);
+    // Undo and the lit button are two faces of the same mark, so taking it
+    // back here has to unlight the button as well.
+    setSessionMarks((current) => {
+      if (!current.has(pending.item.id)) return current;
+      const next = new Map(current);
+      next.delete(pending.item.id);
+      return next;
+    });
     timedHiddenIdsRef.current.delete(pending.item.id);
     setHiddenIds((current) => {
       if (!current.has(pending.item.id)) return current;
@@ -1047,8 +1107,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
-          <p className="mt-4 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
-            {item.de}
+          {/* Hoverable a word at a time. Listen plays a line twice and moves
+              on, so the one word that blocked the sentence would otherwise
+              stay blocked — this answers it without stopping the loop or
+              sending anyone to a dictionary. */}
+          <p className="listen-sentence mt-4 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
+            <GlossedGerman text={item.de} />
           </p>
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
@@ -1112,16 +1176,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 onMouseEnter={openReviewPanel}
               >
                 <button
+                  aria-pressed={itemMark === "know"}
                   className={cn(
                     "inline-flex h-11 items-center gap-2 rounded-l-xl border border-r-0 px-4 text-sm font-black transition-colors",
-                    graded === "know"
+                    graded === "know" || itemMark === "know"
                       ? "border-emerald-500 bg-emerald-500 text-white"
                       : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
                   )}
                   onClick={() => grade("know")}
+                  title={itemMark === "know" ? ui("Marked as known. Press to take the mark off.") : undefined}
                   type="button"
                 >
-                  <Check className="h-4 w-4" /> {ui("Know it")}
+                  <Check className="h-4 w-4" /> {ui(itemMark === "know" ? "Known" : "Know it")}
                 </button>
                 <button
                   aria-expanded={reviewPanel === "menu"}
@@ -1129,7 +1195,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   aria-label={ui("More Know it options")}
                   className={cn(
                     "inline-grid h-11 w-9 place-items-center rounded-r-xl border text-sm font-black transition-colors",
-                    graded === "know"
+                    graded === "know" || itemMark === "know"
                       ? "border-emerald-500 border-l-white/30 bg-emerald-500 text-white"
                       : "border-emerald-500/30 border-l-emerald-500/15 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/18 dark:text-emerald-300"
                   )}
@@ -1145,16 +1211,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 </button>
               </div>
               <button
+                aria-pressed={itemMark === "difficult"}
                 className={cn(
                   "inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition-colors",
-                  graded === "difficult"
+                  graded === "difficult" || itemMark === "difficult"
                     ? "border-rose-500 bg-rose-500 text-white"
                     : "border-rose-500/30 bg-rose-500/10 text-rose-700 hover:bg-rose-500/18 dark:text-rose-300"
                 )}
                 onClick={() => grade("difficult")}
+                title={itemMark === "difficult" ? ui("Marked as a struggle. Press to take the mark off.") : undefined}
                 type="button"
               >
-                <X className="h-4 w-4" /> {ui("Struggle")}
+                <X className="h-4 w-4" /> {ui(itemMark === "difficult" ? "Struggling" : "Struggle")}
               </button>
             </div>
 

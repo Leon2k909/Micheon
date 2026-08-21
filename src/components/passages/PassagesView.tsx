@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, Eye, RotateCcw, ScrollText } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { germanWordGloss } from "@/lib/germanWordGloss";
-import { coverIdeas, passageTokens, PASSAGES, type Passage } from "@/lib/passages";
+import { GlossedGerman } from "@/components/shared/GlossedGerman";
+import { coverIdeas, PASSAGES, type Passage } from "@/lib/passages";
 
 /**
  * Read a paragraph of real German and say what it means.
@@ -217,26 +217,9 @@ function PassageRun({ passage, onBack }: { passage: Passage; onBack: () => void 
                 at === index ? "bg-[var(--accent-dim)] text-[var(--text-1)]" : "text-[var(--text-3)]"
               )}
             >
-              {passageTokens(entry.de).map((token, tokenIndex) => {
-                if (!token.word) return <span key={tokenIndex}>{token.text}</span>;
-                // The line's own glossary wins: it knows which sense is meant
-                // here, which a word-level lookup cannot.
-                const gloss = entry.glosses?.[token.text]
-                  ?? entry.glosses?.[token.text.toLocaleLowerCase("de-DE")]
-                  ?? germanWordGloss(token.text);
-                return (
-                  <span
-                    key={tokenIndex}
-                    className={cn("passage-word", gloss && "has-gloss")}
-                    data-gloss={gloss ?? undefined}
-                    title={gloss ?? undefined}
-                    tabIndex={gloss ? 0 : undefined}
-                    aria-label={gloss ? `${token.text}: ${gloss}` : undefined}
-                  >
-                    {token.text}
-                  </span>
-                );
-              })}
+              {/* The line's own glossary wins: it knows which sense is meant
+                  here, which a word-level lookup cannot. */}
+              <GlossedGerman text={entry.de} glosses={entry.glosses} />
             </p>
           ))}
         </div>

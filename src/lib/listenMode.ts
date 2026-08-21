@@ -772,14 +772,20 @@ function snapshotListenReviewChange(
 /**
  * Record a listen-mode grade. See the module comment for why every branch
  * is deliberately weaker than its guided-session counterpart.
+ *
+ * Returns what the record looked like BEFORE the grade, so the screen can
+ * offer Undo. Marking something a struggle while half-listening in the
+ * kitchen is exactly the kind of press that gets made by accident, and until
+ * this returned a snapshot there was no way back from it.
  */
 export function recordListenGrade(
   item: Pick<ListenItem, "id" | "aliases">,
   grade: ListenGrade,
   profile: UserProfile | null = getAuthUser(),
   now = Date.now()
-): void {
+): ListenReviewChange {
   const store = loadGradeStore(profile);
+  const undo = snapshotListenReviewChange(store, item);
   const status = statusForId(store, item.id, item.aliases);
   const prior = progressEntryForId(store, item.id, item.aliases)?.record;
   const listenFields = {
@@ -818,6 +824,7 @@ export function recordListenGrade(
   }
 
   saveGradeStore(store, profile);
+  return undo;
 }
 
 /**

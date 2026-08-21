@@ -129,8 +129,9 @@ for (const [id, word, wanted, generalWouldSay] of [
 }
 
 // The view has to offer the lookup and refuse to mark the translation.
-const view = fs.readFileSync(path.join(root, "src/components/passages/PassagesView.tsx"), "utf8");
-assert.ok(view.includes("entry.glosses?.[token.text]"),
+const view = fs.readFileSync(path.join(root, "src/components/passages/PassagesView.tsx"), "utf8")
+  + fs.readFileSync(path.join(root, "src/components/shared/GlossedGerman.tsx"), "utf8");
+assert.ok(view.includes("glosses={entry.glosses}") && view.includes("glosses?.[token.text]"),
   "the view ignores the line's own glossary, so the context-correct meanings never show");
 assert.ok(view.includes("data-gloss"), "words are not hoverable");
 assert.ok(/I had it|Close enough|I missed it/.test(view),
@@ -139,8 +140,8 @@ assert.ok(!/is correct|richtig|Correct!/.test(view),
   "a free translation must not be declared correct by the app");
 
 const styles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
-assert.ok(styles.includes(".passage-word.has-gloss"), "a hoverable word has no affordance");
-assert.ok(/\.passage-word\.has-gloss::after[\s\S]{0,400}content: attr\(data-gloss\)/.test(styles),
+assert.ok(styles.includes(".gloss-word.has-gloss"), "a hoverable word has no affordance");
+assert.ok(/\.gloss-word\.has-gloss::after[\s\S]{0,400}content: attr\(data-gloss\)/.test(styles),
   "the gloss never reaches the screen");
 
 console.log(

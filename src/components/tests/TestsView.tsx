@@ -1388,10 +1388,23 @@ export function TestsView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedback]);
 
-  const markTrackedStatus = (item: TestItem, status: Extract<ItemStatus, "known" | "struggle">) => {
+  const markTrackedStatus = (item: TestItem, status: ItemStatus) => {
     setItemStatus(item.id, status, profile, item.aliases);
     setTrackedStatuses((current) => ({ ...current, [item.id]: status }));
     setGradeRevision((revision) => revision + 1);
+  };
+
+  /**
+   * The lit button IS the mark, so pressing it again has to take the mark off
+   * rather than set the same one twice. Without this the only way back from a
+   * mis-tap was to find the item in the tracker.
+   */
+  const toggleTrackedStatus = (
+    item: TestItem,
+    status: Extract<ItemStatus, "known" | "struggle">,
+    current: ItemStatus
+  ) => {
+    markTrackedStatus(item, current === status ? "new" : status);
   };
 
   const markKnownAndAdvance = () => {
@@ -1520,10 +1533,11 @@ export function TestsView({
                               ? "border-rose-500 bg-rose-500 text-white"
                               : "border-rose-500/30 bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 dark:text-rose-400"
                           )}
-                          onClick={() => markTrackedStatus(result.question.item, "struggle")}
+                          onClick={() => toggleTrackedStatus(result.question.item, "struggle", trackedStatus)}
+                          title={trackedStatus === "struggle" ? ui("Marked as a struggle. Press to take the mark off.") : undefined}
                           type="button"
                         >
-                          {ui("Struggle")}
+                          {ui(trackedStatus === "struggle" ? "Struggling" : "Struggle")}
                         </button>
                       </div>
                     </div>
@@ -1725,10 +1739,11 @@ export function TestsView({
                       : "border-rose-500/30 bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 dark:text-rose-400"
                   )}
                   data-testid="test-mark-struggle"
-                  onClick={() => markTrackedStatus(currentQuestion.item, "struggle")}
+                  onClick={() => toggleTrackedStatus(currentQuestion.item, "struggle", trackedStatus)}
+                  title={trackedStatus === "struggle" ? ui("Marked as a struggle. Press to take the mark off.") : undefined}
                   type="button"
                 >
-                  {ui("Struggle")}
+                  {ui(trackedStatus === "struggle" ? "Struggling" : "Struggle")}
                 </button>
               </div>
             </div>

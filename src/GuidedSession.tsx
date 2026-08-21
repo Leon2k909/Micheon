@@ -710,7 +710,11 @@ function TappableSentence({ text, lang, meaningText }: { text: string; lang: str
   return (
     <span className="fs-tappable-sentence" onCopy={copySelectionWithSpaces}>
       {words.map((w, i) => {
-        const hoverGloss = glossLang === "de" ? germanWordGloss(w)
+        // A capital anywhere but the opening word is German saying "noun" —
+        // without the hint, Krieg glosses as "get / manage" and Stelle as
+        // "stand something up", from their lowercase verb twins.
+        const hoverGloss = glossLang === "de"
+          ? germanWordGloss(w, { midSentenceCapital: i > 0 && /^\p{Lu}/u.test(w) })
           : glossLang === "en" ? englishWordGloss(w)
             : null;
         const popoverOpen = popoverIndex === i;
@@ -1625,7 +1629,7 @@ function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease 
     </span>
   );
 }
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
@@ -1642,6 +1646,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   onHoldManualReview?: () => void;
   onReleaseManualReview?: () => void;
   onDismissManualReview?: () => void;
+  /**
+   * The mark standing on this item right now, which is not the same thing as
+   * the notice about it: the notice clears itself after a few seconds, the
+   * mark stays until it is taken off. The grade buttons read this so they
+   * still show what was decided once the notice has gone.
+   */
+  markedLevel?: GuidedReviewLevel | null;
+  /** Press a lit button again to take its mark off. */
+  onClearMark?: () => void;
 }) {
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean, gentle = false, animate = true) => {
@@ -2936,8 +2949,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (item?.id) onGradeItem?.(item.id, "know");
     onNext();
   };
+  const isStruggling = markedLevel === "struggle";
   const markStruggle = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
+    // Pressing it while it is lit takes the mark off, which is the whole
+    // point of showing the state on the button.
+    if (isStruggling) {
+      setGrade(null);
+      onClearMark?.();
+      return;
+    }
     setGrade("struggle");
     if (item?.id) onGradeItem?.(item.id, "struggle");
   };
@@ -2961,7 +2982,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [item?.id, onGradeItem]);
+    // isStruggling and onClearMark decide what Alt S does now, so a stale
+    // closure here would leave the shortcut re-marking an already-marked item.
+  }, [item?.id, onGradeItem, isStruggling, onClearMark]);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
@@ -3029,13 +3052,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </button>
             )}
             <button
-              aria-label={ui("Mark this item as a struggle. Shortcut Alt S")}
-              className="grade-btn grade-btn-struggle"
+              aria-label={ui(isStruggling
+                ? "Marked as a struggle. Press to take the mark off. Shortcut Alt S"
+                : "Mark this item as a struggle. Shortcut Alt S")}
+              aria-pressed={isStruggling}
+              className={cn("grade-btn grade-btn-struggle", isStruggling && "is-marked")}
               onClick={markStruggle}
               disabled={recallTransitionPending || recallCompletionScheduledRef.current}
               type="button"
             >
-              {ui("Struggle")}
+              {ui(isStruggling ? "Struggling" : "Struggle")}
               <kbd className="grade-kbd">Alt S</kbd>
             </button>
             {/* No replay button here any more: tapping any word in the
@@ -4509,7 +4535,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 aria-label={ui(learnEn ? "English words to arrange" : "German words to arrange")}
               >
                 {orderTokens.map((token, tokenIndex) => {
-                  const hoverGloss = learnEn ? englishWordGloss(token.text) : germanWordGloss(token.text);
+                  // The tiles are shuffled, so where a token sits now says
+                  // nothing. What matters is whether it opens the SENTENCE:
+                  // any other capital is a noun.
+                  const hoverGloss = learnEn
+                    ? englishWordGloss(token.text)
+                    : germanWordGloss(token.text, {
+                      midSentenceCapital: /^\p{Lu}/u.test(token.text)
+                        && token.text !== String(item.de).trim().split(/\s+/)[0],
+                    });
                   return (
                     <button
                       key={token.id}
@@ -4817,7 +4851,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 }
 
 // Section
-function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void; onSnooze?: (itemId: string, days: number) => void; onAnswer?: (correct: boolean) => void }) {
+function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer, markedLevels, onClearMark }: { dialogue: any; onNext: () => void; onGradeItem?: (itemId: string, grade: "know" | "struggle") => void; onReviewLevel?: (itemId: string, level: GuidedReviewLevel) => void; onSnooze?: (itemId: string, days: number) => void; onAnswer?: (correct: boolean) => void; markedLevels?: Record<string, GuidedReviewLevel>; onClearMark?: (itemId: string) => void }) {
   const lines: any[] = dialogue?.lines ?? [];
   const [lineIdx, setLineIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -4886,7 +4920,15 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
     onGradeItem?.(lineGradeId, "know");
     nextLine();
   };
+  // Same toggle as the sentence exercise: the button shows the mark that is
+  // standing, and pressing it while lit takes that mark off.
+  const isStruggling = markedLevels?.[lineGradeId] === "struggle";
   const markStruggle = () => {
+    if (isStruggling) {
+      setGrade(null);
+      onClearMark?.(lineGradeId);
+      return;
+    }
     setGrade("struggle");
     onGradeItem?.(lineGradeId, "struggle");
   };
@@ -4918,7 +4960,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lineGradeId, onGradeItem]);
+  }, [lineGradeId, onGradeItem, isStruggling, onClearMark]);
 
   if (!line) return null;
 
@@ -4950,12 +4992,15 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
             </button>
           )}
           <button
-            aria-label="Mark this line as a struggle. Shortcut Alt S"
-            className="grade-btn grade-btn-struggle"
+            aria-label={ui(isStruggling
+              ? "Marked as a struggle. Press to take the mark off. Shortcut Alt S"
+              : "Mark this line as a struggle. Shortcut Alt S")}
+            aria-pressed={isStruggling}
+            className={cn("grade-btn grade-btn-struggle", isStruggling && "is-marked")}
             onClick={markStruggle}
             type="button"
           >
-            {ui("Struggle")}
+            {ui(isStruggling ? "Struggling" : "Struggle")}
             <kbd className="grade-kbd">Alt S</kbd>
           </button>
         </div>
@@ -6078,6 +6123,16 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   }, [lastManualReviewChange, reviewNoticeHeld]);
   const holdReviewNotice = useCallback(() => setReviewNoticeHeld(true), []);
   const releaseReviewNotice = useCallback(() => setReviewNoticeHeld(false), []);
+  /**
+   * The mark itself, which outlives the notice about it.
+   *
+   * The notice is a few seconds of "you can take that back"; the mark is a
+   * decision. Tying the button's appearance to the notice meant Struggle went
+   * back to looking unpressed while the item was still marked, so there was no
+   * way to see what you had decided — or to change your mind — once the toast
+   * had gone. This is what the button reads, and what pressing it again clears.
+   */
+  const [manualMarks, setManualMarks] = useState<Record<string, GuidedReviewLevel>>({});
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
   useEffect(() => {
     const syncGuidedBackground = () => {
@@ -6134,6 +6189,11 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       else if (level === "permanent") onSetItemPermanent?.(itemId);
       else onSetItemStrength?.(itemId, level === "new" ? 0 : level);
     });
+    setManualMarks((current) => {
+      const next = { ...current };
+      for (const itemId of ids) next[itemId] = level;
+      return next;
+    });
     const details = reviewLevelDetails(level);
     setLastManualReviewChange({
       itemIds: ids,
@@ -6143,6 +6203,25 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       subject: describeMarkedItems(ids),
     });
   }, [describeMarkedItems, onGradeItem, onSetItemPermanent, onSetItemStrength]);
+
+  /**
+   * Take a mark back off an item by pressing its lit button again — the same
+   * restore Undo performs, reached from the control that set it rather than
+   * from a notice that has usually gone by the time anyone changes their mind.
+   */
+  const clearManualMark = useCallback((itemId: string) => {
+    const id = String(itemId ?? "");
+    if (!id || !onUndoGradeItem?.(id)) return;
+    setManualMarks((current) => {
+      if (!(id in current)) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    setLastManualReviewChange((current) => (
+      current && current.itemIds.includes(id) ? null : current
+    ));
+  }, [onUndoGradeItem]);
   /**
    * Put an item off, and say so in the same notice the levels use.
    *
@@ -6432,6 +6511,13 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       if (onUndoGradeItem?.(itemId)) restored = true;
     }
     if (!restored) return;
+    // Undo and the lit button show the same mark, so taking it back here has
+    // to unlight the button too.
+    setManualMarks((current) => {
+      const next = { ...current };
+      for (const itemId of lastManualReviewChange.itemIds) delete next[itemId];
+      return next;
+    });
     // Only marks that moved the learner on carry a returnIndex, so this puts
     // them back exactly where the mark was made without ever disturbing an
     // undo made on the spot.
@@ -6631,8 +6717,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} /></div>}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} markedLevel={manualMarks[String(step.item?.id ?? "")] ?? null} onClearMark={() => clearManualMark(String(step.item?.id ?? ""))} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} markedLevels={manualMarks} onClearMark={clearManualMark} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">
