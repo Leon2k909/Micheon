@@ -8,6 +8,21 @@ import { getAuthUser } from "@/lib/profileStorage";
 import { ui, uiFmt } from "@/lib/i18n";
 import { translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
 
+/**
+ * "lesson 16" beside "Fertig" is the worst of both languages, so the numbered
+ * badges follow the interface language. Only the two known shapes are
+ * translated; anything else (the C# course's "s&box") passes through
+ * unchanged rather than being lost to a missing key.
+ */
+function badgeLabel(badge: string): string {
+  const numbered = /^(lesson|practice)\s+(\d+)$/i.exec(badge.trim());
+  if (!numbered) return ui(badge);
+  const n = numbered[2];
+  return numbered[1].toLowerCase() === "lesson"
+    ? uiFmt("lesson {n}", { n })
+    : uiFmt("practice {n}", { n });
+}
+
 const BACKGROUND_OPTIONS: { key: CodeBackground; label: string; sub: string }[] = [
   { key: "python", label: "🐍 Python", sub: "Explanations compare C# to Python" },
   { key: "js", label: "🟨 JavaScript", sub: "Explanations compare C# to JS" },
@@ -78,7 +93,7 @@ export function CourseLessonsView({
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)]"
               >
                 <Sparkles className="h-3 w-3 text-[var(--accent)]" />
-                Tailored for: {CODE_BACKGROUND_LABEL[background]} · change
+                {uiFmt("Tailored for: {background} · change", { background: CODE_BACKGROUND_LABEL[background] })}
               </button>
             )}
           </div>
@@ -111,11 +126,11 @@ export function CourseLessonsView({
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[var(--accent)]" />
             <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">
-              Which language do you already know?
+              {ui("Which language do you already know?")}
             </h2>
           </div>
           <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--text-2)]">
-            The course adapts its explanations and side-by-side code comparisons to the language you already speak.
+            {ui("The course adapts its explanations and side-by-side code comparisons to the language you already speak.")}
           </p>
           <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
             {BACKGROUND_OPTIONS.map((opt) => (
@@ -130,8 +145,8 @@ export function CourseLessonsView({
                     : "border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]")
                 }
               >
-                <p className="text-sm font-black text-[var(--text-1)]">{opt.label}</p>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{opt.sub}</p>
+                <p className="text-sm font-black text-[var(--text-1)]">{ui(opt.label)}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(opt.sub)}</p>
               </button>
             ))}
           </div>
@@ -169,7 +184,7 @@ export function CourseLessonsView({
                       </span>
                     ) : lesson.badge ? (
                       <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--text-1)]">
-                        {lesson.badge}
+                        {badgeLabel(lesson.badge)}
                       </span>
                     ) : null}
                   </div>

@@ -10334,6 +10334,17 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
   cursor: pointer;
 }
 
+/* The drop-down list itself is painted by the browser, not by us. The select
+   sets `background: transparent` so the pill behind it shows through, and the
+   options inherit that. A transparent option leaves Chromium no colour to paint
+   the popup with, so it falls back to white with a blue highlight — in the
+   middle of a dark interface. Naming the surface explicitly is what makes the
+   list follow the theme, in both directions. */
+.np-uk-translation select option {
+  color: var(--text-1);
+  background-color: var(--surface);
+}
+
 .np-uk-translation select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

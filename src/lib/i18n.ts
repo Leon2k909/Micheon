@@ -2221,6 +2221,22 @@ const DE: Record<string, string> = {
   "Your review is ready": "Deine Wiederholung ist bereit",
   "Your vocabulary total and next milestone are on your profile.": "Dein Wortschatzstand und der nächste Meilenstein stehen in deinem Profil.",
   "Your weekly goal": "Dein Wochenziel",
+  // ── Course cards: lesson badges and hero copy ──
+  "lesson {n}": "Lektion {n}",
+  "practice {n}": "Übung {n}",
+  "{pct}% complete": "{pct}% geschafft",
+  "Review course": "Kurs wiederholen",
+  "Pick up where you left off. {done} of {total} lessons done.": "Mach da weiter, wo du aufgehört hast. {done} von {total} Lektionen geschafft.",
+  "You've completed every lesson. Revisit any topic from the course material.": "Du hast jede Lektion abgeschlossen. Im Kursmaterial kannst du jedes Thema noch einmal ansehen.",
+  "Start from the top. {n} lessons, and the first one explains the test itself.": "Fang von vorne an: {n} Lektionen, und die erste erklärt den Test selbst.",
+  "{n} lessons across {s} sections": "{n} Lektionen in {s} Abschnitten",
+  "Start from the top — variables, types, then build up to s&box game code.": "Fang von vorne an: Variablen, Typen und dann Schritt für Schritt bis zum s&box-Spielcode.",
+  "Which language do you already know?": "Welche Sprache kannst du schon?",
+  "The course adapts its explanations and side-by-side code comparisons to the language you already speak.": "Der Kurs passt seine Erklärungen und Code-Vergleiche an die Sprache an, die du schon sprichst.",
+  "Tailored for: {background} · change": "Angepasst an: {background} · ändern",
+  "Explanations compare C# to Python": "Erklärungen vergleichen C# mit Python",
+  "Explanations compare C# to JS": "Erklärungen vergleichen C# mit JS",
+  "No comparisons — plain-English explanations": "Keine Vergleiche – Erklärungen in einfachem Englisch",
   "per month, preview price": "pro Monat, Vorschaupreis",
 
   "Not quite — the correct answer is highlighted above.":

@@ -1,4 +1,4 @@
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import React from "react";
 import { ArrowRight, BookOpen, Check, Code2, Landmark, Trophy } from "lucide-react";
 import type { Course } from "@/lib/courses";
@@ -29,8 +29,8 @@ export function CourseDashboardView({
   // brackets for the same reason.
   const LessonIcon = course.kind === "programming" ? Code2 : Landmark;
   const openingLine = course.kind === "programming"
-    ? "Start from the top — variables, types, then build up to s&box game code."
-    : `Start from the top. ${lessons.length} lessons, and the first one explains the test itself.`;
+    ? ui("Start from the top — variables, types, then build up to s&box game code.")
+    : uiFmt("Start from the top. {n} lessons, and the first one explains the test itself.", { n: lessons.length });
 
   return (
     <div className="space-y-4">
@@ -42,18 +42,18 @@ export function CourseDashboardView({
               {course.name}
             </span>
             <span className="course-feature-pill-success rounded-full px-3 py-1 text-[11px] font-black">
-              {pct}% complete
+              {uiFmt("{pct}% complete", { pct })}
             </span>
           </div>
           <h2 className="course-feature-title mt-4 text-2xl font-black leading-tight tracking-tight">
-            {nextLesson ? nextLesson.title : "Course complete"}
+            {nextLesson ? nextLesson.title : ui("Course complete")}
           </h2>
           <p className="course-feature-copy mt-2 max-w-md text-sm leading-6">
             {doneCount === 0
               ? openingLine
               : nextLesson
-                ? `Pick up where you left off. ${doneCount} of ${lessons.length} lessons done.`
-                : "You've completed every lesson. Revisit any topic from the course material."}
+                ? uiFmt("Pick up where you left off. {done} of {total} lessons done.", { done: doneCount, total: lessons.length })
+                : ui("You've completed every lesson. Revisit any topic from the course material.")}
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export function CourseDashboardView({
           onClick={() => (nextLesson ? onOpenLesson(nextLesson.id) : onOpenReader())}
           type="button"
         >
-          {doneCount === 0 ? "Start learning" : nextLesson ? "Continue learning" : "Review course"}
+          {doneCount === 0 ? ui("Start learning") : nextLesson ? ui("Continue learning") : ui("Review course")}
           <ArrowRight className="h-4 w-4" />
         </button>
       </section>
@@ -91,7 +91,7 @@ export function CourseDashboardView({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("Browse lessons")}</p>
-            <p className="text-xs font-semibold text-[var(--text-3)]">{lessons.length} lessons across {new Set(lessons.map((l) => l.section)).size} sections</p>
+            <p className="text-xs font-semibold text-[var(--text-3)]">{uiFmt("{n} lessons across {s} sections", { n: lessons.length, s: new Set(lessons.map((l) => l.section)).size })}</p>
           </div>
           <ArrowRight className="h-4 w-4 text-[var(--text-3)]" />
         </button>
