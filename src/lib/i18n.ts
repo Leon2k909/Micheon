@@ -2022,6 +2022,7 @@ const DE: Record<string, string> = {
   "Choose a coin pack for profile pins and future shop rewards.": "Wähle ein Münzpaket für Profil-Pins und künftige Shop-Belohnungen.",
   "Choose pets, adjust coaching, and set how flashcards flip.": "Tiere auswählen, Coaching anpassen und einstellen, wie Karteikarten umdrehen.",
   // ── The sidebar's folding sections ──
+  "Fold away": "Zur Seite klappen",
   "Language learning": "Sprachen lernen",
   "Change the language you are learning": "Lernsprache ändern",
   // From the long-list controls that arrived in 1.2.410.

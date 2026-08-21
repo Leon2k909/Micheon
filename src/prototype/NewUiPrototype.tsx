@@ -9,6 +9,7 @@ import {
   CheckCheck,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleUserRound,
   ClipboardCheck,
@@ -2325,13 +2326,21 @@ function ProgressPanel({
 
   return (
     <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${sections.panel ? " is-open" : " is-folded"}`}>
-      {/* The heading is the control, like the sidebar's section headings. */}
+      {/* The heading is the control. Folded, the panel closes sideways into
+          a rail at the edge of the column rather than collapsing downwards —
+          Michelle: "ich wollte das man es seitlich aufklappen kann nicht von
+          oben nach unten" — so the title turns with it and stays readable. */}
       <button
         aria-expanded={sections.panel}
+        aria-label={ui("Your progress")}
         className="np-progress-title"
         onClick={() => toggleSection("panel")}
+        title={sections.panel ? ui("Fold away") : ui("Your progress")}
         type="button"
       >
+        {sections.panel
+          ? <ChevronRight aria-hidden="true" className="np-side-chevron" />
+          : <ChevronLeft aria-hidden="true" className="np-side-chevron" />}
         <div>
           <h2>{ui("Your progress")}</h2>
           <p>
@@ -2343,7 +2352,6 @@ function ProgressPanel({
           </p>
         </div>
         <AchievementArt id="week" />
-        <ChevronDown aria-hidden="true" className="np-fold-chevron" />
       </button>
 
       {sections.panel && (

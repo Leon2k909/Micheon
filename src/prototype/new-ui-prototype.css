@@ -1693,6 +1693,17 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   padding: 0 24px 25px;
 }
 
+/* Folded, the progress column gives its width back to the page rather than
+   leaving a full-width card with nothing in it. :has() puts the decision on
+   the grid without the panel having to tell React about its own container. */
+.np-content-grid:has(.np-progress-panel.is-folded) {
+  grid-template-columns: minmax(0, 1fr) 58px;
+}
+
+.np-right-rail {
+  min-width: 0;
+}
+
 .np-content-grid--wide {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -2232,21 +2243,61 @@ button.np-progress-title:focus-visible,
   transition: transform var(--np-motion-fast) ease;
 }
 
-/* Pointing down when the section is closed, up when it is open — the same
-   direction the sidebar's chevrons turn. */
-.np-progress-panel.is-folded .np-progress-title .np-fold-chevron,
+/* The blocks inside still open downwards, and their chevrons still say so. */
 .np-fold-chevron:not(.is-open) {
   transform: rotate(0deg);
 }
 
-.np-progress-panel.is-open > .np-progress-title .np-fold-chevron,
 .np-fold-chevron.is-open {
   transform: rotate(180deg);
 }
 
+/*
+ * Folded is a rail, not a stub.
+ *
+ * The panel used to collapse downwards and leave a wide, empty card sitting
+ * where the content had been. It closes to the side now: 58px of column with
+ * the heading turned on its side, so the thing you press to get it back says
+ * what it is.
+ */
 .np-progress-panel.is-folded {
   gap: 0;
+  padding: 14px 6px 18px;
+  overflow: hidden;
 }
+
+.np-progress-panel.is-folded .np-progress-title {
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+}
+
+.np-progress-panel.is-folded .np-progress-title h2 {
+  font-size: 15px;
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+/* The subtitle and the trophy have nowhere to go in 58px. */
+.np-progress-panel.is-folded .np-progress-title p,
+.np-progress-panel.is-folded .np-progress-title .np-achievement-art {
+  display: none;
+}
+
+/* Open, it points the way the panel will go — out to the right. Folded, it
+   points back at the page it will come out over. */
+.np-side-chevron {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  opacity: 0.55;
+  transform: rotate(0deg);
+  transition: transform var(--np-motion-fast) ease;
+}
+
+
 
 .np-section-heading h2,
 .np-list-heading h2,
@@ -4769,6 +4820,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   .np-stat-chip__art .np-reward-icon {
     width: 34px;
     height: 34px;
+  }
+
+  .np-content-grid:has(.np-progress-panel.is-folded) {
+    grid-template-columns: minmax(0, 1fr) 58px;
   }
 
   .np-content-grid {

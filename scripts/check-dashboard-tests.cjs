@@ -98,6 +98,27 @@ check(
   /<button\s+aria-expanded=\{sections\.achievements\}[\s\S]{0,400}<\/button>\s*\{standalone \?/.test(dashboard)
     && !/np-block-toggle[^>]*>[\s\S]{0,200}onClick=\{onViewAllAchievements\}/.test(dashboard)
 );
+// Sideways, not downwards. Michelle: "ich wollte das man es seitlich
+// aufklappen kann nicht von oben nach unten." Folded, the column hands its
+// width back to the page and keeps a 58px rail with the heading turned on its
+// side, so the thing you press to get it back still says what it is.
+const dashboardCss = fs.readFileSync(
+  path.join(root, "src/prototype/new-ui-prototype.css"),
+  "utf8"
+);
+check(
+  "folding it closes the column sideways rather than collapsing it downwards",
+  /\.np-content-grid:has\(\.np-progress-panel\.is-folded\) \{[^}]*grid-template-columns: minmax\(0, 1fr\) 58px/.test(dashboardCss)
+);
+check(
+  "the folded rail keeps its heading readable, turned on its side",
+  /\.np-progress-panel\.is-folded \.np-progress-title h2 \{[^}]*writing-mode: vertical-rl/.test(dashboardCss)
+);
+check(
+  "the arrow points the way the panel will move, by swapping icon rather than rotating one",
+  /sections\.panel[\s\S]{0,40}<ChevronRight[\s\S]{0,140}<ChevronLeft/.test(dashboard)
+);
+
 check(
   "how it was left is remembered, per profile",
   /saveScopedJson\(PROGRESS_SECTIONS_KEY, next, profile\)/.test(dashboard)
