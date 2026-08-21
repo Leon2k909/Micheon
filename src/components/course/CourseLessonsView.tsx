@@ -5,6 +5,8 @@ import type { Course } from "@/lib/courses";
 import { loadCourseProgress } from "@/lib/courses";
 import { CODE_BACKGROUND_LABEL, getCodeBackground, setCodeBackground, type CodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
+import { ui, uiFmt } from "@/lib/i18n";
+import { translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
 
 const BACKGROUND_OPTIONS: { key: CodeBackground; label: string; sub: string }[] = [
   { key: "python", label: "🐍 Python", sub: "Explanations compare C# to Python" },
@@ -31,6 +33,7 @@ export function CourseLessonsView({
   const lessons = course.lessons ?? [];
   const completed = new Set(loadCourseProgress(course.id, getAuthUser()));
   const [background, setBackgroundState] = useState<CodeBackground | null>(getCodeBackground);
+  const translationLanguage = useTranslationLanguage();
   const [pickingBackground, setPickingBackground] = useState(false);
   const isProgramming = course.kind === "programming";
   // Every lesson card carried a pair of code brackets, which is right for C#
@@ -52,6 +55,8 @@ export function CourseLessonsView({
   }
 
   const doneCount = lessons.filter((l) => completed.has(l.id)).length;
+  const tagline = taglineFor(course, background);
+  const taglineTranslated = translateCourseText(tagline, translationLanguage);
 
   return (
     <div className="space-y-4">
@@ -59,7 +64,13 @@ export function CourseLessonsView({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{course.name}</h1>
-            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">{taglineFor(course, background)}</p>
+            {/* The tagline is course content, not interface text, so it follows
+                the translation picker rather than the app language — same
+                choice, same behaviour as the cards inside a lesson. */}
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">{tagline}</p>
+            {taglineTranslated ? (
+              <p className="mt-1 max-w-2xl text-sm font-bold leading-6 text-[var(--accent)]">{taglineTranslated}</p>
+            ) : null}
             {isProgramming && background && !showPicker && (
               <button
                 type="button"
@@ -76,17 +87,17 @@ export function CourseLessonsView({
             onClick={onOpenReader}
             className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90"
           >
-            <BookOpen className="h-4 w-4" /> Read full course
+            <BookOpen className="h-4 w-4" /> {ui("Read full course")}
           </button>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-2 sm:max-w-xs">
           <div className="rounded-2xl bg-[var(--surface-2)] px-4 py-3">
             <p className="text-2xl font-black text-[var(--text-1)]">{lessons.length}</p>
-            <p className="text-[11px] font-bold text-[var(--text-3)]">lessons</p>
+            <p className="text-[11px] font-bold text-[var(--text-3)]">{ui("lessons")}</p>
           </div>
           <div className="rounded-2xl bg-[var(--surface-2)] px-4 py-3">
             <p className="text-2xl font-black text-[var(--text-1)]">{doneCount}</p>
-            <p className="text-[11px] font-bold text-[var(--text-3)]">completed</p>
+            <p className="text-[11px] font-bold text-[var(--text-3)]">{ui("completed")}</p>
           </div>
         </div>
       </section>
@@ -129,7 +140,14 @@ export function CourseLessonsView({
 
       {sections.map(([section, items]) => (
         <section key={section}>
-          <h2 className="mb-3 px-1 text-sm font-black uppercase tracking-wide text-[var(--text-3)]">{section}</h2>
+          <div className="mb-3 px-1">
+            <h2 className="text-sm font-black uppercase tracking-wide text-[var(--text-3)]">{section}</h2>
+            {translateCourseText(section, translationLanguage) && (
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)] opacity-80">
+                {translateCourseText(section, translationLanguage)}
+              </p>
+            )}
+          </div>
           <div className="grid gap-4 lg:grid-cols-3">
             {items.map((lesson) => {
               const done = completed.has(lesson.id);
@@ -147,7 +165,7 @@ export function CourseLessonsView({
                     </div>
                     {done ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success-bg)] px-2.5 py-1 text-[11px] font-black text-[var(--success-text)]">
-                        <Check className="h-3 w-3" /> Done
+                        <Check className="h-3 w-3" /> {ui("Done")}
                       </span>
                     ) : lesson.badge ? (
                       <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--text-1)]">
@@ -156,8 +174,13 @@ export function CourseLessonsView({
                     ) : null}
                   </div>
                   <h3 className="mt-5 text-lg font-black leading-tight tracking-tight text-[var(--text-1)]">{lesson.title}</h3>
+                  {translateCourseText(lesson.title, translationLanguage) && (
+                    <p className="mt-1 text-[13px] font-semibold leading-snug text-[var(--text-3)]">
+                      {translateCourseText(lesson.title, translationLanguage)}
+                    </p>
+                  )}
                   <div className="mt-4 flex items-center justify-between">
-                    <p className="text-[11px] font-semibold text-[var(--text-3)]">{lesson.blocks.length} sections</p>
+                    <p className="text-[11px] font-semibold text-[var(--text-3)]">{uiFmt("{n} sections", { n: lesson.blocks.length })}</p>
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#070707] text-white">
                       <ArrowRight className="h-4 w-4" />
                     </div>

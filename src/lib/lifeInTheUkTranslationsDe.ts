@@ -14,6 +14,41 @@
  * around them.
  */
 export const LIFE_IN_THE_UK_DE: Record<string, string> = {
+  // ── Lesson titles and chapter headings ──────────────────────────────────
+  // Shown under the English on the lesson cards, so you can find a topic by
+  // the German name without losing the English one you will meet in the exam.
+  // "Devolution" would otherwise translate to itself, which reads as a
+  // forgotten paste, so it carries the short explanation German needs anyway.
+  "Values and principles": "Werte und Grundsätze",
+  "What is the UK?": "Was ist das Vereinigte Königreich?",
+  "A long and illustrious history": "Eine lange und bedeutende Geschichte",
+  "Government, the law and your role": "Regierung, Recht und deine Rolle",
+  "A modern, thriving society": "Eine moderne, lebendige Gesellschaft",
+
+  "British Values & Principles": "Britische Werte und Grundsätze",
+  "The UK & Geography": "Das Vereinigte Königreich und seine Geografie",
+  "National Identity & Symbols": "Nationale Identität und Symbole",
+  "Early British History": "Frühe britische Geschichte",
+  "Medieval Britain": "Britannien im Mittelalter",
+  "The Tudors": "Die Tudors",
+  "Stuarts & Civil War": "Die Stuarts und der Bürgerkrieg",
+  "Britain 1700–1900": "Großbritannien 1700–1900",
+  "Britain 1900–Present": "Großbritannien 1900 bis heute",
+  "Important Dates & Timeline": "Wichtige Jahreszahlen und Zeitleiste",
+  "The Monarchy": "Die Monarchie",
+  "Government & Parliament": "Regierung und Parlament",
+  "Devolution": "Devolution: die Regionalparlamente",
+  "Law & Justice": "Recht und Justiz",
+  "Rights & Responsibilities": "Rechte und Pflichten",
+  "British Society & Culture": "Britische Gesellschaft und Kultur",
+  "Religion & Beliefs": "Religion und Glaube",
+  "British Traditions & Celebrations": "Britische Traditionen und Feste",
+  "Sports & Leisure": "Sport und Freizeit",
+  "Literature, Art & Music": "Literatur, Kunst und Musik",
+  "Science & Inventions": "Wissenschaft und Erfindungen",
+  "Famous British People": "Berühmte Britinnen und Briten",
+  "Education & Healthcare": "Bildung und Gesundheitswesen",
+
   // ── 1. British Values & Principles ──────────────────────────────────────
   "The fundamental principles": "Die Grundprinzipien",
   "Equality: the nine protected characteristics": "Gleichheit: die neun geschützten Merkmale",
@@ -1371,4 +1406,8 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "In one line: The values are a list you may be asked to complete or spot a gap in, and every right on it has a matching duty.":
     "In einem Satz: Die Werte sind eine Liste, die du vervollständigen oder in der du eine Lücke erkennen sollst – und zu jedem Recht gehört eine Pflicht.",
   "Now answer these": "Jetzt beantworte diese Fragen",
+
+  // ── Kurskopf ──
+  "History, government and traditions — everything the citizenship test asks.":
+    "Geschichte, Regierung und Traditionen – alles, was der Einbürgerungstest abfragt.",
 };

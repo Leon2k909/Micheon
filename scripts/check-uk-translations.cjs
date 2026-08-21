@@ -47,7 +47,16 @@ const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE } = compiled.exports;
 // and callouts are included because they are tappable too — the marker only
 // appears where a translation exists, so this is what "everything" means.
 const translatable = new Set();
+// The course header shows the tagline with its translation underneath, the
+// same way a card does, so it is a translatable source string too.
+if (lifeInTheUkCourse.tagline) translatable.add(lifeInTheUkCourse.tagline);
 for (const lesson of lifeInTheUkCourse.lessons ?? []) {
+  // The lesson card shows its title and its chapter heading with the German
+  // underneath, so both are translatable source strings in exactly the same
+  // sense as a card body. Without these two lines every title key would be
+  // reported as an orphan.
+  translatable.add(lesson.title);
+  translatable.add(lesson.section);
   for (const block of lesson.blocks ?? []) {
     if (block.type === "h3" || block.type === "p" || block.type === "callout") {
       translatable.add(block.text);
