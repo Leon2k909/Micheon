@@ -205,10 +205,21 @@ assert.ok(
 // ── the timeline ────────────────────────────────────────────────────────────
 const timeline = M.ukTimelineSorted();
 assert.ok(timeline.length >= 30, `only ${timeline.length} timeline events`);
+// A span sorts on the year it ENDED, so monotonicity is checked on the same
+// key the list is built with. Checking the start year instead would fail on
+// any range that opens before the single date in front of it — the Hundred
+// Years War (1337-1453) legitimately follows the Black Death (1348).
+const sortYear = (entry) => entry.endYear ?? entry.year;
 for (let index = 1; index < timeline.length; index += 1) {
   assert.ok(
-    timeline[index].year >= timeline[index - 1].year,
+    sortYear(timeline[index]) >= sortYear(timeline[index - 1]),
     `the timeline is out of order at ${timeline[index].title}`
+  );
+  // An end before its own start is a typo that would silently move the entry
+  // somewhere it does not belong, without anything looking broken.
+  assert.ok(
+    timeline[index].endYear === undefined || timeline[index].endYear >= timeline[index].year,
+    `${timeline[index].title} ends before it starts`
   );
 }
 const timelineIds = new Set();

@@ -32,6 +32,22 @@ export function UkTimelineView() {
     return era === "all" ? all : all.filter((entry) => entry.era === era);
   }, [era]);
 
+  // Showing everything, the eras get headings so the column can be scanned
+  // rather than read. Showing one era, the heading would repeat the filter
+  // button that is already highlighted, so it is left out.
+  const rows = useMemo(() => {
+    const out: Array<{ kind: "heading"; era: UkEra } | { kind: "event"; entry: (typeof events)[number] }> = [];
+    let current: UkEra | null = null;
+    for (const entry of events) {
+      if (era === "all" && entry.era !== current) {
+        out.push({ kind: "heading", era: entry.era });
+        current = entry.era;
+      }
+      out.push({ kind: "event", entry });
+    }
+    return out;
+  }, [events, era]);
+
   return (
     <div className="space-y-4">
       <section className="card p-5 sm:p-6">
@@ -76,7 +92,21 @@ export function UkTimelineView() {
         <div className="relative pl-8">
           <div className="absolute bottom-2 left-[13px] top-2 w-px bg-[var(--border-2)]" aria-hidden="true" />
           <ol className="space-y-2">
-            {events.map((entry) => {
+            {rows.map((row) => {
+              if (row.kind === "heading") {
+                return (
+                  <li className="relative pt-4 first:pt-0" key={`era-${row.era}`}>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-[26px] top-[26px] h-2 w-5 bg-[var(--surface)] first:top-[10px]"
+                    />
+                    <h3 className="px-1 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                      {ui(UK_ERA_LABELS[row.era])}
+                    </h3>
+                  </li>
+                );
+              }
+              const entry = row.entry;
               const open = openId === entry.id;
               return (
                 <li key={entry.id} className="relative">

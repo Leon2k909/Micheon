@@ -14,6 +14,16 @@
 export type UkTimelineEvent = {
   id: string;
   year: number;
+  /**
+   * The year a span ENDED, for events that cover one.
+   *
+   * The list sorts on this when it is present. A 70-year reign sorted by its
+   * first year lands where it began, which put Elizabeth II between the NHS
+   * and joining the EEC — reading down the line she appeared to be finished
+   * before Thatcher took office. Undefined for a single date, and for an open
+   * span like "1947 onwards" that has no end to sort by.
+   */
+  endYear?: number;
   displayYear: string;
   title: string;
   summary: string;
@@ -63,6 +73,20 @@ const event = (
   tags: string[],
   category = "History"
 ): UkTimelineEvent => ({ id, year, displayYear, era, title, summary, detail, tags, category });
+
+/** Same, for an event that covers a span of years and ends in a known one. */
+const span = (
+  id: string,
+  year: number,
+  endYear: number,
+  displayYear: string,
+  era: UkEra,
+  title: string,
+  summary: string,
+  detail: string,
+  tags: string[],
+  category = "History"
+): UkTimelineEvent => ({ id, year, endYear, displayYear, era, title, summary, detail, tags, category });
 
 export const UK_TIMELINE: UkTimelineEvent[] = [
   event("t-stonehenge", -3000, "c. 3000 BC", "prehistory", "Stonehenge is built",
@@ -117,7 +141,7 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "Robert the Bruce defeats the English.",
     "Scotland kept its independence for centuries more. The crowns were not joined until 1603, and the parliaments not until 1707.",
     ["Robert the Bruce", "Bannockburn", "Scotland", "1314"]),
-  event("t-hundred-years", 1337, "1337–1453", "medieval", "The Hundred Years War",
+  span("t-hundred-years", 1337, 1453, "1337–1453", "medieval", "The Hundred Years War",
     "England and France fight on and off for over a century.",
     "The best-remembered English victory is Agincourt in 1415, won by Henry V against far larger French numbers thanks largely to the longbow. The war ended in 1453 with England holding almost nothing in France.",
     ["Hundred Years War", "Agincourt", "Henry V", "France", "1415"]),
@@ -133,7 +157,7 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "Henry VIII makes himself head of the Church of England.",
     "The Pope refused to annul Henry's marriage, so Henry broke with Rome, declared himself head of the Church of England and dissolved the monasteries. The English Reformation was as much dynastic as religious. Henry had six wives: Catherine of Aragon, Anne Boleyn, Jane Seymour, Anne of Cleves, Catherine Howard and Catherine Parr.",
     ["Henry VIII", "Reformation", "Church of England", "Anne Boleyn", "Catherine of Aragon"]),
-  event("t-wales-union", 1536, "1536–1543", "tudor-stuart", "Wales is united with England",
+  span("t-wales-union", 1536, 1543, "1536–1543", "tudor-stuart", "Wales is united with England",
     "The Acts of Union give Wales seats in Parliament.",
     "Wales gained representation in the English Parliament, and English became the language of its courts. This is why Wales is not represented separately on the Union Flag.",
     ["Acts of Union", "Wales", "1536", "1543"]),
@@ -149,7 +173,7 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "Guy Fawkes is caught beneath the House of Lords.",
     "A group of Catholic conspirators tried to blow up Parliament and kill James I. Guy Fawkes was found guarding the explosives. The failure is still marked every 5 November with bonfires and fireworks.",
     ["Gunpowder Plot", "Guy Fawkes", "Bonfire Night", "1605"], "Society and culture"),
-  event("t-civil-war", 1642, "1642–1651", "tudor-stuart", "The English Civil War",
+  span("t-civil-war", 1642, 1651, "1642–1651", "tudor-stuart", "The English Civil War",
     "Parliament fights the king, and wins.",
     "Charles I believed he ruled by divine right and clashed with Parliament over money and religion. Cavaliers fought Roundheads; Parliament won. Charles I was executed in 1649, the only English king put to death by his own subjects, and Oliver Cromwell ruled as Lord Protector for eleven years.",
     ["English Civil War", "Charles I", "Oliver Cromwell", "Cavaliers", "Roundheads", "1649"]),
@@ -181,19 +205,19 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "The United Kingdom of Great Britain and Ireland is formed.",
     "Ireland was joined to Great Britain, and the country took the name it kept until 1922.",
     ["Act of Union", "Ireland", "1801"], "Government and the law"),
-  event("t-victoria", 1837, "1837–1901", "georgian-victorian", "The reign of Queen Victoria",
+  span("t-victoria", 1837, 1901, "1837–1901", "georgian-victorian", "The reign of Queen Victoria",
     "64 years, and the empire at its height.",
     "At its peak the British Empire covered around a quarter of the world's population. At home the century brought reform: laws limiting the hours women and children could work, the growth of trade unions, and Reform Acts widening the vote. Florence Nightingale transformed nursing during the Crimean War; Brunel built the railways; the Great Exhibition of 1851 displayed British industry in the Crystal Palace.",
     ["Queen Victoria", "British Empire", "Florence Nightingale", "Brunel", "Great Exhibition", "Crimean War", "1851"]),
-  event("t-famine", 1845, "1845–1852", "georgian-victorian", "The Irish famine",
+  span("t-famine", 1845, 1852, "1845–1852", "georgian-victorian", "The Irish famine",
     "About a million die and many more emigrate.",
     "Ireland's population fell sharply and the demand for Home Rule grew through the rest of the century.",
     ["Irish famine", "Ireland", "emigration"]),
-  event("t-ww1", 1914, "1914–1918", "modern", "The First World War",
+  span("t-ww1", 1914, 1918, "1914–1918", "modern", "The First World War",
     "Britain enters after Germany invades Belgium.",
     "More than a million British and Empire servicemen died. The Battle of the Somme in 1916 saw around 60,000 British casualties on its first day alone. The war is remembered every 11 November — Remembrance Day — with poppies and a two-minute silence at 11am.",
     ["First World War", "Somme", "Remembrance Day", "poppy", "1914", "1918"]),
-  event("t-suffrage", 1918, "1918 and 1928", "modern", "Votes for women",
+  span("t-suffrage", 1918, 1928, "1918 and 1928", "modern", "Votes for women",
     "Partial in 1918, equal in 1928.",
     "The suffragettes campaigned, and often went to prison, for the right to vote. In 1918 women over 30 who met a property qualification were enfranchised. It was 1928 before women could vote at 21 on the same terms as men. The two dates are a common test question.",
     ["suffrage", "suffragettes", "women's vote", "1918", "1928"], "Government and the law"),
@@ -201,7 +225,7 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "Ireland divides and the UK takes its present name.",
     "After a war of independence the Irish Free State became a separate country, while six counties in the north remained. The country became the United Kingdom of Great Britain and Northern Ireland.",
     ["Irish Free State", "Northern Ireland", "1922"], "What is the UK?"),
-  event("t-ww2", 1939, "1939–1945", "modern", "The Second World War",
+  span("t-ww2", 1939, 1945, "1939–1945", "modern", "The Second World War",
     "Britain declares war after Germany invades Poland.",
     "Winston Churchill became Prime Minister in 1940. Over 300,000 troops were evacuated from Dunkirk, many by small civilian boats. The RAF held off the German air force in the Battle of Britain, preventing invasion. Allied forces landed in Normandy on D-Day, 6 June 1944. Alan Turing and colleagues at Bletchley Park broke German codes, work now credited with shortening the war.",
     ["Second World War", "Winston Churchill", "Dunkirk", "Battle of Britain", "D-Day", "Alan Turing", "Bletchley Park", "1940", "1944"]),
@@ -229,15 +253,48 @@ export const UK_TIMELINE: UkTimelineEvent[] = [
     "Scotland, Wales and Northern Ireland get their own bodies.",
     "Following referendums, powers were transferred from Westminster to a Scottish Parliament, a Welsh Assembly (now the Senedd) and a Northern Ireland Assembly. Each controls devolved matters such as health and education; defence, foreign policy and immigration stay with the UK Parliament.",
     ["devolution", "Scottish Parliament", "Senedd", "Northern Ireland Assembly", "1999"], "Government and the law"),
-  event("t-elizabeth", 1952, "1952–2022", "modern", "The reign of Elizabeth II",
+  span("t-elizabeth", 1952, 2022, "1952–2022", "modern", "The reign of Elizabeth II",
     "The longest reign in British history.",
     "Elizabeth II reigned for 70 years, passing Queen Victoria's 64. She was succeeded by Charles III.",
     ["Elizabeth II", "Charles III", "1952", "2022"], "Government and the law"),
+  event("t-olympics", 2012, "2012", "modern", "London hosts the Olympic Games",
+    "The third time London has staged them.",
+    "London held the Olympic and Paralympic Games in 2012, having also hosted in 1908 and 1948 — more often than any other city. The Paralympic movement began in Britain, at Stoke Mandeville hospital in Buckinghamshire.",
+    ["Olympics", "Paralympics", "London", "2012", "Stoke Mandeville"], "Society and culture"),
+  event("t-scotland-referendum", 2014, "2014", "modern", "The Scottish independence referendum",
+    "Scotland votes to stay in the United Kingdom.",
+    "Voters in Scotland were asked whether Scotland should become an independent country. The answer was no, by 55% to 45%, on a turnout of about 85% — the highest recorded for any vote in Scotland.",
+    ["Scotland", "referendum", "independence", "2014"], "Government and the law"),
+  event("t-eu-referendum", 2016, "2016", "modern", "The referendum on EU membership",
+    "The UK votes to leave the European Union.",
+    "In June 2016 the UK voted by 52% to 48% to leave the European Union, which it had joined as the EEC in 1973. Leaving took nearly four more years to negotiate.",
+    ["European Union", "referendum", "Brexit", "2016"], "Government and the law"),
+  event("t-brexit", 2020, "2020", "modern", "The UK leaves the European Union",
+    "Membership formally ends on 31 January.",
+    "The UK left the EU on 31 January 2020, followed by a transition period that ran to the end of that year. Note the gap the test likes: the vote was 2016, the departure 2020.",
+    ["Brexit", "European Union", "2020", "31 January"], "Government and the law"),
+  event("t-charles", 2022, "2022", "modern", "Charles III becomes King",
+    "The throne passes on the death of Elizabeth II.",
+    "Elizabeth II died in September 2022 after 70 years, and Charles III succeeded her immediately — a monarch becomes monarch on the death of the last one, not at the coronation.",
+    ["Charles III", "Elizabeth II", "2022", "succession"], "Government and the law"),
+  event("t-coronation", 2023, "2023", "modern", "The coronation of Charles III",
+    "Crowned at Westminster Abbey in May.",
+    "Charles III was crowned at Westminster Abbey by the Archbishop of Canterbury in May 2023, eight months after becoming King. The ceremony confirms a reign that has already begun.",
+    ["coronation", "Westminster Abbey", "Charles III", "2023"], "Government and the law"),
 ];
 
-/** Chronological, which is the only order a timeline can be in. */
+/**
+ * Chronological, which is the only order a timeline can be in.
+ *
+ * A span sorts on the year it ended, so a long reign or a long war sits where
+ * it finished rather than where it started. Ties fall back to the start year,
+ * so 2022 (Charles III succeeds) follows 1952–2022 (the reign that ended that
+ * year) instead of ordering at random.
+ */
+const sortYear = (entry: UkTimelineEvent) => entry.endYear ?? entry.year;
+
 export function ukTimelineSorted(): UkTimelineEvent[] {
-  return [...UK_TIMELINE].sort((a, b) => a.year - b.year);
+  return [...UK_TIMELINE].sort((a, b) => sortYear(a) - sortYear(b) || a.year - b.year);
 }
 
 export function ukTimelineByEra(): { era: UkEra; label: string; events: UkTimelineEvent[] }[] {

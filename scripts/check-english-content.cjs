@@ -124,7 +124,7 @@ const definiteErrorPatterns = [
   // to make it read as a verb, which is right for 286 of the 288 seeds it
   // touched and wrong for exactly the two whose bank gloss already began with
   // a modal. The bank itself had both right all along.
-  ["an English modal given an infinitive 'to'", /to (?:should|may|can|must|shall|will|would|could|might|ought)/i],
+  ["an English modal given an infinitive 'to'", /\bto (?:should|may|can|must|shall|will|would|could|might|ought)\b/i],
   ["the legacy 'your seeing him' sentence", /I don't think your seeing him is good for you/i],
   ["a literal German hunger or thirst construction", /\bI (?:have|had) (?:hunger|thirst)\b/i],
   ["a German Bock phrase presented as English", /\bI (?:have|had) (?:null )?Bock\b/i],
