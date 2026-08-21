@@ -537,14 +537,11 @@
 .np-nav-group-items {
   display: grid;
   gap: 4px;
-  margin-left: 21px;
-  padding-left: 10px;
-  border-left: 1px solid var(--np-line);
 }
 
 .np-side-nav .np-nav-group-items button {
   min-height: 46px;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   gap: 10px;
   font-size: 15px;
 }
@@ -593,8 +590,8 @@
 }
 
 .np-sidebar.is-brand-compact .np-nav-group-items {
-  margin-left: 12px;
-  padding-left: 8px;
+  margin-left: 0;
+  padding-left: 0;
 }
 
 .np-sidebar.is-brand-compact .np-side-nav button {
@@ -638,8 +635,8 @@
    is the difference between a word fitting and not. The line down the left
    still says which heading these rows belong to. */
 .np-sidebar.is-brand-stacked .np-nav-group-items {
-  margin-left: 6px;
-  padding-left: 7px;
+  margin-left: 0;
+  padding-left: 0;
 }
 
 .np-sidebar.is-brand-stacked .np-side-nav button {
@@ -670,7 +667,7 @@
 
 .np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-items button {
   min-height: 46px;
-  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   gap: 9px;
   font-size: 15px;
 }

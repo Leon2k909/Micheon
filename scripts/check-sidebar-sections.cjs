@@ -224,14 +224,17 @@ assert.ok(
 
 // ── Beta folds too, and the way back stays at the foot ─────────────────────
 
-// It was a violet "Beta" pill until Michelle asked for "Extras" in the same
-// type as the other headings: the pill read as a warning label, not a place to
-// go. Both the badge class and its stylesheet rule went with it, so this pins
-// the absence — a reintroduced pill would put the sidebar back to two kinds of
+// It was a violet "Beta" pill, which read as a warning label rather than a
+// place to go. The pill is gone and the section is now set in the same type as
+// the headings above it — but by its own name: her brief calls the section
+// "Beta", her drawing shows "KATEGORIE BETA", and the one change she asked for
+// was to drop the word "Kategorie". Calling it "Extras" went further than that.
+// Both the badge class and its stylesheet rule stay gone, so this pins the
+// absence too — a reintroduced pill would put the rail back to two kinds of
 // heading without anything failing.
 assert.ok(
-  /<span>\{ui\("Extras"\)\}<\/span>/.test(shell),
-  "the section reads Extras, in the same heading type as the sections above it"
+  /<span>\{ui\("Beta"\)\}<\/span>/.test(shell),
+  "the section reads Beta, in the same heading type as the sections above it"
 );
 assert.ok(
   !/np-nav-section-badge/.test(shell) && !/np-nav-section-badge/.test(prototypeCss),
@@ -285,9 +288,17 @@ for (const columns of [
     `the rail needs "${columns}" — a bare 1fr is min-content wide, and a long label widens the sidebar instead of fitting it`
   );
 }
+// Her four crops hang nothing off the left: a section's rows sit flush under
+// its heading, their icons in the same column as the flag above them. The
+// guide line and indent here were my reasoning, not hers, and side by side
+// they were the thing that still looked unlike her drawing.
 assert.ok(
-  /\.np-nav-group-items \{[^}]*border-left/.test(css),
-  "the rows under a heading are hung off a line, so they read as belonging to it"
+  !/\.np-nav-group-items \{[^}]*border-left/.test(css),
+  "a section's rows sit flush under its heading — no rule hanging down the left"
+);
+assert.ok(
+  !/\.np-nav-group-items \{[^}]*margin-left:\s*[1-9]/.test(css),
+  "and they are not indented away from it"
 );
 assert.ok(
   /\.np-nav-group \+ \.np-nav-group \{[^}]*border-top/.test(css),

@@ -1028,7 +1028,7 @@ function Sidebar({
               type="button"
             >
               <span aria-hidden="true" />
-              <span>{ui("Extras")}</span>
+              <span>{ui("Beta")}</span>
               <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
             </button>
             {groups.beta && (

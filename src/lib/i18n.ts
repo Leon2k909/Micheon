@@ -2353,6 +2353,7 @@ const DE: Record<string, string> = {
   // both languages, but the key has to exist or check-german-interface
   // reports it as a string that would show in English.
   "Extras": "Extras",
+  "Beta": "Beta",
   "per month, preview price": "pro Monat, Vorschaupreis",
 
   "Not quite — the correct answer is highlighted above.":
