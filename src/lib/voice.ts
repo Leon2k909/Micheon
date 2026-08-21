@@ -20,12 +20,18 @@ import {
 import { firstSpokenAlternative } from "@/lib/spokenText";
 import { TTS_VOICE_EVENT, voiceForLang } from "@/lib/ttsVoice";
 
-type SeqItem = {
+export type SeqItem = {
   text: string;
   rate?: number;
   lang: string;
   /** Runs immediately before this clip starts, used for synced captions. */
   onStart?: () => void;
+  /** Silence to hold before this clip — the learner's turn to say it first. */
+  pauseBeforeMs?: number;
+  /** true while that silence is held, false when it ends. A held pause with
+   *  no sound and no sign of one looks like the player has died, so whoever
+   *  asked for it gets told when it starts and when it is over. */
+  onPause?: (holding: boolean) => void;
 };
 
 const DEFAULT_RATE = 0.88;
@@ -526,6 +532,27 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
   });
 }
 
+/**
+ * Wait, but let go the moment playback is cancelled.
+ *
+ * A plain sleep would keep the sequence alive for the whole gap after Pause,
+ * and the caller's "finished" handler runs when the sequence settles — so a
+ * paused card would advance itself several seconds later. Aborting resolves
+ * it immediately; the token check after it is what stops the next clip.
+ */
+function silence(ms: number, signal?: AbortSignal): Promise<void> {
+  if (!(ms > 0) || signal?.aborted) return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    signal?.addEventListener("abort", done, { once: true });
+  });
+}
+
 /** Speak several phrases back-to-back (e.g. German then French on the Listen step). No-op while muted. */
 export function ttsSequence(items: SeqItem[]): Promise<void> {
   if (!items.some((item) => getTtsAudioVolume(item.lang) > 0)) {
@@ -539,6 +566,14 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
   return (async () => {
     for (const item of items) {
       if (token !== playSeq) break;
+      // Only ahead of a clip that is going to be heard. Holding a five-second
+      // gap for a muted voice is just five seconds of nothing.
+      if (item.pauseBeforeMs && getTtsAudioVolume(item.lang) > 0) {
+        try { item.onPause?.(true); } catch { /* captions must never break audio */ }
+        await silence(item.pauseBeforeMs, fetchController.signal);
+        try { item.onPause?.(false); } catch { /* nor on the way out */ }
+        if (token !== playSeq) break;
+      }
       await playOne(item, token, fetchController.signal);
     }
   })().finally(() => {

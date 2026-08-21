@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SettingsCategory } from "@/components/SettingsCategory";
-import { ui, uiFmt } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -36,12 +36,14 @@ import {
 import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 import {
   buildListenQueue,
+  buildListenSpeechPlan,
   formatListenPetCaption,
   getListenBackgroundPlayback,
   getListenContentSource,
   getListenCurrentItemId,
   getListenEnglishRepeats,
   getListenGermanRepeats,
+  getListenLanguageGapMs,
   getListenLanguageOrder,
   getListenLoopItems,
   getListenLoopPasses,
@@ -57,6 +59,7 @@ import {
   setListenCurrentItemId,
   setListenEnglishRepeats,
   setListenGermanRepeats,
+  setListenLanguageGapMs,
   setListenLanguageOrder,
   setListenLoopItems,
   setListenLoopPasses,
@@ -73,7 +76,7 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
-import { stopTts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
+import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
 import {
@@ -347,6 +350,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
   const [languageOrder, setLanguageOrder] = useState(() => getListenLanguageOrder(learningDirection));
   const [nextCardDelayMs, setNextCardDelayMs] = useState(getListenNextCardDelayMs);
+  const [languageGapMs, setLanguageGapMs] = useState(getListenLanguageGapMs);
+  const [yourTurn, setYourTurn] = useState(false);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(getAudioSettings);
   const [graded, setGraded] = useState<"know" | "difficult" | null>(null);
   const [reviewPanel, setReviewPanel] = useState<"menu" | null>(null);
@@ -474,27 +479,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       });
     };
 
-    const germanSequence = Array.from(
-      { length: germanRepeats },
-      () => ({
-        text: item.de,
-        rate: 0.92,
-        lang: "de-DE",
-        onStart: () => mirrorOnPet(item.de, "de-DE"),
-      })
-    );
-    const englishSequence = Array.from(
-      { length: englishRepeats },
-      () => ({
-        text: item.en,
-        rate: 0.95,
-        lang: englishLang,
-        onStart: () => mirrorOnPet(item.en, "en-US"),
-      })
-    );
-    const sequence = languageOrder === "english-first"
-      ? [...englishSequence, ...germanSequence]
-      : [...germanSequence, ...englishSequence];
+    const sequence: SeqItem[] = buildListenSpeechPlan({
+      de: item.de,
+      en: item.en,
+      englishLang,
+      englishRepeats,
+      germanRepeats,
+      languageGapMs,
+      languageOrder,
+    }).map((clip) => ({
+      ...clip,
+      onStart: () => mirrorOnPet(clip.text, clip.side === "de" ? "de-DE" : "en-US"),
+      onPause: (holding: boolean) => setYourTurn(holding && runRef.current === run),
+    }));
     void ttsSequence(sequence).then(() => {
       window.removeEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
       if (runRef.current !== run) return;
@@ -512,9 +509,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     return () => {
       window.removeEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
       if (advanceTimer != null) window.clearTimeout(advanceTimer);
+      // Pausing during the gap must take the prompt down with it, or the card
+      // sits there telling a stopped player it is their turn.
+      setYourTurn(false);
       stopTts();
     };
-  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, nextCardDelayMs, item?.id, englishLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, englishLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -906,6 +906,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     return nextMs / 1000;
   };
 
+  const commitLanguageGapSeconds = (seconds: number) => {
+    const nextMs = setListenLanguageGapMs(seconds * 1000);
+    setLanguageGapMs(nextMs);
+    return nextMs / 1000;
+  };
+
   const chooseBackgroundPlayback = (enabled: boolean) => {
     setBackgroundPlayback(setListenBackgroundPlayback(enabled, profile));
   };
@@ -1025,6 +1031,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 ? uiFmt("English {en}×, then German {de}×", { de: germanRepeats, en: englishRepeats })
                 : uiFmt("German {de}×, then English {en}×", { de: germanRepeats, en: englishRepeats })}
             </span>
+            {languageGapMs > 0 && (
+              <>
+                <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
+                <span>{uiFmt("{seconds}s for you", { seconds: uiNumber(languageGapMs / 1000) })}</span>
+              </>
+            )}
             <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
             <span>{uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
           </div>
@@ -1041,6 +1053,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
           </p>
+          {yourTurn ? (
+            <p
+              aria-live="polite"
+              className="listen-your-turn"
+              data-testid="listen-your-turn"
+              style={{ "--gap-duration": `${languageGapMs}ms` } as React.CSSProperties}
+            >
+              {ui(languageOrder === "english-first"
+                ? "Your turn — say it in German"
+                : "Your turn — say it in English")}
+              <span aria-hidden="true" className="listen-your-turn__bar">
+                <span className="listen-your-turn__fill" />
+              </span>
+            </p>
+          ) : null}
           {item.kind === "word" && item.use ? (
             <p className="mx-auto mt-3 max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
               {item.use}
@@ -1465,6 +1492,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 suffix="×"
                 testId="listen-english-repeats"
                 value={englishRepeats}
+              />
+              <NumberSetting
+                label={ui("Pause between languages")}
+                max={30}
+                min={0}
+                note={ui(
+                  languageOrder === "english-first"
+                    ? "Your turn to say the German before it is spoken"
+                    : "Your turn to say the English before it is spoken"
+                )}
+                onCommit={commitLanguageGapSeconds}
+                step={0.5}
+                suffix={ui("sec")}
+                testId="listen-language-gap"
+                value={languageGapMs / 1000}
               />
             </div>
           </SettingsCategory>

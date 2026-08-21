@@ -62,6 +62,7 @@ const GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
 const ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
 const LANGUAGE_ORDER_KEY = "gl-listen-language-order";
 const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
+const LANGUAGE_GAP_KEY = "gl-listen-language-gap-ms";
 const LOOP_ITEMS_KEY = "gl-listen-loop-items";
 const LOOP_PASSES_KEY = "gl-listen-loop-passes";
 const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
@@ -77,11 +78,13 @@ const MAX_LANGUAGE_REPEATS = 10;
 const MAX_LOOP_ITEMS = 12;
 const MAX_LOOP_PASSES = 6;
 const MAX_NEXT_CARD_DELAY_MS = 30_000;
+const MAX_LANGUAGE_GAP_MS = 30_000;
 export const DEFAULT_GERMAN_REPEATS = 2;
 export const DEFAULT_ENGLISH_REPEATS = 1;
 export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
+export const DEFAULT_LANGUAGE_GAP_MS = 0;
 export type ListenContentSource = "sentences" | "words" | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest";
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
@@ -252,6 +255,84 @@ export function getListenNextCardDelayMs(): number {
 
 export function setListenNextCardDelayMs(delayMs: number): number {
   return storeIntegerSetting(NEXT_CARD_DELAY_KEY, delayMs, 0, MAX_NEXT_CARD_DELAY_MS);
+}
+
+/**
+ * Silence held where the card changes language.
+ *
+ * The next-card delay above is a pause AFTER both languages have finished, so
+ * it can only ever pace how fast cards arrive. It cannot open the gap that
+ * matters for speaking: hear the English, say the German yourself, then hear
+ * the German and find out whether you were right. Leon: "i need to be able to
+ * change the delay between eng and german". Without this, the answer arrives
+ * before there is time to attempt it, and Listen stays a listening exercise.
+ *
+ * It is held once per card, at the switch — not between repeats of the same
+ * language, which are there to be heard back-to-back. Zero by default, so
+ * playback is unchanged until somebody asks for a gap.
+ */
+export function getListenLanguageGapMs(): number {
+  return readIntegerSetting(LANGUAGE_GAP_KEY, DEFAULT_LANGUAGE_GAP_MS, 0, MAX_LANGUAGE_GAP_MS);
+}
+
+export function setListenLanguageGapMs(gapMs: number): number {
+  return storeIntegerSetting(LANGUAGE_GAP_KEY, gapMs, 0, MAX_LANGUAGE_GAP_MS);
+}
+
+/** One thing the player says, in order. `side` is which face of the card it is. */
+export type ListenSpeechClip = {
+  text: string;
+  rate: number;
+  lang: string;
+  side: "de" | "en";
+  /** Silence held before this clip. Set on exactly one clip per card. */
+  pauseBeforeMs?: number;
+};
+
+/**
+ * Everything a card says, in order, gap included.
+ *
+ * Lives here rather than inside the player so the rule that matters can be
+ * tested rather than described: the pause belongs at the ONE point where the
+ * card changes language. Built inline, the only thing a check could do was
+ * match the source text of the component and hope it meant what it looked
+ * like.
+ */
+export function buildListenSpeechPlan({
+  de,
+  en,
+  germanRepeats,
+  englishRepeats,
+  languageOrder,
+  englishLang,
+  languageGapMs,
+}: {
+  de: string;
+  en: string;
+  germanRepeats: number;
+  englishRepeats: number;
+  languageOrder: ListenLanguageOrder;
+  englishLang: string;
+  languageGapMs: number;
+}): ListenSpeechClip[] {
+  const german: ListenSpeechClip[] = Array.from(
+    { length: Math.max(0, germanRepeats) },
+    () => ({ text: de, rate: 0.92, lang: "de-DE", side: "de" as const })
+  );
+  const english: ListenSpeechClip[] = Array.from(
+    { length: Math.max(0, englishRepeats) },
+    () => ({ text: en, rate: 0.95, lang: englishLang, side: "en" as const })
+  );
+  const [first, second] = languageOrder === "english-first"
+    ? [english, german]
+    : [german, english];
+  // Repeats of one language are meant to run together — the pause is the
+  // learner's turn to answer, and there is only one place on a card where
+  // that is what the silence means.
+  if (languageGapMs > 0 && first.length > 0 && second.length > 0) {
+    second[0] = { ...second[0], pauseBeforeMs: languageGapMs };
+  }
+  return [...first, ...second];
 }
 
 /**

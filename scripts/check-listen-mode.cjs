@@ -44,9 +44,10 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
+      'export { ttsSequence, stopTts } from "./src/lib/voice.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
@@ -82,6 +83,8 @@ const {
   getListenLoopPasses, setListenLoopPasses,
   listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead,
   getListenNextCardDelayMs, setListenNextCardDelayMs,
+  getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan,
+  ttsSequence, stopTts, DEFAULT_LANGUAGE_GAP_MS,
   DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
   DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
   DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE,
@@ -561,6 +564,44 @@ check("each course keeps its own language and learning-loop repetition plan",
   && getListenLoopItems("learn-en") === 6
   && getListenLoopPasses("learn-en") === 4);
 check("the next-card delay is the learner's to change", getListenNextCardDelayMs() === 2500);
+
+// ── the gap between the two languages ───────────────────────────────────
+//
+// The next-card delay above pauses AFTER both languages have been spoken, so
+// it can only pace how fast cards arrive. Leon: "i need to be able to change
+// the delay between eng and german" — the silence he wants is inside a card,
+// where he can say the German himself before it tells him.
+stored.set("gl-listen-language-gap-ms", "3000");
+check("the gap between languages is the learner's to change",
+  DEFAULT_LANGUAGE_GAP_MS === 0 && getListenLanguageGapMs() === 3000);
+stored.set("gl-listen-language-gap-ms", "999999");
+check("a corrupt gap falls back to the documented default rather than stalling playback",
+  getListenLanguageGapMs() === 0);
+check("the gap writer clamps to safe limits",
+  setListenLanguageGapMs(99_000) === 30_000 && setListenLanguageGapMs(-5) === 0);
+
+const plan = (options) => buildListenSpeechPlan({
+  de: "das Haus", en: "the house", englishLang: "en-GB",
+  germanRepeats: 2, englishRepeats: 2, languageGapMs: 3000,
+  languageOrder: "english-first", ...options,
+});
+const gapsIn = (clips) => clips.map((clip, index) => [index, clip.pauseBeforeMs])
+  .filter(([, ms]) => ms != null);
+
+check("the gap is held once, where the card changes language",
+  JSON.stringify(gapsIn(plan({}))) === JSON.stringify([[2, 3000]])
+  && plan({})[2].side === "de");
+check("German first puts the same gap ahead of the English",
+  JSON.stringify(gapsIn(plan({ languageOrder: "german-first" }))) === JSON.stringify([[2, 3000]])
+  && plan({ languageOrder: "german-first" })[2].side === "en");
+check("repeats of one language stay back-to-back — the gap is not between them",
+  plan({ germanRepeats: 4, englishRepeats: 4 }).filter((clip) => clip.pauseBeforeMs).length === 1
+  && gapsIn(plan({ germanRepeats: 4, englishRepeats: 4 }))[0][0] === 4);
+check("a zero gap leaves the sequence exactly as it was",
+  plan({ languageGapMs: 0 }).every((clip) => clip.pauseBeforeMs === undefined));
+check("a card with only one language has no switch to pause at",
+  plan({ germanRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined)
+  && plan({ englishRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined));
 stored.set("gl-listen-german-repeats:learn-de", "99");
 stored.set("gl-listen-english-repeats:learn-de", "0");
 stored.set("gl-listen-language-order:learn-de", "invalid");
@@ -629,14 +670,17 @@ check("the Listen view stays mounted behind the catalogue gate across dashboard 
   && prototype.includes('learningDirection={learningEnglish() ? "learn-en" : "learn-de"}'));
 
 const view = read("src/components/listen/ListenView.tsx");
-check("the view schedules both languages in the learner-selected order", view.includes("ttsSequence(")
-  && view.includes('lang: "de-DE"')
-  && view.includes("englishLang")
-  && view.includes('languageOrder === "english-first"')
-  && view.includes("[...englishSequence, ...germanSequence]"));
-check("the view repeats German and English independently",
-  /Array\.from\(\s*\{ length: germanRepeats \}/.test(view)
-  && /Array\.from\(\s*\{ length: englishRepeats \}/.test(view));
+const sides = (options) => plan(options).map((clip) => clip.side).join(" ");
+check("both languages are scheduled in the learner-selected order",
+  view.includes("ttsSequence(")
+  && view.includes("buildListenSpeechPlan({")
+  && sides({}) === "en en de de"
+  && sides({ languageOrder: "german-first" }) === "de de en en"
+  && plan({}).some((clip) => clip.lang === "de-DE")
+  && plan({}).some((clip) => clip.lang === "en-GB"));
+check("German and English repeat independently",
+  sides({ germanRepeats: 3, englishRepeats: 1 }) === "en de de de"
+  && sides({ germanRepeats: 1, englishRepeats: 4 }) === "en en en en de");
 check("reviewed word cards explain important secondary meanings on screen",
   view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
 check("the playback plan, order switch, and typed repeat counts are visible",
@@ -659,6 +703,19 @@ check("Listen exposes real source and queue-order controls",
 check("the next-card delay is visible and drives auto-advance",
   view.includes('testId="listen-next-card-delay"')
   && view.includes("}, nextCardDelayMs);"));
+check("the language gap is a visible setting that reaches the player",
+  view.includes('testId="listen-language-gap"')
+  && view.includes("setListenLanguageGapMs(seconds * 1000)")
+  && view.includes("languageGapMs,")
+  && view.includes("buildListenSpeechPlan({"));
+// A silent gap and a dead player look identical. Whoever is holding the
+// silence has to say so, and stop saying so the moment playback is paused.
+check("the held gap says whose turn it is, and stops saying it when playback does",
+  view.includes('data-testid="listen-your-turn"')
+  && view.includes('"Your turn — say it in German"')
+  && view.includes('"Your turn — say it in English"')
+  && view.includes("onPause: (holding: boolean) => setYourTurn(holding && runRef.current === run)")
+  && /return \(\) => \{[\s\S]{0,400}setYourTurn\(false\);/.test(view));
 check("master, German, and English volume sliders are always in the Listen view",
   view.includes('testId="listen-master"')
   && view.includes('testId="listen-german"')
@@ -794,8 +851,6 @@ for (const key of [
   check(`the new UI string is translated: ${key.slice(0, 40)}…`, new RegExp(`"${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}": "`).test(i18n));
 }
 
-delete global.window;
-delete global.localStorage;
 
 // ── the page leads with the display face where the dashboard does ───────
 // Rounded lettering on the hero pair only (the language-tagged word and its
@@ -812,11 +867,62 @@ check(
     && /\.new-ui-prototype \.listen-view p\[lang\],\s*\.listen-view p\[lang\] \{\s*font-family: var\(--np-font-display/.test(css)
 );
 
-if (failures > 0) {
-  console.error(`\n${failures} listen-mode check(s) failed`);
-  process.exit(1);
-}
-console.log("\nListen mode stays passive: damped grades, honest queue, wired UI");
-// Modules loaded under the window polyfill may have armed timers; exit
-// explicitly so a green run doesn't idle until the CI step times out.
-process.exit(0);
+// ── the player really does hold the silence ─────────────────────────────
+//
+// Everything above proves the gap is asked for. This runs the REAL sequencer
+// and times it, because the two ways this can break are both invisible to a
+// plan: not waiting at all, and — worse — not letting go. A gap that outlived
+// Pause would advance the card seconds after the learner stopped it, which is
+// why the wait is abortable rather than a plain sleep.
+const elapsed = (from) => Date.now() - from;
+
+void (async () => {
+  const held = [];
+  const heldStart = Date.now();
+  await ttsSequence([
+    { text: "the house", lang: "en-GB" },
+    {
+      text: "das Haus",
+      lang: "de-DE",
+      pauseBeforeMs: 400,
+      onPause: (holding) => held.push([holding, elapsed(heldStart)]),
+    },
+  ]);
+  check("a gap in the sequence is actually waited out",
+    held.length === 2 && held[0][0] === true && held[1][0] === false
+    && held[1][1] - held[0][1] >= 380);
+
+  const cutStart = Date.now();
+  const running = ttsSequence([
+    { text: "the house", lang: "en-GB" },
+    { text: "das Haus", lang: "de-DE", pauseBeforeMs: 8000 },
+  ]);
+  setTimeout(stopTts, 200);
+  await running;
+  check("pausing during the gap releases it at once instead of advancing later",
+    elapsed(cutStart) < 2000);
+
+  // A gap ahead of a voice that has been muted is silence for nothing.
+  stored.set("gl-audio-settings-v1", JSON.stringify({
+    masterVolume: 1, germanVolume: 0, englishVolume: 1,
+  }));
+  const mutedStart = Date.now();
+  await ttsSequence([
+    { text: "the house", lang: "en-GB" },
+    { text: "das Haus", lang: "de-DE", pauseBeforeMs: 4000 },
+  ]);
+  check("no gap is held for a language that has been muted",
+    elapsed(mutedStart) < 1500);
+
+  delete global.window;
+  delete global.localStorage;
+
+  if (failures > 0) {
+    console.error(`\n${failures} listen-mode check(s) failed`);
+    process.exit(1);
+  }
+  console.log("\nListen mode stays passive: damped grades, honest queue, wired UI");
+  // Modules loaded under the window polyfill may have armed timers; exit
+  // explicitly so a green run doesn't idle until the CI step times out.
+  process.exit(0);
+})();
