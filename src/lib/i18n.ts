@@ -2002,6 +2002,12 @@ const DE: Record<string, string> = {
   "Choose pets, adjust coaching, and set how flashcards flip.": "Tiere auswählen, Coaching anpassen und einstellen, wie Karteikarten umdrehen.",
   // ── The sidebar's folding sections ──
   "Language learning": "Sprachen lernen",
+  "Change the language you are learning": "Lernsprache ändern",
+  // From the long-list controls that arrived in 1.2.410.
+  "Long lists": "Lange Listen",
+  "{count} shown": "{count} angezeigt",
+  "{shown} of {total}": "{shown} von {total}",
+  "{from}-{to} of {total}": "{from}–{to} von {total}",
   "Vocabulary library": "Wortschatz",
   "Your vocabulary library, on the profile page.": "Deine Wortschatz-Bibliothek auf der Profilseite.",
   "Not built yet.": "Gibt es noch nicht.",

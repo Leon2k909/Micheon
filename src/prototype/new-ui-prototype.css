@@ -505,6 +505,24 @@
   height: 30px;
 }
 
+.np-nav-flag.is-pressable {
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform var(--np-motion-fast) ease,
+    box-shadow var(--np-motion-fast) ease;
+}
+
+.np-nav-flag.is-pressable:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.np-nav-flag.is-pressable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .np-nav-group-chevron {
   width: 17px;
   height: 17px;

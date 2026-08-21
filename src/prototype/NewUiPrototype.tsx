@@ -99,6 +99,7 @@ import {
 } from "@/lib/courses";
 import { getCourse } from "@/lib/courseRegistry";
 import { FlagRoundel } from "@/components/course/FlagRoundel";
+import { learningFlagId } from "@/lib/learningFlag";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import { HIDDEN_NAV_EVENT, canHideNavItem, hideNavItem, loadHiddenNav, showAllNavItems, showNavItem } from "@/lib/navPreferences";
 import { isNavDrag, readNavDrag, startNavDrag, type NavDragOrigin } from "@/lib/navDrag";
@@ -257,14 +258,14 @@ type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
  * the destination it always did.
  */
 /**
- * The five rows under "Sprachen lernen", in the order Michelle listed them.
+ * The rows under "Sprachen lernen".
  *
- * Three are destinations the nav already had. Vocabulary is the tracker that
- * has always lived on the profile page — "Sätze" and "Wörter" — reached from
- * here rather than by scrolling to find it. Speaking has nothing behind it
- * yet: the row is shown because the section is incomplete without it, and it
- * says so rather than pretending, because inventing the feature is not what
- * was asked for.
+ * Three destinations the nav already had, and Speaking, which has nothing
+ * behind it yet: that row is shown because the section is incomplete without
+ * it, and says so rather than pretending, because inventing the feature is
+ * not what was asked for. Vocabulary was here for a while and Michelle asked
+ * for it back out — the tracker it pointed at is on the profile page, which
+ * is where it already lived.
  */
 type LanguageRow =
   | { kind: "nav"; id: PrototypeView }
@@ -276,7 +277,6 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "nav", id: "practice" },
   { kind: "nav", id: "listen" },
   { kind: "soon", icon: MessageCircleMore, label: "Speaking" },
-  { kind: "view", icon: Languages, label: "Vocabulary library", view: "profile" },
 ];
 
 const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
@@ -557,6 +557,7 @@ function Sidebar({
   onNavigate,
   onOpenUkSection,
   onPrefetch,
+  onSwitchCourse,
   onResize,
   profile,
   shopUnlocked,
@@ -573,6 +574,8 @@ function Sidebar({
   onNavigate: (view: PrototypeView) => void;
   /** Opens Life in the UK on one of its halves, the way search already does. */
   onOpenUkSection: (tab: UkTab) => void;
+  /** The course picker, opened by pressing the flag. */
+  onSwitchCourse: () => void;
   onPrefetch: (view: PrototypeView) => void;
   onResize: (width: number, persist?: boolean) => void;
   profile: UserProfile | null;
@@ -758,7 +761,27 @@ function Sidebar({
               onClick={() => toggleGroup("languages")}
               type="button"
             >
-              <span aria-hidden="true" className="np-nav-flag"><FlagRoundel id={courseFlagId} /></span>
+              {/* The flag is the language, so pressing it is where you change
+                  the language — a span with a button role, because a button
+                  inside a button is invalid and screen readers flatten it.
+                  It opens the course picker that already exists; nothing about
+                  choosing a course changed. */}
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={ui("Change the language you are learning")}
+                className="np-nav-flag is-pressable"
+                onClick={(event) => { event.stopPropagation(); onSwitchCourse(); }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onSwitchCourse();
+                }}
+                title={ui("Change the language you are learning")}
+              >
+                <FlagRoundel id={courseFlagId} />
+              </span>
               <span>{ui("Language learning")}</span>
               <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
             </button>
@@ -3645,12 +3668,13 @@ export default function NewUiPrototype({
         >
           <Sidebar
             activeView={activeView}
-            courseFlagId={activeCourseId}
+            courseFlagId={learningFlagId(activeCourseId)}
             createUnlocked={createUnlocked}
             learnPathUnlocked={learnPathUnlocked}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
             onOpenUkSection={(tab) => { setUkTab(tab); navigate("life-in-uk"); }}
+            onSwitchCourse={() => setCourseSwitcherOpen(true)}
             onPrefetch={prefetchView}
             onResize={resizeSidebar}
             profile={profile}

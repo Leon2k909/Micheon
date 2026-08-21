@@ -16,6 +16,8 @@
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
+const Module = require("module");
+const esbuild = require("esbuild");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8").split("\r\n").join("\n");
@@ -25,21 +27,18 @@ const i18n = read("src/lib/i18n.ts");
 
 // ── two folding sections, each with its own flag ───────────────────────────
 
-// The five rows Michelle listed, in her order. Three are destinations the nav
-// already had; Vocabulary reaches the tracker that has always been on the
-// profile page; Speaking has nothing behind it yet and says so rather than
-// being quietly left out of the section.
+// The rows Michelle asked for, in her order: three destinations the nav
+// already had, then Speaking, which has nothing behind it yet and says so
+// rather than being quietly left out of the section. Vocabulary was here for
+// a while and she asked for it back out — the tracker it opened is on the
+// profile page, which is where it already lived.
 const languageBlock = /const LANGUAGE_SECTION_ROWS: LanguageRow\[\] = \[([\s\S]*?)\n\];/.exec(shell)?.[1] ?? "";
 const languageOrder = [...languageBlock.matchAll(/kind: "(nav|view|soon)"[^\n]*?(?:id|label): "([^"]+)"/g)]
   .map((match) => match[2]);
 assert.deepStrictEqual(
   languageOrder,
-  ["learn", "practice", "listen", "Speaking", "Vocabulary library"],
-  "language learning lists lessons, practice, listening, speaking and vocabulary, in that order"
-);
-assert.ok(
-  /kind: "view", icon: Languages, label: "Vocabulary library", view: "profile"/.test(languageBlock),
-  "vocabulary opens the page the tracker already lives on rather than a new one"
+  ["learn", "practice", "listen", "Speaking"],
+  "language learning lists lessons, practice, listening and speaking, in that order"
 );
 assert.ok(
   /kind: "soon", icon: MessageCircleMore, label: "Speaking"/.test(languageBlock)
@@ -47,13 +46,108 @@ assert.ok(
   "speaking is shown as not built yet, not wired to something it is not"
 );
 assert.ok(
-  shell.includes(`<FlagRoundel id={courseFlagId} />`),
-  "the language section's flag comes from the course being learned"
+  /className="np-nav-flag is-pressable"[\s\S]{0,400}onSwitchCourse\(\)/.test(shell),
+  "pressing the flag opens the course picker rather than folding the section"
 );
 assert.ok(
-  /courseFlagId=\{activeCourseId\}/.test(shell),
-  "and courseFlagId is the active course — not the interface language, which is a separate setting"
+  /aria-label=\{ui\("Change the language you are learning"\)\}/.test(shell)
+    && /role="button"[\s\S]{0,200}np-nav-flag is-pressable/.test(shell),
+  "and it is reachable and named, not a secret hotspot on a decoration"
 );
+assert.ok(
+  /\.np-nav-flag\.is-pressable:hover/.test(css) && /\.np-nav-flag\.is-pressable:focus-visible/.test(css),
+  "a flag you can press has to look pressable"
+);
+assert.ok(
+  shell.includes(`<FlagRoundel id={courseFlagId} />`),
+  "the language section's flag comes from the language being learned"
+);
+assert.ok(
+  /courseFlagId=\{learningFlagId\(activeCourseId\)\}/.test(shell),
+  "and it goes through learningFlagId — the raw course id is the wrong answer for half the people using this"
+);
+
+// ── the rule itself, run ───────────────────────────────────────────────────
+//
+// German and English are one course served both ways round. Michelle and Leon
+// both have active-course "german"; she is learning English and he is learning
+// German, and the direction is the only thing that says so. Reading the course
+// id alone hands them the same flag, which is how Leon ended up looking at a
+// globe where his flag should be.
+{
+  const store = new Map();
+  const localStorageStub = {
+    getItem: (key) => (store.has(key) ? store.get(key) : null),
+    key: (index) => [...store.keys()][index] ?? null,
+    removeItem: (key) => void store.delete(key),
+    setItem: (key, value) => void store.set(key, String(value)),
+  };
+  Object.defineProperty(localStorageStub, "length", { get: () => store.size });
+  globalThis.window = {
+    addEventListener() {},
+    dispatchEvent() {},
+    localStorage: localStorageStub,
+    removeEventListener() {},
+  };
+  globalThis.localStorage = localStorageStub;
+  globalThis.navigator = { language: "de-DE", languages: ["de-DE"] };
+  globalThis.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init?.detail; } };
+  globalThis.fetch = async () => ({ json: async () => ({ items: {} }), ok: true });
+
+  const built = esbuild.buildSync({
+    stdin: {
+      contents: `export { learningFlagId } from "./src/lib/learningFlag.ts";
+export { hasFlagArt } from "./src/components/course/FlagRoundel.tsx";
+export { setLearningDirection } from "./src/lib/direction.ts";
+export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
+      resolveDir: root,
+      sourcefile: "learning-flag-check-entry.ts",
+    },
+    alias: { "@": path.join(root, "src") },
+    bundle: true,
+    format: "cjs",
+    jsx: "transform",
+    platform: "node",
+    target: "node20",
+    write: false,
+    logLevel: "silent",
+  });
+  const compiled = new Module("learning-flag-check", module);
+  compiled.filename = path.join(root, ".learning-flag-check.cjs");
+  compiled.paths = Module._nodeModulePaths(root);
+  compiled._compile(built.outputFiles[0].text, compiled.filename);
+  const { hasFlagArt, learningFlagId, setEnglishVariant, setLearningDirection } = compiled.exports;
+
+  // Every finished course has art, or the roundel falls through to a globe.
+  for (const id of ["german", "english-uk", "english-us", "spanish", "french"]) {
+    assert.ok(hasFlagArt(id), `"${id}" has no drawn flag, so its heading would show a globe`);
+  }
+
+  setEnglishVariant("british");
+  setLearningDirection("learn-de");
+  assert.strictEqual(learningFlagId("german"), "german", "Leon learns German from the German course");
+  assert.strictEqual(learningFlagId("english-uk"), "german", "...and still German if the pair is named the other way");
+
+  setLearningDirection("learn-en");
+  assert.strictEqual(learningFlagId("german"), "english-uk", "Michelle learns English from the same course");
+  setEnglishVariant("american");
+  assert.strictEqual(learningFlagId("german"), "english-us", "and the variant she chose is the flag she gets");
+  setEnglishVariant("british");
+
+  // A language course of its own names itself, whichever way the pair is set.
+  for (const direction of ["learn-de", "learn-en"]) {
+    setLearningDirection(direction);
+    assert.strictEqual(learningFlagId("spanish"), "spanish", "Spanish is Spanish either way");
+    assert.strictEqual(learningFlagId("french"), "french", "so is French");
+  }
+
+  // And the two courses that are not languages never reach the globe.
+  setLearningDirection("learn-en");
+  assert.strictEqual(learningFlagId("csharp"), "english-uk", "the programming course falls back to the language");
+  assert.strictEqual(learningFlagId("life-in-the-uk"), "english-uk", "so does the citizenship course");
+  setLearningDirection("learn-de");
+  assert.strictEqual(learningFlagId("csharp"), "german", "and it follows the direction when that changes");
+}
 assert.ok(
   shell.includes(`<FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />`)
     && /const COUNTRY_STUDIES_FLAG_ID = "english-uk"/.test(shell),
