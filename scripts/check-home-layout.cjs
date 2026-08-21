@@ -58,9 +58,18 @@ assert.ok(
   /className="np-home-banner-mascot"[^>]*src=\{heroImage\}/.test(shell),
   "the mascot is gone from the banner — she asked for it to stay in front of the skyline"
 );
+// The mask existed to feather away the rectangle of hillside that came with
+// him when the banner was cropped out of the landscape art. He is a cut-out
+// now, so there is no rectangle — and the mask would fade his ears and tail
+// instead. Pinned as an absence, because reintroducing it would quietly eat
+// his edges without anything failing.
 assert.ok(
-  /\.np-home-banner-mascot \{[\s\S]*?mask-image: radial-gradient/.test(css),
-  "the mascot needs its soft mask, or its grass sits on the skyline as a hard rectangle"
+  !/\.np-home-banner-mascot \{[\s\S]*?mask-image/.test(css),
+  "the mascot is a cut-out; a mask on it now only fades his own edges"
+);
+assert.ok(
+  /\.np-home-banner-mascot \{[\s\S]*?object-fit: contain/.test(css),
+  "contain, not cover — cover crops the cut-out and takes his tail off"
 );
 assert.ok(
   /\.np-home-banner-mascot \{[\s\S]*?height: 100%/.test(css),

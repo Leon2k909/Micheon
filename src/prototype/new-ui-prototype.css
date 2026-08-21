@@ -1771,6 +1771,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     );
 }
 
+/* The mascot is a cut-out now, so the panel behind him is the app's own.
+   This used to draw the whole landscape banner and crop it to him with
+   object-fit: cover, which brought a rectangle of hillside onto the panel; a
+   radial mask feathered that rectangle away. With nothing to hide, that mask
+   would only fade his ears and tail, so it is gone — and contain replaces
+   cover, or the crop cuts him off. */
 .np-home-banner-mascot {
   position: absolute;
   z-index: 2;
@@ -1778,10 +1784,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   bottom: 0;
   width: min(30%, 300px);
   height: 100%;
-  object-fit: cover;
-  object-position: 100% 58%;
-  -webkit-mask-image: radial-gradient(ellipse 64% 76% at 60% 52%, #000 56%, rgba(0, 0, 0, 0) 86%);
-  mask-image: radial-gradient(ellipse 64% 76% at 60% 52%, #000 56%, rgba(0, 0, 0, 0) 86%);
+  object-fit: contain;
+  object-position: 100% 100%;
   pointer-events: none;
 }
 
@@ -1879,13 +1883,51 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   );
 }
 
+/* The picture half. A min-height rather than letting the text decide, because
+   the text is short and the artwork was being cropped to a strip — Michelle:
+   "hier muss bitte alles weiter runter verschoben sein, sodass man mehr vom
+   bild sieht". The copy sits at the FOOT of it, so the top two thirds are the
+   picture and nothing else. */
+.np-home-choice-hero {
+  position: relative;
+  display: flex;
+  /* 430 measured, not guessed: the copy block is 268px tall, so this leaves
+     162px — 38% of the hero — as picture with nothing over it. At the 340px
+     first tried, only 48px showed and the change was barely visible. */
+  min-height: 430px;
+  flex-direction: column;
+  justify-content: flex-end;
+  isolation: isolate;
+}
+
 .np-home-choice-body {
   position: relative;
   z-index: 2;
   display: grid;
   gap: 12px;
-  align-content: start;
-  padding: 24px 22px 22px;
+  /* end, not start: the block is anchored to the bottom of the picture. */
+  align-content: end;
+  /* No padding-top. Anchored to the bottom, it was 24px of dead height that
+     ate into the visible picture for nothing. */
+  padding: 0 22px 22px;
+}
+
+/* Progress and Continue, below the picture on the plain card. They were over
+   the artwork and are the parts that need to be plainly readable rather than
+   atmospheric. */
+.np-home-choice-foot {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  padding: 16px 22px 22px;
+  background: var(--surface);
+}
+
+@media (max-width: 700px) {
+  .np-home-choice-hero {
+    min-height: 260px;
+  }
 }
 
 .np-home-choice-flag {

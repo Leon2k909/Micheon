@@ -140,7 +140,7 @@ import { hasLeonSocialPreview } from "@/lib/socialPreview";
 import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
-import heroImage from "./assets/micheon-hero-v3.webp";
+import heroImage from "./assets/micheon-monkey-v1.webp";
 /*
  * Michelle's own artwork for the home page, used exactly as supplied.
  *
@@ -1862,24 +1862,34 @@ function LanguageCard({
 
   return (
     <article className="np-home-choice np-home-choice--language">
-      <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
-      <div aria-hidden="true" className="np-home-choice-wash" />
-      <div className="np-home-choice-body">
-        <span aria-hidden="true" className="np-home-choice-flag np-home-choice-flag--globe"><Globe /></span>
-        <h2>{ui("Language learning")}</h2>
-        <p>{ui("Learn a new language step by step and build your skills.")}</p>
+      {/* Two halves, on Michelle's call: "gerne nur den absatz mit sprachen
+          lernen bis hin zu aktuelle sprache englisch im bild lassen aber tief
+          dahin und grundbausteine sowie weiterlernen etc alles unters bild".
+          The hero keeps the picture with the title and the language panel sunk
+          to its foot, so far more of the artwork is visible; progress and the
+          button sit below it on the plain card. */}
+      <div className="np-home-choice-hero">
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
+        <div aria-hidden="true" className="np-home-choice-wash" />
+        <div className="np-home-choice-body">
+          <span aria-hidden="true" className="np-home-choice-flag np-home-choice-flag--globe"><Globe /></span>
+          <h2>{ui("Language learning")}</h2>
+          <p>{ui("Learn a new language step by step and build your skills.")}</p>
 
-        <div className="np-home-choice-panel">
-          <small>{ui("Current language")}</small>
-          <span className="np-home-choice-value">
-            <FlagRoundel id={courseFlagId} />
-            <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
-            <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
-              {ui("Change")}
-            </button>
-          </span>
+          <div className="np-home-choice-panel">
+            <small>{ui("Current language")}</small>
+            <span className="np-home-choice-value">
+              <FlagRoundel id={courseFlagId} />
+              <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
+              <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
+                {ui("Change")}
+              </button>
+            </span>
+          </div>
         </div>
+      </div>
 
+      <div className="np-home-choice-foot">
         <div className="np-home-choice-panel np-home-choice-panel--progress">
           <small>{ui("Your progress")}</small>
           <div className="np-home-choice-row">
@@ -1919,24 +1929,31 @@ function CountryCard({ onOpen, onSwitchCountry, profile }: { onOpen: () => void;
 
   return (
     <article className="np-home-choice np-home-choice--country">
-      <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={homeCountryImage} />
-      <div aria-hidden="true" className="np-home-choice-wash" />
-      <div className="np-home-choice-body">
-        <span className="np-home-choice-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
-        <h2>{ui("Country studies")}</h2>
-        <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
+      {/* Same two halves as LanguageCard. The pair has to keep matching — they
+          are drawn as one choice with two sides, and splitting only one of them
+          would leave the row lopsided. */}
+      <div className="np-home-choice-hero">
+        <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={homeCountryImage} />
+        <div aria-hidden="true" className="np-home-choice-wash" />
+        <div className="np-home-choice-body">
+          <span className="np-home-choice-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
+          <h2>{ui("Country studies")}</h2>
+          <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
 
-        <div className="np-home-choice-panel">
-          <small>{ui("Selected country")}</small>
-          <span className="np-home-choice-value">
-            <FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />
-            <strong>{ui("United Kingdom")}</strong>
-            <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
-              {ui("Change")}
-            </button>
-          </span>
+          <div className="np-home-choice-panel">
+            <small>{ui("Selected country")}</small>
+            <span className="np-home-choice-value">
+              <FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />
+              <strong>{ui("United Kingdom")}</strong>
+              <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
+                {ui("Change")}
+              </button>
+            </span>
+          </div>
         </div>
+      </div>
 
+      <div className="np-home-choice-foot">
         <div className="np-home-choice-panel np-home-choice-panel--progress">
           <small>{ui("Your progress")}</small>
           <div className="np-home-choice-row">
