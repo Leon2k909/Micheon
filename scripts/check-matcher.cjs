@@ -492,6 +492,75 @@ for (const kind of ["words", "sentences"]) {
   assert.ok(!/Step \d/.test(html.replace(/<[^>]+>/g, " ")),
     "a fresh board already claims to be at a raised step");
 
+  // ── and exactly one menu when one is open ─────────────────────────────
+  //
+  // A closed board proves nothing about this. The menu is keyed on the PAIR,
+  // and a pair has two tiles — so with the open-state forced, an unguarded
+  // menu draws twice: once under the German word and once under its English
+  // tile, wherever the shuffle put it. That is what Leon saw, and the check
+  // above sailed past it because nothing was open.
+  //
+  // Forced by pinning the open test itself in a copy of the real source,
+  // which turns "is this pair's menu open" into "yes" for every tile that is
+  // allowed to draw one. Six means the side guard holds; twelve means it does
+  // not.
+  const openMenuFile = path.join(root, "src/components/matcher/__menu-open-check.tsx");
+  const original = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView.tsx"), "utf8")
+    .replace(/\r\n?/gu, "\n");
+  const pinned = original.replace("const menuOpen = menuFor === pair.id;", "const menuOpen = true;");
+  assert.notStrictEqual(pinned, original, "the menu's open test has been renamed or moved");
+  fs.writeFileSync(openMenuFile, pinned);
+  try {
+    const openBuild = esbuild.buildSync({
+      stdin: {
+        contents: [
+          'export { MatcherView } from "./src/components/matcher/__menu-open-check.tsx";',
+          'export { renderToStaticMarkup } from "react-dom/server";',
+          'export { createElement } from "react";',
+        ].join("\n"),
+        resolveDir: root,
+        sourcefile: "matcher-open-entry.tsx",
+        loader: "tsx",
+      },
+      alias: { "@": path.join(root, "src") },
+      bundle: true,
+      format: "cjs",
+      platform: "node",
+      target: "node20",
+      jsx: "automatic",
+      define: {
+        "import.meta.env.DEV": "false",
+        "import.meta.env.PROD": "true",
+        "import.meta.env.MODE": '"production"',
+      },
+      loader: { ".css": "empty", ".png": "dataurl", ".svg": "dataurl", ".json": "json" },
+      write: false,
+      logLevel: "silent",
+    });
+    const openModule = new Module("matcher-open-check", module);
+    openModule.filename = path.join(root, ".matcher-open-check.cjs");
+    openModule.paths = Module._nodeModulePaths(root);
+    openModule._compile(openBuild.outputFiles[0].text, openModule.filename);
+    const opened = openModule.exports.renderToStaticMarkup(
+      openModule.exports.createElement(openModule.exports.MatcherView, {
+        apiParts: parts, profile: null, onExit() {},
+      })
+    );
+    const menus = (opened.match(/class="matcher-tile-menu"/g) ?? []).length;
+    assert.strictEqual(menus, MATCHER_BOARD_SIZE,
+      `${menus} level menus drew for ${MATCHER_BOARD_SIZE} pairs — the menu is keyed on the `
+      + "pair but rendered per tile, so each one appears under the German word AND its English tile");
+    // And they hang off the German side, where the buttons that open them are.
+    const germanColumn = opened.slice(
+      opened.indexOf('data-testid="matcher-german"'),
+      opened.indexOf('data-testid="matcher-english"')
+    );
+    assert.strictEqual((germanColumn.match(/class="matcher-tile-menu"/g) ?? []).length, MATCHER_BOARD_SIZE,
+      "the level menus are not all in the German column, where the controls are");
+  } finally {
+    fs.rmSync(openMenuFile, { force: true });
+  }
+
   global.window = priorWindow;
   dom.window.close();
 }

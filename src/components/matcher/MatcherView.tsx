@@ -425,7 +425,11 @@ export function MatcherView({
           </span>
         )}
 
-        {menuOpen && !done && (
+        {/* German side only — the same as the buttons that open it. Without
+            this the menu is keyed on the PAIR, so opening it drew one under
+            the German tile and a second under the English tile for the same
+            pair, wherever the shuffle had put it. */}
+        {side === "de" && menuOpen && !done && (
           <div className="matcher-tile-menu" role="menu" aria-label={ui("Set level or put off")}>
             <strong>{ui("Set level")}</strong>
             {REVIEW_LEVELS.map((option) => (
