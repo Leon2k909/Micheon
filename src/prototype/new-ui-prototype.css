@@ -2189,6 +2189,65 @@ html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span
   gap: 20px;
 }
 
+button.np-progress-title {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.np-progress-title:hover h2,
+.np-block-toggle:hover strong {
+  color: var(--accent-ink, var(--np-green-dark));
+}
+
+button.np-progress-title:focus-visible,
+.np-block-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.np-block-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.np-fold-chevron {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  opacity: 0.55;
+  transform: rotate(180deg);
+  transition: transform var(--np-motion-fast) ease;
+}
+
+/* Pointing down when the section is closed, up when it is open — the same
+   direction the sidebar's chevrons turn. */
+.np-progress-panel.is-folded .np-progress-title .np-fold-chevron,
+.np-fold-chevron:not(.is-open) {
+  transform: rotate(0deg);
+}
+
+.np-progress-panel.is-open > .np-progress-title .np-fold-chevron,
+.np-fold-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.np-progress-panel.is-folded {
+  gap: 0;
+}
+
 .np-section-heading h2,
 .np-list-heading h2,
 .np-progress-title h2,

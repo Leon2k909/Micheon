@@ -73,6 +73,37 @@ check(
     && testsView.includes('setTestSearch("")')
 );
 
+// ── the progress panel folds ──────────────────────────────────────────────
+//
+// Michelle asked for it to work the way the sidebar's sections do: the whole
+// panel from its own heading, and the two blocks inside that have headings of
+// their own on their own. The trap is the achievements heading, which already
+// held a "View all" button — folding from it would have put a button inside a
+// button, which is invalid and which screen readers flatten.
+check(
+  "the panel folds from its own heading",
+  /aria-expanded=\{sections\.panel\}/.test(dashboard)
+    && /className="np-progress-title"/.test(dashboard)
+    && /\{sections\.panel && \(/.test(dashboard)
+);
+check(
+  "achievements and recently-completed fold on their own",
+  /aria-expanded=\{sections\.achievements\}/.test(dashboard)
+    && /aria-expanded=\{sections\.recent\}/.test(dashboard)
+    && /\{sections\.achievements && \(/.test(dashboard)
+    && /\{sections\.recent && recentSessions\.map/.test(dashboard)
+);
+check(
+  "the fold control and View all are siblings, not one inside the other",
+  /<button\s+aria-expanded=\{sections\.achievements\}[\s\S]{0,400}<\/button>\s*\{standalone \?/.test(dashboard)
+    && !/np-block-toggle[^>]*>[\s\S]{0,200}onClick=\{onViewAllAchievements\}/.test(dashboard)
+);
+check(
+  "how it was left is remembered, per profile",
+  /saveScopedJson\(PROGRESS_SECTIONS_KEY, next, profile\)/.test(dashboard)
+    && /stored\?\.panel !== false/.test(dashboard)
+);
+
 if (failures) {
   console.error(`\n${failures} dashboard/test-library regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

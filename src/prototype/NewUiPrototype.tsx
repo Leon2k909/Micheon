@@ -87,7 +87,7 @@ import {
 } from "@/lib/practiceRecall";
 
 import { getMasteredCount } from "@/lib/mastery";
-import { loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
+import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { getLevelInfo, MILESTONES, type GamificationStats } from "@/lib/gamificationProgress";
 import type { Blueprint, Part } from "@/lib/types";
@@ -305,6 +305,31 @@ const UK_SECTIONS: Array<{ icon: ComponentType<{ className?: string }>; label: s
 const COUNTRY_STUDIES_FLAG_ID = "english-uk";
 
 const NAV_GROUPS_KEY = "gl-nav-groups-v1";
+const PROGRESS_SECTIONS_KEY = "gl-progress-sections-v1";
+
+/**
+ * Which parts of "Dein Fortschritt" are folded open.
+ *
+ * Michelle asked for this panel to fold the way the sidebar's sections do.
+ * The whole thing collapses from its own heading, and the two blocks inside
+ * it that have headings of their own fold on their own as well, so a long
+ * right-hand column can be cut down to whichever part is being looked at.
+ * Everything starts open, which is how the panel looked before it folded.
+ */
+type ProgressSectionState = {
+  achievements: boolean;
+  panel: boolean;
+  recent: boolean;
+};
+
+function loadProgressSections(profile: UserProfile | null): ProgressSectionState {
+  const stored = loadScopedJson<Partial<ProgressSectionState>>(PROGRESS_SECTIONS_KEY, {}, profile);
+  return {
+    achievements: stored?.achievements !== false,
+    panel: stored?.panel !== false,
+    recent: stored?.recent !== false,
+  };
+}
 
 type NavGroupState = { country: boolean; languages: boolean };
 
@@ -2239,10 +2264,25 @@ function ProgressPanel({
   const nextTarget = nextAchievement?.target ?? 1;
   const nextProgressPercent = Math.round((nextProgress / nextTarget) * 100);
   const { cur, nxt, pct } = getLevelInfo(stats.totalXp);
+  const profile = getAuthUser();
+  const [sections, setSections] = useState<ProgressSectionState>(() => loadProgressSections(profile));
+  const toggleSection = (id: keyof ProgressSectionState) => {
+    setSections((current) => {
+      const next = { ...current, [id]: !current[id] };
+      saveScopedJson(PROGRESS_SECTIONS_KEY, next, profile);
+      return next;
+    });
+  };
 
   return (
-    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}`}>
-      <div className="np-progress-title">
+    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${sections.panel ? " is-open" : " is-folded"}`}>
+      {/* The heading is the control, like the sidebar's section headings. */}
+      <button
+        aria-expanded={sections.panel}
+        className="np-progress-title"
+        onClick={() => toggleSection("panel")}
+        type="button"
+      >
         <div>
           <h2>{ui("Your progress")}</h2>
           <p>
@@ -2254,7 +2294,11 @@ function ProgressPanel({
           </p>
         </div>
         <AchievementArt id="week" />
-      </div>
+        <ChevronDown aria-hidden="true" className="np-fold-chevron" />
+      </button>
+
+      {sections.panel && (
+        <>
 
       <div className="np-level-card">
         <span className="np-level-badge">L{cur.level}</span>
@@ -2275,19 +2319,31 @@ function ProgressPanel({
       </div>
 
       <div className="np-badges-block">
+        {/* Two sibling buttons, not one inside the other: the title folds the
+            block, "View all" opens the page. */}
         <div className="np-block-heading">
-          <strong>{ui("Achievements")}</strong>
+          <button
+            aria-expanded={sections.achievements}
+            className="np-block-toggle"
+            onClick={() => toggleSection("achievements")}
+            type="button"
+          >
+            <strong>{ui("Achievements")}</strong>
+            <ChevronDown aria-hidden="true" className={`np-fold-chevron${sections.achievements ? " is-open" : ""}`} />
+          </button>
           {standalone ? (
             <span className="np-achievement-count">{earnedAchievements} unlocked</span>
           ) : (
             <button onClick={onViewAllAchievements} type="button">{ui("View all")}</button>
           )}
         </div>
-        <div className={`np-badge-list${standalone ? " np-badge-list--expanded" : ""}`}>
-          {visibleAchievements.map((achievement) => (
-            <AchievementBadge achievement={achievement} key={achievement.id} standalone={standalone} stats={stats} />
-          ))}
-        </div>
+        {sections.achievements && (
+          <div className={`np-badge-list${standalone ? " np-badge-list--expanded" : ""}`}>
+            {visibleAchievements.map((achievement) => (
+              <AchievementBadge achievement={achievement} key={achievement.id} standalone={standalone} stats={stats} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="np-goal-card">
@@ -2302,8 +2358,18 @@ function ProgressPanel({
 
       {recentSessions.length > 0 && (
         <div className="np-completed-block">
-          <div className="np-block-heading"><strong>{ui("Recently completed")}</strong></div>
-          {recentSessions.map((session, index) => (
+          <div className="np-block-heading">
+            <button
+              aria-expanded={sections.recent}
+              className="np-block-toggle"
+              onClick={() => toggleSection("recent")}
+              type="button"
+            >
+              <strong>{ui("Recently completed")}</strong>
+              <ChevronDown aria-hidden="true" className={`np-fold-chevron${sections.recent ? " is-open" : ""}`} />
+            </button>
+          </div>
+          {sections.recent && recentSessions.map((session, index) => (
             <div className="np-completed-row" key={`${session.ts}-${index}`}>
               <CheckCircle2 />
               <span>
@@ -2314,6 +2380,8 @@ function ProgressPanel({
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
     </section>
   );
