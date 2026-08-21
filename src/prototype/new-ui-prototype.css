@@ -11339,3 +11339,37 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-action > button {
     display: none;
   }
 }
+
+
+/* ── where you are, marked the way she draws it ────────────────────────────
+   Not a filled pill but the word in the accent, with the icon to match. Set
+   last, and with every palette named, so a custom accent cannot leave one
+   combination still painting a background behind the row.
+   The marker class in this comment — np-side-nav-active-mark — exists only so
+   this block can be found again. */
+html .np-side-nav button.is-active,
+html[data-accent="custom"] .np-side-nav button.is-active,
+html[data-theme="dark"] .np-side-nav button.is-active,
+html[data-theme="dark"][data-accent="custom"] .np-side-nav button.is-active {
+  border-color: transparent;
+  color: var(--accent, var(--np-green-dark));
+  background: transparent;
+  box-shadow: none;
+}
+
+html .np-side-nav button.is-active .np-nav-visual,
+html[data-accent="custom"] .np-side-nav button.is-active .np-nav-visual,
+html[data-theme="dark"] .np-side-nav button.is-active .np-nav-visual,
+html[data-theme="dark"][data-accent="custom"] .np-side-nav button.is-active .np-nav-visual {
+  border-color: transparent;
+  color: var(--accent, var(--np-green-dark));
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Hover still has to register on the row that is already current, or the rail
+   feels dead under the pointer exactly where it is most used. */
+html .np-side-nav button.is-active:hover,
+html[data-theme="dark"] .np-side-nav button.is-active:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
