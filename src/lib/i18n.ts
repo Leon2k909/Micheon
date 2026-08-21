@@ -2337,6 +2337,10 @@ const DE: Record<string, string> = {
   "Explanations compare C# to Python": "Erklärungen vergleichen C# mit Python",
   "Explanations compare C# to JS": "Erklärungen vergleichen C# mit JS",
   "No comparisons — plain-English explanations": "Keine Vergleiche – Erklärungen in einfachem Englisch",
+  // The sidebar section that used to be a violet Beta pill. Same word in
+  // both languages, but the key has to exist or check-german-interface
+  // reports it as a string that would show in English.
+  "Extras": "Extras",
   "per month, preview price": "pro Monat, Vorschaupreis",
 
   "Not quite — the correct answer is highlighted above.":

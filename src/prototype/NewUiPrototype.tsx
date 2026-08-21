@@ -1013,20 +1013,22 @@ function Sidebar({
 
         {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
           <div className={`np-nav-group np-nav-group--beta${groups.beta ? " is-open" : ""}`}>
-            {/* The badge is the heading, and now the control as well. The
-                first brief said Beta should not fold "vorerst"; that was
-                lifted — "kannst du das auch als drop down menü machen?" — so
-                it folds like the two above it. It used to be labelled too,
-                and "KATEGORIE BETA" beside a BETA pill said it twice. */}
+            {/* A heading like the two above it. This used to be a violet
+                "Beta" pill, which made the newest section read as a warning
+                label rather than a place to go, and left it the only heading
+                in the sidebar that did not look like one. The empty first cell
+                keeps the label on the same left edge as the sections that do
+                carry a flag. The state key stays "beta" — it is stored per
+                profile, so renaming it would spring the fold back to its
+                default for anyone who had already set it. */}
             <button
               aria-expanded={groups.beta}
-              aria-label="Beta"
-              className={`np-nav-group-head np-nav-group-head--beta${!groups.beta && betaItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
+              className={`np-nav-group-head${!groups.beta && betaItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
               onClick={() => toggleGroup("beta")}
               type="button"
             >
-              <b className="np-nav-section-badge">Beta</b>
-              <span />
+              <span aria-hidden="true" />
+              <span>{ui("Extras")}</span>
               <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
             </button>
             {groups.beta && (

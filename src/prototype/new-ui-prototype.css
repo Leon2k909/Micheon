@@ -690,26 +690,13 @@
 
 /* Beta's heading is its badge: nothing else needs saying, and the rail is
    too narrow to say it twice. */
-.np-side-nav .np-nav-group-head--beta {
-  min-height: 46px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
+/* The section that used to be "Beta" now uses the ordinary group heading —
+   same grid, same left edge, same type as the sections above it. Its own rule
+   below stays: it separates the group, which is still wanted. */
 .np-nav-group--beta {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--np-line);
-}
-
-.np-nav-section-badge {
-  padding: 3px 8px;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--np-violet);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
 }
 
 /* The put-away drawer sits below a rule, on its own. */

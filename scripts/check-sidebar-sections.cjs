@@ -22,6 +22,7 @@ const esbuild = require("esbuild");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8").split("\r\n").join("\n");
 const shell = read("src/prototype/NewUiPrototype.tsx");
+const prototypeCss = read("src/prototype/new-ui-prototype.css");
 const css = read("src/prototype/new-ui-prototype.css");
 const i18n = read("src/lib/i18n.ts");
 
@@ -223,18 +224,26 @@ assert.ok(
 
 // ── Beta folds too, and the way back stays at the foot ─────────────────────
 
+// It was a violet "Beta" pill until Michelle asked for "Extras" in the same
+// type as the other headings: the pill read as a warning label, not a place to
+// go. Both the badge class and its stylesheet rule went with it, so this pins
+// the absence — a reintroduced pill would put the sidebar back to two kinds of
+// heading without anything failing.
 assert.ok(
-  /np-nav-section-badge">Beta</.test(shell) && !shell.includes("Beta category"),
-  "Beta is marked by its badge alone — a heading beside a BETA pill said it twice"
+  /<span>\{ui\("Extras"\)\}<\/span>/.test(shell),
+  "the section reads Extras, in the same heading type as the sections above it"
+);
+assert.ok(
+  !/np-nav-section-badge/.test(shell) && !/np-nav-section-badge/.test(prototypeCss),
+  "the violet section pill is gone from both the markup and the stylesheet"
 );
 // The first brief said Beta should not fold "vorerst". That was lifted —
 // "kannst du das auch als drop down menü machen?" — so all three sections
 // fold now, and the badge that marked the section is the control.
 assert.ok(
   /aria-expanded=\{groups\.beta\}/.test(shell)
-    && /np-nav-group-head--beta/.test(shell)
     && /\{groups\.beta && \(/.test(shell),
-  "Beta folds from its badge like the two sections above it"
+  "Extras folds from its heading like the two sections above it"
 );
 assert.ok(
   /stored\?\.beta !== false/.test(shell),
