@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume
 import { cn } from "@/lib/utils";
 import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
+import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import {
   loadGradeStore,
@@ -256,7 +257,15 @@ export function WordsTracker({ apiParts, user }: {
   const learnsEnglish = learningEnglish();
   const alphabetLanguage = learnsEnglish ? "en" : "de";
 
-  const catalog = useMemo(() => rankWordCatalog(buildWordCatalog(apiParts), null), [apiParts]);
+  // The catalogue depends on the learning style now: Conversation fronts the
+  // word people say, exam practice the word people write. Memoising on the
+  // parts alone left the tracker showing the other mode's faces until the
+  // screen was rebuilt.
+  const learningMode = useLearningMode();
+  const catalog = useMemo(
+    () => rankWordCatalog(buildWordCatalog(apiParts, learningMode), null),
+    [apiParts, learningMode]
+  );
   const commonRanks = useMemo(
     () => new Map(catalog.map((word, index) => [word.id, index])),
     [catalog]

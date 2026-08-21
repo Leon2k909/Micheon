@@ -17,9 +17,10 @@
  * "Prost!", "Genau!" — which are sentences by intent: things you say on
  * their own.
  */
-import { frequencyRank } from "@/lib/wordFrequency";
+import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
+import { getLearningMode, type LearningMode } from "@/lib/learningMode";
 import { packMeta } from "@/lib/curriculum";
-import { corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
+import { corpusIgnores, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
@@ -113,7 +114,12 @@ const beatsExisting = (
  * Words without a gloss are skipped rather than guessed at — a flashcard whose
  * back is empty teaches nothing.
  */
-export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
+export function buildWordCatalog(
+  apiParts: Record<string, any>,
+  /** Conversation fronts the spoken word; exam practice keeps the written
+   *  one. Defaults to the live setting so existing callers are unchanged. */
+  mode: LearningMode = getLearningMode()
+): WordItem[] {
   const byLemma = new Map<string, WordItem>();
   const authoredGlosses = new Map<string, Set<string>>();
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
@@ -234,7 +240,7 @@ export function buildWordCatalog(apiParts: Record<string, any>): WordItem[] {
     ])].filter((id) => id && id !== existing.id);
     existing.listenSafe = Boolean(existing.listenSafe || word.listenSafe);
   }
-  return consolidateSynonymGroups(deduped);
+  return consolidateSynonymGroups(deduped, mode);
 }
 
 /** Every English alternative once, first spelling wins — the same join the visible-word dedup uses. */
@@ -262,7 +268,7 @@ const mergeEnglishAlternatives = (values: string[]): string => {
  * still decides when the meaning is first met; within the group, frequency
  * rank decides who fronts the card (curriculum order breaks ties).
  */
-function consolidateSynonymGroups(words: WordItem[]): WordItem[] {
+function consolidateSynonymGroups(words: WordItem[], mode: LearningMode): WordItem[] {
   const groupKeyFor = (word: WordItem): string | null => {
     const extra = extraSynonymGroupKey(word.lookup || word.de);
     if (extra) return extra;
@@ -292,10 +298,39 @@ function consolidateSynonymGroups(words: WordItem[]): WordItem[] {
   // from a tier-note pack (niche/casual — always labelled) must never front
   // a standard word it happens to tie with.
   const tierNoted = (word: WordItem): number => (packMeta(word.partKey).note ? 1 : 0);
+  /**
+   * Which same-meaning word fronts the card in Conversation mode.
+   *
+   * The frequency bank is built from written German, so it ranked der Ort
+   * above der Platz and put the written word on the face of a card whose own
+   * synonym line read "more common in speech". In Conversation mode that is
+   * backwards: the word people say is the word to learn, and speechPrefers
+   * already knows which that is.
+   *
+   * Only for a documented pair. Everywhere else the bank still decides —
+   * guessing which of two words sounds more spoken is exactly the kind of
+   * claim this file refuses to make.
+   *
+   * A SCORE rather than a comparison between two words, because a group can
+   * hold three. Unternehmen/Betrieb/Firma is one: speech prefers Firma over
+   * Unternehmen, the bank prefers Unternehmen over Betrieb and Betrieb over
+   * Firma, and a pairwise override turns that into a cycle the sort resolves
+   * arbitrarily. Asking each word once whether speech prefers it to anything
+   * else in ITS OWN group gives a real order.
+   */
+  const speechFavoured = (word: WordItem, members: WordItem[]): number => {
+    if (mode !== "conversation") return 1;
+    const name = word.lookup || word.de;
+    return members.some((other) => other !== word && speechPrefers(name, other.lookup || other.de))
+      ? 0
+      : 1;
+  };
   for (const indexes of groups.values()) {
     if (indexes.length < 2) continue;
+    const members = indexes.map((index) => words[index]);
     const ordered = [...indexes].sort((a, b) =>
-      frequencyRank(words[a].lookup || words[a].de) - frequencyRank(words[b].lookup || words[b].de)
+      speechFavoured(words[a], members) - speechFavoured(words[b], members)
+      || frequencyRank(words[a].lookup || words[a].de) - frequencyRank(words[b].lookup || words[b].de)
       || tierNoted(words[a]) - tierNoted(words[b])
       || a - b
     );
@@ -392,12 +427,47 @@ function isCoreFunctionWord(word: string | undefined): boolean {
  * it do so here would have been marking its own homework: it scored 0.549
  * that way, predicting an answer it had been given.)
  */
-export function rankWordCatalog(catalog: WordItem[], corpusIndex: CorpusIndex | null = null): WordItem[] {
+/** How far back a word waits when our own conversation never uses it. */
+const UNSPOKEN_SETBACK = 600;
+
+export function rankWordCatalog(
+  catalog: WordItem[],
+  corpusIndex: CorpusIndex | null = null,
+  mode: LearningMode = getLearningMode()
+): WordItem[] {
+  /**
+   * Conversation mode ranks by what people SAY, not by what gets written.
+   *
+   * The frequency bank is corpus-ranked from written German — news and web
+   * text — so it put "entsprechend" at position 30 of the queue. Leon: "like
+   * surely this is not 30th as a priority", and "people need to be able to
+   * learn how to speak german, as quick as possible.. not write it".
+   *
+   * The evidence is already in the app: 12,689 hand-written CONVERSATIONAL
+   * sentences. entsprechend appears in none of them; sagen appears in 41 and
+   * was waiting behind it. A word this course never once puts in somebody's
+   * mouth is not what to learn first for speaking.
+   *
+   * A setback rather than exile, because absence is partly just coverage —
+   * 39% of ranked words are never said, and many are perfectly speakable
+   * words our sentences happen not to reach. Six hundred places is enough to
+   * let the words we DO say overtake it, and not enough to bury it.
+   *
+   * Function words are exempt: the corpus index drops them, so their zero
+   * means nothing at all.
+   */
+  const speakingRank = (word: WordItem, rank: number): number => {
+    if (mode !== "conversation" || !Number.isFinite(rank)) return rank;
+    const name = word.lookup || word.de;
+    if (corpusIgnores(name)) return rank;
+    return corpusUses(name, corpusIndex) > 0 ? rank : rank + UNSPOKEN_SETBACK;
+  };
+
   return [...catalog]
     .map((word, index) => ({
       word,
       index,
-      rank: frequencyRank(word.lookup || word.de),
+      rank: speakingRank(word, frequencyRank(word.lookup || word.de)),
       // A connector is core vocabulary whatever pack happens to teach it.
       // obwohl and nachdem are taught in a B1-B2 pack and are missing from
       // the 2,500-word frequency bank, so ordering by the pack's level alone

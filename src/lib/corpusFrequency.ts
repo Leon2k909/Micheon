@@ -125,6 +125,20 @@ function lemmaCandidates(key: string): string[] {
  * It is the finer signal: der Teller is said fifteen times across the course
  * and der Saal twice, and that is the difference between them.
  */
+/**
+ * Is this a word the corpus index deliberately ignores?
+ *
+ * The index drops function words, so "sein" and "nicht" count zero however
+ * often the course says them. Anything reading a zero as "nobody says this"
+ * has to ask this first, or it would conclude that German does not use "und".
+ */
+export function corpusIgnores(word: string | undefined): boolean {
+  const key = String(word ?? "").toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim();
+  if (!key) return true;
+  if (key.length <= 2) return true;
+  return STOP.has(key);
+}
+
 export function corpusUses(word: string, index: CorpusIndex | null): number {
   if (!index) return 0;
   const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");

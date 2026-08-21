@@ -595,6 +595,35 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   };
 
   /**
+   * Arrow keys move through the queue.
+   *
+   * Leon: "should be able to use my arrow keys to move to another word". The
+   * buttons were the only way, which means a hand on the mouse for something
+   * you do every few seconds while listening.
+   *
+   * Left and right only, and only on the Listen screen. Up and down are left
+   * alone because they scroll the page, and a key pressed inside a text box
+   * or on a focused control belongs to that control — a right arrow in the
+   * volume slider should move the volume, not the queue.
+   */
+  useEffect(() => {
+    if (!active) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      // instanceof rather than a cast: a key event can arrive with the window
+      // itself as its target, and window has no closest() to call.
+      const target = event.target;
+      if (target instanceof Element
+        && target.closest("input, textarea, select, [contenteditable='true']")) return;
+      event.preventDefault();
+      step(event.key === "ArrowRight" ? 1 : -1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  /**
    * Dragging the background player.
    *
    * Pointer events rather than mouse events, so a touchscreen and a pen work

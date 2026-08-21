@@ -270,6 +270,28 @@ check("newest-first order serves the same material, nothing dropped",
 const shifts = commonWords
   .map((item, position) => Math.abs(position - (newestPositions.get(item.id) ?? position)))
   .sort((a, b) => a - b);
+// ── the arrow keys move through the queue ───────────────────────────────────
+// Leon: "should be able to use my arrow keys to move to another word". The
+// buttons were the only way, which means a hand on the mouse for something
+// done every few seconds while listening.
+{
+  const view = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+  check(
+    "left and right step through the queue",
+    view.includes('event.key !== "ArrowLeft" && event.key !== "ArrowRight"')
+      && view.includes('step(event.key === "ArrowRight" ? 1 : -1)')
+  );
+  check(
+    "a key inside a field belongs to the field, not the queue",
+    view.includes("input, textarea, select, [contenteditable=")
+  );
+  // A key event can arrive with the window as its target, and window has no
+  // closest() — casting instead of checking threw inside the handler, and the
+  // arrows silently did nothing at all.
+  check("the event target is checked, not cast", view.includes("target instanceof Element"));
+}
+
+
 check("newest-first is a different order, not most-common-first relabelled",
   buriedByCommon.length > 300
   && shifts[Math.floor(shifts.length / 2)] > commonWords.length * 0.15);

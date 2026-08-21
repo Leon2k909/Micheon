@@ -121,6 +121,12 @@ const parts = {
 };
 const catalog = buildWordCatalog(parts);
 const combined = catalog.filter((word) => (word.synonyms?.length ?? 0) > 0);
+// The same catalogue built for written practice, where the frequency bank
+// alone decides which word fronts a card. Conversation mode overrides it for
+// the pairs where speech and writing disagree, so the "most common first"
+// rules below — which mean the bank — are measured here.
+const examCatalog = buildWordCatalog(parts, "exam");
+const examCombined = examCatalog.filter((word) => (word.synonyms?.length ?? 0) > 0);
 
 // The fold is alive. If this floor ever fails, the consolidation died and the
 // tracker is full of duplicate meanings again.
@@ -140,7 +146,12 @@ for (const word of combined) {
 
 // Most common first: the face is at least as common as every synonym, and the
 // synonyms themselves are ordered most common first.
-for (const word of combined) {
+// Measured on the EXAM catalogue: "most common" here means the frequency
+// bank, and the bank is built from written German. Conversation mode
+// deliberately fronts the spoken word for the pairs where the two
+// disagree, so checking it against this rule would assert the override
+// does not work. The speech rule for that mode is at the end of the file.
+for (const word of examCombined) {
   const faceRank = frequencyRank(word.lookup || word.de);
   let previous = faceRank;
   for (const syn of word.synonyms) {
@@ -168,7 +179,7 @@ for (const group of KEEP_APART) {
 
 // The meaning side keeps every absorbed gloss as an accepted alternative, so
 // answering with a synonym's meaning stays right everywhere " / " is split.
-for (const word of combined) {
+for (const word of examCombined) {
   const alternatives = String(word.en).toLowerCase();
   for (const syn of word.synonyms) {
     const primary = String(syn.en).split(" / ")[0].split(",")[0].trim().toLowerCase();
@@ -228,7 +239,7 @@ check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = mat
   // a lie on that card and the fold itself would be picking the wrong word.
   const inverted = [];
   let comparable = 0;
-  for (const word of combined) {
+  for (const word of examCombined) {
     const face = frequencyRank(word.lookup || word.de);
     for (const syn of word.synonyms ?? []) {
       const other = frequencyRank(syn.lookup || syn.de);
@@ -293,11 +304,56 @@ check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = mat
   }
 }
 
+// ── conversation fronts the word people say ─────────────────────────────────
+//
+// Leon, looking at a card whose own synonym line read "der Platz (more common
+// in speech)": "im in conversation mode so Platz should have been the parent
+// word surely?" — yes. The frequency bank is written German, so it fronted
+// der Ort; SPOKEN_PREFERENCE has always known which word speech reaches for,
+// and in Conversation mode it now decides.
+{
+  const faceOf = (list) => {
+    const byMember = new Map();
+    for (const word of list) {
+      const face = word.lookup || word.de;
+      byMember.set(face, face);
+      for (const syn of word.synonyms ?? []) byMember.set(syn.lookup || syn.de, face);
+    }
+    return byMember;
+  };
+  const conversationFace = faceOf(catalog);
+  const examFace = faceOf(examCatalog);
+
+  // Every documented written/spoken pair, both ways round.
+  const pairs = [
+    ["Platz", "Ort"], ["Stelle", "Ort"], ["Firma", "Unternehmen"],
+    ["reden", "sprechen"], ["Zimmer", "Raum"], ["anfangen", "beginnen"],
+    ["probieren", "versuchen"], ["Job", "Beruf"], ["nötig", "notwendig"],
+    ["niedrig", "gering"], ["klar", "deutlich"], ["komplett", "gesamt"],
+  ];
+  // The rule is that the WRITTEN word must not front the card, rather than
+  // that one named spoken word must. der Ort has two spoken partners — der
+  // Platz and die Stelle — and they share a group, so only one of them can be
+  // the face. Either is right; der Ort is not.
+  for (const [spoken, written] of pairs) {
+    const face = conversationFace.get(spoken);
+    if (!face) continue;
+    check(face !== written,
+      `Conversation mode still fronts the written word "${written}" over "${spoken}"`);
+    const examOwner = examFace.get(written);
+    if (examOwner) {
+      check(examOwner === written,
+        `Exam practice should keep the written word "${written}" on the face, not "${examOwner}"`);
+    }
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-synonym-cards");
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
+
 console.log(
   `check-synonym-cards: ${combined.length} combined cards, most common word first, ` +
   "keep-apart words separate, progress ids preserved, all surfaces rendering, " +

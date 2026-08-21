@@ -125,6 +125,43 @@ const SPOKEN_PREFERENCE: { written: string; spoken: string }[] = [
   { written: "gering", spoken: "niedrig" },
 ];
 
+/**
+ * Does everyday speech reach for this word where writing reaches for that one?
+ *
+ * The table above has always known — it is what puts "more common in speech"
+ * on the synonym line. It just was not allowed to decide anything: the card's
+ * face is chosen by the frequency bank, and that bank is built from WRITTEN
+ * German, so der Ort fronted a card whose own note said Germans say der Platz.
+ *
+ * Leon: "im in conversation mode so Platz should have been the parent word
+ * surely?" — yes. In Conversation mode the word people say is the word to
+ * learn, and the written one waits behind it as the synonym.
+ */
+export function speechPrefers(
+  candidate: string | undefined,
+  over: string | undefined
+): boolean {
+  const spoken = bare(String(candidate ?? ""));
+  const written = bare(String(over ?? ""));
+  if (!spoken || !written) return false;
+  return SPOKEN_PREFERENCE.some((pair) =>
+    bare(pair.spoken) === spoken && bare(pair.written) === written);
+}
+
+/** Is this the spoken side of any documented written/spoken pair? */
+export function isSpokenForm(word: string | undefined): boolean {
+  const name = bare(String(word ?? ""));
+  if (!name) return false;
+  return SPOKEN_PREFERENCE.some((pair) => bare(pair.spoken) === name);
+}
+
+/** And the written side, which Conversation mode should hold back. */
+export function isWrittenForm(word: string | undefined): boolean {
+  const name = bare(String(word ?? ""));
+  if (!name) return false;
+  return SPOKEN_PREFERENCE.some((pair) => bare(pair.written) === name);
+}
+
 export function synonymCommonality(
   faceWord: string | undefined,
   synonymWord: string | undefined
