@@ -161,6 +161,84 @@ export function setMatcherCursor(
   return next;
 }
 
+/* ── the ones you got wrong ─────────────────────────────────────────────
+ *
+ * Leon: "add a button to match just the missed ones if i want to".
+ *
+ * Kept as ids rather than as pairs, and resolved against the live queue when
+ * it is time to deal them. A pair frozen at the moment of the miss would keep
+ * showing after the word had been graded away or its pack muted — the missed
+ * list is a pointer at the course, not a copy of it.
+ *
+ * Newest first, so the cap drops the oldest misses rather than the freshest.
+ */
+const MATCHER_MISSED_KEY = "gl-matcher-missed-v1";
+export const MATCHER_MISSED_LIMIT = 200;
+
+function missedStorageKey(kind: MatcherKind, direction: LearningDirection): string {
+  return `${MATCHER_MISSED_KEY}:${direction}:${kind}`;
+}
+
+export function getMatcherMissed(
+  kind: MatcherKind,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): string[] {
+  const stored = loadScopedJson<unknown>(missedStorageKey(kind, direction), null, profile);
+  if (!Array.isArray(stored)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of stored) {
+    if (typeof value !== "string" || !value || seen.has(value)) continue;
+    seen.add(value);
+    out.push(value);
+    if (out.length >= MATCHER_MISSED_LIMIT) break;
+  }
+  return out;
+}
+
+export function setMatcherMissed(
+  ids: string[],
+  kind: MatcherKind,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): string[] {
+  const seen = new Set<string>();
+  const next: string[] = [];
+  for (const id of ids) {
+    if (typeof id !== "string" || !id || seen.has(id)) continue;
+    seen.add(id);
+    next.push(id);
+    if (next.length >= MATCHER_MISSED_LIMIT) break;
+  }
+  saveScopedJson(missedStorageKey(kind, direction), next, profile);
+  return next;
+}
+
+/** Add a miss to the front of the list, without letting it grow for ever. */
+export function rememberMiss(ids: string[], id: string): string[] {
+  if (!id) return ids;
+  return [id, ...ids.filter((entry) => entry !== id)].slice(0, MATCHER_MISSED_LIMIT);
+}
+
+/**
+ * The missed ids that are still real, as pairs, in the order they were missed.
+ *
+ * Anything the course has since dropped — graded to a level that is not due,
+ * muted, retired — quietly falls out here rather than being dealt as a card
+ * that no longer belongs to the queue it came from.
+ */
+export function matcherMissedPairs(queue: MatcherPair[], ids: string[]): MatcherPair[] {
+  if (queue.length === 0 || ids.length === 0) return [];
+  const byId = new Map(queue.map((pair) => [pair.id, pair]));
+  const out: MatcherPair[] = [];
+  for (const id of ids) {
+    const pair = byId.get(id);
+    if (pair) out.push(pair);
+  }
+  return out;
+}
+
 /** Where in THIS queue the stored cursor lands. */
 export function matcherResumeFrom(queue: MatcherPair[], cursor: MatcherCursor): number {
   if (queue.length === 0) return 0;

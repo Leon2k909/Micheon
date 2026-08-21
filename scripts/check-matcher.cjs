@@ -28,7 +28,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss, getMatcherCursor, setMatcherCursor, matcherResumeFrom, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP } from "./src/lib/matcher.ts";',
+      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss, getMatcherCursor, setMatcherCursor, matcherResumeFrom, getMatcherMissed, setMatcherMissed, rememberMiss, matcherMissedPairs, MATCHER_MISSED_LIMIT, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP } from "./src/lib/matcher.ts";',
       'export { matchingVisibleKey } from "./src/lib/germanTextMatch.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -65,6 +65,7 @@ const {
   allPartBlueprints, buildApiPartFromResolved,
   buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss,
   getMatcherCursor, setMatcherCursor, matcherResumeFrom,
+  getMatcherMissed, setMatcherMissed, rememberMiss, matcherMissedPairs, MATCHER_MISSED_LIMIT,
   MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP,
   matchingVisibleKey,
 } = compiled.exports;
@@ -335,6 +336,78 @@ for (const kind of ["words", "sentences"]) {
     "there is no way back to the front of the list once you are deep in it");
 }
 
+// ── redoing just the ones you got wrong ─────────────────────────────────
+// Leon: "add a button to match just the missed ones if i want to".
+{
+  const queue = buildMatcherQueue(parts, "words", null);
+  const sample = buildMatcherBoard(queue, 200).pairs;
+
+  // Newest first, deduped, and capped — a list that grows for ever is a list
+  // nobody ever clears.
+  let list = [];
+  for (const pair of sample) list = rememberMiss(list, pair.id);
+  assert.strictEqual(list[0], sample[sample.length - 1].id, "the newest miss is not at the front");
+  assert.strictEqual(list.length, sample.length, "a miss was dropped or duplicated");
+  list = rememberMiss(list, sample[0].id);
+  assert.strictEqual(list[0], sample[0].id, "missing the same pair again does not move it up");
+  assert.strictEqual(list.length, sample.length, "missing the same pair twice records it twice");
+
+  let long = [];
+  for (let i = 0; i < MATCHER_MISSED_LIMIT + 50; i += 1) long = rememberMiss(long, `id-${i}`);
+  assert.strictEqual(long.length, MATCHER_MISSED_LIMIT, "the missed list grows without limit");
+  assert.strictEqual(long[0], `id-${MATCHER_MISSED_LIMIT + 49}`, "the cap dropped the newest instead of the oldest");
+
+  // Ids resolve against the LIVE queue, in the order they were missed, and a
+  // pair the course has since dropped falls out rather than being dealt.
+  const ids = sample.map((pair) => pair.id);
+  const resolved = matcherMissedPairs(queue, ids);
+  assert.deepStrictEqual(resolved.map((pair) => pair.id), ids, "the missed pairs came back in the wrong order");
+  const withGhost = matcherMissedPairs(queue, ["not-a-real-id", ...ids]);
+  assert.deepStrictEqual(withGhost.map((pair) => pair.id), ids, "a missed id that has left the queue is still dealt");
+  assert.deepStrictEqual(matcherMissedPairs([], ids), [], "an empty queue still produces missed pairs");
+  assert.deepStrictEqual(matcherMissedPairs(queue, []), [], "an empty list still produces pairs");
+
+  // A missed board has to be dealable — and short lists must not come back
+  // empty, or the button would open onto nothing.
+  for (const size of [1, 2, 3, 6]) {
+    const few = matcherMissedPairs(queue, ids.slice(0, size));
+    const board = buildMatcherBoard(few, 0, MATCHER_BOARD_SIZE);
+    assert.ok(board.pairs.length > 0 && board.pairs.length <= size,
+      `a missed list of ${size} dealt ${board.pairs.length} cards`);
+    assert.ok(board.pairs.every((pair) => ids.includes(pair.id)),
+      "the missed round dealt something that was not missed");
+  }
+
+  // Storage round trip, and separate lists per queue.
+  setMatcherMissed(ids, "words", "learn-de", null);
+  assert.deepStrictEqual(getMatcherMissed("words", "learn-de", null), ids,
+    "the missed list did not survive storage");
+  assert.deepStrictEqual(getMatcherMissed("sentences", "learn-de", null), [],
+    "the words misses are answering for sentences too");
+  setMatcherMissed(["a", "a", "", "b"], "sentences", "learn-de", null);
+  assert.deepStrictEqual(getMatcherMissed("sentences", "learn-de", null), ["a", "b"],
+    "blank and duplicate ids are stored rather than cleaned");
+
+  // The view's side of it.
+  const view = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView.tsx"), "utf8");
+  assert.ok(view.includes('data-testid="matcher-review-missed"'),
+    "there is no button to redo the missed ones");
+  assert.ok(/setMissedIds\(\(current\) => rememberMiss\(rememberMiss\(current, id\), picked\.id\)\)/.test(view),
+    "a wrong guess records only one of the two cards involved");
+  assert.ok(/if \(reviewing\) setMissedIds\(\(current\) => current\.filter/.test(view),
+    "getting a missed pair right does not take it off the list");
+  assert.ok(!/if \(!reviewing\) setMissedIds\(\(current\) => current\.filter/.test(view),
+    "an ordinary correct match clears the list — after a miss the card stays "
+    + "put and is matched on the next press, so the list would never fill");
+  // The detour must not overwrite where you were in the course.
+  assert.ok(/if \(reviewing \|\| board\.pairs\.length === 0 \|\| queue\.length === 0\) return;/.test(view),
+    "reviewing the missed ones writes its board as the course cursor, losing your place");
+  assert.ok(/reviewing\s*\n?\s*\? buildMatcherBoard\(missedPairs, 0, MATCHER_BOARD_SIZE\)/.test(view),
+    "the missed round does not deal from the missed pairs");
+  assert.ok(/!reviewing && difficulty\.step > 0/.test(view),
+    "the missed round claims a difficulty step it is not running at");
+}
+
 // ── the controls have to be on the board, not just in the file ──────────
 // Everything above reads source. This renders the real component against the
 // real queue and looks at what comes out, because a control that is wired
@@ -427,7 +500,7 @@ console.log(
   `check-matcher: both queues ordered like the course, 40 boards each solvable `
   + `and advancing, the deal stable, the place kept across visits, matching still `
   + `unscored, the step rising and falling with the run of Know its, and every `
-  + `pair rendering its controls`
+  + `pair rendering its controls, with the missed ones redoable on their own`
 );
 // Writing a cursor schedules the shared-items sync, which outside a browser
 // fails and retries on a growing delay — it would keep the build waiting for

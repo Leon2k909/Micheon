@@ -8,10 +8,14 @@ import {
   buildMatcherQueue,
   dealColumns,
   getMatcherCursor,
+  getMatcherMissed,
   matcherDifficulty,
+  matcherMissedPairs,
   matcherResumeFrom,
   matcherStreakAfterMiss,
+  rememberMiss,
   setMatcherCursor,
+  setMatcherMissed,
   type MatcherKind,
   type MatcherPair,
 } from "@/lib/matcher";
@@ -124,12 +128,37 @@ export function MatcherView({
     if (lastKind.current === kind) return;
     lastKind.current = kind;
     setFrom(matcherResumeFrom(queue, getMatcherCursor(kind, direction, profile)));
+    // Each list keeps its own misses too, so load that list's rather than
+    // carrying the other one's across.
+    setMissedIds(getMatcherMissed(kind, direction, profile));
+    savedKind.current = kind;
   }, [kind, queue, direction, profile]);
 
+  /**
+   * The ones you got wrong, kept between visits.
+   *
+   * A pair leaves this list by being matched correctly IN the missed round,
+   * not by being matched at all — after a miss the card stays on the board and
+   * is almost always matched right on the next press, so counting that would
+   * empty the list before it was any use.
+   */
+  const [missedIds, setMissedIds] = useState<string[]>(
+    () => getMatcherMissed(kind, direction, profile)
+  );
+  const [reviewing, setReviewing] = useState(false);
+  const missedPairs = useMemo(
+    () => matcherMissedPairs(queue, missedIds),
+    [queue, missedIds]
+  );
+
   const difficulty = useMemo(() => matcherDifficulty(knownStreak), [knownStreak]);
+  // The missed round is a redo, not an escalation: normal board size, and it
+  // deals from the missed pairs rather than from the course queue.
   const board = useMemo(
-    () => buildMatcherBoard(queue, from, difficulty.boardSize),
-    [queue, from, difficulty.boardSize]
+    () => (reviewing
+      ? buildMatcherBoard(missedPairs, 0, MATCHER_BOARD_SIZE)
+      : buildMatcherBoard(queue, from, difficulty.boardSize)),
+    [reviewing, missedPairs, queue, from, difficulty.boardSize]
   );
   const columns = useMemo(() => dealColumns(board.pairs), [board.pairs]);
 
@@ -156,7 +185,9 @@ export function MatcherView({
    * is only the backstop for when the whole board has been graded away.
    */
   useEffect(() => {
-    if (board.pairs.length === 0 || queue.length === 0) return;
+    // Never while reviewing the missed ones: that board is a detour, and
+    // writing it as the cursor would lose the place in the course queue.
+    if (reviewing || board.pairs.length === 0 || queue.length === 0) return;
     const at = ((from % queue.length) + queue.length) % queue.length;
     setMatcherCursor(
       { ids: board.pairs.map((pair) => pair.id), approx: at },
@@ -164,16 +195,43 @@ export function MatcherView({
       direction,
       profile
     );
-  }, [board.pairs, from, queue.length, kind, direction, profile]);
+  }, [reviewing, board.pairs, from, queue.length, kind, direction, profile]);
+
+  // The missed list outlives the sitting, same as the place does.
+  const savedKind = useRef(kind);
+  useEffect(() => {
+    // Only write back to the list this state belongs to. On a kind switch the
+    // state is replaced in the same pass, and writing first would copy one
+    // list's misses over the other's.
+    if (savedKind.current !== kind) return;
+    setMatcherMissed(missedIds, kind, direction, profile);
+  }, [missedIds, kind, direction, profile]);
 
   const dealNext = useCallback(() => {
     setSolved(new Set());
     arm(null);
     setMenuFor(null);
+    if (reviewing) {
+      // The missed round has no queue to advance through — clearing a board
+      // shortens the list itself. When it runs out, say so and go back to the
+      // course rather than sitting on an empty board.
+      if (missedPairs.length === 0) {
+        setReviewing(false);
+        setNotice({ message: ui("That is the missed list cleared. Back to where you were.") });
+      }
+      return;
+    }
     // The difficulty step pushes further down the queue: past the most useful
     // items and into the rarer ones, which is what harder means here.
     setFrom(board.nextFrom + difficulty.skipAhead);
-  }, [arm, board.nextFrom, difficulty.skipAhead]);
+  }, [arm, board.nextFrom, difficulty.skipAhead, missedPairs.length, reviewing]);
+
+  const toggleReviewing = useCallback(() => {
+    setSolved(new Set());
+    setMenuFor(null);
+    arm(null);
+    setReviewing((current) => !current);
+  }, [arm]);
 
   // A cleared board is the point of the mode, so the next one arrives on its
   // own. The pause is long enough to see the last pair land.
@@ -230,6 +288,11 @@ export function MatcherView({
     if (picked.id === id) {
       setSolved((current) => new Set(current).add(id));
       setMatched((count) => count + 1);
+      // Getting it right in the missed round is what clears it. Getting it
+      // right in the ordinary round does not: after a miss the card stays put
+      // and is almost always matched on the very next press, so counting that
+      // would empty the list before it was any use.
+      if (reviewing) setMissedIds((current) => current.filter((entry) => entry !== id));
       arm(null);
       return;
     }
@@ -239,10 +302,13 @@ export function MatcherView({
     // where you stop breezing through, not to ratchet away from you.
     setMissed((count) => count + 1);
     setKnownStreak(matcherStreakAfterMiss);
+    // Both halves of a wrong guess go on the list: the card you meant and the
+    // card you hit. Either one is a pair you did not have.
+    setMissedIds((current) => rememberMiss(rememberMiss(current, id), picked.id));
     setWrong(id);
     arm(null);
     window.setTimeout(() => setWrong((current) => (current === id ? null : current)), 420);
-  }, [arm, board.pairs, solved, speak]);
+  }, [arm, board.pairs, reviewing, solved, speak]);
 
   /** Say you already have it: writes the same declaration the lesson's skip does. */
   const markKnown = useCallback((pair: MatcherPair, quiet = false) => {
@@ -427,6 +493,29 @@ export function MatcherView({
                 {ui(label)}
               </button>
             ))}
+            {/* Redo just the ones you got wrong. Disabled rather than hidden
+                when there are none, so it does not appear and vanish. */}
+            <button
+              type="button"
+              onClick={toggleReviewing}
+              disabled={!reviewing && missedPairs.length === 0}
+              aria-pressed={reviewing}
+              data-testid="matcher-review-missed"
+              className={cn(
+                "inline-flex h-8 items-center gap-1.5 rounded-xl border px-3 text-xs font-black transition-colors disabled:opacity-40",
+                reviewing
+                  ? "border-rose-500 bg-rose-500 text-white"
+                  : "border-rose-500/35 bg-rose-500/10 text-rose-700 hover:bg-rose-500/18 dark:text-rose-300"
+              )}
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              {/* "Redo 4 missed" rather than "Missed 4": the counter beside it
+                  is this sitting's, so a fresh visit would otherwise read
+                  "0 missed · Missed 4" and look like a contradiction. */}
+              {reviewing
+                ? ui("Back to the list")
+                : uiFmt("Redo {n} missed", { n: uiNumber(missedPairs.length) })}
+            </button>
             <button
               type="button"
               onClick={knowAll}
@@ -445,21 +534,31 @@ export function MatcherView({
             missed: uiNumber(missed),
           })}
           {" · "}
-          {/* Where you are, because "7,243 in the queue" alone reads like a
-              list you have never touched. */}
-          {uiFmt("at {at} of {n}", {
-            at: uiNumber(Math.min(position + 1, queue.length)),
-            n: uiNumber(queue.length),
-          })}
-          {position > 0 && (
+          {reviewing ? (
+            // The place in the course is not what you are looking at, so
+            // showing it here would be a lie about where you are.
+            <span className="font-black text-rose-600 dark:text-rose-400">
+              {uiFmt("redoing {n} you missed", { n: uiNumber(missedPairs.length) })}
+            </span>
+          ) : (
             <>
-              {" · "}
-              <button type="button" onClick={startOver} className="matcher-restart">
-                {ui("Start over")}
-              </button>
+              {/* Where you are, because "7,243 in the queue" alone reads like a
+                  list you have never touched. */}
+              {uiFmt("at {at} of {n}", {
+                at: uiNumber(Math.min(position + 1, queue.length)),
+                n: uiNumber(queue.length),
+              })}
+              {position > 0 && (
+                <>
+                  {" · "}
+                  <button type="button" onClick={startOver} className="matcher-restart">
+                    {ui("Start over")}
+                  </button>
+                </>
+              )}
             </>
           )}
-          {difficulty.step > 0 && (
+          {!reviewing && difficulty.step > 0 && (
             <>
               {" · "}
               <span className="font-black text-[var(--accent)]">
