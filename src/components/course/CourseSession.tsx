@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Code2, RotateCcw, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ui, uiFmt } from "@/lib/i18n";
 import { resolveLessonForBackground, type Course, type Lesson } from "@/lib/courses";
 import { getCodeBackground } from "@/lib/codeBackground";
 import { buildLessonSession, checkCode, type QuizStep, type SessionStep } from "@/lib/courseSession";
@@ -208,21 +209,21 @@ function CodeStepView({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-black text-[var(--text-1)]">{prompt}</p>
-          <p className="text-xs font-semibold text-[var(--text-3)]">Retype the reference below into the editor. You only need the code, not the explanation comments.</p>
+          <p className="text-xs font-semibold text-[var(--text-3)]">{ui("Retype the reference below into the editor. You only need the code, not the explanation comments.")}</p>
         </div>
       </div>
 
       {/* Reference (shown by default) */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">Reference — type this</span>
+          <span className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Reference — type this")}</span>
           <button
             type="button"
             onClick={() => setShowReference((v) => !v)}
             className="inline-flex items-center gap-1 text-[11px] font-black text-[var(--accent)] hover:underline"
           >
             {showReference ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            {showReference ? "Hide" : "Show"}
+            {showReference ? ui("Hide") : ui("Show")}
           </button>
         </div>
         {showReference ? (
@@ -231,7 +232,8 @@ function CodeStepView({
           </pre>
         ) : (
           <p className="text-xs font-semibold text-[var(--text-3)]">
-            Hidden — try from memory.{hintComments.length > 0 ? " Goal: " + hintComments.join("; ") : ""}
+            {ui("Hidden — try from memory.")}
+            {hintComments.length > 0 ? ` ${ui("Goal:")} ${hintComments.join("; ")}` : ""}
           </p>
         )}
       </div>
@@ -245,7 +247,7 @@ function CodeStepView({
           rows={Math.max(4, targetLines + 1)}
           state={checked ? (result.ok ? "ok" : "bad") : "idle"}
         />
-        <p className="text-right text-[10px] font-semibold text-[var(--text-3)]">Tab = indent · Ctrl+Enter = check</p>
+        <p className="text-right text-[10px] font-semibold text-[var(--text-3)]">{ui("Tab = indent · Ctrl+Enter = check")}</p>
 
         <AnimatePresence>
           {checked && (
@@ -259,16 +261,19 @@ function CodeStepView({
               )}
             >
               {result.ok
-                ? "Correct! Nicely done."
+                ? ui("Correct! Nicely done.")
                 : result.misplacedSemicolon
-                  ? "Nearly — the semicolon goes after the closing bracket: WriteLine(value); not WriteLine(value;)."
+                  ? ui("Nearly — the semicolon goes after the closing bracket: WriteLine(value); not WriteLine(value;).")
                   : result.caseMismatch
-                    ? "Nearly — check the capital letters. C# is case-sensitive, e.g. WriteLine needs a capital L."
+                    ? ui("Nearly — check the capital letters. C# is case-sensitive, e.g. WriteLine needs a capital L.")
                     : result.missingPunctuation
-                      ? "Nearly — you're missing a semicolon. C# needs it here."
+                      ? ui("Nearly — you're missing a semicolon. C# needs it here.")
                       : result.typoHint
-                        ? `Typo — you typed ${result.typoHint.typed}, but it should be ${result.typoHint.expected}.`
-                        : "Not quite — compare with the reference and try again."}
+                        ? uiFmt("Typo — you typed {typed}, but it should be {expected}.", {
+                          expected: result.typoHint.expected,
+                          typed: result.typoHint.typed,
+                        })
+                        : ui("Not quite — compare with the reference and try again.")}
             </motion.div>
           )}
         </AnimatePresence>
@@ -277,13 +282,13 @@ function CodeStepView({
           {checked && !result.ok ? (
             <>
               <button type="button" onClick={() => { onChange(""); setChecked(false); }} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-sm font-black text-[var(--text-2)] hover:bg-[var(--surface-2)]">
-                <RotateCcw className="h-4 w-4" /> Clear
+                <RotateCcw className="h-4 w-4" /> {ui("Clear")}
               </button>
               <button type="button" onClick={() => { setChecked(false); onChange(target); }} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-sm font-black text-[var(--text-1)] hover:bg-[var(--surface-3)]">
-                Fill answer
+                {ui("Fill answer")}
               </button>
               <button type="button" onClick={onPass} className="app-skip-button inline-flex h-12 flex-1 items-center justify-center rounded-2xl text-sm font-black">
-                Skip
+                {ui("Skip")}
               </button>
             </>
           ) : (
@@ -292,7 +297,7 @@ function CodeStepView({
               onClick={checked && result.ok ? onPass : handleCheck}
               className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
             >
-              {checked && result.ok ? <>Next <ArrowRight className="h-4 w-4" /></> : "Check"}
+              {checked && result.ok ? <>{ui("Next")} <ArrowRight className="h-4 w-4" /></> : ui("Check")}
             </button>
           )}
         </div>
@@ -311,7 +316,7 @@ function ConceptStepView({ blocks, onNext }: { blocks: SessionStep extends never
         onClick={onNext}
         className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white transition-opacity hover:opacity-90"
       >
-        Continue <ChevronRight className="h-4 w-4" />
+        {ui("Continue")} <ChevronRight className="h-4 w-4" />
       </button>
     </motion.div>
   );
@@ -363,7 +368,7 @@ function QuizStepView({ q, options, explanation, onNext, onAnswered }: { q: stri
       </div>
       {answered && !options[picked]?.correct && (
         <button type="button" onClick={onNext} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
-          Continue <ArrowRight className="h-4 w-4" />
+          {ui("Continue")} <ArrowRight className="h-4 w-4" />
         </button>
       )}
     </motion.div>
@@ -418,8 +423,8 @@ export function CourseSession({
             onClick={back}
             disabled={!canGoBack}
             className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Go back one step"
-            title="Back"
+            aria-label={ui("Go back one step")}
+            title={ui("Back")}
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -433,7 +438,7 @@ export function CourseSession({
         </div>
         <div className="flex-1">
           <div className="mb-1.5 flex justify-between text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            <span>Progress</span><span>{progress}%</span>
+            <span>{ui("Progress")}</span><span>{progress}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-2)]">
             <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${progress}%` }} />
@@ -444,7 +449,7 @@ export function CourseSession({
           onClick={onExit}
           className="flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
         >
-          <X className="h-4 w-4" /> Exit
+          <X className="h-4 w-4" /> {ui("Exit")}
         </button>
       </header>
 
@@ -485,11 +490,11 @@ export function CourseSession({
                   <Check className="h-8 w-8" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-black tracking-tight text-[var(--text-1)]">Lesson complete</h2>
-                  <p className="text-sm font-semibold text-[var(--text-3)]">You read the concepts and typed the code. Keep the momentum going.</p>
+                  <h2 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Lesson complete")}</h2>
+                  <p className="text-sm font-semibold text-[var(--text-3)]">{ui("You read the concepts and typed the code. Keep the momentum going.")}</p>
                 </div>
                 <button type="button" onClick={onComplete} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
-                  Finish <ArrowRight className="h-5 w-5" />
+                  {ui("Finish")} <ArrowRight className="h-5 w-5" />
                 </button>
               </motion.div>
             )}

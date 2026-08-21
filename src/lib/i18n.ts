@@ -2646,6 +2646,32 @@ const DE: Record<string, string> = {
   "Extra practice": "Zusätzliche Übung",
   "Swallow a German city. Everything you eat teaches you its name.":
     "Verschling eine deutsche Stadt. Alles, was du frisst, bringt dir seinen Namen bei.",
+  // ── The lesson session, shared by the programming courses and Life in the UK ──
+  // This component routed no copy through ui() at all, so its reference panel,
+  // its feedback lines and its header buttons went to the screen in English
+  // whatever the interface was set to.
+  "Retype the reference below into the editor. You only need the code, not the explanation comments.":
+    "Tipp die Vorlage unten im Editor ab. Du brauchst nur den Code, nicht die erklärenden Kommentare.",
+  "Reference — type this": "Vorlage — das hier abtippen",
+  "Hidden — try from memory.": "Versteckt — versuch es aus dem Gedächtnis.",
+  "Goal:": "Ziel:",
+  "Tab = indent · Ctrl+Enter = check": "Tab = einrücken · Strg+Enter = prüfen",
+  "Correct! Nicely done.": "Richtig! Gut gemacht.",
+  "Nearly — the semicolon goes after the closing bracket: WriteLine(value); not WriteLine(value;).":
+    "Fast — das Semikolon gehört hinter die schließende Klammer: WriteLine(value); und nicht WriteLine(value;).",
+  "Nearly — check the capital letters. C# is case-sensitive, e.g. WriteLine needs a capital L.":
+    "Fast — achte auf die Großbuchstaben. C# unterscheidet Groß- und Kleinschreibung, WriteLine braucht zum Beispiel ein großes L.",
+  "Nearly — you're missing a semicolon. C# needs it here.":
+    "Fast — dir fehlt ein Semikolon. C# braucht es hier.",
+  "Typo — you typed {typed}, but it should be {expected}.":
+    "Vertippt — du hast {typed} geschrieben, richtig wäre {expected}.",
+  "Not quite — compare with the reference and try again.":
+    "Noch nicht ganz — vergleich mit der Vorlage und versuch es noch einmal.",
+  "Fill answer": "Antwort einsetzen",
+  "Go back one step": "Einen Schritt zurück",
+  "Exit": "Beenden",
+  "You read the concepts and typed the code. Keep the momentum going.":
+    "Du hast die Grundlagen gelesen und den Code getippt. Bleib dran.",
   "Checking in on each other": "Nachfragen, wie es geht",
 };
 
