@@ -26,6 +26,7 @@ import {
   Home,
   Landmark,
   Languages,
+  WholeWord,
   Leaf,
   LockKeyhole,
   Medal,
@@ -292,7 +293,7 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "nav", id: "practice" },
   { kind: "nav", id: "listen" },
   { kind: "soon", icon: MessageCircleMore, label: "Speaking" },
-  { kind: "view", icon: Languages, label: "Vocabulary library", view: "profile" },
+  { kind: "view", icon: WholeWord, label: "Vocabulary library", view: "profile" },
 ];
 
 /**

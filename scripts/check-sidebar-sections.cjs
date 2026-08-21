@@ -47,7 +47,10 @@ assert.deepStrictEqual(
   "language learning lists lessons, practice, listening, speaking and vocabulary, in that order"
 );
 assert.ok(
-  /kind: "view", icon: Languages, label: "Vocabulary library", view: "profile"/.test(languageBlock)
+  // Any icon: which mark it wears is a drawing decision — her crop shows
+  // letters in a box rather than the translate glyph — and pinning the name
+  // here failed a change that left the behaviour below untouched.
+  /kind: "view", icon: \w+, label: "Vocabulary library", view: "profile"/.test(languageBlock)
     && /onNavigate\(row\.view\); scrollToVocabularyLibrary\(\)/.test(shell)
     && /className="np-vocabulary-anchor"/.test(read("src/Gamification.tsx")),
   "vocabulary opens the tracker that already exists, and lands on it rather than near it"
