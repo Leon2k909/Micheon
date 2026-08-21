@@ -82,7 +82,7 @@ import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
   MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
-  Eye, EyeOff, Lightbulb, Keyboard, MousePointerClick, SkipForward, Square, Download, LoaderCircle
+  Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward, Square, Download, LoaderCircle
 } from "lucide-react";
 
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
@@ -545,7 +545,7 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
   if (withFrench && p === "Type") return "German";
   if (p === "MeaningPick") return "Meaning";
   if (p === "MeaningSelect") return "Select";
-  if (p === "ListenPick") return "Pick it";
+  if (p === "ListenPick") return "Hear & write";
   if (p === "MissingWord") return "Missing word";
   if (p === "TypeAgain") return "Type 2";
   if (p === "TranslateAgain") return "Recall";
@@ -564,7 +564,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
     case "Read": return "Read & listen";
     case "MeaningPick": return "Pick the meaning";
     case "MeaningSelect": return "Select the correct meaning";
-    case "ListenPick": return "What did you hear?";
+    case "ListenPick": return "Write what you hear";
     case "MissingWord": return "Listen for the missing word";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
     case "TypeAgain": return "Type it once more";
@@ -1723,6 +1723,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [meaningSelectChecked, setMeaningSelectChecked] = useState(false);
   const [listeningChoice, setListeningChoice] = useState<string | null>(null);
   const [listeningChecked, setListeningChecked] = useState(false);
+  // The listening stage is dictation first: hear it, write it. The four
+  // options are still here, but as the way out rather than the way in —
+  // recognising one of four is a far weaker test than producing the line, so
+  // it is offered to anyone stuck instead of handed to everyone by default.
+  const [listeningMode, setListeningMode] = useState<"type" | "pick">("type");
+  const [listeningInput, setListeningInput] = useState("");
+  const [listeningTypeChecked, setListeningTypeChecked] = useState(false);
+  const [listeningMisses, setListeningMisses] = useState(0);
+  const listeningInputRef = useRef<HTMLInputElement>(null);
   const [missingWordPreview, setMissingWordPreview] = useState<string | null>(null);
   const [missingWordChoice, setMissingWordChoice] = useState<string | null>(null);
   const [missingWordChecked, setMissingWordChecked] = useState(false);
@@ -1753,7 +1762,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // Is a verdict card on screen? If one is, it hosts the "marked as" note;
   // if not, the note needs a card of its own or Undo has nowhere to live.
   const verdictShowing = enChecked || gapChecked || meaningChecked || meaningSelectChecked
-    || listeningChecked || missingWordChecked || orderChecked || sayChecked
+    || listeningChecked || listeningTypeChecked || missingWordChecked || orderChecked || sayChecked
     || recallTargetChecked || recallMeaningChecked || recallBothTargetChecked || recallBothChecked;
   const recallBothTargetRef = useRef<HTMLInputElement>(null);
   const recallBothMeaningRef = useRef<HTMLInputElement>(null);
@@ -1787,6 +1796,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // phase; only the active phase's box claims focus.
   useStickyFocus(inputRef, phase === "Type" || phase === "TypeAgain");
   useStickyFocus(enInputRef, (phase === "Translate" || phase === "TranslateAgain") && translationMode === "type");
+  useStickyFocus(listeningInputRef, phase === "ListenPick" && listeningMode === "type");
   useStickyFocus(gapInputRef, phase === "Gap");
   useStickyFocus(sayRef, phase === "WriteFromMemory");
   useStickyFocus(recallTargetRef, phase === "RecallTarget");
@@ -1871,6 +1881,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
+  // Written-from-hearing is graded exactly like written-from-reading: the same
+  // tolerance for a slipped letter, the same acceptance of the fuller written
+  // form and of a merged synonym. What is being tested is whether the sounds
+  // resolved into the right sentence, not typing accuracy.
+  const listeningTypeResult = useMemo(
+    () => matchEither(listeningInput),
+    [listeningInput, matchEither]
+  );
   // The other half of the pair, used only to recognise an answer aimed at the
   // wrong box. `displayEnglish` is whichever side carries the meaning, so this
   // stays correct in both learning directions.
@@ -2020,6 +2038,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // Focus input when entering Type or Translate phase
   useEffect(() => {
     if (phase === "Type" || phase === "TypeAgain")           setTimeout(() => inputRef.current?.focus(), 100);
+    if (phase === "ListenPick" && listeningMode === "type")  setTimeout(() => listeningInputRef.current?.focus(), 100);
     if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type") {
       setTimeout(() => enInputRef.current?.focus(), 100);
     }
@@ -2030,7 +2049,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "RecallBoth") setTimeout(() => recallBothTargetRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
     if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
-  }, [phase, translationMode]);
+  }, [phase, translationMode, listeningMode]);
 
   const advance = () => {
     // Ignore a delayed auto-advance if the learner manually jumped elsewhere
@@ -2083,6 +2102,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "ListenPick") {
       setListeningChoice(null);
       setListeningChecked(false);
+      setListeningMode("type");
+      setListeningInput("");
+      setListeningTypeChecked(false);
+      setListeningMisses(0);
     }
     if (phase === "MissingWord") {
       setMissingWordChoice(null);
@@ -2204,7 +2227,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   ]);
 
   useEffect(() => {
-    if (phase !== "ListenPick") return;
+    // Only while the options are on screen. In dictation mode the digits are
+    // part of the answer, and Space belongs to the sentence being typed.
+    if (phase !== "ListenPick" || listeningMode !== "pick") return;
     const handleChoiceKey = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
       if (isTextEntryTarget(event.target)) return;
@@ -2232,7 +2257,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     };
     window.addEventListener("keydown", handleChoiceKey, true);
     return () => window.removeEventListener("keydown", handleChoiceKey, true);
-  }, [phase, listeningChecked, listeningCorrect, listeningChoices, item.de, targetLang]);
+  }, [phase, listeningMode, listeningChecked, listeningCorrect, listeningChoices, item.de, targetLang]);
 
   useEffect(() => {
     if (phase !== "MissingWord") return;
@@ -2580,6 +2605,59 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningChoice(null);
     setListeningChecked(false);
     tts(item.de, 0.88, targetLang);
+  };
+
+  const checkListeningTyped = () => {
+    if (!listeningInput.trim()) return;
+    if (listeningTypeChecked && listeningTypeResult.ok) return;
+    // Answering in the wrong language here means the sounds were understood
+    // and then written down as their meaning — worth saying so rather than
+    // marking it simply wrong.
+    if (!listeningTypeResult.ok && answeredOtherSide(listeningInput, "target")) {
+      flagWrongLanguage("target");
+      return;
+    }
+    setWrongLanguageNotice(null);
+    setListeningTypeChecked(true);
+    reactToAnswer(listeningTypeResult.ok, !!listeningTypeResult.phrasingNote);
+    if (listeningTypeResult.ok) {
+      tts(item.de, 0.88, targetLang);
+      window.setTimeout(advanceOrFinish, 900);
+    } else {
+      setListeningMisses((misses) => misses + 1);
+      tts(item.de, 0.75, targetLang);
+    }
+  };
+
+  const retryListeningTyped = () => {
+    setListeningInput("");
+    setListeningTypeChecked(false);
+    tts(item.de, 0.88, targetLang);
+    setTimeout(() => listeningInputRef.current?.focus(), 50);
+  };
+
+  // Taking the four options is allowed at any point, but it is not free: the
+  // phrase is marked as a struggle, exactly as asking for a hint is, so it
+  // comes back round instead of counting as heard and known.
+  const showListeningChoices = () => {
+    if (listeningMode === "pick") return;
+    setListeningMode("pick");
+    setListeningTypeChecked(false);
+    setWrongLanguageNotice(null);
+    if (grade !== "struggle") {
+      setGrade("struggle");
+      if (item?.id) onGradeItem?.(item.id, "struggle");
+    }
+    tts(item.de, 0.88, targetLang);
+  };
+
+  const backToListeningTyping = () => {
+    if (listeningMode === "type" || (listeningChecked && listeningCorrect)) return;
+    setListeningMode("type");
+    setListeningChoice(null);
+    setListeningChecked(false);
+    tts(item.de, 0.88, targetLang);
+    setTimeout(() => listeningInputRef.current?.focus(), 50);
   };
 
   const selectMissingWord = (choice: string) => {
@@ -3433,6 +3511,122 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             exit={{ opacity: 0, y: -8 }}
             className="space-y-4"
           >
+            {listeningMode === "type" ? (
+              <>
+                <p className="text-center text-sm font-semibold text-zinc-500">
+                  {ui(`Write down the ${targetLabel} you just heard.`)}
+                </p>
+
+                <motion.div animate={shakeControls}>
+                  <div className={cn("fs-panel",
+                    listeningTypeChecked && listeningTypeResult.ok && "is-good",
+                    listeningTypeChecked && !listeningTypeResult.ok
+                      && (listeningTypeResult.phrasingNote ? "is-coach" : "is-bad"))}>
+                    <div className="fs-prompt">
+                      <PromptLanguageBadge label={targetLabel} />
+                      <strong>{ui("Type what you heard")}</strong>
+                    </div>
+                    <Input
+                      ref={listeningInputRef}
+                      className="fs-input"
+                      aria-label={ui(`Type the ${targetLabel} you heard`)}
+                      placeholder={ui("Type what you heard...")}
+                      autoFocus
+                      spellCheck={false}
+                      value={listeningInput}
+                      onChange={(event) => {
+                        setListeningInput(event.target.value);
+                        if (listeningTypeChecked) setListeningTypeChecked(false);
+                      }}
+                      onKeyDown={(event) => event.key === "Enter" && checkListeningTyped()}
+                      disabled={listeningTypeChecked && listeningTypeResult.ok}
+                    />
+                    <button
+                      type="button"
+                      className="fs-check"
+                      onClick={checkListeningTyped}
+                      disabled={listeningTypeChecked && listeningTypeResult.ok}
+                    >
+                      <span className="fs-check-label">
+                        {ui(listeningTypeChecked && listeningTypeResult.ok ? "Next" : "Check")}
+                      </span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </motion.div>
+                {!learnEn && (
+                  <div className="fs-charsrow">
+                    <CharBar onInsert={(character) => insertAt(listeningInputRef.current, character, setListeningInput)} />
+                  </div>
+                )}
+
+                <AnimatePresence>
+                  {listeningTypeChecked && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={cn("fs-result", listeningTypeResult.ok ? "is-good" : "is-bad")}
+                      role="status"
+                    >
+                      <strong>
+                        {ui(listeningTypeResult.ok
+                          ? (listeningTypeResult.spellingNote ? "Close enough — watch the spelling" : "That's it!")
+                          : "Not quite")}
+                      </strong>
+                      <span>
+                        {listeningTypeResult.ok
+                          ? ui("You wrote down what was said.")
+                          : ui("Play it once more and write what you hear.")}
+                      </span>
+                      <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {listeningTypeChecked && !listeningTypeResult.ok && (
+                  <Button
+                    type="button"
+                    onClick={retryListeningTyped}
+                    variant="outline"
+                    className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50"
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" /> {ui("Hear it and try again")}
+                  </Button>
+                )}
+
+                {/* The way out. Quiet while the round is still going the
+                    learner's way; after two misses it stops being a footnote
+                    and says out loud that the easier version exists. */}
+                {listeningMisses >= 2 ? (
+                  <div className="fs-listening-rescue">
+                    <p>{ui("Hard to catch? Take it as four options instead.")}</p>
+                    <Button
+                      type="button"
+                      onClick={showListeningChoices}
+                      className="h-12 w-full rounded-2xl font-black"
+                    >
+                      <ListChecks className="mr-2 h-4 w-4" />
+                      {ui("Show me the options")}
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={showListeningChoices}
+                    className="fs-listening-switch"
+                  >
+                    <ListChecks aria-hidden="true" className="h-4 w-4" />
+                    {ui("Show me the options instead")}
+                  </button>
+                )}
+
+                {!listeningTypeChecked && (
+                  <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
+                )}
+              </>
+            ) : (
+              <>
             <p className="text-center text-sm font-semibold text-zinc-500">
               {ui(`Choose the ${targetLabel} phrase you heard.`)}
             </p>
@@ -3494,6 +3688,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <div className="fs-hint">
                   <kbd>{ui("Space")}</kbd> <kbd>R</kbd> <kbd>→</kbd> {ui("Try again")}
                 </div>
+              </>
+            )}
+
+            {/* Back to writing it, for anyone who took the options to see the
+                shape of the sentence and now wants the real attempt. */}
+            {!(listeningChecked && listeningCorrect) && (
+              <button
+                type="button"
+                onClick={backToListeningTyping}
+                className="fs-listening-switch"
+              >
+                <Keyboard aria-hidden="true" className="h-4 w-4" />
+                {ui("Go back to writing it")}
+              </button>
+            )}
               </>
             )}
             <button type="button" onClick={goBack} className="w-full text-center text-xs font-semibold text-zinc-400 transition-colors hover:text-[var(--accent)]">

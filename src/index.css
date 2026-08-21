@@ -3374,6 +3374,24 @@ a { color: inherit; text-decoration: none; }
   box-shadow: inset 0 0 0 1px rgba(255,140,160,0.08), 0 5px 0 rgba(110,35,53,0.82);
 }
 
+/* The listening round is dictation; these two swap it for the four options and
+   back. Deliberately quiet — a way out that shouts is a way out everyone takes
+   before they have tried. */
+.guided-session .fs-listening-switch {
+  width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 12px; border: 0; border-radius: 12px; background: transparent;
+  color: var(--fs-muted); font-size: 12.5px; font-weight: 750; cursor: pointer;
+  transition: color 0.17s ease, background 0.17s ease;
+}
+.guided-session .fs-listening-switch:hover {
+  color: var(--fs-text-2); background: rgba(255,255,255,0.04);
+}
+/* After two misses it stops whispering. */
+.fs-listening-rescue { display: grid; gap: 9px; }
+.fs-listening-rescue p {
+  margin: 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--fs-muted);
+}
+
 /* ── listen for the missing word ── */
 .fs-missing-phase {
   display: grid;
