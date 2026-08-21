@@ -164,4 +164,59 @@ if (failures.length) {
   }
 }
 
-console.log(`check-teaching-order: no band holds more than ${Math.round(share * 100)}% of the catalogue, the essentials come first, and the pregnancy line sits at ${niche} against "where is the toilet" at ${toilet}, and declaring knowns never buries the common words`);
+// ── conversation mode ranks by what people SAY, on every screen ─────────
+//
+// The frequency bank is written German, so it put "entsprechend" — a word
+// that appears in NONE of the course's 12,689 conversational sentences — at
+// position 108. Conversation mode holds those back.
+//
+// The trap this exists to catch is not the rule failing but the rule being
+// silently switched off. corpusUses() returns 0 without an index, so a caller
+// passing null made every word look unspoken, every word took the same
+// setback, and it cancelled out to written order. The words tracker did
+// exactly that, which is how the one screen the setback was written for kept
+// showing entsprechend at 108 after it shipped.
+let entsprechendTalking = 0;
+let entsprechendWriting = 0;
+{
+  const { buildApiPartFromResolved, buildWordCatalog, rankWordCatalog } = mod.exports;
+  const wordParts = {};
+  for (const [key, blueprint] of Object.entries(allPartBlueprints)) {
+    try { wordParts[key] = buildApiPartFromResolved(blueprint, {}); } catch { /* as the app does */ }
+  }
+  const index = buildCorpusIndex(wordParts);
+  const catalog = buildWordCatalog(wordParts, "conversation");
+  const bare = (word) => (word.lookup || word.de).toLowerCase().replace(/^(der|die|das)\s+/, "");
+  const place = (list, name) => list.findIndex((word) => bare(word) === name) + 1;
+
+  const written = rankWordCatalog(catalog, index, "exam");
+  const spoken = rankWordCatalog(catalog, index, "conversation");
+  entsprechendTalking = place(spoken, "entsprechend");
+  entsprechendWriting = place(written, "entsprechend");
+  assert.ok(
+    place(spoken, "entsprechend") - place(written, "entsprechend") > 300,
+    `conversation mode is not holding back a word nobody says: entsprechend sits at `
+    + `${place(spoken, "entsprechend")} talking against ${place(written, "entsprechend")} writing`
+  );
+  assert.ok(
+    Math.abs(place(spoken, "sagen") - place(written, "sagen")) < 25,
+    "a word the course says constantly must not be swept back with the unspoken ones"
+  );
+
+  // No index is NO EVIDENCE. Without one the honest answer is the written
+  // order, not a rule that fires on every word and therefore sorts nothing.
+  assert.deepStrictEqual(
+    rankWordCatalog(catalog, null, "conversation").map((word) => word.id),
+    rankWordCatalog(catalog, null, "exam").map((word) => word.id),
+    "with no corpus index to consult, conversation mode must fall back to written order"
+  );
+
+  // And the tracker must not be the caller relying on that fallback.
+  const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
+  assert.ok(
+    tracker.includes("buildCorpusIndex(") && !/rankWordCatalog\([^;]*,\s*null\s*[,)]/.test(tracker),
+    "the words tracker ranks without a corpus index, so conversation mode cannot reach the screen it was written for"
+  );
+}
+
+console.log(`check-teaching-order: no band holds more than ${Math.round(share * 100)}% of the catalogue, the essentials come first, and the pregnancy line sits at ${niche} against "where is the toilet" at ${toilet}, declaring knowns never buries the common words, and conversation mode moves entsprechend from ${entsprechendWriting} to ${entsprechendTalking}`);

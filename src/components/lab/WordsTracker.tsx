@@ -5,6 +5,7 @@ import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
+import { buildCorpusIndex } from "@/lib/corpusFrequency";
 import {
   loadGradeStore,
   progressEntryForId,
@@ -262,9 +263,15 @@ export function WordsTracker({ apiParts, user }: {
   // parts alone left the tracker showing the other mode's faces until the
   // screen was rebuilt.
   const learningMode = useLearningMode();
+  // The index is what tells conversation mode which words people actually say,
+  // and it was not being built here — so the tracker ranked by written
+  // frequency in both modes and entsprechend stayed at 108. It is memoised on
+  // the parts object inside buildCorpusIndex too, so the other screens that
+  // already build it and this one share the one walk of the course.
+  const corpusIndex = useMemo(() => buildCorpusIndex(apiParts as any), [apiParts]);
   const catalog = useMemo(
-    () => rankWordCatalog(buildWordCatalog(apiParts, learningMode), null),
-    [apiParts, learningMode]
+    () => rankWordCatalog(buildWordCatalog(apiParts, learningMode), corpusIndex, learningMode),
+    [apiParts, corpusIndex, learningMode]
   );
   const commonRanks = useMemo(
     () => new Map(catalog.map((word, index) => [word.id, index])),

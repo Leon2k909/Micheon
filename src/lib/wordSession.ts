@@ -458,6 +458,12 @@ export function rankWordCatalog(
    */
   const speakingRank = (word: WordItem, rank: number): number => {
     if (mode !== "conversation" || !Number.isFinite(rank)) return rank;
+    // No index is NO EVIDENCE, not evidence of absence. corpusUses returns 0
+    // without one, so every word looked unspoken and every word took the same
+    // setback — which cancels out and quietly disables the whole rule. The
+    // words tracker passes null and showed entsprechend at 108, its written
+    // rank, on the very screen the setback was written for.
+    if (!corpusIndex) return rank;
     const name = word.lookup || word.de;
     if (corpusIgnores(name)) return rank;
     return corpusUses(name, corpusIndex) > 0 ? rank : rank + UNSPOKEN_SETBACK;
