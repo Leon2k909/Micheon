@@ -62,7 +62,7 @@ import { MuteButton } from "@/components/MuteButton";
 import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
-import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
+import { frequencyInfo, synonymCommonality, synonymNote } from "@/lib/wordFrequency";
 import { germanWordGloss } from "@/lib/germanWordGloss";
 import { englishWordGloss } from "@/lib/englishWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
@@ -243,16 +243,19 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
           so the learner sees the words Germans reach for less often without
           being dealt a separate card for each one. */}
       {groupSynonyms.map((entry) => {
-        // Unranked words (slang, function words) get no tier claim — being
-        // listed after the face already says who leads.
-        const tier = frequencyInfo(entry.lookup || entry.de);
+        // Measured against the word leading the card, not on its own. A bare
+        // tier read as a dangling comparison for the same reason the chip
+        // above it was removed: "common" next to a face of the same tier
+        // says nothing. Unranked words (slang, function words) still get no
+        // claim — being listed after the face already says who leads.
+        const versus = synonymCommonality(lookup || de, entry.lookup || entry.de);
         return (
           <span
             key={entry.de}
-            title={ui("Same meaning — the most common word leads this card.")}
+            title={versus ? ui(versus.hint) : ui("Same meaning — the most common word leads this card.")}
             className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-black text-sky-600"
           >
-            {ui("Also")}: {entry.de}{tier ? <> · {ui(tier.label)}</> : null}
+            {ui("Also")}: {entry.de}{versus ? <> · {ui(versus.label)}</> : null}
           </span>
         );
       })}

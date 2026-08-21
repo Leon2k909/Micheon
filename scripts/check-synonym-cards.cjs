@@ -27,7 +27,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { buildWordCatalog, rankWordCatalog } from "./src/lib/wordSession.ts";',
       'export { wordMeaningKey, keepApartTag, extraSynonymGroupKey, KEEP_APART, EXTRA_SYNONYM_GROUPS } from "./src/lib/wordSynonymGroups.ts";',
-      'export { frequencyRank } from "./src/lib/wordFrequency.ts";',
+      'export { frequencyRank, synonymCommonality } from "./src/lib/wordFrequency.ts";',
       'export { sentenceIdentityKey } from "./src/lib/germanTextMatch.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
@@ -55,6 +55,7 @@ const {
   buildTatoebaParts,
   buildWordCatalog,
   frequencyRank,
+  synonymCommonality,
   wordMeaningKey,
   keepApartTag,
   extraSynonymGroupKey,
@@ -217,6 +218,59 @@ check(guided.includes("groupSynonyms.map"), "UsageChips no longer renders the sy
 check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = matchTarget\(typed, entry\.de\);/u.test(guided),
   "GuidedSession no longer accepts a synonym as a typed answer");
 
+// ── the tag on a folded synonym compares it with the face ───────────────────
+// Leon: "the common tag should have said whether it was the same commonality,
+// less or more than the parent word. parent word always the absolute most
+// common". Both halves are checked here: the claim about the data, and the
+// label built on top of it.
+{
+  // The premise. If a synonym ever outranked its face, "less common" would be
+  // a lie on that card and the fold itself would be picking the wrong word.
+  const inverted = [];
+  let comparable = 0;
+  for (const word of combined) {
+    const face = frequencyRank(word.lookup || word.de);
+    for (const syn of word.synonyms ?? []) {
+      const other = frequencyRank(syn.lookup || syn.de);
+      if (!Number.isFinite(face) || !Number.isFinite(other)) continue;
+      comparable += 1;
+      if (other < face) inverted.push(`${word.de} #${face} is led by ${syn.de} #${other}`);
+    }
+  }
+  check(inverted.length === 0,
+    `the face of a combined card is not the most common word: ${inverted.slice(0, 4).join("; ")}`);
+  check(comparable >= 200, `only ${comparable} synonym pairs have both words ranked`);
+
+  // The label. Compared by ratio, because a frequency list is Zipfian: the
+  // 212 ranks between das Fernsehen and das TV are nothing, the 216 between
+  // das Unternehmen and der Betrieb are a different word entirely.
+  check(synonymCommonality("Fernsehen", "TV")?.label === "just as common",
+    "das Fernsehen and das TV are a rank apart in practice and should read that way");
+  check(synonymCommonality("Unternehmen", "Betrieb")?.label === "much less common",
+    "#23 against #239 is a real drop and should read as one");
+  check(synonymCommonality("erhalten", "empfangen")?.label === "much less common",
+    "#32 against #1809 is the clearest case there is");
+  check(synonymCommonality("professionell", "fachlich")?.label === "just as common",
+    "the pair Leon reported should say they are interchangeable, not repeat a tier");
+
+  // Silence rather than a guess: the bank carries neither slang nor function
+  // words, so unranked never means rare.
+  check(synonymCommonality("Auto", "zzzznotaword") === null,
+    "an unranked synonym must make no claim at all");
+  check(synonymCommonality(undefined, "Auto") === null, "nor must a missing face");
+
+  // And the surfaces have to ask for the comparison rather than the old tier.
+  for (const [file, label] of [
+    ["src/components/lab/WordsTracker.tsx", "the Words tracker"],
+    ["src/GuidedSession.tsx", "a lesson"],
+    ["src/lib/listenMode.ts", "Listen"],
+  ]) {
+    const text = fs.readFileSync(path.join(root, file), "utf8");
+    check(text.includes("synonymCommonality("),
+      `${label} still tags a folded synonym with its own tier instead of comparing it with the face`);
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-synonym-cards");
   failures.forEach((line) => console.error("  " + line));
@@ -224,5 +278,6 @@ if (failures.length) {
 }
 console.log(
   `check-synonym-cards: ${combined.length} combined cards, most common word first, ` +
-  "keep-apart words separate, progress ids preserved, all surfaces rendering"
+  "keep-apart words separate, progress ids preserved, all surfaces rendering, " +
+  "and every folded synonym compared with the face rather than tiered alone"
 );

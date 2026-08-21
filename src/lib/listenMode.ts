@@ -18,7 +18,7 @@ import {
   setStrengthLevel,
   snoozeForDays,
 } from "@/lib/memoryStrength";
-import { frequencyInfo } from "@/lib/wordFrequency";
+import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
@@ -571,10 +571,13 @@ export function buildListenQueue(
       use: word.use,
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
+      // Compared with the face of the card rather than rated alone — the
+      // face is always the commoner word, so a bare tier told the reader
+      // nothing they could act on.
       synonyms: word.synonyms?.map((syn) => ({
         de: syn.de,
         en: primaryAnswer(syn.en),
-        label: frequencyInfo(syn.lookup || syn.de)?.label,
+        label: synonymCommonality(word.lookup || word.de, syn.lookup || syn.de)?.label,
       })),
       kind: "word" as const,
       popularity: index / Math.max(1, ranked.length - 1),

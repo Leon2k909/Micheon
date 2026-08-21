@@ -24,7 +24,7 @@ import {
   REVIEW_INTERVALS_DAYS,
   type GradeRecord,
 } from "@/lib/memoryStrength";
-import { frequencyInfo } from "@/lib/wordFrequency";
+import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
 import { learningEnglish, targetLangTag } from "@/lib/direction";
@@ -574,20 +574,23 @@ export function WordsTracker({ apiParts, user }: {
                     <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">
                       <span className="font-black text-sky-600">{ui("Also")}: </span>
                       {(word.synonyms ?? []).map((syn, index) => {
-                        // The bank does not rank slang or function words, so an
-                        // unranked synonym is listed without a tier rather than
-                        // being called "less common" on no evidence.
-                        const tier = frequencyInfo(syn.lookup || syn.de);
+                        // Compared with the word leading the card, not rated on
+                        // its own: a bare tier said "(common)" about a synonym
+                        // sitting beside a face of the same tier, which answers
+                        // a question nobody asked. The bank does not rank slang
+                        // or function words, so an unranked pair still says
+                        // nothing rather than guessing.
+                        const versus = synonymCommonality(word.lookup || word.de, syn.lookup || syn.de);
                         return (
                           <span
                             key={syn.id}
-                            title={tier
-                              ? uiFmt("Same meaning as “{word}” — used less often.", { word: word.de })
+                            title={versus
+                              ? versus.hint
                               : ui("Same meaning — the most common word leads this card.")}
                           >
                             {index > 0 && <span aria-hidden="true"> · </span>}
                             <span className="font-bold text-[var(--text-2)]">{syn.de}</span>
-                            {tier && <span className="font-black text-amber-600"> ({ui(tier.label)})</span>}
+                            {versus && <span className="font-black text-amber-600"> ({ui(versus.label)})</span>}
                           </span>
                         );
                       })}

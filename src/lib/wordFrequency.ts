@@ -56,6 +56,60 @@ const SYNONYM_PAIRS: { common: string; rare: string; context?: string }[] = [
 
 export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hint: string } | null;
 
+/**
+ * How common a folded-in synonym is COMPARED WITH the word leading its card.
+ *
+ * A combined card showed its synonyms with a bare tier — "Also: fachlich
+ * (common)" — which answers a question nobody asked. Leon: "the common tag
+ * should have said whether it was the same commonality, less or more than the
+ * parent word. parent word always the absolute most common". He is right on
+ * both counts, and the second one is checkable: of the 236 synonym pairs where
+ * the bank ranks both words, the face is the commoner one 236 times. So the
+ * only honest answers are "the same" and "less", and the tier was hiding that
+ * — professionell is #719 and fachlich #956, which is the same tier and a
+ * third of a step apart.
+ *
+ * Compared by RATIO rather than by difference, because a frequency list is
+ * roughly Zipfian: #23 to #239 is a real drop in how often you meet a word,
+ * while #1621 to #1833 is the same distance on paper and no distance at all
+ * in practice. The cuts sit at 1.5x and 4x, which splits the 236 pairs about
+ * 76 / 101 / 59 and puts das Fernsehen + das TV (1.13x) in the first band and
+ * erhalten + empfangen (56x) in the last, where a reader would put them.
+ *
+ * Null when either word is outside the 2,500-word bank. Slang and function
+ * words are unranked without being rare — the bank simply does not carry
+ * them — so silence is the honest answer rather than a guess.
+ */
+export type SynonymCommonality = { label: string; hint: string } | null;
+
+export function synonymCommonality(
+  faceWord: string | undefined,
+  synonymWord: string | undefined
+): SynonymCommonality {
+  const face = frequencyRank(faceWord);
+  const synonym = frequencyRank(synonymWord);
+  if (!Number.isFinite(face) || !Number.isFinite(synonym) || face <= 0) return null;
+
+  const faceName = String(faceWord ?? "").replace(/^(der|die|das)\s+/, "");
+  const ratio = synonym / face;
+  if (ratio < 1.5) {
+    return {
+      label: "just as common",
+      hint: `Used about as often as ${faceName} — either is natural.`,
+    };
+  }
+  if (ratio < 4) {
+    return {
+      label: "less common",
+      hint: `Germans reach for ${faceName} more often, but this is not rare.`,
+    };
+  }
+  return {
+    label: "much less common",
+    hint: `${faceName} is the everyday choice; this one is noticeably rarer.`,
+  };
+}
+
 // Native-verified loanword/sibling pairs (see scratch/loanword-workflow):
 // which anglicism or synonym Germans really use alongside the taught word.
 // prefer: which side everyday speech reaches for ("either" = both common).
