@@ -2001,6 +2001,13 @@ const DE: Record<string, string> = {
   "Choose a coin pack for profile pins and future shop rewards.": "Wähle ein Münzpaket für Profil-Pins und künftige Shop-Belohnungen.",
   "Choose pets, adjust coaching, and set how flashcards flip.": "Tiere auswählen, Coaching anpassen und einstellen, wie Karteikarten umdrehen.",
   "Choose the phrase": "Wähle den Satz",
+  "Getting the next phrases ready…": "Die nächsten Sätze werden vorbereitet …",
+  "{n} in a row": "{n} richtig in Folge",
+  "Hear the answer": "Antwort anhören",
+  "Answer choices": "Antwortmöglichkeiten",
+  "“{phrase}” is the one people use.": "„{phrase}“ sagt man wirklich so.",
+  "“{phrase}” means “{meaning}”. The one you want is “{answer}”.":
+    "„{phrase}“ heißt „{meaning}“. Gesucht war „{answer}“.",
   "Choose useful phrases and review conversational German.": "Nützliche Sätze wählen und Alltagsdeutsch wiederholen.",
   "Choose what to strengthen": "Wähle, was du festigen willst",
   "Choose where to begin": "Wähle, wo du anfängst",

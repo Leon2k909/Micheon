@@ -1974,6 +1974,18 @@ html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span
   background: linear-gradient(180deg, #74df5c, #40b33f);
 }
 
+.np-practice-loading {
+  display: grid;
+  min-height: 222px;
+  place-items: center;
+  margin-top: 22px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .np-practice-grid {
   display: grid;
   grid-template-columns: minmax(210px, 0.82fr) minmax(310px, 1.18fr);

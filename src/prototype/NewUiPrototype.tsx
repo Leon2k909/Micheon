@@ -71,6 +71,20 @@ import {
 import { learningEnglish, setLearningDirection } from "@/lib/direction";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
+import { buildCatalog } from "@/session";
+import {
+  buildPracticeQuestion,
+  practiceCandidates,
+  type PracticeQuestion,
+} from "@/lib/practiceQuestions";
+import {
+  applyPracticeAnswer,
+  loadPracticeRecallState,
+  savePracticeRecallState,
+  selectPracticeItem,
+  type PracticeRecallState,
+} from "@/lib/practiceRecall";
+
 import { getMasteredCount } from "@/lib/mastery";
 import { loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getStreak, recordStreakDay } from "@/lib/streak";
@@ -167,15 +181,6 @@ type NavigationItem = {
   id: PrototypeView;
   label: string;
   icon: ComponentType<{ className?: string }>;
-};
-
-type Exercise = {
-  english: string;
-  answers: Array<{
-    german: string;
-    note: string;
-  }>;
-  correct: number;
 };
 
 type Milestone = (typeof MILESTONES)[number];
@@ -379,39 +384,6 @@ const SOCIAL_LEADERBOARD: SocialLeaderboardEntry[] = [
 function isShopBadgeId(value: unknown): value is ShopBadgeId {
   return typeof value === "string" && SHOP_ITEMS.some((item) => item.id === value);
 }
-
-const EXERCISES: Exercise[] = [
-  {
-    english: "Let me think for a moment.",
-    correct: 0,
-    answers: [
-      { german: "Lass mich kurz überlegen.", note: "This is the natural everyday choice." },
-      { german: "Ich werde darüber nachdenken.", note: "This means 'I'll think about it.'" },
-      { german: "Ich glaube schon.", note: "This means 'I think so.'" },
-      { german: "Warte bitte auf mich.", note: "This means 'Please wait for me.'" },
-    ],
-  },
-  {
-    english: "That depends.",
-    correct: 1,
-    answers: [
-      { german: "Das liegt nebenan.", note: "This means 'That's next door.'" },
-      { german: "Das kommt darauf an.", note: "This is the common conversational phrase." },
-      { german: "Das kommt später.", note: "This means 'That comes later.'" },
-      { german: "Das passt schon.", note: "This means 'It's fine as it is.'" },
-    ],
-  },
-  {
-    english: "Either is fine with me.",
-    correct: 2,
-    answers: [
-      { german: "Ich nehme beide.", note: "This means 'I'll take both.'" },
-      { german: "Beides ist fertig.", note: "This means 'Both are ready.'" },
-      { german: "Mir ist beides recht.", note: "This is a friendly, natural answer." },
-      { german: "Ich weiß es nicht.", note: "This means 'I don't know.'" },
-    ],
-  },
-];
 
 const REWARD_IMAGE: Record<RewardKind, string> = {
   heart: heartReward,
@@ -1444,25 +1416,114 @@ function CourseHero({
   );
 }
 
-function playPhrase(text: string) {
+/**
+ * Read a phrase aloud in the language it is written in.
+ *
+ * The tag was hardcoded to de-DE, which made a German voice read English
+ * answers aloud to anyone learning English.
+ */
+function playPhrase(text: string, langTag: string) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "de-DE";
+  utterance.lang = langTag;
   utterance.rate = 0.88;
   window.speechSynthesis.speak(utterance);
 }
 
-function PracticeCard({ compact = false }: { compact?: boolean }) {
-  const [exerciseIndex, setExerciseIndex] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
-  const exercise = EXERCISES[exerciseIndex];
-  const correct = selected === exercise.correct;
+/** How many right in a row fills the streak bar. */
+const PRACTICE_STREAK_TARGET = 10;
 
-  const next = () => {
-    setExerciseIndex((index) => (index + 1) % EXERCISES.length);
+/**
+ * Ten questions' worth of phrases is the least this card can work with.
+ *
+ * A question needs one right answer and three wrong ones from the same
+ * catalogue, and drawing four out of five would show the same three
+ * distractors every time.
+ */
+const PRACTICE_MIN_POOL = 10;
+
+function PracticeCard({
+  apiParts,
+  compact = false,
+  onRequestCatalogue,
+}: {
+  apiParts: Record<string, Part>;
+  compact?: boolean;
+  onRequestCatalogue: () => void;
+}) {
+  // Built from the course catalogue, so the supply is every phrase the course
+  // teaches rather than the three that used to be written in here. Rebuilt
+  // when the direction changes, because which side is asked follows the course.
+  const candidates = useMemo(() => practiceCandidates(buildCatalog(apiParts)), [apiParts]);
+  const ready = candidates.length >= PRACTICE_MIN_POOL;
+
+  const [question, setQuestion] = useState<PracticeQuestion | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [streak, setStreak] = useState(0);
+  /** Only the first answer to a question counts. */
+  const scored = useRef(false);
+
+  useEffect(() => {
+    if (!ready) onRequestCatalogue();
+  }, [onRequestCatalogue, ready]);
+
+  const drawQuestion = useCallback((
+    from: PracticeRecallState,
+    justAskedId?: string
+  ): PracticeQuestion | null => {
+    const pick = selectPracticeItem(from, candidates, justAskedId);
+    return pick ? buildPracticeQuestion(pick, candidates) : null;
+  }, [candidates]);
+
+  // First question once the catalogue arrives, and a fresh one if the course
+  // changes underneath — a new pool means the phrase on screen may no longer
+  // be part of what is being learned.
+  useEffect(() => {
+    if (!ready) return;
+    setQuestion((current) => (
+      current && candidates.some((candidate) => candidate.id === current.id)
+        ? current
+        : drawQuestion(loadPracticeRecallState())
+    ));
     setSelected(null);
+    scored.current = false;
+  }, [candidates, drawQuestion, ready]);
+
+  const answer = (index: number) => {
+    if (!question) return;
+    setSelected(index);
+    if (scored.current) return;
+    scored.current = true;
+    const isRight = Boolean(question.options[index]?.correct);
+    savePracticeRecallState(applyPracticeAnswer(loadPracticeRecallState(), question.id, isRight));
+    setStreak((value) => (isRight ? value + 1 : 0));
   };
+
+  const nextQuestion = () => {
+    const drawn = drawQuestion(loadPracticeRecallState(), question?.id);
+    setSelected(null);
+    scored.current = false;
+    if (drawn) setQuestion(drawn);
+  };
+
+  if (!question) {
+    return (
+      <section className={`np-practice-card${compact ? " np-practice-card--compact" : ""}`}>
+        <div className="np-section-heading">
+          <div>
+            <h2>{ui("Choose the phrase")}</h2>
+            <p>{ui("Pick what people actually say in a normal conversation.")}</p>
+          </div>
+        </div>
+        <p className="np-practice-loading">{ui("Getting the next phrases ready…")}</p>
+      </section>
+    );
+  }
+
+  const chosen = selected === null ? null : question.options[selected];
+  const correct = Boolean(chosen?.correct);
+  const solution = question.options.find((option) => option.correct);
 
   return (
     <section className={`np-practice-card${compact ? " np-practice-card--compact" : ""}`}>
@@ -1472,36 +1533,45 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
           <p>{ui("Pick what people actually say in a normal conversation.")}</p>
         </div>
         <div className="np-mini-progress">
-          <strong>{exerciseIndex + 1} in a row</strong>
-          <div><i style={{ width: `${((exerciseIndex + 1) / EXERCISES.length) * 100}%` }} /></div>
+          <strong>{uiFmt("{n} in a row", { n: streak })}</strong>
+          <div>
+            <i style={{ width: `${Math.min(100, (streak % PRACTICE_STREAK_TARGET || (streak ? PRACTICE_STREAK_TARGET : 0)) / PRACTICE_STREAK_TARGET * 100)}%` }} />
+          </div>
         </div>
       </div>
 
       <div className="np-practice-grid">
         <div className="np-prompt-card">
-          <span className="np-prompt-language">{ui("English")}</span>
-          <button aria-label={ui("Hear the German phrase")} className="np-sound-button" onClick={() => playPhrase(exercise.answers[exercise.correct].german)} type="button">
-            <Volume2 />
-          </button>
+          <span className="np-prompt-language">{ui(question.promptLanguageKey)}</span>
+          {solution && (
+            <button
+              aria-label={ui("Hear the answer")}
+              className="np-sound-button"
+              onClick={() => playPhrase(solution.text, question.answerLangTag)}
+              type="button"
+            >
+              <Volume2 />
+            </button>
+          )}
           <MessageCircleMore aria-hidden="true" className="np-prompt-symbol" />
-          <strong>{exercise.english}</strong>
-          <small>{ui("Everyday conversation")}</small>
+          <strong>{question.prompt}</strong>
+          <small>{question.context ? ui(question.context) : ui("Everyday conversation")}</small>
         </div>
 
-        <div aria-label={ui("German answer choices")} className="np-answer-list">
-          {exercise.answers.map((answer, index) => {
-            const chosen = selected === index;
-            const state = chosen ? (index === exercise.correct ? "correct" : "wrong") : "idle";
+        <div aria-label={ui("Answer choices")} className="np-answer-list">
+          {question.options.map((option, index) => {
+            const picked = selected === index;
+            const state = picked ? (option.correct ? "correct" : "wrong") : "idle";
             return (
               <button
-                aria-pressed={chosen}
+                aria-pressed={picked}
                 className={`np-answer np-answer--${state}`}
-                key={answer.german}
-                onClick={() => setSelected(index)}
+                key={option.text}
+                onClick={() => answer(index)}
                 type="button"
               >
                 <span>{String.fromCharCode(65 + index)}</span>
-                <strong>{answer.german}</strong>
+                <strong>{option.text}</strong>
                 {state === "correct" ? <Check /> : <ChevronRight />}
               </button>
             );
@@ -1510,27 +1580,38 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
       </div>
 
       <AnimatePresence initial={false} mode="wait">
-        {selected !== null && (
+        {chosen && (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
             aria-live="polite"
             className={`np-feedback ${correct ? "is-correct" : "is-wrong"}`}
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 10 }}
-            key={`${exerciseIndex}-${selected}`}
+            key={`${question.id}-${selected}`}
             role="status"
           >
             <RewardIcon kind={correct ? "star" : "heart"} />
             <div>
               <strong>{correct ? ui("Exactly right!") : ui("Try another one")}</strong>
-              <p>{ui(exercise.answers[selected].note)}</p>
+              {/* A miss is told what it picked and what was wanted. Skipping
+                  that would leave the phrase to come back around with nothing
+                  learned in between. */}
+              <p>
+                {correct
+                  ? uiFmt("“{phrase}” is the one people use.", { phrase: chosen.text })
+                  : uiFmt("“{phrase}” means “{meaning}”. The one you want is “{answer}”.", {
+                    answer: solution?.text ?? "",
+                    meaning: chosen.meaning,
+                    phrase: chosen.text,
+                  })}
+              </p>
             </div>
-            {correct && (
-              <button className="np-feedback-next" onClick={next} type="button">
-                {ui("Next phrase")}
-                <ChevronRight />
-              </button>
-            )}
+            {/* Shown after a miss too: the phrase comes back on its own in a
+                few questions, so there is nothing to be stuck on. */}
+            <button className="np-feedback-next" onClick={nextQuestion} type="button">
+              {ui("Next phrase")}
+              <ChevronRight />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1538,7 +1619,15 @@ function PracticeCard({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void }) {
+function PracticeHub({
+  apiParts,
+  onNavigate,
+  onRequestCatalogue,
+}: {
+  apiParts: Record<string, Part>;
+  onNavigate: (view: PrototypeView) => void;
+  onRequestCatalogue: () => void;
+}) {
   const tools = [
     {
       description: ui("Search by level or topic, then build a focused test from words, phrases, or weak spots."),
@@ -1586,7 +1675,7 @@ function PracticeHub({ onNavigate }: { onNavigate: (view: PrototypeView) => void
           })}
         </div>
       </section>
-      <PracticeCard />
+      <PracticeCard apiParts={apiParts} onRequestCatalogue={onRequestCatalogue} />
     </div>
   );
 }
@@ -3113,7 +3202,7 @@ export default function NewUiPrototype({
       ) : <FeatureLoading />}
     </div>
   ) : activeView === "practice" ? (
-    <PracticeHub onNavigate={navigate} />
+    <PracticeHub apiParts={apiParts} onNavigate={navigate} onRequestCatalogue={requestParts} />
   ) : activeView === "listen" ? (
     <div className="np-feature-host">
       <FeatureLoading />
