@@ -2158,31 +2158,39 @@ html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span
   align-items: center;
   gap: 14px;
   margin-top: 21px;
-  padding: 10px 15px 10px 7px;
-  border: 1px solid var(--border);
+  padding: 9px 14px 9px 6px;
+  border: 2px solid var(--border);
   border-radius: 22px;
   background: var(--surface-2);
+  color: var(--text-1);
 }
 
 /*
- * Right and wrong are signals, so they keep their own colours whatever the
- * accent — but as a tinted card with a coloured edge and heading, not as a
- * slab of colour. It used to be a full-width block of green, hardcoded, and
- * a separate rule painted the heading in the accent on top of it: on a pink
- * accent that was pink lettering on a green field, which Michelle reported
- * as "sieht schrecklich aus". The tint is mixed into the card surface, so it
- * belongs to the theme instead of fighting it.
+ * The panel keeps the card's own surface; only its edge says how it went.
+ *
+ * It was a slab of hardcoded green, and a second rule painted the heading in
+ * the accent over it — pink lettering on a green field once a custom colour
+ * was set. Tinting the surface instead was still too much green for Michelle:
+ * "der hintergrund der bubble soll den selben hintergund behalten, aber wenns
+ * korrekt ist die umrandung grün, wenn falsch rot." So the background is the
+ * same in both states, and the ring around it carries the whole signal.
  */
 .np-feedback.is-correct {
-  color: color-mix(in srgb, var(--success-text) 70%, var(--text-1));
-  border-color: color-mix(in srgb, var(--success-text) 34%, transparent);
-  background: color-mix(in srgb, var(--success-bg) 62%, var(--surface-2));
+  border-color: var(--success-text);
 }
 
 .np-feedback.is-wrong {
+  border-color: var(--red-text);
+}
+
+/* The heading joins in, pulled toward the reading colour so it clears 4.5:1
+   on the plain surface in both themes. */
+.np-feedback.is-correct strong {
+  color: color-mix(in srgb, var(--success-text) 70%, var(--text-1));
+}
+
+.np-feedback.is-wrong strong {
   color: color-mix(in srgb, var(--red-text) 70%, var(--text-1));
-  border-color: color-mix(in srgb, var(--red-text) 30%, transparent);
-  background: color-mix(in srgb, var(--red-bg) 62%, var(--surface-2));
 }
 
 .np-feedback .np-reward-icon {
