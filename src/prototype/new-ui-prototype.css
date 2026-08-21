@@ -1915,29 +1915,43 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 /* Progress and Continue, below the picture on the plain card. They were over
    the artwork and are the parts that need to be plainly readable rather than
    atmospheric. */
-/* The panel sitting ON the picture is sized to its contents and capped at half
-   the picture's width — Michelle: "das müsste etwas schmaler und kleiner sein,
-   so zur hälfte vom bild maximal". Full width, it read as a bar across the
-   artwork rather than a label on it.
+/* The panel sitting ON the picture is only as wide as its row — Michelle:
+   "das müsste etwas schmaler und kleiner sein, so zur hälfte vom bild
+   maximal". Full width it read as a bar across the artwork rather than a
+   label on it.
 
-   max(190px, 50%) rather than a plain 50%: the row is a flag, a language name
-   and the Change button, and it needs 190px. On a narrow card half the width
-   is less than that, and the cap would clip the button instead of the panel
-   simply being a larger share of a smaller picture.
+   It was capped at half the picture first, and that cut the Change button
+   off: a max-width shrinks the box, not the flag, the country name and the
+   button inside it, so they ran past the corner and were clipped. What makes
+   it small is the row being smaller — everything in it comes down a step —
+   with the box taking exactly the width that leaves and no more.
 
    Scoped to the hero, so the progress panel below keeps its full width. */
 .np-home-choice-hero .np-home-choice-panel {
   width: fit-content;
-  max-width: max(190px, 50%);
-  padding: 9px 12px;
+  max-width: 100%;
+  padding: 8px 11px;
 }
 
 .np-home-choice-hero .np-home-choice-panel small {
   font-size: 10px;
 }
 
+.np-home-choice-hero .np-home-choice-value {
+  gap: 7px;
+  font-size: 13px;
+}
+
+/* The roundel is drawn at 30px in the rail; on this label it only has to say
+   which flag, beside a name that already says it. */
+.np-home-choice-hero .np-home-choice-value > :first-child {
+  width: 22px;
+  height: 22px;
+}
+
 .np-home-choice-hero .np-home-choice-change {
-  padding: 5px 12px;
+  margin-left: 4px;
+  padding: 4px 10px;
   font-size: 11px;
 }
 
