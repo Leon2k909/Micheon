@@ -575,6 +575,15 @@
 }
 
 .np-nav-soon {
+  /* Third child of a two-column grid, so it falls to row 2. Without a column
+     of its own it lands in column 1 — the 24px icon track — which held the
+     pill to 24px while "Bald" needed 38.7px and the word spilled out of it.
+     Column 2 sits it under the label; justify-self keeps it the width of its
+     own text instead of stretching across the track, so the pill fits the
+     word whatever the word turns out to be. A long one wraps and the pill
+     grows taller rather than the text escaping it. */
+  grid-column: 2;
+  justify-self: start;
   padding: 2px 7px;
   border-radius: 999px;
   color: var(--text-3);

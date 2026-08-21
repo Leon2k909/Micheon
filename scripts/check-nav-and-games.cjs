@@ -92,6 +92,28 @@ assert.ok(
   + "and a pointer resting over the sidebar during boot would drag 3.9 MB back into it"
 );
 
+// ── the "Soon" pill fits its own word ───────────────────────────────────────
+// The nav button is a two-column grid and the pill is its third child, so it
+// falls to row 2. Without a column of its own it takes column 1 — the icon
+// track — and the pill renders exactly as wide as an icon whatever the word
+// says: 24px of bubble around 38.7px of "Bald", measured. Both declarations
+// below are what stop that, and neither reads as load-bearing.
+const prototypeCss = read("src/prototype/new-ui-prototype.css");
+const soonRule = /\.np-nav-soon \{([\s\S]*?)\}/.exec(prototypeCss);
+assert.ok(soonRule, "the .np-nav-soon rule could not be found");
+assert.ok(
+  /grid-column:\s*2/.test(soonRule[1]),
+  "the Soon pill needs grid-column: 2, or it falls into the 24px icon track and clips its own word"
+);
+assert.ok(
+  /justify-self:\s*start/.test(soonRule[1]),
+  "the Soon pill needs justify-self: start, or it stretches across the label track instead of fitting its word"
+);
+assert.ok(
+  !/\bwidth:\s*\d/.test(soonRule[1]),
+  "the Soon pill must not carry a fixed width — the whole point is that it follows whatever the word says"
+);
+
 console.log(
   `check-nav-and-games: nav order ${order.join(" → ")}; `
   + "the games library renders without the catalogue and a game still waits for it"
