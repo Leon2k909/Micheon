@@ -83,6 +83,10 @@ export function applyThemeToDom(theme: Theme) {
     // A custom accent is derived per theme — the dark shades come off a
     // lifted base — so the paint has to follow every theme change.
     void import("@/lib/accentColour").then((m) => m.applyAccentColour()).catch(() => {});
+    // Hand-picked part colours are stored per theme for the same reason a
+    // colour chosen against the dark background is unreadable on the light
+    // one, so the light and dark books are swapped here too.
+    void import("@/lib/customColours").then((m) => m.applyCustomColours()).catch(() => {});
   }
 }
 

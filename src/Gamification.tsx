@@ -21,6 +21,7 @@ import {
   MoonStar,
   Paintbrush,
   Palette,
+  Pipette,
   Monitor,
   Layers,
   HardDrive,
@@ -71,6 +72,16 @@ import {
   resetAccentColour,
   setAccentColour,
 } from "@/lib/accentColour";
+import {
+  CUSTOM_COLOURS_CHANGE_EVENT,
+  PAINTABLE_BY_TOKEN,
+  clearCustomColour,
+  currentThemeName,
+  getCustomColours,
+  resetCustomColours,
+  setCustomColour,
+} from "@/lib/customColours";
+import { ColourInspector } from "@/components/settings/ColourInspector";
 import { getEffects, setEffects, type Effects } from "@/lib/effects";
 import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
 import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
@@ -622,6 +633,21 @@ export default function GamificationPanel({
       window.removeEventListener("storage-sync-completed", sync);
     };
   }, []);
+  const [inspecting, setInspecting] = useState(false);
+  const [paintedParts, setPaintedParts] = useState<Record<string, string | undefined>>(
+    () => (typeof window === "undefined" ? {} : getCustomColours())
+  );
+  useEffect(() => {
+    const sync = () => setPaintedParts(getCustomColours());
+    window.addEventListener(CUSTOM_COLOURS_CHANGE_EVENT, sync);
+    window.addEventListener(THEME_CHANGE_EVENT, sync);
+    window.addEventListener("storage-sync-completed", sync);
+    return () => {
+      window.removeEventListener(CUSTOM_COLOURS_CHANGE_EVENT, sync);
+      window.removeEventListener(THEME_CHANGE_EVENT, sync);
+      window.removeEventListener("storage-sync-completed", sync);
+    };
+  }, []);
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => getThemePreference());
   // Another window (or the OS, while on "system") can change the theme; keep
   // the chosen option in step rather than showing a stale selection.
@@ -1092,6 +1118,85 @@ export default function GamificationPanel({
                         {ui("Reset to green")}
                       </button>
                     </div>
+                  </div>
+                  <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
+                    <div className="flex items-start gap-2">
+                      <Pipette className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      <div>
+                        <p className="text-sm font-black text-[var(--text-1)]">{ui("Advanced: colour any part")}</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                          {ui("Point at a part of the app and change its colour. Each colour is remembered separately for the light and dark themes.")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        className="settings-reset"
+                        onClick={() => setInspecting(true)}
+                        type="button"
+                      >
+                        <Pipette aria-hidden="true" />
+                        {ui("Pick a part of the app")}
+                      </button>
+                      <button
+                        className="settings-reset"
+                        disabled={Object.keys(paintedParts).length === 0}
+                        onClick={() => {
+                          resetCustomColours();
+                          setPaintedParts({});
+                        }}
+                        type="button"
+                      >
+                        <RotateCcw aria-hidden="true" />
+                        {ui("Reset every part")}
+                      </button>
+                    </div>
+                    {Object.keys(paintedParts).length === 0 ? (
+                      <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                        {ui("Nothing recoloured yet — the app is using its own palette.")}
+                      </p>
+                    ) : (
+                      <div className="mt-2">
+                        {Object.entries(paintedParts).map(([token, hex]) => {
+                          const part = PAINTABLE_BY_TOKEN.get(token);
+                          if (!part || !hex) return null;
+                          return (
+                            <div className="painted-part" key={token}>
+                              <label className="painted-part__swatch">
+                                <input
+                                  aria-label={ui(part.name)}
+                                  onChange={(event) => {
+                                    setCustomColour(token, event.target.value);
+                                    setPaintedParts(getCustomColours());
+                                  }}
+                                  type="color"
+                                  value={hex}
+                                />
+                              </label>
+                              <span className="painted-part__text">
+                                <span className="painted-part__name">{ui(part.name)}</span>
+                                <span className="painted-part__note">{ui(part.description)}</span>
+                              </span>
+                              <button
+                                className="painted-part__clear"
+                                onClick={() => {
+                                  clearCustomColour(token);
+                                  setPaintedParts(getCustomColours());
+                                }}
+                                type="button"
+                              >
+                                {ui("Undo")}
+                              </button>
+                            </div>
+                          );
+                        })}
+                        <p className="mt-2 text-[11px] font-semibold text-[var(--text-3)]">
+                          {currentThemeName() === "dark"
+                            ? ui("These apply to the dark theme.")
+                            : ui("These apply to the light theme.")}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex items-start gap-2">
@@ -1738,6 +1843,18 @@ export default function GamificationPanel({
           })}
         </div>
       </SettingsCategory>
+      {/* Rendered last and portalled to the body: the picker has to sit above
+          the settings panel it was started from, and outline anything the
+          pointer reaches — including the screens behind this one. */}
+      {inspecting && (
+        <ColourInspector
+          onCancel={() => setInspecting(false)}
+          onPick={(part, currentHex) => {
+            setCustomColour(part.token, currentHex ?? "#888888");
+            setPaintedParts(getCustomColours());
+          }}
+        />
+      )}
     </div>
   );
 }

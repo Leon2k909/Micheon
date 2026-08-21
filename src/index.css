@@ -7626,6 +7626,127 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
 .settings-reset:hover:not(:disabled) { border-color: var(--border-2); color: var(--text-1); }
 .settings-reset:disabled { opacity: 0.45; cursor: default; }
 
+/* ── advanced colours: the point-at-it picker ───────────────────────────── */
+/* The picker paints its own colours rather than reading tokens, because the
+   tokens are the thing being changed: an outline drawn in --accent would
+   disappear the moment somebody recoloured the accent, and the panel has to
+   stay readable while the app underneath it is half-repainted. */
+.colour-inspector { position: fixed; inset: 0; z-index: 2147483000; }
+.colour-inspector-capture { position: absolute; inset: 0; cursor: crosshair; }
+.colour-inspector-outline {
+  position: fixed;
+  pointer-events: none;
+  border: 2px solid #4f9dff;
+  border-radius: 8px;
+  background: rgba(79, 157, 255, 0.14);
+  box-shadow: 0 0 0 9999px rgba(4, 7, 12, 0.32);
+  transition: top 90ms ease, left 90ms ease, width 90ms ease, height 90ms ease;
+}
+.colour-inspector-label {
+  position: fixed;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 312px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #0d1219;
+  color: #f4f7fb;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.colour-inspector-name { font-size: 12px; font-weight: 900; }
+.colour-inspector-more { font-size: 11px; font-weight: 700; color: #9fb4cc; }
+.colour-inspector-choice {
+  position: fixed;
+  width: 300px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #0d1219;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.colour-inspector-choice-title {
+  margin: 2px 4px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9fb4cc;
+}
+.colour-inspector-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #f4f7fb;
+  text-align: left;
+  cursor: pointer;
+}
+.colour-inspector-choice-row:hover { background: rgba(255, 255, 255, 0.08); }
+.colour-inspector-chip {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.colour-inspector-choice-name { display: block; font-size: 12px; font-weight: 850; }
+.colour-inspector-choice-note { display: block; margin-top: 1px; font-size: 11px; font-weight: 650; color: #9fb4cc; }
+.colour-inspector-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px 9px 16px;
+  border-radius: 999px;
+  background: #0d1219;
+  color: #f4f7fb;
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.colour-inspector-hint button {
+  height: 28px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #4f9dff;
+  color: #06121f;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* The list of parts already recoloured, in Appearance. */
+.painted-part { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+.painted-part + .painted-part { border-top: 1px solid var(--border); }
+.painted-part__swatch {
+  width: 26px; height: 26px; flex: 0 0 auto; padding: 0;
+  border: 1px solid var(--border-2, var(--border)); border-radius: 8px;
+  background: transparent; cursor: pointer;
+}
+.painted-part__swatch input[type="color"] {
+  width: 100%; height: 100%; padding: 0; border: 0; border-radius: 7px;
+  background: transparent; cursor: pointer;
+}
+.painted-part__text { flex: 1 1 auto; min-width: 0; }
+.painted-part__name { display: block; font-size: 12px; font-weight: 850; color: var(--text-1); }
+.painted-part__note { display: block; margin-top: 1px; font-size: 11px; font-weight: 650; color: var(--text-3); }
+.painted-part__clear {
+  flex: 0 0 auto; height: 28px; padding: 0 10px;
+  border: 1px solid var(--card-edge, var(--border)); border-radius: 999px;
+  background: var(--surface-2); color: var(--text-2);
+  font-size: 11px; font-weight: 800; cursor: pointer;
+}
+.painted-part__clear:hover { color: var(--text-1); border-color: var(--border-2); }
+
 /* ── update preferences ──────────────────────────────────────────────────── */
 .update-prefs { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
 .update-prefs__label { font-size: 11px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }

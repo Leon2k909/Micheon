@@ -7,6 +7,7 @@ import { installGlobalCrashHooks } from "./lib/crashReport";
 import { SilencedAudioPrompt } from "./components/SilencedAudioPrompt";
 import { applyThemeToDom, resolveTheme } from "./lib/theme";
 import { applyAccentColour } from "./lib/accentColour";
+import { applyCustomColours } from "./lib/customColours";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
 import { watchRuntimePerformance } from "./lib/runtimePerformance";
@@ -42,6 +43,9 @@ if (bootTheme === "dark") {
 applyEffects(getEffects());
 // After the theme, because the dark shades are derived from a lifted base.
 applyAccentColour();
+// After the accent: a part somebody pointed at and chose by hand outranks
+// the shades derived from the accent colour.
+applyCustomColours();
 applyHighContrast(getHighContrast());
 
 // Flag the desktop (Electron) build so the custom title bar + height offset apply.
