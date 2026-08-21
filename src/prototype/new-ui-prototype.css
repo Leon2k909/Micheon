@@ -1753,14 +1753,22 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--accent) 92%, #3d0f3a) 0%,
-    color-mix(in srgb, var(--accent) 72%, #46187a) 24%,
-    color-mix(in srgb, var(--accent) 44%, #46187a) 40%,
-    color-mix(in srgb, var(--accent) 22%, transparent) 54%,
-    transparent 72%
-  );
+  background:
+    linear-gradient(
+      100deg,
+      rgba(24, 16, 32, 0.4) 0%,
+      rgba(24, 16, 32, 0.24) 30%,
+      rgba(24, 16, 32, 0.08) 48%,
+      transparent 62%
+    ),
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--accent) 66%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 48%, transparent) 26%,
+      color-mix(in srgb, var(--accent) 28%, transparent) 44%,
+      color-mix(in srgb, var(--accent) 11%, transparent) 58%,
+      transparent 74%
+    );
 }
 
 .np-home-banner-mascot {
@@ -1786,13 +1794,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   padding: 32px 30px;
 }
 
-.np-home-banner-quote {
-  color: var(--accent);
-  font-family: var(--np-font-display);
-  font-size: 54px;
-  font-weight: 900;
-  line-height: 0.6;
-}
 
 .np-home-banner-copy p {
   margin: 0;

@@ -1812,7 +1812,6 @@ function HomeBanner() {
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
-        <span aria-hidden="true" className="np-home-banner-quote">&ldquo;</span>
         <p>{ui("Small steps every day add up to big results.")}</p>
         <span aria-hidden="true" className="np-home-banner-heart"><Leaf /></span>
       </div>
