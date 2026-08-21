@@ -1737,6 +1737,387 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   gap: 19px;
 }
 
+/* ── The motivational banner ─────────────────────────────────────────────
+ *
+ * Michelle's skyline fills it, her quote sits on the left over a wash that
+ * only darkens that side, and the mascot stands on the right in front.
+ *
+ * The mascot is not a cut-out — it is painted into the hero artwork on
+ * grass — so rather than fake a cut-out badly, the right-hand slice of that
+ * picture is masked with a soft ellipse. Its grass meets the meadow the
+ * skyline already has on that side, which is why this reads as one picture
+ * rather than a sticker.
+ */
+.np-home-banner {
+  position: relative;
+  overflow: hidden;
+  min-height: 250px;
+  border: 1px solid var(--np-line);
+  border-radius: 28px;
+  isolation: isolate;
+}
+
+.np-home-banner-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+}
+
+.np-home-banner-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    100deg,
+    rgba(24, 20, 34, 0.72) 0%,
+    rgba(24, 20, 34, 0.5) 34%,
+    rgba(24, 20, 34, 0.12) 56%,
+    rgba(24, 20, 34, 0) 72%
+  );
+}
+
+.np-home-banner-mascot {
+  position: absolute;
+  z-index: 2;
+  right: 2%;
+  bottom: 0;
+  width: min(30%, 300px);
+  height: 100%;
+  object-fit: cover;
+  object-position: 100% 58%;
+  -webkit-mask-image: radial-gradient(ellipse 64% 76% at 60% 52%, #000 56%, rgba(0, 0, 0, 0) 86%);
+  mask-image: radial-gradient(ellipse 64% 76% at 60% 52%, #000 56%, rgba(0, 0, 0, 0) 86%);
+  pointer-events: none;
+}
+
+.np-home-banner-copy {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 10px;
+  max-width: 54%;
+  padding: 32px 30px;
+}
+
+.np-home-banner-quote {
+  color: var(--accent);
+  font-family: var(--np-font-display);
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 0.6;
+}
+
+.np-home-banner-copy p {
+  margin: 0;
+  color: #fff;
+  font-family: var(--np-font-display);
+  font-size: clamp(19px, 2.1vw, 27px);
+  font-weight: 850;
+  line-height: 1.24;
+  text-shadow: 0 2px 12px rgba(16, 12, 24, 0.5);
+}
+
+.np-home-banner-heart {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.np-home-banner-heart svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── The question, and the two cards that answer it ──────────────────────── */
+.np-home-question {
+  margin: 6px 0 0;
+  color: var(--text-1);
+  font-family: var(--np-font-display);
+  font-size: clamp(24px, 2.6vw, 33px);
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.np-home-question em {
+  margin: 0 0.28em;
+  color: var(--accent);
+  font-style: normal;
+}
+
+.np-home-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  align-items: stretch;
+  gap: 20px;
+}
+
+.np-home-choice {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--np-line);
+  border-radius: 26px;
+  isolation: isolate;
+}
+
+/* The picture is the card, not a strip at the top of it. The wash keeps text
+   readable without hiding what is underneath — Michelle: "Das Bild soll dabei
+   gut sichtbar bleiben und nicht komplett von einer undurchsichtigen Fläche
+   verdeckt werden." */
+.np-home-choice-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.np-home-choice-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 14%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 46%, transparent) 38%,
+    color-mix(in srgb, var(--surface) 84%, transparent) 68%,
+    color-mix(in srgb, var(--surface) 94%, transparent) 100%
+  );
+}
+
+.np-home-choice-body {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 24px 22px 22px;
+}
+
+.np-home-choice-flag {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 4px 14px rgba(20, 16, 28, 0.24);
+}
+
+.np-home-choice-body h2 {
+  margin: 4px 0 0;
+  color: var(--text-1);
+  font-family: var(--np-font-display);
+  font-size: 27px;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.np-home-choice-body > p {
+  margin: 0;
+  max-width: 38ch;
+  color: var(--text-2, var(--text-1));
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.np-home-choice-panel {
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+}
+
+.np-home-choice-panel small {
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.np-home-choice-value {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-1);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.np-home-choice-value > span {
+  width: 26px;
+  height: 26px;
+}
+
+.np-home-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.np-home-choice-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--accent-ink, var(--np-green-dark));
+  background: var(--accent-dim);
+}
+
+.np-home-choice-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.np-home-choice-lesson {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.np-home-choice-lesson strong {
+  overflow: hidden;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-home-choice-lesson small {
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.np-home-choice-row > b {
+  flex: 0 0 auto;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.np-home-choice-cta {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--accent-hover, var(--np-green)), var(--accent-pressed, var(--np-green-dark)));
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform var(--np-motion-fast) ease, filter var(--np-motion-fast) ease;
+}
+
+.np-home-choice-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.np-home-choice-cta:active {
+  transform: translateY(1px);
+}
+
+.np-home-choice-cta svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The language card wears the same picture treatment; its contents are the
+   course hero, which already knows how to count the pack down. */
+.np-home-choice--language .np-course-hero-frame {
+  position: relative;
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.np-home-choice--language .np-course-hero {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ── The figures under the cards ─────────────────────────────────────────── */
+.np-home-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--np-line);
+  border-radius: 22px;
+  background: var(--surface);
+}
+
+.np-home-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.np-home-stat .np-reward-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+}
+
+.np-home-stat > div {
+  display: grid;
+  min-width: 0;
+}
+
+.np-home-stat small {
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.np-home-stat strong {
+  color: var(--accent-ink, var(--text-1));
+  font-family: var(--np-font-display);
+  font-size: 23px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.np-home-stat span {
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .np-home-banner-copy {
+    max-width: 68%;
+    padding: 22px 20px;
+  }
+
+  .np-home-banner-mascot {
+    width: min(40%, 200px);
+  }
+}
+
 .np-course-hero-frame {
   border-radius: 27px;
   box-shadow:

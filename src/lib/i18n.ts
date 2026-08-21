@@ -2066,6 +2066,20 @@ const DE: Record<string, string> = {
   // ── The sidebar's folding sections ──
   "Fold away": "Zur Seite klappen",
   "Language learning": "Sprachen lernen",
+  // ── The home page Michelle laid out ──
+  "Small steps every day add up to big results.": "Kleine Schritte jeden Tag führen zu großen Ergebnissen.",
+  "What would you like to learn {today}?": "Was möchtest du {today} lernen?",
+  "today": "heute",
+  "Discover the history, culture and society of the country you are studying.":
+    "Entdecke die Geschichte, Kultur und Gesellschaft des Landes, das du lernst.",
+  "Selected country": "Ausgewähltes Land",
+  "United Kingdom": "Großbritannien",
+  "Lesson {n}": "Lektion {n}",
+  "Every lesson counts.": "Jede Lektion zählt.",
+  "Keep it going!": "Mach weiter so!",
+  "You are doing brilliantly.": "Du machst das großartig.",
+  // From the guided session's language toggle.
+  "tap to switch": "zum Wechseln tippen",
   "Change the language you are learning": "Lernsprache ändern",
   // From the long-list controls that arrived in 1.2.410.
   "Long lists": "Lange Listen",

@@ -1,6 +1,7 @@
 import { ui, uiFmt, uiLocale, uiNumber } from "@/lib/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  ArrowRight,
   BarChart3,
   Bell,
   BellOff,
@@ -138,6 +139,18 @@ import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
 import heroImage from "./assets/micheon-hero-v3.webp";
+/*
+ * Michelle's own artwork for the home page, used exactly as supplied.
+ *
+ * All three belong to the German course for now — "Bitte erstelle jetzt noch
+ * keine Logik für andere Sprachen" — so they are imported flat rather than
+ * chosen per language. The skyline sits behind the mascot in the banner; the
+ * other two are the faces of the two cards under "Was möchtest du heute
+ * lernen?".
+ */
+import homeSkylineImage from "./assets/home-skyline-de-v1.webp";
+import homeLanguagesImage from "./assets/home-languages-de-v1.webp";
+import homeCountryImage from "./assets/home-country-de-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
 import flameReward from "./assets/rewards-v3/flame.webp";
@@ -1700,11 +1713,11 @@ function CourseHero({
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={724} loading="eager" src={heroImage} width={2172} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
-            <span className="np-course-kicker">{ui("Your active course")}</span>
+            <span className="np-course-kicker">{ui("Language learning")}</span>
             {/* The chip was hardcoded to German, so someone learning English
                 was told their active course was German on every visit. */}
             <button aria-label={uiFmt("Switch course, currently {course}", { course: learnsEnglish ? ui("English") : ui("German") })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
@@ -1771,6 +1784,122 @@ function CourseHero({
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * The motivational banner: her skyline behind, the mascot in front of it.
+ *
+ * The mascot is not a cut-out — it is drawn into the top of the existing hero
+ * artwork, on grass. Rather than fake a cut-out badly, the right-hand slice of
+ * that picture is laid over the skyline behind a soft elliptical mask, so its
+ * grass fades into the meadow the skyline already has on that side.
+ */
+function HomeBanner() {
+  return (
+    <section className="np-home-banner">
+      <img
+        alt=""
+        className="np-home-banner-sky"
+        decoding="async"
+        fetchPriority="high"
+        loading="eager"
+        src={homeSkylineImage}
+      />
+      <div aria-hidden="true" className="np-home-banner-wash" />
+      <div className="np-home-banner-copy">
+        <span aria-hidden="true" className="np-home-banner-quote">&ldquo;</span>
+        <p>{ui("Small steps every day add up to big results.")}</p>
+        <span aria-hidden="true" className="np-home-banner-heart"><Leaf /></span>
+      </div>
+      <img alt="" aria-hidden="true" className="np-home-banner-mascot" decoding="async" src={heroImage} />
+    </section>
+  );
+}
+
+/**
+ * The second card: the citizenship course, with its own progress.
+ *
+ * Britain is the only country the course covers, and choosing another one is
+ * Michelle's own next piece of work, so this reports what exists rather than
+ * inventing a picker for it. Its progress is the real count of lessons
+ * completed in that course.
+ */
+function CountryCard({ onOpen, profile }: { onOpen: () => void; profile: UserProfile | null }) {
+  const course = getCourse(LIFE_IN_THE_UK_COURSE_ID);
+  const lessons = course?.lessons ?? [];
+  const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).length;
+  const percent = lessons.length > 0 ? Math.round((Math.min(done, lessons.length) / lessons.length) * 100) : 0;
+  const nextLesson = lessons.find((lesson) => !loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).includes(lesson.id));
+
+  return (
+    <article className="np-home-choice np-home-choice--country">
+      <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={homeCountryImage} />
+      <div aria-hidden="true" className="np-home-choice-wash" />
+      <div className="np-home-choice-body">
+        <span className="np-home-choice-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
+        <h2>{ui("Country studies")}</h2>
+        <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
+
+        <div className="np-home-choice-panel">
+          <small>{ui("Selected country")}</small>
+          <span className="np-home-choice-value">
+            <FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />
+            <strong>{ui("United Kingdom")}</strong>
+          </span>
+        </div>
+
+        <div className="np-home-choice-panel np-home-choice-panel--progress">
+          <small>{ui("Your progress")}</small>
+          <div className="np-home-choice-row">
+            <span aria-hidden="true" className="np-home-choice-icon"><Landmark /></span>
+            <span className="np-home-choice-lesson">
+              <strong>{course?.name ? ui(course.name) : ui("Life in the UK")}</strong>
+              <small>{nextLesson ? uiFmt("Lesson {n}", { n: uiNumber(Math.min(done + 1, lessons.length)) }) : ui("Course complete")}</small>
+            </span>
+            <b>{percent}&nbsp;%</b>
+          </div>
+          <div
+            aria-label={uiFmt("{pct}% through {pack}", { pct: percent, pack: ui("Life in the UK") })}
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={percent}
+            className="np-progress-track"
+            role="progressbar"
+          >
+            <span style={{ width: `${percent}%` }} />
+          </div>
+        </div>
+
+        <button className="np-home-choice-cta" onClick={onOpen} type="button">
+          {ui("Continue learning")}
+          <ArrowRight aria-hidden="true" />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+/** The three figures from the header, repeated under the cards as a strip. */
+function HomeStats({ stats }: { stats: PrototypeStats }) {
+  const tiles: Array<{ icon: RewardKind; label: string; note: string; value: string }> = [
+    { icon: "flame", label: "Day streak", note: "Keep it going!", value: uiNumber(stats.streak) },
+    { icon: "star", label: "Total XP", note: "Every lesson counts.", value: uiNumber(stats.totalXp) },
+    { icon: "trophy", label: "Lessons done", note: "You are doing brilliantly.", value: uiNumber(stats.sessionsCompleted) },
+  ];
+  return (
+    <section className="np-home-stats">
+      {tiles.map((tile) => (
+        <div className="np-home-stat" key={tile.label}>
+          <RewardIcon kind={tile.icon} />
+          <div>
+            <small>{ui(tile.label)}</small>
+            <strong>{tile.value}</strong>
+            <span>{ui(tile.note)}</span>
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -2461,6 +2590,7 @@ function ProgressPanel({
 
 function HomeView({
   apiParts,
+  onOpenCountryCourse,
   onPractice,
   onRequestCatalogue,
   onViewAllLessons,
@@ -2470,6 +2600,8 @@ function HomeView({
   vocab,
 }: {
   apiParts: Record<string, Part>;
+  /** The citizenship course, opened from the second card. */
+  onOpenCountryCourse: () => void;
   onPractice: () => void;
   onRequestCatalogue: () => void;
   onViewAllLessons: () => void;
@@ -2536,14 +2668,34 @@ function HomeView({
 
   return (
     <div className="np-home-view">
-      <CourseHero
-        packProgress={packProgress}
-        needsStartingPoint={needsStartingPoint}
-        onSwitchCourse={onSwitchCourse}
-        placementPart={placementPart}
-        stats={stats}
-      />
-      <div className="np-course-launch">
+      {/*
+        The order Michelle laid out from her reference: the motivational
+        banner, the question, the two cards it answers, then the figures.
+        The fluency outlook and the lesson path keep their places below —
+        they were not in the reference because it only showed the top of the
+        page, and nothing asked for them to go.
+      */}
+      <HomeBanner />
+
+      <h2 className="np-home-question">
+        {ui("What would you like to learn {today}?").split("{today}").map((part, index) => (
+          <Fragment key={index}>
+            {index > 0 && <em>{ui("today")}</em>}
+            {part}
+          </Fragment>
+        ))}
+      </h2>
+
+      <div className="np-home-choices">
+        <article className="np-home-choice np-home-choice--language">
+          <CourseHero
+            packProgress={packProgress}
+            needsStartingPoint={needsStartingPoint}
+            onSwitchCourse={onSwitchCourse}
+            placementPart={placementPart}
+            stats={stats}
+          />
+          <div className="np-course-launch">
       <button
         aria-label={needsStartingPoint
           ? ui("Choose your starting point. Tell us if you are a total beginner.")
@@ -2612,6 +2764,13 @@ function HomeView({
         )}
       </div>
       </div>
+        </article>
+
+        <CountryCard onOpen={onOpenCountryCourse} profile={profile} />
+      </div>
+
+      <HomeStats stats={stats} />
+
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} onViewAll={onViewAllLessons} packs={upcomingPacks} ready={catalogueReady} />
     </div>
@@ -3580,6 +3739,7 @@ export default function NewUiPrototype({
     ) : (
       <HomeView
         apiParts={apiParts}
+        onOpenCountryCourse={() => navigate("life-in-uk")}
         onPractice={openGuidedSession}
         onRequestCatalogue={requestParts}
         onViewAllLessons={() => navigate("learn")}

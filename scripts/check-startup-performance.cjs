@@ -107,10 +107,10 @@ check(
 );
 check(
   "the course hero remains the intentional high-priority image",
-  prototype.includes('fetchPriority="high"')
-    && prototype.includes('decoding="async"')
-    && prototype.includes('height={724}')
-    && prototype.includes('width={2172}'),
+  /className="np-course-art"[^>]*fetchPriority="high"/.test(prototype)
+    && /className="np-course-art"[^>]*decoding="async"/.test(prototype)
+    && /className="np-course-art"[^>]*height=\{\d+\}/.test(prototype)
+    && /className="np-course-art"[^>]*width=\{\d+\}/.test(prototype),
 );
 check(
   "homepage artwork uses efficient WebP assets",
