@@ -253,6 +253,28 @@ check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = mat
   check(synonymCommonality("professionell", "fachlich")?.label === "just as common",
     "the pair Leon reported should say they are interchangeable, not repeat a tier");
 
+  // Where writing and speech disagree, the card says so instead of reporting
+  // the rank as though it settled the matter. The bank is a written corpus:
+  // it has anfangen at #1131 against beginnen at #130, which is true of prose
+  // and false of anybody talking.
+  for (const [face, spoken] of [
+    ["beginnen", "anfangen"],
+    ["Unternehmen", "Firma"],
+    ["Beruf", "Job"],
+    ["Raum", "Zimmer"],
+    ["notwendig", "nötig"],
+  ]) {
+    const versus = synonymCommonality(face, spoken);
+    check(versus?.label === "more common in speech",
+      `${spoken} is what people say instead of ${face}, and the card should say so `
+      + `rather than "${versus?.label ?? "nothing"}"`);
+  }
+  // But only where it was reviewed. The sweep that found those also produced
+  // false ones — corpusUses pools a lemma's forms, so "gebraucht" counted as
+  // gebrauchen — and an unreviewed pair keeps the written verdict.
+  check(synonymCommonality("verwenden", "gebrauchen")?.label === "much less common",
+    "gebrauchen was rejected from the spoken list and must keep the written verdict");
+
   // Silence rather than a guess: the bank carries neither slang nor function
   // words, so unranked never means rare.
   check(synonymCommonality("Auto", "zzzznotaword") === null,

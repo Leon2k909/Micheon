@@ -48,6 +48,10 @@ export function frequencyRank(word: string | undefined): number {
 // Only pairs with a clear-cut preference are listed — beginnen/anfangen
 // (written rank favours beginnen, speech favours anfangen) is deliberately
 // absent, because a wrong "more common" claim is worse than none.
+// That pair is not unanswerable, only unanswerable HERE: this list ranks two
+// words against each other outright, and the honest answer depends on whether
+// you are writing or speaking. SPOKEN_PREFERENCE below says exactly that, and
+// is where beginnen/anfangen ended up.
 const SYNONYM_PAIRS: { common: string; rare: string; context?: string }[] = [
   { common: "Gegner", rare: "Feind", context: "in games & everyday talk" },
   { common: "Auto", rare: "Wagen" },
@@ -82,6 +86,45 @@ export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hin
  */
 export type SynonymCommonality = { label: string; hint: string } | null;
 
+/**
+ * Pairs where the bank is right about writing and wrong about speech.
+ *
+ * The bank is a written corpus, so it ranks anfangen #1131 against beginnen
+ * #130 — true of prose and false of anybody talking. Leaving that as a
+ * caveat only the code knows is the worst of both: the card states a rank as
+ * though it settled the matter. Leon: "this is fixable, just tell the user".
+ *
+ * Found by measurement rather than by memory. Micheon's own phrases are
+ * written to sound spoken, so how often each word turns up across them is the
+ * closest thing to a spoken check that exists here, and the pairs where the
+ * two sources disagree are exactly the ones worth naming — the sweep produced
+ * eighteen candidates and found beginnen/anfangen unprompted, which is the
+ * pair the curated list above documents as too split to call.
+ *
+ * Hand-reviewed from there, because the sweep also produces false ones:
+ * corpusUses pools a lemma's forms, so "gebraucht" (second-hand) counted as
+ * gebrauchen, and "total" counted the intensifier rather than the synonym for
+ * gesamt. Six of the eighteen were rejected for that, der Betrieb among them:
+ * four mentions against one is not evidence, and die Firma already carries
+ * what people actually say for that word. The rule this file has always used
+ * decides the close ones — a wrong claim about which word Germans reach for
+ * is worse than no claim at all.
+ */
+const SPOKEN_PREFERENCE: { written: string; spoken: string }[] = [
+  { written: "sprechen", spoken: "reden" },
+  { written: "gesamt", spoken: "komplett" },
+  { written: "Ort", spoken: "Stelle" },
+  { written: "Ort", spoken: "Platz" },
+  { written: "deutlich", spoken: "klar" },
+  { written: "Raum", spoken: "Zimmer" },
+  { written: "Unternehmen", spoken: "Firma" },
+  { written: "beginnen", spoken: "anfangen" },
+  { written: "versuchen", spoken: "probieren" },
+  { written: "Beruf", spoken: "Job" },
+  { written: "notwendig", spoken: "nötig" },
+  { written: "gering", spoken: "niedrig" },
+];
+
 export function synonymCommonality(
   faceWord: string | undefined,
   synonymWord: string | undefined
@@ -91,6 +134,19 @@ export function synonymCommonality(
   if (!Number.isFinite(face) || !Number.isFinite(synonym) || face <= 0) return null;
 
   const faceName = String(faceWord ?? "").replace(/^(der|die|das)\s+/, "");
+  const synonymName = String(synonymWord ?? "").replace(/^(der|die|das)\s+/, "");
+
+  // Where writing and speech disagree, say so rather than reporting the rank
+  // as though it were the whole answer.
+  const spoken = SPOKEN_PREFERENCE.find((pair) =>
+    bare(pair.written) === bare(faceName) && bare(pair.spoken) === bare(synonymName));
+  if (spoken) {
+    return {
+      label: "more common in speech",
+      hint: `Writing prefers ${faceName}, but this is what people say.`,
+    };
+  }
+
   const ratio = synonym / face;
   if (ratio < 1.5) {
     return {
