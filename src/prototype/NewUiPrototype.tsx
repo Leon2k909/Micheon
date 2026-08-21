@@ -451,10 +451,10 @@ function clampPrototypeSidebarWidth(width: number) {
 }
 
 function defaultPrototypeSidebarWidth() {
-  if (typeof window === "undefined") return 226;
-  if (window.innerWidth <= 1100) return 192;
-  if (window.innerWidth <= 1280) return 205;
-  return 226;
+  if (typeof window === "undefined") return 272;
+  if (window.innerWidth <= 1100) return 216;
+  if (window.innerWidth <= 1280) return 244;
+  return 272;
 }
 
 const PREVIEW_PROFILE: UserProfile = {

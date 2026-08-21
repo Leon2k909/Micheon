@@ -158,7 +158,7 @@
 
 .np-shell {
   display: grid;
-  grid-template-columns: var(--np-sidebar-width, 226px) minmax(0, 1fr);
+  grid-template-columns: var(--np-sidebar-width, 272px) minmax(0, 1fr);
   min-height: var(--app-h, 100dvh);
 }
 
@@ -556,8 +556,8 @@
 }
 
 .np-side-nav .np-nav-group-items .np-nav-icon {
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
 }
 
 .np-side-nav .np-nav-group-items button.is-soon {
@@ -643,41 +643,41 @@
 }
 
 .np-sidebar.is-brand-stacked .np-side-nav button {
-  min-height: 50px;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 8px;
-  font-size: 14px;
+  min-height: 54px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 15px;
 }
 
 .np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-head,
 .np-sidebar.is-brand-stacked .np-side-nav .np-nav-hidden-toggle {
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  gap: 7px;
-  font-size: 14px;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 9px;
+  font-size: 15px;
 }
 
 .np-sidebar.is-brand-stacked .np-nav-visual {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
 }
 
 .np-sidebar.is-brand-stacked .np-nav-flag,
 .np-sidebar.is-brand-stacked .np-nav-flag > span {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
 }
 
 .np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-items button {
-  min-height: 40px;
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 7px;
-  font-size: 13px;
+  min-height: 46px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+  font-size: 15px;
 }
 
 .np-sidebar.is-brand-stacked .np-side-nav .np-nav-group-items .np-nav-visual {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
 }
 
@@ -799,7 +799,7 @@
 .np-nav-icon {
   width: 24px;
   height: 24px;
-  stroke-width: 2.6;
+  stroke-width: 1.8;
 }
 
 .np-sidebar-spacer {
@@ -5184,7 +5184,7 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   }
 
   .np-shell {
-    grid-template-columns: var(--np-sidebar-width, 205px) minmax(0, 1fr);
+    grid-template-columns: var(--np-sidebar-width, 244px) minmax(0, 1fr);
   }
 
   .np-header {
@@ -5269,7 +5269,7 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
 @media (max-width: 1100px) {
   .np-shell {
-    grid-template-columns: var(--np-sidebar-width, 192px) minmax(0, 1fr);
+    grid-template-columns: var(--np-sidebar-width, 216px) minmax(0, 1fr);
   }
 
   .np-sidebar {
