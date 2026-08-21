@@ -157,6 +157,84 @@ if (frozen > 0) {
   failures.push(`${frozen} translation call(s) sit in module data tables, so the language would freeze at app start`);
 }
 
+// ── 4. words that reach ui() through a variable ───────────────────────────
+// The rules above read ui("…") literally, which is blind to the shape the
+// update panel uses:
+//
+//     [["auto", "Automatic", "Download and install on quit"], …]
+//       .map(([value, label, note]) => <><strong>{ui(label)}</strong>…</>)
+//
+// Every one of those notes was English on a German screen, and every check
+// passed. So: any sentence-shaped string in the app's own chrome must either
+// have German or be named below with a reason.
+const CHROME = ["src/components", "src/components/course", "src/components/codexPets"];
+
+// Not translations, and each for its own reason.
+const DELIBERATE = new Set([
+  // Sample lines spoken by the voice being auditioned — they are the voice's
+  // own language, which is the point of hearing them.
+  "Hello! Shall we make a start?",
+  "Guten Tag! Wollen wir anfangen?",
+  "Bonjour ! On commence ?",
+  // Both halves of a locale ternary; the German one is right there beside it.
+  "Cache cleared.",
+  "Cache geleert.",
+  "Could not clear the cache.",
+  "The selected file is too large.",
+  "Keep learning while Micheon prepares the new version.",
+  // Compared against lesson content, never shown.
+  "Now answer these",
+]);
+
+// Already German — the other half of a locale ternary, which needs no entry
+// in a table that translates into German.
+const readsGerman = (value) =>
+  /[äöüßÄÖÜ]/.test(value)
+  || /\b(der|die|das|und|oder|nicht|kann|wird|deine|diese|einen|eine|für|mit|von|jetzt|noch)\b/i.test(value);
+
+const sentenceShaped = (value) =>
+  value.length >= 4 && value.length <= 120
+  && /^[A-Z]/.test(value)
+  && /\s/.test(value)
+  && !/[<>{}[\]\/\\|@#$^*=_~`]/.test(value)
+  && /[a-z]{2}/.test(value);
+
+const chromeEnglish = [];
+for (const dir of CHROME) {
+  const full = path.join(root, dir);
+  if (!fs.existsSync(full)) continue;
+  for (const name of fs.readdirSync(full)) {
+    if (!/\.tsx?$/.test(name)) continue;
+    const file = path.join(full, name);
+    if (!fs.statSync(file).isFile()) continue;
+    // Comments are stripped rather than skipped line by line: a sentence
+    // quoted inside a /* … */ block sits on a continuation line that starts
+    // with neither marker, and was reported as untranslated interface text.
+    const source = fs.readFileSync(file, "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      (block) => block.replace(/[^\n]/g, " ")
+    );
+    source.split("\n").forEach((line, index) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) return;
+      for (const match of line.matchAll(/"((?:[^"\\]|\\.)*)"/g)) {
+        const value = match[1];
+        if (!sentenceShaped(value) || DELIBERATE.has(value) || readsGerman(value)) continue;
+        if (translated.has(value)) continue;
+        // A fallback for an error object's own message, not a label.
+        if (/instanceof Error \? \w+\.message :/.test(line)) continue;
+        chromeEnglish.push(dir + "/" + name + ":" + (index + 1) + "  " + JSON.stringify(value));
+      }
+    });
+  }
+}
+if (chromeEnglish.length) {
+  failures.push(
+    chromeEnglish.length + " string(s) in the app's own chrome have no German — translate them, "
+    + "or add them to DELIBERATE with the reason:\n    " + chromeEnglish.join("\n    ")
+  );
+}
+
 if (failures.length) {
   console.error("FAIL check-german-interface");
   failures.forEach((line) => console.error("  " + line));

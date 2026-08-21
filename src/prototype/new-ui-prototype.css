@@ -1909,24 +1909,52 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   align-content: end;
   /* No padding-top. Anchored to the bottom, it was 24px of dead height that
      ate into the visible picture for nothing. */
-  padding: 0 22px 22px;
+  padding: 0 22px 16px;
 }
 
 /* Progress and Continue, below the picture on the plain card. They were over
    the artwork and are the parts that need to be plainly readable rather than
    atmospheric. */
+/* The panel sitting ON the picture is sized to its contents and capped at half
+   the picture's width — Michelle: "das müsste etwas schmaler und kleiner sein,
+   so zur hälfte vom bild maximal". Full width, it read as a bar across the
+   artwork rather than a label on it.
+
+   max(190px, 50%) rather than a plain 50%: the row is a flag, a language name
+   and the Change button, and it needs 190px. On a narrow card half the width
+   is less than that, and the cap would clip the button instead of the panel
+   simply being a larger share of a smaller picture.
+
+   Scoped to the hero, so the progress panel below keeps its full width. */
+.np-home-choice-hero .np-home-choice-panel {
+  width: fit-content;
+  max-width: max(190px, 50%);
+  padding: 9px 12px;
+}
+
+.np-home-choice-hero .np-home-choice-panel small {
+  font-size: 10px;
+}
+
+.np-home-choice-hero .np-home-choice-change {
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
 .np-home-choice-foot {
   position: relative;
   z-index: 2;
   display: grid;
   gap: 12px;
-  padding: 16px 22px 22px;
+  padding: 6px 22px 22px;
   background: var(--surface);
 }
 
 @media (max-width: 700px) {
+  /* The copy block is the same height on a phone but the screen is not, so a
+     430px hero would fill it. Still leaves picture above the text. */
   .np-home-choice-hero {
-    min-height: 260px;
+    min-height: 350px;
   }
 }
 
