@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, Eye, RotateCcw, ScrollText } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { GlossedGerman } from "@/components/shared/GlossedGerman";
+import { TappableSentence } from "@/components/shared/TappableSentence";
 import { coverIdeas, PASSAGES, type Passage } from "@/lib/passages";
 
 /**
@@ -219,7 +219,7 @@ function PassageRun({ passage, onBack }: { passage: Passage; onBack: () => void 
             >
               {/* The line's own glossary wins: it knows which sense is meant
                   here, which a word-level lookup cannot. */}
-              <GlossedGerman text={entry.de} glosses={entry.glosses} />
+              <TappableSentence text={entry.de} lang="de-DE" glosses={entry.glosses} />
             </p>
           ))}
         </div>

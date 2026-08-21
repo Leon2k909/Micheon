@@ -714,11 +714,11 @@ const packageLockSource = fs.readFileSync(path.join(root, "package-lock.json"), 
 const dialogueStart = guidedSource.indexOf("function DialogueExercise(");
 const dialogueEnd = guidedSource.indexOf("// Section", dialogueStart);
 const dialogueSource = guidedSource.slice(dialogueStart, dialogueEnd > dialogueStart ? dialogueEnd : undefined);
-const tappableSentenceStart = guidedSource.indexOf("function TappableSentence(");
-const tappableSentenceEnd = guidedSource.indexOf("// Prototype-style stage route", tappableSentenceStart);
-const tappableSentenceSource = guidedSource.slice(
-  tappableSentenceStart,
-  tappableSentenceEnd > tappableSentenceStart ? tappableSentenceEnd : undefined
+// TappableSentence is shared with Listen and the passages now, so it has its
+// own file and the whole file is the component — no slicing needed.
+const tappableSentenceSource = fs.readFileSync(
+  path.join(root, "src/components/shared/TappableSentence.tsx"),
+  "utf8"
 );
 const guidedSentenceTracking = [...guidedStyles.matchAll(
   /(?:^|\n)[^{\n]*\.fs-line\s*\{[^}]*letter-spacing:\s*(-?\d*\.?\d+)em;/g
@@ -910,12 +910,14 @@ check(
     && germanWordGloss("unbekanntesfantasiewort") === null
     // Both directions still resolve a gloss; the German side now also tells
     // the lookup where the word sits, so a mid-sentence capital gets the noun
-    // rather than its lowercase verb twin (see check-word-hovers).
-    && guidedSource.includes("germanWordGloss(w, { midSentenceCapital:")
-    && guidedSource.includes(': glossLang === "en" ? englishWordGloss(w)')
+    // rather than its lowercase verb twin (see check-word-hovers). The
+    // sentence itself lives in the shared component; the reorder tiles are
+    // still the lesson's own.
+    && tappableSentenceSource.includes("germanWordGloss(w, { midSentenceCapital:")
+    && tappableSentenceSource.includes(': glossLang === "en" ? englishWordGloss(w)')
     && guidedSource.includes("? englishWordGloss(token.text)")
     && guidedSource.includes("germanWordGloss(token.text, {")
-    && guidedSource.includes("data-gloss={hoverGloss ?? undefined}")
+    && tappableSentenceSource.includes("data-gloss={hoverGloss ?? undefined}")
     && guidedStyles.includes("[data-gloss]:is(:hover, :focus-visible)::before")
 );
 check(
@@ -931,11 +933,11 @@ check(
     && englishWordGloss("zzzunknownword") === null
     // The popover opens in both directions: the gate is "a gloss language
     // exists", never "the course is German".
-    && guidedSource.includes("if (!glossLang) return;")
-    && !guidedSource.includes("if (!showEnglishGloss) return;")
+    && tappableSentenceSource.includes("if (!glossLang) return;")
+    && !tappableSentenceSource.includes("if (!showEnglishGloss) return;")
     // Learn-English practice writes keep German in `de`: the gloss becomes
     // the card's German side and the hovered English word its front.
-    && guidedSource.includes("addCustomEntries([{ de, en: face, use: text }]);")
+    && tappableSentenceSource.includes("addCustomEntries([{ de, en: face, use: text }]);")
 );
 check(
   "copying tappable lesson words produces one normally spaced sentence",

@@ -32,7 +32,8 @@ function check(name, condition, detail = "") {
 }
 
 // ── 1. the sentence selects like text ──────────────────────────────────────
-const tappable = guided.slice(guided.indexOf("function TappableSentence("));
+// Shared with Listen and the passages now, so it has its own file.
+const tappable = fs.readFileSync(path.join(root, "src/components/shared/TappableSentence.tsx"), "utf8");
 const wordEl = tappable.slice(0, tappable.indexOf("{popoverOpen && ("));
 check(
   "each word is a span, not a button, so a drag starts a selection",
@@ -44,13 +45,15 @@ check(
   wordEl.includes("onKeyDown=") && /event\.key !== "Enter" && event\.key !== " "/.test(wordEl)
 );
 check(
+  // The scope was widened when the component moved out of the lesson, so the
+  // same rule now also covers Listen and the passages.
   "the words are explicitly selectable and not draggable",
-  /\.guided-session \.fs-word \{[\s\S]{0,320}?user-select: text;[\s\S]{0,120}?-webkit-user-drag: none;/.test(css)
+  /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word \{[\s\S]{0,320}?user-select: text;[\s\S]{0,120}?-webkit-user-drag: none;/.test(css)
 );
 check(
   "copying a selection still puts the spaces back",
-  guided.includes("copySelectionWithSpaces")
-    && guided.includes('querySelectorAll<HTMLElement>(".fs-word")')
+  tappable.includes("copySelectionWithSpaces")
+    && tappable.includes('querySelectorAll<HTMLElement>(".fs-word")')
 );
 
 // ── 2. one door to the audio, speed still reachable ───────────────────────

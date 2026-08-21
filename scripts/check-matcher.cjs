@@ -28,7 +28,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, MATCHER_BOARD_SIZE } from "./src/lib/matcher.ts";',
+      'export { buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP } from "./src/lib/matcher.ts";',
       'export { matchingVisibleKey } from "./src/lib/germanTextMatch.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -63,7 +63,8 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const {
   allPartBlueprints, buildApiPartFromResolved,
-  buildMatcherQueue, buildMatcherBoard, dealColumns, MATCHER_BOARD_SIZE,
+  buildMatcherQueue, buildMatcherBoard, dealColumns, matcherDifficulty, matcherStreakAfterMiss,
+  MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE, MATCHER_MAX_STEP,
   matchingVisibleKey,
 } = compiled.exports;
 
@@ -127,15 +128,50 @@ for (const kind of ["words", "sentences"]) {
     "the deal dropped or duplicated a pair");
 }
 
-// It practises, it does not grade. Recognition with the answer on screen must
-// not promote anything, and the screen says so rather than leaving it implied.
+// MATCHING does not grade; DECLARING does.
+//
+// Pairing six visible cards is recognition with the answer on screen, so it
+// must promote nothing — that line is the same one Listen draws. But Leon
+// asked for Know it and a level menu here, and pressing those is a statement
+// about what you know, exactly as the lesson's skip button is. So the rule is
+// not "this screen never writes", it is "the matching never writes".
 {
   const view = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView.tsx"), "utf8");
-  for (const writer of ["recordListenGrade", "saveGradeStore", "recordSuccess", "setListenReviewLevel"]) {
-    assert.ok(!view.includes(writer), `the Matcher writes progress through ${writer}`);
+
+  // The matching handler, on its own.
+  const chooseStart = view.indexOf("const choose = useCallback(");
+  assert.ok(chooseStart > 0, "the matching handler has been renamed");
+  const chooseEnd = view.indexOf("/** Say you already have it", chooseStart);
+  assert.ok(chooseEnd > chooseStart, "cannot tell where the matching handler ends");
+  const chooseSource = view.slice(chooseStart, chooseEnd);
+  for (const writer of ["recordListenGrade", "saveGradeStore", "recordSuccess", "setListenReviewLevel", "snoozeListenItem", "setItemStatus"]) {
+    assert.ok(!chooseSource.includes(writer),
+      `matching a pair writes progress through ${writer} — recognition must stay unscored`);
   }
-  assert.ok(/nothing here changes your progress/.test(view),
-    "the Matcher does not tell the learner that it is practice only");
+
+  // And the declarations do write, or the buttons are decoration.
+  assert.ok(/const markKnown = useCallback\([\s\S]{0,400}?setListenReviewLevel\(pair, 5, profile\)/.test(view),
+    "Know it does not record anything");
+  assert.ok(/const applyLevel = useCallback\([\s\S]{0,400}?setListenReviewLevel\(pair, level, profile\)/.test(view),
+    "the level menu does not record anything");
+  assert.ok(/const putOff = useCallback\([\s\S]{0,300}?snoozeListenItem\(pair, days, profile\)/.test(view),
+    "Put off does not delay anything");
+  assert.ok(/undoListenReviewChange\(pending\.change, profile\)/.test(view),
+    "a mark made here cannot be taken back");
+  assert.ok(view.includes('data-testid="matcher-know-all"') && /const knowAll = useCallback\(/.test(view),
+    "there is no way to clear the whole board at once");
+
+  // Tapping a card speaks it, through the one door that honours the mixer.
+  assert.ok(/void tts\(text, side === "de" \? 0\.88 : 0\.95, side === "de" \? "de-DE" : englishLang\)/.test(view),
+    "tapping a card does not speak it");
+  assert.ok(!/getTtsAudioVolume|audioMuted|masterVolume/.test(view),
+    "the Matcher checks the volume itself instead of letting tts() do it — that is how a "
+    + "surface drifts out of step with the mixer");
+  assert.ok(/const pair = board\.pairs\.find\(\(entry\) => entry\.id === id\);\s*\n\s*if \(pair\) speak\(pair, side\);/.test(view),
+    "the spoken word is not the card that was pressed");
+
+  assert.ok(/Matching itself changes nothing/.test(view),
+    "the Matcher does not tell the learner which of its buttons count");
   // Two clicks inside one frame used to score a miss on a correct pair.
   assert.ok(view.includes("pickedRef.current"),
     "the Matcher reads its selection from render state, so fast clicking mis-scores");
@@ -147,12 +183,175 @@ for (const kind of ["words", "sentences"]) {
 
   // German, because the app offers a German interface and this is new copy.
   const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
-  for (const key of ["Matcher", "Match and keep going", "Nothing to match yet"]) {
+  for (const key of [
+    "Matcher", "Match and keep going", "Nothing to match yet",
+    "Know all {n}", "Set level or put off", "Step {step}: {size} pairs, deeper in",
+    "“{item}” marked as known.", "“{item}” put off for {days} days.",
+  ]) {
     assert.ok(i18n.includes(`"${key}":`), `"${key}" has no German`);
   }
 }
 
+// ── keep pressing Know it and it gets harder ────────────────────────────
+// Leon: "if im constantly pressing know it, it should get progressively
+// harder". Two levers, and the second is the one that matters: a bigger board
+// is only more of the same words, whereas moving down the queue is moving into
+// rarer ones — which is what harder means for vocabulary.
+{
+  const flat = matcherDifficulty(0);
+  assert.strictEqual(flat.step, 0, "the mode starts above its own floor");
+  assert.strictEqual(flat.boardSize, MATCHER_BOARD_SIZE, "the first board is not the normal size");
+  assert.strictEqual(flat.skipAhead, 0, "a fresh start already skips ahead");
+
+  // A couple of easy words is not a complaint; a whole board's worth is.
+  assert.strictEqual(matcherDifficulty(MATCHER_BOARD_SIZE - 1).step, 0,
+    "the step rises before a full board has been declared known");
+  assert.strictEqual(matcherDifficulty(MATCHER_BOARD_SIZE).step, 1,
+    "clearing a board by declaration does not raise the step");
+
+  let previousSize = 0;
+  let previousSkip = -1;
+  for (let streak = 0; streak <= MATCHER_BOARD_SIZE * 12; streak += MATCHER_BOARD_SIZE) {
+    const level = matcherDifficulty(streak);
+    assert.ok(level.boardSize >= previousSize, "the board shrank as the streak grew");
+    assert.ok(level.skipAhead > previousSkip || level.step === MATCHER_MAX_STEP,
+      "the queue position stopped moving before the top step");
+    assert.ok(level.boardSize <= MATCHER_MAX_BOARD_SIZE,
+      `board grew to ${level.boardSize}, past what fits without scrolling`);
+    assert.ok(level.step <= MATCHER_MAX_STEP, "the step ran away past its ceiling");
+    previousSize = level.boardSize;
+    previousSkip = level.skipAhead;
+  }
+  assert.strictEqual(matcherDifficulty(Number.MAX_SAFE_INTEGER).step, MATCHER_MAX_STEP,
+    "an enormous streak escapes the ceiling");
+
+  // And it comes back down, so a run of Know its cannot strand someone in
+  // material they cannot do.
+  assert.strictEqual(matcherStreakAfterMiss(MATCHER_BOARD_SIZE * 3), MATCHER_BOARD_SIZE * 2,
+    "a miss does not cost a board's worth of streak");
+  assert.strictEqual(matcherStreakAfterMiss(2), 0, "the streak went negative");
+  assert.ok(
+    matcherDifficulty(matcherStreakAfterMiss(MATCHER_BOARD_SIZE)).step
+      < matcherDifficulty(MATCHER_BOARD_SIZE).step,
+    "missing at the bottom of a step does not drop back down"
+  );
+
+  // The bigger board still has to be dealable from the real queue.
+  const top = matcherDifficulty(MATCHER_BOARD_SIZE * MATCHER_MAX_STEP);
+  const wordQueue = buildMatcherQueue(parts, "words", null);
+  const big = buildMatcherBoard(wordQueue, 0, top.boardSize);
+  assert.strictEqual(big.pairs.length, top.boardSize,
+    `the hardest board deals ${big.pairs.length} pairs, not ${top.boardSize}`);
+  assert.strictEqual(new Set(big.pairs.map((p) => p.id)).size, big.pairs.length,
+    "the hardest board repeats a pair");
+
+  // Skipping ahead must land somewhere real rather than off the end.
+  const deep = buildMatcherBoard(wordQueue, big.nextFrom + top.skipAhead, top.boardSize);
+  assert.strictEqual(deep.pairs.length, top.boardSize, "skipping ahead deals a short board");
+  assert.notDeepStrictEqual(deep.pairs.map((p) => p.id), big.pairs.map((p) => p.id),
+    "skipping ahead deals the same pairs, so nothing got harder");
+}
+
+// A grade has to land on every key the item is stored under, or marking a word
+// known here leaves an alias behind that the rest of the app still serves.
+{
+  const wordQueue = buildMatcherQueue(parts, "words", null);
+  assert.ok(wordQueue.every((pair) => Array.isArray(pair.aliases)),
+    "pairs carry no aliases, so a grade written here misses the item's other keys");
+  assert.ok(wordQueue.some((pair) => pair.aliases.length > 0),
+    "not one pair in the whole queue has an alias — the field is being dropped");
+}
+
+// ── the controls have to be on the board, not just in the file ──────────
+// Everything above reads source. This renders the real component against the
+// real queue and looks at what comes out, because a control that is wired
+// perfectly and never drawn is the same as no control.
+{
+  const { JSDOM } = require("jsdom");
+  const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http://localhost/" });
+  const priorWindow = global.window;
+  global.window = dom.window;
+  global.document = dom.window.document;
+  global.navigator = dom.window.navigator;
+  global.localStorage = dom.window.localStorage;
+  global.HTMLElement = dom.window.HTMLElement;
+  global.Element = dom.window.Element;
+  global.Node = dom.window.Node;
+  global.CustomEvent = dom.window.CustomEvent;
+  dom.window.dispatchEvent = () => true;
+  dom.window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
+  global.matchMedia = dom.window.matchMedia;
+  global.requestAnimationFrame = (fn) => setTimeout(() => fn(Date.now()), 0);
+  global.cancelAnimationFrame = (id) => clearTimeout(id);
+  global.speechSynthesis = { speak() {}, cancel() {}, getVoices: () => [], addEventListener() {}, removeEventListener() {} };
+  global.SpeechSynthesisUtterance = function () {};
+  global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  global.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
+
+  const viewBuild = esbuild.buildSync({
+    stdin: {
+      contents: [
+        'export { MatcherView } from "./src/components/matcher/MatcherView.tsx";',
+        'export { renderToStaticMarkup } from "react-dom/server";',
+        'export { createElement } from "react";',
+      ].join("\n"),
+      resolveDir: root,
+      sourcefile: "matcher-view-entry.tsx",
+      loader: "tsx",
+    },
+    alias: { "@": path.join(root, "src") },
+    bundle: true,
+    format: "cjs",
+    platform: "node",
+    target: "node20",
+    jsx: "automatic",
+    define: {
+      "import.meta.env.DEV": "false",
+      "import.meta.env.PROD": "true",
+      "import.meta.env.MODE": '"production"',
+    },
+    loader: { ".css": "empty", ".png": "dataurl", ".svg": "dataurl", ".json": "json" },
+    write: false,
+    logLevel: "silent",
+  });
+  const viewModule = new Module("matcher-view-check", module);
+  viewModule.filename = path.join(root, ".matcher-view-check.cjs");
+  viewModule.paths = Module._nodeModulePaths(root);
+  viewModule._compile(viewBuild.outputFiles[0].text, viewModule.filename);
+  const { MatcherView, renderToStaticMarkup, createElement } = viewModule.exports;
+
+  const html = renderToStaticMarkup(createElement(MatcherView, {
+    apiParts: parts,
+    profile: null,
+    onExit() {},
+  }));
+
+  const count = (needle) => (html.match(new RegExp(needle, "g")) ?? []).length;
+  assert.strictEqual(count("matcher-tile-actions"), MATCHER_BOARD_SIZE,
+    `${count("matcher-tile-actions")} pairs carry grade controls, not ${MATCHER_BOARD_SIZE}`);
+  assert.ok(html.includes('data-testid="matcher-know-all"'),
+    "Know all is not on the board");
+  assert.ok(/Know all\s*6/.test(html.replace(/<[^>]+>/g, " ")),
+    "Know all does not say how many it would take");
+  assert.strictEqual(count('aria-haspopup="menu"'), MATCHER_BOARD_SIZE,
+    "not every pair can open its level menu");
+  // The menu is closed until asked for — a board with six open menus is a mess.
+  assert.strictEqual(count("matcher-tile-menu"), 0,
+    "the level menus render open");
+  assert.strictEqual(count('aria-expanded="false"'), MATCHER_BOARD_SIZE,
+    "the menu buttons do not report themselves closed");
+  // Six German tiles and six English ones, and only the German side is graded.
+  assert.strictEqual(count("matcher-tile is-german"), MATCHER_BOARD_SIZE,
+    "the German column is not the one carrying the controls");
+  assert.ok(!/Step \d/.test(html.replace(/<[^>]+>/g, " ")),
+    "a fresh board already claims to be at a raised step");
+
+  global.window = priorWindow;
+  dom.window.close();
+}
+
 console.log(
   `check-matcher: both queues ordered like the course, 40 boards each solvable `
-  + `and advancing, the deal stable, and nothing graded`
+  + `and advancing, the deal stable, matching still unscored, the step rising `
+  + `and falling with the run of Know its, and every pair rendering its controls`
 );

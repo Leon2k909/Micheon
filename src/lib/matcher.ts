@@ -26,6 +26,8 @@ export type MatcherPair = {
   id: string;
   de: string;
   en: string;
+  /** Every key this item is stored under, so a grade lands on all of them. */
+  aliases: string[];
 };
 
 /** Every item the Matcher can serve, in the order the course would serve it. */
@@ -44,12 +46,55 @@ export function buildMatcherQueue(
       id: item.id,
       de: String(item.de ?? "").trim(),
       en: String(item.en ?? "").trim(),
+      aliases: [...(item.aliases ?? [])],
     }))
     .filter((pair) => pair.de && pair.en);
 }
 
 /** How many pairs a board holds. Six fits a phone without scrolling. */
 export const MATCHER_BOARD_SIZE = 6;
+/** Ten is the most that still fits without the board becoming a scroll. */
+export const MATCHER_MAX_BOARD_SIZE = 10;
+
+/**
+ * Pressing Know it over and over is a complaint: this is too easy.
+ *
+ * So the mode answers it. A run of Know its raises a step, and each step does
+ * two things — puts more pairs on the board, and pushes further down the
+ * queue. The second is the one that actually matters: the queue is ordered
+ * most-useful-first, so moving down it is moving into rarer words, which is
+ * what "harder" means for vocabulary. A bigger board alone would only be more
+ * of the same words.
+ *
+ * A miss costs more than a Know it earns, because the point is to find the
+ * level where you stop breezing through, not to ratchet upward and strand
+ * someone in material they cannot do. The step falls back on its own.
+ */
+export const MATCHER_MAX_STEP = 4;
+
+export function matcherDifficulty(knownStreak: number): {
+  step: number;
+  boardSize: number;
+  skipAhead: number;
+} {
+  const streak = Math.max(0, Math.floor(knownStreak));
+  // One step per board's worth of Know its — a whole board cleared by
+  // declaration rather than a couple of easy words.
+  const step = Math.min(MATCHER_MAX_STEP, Math.floor(streak / MATCHER_BOARD_SIZE));
+  return {
+    step,
+    boardSize: Math.min(MATCHER_MAX_BOARD_SIZE, MATCHER_BOARD_SIZE + step),
+    // Two extra boards' worth of queue per step. At the top step that is 48
+    // items skipped every deal, which walks into rarer material quickly
+    // without ever jumping somewhere unrelated.
+    skipAhead: step * MATCHER_BOARD_SIZE * 2,
+  };
+}
+
+/** What a miss does to the run. Steeper than the climb, deliberately. */
+export function matcherStreakAfterMiss(knownStreak: number): number {
+  return Math.max(0, Math.floor(knownStreak) - MATCHER_BOARD_SIZE);
+}
 
 /**
  * The next board, starting at `from`.

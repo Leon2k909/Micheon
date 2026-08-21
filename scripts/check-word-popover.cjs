@@ -36,7 +36,9 @@ if (!cardRule) {
   }
 }
 
-const popover = /\.guided-session \.fs-word-popover \{([^}]*)\}/.exec(css)?.[1] ?? "";
+// The scope was widened when the component moved out of the lesson: these
+// styles now apply wherever it renders, not only inside a session.
+const popover = /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word-popover \{([^}]*)\}/.exec(css)?.[1] ?? "";
 if (!popover) {
   failures.push("the word panel has no styling");
 } else {

@@ -1284,7 +1284,6 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-
 html[data-theme="dark"] .micheon-update-version,
 html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary {
   border-color: rgba(207, 228, 203, 0.12);
@@ -1466,8 +1465,6 @@ html[data-theme="dark"] .micheon-update-install-icon-shell {
   background: linear-gradient(180deg, #263a29, #1f3022);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 36px rgba(0, 0, 0, 0.25);
 }
-
-
 
 html[data-theme="dark"] .micheon-update-install-version {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
@@ -2990,7 +2987,7 @@ a { color: inherit; text-decoration: none; }
   padding: 12px;
   border: 1px solid var(--fs-line-strong);
   border-radius: 16px;
-  background: var(--fs-surface, #fff);
+  background: var(--fs-surface, var(--surface, #fff));
   box-shadow: 0 12px 32px rgba(20, 24, 18, 0.18);
 }
 .fs-speed-menu .speech-speed-title { color: var(--fs-text-2); }
@@ -3104,22 +3101,22 @@ a { color: inherit; text-decoration: none; }
   contain-intrinsic-size: auto 76px;
 }
 .fs-tappable-sentence { display: contents; }
-.guided-session .fs-word {
+:is(.guided-session, .fs-tappable-sentence) .fs-word {
   position: relative; display: inline-block; border: 0; border-radius: 0.24em; padding: 0.1em 0.08em 0.14em;
   user-select: text; -webkit-user-select: text; -webkit-user-drag: none;
   background: transparent; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer;
   text-shadow: 0 2px 0 rgba(0,0,0,0.18);
   transition: transform 0.18s cubic-bezier(0.2,0.9,0.2,1), background 0.18s ease, color 0.18s ease;
 }
-.guided-session .fs-word::after { content: ""; position: absolute; left: 16%; right: 16%; bottom: 0.05em; height: 3px; border-radius: 999px; background: transparent; transform: scaleX(0.45); transition: transform 0.18s ease, background 0.18s ease; }
-.guided-session .fs-word:hover { transform: translateY(-4px); background: rgba(139,76,255,0.085); color: #fff; }
-.guided-session .fs-word:hover::after { background: rgba(168,120,255,0.64); transform: scaleX(1); }
-.guided-session .fs-word.is-playing { color: #cdbbff; background: rgba(139,76,255,0.11); }
-.guided-session .fs-word.is-playing::after { background: #9b63ff; transform: scaleX(1); }
+:is(.guided-session, .fs-tappable-sentence) .fs-word::after { content: ""; position: absolute; left: 16%; right: 16%; bottom: 0.05em; height: 3px; border-radius: 999px; background: transparent; transform: scaleX(0.45); transition: transform 0.18s ease, background 0.18s ease; }
+:is(.guided-session, .fs-tappable-sentence) .fs-word:hover { transform: translateY(-4px); background: rgba(139,76,255,0.085); color: #fff; }
+:is(.guided-session, .fs-tappable-sentence) .fs-word:hover::after { background: rgba(168,120,255,0.64); transform: scaleX(1); }
+:is(.guided-session, .fs-tappable-sentence) .fs-word.is-playing { color: #cdbbff; background: rgba(139,76,255,0.11); }
+:is(.guided-session, .fs-tappable-sentence) .fs-word.is-playing::after { background: #9b63ff; transform: scaleX(1); }
 /* Word popover: hover or right-click a German word for its meaning plus a
    practice action. While it is open the plain gloss tooltip stays hidden so
    the two never stack. */
-.guided-session .fs-word-anchor { position: relative; display: inline-block; }
+:is(.guided-session, .fs-tappable-sentence) .fs-word-anchor { position: relative; display: inline-block; }
 /* While a word panel is open, no hover tooltips anywhere in the sentence. The
    panel already gives the meaning, the audio and the save action; a second
    green chip floating beside it is the same information twice. The tooltip
@@ -3127,7 +3124,7 @@ a { color: inherit; text-decoration: none; }
 .guided-session:has(.fs-word.has-popover) .fs-order-token[data-gloss]::before {
   display: none;
 }
-.guided-session .fs-word-popover {
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover {
   position: absolute;
   /* Above the word, not below it. The sentence sits low in the card and
      there is far more room overhead, so opening downward ran the panel into
@@ -3140,9 +3137,12 @@ a { color: inherit; text-decoration: none; }
   gap: 4px;
   min-width: 190px;
   padding: 10px 11px;
-  border: 1px solid var(--fs-line-strong);
+  border: 1px solid var(--fs-line-strong, var(--border));
   border-radius: 13px;
-  background: var(--fs-surface, #fff);
+  /* --fs-surface only exists inside a lesson. Outside one the old #fff
+     fallback painted a white panel under near-white text — invisible in the
+     dark app, which is where Listen and the passages live. */
+  background: var(--fs-surface, var(--surface, #fff));
   box-shadow: 0 14px 34px rgba(20, 24, 18, 0.2);
   transform: translateX(-50%);
   cursor: default;
@@ -3152,66 +3152,68 @@ a { color: inherit; text-decoration: none; }
   max-height: min(320px, 60vh);
   overflow-y: auto;
 }
-.guided-session .fs-word-popover-word {
-  color: var(--fs-text);
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-word {
+  color: var(--fs-text, var(--text-1));
   font-size: 14px;
   font-weight: 850;
   line-height: 1.2;
 }
-.guided-session .fs-word-popover-gloss {
-  color: var(--fs-muted);
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-gloss {
+  color: var(--fs-muted, var(--text-3));
   font-size: 12px;
   font-weight: 650;
   line-height: 1.35;
 }
 
 /* The "why is it ihn, not er?" line for case-changed pronouns. */
-.guided-session .fs-word-popover-note {
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-note {
   max-width: 240px;
   padding-top: 3px;
-  border-top: 1px dashed var(--fs-line);
-  color: var(--fs-text-2);
+  border-top: 1px dashed var(--fs-line, var(--border));
+  color: var(--fs-text-2, var(--text-2));
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
 }
-.guided-session .fs-word-popover-actions {
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 6px;
   flex-wrap: wrap;
 }
-.guided-session .fs-word-popover-btn {
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   height: 28px;
   padding: 0 9px;
-  border: 1px solid var(--fs-line);
+  border: 1px solid var(--fs-line, var(--border));
   border-radius: 9px;
   background: transparent;
-  color: var(--fs-text-2);
+  color: var(--fs-text-2, var(--text-2));
   font-size: 11px;
   font-weight: 750;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-.guided-session .fs-word-popover-btn:hover { border-color: var(--fs-line-strong); color: var(--fs-text); }
-.guided-session .fs-word-popover-btn.is-primary {
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-btn:hover { border-color: var(--fs-line-strong, var(--border)); color: var(--fs-text, var(--text-1)); }
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-btn.is-primary {
   border-color: transparent;
-  background: var(--fs-grad);
+  background: var(--fs-grad, var(--accent));
   color: #fff;
 }
-.guided-session .fs-word-popover-saved {
-  color: var(--fs-accent, #39aa45);
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover-saved {
+  /* --success does not exist; --success-text is the app-wide one. Kept off a
+     literal so a custom accent can still reach it. */
+  color: var(--fs-accent, var(--success-text));
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
 }
 @media (prefers-reduced-motion: reduce) {
-  .guided-session .fs-word-popover-btn { transition: none; }
+  :is(.guided-session, .fs-tappable-sentence) .fs-word-popover-btn { transition: none; }
 }
 
 .guided-session .fs-order-token[data-gloss]::before {
@@ -3774,7 +3776,6 @@ a { color: inherit; text-decoration: none; }
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--fs-text);
 }
-
 
 /* ── "When you'd say it" ──
    The situation that triggers a phrase, for sentences whose moment isn't
@@ -5435,8 +5436,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   box-shadow: 0 5px 0 rgba(48, 145, 58, 0.18);
 }
 
-
-
 .guided-session.fs-app.prototype-guided-session :is(
   .fs-listening-wave i,
   .fs-missing-wave i
@@ -5662,11 +5661,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
 .guided-session.fs-app.prototype-guided-session .fs-when-label {
   color: #338f3d;
 }
-
-
-
-
-
 
 /* Dashboard-quality lesson interaction: one clear prompt, stacked tactile
    choices, and a full-width feedback tray instead of disconnected widgets. */
@@ -6194,7 +6188,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
     font-size: clamp(27px, 8.5vw, 36px);
   }
 
-
   .guided-session.fs-app.prototype-guided-session .fs-card--preview {
     border-radius: 23px;
   }
@@ -6607,7 +6600,6 @@ html[data-theme="dark"] .fs-shortcut-altcode {
   color: #cdd5e1;
 }
 
-
 /* ── Guided lesson, dark: the surfaces that paint their own colour ──
    Generated from the light rules (scratchpad gen-guided-dark.py) so no
    surface is missed. Light near-whites become the card surfaces, tinted
@@ -6978,7 +6970,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-inpu
   background: #161b23;
 }
 
-
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
   background: #161b23;
 }
@@ -7029,7 +7020,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-bran
   background: #1c222c;
 }
 
-
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german,
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-english {
   background: #232a35;
@@ -7056,7 +7046,6 @@ html[data-theme="dark"] .audio-mixer-panel.prototype-audio-mixer {
   background: #161b23;
   color: #eef2f8;
 }
-
 
 /* ── Guided lesson, dark: inks that assumed a light surface ──
    The mirror of the surface pass. These rules hardcode a dark colour
@@ -7424,10 +7413,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-stag
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-when-label {
   color: #6ddc92;
 }
-
-
-
-
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-new {
   color: #8fbde6;
@@ -7811,7 +7796,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .skip-st
 .update-prefs__toggle strong { display: block; font-size: 12px; font-weight: 850; color: var(--text-1); }
 .update-prefs__toggle small { display: block; margin-top: 2px; font-size: 11px; font-weight: 650; color: var(--text-3); }
 
-
 /* ── no white rings in the dark ──────────────────────────────────────────
    The light theme builds depth out of a white top highlight, a pale ring
    and a grey drop bar. Dark mode only ever repainted background and
@@ -8166,7 +8150,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-orde
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(47, 142, 57, 0.22);
 }
 
-
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(81, 94, 101, 0.12), 0 18px 34px rgba(72, 83, 88, 0.09);
 }
@@ -8215,7 +8198,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-engl
   border: 2px solid rgba(255,255,255,0.10);
 }
 
-
 /* ── text that forgot to turn light ──────────────────────────────────────
    A descendant's own colour beats the one it inherits, so repainting a
    panel never reached the heading inside it: "Set review level" was
@@ -8249,7 +8231,6 @@ html[data-theme="dark"] .fs-shortcut-altcode > span {
 html[data-theme="dark"] .fs-shortcut-altcode code {
   color: #cdd5e1;
 }
-
 
 /* ── the translucent greens follow the accent too ────────────────────────
    The earlier accent pass only re-pointed #hex greens, so every fade and
@@ -8477,11 +8458,11 @@ html[data-theme="dark"][data-accent="custom"] .guided-session .fs-match-option.i
   box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.14), 0 4px 0 rgba(var(--accent-hover-rgb), 0.78);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session .fs-word-popover-saved {
+html:not([data-theme="dark"])[data-accent="custom"] :is(.guided-session, .fs-tappable-sentence) .fs-word-popover-saved {
   color: var(--accent-text);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session .fs-word-popover-saved {
+html[data-theme="dark"][data-accent="custom"] :is(.guided-session, .fs-tappable-sentence) .fs-word-popover-saved {
   color: var(--accent-text);
 }
 
@@ -9742,11 +9723,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
   color: var(--accent-ink, var(--np-green));
 }
 
-
-
-
-
-
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   border-color: rgba(var(--accent-rgb), 0.48);
   color: var(--accent-ink, var(--np-green));
@@ -9958,7 +9934,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   background: var(--accent-pressed, var(--np-green-dark));
   color: var(--accent-text);
@@ -10144,8 +10119,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-when-label {
   color: var(--accent-ink, var(--np-green));
 }
-
-
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   color: var(--accent-text);
@@ -10367,7 +10340,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-order-token {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(var(--accent-hover-rgb), 0.22);
 }
-
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 0 rgba(var(--accent-hover-rgb), 0.17), 0 13px 23px rgba(var(--accent-hover-rgb), 0.1);
@@ -11023,7 +10995,6 @@ html[data-theme="dark"] .fs-review-level-option strong {
   color: var(--accent-ink, var(--fs-text)) !important;
 }
 
-
 /* ── Wrong-answer colours, which never existed ─────────────────────────────
    Twenty-two places across the course, tests and settings painted wrong
    answers as var(--red-bg,#3a2026) — a variable that was never declared, with
@@ -11137,54 +11108,130 @@ html[data-theme="dark"] {
   }
 }
 
+
 /*
- * A hoverable word — in a passage, in a Listen card, anywhere German is shown to be read.
+ * Matcher: the grade controls that hang off a pair.
  *
- * The gloss sits in a data attribute and comes out as a tooltip, the same
- * shape the lesson's word tokens use — dotted underline to say "there is
- * something here", and nothing at all when the word has no gloss, because an
- * underline that leads nowhere is worse than a plain word.
+ * One set per pair, on the German tile — the side that names the thing being
+ * graded. They sit inside the tile's right edge rather than below it so the
+ * board keeps its shape as pairs are cleared; the tile reserves the room with
+ * its own right padding rather than letting the buttons overlap long words.
  */
-.gloss-word.has-gloss {
-  position: relative;
-  cursor: help;
-  border-bottom: 1px dotted color-mix(in srgb, var(--accent) 60%, transparent);
-}
-.gloss-word.has-gloss:hover,
-.gloss-word.has-gloss:focus-visible {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  border-radius: 4px;
-  outline: none;
-}
-.gloss-word.has-gloss::after {
-  content: attr(data-gloss);
+.matcher-tile { position: relative; }
+.matcher-tile-actions {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  z-index: 30;
-  transform: translateX(-50%) translateY(3px);
-  padding: 5px 9px;
+  top: 50%;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  transform: translateY(-50%);
+}
+.matcher-tile-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+.matcher-tile-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.matcher-tile-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  gap: 3px;
+  width: min(280px, 78vw);
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px var(--shadow);
+  text-align: left;
+}
+.matcher-tile-menu > strong {
+  padding: 4px 6px 2px;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.matcher-tile-menu > button {
+  display: grid;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+.matcher-tile-menu > button:hover { background: var(--accent-dim); }
+.matcher-tile-menu > button > span { font-size: 12px; font-weight: 850; }
+.matcher-tile-menu > button > small { color: var(--text-3); font-size: 10.5px; font-weight: 650; }
+.matcher-tile-menu-days { display: flex; gap: 5px; padding: 2px 4px 0; }
+.matcher-tile-menu-days > button {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+.matcher-tile-menu-days > button:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.matcher-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 750;
+}
+.matcher-notice > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
   background: var(--surface);
   color: var(--text-1);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
-  white-space: nowrap;
-  max-width: min(320px, 70vw);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--text-1) 18%, transparent);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 120ms ease, transform 120ms ease;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease;
 }
-.gloss-word.has-gloss:hover::after,
-.gloss-word.has-gloss:focus-visible::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
+.matcher-notice > button:hover { border-color: var(--accent); color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
-  .gloss-word.has-gloss::after { transition: none; }
+  .matcher-tile-btn,
+  .matcher-tile-menu > button,
+  .matcher-tile-menu-days > button,
+  .matcher-notice > button { transition: none; }
 }

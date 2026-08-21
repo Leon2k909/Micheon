@@ -45,7 +45,6 @@ const built = esbuild.buildSync({
   stdin: {
     contents: [
       'export { germanWordGloss } from "./src/lib/germanWordGloss.ts";',
-      'export { glossedTokens } from "./src/components/shared/GlossedGerman.tsx";',
       'export { default as bank } from "./src/lib/bundledWordBank.json";',
     ].join("\n"),
     resolveDir: root,
@@ -66,7 +65,12 @@ const compiled = new Module("hover-check", module);
 compiled.filename = path.join(root, ".hover-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { germanWordGloss, glossedTokens, bank } = compiled.exports;
+const { germanWordGloss, bank } = compiled.exports;
+
+// The component splits on whitespace and strips punctuation at lookup time,
+// so the sweep below has to count words the same way it does.
+const bareWord = (word) => word.replace(/[.,!?;:"«»„“()]/g, "");
+const sentenceWords = (line) => String(line ?? "").trim().split(/\s+/).filter(Boolean);
 
 const asNoun = (word) => germanWordGloss(word, { midSentenceCapital: true });
 
@@ -100,14 +104,13 @@ for (const [word, wanted, wrongTwin] of [
   const lost = [];
   const improved = new Set();
   for (const sentence of sentences) {
-    glossedTokens(sentence).forEach((token, index) => {
-      if (!token.word) return;
-      if (!(index > 0 && /^\p{Lu}/u.test(token.text))) return;
+    sentenceWords(sentence).forEach((word, index) => {
+      if (!(index > 0 && /^\p{Lu}/u.test(word))) return;
       capitals += 1;
-      const before = germanWordGloss(token.text);
-      const after = asNoun(token.text);
-      if (before && !after) lost.push(`${token.text} (had "${before}")`);
-      if (before !== after && after) improved.add(token.text);
+      const before = germanWordGloss(word);
+      const after = asNoun(word);
+      if (before && !after) lost.push(`${word} (had "${before}")`);
+      if (before !== after && after) improved.add(bareWord(word));
     });
   }
   check(`the sweep actually looked at something (${capitals} mid-sentence capitals)`, capitals > 500);
@@ -122,44 +125,82 @@ for (const [word, wanted, wrongTwin] of [
 // capital, so treating that capital as evidence would break the common case
 // to fix the rare one.
 {
-  const opener = glossedTokens("Weiß ich nicht.");
-  check("the tokeniser marks the opening word as index 0", opener[0].text === "Weiß" && opener[0].word);
+  const opener = sentenceWords("Weiß ich nicht.");
+  check("the opening word is the one at index 0", opener[0] === "Weiß");
   check("a sentence-opening capital is not treated as a noun",
     /know/i.test(String(germanWordGloss("Weiß"))));
 }
 
 // ── one hover implementation, used by every surface that shows German ───
-const shared = read("src/components/shared/GlossedGerman.tsx");
+// A plain tooltip was tried in Listen first and was the wrong answer: it could
+// say what a word meant and then leave the learner with nowhere to put it.
+// Every surface now shows the same popover — meaning, Hear it, Practice this
+// word — so there is one thing to get right rather than three.
+const shared = read("src/components/shared/TappableSentence.tsx");
 check("the shared component asks for the noun sense on mid-sentence capitals",
-  /midSentenceCapital = index > 0 && \/\^\\p\{Lu\}\/u\.test\(token\.text\)/.test(shared));
+  /midSentenceCapital: i > 0 && \/\^\\p\{Lu\}\/u\.test\(w\)/.test(shared));
 check("a line's own glossary still beats the word lookup",
-  shared.indexOf("glosses?.[token.text]") < shared.indexOf("germanWordGloss(token.text"));
-check("words with no gloss get no affordance — an underline leading nowhere is worse than none",
-  /cn\("gloss-word", gloss && "has-gloss"\)/.test(shared));
-check("the gloss is reachable by keyboard, not hover alone",
-  /tabIndex=\{gloss \? 0 : undefined\}/.test(shared) && /aria-label=\{gloss \?/.test(shared));
+  /const lineGloss = glosses\?\.\[w\]/.test(shared)
+  && shared.indexOf("const lineGloss") < shared.indexOf("const hoverGloss"));
+check("the popover offers the two things a learner wants next",
+  /\{ui\("Hear it"\)\}/.test(shared) && /\{ui\("Practice this word"\)\}/.test(shared));
+check("a word already kept says so instead of offering to keep it twice",
+  /popoverSaved \? \([\s\S]{0,200}?In your words/.test(shared));
+check("the popover is reachable without a pointer",
+  /tabIndex=\{0\}/.test(shared) && /onKeyDown=/.test(shared) && /onContextMenu=/.test(shared));
+check("speaking a word can be announced, so a surface already playing can stand down",
+  /onWordAudio\?\.\(\);/.test(shared));
 
 const listen = read("src/components/listen/ListenView.tsx");
 check("Listen renders its sentence through the shared component",
-  /<GlossedGerman text=\{item\.de\} \/>/.test(listen));
+  /<TappableSentence text=\{item\.de\} lang="de-DE" meaningText=\{item\.en\} onWordAudio=\{pause\} \/>/.test(listen));
+check("and tapping a word pauses the loop rather than talking over it",
+  /onWordAudio=\{pause\}/.test(listen));
 
 const passages = read("src/components/passages/PassagesView.tsx");
 check("Passages uses the same one rather than its own copy",
-  /<GlossedGerman text=\{entry\.de\} glosses=\{entry\.glosses\} \/>/.test(passages));
+  /<TappableSentence text=\{entry\.de\} lang="de-DE" glosses=\{entry\.glosses\} \/>/.test(passages));
 check("and no longer carries a second hover implementation",
   !passages.includes("data-gloss"));
 
 const guided = read("src/GuidedSession.tsx");
-check("the lesson's tappable words pass the hint too",
-  /germanWordGloss\(w, \{ midSentenceCapital: i > 0 && \/\^\\p\{Lu\}\/u\.test\(w\) \}\)/.test(guided));
+check("the lesson imports the component instead of keeping its own",
+  /import \{ TappableSentence \} from "@\/components\/shared\/TappableSentence";/.test(guided)
+  && !guided.includes("function TappableSentence("));
 check("the reorder stage judges by the sentence, not by where the shuffle put the tile",
   /token\.text !== String\(item\.de\)\.trim\(\)\.split\(\/\\s\+\/\)\[0\]/.test(guided));
 
+// ── and it has to be visible outside a lesson ───────────────────────────
+// Every one of these styles was scoped to .guided-session, and the --fs-*
+// palette they use is only defined there. Un-widened, the popover renders in
+// Listen as unstyled text on no background — the silent way CSS fails.
 const styles = read("src/index.css");
-check("a hoverable word is marked as one",
-  /\.gloss-word\.has-gloss \{[\s\S]{0,200}?border-bottom: 1px dotted/.test(styles));
-check("and the gloss reaches the screen",
-  /\.gloss-word\.has-gloss::after[\s\S]{0,120}?content: attr\(data-gloss\)/.test(styles));
+check("the popover styles apply wherever the component renders",
+  /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word-popover \{/.test(styles));
+check("so do the word and its anchor",
+  /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word \{/.test(styles)
+  && /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word-anchor \{/.test(styles));
+check("and the buttons inside it",
+  /:is\(\.guided-session, \.fs-tappable-sentence\) \.fs-word-popover-btn \{/.test(styles));
+{
+  // No --fs- token may be referenced bare in these rules: outside a lesson it
+  // resolves to nothing and the colour simply does not happen.
+  const blocks = [...styles.matchAll(/^:is\(\.guided-session, \.fs-tappable-sentence\)[\s\S]*?\n\}/gmu)];
+  const bare = blocks.flatMap((block) => [...block[0].matchAll(/var\((--fs-[a-z0-9-]+)\)(?!\s*,)/gu)].map((m) => m[1]));
+  check(`every lesson-palette token has a theme fallback${bare.length ? ` — bare: ${[...new Set(bare)].join(", ")}` : ""}`,
+    blocks.length > 5 && bare.length === 0);
+
+  // And the fallback has to be a theme token, not a literal. --fs-surface
+  // once fell back to #fff, which painted a white panel under near-white
+  // text — perfectly visible in a light lesson, invisible in the dark app
+  // where Listen and the passages actually live.
+  const literalFallbacks = blocks.flatMap((block) =>
+    [...block[0].matchAll(/var\((--fs-[a-z0-9-]+),\s*(#[0-9a-f]{3,8}|rgb|hsl)/giu)].map((m) => m[1]));
+  check(`no lesson-palette token falls back to a hardcoded colour${literalFallbacks.length ? ` — ${[...new Set(literalFallbacks)].join(", ")}` : ""}`,
+    literalFallbacks.length === 0);
+}
+check("the lesson's own dark skin still out-specifies the shared rules",
+  styles.includes(".guided-session.fs-app.prototype-guided-session .fs-word"));
 
 if (failures) {
   console.error(`\ncheck-word-hovers: ${failures} failed`);

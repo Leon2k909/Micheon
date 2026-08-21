@@ -239,6 +239,18 @@ const DE: Record<string, string> = {
   "Mark this line as a struggle. Shortcut Alt S": "Diese Zeile als schwierig markieren. Kürzel Alt S",
   "“{item}” marked as {verdict}.": "„{item}“ als {verdict} markiert.",
   "Took the mark off “{item}”.": "Markierung von „{item}“ entfernt.",
+  // Matcher: grading a pair without leaving the board.
+  "Set level or put off": "Stufe setzen oder aufschieben",
+  "“{item}” marked as known.": "„{item}“ als gekonnt markiert.",
+  "Marked {n} as known.": "{n} als gekonnt markiert.",
+  "“{item}” put off for {days} days.": "„{item}“ um {days} Tage aufgeschoben.",
+  "Mark “{item}” as known": "„{item}“ als gekonnt markieren",
+  "More options for “{item}”": "Weitere Optionen für „{item}“",
+  "Know all {n}": "Alle {n} gekonnt",
+  "Step {step}: {size} pairs, deeper in": "Stufe {step}: {size} Paare, weiter hinten",
+  "{days}d": "{days} T",
+  "Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.":
+    "Tippe auf eine Karte, um sie zu hören – in der Lautstärke, die du für diese Sprache eingestellt hast. Das Zuordnen selbst ändert nichts: Beide Antworten stehen auf dem Bildschirm, es ist also Wiedererkennen. „Gekonnt“ und das Stufenmenü schreiben mit, wie überall sonst, und wer immer weiter „Gekonnt“ drückt, bekommt größere Bretter aus tieferen Bereichen der Liste.",
   // Listening stage: write down what you heard, options only on request.
   "Hear & write": "Hören & schreiben",
   "Write what you hear": "Schreib, was du hörst",

@@ -76,7 +76,7 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
-import { GlossedGerman } from "@/components/shared/GlossedGerman";
+import { TappableSentence } from "@/components/shared/TappableSentence";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
@@ -1107,12 +1107,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
-          {/* Hoverable a word at a time. Listen plays a line twice and moves
-              on, so the one word that blocked the sentence would otherwise
-              stay blocked — this answers it without stopping the loop or
-              sending anyone to a dictionary. */}
+          {/* A word at a time, with the same popover the lesson uses: the
+              meaning, then Hear it and Practice this word. Listen plays a line
+              twice and moves on, so the one word that blocked the sentence
+              would otherwise stay blocked — and knowing what it meant is only
+              half of it, since the next thing you want is to keep it.
+              Tapping a word pauses the loop rather than talking over it. */}
           <p className="listen-sentence mt-4 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
-            <GlossedGerman text={item.de} />
+            <TappableSentence text={item.de} lang="de-DE" meaningText={item.en} onWordAudio={pause} />
           </p>
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
