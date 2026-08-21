@@ -209,6 +209,17 @@ const DE: Record<string, string> = {
   "I had it": "Hatte ich",
   "Close enough": "Nah dran",
   "I missed it": "Nicht getroffen",
+  "Matcher": "Zuordnen",
+  "Match and keep going": "Zuordnen, immer weiter",
+  "German against English, six pairs at a time — words or sentences, refilling until you stop.":
+    "Deutsch gegen Englisch, sechs Paare auf einmal — Wörter oder Sätze, immer wieder neu, bis du aufhörst.",
+  "{matched} matched · {missed} missed": "{matched} richtig · {missed} daneben",
+  "{n} in the queue": "{n} in der Warteschlange",
+  "Nothing to match yet": "Noch nichts zum Zuordnen",
+  "Once the course content is loaded, everything you are learning can be matched here.":
+    "Sobald die Kursinhalte geladen sind, kannst du hier alles zuordnen, was du gerade lernst.",
+  "Practice only — matching with both answers on screen is recognition, so nothing here changes your progress. It works through the same order your lessons do, and refills as soon as you clear a board.":
+    "Nur zum Üben — Zuordnen mit beiden Antworten auf dem Bildschirm ist Wiedererkennen, deshalb ändert sich hier nichts an deinem Fortschritt. Es geht dieselbe Reihenfolge durch wie deine Lektionen und füllt sich neu, sobald ein Feld leer ist.",
   "Combo": "Serie",
   "Choose the correct meaning.": "Wähle die richtige Bedeutung.",
   "Replay the phrase": "Satz noch einmal abspielen",

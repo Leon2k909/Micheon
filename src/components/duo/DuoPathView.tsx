@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Lock, Play, Star, Zap } from "lucide-react";
+import { Check, ChevronRight, Lock, Play, Shuffle, Star, Zap } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildDuoPath, type DuoNode } from "@/lib/duoPath";
 import { DuoLesson } from "@/components/duo/DuoLesson";
+import { MatcherView } from "@/components/matcher/MatcherView";
 
 /**
- * Two ways in, side by side.
+ * Three ways in, side by side.
  *
  * The app already had one: a button that hands you the next thing you should
  * see. It is efficient and it is opaque — you cannot tell where you are, what
@@ -30,6 +31,7 @@ export function DuoPathView({
   lessonsCompleted: number;
 }) {
   const [activeNode, setActiveNode] = useState<DuoNode | null>(null);
+  const [matching, setMatching] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   // Rebuilt after a lesson so finished nodes fill in without a reload.
@@ -38,6 +40,10 @@ export function DuoPathView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [apiParts, refreshToken]
   );
+
+  if (matching) {
+    return <MatcherView apiParts={apiParts} profile={null} onExit={() => setMatching(false)} />;
+  }
 
   if (activeNode) {
     return (
@@ -55,7 +61,7 @@ export function DuoPathView({
   return (
     <div className="space-y-4">
       {/* The two ways in. */}
-      <section className="grid gap-3 sm:grid-cols-2">
+      <section className="grid gap-3 sm:grid-cols-3">
         <button
           type="button"
           onClick={onGuidedSession}
@@ -103,6 +109,34 @@ export function DuoPathView({
               {current
                 ? uiFmt("{title} — ten quick turns, five hearts.", { title: current.title })
                 : ui("Every unit in the course is finished.")}
+            </span>
+          </span>
+          <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
+            {ui("Start")} <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+        {/*
+          The third way in: the tracker, in pairs, endlessly. It sits beside
+          the other two rather than under Games because it walks the same
+          queue the course does — it is practice, not a diversion.
+        */}
+        <button
+          type="button"
+          onClick={() => setMatching(true)}
+          className="card card-hover flex flex-col items-start gap-3 p-5 text-left"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+            <Shuffle className="h-5 w-5" />
+          </span>
+          <span>
+            <span className="block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {ui("Matcher")}
+            </span>
+            <strong className="mt-1 block text-lg font-black tracking-tight text-[var(--text-1)]">
+              {ui("Match and keep going")}
+            </strong>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+              {ui("German against English, six pairs at a time — words or sentences, refilling until you stop.")}
             </span>
           </span>
           <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
