@@ -2336,6 +2336,316 @@ const DE: Record<string, string> = {
   "Match target words while keeping the run alive.": "Sammle die gesuchten Wörter und bleib dabei im Spiel.",
   // ── Course packs whose names reach the dashboard ──
   "Building blocks": "Grundbausteine",
+  // ── Screens outside the dashboard ──
+  // Every one of these already went through ui() at its call site and simply
+  // had no German to find, so ui() handed the English key straight back and
+  // the screen read English however the interface was set: storage and data,
+  // updates, the pet picker and message history, the course switcher, the
+  // catalogue import, custom sets and their study modes, the quick path, the
+  // placement ladder, the vocabulary tracker, and the Hole game.
+  "German characters": "Deutsche Sonderzeichen",
+  "Windows number pad": "Windows-Zehnerblock",
+  "Uppercase: Ä Alt + 0196 · Ö Alt + 0214 · Ü Alt + 0220":
+    "Großbuchstaben: Ä Alt + 0196 · Ö Alt + 0214 · Ü Alt + 0220",
+  "Stage numbers use Ctrl so Windows Alt-codes keep working. Hold Alt while typing the number-pad code, then release it. Arrow keys never take over an answer box.":
+    "Für Schrittnummern wird Strg verwendet, damit die Windows-Alt-Codes weiter funktionieren. Halte Alt gedrückt, tippe den Code auf dem Zehnerblock und lass Alt dann los. In Antwortfeldern bleiben die Pfeiltasten beim Text.",
+  "Quick check": "Kurze Kontrolle",
+  "That's it.": "Genau so.",
+  "Worth knowing:": "Gut zu wissen:",
+  "Got it": "Verstanden",
+  "Starting your next lesson in {seconds}…": "Nächste Lektion startet in {seconds} …",
+  "Credits": "Danksagungen",
+  "Micheon is written by Leon and Michelle. These are the pieces it stands on, and the licences they are used under.":
+    "Micheon wird von Leon und Michelle geschrieben. Das hier sind die Bausteine, auf denen es steht, und die Lizenzen, unter denen sie verwendet werden.",
+  "Space on this computer": "Speicherplatz auf diesem Computer",
+  "Recheck": "Neu prüfen",
+  "Micheon and the course": "Micheon und der Kurs",
+  "The program itself. Cannot be removed from in here.":
+    "Das Programm selbst. Lässt sich von hier aus nicht entfernen.",
+  "Your saved data": "Deine gespeicherten Daten",
+  "Progress, settings, and your own words.": "Fortschritt, Einstellungen und deine eigenen Wörter.",
+  "Cache": "Zwischenspeicher",
+  "Temporary files. Safe to clear.": "Temporäre Dateien. Können bedenkenlos gelöscht werden.",
+  "Clearing…": "Wird geleert …",
+  "Clear cache": "Zwischenspeicher leeren",
+  "Disk figures are only available in the desktop app.": "Speicherangaben gibt es nur in der Desktop-App.",
+  "Take your progress, settings, custom words, mastery and installed pets to another computer with a private JSON file.":
+    "Nimm deinen Fortschritt, deine Einstellungen, eigene Wörter, den Lernstand und installierte Pets als private JSON-Datei mit auf einen anderen Computer.",
+  "What Micheon is storing for you": "Was Micheon für dich speichert",
+  "Nothing stored yet.": "Noch nichts gespeichert.",
+  "Cannot be recovered": "Lässt sich nicht wiederherstellen",
+  "Tap again to delete": "Zum Löschen noch einmal tippen",
+  "Delete all my data": "Alle meine Daten löschen",
+  "Tap again to delete everything": "Zum Löschen von allem noch einmal tippen",
+  "Delete everything": "Alles löschen",
+  "is muted": "ist stummgeschaltet",
+  "That is why nothing played. Turn it back on?": "Deshalb war nichts zu hören. Wieder einschalten?",
+  "Unmute": "Ton einschalten",
+  "Keep it muted": "Stumm lassen",
+  "Current": "Aktuell",
+  "How updates arrive": "Wie Updates ankommen",
+  "Postponed until": "Aufgeschoben bis",
+  "Resume updates": "Updates fortsetzen",
+  "Postpone for": "Aufschieben um",
+  "Hide update notices": "Update-Hinweise ausblenden",
+  "Updates still install. This panel and the ready banner stay out of the way.":
+    "Updates werden weiterhin installiert. Nur diese Übersicht und das Hinweisband halten sich zurück.",
+  "Search pet messages": "Pet-Nachrichten durchsuchen",
+  "Search what the pet said…": "Suchen, was das Pet gesagt hat …",
+  "Move": "Verschieben",
+  "Choose one pet to speak. Keep additional pets visible with Show.":
+    "Wähle ein Pet, das spricht. Weitere Pets bleiben mit „Zeigen“ sichtbar.",
+  "Make": "Mach",
+  "the talking pet": "zum sprechenden Pet",
+  "Same course, two spellings and accents. Pick one — you can swap any time.":
+    "Derselbe Kurs, zwei Schreibweisen und Akzente. Wähl eine — du kannst jederzeit wechseln.",
+  "Pick a language, a programming track or the Life in the UK course.":
+    "Wähle eine Sprache, einen Programmierkurs oder den Kurs „Life in the UK“.",
+  "Living in the UK": "Leben im Vereinigten Königreich",
+  "No matching course": "Kein passender Kurs",
+  "Search by name, language code, or the name in that language — Deutsch, español, 日本語.":
+    "Suche nach Name, Sprachcode oder dem Namen in der jeweiligen Sprache — Deutsch, español, 日本語.",
+  "Search every word and phrase we have": "Alle Wörter und Sätze durchsuchen, die es gibt",
+  "Which catalogue": "Welcher Katalog",
+  "Level": "Niveau",
+  "Any": "Alle",
+  "Common words only": "Nur häufige Wörter",
+  "The most frequent": "Die häufigsten",
+  "in everyday German.": "im deutschen Alltag.",
+  "Only what I get wrong": "Nur, was ich falsch mache",
+  "From your tracker — things you have missed or keep failing.":
+    "Aus deinem Tracker — was du nicht wusstest oder immer wieder falsch machst.",
+  "Theme or pack": "Thema oder Paket",
+  "clear": "zurücksetzen",
+  "Find a pack — cooking, travel, work…": "Paket finden — Kochen, Reisen, Arbeit …",
+  "No pack matches that.": "Dazu passt kein Paket.",
+  "The catalogue is still loading. Try again in a moment.":
+    "Der Katalog wird noch geladen. Versuch es gleich noch einmal.",
+  "Preparing the catalogue…": "Katalog wird vorbereitet …",
+  "Add selected": "Ausgewählte hinzufügen",
+  "Add all": "Alle hinzufügen",
+  "(max)": "(Maximum)",
+  "Nothing matches those filters.": "Zu diesen Filtern passt nichts.",
+  "Select this one": "Diesen auswählen",
+  "word": "Wort",
+  "phrase": "Satz",
+  "Showing the first": "Gezeigt werden die ersten",
+  "— narrow the filters, or use Add all.": "— grenze die Filter ein oder nimm „Alle hinzufügen“.",
+  "Your own flashcards, studied with the same engine as the course. Type them, paste them, or pull them straight from our catalogue.":
+    "Deine eigenen Lernkarten, gelernt mit derselben Technik wie der Kurs. Tippe sie ein, füge sie ein oder hol sie direkt aus unserem Katalog.",
+  "New set": "Neues Set",
+  "Search your sets": "Deine Sets durchsuchen",
+  "No sets yet": "Noch keine Sets",
+  "Make a set for whatever keeps slipping — irregular verbs, words from a conversation, anything. You can pull cards from the catalogue instead of typing them.":
+    "Leg ein Set für alles an, was dir nicht im Kopf bleibt — unregelmäßige Verben, Wörter aus einem Gespräch, was auch immer. Du kannst Karten aus dem Katalog holen, statt sie zu tippen.",
+  "Try a different word, or clear the search.": "Probier ein anderes Wort oder setz die Suche zurück.",
+  "Make your first set": "Dein erstes Set anlegen",
+  "sets and their progress": "Sets und ihr Fortschritt",
+  "Select set": "Set auswählen",
+  "cards": "Karten",
+  "learning": "am Lernen",
+  "new": "neu",
+  "Edit": "Bearbeiten",
+  "Duplicate": "Duplizieren",
+  "Delete this set and its progress?": "Dieses Set und seinen Fortschritt löschen?",
+  "Keep": "Behalten",
+  "Tip: in the editor, \"From catalogue\" searches every word and phrase the app already knows — genders, glosses and usage notes come with them, so you rarely have to type a card yourself.":
+    "Tipp: Im Editor durchsucht „Aus dem Katalog“ alle Wörter und Sätze, die die App schon kennt — Artikel, Übersetzungen und Hinweise kommen mit, du musst also selten selbst eine Karte tippen.",
+  "All sets": "Alle Sets",
+  "Study": "Lernen",
+  "Set title": "Titel des Sets",
+  "Set title — click to rename": "Titel des Sets — zum Umbenennen klicken",
+  "Add a description (optional)": "Beschreibung hinzufügen (optional)",
+  "Set description": "Beschreibung des Sets",
+  "card(s) are missing a side and will be skipped when you study.":
+    "Karte(n) fehlt eine Seite; sie werden beim Lernen übersprungen.",
+  "Repeated term(s)": "Doppelte Begriffe",
+  "To top": "Nach ganz oben",
+  "To bottom": "Nach ganz unten",
+  "Select the": "Wähle die",
+  "incomplete": "unvollständigen",
+  "No cards yet. Add one below, pull them from the catalogue, or paste a list.":
+    "Noch keine Karten. Füge unten eine hinzu, hol sie aus dem Katalog oder füge eine Liste ein.",
+  "Select card": "Karte auswählen",
+  "Definition": "Bedeutung",
+  "Move up": "Nach oben",
+  "Move down": "Nach unten",
+  "Remove card": "Karte entfernen",
+  "Hint or example (optional)": "Hinweis oder Beispiel (optional)",
+  "catalogue": "Katalog",
+  "Add a card": "Karte hinzufügen",
+  "Paste a list": "Liste einfügen",
+  "One card per line. Separate the two sides with a tab, a dash, an equals sign or a colon — a tab is what you get pasting two columns out of a spreadsheet.":
+    "Eine Karte pro Zeile. Trenn die beiden Seiten mit einem Tabulator, Bindestrich, Gleichheitszeichen oder Doppelpunkt — einen Tabulator bekommst du, wenn du zwei Spalten aus einer Tabelle einfügst.",
+  "no second side": "keine zweite Seite",
+  "more": "weitere",
+  "Send this set to someone": "Dieses Set jemandem schicken",
+  "Copy the text below and paste it into a message. Whoever receives it pastes it back in here — it is the same format the paste box already reads.":
+    "Kopier den Text unten und füge ihn in eine Nachricht ein. Wer ihn bekommt, fügt ihn hier wieder ein — es ist dasselbe Format, das das Einfügefeld ohnehin liest.",
+  "Receive a set": "Ein Set empfangen",
+  "Paste a shared set here to add its cards to this one. The title and description stay as they are.":
+    "Füge hier ein geteiltes Set ein, um seine Karten zu diesem hinzuzufügen. Titel und Beschreibung bleiben, wie sie sind.",
+  "from": "aus",
+  "Stages": "Schritte",
+  "A Learn session walks each card up this ladder. Reorder or switch off whichever you like; what it takes to climb is set below.":
+    "Eine Lernrunde führt jede Karte diese Leiter hinauf. Sortier sie um oder schalt ab, was du nicht brauchst; wie viel eine Stufe kostet, stellst du unten ein.",
+  "Remove stage": "Schritt entfernen",
+  "Add a stage": "Schritt hinzufügen",
+  "How the ladder is climbed": "Wie die Leiter erklommen wird",
+  "Right answers to promote": "Richtige Antworten für die nächste Stufe",
+  "How many in a row before a card moves up a stage. One is quick; four makes you prove it.":
+    "Wie viele hintereinander, bevor eine Karte eine Stufe aufsteigt. Eine geht schnell; vier verlangen echten Beweis.",
+  "Cards per round": "Karten pro Runde",
+  "How many a Learn session asks before it stops and shows you where you got to.":
+    "Wie viele eine Lernrunde abfragt, bevor sie anhält und dir zeigt, wie weit du gekommen bist.",
+  "A mistake costs a stage": "Ein Fehler kostet eine Stufe",
+  "On: getting one wrong drops the card back down the ladder. Off: it only resets the streak, so a slip never undoes work.":
+    "An: Eine falsche Antwort schickt die Karte eine Stufe zurück. Aus: Nur die Serie beginnt von vorn, ein Versehen macht also nie Arbeit zunichte.",
+  "Which side is asked": "Welche Seite abgefragt wird",
+  "Read cards aloud": "Karten vorlesen",
+  "Speaks the German side when a card appears.": "Liest die deutsche Seite vor, wenn eine Karte erscheint.",
+  "Back to modes": "Zurück zu den Modi",
+  "Edit set": "Set bearbeiten",
+  "Reset": "Zurücksetzen",
+  "Shuffle": "Mischen",
+  "tap to go back": "zum Zurückblättern tippen",
+  "tap to reveal": "zum Aufdecken tippen",
+  "Everything is mastered": "Alles sitzt",
+  "Nothing left to learn in this set. Reset the progress to go again.":
+    "In diesem Set gibt es nichts mehr zu lernen. Setz den Fortschritt zurück, um noch einmal zu üben.",
+  "Round complete": "Runde abgeschlossen",
+  "right": "richtig",
+  "wrong": "falsch",
+  "Type the answer": "Antwort eintippen",
+  "Finish round": "Runde beenden",
+  "Submit test": "Test abgeben",
+  "New round": "Neue Runde",
+  "Go again": "Noch einmal",
+  "Nothing to practise here yet": "Hier gibt es noch nichts zu üben",
+  "This unit has no items the course can build a lesson from.":
+    "Diese Einheit hat nichts, woraus der Kurs eine Lektion bauen könnte.",
+  "Back to the path": "Zurück zum Pfad",
+  "Out of hearts": "Keine Herzen mehr",
+  "Lesson complete": "Lektion abgeschlossen",
+  "XP": "XP",
+  "Accuracy": "Trefferquote",
+  "Leave lesson": "Lektion verlassen",
+  "hearts left": "Herzen übrig",
+  "What does this mean?": "Was heißt das?",
+  "How do you say this?": "Wie sagt man das?",
+  "Put it in order": "Bring es in die richtige Reihenfolge",
+  "Type it in German": "Tipp es auf Deutsch",
+  "Type the German": "Das Deutsche eintippen",
+  "Guided session": "Geführte Runde",
+  "Lesson {n}. Seven stages on one phrase at a time — read, choose, type, translate, recall.":
+    "Lektion {n}. Sieben Schritte, immer an einem Satz — lesen, auswählen, tippen, übersetzen, erinnern.",
+  "Quick path": "Schneller Pfad",
+  "Continue the path": "Pfad fortsetzen",
+  "Path complete": "Pfad abgeschlossen",
+  "{title} — ten quick turns, five hearts.": "{title} — zehn schnelle Züge, fünf Herzen.",
+  "Every unit in the course is finished.": "Jede Einheit des Kurses ist geschafft.",
+  "Building your path": "Dein Pfad wird gebaut",
+  "The course catalogue is still loading.": "Der Kurskatalog wird noch geladen.",
+  "Your path": "Dein Pfad",
+  "{done} of {total} units complete": "{done} von {total} Einheiten geschafft",
+  "Unit {n}": "Einheit {n}",
+  "Save": "Speichern",
+  "Item type": "Art des Eintrags",
+  "Usefulness": "Nützlichkeit",
+  "Most common first uses conversation usefulness, curriculum order, and then word frequency. Niche and extra-practice material stays later.":
+    "„Häufigste zuerst“ richtet sich danach, wie nützlich etwas im Gespräch ist, dann nach der Kursreihenfolge und zuletzt nach der Worthäufigkeit. Nischenthemen und Zusatzübungen kommen später.",
+  "Filters and sorting apply to the full tracker, not only the rows currently visible.":
+    "Filter und Sortierung gelten für den ganzen Tracker, nicht nur für die gerade sichtbaren Zeilen.",
+  "Drag to move": "Zum Verschieben ziehen",
+  "You placed at {level}": "Du bist auf {level} eingestuft",
+  "Starting from the beginning": "Los geht es von vorn",
+  "You cleared {n} of {total} levels across {asked} questions.":
+    "Du hast {n} von {total} Stufen geschafft, bei {asked} Fragen.",
+  "No level was cleared, so the course starts at the first pack. That is the right place to begin.":
+    "Keine Stufe war geschafft, der Kurs beginnt also beim ersten Paket. Genau dort fängt man richtig an.",
+  "Continue learning now starts here": "„Weiterlernen“ beginnt jetzt hier",
+  "No placement questions available": "Keine Einstufungsfragen verfügbar",
+  "Placement test": "Einstufungstest",
+  "Level {level} — question {n} of {total}": "Stufe {level} — Frage {n} von {total}",
+  "Leave placement test": "Einstufungstest verlassen",
+  "Finish this level": "Diese Stufe abschließen",
+  "Get {pass} of {size} right to move up a level.":
+    "Beantworte {pass} von {size} richtig, um eine Stufe aufzusteigen.",
+  "Climbs while you keep passing. Do well and Continue learning starts harder.":
+    "Steigt, solange du bestehst. Läuft es gut, startet „Weiterlernen“ schwerer.",
+  "Hole": "Loch",
+  "Swallow the city. Everything smaller than your hole goes in — and everything you eat teaches you its name.":
+    "Verschling die Stadt. Alles, was kleiner ist als dein Loch, fällt hinein — und alles, was du frisst, bringt dir seinen Namen bei.",
+  "Rank": "Platz",
+  "You finished": "Du wurdest",
+  "with": "mit",
+  "Two minutes. Start with litter, end with tower blocks. Move with the mouse or WASD.":
+    "Zwei Minuten. Fang beim Müll an, hör bei Hochhäusern auf. Bewegen mit der Maus oder WASD.",
+  "Mouse or WASD to move · you can only swallow what is smaller than your hole":
+    "Maus oder WASD zum Bewegen · du kannst nur verschlingen, was kleiner ist als dein Loch",
+  "Lesson unavailable": "Lektion nicht verfügbar",
+  "Return home and choose another lesson.": "Geh zurück zum Start und wähl eine andere Lektion.",
+  "Back to Micheon": "Zurück zu Micheon",
+  // ── Labels that live in tables and reach the screen through ui(item.field) ──
+  // Study modes and their blurbs, the placement levels, the tracker filters,
+  // the credits list, the games, and the mascot display option that had no
+  // German while its two neighbours did.
+  "Twemoji": "Twemoji",
+  "The pictures beside the words. Around eight hundred of them ship with the app, so they look the same on every machine and work with no connection.":
+    "Die Bilder neben den Wörtern. Rund achthundert davon kommen mit der App, damit sie überall gleich aussehen und ohne Verbindung funktionieren.",
+  "Tatoeba": "Tatoeba",
+  "Part of the real-sentence practice. Most of the course is written for Micheon, and the share coming from here falls with every pack that replaces it.":
+    "Ein Teil der echten Beispielsätze. Der Großteil des Kurses ist für Micheon geschrieben, und der Anteil von hier sinkt mit jedem Paket, das ihn ersetzt.",
+  "Lucide": "Lucide",
+  "The interface icons.": "Die Symbole der Oberfläche.",
+  "Electron, React and Vite": "Electron, React und Vite",
+  "What the desktop app is built with.": "Womit die Desktop-App gebaut ist.",
+  "Also stay over fullscreen games. This can add input lag to the game.":
+    "Auch über Vollbildspielen bleiben. Das kann im Spiel zu Eingabeverzögerung führen.",
+  "🌱 I'm new to coding": "🌱 Ich fange mit dem Programmieren an",
+  "colour, practise": "colour, practise",
+  "color, practice": "color, practice",
+  "Walks each card up the stages you set. The one that tracks progress.":
+    "Führt jede Karte die Schritte hinauf, die du festgelegt hast. Der Modus, der den Fortschritt zählt.",
+  "Flip through at your own pace. Nothing is graded.":
+    "Blättere in deinem Tempo durch. Nichts wird bewertet.",
+  "Answer the whole set, then see a score and every correction.":
+    "Beantworte das ganze Set und sieh dann Ergebnis und jede Korrektur.",
+  "Match": "Paare",
+  "Pair terms against definitions, against the clock.":
+    "Ordne Begriffe ihren Bedeutungen zu — gegen die Uhr.",
+  "Builds the set into your memory. Progress only moves here.":
+    "Verankert das Set im Gedächtnis. Nur hier bewegt sich der Fortschritt.",
+  "Checks where you stand. Graded, and it changes nothing.":
+    "Prüft, wo du stehst. Wird bewertet und ändert nichts.",
+  "Written test": "Schriftlicher Test",
+  "A1–A2 · Beginner": "A1–A2 · Anfänger",
+  "Everyday basics: greetings, ordering, simple questions about yourself.":
+    "Alltagsgrundlagen: begrüßen, bestellen, einfache Fragen zu dir selbst.",
+  "B1 · Getting by": "B1 · Kommt zurecht",
+  "Handling ordinary situations alone — appointments, plans, opinions in short.":
+    "Gewöhnliche Situationen allein meistern — Termine, Pläne, Meinungen in Kürze.",
+  "B2 · Conversational": "B2 · Gesprächssicher",
+  "Keeping up with natives on familiar topics, and arguing a point.":
+    "Mit Muttersprachlern über vertraute Themen mithalten und einen Standpunkt vertreten.",
+  "C1 · Advanced": "C1 · Fortgeschritten",
+  "Fluent and precise, including work, study and abstract subjects.":
+    "Fließend und genau, auch bei Arbeit, Studium und abstrakten Themen.",
+  "C2 · Near-native": "C2 · Fast muttersprachlich",
+  "Anything a native handles: idiom, nuance, humour, fast speech.":
+    "Alles, was ein Muttersprachler kann: Redewendungen, Feinheiten, Humor, schnelles Sprechen.",
+  "All items": "Alle Einträge",
+  "Phrases & dialogues": "Sätze & Dialoge",
+  "Vocabulary in context": "Wortschatz im Zusammenhang",
+  "All usefulness levels": "Alle Nützlichkeitsstufen",
+  "Conversation essentials": "Das Wichtigste fürs Gespräch",
+  "Your material": "Dein eigenes Material",
+  "Daily life": "Alltag",
+  "Life events & big topics": "Lebensereignisse & große Themen",
+  "Specialist / casual": "Fachlich / beiläufig",
+  "Extra practice": "Zusätzliche Übung",
+  "Swallow a German city. Everything you eat teaches you its name.":
+    "Verschling eine deutsche Stadt. Alles, was du frisst, bringt dir seinen Namen bei.",
   "Checking in on each other": "Nachfragen, wie es geht",
 };
 
