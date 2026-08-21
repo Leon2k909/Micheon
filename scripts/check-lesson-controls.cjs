@@ -206,9 +206,41 @@ check(
   css.includes("0 5px 0 var(--accent-pressed, #a77b00)")
 );
 
+// ── the flag is the switch ──────────────────────────────────────────────────
+// Leon: "i should be able to click this to switch to eng uk or usa in
+// guidedsession". The flag on the typing prompt already says which variant
+// you are being marked against, so it is the obvious thing to press — rather
+// than leaving the lesson for Settings and coming back to it.
+{
+  const guided = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
+  check(
+    "the English flag on the typing prompt is a button",
+    /<button[\s\S]{0,220}data-testid="english-variant-switch"/.test(guided),
+    "it is still a plain span, so there is nothing to press"
+  );
+  check(
+    "pressing it swaps British for American and back",
+    guided.includes('setEnglishVariant(englishVariant === "british" ? "american" : "british")'),
+    "the switch does not actually change the variant"
+  );
+  check(
+    "the lesson follows the change while it is open",
+    guided.includes("useEnglishVariant()") && !/getEnglishVariant\(\), \[\]\)/.test(guided),
+    "the variant is still read once on mount, so switching needs a restart to show"
+  );
+
+  const lib = fs.readFileSync(path.join(root, "src/lib/englishVariant.ts"), "utf8");
+  check(
+    "changing the variant announces itself",
+    lib.includes("ENGLISH_VARIANT_EVENT")
+      && /dispatchEvent\(new CustomEvent\(ENGLISH_VARIANT_EVENT/.test(lib),
+    "nothing on screen can know the setting changed"
+  );
+}
+
 if (failures) {
   console.error(`\n${failures} lesson-control regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
 }
 
-console.log("\nthe sentence selects, the buttons match, and the speeds are real");
+console.log("\nthe sentence selects, the buttons match, the speeds are real, and the flag switches the English");

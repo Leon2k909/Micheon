@@ -26,7 +26,12 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const COMPONENT = /^(?:export\s+)?(?:default\s+)?(?:function|const)\s+[A-Z]\w*/;
+// A component OR a custom hook: both are bodies of their own, and both reset
+// what counts as an early return. Matching only capitalised names meant a
+// `function useEnglishVariant()` written under a plain helper that returns
+// early inherited that helper's guard, and every hook inside it was reported
+// as conditional when nothing about it was.
+const COMPONENT = /^(?:export\s+)?(?:default\s+)?(?:function|const)\s+(?:[A-Z]\w*|use[A-Z]\w*)/;
 const BODY_GUARD = /^ {2}if\s*\(.*\)\s*return\b/;
 const BODY_HOOK = /^ {2}(?:const\s*[[{]?[^=]*?=\s*)?(use[A-Z]\w*)\s*\(/;
 

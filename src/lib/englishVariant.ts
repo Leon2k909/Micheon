@@ -27,8 +27,22 @@ export function getEnglishVariant(profile?: UserProfile | null): EnglishVariant 
   return loadScopedJson<EnglishVariant>(ENGLISH_VARIANT_KEY, "auto", profile);
 }
 
+/**
+ * Announced, so a change lands on the screen you are looking at.
+ *
+ * The variant was read from storage at render and never watched, which was
+ * fine while it could only be changed in Settings — you came back to a fresh
+ * screen either way. It can now be switched from the flag on the typing
+ * prompt mid-lesson, and a setting that needs a restart to take effect is
+ * not really a switch.
+ */
+export const ENGLISH_VARIANT_EVENT = "micheon:english-variant";
+
 export function setEnglishVariant(value: EnglishVariant, profile?: UserProfile | null) {
   saveScopedJson(ENGLISH_VARIANT_KEY, value, profile);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(ENGLISH_VARIANT_EVENT, { detail: value }));
+  }
 }
 
 export function resolveEnglishVariant(value: EnglishVariant): ResolvedEnglishVariant {

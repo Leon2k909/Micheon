@@ -5828,6 +5828,26 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   box-shadow: inset 0 1px 0 #fff, 0 4px 0 rgba(72, 77, 66, 0.12), 0 9px 18px rgba(64, 70, 58, 0.08);
 }
 
+/* The English flag is a button now, so it has to look pressable and take a
+   focus ring like one. The German one is not — there is one German. */
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-switchable {
+  padding: 0;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-switchable:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 #fff, 0 5px 0 rgba(72, 77, 66, 0.16), 0 10px 20px rgba(64, 70, 58, 0.12);
+}
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-switchable:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(72, 77, 66, 0.16);
+}
+.guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-switchable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* A circle, matching the English flag beside it and the course chip on the
    dashboard. A round crop does trim the outer bands of a tricolour, but two
    flags of different shapes in the same row looked far worse. */

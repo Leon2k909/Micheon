@@ -21,7 +21,14 @@ import {
 } from "@/lib/germanTextMatch";
 import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
 import type { AnswerPerformance } from "@/lib/adaptivePractice";
-import { englishVariantLabel, formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import {
+  ENGLISH_VARIANT_EVENT,
+  englishVariantLabel,
+  formatEnglishText,
+  getEnglishVariant,
+  resolveEnglishVariant,
+  setEnglishVariant,
+} from "@/lib/englishVariant";
 import { matchLearningModeGermanAnswer } from "@/lib/learningMode";
 import {
   FLASHCARD_FACE_KEY,
@@ -1257,18 +1264,59 @@ function guidedTargetLanguageTag(): "de-DE" | "en-GB" | "en-US" {
   return resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US";
 }
 
+/**
+ * The English variant, watched rather than read once.
+ *
+ * Every screen that shows English text needs the same answer, and the answer
+ * can now change while a lesson is open.
+ */
+function useEnglishVariant() {
+  const [variant, setVariant] = useState(() => getEnglishVariant());
+  useEffect(() => {
+    const sync = () => setVariant(getEnglishVariant());
+    window.addEventListener(ENGLISH_VARIANT_EVENT, sync);
+    return () => window.removeEventListener(ENGLISH_VARIANT_EVENT, sync);
+  }, []);
+  return variant;
+}
+
 function PromptLanguageBadge({ label }: { label: string }) {
   const isGerman = label === "German";
   const isEnglish = label === "English";
   // The English side mirrors the German flag treatment, but honours the
   // profile's English-variant setting so British learners see their own flag.
-  const englishVariant = isEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
+  const stored = useEnglishVariant();
+  const englishVariant = isEnglish ? resolveEnglishVariant(stored) : null;
   const shortLabel = label.slice(0, 2).toUpperCase();
-  const title = englishVariant ? ui(englishVariantLabel(englishVariant)) : ui(label);
+  const title = englishVariant
+    // Leon: "i should be able to click this to switch to eng uk or usa in
+    // guidedsession". The flag already says which variant you are being
+    // marked against, so it is the obvious thing to press to change it —
+    // rather than leaving the lesson for Settings and coming back.
+    ? `${ui(englishVariantLabel(englishVariant))} — ${ui("tap to switch")}`
+    : ui(label);
+
+  if (isEnglish) {
+    return (
+      <button
+        type="button"
+        data-testid="english-variant-switch"
+        className={cn("fs-prompt-language", "is-english", "is-switchable")}
+        aria-label={title}
+        title={title}
+        onClick={() => setEnglishVariant(englishVariant === "british" ? "american" : "british")}
+      >
+        <i
+          className={cn("fs-english-flag", englishVariant === "british" ? "is-british" : "is-american")}
+          aria-hidden="true"
+        />
+      </button>
+    );
+  }
 
   return (
     <span
-      className={cn("fs-prompt-language", isGerman && "is-german", isEnglish && "is-english")}
+      className={cn("fs-prompt-language", isGerman && "is-german")}
       aria-label={title}
       title={title}
     >
@@ -1744,7 +1792,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useStickyFocus(recallTargetRef, phase === "RecallTarget");
   useStickyFocus(recallMeaningRef, phase === "RecallMeaning");
   useStickyFocus(frInputRef, phase === "French");
-  const englishVariant = useMemo(() => getEnglishVariant(), []);
+  const englishVariant = useEnglishVariant();
   // Learning direction: by default German is the target (item.de) and English the
   // meaning (item.en). When learning English, the session builder has already
   // swapped the fields, so item.de IS the English target — we just need the right

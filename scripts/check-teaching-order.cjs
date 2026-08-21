@@ -18,6 +18,7 @@
  *   band       = how often you NEED this — editorial, no word count can supply it
  *   commonality = how hard the VOCABULARY is — measured, and only sorts within a band
  */
+const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const Module = require("module");
@@ -36,6 +37,9 @@ const built = esbuild.buildSync({
       export { conversationPriorityScore, conversationPriorityInfo } from "./src/lib/conversationPriority.ts";
       export { buildCorpusIndex, sentenceCommonality } from "./src/lib/corpusFrequency.ts";
       export { allPartBlueprints } from "./src/lib/data.ts";
+      export { buildApiPartFromResolved } from "./src/lib/api.ts";
+      export { buildWordCatalog, rankWordCatalog, buildWordSitting, learnerWordRung } from "./src/lib/wordSession.ts";
+      export { frequencyRank } from "./src/lib/wordFrequency.ts";
     `,
     resolveDir: root, sourcefile: "order-entry.ts",
   },
@@ -113,4 +117,51 @@ if (failures.length) {
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
-console.log(`check-teaching-order: no band holds more than ${Math.round(share * 100)}% of the catalogue, the essentials come first, and the pregnancy line sits at ${niche} against "where is the toilet" at ${toilet}`);
+// ── declaring knowns must not bury the common words ─────────────────────────
+// Leon: "im concerned that if i keep pressing kann ich, it will make things
+// less popular.. is that a good worry?"
+//
+// The mechanism is real: the rung climbs on DECLARED knowns — five presses a
+// rung, six rungs, so it tops out after twenty-five — and new words are then
+// served from that rung upward. What stops it becoming a problem is the core
+// carve-out: a word in the top 1,200 of the frequency bank counts as at-rung
+// wherever the learner stands, so the everyday vocabulary can never be pushed
+// behind C1 material. This asserts the outcome rather than the mechanism, so
+// it survives the mechanism being rewritten.
+{
+  const { buildApiPartFromResolved, buildWordCatalog, rankWordCatalog, buildWordSitting, learnerWordRung, frequencyRank } = mod.exports;
+  const wordParts = {};
+  for (const [key, blueprint] of Object.entries(allPartBlueprints)) {
+    try { wordParts[key] = buildApiPartFromResolved(blueprint, {}); } catch { /* as the app does */ }
+  }
+  const rankedWords = rankWordCatalog(buildWordCatalog(wordParts), null);
+  const declareTopN = (n) => {
+    const grades = {};
+    for (let i = 0; i < n; i += 1) {
+      const word = rankedWords[i];
+      if (word) grades[word.id] = { lastGrade: "know", declared: true };
+    }
+    return grades;
+  };
+
+  // The rung really does saturate, which is worth stating rather than
+  // discovering later: after 25 presses everyone is on the top rung.
+  assert.strictEqual(learnerWordRung(declareTopN(0)), 1, "nobody starts above the first rung");
+  assert.strictEqual(learnerWordRung(declareTopN(25)), 6, "25 declared knowns reaches the top rung");
+  assert.strictEqual(learnerWordRung(declareTopN(2000)), 6, "and it cannot climb past it");
+
+  // The outcome that matters: however far up the ladder you are, the next new
+  // words are still the most common ones you have not met.
+  for (const declared of [0, 25, 100, 500, 1000]) {
+    const grades = declareTopN(declared);
+    const sitting = buildWordSitting(rankedWords, grades, Date.now(), { reviewSlots: 0, freshSlots: 6 });
+    const words = sitting.map((step) => step.item);
+    assert.ok(words.length > 0, `no words served after ${declared} declared knowns`);
+    const known = words.filter((word) => Number.isFinite(frequencyRank(word.lookup || word.de))).length;
+    assert.strictEqual(known, words.length,
+      `after ${declared} presses of Kann ich, ${words.length - known} of ${words.length} new words `
+      + "are outside the 2,500-word frequency bank — declaring knowns is pushing rare words forward");
+  }
+}
+
+console.log(`check-teaching-order: no band holds more than ${Math.round(share * 100)}% of the catalogue, the essentials come first, and the pregnancy line sits at ${niche} against "where is the toilet" at ${toilet}, and declaring knowns never buries the common words`);
