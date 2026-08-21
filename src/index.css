@@ -5566,64 +5566,10 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
   color: #338f3d;
 }
 
-.guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  pointer-events: none;
-  position: absolute;
-  top: 82px;
-  left: 50%;
-  z-index: 40;
-  display: inline-flex;
-  min-width: 188px;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 13px 12px;
-  border: 1px solid rgba(54, 82, 45, 0.18);
-  border-radius: 15px;
-  background: rgba(255, 254, 250, 0.97);
-  color: #252a24;
-  box-shadow:
-    inset 0 1px 0 #fff,
-    0 5px 0 rgba(80, 112, 68, 0.14),
-    0 18px 38px rgba(55, 80, 46, 0.17);
-  backdrop-filter: blur(14px);
-}
 
-.guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid rgba(51, 151, 62, 0.25);
-  border-radius: 12px;
-  background: #e3f5dc;
-  color: #247a31;
-  box-shadow: 0 3px 0 rgba(54, 145, 62, 0.16);
-  font-family: var(--fs-font-display);
-  font-size: 15px;
-  font-weight: 950;
-  font-variant-numeric: tabular-nums;
-}
 
-.guided-session.fs-app.prototype-guided-session .fs-praise-copy {
-  display: flex;
-  flex-direction: column;
-}
 
-.guided-session.fs-app.prototype-guided-session .fs-praise-label {
-  color: #338f3d;
-  font-size: 9px;
-  font-weight: 950;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
 
-.guided-session.fs-app.prototype-guided-session .fs-praise-copy strong {
-  color: #252a24;
-  font-size: 14px;
-  font-weight: 950;
-  line-height: 1.15;
-}
 
 /* Dashboard-quality lesson interaction: one clear prompt, stacked tactile
    choices, and a full-width feedback tray instead of disconnected widgets. */
@@ -6151,9 +6097,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prev
     font-size: clamp(27px, 8.5vw, 36px);
   }
 
-  .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-    top: 72px;
-  }
 
   .guided-session.fs-app.prototype-guided-session .fs-card--preview {
     border-radius: 23px;
@@ -6938,10 +6881,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-inpu
   background: #161b23;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  background: #173a24;
-  color: #7fe6a0;
-}
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
   background: #161b23;
@@ -6993,10 +6932,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-bran
   background: #1c222c;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  background: #1c222c;
-  color: #eef2f8;
-}
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-german,
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-prompt .fs-prompt-language.is-english {
@@ -7393,21 +7328,9 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-when
   color: #6ddc92;
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  color: #eef2f8;
-}
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  color: #6ddc92;
-}
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-label {
-  color: #6ddc92;
-}
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-copy strong {
-  color: #eef2f8;
-}
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-new {
   color: #8fbde6;
@@ -8146,9 +8069,6 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-orde
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(47, 142, 57, 0.22);
 }
 
-html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(80, 112, 68, 0.14), 0 18px 38px rgba(55, 80, 46, 0.17);
-}
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-prompt {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(81, 94, 101, 0.12), 0 18px 34px rgba(72, 83, 88, 0.09);
@@ -9725,32 +9645,10 @@ html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.proto
   color: var(--accent-ink, var(--np-green));
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.18);
-  box-shadow: inset 0 1px 0 #fff,
-    0 5px 0 rgba(var(--accent-hover-rgb), 0.14),
-    0 18px 38px rgba(var(--accent-hover-rgb), 0.17);
-}
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.18);
-}
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
-  background: var(--np-green-soft, var(--accent-dim));
-  color: var(--accent-text);
-  box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.16);
-}
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
-  box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.16);
-}
 
-html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-label {
-  color: var(--accent-ink, var(--np-green));
-}
 
 html:not([data-theme="dark"])[data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   border-color: rgba(var(--accent-rgb), 0.48);
@@ -9963,10 +9861,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  background: var(--accent-pressed, var(--np-green-dark));
-  color: var(--accent-text);
-}
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   background: var(--accent-pressed, var(--np-green-dark));
@@ -10154,13 +10048,7 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   color: var(--accent-ink, var(--np-green));
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-count {
-  color: var(--accent-text);
-}
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-label {
-  color: var(--accent-ink, var(--np-green));
-}
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   color: var(--accent-text);
@@ -10383,9 +10271,6 @@ html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-g
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 0 rgba(var(--accent-hover-rgb), 0.22);
 }
 
-html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-praise-pop {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 5px 0 rgba(var(--accent-hover-rgb), 0.14), 0 18px 38px rgba(var(--accent-hover-rgb), 0.17);
-}
 
 html[data-theme="dark"][data-accent="custom"] .guided-session.fs-app.prototype-guided-session .fs-dashboard-choice-layout .fs-meaning-choice:hover:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 0 rgba(var(--accent-hover-rgb), 0.17), 0 13px 23px rgba(var(--accent-hover-rgb), 0.1);

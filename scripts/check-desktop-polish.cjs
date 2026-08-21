@@ -128,7 +128,13 @@ check("the prototype guided lesson gets a wider learning canvas", /\.guided-sess
 check("word-order lessons compact at desktop heights instead of forcing a page scroll", guidedSession.includes('className="fs-order-phase space-y-4"') && /@media \(min-width: 900px\) and \(max-height: 1040px\)[\s\S]*?\.fs-card:has\(\.fs-order-phase\) \.fs-order-panel\s*\{[^}]*min-height:\s*144px;/s.test(appStyles) && /\.fs-card:has\(\.fs-order-phase\) \.fs-order-feedback\s*\{[^}]*min-height:\s*94px;/s.test(appStyles));
 check("dark guided reorder prompts stay on a dark high-contrast surface", /html\[data-theme="dark"\] \.guided-session\.fs-app\.prototype-guided-session \.fs-reorder-prompt\s*\{[^}]*background:\s*#161b23;/s.test(appStyles));
 check("the active guided stage uses Micheon green instead of legacy gold", /prototype-guided-session \.fs-stagebtn\.is-active > span\s*\{[^}]*background:\s*var\(--fs-grad\);[^}]*color:\s*#fff;/s.test(appStyles));
-check("guided streak feedback uses the light green product surface", guidedSession.includes('className="fs-praise-pop"') && /prototype-guided-session \.fs-praise-pop\s*\{[^}]*background:\s*rgba\(255,\s*254,\s*250,\s*0\.97\);/s.test(appStyles));
+// The streak counter that popped over a lesson at 3, 5, 10 and every 5 after
+// is gone — Leon: "remove this keep it going thing its broken and looks bad
+// anyway". Asserted absent rather than deleted, because a floating overlay is
+// exactly the sort of thing that gets added back without anyone noticing, and
+// its twenty-two style rules across four themes cost more than it earned. The
+// pet still says so at the same milestones; that is the feedback that stayed.
+check("the guided streak pop stays removed, markup and styles alike", !guidedSession.includes("fs-praise-pop") && !guidedSession.includes("setPraise") && !appStyles.includes("fs-praise"));
 check("closed-book recall uses a high-contrast light learning surface", /prototype-guided-session \.fs-closed-recall-cue\s*\{[^}]*border-color:\s*rgba\(67,\s*184,\s*76,\s*0\.3\);[^}]*background:\s*linear-gradient\(180deg,\s*#fbfff8 0%,\s*#f1f8ec 100%\);/s.test(appStyles) && /prototype-guided-session \.fs-closed-recall-cue strong\s*\{[^}]*color:\s*#252a24;[^}]*font-weight:\s*950;/s.test(appStyles));
 check("notifications close with a neutral icon action", prototype.includes('aria-label={ui("Close notifications")}') && prototype.includes('<X aria-hidden="true" />') && /\.np-notification-heading button\s*\{[^}]*background:\s*var\(--np-surface-soft\);/s.test(styles));
 check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));

@@ -5870,7 +5870,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const holdReviewNotice = useCallback(() => setReviewNoticeHeld(true), []);
   const releaseReviewNotice = useCallback(() => setReviewNoticeHeld(false), []);
   const [gradeResetNonce, setGradeResetNonce] = useState(0);
-  const [praise, setPraise] = useState<{ count: number; id: number } | null>(null);
   useEffect(() => {
     const syncGuidedBackground = () => {
       setGuidedBackground(getGuidedBackground());
@@ -5882,7 +5881,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const lessonProgressRef = useRef<HTMLDivElement | null>(null);
   const lessonProgressTriggerRef = useRef<HTMLButtonElement | null>(null);
   const comboRef = useRef(0);
-  const praiseId = useRef(0);
   const correctPraiseIndex = useRef(0);
   const retryPraiseIndex = useRef(0);
   const announcedComplete = useRef(false);
@@ -6009,17 +6007,15 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       });
     }
     // The praise filter: off silences the pet's cheering entirely, low keeps
-    // only streak milestones. The little on-screen streak flash stays either
-    // way — the filter is about chatter, not feedback.
+    // only streak milestones. There was also a streak counter that popped over
+    // the lesson at 3, 5, 10 and every 5 after — Leon: "remove this keep it
+    // going thing its broken and looks bad anyway". The pet still says so.
     const praiseFrequency = getCodexPetFrequency("praise");
     if (ok) {
       const n = comboRef.current + 1;
       comboRef.current = n;
       playCorrect();
       if (n === 3 || n === 5 || n === 10 || (n > 10 && n % 5 === 0)) {
-        const id = ++praiseId.current;
-        setPraise({ count: n, id });
-        setTimeout(() => setPraise((p) => (p && p.id === id ? null : p)), 1500);
         if (praiseFrequency !== "off") {
           petSpeak(`${n} correct in a row! Excellent work.`, {
             durationMs: 3800,
@@ -6492,39 +6488,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
           )}
         </AnimatePresence>
       </main>
-
-      {/* Milestone praise pop */}
-      <AnimatePresence>
-        {praise && !petEnabled && (
-          <motion.div
-            key={praise.id}
-            initial={reduceMotion
-              ? { opacity: 0, x: "-50%" }
-              : { opacity: 0, x: "-50%", y: -8 }}
-            animate={{ opacity: 1, x: "-50%", y: 0 }}
-            exit={reduceMotion
-              ? { opacity: 0, x: "-50%" }
-              : { opacity: 0, x: "-50%", y: -4 }}
-            transition={reduceMotion
-              ? { duration: 0.12 }
-              : { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            aria-label={`${praise.count} ${ui("correct in a row")}`}
-            className="fs-praise-pop"
-            data-testid="lesson-streak-feedback"
-            role="status"
-          >
-            <span className="fs-praise-count">
-              {praise.count}
-            </span>
-            <span className="fs-praise-copy">
-              <span className="fs-praise-label">
-                {ui("Correct streak")}
-              </span>
-              <strong>{ui("Keep it going")}</strong>
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
     </div>
   );
