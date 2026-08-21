@@ -1107,7 +1107,15 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
 
       // Knowing, thinking, hoping
       { de: "Ich weiß.", en: "I know.", use: "For facts. Knowing a person or a place is kennen: Ich kenne ihn." },
-      { de: "Ich verstehe.", en: "I see.", use: "Says you followed it, not that you agree." },
+      // Glossed "I see." until Leon caught it: "i understand is better, no? i
+      // see is the same but ich seh is gonna get confused surely?" — right,
+      // and this pack made it worse than a general risk. Ich sehe das. sits
+      // seven cards below glossed "I see it that way.", and the card directly
+      // under this one already says "I don't understand." So the prompt "I
+      // see." asked for verstehen while its own neighbours taught sehen for
+      // the same English. The idiom is real and stays in the note; the prompt
+      // has to name the verb it wants.
+      { de: "Ich verstehe.", en: "I understand.", use: "English usually says 'I see' here. Says you followed it, not that you agree." },
       { de: "Ich verstehe nicht.", en: "I don't understand.", use: "Add das to point at the specific thing: Ich verstehe das nicht." },
       { de: "Ich denke schon.", en: "I think so.", use: "schon is what completes it — bare 'Ich denke' or 'Ich glaube' trails off. With a comma it carries the thought instead: Ich denke, das stimmt." },
       { de: "Ich denke nach.", en: "I'm thinking about it.", use: "nachdenken is thinking something OVER. Bare 'Ich denke' does not mean this — it opens an opinion: Ich denke, das stimmt." },
