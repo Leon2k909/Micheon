@@ -29,9 +29,13 @@ const i18n = read("src/lib/i18n.ts");
 
 // The rows Michelle asked for, in her order: three destinations the nav
 // already had, then Speaking, which has nothing behind it yet and says so
-// rather than being quietly left out of the section. Vocabulary was here for
-// a while and she asked for it back out — the tracker it opened is on the
-// profile page, which is where it already lived.
+// rather than being quietly left out of the section.
+//
+// Four rows, where the first brief listed five. Vocabulary was built, shipped,
+// and then taken back out on her word — "hier muss das wortschatz weg" — after
+// she saw it: the tracker it opened lives on the profile page, which is where
+// it already was. Recorded here, with the quote, so a later reader finds a
+// decision rather than an omission and puts it back by accident.
 const languageBlock = /const LANGUAGE_SECTION_ROWS: LanguageRow\[\] = \[([\s\S]*?)\n\];/.exec(shell)?.[1] ?? "";
 const languageOrder = [...languageBlock.matchAll(/kind: "(nav|view|soon)"[^\n]*?(?:id|label): "([^"]+)"/g)]
   .map((match) => match[2]);
@@ -48,6 +52,21 @@ assert.ok(
 assert.ok(
   /className="np-nav-flag is-pressable"[\s\S]{0,400}onSwitchCourse\(\)/.test(shell),
   "pressing the flag opens the course picker rather than folding the section"
+);
+// The first brief's rule for this section was "Die Auswahl der Lernsprache
+// erfolgt separat und nicht über dieses Dropdown", and it still holds: no row
+// in the dropdown changes anything about the language. What she asked for
+// afterwards was a way IN — "wenn man auf die flagge bei sprachen lernen
+// tippt man dort die sprache ändern kann" — so the flag opens the separate
+// picker that was already there. The choosing happens in that picker, not in
+// this section, which is what the rule was protecting.
+assert.ok(
+  !languageBlock.includes("onSwitchCourse") && !languageBlock.includes("setActiveCourseId"),
+  "no row inside the dropdown selects a language — the picker stays a separate place"
+);
+assert.ok(
+  !/np-nav-group-items[\s\S]{0,1200}onSwitchCourse/.test(shell),
+  "and nothing in the opened list reaches the picker either"
 );
 assert.ok(
   /aria-label=\{ui\("Change the language you are learning"\)\}/.test(shell)
