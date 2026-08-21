@@ -31,7 +31,7 @@ const pack = (label: string, level: string, theme: string, description: string, 
 export const frequencyWordPartBlueprints: Record<string, Blueprint> = {
   part476: pack("Part 476", "A1", "Common words 1", "Frequency-ranked everyday German, bank ranks 5\u2013108.", [
     { de: "das Jahr", lookup: "Jahr", fallbackEn: "year", tip: "noun", article: "das" },
-    { de: "sollen", lookup: "sollen", fallbackEn: "to should, be supposed to, ought to", tip: "verb" },
+    { de: "sollen", lookup: "sollen", fallbackEn: "should, be supposed to, ought to", tip: "verb" },
     { de: "neu", lookup: "neu", fallbackEn: "new", tip: "adjective" },
     { de: "müssen", lookup: "müssen", fallbackEn: "to have to, must", tip: "verb" },
     { de: "der Mensch", lookup: "Mensch", fallbackEn: "human, human being", tip: "noun", article: "der" },
@@ -52,7 +52,7 @@ export const frequencyWordPartBlueprints: Record<string, Blueprint> = {
     { de: "hoch", lookup: "hoch", fallbackEn: "high, tall", tip: "adjective" },
     { de: "das Datum", lookup: "Datum", fallbackEn: "date, datum", tip: "noun", article: "das" },
     { de: "das Land", lookup: "Land", fallbackEn: "country, countryside", tip: "noun", article: "das" },
-    { de: "dürfen", lookup: "dürfen", fallbackEn: "to may, be allowed to", tip: "verb" },
+    { de: "dürfen", lookup: "dürfen", fallbackEn: "be allowed to, may", tip: "verb", use: "The modal for permission. Led with \"be allowed to\" because a spoken \"may\" is indistinguishable from der Mai, the month." },
     { de: "die Seite", lookup: "Seite", fallbackEn: "side, page", tip: "noun", article: "die" },
     { de: "der Schüler", lookup: "Schüler", fallbackEn: "pupil, student", tip: "noun", article: "der" },
     { de: "das Teil", lookup: "Teil", fallbackEn: "part, piece, component", tip: "noun", article: "das" },
