@@ -1,8 +1,18 @@
-import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Check, CheckSquare, Layers, Plus, Search, SlidersHorizontal, Square, X } from "lucide-react";
-import { ui, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import { cn } from "@/lib/utils";
+import { ListPager, LongListChoice, ScrollJump, ShowMore } from "@/components/create/LongList";
+import {
+  CATALOGUE_PAGE_SIZE,
+  LONG_LIST_THRESHOLD,
+  loadLongListMode,
+  pageSlice,
+  pageWindow,
+  saveLongListMode,
+  type LongListMode,
+} from "@/lib/longLists";
 import {
   ADD_ALL_LIMIT,
   CEFR_LEVELS,
@@ -47,6 +57,17 @@ export function CatalogueImport({
   // Ticking individual results, for when "add all" is too blunt and one at a
   // time is too slow — which is most of the time.
   const [ticked, setTicked] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  // Scroll mode grows a chunk at a time. Rendering all 23,584 matches at once
+  // locks the browser for seconds and then scrolls badly forever.
+  const [loaded, setLoaded] = useState(CATALOGUE_PAGE_SIZE);
+  const [mode, setMode] = useState<LongListMode>(() => loadLongListMode());
+  const chooseMode = useCallback((next: LongListMode) => {
+    setMode(next);
+    saveLongListMode(next);
+    setPage(1);
+    setLoaded(CATALOGUE_PAGE_SIZE);
+  }, []);
   const deferred = useDeferredValue(filters);
 
   // Both catalogues together are a lot of work, so it happens once, when the
@@ -87,11 +108,26 @@ export function CatalogueImport({
     return list.slice(0, 40);
   }, [packs, packQuery]);
 
+  // A new filter is a new list, so it starts at the beginning. pageWindow
+  // clamps anyway, but landing on "page 4 of 4" after narrowing a search
+  // reads as though results are missing.
+  useEffect(() => { setPage(1); setLoaded(CATALOGUE_PAGE_SIZE); }, [deferred]);
+
   const results = useMemo(
     () => (pool ? filterImportPool(pool, deferred, grades) : []),
     [pool, deferred, grades]
   );
-  const shown = results.slice(0, 80);
+  /**
+   * Paged, not truncated.
+   *
+   * This showed the first eighty matches and told you to narrow the filters,
+   * which is fine advice for "der" and useless for a pack of two hundred you
+   * deliberately asked for: there was no way to reach match eighty-one.
+   */
+  const pages = pageWindow(results.length, page, CATALOGUE_PAGE_SIZE);
+  const shown = mode === "scroll"
+    ? results.slice(0, loaded)
+    : pageSlice(results, pages.page, CATALOGUE_PAGE_SIZE);
   const addable = results.filter((item) => !alreadyAdded.has(item.id)).slice(0, ADD_ALL_LIMIT);
 
   const set = <K extends keyof ImportFilters>(key: K, value: ImportFilters[K]) =>
@@ -413,13 +449,21 @@ export function CatalogueImport({
                   </div>
                 );
               })}
-              {results.length > shown.length && (
-                <p className="pt-1 text-center text-[11px] font-bold text-[var(--text-3)]">
-                  {ui("Showing the first")} {shown.length} {ui("— narrow the filters, or use Add all.")}
-                </p>
-              )}
             </div>
           )}
+          {results.length > 0 && (
+            mode === "scroll"
+              ? (
+                <ShowMore
+                  shown={shown.length}
+                  total={results.length}
+                  onMore={() => setLoaded((value) => value + CATALOGUE_PAGE_SIZE * 2)}
+                />
+              )
+              : <ListPager window={pages} onPage={setPage} />
+          )}
+          <LongListChoice mode={mode} onMode={chooseMode} total={results.length} />
+          <ScrollJump enabled={mode === "scroll" && results.length >= LONG_LIST_THRESHOLD} />
         </>
       )}
     </section>

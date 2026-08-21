@@ -21,6 +21,15 @@ import {
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CatalogueImport } from "@/components/create/CatalogueImport";
+import { ListPager, LongListChoice, ScrollJump, ShowMore } from "@/components/create/LongList";
+import {
+  CARD_PAGE_SIZE,
+  LONG_LIST_THRESHOLD,
+  loadLongListMode,
+  pageWindow,
+  saveLongListMode,
+  type LongListMode,
+} from "@/lib/longLists";
 import type { ImportItem } from "@/lib/studyImport";
 import {
   ALL_STAGES,
@@ -80,6 +89,17 @@ export function SetEditor({
    * and deletion instead of silently pointing at whatever moved into the slot.
    */
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [cardPage, setCardPage] = useState(1);
+  // Same bound as the catalogue: a card row is two inputs, so a set of a few
+  // thousand would be far heavier than a list of search results.
+  const [cardsLoaded, setCardsLoaded] = useState(CARD_PAGE_SIZE);
+  const [cardMode, setCardMode] = useState<LongListMode>(() => loadLongListMode());
+  const chooseCardMode = useCallback((next: LongListMode) => {
+    setCardMode(next);
+    saveLongListMode(next);
+    setCardPage(1);
+    setCardsLoaded(CARD_PAGE_SIZE);
+  }, []);
 
   const patch = useCallback((changes: Partial<StudySet>) => {
     onChange({ ...set, ...changes, updatedAt: new Date().toISOString() });
@@ -171,6 +191,20 @@ export function SetEditor({
     [next[index], next[target]] = [next[target], next[index]];
     patch({ stages: next });
   }, [patch, set.stages]);
+
+  /**
+   * The page of cards on screen, each with the index it has in the set.
+   *
+   * The index has to be the real one: reorder, the numbering beside each row
+   * and moveCard all address the set, not the page. Handing them a
+   * page-relative index would silently move the wrong card.
+   */
+  const cardPages = pageWindow(set.cards.length, cardPage, CARD_PAGE_SIZE);
+  const visibleCards = useMemo(() => {
+    const withIndex = set.cards.map((card, index) => ({ card, index }));
+    if (cardMode === "scroll") return withIndex.slice(0, cardsLoaded);
+    return withIndex.slice((cardPages.page - 1) * CARD_PAGE_SIZE, cardPages.page * CARD_PAGE_SIZE);
+  }, [set.cards, cardMode, cardPages.page, cardsLoaded]);
 
   const incomplete = incompleteCards(set);
   const duplicates = duplicateTerms(set);
@@ -348,7 +382,7 @@ export function SetEditor({
             </p>
           ) : (
             <div className="space-y-2.5">
-              {set.cards.map((card, index) => (
+              {visibleCards.map(({ card, index }) => (
                 <div
                   key={card.id}
                   className={cn(
@@ -429,6 +463,22 @@ export function SetEditor({
               ))}
             </div>
           )}
+          {/*
+            A long set is either paged or scrolled, and the reader picks.
+            Three hundred cards rendered in one column is a page you scroll
+            for a while with no idea how far in you are.
+          */}
+          {set.cards.length > 0 && (cardMode === "pages"
+            ? <ListPager window={cardPages} onPage={setCardPage} />
+            : (
+              <ShowMore
+                shown={visibleCards.length}
+                total={set.cards.length}
+                onMore={() => setCardsLoaded((value) => value + CARD_PAGE_SIZE * 2)}
+              />
+            ))}
+          <LongListChoice mode={cardMode} onMode={chooseCardMode} total={set.cards.length} />
+          <ScrollJump enabled={cardMode === "scroll" && set.cards.length >= LONG_LIST_THRESHOLD} />
 
           <button
             type="button"

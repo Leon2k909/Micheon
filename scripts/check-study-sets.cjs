@@ -640,8 +640,76 @@ assert.ok(
   assert.ok(onNarrow.top + size.height <= narrow.height, "vertically too");
 }
 
+// ── long lists get around ───────────────────────────────────────────────────
+// Leon: "no pagination when adding words? and if a page is really long like i
+// have loads of flashcards, let users pick if they wanna see a scroll to
+// bottom thing on the right of their screen or pagination".
+{
+  const L = loadModule("src/lib/longLists.ts");
+
+  // Paging arithmetic, including the case that strands a reader: a filter
+  // that shrinks the list while they are on a later page.
+  const first = L.pageWindow(23584, 1, 80);
+  assert.strictEqual(first.from, 1);
+  assert.strictEqual(first.to, 80);
+  assert.strictEqual(first.pageCount, 295, "23,584 results at 80 a page is 295 pages, the last one short");
+  const third = L.pageWindow(23584, 3, 80);
+  assert.strictEqual(third.from, 161, "page three starts at 161, not at 160 or 162");
+  const stranded = L.pageWindow(12, 9, 80);
+  assert.strictEqual(stranded.page, 1, "a page beyond the end must be pulled back into range");
+  assert.strictEqual(stranded.to, 12);
+  const empty = L.pageWindow(0, 1, 80);
+  assert.strictEqual(empty.from, 0, "an empty list starts at nothing rather than at one");
+  assert.strictEqual(empty.pageCount, 1, "and still has a page to be on");
+
+  const items = Array.from({ length: 200 }, (_, i) => i);
+  assert.deepStrictEqual(L.pageSlice(items, 2, 80), items.slice(80, 160));
+  assert.strictEqual(L.pageSlice(items, 99, 80).length, 40, "the last page is however long it is");
+
+  assert.strictEqual(L.DEFAULT_LONG_LIST_MODE, "pages");
+
+  // The catalogue used to cut itself off at eighty with no way to the
+  // eighty-first, and the card editor rendered every card it had.
+  const importer = fs.readFileSync(path.join(root, "src/components/create/CatalogueImport.tsx"), "utf8");
+  assert.ok(!importer.includes("Showing the first"),
+    "the catalogue still truncates its results instead of paging them");
+  assert.ok(importer.includes("<ListPager"), "the catalogue has no pager");
+  assert.ok(importer.includes("<LongListChoice"), "the reader cannot choose pages or scrolling");
+
+  // Scroll mode must stay bounded. Rendering 23,584 rows locks the browser.
+  for (const [file, label] of [
+    ["src/components/create/CatalogueImport.tsx", "the catalogue"],
+    ["src/components/create/SetEditor.tsx", "the card editor"],
+  ]) {
+    const text = fs.readFileSync(path.join(root, file), "utf8");
+    assert.ok(/mode === "scroll"[\s\S]{0,120}\.slice\(0,/.test(text)
+      || /cardMode === "scroll"[\s\S]{0,120}\.slice\(0,/.test(text),
+      `${label} renders every row in scroll mode rather than a bounded chunk`);
+    assert.ok(text.includes("<ShowMore"), `${label} has no way to reveal the rest`);
+  }
+
+  // The jump control has to arrive even where smooth scrolling is ignored,
+  // and has to respect a reader who asked for less motion.
+  const list = fs.readFileSync(path.join(root, "src/components/create/LongList.tsx"), "utf8");
+  assert.ok(list.includes("prefers-reduced-motion: reduce"),
+    "the jump ignores a reader who asked for less motion");
+  assert.ok(/behavior: "auto"/.test(list),
+    "the jump has no fallback for a browser that accepts smooth and does nothing");
+  assert.ok(list.includes('data-testid="scroll-jump"'), "the jump control cannot be found to test");
+
+  // The preference belongs to the person, not to the guest scope.
+  const lib = fs.readFileSync(path.join(root, "src/lib/longLists.ts"), "utf8");
+  assert.ok(/loadLongListMode\(profile: UserProfile \| null = getAuthUser\(\)\)/.test(lib),
+    "the long-list preference reads from the guest scope rather than the signed-in profile");
+  for (const file of ["src/components/create/CatalogueImport.tsx", "src/components/create/SetEditor.tsx"]) {
+    const text = fs.readFileSync(path.join(root, file), "utf8");
+    assert.ok(!/loadLongListMode\(null\)|saveLongListMode\([^)]*, null\)/.test(text),
+      `${file} pins the preference to the guest scope, so it never comes back`);
+  }
+}
+
 console.log(
   "check-study-sets: Learn sits under beta with Create, the mascot's window "
   + "position survives a restart, the ladder is the set's to tune, and the "
-  + "background player goes where it is put"
+  + "background player goes where it is put, and a long list pages or scrolls"
 );
