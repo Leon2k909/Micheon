@@ -82,7 +82,14 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // and the closed sets with holes in them — twelve of the fourteen counting
 // words, Oma, Opa, Onkel, Tante, Cousin, brown, grey and purple. The bank is
 // now taught to 2,495 of its 2,502 words, up from 2,351.
-assert.equal(taughtWords, 7753, "the reviewed sense fixes changed the standalone word count");
+// 7753 -> 7845: parts 543 and 544 teach 92 words from the fourth Immersion
+// export — the loose adverbs German hangs a sentence on (irgendwann, soeben,
+// stattdessen, quasi), the judgements (wahnsinnig, widerlich, edel), ordinary
+// things and deeds (das Rätsel, das Zeug, der Unfug, schiefgehen, feststecken),
+// and five strong verbs the new principal-parts table needs to point at
+// (befehlen, fliehen, geschehen, stechen, zurückkommen). All 92 stand alone;
+// none folded into an existing synonym card.
+assert.equal(taughtWords, 7845, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

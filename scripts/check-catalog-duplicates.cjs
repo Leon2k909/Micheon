@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const assert = require("assert");
+const fs = require("fs");
 const path = require("path");
 const Module = require("module");
 const esbuild = require("esbuild");
@@ -224,6 +225,44 @@ const makesSense = catalog.filter((item) => identity(item.de, "de-DE") === "das 
 assert.equal(makesSense.length, 1, "Das macht Sinn. still appears more than once in the tracker");
 
 const duplicateEntries = rawRepeatedGerman.reduce((sum, group) => sum + group.length - 1, 0);
+// ── one part key, one pack ─────────────────────────────────────────────────
+//
+// allPartBlueprints is built by spreading a dozen blueprint objects into one,
+// and a key written twice does not collide — the later spread silently wins
+// and the earlier pack ceases to exist. Nothing about that looks broken: the
+// file is still there, the tests still pass, the part is still in the course.
+// It just is not the part the file says it is. This happened: two new packs
+// were numbered 461 and 462, which everydayWordPacks already owned, and both
+// vanished on the way to the catalogue without a word.
+{
+  const packFiles = fs.readdirSync(path.join(root, "src", "lib"))
+    .filter((name) => name.endsWith(".ts"));
+  const claimedBy = new Map();
+  const collisions = [];
+  for (const name of packFiles) {
+    const source = fs.readFileSync(path.join(root, "src", "lib", name), "utf8");
+    // Top-level keys only — a part is declared at one indent inside the object
+    // — and only those whose value is a blueprint. curriculum.ts keys the same
+    // part numbers to strings of advice about them, which is not a second
+    // declaration of the pack.
+    for (const [, key] of source.matchAll(/^  (part\d+):\s*[^"'\s]/gm)) {
+      if (claimedBy.has(key) && claimedBy.get(key) !== name) {
+        collisions.push(`${key}: ${claimedBy.get(key)} and ${name}`);
+      }
+      claimedBy.set(key, name);
+    }
+  }
+  assert.deepStrictEqual(collisions, [],
+    `two blueprint files claim the same part key, and one pack is being silently `
+    + `discarded: ${collisions.join("; ")}`);
+  assert.ok(claimedBy.size > 400, `only ${claimedBy.size} parts found; the scan is looking in the wrong place`);
+
+  // And every declared part actually survives into the catalogue, which is the
+  // condition the collision above breaks.
+  const missing = [...claimedBy.keys()].filter((key) => !allPartBlueprints[key]);
+  assert.deepStrictEqual(missing, [],
+    `parts declared in a blueprint file but absent from allPartBlueprints: ${missing.join(", ")}`);
+}
 console.log(
   `check-catalog-duplicates: ${duplicateEntries} repeated entries across `
   + `${rawRepeatedGerman.length} German forms collapse to one progress-preserving card `

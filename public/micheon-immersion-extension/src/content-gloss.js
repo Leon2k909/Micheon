@@ -830,7 +830,6 @@
     "könnte": "können",
     "modelle": "Modell",
     "sagt": "sagen",
-    "gewesen": "werden",
     "kannst": "können",
     "versprochen": "versprechen",
     "sammelt": "sammeln",
@@ -1270,6 +1269,173 @@
   }));
 
   /**
+   * The strong verbs, written as principal parts.
+   *
+   * A strong verb changes its stem vowel, and no suffix rule can undo that:
+   * gefunden does not contain finden, gibt does not contain geben, gegangen
+   * does not contain gehen. The map above had picked these up one at a time as
+   * somebody noticed them, and the newest export shows what that leaves: of the
+   * fifty-one commonest strong forms, thirty-six resolved to nothing, and every
+   * one of their infinitives was already in the glossary. These are not rare
+   * words -- they are sein, geben, gehen, nehmen, finden, sprechen -- so the
+   * reader was getting silence on the most ordinary verbs on the page while
+   * obscure compounds glossed fine.
+   *
+   * Written by verb rather than by form, because that is how the language is
+   * organised and how the list stays checkable: each line is one verb's parts,
+   * and check-immersion-extension asserts that no form is claimed by two verbs.
+   *
+   * A separable verb contributes only its JOINED participle (aufgenommen). Its
+   * separated forms are two tokens on the page -- nimmt ... auf -- which a
+   * single-token lookup can never see, and its bare stem belongs to the base
+   * verb, where it would fight with it.
+   */
+  const STRONG_VERB_FORMS = {
+    "sein": "gewesen",
+    "werden": "ward worden",
+    "geben": "gab gaben gabst gabt gegeben gibst gibt gäbe gäben",
+    "nehmen": "genommen nahm nahmen nimmst nimmt nähme",
+    "sprechen": "gesprochen sprach sprachen sprachst spracht sprichst spricht spräche",
+    "sehen": "gesehen sah sahen siehst sieht sähe",
+    "gehen": "gegangen ging ginge gingen gingst",
+    "stehen": "gestanden stand standen stände stünde",
+    "verstehen": "verstand verstanden verstünde",
+    "bestehen": "bestand bestanden",
+    "entstehen": "entstand entstanden",
+    "finden": "fand fanden fandst fände gefunden",
+    "stattfinden": "stattgefunden",
+    "kommen": "gekommen kam kamen kamst käme",
+    "bekommen": "bekam bekamen bekäme",
+    "nennen": "genannt nannte nannten",
+    "bringen": "brachte brachten gebracht",
+    "verbringen": "verbracht verbrachte",
+    "kennen": "gekannt kannte kannten",
+    "erkennen": "erkannt erkannte erkannten",
+    "wissen": "gewusst wusste wussten wüsste",
+    "treffen": "getroffen traf trafen triffst trifft träfe",
+    "helfen": "geholfen half halfen hilfst hilft hülfe",
+    "erscheinen": "erschien erschienen",
+    "scheinen": "geschienen schien schienen",
+    "steigen": "gestiegen stieg stiegen",
+    "entscheiden": "entschied entschieden",
+    "schreiben": "geschrieben schrieb schrieben",
+    "bleiben": "blieb blieben geblieben",
+    "lesen": "gelesen las lasen liest läse",
+    "essen": "aß aßen gegessen isst äße",
+    "trinken": "getrunken trank tranken tränke",
+    "singen": "gesungen sang sangen",
+    "sitzen": "gesessen saß saßen säße",
+    "liegen": "gelegen lag lagen läge",
+    "laufen": "gelaufen lief liefen läufst läuft",
+    "fahren": "fuhr fuhren fährst fährt gefahren",
+    "tragen": "getragen trug trugen trägst trägt trüge",
+    "schlagen": "geschlagen schlug schlugen schlägst schlägt",
+    "halten": "gehalten hielt hielten hält hältst",
+    "enthalten": "enthielt enthielten enthält enthältst",
+    "behalten": "behielt behielten behält behältst",
+    "fallen": "fiel fielen fällst fällt gefallen",
+    "gefallen": "gefiel gefielen gefällst gefällt",
+    "lassen": "gelassen ließ ließe ließen lässt",
+    "verlassen": "verließ verließen verlässt",
+    "schlafen": "geschlafen schlief schliefen schläfst schläft",
+    "raten": "geraten riet rieten rät rätst",
+    "waschen": "gewaschen wusch wuschen wäschst wäscht",
+    "wachsen": "gewachsen wuchs wuchsen wächst",
+    "ziehen": "gezogen zog zogen zöge",
+    "fliegen": "flog flogen flöge geflogen",
+    "schließen": "geschlossen schließt schloss schlossen",
+    "verlieren": "verlor verloren verlöre",
+    "schießen": "geschossen schoss schossen",
+    "werfen": "geworfen warf warfen wirfst wirft würfe",
+    "sterben": "gestorben starb starben stirbst stirbt",
+    "brechen": "brach brachen brichst bricht gebrochen",
+    "versprechen": "versprach versprichst verspricht",
+    "empfehlen": "empfahl empfiehlst empfiehlt empfohlen",
+    "stehlen": "gestohlen stahl stiehlst stiehlt",
+    "befehlen": "befahl befiehlst befiehlt befohlen",
+    "messen": "gemessen maß maßen misst",
+    "vergessen": "vergaß vergaßen vergessen vergisst",
+    "gewinnen": "gewann gewannen gewonnen gewönne",
+    "beginnen": "begann begannen begonnen begönne",
+    "schwimmen": "geschwommen schwamm schwammen",
+    "springen": "gesprungen sprang sprangen",
+    "zwingen": "gezwungen zwang zwangen",
+    "gelingen": "gelang gelangen gelungen",
+    "klingen": "geklungen klang klangen",
+    "binden": "band banden gebunden",
+    "verschwinden": "verschwand verschwanden verschwunden",
+    "schneiden": "geschnitten schnitt schnitten",
+    "greifen": "gegriffen griff griffen",
+    "reiten": "geritten ritt ritten",
+    "streiten": "gestritten stritt stritten",
+    "leiden": "gelitten litt litten",
+    "bitten": "bat baten gebeten",
+    "beißen": "biss bissen gebissen",
+    "reißen": "gerissen riss rissen",
+    "heißen": "geheißen hieß hießen",
+    "rufen": "gerufen rief riefen",
+    "tun": "getan tat taten tust tut",
+    "fangen": "fing fingen gefangen",
+    "anfangen": "angefangen",
+    "hängen": "gehangen hing hingen",
+    "gelten": "galt galten gegolten gilt giltst",
+    "treten": "getreten trat traten tritt trittst",
+    "bieten": "bot boten geboten",
+    "anbieten": "angeboten",
+    "verbieten": "verbot verboten",
+    "schieben": "geschoben schob schoben",
+    "heben": "gehoben hob hoben",
+    "lügen": "gelogen log logen",
+    "betrügen": "betrog betrogen",
+    "riechen": "gerochen roch rochen",
+    "biegen": "bog bogen gebogen",
+    "fliehen": "floh flohen geflohen",
+    "frieren": "fror froren gefroren",
+    "genießen": "genoss genossen",
+    "gießen": "gegossen goss gossen",
+    "sinken": "gesunken sank sanken",
+    "laden": "geladen lud luden lädst lädt",
+    "einladen": "eingeladen",
+    "graben": "gegraben grub gruben gräbst gräbt",
+    "geschehen": "geschah geschahen geschieht",
+    "werben": "geworben warb warben wirbst wirbt",
+    "stechen": "gestochen stach stachen stichst sticht",
+    "brennen": "brannte brannten gebrannt",
+    "rennen": "gerannt rannte rannten",
+    "senden": "gesandt sandte sandten",
+    "wenden": "gewandt wandte wandten",
+    "schaffen": "geschaffen schuf schufen",
+    "erschaffen": "erschuf erschufen",
+    "ausgeben": "ausgegeben",
+    "aufnehmen": "aufgenommen",
+    "teilnehmen": "teilgenommen",
+    "annehmen": "angenommen",
+    "zunehmen": "zugenommen",
+    "abnehmen": "abgenommen",
+    "mitnehmen": "mitgenommen",
+    "ansehen": "angesehen",
+    "aussehen": "ausgesehen",
+    "fernsehen": "ferngesehen",
+    "vergehen": "vergangen",
+    "umgehen": "umgegangen",
+    "eingehen": "eingegangen",
+    "ausgehen": "ausgegangen",
+    "angehen": "angegangen",
+    "vorgehen": "vorgegangen",
+    "zurückkommen": "zurückgekommen",
+    "ankommen": "angekommen",
+    "mitkommen": "mitgekommen",
+    "herausfinden": "herausgefunden",
+    "antreiben": "angetrieben",
+    "treiben": "getrieben trieb trieben",
+    "übereinstimmen": "übereingestimmt",
+  };
+  const STRONG_FORM_TO_LEMMA = new Map();
+  for (const [lemma, forms] of Object.entries(STRONG_VERB_FORMS)) {
+    for (const form of forms.split(" ")) STRONG_FORM_TO_LEMMA.set(form, lemma);
+  }
+
+  /**
    * German words are inflected, and a glossary holds dictionary forms.
    *
    * OBSERVED_FORM_TO_LEMMA above is a hand-written list of forms somebody
@@ -1348,8 +1514,15 @@
    * (bereitzustellen), because a prefix missing from either list is a whole
    * family of words going silent — "heraus" was, and herausgekommen with it.
    */
-  const SEPARABLE_PREFIX = "ab|an|auf|aus|bei|durch|ein|fest|frei|her|heraus|herein|herunter"
-    + "|hin|hinaus|hinein|hoch|los|mit|nach|statt|über|um|vor|voran|vorbei|weg|zu|zurück|zusammen";
+  // Longest first: the alternation is tried in order, and a short prefix
+  // matching the front of a longer one is a whole family of words going quiet.
+  // Each addition below came from a real export -- übereingestimmt,
+  // vorausgesetzt, rausgekommen, weitergemacht.
+  const SEPARABLE_PREFIX = "gegenüber|hinterher|zusammen|zurecht|zurück|voraus|vorbei"
+    + "|vorüber|überein|entgegen|entlang|herunter|herein|heraus|hervor|herauf|herab"
+    + "|hinunter|hinüber|hinaus|hinein|hinauf|runter|rüber|herum|umher|empor|weiter"
+    + "|nieder|wieder|voran|davon|dabei|fort|heim|teil|fern|raus|rein|hoch|statt|nach"
+    + "|durch|frei|fest|über|los|mit|vor|weg|ein|aus|auf|bei|ab|an|um|zu|her";
   const SEPARATED_PARTICIPLE = new RegExp(`^(${SEPARABLE_PREFIX})ge(.{2,})(t|en)$`);
   /**
    * German also puts zu INSIDE a separable verb: "bereitzustellen" is
@@ -1378,6 +1551,17 @@
       // ge-...-t and ge-...-en participles: geteilt, geladen.
       const participle = /^ge(.{2,})(t|en)$/.exec(word);
       if (participle) stems.add(participle[1]);
+      // A stem ending in t, d, m or n cannot pronounce a bare -t, so its
+      // participle takes a linking -e-: getestet, gearbeitet, geredet, geöffnet,
+      // gewartet, gesendet, geleitet. The rule above reads getestet as
+      // ge + teste + t and proposes testeen, so the whole class -- every verb of
+      // that shape in the language -- resolved to nothing.
+      const linked = /^ge(.{2,}[tdmn])et$/.exec(word);
+      if (linked) stems.add(linked[1]);
+      const linkedSeparated = new RegExp(
+        "^(" + SEPARABLE_PREFIX + ")ge(.{2,}[tdmn])et$"
+      ).exec(word);
+      if (linkedSeparated) stems.add(linkedSeparated[1] + linkedSeparated[2]);
       // A separable verb buries its ge in the middle: eingelöst is einlösen,
       // angerufen is anrufen. Without this the prefix hides the whole verb.
       const separated = SEPARATED_PARTICIPLE.exec(word);
@@ -1470,14 +1654,35 @@
   function findGermanEntry(token, { allowCaseFold = false } = {}) {
     const exact = byDeExact.get(token);
     if (exact) return exact;
-    const lemma = OBSERVED_FORM_TO_LEMMA.get(token.toLowerCase());
-    if (lemma) return byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null;
+    const lower = token.toLowerCase();
+    const heldEntry = (lemma) =>
+      (lemma ? byDeExact.get(lemma) || byDeLowerAny.get(lemma.toLowerCase()) || null : null);
+    // An alias whose lemma we do NOT hold used to end the search here and return
+    // null, so a single entry could silence a word the suffix rules would have
+    // found. Falling through costs nothing: the rules get exactly the question
+    // they would have got had the alias never been written.
+    const observed = heldEntry(OBSERVED_FORM_TO_LEMMA.get(lower));
+    if (observed) return observed;
+    const strong = () => heldEntry(STRONG_FORM_TO_LEMMA.get(lower));
+    // German capitalises its nouns, so a lowercase token cannot be one and the
+    // verb reading is safe to take first. A capitalised token might be either --
+    // band is the past of binden, Band is a noun -- so there the noun rules get
+    // first refusal and the verb table catches what is left, which is the
+    // sentence-initial verb: Gibt es noch einen Platz?
+    if (token === lower) {
+      const asVerb = strong();
+      if (asVerb) return asVerb;
+    }
     const inflected = inflectedGermanEntry(token);
     if (inflected) return inflected;
+    if (token !== lower) {
+      const asVerb = strong();
+      if (asVerb) return asVerb;
+    }
     // Navigation labels are isolated from authored prose before enabling
     // this. Their initial capital is UI styling rather than German noun
     // grammar, so "Entdecken" can safely resolve to the verb "entdecken".
-    return allowCaseFold ? byDeLowerAny.get(token.toLowerCase()) || null : null;
+    return allowCaseFold ? byDeLowerAny.get(lower) || null : null;
   }
 
   function speakGerman(text, { force = false, reason = "hover" } = {}) {

@@ -54,6 +54,65 @@ function buildReverseIndex(glossary) {
   };
 }
 
+/**
+ * findGermanEntry as the page actually calls it.
+ *
+ * The de-inflection harness below isolates inflectedGermanEntry, which is the
+ * suffix rules alone — it cannot see the written-down forms, the strong-verb
+ * table, or the order the three are consulted in. That order is where the
+ * interesting mistakes live: a noun losing to a verb, or an alias whose lemma
+ * we do not hold ending the search instead of falling through. So this runs
+ * the whole content script in a sandbox with a document that never finishes
+ * loading, which is what keeps start() from running, and lifts the real
+ * function out of the closure.
+ */
+function loadLiveResolver(glossary) {
+  const noop = () => {};
+  const element = () => ({
+    style: {}, dataset: {}, appendChild: noop, setAttribute: noop,
+    addEventListener: noop, remove: noop,
+    classList: { add: noop, remove: noop, contains: () => false },
+  });
+  const sandbox = {
+    console, setTimeout, clearTimeout, setInterval, clearInterval,
+    MutationObserver: class { observe() {} disconnect() {} },
+    IntersectionObserver: class { observe() {} disconnect() {} unobserve() {} },
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+    NodeFilter: { SHOW_TEXT: 4, FILTER_ACCEPT: 1, FILTER_REJECT: 2, FILTER_SKIP: 3 },
+    location: { hostname: "example.de", href: "https://example.de/" },
+    navigator: { language: "de-DE", languages: ["de"] },
+    document: {
+      readyState: "loading",
+      addEventListener: noop, removeEventListener: noop,
+      documentElement: Object.assign(element(), { lang: "de" }),
+      body: element(), head: element(), createElement: element,
+      createTreeWalker: () => ({ nextNode: () => null }),
+      querySelectorAll: () => [], querySelector: () => null,
+    },
+    chrome: {
+      runtime: {
+        getURL: (file) => path.join(extension, file), sendMessage: noop,
+        onMessage: { addListener: noop }, id: "check",
+      },
+      storage: {
+        local: { get: (_keys, done) => done && done({}), set: noop },
+        sync: { get: (_keys, done) => done && done({}), set: noop },
+        onChanged: { addListener: noop },
+      },
+    },
+    fetch: async () => ({ ok: true, json: async () => glossary }),
+  };
+  sandbox.window = sandbox;
+  sandbox.globalThis = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(
+    gloss.replace(/\}\)\(\);\s*$/, "globalThis.__live = { findGermanEntry, buildIndexes };\n})();"),
+    sandbox, { filename: "content-gloss-live.js" }
+  );
+  assert.ok(sandbox.__live, "could not lift findGermanEntry out of the content script");
+  sandbox.__live.buildIndexes(glossary);
+  return (token) => sandbox.__live.findGermanEntry(token, { allowCaseFold: true });
+}
 function loadGlossTextFilters() {
   const start = gloss.indexOf("  const WORD_RE =");
   const end = gloss.indexOf("  function detectGerman", start);
@@ -204,7 +263,9 @@ assert(gloss.includes('"mitteilungen": "Mitteilung"') && gloss.includes('"booste
   "common inflected interface words are no longer resolved to their authored lemmas");
 const aliasBlock = gloss.slice(
   gloss.indexOf("  const OBSERVED_FORM_TO_LEMMA"),
-  gloss.indexOf("  function findGermanEntry"),
+  // Stops at the strong-verb table, which is written the other way round:
+  // one verb and its forms, not one form and its verb.
+  gloss.indexOf("  const STRONG_VERB_FORMS"),
 );
 const glossaryLemmas = new Set(words.map((word) => word.de.toLocaleLowerCase("de-DE")));
 const brokenAliases = [];
@@ -216,6 +277,19 @@ for (const match of aliasBlock.matchAll(/^\s*"([^"]+)":\s*"([^"]+)",?$/gm)) {
     brokenAliases.push(`${observed} -> ${lemma}`);
   }
 }
+// The strong-verb table names a verb and lists its parts, so what has to be a
+// dictionary entry is the KEY. A form pointing at a verb we do not hold would
+// answer nothing, which is the silence the table was written to end.
+const strongBlock = gloss.slice(
+  gloss.indexOf("  const STRONG_VERB_FORMS"),
+  gloss.indexOf("  const STRONG_FORM_TO_LEMMA"),
+);
+const strongWithoutEntry = [];
+for (const [, lemma] of strongBlock.matchAll(/^\s*"([^"]+)":\s*"[^"]+",?$/gm)) {
+  if (!glossaryLemmas.has(lemma.toLocaleLowerCase("de-DE"))) strongWithoutEntry.push(lemma);
+}
+assert.deepEqual(strongWithoutEntry, [],
+  `strong verbs whose infinitive is not in the glossary: ${strongWithoutEntry.join(", ")}`);
 const duplicateAliases = [...new Set(aliasKeys.filter((alias, index) => aliasKeys.indexOf(alias) !== index))];
 assert.deepEqual(duplicateAliases, [], `Duplicate Immersion aliases: ${duplicateAliases.join(", ")}`);
 assert.deepEqual(brokenAliases, [], `Immersion aliases with missing dictionary targets: ${brokenAliases.join(", ")}`);
@@ -890,6 +964,113 @@ checkLatestAudioWins().then(() => {
       `"${form}" is aliased to "${lemma}", which is not in the glossary`);
   }
 
+  // ── the whole lookup, in the order the page uses it ───────────────────
+  const live = loadLiveResolver(words);
+  // buildIndexes stores the display form, article and all, so the article
+  // comes off before comparing: what is being asserted is which WORD was
+  // reached, not how the tip prints it.
+  const lookup = (token) => {
+    const hit = live(token);
+    if (!hit) return null;
+    return String(hit.deDisplay || hit.de)
+      .replace(/^(der|die|das)\s+/, "")
+      .toLocaleLowerCase("de-DE");
+  };
+
+  // A strong verb changes its stem vowel, so no suffix rule can undo it and
+  // the principal-parts table has to carry it. The export that prompted that
+  // table had thirty-six of the fifty-one commonest strong forms resolving to
+  // nothing, while every one of their infinitives sat in the glossary already.
+  for (const [form, lemma] of [
+    ["gibt", "geben"],
+    ["nimmt", "nehmen"],
+    ["gefunden", "finden"],
+    ["gegangen", "gehen"],
+    ["gesprochen", "sprechen"],
+    ["verstanden", "verstehen"],
+    ["worden", "werden"],
+    ["sang", "singen"],
+    ["bricht", "brechen"],
+    ["aufgenommen", "aufnehmen"],
+    // gebeten is the participle of bitten. The suffix rules read it as
+    // ge + bet + en and answered beten, to pray — a wrong gloss rather than a
+    // missing one, and the reader has no way to tell the difference.
+    ["gebeten", "bitten"],
+  ]) {
+    assert.equal(lookup(form), lemma,
+      `"${form}" should reach "${lemma}" — it is one of the commonest verbs on any German page`);
+  }
+
+  // German capitalises its nouns, so the verb table must never outrank a noun
+  // reading on a capitalised token. The lowercase half of each pair below is
+  // the verb; the capitalised half stays the thing.
+  for (const [lower, verb, capitalised, noun] of [
+    ["band", "binden", "Band", "band"],
+    ["stand", "stehen", "Stand", "stand"],
+    ["tat", "tun", "Tat", "tat"],
+  ]) {
+    assert.equal(lookup(lower), verb,
+      `lowercase "${lower}" is a verb form and should reach ${verb}`);
+    assert.equal(lookup(capitalised), noun,
+      `"${capitalised}" is a noun and must not be answered as the verb ${verb}`);
+  }
+
+  // A stem ending in t, d, m or n cannot pronounce a bare -t, so its participle
+  // takes a linking -e-. The plain rule reads getestet as ge + teste + t and
+  // proposes testeen, which is not a word, so the whole class went quiet.
+  for (const [form, lemma] of [
+    ["getestet", "testen"],
+    ["gewartet", "warten"],
+    ["gesendet", "senden"],
+  ]) {
+    assert.equal(lookup(form), lemma,
+      `"${form}" should reach "${lemma}" — the participle takes a linking -e-`);
+  }
+
+  // A prefix missing from SEPARABLE_PREFIX is a whole family of words going
+  // quiet, and the alternation has to try the longest first or vor swallows
+  // the front of voraus and the match fails.
+  for (const [form, lemma] of [
+    ["vorausgesetzt", "voraussetzen"],
+    ["übereingestimmt", "übereinstimmen"],
+  ]) {
+    assert.equal(lookup(form), lemma,
+      `"${form}" should reach "${lemma}" — its prefix is missing from the separable list`);
+  }
+
+  // Both tables are object literals, where a repeated key silently wins. A
+  // second "gewesen" written for werden overwrote the correct one, and the
+  // participle of sein answered werden on every German page for as long as it
+  // stood there. Nothing about that looks broken from the outside.
+  for (const [name, ends] of [["OBSERVED_FORM_TO_LEMMA", "}));"],
+                             ["STRONG_VERB_FORMS", "  };"]]) {
+    const start = gloss.indexOf(`const ${name}`);
+    assert.ok(start >= 0, `${name} is gone`);
+    const body = gloss.slice(start, gloss.indexOf(ends, start));
+    const seen = new Map();
+    for (const [, key, value] of body.matchAll(/"([^"]+)":\s*"([^"]+)"/g)) {
+      assert.ok(!seen.has(key) || seen.get(key) === value,
+        `${name} names "${key}" twice — as ${seen.get(key)} and as ${value} — and the second one silently wins`);
+      seen.set(key, value);
+    }
+  }
+
+  // No form may be claimed by two verbs, or one of them loses every hover.
+  {
+    const table = gloss.slice(gloss.indexOf("const STRONG_VERB_FORMS"),
+      gloss.indexOf("const STRONG_FORM_TO_LEMMA"));
+    const owner = new Map();
+    for (const [, lemma, forms] of table.matchAll(/"([^"]+)":\s*"([^"]+)"/g)) {
+      assert.ok(!/[^a-zäöüß ]/.test(forms),
+        `${lemma} lists something that is not a single lowercase token: ${forms}`);
+      for (const form of forms.split(" ")) {
+        assert.ok(!owner.has(form) || owner.get(form) === lemma,
+          `"${form}" is claimed by both ${owner.get(form)} and ${lemma}`);
+        owner.set(form, lemma);
+      }
+    }
+    assert.ok(owner.size > 400, `only ${owner.size} strong forms are written down`);
+  }
   // The commonest English words are not German vocabulary, and collecting
   // them only fills the export Leon reads with had, let, other and stood.
   const collector = gloss.slice(
