@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { COURSES } from "@/lib/courseRegistry";
+import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",
@@ -104,6 +104,23 @@ export function CourseSwitcher({
     ? allLanguages.filter((c) => c.id !== "english-uk" && c.id !== "english-us")
     : allLanguages;
   const languageRowCount = languages.length + (mergedEnglish ? 1 : 0);
+
+  /**
+   * Only German is taught; the other eighty-odd rows say Coming soon.
+   *
+   * Drawing all of them cost 123 ms of render on every open, for 12,324px of
+   * list in a window that shows about six hundred — so the wait was almost
+   * entirely for rows nobody had scrolled to. The ones that can actually be
+   * chosen are drawn immediately and the rest wait to be asked for.
+   *
+   * Searching shows everything that matches, because that is the question the
+   * long list exists to answer: is my language in here? Typing "farsi" must
+   * still find Persian without pressing anything first.
+   */
+  const [showAllLanguages, setShowAllLanguages] = useState(false);
+  const searching = Boolean(normalizedQuery);
+  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages });
+  const hiddenLanguageCount = languages.length - shownLanguages.length;
   const programming = visibleCourses.filter((c) => c.kind === "programming");
   const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
 
@@ -311,8 +328,17 @@ export function CourseSwitcher({
                         German speaker here is most likely to want, and the
                         merged card is taller than the rest. */}
                     {mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
-                    {languages.map((c) => <Card key={c.id} {...c} />)}
+                    {shownLanguages.map((c) => <Card key={c.id} {...c} />)}
                   </div>
+                  {hiddenLanguageCount > 0 && (
+                    <button
+                      className="mt-2 w-full rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-4 py-3 text-sm font-black text-[var(--text-2)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text-1)]"
+                      onClick={() => setShowAllLanguages(true)}
+                      type="button"
+                    >
+                      {uiFmt("Show {n} more languages", { n: hiddenLanguageCount })}
+                    </button>
+                  )}
                 </>
               )}
 
