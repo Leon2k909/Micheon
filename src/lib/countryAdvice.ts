@@ -22,7 +22,16 @@ import { countryPassPercent } from "@/lib/countryTests";
 export type CountryAdvice = {
   id: string;
   tone: "praise" | "warn" | "info";
+  /**
+   * The English sentence, used as the translation key.
+   *
+   * Kept as text rather than an opaque id so the British reading is the
+   * source of truth and a missing translation falls back to something
+   * sensible rather than to a key name.
+   */
   text: string;
+  /** Values for the {placeholders} in text, when it has any. */
+  values?: Record<string, string | number>;
   /** A chapter to open if the learner acts on it. */
   chapter?: string;
 };
@@ -65,7 +74,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
     out.push({
       id: "passed-last",
       tone: "praise",
-      text: `You passed your last exam simulation with ${exams[0].score}/${exams[0].total}. Two more passes and you are ready.`,
+      text: "You passed your last exam simulation with {score}/{total}. Two more passes and you are ready.",
+      values: { score: exams[0].score, total: exams[0].total },
     });
   }
 
@@ -81,7 +91,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
       out.push({
         id: `weakest-${weakest.chapter}`,
         tone: "warn",
-        text: `${weakest.chapter} is currently your weakest area, at ${weakest.accuracy}%.`,
+        text: "{chapter} is currently your weakest area, at {percent}%.",
+        values: { chapter: weakest.chapter, percent: weakest.accuracy },
         chapter: weakest.chapter,
       });
     }
@@ -90,7 +101,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
       out.push({
         id: `strongest-${strongest.chapter}`,
         tone: "praise",
-        text: `${strongest.chapter} is your strongest area, at ${strongest.accuracy}%.`,
+        text: "{chapter} is your strongest area, at {percent}%.",
+        values: { chapter: strongest.chapter, percent: strongest.accuracy },
         chapter: strongest.chapter,
       });
     }
@@ -109,7 +121,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
     out.push({
       id: `mistakes-${worst[0]}`,
       tone: "warn",
-      text: `You have answered ${worst[1]} questions on ${worst[0]} incorrectly. We recommend revisiting this topic.`,
+      text: "You have answered {count} questions on {chapter} incorrectly. We recommend revisiting this topic.",
+      values: { count: worst[1], chapter: worst[0] },
       chapter: worst[0],
     });
   }
@@ -119,7 +132,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
     out.push({
       id: "untouched",
       tone: "info",
-      text: `You have not answered anything on ${untouched.join(", ")} yet.`,
+      text: "You have not answered anything on {chapters} yet.",
+      values: { chapters: untouched.join(", ") },
       chapter: untouched[0],
     });
   }
@@ -129,7 +143,8 @@ export function countryAdvice(pack: CountryPack, state: CountryQuizState): Count
     out.push({
       id: "try-exam",
       tone: "info",
-      text: `You have practised enough to try a full exam simulation — ${pack.exam.questionCount} questions in ${minutes} minutes.`,
+      text: "You have practised enough to try a full exam simulation — {count} questions in {minutes} minutes.",
+      values: { count: pack.exam.questionCount, minutes },
     });
   }
 

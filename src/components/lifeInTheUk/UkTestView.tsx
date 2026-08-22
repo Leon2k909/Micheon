@@ -80,8 +80,8 @@ export function UkTestView({
   const [reviewOnlyWrong, setReviewOnlyWrong] = useState(true);
   const startedAtRef = useRef(0);
 
-  const chapters = useMemo(() => packChapters(pack), []);
-  const advice = useMemo(() => countryAdvice(pack, state), [state]);
+  const chapters = useMemo(() => packChapters(pack), [pack]);
+  const advice = useMemo(() => countryAdvice(pack, state), [pack, state]);
   const history = useMemo(() => [...state.tests].reverse(), [state.tests]);
   const favouriteCount = useMemo(() => state.favourites.length, [state.stats]);
   const mistakeCount = useMemo(
@@ -474,7 +474,9 @@ export function UkTestView({
                 {entry.tone === "praise" ? <Trophy className="mt-0.5 h-4 w-4 shrink-0" />
                   : entry.tone === "warn" ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                   : <ChevronRight className="mt-0.5 h-4 w-4 shrink-0" />}
-                <p className="text-sm font-bold leading-5">{entry.text}</p>
+                <p className="text-sm font-bold leading-5">
+                  {entry.values ? uiFmt(entry.text, entry.values) : ui(entry.text)}
+                </p>
                 {entry.chapter && (
                   <button
                     type="button"

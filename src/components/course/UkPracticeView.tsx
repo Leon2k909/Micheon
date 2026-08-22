@@ -92,13 +92,13 @@ export function UkPracticeView({
   const [levels, setLevels] = useState<CountryLevel[]>([]);
   const [chapterFilter, setChapterFilter] = useState<string>("");
 
-  const summary = useMemo(() => engine.progressSummary(state, profile), [state, profile]);
-  const strengths = useMemo(() => engine.categoryStrength(state), [state]);
-  const weak = useMemo(() => engine.weakCategories(state), [state]);
-  const mistakes = useMemo(() => engine.mistakes(state), [state]);
-  const favourites = useMemo(() => engine.favouriteQuestions(state), [state]);
-  const categories = useMemo(() => packCategories(pack), []);
-  const chapters = useMemo(() => packChapters(pack), []);
+  const summary = useMemo(() => engine.progressSummary(state, profile), [engine, state, profile]);
+  const strengths = useMemo(() => engine.categoryStrength(state), [engine, state]);
+  const weak = useMemo(() => engine.weakCategories(state), [engine, state]);
+  const mistakes = useMemo(() => engine.mistakes(state), [engine, state]);
+  const favourites = useMemo(() => engine.favouriteQuestions(state), [engine, state]);
+  const categories = useMemo(() => packCategories(pack), [pack]);
+  const chapters = useMemo(() => packChapters(pack), [pack]);
 
   const startSession = (questions: CountryQuestion[], scope: string, label: string, isDaily = false) => {
     if (questions.length === 0) return;
@@ -371,10 +371,10 @@ export function UkPracticeView({
             </button>
             <button
               className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--surface-2)] px-5 text-sm font-black text-[var(--text-1)] transition-colors hover:bg-[var(--surface-3)]"
-              onClick={() => startSession(engine.pickQuestions({ count: 24, levels }, state), "mixed", ui("Mock test"))}
+              onClick={() => startSession(engine.pickQuestions({ count: pack.exam.questionCount, levels }, state), "mixed", ui("Mock test"))}
               type="button"
             >
-              {ui("Mock test — 24 questions")}
+              {uiFmt("Mock test — {count} questions", { count: pack.exam.questionCount })}
             </button>
           </div>
         </div>

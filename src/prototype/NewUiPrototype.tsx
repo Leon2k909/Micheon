@@ -4025,19 +4025,25 @@ export default function NewUiPrototype({
             />
           ) : ukTab === "practice" ? (
             <UkPracticeView
+              /* Keyed on the country: switching remounts the screen, so no
+                 session, test, timer or cached progress from the other one
+                 can survive into it and be written to the wrong store. */
+              key={activePack.id}
               onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
               pack={activePack}
               profile={profile}
             />
           ) : ukTab === "exam" ? (
             <UkTestView
+              key={activePack.id}
               onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
               pack={activePack}
             />
           ) : ukTab === "timeline" ? (
-            <UkTimelineView pack={activePack} />
+            <UkTimelineView key={activePack.id} pack={activePack} />
           ) : (
             <UkSearchView
+              key={activePack.id}
               onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
               pack={activePack}
             />
