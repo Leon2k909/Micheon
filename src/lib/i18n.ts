@@ -2195,7 +2195,6 @@ const DE: Record<string, string> = {
   // "Life in the UK" is the name of a Home Office test, so it keeps its English
   // name on a German interface the same way "Micheon Premium" does.
   "Life in UK": "Life in UK",
-  "Life in the UK": "Life in the UK",
   "The citizenship test course: history, government, law and traditions.": "Der Kurs für den Einbürgerungstest: Geschichte, Regierung, Recht und Traditionen.",
   "Everything the Life in the UK Test asks, in fourteen lessons.": "Alles, was der Life-in-the-UK-Test abfragt, in vierzehn Lektionen.",
   "Level progress": "Stufenfortschritt",
@@ -2382,6 +2381,10 @@ const DE: Record<string, string> = {
   // The questions and explanations themselves stay in English — the test is
   // sat in English. Only the surrounding controls are translated.
   "Life in the UK sections": "Life-in-the-UK-Bereiche",
+  "Country studies sections": "Landeskunde-Bereiche",
+  "Life in the UK": "Life in the UK",
+  "Leben in Deutschland": "Leben in Deutschland",
+  Germany: "Deutschland",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
   "By topic": "Nach Thema",

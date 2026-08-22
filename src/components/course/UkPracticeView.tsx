@@ -15,31 +15,13 @@ import {
 import { ui, uiFmt } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import {
-  UK_LEVELS,
-  ukCategories,
-  ukChapters,
-  type UkLevel,
-  type UkQuestion,
-} from "@/lib/ukQuestionBank";
-import {
-  loadUkQuiz,
-  recordUkAnswer,
-  recordUkTest,
-  toggleUkFavourite,
-  ukCategoryStrength,
-  ukDailyComplete,
-  ukDailyQuestions,
-  ukEnsureDaily,
-  ukFavouriteQuestions,
-  ukMistakes,
-  ukPickQuestions,
-  ukProgressSummary,
-  ukRecordDailyAnswer,
-  ukReviewQueue,
-  ukStatFor,
-  ukWeakCategories,
-  type UkQuizState,
-} from "@/lib/ukQuizProgress";
+  COUNTRY_LEVELS,
+  type CountryLevel,
+  type CountryPack,
+  type CountryQuestion,
+} from "@/lib/countryStudies";
+import { UK_PACK, packCategories, packChapters } from "@/lib/countryPacks";
+import { countryProgress, type CountryQuizState } from "@/lib/countryQuizProgress";
 
 /**
  * Practice for the Life in the UK test.
@@ -55,7 +37,7 @@ import {
  * sessions someone remembered to label as a test.
  */
 
-const LEVEL_LABEL: Record<UkLevel, string> = {
+const LEVEL_LABEL: Record<CountryLevel, string> = {
   easy: "Easy",
   medium: "Medium",
   hard: "Hard",
@@ -64,11 +46,11 @@ const LEVEL_LABEL: Record<UkLevel, string> = {
 type Mode = "overview" | "topics" | "mistakes" | "favourites";
 
 type Session = {
-  questions: UkQuestion[];
+  questions: CountryQuestion[];
   index: number;
   chosen: number | null;
   correctCount: number;
-  answers: Array<{ question: UkQuestion; chosen: number; correct: boolean }>;
+  answers: Array<{ question: CountryQuestion; chosen: number; correct: boolean }>;
   scope: string;
   label: string;
   isDaily: boolean;
@@ -94,25 +76,31 @@ function StatTile({ label, value, hint }: { label: string; value: string; hint?:
 export function UkPracticeView({
   profile,
   onOpenLesson,
+  pack = UK_PACK,
 }: {
   profile: UserProfile | null;
   onOpenLesson?: (lessonId: string) => void;
+  /** Which country this screen is practising. Defaults to the UK. */
+  pack?: CountryPack;
 }) {
-  const [state, setState] = useState<UkQuizState>(() => ukEnsureDaily(loadUkQuiz(profile), profile));
+  const engine = useMemo(() => countryProgress(pack), [pack]);
+  const [state, setState] = useState<CountryQuizState>(() =>
+    countryProgress(pack).ensureDaily(countryProgress(pack).load(profile), profile)
+  );
   const [mode, setMode] = useState<Mode>("overview");
   const [session, setSession] = useState<Session | null>(null);
-  const [levels, setLevels] = useState<UkLevel[]>([]);
+  const [levels, setLevels] = useState<CountryLevel[]>([]);
   const [chapterFilter, setChapterFilter] = useState<string>("");
 
-  const summary = useMemo(() => ukProgressSummary(state, profile), [state, profile]);
-  const strengths = useMemo(() => ukCategoryStrength(state), [state]);
-  const weak = useMemo(() => ukWeakCategories(state), [state]);
-  const mistakes = useMemo(() => ukMistakes(state), [state]);
-  const favourites = useMemo(() => ukFavouriteQuestions(state), [state]);
-  const categories = useMemo(() => ukCategories(), []);
-  const chapters = useMemo(() => ukChapters(), []);
+  const summary = useMemo(() => engine.progressSummary(state, profile), [state, profile]);
+  const strengths = useMemo(() => engine.categoryStrength(state), [state]);
+  const weak = useMemo(() => engine.weakCategories(state), [state]);
+  const mistakes = useMemo(() => engine.mistakes(state), [state]);
+  const favourites = useMemo(() => engine.favouriteQuestions(state), [state]);
+  const categories = useMemo(() => packCategories(pack), []);
+  const chapters = useMemo(() => packChapters(pack), []);
 
-  const startSession = (questions: UkQuestion[], scope: string, label: string, isDaily = false) => {
+  const startSession = (questions: CountryQuestion[], scope: string, label: string, isDaily = false) => {
     if (questions.length === 0) return;
     setSession({
       questions,
@@ -132,8 +120,8 @@ export function UkPracticeView({
     const question = session.questions[session.index];
     const correct = choice === question.answer;
     const nextState = session.isDaily
-      ? ukRecordDailyAnswer(question.id, choice, correct, profile, state)
-      : recordUkAnswer(question.id, choice, correct, profile, state);
+      ? engine.recordDailyAnswer(question.id, choice, correct, profile, state)
+      : engine.recordAnswer(question.id, choice, correct, profile, state);
     setState(nextState);
     setSession({
       ...session,
@@ -150,7 +138,7 @@ export function UkPracticeView({
       const finished = { ...session, finished: true };
       setSession(finished);
       setState(
-        recordUkTest(
+        engine.recordTest(
           { at: Date.now(), score: session.correctCount, total: session.questions.length, scope: session.scope },
           profile,
           state
@@ -161,9 +149,9 @@ export function UkPracticeView({
     setSession({ ...session, index: session.index + 1, chosen: null });
   };
 
-  const favourite = (id: string) => setState(toggleUkFavourite(id, profile, state));
+  const favourite = (id: string) => setState(engine.toggleFavourite(id, profile, state));
 
-  const toggleLevel = (level: UkLevel) =>
+  const toggleLevel = (level: CountryLevel) =>
     setLevels((current) => (current.includes(level) ? current.filter((l) => l !== level) : [...current, level]));
 
   // ── The runner ──────────────────────────────────────────────────────────
@@ -245,7 +233,7 @@ export function UkPracticeView({
     }
 
     const question = session.questions[session.index];
-    const stat = ukStatFor(state, question.id);
+    const stat = engine.statFor(state, question.id);
     const isFavourite = state.favourites.includes(question.id);
     const progress = Math.round((session.index / session.questions.length) * 100);
 
@@ -356,8 +344,8 @@ export function UkPracticeView({
     { id: "favourites", label: ui("Favourites"), badge: favourites.length },
   ];
 
-  const dailyQuestions = ukDailyQuestions(state);
-  const dailyDone = ukDailyComplete(state);
+  const dailyQuestions = engine.dailyQuestions(state);
+  const dailyDone = engine.dailyComplete(state);
   const dailyAnswered = Object.keys(state.daily.answered).length;
 
   return (
@@ -376,14 +364,14 @@ export function UkPracticeView({
           <div className="flex flex-wrap gap-2">
             <button
               className="accent-btn inline-flex h-11 items-center justify-center gap-2 px-5 text-sm"
-              onClick={() => startSession(ukReviewQueue(state, 15), "review", ui("Smart review"))}
+              onClick={() => startSession(engine.reviewQueue(state, 15), "review", ui("Smart review"))}
               type="button"
             >
               <Target className="h-4 w-4" /> {ui("Smart review")}
             </button>
             <button
               className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--surface-2)] px-5 text-sm font-black text-[var(--text-1)] transition-colors hover:bg-[var(--surface-3)]"
-              onClick={() => startSession(ukPickQuestions({ count: 24, levels }, state), "mixed", ui("Mock test"))}
+              onClick={() => startSession(engine.pickQuestions({ count: 24, levels }, state), "mixed", ui("Mock test"))}
               type="button"
             >
               {ui("Mock test — 24 questions")}
@@ -501,7 +489,7 @@ export function UkPracticeView({
                       <span className={`text-lg font-black ${percentClass(row.percent)}`}>{row.percent}%</span>
                       <button
                         className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-1)] transition-colors hover:bg-[var(--surface-3)]"
-                        onClick={() => startSession(ukPickQuestions({ lesson: row.id, count: 10 }, state), row.id, row.title)}
+                        onClick={() => startSession(engine.pickQuestions({ lesson: row.id, count: 10 }, state), row.id, row.title)}
                         type="button"
                       >
                         {ui("Revise")}
@@ -542,7 +530,7 @@ export function UkPracticeView({
             <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Filters")}</h2>
             <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Difficulty")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {UK_LEVELS.map((level) => (
+              {COUNTRY_LEVELS.map((level) => (
                 <button
                   className={`rounded-full px-4 py-2 text-xs font-black transition-colors ${
                     levels.includes(level)
@@ -593,7 +581,7 @@ export function UkPracticeView({
             {chapterFilter && (
               <button
                 className="accent-btn mt-4 inline-flex h-11 items-center justify-center gap-2 px-5 text-sm"
-                onClick={() => startSession(ukPickQuestions({ chapter: chapterFilter, levels, count: 20 }, state), chapterFilter, chapterFilter)}
+                onClick={() => startSession(engine.pickQuestions({ chapter: chapterFilter, levels, count: 20 }, state), chapterFilter, chapterFilter)}
                 type="button"
               >
                 {uiFmt("Practise the whole chapter", {})} <ArrowRight className="h-4 w-4" />
@@ -628,7 +616,7 @@ export function UkPracticeView({
                         disabled={category.count === 0}
                         onClick={() =>
                           startSession(
-                            ukPickQuestions({ lesson: category.id, levels, count: 10 }, state),
+                            engine.pickQuestions({ lesson: category.id, levels, count: 10 }, state),
                             category.id,
                             category.title
                           )
@@ -668,7 +656,7 @@ export function UkPracticeView({
                 className="accent-btn inline-flex h-11 items-center justify-center gap-2 px-5 text-sm"
                 onClick={() =>
                   startSession(
-                    ukPickQuestions({ mistakesOnly: true, count: Math.min(20, mistakes.length) }, state),
+                    engine.pickQuestions({ mistakesOnly: true, count: Math.min(20, mistakes.length) }, state),
                     "mistakes",
                     ui("My mistakes")
                   )
@@ -730,7 +718,7 @@ export function UkPracticeView({
                 className="accent-btn inline-flex h-11 items-center justify-center gap-2 px-5 text-sm"
                 onClick={() =>
                   startSession(
-                    ukPickQuestions({ favouritesOnly: true, count: Math.min(20, favourites.length) }, state),
+                    engine.pickQuestions({ favouritesOnly: true, count: Math.min(20, favourites.length) }, state),
                     "favourites",
                     ui("Favourites")
                   )

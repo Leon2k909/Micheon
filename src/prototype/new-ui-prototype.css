@@ -557,6 +557,35 @@
   height: 20px;
 }
 
+/* The country row: a flag, the country's name, and the sections beneath it.
+   Slightly heavier than a section row because it heads a group of them. */
+.np-side-nav .np-nav-group-items button.np-nav-country {
+  font-weight: 800;
+}
+
+.np-side-nav .np-nav-group-items button.np-nav-country .np-nav-visual {
+  background: transparent;
+  border-radius: 999px;
+}
+
+/* Indented under their country. The 12px is the flag's own left edge, so the
+   section icons line up just inside it rather than under it. */
+.np-side-nav .np-nav-group-items button.np-nav-country-section {
+  padding-left: 12px;
+  min-height: 42px;
+  font-size: 14px;
+}
+
+.np-side-nav .np-nav-group-items button.np-nav-country-section .np-nav-visual {
+  width: 26px;
+  height: 26px;
+}
+
+.np-side-nav .np-nav-group-items button.np-nav-country-section .np-nav-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .np-side-nav .np-nav-group-items button.is-soon {
   grid-template-columns: 30px minmax(0, 1fr) auto;
   opacity: 0.5;

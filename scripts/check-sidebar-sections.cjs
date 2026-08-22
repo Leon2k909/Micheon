@@ -178,10 +178,28 @@ export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
   setLearningDirection("learn-de");
   assert.strictEqual(learningFlagId("csharp"), "german", "and it follows the direction when that changes");
 }
+// Country studies used to hold one country and fly its flag from a constant.
+// It holds two now, so what is pinned is the shape that replaced it: the group
+// head shows the SELECTED country's flag, each country row carries its own,
+// and the sections sit under the country they belong to. A regression to one
+// hard-coded flag fails here.
 assert.ok(
-  shell.includes(`<FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />`)
-    && /const COUNTRY_STUDIES_FLAG_ID = "english-uk"/.test(shell),
-  "country studies flies the flag of the country it covers"
+  /<FlagRoundel id=\{countryPack\(countryId\)\.flagId/.test(shell),
+  "the group head flies the flag of whichever country is selected"
+);
+assert.ok(
+  shell.includes("COUNTRY_PACKS.map((entry)")
+    && shell.includes("<FlagRoundel id={entry.flagId} />"),
+  "every country in the group gets a row with its own flag"
+);
+assert.ok(
+  /className=\{"np-nav-country-section"/.test(shell)
+    && shell.includes("{selected && UK_SECTIONS.map((section)"),
+  "the sections belong to the selected country, not to the group"
+);
+assert.ok(
+  /const COUNTRY_STUDIES_FALLBACK_FLAG_ID = "english-uk"/.test(shell),
+  "a pack without a flag still falls back to one rather than rendering nothing"
 );
 assert.ok(
   /ui\("Language learning"\)/.test(shell) && /ui\("Country studies"\)/.test(shell),
@@ -204,8 +222,14 @@ for (const [label, tab] of [["Lessons", "learn"], ["Practice", "practice"], ["Te
   );
 }
 assert.ok(
-  /onOpenUkSection=\{\(tab\) => \{ setUkTab\(tab\); navigate\("life-in-uk"\); \}\}/.test(shell),
+  /onOpenUkSection=\{\(tab, country\) => \{/.test(shell)
+    && /setUkTab\(tab\);/.test(shell)
+    && /navigate\("life-in-uk"\);/.test(shell),
   "a country row switches the course's existing tab rather than introducing a second way in"
+);
+assert.ok(
+  /if \(country && country !== countryId\) \{[\s\S]*?setCountryId\(country\);[\s\S]*?setUkLessonId\(undefined\);/.test(shell),
+  "switching country clears the open lesson, whose id does not exist in the other course"
 );
 assert.ok(
   /activeView === "life-in-uk" && ukTab === section\.tab/.test(shell),

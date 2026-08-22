@@ -1,6 +1,7 @@
 import type { Course } from "@/lib/courses";
 import { csharpCourse } from "@/lib/csharpCourse";
 import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
+import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 
 // The native German experience is "built in" — selecting it returns to the
@@ -66,6 +67,7 @@ export const COURSES: Course[] = [
   })),
   csharpCourse,
   lifeInTheUkCourse,
+  lebenInDeutschlandCourse,
 ];
 
 export function getCourse(id: string): Course | undefined {

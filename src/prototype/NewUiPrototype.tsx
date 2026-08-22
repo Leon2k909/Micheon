@@ -1,4 +1,6 @@
 import { ui, uiFmt, uiLocale, uiNumber } from "@/lib/i18n";
+import type { CountryId, CountryPack } from "@/lib/countryStudies";
+import { COUNTRY_PACKS, countryPack } from "@/lib/countryPacks";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
@@ -352,14 +354,15 @@ const UK_SECTIONS: Array<{ icon: ComponentType<{ className?: string }>; label: s
 ];
 
 /**
- * Country studies has one country in it, and the flag says which.
+ * Country studies holds more than one country, and each brings its own flag.
  *
- * Picking another one is Michelle's own next piece of work — "ich kümmere
- * mich später separat darum" — so this names the country the course already
- * covers rather than inventing a chooser for it. english-uk is the union
- * flag; there is no separate life-in-the-uk artwork to reuse.
+ * It used to hold only the UK, with this constant naming it. Germany sits
+ * beside it now — same sections, same order, its own material — so the group
+ * lists its countries and the head shows whichever is selected. english-uk is
+ * the union flag; german is black-red-gold. Neither has separate artwork of
+ * its own to reuse.
  */
-const COUNTRY_STUDIES_FLAG_ID = "english-uk";
+const COUNTRY_STUDIES_FALLBACK_FLAG_ID = "english-uk";
 
 const NAV_GROUPS_KEY = "gl-nav-groups-v1";
 const PROGRESS_SECTIONS_KEY = "gl-progress-sections-v1";
@@ -638,6 +641,7 @@ function Sidebar({
   activeView,
   gamesUnlocked,
   onNavigate,
+  countryId,
   onOpenUkSection,
   onPrefetch,
   onSwitchCourse,
@@ -655,8 +659,10 @@ function Sidebar({
   learnPathUnlocked: boolean;
   gamesUnlocked: boolean;
   onNavigate: (view: PrototypeView) => void;
-  /** Opens Life in the UK on one of its halves, the way search already does. */
-  onOpenUkSection: (tab: UkTab) => void;
+  /** Which country studies country is selected. */
+  countryId: CountryId;
+  /** Opens a country on one of its sections, the way search already does. */
+  onOpenUkSection: (tab: UkTab, country?: CountryId) => void;
   /** The course picker, opened by pressing the flag. */
   onSwitchCourse: () => void;
   onPrefetch: (view: PrototypeView) => void;
@@ -966,7 +972,9 @@ function Sidebar({
               type="button"
               {...dragProps(countryItem.id)}
             >
-              <span aria-hidden="true" className="np-nav-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
+              <span aria-hidden="true" className="np-nav-flag">
+                <FlagRoundel id={countryPack(countryId).flagId ?? COUNTRY_STUDIES_FALLBACK_FLAG_ID} />
+              </span>
               <span>{ui("Country studies")}</span>
               <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
               <span
@@ -987,25 +995,47 @@ function Sidebar({
             </button>
             {groups.country && (
               <div className="np-nav-group-items">
-                {/* The same four halves the course's own tab bar has, reached
-                    from the nav instead of from inside the view. Search
-                    already opens the timeline this way. */}
-                {UK_SECTIONS.map((section) => {
-                  const Icon = section.icon;
-                  const active = activeView === "life-in-uk" && ukTab === section.tab;
+                {/* One row per country, and beneath the selected one the same
+                    four sections the course's own tab bar has. Collapsing the
+                    other country's sections keeps the list at six rows rather
+                    than ten, and makes it obvious which country you are in. */}
+                {COUNTRY_PACKS.map((entry) => {
+                  const selected = countryId === entry.id;
+                  const onCountry = selected && activeView === "life-in-uk";
                   return (
-                    <button
-                      aria-current={active ? "page" : undefined}
-                      className={active ? "is-active" : ""}
-                      key={section.tab}
-                      onClick={() => onOpenUkSection(section.tab)}
-                      onFocus={() => onPrefetch("life-in-uk")}
-                      onPointerEnter={() => onPrefetch("life-in-uk")}
-                      type="button"
-                    >
-                      <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
-                      <span>{ui(section.label)}</span>
-                    </button>
+                    <Fragment key={entry.id}>
+                      <button
+                        aria-current={onCountry ? "page" : undefined}
+                        className={"np-nav-country" + (onCountry ? " is-active" : "")}
+                        onClick={() => onOpenUkSection(selected ? ukTab : "learn", entry.id)}
+                        onFocus={() => onPrefetch("life-in-uk")}
+                        onPointerEnter={() => onPrefetch("life-in-uk")}
+                        type="button"
+                      >
+                        <span aria-hidden="true" className="np-nav-visual">
+                          <FlagRoundel id={entry.flagId} />
+                        </span>
+                        <span>{ui(entry.label)}</span>
+                      </button>
+                      {selected && UK_SECTIONS.map((section) => {
+                        const Icon = section.icon;
+                        const active = activeView === "life-in-uk" && ukTab === section.tab;
+                        return (
+                          <button
+                            aria-current={active ? "page" : undefined}
+                            className={"np-nav-country-section" + (active ? " is-active" : "")}
+                            key={entry.id + "-" + section.tab}
+                            onClick={() => onOpenUkSection(section.tab, entry.id)}
+                            onFocus={() => onPrefetch("life-in-uk")}
+                            onPointerEnter={() => onPrefetch("life-in-uk")}
+                            type="button"
+                          >
+                            <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
+                            <span>{ui(section.label)}</span>
+                          </button>
+                        );
+                      })}
+                    </Fragment>
                   );
                 })}
               </div>
@@ -1920,7 +1950,18 @@ function LanguageCard({
   );
 }
 
-function CountryCard({ onOpen, onSwitchCountry, profile }: { onOpen: () => void; onSwitchCountry: () => void; profile: UserProfile | null }) {
+function CountryCard({
+  onOpen,
+  onSwitchCountry,
+  pack,
+  profile,
+}: {
+  onOpen: () => void;
+  /** Moves to the next country. The card is the second way in, beside the nav. */
+  onSwitchCountry: () => void;
+  pack: CountryPack;
+  profile: UserProfile | null;
+}) {
   const course = getCourse(LIFE_IN_THE_UK_COURSE_ID);
   const lessons = course?.lessons ?? [];
   const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).length;
@@ -1936,15 +1977,15 @@ function CountryCard({ onOpen, onSwitchCountry, profile }: { onOpen: () => void;
         <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={homeCountryImage} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
-          <span className="np-home-choice-flag"><FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} /></span>
+          <span className="np-home-choice-flag"><FlagRoundel id={pack.flagId} /></span>
           <h2>{ui("Country studies")}</h2>
           <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
 
           <div className="np-home-choice-panel">
             <small>{ui("Selected country")}</small>
             <span className="np-home-choice-value">
-              <FlagRoundel id={COUNTRY_STUDIES_FLAG_ID} />
-              <strong>{ui("United Kingdom")}</strong>
+              <FlagRoundel id={pack.flagId} />
+              <strong>{ui(pack.id === "de" ? "Germany" : "United Kingdom")}</strong>
               <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
                 {ui("Change")}
               </button>
@@ -2695,6 +2736,8 @@ function ProgressPanel({
 
 function HomeView({
   apiParts,
+  countryId,
+  onCycleCountry,
   onOpenCountryCourse,
   onPractice,
   onRequestCatalogue,
@@ -2705,6 +2748,10 @@ function HomeView({
   vocab,
 }: {
   apiParts: Record<string, Part>;
+  /** Which country studies country the card should show. */
+  countryId: CountryId;
+  /** Moves the card to the next country. */
+  onCycleCountry: () => void;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
   onPractice: () => void;
@@ -2800,7 +2847,12 @@ function HomeView({
           stats={stats}
         />
 
-        <CountryCard onOpen={onOpenCountryCourse} onSwitchCountry={onSwitchCourse} profile={profile} />
+        <CountryCard
+          onOpen={onOpenCountryCourse}
+          onSwitchCountry={onCycleCountry}
+          pack={countryPack(countryId)}
+          profile={profile}
+        />
       </div>
 
       <div className="np-course-launch">
@@ -3535,6 +3587,15 @@ export default function NewUiPrototype({
   // Life in the UK runs beside the language course instead of replacing it, so
   // it carries its own lesson and reader state. Reusing the active-course state
   // would have meant that opening it switched you off German.
+  /**
+   * Which country studies country is open.
+   *
+   * Not persisted on purpose: the two are separate courses with separate
+   * progress, and opening the app on whichever was last looked at would be a
+   * surprise for someone who only ever studies one of them. Country studies
+   * opens on the UK, which is where the feature started.
+   */
+  const [countryId, setCountryId] = useState<CountryId>("uk");
   const [ukLessonId, setUkLessonId] = useState<string | undefined>(undefined);
   const [ukReaderOpen, setUkReaderOpen] = useState(false);
   // Learn a topic, then answer questions on it. Two halves of one destination
@@ -3579,7 +3640,24 @@ export default function NewUiPrototype({
   const activeCourseName = activeCourse?.name ?? "German";
   const courseHasReader = Boolean(activeCourse?.lessons?.length);
   const sessionLesson = activeCourse?.lessons?.find((lesson) => lesson.id === courseSessionLesson);
-  const ukCourse = getCourse(LIFE_IN_THE_UK_COURSE_ID);
+  const activePack = countryPack(countryId);
+
+  /**
+   * Move to the next country studies country.
+   *
+   * Cycling rather than opening a picker: there are two, and a dialog to
+   * choose between two things is a dialog too many. The lesson being read is
+   * cleared because lesson ids do not cross countries.
+   */
+  const cycleCountry = useCallback(() => {
+    setCountryId((current) => {
+      const index = COUNTRY_PACKS.findIndex((entry) => entry.id === current);
+      return COUNTRY_PACKS[(index + 1) % COUNTRY_PACKS.length].id;
+    });
+    setUkLessonId(undefined);
+    setUkReaderOpen(false);
+  }, []);
+  const ukCourse = getCourse(activePack.course.id);
   const ukLesson = ukCourse?.lessons?.find((lesson) => lesson.id === ukLessonId);
   const partsReady = Object.keys(apiParts).length > 0;
   const earnedShopCoins = 80
@@ -3843,6 +3921,8 @@ export default function NewUiPrototype({
     ) : (
       <HomeView
         apiParts={apiParts}
+        countryId={countryId}
+        onCycleCountry={cycleCountry}
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onPractice={openGuidedSession}
         onRequestCatalogue={requestParts}
@@ -3965,7 +4045,7 @@ export default function NewUiPrototype({
       {ukCourse ? (
 
         <Suspense fallback={<FeatureLoading />}>
-          <div className="np-uk-tabs" role="tablist" aria-label={ui("Life in the UK sections")}>
+          <div className="np-uk-tabs" role="tablist" aria-label={ui("Country studies sections")}>
             <button
               aria-selected={ukTab === "learn"}
               className={ukTab === "learn" ? "is-active" : ""}
@@ -4046,14 +4126,21 @@ export default function NewUiPrototype({
           ) : ukTab === "practice" ? (
             <UkPracticeView
               onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
+              pack={activePack}
               profile={profile}
             />
           ) : ukTab === "exam" ? (
-            <UkTestView onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }} />
+            <UkTestView
+              onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
+              pack={activePack}
+            />
           ) : ukTab === "timeline" ? (
-            <UkTimelineView />
+            <UkTimelineView pack={activePack} />
           ) : (
-            <UkSearchView onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }} />
+            <UkSearchView
+              onOpenLesson={(lessonId) => { setUkTab("learn"); setUkLessonId(lessonId); }}
+              pack={activePack}
+            />
           )}
         </Suspense>
       ) : <FeatureLoading />}
@@ -4083,7 +4170,19 @@ export default function NewUiPrototype({
             learnPathUnlocked={learnPathUnlocked}
             gamesUnlocked={gamesUnlocked}
             onNavigate={navigate}
-            onOpenUkSection={(tab) => { setUkTab(tab); navigate("life-in-uk"); }}
+            countryId={countryId}
+            onOpenUkSection={(tab, country) => {
+              // Switching country resets the lesson being read: lesson ids do
+              // not cross countries, and a stale one would leave the reader
+              // showing nothing.
+              if (country && country !== countryId) {
+                setCountryId(country);
+                setUkLessonId(undefined);
+                setUkReaderOpen(false);
+              }
+              setUkTab(tab);
+              navigate("life-in-uk");
+            }}
             onSwitchCourse={() => setCourseSwitcherOpen(true)}
             onPrefetch={prefetchView}
             onResize={resizeSidebar}

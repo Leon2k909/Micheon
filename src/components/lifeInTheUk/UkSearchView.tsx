@@ -2,11 +2,13 @@ import React, { useDeferredValue, useMemo, useState } from "react";
 import { BookOpen, CalendarClock, HelpCircle, Layers, Search } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import type { CountryPack } from "@/lib/countryStudies";
+import { UK_PACK } from "@/lib/countryPacks";
 import {
-  UK_SEARCH_EXAMPLES,
-  searchLifeInTheUk,
-  type UkSearchHit,
-} from "@/lib/lifeInTheUkSearch";
+  COUNTRY_SEARCH_EXAMPLES,
+  searchCountry,
+  type CountrySearchHit,
+} from "@/lib/countrySearch";
 
 
 const KIND_ICON = {
@@ -35,14 +37,22 @@ const KIND_LABEL = {
  * which tags did the pulling, so the learner can see the thread and follow it
  * further rather than wondering where the extra results came from.
  */
-export function UkSearchView({ onOpenLesson }: { onOpenLesson?: (lessonId: string) => void }) {
+export function UkSearchView({
+  onOpenLesson,
+  pack = UK_PACK,
+}: {
+  onOpenLesson?: (lessonId: string) => void;
+  /** Which country is being searched. Defaults to the UK. */
+  pack?: CountryPack;
+}) {
   const [query, setQuery] = useState("");
   const deferred = useDeferredValue(query);
-  const { hits, matchedTags } = useMemo(() => searchLifeInTheUk(deferred), [deferred]);
+  const { hits, matchedTags } = useMemo(() => searchCountry(pack, deferred), [deferred, pack]);
+  const examples = COUNTRY_SEARCH_EXAMPLES[pack.id] ?? COUNTRY_SEARCH_EXAMPLES.uk;
   const [openId, setOpenId] = useState<string | null>(null);
 
   const grouped = useMemo(() => {
-    const order: UkSearchHit["kind"][] = ["event", "lesson", "category", "question"];
+    const order: CountrySearchHit["kind"][] = ["event", "lesson", "category", "question"];
     return order
       .map((kind) => ({ kind, items: hits.filter((hit) => hit.kind === kind) }))
       .filter((group) => group.items.length > 0);
@@ -69,7 +79,7 @@ export function UkSearchView({ onOpenLesson }: { onOpenLesson?: (lessonId: strin
 
         {query.trim().length < 2 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {UK_SEARCH_EXAMPLES.map((example) => (
+            {examples.map((example) => (
               <button
                 key={example}
                 type="button"

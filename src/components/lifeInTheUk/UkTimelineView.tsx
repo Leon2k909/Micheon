@@ -3,12 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import {
-  UK_ERA_LABELS,
-  UK_ERA_ORDER,
-  ukTimelineSorted,
-  type UkEra,
-} from "@/lib/lifeInTheUkTimeline";
+import type { CountryPack } from "@/lib/countryStudies";
+import { UK_PACK, packTimelineSorted } from "@/lib/countryPacks";
 
 
 /**
@@ -23,21 +19,21 @@ import {
  * Clicking an event opens its detail rather than navigating away, so you can
  * open three in a row and compare them without losing your place.
  */
-export function UkTimelineView() {
+export function UkTimelineView({ pack = UK_PACK }: { pack?: CountryPack } = {}) {
   const [openId, setOpenId] = useState<string | null>(null);
-  const [era, setEra] = useState<UkEra | "all">("all");
+  const [era, setEra] = useState<string>("all");
 
   const events = useMemo(() => {
-    const all = ukTimelineSorted();
+    const all = packTimelineSorted(pack);
     return era === "all" ? all : all.filter((entry) => entry.era === era);
-  }, [era]);
+  }, [era, pack]);
 
   // Showing everything, the eras get headings so the column can be scanned
   // rather than read. Showing one era, the heading would repeat the filter
   // button that is already highlighted, so it is left out.
   const rows = useMemo(() => {
-    const out: Array<{ kind: "heading"; era: UkEra } | { kind: "event"; entry: (typeof events)[number] }> = [];
-    let current: UkEra | null = null;
+    const out: Array<{ kind: "heading"; era: string } | { kind: "event"; entry: (typeof events)[number] }> = [];
+    let current: string | null = null;
     for (const entry of events) {
       if (era === "all" && entry.era !== current) {
         out.push({ kind: "heading", era: entry.era });
@@ -68,7 +64,7 @@ export function UkTimelineView() {
           >
             {ui("All")}
           </button>
-          {UK_ERA_ORDER.map((entry) => (
+          {pack.eraOrder.map((entry) => (
             <button
               key={entry}
               type="button"
@@ -80,7 +76,7 @@ export function UkTimelineView() {
                   : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
               )}
             >
-              {ui(UK_ERA_LABELS[entry])}
+              {ui(pack.eraLabels[entry])}
             </button>
           ))}
         </div>
@@ -101,7 +97,7 @@ export function UkTimelineView() {
                       className="absolute -left-[26px] top-[26px] h-2 w-5 bg-[var(--surface)] first:top-[10px]"
                     />
                     <h3 className="px-1 text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                      {ui(UK_ERA_LABELS[row.era])}
+                      {ui(pack.eraLabels[row.era])}
                     </h3>
                   </li>
                 );

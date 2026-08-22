@@ -13,27 +13,17 @@ import {
 } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { ukChapters, ukQuestionById, ukQuestionsForChapter, ukLessonTitle } from "@/lib/ukQuestionBank";
+import type { CountryPack } from "@/lib/countryStudies";
+import { UK_PACK, packChapters, packLessonTitle } from "@/lib/countryPacks";
+import { countryProgress, type CountryQuizState } from "@/lib/countryQuizProgress";
 import {
-  loadUkQuiz,
-  recordUkAnswer,
-  recordUkTest,
-  toggleUkFavourite,
-  type UkQuizState,
-} from "@/lib/ukQuizProgress";
-import {
-  UK_EXAM_PASS_MARK,
-  UK_EXAM_QUESTION_COUNT,
-  UK_PASS_PERCENT,
-  UK_TEST_MODES,
-  buildUkTest,
-  scoreUkTest,
-  ukModeTitle,
-  type UkExamOutcome,
-  type UkTest,
-  type UkTestMode,
-} from "@/lib/lifeInTheUkTests";
-import { ukAdvice } from "@/lib/lifeInTheUkAdvice";
+  countryPassPercent,
+  countryTests,
+  type CountryExamOutcome,
+  type CountryTest,
+  type CountryTestMode,
+} from "@/lib/countryTests";
+import { countryAdvice } from "@/lib/countryAdvice";
 
 type Stage = "hub" | "running" | "result";
 
@@ -66,19 +56,32 @@ function formatDate(at: number): string {
  * runs on some renders and not others, which is React error #310 and the
  * whole screen going to the crash boundary.
  */
-export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string) => void }) {
+export function UkTestView({
+  onOpenLesson,
+  pack = UK_PACK,
+}: {
+  onOpenLesson?: (lessonId: string) => void;
+  /** Which country's test this is. Defaults to the UK. */
+  pack?: CountryPack;
+}) {
+  const engine = useMemo(() => countryTests(pack), [pack]);
+  const quiz = useMemo(() => countryProgress(pack), [pack]);
+  const passPercent = countryPassPercent(pack);
+  const examCount = pack.exam.questionCount;
+  const examPassMark = pack.exam.passMark;
+  const testModes = useMemo(() => engine.modes(), [engine]);
   const [stage, setStage] = useState<Stage>("hub");
-  const [test, setTest] = useState<UkTest | null>(null);
+  const [test, setTest] = useState<CountryTest | null>(null);
   const [index, setIndex] = useState(0);
   const [chosen, setChosen] = useState<Record<string, number | null>>({});
-  const [outcome, setOutcome] = useState<UkExamOutcome | null>(null);
+  const [outcome, setOutcome] = useState<CountryExamOutcome | null>(null);
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
-  const [state, setState] = useState<UkQuizState>(() => loadUkQuiz());
+  const [state, setState] = useState<CountryQuizState>(() => quiz.load());
   const [reviewOnlyWrong, setReviewOnlyWrong] = useState(true);
   const startedAtRef = useRef(0);
 
-  const chapters = useMemo(() => ukChapters(), []);
-  const advice = useMemo(() => ukAdvice(state), [state]);
+  const chapters = useMemo(() => packChapters(pack), []);
+  const advice = useMemo(() => countryAdvice(pack, state), [state]);
   const history = useMemo(() => [...state.tests].reverse(), [state.tests]);
   const favouriteCount = useMemo(() => state.favourites.length, [state.stats]);
   const mistakeCount = useMemo(
@@ -88,17 +91,17 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
 
   const finish = useCallback(() => {
     if (!test) return;
-    const scored = scoreUkTest(test, chosen, {
+    const scored = engine.score(test, chosen, {
       at: Date.now(),
       elapsedMs: Date.now() - startedAtRef.current,
     });
     // Fold every answer into the shared record first, so mistakes and topic
     // strength update exactly as they do on the practice screens.
-    let next = loadUkQuiz();
+    let next = quiz.load();
     for (const answer of scored.answers) {
-      next = recordUkAnswer(answer.questionId, answer.chosen ?? -1, answer.correct, undefined, next);
+      next = quiz.recordAnswer(answer.questionId, answer.chosen ?? -1, answer.correct, undefined, next);
     }
-    next = recordUkTest({
+    next = quiz.recordTest({
       at: scored.at,
       score: scored.correct,
       total: scored.total,
@@ -129,9 +132,9 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
     return () => window.clearInterval(timer);
   }, [stage, test, finish]);
 
-  const start = useCallback((mode: UkTestMode, chapter?: string) => {
-    const current = loadUkQuiz();
-    const built = buildUkTest(mode, current, { chapter: chapter ?? null });
+  const start = useCallback((mode: CountryTestMode, chapter?: string) => {
+    const current = quiz.load();
+    const built = engine.build(mode, current, { chapter: chapter ?? null });
     if (built.questions.length === 0) return;
     startedAtRef.current = Date.now();
     setState(current);
@@ -144,7 +147,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
   }, []);
 
   const toggleStar = useCallback((questionId: string) => {
-    setState(toggleUkFavourite(questionId));
+    setState(quiz.toggleFavourite(questionId));
   }, []);
 
   // ── Running ──────────────────────────────────────────────────────────────
@@ -160,7 +163,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                {ui(ukModeTitle(test.mode))}
+                {ui(engine.modeTitle(test.mode))}
               </p>
               <h2 className="mt-1 text-lg font-black tracking-tight text-[var(--text-1)]">
                 {ui("Question")} {index + 1} {ui("of")} {test.questions.length}
@@ -204,7 +207,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <span className="rounded-full bg-[var(--accent-dim)] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--accent)]">
-                {ukLessonTitle(question.lesson)}
+                {packLessonTitle(pack, question.lesson)}
               </span>
               <h3 className="mt-3 text-xl font-black leading-snug tracking-tight text-[var(--text-1)]">
                 {question.q}
@@ -332,7 +335,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
             {outcome.passed ? ui("Passed") : ui("Not passed")}
           </h2>
           <p className="mt-1 text-sm font-bold text-[var(--text-3)]">
-            {ui(ukModeTitle(outcome.mode))}{outcome.chapter ? ` · ${outcome.chapter}` : ""}
+            {ui(engine.modeTitle(outcome.mode))}{outcome.chapter ? ` · ${outcome.chapter}` : ""}
           </p>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
@@ -352,7 +355,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
 
           <p className="mt-4 text-xs font-bold text-[var(--text-3)]">
             {ui("Pass mark")}: {outcome.passMark}/{outcome.total}
-            {outcome.mode === "exam" ? ` — ${UK_EXAM_PASS_MARK}/${UK_EXAM_QUESTION_COUNT} = ${UK_PASS_PERCENT}%` : ""}
+            {outcome.mode === "exam" ? ` — ${examPassMark}/${examCount} = ${passPercent}%` : ""}
             {" · "}{ui("Time")}: {formatClock(outcome.elapsedMs)}
           </p>
 
@@ -392,7 +395,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
           ) : (
             <div className="mt-4 space-y-3">
               {shown.map((answer) => {
-                const question = ukQuestionById(answer.questionId);
+                const question = quiz.questionById(answer.questionId);
                 if (!question) return null;
                 const starred = state.favourites.includes(question.id);
                 return (
@@ -404,7 +407,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
                           onClick={() => onOpenLesson?.(question.lesson)}
                           className="text-[10px] font-black uppercase tracking-wide text-[var(--accent)] hover:underline"
                         >
-                          {ukLessonTitle(question.lesson)}
+                          {packLessonTitle(pack, question.lesson)}
                         </button>
                         <p className="mt-1.5 text-sm font-black text-[var(--text-1)]">{question.q}</p>
                       </div>
@@ -494,7 +497,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
         </p>
 
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {UK_TEST_MODES.map((entry) => {
+          {testModes.map((entry) => {
             const unavailable =
               (entry.mode === "favourites" && favouriteCount === 0)
               || (entry.mode === "mistakes" && mistakeCount === 0);
@@ -544,7 +547,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
               >
                 {chapter}
                 <span className="ml-2 text-[10px] font-bold text-[var(--text-3)]">
-                  {ukQuestionsForChapter(chapter).length}
+                  {engine.questionsForChapter(chapter).length}
                 </span>
               </button>
             ))}
@@ -585,7 +588,7 @@ export function UkTestView({ onOpenLesson }: { onOpenLesson?: (lessonId: string)
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-black text-[var(--text-1)]">
-                      {entry.mode ? ui(ukModeTitle(entry.mode as UkTestMode)) : entry.scope}
+                      {entry.mode ? ui(engine.modeTitle(entry.mode as CountryTestMode)) : entry.scope}
                     </p>
                     <p className="truncate text-[11px] font-semibold text-[var(--text-3)]">{formatDate(entry.at)}</p>
                   </div>
