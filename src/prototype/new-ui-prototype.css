@@ -431,7 +431,16 @@
     background var(--np-motion-fast) ease;
 }
 
-.np-side-nav button:hover .np-nav-hide,
+/* Keyboard only.
+
+   Leon: "remove the eye icons from enabled menu items because i wanna just be
+   able to drag every menu into disabled". So the eye no longer answers hover —
+   with the mouse, putting something away is the drag, and the eye that used to
+   appear over every row on the way past is gone.
+
+   It stays in the DOM, and stays reachable by Tab, because dragging is not a
+   keyboard gesture: taking it out entirely would leave no way at all to hide a
+   row without a mouse. Focus is the one thing that still reveals it. */
 .np-nav-hide:focus-visible {
   opacity: 1;
 }
@@ -832,13 +841,29 @@
   font-weight: 740;
 }
 
+/* The eye that puts it back. It was the word SHOW; it is the icon now, because
+   this drawer is the one place the eye still means something and the row is
+   already a button whose whole job is restoring. Brightens on hover so the
+   row reads as pressable rather than as a label with a picture on it. */
 .np-nav-hidden-show {
+  display: grid;
   flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  opacity: 0.72;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  opacity: 0.6;
+  transition:
+    opacity var(--np-motion-fast) ease,
+    color var(--np-motion-fast) ease,
+    background var(--np-motion-fast) ease;
+}
+
+.np-nav-hidden-row:hover .np-nav-hidden-show,
+.np-nav-hidden-row:focus-visible .np-nav-hidden-show {
+  opacity: 1;
+  color: var(--accent-ink, var(--np-green-dark));
+  background: rgba(var(--accent-rgb, 79, 189, 81), 0.14);
 }
 
 .np-side-nav .np-nav-hidden-list button.is-all {

@@ -222,6 +222,82 @@ for (const rule of [".np-more-stash", ".np-more-stash.is-drop-target", ".np-side
   assert.ok(stashCss.includes(rule), `${rule} has no styling, so the drop target is invisible`);
 }
 
+// ── everything in the sidebar can be put away ─────────────────────────────
+//
+// Leon: "i wanna just be able to drag every menu into disabled, all of them,
+// including categories or on their own. each thing either together or
+// separate." Most of the sidebar was not draggable, because most of it is not
+// a nav destination: the three headings are layout, the rows under Country
+// studies are tabs within one view, Speaking is not built, and Vocabulary
+// library is a scroll position. Each now carries an id of its own.
+for (const [id, what] of [
+  ["SECTION_LANGUAGES", "the Language learning heading"],
+  ["SECTION_COUNTRY", "the Country studies heading"],
+  ["SECTION_BETA", "the Beta heading"],
+  ["ROW_SPEAKING", "the Speaking row"],
+  ["ROW_VOCABULARY", "the Vocabulary library row"],
+]) {
+  assert.ok(new RegExp(`\\{\\.\\.\\.dragProps\\(${id}\\)\\}`).test(prototype),
+    `${what} cannot be dragged away, and it is not a nav item so nothing else can hide it`);
+}
+assert.ok(/\{\.\.\.dragProps\(ukTabRowId\(section\.tab\)\)\}/.test(prototype),
+  "the rows under Country studies cannot be dragged away one at a time");
+
+// A heading that drags must take its section with it, or the drag reports
+// success and nothing moves.
+for (const [id, what] of [
+  ["SECTION_LANGUAGES", "Language learning"],
+  ["SECTION_COUNTRY", "Country studies"],
+  ["SECTION_BETA", "Beta"],
+]) {
+  assert.ok(new RegExp(`!isHidden\\(${id}\\)`).test(prototype),
+    `hiding ${what} does not actually remove the section`);
+}
+assert.ok(/UK_SECTIONS\.filter\(\(section\) => !isHidden\(ukTabRowId\(section\.tab\)\)\)/.test(prototype),
+  "a hidden Country studies row would still be drawn");
+assert.ok(/isHidden\(ROW_SPEAKING\)/.test(prototype) && /isHidden\(ROW_VOCABULARY\)/.test(prototype),
+  "the two non-destination language rows are not filtered by the preference they now carry");
+
+// The Country heading used to drag as Life in the UK — one row's id doing a
+// whole section's job, so putting the heading away and putting that one row
+// away were the same act.
+assert.ok(!/dragProps\(countryItem\.id\)/.test(prototype),
+  "the Country studies heading is dragging one row's id again instead of the section's");
+
+// Every id that can be hidden must be able to say its own name in the drawer,
+// or the way back fills up with "section:beta" and stops being a way back.
+assert.ok(/function navHideLabel\(id: string\): string/.test(prototype),
+  "nothing resolves a section or row id to a label");
+for (const label of [
+  "Language learning", "Country studies", "Beta", "Speaking", "Vocabulary library",
+]) {
+  assert.ok(new RegExp(`return ui\\("${label}"\\)`).test(prototype),
+    `a hidden "${label}" would be listed by its raw id`);
+}
+assert.ok(/UK_SECTIONS\.find\(\(section\) => ukTabRowId\(section\.tab\) === id\)/.test(prototype),
+  "a hidden Country studies row would be listed by its raw id");
+
+// ── the eye, and where it is allowed to appear ────────────────────────────
+//
+// Leon: "remove the eye icons from enabled menu items ... and keep the eye
+// icon for disabled stuff tho so i can just renable easy from the disabled
+// folder." So on a visible row the eye must not answer hover — a mouse user
+// puts things away by dragging them — while the drawer that offers them back
+// is exactly where an eye earns its place.
+//
+// It stays in the DOM and stays tabbable, and that is not a hedge: dragging
+// is not a keyboard gesture, so deleting the control outright would leave no
+// way whatsoever to hide a row without a mouse. Focus is the one thing that
+// still reveals it, which is why the assertions above about role, tabIndex,
+// aria-label and onKeyDown still stand.
+assert.ok(!/button:hover \.np-nav-hide/.test(stashCss),
+  "the eye still appears on hover over a visible row");
+assert.ok(/\.np-nav-hide:focus-visible\s*\{[^}]*opacity:\s*1/.test(stashCss),
+  "the eye is unreachable by keyboard, which leaves no way to hide a row without a mouse");
+assert.ok(/np-nav-hidden-show"><Eye /.test(prototype),
+  "the put-away rows lost the eye that brings them back");
+assert.ok(/aria-label=\{uiFmt\("Show \{label\}", \{ label \}\)\}/.test(prototype),
+  "an icon-only restore row needs to say what pressing it does");
 console.log(
   "check-nav-hiding: any destination but Home can be hidden, the count is shown, "
   + "Show/Show all bring them back, and destinations drag between the sidebar and More"

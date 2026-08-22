@@ -212,8 +212,12 @@ assert.ok(
     && !shell.includes("{selected && UK_SECTIONS.map((section)"),
   "the per-country section rows are back, which is the nesting she asked to remove"
 );
+// The filter in the middle is the learner's own hiding — each of these rows
+// can be dragged into Hidden apps on its own — so what is pinned here is that
+// the rows still come from ONE list of sections, not that nothing stands
+// between that list and the map.
 assert.ok(
-  /\{UK_SECTIONS\.map\(\(section\) => \{/.test(shell),
+  /\{UK_SECTIONS(\.filter\([^\n]*\))?\.map\(\(section\) => \{/.test(shell),
   "the group no longer lists the selected country's sections at all"
 );
 // Opened menus have to be closable, or they strand themselves over the rail.

@@ -107,7 +107,16 @@ import { getCourse } from "@/lib/courseRegistry";
 import { FlagRoundel } from "@/components/course/FlagRoundel";
 import { learningFlagId } from "@/lib/learningFlag";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
-import { HIDDEN_NAV_EVENT, canHideNavItem, hideNavItem, loadHiddenNav, showAllNavItems, showNavItem } from "@/lib/navPreferences";
+import {
+  HIDDEN_NAV_EVENT,
+  canHideNavItem,
+  hideNavItem,
+  loadHiddenNav,
+  navRowId,
+  navSectionId,
+  showAllNavItems,
+  showNavItem,
+} from "@/lib/navPreferences";
 import { isNavDrag, readNavDrag, startNavDrag, type NavDragOrigin } from "@/lib/navDrag";
 import {
   CURRENCY_AUTO,
@@ -290,6 +299,43 @@ type LanguageRow =
   | { kind: "nav"; id: PrototypeView }
   | { kind: "view"; icon: ComponentType<{ className?: string }>; label: string; view: PrototypeView }
   | { kind: "soon"; icon: ComponentType<{ className?: string }>; label: string };
+
+/**
+ * An id for everything in the sidebar, so everything can be put away.
+ *
+ * The three headings are layout rather than destinations, and several rows are
+ * tabs or scroll positions rather than views, so none of them had an id the
+ * hidden list could hold. These give them one. Dragging a heading takes the
+ * whole section; dragging a row inside takes just that row; and because they
+ * are ordinary strings in the same preference, Show all and the count need to
+ * know nothing about the distinction.
+ */
+const SECTION_LANGUAGES = navSectionId("languages");
+const SECTION_COUNTRY = navSectionId("country");
+const SECTION_BETA = navSectionId("beta");
+const ROW_SPEAKING = navRowId("speaking");
+const ROW_VOCABULARY = navRowId("vocabulary-library");
+const ukTabRowId = (tab: UkTab) => navRowId(`uk-${tab}`);
+
+/**
+ * What a put-away thing is called in the list that offers it back.
+ *
+ * A hidden id has to name itself there or the drawer fills up with
+ * "section:beta" and the way back stops being a way back. Nav items are
+ * resolved from ALL_NAV_ITEMS by the list itself; everything else is named
+ * here, from the same constants that label the row on screen, so a heading
+ * cannot end up called one thing in the sidebar and another in the drawer.
+ */
+function navHideLabel(id: string): string {
+  if (id === SECTION_LANGUAGES) return ui("Language learning");
+  if (id === SECTION_COUNTRY) return ui("Country studies");
+  if (id === SECTION_BETA) return ui("Beta");
+  if (id === ROW_SPEAKING) return ui("Speaking");
+  if (id === ROW_VOCABULARY) return ui("Vocabulary library");
+  const ukSection = UK_SECTIONS.find((section) => ukTabRowId(section.tab) === id);
+  if (ukSection) return ui(ukSection.label);
+  return id;
+}
 
 const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "nav", id: "learn" },
@@ -784,7 +830,10 @@ function Sidebar({
     .filter((item): item is NavigationItem => Boolean(item));
   const languageRows: Array<{ item: NavigationItem | null; row: LanguageRow }> =
     LANGUAGE_SECTION_ROWS.flatMap((row): Array<{ item: NavigationItem | null; row: LanguageRow }> => {
-      if (row.kind !== "nav") return [{ item: null, row }];
+      // The two rows that are not destinations carry their own hide ids, so
+      // they answer to the preference the same way a nav item does.
+      if (row.kind === "soon") return isHidden(ROW_SPEAKING) ? [] : [{ item: null, row }];
+      if (row.kind === "view") return isHidden(ROW_VOCABULARY) ? [] : [{ item: null, row }];
       const item = visibleNavigation.find((entry) => entry.id === row.id);
       return item ? [{ item, row }] : [];
     });
@@ -866,13 +915,14 @@ function Sidebar({
           );
         })}
 
-        {languageRows.length > 0 && (
+        {languageRows.length > 0 && !isHidden(SECTION_LANGUAGES) && (
           <div className={`np-nav-group${groups.languages ? " is-open" : ""}`}>
             <button
               aria-expanded={groups.languages}
               className={`np-nav-group-head${!groups.languages && languageItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
               onClick={() => toggleGroup("languages")}
               type="button"
+              {...dragProps(SECTION_LANGUAGES)}
             >
               {/* The flag is the language, so pressing it is where you change
                   the language — a span with a button role, because a button
@@ -905,6 +955,10 @@ function Sidebar({
                     // Shown, and honest about it. The section reads wrong
                     // without the row, and worse with a row that goes nowhere
                     // without saying so.
+                    //
+                    // Draggable even though it is disabled: a disabled button
+                    // is unclickable, not unmovable, and "all of them" includes
+                    // the one row you might most want out of the way.
                     const SoonIcon = row.icon;
                     return (
                       <button
@@ -913,6 +967,7 @@ function Sidebar({
                         key={row.label}
                         title={ui("Not built yet.")}
                         type="button"
+                        {...dragProps(ROW_SPEAKING)}
                       >
                         <span aria-hidden="true" className="np-nav-visual"><SoonIcon className="np-nav-icon" /></span>
                         <span>{ui(row.label)}</span>
@@ -933,6 +988,7 @@ function Sidebar({
                         onPointerEnter={() => onPrefetch(row.view)}
                         title={ui("Your vocabulary library, on the profile page.")}
                         type="button"
+                        {...dragProps(ROW_VOCABULARY)}
                       >
                         <span aria-hidden="true" className="np-nav-visual"><ViewIcon className="np-nav-icon" /></span>
                         <span>{ui(row.label)}</span>
@@ -987,14 +1043,18 @@ function Sidebar({
           </div>
         )}
 
-        {countryItem && (
+        {countryItem && !isHidden(SECTION_COUNTRY) && (
           <div className={`np-nav-group${groups.country ? " is-open" : ""}`}>
+            {/* The heading drags as the section, not as Life in the UK. It used
+                to carry that one item's id, so putting the heading away was
+                indistinguishable from putting one row away — and the row it
+                happened to name is the one the whole group hangs on. */}
             <button
               aria-expanded={groups.country}
               className={`np-nav-group-head${!groups.country && activeView === "life-in-uk" ? " is-active" : ""}`}
               onClick={() => toggleGroup("country")}
               type="button"
-              {...dragProps(countryItem.id)}
+              {...dragProps(SECTION_COUNTRY)}
             >
               {/* The flag is the country chooser, the same way the language
                   group's flag changes the language being learned. */}
@@ -1022,12 +1082,12 @@ function Sidebar({
                 tabIndex={0}
                 aria-label={uiFmt("Hide {label}", { label: ui("Country studies") })}
                 className="np-nav-hide"
-                onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(countryItem.id)); }}
+                onClick={(event) => { event.stopPropagation(); setHidden(hideNavItem(SECTION_COUNTRY)); }}
                 onKeyDown={(event) => {
                   if (event.key !== "Enter" && event.key !== " ") return;
                   event.preventDefault();
                   event.stopPropagation();
-                  setHidden(hideNavItem(countryItem.id));
+                  setHidden(hideNavItem(SECTION_COUNTRY));
                 }}
               >
                 <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
@@ -1070,7 +1130,7 @@ function Sidebar({
                     is said by the flag above and by the chooser it opens, so
                     repeating it as a row here would be a second answer to a
                     question already answered. */}
-                {UK_SECTIONS.map((section) => {
+                {UK_SECTIONS.filter((section) => !isHidden(ukTabRowId(section.tab))).map((section) => {
                   const Icon = section.icon;
                   const active = activeView === "life-in-uk" && ukTab === section.tab;
                   return (
@@ -1082,6 +1142,7 @@ function Sidebar({
                       onFocus={() => onPrefetch("life-in-uk")}
                       onPointerEnter={() => onPrefetch("life-in-uk")}
                       type="button"
+                      {...dragProps(ukTabRowId(section.tab))}
                     >
                       <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
                       <span>{ui(section.label)}</span>
@@ -1093,7 +1154,7 @@ function Sidebar({
           </div>
         )}
 
-        {betaItems.filter((item) => !isHidden(item.id)).length > 0 && (
+        {betaItems.filter((item) => !isHidden(item.id)).length > 0 && !isHidden(SECTION_BETA) && (
           <div className={`np-nav-group np-nav-group--beta${groups.beta ? " is-open" : ""}`}>
             {/* A heading like the two above it. This used to be a violet
                 "Beta" pill, which made the newest section read as a warning
@@ -1108,6 +1169,7 @@ function Sidebar({
               className={`np-nav-group-head${!groups.beta && betaItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
               onClick={() => toggleGroup("beta")}
               type="button"
+              {...dragProps(SECTION_BETA)}
             >
               <span aria-hidden="true" />
               <span>{ui("Beta")}</span>
@@ -1188,16 +1250,21 @@ function Sidebar({
               )}
               {hidden.map((id) => {
                 const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
-                const label = item ? ui(item.label) : id;
+                const label = item ? ui(item.label) : navHideLabel(id);
                 return (
                   <button
+                    aria-label={uiFmt("Show {label}", { label })}
                     className="np-nav-hidden-row"
                     key={id}
                     onClick={() => setHidden(showNavItem(id))}
                     type="button"
                   >
                     <span className="truncate">{label}</span>
-                    <span className="np-nav-hidden-show">{ui("Show")}</span>
+                    {/* The eye lives here and only here. On a visible row it was
+                        eleven standing invitations to dismantle the nav, and
+                        Leon puts things away by dragging them; on a put-away row
+                        it is the whole point of opening the drawer. */}
+                    <span aria-hidden="true" className="np-nav-hidden-show"><Eye className="h-3.5 w-3.5" /></span>
                   </button>
                 );
               })}

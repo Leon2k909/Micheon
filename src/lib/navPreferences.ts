@@ -60,3 +60,31 @@ export function showAllNavItems(profile: UserProfile | null = getAuthUser()) {
 export function canHideNavItem(id: string): boolean {
   return !ALWAYS_VISIBLE_NAV.includes(id);
 }
+
+/**
+ * Not everything in the sidebar is a destination.
+ *
+ * Leon: "i wanna just be able to drag every menu into disabled, all of them,
+ * including categories or on their own. each thing either together or
+ * separate." Most of what he can see is not a nav item and so had no id to
+ * put away: the three folding headings are layout, and the rows under Country
+ * studies are tabs within one view rather than views of their own. Speaking is
+ * not built yet and Vocabulary library is a scroll position on the profile
+ * page.
+ *
+ * So the store — which was always just a list of strings — gains two more
+ * kinds of string. The prefix is what tells them apart, and it is a prefix
+ * rather than a separate preference so that Show all, the count, the drag and
+ * the restore list all keep working on one list without knowing the
+ * difference.
+ */
+export const NAV_SECTION_PREFIX = "section:";
+export const NAV_ROW_PREFIX = "row:";
+
+/** The whole heading and everything folded under it. */
+export const navSectionId = (section: string) => `${NAV_SECTION_PREFIX}${section}`;
+/** One row that is not a nav destination: a tab, a preview, a scroll target. */
+export const navRowId = (row: string) => `${NAV_ROW_PREFIX}${row}`;
+
+export const isNavSectionId = (id: string) => id.startsWith(NAV_SECTION_PREFIX);
+export const isNavRowId = (id: string) => id.startsWith(NAV_ROW_PREFIX);

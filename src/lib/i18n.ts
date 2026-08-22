@@ -2272,6 +2272,7 @@ const DE: Record<string, string> = {
   "Resets Monday": "Setzt montags zurück",
   "Resize sidebar": "Seitenleiste anpassen",
   "Hide {label}": "{label} ausblenden",
+  "Show {label}": "{label} einblenden",
   "Hidden ({n})": "Ausgeblendet ({n})",
   "Put away": "Weggeräumt",
   "Put away ({n})": "Weggeräumt ({n})",
