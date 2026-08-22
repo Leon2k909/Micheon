@@ -483,6 +483,20 @@
   gap: 10px;
 }
 
+/* Clear of the fold arrow.
+
+   .np-nav-hide sits at right: 9px, which on a group head is exactly where the
+   chevron is — measured at 187-213px against the chevron's 194-211, covering
+   it completely. Pressing the arrow to fold the group pressed "hide" instead.
+   Only Country studies shows this, being the one group head that is also a
+   hideable nav item.
+
+   Moving the button rather than the arrow keeps the chevron flush right on
+   all three heads, so they still line up. */
+.np-side-nav .np-nav-group-head .np-nav-hide {
+  right: 32px;
+}
+
 .np-side-nav .np-nav-group-head > span:nth-of-type(2),
 .np-side-nav .np-nav-group-items button > span:nth-of-type(2),
 .np-side-nav .np-nav-hidden-toggle > span:nth-of-type(2),
