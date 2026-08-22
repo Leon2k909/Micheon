@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
+import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
 
 /**
  * Tap a card, read it in your own language.
@@ -13,26 +14,53 @@ import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
  * to "off" for people who do not need it.
  *
  * Adding a language is one file and two lines: export a Record<string, string>
- * keyed on the ENGLISH source text, and register it in TRANSLATIONS below. The
- * keys are the English strings exactly as they appear in the course, so a
- * missing entry degrades to showing the English rather than to a crash or an
- * empty panel.
+ * keyed on the SOURCE text, and register it in TRANSLATIONS below. The keys
+ * are the course's own strings exactly as they appear in it, so a missing
+ * entry degrades to showing the original rather than to a crash or an empty
+ * panel.
+ *
+ * A table also says which language it translates FROM. Country studies now
+ * holds two courses written in two languages: Life in the UK is English and
+ * offers German, Leben in Deutschland is German and offers English. Without
+ * "from", the picker would offer a German learner a German translation of
+ * German cards and appear broken.
  */
 
 const KEY = "gl-course-translation";
 export const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
 
 /** "off" means cards are not tappable and nothing is offered. */
-export type TranslationLanguage = "off" | "de";
+export type TranslationLanguage = "off" | "de" | "en";
 
-export const TRANSLATION_LANGUAGES: Array<{ id: TranslationLanguage; label: string; endonym: string }> = [
-  { id: "off", label: "No translation", endonym: "No translation" },
-  { id: "de", label: "German", endonym: "Deutsch" },
+/** The language a course is written in, which decides what can be offered. */
+export type ContentLanguage = "en" | "de";
+
+export const TRANSLATION_LANGUAGES: Array<{
+  id: TranslationLanguage;
+  label: string;
+  endonym: string;
+  /** null for "off", which belongs in every list. */
+  from: ContentLanguage | null;
+}> = [
+  { id: "off", label: "No translation", endonym: "No translation", from: null },
+  { id: "de", label: "German", endonym: "Deutsch", from: "en" },
+  { id: "en", label: "English", endonym: "English", from: "de" },
 ];
 
 const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>> = {
   de: LIFE_IN_THE_UK_DE,
+  en: LEBEN_IN_DEUTSCHLAND_EN,
 };
+
+/**
+ * What to offer beside a course written in this language.
+ *
+ * Always includes "off", so there is a way to turn it back off, and never
+ * includes a table that reads the same language the course is already in.
+ */
+export function translationLanguagesFor(contentLang: ContentLanguage) {
+  return TRANSLATION_LANGUAGES.filter((language) => language.from === null || language.from === contentLang);
+}
 
 let inMemory: TranslationLanguage = "off";
 
@@ -40,7 +68,7 @@ export function getTranslationLanguage(): TranslationLanguage {
   if (typeof window === "undefined") return "off";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "de" ? stored : "off";
+    inMemory = stored === "de" || stored === "en" ? stored : "off";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }

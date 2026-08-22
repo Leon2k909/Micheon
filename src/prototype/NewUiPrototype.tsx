@@ -70,7 +70,7 @@ import {
 
 import { CourseSwitcher } from "@/components/course/CourseSwitcher";
 import {
-  TRANSLATION_LANGUAGES,
+  translationLanguagesFor,
   setTranslationLanguage,
   useTranslationLanguage,
   type TranslationLanguage,
@@ -4199,11 +4199,11 @@ export default function NewUiPrototype({
                 between two tabs before, where it read as a broken tab rather
                 than a control — Michelle could not find it. Only on Learn,
                 because it is the only tab showing cards to translate. */}
-            {/* UK only: the table behind this translates English cards into
-                German. The German course's cards are already German, and no
-                table exists to turn them into anything else, so the control
-                is hidden rather than offered and left inert. */}
-            {ukTab === "learn" && activePack.id === "uk" && (
+            {/* Both courses now, filtered by the language each is written in:
+                Life in the UK is English and offers German, Leben in
+                Deutschland is German and offers English. It was UK-only while
+                the only table read English. */}
+            {ukTab === "learn" && translationLanguagesFor(activePack.contentLang).length > 1 && (
               <label className="np-uk-translation">
                 <Languages aria-hidden="true" />
                 <span>{ui("Tap a card for")}</span>
@@ -4212,7 +4212,7 @@ export default function NewUiPrototype({
                   onChange={(event) => setTranslationLanguage(event.target.value as TranslationLanguage)}
                   value={translationLanguage}
                 >
-                  {TRANSLATION_LANGUAGES.map((language) => (
+                  {translationLanguagesFor(activePack.contentLang).map((language) => (
                     <option key={language.id} value={language.id}>
                       {language.id === "off" ? ui("No translation") : language.endonym}
                     </option>
