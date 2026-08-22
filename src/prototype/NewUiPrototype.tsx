@@ -28,6 +28,7 @@ import {
   Headphones,
   Home,
   Landmark,
+  Layers,
   Languages,
   WholeWord,
   Leaf,
@@ -1871,14 +1872,22 @@ function HomeBanner() {
  * the existing course picker, exactly as the flag in the rail does.
  */
 function LanguageCard({
+  contentMenuOpen,
+  lessonContent,
   onOpen,
+  onPickContent,
   onSwitchCourse,
+  onToggleContentMenu,
   packProgress,
   profile,
   stats,
 }: {
+  contentMenuOpen: boolean;
+  lessonContent: LessonContent;
   onOpen: () => void;
+  onPickContent: (value: LessonContent) => void;
   onSwitchCourse: () => void;
+  onToggleContentMenu: () => void;
   packProgress: PackProgress | null;
   profile: UserProfile | null;
   stats: PrototypeStats;
@@ -1906,15 +1915,61 @@ function LanguageCard({
           <h2>{ui("Language learning")}</h2>
           <p>{ui("Learn a new language step by step and build your skills.")}</p>
 
-          <div className="np-home-choice-panel">
-            <small>{ui("Current language")}</small>
-            <span className="np-home-choice-value">
-              <FlagRoundel id={courseFlagId} />
-              <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
-              <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
-                {ui("Change")}
-              </button>
-            </span>
+          <div className="np-home-choice-controls">
+            <div className="np-home-choice-panel">
+              <small>{ui("Current language")}</small>
+              <span className="np-home-choice-value">
+                <FlagRoundel id={courseFlagId} />
+                <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
+                <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
+                  {ui("Change")}
+                </button>
+              </span>
+            </div>
+
+            {/* The same choice the next-lesson strip used to carry, in its own
+                panel beside the language: whether a sitting is made of
+                sentences, words, or both. Same three values and the same
+                store — only where it lives has changed. */}
+            <div className="np-home-choice-panel np-home-choice-panel--content">
+              <small>{ui("Lesson content")}</small>
+              <span className="np-home-choice-value">
+                <span aria-hidden="true" className="np-home-choice-icon"><Layers /></span>
+                <strong>{ui(lessonContent === "words" ? "Words" : lessonContent === "mixed" ? "Both" : "Sentences")}</strong>
+                <button
+                  aria-expanded={contentMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={ui("What your lessons are made of")}
+                  className="np-home-choice-change"
+                  onClick={onToggleContentMenu}
+                  type="button"
+                >
+                  {ui("Change")}
+                  <ChevronDown aria-hidden="true" />
+                </button>
+              </span>
+
+              {contentMenuOpen && (
+                <div aria-label={ui("What your lessons are made of")} className="np-home-content-menu" role="menu">
+                  {([
+                    ["sentences", "Sentences", "Phrases, sentences and dialogues — the course as it has always been."],
+                    ["words", "Words", "Single words with their meanings, most common first."],
+                    ["mixed", "Both", "Four sentence slots and two word slots in each sitting."],
+                  ] as const).map(([value, label, hint]) => (
+                    <button
+                      aria-checked={lessonContent === value}
+                      key={value}
+                      onClick={() => onPickContent(value)}
+                      role="menuitemradio"
+                      type="button"
+                    >
+                      <strong>{ui(label)}</strong>
+                      <small>{ui(hint)}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -2768,7 +2823,7 @@ function HomeView({
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
     const onPointerDown = (event: PointerEvent) => {
-      if (!(event.target as Element | null)?.closest?.(".np-lesson-content-picker")) setContentMenuOpen(false);
+      if (!(event.target as Element | null)?.closest?.(".np-home-choice-panel--content")) setContentMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setContentMenuOpen(false);
@@ -2808,8 +2863,16 @@ function HomeView({
 
       <div className="np-home-choices">
         <LanguageCard
+          contentMenuOpen={contentMenuOpen}
+          lessonContent={lessonContent}
           onOpen={onPractice}
+          onPickContent={(value) => {
+            setLessonContent(value);
+            setLessonContentState(value);
+            setContentMenuOpen(false);
+          }}
           onSwitchCourse={onSwitchCourse}
+          onToggleContentMenu={() => setContentMenuOpen((open) => !open)}
           packProgress={packProgress}
           profile={profile}
           stats={stats}

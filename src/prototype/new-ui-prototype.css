@@ -1912,8 +1912,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     color-mix(in srgb, var(--surface) 12%, transparent) 0%,
     color-mix(in srgb, var(--surface) 44%, transparent) 40%,
     color-mix(in srgb, var(--surface) 72%, transparent) 62%,
-    color-mix(in srgb, var(--surface) 60%, transparent) 84%,
-    color-mix(in srgb, var(--surface) 34%, transparent) 100%
+    color-mix(in srgb, var(--surface) 52%, transparent) 84%,
+    color-mix(in srgb, var(--surface) 30%, transparent) 100%
   );
 }
 
@@ -1997,13 +1997,18 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   padding: 6px 22px 22px;
   /* Fades in rather than starting opaque, so the picture running on behind it
      dissolves into the bar instead of meeting it at a line. */
+  /* Starts at 30% — the value the hero's veil ends on — so the two meet
+     without a step. Starting from nothing made the picture jump brighter at
+     the seam and then fade, and a step in the middle of a fade is read as an
+     edge. */
   background: linear-gradient(
     180deg,
-    transparent 0%,
-    color-mix(in srgb, var(--surface) 42%, transparent) 34px,
-    color-mix(in srgb, var(--surface) 78%, transparent) 78px,
-    color-mix(in srgb, var(--surface) 96%, transparent) 130px,
-    var(--surface) 170px
+    color-mix(in srgb, var(--surface) 30%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 46%, transparent) 44px,
+    color-mix(in srgb, var(--surface) 68%, transparent) 96px,
+    color-mix(in srgb, var(--surface) 88%, transparent) 152px,
+    color-mix(in srgb, var(--surface) 98%, transparent) 205px,
+    var(--surface) 240px
   );
 }
 
@@ -11615,5 +11620,92 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
    so nothing escapes the rounded corner. */
 .np-home-choice-art,
 .np-home-choice .np-course-art {
-  height: calc(100% + 175px);
+  height: calc(100% + 260px);
+}
+
+/* ── the two choices on the picture ────────────────────────────────────────
+   Language and lesson content, side by side. They wrap rather than shrink:
+   both hold a flag or an icon, a word and a button, and squeezing the row is
+   what cut the Change button off when the panel was capped by width. */
+.np-home-choice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* The menu hangs off its own panel, so the panel is the anchor. */
+.np-home-choice-panel--content {
+  position: relative;
+}
+
+.np-home-choice-panel--content .np-home-choice-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+}
+
+.np-home-choice-panel--content .np-home-choice-icon > svg {
+  width: 13px;
+  height: 13px;
+}
+
+.np-home-choice-change > svg {
+  width: 13px;
+  height: 13px;
+  margin-left: 3px;
+  vertical-align: -2px;
+}
+
+.np-home-content-menu {
+  position: absolute;
+  z-index: 6;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  width: max(240px, 100%);
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+  box-shadow: 0 16px 40px rgba(10, 8, 18, 0.34);
+}
+
+.np-home-content-menu > button {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.np-home-content-menu > button:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.np-home-content-menu > button[aria-checked="true"] {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.np-home-content-menu > button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.np-home-content-menu strong {
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.np-home-content-menu small {
+  max-width: 30ch;
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
 }
