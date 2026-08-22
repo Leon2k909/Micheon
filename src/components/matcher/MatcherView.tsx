@@ -27,7 +27,7 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
-import { tts, stopTts } from "@/lib/voice";
+import { preloadTts, tts, stopTts } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -269,6 +269,28 @@ export function MatcherView({
     if (!text) return;
     void tts(text, side === "de" ? 0.88 : 0.95, side === "de" ? "de-DE" : englishLang);
   }, [englishLang]);
+
+  /**
+   * Warm the board's audio while the learner is still reading it.
+   *
+   * A clip that has never been spoken has to be synthesised upstream first,
+   * which measured at 377-847 ms — long enough that tapping a card felt
+   * broken. The whole board costs about as much as one clip, because each
+   * synthesis opens its own connection and they overlap: six lines measured
+   * 357 ms together against 716 ms for the slowest one alone.
+   *
+   * The cache this fills is the one playback reads, keyed on the same text,
+   * rate and language, so a tap after this lands on a hit. Failures are
+   * ignored on purpose — this is a head start, and a tap still works without
+   * it exactly as it did before.
+   */
+  useEffect(() => {
+    if (!board.pairs.length) return;
+    for (const pair of board.pairs) {
+      if (pair.de) preloadTts(pair.de, 0.88, "de-DE");
+      if (pair.en) preloadTts(pair.en, 0.95, englishLang);
+    }
+  }, [board.pairs, englishLang]);
 
   const choose = useCallback((side: "de" | "en", id: string) => {
     if (solved.has(id)) return;
