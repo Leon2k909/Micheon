@@ -1959,28 +1959,9 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: relative;
   z-index: 2;
   display: grid;
-  /* Left-aligned rather than stretched, so a panel narrower than the card
-     starts at the same edge as the one above it and the three steps line up. */
-  justify-items: start;
   gap: 12px;
   padding: 6px 22px 22px;
   background: var(--surface);
-}
-
-/* The middle step. Two thirds, as she asked — but floored at the width the row
-   actually needs, because capping a box does not shrink the icon, the lesson
-   name and the percentage inside it; that is what cut the Change button off
-   the label above. On a card too narrow for both, the step gives way and the
-   panel simply runs full width rather than clipping. */
-.np-home-choice-foot .np-home-choice-panel--progress {
-  width: max(270px, 66%);
-  max-width: 100%;
-}
-
-/* The bottom step is the full width, which is what makes the other two read
-   as steps at all. */
-.np-home-choice-foot .np-home-choice-cta {
-  width: 100%;
 }
 
 @media (max-width: 700px) {
