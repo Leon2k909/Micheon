@@ -8,6 +8,7 @@ import {
   buildMatcherQueue,
   dealColumns,
   getMatcherCursor,
+  getMatcherKind,
   getMatcherMissed,
   matcherDifficulty,
   matcherMissedPairs,
@@ -15,6 +16,7 @@ import {
   matcherStreakAfterMiss,
   rememberMiss,
   setMatcherCursor,
+  setMatcherKind,
   setMatcherMissed,
   type MatcherKind,
   type MatcherPair,
@@ -69,7 +71,10 @@ export function MatcherView({
   profile: UserProfile | null;
   onExit: () => void;
 }) {
-  const [kind, setKind] = useState<MatcherKind>("words");
+  // Resolved on the first render rather than in an effect, for the same reason
+  // the cursor is: opening on Words and then swapping to Sentences would flash
+  // the wrong list every single time.
+  const [kind, setKind] = useState<MatcherKind>(() => getMatcherKind(getLearningDirection(), profile));
   const [picked, setPicked] = useState<{ side: "de" | "en"; id: string } | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
@@ -245,10 +250,11 @@ export function MatcherView({
   // puts the new one back where it was left rather than at its start.
   const chooseKind = useCallback((next: MatcherKind) => {
     setKind(next);
+    setMatcherKind(next, direction, profile);
     setSolved(new Set());
     setMenuFor(null);
     arm(null);
-  }, [arm]);
+  }, [arm, direction, profile]);
 
   /** Back to the head of the queue, for when the point is the easy words. */
   const startOver = useCallback(() => {

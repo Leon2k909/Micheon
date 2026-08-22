@@ -124,6 +124,36 @@ export function matcherStreakAfterMiss(knownStreak: number): number {
  */
 const MATCHER_CURSOR_KEY = "gl-matcher-cursor-v1";
 
+/**
+ * Which list was open, remembered like everything else here.
+ *
+ * Each list already kept its own place, its own misses and its own streak —
+ * but not the fact that it was the one being used, so every visit opened on
+ * Words and somebody working through the sentences had to say so again each
+ * time. Stored per course, because which list you want is a fact about the
+ * language you are learning rather than about the machine.
+ */
+const MATCHER_KIND_KEY = "gl-matcher-kind-v1";
+
+export function getMatcherKind(
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): MatcherKind {
+  const stored = loadScopedJson<unknown>(`${MATCHER_KIND_KEY}:${direction}`, null, profile);
+  // Anything else — a missing value, a corrupted one, an older spelling — is
+  // the default rather than an error, the same as every other preference here.
+  return stored === "sentences" || stored === "words" ? stored : "words";
+}
+
+export function setMatcherKind(
+  kind: MatcherKind,
+  direction: LearningDirection = getLearningDirection(),
+  profile: UserProfile | null = getAuthUser()
+): MatcherKind {
+  saveScopedJson(`${MATCHER_KIND_KEY}:${direction}`, kind, profile);
+  return kind;
+}
+
 export type MatcherCursor = { ids: string[]; approx: number };
 
 /** Words and sentences are different queues, and each course has its own. */
