@@ -2128,6 +2128,23 @@ const DE: Record<string, string> = {
   "Country studies": "Landeskunde",
   "Hidden apps": "Ausgeblendete Apps",
   "Nothing is hidden.": "Es ist nichts ausgeblendet.",
+
+  // ── The Listen test ──
+  "Test me": "Teste mich",
+  "Back to Listen": "Zurück zum Hören",
+  "Test again": "Noch einmal testen",
+  "What does it mean?": "Was bedeutet das?",
+  "remembered": "behalten",
+  "The ones that got away": "Die, die dir entwischt sind",
+  "you said: {chosen}": "du sagtest: {chosen}",
+  "{right} of {total}": "{right} von {total}",
+  "{n} of {total}": "{n} von {total}",
+  "All of them. Nothing got past you.": "Alle. Dir ist nichts entgangen.",
+  "Listen to a few first": "Hör dir erst ein paar an",
+  "This tests what this sitting has played. Press play, let a few cards go by, then come back.":
+    "Getestet wird, was in dieser Sitzung gelaufen ist. Drück auf Abspielen, lass ein paar Karten laufen und komm dann zurück.",
+  "A score here changes nothing in your lessons — picking from four is recognition, and the lessons ask you to produce the word. It is a read on how the listening is going.":
+    "Das Ergebnis ändert nichts an deinen Lektionen — aus vier auszuwählen ist Wiedererkennen, und die Lektionen verlangen, dass du das Wort selbst produzierst. Es zeigt dir, wie das Hören läuft.",
   "Choose the phrase": "Wähle den Satz",
   "Getting the next phrases ready…": "Die nächsten Sätze werden vorbereitet …",
   "{n} in a row": "{n} richtig in Folge",

@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
   GripVertical,
   Headphones,
   ListMusic,
@@ -76,6 +77,8 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
+import { ListenTest } from "@/components/listen/ListenTest";
+import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
@@ -365,6 +368,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [sessionMarks, setSessionMarks] = useState<Map<string, { verdict: "know" | "difficult"; undo: ListenReviewChange }>>(
     () => new Map()
   );
+  const [testing, setTesting] = useState(false);
   const [reviewPanel, setReviewPanel] = useState<"menu" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
   const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
@@ -390,6 +394,26 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   );
   const loopPass = listenLoopPassForPlayhead(playhead, queue.length, effectiveLoopItems, loopPasses);
   const item = queue.length ? queue[queueIndex] : null;
+
+  /**
+   * What this sitting has actually played, oldest first.
+   *
+   * The test asks about these rather than about the queue, which is 23,000
+   * long and mostly unheard. Ids only — the queue rebuilds when a setting
+   * changes, and holding the objects would test yesterday's copy of a card.
+   */
+  const [heardIds, setHeardIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (!item) return;
+    setHeardIds((current) => (current[current.length - 1] === item.id
+      ? current
+      : [...current.filter((id) => id !== item.id), item.id].slice(-LISTEN_TEST_MAX_QUESTIONS * 3)));
+  }, [item?.id]);
+  const heardItems = useMemo(() => {
+    const byId = new Map(queue.map((entry) => [entry.id, entry]));
+    return heardIds.map((id) => byId.get(id)).filter((entry): entry is ListenItem => Boolean(entry));
+  }, [heardIds, queue]);
+
   const englishLang = resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = audioSettings.englishMuted || audioSettings.englishVolume <= 0;
@@ -1070,6 +1094,17 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     );
   }
 
+  // The test takes the whole page rather than sitting under the player: the
+  // player is a wall of controls and settings, and none of it is any help
+  // while you are trying to remember what a word meant.
+  if (testing) {
+    return (
+      <div className="listen-view mx-auto w-full max-w-3xl space-y-4">
+        <ListenTest heard={heardItems} onClose={() => setTesting(false)} pool={queue} />
+      </div>
+    );
+  }
+
   return (
     <div className="listen-view mx-auto w-full max-w-7xl space-y-4">
       <section className="card p-5 sm:p-6">
@@ -1310,6 +1345,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           )}
           <button aria-label={ui("Next")} className="ghost-btn h-11 w-11" onClick={() => step(1)} type="button">
             <ChevronRight className="mx-auto h-5 w-5" />
+          </button>
+          {/* Listening tells you nothing about what stuck, so this asks. It
+              pauses first: the test is silent, and audio carrying on
+              underneath it would be reading the answers out. */}
+          <button
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-black text-[var(--text-1)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-dim)]"
+            data-testid="listen-test-open"
+            onClick={() => { pause(); setTesting(true); }}
+            type="button"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            {ui("Test me")}
           </button>
         </div>
 

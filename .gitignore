@@ -67,3 +67,8 @@ public/catalogue.db
 # derived entirely from the packs in src/lib, the same way public/catalogue.db
 # is — committing it would put a second copy of the whole course in every diff.
 public/content/
+
+# Instructions for the coding assistant, not project content. Kept out of the
+# repository because it is about how to work here rather than about what the
+# app does, and this repository is public.
+CLAUDE.md

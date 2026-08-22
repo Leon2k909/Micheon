@@ -14,8 +14,9 @@
  * same fact, minus the person, plus the reason a stranger would need.
  *
  * This refuses the attribution and leaves the reason alone. It cannot check
- * commit messages, which are written after the build runs; CLAUDE.md carries
- * that half.
+ * commit messages — they are written after the build has run — so the same
+ * rule holds there by hand: no names, no quotations, no account of how the
+ * change came to be asked for.
  */
 const assert = require("assert");
 const fs = require("fs");
@@ -131,17 +132,13 @@ if (offenders.length) {
   assert.fail(
     `${offenders.length} comment(s) carry the conversation rather than the reason:\n${shown}`
     + (offenders.length > 20 ? `\n  ... and ${offenders.length - 20} more` : "")
-    + "\n\nSee CLAUDE.md — keep the why, drop who said it."
+    + "\n\nKeep the reason, drop who said it:\n"
+    + "  ✗ \"X asked for the queue to be ordered by frequency.\"\n"
+    + "  ✓ \"The queue is ordered by frequency. Ordered by pack it reached rare\n"
+    + "     words like der Saal at position 2,450 while everyday ones waited.\"\n"
+    + "The reason is almost always the half worth keeping; the attribution never is."
   );
 }
-
-// The rule itself has to be written down somewhere a reader will find it, and
-// somewhere the next session loads without being asked.
-const guidance = fs.readFileSync(path.join(root, "CLAUDE.md"), "utf8");
-assert.ok(/Do not put the conversation in the repository/.test(guidance),
-  "CLAUDE.md no longer carries the rule this check enforces");
-assert.ok(/Comments earn their place/.test(guidance),
-  "CLAUDE.md no longer says when a comment is worth writing");
 
 const scanned = ROOTS.reduce((total, from) => total + sourceFiles(from).length, 0);
 console.log(
