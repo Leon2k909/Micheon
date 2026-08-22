@@ -10712,6 +10712,30 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   min-height: 2lh;
 }
 
+/* In the sidebar, the group boxes are scaffolding you cannot see.
+ *
+ * The categories are wrapped in four of them, left over from when settings
+ * were a page of stacked cards: two with p-5, one with no side padding and a
+ * rule above it, one with px-5 pt-2. Only one category is on screen at a time
+ * here, so the box adds nothing to read — except its own inset, which moved
+ * the category inside it. Clicking from Account details to Appearance shifted
+ * the icon and the title 20px sideways; Flashcards to Pet & mascot dropped
+ * them 12px down.
+ *
+ * The header was already anchored inside its box (.settings-panel-head). This
+ * is the other half of the same fix: now every box starts in the same place.
+ *
+ * Sidebar only. While searching, the categories are a list again and the
+ * grouping is part of what you are reading, so the boxes stay.
+ */
+.settings-layout:not(.is-searching) .settings-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
 /* One gap under every category header.
  *
  * These categories were written before the sidebar layout existed, back when
