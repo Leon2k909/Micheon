@@ -11627,26 +11627,37 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
    Language and lesson content, side by side. They wrap rather than shrink:
    both hold a flag or an icon, a word and a button, and squeezing the row is
    what cut the Change button off when the panel was capped by width. */
-.np-home-choice-controls {
+/* ── the two choices, in one bubble ────────────────────────────────────────
+   Language and lesson content share a panel and are told apart by a rule
+   between them rather than by a gap. */
+.np-home-choice-hero .np-home-choice-panel--pair {
   display: flex;
+  width: 100%;
+  max-width: none;
   flex-wrap: wrap;
-  gap: 10px;
-  /* stretch, not flex-start: the two are a pair and should read as one
-     object, so the shorter one grows to the taller one's height rather than
-     leaving a step between them. */
+  gap: 14px;
   align-items: stretch;
 }
 
-/* Same size, both of them. Sized to their own words they came out different
-   widths — "Englisch" against "Sätze" — so inside this row they share the
-   space equally instead of each taking what it needs. They still wrap to full
-   width on a card too narrow for two, which is the one case where equal
-   halves would squeeze the contents. */
-.np-home-choice-controls > .np-home-choice-panel {
-  width: auto;
-  max-width: none;
-  flex: 1 1 190px;
+/* Equal halves. Sized to their own words they came out different widths —
+   "Englisch" against "Sätze". They wrap to full width on a card too narrow
+   for two, which is the one case where equal halves would squeeze the
+   contents and clip a button. */
+.np-home-choice-field {
+  position: relative;
+  display: grid;
+  flex: 1 1 180px;
+  gap: 6px;
   align-content: start;
+}
+
+.np-home-choice-field + .np-home-choice-field {
+  padding-left: 14px;
+  border-left: 1px solid rgba(120, 120, 130, 0.28);
+}
+
+html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
+  border-left-color: rgba(255, 255, 255, 0.14);
 }
 
 /* The menu hangs off its own panel, so the panel is the anchor. */
@@ -11673,8 +11684,11 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
 
 .np-home-content-menu {
   position: absolute;
-  z-index: 6;
-  top: calc(100% + 8px);
+  /* Upward. Downward it opened into the bar under the picture — a separate
+     stacking context that paints above the hero — so it came out behind the
+     progress panel and could not be clicked at all. */
+  z-index: 20;
+  bottom: calc(100% + 8px);
   left: 0;
   display: grid;
   width: max(240px, 100%);

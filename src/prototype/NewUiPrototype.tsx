@@ -20,7 +20,6 @@ import {
   Coins,
   Crown,
   Gamepad2,
-  Globe,
   Route,
   EyeOff,
   Eye,
@@ -1911,12 +1910,15 @@ function LanguageCard({
         <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
-          <span aria-hidden="true" className="np-home-choice-flag np-home-choice-flag--globe"><Globe /></span>
+          <span aria-hidden="true" className="np-home-choice-flag"><FlagRoundel id={courseFlagId} /></span>
           <h2>{ui("Language learning")}</h2>
           <p>{ui("Learn a new language step by step and build your skills.")}</p>
 
-          <div className="np-home-choice-controls">
-            <div className="np-home-choice-panel">
+          {/* One bubble holding both choices, on her call: "lektionsinhalt
+              kann gern in der selben bubble sein wie aktuelle sprache". They
+              are two fields divided by a rule rather than two panels. */}
+          <div className="np-home-choice-panel np-home-choice-panel--pair">
+            <div className="np-home-choice-field">
               <small>{ui("Current language")}</small>
               <span className="np-home-choice-value">
                 <FlagRoundel id={courseFlagId} />
@@ -1927,11 +1929,10 @@ function LanguageCard({
               </span>
             </div>
 
-            {/* The same choice the next-lesson strip used to carry, in its own
-                panel beside the language: whether a sitting is made of
-                sentences, words, or both. Same three values and the same
-                store — only where it lives has changed. */}
-            <div className="np-home-choice-panel np-home-choice-panel--content">
+            {/* The same choice the next-lesson strip used to carry: whether a
+                sitting is made of sentences, words, or both. Same three values
+                and the same store — only where it lives has changed. */}
+            <div className="np-home-choice-field np-home-choice-field--content">
               <small>{ui("Lesson content")}</small>
               <span className="np-home-choice-value">
                 <span aria-hidden="true" className="np-home-choice-icon"><Layers /></span>
@@ -2823,7 +2824,7 @@ function HomeView({
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
     const onPointerDown = (event: PointerEvent) => {
-      if (!(event.target as Element | null)?.closest?.(".np-home-choice-panel--content")) setContentMenuOpen(false);
+      if (!(event.target as Element | null)?.closest?.(".np-home-choice-field--content")) setContentMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setContentMenuOpen(false);
