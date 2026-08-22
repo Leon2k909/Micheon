@@ -11631,7 +11631,22 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  align-items: flex-start;
+  /* stretch, not flex-start: the two are a pair and should read as one
+     object, so the shorter one grows to the taller one's height rather than
+     leaving a step between them. */
+  align-items: stretch;
+}
+
+/* Same size, both of them. Sized to their own words they came out different
+   widths — "Englisch" against "Sätze" — so inside this row they share the
+   space equally instead of each taking what it needs. They still wrap to full
+   width on a card too narrow for two, which is the one case where equal
+   halves would squeeze the contents. */
+.np-home-choice-controls > .np-home-choice-panel {
+  width: auto;
+  max-width: none;
+  flex: 1 1 190px;
+  align-content: start;
 }
 
 /* The menu hangs off its own panel, so the panel is the anchor. */
@@ -11653,8 +11668,7 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
 .np-home-choice-change > svg {
   width: 13px;
   height: 13px;
-  margin-left: 3px;
-  vertical-align: -2px;
+  flex: 0 0 auto;
 }
 
 .np-home-content-menu {
@@ -11708,4 +11722,13 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
   font-size: 11px;
   font-weight: 600;
   line-height: 1.35;
+}
+
+/* The Change button never breaks across lines: its chevron wrapping under the
+   word is what made the content panel taller than the language one. */
+.np-home-choice-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
