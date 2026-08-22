@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogOut, Monitor, PanelTopClose } from "lucide-react";
+import { LogOut, PanelTopClose } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
@@ -81,31 +81,27 @@ export function WindowsAppSettings() {
 
   const available = settings?.platform === "win32";
 
+  // No heading of its own. The category above already reads "Desktop app &
+  // updates" with the same Monitor icon and a description that covers this, so
+  // the panel opened with two near-identical headers stacked in two different
+  // sizes (a 34px icon, then a 40px one) and the real content started lower
+  // here than in every other category.
+  //
+  // This component is only ever rendered inside that category, so the heading
+  // was pure duplication.
   return (
     <div className="settings-rule-above">
-      <div className="flex flex-wrap items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--accent-dim)] text-[var(--accent)]">
-          <Monitor aria-hidden="true" className="h-5 w-5" />
-        </div>
-        <div>
-          <h3 className="text-sm font-black text-[var(--text-1)]">{ui("Windows app")}</h3>
-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-            {ui("Choose how Micheon starts and what the close button does.")}
-          </p>
-        </div>
-      </div>
-
       {loading ? (
-        <div aria-label={ui("Loading Windows settings")} className="mt-4 space-y-2" role="status">
+        <div aria-label={ui("Loading Windows settings")} className="space-y-2" role="status">
           <div className="h-16 rounded-[18px] bg-[var(--surface)] motion-safe:animate-pulse" />
           <div className="h-24 rounded-[18px] bg-[var(--surface)] motion-safe:animate-pulse" />
         </div>
       ) : !available ? (
-        <p className="mt-4 rounded-[18px] bg-[var(--surface)] px-4 py-3 text-xs font-bold leading-5 text-[var(--text-3)]">
+        <p className="rounded-[18px] bg-[var(--surface)] px-4 py-3 text-xs font-bold leading-5 text-[var(--text-3)]">
           {ui("These controls are available in the installed Windows app.")}
         </p>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className="space-y-3">
           {/* Wraps rather than squeezing: on a narrow window the label had a
               few words of width and ran to six lines beside a switch that
               never gave any of it up. Below 12rem of text the switch drops to
