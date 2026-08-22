@@ -1832,6 +1832,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
  */
 .np-home-banner {
   position: relative;
+  /* The quote is the only child in normal flow, so it sat at the top of the
+     banner. Centred here rather than by padding, so it stays centred at any
+     banner height. The picture, the veil and the mascot are placed
+     absolutely and are not affected. */
+  display: flex;
+  align-items: center;
   overflow: hidden;
   min-height: 250px;
   border: 1px solid var(--np-line);
@@ -1909,20 +1915,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   text-shadow: 0 2px 12px rgba(16, 12, 24, 0.5);
 }
 
-.np-home-banner-heart {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.16);
-}
 
-.np-home-banner-heart svg {
-  width: 18px;
-  height: 18px;
-}
 
 /* ── The question, and the two cards that answer it ──────────────────────── */
 .np-home-question {

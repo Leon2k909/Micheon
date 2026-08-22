@@ -1960,7 +1960,6 @@ function HomeBanner() {
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
         <p>{ui("Small steps every day add up to big results.")}</p>
-        <span aria-hidden="true" className="np-home-banner-heart"><Leaf /></span>
       </div>
       <img alt="" aria-hidden="true" className="np-home-banner-mascot" decoding="async" src={heroImage} />
     </section>
