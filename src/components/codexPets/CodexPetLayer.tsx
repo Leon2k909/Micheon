@@ -2031,7 +2031,7 @@ export function CodexPetLayer() {
             // Width comes from the style below, against the DESKTOP size. A vw
             // unit here measured the compact overlay window instead, which is
             // only as wide as the pet plus its margin.
-            className="pointer-events-auto absolute z-10 flex flex-col overflow-visible rounded-xl border border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 text-left text-sm font-bold leading-snug text-[var(--text-1)] shadow-[0_12px_30px_rgba(66,82,57,0.14)]"
+            className="pointer-events-auto absolute z-10 overflow-visible text-left text-sm font-bold leading-snug text-[var(--text-1)]"
             exit={{ opacity: 0, scale: 0.94, y: 5 }}
             initial={{ opacity: 0, scale: 0.92, y: 8 }}
             data-pet-interactive="true"
@@ -2044,14 +2044,20 @@ export function CodexPetLayer() {
             style={{
               bottom: bubbleBottom,
               left: bubbleLeft,
-              maxHeight: bubbleMaxHeight,
               maxWidth: bubbleWidth,
               width: "max-content",
               willChange: dragging ? "translate" : undefined,
             }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex min-h-0 flex-auto items-start gap-2">
+            {/* Keep the tail outside the clipped panel. The former single
+                overflow-visible box also let long text escape beneath the
+                bubble on short windows. */}
+            <div
+              className="flex w-full flex-col overflow-hidden rounded-xl border-2 border-[var(--border-2)] bg-[var(--surface)] px-3.5 py-3 shadow-[0_12px_30px_rgba(66,82,57,0.14)]"
+              style={{ maxHeight: bubbleMaxHeight }}
+            >
+              <div className="flex min-h-0 flex-auto items-start gap-2">
               {/* lang is what makes hyphens:auto work: without it the engine
                   has no dictionary to break by and falls back to breaking
                   anywhere. German is right here even for the English gloss
@@ -2086,9 +2092,9 @@ export function CodexPetLayer() {
                   <X className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-            {speech.question && (
-              <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
+              </div>
+              {speech.question && (
+                <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
                 {(["yes", "no"] as const).map((answer) => {
                   const selected = speech.answer === answer;
                   return (
@@ -2110,8 +2116,9 @@ export function CodexPetLayer() {
                     </button>
                   );
                 })}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
             <span
               aria-hidden="true"
               className={`absolute -bottom-2 ${tailHorizontalClass} h-4 w-4 rotate-45 border-b border-r border-[var(--border-2)] bg-[var(--surface)]`}
