@@ -73,3 +73,29 @@ export const COURSES: Course[] = [
 export function getCourse(id: string): Course | undefined {
   return COURSES.find((c) => c.id === id);
 }
+
+const PLANNED_IDS = new Set(PLANNED_LANGUAGES.map((language) => language.id));
+
+/**
+ * Which language rows the picker draws before anyone asks for more.
+ *
+ * Eighty-four of the eighty-seven say Coming soon, and drawing all of them
+ * cost 123 ms of render on every open — 12,324px of list inside a window that
+ * shows about six hundred. So the ones that can be chosen, plus the two
+ * written out by hand with their own flags, are drawn straight away and the
+ * catalogue waits to be asked for.
+ *
+ * Searching overrides that completely, because finding your language is the
+ * question the long list exists to answer: typing "farsi" has to reach Persian
+ * without pressing anything first.
+ *
+ * A function rather than a line inside the component so it can be checked
+ * against the real course list instead of by reading the source.
+ */
+export function visibleLanguageRows(
+  languages: Course[],
+  { searching, showAll }: { searching: boolean; showAll: boolean }
+): Course[] {
+  if (searching || showAll) return languages;
+  return languages.filter((course) => !PLANNED_IDS.has(course.id));
+}
