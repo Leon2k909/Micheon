@@ -267,7 +267,6 @@ const ALL_NAV_ITEMS: NavigationItem[] = [
   SHOP_NAVIGATION_ITEM,
 ];
 
-const LIFE_IN_THE_UK_COURSE_ID = "life-in-the-uk";
 
 /** Which half of the Life in the UK course a nav row opens. */
 type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
@@ -2134,11 +2133,16 @@ function CountryCard({
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
-  const course = getCourse(LIFE_IN_THE_UK_COURSE_ID);
+  // The SELECTED country's course, not the British one. This card used to
+  // name life-in-the-uk outright, so choosing Germany left it counting 23
+  // British lessons and reporting progress through them under a German flag.
+  const courseId = pack.course.id;
+  const course = getCourse(courseId);
   const lessons = course?.lessons ?? [];
-  const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).length;
+  const completed = loadCourseProgress(courseId, profile);
+  const done = completed.length;
   const percent = lessons.length > 0 ? Math.round((Math.min(done, lessons.length) / lessons.length) * 100) : 0;
-  const nextLesson = lessons.find((lesson) => !loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile).includes(lesson.id));
+  const nextLesson = lessons.find((lesson) => !completed.includes(lesson.id));
 
   return (
     <article className="np-home-choice np-home-choice--country">
@@ -2178,7 +2182,7 @@ function CountryCard({
             <b>{percent}&nbsp;%</b>
           </div>
           <div
-            aria-label={uiFmt("{pct}% through {pack}", { pct: percent, pack: ui("Life in the UK") })}
+            aria-label={uiFmt("{pct}% through {pack}", { pct: percent, pack: ui(pack.label) })}
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={percent}
@@ -3925,8 +3929,13 @@ export default function NewUiPrototype({
   };
 
   const completeUkLesson = (lessonId: string) => {
-    const done = loadCourseProgress(LIFE_IN_THE_UK_COURSE_ID, profile);
-    if (!done.includes(lessonId)) saveCourseProgress(LIFE_IN_THE_UK_COURSE_ID, [...done, lessonId], profile);
+    // Against the course actually being read. Keyed to life-in-the-uk, a
+    // finished German lesson was recorded as a British one — which both
+    // stopped the German course ever filling up and filled the British one
+    // with lessons nobody had opened.
+    const countryCourseId = activePack.course.id;
+    const done = loadCourseProgress(countryCourseId, profile);
+    if (!done.includes(lessonId)) saveCourseProgress(countryCourseId, [...done, lessonId], profile);
     updateStats({ streak: recordStreakDay(profile) });
     setUkLessonId(undefined);
   };
