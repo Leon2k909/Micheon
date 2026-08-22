@@ -83,7 +83,9 @@ export function UkTestView({
   const chapters = useMemo(() => packChapters(pack), [pack]);
   const advice = useMemo(() => countryAdvice(pack, state), [pack, state]);
   const history = useMemo(() => [...state.tests].reverse(), [state.tests]);
-  const favouriteCount = useMemo(() => state.favourites.length, [state.stats]);
+  // Watches favourites, not stats: starring a question changes the former and
+  // not the latter, and this count is what greys the Favourites test out.
+  const favouriteCount = useMemo(() => state.favourites.length, [state.favourites]);
   const mistakeCount = useMemo(
     () => Object.values(state.stats).filter((stat) => stat.wrong > 0).length,
     [state.stats]

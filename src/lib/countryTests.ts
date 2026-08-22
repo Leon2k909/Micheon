@@ -280,7 +280,10 @@ export function countryTests(pack: CountryPack) {
       total,
       correct,
       percent: total === 0 ? 0 : Math.round((correct / total) * 100),
-      passed: correct >= test.passMark,
+      // A test with no questions is not a pass. build("favourites") with
+      // nothing starred returns zero questions and a pass mark of zero, and
+      // 0 >= 0 would otherwise record a pass the learner never sat.
+      passed: total > 0 && correct >= test.passMark,
       passMark: test.passMark,
       answers,
       elapsedMs: meta.elapsedMs,
