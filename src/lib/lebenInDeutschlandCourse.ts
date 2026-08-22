@@ -42,12 +42,6 @@ export const lebenInDeutschlandCourse: Course = {
       section: "Politik in der Demokratie",
       badge: "lesson 1",
       blocks: [
-        { type: "p", text: "Der Test besteht aus **33 Fragen in 60 Minuten**, und **17 richtige Antworten** genügen zum Bestehen. 30 Fragen kommen aus dem bundesweiten Katalog, 3 beziehen sich auf das Bundesland, in dem du den Test schreibst." },
-        { type: "cards", items: [
-          { h4: "Wo", p: "Bei einer zugelassenen Stelle, meist Volkshochschule oder Bildungsträger. Anmeldung vorab, Ausweis mitbringen." },
-          { h4: "Wer", p: "Wer eingebürgert werden möchte, legt den Einbürgerungstest ab. Am Ende eines Integrationskurses steht derselbe Katalog als Test „Leben in Deutschland“." },
-          { h4: "Ergebnis", p: "Das Zertifikat kommt per Post. Wer nicht besteht, kann beliebig oft wiederholen." },
-        ] },
         { type: "callout", variant: "why", text: "Warum diese Lektion zuerst: Ein großer Teil der Fragen prüft nicht Wissen über Deutschland, sondern über die Werte, auf denen es aufgebaut ist. Die stehen alle im Grundgesetz — und zwar gleich am Anfang." },
         { type: "h3", text: "Das Grundgesetz" },
         { type: "p", text: "Die Verfassung der Bundesrepublik heißt **Grundgesetz**. Sie trat am **23. Mai 1949** in Kraft. Der Name war als Provisorium gedacht: Solange Deutschland geteilt war, wollte man sich das Wort „Verfassung“ für die Wiedervereinigung aufheben. Seit 1990 gilt das Grundgesetz für ganz Deutschland und ist die Verfassung geblieben." },
