@@ -78,7 +78,15 @@ assert.ok(
 
 // ── the order she listed ──────────────────────────────────────────────────
 const home = /<div className="np-home-view">([\s\S]*?)\n    <\/div>\n  \);/.exec(shell)?.[1] ?? shell;
-const order = ["<HomeBanner />", "np-home-question", "np-home-choices", "<HomeStats", "<FluencyOutlook", "<LessonPath"];
+// The figures strip and the next-lesson strip are both gone at her word —
+// "du kannst diese beiden dinge vollständig entfernen" — so the cards run
+// straight into the outlook. The same three figures are still in the header
+// above, which is what made the strip a repeat of something already on screen.
+const order = ["<HomeBanner />", "np-home-question", "np-home-choices", "<FluencyOutlook", "<LessonPath"];
+assert.ok(
+  !home.includes("<HomeStats") && !home.includes("np-course-launch"),
+  "neither strip comes back without her asking — she had both removed"
+);
 let at = -1;
 for (const marker of order) {
   const next = home.indexOf(marker, at + 1);

@@ -2026,29 +2026,6 @@ function CountryCard({
   );
 }
 
-/** The three figures from the header, repeated under the cards as a strip. */
-function HomeStats({ stats }: { stats: PrototypeStats }) {
-  const tiles: Array<{ icon: RewardKind; label: string; note: string; value: string }> = [
-    { icon: "flame", label: "Day streak", note: "Keep it going!", value: uiNumber(stats.streak) },
-    { icon: "star", label: "Total XP", note: "Every lesson counts.", value: uiNumber(stats.totalXp) },
-    { icon: "trophy", label: "Lessons done", note: "You are doing brilliantly.", value: uiNumber(stats.sessionsCompleted) },
-  ];
-  return (
-    <section className="np-home-stats">
-      {tiles.map((tile) => (
-        <div className="np-home-stat" key={tile.label}>
-          <RewardIcon kind={tile.icon} />
-          <div>
-            <small>{ui(tile.label)}</small>
-            <strong>{tile.value}</strong>
-            <span>{ui(tile.note)}</span>
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
 /**
  * Read a phrase aloud in the language it is written in.
  *
@@ -2808,15 +2785,6 @@ function HomeView({
   const placementPart = profile
     ? loadScopedJson<string | null>("german-lab-placement-result", null, profile)
     : null;
-  const firstLessonReady = !needsStartingPoint
-    && Boolean(placementPart)
-    && stats.sessionsCompleted === 0;
-  const firstLessonLevel = placementPart === "part1" ? "A1"
-    : placementPart === "part3" ? "A1-A2"
-      : placementPart === "part5" ? "A2"
-        : placementPart === "part8" ? "A2-B1"
-          : placementPart === "part11" ? "B1"
-            : "A1";
 
   return (
     <div className="np-home-view">
@@ -2854,78 +2822,6 @@ function HomeView({
           profile={profile}
         />
       </div>
-
-      <div className="np-course-launch">
-      <button
-        aria-label={needsStartingPoint
-          ? ui("Choose your starting point. Tell us if you are a total beginner.")
-          : firstLessonReady
-            ? uiFmt("Start your first lesson. Level {level} everyday essentials.", { level: firstLessonLevel })
-            : uiFmt("Continue learning. Lesson {n}.", { n: stats.sessionsCompleted + 1 })}
-        className="np-mobile-course-button"
-        onClick={onPractice}
-        type="button"
-      >
-        <Play />
-        <span className="np-course-button-copy">
-          <span className="np-course-button-kicker">
-            {needsStartingPoint ? ui("First step") : firstLessonReady ? ui("Your first lesson") : ui("Your next lesson")}
-          </span>
-          <strong>{needsStartingPoint ? ui("Choose your starting point") : firstLessonReady ? ui("Start learning") : ui("Continue learning")}</strong>
-          <small>
-            {needsStartingPoint
-              ? ui("Tell us if you are a total beginner")
-              : firstLessonReady ? uiFmt("Level {level}: Everyday essentials", { level: firstLessonLevel }) : uiFmt("Lesson {n}: picks up where you left off", { n: stats.sessionsCompleted + 1 })}
-          </small>
-        </span>
-        <ChevronRight />
-      </button>
-      {/* What the button serves: a dropdown ON the button, beside its arrow,
-          because a row of pills below it read as unrelated chrome. The choice
-          holds until changed — "I'm here for vocabulary" is true for weeks,
-          not per press. Word progress lives under its own ids, so nothing
-          chosen here can push a single word into the sentence course's
-          queues or vice versa. */}
-      <div className="np-lesson-content-picker">
-        <button
-          aria-expanded={contentMenuOpen}
-          aria-haspopup="menu"
-          aria-label={ui("Lesson content")}
-          className="np-lesson-content-trigger"
-          onClick={() => setContentMenuOpen((open) => !open)}
-          type="button"
-        >
-          {ui(lessonContent === "words" ? "Words" : lessonContent === "mixed" ? "Both" : "Sentences")}
-          <ChevronDown aria-hidden="true" />
-        </button>
-        {contentMenuOpen && (
-          <div aria-label={ui("What your lessons are made of")} className="np-lesson-content-menu" role="menu">
-            {([
-              ["sentences", "Sentences", "Phrases, sentences and dialogues — the course as it has always been."],
-              ["words", "Words", "Single words with their meanings, most common first."],
-              ["mixed", "Both", "Four sentence slots and two word slots in each sitting."],
-            ] as const).map(([value, label, hint]) => (
-              <button
-                aria-checked={lessonContent === value}
-                key={value}
-                onClick={() => {
-                  setLessonContent(value);
-                  setLessonContentState(value);
-                  setContentMenuOpen(false);
-                }}
-                role="menuitemradio"
-                type="button"
-              >
-                <strong>{ui(label)}</strong>
-                <small>{ui(hint)}</small>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      </div>
-
-      <HomeStats stats={stats} />
 
       <FluencyOutlook profile={profile} vocab={vocab} />
       <LessonPath onOpenLesson={onPractice} onViewAll={onViewAllLessons} packs={upcomingPacks} ready={catalogueReady} />
