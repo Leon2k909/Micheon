@@ -1,3 +1,4 @@
+import { germanVerbLemma } from "@/lib/germanVerbForms";
 import { frequencyRank } from "@/lib/wordFrequency";
 
 /**
@@ -20,6 +21,10 @@ export type CorpusIndex = {
   spread: Map<string, number>;
   /** word -> total occurrences */
   count: Map<string, number>;
+  /** word -> occurrences written as a noun (capitalised away from a full stop) */
+  nounCount: Map<string, number>;
+  /** word -> occurrences written as anything else */
+  otherCount: Map<string, number>;
   packs: number;
 };
 
@@ -37,6 +42,38 @@ function words(text: string): string[] {
     .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOP.has(w));
+}
+
+/**
+ * The same tokens, but keeping which ones were written as nouns.
+ *
+ * German capitalises its nouns, and that is the only thing separating die
+ * Macht from "er macht" — which matters, because pooling them credited the
+ * noun with 148 uses it never had and would have carried it into the first
+ * twenty words of the course.
+ *
+ * The first word of a sentence is capitalised whatever it is, so it is not
+ * evidence either way and is left out of both tallies rather than guessed at.
+ */
+function shapedWords(text: string): Array<{ key: string; noun: boolean }> {
+  const raw = String(text ?? "").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
+  const out: Array<{ key: string; noun: boolean }> = [];
+  raw.forEach((token, index) => {
+    const key = token.toLocaleLowerCase("de-DE");
+    if (key.length <= 2 || STOP.has(key)) return;
+    if (index === 0) return;
+    out.push({ key, noun: token[0] === token[0].toLocaleUpperCase("de-DE") });
+  });
+  return out;
+}
+
+/** Does this word present as a noun — an article, or a capital of its own? */
+export function looksLikeGermanNoun(word: string | undefined): boolean {
+  const text = String(word ?? "").trim();
+  if (!text) return false;
+  if (/^(der|die|das)\s/i.test(text)) return true;
+  const first = text[0];
+  return first === first.toLocaleUpperCase("de-DE") && first !== first.toLocaleLowerCase("de-DE");
 }
 
 /** Build the index once from the whole course. */
@@ -62,18 +99,31 @@ export function buildCorpusIndex(parts: Record<string, { phrases?: { de?: string
 function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] }>): CorpusIndex {
   const spread = new Map<string, number>();
   const count = new Map<string, number>();
+  const nounCount = new Map<string, number>();
+  const otherCount = new Map<string, number>();
   const keys = Object.keys(parts);
   for (const key of keys) {
     const seen = new Set<string>();
     for (const phrase of parts[key]?.phrases ?? []) {
       for (const word of words(phrase?.de ?? "")) {
-        count.set(word, (count.get(word) ?? 0) + 1);
-        seen.add(word);
+        // Irregular verbs are counted against their dictionary form, because
+        // the suffix rules below cannot get from "ist" to "sein" and nothing
+        // else will: this corpus uses haben 1,011 times and a suffix-only
+        // count found 200 of them.
+        const lemma = germanVerbLemma(word) ?? word;
+        count.set(lemma, (count.get(lemma) ?? 0) + 1);
+        seen.add(lemma);
+      }
+      // And again, keeping the noun/not-noun split.
+      for (const { key: word, noun } of shapedWords(phrase?.de ?? "")) {
+        const lemma = germanVerbLemma(word) ?? word;
+        const tally = noun ? nounCount : otherCount;
+        tally.set(lemma, (tally.get(lemma) ?? 0) + 1);
       }
     }
     for (const word of seen) spread.set(word, (spread.get(word) ?? 0) + 1);
   }
-  return { spread, count, packs: keys.length };
+  return { spread, count, nounCount, otherCount, packs: keys.length };
 }
 
 /**
@@ -141,11 +191,20 @@ export function corpusIgnores(word: string | undefined): boolean {
 
 export function corpusUses(word: string, index: CorpusIndex | null): number {
   if (!index) return 0;
-  const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");
+  const key = word.toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").replace(/[^\p{L}\p{N}]/gu, "");
   if (!key) return 0;
+  // A noun is counted from the noun tally and everything else from the other
+  // one, so "er macht" cannot vouch for die Macht. Where the split has no
+  // evidence at all — a word this corpus only ever puts first in a sentence —
+  // the pooled count answers rather than a zero that would read as "unused".
+  const shaped = looksLikeGermanNoun(word) ? index.nounCount : index.otherCount;
   let uses = 0;
-  for (const candidate of lemmaCandidates(key)) uses = Math.max(uses, index.count.get(candidate) ?? 0);
-  return uses;
+  let pooled = 0;
+  for (const candidate of lemmaCandidates(key)) {
+    uses = Math.max(uses, shaped.get(candidate) ?? 0);
+    pooled = Math.max(pooled, index.count.get(candidate) ?? 0);
+  }
+  return uses || (pooled && !index.nounCount.get(key) && !index.otherCount.get(key) ? pooled : uses);
 }
 
 export function wordCommonality(word: string, index: CorpusIndex | null): number {

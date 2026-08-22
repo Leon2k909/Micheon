@@ -1543,7 +1543,7 @@ const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
   },
   gemeinde: {
     de: "die Gemeinde",
-    en: "municipality or community",
+    en: "community",
     use: "The local-government unit; a church congregation is also die Gemeinde.",
     pos: "noun",
   },

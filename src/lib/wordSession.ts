@@ -222,17 +222,11 @@ export function buildWordCatalog(
       continue;
     }
 
-    const answers = [...String(existing.en).split(/\s+\/\s+/u), ...String(word.en).split(/\s+\/\s+/u)];
-    const seenAnswers = new Set<string>();
-    existing.en = answers
-      .map((answer) => answer.trim())
-      .filter((answer) => {
-        const key = sentenceIdentityKey(answer).toLocaleLowerCase("en-GB");
-        if (!key || seenAnswers.has(key)) return false;
-        seenAnswers.add(key);
-        return true;
-      })
-      .join(" / ");
+    // One merge, one rule. This was a second copy of the join below, and the
+    // copies drifted: only one of them knew that "speak" and "to speak" are
+    // the same sense, so which spelling of a duplicate survived depended on
+    // which path a word happened to take.
+    existing.en = mergeEnglishAlternatives([existing.en, word.en]);
     existing.aliases = [...new Set([
       ...(existing.aliases ?? []),
       word.id,
@@ -247,9 +241,19 @@ export function buildWordCatalog(
 const mergeEnglishAlternatives = (values: string[]): string => {
   const seen = new Set<string>();
   const merged: string[] = [];
-  for (const answer of values.flatMap((value) => String(value ?? "").split(/\s+\/\s+/u))) {
+  // Both separators, because the two sources use different ones: the packs
+  // write "to talk / to speak" and the frequency bank writes "human, humane".
+  // Splitting on the slash alone compared "humane" against the whole string
+  // "human, humane", found no match, and produced "humane / human / humane".
+  for (const answer of values.flatMap((value) => String(value ?? "").split(/\s*[/,;]\s*/u))) {
     const trimmed = answer.trim();
-    const key = sentenceIdentityKey(trimmed).toLocaleLowerCase("en-GB");
+    // "speak" and "to speak" are one sense written twice, and comparing them
+    // whole let both through: reden read "to talk / speak / to speak". The
+    // infinitive marker and a leading article are spelling, not meaning, so
+    // they come off before comparing — and the first spelling still wins, so
+    // the card keeps whichever form the earlier pack chose.
+    const key = sentenceIdentityKey(trimmed.replace(/^(to|a|an|the)\s+/i, ""))
+      .toLocaleLowerCase("en-GB");
     if (!key || seen.has(key)) continue;
     seen.add(key);
     merged.push(trimmed);
@@ -427,6 +431,13 @@ function isCoreFunctionWord(word: string | undefined): boolean {
  * that way, predicting an answer it had been given.)
  */
 /** How far back a word waits when our own conversation never uses it. */
+/**
+ * How far behind the last word the course DOES say an unsaid one starts.
+ *
+ * A setback rather than exile, because absence is partly just coverage: many
+ * perfectly speakable words simply never come up in 10,078 sentences. Far
+ * enough that the words we do say overtake it, not far enough to bury it.
+ */
 const UNSPOKEN_SETBACK = 600;
 
 export function rankWordCatalog(
@@ -455,17 +466,44 @@ export function rankWordCatalog(
    * Function words are exempt: the corpus index drops them, so their zero
    * means nothing at all.
    */
+  /**
+   * How often the course's own conversational text says each word, as a rank.
+   *
+   * Built once for the whole catalogue rather than per word, because a rank is
+   * a position among the others and there is no way to know one word's without
+   * looking at all of them.
+   */
+  const spokenRanks = (() => {
+    if (mode !== "conversation" || !corpusIndex) return null;
+    const attested = catalog
+      .map((word) => ({ id: word.id, uses: corpusUses(word.lookup || word.de, corpusIndex) }))
+      .filter((entry) => entry.uses > 0)
+      .sort((a, b) => b.uses - a.uses);
+    return new Map(attested.map((entry, index) => [entry.id, index + 1]));
+  })();
+
   const speakingRank = (word: WordItem, rank: number): number => {
-    if (mode !== "conversation" || !Number.isFinite(rank)) return rank;
     // No index is NO EVIDENCE, not evidence of absence. corpusUses returns 0
-    // without one, so every word looked unspoken and every word took the same
-    // setback — which cancels out and quietly disables the whole rule. The
-    // words tracker passes null and showed entsprechend at 108, its written
-    // rank, on the very screen the setback was written for.
-    if (!corpusIndex) return rank;
+    // without one, so every word looks unspoken, every word moves the same
+    // distance, and the whole rule quietly cancels itself out.
+    if (!spokenRanks || !Number.isFinite(rank)) return rank;
     const name = word.lookup || word.de;
+    // Function words are exempt: the corpus index drops them, so their zero
+    // means nothing at all.
     if (corpusIgnores(name)) return rank;
-    return corpusUses(name, corpusIndex) > 0 ? rank : rank + UNSPOKEN_SETBACK;
+    const spoken = spokenRanks.get(word.id) ?? spokenRanks.size + UNSPOKEN_SETBACK;
+    // The geometric mean of the two ranks, which is the shape that lets
+    // DISAGREEMENT move a word both ways. The rule this replaces only ever
+    // pushed back, and only words used exactly zero times: der Bereich is used
+    // once in 10,078 sentences, which was enough to exempt it, so it sat at
+    // position 34 of a course meant to teach conversation. And nothing could
+    // come forward — morgen is said 72 times and waited at 1,279 because the
+    // written bank ranks it 1,650.
+    //
+    // Multiplying is right for ranks rather than averaging them, because a
+    // frequency list is Zipfian: 30 to 300 is a real drop in how often you
+    // meet a word and 3,000 to 3,300 is no drop at all.
+    return Math.sqrt(rank * spoken);
   };
 
   return [...catalog]
