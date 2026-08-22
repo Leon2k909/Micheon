@@ -190,12 +190,37 @@ assert.ok(
 assert.ok(
   shell.includes("COUNTRY_PACKS.map((entry)")
     && shell.includes("<FlagRoundel id={entry.flagId} />"),
-  "every country in the group gets a row with its own flag"
+  "every country is offered with its own flag"
+);
+// The choice is made AT the flag, not from a row in the list. The flag is a
+// button that opens a menu, and the menu is what lists the countries.
+assert.ok(
+  /aria-label=\{ui\("Choose the country you are studying"\)\}/.test(shell)
+    && /className="np-nav-flag is-pressable"/.test(shell)
+    && shell.includes('aria-haspopup="menu"'),
+  "the country studies flag is not a chooser you can press"
 );
 assert.ok(
-  /className=\{"np-nav-country-section"/.test(shell)
-    && shell.includes("{selected && UK_SECTIONS.map((section)"),
-  "the sections belong to the selected country, not to the group"
+  shell.includes('className="np-nav-country-picker" role="menu"')
+    && shell.includes('role="menuitemradio"'),
+  "the chooser is not a menu of countries with the current one marked"
+);
+// One list of sections, for whichever country is selected — not a set per
+// country, which is what made the rail six rows deep before.
+assert.ok(
+  !/className=\{"np-nav-country-section"/.test(shell)
+    && !shell.includes("{selected && UK_SECTIONS.map((section)"),
+  "the per-country section rows are back, which is the nesting she asked to remove"
+);
+assert.ok(
+  /\{UK_SECTIONS\.map\(\(section\) => \{/.test(shell),
+  "the group no longer lists the selected country's sections at all"
+);
+// Opened menus have to be closable, or they strand themselves over the rail.
+assert.ok(
+  /if \(event\.key === "Escape"\) setCountryMenuOpen\(false\)/.test(shell)
+    && /closest\?\.\(".np-nav-country-picker"\)/.test(shell),
+  "the country chooser cannot be dismissed by Escape or by clicking away"
 );
 assert.ok(
   /const COUNTRY_STUDIES_FALLBACK_FLAG_ID = "english-uk"/.test(shell),

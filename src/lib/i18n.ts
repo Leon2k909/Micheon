@@ -2394,6 +2394,7 @@ const DE: Record<string, string> = {
   // sat in English. Only the surrounding controls are translated.
   "Life in the UK sections": "Life-in-the-UK-Bereiche",
   "Country studies sections": "Landeskunde-Bereiche",
+  "Choose the country you are studying": "Wähle das Land, das du lernst",
   "Life in the UK": "Life in the UK",
   "Leben in Deutschland": "Leben in Deutschland",
   Germany: "Deutschland",

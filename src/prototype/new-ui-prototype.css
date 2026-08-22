@@ -557,33 +557,79 @@
   height: 20px;
 }
 
-/* The country row: a flag, the country's name, and the sections beneath it.
-   Slightly heavier than a section row because it heads a group of them. */
-.np-side-nav .np-nav-group-items button.np-nav-country {
-  font-weight: 800;
+/* The country chooser, opened by pressing the flag on the group head.
+
+   In the flow, directly under the head, rather than floating over it. Floated
+   absolutely inside .np-nav-group it landed 10px above the head's top edge
+   and hid the very flag that opened it. In the flow it pushes the section
+   list down by its own height, which is what every other group in this rail
+   does when it opens. */
+.np-nav-country-picker {
+  margin: 2px 8px 6px;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
 }
 
-.np-side-nav .np-nav-group-items button.np-nav-country .np-nav-visual {
+.np-side-nav .np-nav-country-picker button.np-nav-country-option {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  /* min-height, and vertical padding that survives a second line: at 231px of
+     sidebar "Leben in Deutschland" needs two, and 34px of text in a 42px box
+     had nowhere to put them. */
+  min-height: 42px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.np-side-nav .np-nav-country-picker button.np-nav-country-option:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+.np-side-nav .np-nav-country-picker button.np-nav-country-option.is-active {
+  color: var(--text-1);
+}
+
+.np-side-nav .np-nav-country-picker .np-nav-visual {
+  width: 28px;
+  height: 28px;
   background: transparent;
   border-radius: 999px;
 }
 
-/* Indented under their country. The 12px is the flag's own left edge, so the
-   section icons line up just inside it rather than under it. */
-.np-side-nav .np-nav-group-items button.np-nav-country-section {
-  padding-left: 12px;
-  min-height: 42px;
-  font-size: 14px;
+/* The name wraps rather than clipping: "Leben in Deutschland" does not fit on
+   one line at the narrowest sidebar width, and a truncated country name is
+   worse than a two-line one. */
+.np-side-nav .np-nav-country-picker button.np-nav-country-option > span:nth-of-type(2) {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.2;
 }
 
-.np-side-nav .np-nav-group-items button.np-nav-country-section .np-nav-visual {
-  width: 26px;
-  height: 26px;
-}
-
-.np-side-nav .np-nav-group-items button.np-nav-country-section .np-nav-icon {
-  width: 18px;
-  height: 18px;
+/* Pinned to the first row and the last column. At a narrow sidebar the tick
+   otherwise wrapped onto a second line under the flag, where it read as a
+   stray mark rather than as "this is the one you are on". */
+.np-nav-country-tick {
+  grid-row: 1;
+  grid-column: 3;
+  align-self: center;
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
 }
 
 .np-side-nav .np-nav-group-items button.is-soon {
@@ -11631,9 +11677,9 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
    Language and lesson content share a panel and are told apart by a rule
    between them rather than by a gap. */
 .np-home-choice-hero .np-home-choice-panel--pair {
-  display: flex;
   width: 100%;
   max-width: none;
+  display: flex;
   flex-wrap: wrap;
   gap: 14px;
   align-items: stretch;

@@ -675,6 +675,7 @@ function Sidebar({
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
 
+
   /**
    * Destinations the learner has put away.
    *
@@ -684,6 +685,29 @@ function Sidebar({
    */
   const [hidden, setHidden] = useState<string[]>(() => loadHiddenNav());
   const [restoreOpen, setRestoreOpen] = useState(false);
+  /**
+   * Whether the country chooser hanging off the Country studies flag is open.
+   *
+   * Closed on any click outside it and on Escape, the way the lesson-content
+   * menu behaves, so it never strands itself open behind another screen.
+   */
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!countryMenuOpen) return undefined;
+    const onDown = (event: MouseEvent) => {
+      if (!(event.target as Element | null)?.closest?.(".np-nav-country-picker")) setCountryMenuOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCountryMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [countryMenuOpen]);
   /** Which sections are folded open. Remembered per profile. */
   const [groups, setGroups] = useState<NavGroupState>(() => loadNavGroups(profile));
   const toggleGroup = (id: keyof NavGroupState) => {
@@ -972,7 +996,23 @@ function Sidebar({
               type="button"
               {...dragProps(countryItem.id)}
             >
-              <span aria-hidden="true" className="np-nav-flag">
+              {/* The flag is the country chooser, the same way the language
+                  group's flag changes the language being learned. */}
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={ui("Choose the country you are studying")}
+                aria-haspopup="menu"
+                aria-expanded={countryMenuOpen}
+                className="np-nav-flag is-pressable"
+                onClick={(event) => { event.stopPropagation(); setCountryMenuOpen((open) => !open); }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setCountryMenuOpen((open) => !open);
+                }}
+              >
                 <FlagRoundel id={countryPack(countryId).flagId ?? COUNTRY_STUDIES_FALLBACK_FLAG_ID} />
               </span>
               <span>{ui("Country studies")}</span>
@@ -993,49 +1033,59 @@ function Sidebar({
                 <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
               </span>
             </button>
-            {groups.country && (
-              <div className="np-nav-group-items">
-                {/* One row per country, and beneath the selected one the same
-                    four sections the course's own tab bar has. Collapsing the
-                    other country's sections keeps the list at six rows rather
-                    than ten, and makes it obvious which country you are in. */}
+            {countryMenuOpen && (
+              <div className="np-nav-country-picker" role="menu" aria-label={ui("Country studies")}>
                 {COUNTRY_PACKS.map((entry) => {
                   const selected = countryId === entry.id;
-                  const onCountry = selected && activeView === "life-in-uk";
                   return (
-                    <Fragment key={entry.id}>
-                      <button
-                        aria-current={onCountry ? "page" : undefined}
-                        className={"np-nav-country" + (onCountry ? " is-active" : "")}
-                        onClick={() => onOpenUkSection(selected ? ukTab : "learn", entry.id)}
-                        onFocus={() => onPrefetch("life-in-uk")}
-                        onPointerEnter={() => onPrefetch("life-in-uk")}
-                        type="button"
-                      >
-                        <span aria-hidden="true" className="np-nav-visual">
-                          <FlagRoundel id={entry.flagId} />
-                        </span>
-                        <span>{ui(entry.label)}</span>
-                      </button>
-                      {selected && UK_SECTIONS.map((section) => {
-                        const Icon = section.icon;
-                        const active = activeView === "life-in-uk" && ukTab === section.tab;
-                        return (
-                          <button
-                            aria-current={active ? "page" : undefined}
-                            className={"np-nav-country-section" + (active ? " is-active" : "")}
-                            key={entry.id + "-" + section.tab}
-                            onClick={() => onOpenUkSection(section.tab, entry.id)}
-                            onFocus={() => onPrefetch("life-in-uk")}
-                            onPointerEnter={() => onPrefetch("life-in-uk")}
-                            type="button"
-                          >
-                            <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
-                            <span>{ui(section.label)}</span>
-                          </button>
-                        );
-                      })}
-                    </Fragment>
+                    <button
+                      aria-checked={selected}
+                      className={"np-nav-country-option" + (selected ? " is-active" : "")}
+                      key={entry.id}
+                      onClick={() => {
+                        setCountryMenuOpen(false);
+                        // Keep the section you were on when swapping country,
+                        // so choosing Germany from the Timeline lands on the
+                        // German timeline rather than back at the lessons.
+                        onOpenUkSection(ukTab, entry.id);
+                      }}
+                      onFocus={() => onPrefetch("life-in-uk")}
+                      onPointerEnter={() => onPrefetch("life-in-uk")}
+                      role="menuitemradio"
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="np-nav-visual">
+                        <FlagRoundel id={entry.flagId} />
+                      </span>
+                      <span>{ui(entry.label)}</span>
+                      {selected && <Check aria-hidden="true" className="np-nav-country-tick" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {groups.country && (
+              <div className="np-nav-group-items">
+                {/* Only the selected country's sections. Which country that is
+                    is said by the flag above and by the chooser it opens, so
+                    repeating it as a row here would be a second answer to a
+                    question already answered. */}
+                {UK_SECTIONS.map((section) => {
+                  const Icon = section.icon;
+                  const active = activeView === "life-in-uk" && ukTab === section.tab;
+                  return (
+                    <button
+                      aria-current={active ? "page" : undefined}
+                      className={active ? "is-active" : ""}
+                      key={section.tab}
+                      onClick={() => onOpenUkSection(section.tab)}
+                      onFocus={() => onPrefetch("life-in-uk")}
+                      onPointerEnter={() => onPrefetch("life-in-uk")}
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="np-nav-visual"><Icon className="np-nav-icon" /></span>
+                      <span>{ui(section.label)}</span>
+                    </button>
                   );
                 })}
               </div>
