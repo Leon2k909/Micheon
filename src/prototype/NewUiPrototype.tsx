@@ -2934,7 +2934,6 @@ function HomeView({
   // Recomputed when the catalogue arrives or a lesson lands, so the hero's
   // "how much longer" tracks what was just learned.
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
-  const upcomingPacks = useMemo(() => upcomingPackProgress(apiParts, profile, 3), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
   // The menu closes the way every menu should: outside click or Escape.
@@ -3005,7 +3004,6 @@ function HomeView({
       </div>
 
       <FluencyOutlook profile={profile} vocab={vocab} />
-      <LessonPath onOpenLesson={onPractice} onViewAll={onViewAllLessons} packs={upcomingPacks} ready={catalogueReady} />
     </div>
   );
 }

@@ -82,10 +82,15 @@ const home = /<div className="np-home-view">([\s\S]*?)\n    <\/div>\n  \);/.exec
 // "du kannst diese beiden dinge vollständig entfernen" — so the cards run
 // straight into the outlook. The same three figures are still in the header
 // above, which is what made the strip a repeat of something already on screen.
-const order = ["<HomeBanner />", "np-home-question", "np-home-choices", "<FluencyOutlook", "<LessonPath"];
+const order = ["<HomeBanner />", "np-home-question", "np-home-choices", "<FluencyOutlook"];
+// Three sections have come off this page at her word: the figures strip and
+// the next-lesson strip ("du kannst diese beiden dinge vollständig
+// entfernen"), and the lesson path ("entfern das vorerst"). Pinned as
+// absences so none of them drifts back without her asking. The LessonPath
+// component itself is left in the file — vorerst — so restoring it is a line.
 assert.ok(
-  !home.includes("<HomeStats") && !home.includes("np-course-launch"),
-  "neither strip comes back without her asking — she had both removed"
+  !home.includes("<HomeStats") && !home.includes("np-course-launch") && !home.includes("<LessonPath"),
+  "none of the removed sections comes back without her asking"
 );
 let at = -1;
 for (const marker of order) {
