@@ -26,7 +26,7 @@ import {
   Layers,
   HardDrive,
   PawPrint,
-  Accessibility,
+  Eye,
   Contrast,
   UserRound,
 } from "lucide-react";
@@ -1293,7 +1293,7 @@ export default function GamificationPanel({
                   description={ui("High contrast, calmer motion, and speech speed.")}
                   forceOpen={settingsTerms.length > 0}
                   hidden={!matchesSearch(ui("Accessibility"), ui("High contrast, calmer motion, and speech speed."))}
-                  icon={Accessibility}
+                  icon={Eye}
                   title={ui("Accessibility")}
                 >
                   <button

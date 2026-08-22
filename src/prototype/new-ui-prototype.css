@@ -11748,6 +11748,41 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   border-left-color: rgba(255, 255, 255, 0.14);
 }
 
+/* Two fields side by side need ~410px. Below that the Change button was
+   pushed outside its own field — Michelle: "hier muss das ändern von
+   lektionsinhalt angepasst werden", with the second button hanging off the
+   card edge. Lesson content is the one that fails first: its button carries a
+   chevron, so it is 76px against the other's 59px.
+ *
+ * The comment above already claimed these wrap on a narrow card. They did not:
+ * minmax(0, 1fr) lets a column shrink below its contents indefinitely, so they
+ * squeezed instead and clipped the button.
+ *
+ * A CONTAINER query, not a media query. Card width comes from the auto-fit
+ * grid, not the window — at 800px wide the row holds two ~380px cards and each
+ * one is already too narrow, which a window-width breakpoint would miss. */
+.np-home-choice-hero {
+  container-type: inline-size;
+}
+
+@container (max-width: 410px) {
+  .np-home-choice-hero .np-home-choice-panel--pair {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stacked, the rule between them belongs above, not beside. */
+  .np-home-choice-hero .np-home-choice-field + .np-home-choice-field {
+    padding-top: 10px;
+    padding-left: 0;
+    border-top: 1px solid rgba(120, 120, 130, 0.28);
+    border-left: 0;
+  }
+
+  html[data-theme="dark"] .np-home-choice-hero .np-home-choice-field + .np-home-choice-field {
+    border-top-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
 /* The menu hangs off its own panel, so the panel is the anchor. */
 .np-home-choice-panel--content {
   position: relative;

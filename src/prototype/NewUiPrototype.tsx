@@ -1478,7 +1478,12 @@ function Header({
       </div>
       <div className="np-header-stats">
         <StatChip kind="flame" label={ui("Day streak")} value={uiNumber(stats.streak)} />
-        <StatChip kind="star" label={ui("Total XP")} value={`${uiNumber(stats.totalXp)} XP`} />
+        {/* No " XP" on the value. Its neighbours are bare numbers and the
+            label underneath already reads "Total XP", so the unit made this
+            one chip look different from the two beside it for no gain — and
+            said XP twice. The stats strip further down the page has always
+            shown it bare, so this matches that too. */}
+        <StatChip kind="star" label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
         <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
       </div>
       <div className="np-header-actions">
