@@ -90,8 +90,10 @@ export function UpdateStatusCard() {
 
   return (
     <div className="mt-5 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      {/* The version pill drops below the text rather than taking width from
+          it — "Du hast die neueste Version." was running to three lines. */}
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="min-w-44 flex-1 basis-0">
           <p className="text-sm font-black text-[var(--text-1)]">{ui("Updates")}</p>
           <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold leading-5 text-[var(--text-3)]">
             <Icon

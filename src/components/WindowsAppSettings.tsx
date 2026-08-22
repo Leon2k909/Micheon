@@ -83,7 +83,7 @@ export function WindowsAppSettings() {
 
   return (
     <div className="settings-rule-above">
-      <div className="flex items-start gap-3">
+      <div className="flex flex-wrap items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--accent-dim)] text-[var(--accent)]">
           <Monitor aria-hidden="true" className="h-5 w-5" />
         </div>
@@ -106,8 +106,12 @@ export function WindowsAppSettings() {
         </p>
       ) : (
         <div className="mt-4 space-y-3">
-          <div className="flex items-center justify-between gap-4 rounded-[18px] bg-[var(--surface)] px-4 py-3.5">
-            <div className="min-w-0">
+          {/* Wraps rather than squeezing: on a narrow window the label had a
+              few words of width and ran to six lines beside a switch that
+              never gave any of it up. Below 12rem of text the switch drops to
+              its own line instead. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-[18px] bg-[var(--surface)] px-4 py-3.5">
+            <div className="min-w-48 flex-1 basis-0">
               <p className="text-sm font-black text-[var(--text-1)]">{ui("Launch when I sign in")}</p>
               <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
                 {settings.launchAtLoginSupported
@@ -146,7 +150,9 @@ export function WindowsAppSettings() {
                 ? ui("Keep Micheon, pets, and updates running in the notification area.")
                 : ui("Fully quit Micheon when the window is closed.")}
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">
+            {/* Two across while they fit, stacked when they do not. Fixed at
+                two columns, "Micheon beenden" wrapped inside its own button. */}
+            <div className="mt-3 flex flex-wrap gap-2 rounded-[16px] bg-[var(--surface-2)] p-1.5">
               {([
                 { behavior: "exit" as const, icon: LogOut, label: ui("Exit Micheon") },
                 { behavior: "tray" as const, icon: PanelTopClose, label: ui("Minimize to tray") },
@@ -156,7 +162,7 @@ export function WindowsAppSettings() {
                   <button
                     aria-pressed={selected}
                     className={cn(
-                      "flex min-h-11 items-center justify-center gap-2 rounded-[12px] border px-2 text-xs font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-wait disabled:opacity-60",
+                      "flex min-h-11 min-w-36 flex-1 items-center justify-center gap-2 rounded-[12px] border px-2 text-center text-xs font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-wait disabled:opacity-60",
                       selected
                         ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
                         : "border-transparent bg-transparent text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text-1)]"
