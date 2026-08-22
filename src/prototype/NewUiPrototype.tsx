@@ -75,7 +75,7 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { learningEnglish, setLearningDirection } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, learningEnglish, setLearningDirection } from "@/lib/direction";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { buildCatalog } from "@/session";
@@ -3688,6 +3688,23 @@ export default function NewUiPrototype({
     streak: getStreak(profile),
     externalWords: loadScopedJson("externalWords", profile?.externalWordsLearned ?? 0, profile) as number,
   }));
+  /**
+   * The lesson count is kept per learning direction, so it has to be re-read
+   * when the direction changes — otherwise the card prints the English count
+   * over a German pack that has nothing done in it. XP, reviews and the streak
+   * are shared across both and are deliberately left alone.
+   */
+  useEffect(() => {
+    const sync = () => {
+      setStats((current) => ({
+        ...current,
+        sessionsCompleted: loadScopedJson("sessionsCompleted", 0, profile) as number,
+      }));
+    };
+    window.addEventListener(DIRECTION_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(DIRECTION_CHANGE_EVENT, sync);
+  }, [profile]);
+
   const [ownedShopBadges, setOwnedShopBadges] = useState<ShopBadgeId[]>(() => {
     const stored = loadScopedJson<unknown[]>(SHOP_PURCHASES_KEY, [], profile);
     return Array.isArray(stored) ? stored.filter(isShopBadgeId) : [];

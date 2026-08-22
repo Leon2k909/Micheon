@@ -46,6 +46,7 @@ const result = esbuild.buildSync({
     contents: [
       'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
+      'export { getScopedKey } from "./src/lib/profileStorage.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { ttsSequence, stopTts } from "./src/lib/voice.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
@@ -91,12 +92,15 @@ const {
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId, buildWordCatalog, wordLadderRung,
-  loadGradeStore, statusForId, COMPLETED_KEY,
+  loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 
-const GRADES_KEY = `${COMPLETED_KEY}:default`;
+// Asked for rather than assembled: lesson state is stored per learning
+// direction now, so the address is "session-completed@learn-de:default" and
+// not "session-completed:default". getScopedKey is the app's own answer.
+const GRADES_KEY = getScopedKey(COMPLETED_KEY, null);
 const seedGrades = (store) => stored.set(GRADES_KEY, JSON.stringify(store));
 const readGrades = () => JSON.parse(stored.get(GRADES_KEY) ?? "{}");
 

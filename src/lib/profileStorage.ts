@@ -319,13 +319,87 @@ export function signOut() {
   syncSharedItems({ [SIGNED_OUT_KEY]: "1" });
 }
 
+/**
+ * Keys whose value belongs to ONE learning direction.
+ *
+ * These say where the learner is: which sentences are done, which words are
+ * seen, what the placement decided. None of that carries across from learning
+ * German to learning English — they are different courses through different
+ * material. Switching used to leave the old figures in place, so the card
+ * announced 98% of a pack that had never been opened in that direction.
+ *
+ * Deliberately NOT here: totalXp, totalReviews and streak, which measure how
+ * much has been done rather than where you are — splitting a streak would
+ * punish studying both languages on the same day. Also not course-progress,
+ * which carries the Country studies courses, whose progress has nothing to do
+ * with which way round sentences are shown.
+ */
+const DIRECTION_SCOPED_KEYS = new Set([
+  "session-completed",
+  "german-lab-review-state",
+  "progress-seen-words",
+  "vocab-mastery",
+  "active-part",
+  "german-lab-placement-done",
+  "german-lab-placement-result",
+  // The lesson counter belongs here too: the card reads it as "Lektion 222",
+  // and showing that beside 0% of a pack nobody has opened in this direction
+  // is the same contradiction, one line further down.
+  "sessionsCompleted",
+]);
+
+/** Marker for the one-time copy described at the top of this file. */
+// Versioned: the set above grew after v1 ran, and a key added later would
+// otherwise never be handed to the direction that earned it. Bumping this
+// re-runs the copy, and the copy skips any target that already has a value,
+// so nothing written since is overwritten.
+const DIRECTION_SPLIT_KEY = "gl-direction-split-v2";
+
+function currentDirection(): string {
+  if (typeof window === "undefined") return "learn-de";
+  try {
+    return window.localStorage.getItem("gl-direction") === "learn-en" ? "learn-en" : "learn-de";
+  } catch {
+    return "learn-de";
+  }
+}
+
 export function getScopedKey(key: string, profile: UserProfile | null) {
   const profileId = profile?.id || "default";
-  return `${key}:${profileId}`;
+  const base = DIRECTION_SCOPED_KEYS.has(key) ? `${key}@${currentDirection()}` : key;
+  return `${base}:${profileId}`;
+}
+
+/**
+ * Hand the pre-split store to the direction that earned it. Once, per profile.
+ *
+ * Copies rather than moves, and writes a marker first so a second call — or a
+ * later switch to the other direction — cannot claim the same data twice.
+ * Runs lazily on first read so no startup order has to be arranged for it.
+ */
+function migrateDirectionScoped(profile: UserProfile | null) {
+  if (typeof window === "undefined") return;
+  const profileId = profile?.id || "default";
+  const marker = `${DIRECTION_SPLIT_KEY}:${profileId}`;
+  try {
+    if (window.localStorage.getItem(marker)) return;
+    const direction = currentDirection();
+    window.localStorage.setItem(marker, direction);
+    for (const key of DIRECTION_SCOPED_KEYS) {
+      const legacy = window.localStorage.getItem(`${key}:${profileId}`);
+      if (legacy == null) continue;
+      const target = `${key}@${direction}:${profileId}`;
+      if (window.localStorage.getItem(target) == null) window.localStorage.setItem(target, legacy);
+    }
+  } catch {
+    // A blocked or full localStorage is not worth crashing a read over; the
+    // learner sees an empty pack rather than a broken app.
+  }
 }
 
 export function loadScopedJson<T>(key: string, fallback: T, profile: UserProfile | null = getAuthUser()): T {
   if (typeof window === "undefined") return fallback;
+  if (DIRECTION_SCOPED_KEYS.has(key)) migrateDirectionScoped(profile);
   const storage = window.localStorage;
   const scopedKey = getScopedKey(key, profile);
   const raw = storage.getItem(scopedKey);
