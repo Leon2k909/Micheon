@@ -28,7 +28,15 @@ export type CountryTestMode =
 export type CountryTestModeSpec = {
   mode: CountryTestMode;
   title: string;
+  /**
+   * A format string, not a finished sentence.
+   *
+   * The exam modes name the country's own question count, duration and pass
+   * mark, and those differ per country — so the view formats it with uiFmt
+   * and the translation table holds one entry rather than one per country.
+   */
   blurb: string;
+  blurbValues?: Record<string, string | number>;
   count: number | null;
   timed: boolean;
 };
@@ -95,7 +103,8 @@ export function countryTestModes(pack: CountryPack): CountryTestModeSpec[] {
     {
       mode: "exam",
       title: "Full exam simulation",
-      blurb: `${questionCount} questions, ${minutes} minutes, ${passMark} to pass — exactly like the real test.`,
+      blurb: "{count} questions, {minutes} minutes, {pass} to pass — exactly like the real test.",
+      blurbValues: { count: questionCount, minutes, pass: passMark },
       count: questionCount,
       timed: true,
     },
@@ -103,7 +112,8 @@ export function countryTestModes(pack: CountryPack): CountryTestModeSpec[] {
     {
       mode: "mixed",
       title: "Mixed test",
-      blurb: `${questionCount} questions spread across every chapter, untimed.`,
+      blurb: "{count} questions spread across every chapter, untimed.",
+      blurbValues: { count: questionCount },
       count: questionCount,
       timed: false,
     },

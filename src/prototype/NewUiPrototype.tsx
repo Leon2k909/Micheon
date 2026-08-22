@@ -3995,7 +3995,11 @@ export default function NewUiPrototype({
                 between two tabs before, where it read as a broken tab rather
                 than a control — Michelle could not find it. Only on Learn,
                 because it is the only tab showing cards to translate. */}
-            {ukTab === "learn" && (
+            {/* UK only: the table behind this translates English cards into
+                German. The German course's cards are already German, and no
+                table exists to turn them into anything else, so the control
+                is hidden rather than offered and left inert. */}
+            {ukTab === "learn" && activePack.id === "uk" && (
               <label className="np-uk-translation">
                 <Languages aria-hidden="true" />
                 <span>{ui("Tap a card for")}</span>

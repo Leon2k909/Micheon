@@ -270,9 +270,18 @@ assert(wordProgressId("Haus") === wordProgressId("haus"), "word ids are case-sen
 
 // ── the picker, and the flag it writes ────────────────────────────────────
 const home = read("src/prototype/NewUiPrototype.tsx");
-assert(home.includes("np-lesson-content-picker"), "the content picker is gone from the home page");
-assert(home.includes("np-lesson-content-trigger") && home.includes('aria-haspopup="menu"'),
-  "the picker is no longer the dropdown on the button that Leon asked for");
+// The picker used to be a dropdown on the next-lesson strip's button. That
+// strip went in v1.2.450 — "du kannst diese beiden dinge vollständig
+// entfernen" — and the dropdown had nowhere to live once its button was gone.
+//
+// So this no longer asserts a control exists. What it still asserts is that
+// the SETTING behind it is intact and honoured, because that is what actually
+// decides whether a sitting drills words, sentences or both. If the picker is
+// ever given a new home, tighten this back up to name it.
+assert(home.includes("getLessonContent") && home.includes("setLessonContent"),
+  "the home view no longer reads or writes the lesson-content setting at all");
+assert(!home.includes("np-lesson-content-trigger") || home.includes('aria-haspopup="menu"'),
+  "the picker markup is half-present: a trigger without the menu it opens");
 // The preview swap must replace like with like: mastering a WORD on the
 // vocabulary flashcards used to hand back a SENTENCE, mid-preview, in a
 // sitting chosen precisely for having no sentences in it.
@@ -281,8 +290,17 @@ assert(sessionSrc.includes('outgoing?.item?.kind === "word"'),
   "the preview swap no longer distinguishes word cards from sentence cards");
 assert(sessionSrc.includes("swappingWord") && /swappingWord[\s\S]{0,220}rankWordCatalog/.test(sessionSrc),
   "a mastered word card is not replaced from the word catalogue");
+// Pinned at the source rather than on a screen: the picker that used to list
+// these went with the next-lesson strip in v1.2.450, but the values are what
+// the guided session switches on, and dropping one would break a sitting.
+const contentModule = read("src/lib/lessonContent.ts");
 for (const value of ['"sentences"', '"words"', '"mixed"']) {
-  assert(home.includes(value), `the picker lost its ${value} option`);
+  assert(contentModule.includes(value), `the lesson-content setting lost its ${value} value`);
+}
+// The session switches on "words" and "mixed"; "sentences" is the default it
+// falls through to, so it is named in the type rather than in a branch.
+for (const value of [`"words"`, `"mixed"`]) {
+  assert(sessionSrc.includes(value), `the guided session no longer handles ${value}`);
 }
 const session = read("src/guided_learning_session.tsx");
 assert(session.includes('getLessonContent()') && session.includes('lessonContent === "words"'),

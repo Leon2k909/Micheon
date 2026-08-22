@@ -15,6 +15,7 @@
  * two sets are compared here and any overlap fails the build.
  */
 const assert = require("assert");
+const fs = require("fs");
 const path = require("path");
 const Module = require("module");
 const esbuild = require("esbuild");
@@ -154,6 +155,49 @@ for (const entry of DE_TIMELINE) {
     problems.push(`Zeitleiste: "${entry.title}" hat keine Schlagwörter — die Suche fände es über nichts`);
   }
 }
+
+// ── die Prüfungszahlen ─────────────────────────────────────────────────────
+// Der echte Test "Leben in Deutschland" hat 33 Fragen in 60 Minuten, 17 zum
+// Bestehen. Der britische hat 24 in 45 mit 18. Beide Sätze stehen in der
+// Oberfläche, und beide müssen die Zahlen ihres eigenen Landes nennen.
+const packs = (() => {
+  const b = esbuild.buildSync({
+    stdin: {
+      contents: 'export { UK_PACK, DE_PACK } from "./src/lib/countryPacks.ts";',
+      resolveDir: root,
+      sourcefile: "packs-entry.ts",
+    },
+    alias: { "@": path.join(root, "src") },
+    bundle: true, format: "cjs", platform: "node", target: "node20",
+    write: false, logLevel: "silent",
+  });
+  const m = new Module("packs-check", module);
+  m.filename = path.join(root, ".packs-check.cjs");
+  m.paths = Module._nodeModulePaths(root);
+  m._compile(b.outputFiles[0].text, m.filename);
+  return m.exports;
+})();
+
+assert.strictEqual(packs.DE_PACK.exam.questionCount, 33, "der deutsche Test hat 33 Fragen");
+assert.strictEqual(packs.DE_PACK.exam.durationMs, 60 * 60 * 1000, "und 60 Minuten Zeit");
+assert.strictEqual(packs.DE_PACK.exam.passMark, 17, "und 17 richtige zum Bestehen");
+assert.strictEqual(packs.UK_PACK.exam.questionCount, 24, "der britische Test bleibt bei 24 Fragen");
+assert.strictEqual(packs.UK_PACK.exam.passMark, 18, "und bei 18 zum Bestehen");
+assert.notStrictEqual(packs.DE_PACK.storeKey, packs.UK_PACK.storeKey, "getrennte Speicher, getrennter Fortschritt");
+
+// Und der Satz auf dem Prüfungsbildschirm muss formatiert sein, nicht fest:
+// eine feste Zahl dort war genau der Fehler.
+const testView = fs.readFileSync(
+  path.join(root, "src/components/lifeInTheUk/UkTestView.tsx"), "utf8"
+);
+assert.ok(
+  /uiFmt\(\s*"The exam simulation is the real thing: \{count\} questions, \{minutes\} minutes, \{pass\} to pass\."/.test(testView),
+  "der Prüfungssatz nimmt die Zahlen des Landes, statt sie fest zu nennen"
+);
+assert.ok(
+  !/24 questions, 45 minutes, 18 to pass\.\"\)/.test(testView),
+  "und die alte feste Fassung wird nicht mehr ausgegeben"
+);
 
 assert.ok(DE_QUESTIONS.length >= 130, `nur ${DE_QUESTIONS.length} Fragen im Pool`);
 assert.ok(lessons.length >= 23, `nur ${lessons.length} Lektionen im Kurs`);

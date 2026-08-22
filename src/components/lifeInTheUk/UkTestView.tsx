@@ -11,7 +11,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { CountryPack } from "@/lib/countryStudies";
 import { UK_PACK, packChapters, packLessonTitle } from "@/lib/countryPacks";
@@ -493,7 +493,11 @@ export function UkTestView({
       <section className="card p-5 sm:p-6">
         <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Choose a test")}</h2>
         <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
-          {ui("The exam simulation is the real thing: 24 questions, 45 minutes, 18 to pass.")}
+          {uiFmt("The exam simulation is the real thing: {count} questions, {minutes} minutes, {pass} to pass.", {
+            count: examCount,
+            minutes: Math.round(pack.exam.durationMs / 60000),
+            pass: examPassMark,
+          })}
         </p>
 
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
@@ -523,7 +527,9 @@ export function UkTestView({
                   <span className="text-sm font-black text-[var(--text-1)]">{ui(entry.title)}</span>
                   {entry.timed && <Clock className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />}
                 </div>
-                <span className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(entry.blurb)}</span>
+                <span className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                  {entry.blurbValues ? uiFmt(entry.blurb, entry.blurbValues) : ui(entry.blurb)}
+                </span>
                 {detail && <span className="mt-2 rounded-full bg-[var(--surface)] px-2 py-1 text-[10px] font-black text-[var(--text-3)]">{detail}</span>}
                 {unavailable && (
                   <span className="mt-2 text-[10px] font-bold text-[var(--text-3)]">
