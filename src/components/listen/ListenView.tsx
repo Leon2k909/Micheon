@@ -306,13 +306,33 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       setGradesRevision((revision) => revision + 1);
     }
   }, [active]);
+  /**
+   * The queue is built when Listen is first opened, not when it is mounted.
+   *
+   * This view stays mounted whichever screen you are on, so that playback
+   * survives navigating away — which also meant it built a 20,019-item queue
+   * on every start and every language change, for a screen nobody was looking
+   * at. Measured on a language switch: 2,182ms of a 3,195ms frozen frame, and
+   * the same again at startup.
+   *
+   * Once opened it stays open as far as this is concerned, so the queue lives
+   * on behind the mini player exactly as it did before. `active` is enough on
+   * its own — nothing plays without the view having been opened to press it.
+   */
+  const [everOpened, setEverOpened] = useState(active);
+  useEffect(() => {
+    if (active) setEverOpened(true);
+  }, [active]);
+
   const baseQueue = useMemo<ListenItem[]>(
-    () => buildListenQueue(apiParts, loadGradeStore(profile), {
-      contentSource,
-      direction: learningDirection,
-      order: queueOrder,
-    }),
-    [apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder]
+    () => (everOpened
+      ? buildListenQueue(apiParts, loadGradeStore(profile), {
+        contentSource,
+        direction: learningDirection,
+        order: queueOrder,
+      })
+      : []),
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(

@@ -114,12 +114,31 @@ const beatsExisting = (
  * Words without a gloss are skipped rather than guessed at — a flashcard whose
  * back is empty teaches nothing.
  */
+/**
+ * Built once per parts map and mode, and shared.
+ *
+ * Deduping 7,330 words out of the packs costs about 450ms, and nothing about
+ * the answer changes between calls with the same input — but it ran again on
+ * every render that wanted a word list, several times over inside the single
+ * blocked frame a language switch used to be.
+ *
+ * Keyed on the mode as well as the parts, like the sentence catalogue in
+ * session.ts: conversation and exam front different words, so answering one
+ * from a cache filled by the other would be a worse bug than the slowness.
+ */
+const wordCatalogCache = new WeakMap<object, Map<string, WordItem[]>>();
+
 export function buildWordCatalog(
   apiParts: Record<string, any>,
   /** Conversation fronts the spoken word; exam practice keeps the written
    *  one. Defaults to the live setting so existing callers are unchanged. */
   mode: LearningMode = getLearningMode()
 ): WordItem[] {
+  const cacheable = Boolean(apiParts) && typeof apiParts === "object";
+  if (cacheable) {
+    const cached = wordCatalogCache.get(apiParts)?.get(String(mode));
+    if (cached) return cached;
+  }
   const byLemma = new Map<string, WordItem>();
   const authoredGlosses = new Map<string, Set<string>>();
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
@@ -234,7 +253,13 @@ export function buildWordCatalog(
     ])].filter((id) => id && id !== existing.id);
     existing.listenSafe = Boolean(existing.listenSafe || word.listenSafe);
   }
-  return consolidateSynonymGroups(deduped, mode);
+  const out = consolidateSynonymGroups(deduped, mode);
+  if (cacheable) {
+    const byMode = wordCatalogCache.get(apiParts) ?? new Map<string, WordItem[]>();
+    byMode.set(String(mode), out);
+    wordCatalogCache.set(apiParts, byMode);
+  }
+  return out;
 }
 
 /** Every English alternative once, first spelling wins — the same join the visible-word dedup uses. */

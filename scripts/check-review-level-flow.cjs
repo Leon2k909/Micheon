@@ -127,11 +127,22 @@ check(
 // grade writes, and word items must keep their merged-progress aliases or a
 // record stored under a pre-merge id stays invisible.
 const listenView = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+// Pinned by what the dependency list CONTAINS rather than by its exact text.
+// The queue is built lazily now — it waits for the view to be opened, because
+// building twenty thousand items for a hidden screen was two thirds of the
+// frozen frame on every language change — so the memo has one more dependency
+// and a ternary inside it. What matters here is unchanged: a grade written
+// anywhere else still rebuilds it.
+const queueMemo = listenView.slice(
+  listenView.indexOf("const baseQueue = useMemo<ListenItem[]>("),
+  listenView.indexOf("const [hiddenIds")
+);
 check(
   "Listen rebuilds its queue when grades change elsewhere",
   listenView.includes('window.addEventListener("grades-updated", onGradesUpdated)')
     && listenView.includes("setGradesRevision")
-    && /useMemo<ListenItem\[\]>\(\s*\(\) => buildListenQueue\([\s\S]*?\[apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder\]/.test(listenView)
+    && queueMemo.includes("buildListenQueue(")
+    && /\[[^\]]*\bgradesRevision\b[^\]]*\]/.test(queueMemo)
 );
 const listenMode = fs.readFileSync(path.join(root, "src/lib/listenMode.ts"), "utf8");
 check(
