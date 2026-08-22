@@ -1942,7 +1942,11 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 .np-home-question em {
-  margin: 0 0.28em;
+  /* No margin. The sentence already carries its own spaces around the word —
+     "Was möchtest du {today} lernen?" — so a margin on top of them made the
+     gap around "heute" wider than every other gap in the line. It also put a
+     space before the question mark in English, where the string reads
+     "…learn {today}?" and the mark follows the word directly. */
   color: var(--accent);
   font-style: normal;
 }
