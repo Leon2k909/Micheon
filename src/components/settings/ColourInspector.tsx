@@ -12,7 +12,7 @@ import {
 /**
  * Point at a part of the app to recolour it.
  *
- * Leon: "you get like a mouse where it highlights what u wanna change". So
+ * Pointing at a thing is how you choose it, so
  * this is an inspector, not a list: the pointer moves, the thing under it is
  * outlined and named, and clicking it picks it.
  *

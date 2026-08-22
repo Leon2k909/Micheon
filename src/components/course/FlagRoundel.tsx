@@ -161,8 +161,8 @@ const FLAGS: Record<string, Layer[]> = {
   // The three finished language courses, for the same reason English is
   // here: the switcher paints them as CSS gradients beside its own list, and
   // anything asking for a roundel by course id — the sidebar's section
-  // heading does — got no art and fell through to a globe. Leon, on a German
-  // course: the heading was a 🌍 where his flag should be. Same values the
+  // heading does — got no art and fell through to a globe, so a German course
+  // showed a 🌍 where its flag should be. Same values the
   // switcher's gradients use, so the two pictures agree.
   german: [{ h: ["#181818", "#dd0000", "#ffce00"] }],
   spanish: [{ h: ["#aa151b", "#f1bf00", "#aa151b"], r: [1, 2, 1] }],

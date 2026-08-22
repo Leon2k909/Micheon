@@ -3,8 +3,8 @@
  *
  * It used to hold three questions written into the source and cycle them with
  * `(index + 1) % 3`, so the fourth question of any session was the first one
- * again. Michelle: "wäre toll wenn man hier immer wieder neue fragen bekommen
- * würde" — and then the schedule she wants for the ones already seen:
+ * again. What is wanted is a fresh question each time, and a schedule for
+ * the ones already seen:
  *
  *   right  → "erst wieder nach so 30 fragen"
  *   wrong  → "immer mal wieder alle paar fragen ... bis man sie richtig hat"

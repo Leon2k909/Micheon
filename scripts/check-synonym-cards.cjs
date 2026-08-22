@@ -210,7 +210,7 @@ for (const group of EXTRA_SYNONYM_GROUPS) {
 // ── The surfaces that show the group ──────────────────────────────────────
 // Renderers are pinned the way every other gate pins them: by the source that
 // makes the behaviour, so a refactor that silently drops the synonym line fails
-// here instead of in Michelle's tracker.
+// here instead of on somebody's tracker.
 const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
 check(tracker.includes("word.synonyms"), "WordsTracker no longer renders combined synonym cards");
 check(tracker.includes('ui("Also")'), "WordsTracker lost the Also: label for synonyms");
@@ -230,9 +230,9 @@ check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = mat
   "GuidedSession no longer accepts a synonym as a typed answer");
 
 // ── the tag on a folded synonym compares it with the face ───────────────────
-// Leon: "the common tag should have said whether it was the same commonality,
-// less or more than the parent word. parent word always the absolute most
-// common". Both halves are checked here: the claim about the data, and the
+// The tag has to say whether the folded word is as common as the face word,
+// less common or more — and the face is always the most common of the group.
+// Both halves are checked here: the claim about the data, and the
 // label built on top of it.
 {
   // The premise. If a synonym ever outranked its face, "less common" would be
@@ -306,9 +306,9 @@ check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = mat
 
 // ── conversation fronts the word people say ─────────────────────────────────
 //
-// Leon, looking at a card whose own synonym line read "der Platz (more common
-// in speech)": "im in conversation mode so Platz should have been the parent
-// word surely?" — yes. The frequency bank is written German, so it fronted
+// A card in conversation mode carried a synonym line reading "der Platz (more
+// common in speech)" — which is the card admitting the wrong word is on the
+// front. The frequency bank is written German, so it fronted
 // der Ort; SPOKEN_PREFERENCE has always known which word speech reaches for,
 // and in Conversation mode it now decides.
 {

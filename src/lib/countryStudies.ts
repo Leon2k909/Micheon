@@ -3,7 +3,7 @@ import type { Course } from "@/lib/courses";
 /**
  * What a country in Country studies is made of.
  *
- * Michelle asked for Germany beside the UK, built to the same pattern: same
+ * Germany sits beside the UK, built to the same pattern: same
  * navigation, same category types, same presentation, same learning logic,
  * same quiz structure, same progress logic, same user flow — only the content
  * differs. So the views and the progress engine had to stop naming one country

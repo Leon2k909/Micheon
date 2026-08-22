@@ -10,9 +10,9 @@ export const PRACTICE_RECALL_KEY = "gl-practice-recall-v1";
 /**
  * How long a phrase waits before the practice card asks it again.
  *
- * Michelle set these: "wenn man sie richtig hat die jeweilige frage erst
- * wieder nach so 30 fragen", "wenn man sie falsch hat das sie immer mal wieder
- * alle paar fragen kommt bis man sie richtig hat", and — once it is finally
+ * A question answered right waits about 30 questions before returning. One
+ * answered wrong comes back every few questions until it is right. And once
+ * it is finally
  * right — "soll auch die immer mal wieder vorkommen".
  *
  * So a miss comes back in three questions and keeps coming back until it is

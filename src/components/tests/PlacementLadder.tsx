@@ -20,8 +20,8 @@ import {
 /**
  * The placement test, as a ladder you climb until you fall off.
  *
- * Leon: "add a placement test for english so if im doing really good in the
- * test, it can make my continue learning harder". The old test could not do
+ * Doing well in the test has to make Continue learning harder. The old test
+ * could not do that — it asked ten A1–B1 words and topped out at B1, so a strong
  * the second half — it asked ten A1–B1 words and topped out at B1, so a strong
  * result had nowhere to put you.
  *

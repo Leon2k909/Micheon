@@ -524,7 +524,6 @@ export default function SnakeGame() {
         return;
       }
 
-      // ── SENTENCE MODE ──────────────────────────────────────────
       if (sentenceMode) {
         const hitWordTile = wordTiles.find(t => posEq(t.pos, next));
         let newSnake: Pos[];

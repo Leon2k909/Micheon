@@ -274,7 +274,7 @@ for (const id of plannedIds) {
   }
 }
 
-// ── 4. the chains nobody authored — Leon's "I, I have, I have a bike" ─────
+// ── 4. the chains nobody authored — "I, I have, I have a bike" ───────────
 {
   const { deriveImplicitChains } = load(
     `export { deriveImplicitChains } from "./src/session.ts";`, "chains-e");
@@ -376,9 +376,9 @@ for (const id of plannedIds) {
 
 // A chain can only exist between sentences the course actually teaches, so
 // the machinery working is not the same as a learner meeting a base first.
-// Leon met two long sentences cold and named the bases he wanted before them:
-// "surely before [Ich geh gerne ins Kino] we could have [we cant] and [i like
-// going] first". Those bases are cards now; this is the pin that they stay
+// Two long sentences were being met cold, with no shorter card between them
+// and the learner: "Ich geh gerne ins Kino" wants "we cant" and "i like
+// going" ahead of it. Those bases are cards now; this is the pin that they stay
 // cards, and that the deriver still pairs them.
 {
   const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts, buildTatoebaParts, deriveImplicitChains } = load(

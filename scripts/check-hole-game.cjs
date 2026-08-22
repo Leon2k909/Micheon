@@ -2,8 +2,8 @@
 /**
  * Hole, and the three things that made the old one feel wrong.
  *
- * Leon: "HOLE.DE game is nothing like hole.io, its really poorly made". The
- * physics were roughly right; the feel was not, for reasons that are all
+ * The first version played nothing like hole.io, which is what it is for.
+ * The physics were roughly right; the feel was not, for reasons that are all
  * checkable:
  *
  *  1. THE CAMERA NEVER ZOOMED. It followed at 1:1 forever, so a hole near its

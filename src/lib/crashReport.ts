@@ -1,7 +1,7 @@
 /**
  * When the app dies, it has to say what killed it.
  *
- * Leon has now hit two mid-lesson failures that left a blank screen and no
+ * Two mid-lesson failures have left a blank screen and no
  * trace: no OS crash event, no dump, nothing in a log, and an app with no
  * error boundary, so a single render throw unmounts the entire tree. The
  * fault could not even be classified, let alone fixed. This module is the

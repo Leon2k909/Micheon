@@ -2,8 +2,8 @@
 /**
  * How much of the course exists in each language, and whether it is any good.
  *
- * This started as a French-only check when Leon said "18% coverage is bad,
- * lets get this number up". It walks TRANSLATION_LANGUAGES now, so a new
+ * This started as a French-only check, written when French coverage sat at
+ * 18%. It walks TRANSLATION_LANGUAGES now, so a new
  * language is measured and floored from its first run without this file being
  * edited — which is the point of the table-per-language layer it sits on.
  *

@@ -4,7 +4,7 @@
 // The catalogue is built from ALL packs, so the fresh-sentence scorer and the
 // reinforcement scorer both walk items belonging to paused packs and have to
 // drop them explicitly. Miss either and a paused pack keeps serving material,
-// which is exactly the complaint pausing exists to answer.
+// which is exactly the failure pausing exists to prevent.
 const fs = require("fs");
 const path = require("path");
 

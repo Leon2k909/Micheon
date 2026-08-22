@@ -31,8 +31,8 @@ import {
 /**
  * Picking cards out of 23,000 without filters is a chore, not a feature.
  *
- * Leon: "should be filters/more options so i can add more words like a1, a1,
- * common etc or whichever theme etc". So the search box is now the last
+ * Filters do the picking: level, theme, words or phrases. So the search box
+ * is now the last resort rather than the only tool: choose words or phrases, a CEFR level, a
  * resort rather than the only tool: choose words or phrases, a CEFR level, a
  * part of speech, a pack, or just the common ones, and add the whole result
  * in a single press.

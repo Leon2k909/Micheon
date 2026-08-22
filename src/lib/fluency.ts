@@ -23,7 +23,7 @@ export const FLUENCY_STAGES: FluencyStage[] = [
   { label: "Everyday survival", min: 500, blurb: "Getting by in shops, directions, and small talk." },
   { label: "Conversational", min: 1200, blurb: "Following and joining everyday conversations." },
   { label: "Confident", min: 2500, blurb: "Understanding most speech and giving opinions freely." },
-  // 5,000 used to be the top of the ladder. Leon raised the bar after looking
+  // 5,000 used to be the top of the ladder. The bar moved after a look
   // at what native speakers actually hold — an educated native's ACTIVE
   // vocabulary runs to 12,000-16,000 words — so 5,000 became a stage on the
   // way and Fluent now demands the five-figure inventory real fluency takes.
@@ -37,7 +37,7 @@ export const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;
  * The 10,000-item Fluent target, split into what it is actually made of.
  *
  * One raw "7,778 to go" reads like 7,778 hard new words and made the card
- * look, in Leon's words, too hard for people. It never was: about 4,000
+ * look far too hard. It never was: about 4,000
  * ACTIVE words is what vocabulary research puts behind comfortable
  * near-native conversation (the 12-16k native figure counts every word a
  * native holds, most of it passive), and the rest of the distance is

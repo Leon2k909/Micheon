@@ -6,7 +6,7 @@ import { foldEnglishSynonyms } from "@/lib/englishSynonyms";
  * The catalogue taught "anfangen", "beginnen" and "starten" as three separate
  * words, three separate tracker rows, three separate Listen cards — and the
  * learner met "to begin" three times without ever being told the three are one
- * meaning. Leon's call: combine all synonyms into one entry, the most common
+ * meaning. So synonyms are combined into one entry, the most common
  * word first, with the less common ones visible inside it instead of scattered
  * through the list.
  *

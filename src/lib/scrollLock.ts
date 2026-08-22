@@ -6,8 +6,7 @@ import { useEffect } from "react";
  * The course reader and the lesson session are `fixed inset-0` overlays, but
  * the shell underneath keeps its own scrollbar — so the window shows TWO
  * scrollbars side by side on the right, and the wheel sometimes moves the
- * wrong one. Michelle: "rechts mein scroll ding sind 2, wir brauchen nur
- * eins".
+ * wrong one. There should be one scrollbar on the right, not two.
  *
  * Counted rather than a plain on/off flag. A session can be opened from
  * inside the reader, so two overlays are live at once; with a boolean, closing

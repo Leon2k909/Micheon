@@ -212,7 +212,6 @@ assert.strictEqual(staged.stage, "choice", "a card at stage 1 should be asked wi
 const big = { ...set, cards: Array.from({ length: 200 }, (_, i) => M.makeCard(`w${i}`, `d${i}`, { now: i })) };
 assert.strictEqual(M.buildLearnRound(big, {}, 10).length, 10, "the round size must be respected");
 
-// ── summary ─────────────────────────────────────────────────────────────────
 const summary = M.summariseProgress(set, progress);
 assert.strictEqual(summary.total, 3, "the summary counts studiable cards only");
 assert.strictEqual(summary.mastered, 1);
@@ -343,8 +342,8 @@ console.log(
 );
 
 // ── sharing a set ───────────────────────────────────────────────────────────
-// Leon and Michelle share things by pasting them into a chat, so the export
-// has to survive that: what comes out must go back in and give the same cards.
+// Sets get shared by pasting them into a chat, so the export has to survive
+// that: what comes out must go back in and give the same cards.
 const shared = M.makeSet("Kitchen words", 2000);
 shared.description = "Things in a German kitchen";
 shared.stages = ["flashcard", "typed"];
@@ -418,7 +417,7 @@ console.log(
   + "mistakes can be filtered into a set"
 );
 
-// ── the three things Leon asked to be clearer ───────────────────────────────
+// ── three things that were not clear enough ─────────────────────────────────
 const editorSource = fs.readFileSync(path.join(root, "src/components/create/SetEditor.tsx"), "utf8");
 const importSource2 = fs.readFileSync(path.join(root, "src/components/create/CatalogueImport.tsx"), "utf8");
 const studySource = fs.readFileSync(path.join(root, "src/components/create/SetStudy.tsx"), "utf8");
@@ -551,7 +550,7 @@ assert.ok(
 );
 
 // ── the ladder is the set's to tune ─────────────────────────────────────────
-// Leon: "the stages should be more customisable". Choosing which stages run
+// The stages are customisable per set. Choosing which stages run
 // settled what a card is asked; these settle how hard it is to get past them.
 {
   const ladder = { ...M.makeSet("Dials", 1000), stages: ["flashcard", "choice", "typed"] };
@@ -641,9 +640,9 @@ assert.ok(
 }
 
 // ── long lists get around ───────────────────────────────────────────────────
-// Leon: "no pagination when adding words? and if a page is really long like i
-// have loads of flashcards, let users pick if they wanna see a scroll to
-// bottom thing on the right of their screen or pagination".
+// A long list needs a way through it: with hundreds of flashcards, the
+// choice between an endless scroll and pagination belongs to the reader
+// rather than to the page.
 {
   const L = loadModule("src/lib/longLists.ts");
 

@@ -4,8 +4,8 @@ import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileS
  * Where the background Listen player sits.
  *
  * It was pinned to the bottom right, which is also where a lot of the app
- * puts things worth reading — Leon: "this should be moveable around the
- * window the playing in the background thing". So it is dragged, and where it
+ * puts things worth reading, so it has to be movable around the window.
+ * It is dragged, and where it
  * is dragged to is remembered per profile, because a player that returns to
  * the corner every time you open the app has not really moved.
  *

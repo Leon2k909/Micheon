@@ -288,8 +288,8 @@ export function LessonBlocks({
    * The reader is one long page, so questions there sat directly under the
    * text that answered them — you scrolled past the answer on your way to the
    * question. The stepped session already puts each question behind Continue,
-   * which is where answering belongs. Michelle: "auf der ersten seite soll
-   * wirklich nur das sein was zu lesen ist."
+   * which is where answering belongs. The first page should hold only what
+   * there is to read.
    *
    * The blocks stay in the lesson data; only this view skips them.
    */

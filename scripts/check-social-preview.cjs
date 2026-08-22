@@ -47,8 +47,8 @@ function check(name, condition) {
 check("the preview is assigned to Leon's requested login", LEON_SOCIAL_PREVIEW_EMAIL === "leon@ordifydirect.com");
 check("the exact Leon email unlocks social UI", hasLeonSocialPreview("leon@ordifydirect.com"));
 check("email matching tolerates casing and surrounding spaces", hasLeonSocialPreview("  LEON@ORDIFYDIRECT.COM  "));
-// Michelle asked for everything Leon has. She is on the list, not an
-// exception to it, so this is pinned the same way his is.
+// Both accounts get the same features. The second is on the list, not an
+// exception to it, so this is pinned the same way the first is.
 check("the preview is also assigned to Michelle", MICHELLE_SOCIAL_PREVIEW_EMAIL === "sozialmichelle@gmail.com");
 check("Michelle unlocks the same social UI", hasLeonSocialPreview("sozialmichelle@gmail.com"));
 check("Michelle's address tolerates casing and spaces too", hasLeonSocialPreview("  SozialMichelle@Gmail.com "));

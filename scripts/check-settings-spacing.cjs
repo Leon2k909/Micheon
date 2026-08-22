@@ -2,7 +2,7 @@
 /**
  * One gap under every settings category header, and one title.
  *
- * Leon: "the settings categories spacing is inconsistent". It was, and by a
+ * The spacing under settings category headers was inconsistent, and by a
  * lot. These categories were written before the sidebar layout existed, back
  * when each was a card that owned its own spacing, and they kept carrying it:
  * mt-3 in Appearance, mt-5 in Learning options, nothing at all in the ones

@@ -97,7 +97,7 @@ assert(mute.includes("<SpeechSpeedControl"), "global audio mixer lacks scoped sp
 assert(listen.includes("<SpeechSpeedControl"), "Listen lacks scoped speed");
 assert((profile.match(/<SpeechSpeedControl/g) || []).length >= 2, "profile speed surfaces are not shared");
 // The lesson has no speed control of its own any more — first the Hear it
-// button carried it, then a header gauge, and Leon removed both as doors to
+// button carried it, then a header gauge, and both went as second doors to
 // a room the audio mixer already opens. Speed must still be reachable
 // mid-lesson, so the lesson mounts that mixer.
 assert(

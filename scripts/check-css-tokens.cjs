@@ -8,8 +8,8 @@
  * makes the whole box-shadow invalid and drops it. The result looks like a
  * design decision rather than a bug, which is why these survived: the delete
  * confirmation on a study set rendered as two lines of bare text on a panel
- * the same colour as the card, and Leon reported it as "this needs more colour
- * like the buttons".
+ * the same colour as the card, and read as a flat style rather than as three
+ * missing tokens.
  *
  * Uses with a fallback — var(--x, #fff) — are fine by construction and are not
  * checked. Properties set from JavaScript count as defined, because that is

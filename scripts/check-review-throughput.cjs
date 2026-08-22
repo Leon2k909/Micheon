@@ -36,7 +36,7 @@ const { recordSuccess } = load(
 const failures = [];
 
 // ── the shape of the sitting ───────────────────────────────────────────────
-// Leon's rule: a sitting is SIX sentences at most — a backlog trades new
+// The rule: a sitting is SIX sentences at most — a backlog trades new
 // slots for review slots, it never grows the session.
 for (const due of [0, 3, 4, 9, 10, 60, 10000]) {
   const mix = lessonMixForBacklog(due);

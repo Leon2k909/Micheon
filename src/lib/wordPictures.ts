@@ -1,9 +1,9 @@
 /**
  * A picture for the word being taught.
  *
- * Leon asked for images beside the words — "for words like Apple it will
- * show a picture of an apple as well as the text" — with one consistent look
- * so nothing sits out of place, and as much coverage as we can get.
+ * Images sit beside the words: the card for Apfel shows an apple as well as
+ * the text, in one consistent look so nothing sits out of place, and with as
+ * much coverage as can be had.
  *
  * WHY EMOJI RATHER THAN AN IMAGE PACK. Micheon ships everything in the
  * installer and must work with no network, so thousands of downloaded

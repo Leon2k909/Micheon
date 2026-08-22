@@ -1556,7 +1556,6 @@ export const ENGLISH_CLOZE_EXERCISES: ClozeExercise[] = [
   { id: "en58", sentence: "Would you ___ keeping the noise down?", answer: "mind", hint: "Höfliche Bitte passend zur Situation", tip_id: "register_precision_en" },
 ];
 
-// ── Cloze exercises ───────────────────────────────────────────────────────────
 export const CLOZE_EXERCISES: ClozeExercise[] = [
   // Articles
   { id: "c1",  sentence: "___ Mann trinkt Kaffee.",        answer: "Der",    hint: "Masculine article", tip_id: "articles" },

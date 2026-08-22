@@ -5,9 +5,9 @@
  * The old test asked ten A1–B1 vocabulary words and mapped the score onto one
  * of five packs, the highest being B1. Somebody who answered every question
  * correctly and somebody who was comfortably B2 got the same answer, because
- * the ceiling belonged to the test rather than to the learner. Leon asked for
- * exactly that gap to close: "if im doing really good in the test, it can make
- * my continue learning harder".
+ * the ceiling belonged to the test rather than to the learner. That gap has
+ * to close: doing really well in the test has to make Continue learning
+ * harder.
  *
  * So what is checked here is the property that was missing — that a strong run
  * lands strictly higher than a weak one, and that the placement is written to

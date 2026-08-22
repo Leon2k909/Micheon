@@ -75,8 +75,8 @@ check(
 
 // ── the progress panel folds ──────────────────────────────────────────────
 //
-// Michelle asked for it to work the way the sidebar's sections do: the whole
-// panel from its own heading, and the two blocks inside that have headings of
+// It folds the way the sidebar's sections do: the whole panel from its own
+// heading, and the two blocks inside that have headings of their own on
 // their own on their own. The trap is the achievements heading, which already
 // held a "View all" button — folding from it would have put a button inside a
 // button, which is invalid and which screen readers flatten.
@@ -98,8 +98,8 @@ check(
   /<button\s+aria-expanded=\{sections\.achievements\}[\s\S]{0,400}<\/button>\s*\{standalone \?/.test(dashboard)
     && !/np-block-toggle[^>]*>[\s\S]{0,200}onClick=\{onViewAllAchievements\}/.test(dashboard)
 );
-// Sideways, not downwards. Michelle: "ich wollte das man es seitlich
-// aufklappen kann nicht von oben nach unten." Folded, the column hands its
+// Sideways, not downwards: it folds to the side rather than collapsing from
+// top to bottom. Folded, the column hands its
 // width back to the page and keeps a 58px rail with the heading turned on its
 // side, so the thing you press to get it back still says what it is.
 const dashboardCss = fs.readFileSync(

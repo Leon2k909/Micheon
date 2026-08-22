@@ -5,8 +5,8 @@ import type { CatalogItem } from "@/session";
  * One multiple-choice question for the practice card.
  *
  * The card used to hold three questions written into the source, cycled with
- * `(index + 1) % 3`. Michelle: "wäre toll wenn man hier immer wieder neue
- * fragen bekommen würde." These are built from the same catalogue the lessons
+ * `(index + 1) % 3`, so the fourth question was the first one again. These
+ * are built from the same catalogue the lessons
  * are served from, so the supply is the whole course rather than three.
  */
 export type PracticeOption = {
@@ -86,9 +86,9 @@ function usable(text: unknown): text is string {
  * Which side is the question and which side is the answer follows the course:
  * a German speaker learning English is asked in German and picks the English,
  * and an English speaker learning German gets exactly the reverse. The card
- * had this fixed the German-learning way, so Michelle — who is learning
- * English — was shown the English sentence and asked to pick the German one,
- * which practises the language she already has.
+ * had this fixed the German-learning way, so a learner going the other way —
+ * learning English — was shown the English sentence and asked to pick the
+ * German one, which practises the language they already have.
  */
 export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandidate[] {
   const toEnglish = learningEnglish();

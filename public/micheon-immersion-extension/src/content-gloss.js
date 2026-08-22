@@ -319,8 +319,8 @@
     }
 
     // Second pass: the other names for the same word. One German word is one
-    // entry, so when the course calls die Nutzung "use" and the pages Leon
-    // reads call it "usage", only the first spelling used to arrive anywhere.
+    // entry, so when the course calls die Nutzung "use" and the pages a
+    // learner reads call it "usage", only the first spelling used to arrive.
     // These fill keys nothing else claimed, so an authored gloss always wins.
     for (const w of words) {
       for (const alternative of w.enAlt || []) {
@@ -539,7 +539,7 @@
     // iPhone, TikTok, PayPal) -- German words never capitalise mid-word.
     if (/[A-ZÄÖÜ]/.test(token.slice(1))) return false;
     // Apostrophes are English contractions and possessives ("don't",
-    // "Leon's"); the rare German ones ("geht's") aren't dictionary forms
+    // "Anna's"); the rare German ones ("geht's") aren't dictionary forms
     // worth collecting either.
     if (/['’]/.test(token)) return false;
     if (STOPWORDS.has(token.toLowerCase())) return false;
@@ -547,7 +547,7 @@
     // The commonest English words are not German vocabulary, and a German
     // page is full of them. The de-inflection rules already refuse to guess
     // at this list; collecting the same words as "missing German" only fills
-    // the export Leon reads with had, let, other, everyone and stood.
+    // the export a reviewer reads with had, let, other, everyone and stood.
     if (ENGLISH_NEVER_GUESS.has(token.toLowerCase())) return false;
     return true;
   }
@@ -1439,11 +1439,11 @@
    * German words are inflected, and a glossary holds dictionary forms.
    *
    * OBSERVED_FORM_TO_LEMMA above is a hand-written list of forms somebody
-   * noticed and added one at a time. It does not scale: Leon's export of
-   * words the extension could not identify was 276 entries, and 47 of them
+   * noticed and added one at a time. It does not scale: an export of the
+   * words the extension could not identify ran to 276 entries, and 47 of them
    * were plain inflections of words already in the glossary — fühlt for
    * fühlen, neuen for neu, geladen for laden, sollten for sollen. Hovering
-   * any of those did nothing, and every one was logged as a word he did not
+   * any of those did nothing, and every one was logged as unknown vocabulary.
    * know.
    *
    * The rules below are deliberately timid. Each one proposes a lemma and is

@@ -2,9 +2,9 @@
 /**
  * Vocabulary sittings exist, and they cannot contaminate the sentence course.
  *
- * Leon's brief, verbatim: "i dont want single vocabulary leaking into the
- * normal sentence continue learning button, the only singular words in the
- * normal continue learning button ... is if you would say it on its own like
+ * The rule: single vocabulary must never leak into the sentence course. The
+ * only single words the sentence path may contain are the authored one-word
+ * PHRASES — things you would say on their own, like
  * cheers!". So this gate runs both engines and checks the border from both
  * sides, rather than trusting that two id namespaces stay apart because a
  * comment says they will.
@@ -90,7 +90,7 @@ for (const word of ["der Film", "das Ticket", "der Computer", "das Problem", "da
   assert(catalog.some((w) => w.de === word), `${word} is authored but not taught`);
 }
 
-// Leon asked for genuine depth in the dedicated Words mode, especially for
+// The dedicated Words mode needs genuine depth, especially for
 // an English learner who already knows the basics. These packs deliberately
 // double the B2+ inventory with authored verbs, adjectives and modern topic
 // vocabulary. Pin both raw pack size and catalogue ownership: a duplicate
@@ -173,9 +173,9 @@ assert.equal(buildWordSitting(ranked, grades, Date.now(), { reviewSlots: 1, fres
 
 // ── the difficulty ladder ─────────────────────────────────────────────────
 //
-// Leon's rule, verbatim: "if shes repeatedly saying she knows stuff, the
-// words should get harder and harder" — and later, "it should still go back
-// to doing the beginning stuff we skipped out". Both halves are behaviour,
+// The rule has two halves. Repeatedly pressing Know it must make the words
+// get harder; and the climb must still go back for the beginning material
+// that was skipped past. Both halves are behaviour,
 // so both are run rather than read.
 assert(
   catalog.filter((w) => wordLadderRung(w) >= 4).length
@@ -188,13 +188,13 @@ for (const key of ["part401", "part405", "part410"]) {
 // A beginner starts at the bottom.
 assert(buildWordSitting(ranked, {}).every((s) => wordLadderRung(s.item) === 1),
   "a fresh learner is no longer started on the most common words");
-// The climb rate is Leon's: five knowns per rung, so about one preview's
+// The climb rate is five knowns per rung, so about one preview's
 // worth of Kann-ich presses (25) reaches the top. Fifteen-per-rung was
 // shipped first and judged too slow — this assertion is what pins the fix.
 const climbGrades = {};
 for (const w of ranked.slice(0, 26)) climbGrades[w.id] = recordDeclaredKnown(undefined);
 assert(learnerWordRung(climbGrades) >= 6, "25 Kann-ich presses no longer reach the top rung — the climb rate has regressed");
-// Leon's second ruling (2026-08-19), after "erneuerbar" arrived before Hund:
+// A second rule (2026-08-19), after "erneuerbar" arrived before Hund:
 // an unknown word in the everyday core (frequency rank <= 1200) is never
 // beneath anyone, so a climbed learner is served unknown core words alongside
 // the hard tiers rather than after them. Everything OUTSIDE the core still

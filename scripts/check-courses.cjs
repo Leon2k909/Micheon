@@ -136,8 +136,8 @@ for (const required of [
 // This used to require 20+ quiz blocks inside the Life in the UK lessons,
 // written when those blocks were the only practice that existed. They are not
 // any more: the practice bank holds 240+ questions with difficulty levels,
-// spaced repetition and a mistakes list, and Michelle asked for the quizzes to
-// come out of the lessons so reading a topic stays reading a topic.
+// spaced repetition and a mistakes list, and the quizzes came out of the
+// lessons so that reading a topic stays reading a topic.
 //
 // The requirement itself is still worth keeping — a citizenship course with
 // nothing to answer is no use — so it now counts the bank, which is where the

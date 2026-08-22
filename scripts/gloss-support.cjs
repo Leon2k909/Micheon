@@ -1,7 +1,7 @@
 /**
  * Does an example sentence actually show the meaning the card claims?
  *
- * Leon hovered "Profil" on x.com and the card said:
+ * Hovering "Profil" on x.com produced this card:
  *
  *     profile
  *     Wie sieht das Profil aus? — How does the tread look?

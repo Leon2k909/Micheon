@@ -7,8 +7,8 @@ import type { Blueprint, VocabSeed } from "./types";
  * Katze, Kopf, Baum or Tomate: the sentence course mentions them, but no
  * pack ever listed them as vocabulary, so the words tracker, Listen and the
  * Immersion extension had a B2 depth inventory sitting on top of a missing
- * A1 floor. Leon's report, verbatim: "theres only like 5000. no animals, so
- * many things missing." These packs are that floor — animals, the body,
+ * A1 floor: about 5,000 words, no animals, and a great deal else missing.
+ * These packs are that floor — animals, the body,
  * plants and landscape, food, the kitchen, the household, clothes, jobs and
  * weather — every entry checked against the existing catalogue first, so
  * nothing here re-teaches a word another pack already owns.
@@ -1107,9 +1107,9 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
 
       // Knowing, thinking, hoping
       { de: "Ich weiß.", en: "I know.", use: "For facts. Knowing a person or a place is kennen: Ich kenne ihn." },
-      // Glossed "I see." until Leon caught it: "i understand is better, no? i
-      // see is the same but ich seh is gonna get confused surely?" — right,
-      // and this pack made it worse than a general risk. Ich sehe das. sits
+      // Glossed "I see." until the collision turned up: "I understand" is the
+      // better gloss, because "I see" belongs to sehen. This pack made it worse
+      // than a general risk. Ich sehe das. sits
       // seven cards below glossed "I see it that way.", and the card directly
       // under this one already says "I don't understand." So the prompt "I
       // see." asked for verstehen while its own neighbours taught sehen for
@@ -1162,9 +1162,9 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
   },
 
   /**
-   * Leon asked for this one directly: "I often ask my gf how she is, what
-   * she's doing etc." The course already had the greeting version of this —
-   * Wie geht's dir?, Alles klar? — but almost nothing for the rest of the
+   * Asking a partner how they are and what they are doing is a daily
+   * conversation with almost no cards behind it. The course already had the
+   * greeting version — Wie geht's dir?, Alles klar? — but almost nothing for the rest of the
    * day: the midday text, the are-you-eating question, the one you send when
    * she has gone quiet. Everything here is du, because that is who it is for.
    */

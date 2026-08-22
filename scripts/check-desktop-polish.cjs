@@ -83,7 +83,7 @@ check("the mastery percentage uses its real progress ring on a light tile", /\.n
 check("dark custom mastery cards use neutral readable surfaces instead of accent-on-accent text", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-feature-host \.mastery-card__milestone\.is-reached\s*\{[^}]*background:\s*rgba\(var\(--accent-rgb\), 0\.14\);/s.test(styles) && /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-feature-host \.mastery-ring__value\s*\{[^}]*color:\s*var\(--text-1\);/s.test(styles));
 check("dark custom search and social actions keep readable accent ink", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-search-result-action\s*\{[^}]*color:\s*var\(--accent-ink\);/s.test(styles) && /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-side-card > small,[\s\S]*?color:\s*var\(--accent-ink\);/s.test(styles));
 check("dark custom active navigation uses the foreground derived for its accent fill", /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-side-nav button\.is-active\s*\{[^}]*color:\s*var\(--accent-text\);[^}]*background:\s*var\(--accent\);/s.test(styles));
-// Redesigned on Leon's call (2026-08-19). Twice: three separately-boxed
+// Redesigned twice (2026-08-19): three separately-boxed
 // chips with bordered icon tiles inside, then one capsule that stretched
 // across its grid column with the stats marooned mid-pill. The header stats
 // now wear NO container at all — the illustrated reward art anchors each
@@ -129,8 +129,8 @@ check("word-order lessons compact at desktop heights instead of forcing a page s
 check("dark guided reorder prompts stay on a dark high-contrast surface", /html\[data-theme="dark"\] \.guided-session\.fs-app\.prototype-guided-session \.fs-reorder-prompt\s*\{[^}]*background:\s*#161b23;/s.test(appStyles));
 check("the active guided stage uses Micheon green instead of legacy gold", /prototype-guided-session \.fs-stagebtn\.is-active > span\s*\{[^}]*background:\s*var\(--fs-grad\);[^}]*color:\s*#fff;/s.test(appStyles));
 // The streak counter that popped over a lesson at 3, 5, 10 and every 5 after
-// is gone — Leon: "remove this keep it going thing its broken and looks bad
-// anyway". Asserted absent rather than deleted, because a floating overlay is
+// is gone: it was broken and it looked it. Asserted absent rather than
+// deleted and forgotten, because a floating overlay is
 // exactly the sort of thing that gets added back without anyone noticing, and
 // its twenty-two style rules across four themes cost more than it earned. The
 // pet still says so at the same milestones; that is the feedback that stayed.
@@ -173,9 +173,9 @@ check("all showcase screenshots are real, full-size PNGs", screenshotPaths.every
 
 // A pack card opens its lesson through an overlay button at z-0, so anything
 // painted over that overlay has to let clicks through or it becomes a dead
-// patch that still looks pressable. Leon: "this button on lesson cards does
-// nothing, it should prob open the lesson" — the footer strip was capturing
-// every click in it, arrow included, and dropping them on the floor.
+// patch that still looks pressable. The arrow on a lesson card did nothing
+// at all: the footer strip was capturing every click in it, arrow included,
+// and dropping them on the floor.
 const learnFooter = (/<div className="[^"]*relative z-10 mt-6 flex items-center justify-between[^"]*"/.exec(learnView) || [""])[0];
 check(
   "the pack card's footer strip lets clicks reach the card's own open-lesson target",
@@ -191,9 +191,9 @@ check(
 );
 
 // The lesson-content chip sits ON the Continue learning button, so it
-// intercepts the pointer before the button's own :hover can fire. Leon:
-// "hovering this words button doesnt move the [continue learning] button with
-// it, so it doesnt feel connected". The wrapper has to drive the lift for both
+// intercepts the pointer before the button's own :hover can fire, so hovering
+// the chip left the Continue learning button flat underneath it and the two
+// read as unconnected. The wrapper has to drive the lift for both
 // halves, both halves have to follow the press back down, and the chip needs
 // the button's transition or it teleports while the button eases there.
 const tightStyles = styles.replace(/\s+/g, " ");

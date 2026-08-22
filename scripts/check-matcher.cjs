@@ -2,10 +2,9 @@
 /**
  * Matcher: the tracker in pairs, endlessly.
  *
- * Leon: "add another button called Matcher where you just see the english and
- * german and you are just continuously doing either words or sentences from
- * our trackers, matching constantly/endlessly in progression like
- * guidedsession".
+ * English on one side, German on the other, drawn from the same trackers the
+ * course uses and in the same progression order. It does not end: clear a
+ * board and the next one deals itself.
  *
  * Three things can quietly break it and none of them look broken:
  *
@@ -133,8 +132,8 @@ for (const kind of ["words", "sentences"]) {
 // MATCHING does not grade; DECLARING does.
 //
 // Pairing six visible cards is recognition with the answer on screen, so it
-// must promote nothing — that line is the same one Listen draws. But Leon
-// asked for Know it and a level menu here, and pressing those is a statement
+// must promote nothing — that line is the same one Listen draws. But Know it
+// and the level menu are here, and pressing those is a statement
 // about what you know, exactly as the lesson's skip button is. So the rule is
 // not "this screen never writes", it is "the matching never writes".
 {
@@ -195,8 +194,8 @@ for (const kind of ["words", "sentences"]) {
 }
 
 // ── keep pressing Know it and it gets harder ────────────────────────────
-// Leon: "if im constantly pressing know it, it should get progressively
-// harder". Two levers, and the second is the one that matters: a bigger board
+// Pressing Know it over and over has to make the board progressively
+// harder. Two levers, and the second is the one that matters: a bigger board
 // is only more of the same words, whereas moving down the queue is moving into
 // rarer ones — which is what harder means for vocabulary.
 {
@@ -265,8 +264,8 @@ for (const kind of ["words", "sentences"]) {
 }
 
 // ── it remembers where you got to ───────────────────────────────────────
-// Leon: "this is supposed to be like continue learning where it remembers
-// what ive already done ... i dont wanna start from the beginning every time".
+// It works like Continue learning: it remembers what has already been done
+// rather than starting from the beginning of the queue every time.
 //
 // The hard case is the ordinary one: everything graded here LEAVES the queue,
 // so the board you were last looking at is exactly the board most likely to
@@ -297,7 +296,7 @@ for (const kind of ["words", "sentences"]) {
     "grading the first cards of a board loses the place instead of moving to the next one");
 
   // The pathological case: the whole board is gone. Land at the same depth,
-  // never back at the beginning — that is the complaint being fixed.
+  // never back at the beginning, which is the failure this exists to prevent.
   const gone = queue.filter((pair) => !later.pairs.some((p) => p.id === pair.id));
   const deep = matcherResumeFrom(gone, { ids: later.pairs.map((p) => p.id), approx: 400 });
   assert.ok(deep >= 390 && deep <= 400,
@@ -337,7 +336,7 @@ for (const kind of ["words", "sentences"]) {
 }
 
 // ── redoing just the ones you got wrong ─────────────────────────────────
-// Leon: "add a button to match just the missed ones if i want to".
+// The missed pairs can be replayed on their own, on demand.
 {
   const queue = buildMatcherQueue(parts, "words", null);
   const sample = buildMatcherBoard(queue, 200).pairs;
@@ -497,8 +496,8 @@ for (const kind of ["words", "sentences"]) {
   // A closed board proves nothing about this. The menu is keyed on the PAIR,
   // and a pair has two tiles — so with the open-state forced, an unguarded
   // menu draws twice: once under the German word and once under its English
-  // tile, wherever the shuffle put it. That is what Leon saw, and the check
-  // above sailed past it because nothing was open.
+  // tile, wherever the shuffle put it. That is what reached the screen, and
+  // the check
   //
   // Forced by pinning the open test itself in a copy of the real source,
   // which turns "is this pair's menu open" into "yes" for every tile that is

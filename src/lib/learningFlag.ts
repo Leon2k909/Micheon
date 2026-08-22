@@ -6,13 +6,12 @@ import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
  * Which flag stands for the language being LEARNED.
  *
  * Not the course id, which is the trap here. German and English are one body
- * of material served both ways round: Michelle and Leon both have
- * active-course "german", and the direction is what says she is learning
- * English and he is learning German. Reading the course id alone gives them
- * the same flag, and it is the wrong one for one of them — Leon, on the
- * sidebar heading: "bei leon ist hier nicht die flagge für die sprache die er
- * ausgewählt hat ... da soll immer die flagge von dem land sein was gelernt
- * wird."
+ * of material served both ways round: two profiles can both have
+ * active-course "german" while one is learning English and the other German,
+ * and the DIRECTION is what says which. Reading the course id alone gives them
+ * the same flag, and it is the wrong one for one of them: a sidebar heading
+ * showed a globe instead of the flag of the language being learned. The flag
+ * must always be the country of the language being learned.
  *
  * So the reversible pair asks the direction, and picks the variant the learner
  * chose while it is there, because en-GB and en-US are different flags. Any

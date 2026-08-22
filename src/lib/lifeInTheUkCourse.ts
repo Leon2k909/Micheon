@@ -3,7 +3,7 @@ import type { Course } from "@/lib/courses";
 /**
  * Life in the UK.
  *
- * This course teaches the SUBJECT, not the exam process. On Michelle's call
+ * This course teaches the SUBJECT, not the exam process. Deliberately,
  * there is nothing here about how long the test is, where you book it, what ID
  * to bring, how long you wait before a retake, or what happens at the ceremony
  * afterwards. That is paperwork, and it is not why anyone opens a course about
@@ -42,7 +42,7 @@ export const lifeInTheUkCourse: Course = {
       section: "Values and principles",
       badge: "lesson 1",
       blocks: [
-        // No exam admin in this course, on Michelle's call. How long the test
+        // No exam admin in this course, deliberately. How long the test
         // is, where you book it, what ID to bring, how long you wait to retake
         // it, and what happens at the ceremony afterwards are all gone: they
         // are procedure, and she is here to learn the country, not the

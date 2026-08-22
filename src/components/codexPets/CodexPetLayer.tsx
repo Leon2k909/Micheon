@@ -90,8 +90,8 @@ const PET_MENU_ESTIMATED_HEIGHT = 600;
  * 240 left about 140px for text once the two buttons had their share, and
  * German does not deal in 140px words: "die Haftpflichtversicherung" came out
  * as "Haftpflichtversicher / ung", split mid-syllable in the middle of the
- * word. Leon: "maybe the box needs bigger or something when there is longer
- * words or phrases". The compounds are not going to get shorter, so the box
+ * word. The compounds are not going to get shorter, so the box gets wider for
+ * a long word or phrase
  * gets wider — and where one still has to break, it now breaks where a German
  * dictionary would (see hyphens on the message text) rather than wherever the
  * pixels ran out.
@@ -149,8 +149,8 @@ const desktop = typeof window !== "undefined" ? (window as any).germDesktop : un
  *
  * The menu grew a section at a time — size, where pets appear, this pet,
  * messages and voice, layout — until opening it was a wall of controls.
- * Leon: "categorise these under dropdowns or something its getting quite
- * big". Everything is collapsed to start with, so the menu opens as a short
+ * so it needed categorising rather than more scrolling.
+ * Everything is collapsed to start with, so the menu opens as a short
  * list of headings and expands only the one you came for.
  */
 function PetMenuSection({

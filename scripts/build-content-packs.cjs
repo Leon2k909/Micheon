@@ -5,8 +5,8 @@
  * THE PROBLEM. All 21,366 taught entries are TypeScript object literals that
  * compile into one 3.9 MB JavaScript chunk. Everybody downloads all of it: a
  * beginner on lesson 3 gets the B2 expansion packs, and the moment a second
- * language becomes a real course everybody gets that too. Leon: "let people
- * install whichever language they want".
+ * language becomes a real course everybody gets that too. The goal is that
+ * people install whichever language they want.
  *
  * THE SHAPE. Content becomes static JSON under public/content, fetched on
  * demand and cached. Two axes, because there are two reasons to not want

@@ -187,7 +187,7 @@ check(
 
 // Both trackers keep every matching row mounted, because the filters, the
 // search, select-all and the counts are promises about the whole catalogue —
-// Leon: "i want all the data available". Sixteen thousand rows is only
+// all of it has to be available. Sixteen thousand rows is only
 // survivable if the browser skips the ones nobody can see, and if grading one
 // item does not re-render all of them. Measured on this machine: 4,000 rows of
 // comparable markup took 566 ms to lay out without content-visibility and
@@ -283,7 +283,7 @@ check(
 // Typing in the tracker's search box re-filtered all 16,308 items on every
 // keystroke, and the first keystroke also built the search text for every one
 // of them — so "test" did that work four times and the box itself stuttered
-// while it happened. Leon: "the app is also a bit laggy when i use the search".
+// while it happened, so typing in the search box visibly stuttered.
 check(
   "the search box types at full speed while the filter runs behind it",
   /const filterQuery = React\.useDeferredValue\(query\);/.test(tracker)
@@ -294,8 +294,9 @@ check(
   tracker.includes("onFocus={() => { if (!indexedSearch) warmSearchIndex(); }}")
 );
 
-// The mascot is meant to stay ON SCREEN over a game — Leon asked for that
-// explicitly — but a repainting overlay makes the compositor redraw the screen
+// The mascot is meant to stay ON SCREEN over a game — that is the point of
+// it, and hiding it is not the fix — but a repainting overlay makes the
+// compositor redraw the screen
 // over the top of whatever is under it. Holding the frame while another app is
 // in front keeps the pet visible and stops it costing anything to sit there.
 check(
@@ -341,8 +342,8 @@ check(
 );
 
 // German compounds do not fit in 140px. The mascot's bubble was splitting
-// "Haftpflichtversicherung" mid-syllable — Leon: "maybe the box needs bigger
-// or something when there is longer words or phrases".
+// "Haftpflichtversicherung" mid-syllable, so the box has to grow for a long
+// word or phrase rather than break it.
 //
 // This used to pin `PET_BUBBLE_WIDTH = 320`, which was the wrong thing to
 // hold still: it made EVERY message wide, and a four-word question in a

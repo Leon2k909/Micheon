@@ -29,9 +29,9 @@ export type GradeRecord = {
   /**
    * This know came from a DECLARATION ("Know it" / Kann ich, or a tracker
    * Known press) rather than from working through the exercises. The
-   * difficulty ladder climbs on declarations only — Leon: "knowing a lot of
-   * words shouldnt put me in a top rung. only repeatedly pressing know it
-   * ... because the lessons are clearly too easy." A word later recalled
+   * difficulty ladder climbs on declarations only. Knowing a lot of words
+   * must not put a learner on a top rung; only repeatedly pressing Know it
+   * should, because that is the signal the lessons are too easy. A word later recalled
    * through a real exercise loses the stamp: it has been earned.
    */
   declared?: boolean;

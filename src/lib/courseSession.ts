@@ -150,7 +150,7 @@ function isTypeable(code: string): boolean {
  * `extraQuizzes` lets a caller add questions the lesson itself does not carry.
  * The Life in the UK course uses it to pull from the practice bank, which
  * holds 6–16 questions per topic against the 2–3 written into each lesson —
- * Michelle asked for more to answer after each thing she reads, and inventing
+ * a topic needs more to answer than the 2–3 the lesson carries, and inventing
  * a second set alongside a bank that already covers the same ground would have
  * been duplication, not depth.
  *

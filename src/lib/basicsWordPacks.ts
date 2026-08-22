@@ -3,9 +3,9 @@ import type { Blueprint, VocabSeed } from "./types";
 /**
  * The words that fell through the gaps.
  *
- * Leon, at word 2,450 of Listen: "im learning some pretty random advanced
- * words, we should had a lot of more normal ones before this". He was right,
- * and the reason turned out to be findable rather than a matter of taste.
+ * At word 2,450 of Listen the queue was serving rare, advanced words while
+ * ordinary ones were still waiting. The reason turned out to be findable
+ * rather than a matter of taste.
  *
  * Two audits, both done by asking a question with a checkable answer.
  *

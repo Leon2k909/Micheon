@@ -118,8 +118,8 @@ if (failures.length) {
   process.exit(1);
 }
 // ── declaring knowns must not bury the common words ─────────────────────────
-// Leon: "im concerned that if i keep pressing kann ich, it will make things
-// less popular.. is that a good worry?"
+// The worry this answers: does pressing Kann ich over and over push the
+// common words out of reach?
 //
 // The mechanism is real: the rung climbs on DECLARED knowns — five presses a
 // rung, six rungs, so it tops out after twenty-five — and new words are then

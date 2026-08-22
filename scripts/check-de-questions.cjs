@@ -7,9 +7,8 @@
  * an id that names a lesson which does not exist hides the question from every
  * filter in the app, and two questions sharing an id share a score.
  *
- * It carries one assertion the UK check does not, because Michelle asked for
- * it in so many words — "berücksichtige aber bitte dinge nicht doppelt zu
- * verwenden". The lessons close with quizzes of their own, and the practice
+ * It carries one assertion the UK check does not: nothing may be used twice.
+ * The lessons close with quizzes of their own, and the practice
  * pool is drawn from separately. If the same question appeared in both, the
  * learner would meet it twice and the two records would drift apart. So the
  * two sets are compared here and any overlap fails the build.
@@ -134,7 +133,7 @@ for (const [level, count] of Object.entries(perLevel)) {
 }
 
 // ── the timeline ───────────────────────────────────────────────────────────
-// Same rule Michelle set for the British one: a span sorts by the year it
+// Same rule as the British one: a span sorts by the year it
 // ENDED, so a fourteen-year republic does not appear to be over before it
 // began. And an end before its start is a typo, not a span.
 const sorted = deTimelineSorted();

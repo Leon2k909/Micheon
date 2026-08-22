@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The home page is the shape Michelle drew, using the pictures she supplied.
+ * The home page is built to a supplied drawing, using the supplied pictures.
  *
  * She was explicit about the pictures: "Ganz wichtig: Meine drei
  * bereitgestellten Bilder sollen tatsächlich verwendet werden. Keine

@@ -1387,8 +1387,8 @@ function setPetOverlayDisplayMode(mode) {
 /**
  * Hold the mascot still while you are in something else.
  *
- * Leon wants the pet ON SCREEN over CS2 — hiding it is not the answer he
- * asked for — but a mascot that repaints keeps making the desktop compositor
+ * The pet has to stay ON SCREEN over a fullscreen game — hiding it is not
+ * the answer — but a mascot that repaints keeps making the desktop compositor
  * redraw the screen over the top of the game, and that is the part of the
  * cost that is actually avoidable. The window has to stay where it is; the
  * animation does not.

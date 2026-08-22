@@ -306,7 +306,6 @@ function CodeStepView({
   );
 }
 
-// ── Concept step ──────────────────────────────────────────────
 function ConceptStepView({ blocks, onNext }: { blocks: SessionStep extends never ? never : any; onNext: () => void }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-3xl space-y-5">
@@ -322,7 +321,6 @@ function ConceptStepView({ blocks, onNext }: { blocks: SessionStep extends never
   );
 }
 
-// ── Quiz step ─────────────────────────────────────────────────
 function QuizStepView({ q, options, explanation, onNext, onAnswered }: { q: string; options: { text: string; correct: boolean }[]; explanation: string; onNext: () => void; onAnswered?: (correct: boolean, chosen: number) => void }) {
   const [picked, setPicked] = useState<number | null>(null);
   const answered = picked !== null;

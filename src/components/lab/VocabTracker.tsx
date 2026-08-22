@@ -175,7 +175,7 @@ function recordFor(grades: GradeStore, id: string, aliases: string[] = []): Grad
  *
  * The tracker keeps every matching item mounted so filters, search, select-all
  * and the counts all speak for the whole catalogue rather than for whatever is
- * on screen — Leon: "i want all the data available". The cost of keeping that
+ * on screen. All of it has to be available, and the cost of that
  * promise is a very long list, and two separate things made it hurt.
  *
  * This is the first: grading an item rewrites the whole store, so EVERY
@@ -586,8 +586,7 @@ export function VocabTracker({
    * Every keystroke re-filtered all 16,308 items, and the very first one also
    * built the search text for every one of them, so typing "test" did that
    * work four times over and the box itself stuttered while it happened —
-   * Leon: "the app is also a bit laggy when i use the search".
-   *
+   * so the search box was visibly laggy to type in.
    * useDeferredValue keeps the typing at full priority and lets React run the
    * filter behind it, dropping intermediate queries when they arrive faster
    * than the work finishes. The box is instant; the results land a moment
@@ -754,8 +753,7 @@ export function VocabTracker({
     // answers in about a millisecond, but until it does the code below fell
     // back to the in-memory search — which on its first run builds a search
     // string for all 16,308 items, about 770ms of work, for an answer that was
-    // superseded before it finished. Leon: "search still is a little laggy at
-    // first when i start typing".
+    // superseded before it finished, so the first few keystrokes still lagged.
     //
     // So when the index is going to answer, wait for it and keep showing what
     // is already on screen. The wait is milliseconds; the work avoided is most

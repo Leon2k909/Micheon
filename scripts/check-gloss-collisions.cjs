@@ -6,10 +6,10 @@
  * that is ALSO the prompt for a different German verb is unanswerable — not
  * hard, unanswerable, because nothing on screen says which one is wanted.
  *
- * Found in the wild by Leon: "Ich verstehe." was glossed "I see.", while the
+ * Found in the wild: "Ich verstehe." was glossed "I see.", while the
  * same course teaches "Das seh ich anders." for "I see it differently." and
- * "Ich sehe das." for "I see it that way.". His words: "i understand is
- * better, no? i see is the same but ich seh is gonna get confused surely?"
+ * "Ich sehe das." for "I see it that way.". "I understand" is the better
+ * gloss; "I see" collides with the two cards built on sehen.
  * The pack made it worse than a general risk — the card directly below it
  * already read "I don't understand.", so the positive and the negative of one
  * verb were glossed with two different English verbs.

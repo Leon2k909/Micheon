@@ -2098,7 +2098,7 @@ const DE: Record<string, string> = {
   // ── The sidebar's folding sections ──
   "Fold away": "Zur Seite klappen",
   "Language learning": "Sprachen lernen",
-  // ── The home page Michelle laid out ──
+  // ── The home page ──
   "Small steps every day add up to big results.": "Kleine Schritte jeden Tag führen zu großen Ergebnissen.",
   "What would you like to learn {today}?": "Was möchtest du {today} lernen?",
   "today": "heute",
@@ -2914,7 +2914,7 @@ export function uiLocale(): string {
  *
  * Number.toLocaleString() with no argument follows the machine, not the app.
  * On a German-region Windows every count in Micheon came out with German
- * separators regardless of the language the app was set to, so Leon's English
+ * separators regardless of the language the app was set to, so an English
  * dashboard read "18.935 XP" — which an English reader parses as eighteen
  * point nine three five. Sixty-seven call sites did this.
  *

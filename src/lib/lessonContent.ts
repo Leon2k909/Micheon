@@ -3,7 +3,7 @@ const KEY = "gl-lesson-content";
 /**
  * What a Continue Learning sitting is made of.
  *
- * Michelle wants to learn WORDS; the course teaches SENTENCES; some people
+ * Some learners want WORDS; the course teaches SENTENCES; some people
  * want a bit of each. Rather than a second button for every combination, the
  * one Continue Learning button carries a picker and remembers the choice:
  *

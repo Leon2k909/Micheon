@@ -242,8 +242,6 @@ export function SetStudy({
   );
 }
 
-// ── Flashcards ──────────────────────────────────────────────────────────────
-
 function Flashcards({ cards, set, speak }: { cards: StudyCard[]; set: StudySet; speak: (text: string) => void }) {
   const [order, setOrder] = useState(() => cards.map((_, index) => index));
   const [position, setPosition] = useState(0);
@@ -340,8 +338,6 @@ function Flashcards({ cards, set, speak }: { cards: StudyCard[]; set: StudySet; 
     </div>
   );
 }
-
-// ── Learn ───────────────────────────────────────────────────────────────────
 
 function Learn({
   set,
@@ -553,8 +549,6 @@ function Learn({
     </div>
   );
 }
-
-// ── Test ────────────────────────────────────────────────────────────────────
 
 function TestMode({ cards, set }: { cards: StudyCard[]; set: StudySet }) {
   const [questions] = useState(() => shuffled(cards).slice(0, 20));

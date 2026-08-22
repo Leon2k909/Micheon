@@ -12,10 +12,9 @@ import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 /**
  * Matcher: the whole course, in pairs, forever.
  *
- * Leon: "add another button called Matcher where you just see the english and
- * german and you are just continuously doing either words or sentences from
- * our trackers, matching constantly/endlessly in progression like
- * guidedsession".
+ * English on one side, German on the other, drawn from the same trackers the
+ * course uses and walked in the same progression order. It does not end:
+ * clear a board and the next one deals itself.
  *
  * So it is not a game with a score and an end — it is the tracker queue, six
  * pairs at a time, refilling the moment a board is cleared.
@@ -104,9 +103,9 @@ export function matcherStreakAfterMiss(knownStreak: number): number {
 
 /* ── where you got to ───────────────────────────────────────────────────
  *
- * Leon: "this is supposed to be like continue learning where it remembers
- * what ive already done, the same stuff can come back for review but i dont
- * wanna start from the beginning every time".
+ * It works like Continue learning: it remembers what has already been done,
+ * the same material can come back for review, and it never starts from the
+ * beginning of the queue again.
  *
  * A position alone will not do it. The queue is rebuilt from the grade store
  * every visit, and everything graded here leaves it — so the index that meant
@@ -163,7 +162,7 @@ export function setMatcherCursor(
 
 /* ── the ones you got wrong ─────────────────────────────────────────────
  *
- * Leon: "add a button to match just the missed ones if i want to".
+ * The missed pairs can be replayed on their own, on demand.
  *
  * Kept as ids rather than as pairs, and resolved against the live queue when
  * it is time to deal them. A pair frozen at the moment of the miss would keep

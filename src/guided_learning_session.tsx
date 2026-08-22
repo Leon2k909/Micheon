@@ -1107,8 +1107,8 @@ export default function GuidedLearningSession() {
       // arithmetic protected. "Passt das?" ended a sitting three times over
       // that way. This works on the cards that were really chosen: walk them,
       // and where one has an unlearned extension waiting, put it immediately
-      // behind its base. Leon's rule for what it displaces: the extension
-      // takes the next slot and whatever sat there moves to the next sitting.
+      // behind its base. What it displaces: the extension takes the next slot
+      // and whatever sat there moves to the next sitting.
       const pairedFresh: any[] = [];
       const sittingKeys = new Set<string>(
         [...fresh, ...reviews].map((step: any) => chainKey(step?.item?.de)).filter(Boolean)

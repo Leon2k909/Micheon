@@ -253,8 +253,8 @@ check(
 check(
   "the dashboard visibly opts into the study-hours estimate",
   dashboardSource.includes("function FluencyOutlook")
-    // Hours reach all the way to Fluent, and the label says so — Leon's call
-    // after a next-stage-only estimate was tried and rejected.
+    // Hours reach all the way to Fluent, and the label says so. A
+    // next-stage-only estimate was tried first and rejected.
     && dashboardSource.includes("estimateFluencyHours(fluency.toFluent")
     && dashboardSource.includes("hours to Fluent")
     && dashboardSource.includes("Estimated active study left")

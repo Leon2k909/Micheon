@@ -88,9 +88,9 @@ export function toSpokenGerman(sentence: string): string {
  * German comma rules are strict and Conversation mode was following all of
  * them, which produced a register nobody writes in: the verb clipped the way
  * it is SPOKEN ("Ich glaub") and the punctuation set the way it is EXAMINED
- * ("Ich glaub, wir haben alles, was wir brauchen."). Michelle read that and
- * said there were too many commas. She is right about the register, and the
- * register is the entire point of this mode — the other one is called Exam and
+ * ("Ich glaub, wir haben alles, was wir brauchen."). To a native reader that
+ * is too many commas. The register is the entire point of this mode — the
+ * other one is called Exam and
  * keeps every comma.
  *
  * What goes is the grammar comma: the one before a subordinate or relative
@@ -154,10 +154,9 @@ const DASS_LESS_COMMA = new RegExp(
  *
  * NOTE, for whoever reads this next and reaches for the obvious "fix": the
  * comma before dass/weil/wenn is mandatory in German orthography, and this
- * drops it on purpose. That is Michelle's call — she is German, she read
- * "Ich glaub, wir haben alles, was wir brauchen." and said there were too
- * many commas, and check-spoken-forms pins the result. Exam mode keeps every
- * comma. If this should change, it is a decision about which register the
+ * drops it on purpose, on the judgement of a native reader: "Ich glaub, wir
+ * haben alles, was wir brauchen." carries too many commas for the register
+ * this mode is written in, and check-spoken-forms pins the result. Exam mode keeps every
  * default mode teaches, not a bug to be quietly corrected.
  */
 export function toTextedGerman(sentence: string): string {

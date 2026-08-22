@@ -6,8 +6,8 @@ import type { Blueprint, VocabSeed } from "./types";
  * bundledWordBank.json has always held the 2,500 most common German words —
  * corpus-ranked, article-verified, glossed — but it only powered ordering and
  * the extension glossary. Nearly 1,500 of its words, including cores like
- * "das Jahr", "müssen" and "klein", were never taught by any pack. Leon's
- * bar moved to a native-scale inventory ("we need at least 10k words"), and
+ * "das Jahr", "müssen" and "klein", were never taught by any pack. The target
+ * is a native-scale inventory of at least 10,000 words, and
  * the first step is to stop sitting on curated words we already have.
  *
  * GENERATED ONCE from the bank (scripts kept in session notes), then

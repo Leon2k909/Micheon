@@ -3,11 +3,10 @@
  * Turn the emoji in wordPictures.ts into real artwork.
  *
  * The first version of the word pictures drew emoji as text, in whatever the
- * operating system happened to have. On Windows that is Segoe UI Emoji, and
- * Leon's verdict on it was "these emojis look terrible. nothing like what i was
- * expecting from the git repos" — which is fair: the flat two-tone Windows
- * glyphs look nothing like the rounded illustrated set that made the idea
- * appealing in the first place.
+ * operating system happened to have. On Windows that is Segoe UI Emoji: flat
+ * two-tone glyphs that look nothing like the rounded illustrated set that
+ * made the idea appealing in the first place, so the same word picture was a
+ * different drawing on every machine and a poor one here.
  *
  * So the pictures are now Twemoji, drawn from the same hand, shipped as SVG
  * with the app. This copies out ONLY the ones the map actually uses — around

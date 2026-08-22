@@ -2,9 +2,9 @@
 /**
  * The sidebar reads as what is being studied, not as a list of pages.
  *
- * Michelle asked for it in three parts: a folding section per course with the
- * flag of that course on its heading — "[Flagge] Sprachen lernen ▾" — Beta
- * listed flat below them, and "Ausgeblendete Apps" on its own at the foot.
+ * It is in three parts: a folding section per course with the flag of that
+ * course on its heading, Beta listed flat below them, and Hidden apps on its
+ * own at the foot.
  *
  * The part that is easy to get wrong later is which setting feeds which flag.
  * There are three, and they are not the same one: the app language names
@@ -28,7 +28,7 @@ const i18n = read("src/lib/i18n.ts");
 
 // ── two folding sections, each with its own flag ───────────────────────────
 
-// The five rows Michelle listed, in her order: three destinations the nav
+// The five rows, in order: three destinations the nav
 // already had, Speaking, which has nothing behind it yet and says so rather
 // than being quietly left out, and Vocabulary.
 //
@@ -99,11 +99,11 @@ assert.ok(
 
 // ── the rule itself, run ───────────────────────────────────────────────────
 //
-// German and English are one course served both ways round. Michelle and Leon
-// both have active-course "german"; she is learning English and he is learning
-// German, and the direction is the only thing that says so. Reading the course
-// id alone hands them the same flag, which is how Leon ended up looking at a
-// globe where his flag should be.
+// German and English are one course served both ways round. Two profiles can
+// both have active-course "german" while one is learning English and the
+// other German, and the DIRECTION is the only thing that says which. Reading
+// the course id alone hands them the same flag, which is how a learner ended
+// up looking at a globe where their flag should be.
 {
   const store = new Map();
   const localStorageStub = {
@@ -282,9 +282,9 @@ assert.ok(
 
 // It was a violet "Beta" pill, which read as a warning label rather than a
 // place to go. The pill is gone and the section is now set in the same type as
-// the headings above it — but by its own name: her brief calls the section
-// "Beta", her drawing shows "KATEGORIE BETA", and the one change she asked for
-// was to drop the word "Kategorie". Calling it "Extras" went further than that.
+// the headings above it — but by its own name. The section is called "Beta";
+// the only change wanted was to drop the word "Kategorie" in front of it.
+// Renaming it "Extras" went further than that.
 // Both the badge class and its stylesheet rule stay gone, so this pins the
 // absence too — a reintroduced pill would put the rail back to two kinds of
 // heading without anything failing.
@@ -316,7 +316,7 @@ assert.ok(
   /np-nav-footer[\s\S]*?ui\("Hidden apps"\)/.test(shell),
   "hidden apps sit in the separated footer"
 );
-// More is not one of the entries Michelle listed, so it is not in the rail —
+// More is not one of the rail's entries, so it is not there —
 // which leaves the drag that used to land on it needing somewhere to go. It
 // lands on the row that lists what it put away, which is where it was headed.
 assert.ok(

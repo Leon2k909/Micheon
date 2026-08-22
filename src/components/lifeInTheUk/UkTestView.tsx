@@ -152,7 +152,6 @@ export function UkTestView({
     setState(quiz.toggleFavourite(questionId));
   }, []);
 
-  // ── Running ──────────────────────────────────────────────────────────────
   if (stage === "running" && test) {
     const question = test.questions[index];
     const answered = Object.values(chosen).filter((value) => value != null).length;
@@ -316,7 +315,6 @@ export function UkTestView({
     );
   }
 
-  // ── Result ───────────────────────────────────────────────────────────────
   if (stage === "result" && outcome) {
     const wrong = outcome.answers.filter((answer) => !answer.correct);
     const shown = reviewOnlyWrong ? wrong : outcome.answers;

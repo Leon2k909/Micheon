@@ -1821,7 +1821,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 
 /* ── The motivational banner ─────────────────────────────────────────────
  *
- * Michelle's skyline fills it, her quote sits on the left over a wash that
+ * The skyline artwork fills it, the quote sits on the left over a wash that
  * only darkens that side, and the mascot stands on the right in front.
  *
  * The mascot is not a cut-out — it is painted into the hero artwork on
@@ -2020,7 +2020,7 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 /* Progress and Continue, below the picture on the plain card. They were over
    the artwork and are the parts that need to be plainly readable rather than
    atmospheric. */
-/* The panel sitting ON the picture is only as wide as its row — Michelle:
+/* The panel sitting ON the picture is only as wide as its row:
    "das müsste etwas schmaler und kleiner sein, so zur hälfte vom bild
    maximal". Full width it read as a bar across the artwork rather than a
    label on it.
@@ -3184,10 +3184,9 @@ button.np-progress-title:focus-visible,
  *
  * It was a slab of hardcoded green, and a second rule painted the heading in
  * the accent over it — pink lettering on a green field once a custom colour
- * was set. Tinting the surface instead was still too much green for Michelle:
- * "der hintergrund der bubble soll den selben hintergund behalten, aber wenns
- * korrekt ist die umrandung grün, wenn falsch rot." So the background is the
- * same in both states, and the ring around it carries the whole signal.
+ * was set. Tinting the surface instead was still too much green. The bubble
+ * keeps its own background either way; only the BORDER answers — green when
+ * correct, red when wrong. So the background is the
  */
 .np-feedback.is-correct {
   border-color: var(--success-text);
@@ -7703,7 +7702,7 @@ html[data-theme="dark"] .np-premium-card {
   }
 }
 
-/* Leon-only friends and leaderboard preview */
+/* Gated friends and leaderboard preview */
 .np-social-view {
   container-name: np-social;
   container-type: inline-size;

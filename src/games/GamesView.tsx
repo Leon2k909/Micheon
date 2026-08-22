@@ -77,7 +77,7 @@ const GAMES = [
 
 // The Vocabulary mastery card used to live here; it moved to Profile &
 // settings (Gamification.tsx), where the rest of the progress story lives —
-// Games is Leon-only beta territory now and must not hold anyone's stats.
+// Games is beta territory now and must not hold anyone's stats.
 /**
  * The library opens immediately; only a game waits for words.
  *

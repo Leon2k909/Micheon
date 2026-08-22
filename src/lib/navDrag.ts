@@ -2,8 +2,8 @@
  * Dragging a destination between the sidebar and More.
  *
  * Hiding a nav entry was already a preference with a cross on each row and a
- * restore list underneath. Leon asked for the direct version: "i should be
- * able to drag menu items out of stuff on the left into more and out". Same
+ * restore list underneath. This is the direct version: a row drags out of the
+ * sidebar and back again. Same
  * preference underneath — this only gives it a handle.
  *
  * A private MIME type rather than text/plain, because a drop target has to

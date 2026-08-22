@@ -6,7 +6,7 @@ import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@
  * The sidebar carries eleven entries and most people use four. Somebody
  * revising for the citizenship test does not want Games in their eyeline, and
  * somebody here only for German does not want Life in the UK. Hiding is
- * per-profile, because Leon and Michelle share this app and want different
+ * per-profile, because two people share this app and want different
  * things out of it.
  *
  * Nothing here removes a destination — only its button. Every hidden view is
@@ -64,9 +64,9 @@ export function canHideNavItem(id: string): boolean {
 /**
  * Not everything in the sidebar is a destination.
  *
- * Leon: "i wanna just be able to drag every menu into disabled, all of them,
- * including categories or on their own. each thing either together or
- * separate." Most of what he can see is not a nav item and so had no id to
+ * Everything in the sidebar has to be able to go: a heading takes its whole
+ * section, a row inside goes on its own. Most of what is on screen is not a
+ * nav item, though, and so had no id to
  * put away: the three folding headings are layout, and the rows under Country
  * studies are tabs within one view rather than views of their own. Speaking is
  * not built yet and Vocabulary library is a scroll position on the profile

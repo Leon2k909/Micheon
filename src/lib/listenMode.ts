@@ -263,8 +263,8 @@ export function setListenNextCardDelayMs(delayMs: number): number {
  * The next-card delay above is a pause AFTER both languages have finished, so
  * it can only ever pace how fast cards arrive. It cannot open the gap that
  * matters for speaking: hear the English, say the German yourself, then hear
- * the German and find out whether you were right. Leon: "i need to be able to
- * change the delay between eng and german". Without this, the answer arrives
+ * the German and find out whether you were right. Without a gap that can be
+ * set, the answer arrives
  * before there is time to attempt it, and Listen stays a listening exercise.
  *
  * It is held once per card, at the switch — not between repeats of the same

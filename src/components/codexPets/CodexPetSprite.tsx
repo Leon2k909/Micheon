@@ -10,7 +10,7 @@ const desktopBridge = typeof window !== "undefined" ? (window as any).germDeskto
  * A repainting overlay makes the compositor redraw the screen over whatever is
  * underneath it, which over a fullscreen game is felt as input lag. Holding
  * the current frame while you are elsewhere keeps the pet visible — which is
- * what Leon asked for — without it costing anything to sit there.
+ * the whole point of it — without it costing anything to sit there.
  */
 function useAppFocused(): boolean {
   const [focused, setFocused] = useState(true);

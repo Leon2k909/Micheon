@@ -9,8 +9,8 @@ import type { CountryLevel, CountryQuestion } from "@/lib/countryStudies";
  * Stoff noch auf dem Bildschirm steht. Diese hier werden immer wieder gezogen,
  * in beliebiger Reihenfolge, lange nachdem die Lektion gelesen wurde.
  *
- * Keine Frage aus den Lektionen taucht hier ein zweites Mal auf. Michelle hat
- * ausdrücklich darum gebeten, nichts doppelt zu verwenden — also prüft
+ * Keine Frage aus den Lektionen taucht hier ein zweites Mal auf. Nichts darf
+ * doppelt verwendet werden — also prüft
  * check-de-questions, dass sich kein Fragetext zwischen Kurs und Pool
  * wiederholt.
  *

@@ -4,7 +4,7 @@ import type { CountryTimelineEvent } from "@/lib/countryStudies";
  * Die deutsche Zeitleiste.
  *
  * Nach demselben Muster wie die britische gebaut, einschließlich der Regel,
- * die Michelle dort verlangt hat: Ein Zeitraum wird nach seinem LETZTEN Jahr
+ * die dort gilt: Ein Zeitraum wird nach seinem LETZTEN Jahr
  * einsortiert, nicht nach seinem ersten. Die Weimarer Republik gehört ans Ende
  * ihrer vierzehn Jahre, nicht neben den Kriegsausbruch von 1914 — sonst liest
  * sich die Leiste, als wäre sie vorbei, bevor sie begonnen hat.

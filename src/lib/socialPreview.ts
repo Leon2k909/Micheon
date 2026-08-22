@@ -2,9 +2,9 @@
  * Who gets the features that are not public yet.
  *
  * This was a single email, because for a while there was a single person
- * using them. It is a list now: Michelle asked for everything Leon has, and
- * the honest way to give it to her is to add her to the gate rather than to
- * remove the gate. What is behind it — games, the reward shop, the social
+ * using them. It is a list now, because both accounts get the same features,
+ * and the honest way to do that is to add to the gate rather than to
+ * remove it. What is behind it — games, the reward shop, the social
  * preview — is still unfinished, and the app still says so on the cards.
  *
  * Matching stays exact after trimming and lower-casing. No domain rules and

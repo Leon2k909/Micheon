@@ -9,9 +9,8 @@ import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@
  * reach the eighty-first, and the card editor rendered every card, so a set
  * of three hundred was a page you scrolled for a while.
  *
- * Leon: "no pagination when adding words? and if a page is really long like i
- * have loads of flashcards, let users pick if they wanna see a scroll to
- * bottom thing on the right of their screen or pagination".
+ * With hundreds of flashcards on a page, the choice between an endless
+ * scroll and pagination belongs to the reader rather than to the page.
  *
  * So it is a choice rather than a decision made for everybody. Paging is
  * better for finding a particular row; one long scroll is better for reading

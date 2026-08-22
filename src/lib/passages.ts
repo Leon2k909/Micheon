@@ -4,9 +4,9 @@
  * Everything else in Micheon teaches one sentence at a time, and a sentence
  * at a time is not how German arrives. It arrives as four messages from a
  * mate with no punctuation to speak of, a note from a landlord, a rant about
- * a parcel. Leon asked for "conversational paragraphs non-textbook style
- * where its german but you need to translate it into english... but its
- * supposed to be a challenge".
+ * a parcel. So these are conversational paragraphs rather than textbook
+ * prose: German to be read and turned into English, and meant to be a
+ * challenge.
  *
  * So the challenge is deliberately the hard direction. Reading German and
  * producing English is the only exercise here that cannot be passed by

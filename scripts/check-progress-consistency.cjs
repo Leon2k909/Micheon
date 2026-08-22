@@ -31,7 +31,7 @@ if (/totalReviews/.test(mastery)) {
   failures.push("MasteryCard must not reach for totalReviews — that is a practice tally, not a word count");
 }
 
-// 2. The card lives on the profile page now (Games is Leon-only beta), and
+// 2. The card lives on the profile page now (Games is beta, one account), and
 //    the profile hands it the same shared count as everything else. Games
 //    must not quietly grow its own vocabulary number back.
 const games = read("src/games/GamesView.tsx");

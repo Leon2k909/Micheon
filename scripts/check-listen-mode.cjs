@@ -222,7 +222,7 @@ check("least-heard order genuinely rotates material with less Listen exposure to
   queue[0]?.id === commonSentences[4]?.id);
 
 // ── newly added content has to be reachable, not just present ───────────
-// The complaint this order exists for: words added from real reading were in
+// The problem this order exists for: words added from real reading were in
 // the queue but never heard. "Most common first" ranks words by the bundled
 // frequency bank, and a word the bank has never ranked sorts behind every word
 // it has — so the newest content sat ~90% of the way down a 20,000-item queue.
@@ -274,7 +274,7 @@ const shifts = commonWords
   .map((item, position) => Math.abs(position - (newestPositions.get(item.id) ?? position)))
   .sort((a, b) => a - b);
 // ── the arrow keys move through the queue ───────────────────────────────────
-// Leon: "should be able to use my arrow keys to move to another word". The
+// The arrow keys move through the queue. The
 // buttons were the only way, which means a hand on the mouse for something
 // done every few seconds while listening.
 {
@@ -568,9 +568,9 @@ check("the next-card delay is the learner's to change", getListenNextCardDelayMs
 // ── the gap between the two languages ───────────────────────────────────
 //
 // The next-card delay above pauses AFTER both languages have been spoken, so
-// it can only pace how fast cards arrive. Leon: "i need to be able to change
-// the delay between eng and german" — the silence he wants is inside a card,
-// where he can say the German himself before it tells him.
+// it can only pace how fast cards arrive. The silence that matters is inside
+// a card, between the German and the English, so the listener can say the
+// German themselves before the card tells them.
 stored.set("gl-listen-language-gap-ms", "3000");
 check("the gap between languages is the learner's to change",
   DEFAULT_LANGUAGE_GAP_MS === 0 && getListenLanguageGapMs() === 3000);

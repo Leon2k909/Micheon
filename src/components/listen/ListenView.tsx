@@ -608,7 +608,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   /**
    * Arrow keys move through the queue.
    *
-   * Leon: "should be able to use my arrow keys to move to another word". The
+   * The
    * buttons were the only way, which means a hand on the mouse for something
    * you do every few seconds while listening.
    *

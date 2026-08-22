@@ -153,7 +153,7 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
 
 import heroImage from "./assets/micheon-monkey-v1.webp";
 /*
- * Michelle's own artwork for the home page, used exactly as supplied.
+ * Supplied artwork for the home page, used exactly as given.
  *
  * All three belong to the German course for now — "Bitte erstelle jetzt noch
  * keine Logik für andere Sprachen" — so they are imported flat rather than
@@ -275,9 +275,9 @@ type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
 /**
  * The sidebar's two collapsible sections.
  *
- * Michelle asked for the nav to read as what it is: one heading per thing
+ * The nav reads as what it is: one heading per thing
  * being studied, with the flag of what is being studied on it, and the ways
- * into it folded underneath — "[Flagge] Sprachen lernen ▾". Three settings
+ * into it folded underneath. Three settings
  * feed it and they stay separate: the app language names everything, the
  * course being learned picks the first flag, and the country picks the
  * second.
@@ -291,8 +291,8 @@ type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
  * Three destinations the nav already had, and Speaking, which has nothing
  * behind it yet: that row is shown because the section is incomplete without
  * it, and says so rather than pretending, because inventing the feature is
- * not what was asked for. Vocabulary was here for a while and Michelle asked
- * for it back out — the tracker it pointed at is on the profile page, which
+ * not the job. Vocabulary was here for a while and then taken back out —
+ * the tracker it pointed at is on the profile page, which
  * is where it already lived.
  */
 type LanguageRow =
@@ -350,9 +350,9 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
  *
  * The tracker — Sätze and Wörter — has always lived on the profile page, and
  * the row that opened it dropped you at the top of a long settings page to
- * find it yourself. Michelle took the row out when she saw that: "hier muss
- * das wortschatz weg." Her brief asks for it, so it is back, arriving at the
+ * find it yourself, so the row was taken out. It is back now, arriving at the
  * card instead of near it. The section loads when it is scrolled to, which is
+ * why this keeps looking for a few seconds rather than once.
  * why this keeps looking for a few seconds rather than once.
  */
 function scrollToVocabularyLibrary() {
@@ -416,7 +416,7 @@ const PROGRESS_SECTIONS_KEY = "gl-progress-sections-v1";
 /**
  * Which parts of "Dein Fortschritt" are folded open.
  *
- * Michelle asked for this panel to fold the way the sidebar's sections do.
+ * This panel folds the way the sidebar's sections do.
  * The whole thing collapses from its own heading, and the two blocks inside
  * it that have headings of their own fold on their own as well, so a long
  * right-hand column can be cut down to whichever part is being looked at.
@@ -814,7 +814,7 @@ function Sidebar({
 
   // The finished app and the building site, kept visibly apart. Games,
   // Friends and Shop all have rough edges, so together they form a labelled
-  // Beta section at the foot of the nav — and only on Leon's account. Every
+  // Beta section at the foot of the nav — and only on one account. Every
   // other account gets the main navigation and nothing half-built.
   const navigationItems = NAVIGATION.filter((item) => item.id !== "games" && item.id !== "path");
   const betaItems = [
@@ -1971,7 +1971,7 @@ function HomeBanner() {
  * The second card: the citizenship course, with its own progress.
  *
  * Britain is the only country the course covers, and choosing another one is
- * Michelle's own next piece of work, so this reports what exists rather than
+ * work still in flight, so this reports what exists rather than
  * inventing a picker for it. Its progress is the real count of lessons
  * completed in that course.
  */
@@ -2011,7 +2011,7 @@ function LanguageCard({
   const learnsEnglish = learningEnglish();
   // Same rule as the rail: the German/English pair is told apart by which way
   // round the learner is going, not by the stored course id — both accounts
-  // store "german" and Leon was shown the wrong flag because of it.
+  // store "german", and reading it alone showed one of them the wrong flag.
   const courseFlagId = learningFlagId(getActiveCourseId(profile));
   const percent = packProgress ? packProgress.percent : 0;
 
@@ -2477,7 +2477,7 @@ function PracticeHub({
  * These three rows used to be hardcoded: lesson "12 — Keep the conversation
  * going", numbers and titles that matched nothing the learner would ever be
  * taught, and a View all button wired to nothing at all. Both were exactly
- * the mock data Leon asked to be rid of. The rows are now the real upcoming
+ * mock data, and it had to go. The rows are now the real upcoming
  * packs with their real names and real progress, and View all opens the
  * lessons library where the rest of them live.
  */
@@ -2575,7 +2575,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
   }, []);
 
   // Hours to FLUENT — the whole road. A next-stage estimate was tried and
-  // Leon overruled it: the number he wants on the card is the real distance
+  // rejected: the number on the card is the real distance
   // to fluency, straight-line extrapolation and all. The label names the
   // destination so nobody mistakes the span — and the next milestone rides
   // underneath, so 300-odd hours to a native-scale bar stops reading as the
@@ -3624,7 +3624,7 @@ function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: Prot
         const active = item.id === activeView
           || (item.id === "practice" && (activeView === "tests" || activeView === "grammar" || activeView === "passages"))
           // Kept as its own clause: check-social-preview pins the list below
-          // verbatim, because that list is the gate routing Leon's private
+          // verbatim, because that list is the gate routing the private
           // preview through More. Life in the UK is not gated, so it is added
           // here rather than by editing the pinned literal.
           || (item.id === "more" && ["social", "shop", "progress", "profile"].includes(activeView))
@@ -3707,7 +3707,7 @@ export default function NewUiPrototype({
   const leonOnlyFeaturesUnlocked = hasLeonSocialPreview(profile?.email);
   const socialPreviewUnlocked = leonOnlyFeaturesUnlocked;
   const shopUnlocked = leonOnlyFeaturesUnlocked;
-  // Games are a build lab right now — several don't work. Leon's account
+  // Games are a build lab right now — several don't work. One account
   // keeps them (badged Beta); every other account sees no Games tab and a
   // coming-soon card if it lands on the view another way.
   const gamesUnlocked = leonOnlyFeaturesUnlocked;

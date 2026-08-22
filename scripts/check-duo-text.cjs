@@ -2,7 +2,7 @@
 /**
  * The quick path shows whole sentences.
  *
- * Leon found a wrong answer within a minute of the mode shipping, and it was
+ * A wrong answer turned up within a minute of the mode shipping, and it was
  * not one bad entry — one question in five was showing a fragment.
  *
  * germanMeaningAlternatives splits on comma, because a vocabulary gloss like

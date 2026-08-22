@@ -5,7 +5,7 @@
 //     selection — so dragging across them to highlight the sentence fought the
 //     browser the whole way.
 //  2. There is no separate "Hear it" replay button: tapping any word speaks
-//     it, and Leon had the second door to the same audio removed. The speed
+//     it, and the second door to the same audio was removed. The speed
 //     menu it used to host survives as a header control.
 //  3. The speed presets stop where the voice actually stops. The server turns
 //     the rate into an edge-tts "+N%" and clamps at +100%, so offering more
@@ -210,8 +210,8 @@ check(
 );
 
 // ── the flag is the switch ──────────────────────────────────────────────────
-// Leon: "i should be able to click this to switch to eng uk or usa in
-// guidedsession". The flag on the typing prompt already says which variant
+// The flag on the typing prompt already says which variant you are being
+// marked against, so it is the obvious thing to press to change it — rather
 // you are being marked against, so it is the obvious thing to press — rather
 // than leaving the lesson for Settings and coming back to it.
 {

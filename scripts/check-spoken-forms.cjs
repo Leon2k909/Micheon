@@ -187,9 +187,9 @@ check(
 // ── punctuation belongs to the register too ─────────────────────────────────
 //
 // Conversation mode clipped the verb the way it is SPOKEN and punctuated the
-// way an exam is MARKED, which is a register nobody writes in. Michelle, who is
-// German, read "Ich glaub, wir haben alles, was wir brauchen." and said there
-// were too many commas. Both commas are required by the rulebook — and the
+// way an exam is MARKED, which is a register nobody writes in. To a native
+// reader, "Ich glaub, wir haben alles, was wir brauchen." has too many
+// commas. Both are required by the rulebook — and the
 // rulebook is not what this mode is for. The other one is called Exam.
 //
 // So the grammar comma goes and the pause comma stays, and both halves of that

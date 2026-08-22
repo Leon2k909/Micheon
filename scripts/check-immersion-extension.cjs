@@ -438,7 +438,7 @@ checkLatestAudioWins().then(() => {
 }
 
 // ── and the example has to show the meaning the card prints ─────────────────
-// Leon hovered "profile" on x.com and got:
+// Hovering "profile" on x.com produced:
 //
 //     profile
 //     Wie sieht das Profil aus? — How does the tread look?
@@ -508,9 +508,9 @@ checkLatestAudioWins().then(() => {
 
   // A word with a reviewed everyday-first meaning is, by definition, one we
   // decided is polysemous — so its example has to show the meaning the card
-  // leads with, or carry no example at all. Leon read "notification" on die
-  // Mitteilung and was shown "What did the note say?"; der Verlauf said
-  // "history" and was illustrated with "Don't get lost", which is the verb
+  // leads with, or carry no example at all. die Mitteilung led with
+  // "notification" and was illustrated with "What did the note say?"; der
+  // Verlauf said "history" and was shown "Don't get lost", which is the verb
   // sich verlaufen and not the noun.
   const canonicalSource = fs.readFileSync(path.join(root, "src/lib/canonicalWordSenses.ts"), "utf8");
   const canonicalKeys = [...canonicalSource.matchAll(/^ {2}([a-zäöüß]+): \{$/gm)].map((match) => match[1]);
@@ -671,9 +671,9 @@ checkLatestAudioWins().then(() => {
 }
 
 // ── function words, and the reverse direction ───────────────────────────────
-// Leon, reading an English page: "there is stuff on this page that i know we
-// have in our app's translator but not showing, for example and/und and
-// you/du". They were not showing because they were not there: the course
+// On an English page, words the course plainly teaches were not being
+// glossed at all — and/und, you/du among them. They were not showing because
+// they were not there: the course
 // teaches und, du and nicht through sentences rather than as vocabulary
 // cards, so they never reached the word catalogue the glossary is built from.
 {
@@ -695,8 +695,8 @@ checkLatestAudioWins().then(() => {
   const { byEn, reaches } = buildReverseIndex(glossary);
 
   // The plural, the other name, and the verb: three ways a word reached
-  // nothing at all. "plugins" is in every release note Leon reads, "usage"
-  // is what his pages call die Nutzung, and "decide" is a verb, which the
+  // nothing at all. "plugins" is in every release note, "usage" is what a
+  // technical page calls die Nutzung, and "decide" is a verb, which the
   // reverse index used to refuse outright.
   for (const [english, german, why] of [
     ["plugins", "das Plug-in", "an English plural must find its singular"],
@@ -728,8 +728,8 @@ checkLatestAudioWins().then(() => {
 
   // Reconciliation runs on every page load, and has to ask what a hover asks.
   // Checking only for an exact glossary match left words on the collected list
-  // after the very release that taught them — so Leon exported the same words
-  // twice and had to clear the list by hand.
+  // after the very release that taught them — so the same words came back in
+  // the next export and the list had to be cleared by hand.
   const reconcile = gloss.slice(
     gloss.indexOf("function candidateAlreadyTaught"),
     gloss.indexOf("async function reconcileStoredCandidates")
@@ -745,7 +745,7 @@ checkLatestAudioWins().then(() => {
       `"${english}" turns up in German posts and should show ${expected}`);
   }
 
-  // Leon hovered X's Mitteilungen tab and the card said "message" — the
+  // X's Mitteilungen tab hovered as "message" — the
   // wrong sense to lead with, and the same for its neighbours. The canonical
   // senses file owns these; this pins what the card actually leads with.
   for (const [word, leads] of [
@@ -821,8 +821,8 @@ checkLatestAudioWins().then(() => {
 }
 
 // ── inflected forms ─────────────────────────────────────────────────────────
-// German is inflected and a glossary holds dictionary forms. Leon exported the
-// words the extension could not identify: 276 entries, 47 of them plain
+// German is inflected and a glossary holds dictionary forms. An export of the
+// words the extension could not identify ran to 276 entries, 47 of them plain
 // inflections of words already in the glossary. Hovering "fuehlt" did nothing
 // and it was logged as a word he did not know.
 //
@@ -1072,7 +1072,7 @@ checkLatestAudioWins().then(() => {
     assert.ok(owner.size > 400, `only ${owner.size} strong forms are written down`);
   }
   // The commonest English words are not German vocabulary, and collecting
-  // them only fills the export Leon reads with had, let, other and stood.
+  // them only fills the export a reviewer reads with had, let, other, stood.
   const collector = gloss.slice(
     gloss.indexOf("function looksLikeRealGermanCandidate"),
     gloss.indexOf("function examplesForMissing")
@@ -1084,8 +1084,8 @@ checkLatestAudioWins().then(() => {
 }
 
 // ── words the collector reported, now answerable ────────────────────────────
-// Leon: "what english isnt a leak, its telling you words that im seeing on
-// websites that need to be translated to improve our apps". He is right — the
+// English in an export is not a leak: it is the collector reporting words
+// met on real pages that the app could not answer in either direction. The
 // English half of an export is the feature working. Each entry in
 // immersionGaps.json exists because it actually turned up on a page he read
 // and the app had no German for it.

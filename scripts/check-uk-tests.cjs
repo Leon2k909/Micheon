@@ -3,9 +3,9 @@
  * The exam simulation, the timeline and the course search.
  *
  * The question bank itself is checked by check-uk-questions; this covers what
- * sits on top of it. Michelle is revising for an exam she pays to sit, with a
- * pass mark of 18 out of 24, so the failures that matter here are the silent
- * ones:
+ * sits on top of it. This is revision for a real exam that costs money to
+ * sit, with a pass mark of 18 out of 24, so the failures that matter here
+ * are the silent ones:
  *
  *  - a pass mark off by one tells her she failed something she passed;
  *  - an exam draw weighted to one chapter is not the exam she is sitting;
@@ -82,7 +82,6 @@ for (const mode of MODES) {
 const timed = M.UK_TEST_MODES.filter((entry) => entry.timed).map((entry) => entry.mode);
 assert.deepStrictEqual(timed, ["exam"], `only the exam should be timed, but ${timed.join(", ")} are`);
 
-// ── the exam ────────────────────────────────────────────────────────────────
 const exam = M.buildUkTest("exam", emptyState(), { random: seeded(7) });
 assert.strictEqual(exam.questions.length, 24, `exam drew ${exam.questions.length} questions`);
 assert.strictEqual(exam.passMark, 18, `exam pass mark is ${exam.passMark}`);
@@ -202,7 +201,6 @@ assert.ok(
   "with nothing answered the weakness test should fall back to a spread, not return nothing"
 );
 
-// ── the timeline ────────────────────────────────────────────────────────────
 const timeline = M.ukTimelineSorted();
 assert.ok(timeline.length >= 30, `only ${timeline.length} timeline events`);
 // A span sorts on the year it ENDED, so monotonicity is checked on the same

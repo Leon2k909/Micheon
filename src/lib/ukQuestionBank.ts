@@ -51,7 +51,7 @@ export const UK_QUESTIONS: UkQuestion[] = [
   // ── British Values & Principles ────────────────────────────────────────
   // bv-1, bv-2, bv-7, bv-8, bv-10 and bv-11 used to ask about exam procedure —
   // the time limit, the pass mark, the ceremony, the retake wait, the age
-  // range. Michelle asked for none of that in the course, so they were
+  // range. None of that belongs in this course, so they were
   // REPLACED rather than deleted: dropping six would have left this category
   // with half the questions of any other and skewed the weighted picker
   // towards it. The replacements ask about the same lesson's actual content.

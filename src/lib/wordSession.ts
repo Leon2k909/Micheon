@@ -398,10 +398,9 @@ function isCoreFunctionWord(word: string | undefined): boolean {
  * many packs contain it, which for a catalogue of 450 themed packs squeezes
  * 4,915 words into about forty distinct values. Ties fall through to
  * catalogue position, which is pack order, which is the order packs were
- * written in — so Leon reached word 2,450 of Listen and met der Aimbot, das
- * Kondolenzbuch and der Saal while obwohl, der Teller, regnen and der Tee sat
- * unplayed behind them. His words: "im learning some pretty random advanced
- * words, we should had a lot of more normal ones before this".
+ * written in — so by word 2,450 of Listen the queue was serving der Aimbot,
+ * das Kondolenzbuch and der Saal while obwohl, der Teller, regnen and der Tee
+ * sat unplayed behind them: advanced and rare ahead of ordinary and common.
  *
  * The missing signal was already authored and already computed: every pack
  * states its CEFR level, and wordLadderRung turns that into a difficulty
@@ -439,9 +438,9 @@ export function rankWordCatalog(
    * Conversation mode ranks by what people SAY, not by what gets written.
    *
    * The frequency bank is corpus-ranked from written German — news and web
-   * text — so it put "entsprechend" at position 30 of the queue. Leon: "like
-   * surely this is not 30th as a priority", and "people need to be able to
-   * learn how to speak german, as quick as possible.. not write it".
+   * text — so it put "entsprechend" at position 30 of the queue, which is not
+   * a 30th priority for anybody. The point is to learn to SPEAK German as
+   * quickly as possible, not to write it.
    *
    * The evidence is already in the app: 12,689 hand-written CONVERSATIONAL
    * sentences. entsprechend appears in none of them; sagen appears in 41 and
@@ -496,9 +495,9 @@ export function rankWordCatalog(
 /**
  * The difficulty ladder, and how a sitting decides which rung to serve from.
  *
- * Michelle kept being handed "to be" and "to have" because words are served
- * most-common-first — right for a beginner, insulting for someone who reads
- * B2 English for fun. Leon's rule: if the learner keeps saying "Kann ich",
+ * A learner who reads B2 English for fun kept being handed "to be" and "to
+ * have", because words are served most-common-first — right for a beginner,
+ * insulting for them.
  * the words get harder. And later, once the hard tiers run dry, sittings
  * come BACK for the easy words that were skipped over — climbing must never
  * mean words go missing, only that they wait.
@@ -508,8 +507,8 @@ export function rankWordCatalog(
  * counted from their word grades: each known word is a step up (a "Kann ich"
  * press writes exactly such a grade, so mass-skipping basics climbs fast),
  * and each struggling word pulls DOWN twice as hard, because struggling at a
- * rung is the clearest sign it is high enough. Five knowns per rung — Leon
- * judged fifteen too slow, and the failure mode he was guarding against is
+ * rung is the clearest sign it is high enough. Five knowns per rung, because
+ * fifteen was too slow, and the failure mode it guards against is
  * real: someone skipping easy material should feel the sittings harden
  * within one preview's worth of "Kann ich", not three. A genuine beginner
  * still climbs slowly, because earning five knowns takes days while
@@ -539,10 +538,9 @@ export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">):
  *
  * The rung used to count every known word, so simply learning a lot put a
  * learner on the top rung and their sittings turned into a C1 gauntlet
- * while unknown everyday words waited below. Leon's ruling, verbatim:
- * "knowing a lot of words shouldnt put me in a top rung. only repeatedly
- * pressing know it on words in guidedsession should do that because the
- * lessons are clearly too easy." A declaration says the material is beneath
+ * while unknown everyday words waited below. The rule: knowing a lot of
+ * words must not put a learner on a top rung. Only repeatedly pressing Know
+ * it on words in a session should do that, because
  * you; an earned know only says you learned it. Only the first is a climb
  * signal — and a struggle still pulls down twice as hard, whatever kind of
  * knowns sit above it.
@@ -618,14 +616,14 @@ export function buildWordSitting(
   // skipped, so finishing the hard tiers brings the easy ones back. Stable
   // sort over the frequency-ranked input keeps in-rung order.
   //
-  // With one carve-out, from Leon watching "erneuerbar" arrive before words
-  // like Hund existed in his sittings: a word in the everyday core (top
+  // With one carve-out, from "erneuerbar" arriving in sittings before words
+  // like Hund had: a word in the everyday core (top
   // ~1,200 of the frequency bank) is NEVER beneath anyone. The rung count
   // climbs on knowns, so a learner with thousands of known items sat on the
   // top rung while unknown core words waited behind every C1 word for the
   // wrap-down. An unknown core word now counts as at-rung wherever the
-  // learner stands — Michelle's boredom fix survives (a core word she truly
-  // knows is one Kann-ich from gone for ever), and the rungs still govern
+  // learner stands — the boredom fix survives (a core word truly known is one
+  // Kann-ich from gone for ever), and the rungs still govern
   // everything outside the core.
   const CORE_FREQUENCY_RANK = 1200;
   const rung = learnerWordRung(grades, now);

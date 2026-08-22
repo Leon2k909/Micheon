@@ -373,9 +373,9 @@ export function dialogueIsEarned(step: any, servedDe: ReadonlySet<string>): bool
 /**
  * How a sitting splits its six slots between reviews and new material.
  *
- * A sitting is at most SIX sentences — Leon was explicit after the first cut
- * of the backlog fix grew a session to eleven: "it should be a maximum of 6,
- * so 3 things that im reviewing and 3 new things... teach extended sentences
+ * A sitting is at most SIX sentences. The first cut of the backlog fix grew
+ * a session to eleven, which is the failure this rule exists to prevent:
+ * three reviews and three new things, and extended sentences
  * in the next continue learning". So the session never grows; instead, a due
  * backlog TRADES new-material slots for review slots. That drains review
  * debt just as surely — every review served is a review served, and every
@@ -479,7 +479,7 @@ export function pickFresh(fresh: any[], n: number, blockedKeys: Iterable<string>
  * Derive the chains nobody authored.
  *
  * `buildsOn` was hand-written onto a few dozen phrases, but the course is
- * full of unmarked chains — Leon's example: "Ich", then "Ich habe", then
+ * full of unmarked chains: "Ich", then "Ich habe", then
  * "Ich habe ein Fahrrad", each a complete thought on its own. When one
  * unseen sentence is a word-boundary prefix of another, the longer one IS
  * an extension of the shorter, and serving them together teaches the growth

@@ -1089,8 +1089,7 @@ function PromptLanguageBadge({ label }: { label: string }) {
   const englishVariant = isEnglish ? resolveEnglishVariant(stored) : null;
   const shortLabel = label.slice(0, 2).toUpperCase();
   const title = englishVariant
-    // Leon: "i should be able to click this to switch to eng uk or usa in
-    // guidedsession". The flag already says which variant you are being
+    // The flag already says which variant you are being
     // marked against, so it is the obvious thing to press to change it —
     // rather than leaving the lesson for Settings and coming back.
     ? `${ui(englishVariantLabel(englishVariant))} — ${ui("tap to switch")}`
@@ -6092,8 +6091,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     }
     // The praise filter: off silences the pet's cheering entirely, low keeps
     // only streak milestones. There was also a streak counter that popped over
-    // the lesson at 3, 5, 10 and every 5 after — Leon: "remove this keep it
-    // going thing its broken and looks bad anyway". The pet still says so.
+    // the lesson at 3, 5, 10 and every 5 after; it was broken and it looked
+    // it, so it is gone. The pet still says so.
     const praiseFrequency = getCodexPetFrequency("praise");
     if (ok) {
       const n = comboRef.current + 1;

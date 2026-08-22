@@ -75,7 +75,7 @@ const idPart = (value) => String(value ?? "")
  * construction that is not German.
  *
  * Every sentence containing the word is kept, not just the first, because the
- * choice between them is the whole game: shortest-wins gave Leon a card that
+ * choice between them is the whole game: shortest-wins produced a card that
  * read "profile — Wie sieht das Profil aus? / How does the tread look?", when
  * three of our six Profil sentences are about actual profiles. The shortest
  * sentence is only the best one among those that show the right meaning.
@@ -127,9 +127,9 @@ if (fs.existsSync(tatoebaPath)) {
 /**
  * Words the extension reported it could not identify.
  *
- * Leon exports the collected list and the English half of it is not noise —
- * it is the point. Those are words he is reading on real pages that Micheon
- * had no German for, so hovering them said nothing. Each one here exists
+ * The English half of the collected list is not noise — it is the point.
+ * Those are words met on real pages that Micheon had no German for, so
+ * hovering them said nothing. Each one here exists
  * because it actually turned up.
  */
 const gapWords = JSON.parse(
@@ -208,9 +208,9 @@ function chooseExample(key, cardGloss, fullGloss, headword) {
   //
   // The canonical-senses file is the other half of that list, and for the
   // same reason: a word is in it precisely BECAUSE it means more than one
-  // thing and somebody chose which meaning the card leads with. Leon hovered
-  // die Mitteilung, read "notification", and got "What did the note say?";
-  // der Verlauf said "history" and was illustrated with "Don't get lost",
+  // thing and somebody chose which meaning the card leads with. die Mitteilung
+  // read "notification" and was illustrated with "What did the note say?";
+  // der Verlauf said "history" and was shown "Don't get lost",
   // which is the verb sich verlaufen and not the noun at all.
   if (best && best.rank === 2
     && (exampleRequiresSenseOverlap({ de: key, lookup: key }) || CANONICAL_WORDS.has(key))) return {};
@@ -252,7 +252,7 @@ const knows = (value) => known.has(value);
  * A glossary is looked up by the word, not by the word with its article.
  *
  * The catalogue knows this and ships bare lookup keys. The hand-written
- * lists — function words, and the gap list built from Leon's exports — write
+ * lists — function words, and the gap list built from the exports — write
  * "die Korrektur" because that is how you teach a noun, and that string went
  * in as the key. Hovering "Korrektur" on a page then found nothing, while
  * "die Nutzung" sat in the file as a second entry beside the catalogue's own
@@ -269,7 +269,7 @@ for (const word of glossaryWords) {
     // The catalogue's authored gloss wins — it was written for this course.
     // But the other name for the same thing is why a reader hovered, so it
     // still has to reach the German: the catalogue calls die Nutzung "use",
-    // Leon's pages call it "usage", and both should arrive here.
+    // a technical page calls it "usage", and both should arrive here.
     const held = byKey.get(key);
     const alternative = String(word.en).split("/")[0].trim();
     if (held && alternative && alternative.toLocaleLowerCase("en") !== held.en.toLocaleLowerCase("en")) {

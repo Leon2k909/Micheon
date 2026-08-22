@@ -91,9 +91,8 @@ assert.deepStrictEqual(M.loadHiddenNav(), [], "a corrupt preference should read 
 const prototype = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 //
 // This used to require the control to appear only once something was hidden.
-// Michelle asked for it as a permanent entry at the foot of the nav — "Ganz
-// unten in der Navigation soll 'Ausgeblendete Apps' stehen ... Optisch von den
-// darüberliegenden Bereichen getrennt" — so what is guaranteed here is now
+// It is a permanent entry at the foot of the nav now, visually separated
+// from the sections above it — so what is guaranteed here is now
 // stronger than what it replaces: the way back is always on screen, and says
 // how many are waiting behind it.
 assert.ok(
@@ -166,8 +165,8 @@ assert.ok(
 );
 
 // ── dragging between the sidebar and More ──────────────────────────────────
-// Leon: "i should be able to drag menu items out of stuff on the left into
-// more and out". Dragging writes the same preference the cross writes, so
+// A row drags out of the sidebar and back again. Dragging writes the same
+// preference the cross writes, so
 // the rules above still hold — but the drag has rules of its own.
 const navDrag = fs.readFileSync(path.join(root, "src/lib/navDrag.ts"), "utf8");
 
@@ -224,9 +223,9 @@ for (const rule of [".np-more-stash", ".np-more-stash.is-drop-target", ".np-side
 
 // ── everything in the sidebar can be put away ─────────────────────────────
 //
-// Leon: "i wanna just be able to drag every menu into disabled, all of them,
-// including categories or on their own. each thing either together or
-// separate." Most of the sidebar was not draggable, because most of it is not
+// Everything in the sidebar drags into Hidden apps: a heading takes its
+// whole section, a row inside goes on its own.
+// Most of the sidebar was not draggable, because most of it is not
 // a nav destination: the three headings are layout, the rows under Country
 // studies are tabs within one view, Speaking is not built, and Vocabulary
 // library is a scroll position. Each now carries an id of its own.
@@ -279,9 +278,9 @@ assert.ok(/UK_SECTIONS\.find\(\(section\) => ukTabRowId\(section\.tab\) === id\)
 
 // ── the eye, and where it is allowed to appear ────────────────────────────
 //
-// Leon: "remove the eye icons from enabled menu items ... and keep the eye
-// icon for disabled stuff tho so i can just renable easy from the disabled
-// folder." So on a visible row the eye must not answer hover — a mouse user
+// The eye belongs on a hidden row, not on a visible one: with a mouse,
+// putting something away is the drag, and the drawer is where things come
+// back from. So on a visible row the eye must not answer hover — a mouse user
 // puts things away by dragging them — while the drawer that offers them back
 // is exactly where an eye earns its place.
 //

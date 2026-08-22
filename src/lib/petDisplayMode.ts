@@ -12,9 +12,8 @@ export type PetDisplayMode = "app" | "desktop" | "games";
  * does by putting the overlay in the screen-saver z-order band. Nothing can be
  * drawn over a fullscreen game without the desktop compositor staying in
  * charge of the screen, and a game that cannot hand its frames straight to the
- * display picks up a frame of latency doing it. Leon, who never chose this and
- * only ever got it as a default: "when im gaming its like adding input delay
- * to my game bc of it being an overlay".
+ * display picks up a frame of latency doing it. Nobody chooses that — it
+ * arrived as a default — and it is felt as input delay while gaming.
  *
  * Desktop keeps the mascot over the desktop and ordinary windows, where it
  * costs nothing anyone can feel. Anyone who genuinely wants it over a game can

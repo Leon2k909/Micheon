@@ -15,7 +15,7 @@ import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@
  * its gloss and how to say it.
  *
  * Everything is scoped to the profile through the same storage the rest of
- * the app uses, so Leon's sets and Michelle's sets never mix.
+ * the app uses, so one person's sets never mix with another's.
  */
 
 export const STUDY_SETS_KEY = "study-sets:v1";
@@ -56,8 +56,8 @@ export type StudySet = {
    * How the ladder is climbed, not just what is on it.
    *
    * Choosing the stages settled what a card is asked; these settle how hard
-   * it is to get past them. Leon: "the stages should be more customisable" —
-   * so the number of right answers a promotion costs, the size of a round,
+   * it is to get past them. The stages are the set's to tune, so the number of
+   * right answers a promotion costs, the size of a round,
    * and whether a mistake knocks a card back down are the set's to decide.
    */
   masteryTarget: number;
@@ -68,8 +68,8 @@ export type StudySet = {
 /**
  * The stages a Learn session can run.
  *
- * Quizlet hard-codes recognise-then-recall. Leon asked for "however they want
- * stages to work", so the set owns its own ladder and the editor can reorder
+ * Quizlet hard-codes recognise-then-recall. Here the stages work however the
+ * set wants: it owns its own ladder and the editor can reorder
  * or drop any of them. The default is the order that actually works for
  * vocabulary: see it, choose it, then produce it from nothing.
  */
@@ -424,7 +424,7 @@ export function checkTypedAnswer(expected: string, given: string): boolean {
 /**
  * A set as plain text, so it can be sent to somebody.
  *
- * Deliberately not JSON. Leon and Michelle share things by pasting them into
+ * Deliberately not JSON. Sets get shared by pasting them into
  * a chat, and a wall of braces is not something you paste to a person. This
  * is the same tab-separated shape the paste importer already reads, with the
  * title and settings as comment lines — so a set exported here can be pasted

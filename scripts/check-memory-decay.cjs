@@ -132,8 +132,8 @@ if (!/function HowCountingWorks\b/.test(tracker) || !/<HowCountingWorks\b/.test(
 }
 // The explainer has to answer the learner's questions, not describe the
 // algorithm. The first version of this listed intervals, half-lives, floors
-// and a formula — accurate, and Leon's verdict was "i dont understand it
-// myself". So: the four things a reader actually needs, and a ban on the
+// and a formula — accurate, and unreadable to the person it was written
+// for. So: the four things a reader actually needs, and a ban on the
 // vocabulary that made it unreadable.
 for (const [what, needle] of [
   ["why the number can go down", /can go down as well as up/],

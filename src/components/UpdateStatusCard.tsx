@@ -70,7 +70,7 @@ export function UpdateStatusCard() {
       // "Unreachable" almost always means a new version is being published at
       // this exact moment: the check lands in the minute where the release's
       // files are still uploading, fails once, and the retry finds the new
-      // version. Leon watched this happen on every release day. Saying
+      // version — which happens on most release days. Saying
       // "couldn't reach the service" for that reads as something being broken
       // when the truth is the opposite — so the two causes get their own
       // lines, split on the only signal the renderer has.

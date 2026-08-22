@@ -9,13 +9,13 @@ import { packCategories } from "@/lib/countryPacks";
  * Same engine as ukQuizProgress, with the country passed in rather than
  * imported. Everything that file decides — how heavily a wrong answer is
  * weighted, when a question counts as mastered, how the streak rolls over —
- * is reproduced here exactly, because Michelle asked for Germany to work by
- * the same logic and not by a second set of rules invented for it.
+ * is reproduced here exactly, because Germany has to work by the same logic
+ * and not by a second set of rules invented for it.
  *
  * ukQuizProgress is left alone. Pointing it at this file would have been the
- * tidier end state, but it is the busiest file in the feature and Leon is in
- * it; a rewrite of it to add a country he is not working on would collide for
- * no gain the learner can see. When his work lands, its exports can become
+ * tidier end state, but it is the busiest file in the feature and has work in
+ * flight; rewriting it to add a country that work does not touch would
+ * collide for no gain the learner can see. Once that lands, its exports can become
  * thin calls to countryProgress(UK_PACK) with no change to any caller.
  *
  * Storage is per country — DE_PACK.storeKey is "de-quiz-v1" — so a wrong

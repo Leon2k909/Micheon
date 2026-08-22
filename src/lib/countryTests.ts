@@ -10,7 +10,7 @@ import { countryProgress } from "@/lib/countryQuizProgress";
  * the untimed ones — with the exam's own numbers coming from the pack instead
  * of being constants. The UK sits 24 questions in 45 minutes needing 18; the
  * German test is 33 in 60 needing 17. Everything else about how a test is
- * built and scored is identical, which is what Michelle asked for.
+ * built and scored is identical, deliberately.
  *
  * Only the exam is timed. A clock on a ten-question warm-up teaches panic
  * rather than citizenship.

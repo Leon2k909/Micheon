@@ -64,10 +64,9 @@ export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hin
  * How common a folded-in synonym is COMPARED WITH the word leading its card.
  *
  * A combined card showed its synonyms with a bare tier — "Also: fachlich
- * (common)" — which answers a question nobody asked. Leon: "the common tag
- * should have said whether it was the same commonality, less or more than the
- * parent word. parent word always the absolute most common". He is right on
- * both counts, and the second one is checkable: of the 236 synonym pairs where
+ * (common)" — which answers a question nobody asked. The tag has to say
+ * whether the folded word is as common as the face word, less common or more,
+ * and the face is always the most common of the group. That is right on
  * the bank ranks both words, the face is the commoner one 236 times. So the
  * only honest answers are "the same" and "less", and the tier was hiding that
  * — professionell is #719 and fachlich #956, which is the same tier and a
@@ -92,7 +91,7 @@ export type SynonymCommonality = { label: string; hint: string } | null;
  * The bank is a written corpus, so it ranks anfangen #1131 against beginnen
  * #130 — true of prose and false of anybody talking. Leaving that as a
  * caveat only the code knows is the worst of both: the card states a rank as
- * though it settled the matter. Leon: "this is fixable, just tell the user".
+ * though it settled the matter. It is fixable: say so on the card.
  *
  * Found by measurement rather than by memory. Micheon's own phrases are
  * written to sound spoken, so how often each word turns up across them is the
@@ -133,9 +132,9 @@ const SPOKEN_PREFERENCE: { written: string; spoken: string }[] = [
  * face is chosen by the frequency bank, and that bank is built from WRITTEN
  * German, so der Ort fronted a card whose own note said Germans say der Platz.
  *
- * Leon: "im in conversation mode so Platz should have been the parent word
- * surely?" — yes. In Conversation mode the word people say is the word to
- * learn, and the written one waits behind it as the synonym.
+ * In Conversation mode the word people say is the word to learn, so der Platz
+ * belongs on the front of that card and the written one waits behind it as
+ * the synonym.
  */
 export function speechPrefers(
   candidate: string | undefined,

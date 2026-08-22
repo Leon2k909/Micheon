@@ -5,8 +5,8 @@ import { orderParts } from "@/lib/curriculum";
  *
  * The old one asked ten A1–B1 vocabulary words and stopped. Somebody strong
  * answered all ten, was placed at B1, and there was nowhere further to put
- * them — the ceiling was the test's, not the learner's. Leon's ask was exactly
- * that: doing really well should make Continue learning harder.
+ * them — the ceiling was the test's, not the learner's. What is wanted is
+ * exactly that: doing really well should make Continue learning harder.
  *
  * So this climbs. It starts a rung below where it expects you, asks a short
  * round at each level, and only moves up while you are passing. It stops at

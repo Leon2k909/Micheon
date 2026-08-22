@@ -223,9 +223,9 @@ export function recordCompletedLearningSession(
 
 /**
  * How much one more known item raises the learner's pace, and where that
- * stops helping. Calibrated against Leon's timed lessons: at his ~2,300
- * known items the curve predicts ~25 items an hour, which is what he
- * actually measures.
+ * stops helping. Calibrated against real timed lessons: at ~2,300
+ * known items the curve predicts ~25 items an hour, which is what the
+ * lessons actually measure.
  */
 const KNOWLEDGE_SLOPE = 180;
 const KNOWLEDGE_BOOST_CAP = 28;
@@ -250,7 +250,7 @@ export function estimateFluencyHours(
   const remaining = boundedInteger(remainingUnits);
   // What the learner already knows is evidence about how fast they learn.
   //
-  // Michelle has marked a large part of the tracker as known and was still
+  // A learner who has marked a large part of the tracker as known was still
   // quoted 210 hours, because knowing things produces no TIMED lesson
   // samples — declarations are instant — so her pace stayed pinned to the
   // absolute-beginner prior of 12 items an hour. That prior is right for
@@ -259,8 +259,8 @@ export function estimateFluencyHours(
   // not first encounters.
   //
   // So the prior itself scales with demonstrated knowledge. The slope is
-  // calibrated, not invented: at Leon's ~2,300 known it predicts ~25 items
-  // an hour, which is what his timed lessons actually measure. It stays a
+  // calibrated, not invented: at ~2,300 known it predicts ~25 items
+  // an hour, which is what the timed lessons actually measure. It stays a
   // PRIOR — real timing history still outweighs it as samples accumulate.
   const known = Math.max(0, finiteNumber(options.knownUnits, 0));
   const paceAtKnowledge = (units: number) =>
@@ -268,8 +268,8 @@ export function estimateFluencyHours(
     + Math.min(KNOWLEDGE_BOOST_CAP, Math.max(0, units) / KNOWLEDGE_SLOPE);
   const baseline = Math.max(0.1, paceAtKnowledge(known));
   const minRate = Math.max(0.1, finiteNumber(options.minUnitsPerHour, 4));
-  // The ceiling was 24/hour and Leon's real pace sat pinned against it, so
-  // "About 330 hours" was the CAP talking, not his history. A learner who
+  // The ceiling was 24/hour and a real pace sat pinned against it, so
+  // "About 330 hours" was the CAP talking, not the history. A learner who
   // moves fast — Kann-ich declarations, words banked six a sitting, Listen
   // pre-exposure making lessons quicker — earns the number their pace
   // implies; the two-hour baseline prior in the blend still keeps one
@@ -293,7 +293,7 @@ export function estimateFluencyHours(
 
   // The pace is not a constant, so the estimate must not treat it as one.
   //
-  // Michelle knows a large part of the tracker and was still quoted 190
+  // A learner who knows a large part of the tracker was still quoted 190
   // hours, because the remaining items were all priced at TODAY'S pace —
   // when by the time she reaches the last of them she will be far quicker,
   // for exactly the reason the prior above scales with knowledge. Applying

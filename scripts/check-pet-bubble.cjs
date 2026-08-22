@@ -54,8 +54,8 @@ const NARROW = 240;
 const WIDE = 320;
 
 // ── ordinary messages stay narrow ─────────────────────────────────────────
-// The first of these is the exact bubble Leon photographed to say it was too
-// big. If it ever returns the wide size again, that screenshot is back.
+// The first of these is the exact bubble that was too big on screen. If it
+// ever returns to the wide size, this is what says so.
 for (const [text, why] of [
   ['Do you remember what "Ihr könnt das." means?', "the reported bubble"],
   ["Nice work!", "a two-word remark"],

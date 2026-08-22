@@ -152,9 +152,7 @@ function clearUrlCache() {
  * throttling. The app therefore kept working at full tilt while minimised:
  * measured at 5.8% of a core and 279 MB with the window not even on screen.
  * That is exactly the sort of thing you feel as input lag in a game you are
- * playing over the top of it. Leon: "when im gaming its like adding input
- * delay to my game".
- *
+ * playing over the top of it.
  * So the context is suspended once playback has been over for a moment.
  * Suspending is cheap and reversible; every path that plays anything resumes
  * it first. The delay matters — a lesson plays clips a second or two apart,
