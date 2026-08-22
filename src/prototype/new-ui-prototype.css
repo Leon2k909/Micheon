@@ -11677,10 +11677,16 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
    Language and lesson content share a panel and are told apart by a rule
    between them rather than by a gap. */
 .np-home-choice-hero .np-home-choice-panel--pair {
-  width: 100%;
-  max-width: none;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /* Only as wide as the two fields need — it ran the whole width of the card.
+     A flex row could not do both halves of this at once: sized to their own
+     words the fields come out different widths ("Englisch" against "Sätze"),
+     and forced equal they stay equal only by filling the row. Two 1fr columns
+     inside a fit-content box give both — the box is as wide as it has to be,
+     and the columns match each other. */
+  width: fit-content;
+  max-width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -11692,7 +11698,8 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
 .np-home-choice-field {
   position: relative;
   display: grid;
-  flex: 1 1 180px;
+  /* No flex sizing: these are grid items now, and the columns carry the width. */
+  min-width: 0;
   gap: 6px;
   align-content: start;
 }
@@ -11791,4 +11798,26 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+}
+
+/* ── the pair stacks on a narrow card ──────────────────────────────────────
+   Two equal columns of a row that is too short is exactly what clipped the
+   Change button once already. One column then, full width, divided by a rule
+   above instead of beside. */
+@media (max-width: 900px) {
+  .np-home-choice-hero .np-home-choice-panel--pair {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .np-home-choice-field + .np-home-choice-field {
+    padding-top: 12px;
+    padding-left: 0;
+    border-top: 1px solid rgba(120, 120, 130, 0.28);
+    border-left: 0;
+  }
+
+  html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
+    border-top-color: rgba(255, 255, 255, 0.14);
+  }
 }
