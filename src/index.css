@@ -10691,11 +10691,25 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
 
 .settings-panel-head {
   display: flex;
-  align-items: center;
+  /* Top, not centre. Centred, the icon hung off the middle of a header whose
+     height depended on whether the description wrapped — two lines in most
+     categories, one in "Desktop app & updates" and "Learning options". So the
+     icon and title sat 26px down in five of them and 16px down in two, and
+     moved as you clicked between them. Anchored to the top they cannot. */
+  align-items: flex-start;
   gap: 11px;
   /* The gap under a category header belongs to the header, and is set once. */
   margin-bottom: 14px;
   padding: 12px 2px 0;
+}
+
+/* Two lines are reserved whether or not the description needs them, so every
+   header is the same height and the panel body starts at the same place in
+   every category. Without this the icon would be steady but the content under
+   it would still jump by 19px. `lh` rather than a pixel value, so it follows
+   the font size and the app zoom. */
+.settings-panel-desc {
+  min-height: 2lh;
 }
 
 /* One gap under every category header.

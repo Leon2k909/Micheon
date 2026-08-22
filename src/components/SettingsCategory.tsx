@@ -156,9 +156,11 @@ export function SettingsCategory({
           <span className="settings-panel-icon">
             <Icon aria-hidden="true" className="h-4 w-4" />
           </span>
-          <span className="min-w-0">
+          <span className="settings-panel-text min-w-0">
             <span className="block text-sm font-black text-[var(--text-1)]">{title}</span>
-            <span className="mt-0.5 block text-xs font-semibold text-[var(--text-3)]">{description}</span>
+            {/* Named class, not a Tailwind selector: index.css reserves two
+                lines here so every category's header is the same height. */}
+            <span className="settings-panel-desc mt-0.5 block text-xs font-semibold text-[var(--text-3)]">{description}</span>
           </span>
         </header>
         <div id={panelId}>{children}</div>

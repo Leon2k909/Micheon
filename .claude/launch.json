@@ -11,6 +11,17 @@
         "--strictPort"
       ],
       "port": 5181
+    },
+    {
+      "name": "micheon-inspect",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5199",
+        "--strictPort"
+      ],
+      "port": 5199
     }
   ]
 }
