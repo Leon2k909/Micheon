@@ -1874,12 +1874,17 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* Weight where the words are, and then it lets go. It used to reach 94% of
+     the surface at the foot of the hero — in the dark theme that is all but
+     black, so the bottom of the picture was crushed away and the artwork
+     looked as though it had been cut short. */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface) 14%, transparent) 0%,
-    color-mix(in srgb, var(--surface) 46%, transparent) 38%,
-    color-mix(in srgb, var(--surface) 84%, transparent) 68%,
-    color-mix(in srgb, var(--surface) 94%, transparent) 100%
+    color-mix(in srgb, var(--surface) 12%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 44%, transparent) 40%,
+    color-mix(in srgb, var(--surface) 72%, transparent) 62%,
+    color-mix(in srgb, var(--surface) 60%, transparent) 84%,
+    color-mix(in srgb, var(--surface) 34%, transparent) 100%
   );
 }
 
@@ -1961,7 +1966,16 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   display: grid;
   gap: 12px;
   padding: 6px 22px 22px;
-  background: var(--surface);
+  /* Fades in rather than starting opaque, so the picture running on behind it
+     dissolves into the bar instead of meeting it at a line. */
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--surface) 42%, transparent) 34px,
+    color-mix(in srgb, var(--surface) 78%, transparent) 78px,
+    color-mix(in srgb, var(--surface) 96%, transparent) 130px,
+    var(--surface) 170px
+  );
 }
 
 @media (max-width: 700px) {
@@ -11547,4 +11561,13 @@ html[data-theme="dark"] .np-home-choice-panel .np-home-choice-row > b {
   width: 28px;
   height: 28px;
   stroke-width: 2;
+}
+
+/* ── the picture runs on under the bar ─────────────────────────────────────
+   Both cards' artwork is sized to the hero, so it stopped dead at the bar.
+   The extra length is what the bar's fade dissolves into; the card clips it,
+   so nothing escapes the rounded corner. */
+.np-home-choice-art,
+.np-home-choice .np-course-art {
+  height: calc(100% + 175px);
 }
