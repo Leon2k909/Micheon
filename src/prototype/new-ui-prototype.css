@@ -11514,23 +11514,40 @@ html[data-theme="dark"] .np-side-nav button.is-active:hover {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-/* ── the card panels keep their own light, in both themes ──────────────────
-   Answered here rather than left to the dark rules: these sit on her
-   photographs, so the honest dark-mode answer is that they stay light. */
+/* ── the card panels in the dark ───────────────────────────────────────────
+   These were held near-white in both themes, on the reasoning that they sit
+   on a photograph rather than on the page. On a dark screen that is two
+   glaring white blocks — "viel zu hell" — so they are smoked glass here
+   instead: dark enough to carry light text over a bright picture, sheer
+   enough that the artwork still reads through the edges. */
 html[data-theme="dark"] .np-home-choice-panel {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(252, 252, 250, 0.93);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(17, 19, 28, 0.76);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 html[data-theme="dark"] .np-home-choice-panel small,
 html[data-theme="dark"] .np-home-choice-panel .np-home-choice-lesson small {
-  color: #6b6560;
+  color: rgba(233, 236, 245, 0.72);
 }
 
 html[data-theme="dark"] .np-home-choice-panel .np-home-choice-value,
 html[data-theme="dark"] .np-home-choice-panel .np-home-choice-lesson strong,
 html[data-theme="dark"] .np-home-choice-panel .np-home-choice-row > b {
-  color: #241f1b;
+  color: #eef1f8;
+}
+
+/* The Change button sat on a white wash of its own, which on smoked glass
+   read as a sticker. Outline only here. */
+html[data-theme="dark"] .np-home-choice-change {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* And the empty part of the bar: a dark trough on a light panel, a light one
+   on a dark panel, or the remaining distance disappears. */
+html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* ── the card bars run in the accent, as hers do ───────────────────────────
