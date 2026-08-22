@@ -1829,7 +1829,7 @@ const DE: Record<string, string> = {
   "Data imported. Micheon will reload now.": "Daten importiert. Micheon wird jetzt neu geladen.",
   "Could not export your data.": "Deine Daten konnten nicht exportiert werden.",
   "Could not import that file. Choose a Micheon data export for this profile.": "Diese Datei konnte nicht importiert werden. Wähle einen Micheon-Export für dieses Profil.",
-  "Manage your name, learning preferences, and words learned outside Micheon.": "Verwalte deinen Namen, deine Lerneinstellungen und Wörter, die du außerhalb von Micheon gelernt hast.",
+  "Manage your contact details, learning preferences, and words you have already learned.": "Verwalte deine Kontaktdaten sowie deine Lerneinstellungen und Wörter, die du schon gelernt hast.",
   "Pick any colour": "Beliebige Farbe wählen",
   "Read full course": "Ganzen Kurs lesen",
   "Reset to green": "Auf Grün zurücksetzen",

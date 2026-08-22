@@ -831,7 +831,7 @@ export default function GamificationPanel({
               <p className="text-sm font-black text-[var(--accent)]">{ui("Account")}</p>
               <h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Profile settings")}</h1>
               <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-3)]">
-                {ui("Manage your name, learning preferences, and words learned outside Micheon.")}
+                {ui("Manage your contact details, learning preferences, and words you have already learned.")}
               </p>
             </div>
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-dim)] text-xl font-black text-[var(--accent)]">

@@ -11852,3 +11852,18 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
     border-top-color: rgba(255, 255, 255, 0.14);
   }
 }
+
+/* ── the mastery ladder's labels break instead of spilling ─────────────────
+   German compounds are longer than these tiles: "Gut zurechtkommen",
+   "Fortgeschritten" and "Meisterschaft" ran past their own edges, and below
+   about 800px every one of the seven did. A label cannot wrap on its own when
+   the word has no space in it, so it needs permission to break.
+
+   hyphens first, because the document carries lang="de" and the browser then
+   breaks at real syllable boundaries; overflow-wrap is the guarantee behind
+   it for a word the dictionary does not know. Unscoped, so the card behaves
+   the same wherever it is rendered rather than only inside the shell. */
+.mastery-card__milestone > p:first-child {
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
