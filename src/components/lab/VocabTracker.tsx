@@ -6,6 +6,7 @@ import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, progressEntryForId, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
 import { strengthInfo, setStrengthLevel, recordPermanent, recallDetail, REVIEW_INTERVALS_DAYS, type GradeRecord } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymNote } from "@/lib/wordFrequency";
+import { onVocabFilterRequest, type VocabFilterRequest } from "@/lib/vocabFilterRequest";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
@@ -23,7 +24,9 @@ import {
 } from "@/lib/conversationPriority";
 
 type Part = Record<string, any>;
-type FilterKey = "all" | "known" | "fading" | "struggle" | "new";
+// The same five keys the home page can ask for by name, so a filter cannot be
+// renamed here and leave that link pointing at nothing.
+type FilterKey = VocabFilterRequest;
 type ItemTypeFilter = "all" | "phrases" | "vocab";
 type UsefulnessFilter = "all" | ConversationUsefulness;
 
@@ -579,6 +582,17 @@ export function VocabTracker({
   const [usefulnessFilter, setUsefulnessFilter] = useState<UsefulnessFilter>("all");
   const [sort, setSort] = useState<SortKey>("common");
   const [query, setQuery] = useState("");
+  /**
+   * Arriving from the home page's "items are fading" line. The other narrowings
+   * are cleared with it: she clicked a count, and a leftover search or item-type
+   * filter would show her fewer than the number she clicked.
+   */
+  useEffect(() => onVocabFilterRequest((key) => {
+    setFilter(key);
+    setItemTypeFilter("all");
+    setUsefulnessFilter("all");
+    setQuery("");
+  }), []);
   /**
    * What the LIST filters on, which is allowed to lag behind what the box
    * shows.

@@ -96,6 +96,7 @@ import {
   selectPracticeItem,
   type PracticeRecallState,
 } from "@/lib/practiceRecall";
+import { requestVocabFilter } from "@/lib/vocabFilterRequest";
 
 import { getMasteredCount } from "@/lib/mastery";
 import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -2562,7 +2563,12 @@ function LessonPath({
   );
 }
 
-function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab: number }) {
+function FluencyOutlook({ onOpenFading, profile, vocab }: {
+  /** Opens the vocabulary library on the fading items. */
+  onOpenFading: () => void;
+  profile: UserProfile | null;
+  vocab: number;
+}) {
   const [revision, setRevision] = useState(0);
   const fluency = getFluency(vocab);
   // Recomputed with the revision counter, so finishing a lesson updates it.
@@ -2705,12 +2711,17 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
             {uiFmt("{phrases} more phrases", { phrases: uiNumber(phrasesToGo) })}
           </span>
           {fading > 0 && (
-            <span className="np-fluency-figures__fading">
+            <button
+              className="np-fluency-figures__fading"
+              onClick={onOpenFading}
+              title={ui("Opens your vocabulary library on these items.")}
+              type="button"
+            >
               <i aria-hidden="true"><RefreshCw /></i>
               {fading === 1
                 ? ui("1 item is fading · review it")
                 : uiFmt("{count} items are fading · review them", { count: uiNumber(fading) })}
-            </span>
+            </button>
           )}
           <span>
             <i aria-hidden="true"><Clock3 /></i>
@@ -2940,6 +2951,7 @@ function HomeView({
   countryId,
   onCycleCountry,
   onOpenCountryCourse,
+  onOpenFading,
   onPractice,
   onRequestCatalogue,
   onViewAllLessons,
@@ -2955,6 +2967,8 @@ function HomeView({
   onCycleCountry: () => void;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
+  /** The vocabulary library, opened on the items that are fading. */
+  onOpenFading: () => void;
   onPractice: () => void;
   onRequestCatalogue: () => void;
   onViewAllLessons: () => void;
@@ -3054,7 +3068,7 @@ function HomeView({
         />
       </div>
 
-      <FluencyOutlook profile={profile} vocab={vocab} />
+      <FluencyOutlook onOpenFading={onOpenFading} profile={profile} vocab={vocab} />
     </div>
   );
 }
@@ -4076,6 +4090,11 @@ export default function NewUiPrototype({
         countryId={countryId}
         onCycleCountry={cycleCountry}
         onOpenCountryCourse={() => navigate("life-in-uk")}
+        onOpenFading={() => {
+          requestVocabFilter("fading");
+          navigate("profile");
+          scrollToVocabularyLibrary();
+        }}
         onPractice={openGuidedSession}
         onRequestCatalogue={requestParts}
         onViewAllLessons={() => navigate("learn")}

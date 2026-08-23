@@ -2416,6 +2416,7 @@ const DE: Record<string, string> = {
   "{phrases} more phrases": "Noch {phrases} Sätze",
   "1 item is fading · review it": "1 Eintrag verblasst · wiederholen",
   "{count} items are fading · review them": "{count} Einträge verblassen · wiederholen",
+  "Opens your vocabulary library on these items.": "Öffnet deine Wortschatz-Bibliothek bei genau diesen Einträgen.",
   "About {hours} hours to fluent": "Noch etwa {hours} Stunden bis fließend",
   "Your path to fluent conversations": "Dein Weg zu flüssigen Gesprächen",
   "Your private social preview": "Deine private soziale Vorschau",
