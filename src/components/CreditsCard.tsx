@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { ui } from "@/lib/i18n";
 
 /**
@@ -15,6 +16,13 @@ import { ui } from "@/lib/i18n";
  * Tatoeba credit can only come out when the last Tatoeba-derived sentence
  * does; see check-word-pictures, which fails the build if the artwork is
  * shipped without its credit.
+ *
+ * FOLDED SHUT by default, because four cards of licence text at the foot of
+ * the profile page was more room than it deserved. Folded is not hidden: it
+ * is a <details>, so the names and licences stay in the page whether it is
+ * open or not, one press reaches them, and the browser's own find-in-page
+ * opens it. Replacing it with a link to somewhere else would be the version
+ * that breaks the licence.
  */
 type Credit = {
   body: string;
@@ -52,12 +60,16 @@ const CREDITS: Credit[] = [
 
 export function CreditsCard() {
   return (
-    <section className="card p-5 sm:p-6">
-      <h2 className="text-sm font-black text-[var(--text-1)]">{ui("Credits")}</h2>
-      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+    <details className="credits-fold">
+      <summary className="credits-fold__summary">
+        <span className="credits-fold__label">{ui("Credits and licences")}</span>
+        <ChevronDown aria-hidden="true" className="credits-fold__chevron" />
+      </summary>
+
+      <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
         {ui("Micheon is written by Leon and Michelle. These are the pieces it stands on, and the licences they are used under.")}
       </p>
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-3 space-y-2">
         {CREDITS.map((credit) => (
           <li key={credit.title} className="rounded-xl bg-[var(--surface-2)] p-3">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -77,6 +89,6 @@ export function CreditsCard() {
           </li>
         ))}
       </ul>
-    </section>
+    </details>
   );
 }

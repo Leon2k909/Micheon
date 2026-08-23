@@ -2601,6 +2601,7 @@ const DE: Record<string, string> = {
   "Got it": "Verstanden",
   "Starting your next lesson in {seconds}…": "Nächste Lektion startet in {seconds} …",
   "Credits": "Danksagungen",
+  "Credits and licences": "Danksagungen und Lizenzen",
   "Micheon is written by Leon and Michelle. These are the pieces it stands on, and the licences they are used under.":
     "Micheon wird von Leon und Michelle geschrieben. Das hier sind die Bausteine, auf denen es steht, und die Lizenzen, unter denen sie verwendet werden.",
   "Space on this computer": "Speicherplatz auf diesem Computer",

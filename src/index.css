@@ -11570,3 +11570,70 @@ html[data-theme="dark"] {
     height: 340px;
   }
 }
+
+/* ── Credits, folded ─────────────────────────────────────────────────────
+
+   Four cards of licence text used to sit open at the foot of the profile
+   page. They stay in the page — CC-BY asks to be named, and a <details>
+   keeps its contents findable whether it is open or shut — but shut, they
+   cost one line instead of a screenful. */
+.credits-fold {
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 10px 14px;
+}
+
+.credits-fold[open] {
+  padding-bottom: 14px;
+}
+
+.credits-fold__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  /* Both forms: the standard one and the older WebKit pseudo-element, so no
+     stray triangle appears beside the label on any Chromium this ships on. */
+  list-style: none;
+}
+
+.credits-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.credits-fold__summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.credits-fold__label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+}
+
+.credits-fold:hover .credits-fold__label {
+  color: var(--text-2);
+}
+
+.credits-fold__chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform 160ms ease;
+}
+
+.credits-fold[open] .credits-fold__chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credits-fold__chevron {
+    transition: none;
+  }
+}
