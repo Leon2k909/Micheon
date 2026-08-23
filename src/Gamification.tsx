@@ -868,7 +868,11 @@ export default function GamificationPanel({
                       aria-label={ui("Search settings")}
                       className="settings-search__input"
                       onChange={(event) => setSettingsQuery(event.target.value)}
-                      placeholder={ui("Search settings\u2026")}
+                      /* Short on purpose: the box is narrow on a small window
+                         and the full phrase was cut off mid-word. The
+                         aria-label above keeps it, so a screen reader still
+                         hears what is being searched. */
+                      placeholder={ui("Search\u2026")}
                       ref={settingsSearchRef}
                       type="search"
                       value={settingsQuery}

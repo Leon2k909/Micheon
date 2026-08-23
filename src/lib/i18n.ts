@@ -1862,6 +1862,7 @@ const DE: Record<string, string> = {
   "Captions, hints and small print.": "Bildunterschriften, Hinweise und Kleingedrucktes.",
   "Search settings": "Einstellungen durchsuchen",
   "Search settings…": "Einstellungen durchsuchen…",
+  "Search…": "Durchsuchen…",
   "Space used, and deleting what Micheon has saved.": "Belegter Speicher und das Löschen dessen, was Micheon gespeichert hat.",
   "Nothing matches that. Try “theme”, “voice”, or “pet”.": "Dazu passt nichts. Probier „Design“, „Stimme“ oder „Tier“.",
 
