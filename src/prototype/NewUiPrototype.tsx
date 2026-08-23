@@ -19,6 +19,11 @@ import {
   Clock3,
   Coins,
   Crown,
+  Flag,
+  MessageCircle,
+  RefreshCw,
+  Sun,
+  Users,
   Gamepad2,
   Route,
   EyeOff,
@@ -2591,9 +2596,34 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
     [fluency.toFluent, fluency.vocab, profile, revision]
   );
 
+  // Three stages, not the whole ladder: where you are, where you are going
+  // next, and the far end. The seven-stop rail said the same thing in a shape
+  // nobody read — she drew three cards, and three is also all that is
+  // actionable at any moment.
+  const nextStage = FLUENCY_STAGES[Math.min(fluency.index + 1, FLUENCY_STAGES.length - 1)];
+  const finalStage = FLUENCY_STAGES[FLUENCY_STAGES.length - 1];
+  const stages = [
+    { icon: <Sun />, label: fluency.cur.label, note: uiFmt("{count} items known", { count: uiNumber(fluency.vocab) }), current: true },
+    { icon: <Users />, label: nextStage.label, note: nextStage === finalStage ? "" : ui(nextStage.blurb), current: false },
+    {
+      icon: <Flag />,
+      label: finalStage.label,
+      note: uiFmt("Target: {words} words + {phrases} phrases", {
+        phrases: uiNumber(FLUENT_PHRASE_TARGET),
+        words: uiNumber(FLUENT_WORD_TARGET),
+      }),
+      current: false,
+    },
+  ];
+
+  // The ring is drawn rather than filled with a border trick, so the sweep is
+  // exact at any percentage and the cap stays round.
+  const RING = 54;
+  const CIRCUMFERENCE = 2 * Math.PI * RING;
+
   return (
     <section className="np-fluency-outlook">
-      <div className="np-fluency-main">
+      <div className="np-fluency-side">
         <div className="np-fluency-heading">
           <span aria-hidden="true"><Target /></span>
           <div>
@@ -2601,76 +2631,70 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
             <p>{ui("A realistic outlook based on useful words and phrases you can recall.")}</p>
           </div>
         </div>
-        <div className="np-fluency-status">
-          <div>
-            <strong>{ui(fluency.cur.label)}</strong>
-            <small>{uiFmt("{count} useful items known", { count: uiNumber(fluency.vocab) })}</small>
-          </div>
-          <span>{uiFmt("{pct}% to fluent", { pct: fluency.overallPct })}</span>
+
+        <div
+          aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })}
+          className="np-fluency-ring"
+          role="img"
+        >
+          <svg aria-hidden="true" viewBox="0 0 140 140">
+            <circle className="np-fluency-ring__track" cx="70" cy="70" r={RING} />
+            <circle
+              className="np-fluency-ring__arc"
+              cx="70"
+              cy="70"
+              r={RING}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={CIRCUMFERENCE * (1 - Math.min(100, Math.max(0, fluency.overallPct)) / 100)}
+            />
+          </svg>
+          <span className="np-fluency-ring__label">
+            <strong>{uiNumber(fluency.overallPct)}<i>%</i></strong>
+            <small>{ui(fluency.cur.label)}</small>
+          </span>
         </div>
-        {/* The ladder itself, drawn: a circle per stage, bars filling toward
-            the next. One plain percentage bar hid the fact that the road has
-              rest stops, so the milestones are drawn. */}
-        <div aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })} className="np-fluency-steps" role="img">
-          {FLUENCY_STAGES.map((stage, index) => (
+      </div>
+
+      <div className="np-fluency-main">
+        <div className="np-fluency-stages">
+          {stages.map((stage, index) => (
             <Fragment key={stage.label}>
-              {index > 0 && (
-                <span aria-hidden="true" className="np-fluency-steps__bar">
-                  <span
-                    style={{
-                      width: index <= fluency.index
-                        ? "100%"
-                        : index === fluency.index + 1 ? `${fluency.pctToNext}%` : "0%",
-                    }}
-                  />
-                </span>
-              )}
-              <span
-                aria-hidden="true"
-                className={`np-fluency-steps__stop${index <= fluency.index ? " is-reached" : ""}${index === fluency.index ? " is-current" : ""}`}
-                title={`${ui(stage.label)} · ${uiNumber(stage.min)}`}
-              >
-                <i />
-                <em>{ui(stage.label)}</em>
-              </span>
+              {index > 0 && <span aria-hidden="true" className="np-fluency-stages__arrow"><ChevronRight /></span>}
+              <div className={"np-fluency-stage" + (stage.current ? " is-current" : "")}>
+                <span aria-hidden="true" className="np-fluency-stage__icon">{stage.icon}</span>
+                {stage.current && <span className="np-fluency-stage__now">{ui("Current")}</span>}
+                <strong>{ui(stage.label)}</strong>
+                {stage.note && <small>{stage.note}</small>}
+              </div>
             </Fragment>
           ))}
         </div>
-        <div className="np-fluency-footnote">
+        {/* One strip of figures, divided rather than stacked. The hours
+            estimate rides along as the fourth: her drawing has three, but the
+            number it carried is the answer to "how long is this going to
+            take" and deleting it to match a sketch would be a worse card. */}
+        <div className="np-fluency-figures">
           <span>
-            {wordsToGo > 0 || phrasesToGo > 0
-              ? uiFmt("{words} more words · {phrases} more phrases", {
-                phrases: uiNumber(phrasesToGo),
-                words: uiNumber(wordsToGo),
-              })
-              : ui("Both lanes complete — keep them fresh")}
+            <i aria-hidden="true"><BookOpen /></i>
+            {uiFmt("{words} more words", { words: uiNumber(wordsToGo) })}
           </span>
-          {/* Read from the ladder, never hardcoded — the target moved once
-              (5,000 → 10,000) and this label silently lied until it did. */}
           <span>
-            {uiFmt("Fluent = {words} words + {phrases} phrases", {
-              phrases: uiNumber(FLUENT_PHRASE_TARGET),
-              words: uiNumber(FLUENT_WORD_TARGET),
-            })}
+            <i aria-hidden="true"><MessageCircle /></i>
+            {uiFmt("{phrases} more phrases", { phrases: uiNumber(phrasesToGo) })}
+          </span>
+          {fading > 0 && (
+            <span className="np-fluency-figures__fading">
+              <i aria-hidden="true"><RefreshCw /></i>
+              {fading === 1
+                ? ui("1 item is fading · review it")
+                : uiFmt("{count} items are fading · review them", { count: uiNumber(fading) })}
+            </span>
+          )}
+          <span>
+            <i aria-hidden="true"><Clock3 /></i>
+            {uiFmt("About {hours} hours to fluent", { hours: uiNumber(estimate.hoursRemaining) })}
           </span>
         </div>
-        {fading > 0 && (
-          <p className="np-fluency-fading">
-            {fading === 1
-              ? ui("1 item is fading. A review brings it back.")
-              : uiFmt("{count} items are fading. A review brings them back.", {
-                count: uiNumber(fading),
-              })}
-          </p>
-        )}
-      </div>
-      <div className="np-fluency-hours">
-        <span aria-hidden="true"><Clock3 /></span>
-        <small>{ui("Estimated active study left")}</small>
-        {/* Just the number. The explainer lines that used to sit here (next
-              milestone, pace note, hands-on-time caveat) were all cut —
-              the milestone stepper on the left now tells that story. */}
-        <strong>{uiFmt("About {hours} hours to Fluent", { hours: uiNumber(estimate.hoursRemaining) })}</strong>
       </div>
     </section>
   );

@@ -110,7 +110,11 @@ if (!/externalWords/.test(fluency) || !/getMasteredCount\(\)/.test(fluency)) {
   failures.push("hand-mastered and external words carry no schedule and must not be decayed on a guess");
 }
 const home = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
-if (!/countFadingVocab\(profile\)/.test(home) || !/A review brings/.test(home)) {
+// The wording moved onto the strip of figures when the card was rebuilt —
+// "8 Einträge verblassen · wiederholen" instead of a sentence of its own —
+// so this looks for both halves of the point rather than the old phrasing:
+// WHY the number moved (fading) and HOW to move it back (review).
+if (!/countFadingVocab\(profile\)/.test(home) || !/(?:is|are) fading · review/.test(home)) {
   failures.push("the outlook does not tell the learner why the number moved, or how to move it back");
 }
 

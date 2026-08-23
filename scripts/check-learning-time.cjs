@@ -256,8 +256,12 @@ check(
     // Hours reach all the way to Fluent, and the label says so. A
     // next-stage-only estimate was tried first and rejected.
     && dashboardSource.includes("estimateFluencyHours(fluency.toFluent")
-    && dashboardSource.includes("hours to Fluent")
-    && dashboardSource.includes("Estimated active study left")
+    // The caption "Estimated active study left" belonged to a panel of its
+    // own, which the card no longer has: the figure sits on the strip of
+    // numbers now. What this was protecting is unchanged and still checked —
+    // the number is on screen, and it names fluent rather than leaving "150
+    // hours" to mean anything the reader likes.
+    && dashboardSource.includes("About {hours} hours to fluent")
     && dashboardSource.includes('window.addEventListener("activity-updated", refresh)')
     && meterSource.includes('ui("study hours left")')
 );

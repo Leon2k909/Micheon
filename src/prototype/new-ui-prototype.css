@@ -6543,14 +6543,249 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 /* A compact, honest bridge between learned phrases and expected study time. */
 .np-fluency-outlook {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.58fr);
+  /* The ring column is sized to the ring; the rest is the stages and the
+     figures. It was the other way round, with the hours panel on the right. */
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
   overflow: hidden;
-  border: 1px solid rgba(70, 166, 71, 0.24);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
   border-radius: 25px;
   background: var(--np-surface);
-  box-shadow:
-    0 4px 0 rgba(67, 145, 67, 0.12),
-    0 14px 26px rgba(70, 111, 68, 0.1);
+  box-shadow: 0 14px 26px rgba(20, 16, 30, 0.1);
+}
+
+/* Below this the two columns stack: the ring above, the stages under it. */
+@media (max-width: 900px) {
+  .np-fluency-outlook {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.np-fluency-side {
+  display: grid;
+  min-width: 0;
+  gap: 16px;
+  align-content: start;
+  padding: 20px 0 20px 22px;
+}
+
+@media (max-width: 900px) {
+  .np-fluency-side {
+    padding: 20px 22px 0;
+  }
+}
+
+/* ── the ring ─────────────────────────────────────────────────────────────
+   Drawn as an SVG arc rather than a conic gradient, so the sweep is exact at
+   any percentage and the cap stays round at the tip. */
+.np-fluency-ring {
+  position: relative;
+  display: grid;
+  width: 168px;
+  height: 168px;
+  place-items: center;
+  margin: 2px auto 0;
+}
+
+.np-fluency-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.np-fluency-ring__track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-3) 30%, transparent);
+  stroke-width: 9;
+}
+
+.np-fluency-ring__arc {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-width: 9;
+  transition: stroke-dashoffset var(--np-motion-slow, 600ms) ease;
+}
+
+.np-fluency-ring__label {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.np-fluency-ring__label strong {
+  display: flex;
+  align-items: baseline;
+  color: var(--accent);
+  font-family: var(--np-font-display);
+  font-size: 42px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.np-fluency-ring__label i {
+  margin-left: 2px;
+  font-size: 19px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.np-fluency-ring__label small {
+  max-width: 15ch;
+  color: var(--accent);
+  font-family: var(--np-font-display);
+  font-size: var(--np-type-small);
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* ── the three stages ─────────────────────────────────────────────────────
+   A row that wraps rather than shrinks: each card holds an icon, a name and a
+   line of detail, and squeezing them is what clips text. */
+.np-fluency-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 16px;
+}
+
+.np-fluency-stages__arrow {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--text-3);
+}
+
+.np-fluency-stages__arrow svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.6;
+}
+
+.np-fluency-stage {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 170px;
+  gap: 5px;
+  align-content: start;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface-2);
+}
+
+/* Where you are now: the accent, quietly — a tint and an edge rather than a
+   filled block, which would shout louder than the ring. */
+.np-fluency-stage.is-current {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 11%, var(--surface-2));
+}
+
+.np-fluency-stage__icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--text-3);
+}
+
+.np-fluency-stage.is-current .np-fluency-stage__icon {
+  color: var(--accent);
+}
+
+.np-fluency-stage__icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.9;
+}
+
+.np-fluency-stage__now {
+  justify-self: start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.np-fluency-stage strong {
+  color: var(--np-text);
+  font-family: var(--np-font-display);
+  font-size: 15px;
+  font-weight: 900;
+  hyphens: auto;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.np-fluency-stage small {
+  color: var(--np-muted);
+  font-size: var(--np-type-caption);
+  font-weight: 650;
+  hyphens: auto;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* ── the figures ──────────────────────────────────────────────────────────
+   One strip, divided rather than stacked, so three or four numbers read as
+   one row of facts instead of a paragraph. */
+.np-fluency-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 0;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px 6px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface-2);
+}
+
+.np-fluency-figures > span {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 190px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  color: var(--np-text);
+  font-size: var(--np-type-small);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.np-fluency-figures > span + span {
+  border-left: 1px solid var(--border);
+}
+
+.np-fluency-figures i {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.np-fluency-figures svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.1;
+}
+
+/* The one that asks for something back gets its own colour, because it is a
+   call to act rather than a number to read. */
+.np-fluency-figures__fading i {
+  color: var(--np-yellow-dark, #a4761a);
+  background: color-mix(in srgb, var(--np-yellow, #f0b429) 20%, transparent);
 }
 
 .np-fluency-main {
@@ -6571,11 +6806,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   height: 46px;
   flex: 0 0 46px;
   place-items: center;
-  border: 1px solid rgba(66, 164, 70, 0.2);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: 15px;
-  color: var(--np-green-dark);
-  background: var(--np-green-soft);
-  box-shadow: 0 3px 0 rgba(64, 143, 66, 0.11);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .np-fluency-heading svg,
