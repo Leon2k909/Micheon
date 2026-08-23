@@ -25,7 +25,7 @@ import { getLearningDirection, type LearningDirection } from "@/lib/direction";
  * and snoozed items, and already splits words from sentences. A second
  * ordering written here would drift from it within a week.
  */
-export type MatcherKind = "words" | "sentences";
+export type MatcherKind = "words" | "sentences" | "both";
 
 export type MatcherPair = {
   id: string;
@@ -33,6 +33,8 @@ export type MatcherPair = {
   en: string;
   /** Every key this item is stored under, so a grade lands on all of them. */
   aliases: string[];
+  /** The pack's register warning, where it has one. Shown on the tile. */
+  tierNote?: string;
 };
 
 /** Every item the Matcher can serve, in the order the course would serve it. */
@@ -44,13 +46,21 @@ export function buildMatcherQueue(
   const queue = buildListenQueue(
     apiParts as Record<string, never>,
     loadGradeStore(profile),
-    { contentSource: kind === "words" ? "words" : "sentences", order: "common" }
+    // "both" is Listen's mixed queue, not the two lists glued end to end.
+    // That queue puts words and sentences on one comparable popularity scale
+    // and interleaves them, so a board can hold "Wir haben das." beside haben
+    // rather than working through every word before the first sentence.
+    {
+      contentSource: kind === "both" ? "mixed" : kind === "words" ? "words" : "sentences",
+      order: "common",
+    }
   );
   return queue
     .map((item: ListenItem) => ({
       id: item.id,
       de: String(item.de ?? "").trim(),
       en: String(item.en ?? "").trim(),
+      tierNote: item.tierNote,
       aliases: [...(item.aliases ?? [])],
     }))
     .filter((pair) => pair.de && pair.en);
@@ -142,7 +152,7 @@ export function getMatcherKind(
   const stored = loadScopedJson<unknown>(`${MATCHER_KIND_KEY}:${direction}`, null, profile);
   // Anything else — a missing value, a corrupted one, an older spelling — is
   // the default rather than an error, the same as every other preference here.
-  return stored === "sentences" || stored === "words" ? stored : "words";
+  return stored === "sentences" || stored === "words" || stored === "both" ? stored : "words";
 }
 
 export function setMatcherKind(
@@ -156,7 +166,13 @@ export function setMatcherKind(
 
 export type MatcherCursor = { ids: string[]; approx: number };
 
-/** Words and sentences are different queues, and each course has its own. */
+/**
+ * Each list is a different queue, and each course has its own.
+ *
+ * "both" is a third key rather than a view onto the other two, so its place,
+ * its misses and its streak are its own. Sharing a cursor with Words would
+ * mean clearing a mixed board moved you along the word list as well.
+ */
 function cursorStorageKey(kind: MatcherKind, direction: LearningDirection): string {
   return `${MATCHER_CURSOR_KEY}:${direction}:${kind}`;
 }

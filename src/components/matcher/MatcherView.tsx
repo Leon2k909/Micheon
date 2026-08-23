@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, CheckCheck, ChevronDown, RotateCcw, Shuffle, Sparkles, Volume2 } from "lucide-react";
-import { ui, uiFmt, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber, uiOr } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
   MATCHER_BOARD_SIZE,
@@ -74,8 +74,8 @@ export function MatcherView({
   onExit: () => void;
 }) {
   // Resolved on the first render rather than in an effect, for the same reason
-  // the cursor is: opening on Words and then swapping to Sentences would flash
-  // the wrong list every single time.
+  // the cursor is: opening on Words and then swapping to the remembered list
+  // would flash the wrong one every single time.
   const [kind, setKind] = useState<MatcherKind>(() => getMatcherKind(getLearningDirection(), profile));
   const [picked, setPicked] = useState<{ side: "de" | "en"; id: string } | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
@@ -128,8 +128,8 @@ export function MatcherView({
   );
   const [resumedAt] = useState(() => from);
 
-  // Switching Words <-> Sentences resumes THAT list where it was left, since
-  // each one keeps its own cursor.
+  // Switching list resumes THAT list where it was left, since each of the
+  // three keeps its own cursor.
   const lastKind = useRef(kind);
   useEffect(() => {
     if (lastKind.current === kind) return;
@@ -248,8 +248,8 @@ export function MatcherView({
     return () => window.clearTimeout(timer);
   }, [solved, board.pairs.length, dealNext]);
 
-  // Switching between words and sentences swaps the queue; the effect above
-  // puts the new one back where it was left rather than at its start.
+  // Switching list swaps the queue; the effect above puts the new one back
+  // where it was left rather than at its start.
   const chooseKind = useCallback((next: MatcherKind) => {
     setKind(next);
     setMatcherKind(next, direction, profile);
@@ -437,6 +437,15 @@ export function MatcherView({
           {done ? <Check className="h-4 w-4" aria-hidden="true" /> : (side === "de" ? pair.de : pair.en)}
         </button>
 
+        {side === "de" && pair.tierNote ? (
+          <span
+            className="register-note matcher-tile-note"
+            title={ui("Not everyday neutral German — use in the right company")}
+          >
+            {uiOr(pair.tierNote, "Besonderer Sprachgebrauch")}
+          </span>
+        ) : null}
+
         {/* The grade controls hang off the German tile only: one set per pair,
             on the side that names the thing being graded. */}
         {side === "de" && !done && (
@@ -522,7 +531,7 @@ export function MatcherView({
             {ui("Back")}
           </button>
           <div className="flex flex-wrap items-center gap-2">
-            {([["words", "Words"], ["sentences", "Sentences"]] as const).map(([value, label]) => (
+            {([["words", "Words"], ["sentences", "Sentences"], ["both", "Both"]] as const).map(([value, label]) => (
               <button
                 key={value}
                 type="button"
