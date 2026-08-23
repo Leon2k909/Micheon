@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ArrowLeft, Check, ChevronRight, Eye, RotateCcw, ScrollText } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, ChevronRight, Eye, RotateCcw, ScrollText } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { TappableSentence } from "@/components/shared/TappableSentence";
-import { coverIdeas, PASSAGES, type Passage } from "@/lib/passages";
+import { judgeAttempt, coverIdeas, PASSAGES, type Passage } from "@/lib/passages";
 
 /**
  * Read a paragraph of real German and say what it means.
@@ -89,10 +89,11 @@ function PassageRun({ passage, onBack }: { passage: Passage; onBack: () => void 
   const line = passage.lines[index];
   const done = index >= passage.lines.length;
 
-  const coverage = useMemo(
-    () => (revealed && line ? coverIdeas(line.en, attempt) : null),
+  const judged = useMemo(
+    () => (revealed && line ? judgeAttempt(line.en, attempt) : null),
     [revealed, line, attempt]
   );
+  const coverage = judged?.coverage ?? null;
 
   const commit = useCallback(() => {
     setAnswers((current) => ({ ...current, [index]: attempt }));
@@ -280,38 +281,75 @@ function PassageRun({ passage, onBack }: { passage: Passage; onBack: () => void 
             </div>
 
             {/*
-              Not a mark. Two good translations can share almost no words, so
-              the only honest thing to report is which ideas went unmentioned
-              — enough to catch a clause you skipped, and no more.
+              The app says what it found. It used to ask the reader to grade
+              herself, which is a poor thing to make somebody do when the
+              evidence is sitting right there — "this 'you are the judge'
+              thing is terrible. it should tell me if i was wrong."
+
+              The wording tracks what coverage can actually support. Every
+              idea present is a claim it can make. Ideas missing is a fact it
+              can state. What it does NOT say is "wrong", because a good
+              translation can share almost no words with this particular
+              English rendering — hence the button underneath, which is the
+              reader overruling a call the machine got wrong rather than the
+              reader doing the marking.
             */}
-            {coverage && coverage.total > 0 && attempt.trim() ? (
-              <p className="text-xs font-semibold text-[var(--text-3)]">
-                {coverage.missing.length === 0
-                  ? ui("Your version mentions everything the reference does.")
-                  : uiFmt("Not in your version: {words}", { words: coverage.missing.join(", ") })}
-              </p>
+            {judged && attempt.trim() ? (
+              <div
+                className={cn(
+                  "rounded-2xl border p-3",
+                  judged.verdict === "got"
+                    ? "border-[var(--success-text)]/40 bg-[var(--success-bg)]"
+                    : judged.verdict === "close"
+                      ? "border-[var(--yellow)]/50 bg-[var(--yellow)]/10"
+                      : "border-[var(--border)] bg-[var(--surface-2)]"
+                )}
+              >
+                <p
+                  className={cn(
+                    "flex items-center gap-2 text-sm font-black",
+                    judged.verdict === "got"
+                      ? "text-[var(--success-text)]"
+                      : judged.verdict === "close" ? "text-[var(--yellow-ink)]" : "text-[var(--text-1)]"
+                  )}
+                >
+                  {judged.verdict === "got" ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                  {judged.verdict === "got"
+                    ? ui("That's it — every idea is there.")
+                    : judged.verdict === "close"
+                      ? ui("Close — one or two ideas short.")
+                      : ui("Some of the meaning is missing.")}
+                </p>
+                {judged.coverage.missing.length > 0 ? (
+                  <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
+                    {uiFmt("Not in your version: {words}", { words: judged.coverage.missing.join(", ") })}
+                  </p>
+                ) : null}
+              </div>
             ) : null}
 
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                {ui("You are the judge")}
-              </p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                {([
-                  ["got", "I had it"],
-                  ["close", "Close enough"],
-                  ["missed", "I missed it"],
-                ] as const).map(([verdict, label]) => (
-                  <button
-                    key={verdict}
-                    type="button"
-                    onClick={() => mark(verdict)}
-                    className="inline-flex h-11 items-center justify-center rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-1)] transition-colors hover:bg-[var(--surface-3)]"
-                  >
-                    {ui(label)}
-                  </button>
-                ))}
-              </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => mark(judged ? judged.verdict : "missed")}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-xs font-black text-[var(--accent-text)] transition-colors hover:brightness-110"
+              >
+                {ui("Next line")}
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              {/* Only when the call went against her. Judging by shared words
+                  marks a fair translation down whenever it reaches for a
+                  synonym nobody wrote into the list, and she should not have
+                  to accept that. */}
+              {judged && judged.verdict !== "got" && attempt.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => mark("got")}
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-3)] transition-colors hover:text-[var(--text-1)]"
+                >
+                  {ui("I had it after all")}
+                </button>
+              ) : null}
             </div>
           </div>
         )}

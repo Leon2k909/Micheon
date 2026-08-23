@@ -20,6 +20,8 @@
  * chat window is made of.
  */
 
+import { foldEnglishSynonyms } from "@/lib/englishSynonyms";
+
 export type PassageLine = {
   de: string;
   /** A natural English rendering, not a word-for-word crib. */
@@ -344,8 +346,30 @@ const IDEA_STOPWORDS = new Set([
   "m", "ll", "ve", "d", "about", "into", "over", "again", "still", "only",
 ]);
 
-const ideaTokens = (text: string): string[] => String(text ?? "")
-  .toLocaleLowerCase("en")
+/**
+ * Casual address, folded for THIS exercise only.
+ *
+ * Passages are messages from a mate, so the reference says "mate" where the
+ * reader writes "dude" — and shared-word scoring then calls a fair
+ * translation short. These stay local rather than joining ENGLISH_SYNONYMS,
+ * which lesson answer-checking also reads: loosening that would start
+ * accepting wrong answers in exercises where the exact word is the point.
+ */
+const PASSAGE_REGISTER: Array<[RegExp, string]> = [
+  // Word boundaries matter: without them "bro" would fold inside "brother"
+  // and "pal" inside "palace".
+  [/\b(?:dude|pal|buddy|bro)\b/g, "mate"],
+  [/\bshow(?:s|ed|ing)? up\b/g, "turn up"],
+];
+
+const foldRegister = (text: string): string => {
+  let out = text;
+  for (const [pattern, canonical] of PASSAGE_REGISTER) out = out.replace(pattern, canonical);
+  return out;
+};
+
+const ideaTokens = (text: string): string[] => foldRegister(foldEnglishSynonyms(String(text ?? "")
+  .toLocaleLowerCase("en")))
   .replace(/[’']/g, "'")
   .split(/[^a-z']+/)
   // n't first, or didn't leaves "didn" behind — a word in no language, which
@@ -396,6 +420,32 @@ export type IdeaCoverage = {
   missing: string[];
   total: number;
 };
+
+/**
+ * What the app is willing to say about an attempt.
+ *
+ * "got" is a claim the coverage supports: every content word of the reference
+ * is accounted for, allowing for inflection and the synonyms we know.
+ *
+ * "missed" is deliberately NOT "you were wrong". A translation can be right
+ * and score badly here — "the delivery driver was not there" against "the
+ * delivery guy didn't turn up" shares almost nothing — so the interface names
+ * the words that went unmentioned and lets the reader overrule it. What this
+ * catches reliably is the clause somebody skipped, which is the mistake worth
+ * catching.
+ */
+export type AttemptVerdict = "got" | "close" | "missed";
+
+export function judgeAttempt(reference: string, attempt: string): { verdict: AttemptVerdict; coverage: IdeaCoverage } {
+  const coverage = coverIdeas(reference, attempt);
+  if (!attempt.trim() || coverage.total === 0) return { verdict: "missed", coverage };
+  if (coverage.missing.length === 0) return { verdict: "got", coverage };
+  // Two thirds covered is the line between "you left a word out" and "this is
+  // a different sentence". Below it the reader is told what is missing rather
+  // than told they are wrong.
+  const share = coverage.covered.length / coverage.total;
+  return { verdict: share >= 0.66 ? "close" : "missed", coverage };
+}
 
 export function coverIdeas(reference: string, attempt: string): IdeaCoverage {
   const wanted = [...new Set(ideaTokens(reference))];
