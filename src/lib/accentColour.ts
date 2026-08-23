@@ -221,6 +221,23 @@ function readableInk(hex: string, theme: "dark" | "light"): string {
 }
 
 /** "94, 199, 96" — ready to drop into rgba(var(--accent-rgb), 0.4). */
+/**
+ * Ink for text that sits on --feature-gradient.
+ *
+ * Not the same job as accentText, which is picked against `accent`. The
+ * gradient runs accentHover -> accentPressed, and in light mode both are
+ * darker than accent — dark enough that on five of the ten presets the winner
+ * flips. Measured on a light-mode Pine gradient: near-black reaches 3.00:1,
+ * white reaches 4.74:1, and accentText chose the near-black.
+ *
+ * Picked against whichever end of the sweep is worse, so the answer holds for
+ * the whole gradient rather than only where it starts.
+ */
+function featureInk(hover: string, pressed: string): string {
+  const worst = (ink: string) => Math.min(contrastRatio(ink, hover), contrastRatio(ink, pressed));
+  return worst("#ffffff") >= worst("#0b0e13") ? "#ffffff" : "#0b0e13";
+}
+
 function accentChannels(hex: string): string {
   const { r, g, b } = toRgb(hex);
   return `${r}, ${g}, ${b}`;
@@ -265,6 +282,11 @@ export function applyAccentColour(hex: string = getAccentColour()) {
     // page it lands around 3.7:1, which fails. This is the same hue pushed
     // until it clears 4.5:1 against the surface it will actually sit on.
     ["--accent-ink", readableInk(shades.accent, theme)],
+    // Ink for text ON the gradient, as opposed to accent-coloured text on
+    // the page. The cards using it hardcoded #ffffff, which is unreadable
+    // once the accent is a yellow.
+    ["--feature-ink", featureInk(shades.accentHover, shades.accentPressed)],
+    ["--feature-ink-rgb", accentChannels(featureInk(shades.accentHover, shades.accentPressed))],
     ["--np-green", shades.accent],
     ["--np-green-dark", shades.accentHover],
     ["--np-green-soft", shades.accentDim],
