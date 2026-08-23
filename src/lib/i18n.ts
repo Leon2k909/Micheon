@@ -109,6 +109,18 @@ const DE: Record<string, string> = {
   "Not everyday neutral German — use in the right company": "Kein neutrales Alltagsdeutsch — nur im passenden Umfeld verwenden",
   // Moving through the Listen queue by more than one card.
   "Move through the queue": "Durch die Liste bewegen",
+  // Folders in Create, and moving a set between or within them.
+  "New folder": "Neuer Ordner",
+  "Folder name": "Ordnername",
+  "Rename folder": "Ordner umbenennen",
+  "Delete folder": "Ordner löschen",
+  "Move to folder": "In Ordner verschieben",
+  "No folder": "Kein Ordner",
+  "Not in a folder": "Nicht in einem Ordner",
+  "Delete this folder? Its sets move to the top level.": "Diesen Ordner löschen? Seine Sets wandern nach oben.",
+  "Empty. Drag a set here, or use \"Move to folder\" on any card.": "Leer. Zieh ein Set hierher oder nutze \"In Ordner verschieben\" auf einer Karte.",
+  "set": "Set",
+  "sets": "Sets",
   "Back a page": "Eine Seite zurück",
   "On a page": "Eine Seite weiter",
   "Previous page": "Vorherige Seite",

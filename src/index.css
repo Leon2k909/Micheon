@@ -11420,6 +11420,176 @@ html[data-theme="dark"] {
   outline-offset: 1px;
 }
 
+
+/* Folders in Create, and the three ways to move a set.
+   Token-only: the accent is the learner's to change, so nothing here paints a
+   brand green a custom accent could not reach. */
+.create-folder {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 14px;
+}
+
+.create-folder.is-drop-target,
+.create-unfiled--over {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--accent-dim);
+}
+
+/* The unfiled list is a bare grid until something is dragged over it. */
+.create-unfiled--over {
+  border-radius: 20px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+  padding: 10px;
+}
+
+.create-folder__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.create-folder__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-1);
+}
+
+.create-folder__count {
+  margin-right: auto;
+  font-size: 11px;
+  font-weight: 850;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.create-folder__label {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.create-folder__empty {
+  padding: 10px 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.create-folder__rename {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+}
+
+.create-folder__input {
+  min-width: 0;
+  flex: 1;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+
+.create-folder__btn {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--text-2);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.create-folder__btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-dim);
+  color: var(--accent-strong);
+}
+
+.create-folder__input:focus-visible,
+.create-folder__btn:focus-visible,
+.create-set__nudge:focus-visible,
+.create-set__folder:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  outline-offset: 1px;
+}
+
+/* The move row. The grip only says "this card can be dragged" — every action
+   it hints at is also on a button or the select beside it, because native
+   drag never fires from touch. */
+.create-set__move {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.create-set__grip {
+  color: var(--text-3);
+  cursor: grab;
+  opacity: 0.55;
+}
+
+.create-set:hover .create-set__grip { opacity: 1; }
+
+.create-set__nudge {
+  display: inline-flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.create-set__nudge:hover:not(:disabled) {
+  background: var(--accent-dim);
+  color: var(--accent-strong);
+}
+
+.create-set__nudge:disabled { opacity: 0.35; }
+
+.create-set__folder {
+  margin-left: auto;
+  max-width: 11rem;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-folder__btn,
+  .create-set__nudge { transition: none; }
+}
+
 .matcher-tile { position: relative; }
 
 /* The pack's register warning — "18+ · intimate", "Strong language",

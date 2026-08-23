@@ -20,6 +20,8 @@ import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@
 
 export const STUDY_SETS_KEY = "study-sets:v1";
 export const STUDY_PROGRESS_PREFIX = "study-progress:v1";
+/** Folders live beside the sets rather than inside them — see StudyFolder. */
+export const STUDY_FOLDERS_KEY = "study-folders:v1";
 
 export type StudyCardSource = "manual" | "catalogue" | "paste";
 
@@ -38,10 +40,35 @@ export type StudyCard = {
   starred?: boolean;
 };
 
+/**
+ * A folder, which is a name and nothing else.
+ *
+ * Deliberately does NOT hold a list of the sets inside it. A folder that owned
+ * its members would need repairing every time a set was deleted, and a missed
+ * repair leaves a folder pointing at a set that is gone. Pointing the other
+ * way — each set naming its folder — cannot dangle in the direction that
+ * loses anything: a folder id that no longer resolves just means the set is
+ * at the top level, which is where it would want to be anyway.
+ *
+ * One level deep. Nothing here reads a parent, so nothing can nest.
+ */
+export type StudyFolder = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type StudySet = {
   id: string;
   title: string;
   description: string;
+  /**
+   * Which folder this set is filed in, if any. Undefined is the top level —
+   * every set made before folders existed, and every set since that nobody
+   * has filed.
+   */
+  folderId?: string;
   cards: StudyCard[];
   /** ISO timestamps, stamped by the caller so this module stays pure. */
   createdAt: string;
@@ -140,6 +167,11 @@ export function loadStudySets(profile: UserProfile | null = getAuthUser()): Stud
     speak: set.speak !== false,
     stages: Array.isArray(set.stages) && set.stages.length > 0 ? set.stages : DEFAULT_STAGES,
     description: set.description ?? "",
+    // A blank or non-string id is the top level rather than an error. Whether
+    // the id points at a folder that still EXISTS is not knowable here — this
+    // function never sees the folder list — so that question belongs to
+    // resolvedFolderId, which does.
+    folderId: typeof set.folderId === "string" && set.folderId ? set.folderId : undefined,
     masteryTarget: clampMastery(set.masteryTarget),
     roundSize: clampRoundSize(set.roundSize),
     demoteOnWrong: set.demoteOnWrong !== false,
@@ -148,6 +180,24 @@ export function loadStudySets(profile: UserProfile | null = getAuthUser()): Stud
 
 export function saveStudySets(sets: StudySet[], profile: UserProfile | null = getAuthUser()) {
   saveScopedJson(STUDY_SETS_KEY, sets, profile);
+}
+
+export function loadStudyFolders(profile: UserProfile | null = getAuthUser()): StudyFolder[] {
+  const raw = loadScopedJson<StudyFolder[]>(STUDY_FOLDERS_KEY, [], profile);
+  if (!Array.isArray(raw)) return [];
+  // Repaired on read like the sets are: a folder with no id cannot be pointed
+  // at by anything, and one with a blank name would draw an unclickable
+  // header, so both are dealt with here rather than at every use.
+  return raw
+    .filter((folder) => folder && typeof folder.id === "string" && folder.id)
+    .map((folder) => ({
+      ...folder,
+      name: typeof folder.name === "string" && folder.name.trim() ? folder.name : "Untitled folder",
+    }));
+}
+
+export function saveStudyFolders(folders: StudyFolder[], profile: UserProfile | null = getAuthUser()) {
+  saveScopedJson(STUDY_FOLDERS_KEY, folders, profile);
 }
 
 export function loadStudyProgress(setId: string, profile: UserProfile | null = getAuthUser()): StudySetProgress {
@@ -191,6 +241,16 @@ export function makeCard(
   };
 }
 
+export function makeFolder(name: string, now: number): StudyFolder {
+  const at = new Date(now).toISOString();
+  return {
+    id: studyId("folder", now),
+    name: name.trim() || "Untitled folder",
+    createdAt: at,
+    updatedAt: at,
+  };
+}
+
 export function makeSet(title: string, now: number): StudySet {
   const at = new Date(now).toISOString();
   return {
@@ -218,6 +278,67 @@ export function makeSet(title: string, now: number): StudySet {
  * appears INSIDE German glosses — splitting "der Lkw - Lastkraftwagen - lorry"
  * on the first dash is right, on every dash is not.
  */
+/**
+ * The folder a set is really in, which is not always the one it names.
+ *
+ * A set can carry the id of a folder that has since been deleted, or one
+ * copied from another profile. Reading set.folderId directly in that case
+ * hides the set inside a folder that is not drawn, and binds the "Move to
+ * folder" control to an option that does not exist — where a browser shows
+ * the first option instead and quietly claims the set is somewhere it is not.
+ * Everything that groups or displays membership asks this instead.
+ */
+export function resolvedFolderId(set: StudySet, folders: StudyFolder[]): string | null {
+  const id = set.folderId;
+  if (!id) return null;
+  return folders.some((folder) => folder.id === id) ? id : null;
+}
+
+/** Move one item within a list. Order IS the array here, for sets and cards alike. */
+export function moveStudyItem<T>(list: T[], from: number, to: number): T[] {
+  if (from === to || from < 0 || from >= list.length) return list;
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  next.splice(Math.min(Math.max(0, to), next.length), 0, moved);
+  return next;
+}
+
+/**
+ * A copy lands next to what it copies.
+ *
+ * This used to put the copy at index 0. With one flat list and no folders that
+ * only looked odd; once the list is grouped, a duplicate of a set filed deep
+ * in a folder jumps to the top of that folder, which reads as the copy having
+ * been put somewhere else.
+ */
+export function insertCopyAfterSource(sets: StudySet[], sourceId: string, copy: StudySet): StudySet[] {
+  const at = sets.findIndex((set) => set.id === sourceId);
+  if (at < 0) return [...sets, copy];
+  return [...sets.slice(0, at + 1), copy, ...sets.slice(at + 1)];
+}
+
+/**
+ * Delete a folder without deleting what was in it.
+ *
+ * Returns both lists rather than mutating, so the caller can write the SETS
+ * first: interrupted between the two writes, the worst case is a folder that
+ * still exists and is empty, never a set nobody can find.
+ */
+export function unfileFolder(
+  sets: StudySet[],
+  folders: StudyFolder[],
+  folderId: string,
+  now: number
+): { sets: StudySet[]; folders: StudyFolder[] } {
+  const at = new Date(now).toISOString();
+  return {
+    sets: sets.map((set) => (set.folderId === folderId
+      ? { ...set, folderId: undefined, updatedAt: at }
+      : set)),
+    folders: folders.filter((folder) => folder.id !== folderId),
+  };
+}
+
 export function parsePastedCards(text: string, now = 0): StudyCard[] {
   const cards: StudyCard[] = [];
   for (const line of text.split(/\r?\n/)) {

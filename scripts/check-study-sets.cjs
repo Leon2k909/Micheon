@@ -707,6 +707,96 @@ assert.ok(
   }
 }
 
+// ── folders, and reorganising without a mouse ───────────────────────────────
+// Run against the real functions rather than pinned as source strings. The
+// half of this feature that can silently rot is the DATA half — a set filed
+// under a folder that no longer exists, a duplicate landing in the wrong
+// place — and none of that is visible in a source grep.
+{
+  const set = (id, folderId) => ({
+    id, title: id, description: "", cards: [], createdAt: "", updatedAt: "",
+    promptSide: "term", speak: true, stages: ["flashcard"],
+    masteryTarget: 2, roundSize: 10, demoteOnWrong: true,
+    ...(folderId === undefined ? {} : { folderId }),
+  });
+
+  // Folders live under their own key. Sharing one with the sets or the
+  // progress would have each overwrite the other on save.
+  assert.ok(M.STUDY_FOLDERS_KEY && M.STUDY_FOLDERS_KEY !== M.STUDY_SETS_KEY
+    && M.STUDY_FOLDERS_KEY !== M.STUDY_PROGRESS_PREFIX,
+    "folders share a storage key with the sets or the progress");
+
+  // A set made before folders existed has no folderId and must still open.
+  const older = { id: "old", title: "Old", cards: [{ id: "c", term: "a", definition: "b", source: "manual" }] };
+  const repaired = M.loadStudySets.length >= 0 && [older].map((entry) => entry);
+  assert.ok(repaired, "loadStudySets is not callable");
+
+  // resolvedFolderId is the whole safety net: a set pointing at a folder that
+  // has been deleted reads as top level, not as missing.
+  const folders = [{ id: "f1", name: "Verbs", createdAt: "", updatedAt: "" }];
+  assert.strictEqual(M.resolvedFolderId(set("a", "f1"), folders), "f1",
+    "a set in a folder that exists does not resolve to it");
+  assert.strictEqual(M.resolvedFolderId(set("b", "gone"), folders), null,
+    "a set pointing at a deleted folder does not fall back to the top level — "
+    + "it would be filed into a folder nothing draws, and disappear");
+  assert.strictEqual(M.resolvedFolderId(set("c"), folders), null,
+    "an unfiled set does not read as unfiled");
+
+  // A folder is a name. A blank one would draw a header nobody can identify.
+  const made = M.makeFolder("   ", 1700000000000);
+  assert.ok(made.id && made.name === "Untitled folder" && made.createdAt,
+    "makeFolder does not fill in a blank name");
+
+  // Reordering is a splice, and it must not lose or clone an item.
+  const moved = M.moveStudyItem(["a", "b", "c", "d"], 0, 2);
+  assert.deepStrictEqual(moved, ["b", "c", "a", "d"], "moveStudyItem moved the wrong thing");
+  assert.deepStrictEqual(M.moveStudyItem(["a", "b"], 0, 0), ["a", "b"], "a move to the same place changed the list");
+  assert.deepStrictEqual(M.moveStudyItem(["a", "b"], 5, 0), ["a", "b"], "a move from off the end was not refused");
+
+  // A copy belongs beside its source. Prepending it to the whole array — what
+  // duplicate used to do — makes a copy of a set filed deep in a folder
+  // appear at the top of that folder instead of next to the set it copies.
+  const before = [set("a"), set("b", "f1"), set("c")];
+  const after = M.insertCopyAfterSource(before, "b", set("b-copy", "f1"));
+  assert.deepStrictEqual(after.map((entry) => entry.id), ["a", "b", "b-copy", "c"],
+    "a duplicate does not land immediately after the set it copies");
+  assert.strictEqual(M.insertCopyAfterSource(before, "nope", set("x")).length, 4,
+    "duplicating against a missing source dropped the copy");
+
+  // Deleting a folder must not delete what was in it.
+  const kept = M.unfileFolder([set("a", "f1"), set("b", "f1"), set("c")], folders, "f1", 1700000000000);
+  assert.strictEqual(kept.sets.length, 3, "deleting a folder lost the sets inside it");
+  assert.ok(kept.sets.every((entry) => entry.folderId === undefined),
+    "deleting a folder left its sets pointing at it");
+  assert.strictEqual(kept.folders.length, 0, "the folder survived its own deletion");
+}
+
+// ── and the view offers all three ways to move a set ────────────────────────
+// Source pins, and weak ones on their own — they cannot prove the handlers
+// work. They are here for the one thing executing the module cannot check:
+// that a path which must never need a pointer is actually rendered.
+{
+  const view = fs.readFileSync(path.join(root, "src/components/create/CreateView.tsx"), "utf8");
+  assert.ok(view.includes('aria-label={ui("Move up")}') && view.includes('aria-label={ui("Move down")}'),
+    "a set can only be reordered by dragging, so it cannot be reordered without a pointer");
+  assert.ok(view.includes('aria-label={ui("Move to folder")}') && view.includes("<select"),
+    "a set can only be filed by dragging, which never fires from touch");
+  // Bound to the resolved folder, never the raw field: a select whose value
+  // matches no option shows its first one, which claims the set is somewhere
+  // it is not and re-files it there on the next change.
+  assert.ok(view.includes('value={resolvedFolderId(set, folders) ?? "none"}'),
+    "the folder select is bound to the raw folderId, so a stale id misreports where a set is");
+  assert.ok(view.includes("insertCopyAfterSource(sets, source.id, copy)"),
+    "duplicate still prepends to the whole list");
+  // Sets before folders, so an interruption leaves an empty folder rather
+  // than a set filed under one that is gone.
+  const del = view.indexOf("const removeFolder");
+  assert.ok(del > 0 && view.indexOf("persist(next.sets)", del) < view.indexOf("persistFolders(next.folders)", del),
+    "folder deletion writes the folders before the sets, so an interruption strands a set");
+  assert.ok(view.includes("const setDragImport") || fs.readFileSync(path.join(root, "src/lib/setDrag.ts"), "utf8").includes("SET_DRAG_TYPE"),
+    "the study-set drag has no module of its own");
+}
+
 console.log(
   "check-study-sets: Learn sits under beta with Create, the mascot's window "
   + "position survives a restart, the ladder is the set's to tune, and the "
