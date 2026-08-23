@@ -43,11 +43,17 @@ export function normaliseUpdatePercent(value: unknown): number {
  * background check stays silent: the app retries on its own, and anyone who
  * explicitly checks from settings gets their feedback inline there.
  */
-export function updatePanelIsUseful(status: UpdateStatus | null): boolean {
+export function updatePanelIsUseful(status: UpdateStatus | null, now = Date.now()): boolean {
   // "Hide update notices" means exactly that: the update still downloads and
   // still installs, it simply stops announcing itself. Settings remains the
   // place to see what is happening.
   if (status?.noticesHidden) return false;
+  // Postponed means postponed. Settings could already set this and the panel
+  // ignored it, so "remind me in an hour" closed the panel for exactly as long
+  // as the window stayed open — which is not postponing anything. main.js
+  // reports snoozedUntil as 0 once the time has passed, so nothing here has to
+  // remember to forget it.
+  if (Number(status?.snoozedUntil) > now) return false;
   return status?.state === "downloading"
     || status?.state === "ready";
 }

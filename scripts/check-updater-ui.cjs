@@ -11,6 +11,7 @@ const banner = read("src/components/UpdateBanner.tsx");
 const styles = read("src/index.css");
 const card = read("src/components/UpdateStatusCard.tsx");
 const updateStatus = read("src/lib/updateStatus.ts");
+const i18nTable = read("src/lib/i18n.ts");
 const releaseWorkflow = read(".github/workflows/release.yml");
 
 const result = esbuild.buildSync({
@@ -55,6 +56,46 @@ check("invalid update percentages fall back to zero", normaliseUpdatePercent("no
 check("only actionable download and ready states open the panel", ["downloading", "ready"].every((state) => updatePanelIsUseful({ state })));
 check("quiet updater states stay out of the learner's way", ["idle", "checking", "current", "unsupported", "error"].every((state) => !updatePanelIsUseful({ state })));
 check("dismissal keys change with state and version", updateStatusKey({ state: "downloading", version: "1.2.59" }) !== updateStatusKey({ state: "ready", version: "1.2.59" }));
+
+// ── putting it off has to actually put it off ───────────────────────────────
+// The preference existed and settings could already write it, but the floating
+// panel never read it — so a postponement lasted exactly as long as the window
+// stayed open, and the update announced itself again on the next launch.
+check("a postponed update stops announcing itself",
+  !updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 4_000 }, 1_000));
+check("a postponement that has run out lets the panel back",
+  updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 4_000 }, 9_000));
+check("no postponement is not a postponement",
+  updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 0 })
+  && updatePanelIsUseful({ state: "downloading" }));
+// The learner has to be able to reach it without opening settings, which is
+// the whole of the request: a clock on the panel itself.
+check("the panel offers the postponement, not just settings",
+  banner.includes('data-testid="update-postpone"')
+  && banner.includes('ui("Remind me later")')
+  && /<Clock\b/.test(banner));
+// Written to the desktop preference rather than to component state, or it is
+// Keep learning again under a different icon.
+check("postponing writes the preference the settings card writes",
+  /setUpdatePreferences\?\.\(\{\s*snoozeHours: hours\s*\}\)/.test(banner)
+  && card.includes("snoozeHours"));
+check("the panel and settings offer the same postponements",
+  ["1 hour", "Today", "A week"].every((label) => banner.includes(`["${label}"`))
+  && ["1 hour", "Today", "A week"].every((label) => card.includes(`["${label}"`)));
+// The panel clips its own overflow and leaves 115px above the buttons, so a
+// popover needing 132 was cut off at the top and covered the sentence saying
+// what the update is. The choices open as a row instead, and the card grows.
+check("the postponement choices do not float over a panel that clips them",
+  !styles.includes(".micheon-update-postpone__menu")
+  && !/\.micheon-update-postpone\s*\{[^}]*position: absolute/.test(styles)
+  && /\.micheon-update-postpone\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/.test(styles));
+check("the postponement label gets its own line, because German is longer",
+  /\.micheon-update-postpone__title\s*\{[^}]*grid-column: 1 \/ -1/.test(styles));
+check("the third control has a column of its own",
+  /\.micheon-update-actions\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) auto auto/.test(styles)
+  && /\.micheon-update-panel--downloading \.micheon-update-actions\s*\{[^}]*minmax\(0, 1fr\) auto;/.test(styles));
+check("the postponement speaks German too",
+  updateStatus !== null && i18nTable.includes('"Remind me later": "') && i18nTable.includes('"Remind me in": "'));
 
 check("startup uses the in-app updater path", /autoUpdater\.checkForUpdates\(\)/.test(main));
 check("startup does not invoke the native notification updater", !/autoUpdater\.checkForUpdatesAndNotify\s*\(/.test(main));
