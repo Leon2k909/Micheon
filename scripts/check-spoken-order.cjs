@@ -133,7 +133,7 @@ const thin = (list) => list.slice(0, 500)
     && corpusUses(word.lookup || word.de, index) <= 1).length;
 const spokenThin = thin(conversation);
 const writtenThin = thin(exam);
-assert.ok(spokenThin < 60,
+assert.ok(spokenThin < 20,
   `${spokenThin} of the first 500 conversation words are used at most once in the course's own speech`);
 assert.ok(spokenThin < writtenThin / 2,
   `conversation order (${spokenThin}) is no better than the written one (${writtenThin})`);
@@ -159,8 +159,25 @@ assert.ok(talk.get("morgen") < 300,
   `"tomorrow" is at ${talk.get("morgen")} in a course for having conversations`);
 
 // ── but the basics must not be disturbed ────────────────────────────────────
+// Loosened from 25 to 40 deliberately: heute, bitte and immer now sit ahead of
+// gehen, and by the only evidence available they belong there — the course
+// says them 224, 208 and 148 times against gehen's 72.
 for (const de of ["sein", "haben", "machen", "gut", "gehen"]) {
-  assert.ok(talk.get(de) <= 25, `${de} fell to ${talk.get(de)}; the commonest words must stay first`);
+  assert.ok(talk.get(de) <= 40, `${de} fell to ${talk.get(de)}; the commonest words must stay first`);
+}
+
+// ── a word the bank never listed is not a rare word ─────────────────────────
+// The bank holds 2,502 words of WRITTEN German and does not contain heute,
+// bitte, danke or vielleicht. They were handed back as "unranked" before the
+// spoken signal was consulted, and sorted to the far end: heute is the single
+// most-used word in this course's own conversational text and sat at 2,252.
+for (const [de, ceiling] of [["heute", 60], ["bitte", 60], ["immer", 80], ["vielleicht", 400], ["danke", 400]]) {
+  const found = talk.get(de);
+  assert.ok(found, `${de} is no longer taught, so this pin needs rewriting`);
+  assert.ok(found <= ceiling,
+    `${de} sits at ${found}: the bank does not list it, so the corpus has to answer for it`);
+  assert.ok(!Number.isFinite(frequencyRank(de)),
+    `${de} is in the frequency bank now, so this pin is testing the wrong thing`);
 }
 
 // ── exam mode keeps the written order ───────────────────────────────────────

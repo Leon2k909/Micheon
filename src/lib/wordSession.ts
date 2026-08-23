@@ -465,6 +465,15 @@ function isCoreFunctionWord(word: string | undefined): boolean {
  */
 const UNSPOKEN_SETBACK = 600;
 
+/**
+ * How much of the ordering the spoken signal decides, against the written one.
+ *
+ * Not a free parameter: raising it past 0.65 empties the first three hundred
+ * of words the course says twice or less, and 0.85 tips into ordering purely
+ * by this project's own phrasing, which is a smaller sample than the bank.
+ */
+const SPOKEN_WEIGHT = 0.75;
+
 export function rankWordCatalog(
   catalog: WordItem[],
   corpusIndex: CorpusIndex | null = null,
@@ -511,12 +520,30 @@ export function rankWordCatalog(
     // No index is NO EVIDENCE, not evidence of absence. corpusUses returns 0
     // without one, so every word looks unspoken, every word moves the same
     // distance, and the whole rule quietly cancels itself out.
-    if (!spokenRanks || !Number.isFinite(rank)) return rank;
+    if (!spokenRanks) return rank;
     const name = word.lookup || word.de;
     // Function words are exempt: the corpus index drops them, so their zero
     // means nothing at all.
     if (corpusIgnores(name)) return rank;
     const spoken = spokenRanks.get(word.id) ?? spokenRanks.size + UNSPOKEN_SETBACK;
+    /**
+     * A word the bank has never heard of is not a rare word.
+     *
+     * The bank lists 2,502 words of WRITTEN German, and heute, bitte, danke,
+     * vielleicht and bisschen are not among them — so they arrived here as
+     * "unranked", were handed straight back before the spoken signal was
+     * consulted at all, and sorted to the far end of the queue. heute is said
+     * 224 times in this course's own conversational text, more than almost
+     * anything, and sat at 2,252 of a list claiming to teach the commonest
+     * things first.
+     *
+     * Where the bank is silent the corpus is the only evidence there is, so it
+     * answers alone. Only where the corpus has actually seen the word: absent
+     * from both, it stays unranked and sorts on the rung as before.
+     */
+    if (!Number.isFinite(rank)) {
+      return spokenRanks.has(word.id) ? spoken : rank;
+    }
     // The geometric mean of the two ranks, which is the shape that lets
     // DISAGREEMENT move a word both ways. The rule this replaces only ever
     // pushed back, and only words used exactly zero times: der Bereich is used
@@ -528,7 +555,16 @@ export function rankWordCatalog(
     // Multiplying is right for ranks rather than averaging them, because a
     // frequency list is Zipfian: 30 to 300 is a real drop in how often you
     // meet a word and 3,000 to 3,300 is no drop at all.
-    return Math.sqrt(rank * spoken);
+    //
+    // Weighted towards what is SAID rather than an even split, because an even
+    // split let a high written rank carry a word on very thin spoken evidence:
+    // die Ausbildung is ranked 195 in print and said six times in ten thousand
+    // conversational sentences, and sat at 191 of a course for holding
+    // conversations. At 0.75 it sits at 327, der Bereich moves 163 -> 642 and
+    // der Nutzer 676 -> 1,563, while kurz, einfach, heute and bitte come into
+    // the first twenty. Measured across weightings; past 0.65 nothing said
+    // twice or less survives in the first three hundred at all.
+    return Math.pow(spoken, SPOKEN_WEIGHT) * Math.pow(rank, 1 - SPOKEN_WEIGHT);
   };
 
   return [...catalog]

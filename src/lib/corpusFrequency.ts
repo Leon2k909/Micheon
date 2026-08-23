@@ -25,6 +25,8 @@ export type CorpusIndex = {
   nounCount: Map<string, number>;
   /** word -> occurrences written as anything else */
   otherCount: Map<string, number>;
+  /** word -> occurrences at the start of a sentence, where the capital says nothing */
+  initialCount: Map<string, number>;
   packs: number;
 };
 
@@ -55,14 +57,18 @@ function words(text: string): string[] {
  * The first word of a sentence is capitalised whatever it is, so it is not
  * evidence either way and is left out of both tallies rather than guessed at.
  */
-function shapedWords(text: string): Array<{ key: string; noun: boolean }> {
+function shapedWords(text: string): Array<{ key: string; noun: boolean; initial: boolean }> {
   const raw = String(text ?? "").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
-  const out: Array<{ key: string; noun: boolean }> = [];
+  const out: Array<{ key: string; noun: boolean; initial: boolean }> = [];
   raw.forEach((token, index) => {
     const key = token.toLocaleLowerCase("de-DE");
     if (key.length <= 2 || STOP.has(key)) return;
-    if (index === 0) return;
-    out.push({ key, noun: token[0] === token[0].toLocaleUpperCase("de-DE") });
+    // The first word of a sentence is capitalised whatever it is, so its shape
+    // is no evidence — but dropping it lost the count entirely, and the words
+    // that open sentences are exactly the conversational ones. vielleicht was
+    // recorded 9 times against a true 19, heute and bitte likewise. It is kept
+    // apart and added back to whichever tally the word's own shape indicates.
+    out.push({ key, noun: token[0] === token[0].toLocaleUpperCase("de-DE"), initial: index === 0 });
   });
   return out;
 }
@@ -101,6 +107,7 @@ function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] 
   const count = new Map<string, number>();
   const nounCount = new Map<string, number>();
   const otherCount = new Map<string, number>();
+  const initialCount = new Map<string, number>();
   const keys = Object.keys(parts);
   for (const key of keys) {
     const seen = new Set<string>();
@@ -115,15 +122,15 @@ function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] 
         seen.add(lemma);
       }
       // And again, keeping the noun/not-noun split.
-      for (const { key: word, noun } of shapedWords(phrase?.de ?? "")) {
+      for (const { key: word, noun, initial } of shapedWords(phrase?.de ?? "")) {
         const lemma = germanVerbLemma(word) ?? word;
-        const tally = noun ? nounCount : otherCount;
+        const tally = initial ? initialCount : (noun ? nounCount : otherCount);
         tally.set(lemma, (tally.get(lemma) ?? 0) + 1);
       }
     }
     for (const word of seen) spread.set(word, (spread.get(word) ?? 0) + 1);
   }
-  return { spread, count, nounCount, otherCount, packs: keys.length };
+  return { spread, count, nounCount, otherCount, initialCount, packs: keys.length };
 }
 
 /**
@@ -199,12 +206,12 @@ export function corpusUses(word: string, index: CorpusIndex | null): number {
   // the pooled count answers rather than a zero that would read as "unused".
   const shaped = looksLikeGermanNoun(word) ? index.nounCount : index.otherCount;
   let uses = 0;
-  let pooled = 0;
   for (const candidate of lemmaCandidates(key)) {
-    uses = Math.max(uses, shaped.get(candidate) ?? 0);
-    pooled = Math.max(pooled, index.count.get(candidate) ?? 0);
+    // The shape-matched tally plus the sentence openings, which belong to
+    // whichever reading the word itself is.
+    uses = Math.max(uses, (shaped.get(candidate) ?? 0) + (index.initialCount.get(candidate) ?? 0));
   }
-  return uses || (pooled && !index.nounCount.get(key) && !index.otherCount.get(key) ? pooled : uses);
+  return uses;
 }
 
 export function wordCommonality(word: string, index: CorpusIndex | null): number {
