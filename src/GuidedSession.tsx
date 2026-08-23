@@ -243,7 +243,7 @@ function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, lon
       ) : null}
       {/* No bare frequency-tier chip here any more. "less common" with no
           referent read as a dangling comparison ("less common than WHAT?"),
-          and Leon ruled commonality is backstage information — it orders and
+            and commonality is backstage information — it orders and
           filters, it does not badge. The chips that survive all NAME their
           reference: the pairwise note above, the combined-card synonyms
           below. */}
@@ -2861,7 +2861,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </button>
             {/* No replay button here any more: tapping any word in the
                 sentence speaks it, and two doors to the same audio confused
-                more than they helped — Leon had the second one removed. The
+                  more than they helped, so the second one went. The
                 speed menu it used to carry lives in the lesson header now. */}
           </div>
         </div>

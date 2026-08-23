@@ -557,7 +557,7 @@ export function WordsTracker({ apiParts, user }: {
                 <div className="min-w-0 flex-1">
                   {/* No frequency badge here: commonality ORDERS the list and
                       feeds the sort/filter controls, but as a chip on every row
-                      it was noise — Leon: "a thing behind the scenes". */}
+                      it was noise: it belongs behind the scenes. */}
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <p className="min-w-0 flex-1 truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
                   </div>

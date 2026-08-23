@@ -289,6 +289,15 @@ assert.ok(/UK_SECTIONS\.find\(\(section\) => ukTabRowId\(section\.tab\) === id\)
 // way whatsoever to hide a row without a mouse. Focus is the one thing that
 // still reveals it, which is why the assertions above about role, tabIndex,
 // aria-label and onKeyDown still stand.
+// Invisible is not enough: at opacity 0 the control still took the pointer, so
+// pressing the right-hand end of any row hid it — an invisible button doing
+// something is worse than a visible one, because nothing explains what
+// happened. Keyboard focus is unaffected by pointer-events, so the Tab route
+// below still works.
+assert.ok(/\.np-nav-hide\s*\{[^}]*pointer-events:\s*none/.test(stashCss),
+  "the hidden eye still accepts clicks, so pressing the end of a row hides it by accident");
+assert.ok(/\.np-nav-hide:focus-visible\s*\{[^}]*pointer-events:\s*auto/.test(stashCss),
+  "the eye is unclickable even when focused, so the keyboard route cannot activate it");
 assert.ok(!/button:hover \.np-nav-hide/.test(stashCss),
   "the eye still appears on hover over a visible row");
 assert.ok(/\.np-nav-hide:focus-visible\s*\{[^}]*opacity:\s*1/.test(stashCss),

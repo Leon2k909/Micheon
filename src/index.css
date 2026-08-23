@@ -449,8 +449,8 @@ button { cursor: pointer; }
    meaning, the two language-tagged lines) — and nowhere else. The first cut
    of this rule sent EVERY <p> and <small> on the page to the rounded face,
    which on Windows resolves to Arial Rounded/Trebuchet and looks clunky at
-   the 11-13px captions and descriptions; Leon compared them to the
-   dashboard's and said they still looked wrong. The shell's text face is
+   the 11-13px captions and descriptions, and read as wrong beside the
+   dashboard's. The shell's text face is
    tuned for Windows at small sizes, so small copy goes back to it, matching
    the dashboard letter for letter. The doubled selectors keep out-ranking
    the shell's own p/small base rule regardless of stylesheet order. */

@@ -311,8 +311,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 {/*
                   Every way to study, on the card.
                   A single "Practice" button hid Flashcards, Learn, Test and
-                  Match behind a menu nobody had a reason to open — Leon: "i
-                  only see practice button, not tests like quizlet". They are
+                    Match behind a menu nobody had a reason to open, so only
+                    Practice was visible and the tests were not. They are
                   four different intentions, so they are four buttons, and
                   Learn leads because it is the one that moves progress.
                 */}

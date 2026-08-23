@@ -90,7 +90,7 @@
 }
 
 /* Honest label on unfinished territory: Games, Friends and Shop sit under
-   this divider on the one account (Leon's) that sees them at all. */
+   this divider, on the one account that sees them at all. */
 /* The lesson path while the catalogue loads: real rows are a moment away,
    so the space holds its shape instead of collapsing or claiming the course
    is finished. */
@@ -424,6 +424,12 @@
   color: #8b877f;
   background: rgba(255, 255, 255, 0.9);
   opacity: 0;
+  /* Invisible AND untouchable. Opacity alone leaves the control taking clicks,
+     so pressing the right-hand end of a row hid it — an invisible button doing
+     something is worse than a visible one, because nothing explains what just
+     happened. Keyboard focus is unaffected by pointer-events, so the Tab route
+     below still works. */
+  pointer-events: none;
   cursor: pointer;
   transition:
     opacity var(--np-motion-fast) ease,
@@ -433,8 +439,8 @@
 
 /* Keyboard only.
 
-   Leon: "remove the eye icons from enabled menu items because i wanna just be
-   able to drag every menu into disabled". So the eye no longer answers hover —
+   The eye belongs on a hidden row, not on a visible one. So it no longer
+   answers hover —
    with the mouse, putting something away is the drag, and the eye that used to
    appear over every row on the way past is gone.
 
@@ -443,6 +449,7 @@
    row without a mouse. Focus is the one thing that still reveals it. */
 .np-nav-hide:focus-visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .np-nav-hide:hover {
@@ -1969,9 +1976,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 /* The picture is the card, not a strip at the top of it. The wash keeps text
-   readable without hiding what is underneath — Michelle: "Das Bild soll dabei
-   gut sichtbar bleiben und nicht komplett von einer undurchsichtigen Fläche
-   verdeckt werden." */
+   readable without hiding what is underneath: the picture has to stay
+   properly visible rather than disappearing behind an opaque panel. */
 .np-home-choice-art {
   position: absolute;
   inset: 0;
@@ -2000,9 +2006,9 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 }
 
 /* The picture half. A min-height rather than letting the text decide, because
-   the text is short and the artwork was being cropped to a strip — Michelle:
-   "hier muss bitte alles weiter runter verschoben sein, sodass man mehr vom
-   bild sieht". The copy sits at the FOOT of it, so the top two thirds are the
+   the text is short and the artwork was being cropped to a strip. Everything
+   is pushed further down so that more of the picture shows.
+
    picture and nothing else. */
 .np-home-choice-hero {
   position: relative;
@@ -6623,7 +6629,7 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
 /* The ladder as a stepper: a circle per stage, connecting bars that fill on
    the way to the next circle. Replaces the single anonymous progress bar —
-   Leon asked to SEE the milestones. Labels ride under the circles and
+   which hid the fact that the road has milestones. Labels ride under them and
    disappear on narrow layouts rather than colliding. */
 .np-fluency-steps {
   display: flex;
@@ -11502,8 +11508,7 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-action > button {
 }
 
 /* ── dragging a destination between the sidebar and More ──────────────────
-   Leon: "i should be able to drag menu items out of stuff on the left into
-   more and out". The drop targets have to be visible while a drag is in
+   A row drags out of the sidebar and back again.
    flight and invisible the rest of the time, or the nav grows a permanent
    dashed box nobody asked for. */
 .np-side-nav > button[draggable="true"] {
@@ -11749,9 +11754,7 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
 }
 
 /* Two fields side by side need ~410px. Below that the Change button was
-   pushed outside its own field — Michelle: "hier muss das ändern von
-   lektionsinhalt angepasst werden", with the second button hanging off the
-   card edge. Lesson content is the one that fails first: its button carries a
+   pushed outside its own field, hanging off the card edge.
    chevron, so it is 76px against the other's 59px.
  *
  * The comment above already claimed these wrap on a narrow card. They did not:

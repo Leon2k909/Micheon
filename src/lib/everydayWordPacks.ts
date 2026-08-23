@@ -1101,9 +1101,9 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       /* The second batch, chosen by counting what the catalogue actually grows
          from rather than by guessing. "Ich weiß." alone is the opening of 140
          longer sentences, "Ich kann." of 122 — every one of those is a lesson
-         where the words are already half known. Leon asked for two of these by
-         name after meeting the long forms cold: "surely before [Ich geh gerne
-         ins Kino] we could have [Wir können das nicht] and [I like going]". */
+         where the words are already half known. Two of these were added by
+         name after the long forms turned up cold: "Ich geh gerne ins Kino"
+         wants "Wir können das nicht" and "I like going" ahead of it. */
 
       // Knowing, thinking, hoping
       { de: "Ich weiß.", en: "I know.", use: "For facts. Knowing a person or a place is kennen: Ich kenne ihn." },

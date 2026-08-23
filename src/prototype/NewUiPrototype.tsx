@@ -891,9 +891,8 @@ function Sidebar({
       >
         {/*
           One heading per thing being studied, with what is being studied on
-          it. Michelle asked for the two courses to fold — "[Flagge] Sprachen
-          lernen ▾" — with Home above them, Beta listed flat below, and the
-          put-away drawer on its own at the foot. Nothing here changes where a
+            it. The two courses fold, with Home above them, Beta listed flat
+            below, and the
           row goes; it changes which rows sit together.
         */}
         {navigationItems.filter((item) => !isHidden(item.id)).map((item) => item).filter((item) => item.id === "home").map((item) => {
@@ -1222,8 +1221,8 @@ function Sidebar({
           Hiding something with no visible route to undo it is how a nav ends
           up permanently missing an entry nobody can find again. The put-away
           list used to appear only once something was in it; it is a permanent
-          row now, separated from the sections above, because Michelle asked
-          for it to sit at the bottom as one entry of its own.
+            row now, separated from the sections above, sitting at the bottom
+            as one entry of its own.
         */}
         <div className="np-nav-footer">
           {/* Dragging a row here puts it away, which is where a row dragged
@@ -1261,8 +1260,9 @@ function Sidebar({
                     <span className="truncate">{label}</span>
                     {/* The eye lives here and only here. On a visible row it was
                         eleven standing invitations to dismantle the nav, and
-                        Leon puts things away by dragging them; on a put-away row
-                        it is the whole point of opening the drawer. */}
+                        with a mouse things are put away by dragging; on a
+                        put-away row it is the whole point of opening the
+                        drawer. */}
                     <span aria-hidden="true" className="np-nav-hidden-show"><Eye className="h-3.5 w-3.5" /></span>
                   </button>
                 );
@@ -2020,10 +2020,8 @@ function LanguageCard({
 
   return (
     <article className="np-home-choice np-home-choice--language">
-      {/* Two halves, on Michelle's call: "gerne nur den absatz mit sprachen
-          lernen bis hin zu aktuelle sprache englisch im bild lassen aber tief
-          dahin und grundbausteine sowie weiterlernen etc alles unters bild".
-          The hero keeps the picture with the title and the language panel sunk
+      {/* Two halves. Only the heading and the current language stay in the
+          picture; the building blocks and the continue row all sit below it.
           to its foot, so far more of the artwork is visible; progress and the
           button sit below it on the plain card. */}
       <div className="np-home-choice-hero">
@@ -2612,7 +2610,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         </div>
         {/* The ladder itself, drawn: a circle per stage, bars filling toward
             the next. One plain percentage bar hid the fact that the road has
-            rest stops — Leon asked for the milestones to be visible. */}
+              rest stops, so the milestones are drawn. */}
         <div aria-label={uiFmt("{pct}% to fluent", { pct: fluency.overallPct })} className="np-fluency-steps" role="img">
           {FLUENCY_STAGES.map((stage, index) => (
             <Fragment key={stage.label}>
@@ -2670,8 +2668,8 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
         <span aria-hidden="true"><Clock3 /></span>
         <small>{ui("Estimated active study left")}</small>
         {/* Just the number. The explainer lines that used to sit here (next
-            milestone, pace note, hands-on-time caveat) were all cut on Leon's
-            call — the milestone stepper on the left now tells that story. */}
+              milestone, pace note, hands-on-time caveat) were all cut —
+              the milestone stepper on the left now tells that story. */}
         <strong>{uiFmt("About {hours} hours to Fluent", { hours: uiNumber(estimate.hoursRemaining) })}</strong>
       </div>
     </section>
@@ -2775,9 +2773,8 @@ function ProgressPanel({
   return (
     <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${sections.panel ? " is-open" : " is-folded"}`}>
       {/* The heading is the control. Folded, the panel closes sideways into
-          a rail at the edge of the column rather than collapsing downwards —
-          Michelle: "ich wollte das man es seitlich aufklappen kann nicht von
-          oben nach unten" — so the title turns with it and stays readable. */}
+          a rail at the edge of the column rather than collapsing downwards, so
+          the title turns with it and stays readable. */}
       <button
         aria-expanded={sections.panel}
         aria-label={ui("Your progress")}
@@ -2969,7 +2966,7 @@ function HomeView({
   return (
     <div className="np-home-view">
       {/*
-        The order Michelle laid out from her reference: the motivational
+        The order the page is laid out in: the motivational
         banner, the question, the two cards it answers, then the figures.
         The fluency outlook and the lesson path keep their places below —
         they were not in the reference because it only showed the top of the
@@ -4202,7 +4199,7 @@ export default function NewUiPrototype({
             </button>
             {/* Last, and pushed to the far right by margin-left:auto. It sat
                 between two tabs before, where it read as a broken tab rather
-                than a control — Michelle could not find it. Only on Learn,
+                than a control, and went unfound. Only on Learn,
                 because it is the only tab showing cards to translate. */}
             {/* Both courses now, filtered by the language each is written in:
                 Life in the UK is English and offers German, Leben in

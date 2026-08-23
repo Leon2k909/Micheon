@@ -49,19 +49,41 @@ function sourceFiles(from) {
 }
 
 /**
- * A line inside a comment, or the comment part of a line of code.
+ * The text of every comment line in a file.
  *
- * Deliberately simple: a leading //, a leading * inside a block, or a //
- * following code. It does not try to parse strings, so a URL containing "//"
+ * Block-aware: the first version recognised a line only by how it STARTED, so
+ * the continuation lines of a block comment written without leading asterisks
+ * were invisible. CSS is written that way throughout this project, and five
+ * comments naming somebody sat in .css files while this reported all clean.
+ *
+ * It does not try to parse strings, so a URL containing "//"
  * can be read as a comment — which costs nothing, because the patterns below
  * do not match URLs.
  */
-function commentText(line) {
-  const trimmed = line.trim();
-  if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) return trimmed;
-  const slashes = line.indexOf("//");
-  if (slashes >= 0) return line.slice(slashes);
-  return null;
+function commentLines(source) {
+  const out = [];
+  let inBlock = false;
+  source.split(/\r?\n/).forEach((line, index) => {
+    const record = (text) => {
+      if (text && text.trim()) out.push({ line: index + 1, text: text.trim() });
+    };
+    if (inBlock) {
+      const ends = line.indexOf("*/");
+      record(ends >= 0 ? line.slice(0, ends) : line);
+      if (ends >= 0) inBlock = false;
+      return;
+    }
+    const opens = line.indexOf("/*");
+    const slashes = line.indexOf("//");
+    if (opens >= 0 && (slashes < 0 || opens < slashes)) {
+      const ends = line.indexOf("*/", opens + 2);
+      if (ends >= 0) record(line.slice(opens, ends));
+      else { record(line.slice(opens)); inBlock = true; }
+      return;
+    }
+    if (slashes >= 0) record(line.slice(slashes));
+  });
+  return out;
 }
 
 /**
@@ -112,16 +134,13 @@ for (const from of ROOTS) {
     // This file has to name the patterns it refuses, or it cannot refuse them.
     if (path.resolve(file) === path.resolve(__filename)) continue;
     const relative = path.relative(root, file).replace(/\\/g, "/");
-    const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
-    lines.forEach((line, index) => {
-      const text = commentText(line);
-      if (!text) return;
+    for (const { line, text } of commentLines(fs.readFileSync(file, "utf8"))) {
       for (const pattern of PATTERNS) {
         if (!pattern.test(text)) continue;
-        offenders.push({ where: `${relative}:${index + 1}`, why: pattern.why, text: text.trim().slice(0, 96) });
-        return;
+        offenders.push({ where: `${relative}:${line}`, why: pattern.why, text: text.slice(0, 96) });
+        break;
       }
-    });
+    }
   }
 }
 

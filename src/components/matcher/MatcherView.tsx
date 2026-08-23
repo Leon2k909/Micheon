@@ -576,9 +576,8 @@ export function MatcherView({
                 volumes and speeds it reads are these. A separate one would be
                 two places to set the same thing, and they would disagree. */}
             <MuteButton
-              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
               iconClassName="h-3.5 w-3.5"
-              label={ui("Sound")}
               panelClassName="prototype-audio-mixer"
             />
           </div>

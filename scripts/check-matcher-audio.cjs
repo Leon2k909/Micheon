@@ -54,6 +54,13 @@ assert.ok(/AUDIO_SETTINGS_EVENT/.test(matcher),
 assert.ok(/\[board\.pairs, englishLang, audioRevision\]/.test(matcher),
   "the warm-up does not depend on the mixer, so a speed change would not re-warm the board");
 
+// ── the trigger is icon-only ────────────────────────────────────────────────
+// MuteButton renders `label` as visible text INSIDE the button. Passing one to
+// a button sized for an icon put the word "Sound" through its right-hand edge.
+// The aria-label it sets for itself is what names it.
+assert.ok(!/<MuteButton[^>]*\blabel=/s.test(matcher),
+  "the mixer trigger carries a visible label again, which overflows a button sized for an icon");
+
 // ── the label is translated ─────────────────────────────────────────────────
 const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
 assert.ok(/"Sound":/.test(i18n), '"Sound" has no German');
