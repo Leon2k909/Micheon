@@ -2130,6 +2130,7 @@ const DE: Record<string, string> = {
   "Nothing is hidden.": "Es ist nichts ausgeblendet.",
 
   // ── The Listen test ──
+  "Sound": "Ton",
   "Test me": "Teste mich",
   "Back to Listen": "Zurück zum Hören",
   "Test again": "Noch einmal testen",

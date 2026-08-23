@@ -30,6 +30,8 @@ import {
   type ListenReviewLevel,
 } from "@/lib/listenMode";
 import { preloadTts, tts, stopTts } from "@/lib/voice";
+import { MuteButton } from "@/components/MuteButton";
+import { AUDIO_SETTINGS_EVENT } from "@/lib/audioMute";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -290,13 +292,24 @@ export function MatcherView({
    * ignored on purpose — this is a head start, and a tap still works without
    * it exactly as it did before.
    */
+  //
+  // Re-warmed when the mixer changes, because the cache is keyed on the RATE
+  // as well as the text: turning the speed up leaves every warmed clip under
+  // a key nothing will read again, and the delay comes straight back.
+  const [audioRevision, setAudioRevision] = useState(0);
+  useEffect(() => {
+    const onAudioChanged = () => setAudioRevision((revision) => revision + 1);
+    window.addEventListener(AUDIO_SETTINGS_EVENT, onAudioChanged);
+    return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, onAudioChanged);
+  }, []);
+
   useEffect(() => {
     if (!board.pairs.length) return;
     for (const pair of board.pairs) {
       if (pair.de) preloadTts(pair.de, 0.88, "de-DE");
       if (pair.en) preloadTts(pair.en, 0.95, englishLang);
     }
-  }, [board.pairs, englishLang]);
+  }, [board.pairs, englishLang, audioRevision]);
 
   const choose = useCallback((side: "de" | "en", id: string) => {
     if (solved.has(id)) return;
@@ -558,6 +571,16 @@ export function MatcherView({
               <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
               {uiFmt("Know all {n}", { n: uiNumber(remaining) })}
             </button>
+            {/* The lesson's own mixer, not a second set of controls: tapping a
+                card here goes through the same tts() the lesson uses, so the
+                volumes and speeds it reads are these. A separate one would be
+                two places to set the same thing, and they would disagree. */}
+            <MuteButton
+              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+              iconClassName="h-3.5 w-3.5"
+              label={ui("Sound")}
+              panelClassName="prototype-audio-mixer"
+            />
           </div>
         </div>
         <p className="mt-3 text-xs font-bold text-[var(--text-3)]">

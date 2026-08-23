@@ -483,8 +483,12 @@ for (const kind of ["words", "sentences"]) {
   // The menu is closed until asked for — a board with six open menus is a mess.
   assert.strictEqual(count("matcher-tile-menu"), 0,
     "the level menus render open");
-  assert.strictEqual(count('aria-expanded="false"'), MATCHER_BOARD_SIZE,
-    "the menu buttons do not report themselves closed");
+  // Counted among the TILE menus rather than across the whole board: the
+  // header carries the lesson's sound mixer now, which is another thing that
+  // expands, and counting every aria-expanded on the page made a control
+  // being added anywhere look like a tile menu going missing.
+  assert.strictEqual(count('aria-expanded="false" aria-haspopup="menu"'), MATCHER_BOARD_SIZE,
+    "the tile menu buttons do not report themselves closed");
   // Six German tiles and six English ones, and only the German side is graded.
   assert.strictEqual(count("matcher-tile is-german"), MATCHER_BOARD_SIZE,
     "the German column is not the one carrying the controls");
