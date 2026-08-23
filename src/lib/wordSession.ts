@@ -20,7 +20,7 @@
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
 import { packMeta } from "@/lib/curriculum";
-import { corpusIgnores, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
+import { corpusIgnores, corpusReach, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
@@ -515,10 +515,29 @@ export function rankWordCatalog(
    */
   const spokenRanks = (() => {
     if (mode !== "conversation" || !corpusIndex) return null;
+    // Weighted by how many packs say it, not by the raw count. A count on its
+    // own cannot tell a common word from a topic: die Ausbildung is said six
+    // times and das Wetter fourteen, but the six sit in three packs and the
+    // fourteen in twelve, and it is das Wetter a learner will need. The
+    // geometric mean keeps both halves honest — neither a word said often in
+    // one place nor one mentioned once each in many gets to the front on that
+    // alone.
     const attested = catalog
-      .map((word) => ({ id: word.id, uses: corpusUses(word.lookup || word.de, corpusIndex) }))
+      .map((word) => {
+        const name = word.lookup || word.de;
+        const uses = corpusUses(name, corpusIndex);
+        const reach = corpusReach(name, corpusIndex);
+        // Reach is capped at the count, because it cannot honestly exceed it:
+        // a word written once appears in one pack. Where the map says more —
+        // das Los reading 27 from the particle "los", die Sucht 7 from "sucht"
+        // — that is the spread map being blind to part of speech, not
+        // evidence, and without the cap a word used once was pulled from
+        // 3,000th to 660th on it.
+        const weight = Math.sqrt(uses * Math.max(1, Math.min(reach, uses)));
+        return { id: word.id, uses, weight };
+      })
       .filter((entry) => entry.uses > 0)
-      .sort((a, b) => b.uses - a.uses);
+      .sort((a, b) => b.weight - a.weight);
     return new Map(attested.map((entry, index) => [entry.id, index + 1]));
   })();
 

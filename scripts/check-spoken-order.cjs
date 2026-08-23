@@ -168,6 +168,21 @@ for (const de of ["der Bereich", "die Maßnahme", "politisch", "das Mitglied", "
     `${de} sits at ${after} for conversation against ${before} for the exam — barely moved`);
 }
 
+// ── a count on its own cannot tell a common word from a topic ───────────────
+// die Fähigkeit is written eight times and die Ausbildung six, so by count the
+// ability noun comes first. All eight of Fähigkeit’s sit in ONE pack and
+// Ausbildung’s six are spread over three, and a word confined to a single
+// topic is a word most learners will never need. Reach is what separates the
+// two, and by count alone this pin reads backwards — which is what makes it
+// worth having.
+for (const [narrow, broad] of [["die Fähigkeit", "die Ausbildung"], ["die Fähigkeit", "das Wetter"],
+  ["die Fähigkeit", "die Prüfung"]]) {
+  const a = talk.get(narrow), b = talk.get(broad);
+  assert.ok(a && b, `${narrow} or ${broad} is no longer taught, so this pin needs rewriting`);
+  assert.ok(a > b,
+    `${narrow} sits at ${a} and ${broad} at ${b}. ${narrow} is written more often but only ever `
+    + `inside one pack, so ${broad} is the one a learner is more likely to need.`);
+}
 // ── and words people say must come forward ──────────────────────────────────
 for (const de of ["morgen", "echt", "gleich", "kurz", "einfach", "die Minute"]) {
   const before = write.get(de);
