@@ -3218,7 +3218,7 @@ function ShopView({
 
       <div className="np-shop-section-heading">
         <div><h2>{ui("Profile pins")}</h2><p>{ui("Your equipped pin appears on the profile button.")}</p></div>
-        <span>{ownedBadges.length} of {SHOP_ITEMS.length} owned</span>
+        <span>{uiFmt("{owned} of {total} owned", { owned: ownedBadges.length, total: SHOP_ITEMS.length })}</span>
       </div>
 
       <div className="np-shop-grid">
@@ -3228,9 +3228,9 @@ function ShopView({
           const shortfall = Math.max(0, item.price - availableCoins);
           const disabled = equipped || (!owned && shortfall > 0);
           const buttonLabel = equipped
-            ? "Equipped"
+            ? ui("Equipped")
             : owned
-              ? "Equip"
+              ? ui("Equip")
               : shortfall > 0
                 ? uiFmt("Need {n} more", { n: shortfall })
                 : ui("Buy and equip");
@@ -3244,7 +3244,7 @@ function ShopView({
                 <p>{ui(item.description)}</p>
               </div>
               <div className="np-shop-item-footer">
-                <span>{owned ? "Owned" : <><Coins /> {item.price}</>}</span>
+                <span>{owned ? ui("Owned") : <><Coins /> {item.price}</>}</span>
                 <button aria-pressed={equipped} disabled={disabled} onClick={() => onChooseBadge(item.id)} type="button">
                   {buttonLabel}
                 </button>
