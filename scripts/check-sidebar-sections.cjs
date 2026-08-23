@@ -360,6 +360,13 @@ assert.ok(
   /\.np-nav-group \+ \.np-nav-group \{[^}]*border-top/.test(css),
   "and the two sections are ruled apart"
 );
+// Home is a row, not a section, so the rule above it never covered the join
+// between the two: it sat flush on the first heading, the one division down
+// the rail that was not drawn.
+assert.ok(
+  /\.np-side-nav > button \+ \.np-nav-group \{[^}]*border-top/.test(css),
+  "and Home is ruled off from the first section below it"
+);
 assert.ok(
   /\.np-nav-footer \{[^}]*border-top/.test(css),
   "as is the footer from the sections above it"

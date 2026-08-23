@@ -485,6 +485,16 @@
   border-top: 1px solid var(--np-line);
 }
 
+/* Home is a row rather than a section, so nothing ruled it off from the
+   sections beneath it: it sat flush on the first heading and read as that
+   section's first entry. It takes the rule the sections already use between
+   themselves, so every division down the rail is drawn the same way. */
+.np-side-nav > button + .np-nav-group {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--np-line);
+}
+
 .np-side-nav .np-nav-group-head {
   grid-template-columns: 36px minmax(0, 1fr) auto;
   gap: 10px;
