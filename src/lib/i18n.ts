@@ -2369,6 +2369,7 @@ const DE: Record<string, string> = {
   "Your next lesson": "Deine nächste Lektion",
   "{count} items known": "{count} Einträge sicher",
   "Target: {words} words + {phrases} phrases": "Ziel: {words} Wörter + {phrases} Sätze",
+  "Goal: {count} words and phrases": "Ziel: {count} Wörter und Sätze",
   "{words} more words": "Noch {words} Wörter",
   "{phrases} more phrases": "Noch {phrases} Sätze",
   "1 item is fading · review it": "1 Eintrag verblasst · wiederholen",

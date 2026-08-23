@@ -6748,6 +6748,16 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   overflow-wrap: anywhere;
 }
 
+/* The cost of a stage, under the description of it. Heavier and in the
+   accent so the number reads as the answer to "how far is that" rather than
+   as a second sentence about the ability. */
+.np-fluency-stage small.np-fluency-stage__target {
+  margin-top: 1px;
+  color: var(--accent);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── the figures ──────────────────────────────────────────────────────────
    One strip, divided rather than stacked, so three or four numbers read as
    one row of facts instead of a paragraph. */

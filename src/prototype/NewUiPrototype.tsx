@@ -2602,13 +2602,34 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
   // actionable at any moment.
   const nextStage = FLUENCY_STAGES[Math.min(fluency.index + 1, FLUENCY_STAGES.length - 1)];
   const finalStage = FLUENCY_STAGES[FLUENCY_STAGES.length - 1];
+  // Each card says what the stage IS and what it COSTS. The middle one used
+  // to say only the first and the far one only the second, which left the
+  // milestone actually being worked towards without a number on it.
   const stages = [
-    { icon: <Sun />, label: fluency.cur.label, note: uiFmt("{count} items known", { count: uiNumber(fluency.vocab) }), current: true },
-    { icon: <Users />, label: nextStage.label, note: nextStage === finalStage ? "" : ui(nextStage.blurb), current: false },
+    {
+      icon: <Sun />,
+      label: fluency.cur.label,
+      note: uiFmt("{count} items known", { count: uiNumber(fluency.vocab) }),
+      target: "",
+      current: true,
+    },
+    {
+      icon: <Users />,
+      label: nextStage.label,
+      note: nextStage === finalStage ? "" : ui(nextStage.blurb),
+      // From the stage's own threshold, so it follows a recalibrated ladder.
+      // One figure rather than two lanes: only Fluent is split into words and
+      // phrases.
+      target: nextStage === finalStage
+        ? ""
+        : uiFmt("Goal: {count} words and phrases", { count: uiNumber(nextStage.min) }),
+      current: false,
+    },
     {
       icon: <Flag />,
       label: finalStage.label,
-      note: uiFmt("Target: {words} words + {phrases} phrases", {
+      note: ui(finalStage.blurb),
+      target: uiFmt("Target: {words} words + {phrases} phrases", {
         phrases: uiNumber(FLUENT_PHRASE_TARGET),
         words: uiNumber(FLUENT_WORD_TARGET),
       }),
@@ -2665,6 +2686,7 @@ function FluencyOutlook({ profile, vocab }: { profile: UserProfile | null; vocab
                 {stage.current && <span className="np-fluency-stage__now">{ui("Current")}</span>}
                 <strong>{ui(stage.label)}</strong>
                 {stage.note && <small>{stage.note}</small>}
+                {stage.target && <small className="np-fluency-stage__target">{stage.target}</small>}
               </div>
             </Fragment>
           ))}
