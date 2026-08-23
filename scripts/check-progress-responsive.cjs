@@ -57,6 +57,22 @@ if (!/flex flex-wrap items-start justify-between/.test(learn)) {
   failures.push("the lesson card header cannot wrap, so its level badge escapes the card");
 }
 
+// The fluency meter is the narrowest thing in that column, and a screen
+// breakpoint cannot see how narrow: widening the sidebar takes the card down
+// to about 250px while the viewport still reads as a large one. At that width
+// the stage name was clipped to an ellipsis and the sentence under it broke to
+// one word a line, so the card asks its own width rather than the window's.
+const meter = fs.readFileSync(path.join(root, "src/components/FluencyMeter.tsx"), "utf8");
+if (!meter.includes('className="@container ')) {
+  failures.push("the fluency meter has no container query, so it cannot tell how narrow its own column is");
+}
+if (!meter.includes("@max-[18rem]:flex-col")) {
+  failures.push("the fluency meter keeps its figure beside the text at every width, leaving the text about 110px");
+}
+if (meter.includes("truncate text-lg font-black")) {
+  failures.push("the fluency meter truncates the stage name, which is the one thing the card exists to say");
+}
+
 if (failures.length) {
   console.error("FAIL check-progress-responsive");
   failures.forEach((line) => console.error("  " + line));

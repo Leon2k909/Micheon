@@ -79,14 +79,23 @@ export function FluencyMeter({
   }
 
   return (
-    <div className="rounded-[24px] bg-[var(--surface-2)] p-4">
-      <div className="flex items-start justify-between gap-4">
+    // A container query rather than a screen one: how wide this card is has
+    // little to do with how wide the window is. Beside a widened sidebar the
+    // profile page's two-column row leaves it about 250px, and at that size
+    // the stage name was cut to an ellipsis while the sentence under it broke
+    // to one word a line. Below 288px the figure drops beneath the text and
+    // both get the full width of the card.
+    <div className="@container rounded-[24px] bg-[var(--surface-2)] p-4">
+      <div className="flex items-start justify-between gap-4 @max-[18rem]:flex-col @max-[18rem]:gap-3">
         <div className="min-w-0">
           <p className="text-xs font-black text-[var(--text-3)]">{ui("You're at")}</p>
-          <p className="mt-1 truncate text-lg font-black text-[var(--text-1)]">{ui(f.cur.label)}</p>
+          {/* Wrapping, not truncating. The stage name is the answer the card
+              exists to give, and an ellipsis is the one thing it must not do
+              to it. */}
+          <p className="mt-1 text-lg font-black text-[var(--text-1)]">{ui(f.cur.label)}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">{ui(f.cur.blurb)}</p>
         </div>
-        <div className="shrink-0 rounded-2xl bg-[var(--surface)] px-3 py-2 text-right shadow-[inset_0_0_0_1px_var(--border)]">
+        <div className="shrink-0 self-start rounded-2xl bg-[var(--surface)] px-3 py-2 text-right shadow-[inset_0_0_0_1px_var(--border)] @max-[18rem]:self-end">
           <p className="text-2xl font-black leading-none text-[var(--text-1)]">{f.overallPct}%</p>
           <p className="mt-1 text-[10px] font-black text-[var(--text-3)]">{ui("to fluent")}</p>
         </div>
