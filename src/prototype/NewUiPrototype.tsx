@@ -167,7 +167,7 @@ import heroImage from "./assets/micheon-monkey-v1.webp";
  * lernen?".
  */
 import homeSkylineImage from "./assets/home-skyline-de-v1.webp";
-import homeLanguagesImage from "./assets/home-languages-de-v1.webp";
+import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeCountryImage from "./assets/home-country-de-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";

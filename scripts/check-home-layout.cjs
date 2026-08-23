@@ -30,7 +30,7 @@ const i18n = read("src/lib/i18n.ts");
 // first screen — 6.4MB of source became 327KB with the artwork unchanged.
 const PICTURES = [
   ["home-skyline-de-v1.webp", "homeSkylineImage", "np-home-banner-sky"],
-  ["home-languages-de-v1.webp", "homeLanguagesImage", "np-course-art"],
+  ["home-languages-de-v2.webp", "homeLanguagesImage", "np-course-art"],
   ["home-country-de-v1.webp", "homeCountryImage", "np-home-choice-art"],
 ];
 
