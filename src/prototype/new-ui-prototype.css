@@ -1099,6 +1099,11 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
 .np-stat-chip small {
   margin-top: 2px;
   color: var(--np-muted);
+  /* The same face as the figure above it. The number carried the display
+     font and the label underneath fell back to the interface font, so the
+     two lines of one chip were set in two different typefaces — flush left
+     with each other and still not matching. */
+  font-family: var(--np-font-display);
   font-size: var(--np-type-caption);
   font-weight: 650;
   line-height: 1.2;
