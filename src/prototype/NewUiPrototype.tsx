@@ -470,7 +470,7 @@ const PROTOTYPE_SEARCH_PAGES: Array<{
   { id: "progress", title: "Progress and achievements", subtitle: "Levels, streaks, XP, milestones, and activity.", keywords: "stats achievements streak level xp" },
   { id: "profile", title: "Profile and settings", subtitle: "Account, learning direction, sound, and preferences.", keywords: "account settings language sound preferences" },
   { id: "more", title: "More", subtitle: "Course switching and the rest of Micheon's tools.", keywords: "courses switch full app options" },
-  { id: "life-in-uk", title: "Life in UK", subtitle: "The citizenship test course: history, government, law and traditions.", keywords: "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office einbürgerung" },
+  { id: "life-in-uk", title: "Life in UK", subtitle: "British history, government, law and traditions.", keywords: "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office einbürgerung" },
 ];
 
 const LEON_SOCIAL_SEARCH_PAGE = {

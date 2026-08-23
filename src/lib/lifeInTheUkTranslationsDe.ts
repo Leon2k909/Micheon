@@ -1408,6 +1408,6 @@ export const LIFE_IN_THE_UK_DE: Record<string, string> = {
   "Now answer these": "Jetzt beantworte diese Fragen",
 
   // ── Kurskopf ──
-  "History, government and traditions — everything the citizenship test asks.":
-    "Geschichte, Regierung und Traditionen – alles, was der Einbürgerungstest abfragt.",
+  "History, government and traditions — how life in the UK works.":
+    "Geschichte, Regierung und Traditionen – wie das Leben in Großbritannien funktioniert.",
 };

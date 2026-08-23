@@ -2225,8 +2225,7 @@ const DE: Record<string, string> = {
   // "Life in the UK" is the name of a Home Office test, so it keeps its English
   // name on a German interface the same way "Micheon Premium" does.
   "Life in UK": "Life in UK",
-  "The citizenship test course: history, government, law and traditions.": "Der Kurs für den Einbürgerungstest: Geschichte, Regierung, Recht und Traditionen.",
-  "Everything the Life in the UK Test asks, in fourteen lessons.": "Alles, was der Life-in-the-UK-Test abfragt, in vierzehn Lektionen.",
+  "British history, government, law and traditions.": "Britische Geschichte, Regierung, Recht und Traditionen.",
   "Level progress": "Stufenfortschritt",
   "Levels, achievements, and activity": "Stufen, Erfolge und Aktivität",
   "Levels, streaks, XP, milestones, and activity.": "Stufen, Serien, XP, Meilensteine und Aktivität.",
