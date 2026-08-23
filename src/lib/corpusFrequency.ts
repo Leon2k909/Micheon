@@ -27,6 +27,16 @@ export type CorpusIndex = {
   otherCount: Map<string, number>;
   /** word -> occurrences at the start of a sentence, where the capital says nothing */
   initialCount: Map<string, number>;
+  /**
+   * word -> its place in this corpus by how often it is said, 1 = most.
+   *
+   * The written bank is a list of content words: jetzt, hier, dann, immer,
+   * mehr and viel are not in it at all. Without this they fell through to the
+   * pack-spread estimate and scored mid-rare — jetzt at 2,213 — and a
+   * sentence is scored by its worst word, so any line containing one of them
+   * was dragged back with it.
+   */
+  spokenRank: Map<string, number>;
   packs: number;
 };
 
@@ -130,7 +140,14 @@ function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] 
     }
     for (const word of seen) spread.set(word, (spread.get(word) ?? 0) + 1);
   }
-  return { spread, count, nounCount, otherCount, initialCount, packs: keys.length };
+  // Ranked once here rather than per lookup: wordCommonality is called for
+  // every word of every sentence in the catalogue.
+  const spokenRank = new Map<string, number>();
+  [...count.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "de-DE"))
+    .forEach(([word], place) => spokenRank.set(word, place + 1));
+
+  return { spread, count, nounCount, otherCount, initialCount, spokenRank, packs: keys.length };
 }
 
 /**
@@ -161,6 +178,16 @@ function lemmaCandidates(key: string, isNoun: boolean): string[] {
   // du gehst / er geht -> gehen
   if (key.endsWith("st") && key.length > 4) out.add(`${key.slice(0, -2)}en`);
   if (key.endsWith("t") && key.length > 3) out.add(`${key.slice(0, -1)}en`);
+  // A stem ending in a consonant cluster takes a linking -e-, so the third
+  // person is stem+et and the rule above lands one letter short: kostet gave
+  // "kosteen", not kosten. Fifty-eight of the course's verbs were in that
+  // hole — kostet scored 2,873 against kosten's 193, bietet 3,961 against
+  // bieten's 24 — and since a sentence is scored by its worst word, one of
+  // them was enough to send an everyday line to the back.
+  if (key.endsWith("et") && key.length > 4) out.add(`${key.slice(0, -1)}n`);
+  if (key.endsWith("est") && key.length > 5) out.add(`${key.slice(0, -2)}n`);
+  if (key.endsWith("ete") && key.length > 5) out.add(`${key.slice(0, -2)}n`);
+  if (key.endsWith("eten") && key.length > 6) out.add(`${key.slice(0, -3)}n`);
   // machte / machten -> machen
   if (key.endsWith("te") && key.length > 4) out.add(`${key.slice(0, -2)}en`);
   if (key.endsWith("ten") && key.length > 5) out.add(`${key.slice(0, -3)}en`);
@@ -231,6 +258,53 @@ export function corpusUses(word: string, index: CorpusIndex | null): number {
   return uses;
 }
 
+/**
+ * How many different packs of the course say this word.
+ *
+ * The companion to corpusUses, and the half that was never asked for. Six
+ * mentions inside one pack is a topic; six spread over six packs is a word
+ * people say. die Ausbildung is said six times across three packs and arrived
+ * 600th of 7,300, ahead of das Wetter, which is said fourteen times across
+ * twelve — more contexts, more useful, further back.
+ */
+export function corpusReach(word: string, index: CorpusIndex | null): number {
+  if (!index) return 0;
+  const key = word.toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").replace(/[^\p{L}\p{N}]/gu, "");
+  if (!key) return 0;
+  // The same shape test corpusUses makes, and for the same reason. The spread
+  // map is case-folded, so pooling candidates freely let die Wolle claim the
+  // 113 packs that say "wollen" and der Zeh the 68 that say "zehn" — the
+  // false-inheritance bug over again, in the half that counts packs instead
+  // of mentions. A candidate only counts when the corpus has actually written
+  // it in this word's shape.
+  const shaped = looksLikeGermanNoun(word) ? index.nounCount : index.otherCount;
+  let reach = index.spread.get(key) ?? 0;
+  for (const candidate of lemmaCandidates(key, looksLikeGermanNoun(word))) {
+    if (candidate === key) continue;
+    if (!(shaped.get(candidate) ?? 0)) continue;
+    reach = Math.max(reach, index.spread.get(candidate) ?? 0);
+  }
+  return reach;
+}
+
+/**
+ * Whether wordCommonality may fall back to how often this course says a word.
+ *
+ * The bank is a content-word list and has never heard of jetzt, hier, dann,
+ * immer, viel or mehr — 144 words the course says twenty times or more, 7,119
+ * mentions between them, all scored mid-rare by the pack-spread guess instead.
+ * Turning this on fixes that and moves everyday lines forward.
+ *
+ * It is off because it also moves which pack leads the first dozen Continue
+ * Learning lessons, and part380 — the pack that teaches Keine Ahnung, Kann
+ * sein and Mal sehen, then how to extend each one — stops being reached
+ * inside twelve. That pack surfaced early only by accident of word frequency;
+ * making it deliberate is a curriculum decision, not a scoring one, so the
+ * switch waits for that decision rather than being made silently by whoever
+ * touched the scorer last.
+ */
+const USE_SPOKEN_FALLBACK = false;
+
 export function wordCommonality(word: string, index: CorpusIndex | null): number {
   const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");
   if (!key) return 5000;
@@ -243,6 +317,27 @@ export function wordCommonality(word: string, index: CorpusIndex | null): number
   }
   if (Number.isFinite(best)) return best;
   if (!index) return 4000;
+
+  // The bank has no opinion. Before guessing from how many packs mention the
+  // word, ask how often this course actually says it — the same evidence the
+  // word ordering already runs on. 144 words the course says twenty times or
+  // more scored worse than 1500 without this, between them 7,119 mentions,
+  // and every sentence carrying one was scored as if it were rare.
+  //
+  // Mapped onto the bank's own scale rather than a wider one, so a word it
+  // ranks and a word it has never heard of stay comparable inside the same
+  // sentence.
+  // OFF until the phrase-chain question below is decided. See
+  // USE_SPOKEN_FALLBACK.
+  let spoken = Infinity;
+  for (const candidate of candidates) {
+    const place = index.spokenRank.get(candidate);
+    if (place != null && place < spoken) spoken = place;
+  }
+  if (USE_SPOKEN_FALLBACK && Number.isFinite(spoken)) {
+    const of = Math.max(1, index.spokenRank.size);
+    return Math.max(1, Math.round(1 + ((spoken - 1) / of) * 2500));
+  }
 
   // Pool the corpus spread across the forms too, so "gehe", "gehst" and "geht"
   // count as one word rather than three rare ones.

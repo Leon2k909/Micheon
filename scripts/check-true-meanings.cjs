@@ -34,7 +34,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { buildCorpusIndex, corpusUses } from "./src/lib/corpusFrequency.ts";',
+      'export { buildCorpusIndex, corpusUses, wordCommonality } from "./src/lib/corpusFrequency.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
     ].join("\n"),
@@ -159,6 +159,27 @@ for (const card of CARDS) {
   const face = found[1].split(",")[0].trim();
   assert.ok(card.mustLeadWith.test(face) && !card.notLeadWith.test(face),
     `"${card.de}" shows "${face}" — ${card.because}`);
+}
+
+// ── a sentence is scored by its worst word, so no common word may score rare ─
+// Two holes did this, and both are silent: an everyday line simply sits a few
+// hundred places further back than it should and nothing says why.
+{
+  const { wordCommonality } = compiled.exports;
+  // A stem ending in a cluster takes a linking -e-, so the third person is
+  // stem+et. The plain -t rule landed one letter short and produced kosteen.
+  for (const [form, lemma] of [["kostet", "kosten"], ["arbeitet", "arbeiten"],
+    ["findet", "finden"], ["bietet", "bieten"], ["wartet", "warten"], ["öffnet", "öffnen"]]) {
+    const asForm = wordCommonality(form, index);
+    const asLemma = wordCommonality(lemma, index);
+    assert.ok(asForm <= Math.max(120, asLemma * 1.3),
+      `"${form}" scores ${Math.round(asForm)} while "${lemma}" scores ${Math.round(asLemma)} — ` +
+      "the -et form is not reaching its verb, and every sentence using it is scored as rare");
+  }
+  // The matching pin for the bank gap — jetzt, hier, dann and the rest score
+  // mid-rare because the bank has never heard of them — is deliberately NOT
+  // here: USE_SPOKEN_FALLBACK is off, so the behaviour it would pin does not
+  // exist yet. Pinning it now would mean pinning the bug.
 }
 
 // ── and a card must not swallow a word that means something else ────────────
