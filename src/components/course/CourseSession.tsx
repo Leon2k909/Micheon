@@ -329,7 +329,10 @@ function QuizStepView({ q, options, explanation, onNext, onAnswered }: { q: stri
     if (answered) return;
     setPicked(index);
     onAnswered?.(Boolean(options[index]?.correct), index);
-    if (options[index]?.correct) window.setTimeout(onNext, 900);
+    // No auto-advance on a right answer. It used to jump after 900ms, which
+    // put the explanation on screen for less time than it takes to read and
+    // made a right answer behave differently from a wrong one. Both wait for
+    // the same press now.
   };
 
   return (
@@ -364,7 +367,7 @@ function QuizStepView({ q, options, explanation, onNext, onAnswered }: { q: stri
           </div>
         )}
       </div>
-      {answered && !options[picked]?.correct && (
+      {answered && (
         <button type="button" onClick={onNext} className="continue-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-black text-white">
           {ui("Continue")} <ArrowRight className="h-4 w-4" />
         </button>
