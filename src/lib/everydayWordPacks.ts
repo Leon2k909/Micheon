@@ -1120,7 +1120,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich denke schon.", en: "I think so.", use: "schon is what completes it — bare 'Ich denke' or 'Ich glaube' trails off. With a comma it carries the thought instead: Ich denke, das stimmt." },
       { de: "Ich denke nach.", en: "I'm thinking about it.", use: "nachdenken is thinking something OVER. Bare 'Ich denke' does not mean this — it opens an opinion: Ich denke, das stimmt." },
       { de: "Ich hoffe es.", en: "I hope so.", use: "The es is what makes it a complete reply. With a comma comes the wish instead: Ich hoffe, es klappt." },
-      { de: "Ich sehe das.", en: "I see it that way.", use: "Not eyesight — this is how you view something. Ich sehe das anders = I disagree." },
+      { de: "Ich sehe das.", en: "I can see it. / I see that.", use: "Plain eyesight, and the note this card used to carry had it backwards. The opinion reading needs a manner word to complete it, exactly like the cards above: Ich sehe das auch so = I see it that way too, Ich sehe das anders = I disagree." },
 
       // Can, must, want
       { de: "Ich kann.", en: "I can.", use: "A complete answer to Kannst du? The verb is left off once it is obvious." },
@@ -1210,7 +1210,7 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
       { de: "Alles in Ordnung?", en: "Everything alright?", use: "A shade more serious than Alles klar? — you've noticed something." },
       { de: "Stimmt was nicht?", en: "Is something wrong?", long: "Stimmt etwas nicht?", use: "Gentler than Was ist los? — it asks rather than demands." },
       { de: "Willst du drüber reden?", en: "Do you want to talk about it?", long: "Willst du darüber reden?", use: "Spoken German shortens darüber to drüber constantly." },
-      { de: "Erzähl mal.", en: "Tell me about it.", use: "mal takes the edge off an imperative — an invitation, not an order." },
+      { de: "Erzähl mal.", en: "Go on, tell me. / Tell me.", use: "mal takes the edge off an imperative — an invitation, not an order. English \"tell me about it\" is usually the sarcastic one, which is the opposite of what this says." },
 
       // Looking after her
       { de: "Hast du schon gegessen?", en: "Have you eaten yet?", use: "Asked far more often in German than the English is in English." },

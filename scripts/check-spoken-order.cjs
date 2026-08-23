@@ -124,8 +124,29 @@ assert.ok(corpusUses("machen", index) > 100, "machen lost its own count to the n
 
 const conversation = rankWordCatalog(catalog, index, "conversation");
 const exam = rankWordCatalog(catalog, index, "exam");
-const talk = new Map(conversation.map((word, i) => [word.de, i + 1]));
-const write = new Map(exam.map((word, i) => [word.de, i + 1]));
+
+/**
+ * Where a word is taught, whether or not the card is named after it.
+ *
+ * Same-meaning cards are combined, so a word can be taught as the folded
+ * synonym of a commoner one rather than as a card of its own: echt is on the
+ * wirklich card, and looking it up by name finds nothing. That is not "no
+ * longer taught" — it is taught at wirklich's position, which is the position
+ * these pins are about. Reading only the card names made this check report
+ * that a word had been dropped when it had been merged.
+ */
+const positions = (ranked) => {
+  const at = new Map();
+  ranked.forEach((word, i) => {
+    const place = i + 1;
+    for (const name of [word.de, word.lookup, ...(word.synonyms ?? []).flatMap((s) => [s.de, s.lookup])]) {
+      if (name && !at.has(name)) at.set(name, place);
+    }
+  });
+  return at;
+};
+const talk = positions(conversation);
+const write = positions(exam);
 
 // ── the headline: the first 500 must be words people actually say ───────────
 const thin = (list) => list.slice(0, 500)

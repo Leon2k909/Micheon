@@ -254,7 +254,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "treffen",        lookup: "treffen",    fallbackEn: "to meet",     tip: "verb" },
       { de: "planen",         lookup: "planen",     fallbackEn: "to plan",     tip: "verb" },
       { de: "zusammen",       lookup: "zusammen",   fallbackEn: "together",    tip: "adverb" },
-      { de: "nächste Woche", lookup: "Woche",      fallbackEn: "next week",   tip: "phrase", use: "'Ich habe...' is more common" },
+      { de: "nächste Woche", lookup: "Woche",      fallbackEn: "next week",   tip: "phrase", use: "No preposition and no article: nächste Woche, not in der nächsten Woche." },
       { de: "klingen",        lookup: "klingen",    fallbackEn: "to sound",    tip: "verb" },
     ],
     dialogues: [
@@ -837,7 +837,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     dialogues: [
       { title: "Im Norden", lines: [
         { speaker: "A", de: "Moin! Na, alles klar?",        en: "Hi! So, all good? (northern 'Moin')",   fr: "Salut ! Alors, ça va ?" },
-        { speaker: "B", de: "Moin Moin! Jo, läuft.",        en: "Hi there! Yeah, all good.",             fr: "Salut salut ! Ouais, ça roule." },
+        { speaker: "B", de: "Moin Moin! Jo, läuft.",        en: "Hi there! Yeah, all good. (northern)",  fr: "Salut salut ! Ouais, ça roule." },
         { speaker: "A", de: "Schönes Wetter heute, ne?",    en: "Nice weather today, eh?",               fr: "Beau temps aujourd'hui, non ?" },
         { speaker: "B", de: "Auf jeden. Mach's gut!",       en: "Definitely. Take care!",                fr: "Carrément. Prends soin de toi !" },
       ]},
@@ -861,7 +861,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Pfiat di, bis später.",        en: "Bye, see you later. (Bavarian)",                use: "Farewell", fr: "Ciao, à plus tard." },
       { de: "Ade, bis morgen!", en: "Bye, see you tomorrow! (Swabian/Baden)", use: "Farewell", fr: "Salut, à demain ! (souabe)", short: "Ade!" },
       { de: "Komm gut heim!",               en: "Get home safe!",                                use: "Farewell", fr: "Rentre bien !", when: "As a guest puts their coat on to head home late in the evening." },
-      { de: "Moin moin, wie geht's dir denn?", en: "Morning, how are you doing then?", use: "In the north 'Moin' works at any hour, not just morning. Doubling it to 'Moin moin' is warmer — though there is an old northern joke that it counts as chatting too much.", fr: "Salut, comment ça va donc ?", when: "Passing a neighbour on the stairs in Hamburg or Kiel." },
+      { de: "Moin moin, wie geht's dir denn?", en: "Morning, how are you doing then? (North German)", use: "In the north 'Moin' works at any hour, not just morning. Doubling it to 'Moin moin' is warmer — though there is an old northern joke that it counts as chatting too much.", fr: "Salut, comment ça va donc ?", when: "Passing a neighbour on the stairs in Hamburg or Kiel." },
       { de: "Hallo zusammen!", en: "Hi everyone!", use: "The safe greeting for a group anywhere in the country — an email, a meeting, a room of people. No regional flavour, never wrong.", fr: "Bonjour à tous !", when: "Walking into a room or opening a message to several people." },
       { de: "Guten Morgen, haben Sie gut geschlafen?", en: "Good morning, did you sleep well?", use: "Sie-form and gently formal — a hotel, a host family, or a guest in your home. To a friend you would say 'Gut geschlafen?' with no verb at all.", fr: "Bonjour, avez-vous bien dormi ?", when: "The first thing said at a breakfast table." },
       { de: "Grüß dich, schön dich zu sehen!", en: "Hello there, good to see you!", use: "'Grüß dich' is the du-form of 'Grüß Gott' and much less religious-sounding. Common in the south and Austria among people who already know each other.", fr: "Salut, content de te voir !", when: "Meeting a friend in Munich or Vienna." },
@@ -872,7 +872,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "Schönen Feierabend!", en: "Have a good evening!", use: "Untranslatable and very German: 'Feierabend' is the moment work ends. Said to colleagues as you leave, never to someone still on shift for hours.", fr: "Bonne fin de journée !", when: "Leaving the office at the end of the day." },
       { de: "Schönes Wochenende!", en: "Have a good weekend!", use: "Said from Friday lunchtime onwards to almost anyone — colleagues, the baker, the bus driver. The reply is 'Danke, ebenfalls!'", fr: "Bon week-end !", when: "Any Friday goodbye." },
       { de: "Danke, ebenfalls!", en: "Thanks, you too!", use: "The universal reply to any good-wish. 'Gleichfalls' means exactly the same and is just as common.", fr: "Merci, vous aussi !", when: "Someone wishes you a good weekend or a good journey." },
-      { de: "Servus, ich muss dann mal los.", en: "Right, I'd better get going.", use: "'Servus' is both hello AND goodbye in Bavaria and Austria — one of the few German greetings that works at both ends.", fr: "Salut, je dois y aller.", when: "Standing up to leave in a Munich beer garden." },
+      { de: "Servus, ich muss dann mal los.", en: "Right, I'd better get going. (Bavarian/Austrian)", use: "'Servus' is both hello AND goodbye in Bavaria and Austria — one of the few German greetings that works at both ends.", fr: "Salut, je dois y aller.", when: "Standing up to leave in a Munich beer garden." },
       { de: "Bis morgen, schlaf gut!", en: "See you tomorrow, sleep well!", use: "'Schlaf gut' to one person, 'Schlaft gut' to several. 'Träum was Schönes' (sweet dreams) is the affectionate extra.", fr: "À demain, dors bien !", when: "Saying goodnight to family or a flatmate." },
     ],
   },
@@ -3623,7 +3623,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
     focus: "Fan-register football talk: score questions, goal and referee reactions, offside and penalty arguments, club loyalty and WIR-speech, WM/EM and Public Viewing culture, coach-firing pub talk — plus a brief nod to Formula 1, tennis and boxing.",
     seeds: [
       { de: "der Fußball", lookup: "Fußball", fallbackEn: "football, soccer", tip: "noun", article: "der", use: "THE national sport — 'Fußball' means the game and the ball itself" },
-      { de: "das Spiel", lookup: "Spiel", fallbackEn: "match, game", tip: "noun", article: "das", use: "'Wer spielt heute?' — the standard question on a match day" },
+      { de: "das Spiel", lookup: "Spiel", fallbackEn: "game, match", tip: "noun", article: "das", use: "Any game — board, video or sport. Of a sporting fixture English says match: Wer spielt heute?" },
       { de: "die Mannschaft", lookup: "Mannschaft", fallbackEn: "team", tip: "noun", article: "die", use: "'die Mannschaft' was also the nickname of the national team" },
       { de: "der Verein", lookup: "Verein", fallbackEn: "club", tip: "noun", article: "der", use: "club loyalty is lifelong in Germany — you don't switch your Verein" },
       { de: "das Tor", lookup: "Tor", fallbackEn: "goal", tip: "noun", article: "das", use: "screamed as 'TOOOR!' with the O held as long as possible" },
@@ -4209,7 +4209,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
       { de: "stehen", lookup: "stehen", fallbackEn: "to suit someone", tip: "verb", use: "+ dative: Das steht dir — about looks; the crucial contrast with passen" },
       { de: "sitzen", lookup: "sitzen", fallbackEn: "to fit well (of a garment's cut)", tip: "verb", use: "Es sitzt perfekt = it fits like it was made for you" },
       { de: "eng", lookup: "eng", fallbackEn: "tight", tip: "adjective", use: "zu eng = too tight; opposite is weit" },
-      { de: "weit", lookup: "weit", fallbackEn: "wide, loose (of clothes)", tip: "adjective", use: "also far: wie weit ist es noch?" },
+      { de: "weit", lookup: "weit", fallbackEn: "far, wide, loose", tip: "adjective", use: "Distance first: Wie weit ist es noch? Ist es weit? Of clothes it is loose or roomy: eine weite Hose." },
       { de: "umtauschen", lookup: "umtauschen", fallbackEn: "to exchange (a purchase)", tip: "verb", use: "Separable; swap for another size/colour — zurückgeben is returning for money" },
       { de: "der Kassenbon", lookup: "Kassenbon", fallbackEn: "receipt", tip: "noun", article: "der", use: "Also der Bon or der Beleg" },
       { de: "reduziert", lookup: "reduziert", fallbackEn: "reduced, on sale", tip: "adjective", use: "On tags; shop windows use the English 'Sale'" },

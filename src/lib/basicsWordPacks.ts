@@ -55,7 +55,7 @@ export const basicsWordPartBlueprints: Record<string, Blueprint> = {
     { de: "die App", lookup: "App", fallbackEn: "app", tip: "noun", article: "die" },
     { de: "der November", lookup: "November", fallbackEn: "November", tip: "noun", article: "der" },
     { de: "der April", lookup: "April", fallbackEn: "April", tip: "noun", article: "der" },
-    { de: "das Auto", lookup: "Auto", fallbackEn: "auto, car", tip: "noun", article: "das" },
+    { de: "das Auto", lookup: "Auto", fallbackEn: "car", tip: "noun", article: "das", use: "Plural die Autos. Mit dem Auto = by car." },
     { de: "die Situation", lookup: "Situation", fallbackEn: "situation", tip: "noun", article: "die" },
     { de: "die Organisation", lookup: "Organisation", fallbackEn: "organisation, organization", tip: "noun", article: "die" },
     { de: "der Text", lookup: "Text", fallbackEn: "text, lyrics", tip: "noun", article: "der" },
