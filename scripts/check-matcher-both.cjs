@@ -117,6 +117,27 @@ const view = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView
 assert.ok(/\["both",\s*"Both"\]/.test(view),
   "the list is buildable but there is no button to choose it");
 
+// ── and there is a way through it other than starting again ─────────────────
+// Start over was the only exit from a place you did not want to be, which at
+// 660 of 16,324 means replaying everything already cleared to reach the rest.
+const styles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
+assert.ok(view.includes("data-testid=\"matcher-nav\"") && view.includes("matcher-nav__page"),
+  "the Matcher can only be restarted, not moved through");
+// Plain string matching rather than regexes: every one of these needles is
+// full of brackets and dots, and an unescaped regex quietly matches anything.
+assert.ok(view.includes("goToPosition(position - pageSize)")
+  && view.includes("goToPosition(position + pageSize)"),
+  "the page arrows do not move by a page");
+// A page has to be the board on screen. A fixed six would overlap itself or
+// skip pairs the moment the difficulty step deals a bigger board.
+assert.ok(view.includes("const pageSize = Math.max(1, board.pairs.length || difficulty.boardSize)"),
+  "a page is not the board actually being dealt, so paging will overlap or skip");
+assert.ok(view.includes("Math.min(Math.max(1, Math.round(wanted)), queue.length) - 1"),
+  "the jump box does not clamp, so a number past the end goes nowhere useful");
+assert.ok(styles.includes(".matcher-nav__page {") && styles.includes(".matcher-nav__input"),
+  "the page controls have no styling of their own");
+assert.ok(view.includes("ui(\"Start over\")"),
+  "paging replaced Start over rather than joining it");
 console.log(
   `check-matcher-both: Both interleaves ${fromWords} words with ${fromSentences} sentences, `
   + `its first 100 are ${hundredSentences}% sentences, and it keeps its own place`

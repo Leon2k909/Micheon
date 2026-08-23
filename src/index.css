@@ -11277,7 +11277,8 @@ html[data-theme="dark"] {
 /* Moving through a queue of twenty-three thousand. The bar is for roughly
    where, the box is for exactly where; both sit under the transport controls
    rather than beside them, so the player itself stays uncluttered. */
-.listen-scrub {
+.listen-scrub,
+.matcher-nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -11319,14 +11320,17 @@ html[data-theme="dark"] {
   outline-offset: 3px;
 }
 
-.listen-scrub__jump {
+.listen-scrub__jump,
+.matcher-nav__jump {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .listen-scrub__label,
-.listen-scrub__total {
+.listen-scrub__total,
+.matcher-nav__label,
+.matcher-nav__total {
   font-size: 11px;
   font-weight: 850;
   text-transform: uppercase;
@@ -11335,9 +11339,11 @@ html[data-theme="dark"] {
   white-space: nowrap;
 }
 
-.listen-scrub__total { text-transform: none; letter-spacing: 0; }
+.listen-scrub__total,
+.matcher-nav__total { text-transform: none; letter-spacing: 0; }
 
-.listen-scrub__input {
+.listen-scrub__input,
+.matcher-nav__input {
   width: 5.5rem;
   height: 34px;
   border-radius: 10px;
@@ -11351,12 +11357,14 @@ html[data-theme="dark"] {
   color: var(--text-1);
 }
 
-.listen-scrub__input:focus-visible {
+.listen-scrub__input:focus-visible,
+.matcher-nav__input:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
   outline-offset: 1px;
 }
 
-.listen-scrub__go {
+.listen-scrub__go,
+.matcher-nav__go {
   height: 34px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -11368,16 +11376,48 @@ html[data-theme="dark"] {
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
-.listen-scrub__go:hover:not(:disabled) {
+.listen-scrub__go:hover:not(:disabled),
+.matcher-nav__go:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   background: var(--accent-dim);
   color: var(--accent-strong);
 }
 
-.listen-scrub__go:disabled { opacity: 0.45; }
+.listen-scrub__go:disabled,
+.matcher-nav__go:disabled { opacity: 0.45; }
 
 @media (prefers-reduced-motion: reduce) {
-  .listen-scrub__go { transition: none; }
+  .listen-scrub__go,
+  .matcher-nav__go,
+  .matcher-nav__page { transition: none; }
+}
+
+/* The page arrows. Same furniture as Listen's row, which the rules above are
+   shared with; only the arrows are the Matcher's own. */
+.matcher-nav__page {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  gap: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--text-2);
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.matcher-nav__page:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-dim);
+  color: var(--accent-strong);
+}
+
+.matcher-nav__page:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  outline-offset: 1px;
 }
 
 .matcher-tile { position: relative; }

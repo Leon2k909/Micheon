@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, CheckCheck, ChevronDown, RotateCcw, Shuffle, Sparkles, Volume2 } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Shuffle, Sparkles, Volume2 } from "lucide-react";
 import { ui, uiFmt, uiNumber, uiOr } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -89,6 +89,7 @@ export function MatcherView({
    */
   const [knownStreak, setKnownStreak] = useState(0);
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [jumpBox, setJumpBox] = useState("");
   const [notice, setNotice] = useState<MatcherNotice | null>(null);
 
   const englishLang = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
@@ -257,6 +258,27 @@ export function MatcherView({
     setMenuFor(null);
     arm(null);
   }, [arm, direction, profile]);
+
+  /**
+   * Straight to a position in the queue.
+   *
+   * Start over was the only way out of a place you did not want to be, which
+   * is a poor answer at 660 of 16,324 — the whole list back to teach you what
+   * you already cleared. This wraps, so the end and the beginning are one
+   * press apart in either direction.
+   *
+   * The Know it streak is left alone. It records how the boards have been
+   * going, and moving to look at something else is navigation rather than
+   * performance; resetting it would quietly shrink the next board for having
+   * pressed an arrow.
+   */
+  const goToPosition = useCallback((index: number) => {
+    if (queue.length === 0) return;
+    setFrom(((Math.round(index) % queue.length) + queue.length) % queue.length);
+    setSolved(new Set());
+    setMenuFor(null);
+    arm(null);
+  }, [arm, queue.length]);
 
   /** Back to the head of the queue, for when the point is the easy words. */
   const startOver = useCallback(() => {
@@ -514,6 +536,10 @@ export function MatcherView({
 
   const remaining = board.pairs.filter((pair) => !solved.has(pair.id)).length;
   const position = queue.length === 0 ? 0 : ((from % queue.length) + queue.length) % queue.length;
+  // What a page is worth: the board actually on screen, which grows with the
+  // difficulty step, rather than a fixed six that would overlap or skip once
+  // the boards got bigger.
+  const pageSize = Math.max(1, board.pairs.length || difficulty.boardSize);
 
   return (
     <div className="space-y-4" onPointerDown={(event) => {
@@ -675,6 +701,60 @@ export function MatcherView({
           <Volume2 className="mr-1 inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" />
           {ui("It remembers where you got to, so opening it again carries on rather than starting over — words and sentences each keep their own place, and the list comes back round for review when you reach the end. Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.")}
         </p>
+
+        {/* A page is a board, because that is the unit the mode deals in;
+            moving by anything else would land mid-board and deal a different
+            six than the ones just left behind. The box is for the position you
+            can name — 16,324 items is far too many for an arrow to reach. */}
+        {!reviewing && queue.length > pageSize && (
+          <div className="matcher-nav mt-3" data-testid="matcher-nav">
+            <button
+              aria-label={ui("Previous page")}
+              className="matcher-nav__page"
+              onClick={() => goToPosition(position - pageSize)}
+              type="button"
+            >
+              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              {ui("Back a page")}
+            </button>
+            <button
+              aria-label={ui("Next page")}
+              className="matcher-nav__page"
+              onClick={() => goToPosition(position + pageSize)}
+              type="button"
+            >
+              {ui("On a page")}
+              <ChevronRight aria-hidden="true" className="h-4 w-4" />
+            </button>
+            <form
+              className="matcher-nav__jump"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const wanted = Number(jumpBox);
+                if (!Number.isFinite(wanted)) return;
+                // Shown one-based, held zero-based, and clamped rather than
+                // refused: typing 99999 means the end of the list.
+                goToPosition(Math.min(Math.max(1, Math.round(wanted)), queue.length) - 1);
+                setJumpBox("");
+              }}
+            >
+              <label className="matcher-nav__label" htmlFor="matcher-jump">{ui("Go to")}</label>
+              <input
+                className="matcher-nav__input"
+                id="matcher-jump"
+                inputMode="numeric"
+                onChange={(event) => setJumpBox(event.target.value.replace(/[^0-9]/g, ""))}
+                placeholder={String(Math.min(position + 1, queue.length))}
+                type="text"
+                value={jumpBox}
+              />
+              <span className="matcher-nav__total">/ {uiNumber(queue.length)}</span>
+              <button className="matcher-nav__go" disabled={!jumpBox} type="submit">
+                {ui("Go")}
+              </button>
+            </form>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -109,6 +109,10 @@ const DE: Record<string, string> = {
   "Not everyday neutral German — use in the right company": "Kein neutrales Alltagsdeutsch — nur im passenden Umfeld verwenden",
   // Moving through the Listen queue by more than one card.
   "Move through the queue": "Durch die Liste bewegen",
+  "Back a page": "Eine Seite zurück",
+  "On a page": "Eine Seite weiter",
+  "Previous page": "Vorherige Seite",
+  "Next page": "Nächste Seite",
   "Go to": "Springe zu",
   "{position} of {total}": "{position} von {total}",
   // The pack register warnings from curriculum.ts, shown on every card that
