@@ -5,7 +5,7 @@ import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
-import { cefrTier, type CefrTier } from "@/lib/cefr";
+import { cefrOrder, cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMutedPacks, setPackMuted, setPacksMuted } from "@/lib/mutedPacks";
@@ -166,7 +166,8 @@ export function LearnView({
     // Every term must appear somewhere, so extra words narrow rather than widen.
     const corpus = corpora.get(key) ?? "";
     return terms.every((term) => corpus.includes(term));
-  }), [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks]);
+  }).sort(([, a], [, b]) => cefrOrder(a.level) - cefrOrder(b.level)),
+  [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks]);
 
   const filtering = Boolean(terms.length) || levelFilter !== "all"
     || kindFilter !== "all" || progressFilter !== "all";
