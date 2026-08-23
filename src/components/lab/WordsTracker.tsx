@@ -98,7 +98,7 @@ function StrengthMeter({
   const decay = recallDetail(record);
   const struggling = record?.lastGrade === "struggle";
   return (
-    <div className="mt-1 flex items-center gap-1.5">
+    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
       <div className="flex items-center gap-0.5" aria-label={`${ui("Memory strength")}: ${ui(s.label)}. ${ui("Click a bar to set it directly.")}`}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -554,7 +554,7 @@ export function WordsTracker({ apiParts, user }: {
                 >
                   <Volume2 className="h-4 w-4" />
                 </button>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-48 flex-1 basis-0">
                   {/* No frequency badge here: commonality ORDERS the list and
                       feeds the sort/filter controls, but as a chip on every row
                       it was noise: it belongs behind the scenes. */}
