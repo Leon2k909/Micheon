@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SettingsCategory } from "@/components/SettingsCategory";
-import { ui, uiFmt, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber, uiOr } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -389,6 +389,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     () => new Map()
   );
   const [testing, setTesting] = useState(false);
+  /** Where the bar is being dragged to, before the drag is let go of. */
+  const [scrubAt, setScrubAt] = useState<number | null>(null);
+  const [jumpBox, setJumpBox] = useState("");
   const [reviewPanel, setReviewPanel] = useState<"menu" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ListenItem | null>(null);
   const [reviewNotice, setReviewNotice] = useState<ListenReviewNotice | null>(null);
@@ -625,13 +628,32 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setPlaying(true);
   };
 
-  const step = (direction: 1 | -1) => {
+  /** Everything a move has to undo before the card changes under it. */
+  const leaveCurrentItem = () => {
     cancelGradeAdvance();
     runRef.current += 1;
     stopTts();
     setGraded(null);
     reviewWasPlayingRef.current = false;
     closeReviewPanel(false);
+  };
+
+  /**
+   * Straight to a position in the queue.
+   *
+   * The arrows move one card and the queue is twenty-three thousand long, so
+   * reaching anything you remember passing meant holding an arrow down. This
+   * is the same primitive resume uses; it wraps, so 0 and the last item are
+   * one step apart in either direction.
+   */
+  const jumpToQueueIndex = (index: number) => {
+    if (queue.length === 0) return;
+    leaveCurrentItem();
+    setPlayhead(listenPlayheadForQueueIndex(index, queue.length, effectiveLoopItems, loopPasses));
+  };
+
+  const step = (direction: 1 | -1) => {
+    leaveCurrentItem();
     setPlayhead((current) => {
       if (direction > 0) return current + 1;
       if (current > 0) return current - 1;
@@ -1189,6 +1211,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </span>
             </p>
           ) : null}
+          {/* Register warning. Not word-only, unlike the use note below it:
+              the 762 items this can appear on are mostly sentences, and
+              "Ich komm." is exactly the card that needs it. */}
+          {item.tierNote ? (
+            <p className="mt-3 flex justify-center">
+              <span
+                className="register-note"
+                title={ui("Not everyday neutral German — use in the right company")}
+              >
+                {uiOr(item.tierNote, "Besonderer Sprachgebrauch")}
+              </span>
+            </p>
+          ) : null}
           {item.kind === "word" && item.use ? (
             <p className="mx-auto mt-3 max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
               {item.use}
@@ -1379,6 +1414,60 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             {ui("Test me")}
           </button>
         </div>
+
+        {/* Coarse and exact, because they are different jobs. The bar covers
+            the whole queue at about forty items a pixel, which is right for
+            "somewhere around a third of the way in" and useless for landing
+            on a particular card; the box is for the card you can name. The
+            bar commits on release rather than on every pixel, or dragging it
+            would synthesise a few hundred clips on the way past. */}
+        {queue.length > 1 && (
+          <div className="listen-scrub mt-4" data-testid="listen-scrub">
+            <input
+              aria-label={ui("Move through the queue")}
+              aria-valuetext={uiFmt("{position} of {total}", {
+                position: uiNumber((scrubAt ?? queueIndex) + 1),
+                total: uiNumber(queue.length),
+              })}
+              className="listen-scrub__bar"
+              max={queue.length - 1}
+              min={0}
+              onChange={(event) => setScrubAt(Number(event.target.value))}
+              onKeyUp={() => { if (scrubAt !== null) { jumpToQueueIndex(scrubAt); setScrubAt(null); } }}
+              onPointerUp={() => { if (scrubAt !== null) { jumpToQueueIndex(scrubAt); setScrubAt(null); } }}
+              step={1}
+              type="range"
+              value={scrubAt ?? queueIndex}
+            />
+            <form
+              className="listen-scrub__jump"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const wanted = Number(jumpBox);
+                if (!Number.isFinite(wanted)) return;
+                // Shown one-based, held zero-based, and clamped rather than
+                // refused: typing 99999 means "the end".
+                jumpToQueueIndex(Math.min(Math.max(1, Math.round(wanted)), queue.length) - 1);
+                setJumpBox("");
+              }}
+            >
+              <label className="listen-scrub__label" htmlFor="listen-jump">{ui("Go to")}</label>
+              <input
+                className="listen-scrub__input"
+                id="listen-jump"
+                inputMode="numeric"
+                onChange={(event) => setJumpBox(event.target.value.replace(/[^0-9]/g, ""))}
+                placeholder={String(queueIndex + 1)}
+                type="text"
+                value={jumpBox}
+              />
+              <span className="listen-scrub__total">/ {uiNumber(queue.length)}</span>
+              <button className="listen-scrub__go" disabled={!jumpBox} type="submit">
+                {ui("Go")}
+              </button>
+            </form>
+          </div>
+        )}
 
         {(masterMuted || englishMuted || germanMuted) && (
           <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-xs font-bold text-amber-800 dark:text-amber-200" role="status">

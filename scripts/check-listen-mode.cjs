@@ -863,6 +863,38 @@ for (const key of [
 // 11-13px on Windows — this pins the split so neither half regresses.
 const listenView = read("src/components/listen/ListenView.tsx");
 const css = read("src/index.css");
+
+// ── getting somewhere other than the next card ──────────────────────────────
+// The queue is twenty-three thousand long and the only way through it was the
+// next-arrow, one card a press. A bar for roughly where, a box for exactly
+// where.
+check(
+  "the queue can be moved through without pressing next repeatedly",
+  listenView.includes('data-testid="listen-scrub"')
+    && /type="range"/.test(listenView)
+    && listenView.includes('id="listen-jump"')
+    && /\.listen-scrub__bar\s*\{/.test(css)
+);
+check(
+  "a jump goes through the same primitive resume uses, so it wraps and clamps",
+  /jumpToQueueIndex\s*=\s*\(index: number\)/.test(listenView)
+    && /listenPlayheadForQueueIndex\(index, queue\.length, effectiveLoopItems, loopPasses\)/.test(listenView)
+    && /Math\.min\(Math\.max\(1, Math\.round\(wanted\)\), queue\.length\) - 1/.test(listenView)
+);
+check(
+  "dragging the bar does not synthesise a clip per pixel on the way past",
+  // The value is held locally while dragging and committed on release; a
+  // direct onChange->jump would fire on every step of the drag.
+  /onChange=\{\(event\) => setScrubAt\(Number\(event\.target\.value\)\)\}/.test(listenView)
+    && /onPointerUp=\{\(\) => \{ if \(scrubAt !== null\)/.test(listenView)
+);
+check(
+  "a jump tears down the current card the same way an arrow press does",
+  /const leaveCurrentItem = \(\) => \{/.test(listenView)
+    && /const jumpToQueueIndex[\s\S]{0,400}leaveCurrentItem\(\);/.test(listenView)
+    && /const step = \(direction: 1 \| -1\) => \{\s*leaveCurrentItem\(\);/.test(listenView)
+);
+
 check(
   "Listen rounds the hero pair and keeps small copy on the dashboard's text face",
   listenView.includes('className="listen-view mx-auto w-full max-w-7xl space-y-4"')
