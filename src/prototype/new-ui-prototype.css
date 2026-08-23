@@ -6578,10 +6578,18 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
    Drawn as an SVG arc rather than a conic gradient, so the sweep is exact at
    any percentage and the cap stays round at the tip. */
 .np-fluency-ring {
+  /* The ring's measurements live here so everything inside can be derived
+     from them rather than guessed alongside them. */
+  --ring-size: 168px;
+  --ring-stroke: 9px;
+  /* The largest square that fits inside the arc: inner diameter ÷ √2, less a
+     little air so the longest word does not touch the stroke. Text wider than
+     this crosses the circle, which is what "Sicher im Alltag" was doing. */
+  --ring-fit: calc((var(--ring-size) - var(--ring-stroke) * 2) / 1.4143 - 6px);
   position: relative;
   display: grid;
-  width: 168px;
-  height: 168px;
+  width: var(--ring-size);
+  height: var(--ring-size);
   place-items: center;
   margin: 2px auto 0;
 }
@@ -6609,6 +6617,7 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-fluency-ring__label {
   position: absolute;
   display: grid;
+  width: var(--ring-fit);
   justify-items: center;
   gap: 2px;
 }
@@ -6616,9 +6625,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-fluency-ring__label strong {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   color: var(--accent);
   font-family: var(--np-font-display);
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 950;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -6632,12 +6642,18 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 }
 
 .np-fluency-ring__label small {
-  max-width: 15ch;
+  /* No max-width of its own: the box above is the constraint, and a second
+     one in ch units would fight it. Two lines of 11px fit the square with the
+     figure above them; German compounds get hyphenation, and anything the
+     dictionary does not know still breaks rather than escaping the circle. */
+  width: 100%;
   color: var(--accent);
   font-family: var(--np-font-display);
-  font-size: var(--np-type-small);
+  font-size: 11px;
   font-weight: 800;
-  line-height: 1.25;
+  hyphens: auto;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
   text-align: center;
 }
 
