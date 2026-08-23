@@ -159,11 +159,25 @@ assert.ok(talk.get("morgen") < 300,
   `"tomorrow" is at ${talk.get("morgen")} in a course for having conversations`);
 
 // ── but the basics must not be disturbed ────────────────────────────────────
-// Loosened from 25 to 40 deliberately: heute, bitte and immer now sit ahead of
-// gehen, and by the only evidence available they belong there — the course
-// says them 224, 208 and 148 times against gehen's 72.
+// Loosened deliberately, twice. The corpus decides outright now, so the order
+// among content words is how often this course actually says them: gehen is
+// said 72 times, against 224 for heute and 208 for bitte, and sits behind them.
+// What still has to hold is that the handful of words every beginner needs are
+// all in the first fifty, not that they keep a particular position.
 for (const de of ["sein", "haben", "machen", "gut", "gehen"]) {
-  assert.ok(talk.get(de) <= 40, `${de} fell to ${talk.get(de)}; the commonest words must stay first`);
+  assert.ok(talk.get(de) <= 50, `${de} fell to ${talk.get(de)}; the commonest words must stay first`);
+}
+
+// ── office vocabulary is not conversation ───────────────────────────────────
+// The written bank ranks these high because print uses them. Six mentions in
+// ten thousand conversational sentences is what the course itself says about
+// die Ausbildung, and that is the number that should decide.
+for (const [de, floor] of [["die Ausbildung", 400], ["der Bereich", 1500], ["der Nutzer", 1500],
+  ["die Anwendung", 1500], ["die Verwaltung", 1500]]) {
+  const found = talk.get(de);
+  assert.ok(found, `${de} is no longer taught, so this pin needs rewriting`);
+  assert.ok(found >= floor,
+    `${de} is at ${found} in a course for holding conversations; the bank's print rank is carrying it`);
 }
 
 // ── a word the bank never listed is not a rare word ─────────────────────────

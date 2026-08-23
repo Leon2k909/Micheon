@@ -468,11 +468,17 @@ const UNSPOKEN_SETBACK = 600;
 /**
  * How much of the ordering the spoken signal decides, against the written one.
  *
- * Not a free parameter: raising it past 0.65 empties the first three hundred
- * of words the course says twice or less, and 0.85 tips into ordering purely
- * by this project's own phrasing, which is a smaller sample than the bank.
+ * One: where this course's own conversational text has seen a word, it decides
+ * outright and the written bank does not get a vote. Anything less kept
+ * carrying office vocabulary forward on its print rank — at 0.75, die
+ * Ausbildung was still 401st in a course for holding conversations, on six
+ * mentions in ten thousand sentences.
+ *
+ * The bank still orders the two things the corpus cannot speak about: function
+ * words, which the index drops by design, and the words the corpus has never
+ * seen at all.
  */
-const SPOKEN_WEIGHT = 0.75;
+const SPOKEN_WEIGHT = 1;
 
 export function rankWordCatalog(
   catalog: WordItem[],

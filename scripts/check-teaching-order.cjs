@@ -198,9 +198,15 @@ let entsprechendWriting = 0;
     `conversation mode is not holding back a word nobody says: entsprechend sits at `
     + `${place(spoken, "entsprechend")} talking against ${place(written, "entsprechend")} writing`
   );
+  // Pinned by where it LANDS rather than by how far it moves. The corpus
+  // decides the order among content words now, so everything shifts by more
+  // than a couple of dozen places — sagen goes 57 -> 86 on 41 mentions, which
+  // is not being swept back, it is being placed. What must stay true is that a
+  // word the course says constantly is still near the front.
   assert.ok(
-    Math.abs(place(spoken, "sagen") - place(written, "sagen")) < 25,
-    "a word the course says constantly must not be swept back with the unspoken ones"
+    place(spoken, "sagen") <= 150,
+    `a word the course says constantly must not be swept back with the unspoken ones: `
+    + `sagen sits at ${place(spoken, "sagen")}`
   );
 
   // No index is NO EVIDENCE. Without one the honest answer is the written
