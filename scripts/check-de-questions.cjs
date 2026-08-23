@@ -122,7 +122,9 @@ for (const question of DE_QUESTIONS) {
 // Every category has to be practisable, or the topic picker offers a dead end.
 for (const category of deCategories()) {
   const count = perLesson.get(category.id) || 0;
-  if (count < 5) {
+  // Fourteen per lesson is what the bank holds; ten is the floor at which
+  // the topic picker can still offer a fresh set of ten.
+  if (count < 10) {
     problems.push(`Bereich "${category.title}" hat nur ${count} Frage(n); der Themenwähler bietet 10 auf einmal an`);
   }
 }
@@ -198,7 +200,7 @@ assert.ok(
   "und die alte feste Fassung wird nicht mehr ausgegeben"
 );
 
-assert.ok(DE_QUESTIONS.length >= 130, `nur ${DE_QUESTIONS.length} Fragen im Pool`);
+assert.ok(DE_QUESTIONS.length >= 300, `nur ${DE_QUESTIONS.length} Fragen im Pool`);
 assert.ok(lessons.length >= 23, `nur ${lessons.length} Lektionen im Kurs`);
 
 if (problems.length) {
