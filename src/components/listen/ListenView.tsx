@@ -1198,7 +1198,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         </div>
 
-        <div className="mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
+        <div className="listen-card mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
             {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
