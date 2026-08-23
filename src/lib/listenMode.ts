@@ -25,6 +25,7 @@ import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
+import { packMeta } from "@/lib/curriculum";
 import {
   getAuthUser,
   loadScopedJson,
@@ -547,6 +548,15 @@ export type ListenItem = {
    * `label` is the word's own frequency tier — absent when the bank does not
    * rank it, so the card never claims "less common" on no evidence. */
   synonyms?: Array<{ de: string; en: string; label?: string }>;
+  /**
+   * The pack's register warning — "18+ · intimate", "Strong language",
+   * "Regional — not used everywhere". Authored in curriculum.ts, shown in
+   * lessons, and until now dropped here: 762 of the queue's items came from a
+   * pack carrying one and not one of them arrived with it. A learner matching
+   * "Ich komm." against "I'm coming." has nothing on the card to tell them
+   * which room that sentence belongs in.
+   */
+  tierNote?: string;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -623,6 +633,7 @@ export function buildListenQueue(
       aliases: item.aliases ?? [],
       de: primaryAnswer(item.de),
       en: primaryAnswer(item.en),
+      tierNote: item.tierNote,
       kind: "sentence" as const,
       // A percentile makes sentence and word popularity comparable in the
       // mixed queue even though their underlying scorers use different
@@ -650,6 +661,7 @@ export function buildListenQueue(
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
       use: word.use,
+      tierNote: packMeta(word.partKey).note,
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
