@@ -143,8 +143,18 @@ function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] 
  * Rahmenbedingungen stimmen". Trying a few endings fixes the common cases
  * without pretending to be a real morphological analyser.
  */
-function lemmaCandidates(key: string): string[] {
+function lemmaCandidates(key: string, isNoun: boolean): string[] {
   const out = new Set<string>([key]);
+  if (isNoun) {
+    // A noun's other forms are plurals and cases. Nothing else: run the verb
+    // endings over a noun and die Arbeit reaches arbeiten, die Wolle reaches
+    // wollen, and each of them collects a verb's count as if it were its own.
+    // Minute -> Minuten, Gedanke -> Gedanken, Tage -> Tag, Hause -> Haus.
+    out.add(`${key}n`);
+    out.add(`${key}en`);
+    if (key.endsWith("e") && key.length > 3) out.add(key.slice(0, -1));
+    return [...out];
+  }
   // ich gehe -> gehen, wir mach -> machen
   out.add(`${key}n`);
   out.add(`${key}en`);
@@ -154,11 +164,13 @@ function lemmaCandidates(key: string): string[] {
   // machte / machten -> machen
   if (key.endsWith("te") && key.length > 4) out.add(`${key.slice(0, -2)}en`);
   if (key.endsWith("ten") && key.length > 5) out.add(`${key.slice(0, -3)}en`);
-  // Hause -> Haus, Tage -> Tag
-  if (key.endsWith("e") && key.length > 3) out.add(key.slice(0, -1));
-  // gegangen -> gangen is wrong, but ge- stripping helps participles like
-  // gemacht -> macht -> machen via the rule above.
-  if (key.startsWith("ge") && key.length > 5) out.add(key.slice(2));
+  // No ge- stripping. It was here to reach gemacht -> macht -> machen, but
+  // the principal-parts table now credits participles to their verb where the
+  // course actually says them, and stripping the prefix at lookup time does
+  // the opposite job: it hands one word another's count. The adjective
+  // gelassen took all 82 of lassen's while the course says it three times,
+  // and gestehen took all 33 of stehen's while the course never says it at
+  // all — both of which then read as words worth teaching in the first fifty.
   return [...out];
 }
 
@@ -204,12 +216,17 @@ export function corpusUses(word: string, index: CorpusIndex | null): number {
   // one, so "er macht" cannot vouch for die Macht. Where the split has no
   // evidence at all — a word this corpus only ever puts first in a sentence —
   // the pooled count answers rather than a zero that would read as "unused".
-  const shaped = looksLikeGermanNoun(word) ? index.nounCount : index.otherCount;
-  let uses = 0;
-  for (const candidate of lemmaCandidates(key)) {
-    // The shape-matched tally plus the sentence openings, which belong to
-    // whichever reading the word itself is.
-    uses = Math.max(uses, (shaped.get(candidate) ?? 0) + (index.initialCount.get(candidate) ?? 0));
+  const isNoun = looksLikeGermanNoun(word);
+  const shaped = isNoun ? index.nounCount : index.otherCount;
+  // Sentence openings are added for the word as written and for nothing else.
+  // A capital at the start of a sentence says nothing about which reading the
+  // word has, so it is fair to count it towards the word itself — but adding
+  // it to every guessed form is not: die Wolle was collecting the 42 sentences
+  // that open "Wollen wir ...?" and arriving 84th in a course for holding
+  // conversations, on three real mentions.
+  let uses = (shaped.get(key) ?? 0) + (index.initialCount.get(key) ?? 0);
+  for (const candidate of lemmaCandidates(key, isNoun)) {
+    uses = Math.max(uses, shaped.get(candidate) ?? 0);
   }
   return uses;
 }
@@ -217,7 +234,7 @@ export function corpusUses(word: string, index: CorpusIndex | null): number {
 export function wordCommonality(word: string, index: CorpusIndex | null): number {
   const key = word.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]/gu, "");
   if (!key) return 5000;
-  const candidates = lemmaCandidates(key);
+  const candidates = lemmaCandidates(key, looksLikeGermanNoun(word));
 
   let best = Infinity;
   for (const candidate of candidates) {
