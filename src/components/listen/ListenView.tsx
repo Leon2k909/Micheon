@@ -1266,7 +1266,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
           <div
             aria-labelledby="listen-review-heading"
-            className="mt-6 border-t border-[var(--border)] pt-5"
+            className="relative mt-6 border-t border-[var(--border)] pt-5"
             onBlurCapture={(event) => {
               if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
               scheduleReviewPanelClose();
@@ -1340,7 +1340,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             {reviewPanel === "menu" && (
               <div
                 aria-label={ui("More Know it options")}
-                className="mx-auto mt-3 max-w-4xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 text-left shadow-[0_12px_30px_var(--shadow)]"
+                /* Floating, not in the flow: as a block it made the card
+                   taller than its space and put a scrollbar on it. */
+                className="absolute inset-x-0 top-full z-30 mx-auto mt-2 w-full max-w-4xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 text-left shadow-[0_12px_30px_var(--shadow)]"
                 data-testid="listen-review-menu"
                 onMouseEnter={cancelReviewMenuClose}
                 role="menu"

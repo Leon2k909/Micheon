@@ -11561,6 +11561,18 @@ html[data-theme="dark"] {
   overflow-y: auto;
 }
 
+/* The Know-it menu is not content, and must not be scrolled like it.
+
+   Floating the menu stopped it making the block taller, but an absolutely
+   positioned child still adds to an ancestor's scroll height — the card went
+   to 622px of scroll inside a 358px box and swallowed the menu. While it is
+   open the card may overflow visibly, so the menu hangs below the card
+   instead. The fixed height is untouched, so nothing moves, and the moment
+   the menu closes the long-sentence scrolling is back. */
+.listen-card:has([data-testid="listen-review-menu"]) {
+  overflow-y: visible;
+}
+
 /* Two lines reserved for the sentence itself, which is where nearly all of
    the variation was: most items are one line or two, and that single-line
    difference was enough to move the row on almost every step. */
