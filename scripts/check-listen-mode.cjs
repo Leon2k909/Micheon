@@ -895,6 +895,22 @@ check(
     && /const step = \(direction: 1 \| -1\) => \{\s*leaveCurrentItem\(\);/.test(listenView)
 );
 
+// ── the collapsed player says where you are ─────────────────────────────────
+// It showed one card and no count, so 3-of-20 and 19-of-20 looked identical.
+// The scrub bar and the full view both carry the position; the mini player
+// was the one place you could not tell.
+check(
+  "the background player shows the position in the queue",
+  /listen-mini-player__pos/.test(listenView)
+    && /uiNumber\(queueIndex \+ 1\)\} \/ \{uiNumber\(queue\.length\)/.test(listenView)
+);
+check(
+  "the count survives a narrow player — the label gives way instead",
+  // A plain flex row would push the last child out first, and the count is
+  // the last child. The label ellipses; the count does not shrink.
+  /\.listen-mini-player__state\s*\{[^}]*text-overflow:\s*ellipsis/s.test(css)
+    && /\.listen-mini-player__pos\s*\{[^}]*flex:\s*0 0 auto/s.test(css)
+);
 check(
   "Listen rounds the hero pair and keeps small copy on the dashboard's text face",
   listenView.includes('className="listen-view mx-auto w-full max-w-7xl space-y-4"')

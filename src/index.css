@@ -762,6 +762,26 @@ button { cursor: pointer; }
   text-transform: uppercase;
 }
 .listen-mini-player__text small svg { width: 11px; height: 11px; }
+
+/* The status line carries two things now: what the player is doing, and
+ * where you are in the queue. The collapsed player shows one card at a
+ * time, so the count is the only way to tell 3-of-20 from 19-of-20.
+ *
+ * The label gives way, the count does not — the label is guessable from
+ * the play button beside it, the count is not. Without this the small
+ * line is a plain flex row, and on a narrow player the count would be the
+ * part pushed out of view. */
+.listen-mini-player__state {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.listen-mini-player__pos {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
 .listen-mini-player__text strong,
 .listen-mini-player__text > span {
   display: block;

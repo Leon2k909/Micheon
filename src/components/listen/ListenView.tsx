@@ -1088,7 +1088,26 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <Headphones />
           </span>
           <span className="listen-mini-player__text">
-            <small><Minimize2 /> {ui(playing ? "Playing in the background" : "Listen is paused")}</small>
+            <small>
+              <Minimize2 />
+              {/* Shrinks and ellipses so the count beside it never gets
+                  pushed out: which item you are on is the part you cannot
+                  work out from anywhere else in the collapsed player. */}
+              <span className="listen-mini-player__state">
+                {ui(playing ? "Playing in the background" : "Listen is paused")}
+              </span>
+              {queue.length > 0 && (
+                <span
+                  className="listen-mini-player__pos"
+                  title={uiFmt("{position} of {total}", {
+                    position: uiNumber(queueIndex + 1),
+                    total: uiNumber(queue.length),
+                  })}
+                >
+                  · {uiNumber(queueIndex + 1)} / {uiNumber(queue.length)}
+                </span>
+              )}
+            </small>
             <strong lang="de">{item.de}</strong>
             <span lang="en">{item.en}</span>
           </span>
