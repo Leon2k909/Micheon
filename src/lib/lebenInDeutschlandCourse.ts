@@ -31,7 +31,7 @@ export const lebenInDeutschlandCourse: Course = {
   id: "leben-in-deutschland",
   kind: "citizenship",
   name: "Leben in Deutschland",
-  tagline: "Politik, Geschichte und Gesellschaft — alles, was der Einbürgerungstest fragt.",
+  tagline: "Politik, Geschichte und Gesellschaft — wie das Leben in Deutschland funktioniert.",
   icon: "🇩🇪",
   available: true,
   lessons: [
