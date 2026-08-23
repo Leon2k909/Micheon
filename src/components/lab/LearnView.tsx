@@ -270,6 +270,13 @@ export function LearnView({
                 {ui(option.label)}
               </button>
             ))}
+          </div>
+          {/* A row of its own. It used to share the row above, and one row
+              carrying two questions reads as one question: a lit chip in each
+              group looked like two answers at once, and choosing a kind left
+              the progress chip lit with nothing in reach that would put it
+              out. Levels already had their own row; these two now match it. */}
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
             {PROGRESS_FILTERS.map((option) => (
               <button
                 aria-pressed={progressFilter === option.id}

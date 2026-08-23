@@ -57,6 +57,20 @@ if (!/flex flex-wrap items-start justify-between/.test(learn)) {
   failures.push("the lesson card header cannot wrap, so its level badge escapes the card");
 }
 
+// Each filter group gets a row. Two of them shared one, and a row carrying
+// two questions reads as one question: a lit chip in each group looked like
+// two answers at once, and choosing a kind left the progress chip lit with
+// nothing beside it that would put it out.
+const kindAt = learn.indexOf("KIND_FILTERS.map");
+const progressAt = learn.indexOf("PROGRESS_FILTERS.map");
+const betweenFilters = kindAt >= 0 && progressAt > kindAt ? learn.slice(kindAt, progressAt) : "";
+if (!betweenFilters.includes("</div>")) {
+  failures.push(
+    "the kind and progress filters share one row, so two chips light up in it and " +
+    "neither reads as the answer to a question of its own"
+  );
+}
+
 // The fluency meter is the narrowest thing in that column, and a screen
 // breakpoint cannot see how narrow: widening the sidebar takes the card down
 // to about 250px while the viewport still reads as a large one. At that width
