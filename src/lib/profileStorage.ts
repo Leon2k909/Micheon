@@ -44,6 +44,21 @@ const DEPRECATED_SHARED_KEYS = new Set([
   "gl-custom-theme",
 ]);
 
+// Who is signed in stays on this device.
+//
+// It used to travel: the key starts with "german-arena-", so the session went
+// through the same mirror as the progress and the desktop build and the web
+// build kept handing each other whichever account had signed in last. The
+// mirror is re-read on load AND on every window focus, so a second profile in
+// the browser did not survive a click back into the window - signing in with
+// a different address made no difference, because the address was never what
+// was being restored.
+//
+// The learning data still travels, and it is stored per profile, so two
+// accounts on one device keep their own progress either way. Only the session
+// itself is local now, which is what makes them two accounts at all.
+const SESSION_LOCAL_KEYS = new Set([AUTH_USER_KEY, SIGNED_OUT_KEY]);
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -136,6 +151,7 @@ export function getAuthUser(): UserProfile | null {
 }
 
 function shouldSyncKey(key: string) {
+  if (SESSION_LOCAL_KEYS.has(key)) return false;
   return SHARED_SYNC_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
@@ -201,15 +217,23 @@ if (typeof window !== "undefined") {
   window.addEventListener("pagehide", () => void flushSharedItems(true));
 }
 
-function syncSharedItems(items: Record<string, string | null>) {
+// Queue a mirror write without the filter above. Only for deleting keys that
+// must no longer be shared: the filter refuses them in both directions, which
+// would otherwise leave an old entry sitting in the file with no way to clear
+// it, ready for an older build to apply again.
+function queueSharedItems(items: Record<string, string | null>) {
   if (typeof window === "undefined") return;
-  const filtered = Object.fromEntries(Object.entries(items).filter(([key]) => shouldSyncKey(key)));
-  if (Object.keys(filtered).length === 0) return;
+  if (Object.keys(items).length === 0) return;
   // Local storage is already durable at this point. Coalesce the mirror writes
   // so completing one lesson does not cause a read/parse/write cycle for every
   // grade, streak, activity, and statistic updated in the same moment.
-  Object.assign(pendingSharedItems, filtered);
+  Object.assign(pendingSharedItems, items);
   scheduleSharedSync();
+}
+
+function syncSharedItems(items: Record<string, string | null>) {
+  if (typeof window === "undefined") return;
+  queueSharedItems(Object.fromEntries(Object.entries(items).filter(([key]) => shouldSyncKey(key))));
 }
 
 export function syncLocalStorageItem(key: string, value: string | null) {
@@ -235,6 +259,14 @@ export async function hydrateLocalStorageFromSharedStorage() {
     if (!response.ok) return false;
     const data = await response.json();
     const items = data?.items && typeof data.items === "object" ? data.items : {};
+    // An older build mirrored the session, and that copy outlives the change:
+    // it is skipped on the way in now, but it would sit in the file for good.
+    // Clearing it there leaves the session on this device untouched.
+    const staleSession: Record<string, string | null> = {};
+    for (const key of SESSION_LOCAL_KEYS) {
+      if (items[key] !== undefined) staleSession[key] = null;
+    }
+    queueSharedItems(staleSession);
     let changed = false;
     let gradesChanged = false;
     let activityChanged = false;

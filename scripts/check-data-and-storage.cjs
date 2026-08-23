@@ -148,6 +148,24 @@ if (!/deadline/.test(main)) {
   failures.push("the directory walk is unbounded — a large cache would freeze the settings screen");
 }
 
+// ── and two accounts on one machine stay two accounts ──────────────────
+//
+// Everything above is about one profile not reaching another. That holds only
+// while the two surfaces disagree about who is signed in, and the session key
+// starts with the same prefix as the progress, so it used to travel with it:
+// the mirror is re-read on load and on every window focus, and whichever
+// surface signed in last took the other one over on the next click.
+const storage = fs.readFileSync(path.join(root, "src/lib/profileStorage.ts"), "utf8");
+if (!storage.includes("const SESSION_LOCAL_KEYS = new Set([AUTH_USER_KEY, SIGNED_OUT_KEY]);")) {
+  failures.push("the session is not named as local, so it travels through the mirror with the progress");
+}
+if (!storage.includes("if (SESSION_LOCAL_KEYS.has(key)) return false;")) {
+  failures.push("the sync filter does not refuse the session keys, so who is signed in is shared either way");
+}
+if (!storage.includes("queueSharedItems(staleSession)")) {
+  failures.push("a session written by an older build is never cleared out of the mirror, so it waits there");
+}
+
 if (failures.length) {
   console.error("FAIL check-data-and-storage");
   failures.forEach((line) => console.error("  " + line));
