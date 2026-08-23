@@ -3271,8 +3271,12 @@ function SocialView({ userName }: { userName: string }) {
     if (!query) return SOCIAL_FRIENDS;
     return SOCIAL_FRIENDS.filter((friend) => normalizeCatalogSearchText([
       friend.name,
+      // Both, so searching works whichever language is on screen — typing
+      // "heute" finds someone the list shows as "Heute aktiv".
       friend.level,
       friend.status,
+      ui(friend.level),
+      ui(friend.status),
     ].join(" ")).includes(query));
   }, [friendQuery]);
   const leaderboard = useMemo(() => SOCIAL_LEADERBOARD.map((entry) => (
@@ -3365,8 +3369,8 @@ function SocialView({ userName }: { userName: string }) {
                   <SocialAvatar initials={friend.initials} tone={friend.tone} />
                   <div className="np-friend-identity">
                     <strong>{friend.name}</strong>
-                    <span className={`np-social-presence np-social-presence--${friend.statusKind}`}><i />{friend.status}</span>
-                    <small>{friend.level}</small>
+                    <span className={`np-social-presence np-social-presence--${friend.statusKind}`}><i />{ui(friend.status)}</span>
+                    <small>{ui(friend.level)}</small>
                   </div>
                   <div className="np-friend-stat">
                     <RewardIcon kind="flame" />

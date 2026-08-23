@@ -168,6 +168,9 @@ if (frozen > 0) {
 // passed. So: any sentence-shaped string in the app's own chrome must either
 // have German or be named below with a reason.
 const CHROME = ["src/components", "src/components/course", "src/components/codexPets"];
+// The two screens that are not under src/components and were therefore
+// outside this rule until a background option was found sitting in English.
+const CHROME_FILES = ["src/Gamification.tsx", "src/prototype/NewUiPrototype.tsx"];
 
 // Not translations, and each for its own reason.
 const DELIBERATE = new Set([
@@ -184,6 +187,12 @@ const DELIBERATE = new Set([
   "Keep learning while Micheon prepares the new version.",
   // Compared against lesson content, never shown.
   "Now answer these",
+  // Sample people in the Friends screen. A name is a name in every language,
+  // and "translating" one would be a bug rather than a courtesy.
+  "Jonas Weber",
+  "Sophie Klein",
+  "Felix Braun",
+  "Emilia Koch",
 ]);
 
 // Already German — the other half of a locale ternary, which needs no entry
@@ -199,34 +208,45 @@ const sentenceShaped = (value) =>
   && !/[<>{}[\]\/\\|@#$^*=_~`]/.test(value)
   && /[a-z]{2}/.test(value);
 
-const chromeEnglish = [];
+const chromeFiles = [];
 for (const dir of CHROME) {
   const full = path.join(root, dir);
   if (!fs.existsSync(full)) continue;
   for (const name of fs.readdirSync(full)) {
     if (!/\.tsx?$/.test(name)) continue;
     const file = path.join(full, name);
-    if (!fs.statSync(file).isFile()) continue;
-    // Comments are stripped rather than skipped line by line: a sentence
-    // quoted inside a /* … */ block sits on a continuation line that starts
-    // with neither marker, and was reported as untranslated interface text.
-    const source = fs.readFileSync(file, "utf8").replace(
-      /\/\*[\s\S]*?\*\//g,
-      (block) => block.replace(/[^\n]/g, " ")
-    );
-    source.split("\n").forEach((line, index) => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) return;
-      for (const match of line.matchAll(/"((?:[^"\\]|\\.)*)"/g)) {
-        const value = match[1];
-        if (!sentenceShaped(value) || DELIBERATE.has(value) || readsGerman(value)) continue;
-        if (translated.has(value)) continue;
-        // A fallback for an error object's own message, not a label.
-        if (/instanceof Error \? \w+\.message :/.test(line)) continue;
-        chromeEnglish.push(dir + "/" + name + ":" + (index + 1) + "  " + JSON.stringify(value));
-      }
-    });
+    if (fs.statSync(file).isFile()) chromeFiles.push([dir + "/" + name, file]);
   }
+}
+for (const named of CHROME_FILES) {
+  const file = path.join(root, named);
+  if (fs.existsSync(file)) chromeFiles.push([named, file]);
+}
+
+const chromeEnglish = [];
+for (const [label, file] of chromeFiles) {
+  // Comments are stripped rather than skipped line by line: a sentence quoted
+  // inside a /* … */ block sits on a continuation line that starts with
+  // neither marker, and was reported as untranslated interface text.
+  const source = fs.readFileSync(file, "utf8").replace(
+    /\/\*[\s\S]*?\*\//g,
+    (block) => block.replace(/[^\n]/g, " ")
+  );
+  source.split("\n").forEach((line, index) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) return;
+    for (const match of line.matchAll(/"((?:[^"\\]|\\.)*)"/g)) {
+      // Source may write a character as a \uXXXX escape; the key looked up at
+      // runtime is the character itself, and the em dash in that background
+      // note is written exactly that way.
+      const value = unescapeKey(match[1]);
+      if (!sentenceShaped(value) || DELIBERATE.has(value) || readsGerman(value)) continue;
+      if (translated.has(value) || translated.has(match[1])) continue;
+      // A fallback for an error object's own message, not a label.
+      if (/instanceof Error \? \w+\.message :/.test(line)) continue;
+      chromeEnglish.push(label + ":" + (index + 1) + "  " + JSON.stringify(value));
+    }
+  });
 }
 if (chromeEnglish.length) {
   failures.push(
