@@ -1549,7 +1549,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 })}
               </div>
             </fieldset>
-            <fieldset className="mt-4">
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
                 {ui("Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
@@ -1719,43 +1719,54 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 })}
               </div>
             </fieldset>
-            <div className="mt-3 space-y-2">
-              <NumberSetting
-                label={ui("German repeats")}
-                max={10}
-                min={1}
-                note={ui("Times spoken on every card")}
-                onCommit={commitGermanRepeats}
-                suffix="×"
-                testId="listen-german-repeats"
-                value={germanRepeats}
-              />
-              <NumberSetting
-                label={ui("English repeats")}
-                max={10}
-                min={1}
-                note={ui("Times spoken on every card")}
-                onCommit={commitEnglishRepeats}
-                suffix="×"
-                testId="listen-english-repeats"
-                value={englishRepeats}
-              />
-              <NumberSetting
-                label={ui("Pause between languages")}
-                max={30}
-                min={0}
-                note={ui(
-                  languageOrder === "english-first"
-                    ? "Your turn to say the German before it is spoken"
-                    : "Your turn to say the English before it is spoken"
-                )}
-                onCommit={commitLanguageGapSeconds}
-                step={0.5}
-                suffix={ui("sec")}
-                testId="listen-language-gap"
-                value={languageGapMs / 1000}
-              />
-            </div>
+            {/* These three had no heading of their own. They sat straight
+                under the language order and read as part of it, which is
+                nearly true and not true enough: the order decides which
+                language opens a card, these decide how often each one is
+                said and how long the gap between them is. */}
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Repeats and pauses")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("How often each language is spoken on a card, and the gap between them.")}
+              </p>
+              <div className="mt-2 space-y-2">
+                <NumberSetting
+                  label={ui("German repeats")}
+                  max={10}
+                  min={1}
+                  note={ui("Times spoken on every card")}
+                  onCommit={commitGermanRepeats}
+                  suffix="×"
+                  testId="listen-german-repeats"
+                  value={germanRepeats}
+                />
+                <NumberSetting
+                  label={ui("English repeats")}
+                  max={10}
+                  min={1}
+                  note={ui("Times spoken on every card")}
+                  onCommit={commitEnglishRepeats}
+                  suffix="×"
+                  testId="listen-english-repeats"
+                  value={englishRepeats}
+                />
+                <NumberSetting
+                  label={ui("Pause between languages")}
+                  max={30}
+                  min={0}
+                  note={ui(
+                    languageOrder === "english-first"
+                      ? "Your turn to say the German before it is spoken"
+                      : "Your turn to say the English before it is spoken"
+                  )}
+                  onCommit={commitLanguageGapSeconds}
+                  step={0.5}
+                  suffix={ui("sec")}
+                  testId="listen-language-gap"
+                  value={languageGapMs / 1000}
+                />
+              </div>
+            </fieldset>
           </SettingsCategory>
         </div>
 

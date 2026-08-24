@@ -2004,6 +2004,9 @@ const DE: Record<string, string> = {
   "Spoken first on every card": "Wird auf jeder Karte zuerst gesprochen",
   "Spoken after the German": "Wird nach dem Deutschen gesprochen",
   "Times spoken on every card": "So oft wird es auf jeder Karte gesprochen",
+  "Repeats and pauses": "Wiederholungen und Pausen",
+  "How often each language is spoken on a card, and the gap between them.":
+    "Wie oft jede Sprache auf einer Karte gesprochen wird und wie lang die Pause dazwischen ist.",
   "Next card delay": "Pause bis zur nächsten Karte",
   "Pause after both languages finish": "Pause, nachdem beide Sprachen fertig sind",
   "Pause between languages": "Pause zwischen den Sprachen",

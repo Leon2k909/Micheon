@@ -86,6 +86,15 @@ assert.strictEqual(
   "exactly one use is inside a settings category; the standalone card keeps its heading"
 );
 
+// The description says what a category holds, and it was cut off after one
+// line. In a two-column row a card is about half the width, so a German
+// sentence lost its last third to an ellipsis and the header said less than
+// the title above it already had. It wraps instead.
+assert.ok(
+  !/block truncate text-xs font-semibold/.test(category),
+  "a category header description is truncated, so half of it never reaches the reader"
+);
+
 console.log(
   "check-settings-spacing: one 14px gap under every category header, "
   + "and no category prints its own title twice"

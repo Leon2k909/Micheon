@@ -193,7 +193,7 @@ export function SettingsCategory({
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-black text-[var(--text-1)]">{title}</span>
-            <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--text-3)]">{description}</span>
+            <span className="mt-0.5 block text-xs font-semibold leading-snug text-[var(--text-3)]">{description}</span>
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-2">
