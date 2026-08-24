@@ -11607,6 +11607,18 @@ html[data-theme="dark"] {
 
 .create-set:hover .create-set__grip { opacity: 1; }
 
+.create-set.is-dragging { opacity: 0.55; }
+
+.create-set.is-drop-target {
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.create-set.is-drop-target .create-set__grip {
+  color: var(--accent);
+  opacity: 1;
+}
+
 .create-set__nudge {
   display: inline-flex;
   height: 26px;

@@ -777,8 +777,18 @@ assert.ok(
 // that a path which must never need a pointer is actually rendered.
 {
   const view = fs.readFileSync(path.join(root, "src/components/create/CreateView.tsx"), "utf8");
+  const styles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
   assert.ok(view.includes('aria-label={ui("Move up")}') && view.includes('aria-label={ui("Move down")}'),
     "a set can only be reordered by dragging, so it cannot be reordered without a pointer");
+  assert.ok(view.includes("const reorderDraggedSet")
+    && view.includes("reorderDraggedSet(scope, id, set.id)"),
+  "dragging a set onto another set does not reorder their list");
+  assert.ok(view.includes("draggedSet?.scope !== scope")
+    && view.includes("event.stopPropagation()"),
+  "a same-list reorder can bubble into the folder drop and turn into a file move");
+  assert.ok(view.includes('dropSet === set.id && "is-drop-target"')
+    && styles.includes(".create-set.is-drop-target"),
+  "the dragged set has no visible destination before it is dropped");
   assert.ok(view.includes('aria-label={ui("Move to folder")}') && view.includes("<select"),
     "a set can only be filed by dragging, which never fires from touch");
   // Bound to the resolved folder, never the raw field: a select whose value

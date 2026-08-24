@@ -105,6 +105,9 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   const [confirmFolder, setConfirmFolder] = useState<string | null>(null);
   /** Which zone the pointer is over mid-drag, so exactly one lights up. */
   const [dropFolder, setDropFolder] = useState<string | null>(null);
+  /** The card being moved and the card whose position it will take. */
+  const [draggedSet, setDraggedSet] = useState<{ id: string; scope: string | null } | null>(null);
+  const [dropSet, setDropSet] = useState<string | null>(null);
 
   const persist = useCallback((next: StudySet[]) => {
     setSets(next);
@@ -167,6 +170,19 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     if (to < 0 || to >= inScope.length) return;
     const reordered = moveStudyItem(inScope, at, to);
     // Put the reordered slice back into the positions the scope occupied.
+    let take = 0;
+    persist(sets.map((entry) => ((resolvedFolderId(entry, folders) ?? null) === scope
+      ? reordered[take++]
+      : entry)));
+  }, [folders, persist, sets]);
+
+  /** Put one dragged set into the position of another set in the same list. */
+  const reorderDraggedSet = useCallback((scope: string | null, draggedId: string, targetId: string) => {
+    const inScope = sets.filter((entry) => (resolvedFolderId(entry, folders) ?? null) === scope);
+    const from = inScope.findIndex((entry) => entry.id === draggedId);
+    const to = inScope.findIndex((entry) => entry.id === targetId);
+    if (from < 0 || to < 0 || from === to) return;
+    const reordered = moveStudyItem(inScope, from, to);
     let take = 0;
     persist(sets.map((entry) => ((resolvedFolderId(entry, folders) ?? null) === scope
       ? reordered[take++]
@@ -288,12 +304,47 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
             <div
               className={cn(
                 "card create-set flex flex-col p-5 transition-shadow",
-                picked.has(set.id) && "ring-1 ring-[var(--accent)]"
+                picked.has(set.id) && "ring-1 ring-[var(--accent)]",
+                draggedSet?.id === set.id && "is-dragging",
+                dropSet === set.id && "is-drop-target"
               )}
               draggable
               key={set.id}
-              onDragEnd={() => setDropFolder(null)}
-              onDragStart={(event) => startSetDrag(event.dataTransfer, set.id, scope ? "folder" : "unfiled")}
+              onDragEnd={() => {
+                setDraggedSet(null);
+                setDropSet(null);
+                setDropFolder(null);
+              }}
+              onDragLeave={(event) => {
+                const next = event.relatedTarget;
+                if (next instanceof Node && event.currentTarget.contains(next)) return;
+                setDropSet((current) => (current === set.id ? null : current));
+              }}
+              onDragOver={(event) => {
+                if (!isSetDrag(event.dataTransfer)
+                  || draggedSet?.scope !== scope
+                  || draggedSet.id === set.id) return;
+                event.preventDefault();
+                event.stopPropagation();
+                event.dataTransfer.dropEffect = "move";
+                setDropFolder(null);
+                setDropSet(set.id);
+              }}
+              onDragStart={(event) => {
+                setDraggedSet({ id: set.id, scope });
+                setDropSet(null);
+                startSetDrag(event.dataTransfer, set.id, scope ? "folder" : "unfiled");
+              }}
+              onDrop={(event) => {
+                const id = readSetDrag(event.dataTransfer);
+                if (!id || draggedSet?.scope !== scope || id === set.id) return;
+                event.preventDefault();
+                event.stopPropagation();
+                setDraggedSet(null);
+                setDropSet(null);
+                setDropFolder(null);
+                reorderDraggedSet(scope, id, set.id);
+              }}
             >
               {/*
                 Three ways to move one set, because they are not the same job
@@ -606,6 +657,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
               onDragOver={(event) => {
                 if (!isSetDrag(event.dataTransfer)) return;
                 event.preventDefault();
+                setDropSet(null);
                 setDropFolder(folder.id);
               }}
               onDrop={(event) => {
@@ -710,6 +762,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
           onDragOver={(event) => {
             if (!isSetDrag(event.dataTransfer, "folder")) return;
             event.preventDefault();
+            setDropSet(null);
             setDropFolder(UNFILED);
           }}
           onDrop={(event) => {
