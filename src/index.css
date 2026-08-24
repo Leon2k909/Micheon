@@ -549,7 +549,8 @@ button { cursor: pointer; }
   justify-items: center;
   gap: 9px;
   width: min(22rem, 100%);
-  margin: 18px auto 0;
+  /* The card's gap sits above this; its own would be added on top. */
+  margin: 0 auto;
   padding: 11px 18px 13px;
   border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
   border-radius: 18px;
@@ -11958,6 +11959,15 @@ html[data-theme="dark"] {
   height: 360px;
   align-content: center;
   overflow-y: auto;
+  /* One gap for the whole card, set here rather than on each line.
+
+     Every line used to bring its own: 16px under the counter, 12px under
+     the word, the translation, the register pill, the use note and the
+     synonyms, then 24px above the rule and 20px below it. Which lines an
+     item has varies - most have three, some have six - so the card's
+     rhythm changed from card to card as well as inside one. The container
+     owns it now, and a line cannot opt out. */
+  gap: 14px;
 }
 
 /* The Know-it menu is not content, and must not be scrolled like it.
@@ -11970,6 +11980,12 @@ html[data-theme="dark"] {
    the menu closes the long-sentence scrolling is back. */
 .listen-card:has([data-testid="listen-review-menu"]) {
   overflow-y: visible;
+}
+
+/* The rule under the card's content gets the same gap on both sides, so the
+   controls are as far below it as the last line is above it. */
+.listen-card-review {
+  padding-top: 14px;
 }
 
 /* Two lines reserved for the sentence itself, which is where nearly all of

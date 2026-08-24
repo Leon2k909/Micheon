@@ -1000,6 +1000,32 @@ void (async () => {
   delete global.window;
   delete global.localStorage;
 
+  // The card owns the gap between its lines, and no line brings its own.
+  //
+  // Which lines an item has varies - a counter, the word, its translation,
+  // and then a register pill, a use note or a list of synonyms only when the
+  // item carries one. Setting the distance per line meant the rhythm changed
+  // between cards as well as down a card: 16px under the counter, 12px under
+  // the rest, 24px above the rule and 20px below it.
+  const listenCss = read("src/index.css");
+  const listenView = read("src/components/listen/ListenView.tsx");
+  const cardBlock = listenCss.slice(listenCss.indexOf(".listen-card {"), listenCss.indexOf(".listen-card:has("));
+  check(
+    "the listen card sets one gap for every line it holds",
+    cardBlock.includes("gap: 14px")
+  );
+  check(
+    "the rule above the review controls has the same gap on both sides",
+    listenCss.includes(".listen-card-review {") && listenCss.includes("padding-top: 14px")
+  );
+  // From just inside the card's opening tag: the card's own top margin is its
+  // distance from the player above it, which is not part of this rhythm.
+  const cardOpen = listenView.indexOf('className="listen-card');
+  const cardMarkup = listenView.slice(listenView.indexOf(">", cardOpen), listenView.indexOf("listen-card-review"));
+  check(
+    "no line inside the card carries a margin of its own",
+    !/className="[^"]*\bmt-\d/.test(cardMarkup)
+  );
   if (failures > 0) {
     console.error(`\n${failures} listen-mode check(s) failed`);
     process.exit(1);

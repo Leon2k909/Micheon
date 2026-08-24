@@ -1242,10 +1242,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               would otherwise stay blocked — and knowing what it meant is only
               half of it, since the next thing you want is to keep it.
               Tapping a word pauses the loop rather than talking over it. */}
-          <p className="listen-sentence mt-4 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
+          <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
             <TappableSentence text={item.de} lang="de-DE" meaningText={item.en} onWordAudio={pause} />
           </p>
-          <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
+          <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
           </p>
           {/* Which of the word's meanings this card is on. A heard word brings
@@ -1254,7 +1254,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               whether they were wrong. Two or three words settle it while the
               card is still up; the use note underneath explains it afterwards. */}
           {item.kind === "word" && item.senseTag ? (
-            <p className="mt-2 flex justify-center">
+            <p className="flex justify-center">
               <span className="sense-note">
                 {uiFmt("Meaning here: {sense}", { sense: item.senseTag })}
               </span>
@@ -1279,7 +1279,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               the 762 items this can appear on are mostly sentences, and
               "Ich komm." is exactly the card that needs it. */}
           {item.tierNote ? (
-            <p className="mt-3 flex justify-center">
+            <p className="flex justify-center">
               <span
                 className="register-note"
                 title={ui("Not everyday neutral German — use in the right company")}
@@ -1289,13 +1289,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             </p>
           ) : null}
           {item.kind === "word" && item.use ? (
-            <p className="mx-auto mt-3 max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
+            <p className="mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
               {item.use}
             </p>
           ) : null}
           {item.kind === "word" && (item.synonyms?.length ?? 0) > 0 ? (
             <p
-              className="mx-auto mt-3 max-w-3xl text-sm font-semibold leading-relaxed text-[var(--text-3)]"
+              className="mx-auto max-w-3xl text-sm font-semibold leading-relaxed text-[var(--text-3)]"
               title={ui("Same meaning — the most common word leads this card.")}
             >
               <span className="font-black text-sky-600">{ui("Also")}: </span>
@@ -1311,7 +1311,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
           <div
             aria-labelledby="listen-review-heading"
-            className="relative mt-6 border-t border-[var(--border)] pt-5"
+            className="listen-card-review relative border-t border-[var(--border)]"
             onBlurCapture={(event) => {
               if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
               scheduleReviewPanelClose();
