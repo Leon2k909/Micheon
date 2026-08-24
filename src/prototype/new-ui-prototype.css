@@ -12238,3 +12238,52 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   hyphens: auto;
   overflow-wrap: anywhere;
 }
+
+/* ── The mastery ring follows the chosen accent ──────────────────────────────
+   The ring's four colours were declared once, as green literals, with no
+   custom-accent variant at all — so on a pink accent the card sat there as
+   the one green thing on the page. The border was re-pointed and nothing
+   else was, which made it worse: a pink outline around a green ring.
+
+   Derived rather than restated, so a new accent needs no new rule here. */
+html[data-accent="custom"] .np-feature-host .mastery-card {
+  --mastery-ring-start: var(--accent-pressed);
+  --mastery-ring-middle: var(--accent);
+  --mastery-ring-end: var(--accent-hover);
+  --mastery-ring-track: var(--accent-dim);
+  --mastery-ring-halo: rgba(var(--accent-rgb), 0.24);
+  --mastery-ring-tip: color-mix(in srgb, var(--accent) 16%, #ffffff);
+  --mastery-ring-shadow: drop-shadow(0 2px 4px rgba(var(--accent-rgb), 0.18));
+}
+
+/* Dark mode re-pointed the border and stopped. The tile itself stayed a
+   green-tinted slab (#263a29 -> #203123) with green-tinted text on it. */
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-card {
+  --mastery-ring-track: color-mix(in srgb, var(--accent) 26%, var(--np-surface));
+  --mastery-ring-tip: color-mix(in srgb, var(--accent) 14%, #ffffff);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring {
+  color: var(--accent-ink);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent) 13%, var(--np-surface)) 0%,
+    color-mix(in srgb, var(--accent) 7%, var(--np-surface)) 100%
+  );
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 48%),
+    radial-gradient(circle at 18% 112%, rgba(var(--accent-rgb), 0.12), transparent 56%);
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__value {
+  color: var(--accent-ink);
+}
+
+/* The word under the number is a caption, not accent-coloured text: it read
+   as a green tint only because the whole tile was tinted green. */
+html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-ring__label > span:last-child {
+  color: var(--np-text-soft, #b0b6c0);
+}
