@@ -455,7 +455,6 @@ function ProgressSummaryCard({
   earned: number;
   vocab: number;
 }) {
-  const nextMilestone = MILESTONES.find((item) => !item.check(stats));
   const fluency = getFluency(vocab);
 
   return (
@@ -503,20 +502,6 @@ function ProgressSummaryCard({
         ))}
       </div>
 
-      <div className="mt-4 rounded-[20px] p-4 text-[var(--feature-ink)]" style={{ background: "var(--feature-gradient)" }}>
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/12">
-            <Target className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-wide">{ui("Next target")}</p>
-            <p className="mt-1 text-sm font-black">{ui(nextMilestone?.label ?? "Keep the rhythm")}</p>
-            <p className="mt-1 text-xs font-semibold leading-5">
-              {ui(nextMilestone?.desc ?? "You have reached every current milestone.")}
-            </p>
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

@@ -2,7 +2,7 @@
 /**
  * Text on the feature gradient stays readable at every accent colour.
  *
- * The gradient cards — "Next target", "Words tracked", the course hero —
+ * The gradient cards — "Words tracked", the course hero —
  * hardcoded #ffffff and then faded it: opacity-70 on the labels, 0.75 and
  * 0.82 on the copy. That is fine on the built-in purple and falls apart
  * everywhere else. The accent is a free colour picker with ten presets, and

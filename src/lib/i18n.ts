@@ -1262,9 +1262,6 @@ const DE: Record<string, string> = {
   "Single words from vocabulary lessons. Sentences live in the tracker above — the two never mix.":
     "Einzelne Wörter aus den Vokabel-Lektionen. Sätze stehen in der Übersicht darüber — die beiden mischen sich nie.",
   "Milestones": "Meilensteine",
-  "Next target": "Nächstes Ziel",
-  "Keep the rhythm": "Bleib im Rhythmus",
-  "You have reached every current milestone.": "Du hast alle aktuellen Meilensteine erreicht.",
   "This week": "Diese Woche",
   "Quick read on your practice rhythm.": "Ein kurzer Überblick über deinen Lernrhythmus.",
   "Days this week": "Tage diese Woche",
