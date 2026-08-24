@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronRight, Globe, Landmark, Scale, Star, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/courses";
 import { loadCourseProgress, resolveLessonForBackground, saveCourseProgress } from "@/lib/courses";
@@ -7,6 +7,26 @@ import { getCodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 import { useScrollLock } from "@/lib/scrollLock";
+
+/**
+ * One look per chapter, taken in order rather than by name.
+ *
+ * A course brings however many chapters it brings — five for the British
+ * course, three for the German one — so this is indexed into and wrapped.
+ * Keying it on chapter titles would style one course and leave every other
+ * one grey.
+ *
+ * Colours sit at mid saturation so they hold up on the light ground as well
+ * as the dark, and they are applied inline: Tailwind arbitrary values emit
+ * no rule in this project, so a class like text-[#a78bfa] would do nothing.
+ */
+const CHAPTER_LOOKS = [
+  { icon: Star, colour: "#a78bfa" },
+  { icon: Globe, colour: "#60a5fa" },
+  { icon: Landmark, colour: "#34d399" },
+  { icon: Scale, colour: "#fbbf24" },
+  { icon: Users, colour: "#f472b6" },
+] as const;
 
 export function CourseShell({ course, onExit, initialLessonId }: { course: Course; onExit: () => void; initialLessonId?: string }) {
   // The shell underneath is still scrollable, which is where the second
@@ -78,30 +98,76 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
 
       <div className="flex min-h-0 flex-1">
         {/* Sidebar */}
-        <aside className="hidden w-60 shrink-0 overflow-y-auto border-r border-[var(--border)] bg-[var(--surface)] p-3 md:block">
-          {sections.map(([section, items]) => (
-            <div key={section} className="mb-3">
-              <p className="px-2 py-1.5 text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">{section}</p>
-              {items.map((l) => {
-                const active = l.id === activeId;
-                const done = completed.includes(l.id);
-                return (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => go(l.id)}
-                    className={cn(
-                      "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-semibold transition-colors",
-                      active ? "bg-[var(--surface-2)] text-[var(--text-1)]" : "text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
-                    )}
+        <aside className="hidden w-72 shrink-0 overflow-y-auto border-r border-[var(--border)] bg-[var(--surface)] p-3 md:block">
+          {sections.map(([section, items], sectionIndex) => {
+            const look = CHAPTER_LOOKS[sectionIndex % CHAPTER_LOOKS.length];
+            const ChapterIcon = look.icon;
+            return (
+              <div key={section} className="mb-5">
+                <div className="mb-2 flex items-center gap-2 px-1">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: look.colour + "26", color: look.colour }}
                   >
-                    <span className="truncate">{l.title}</span>
-                    {done && <Check className="h-3.5 w-3.5 shrink-0 text-[var(--success-text)]" />}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+                    <ChapterIcon className="h-3.5 w-3.5" />
+                  </span>
+                  {/* The heading takes the icon's colour so the eye can find a
+                      chapter without reading it. It wraps rather than
+                      truncating — a cut-off chapter name is worse than two
+                      lines of it. */}
+                  <p
+                    className="min-w-0 text-[10.5px] font-black uppercase leading-tight tracking-wide"
+                    style={{ color: look.colour }}
+                  >
+                    {section}
+                  </p>
+                </div>
+                <div className="grid gap-1.5">
+                  {items.map((l) => {
+                    const active = l.id === activeId;
+                    const done = completed.includes(l.id);
+                    return (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => go(l.id)}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[12.5px] font-semibold transition-colors",
+                          active
+                            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                            : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                        )}
+                      >
+                        {/* Wraps: the old rail truncated every long title, so
+                            "British Values & Principles" read as "British
+                            Values & Princ…" and two chapters ended up
+                            indistinguishable. */}
+                        <span className="min-w-0 flex-1 leading-snug">{l.title}</span>
+                        {done ? (
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
+                              active ? "bg-white/25 text-white" : "bg-[var(--success-bg)] text-[var(--success-text)]"
+                            )}
+                          >
+                            <Check className="h-2.5 w-2.5" />
+                          </span>
+                        ) : (
+                          <ChevronRight
+                            aria-hidden="true"
+                            className={cn("h-3.5 w-3.5 shrink-0", active ? "text-white/70" : "text-[var(--text-3)]")}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </aside>
 
         {/* Content */}
