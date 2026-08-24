@@ -86,9 +86,16 @@ if (!/overflow-y: auto/.test(nav)) {
 if (!/min-height: 0/.test(nav)) {
   failures.push("the menu cannot shrink below its content, so it pushes the column instead of scrolling");
 }
-const sidebar = proto.slice(proto.indexOf(".np-sidebar {"), proto.indexOf(".np-sidebar {") + 500);
+// Long enough to reach past the rule's comments to its last property.
+const sidebar = proto.slice(proto.indexOf(".np-sidebar {"), proto.indexOf(".np-sidebar {") + 1000);
 if (/overflow-y: auto/.test(sidebar)) {
   failures.push("the sidebar scrolls again, so the logo scrolls away with the menu");
+}
+// Catching at 0 is not the same as not moving: the desktop app puts a 38px
+// title bar above the shell, so a sidebar pinned to the top of the window has
+// that much travel first, and the logo visibly drifts up before it holds.
+if (!sidebar.includes("top: var(--titlebar-h")) {
+  failures.push("the sidebar catches at the top of the window rather than under the title bar, so the logo drifts up as you scroll");
 }
 
 // ── and the gesture it replaced is gone, not merely unused ────────────────

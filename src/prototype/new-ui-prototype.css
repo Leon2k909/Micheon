@@ -216,7 +216,11 @@
      handle sit its 9px past the right edge without being clipped. */
   overflow: visible;
   position: sticky;
-  top: 0;
+  /* Not 0: in the desktop app a 38px title bar sits above the shell, and a
+     sidebar catching at the top of the window has those 38px of travel first
+     — which is the logo drifting up as you scroll. It catches directly under
+     the title bar instead. On the website --titlebar-h is 0px. */
+  top: var(--titlebar-h, 0px);
   display: flex;
   height: var(--app-h, 100dvh);
   min-width: 0;
