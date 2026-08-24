@@ -164,6 +164,38 @@ check(
     && /export const ENGLISH_CLOZE_EXERCISES(?:\s*:\s*ClozeExercise\[\])?\s*=\s*\[/u.test(source)
 );
 
+// A hint has to say WHICH word, not only which form.
+//
+// Simple Present mit we fits learn, study and speak exactly as well as it
+// fits practise, so those gaps could not be worked out - only guessed at,
+// and the answer read as arbitrary when it appeared. The German list already
+// worked the other way round and named the word: to go, wir form. These are
+// the entries where the form alone left the gap open, with the meaning each
+// hint now has to carry. Where the answer is the German word itself, the
+// meaning is given in English so the hint does not hand the answer over.
+const MEANING_IN_HINT = {
+  en6: "üben", en7: "arbeiten", en10: "helfen", en11: "gehen", en15: "spielen",
+  en30: "machen", en31: "bleiben", en32: "ankommen", en33: "Rat",
+  en36: "fertig", en37: "sehen", en41: "absagen", en42: "warten",
+  en43: "ausschalten", en46: "weggehen", en48: "anrufen", en51: "warten",
+  en55: "fühlen", en56: "missverstehen", en58: "dagegen",
+  c30: "to buy", c32: "liefern", c39: "to be", c41: "to explain", c45: "to postpone",
+};
+const exercisesById = new Map(
+  [...CLOZE_EXERCISES, ...ENGLISH_CLOZE_EXERCISES].map((exercise) => [exercise.id, exercise])
+);
+const hintsWithoutMeaning = Object.entries(MEANING_IN_HINT)
+  .filter(([id, meaning]) => {
+    const exercise = exercisesById.get(id);
+    return !exercise || !exercise.hint.includes(meaning);
+  })
+  .map(([id]) => id);
+check(
+  "every gap the form alone left open says what the missing word means",
+  hintsWithoutMeaning.length === 0,
+  hintsWithoutMeaning.join(", ")
+);
+
 if (failures) {
   console.error(`\n${failures} grammar-reference regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
