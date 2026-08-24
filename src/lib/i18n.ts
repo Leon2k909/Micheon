@@ -1595,6 +1595,7 @@ const DE: Record<string, string> = {
   "Clear": "Löschen",
   "Deselect": "Abwählen",
   "Select": "Auswählen",
+  "Select lessons": "Lektionen auswählen",
   "Play German audio": "Deutsche Aussprache abspielen",
   "Play English audio": "Englische Aussprache abspielen",
   "No items match this filter.": "Keine Einträge entsprechen diesem Filter.",

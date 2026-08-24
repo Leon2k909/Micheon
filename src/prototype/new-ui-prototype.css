@@ -565,6 +565,22 @@
   place-items: center;
 }
 
+/* Beta's cell in the group head. Same 36px footprint as a flag so all three
+   headings keep one left edge, but drawn in the muted ink of a nav row rather
+   than as artwork — it is a mark, not a country. */
+.np-nav-beta-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--np-muted);
+}
+
+.np-nav-beta-mark svg {
+  width: 21px;
+  height: 21px;
+}
+
 /* FlagRoundel is drawn at 32px for the course picker; the nav wants it at
    the size of the icon tiles it sits in a column with. */
 .np-nav-flag > span {

@@ -58,7 +58,8 @@ import {
   UsersRound,
   Volume2,
   X,
-  ScrollText,} from "lucide-react";
+  ScrollText,
+  FlaskConical,} from "lucide-react";
 import {
   lazy,
   Fragment,
@@ -1165,11 +1166,13 @@ function Sidebar({
             {/* A heading like the two above it. This used to be a violet
                 "Beta" pill, which made the newest section read as a warning
                 label rather than a place to go, and left it the only heading
-                in the sidebar that did not look like one. The empty first cell
-                keeps the label on the same left edge as the sections that do
-                carry a flag. The state key stays "beta" — it is stored per
-                profile, so renaming it would spring the fold back to its
-                default for anyone who had already set it. */}
+                in the sidebar that did not look like one. The first cell holds
+                a flask rather than a flag, which is what the two sections above
+                it carry and what a section that is not a language cannot: it
+                says in a picture what the rows underneath say in words, that
+                this is still being tested. The state key stays "beta" — it is
+                stored per profile, so renaming it would spring the fold back to
+                its default for anyone who had already set it. */}
             <button
               aria-expanded={groups.beta}
               className={`np-nav-group-head${!groups.beta && betaItems.some((item) => item.id === activeView) ? " is-active" : ""}`}
@@ -1177,7 +1180,7 @@ function Sidebar({
               type="button"
               {...dragProps(SECTION_BETA)}
             >
-              <span aria-hidden="true" />
+              <span aria-hidden="true" className="np-nav-beta-mark"><FlaskConical /></span>
               <span>{ui("Beta")}</span>
               <ChevronDown aria-hidden="true" className="np-nav-group-chevron" />
             </button>

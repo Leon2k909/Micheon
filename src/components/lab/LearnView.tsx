@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, X } from "lucide-react";
+import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, SquareCheck, X } from "lucide-react";
 import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
@@ -102,6 +102,17 @@ export function LearnView({
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
   const [mutedPacks, setMutedPacks] = useState<Set<string>>(() => getMutedPacks());
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  /**
+   * A box on every card said "you are choosing lessons" to everyone who was
+   * only reading them. Choosing is a mode you ask for now, and the boxes
+   * appear with it.
+   */
+  const [selecting, setSelecting] = useState(false);
+  // Leaving drops the selection: boxes you cannot see must not still be ticked.
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
 
   const togglePaused = (key: string) => {
     setMutedPacks(new Set(setPackMuted(key, !mutedPacks.has(key))));
@@ -306,50 +317,74 @@ export function LearnView({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
-            <SelectBox
-              checked={allVisibleSelected}
-              indeterminate={someVisibleSelected && !allVisibleSelected}
-              onClick={toggleSelectAllVisible}
-              label={allVisibleSelected
-                ? ui("Deselect all")
-                : uiIsGerman()
-                  ? `Alle ${visible.length} angezeigten Lektionen auswählen`
-                  : `Select all ${visible.length} shown`}
-            />
-            <p className="text-xs font-bold text-[var(--text-3)]">
-              {selected.size > 0
-                ? `${selected.size} ${ui("selected")}`
-                : uiIsGerman()
-                  ? "Lektionen auswählen, um mehrere auf einmal zu pausieren"
-                  : "Select lessons to pause several at once"}
-            </p>
-            {selected.size > 0 && (
-              <div className="ml-auto flex flex-wrap items-center gap-1.5">
-                <button
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
-                  onClick={() => bulkSetPaused(true)}
-                  type="button"
-                >
-                  <PauseCircle className="h-3.5 w-3.5" />
-                  {ui("Pause selected")}
-                </button>
-                <button
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
-                  onClick={() => bulkSetPaused(false)}
-                  type="button"
-                >
-                  <PlayCircle className="h-3.5 w-3.5" />
-                  {ui("Resume selected")}
-                </button>
-                <button
-                  className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
-                  onClick={() => setSelected(new Set())}
-                  type="button"
-                >
-                  <X className="h-3.5 w-3.5" />
-                  {ui("Clear")}
-                </button>
-              </div>
+            {!selecting ? (
+              <button
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                onClick={() => setSelecting(true)}
+                type="button"
+              >
+                <SquareCheck className="h-3.5 w-3.5" />
+                {ui("Select lessons")}
+              </button>
+            ) : (
+              <>
+                <SelectBox
+                  checked={allVisibleSelected}
+                  indeterminate={someVisibleSelected && !allVisibleSelected}
+                  onClick={toggleSelectAllVisible}
+                  label={allVisibleSelected
+                    ? ui("Deselect all")
+                    : uiIsGerman()
+                      ? `Alle ${visible.length} angezeigten Lektionen auswählen`
+                      : `Select all ${visible.length} shown`}
+                />
+                <p className="text-xs font-bold text-[var(--text-3)]">
+                  {selected.size > 0
+                    ? `${selected.size} ${ui("selected")}`
+                    : uiIsGerman()
+                      ? "Lektionen auswählen, um mehrere auf einmal zu pausieren"
+                      : "Select lessons to pause several at once"}
+                </p>
+                <div className="ml-auto flex flex-wrap items-center gap-1.5">
+                  {selected.size > 0 && (
+                    <>
+                      <button
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                        onClick={() => bulkSetPaused(true)}
+                        type="button"
+                      >
+                        <PauseCircle className="h-3.5 w-3.5" />
+                        {ui("Pause selected")}
+                      </button>
+                      <button
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-[11px] font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                        onClick={() => bulkSetPaused(false)}
+                        type="button"
+                      >
+                        <PlayCircle className="h-3.5 w-3.5" />
+                        {ui("Resume selected")}
+                      </button>
+                      <button
+                        className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-3)] hover:text-[var(--text-1)]"
+                        onClick={() => setSelected(new Set())}
+                        type="button"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        {ui("Clear")}
+                      </button>
+                    </>
+                  )}
+                  {/* Clear empties the selection and stays; Done puts the boxes
+                      away. Two different things, so both are here. */}
+                  <button
+                    className="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[11px] font-black text-[var(--text-2)] hover:text-[var(--text-1)]"
+                    onClick={stopSelecting}
+                    type="button"
+                  >
+                    {ui("Done")}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -399,12 +434,14 @@ export function LearnView({
                 />
                 <div className="pointer-events-none relative z-10 flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-start gap-2">
-                    <SelectBox
-                      checked={selected.has(key)}
-                      className="pointer-events-auto"
-                      label={`${ui(selected.has(key) ? "Deselect" : "Select")} ${uiOr(part.theme, "Konversationsmodul")}`}
-                      onClick={() => toggleSelect(key)}
-                    />
+                    {selecting && (
+                      <SelectBox
+                        checked={selected.has(key)}
+                        className="pointer-events-auto"
+                        label={`${ui(selected.has(key) ? "Deselect" : "Select")} ${uiOr(part.theme, "Konversationsmodul")}`}
+                        onClick={() => toggleSelect(key)}
+                      />
+                    )}
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
                       {isBulkPartKey(key) ? <BookOpen className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
                     </div>
