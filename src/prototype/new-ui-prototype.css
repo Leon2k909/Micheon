@@ -3520,6 +3520,11 @@ button.np-progress-title:focus-visible,
 }
 
 .np-level-card {
+  /* The panel's blocks sit 14px apart; this one had nothing at all under the
+     heading. A little more than the others, because what is above it is a
+     heading rather than another card, and its last line ends flush against
+     its own bottom edge. */
+  margin-top: 18px;
   display: grid;
   min-height: 94px;
   grid-template-columns: 65px 1fr;
