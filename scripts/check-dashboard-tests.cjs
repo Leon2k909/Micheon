@@ -125,6 +125,19 @@ check(
     && /stored\?\.panel !== false/.test(dashboard)
 );
 
+// A pack fills the topic field with a whole lesson headline rather than the
+// two or three words it was built for, and the line sat bare under the
+// instruction in the same weight and colour: on a card whose job is
+// translating German sentences, an unlabelled German sentence is a question.
+check(
+  "the sentence says which lesson it came from, rather than printing the name bare",
+  (() => {
+    const label = testsView.indexOf('ui("Lesson")');
+    const topic = testsView.indexOf("currentQuestion.item.topic");
+    return label >= 0 && topic > label && topic - label < 260;
+  })()
+);
+
 if (failures) {
   console.error(`\n${failures} dashboard/test-library regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

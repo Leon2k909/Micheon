@@ -1694,7 +1694,18 @@ export function TestsView({
                     ? `${markedCount} ${ui(markedCount === 1 ? "word marked to learn" : "words marked to learn")}`
                     : ui("Click any word you don't know — you can learn them all at the end.")}
                 </p>
-                <p className="mt-3 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
+                {/* Where the sentence comes from, said to be that.
+
+                    The line was printed bare, in the weight and colour of the
+                    instruction directly above it, and a pack fills this field
+                    with a whole lesson headline rather than the two or three
+                    words it was built for. A title reading as one more German
+                    sentence on a card whose job is translating German
+                    sentences is a question, not a help. */}
+                <div className="mt-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-3)]">{ui("Lesson")}</p>
+                  <p className="mt-0.5 text-xs font-bold text-[var(--text-3)]">{currentQuestion.item.topic}</p>
+                </div>
               </div>
               <button
                 aria-label={ui("Hear prompt")}
