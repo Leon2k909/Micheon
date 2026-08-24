@@ -34,7 +34,7 @@ const i18n = read("src/lib/i18n.ts");
 // The country card is not in this table any more: it draws one of two
 // pictures depending on the country selected, so it is pinned below.
 const PICTURES = [
-  ["home-skyline-de-v1.webp", "homeSkylineImage", "np-home-banner-sky"],
+  ["home-banner-sunrise-v1.webp", "homeBannerImage", "np-home-banner-sky"],
   ["home-languages-de-v2.webp", "homeLanguagesImage", "np-course-art"],
 ];
 

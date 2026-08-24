@@ -167,7 +167,7 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
  * other two are the faces of the two cards under "Was möchtest du heute
  * lernen?".
  */
-import homeSkylineImage from "./assets/home-skyline-de-v1.webp";
+import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
@@ -1970,7 +1970,7 @@ function HomeBanner() {
         decoding="async"
         fetchPriority="high"
         loading="eager"
-        src={homeSkylineImage}
+        src={homeBannerImage}
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
