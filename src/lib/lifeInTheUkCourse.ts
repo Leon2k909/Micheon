@@ -30,8 +30,8 @@ import type { Course } from "@/lib/courses";
 export const lifeInTheUkCourse: Course = {
   id: "life-in-the-uk",
   kind: "citizenship",
-  name: "Life in the UK",
-  tagline: "History, government and traditions — how life in the UK works.",
+  name: "United Kingdom – Land and Culture",
+  tagline: "History, government and traditions — how the country works.",
   icon: "🏛️",
   available: true,
   lessons: [

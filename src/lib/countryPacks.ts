@@ -21,7 +21,7 @@ import { DE_ERA_LABELS, DE_ERA_ORDER, DE_TIMELINE } from "@/lib/lebenInDeutschla
 export const UK_PACK: CountryPack = {
   id: "uk",
   flagId: "english-uk",
-  label: "Life in the UK",
+  label: "United Kingdom – Land and Culture",
   course: lifeInTheUkCourse,
   questions: UK_QUESTIONS,
   timeline: UK_TIMELINE,
@@ -50,7 +50,7 @@ export const UK_PACK: CountryPack = {
 export const DE_PACK: CountryPack = {
   id: "de",
   flagId: "german",
-  label: "Leben in Deutschland",
+  label: "Germany – Land and Culture",
   course: lebenInDeutschlandCourse,
   questions: DE_QUESTIONS,
   timeline: DE_TIMELINE,

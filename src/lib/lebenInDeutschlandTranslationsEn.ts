@@ -17,8 +17,8 @@
  * recognise it on the day.
  */
 export const LEBEN_IN_DEUTSCHLAND_EN: Record<string, string> = {
-  "Leben in Deutschland": "Life in Germany",
-  "Politik, Geschichte und Gesellschaft — wie das Leben in Deutschland funktioniert.": "Politics, history and society — how life in Germany works.",
+  // The course title is already English, so it has no entry here.
+  "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.": "Politics, history and society — how the country works.",
   "Grundgesetz und Grundrechte": "The Grundgesetz and basic rights",
   "Warum diese Lektion zuerst: Ein großer Teil der Fragen prüft nicht Wissen über Deutschland, sondern über die Werte, auf denen es aufgebaut ist. Die stehen alle im Grundgesetz — und zwar gleich am Anfang.": "Why this lesson first: a large share of the questions test not knowledge about Germany but the values it is built on. All of them are in the Grundgesetz — and right at the beginning of it.",
   "Das Grundgesetz": "The Grundgesetz",

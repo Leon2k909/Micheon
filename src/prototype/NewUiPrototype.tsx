@@ -208,7 +208,7 @@ type PrototypeSearchItem = {
   id: string;
   title: string;
   subtitle: string;
-  group: "Page" | "Lesson" | "Word bank" | "Game" | "Life in the UK";
+  group: "Page" | "Lesson" | "Word bank" | "Game" | "Country studies";
   actionLabel: "Open" | "Start";
   searchText: string;
   onSelect: () => void;
@@ -2185,7 +2185,7 @@ function CountryCard({
           <div className="np-home-choice-row">
             <span aria-hidden="true" className="np-home-choice-icon"><Landmark /></span>
             <span className="np-home-choice-lesson">
-              <strong>{course?.name ? ui(course.name) : ui("Life in the UK")}</strong>
+              <strong>{course?.name ? ui(course.name) : ui("Country studies")}</strong>
               <small>{nextLesson ? uiFmt("Lesson {n}", { n: uiNumber(Math.min(done + 1, lessons.length)) }) : ui("Course complete")}</small>
             </span>
             <b>{percent}&nbsp;%</b>
@@ -3528,7 +3528,7 @@ function MoreView({
     }] : []),
     // The mobile bar is a fixed five columns, so this is where a narrow window
     // reaches the citizenship course.
-    { title: ui("Life in the UK"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
+    { title: ui("Country studies"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
@@ -4042,8 +4042,8 @@ export default function NewUiPrototype({
     ...UK_TIMELINE.map((entry) => ({
       id: `uk-event-${entry.id}`,
       title: entry.title,
-      subtitle: `${entry.displayYear} · ${ui("Life in the UK")}`,
-      group: "Life in the UK" as const,
+      subtitle: `${entry.displayYear} · ${ui(activePack.label)}`,
+      group: "Country studies" as const,
       actionLabel: "Open" as const,
       searchText: buildCatalogSearchText([
         entry.title,

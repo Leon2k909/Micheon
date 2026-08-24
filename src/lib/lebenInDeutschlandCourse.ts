@@ -30,8 +30,8 @@ import type { Course } from "@/lib/courses";
 export const lebenInDeutschlandCourse: Course = {
   id: "leben-in-deutschland",
   kind: "citizenship",
-  name: "Leben in Deutschland",
-  tagline: "Politik, Geschichte und Gesellschaft — wie das Leben in Deutschland funktioniert.",
+  name: "Germany – Land and Culture",
+  tagline: "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.",
   icon: "🇩🇪",
   available: true,
   lessons: [

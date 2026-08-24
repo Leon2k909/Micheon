@@ -276,7 +276,7 @@ export function CourseSwitcher({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Switch course")}</h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language, a programming track or the Life in the UK course.")}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language, a programming track or a country course.")}</p>
               </div>
               <button
                 type="button"

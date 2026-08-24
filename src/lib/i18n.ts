@@ -2474,11 +2474,13 @@ const DE: Record<string, string> = {
   // ── Life in the UK: practice ──
   // The questions and explanations themselves stay in English — the test is
   // sat in English. Only the surrounding controls are translated.
-  "Life in the UK sections": "Life-in-the-UK-Bereiche",
   "Country studies sections": "Landeskunde-Bereiche",
   "Choose the country you are studying": "Wähle das Land, das du lernst",
-  "Life in the UK": "Life in the UK",
-  "Leben in Deutschland": "Leben in Deutschland",
+  // The courses are named for what they teach rather than for the exam they
+  // prepare you for — she did not want the test names on screen. The exams
+  // are still named inside the lessons, where the name is the fact.
+  "United Kingdom – Land and Culture": "Großbritannien – Land und Kultur",
+  "Germany – Land and Culture": "Deutschland – Land und Kultur",
   Germany: "Deutschland",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
@@ -2678,8 +2680,8 @@ const DE: Record<string, string> = {
   "the talking pet": "zum sprechenden Pet",
   "Same course, two spellings and accents. Pick one — you can swap any time.":
     "Derselbe Kurs, zwei Schreibweisen und Akzente. Wähl eine — du kannst jederzeit wechseln.",
-  "Pick a language, a programming track or the Life in the UK course.":
-    "Wähle eine Sprache, einen Programmierkurs oder den Kurs „Life in the UK“.",
+  "Pick a language, a programming track or a country course.":
+    "Wähle eine Sprache, einen Programmierkurs oder einen Länderkurs.",
   "Living in the UK": "Leben im Vereinigten Königreich",
   "No matching course": "Kein passender Kurs",
   "Search by name, language code, or the name in that language — Deutsch, español, 日本語.":
