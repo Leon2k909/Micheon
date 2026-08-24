@@ -47,6 +47,8 @@ import {
   getListenLanguageGapMs,
   getListenLanguageOrder,
   getListenLoopItems,
+  getListenMixedCounts,
+  arrangeListenMixedQueue,
   getListenLoopPasses,
   getListenNextCardDelayMs,
   getListenPetBilingualCaptions,
@@ -63,6 +65,7 @@ import {
   setListenLanguageGapMs,
   setListenLanguageOrder,
   setListenLoopItems,
+  setListenMixedCounts,
   setListenLoopPasses,
   setListenNextCardDelayMs,
   setListenPetBilingualCaptions,
@@ -279,6 +282,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
     () => getListenQueueOrder(learningDirection)
   );
+  const [mixedCounts, setMixedCounts] = useState(() => getListenMixedCounts(learningDirection));
+  useEffect(() => { setMixedCounts(getListenMixedCounts(learningDirection)); }, [learningDirection, profile?.id]);
   // Grade writes made elsewhere (the tracker's "never review" star, lesson
   // grades) must reach this queue: it stays mounted across tab switches, so
   // without a revision it kept playing items the learner had removed. While
@@ -336,8 +341,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
-    () => baseQueue.filter((candidate) => !hiddenIds.has(candidate.id)),
-    [baseQueue, hiddenIds]
+    () => {
+      const visible = baseQueue.filter((candidate) => !hiddenIds.has(candidate.id));
+      return contentSource === "mixed" ? arrangeListenMixedQueue(visible, mixedCounts) : visible;
+    },
+    [baseQueue, contentSource, hiddenIds, mixedCounts]
   );
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
@@ -408,7 +416,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     visibleKeys: visiblePetKeys,
   } = useCodexPets();
 
-  const effectiveLoopItems = Math.min(Math.max(1, queue.length), loopItems);
+  const effectiveLoopItems = Math.min(Math.max(1, queue.length), contentSource === "mixed" ? mixedCounts.words + mixedCounts.sentences : loopItems);
   const queueIndex = listenQueueIndexForPlayhead(
     playhead,
     queue.length,
@@ -454,6 +462,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setEnglishRepeats(getListenEnglishRepeats(learningDirection));
     setLanguageOrder(getListenLanguageOrder(learningDirection));
     setLoopItems(getListenLoopItems(learningDirection));
+    setMixedCounts(getListenMixedCounts(learningDirection));
     setLoopPasses(getListenLoopPasses(learningDirection));
     setBackgroundPlayback(getListenBackgroundPlayback(profile));
     setPetBilingualCaptions(getListenPetBilingualCaptions(profile));
@@ -465,11 +474,17 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setHiddenIds(new Set());
     timedHiddenIdsRef.current.clear();
     const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
-    const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
+    const restoredCounts = getListenMixedCounts(learningDirection);
+    const restoredQueue = contentSource === "mixed"
+      ? arrangeListenMixedQueue(baseQueue, restoredCounts)
+      : baseQueue;
+    const storedIndex = restoredQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
-      baseQueue.length,
-      getListenLoopItems(learningDirection),
+      restoredQueue.length,
+      contentSource === "mixed"
+        ? restoredCounts.words + restoredCounts.sentences
+        : getListenLoopItems(learningDirection),
       getListenLoopPasses(learningDirection)
     ));
   }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder]);
@@ -1007,6 +1022,22 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     return next;
   };
 
+  const commitMixedCounts = (counts: { words: number; sentences: number }) => {
+    const currentId = item?.id ?? "";
+    const next = setListenMixedCounts(counts, learningDirection);
+    const visible = baseQueue.filter((candidate) => !hiddenIds.has(candidate.id));
+    const nextQueue = arrangeListenMixedQueue(visible, next);
+    const nextIndex = Math.max(0, nextQueue.findIndex((candidate) => candidate.id === currentId));
+    setMixedCounts(next);
+    setPlayhead(listenPlayheadForQueueIndex(
+      nextIndex,
+      nextQueue.length,
+      next.words + next.sentences,
+      loopPasses
+    ));
+    return next;
+  };
+
   const commitLoopPasses = (count: number) => {
     const next = setListenLoopPasses(count, learningDirection);
     setLoopPasses(next);
@@ -1194,7 +1225,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </>
             )}
             <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
-            <span>{uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
+            <span>{contentSource === "mixed"
+              ? uiFmt("{words} words + {sentences} sentences, {passes} passes", { words: mixedCounts.words, sentences: mixedCounts.sentences, passes: loopPasses })
+              : uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
           </div>
         </div>
 
@@ -1603,16 +1636,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 </span>
               </div>
               <div className="mt-3 space-y-2">
-                <NumberSetting
-                  label={ui("Items in each loop")}
-                  max={12}
-                  min={1}
-                  note={ui("How many different items to hear before they return")}
-                  onCommit={commitLoopItems}
-                  suffix={ui("items")}
-                  testId="listen-loop-items"
-                  value={loopItems}
-                />
+                {contentSource === "mixed" ? <>
+                  <NumberSetting label={ui("Words in each loop")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("Words before the loop returns")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
+                  <NumberSetting label={ui("Sentences in each loop")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("Sentences and phrases before the loop returns")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
+                </> : <NumberSetting label={ui("Items in each loop")} max={12} min={1} note={ui("How many different items to hear before they return")} onCommit={commitLoopItems} suffix={ui("items")} testId="listen-loop-items" value={loopItems} />}
                 <NumberSetting
                   label={ui("Passes through each loop")}
                   max={6}

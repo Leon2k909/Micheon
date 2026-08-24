@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { getScopedKey } from "./src/lib/profileStorage.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
@@ -81,6 +81,7 @@ const {
   getListenEnglishRepeats, setListenEnglishRepeats,
   getListenLanguageOrder, setListenLanguageOrder,
   getListenLoopItems, setListenLoopItems,
+  arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS,
   getListenLoopPasses, setListenLoopPasses,
   listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead,
   getListenNextCardDelayMs, setListenNextCardDelayMs,
@@ -507,6 +508,30 @@ check("Listen defaults to a real learning loop rather than one-pass exposure",
   && DEFAULT_LISTEN_LOOP_PASSES === 2
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2);
+check("Both defaults to one word and two sentences per loop",
+  DEFAULT_LISTEN_MIXED_COUNTS.words === 1
+  && DEFAULT_LISTEN_MIXED_COUNTS.sentences === 2
+  && JSON.stringify(getListenMixedCounts("learn-de")) === JSON.stringify({ words: 1, sentences: 2 }));
+setListenMixedCounts({ words: 2, sentences: 1 }, "learn-de");
+setListenMixedCounts({ words: 1, sentences: 4 }, "learn-en");
+check("each course remembers its own Both split",
+  JSON.stringify(getListenMixedCounts("learn-de")) === JSON.stringify({ words: 2, sentences: 1 })
+  && JSON.stringify(getListenMixedCounts("learn-en")) === JSON.stringify({ words: 1, sentences: 4 }));
+const mixedFixture = [
+  ...Array.from({ length: 5 }, (_, i) => ({ id: `w${i}`, kind: "word" })),
+  ...Array.from({ length: 7 }, (_, i) => ({ id: `s${i}`, kind: "sentence" })),
+];
+check("Both emits exact 1+2 chunks while preserving each lane's order",
+  arrangeListenMixedQueue(mixedFixture, { words: 1, sentences: 2 }).map((item) => item.id).join(",")
+    === "w0,s0,s1,w1,s2,s3,w2,s4,s5,w3,s6,w4");
+check("Both emits exact 2+1 chunks and drains the available tail without duplication",
+  arrangeListenMixedQueue(mixedFixture, { words: 2, sentences: 1 }).map((item) => item.id).join(",")
+    === "w0,w1,s0,w2,w3,s1,w4,s2,s3,s4,s5,s6");
+stored.set("gl-listen-mixed-counts-v1:learn-de", "not-json");
+check("corrupt Both counts fall back safely",
+  JSON.stringify(getListenMixedCounts("learn-de")) === JSON.stringify({ words: 1, sentences: 2 }));
+check("Both count writers keep at least one of each and cap the combined loop at twelve",
+  JSON.stringify(setListenMixedCounts({ words: 20, sentences: 20 }, "learn-de")) === JSON.stringify({ words: 11, sentences: 1 }));
 check("Listen defaults to both trackers in real most-common-first order",
   getListenContentSource("learn-de") === "mixed"
   && getListenQueueOrder("learn-de") === "common");
@@ -699,6 +724,12 @@ check("whole items return through a visible, learner-controlled learning loop",
   && view.includes('testId="listen-loop-items"')
   && view.includes('testId="listen-loop-passes"')
   && view.includes('"Learning pass {pass} of {passes}"'));
+check("Both exposes independent word and sentence loop counts and preserves the current card",
+  view.includes('testId="listen-loop-words"')
+  && view.includes('testId="listen-loop-sentences"')
+  && view.includes("const currentId = item?.id")
+  && view.includes("nextQueue.findIndex((candidate) => candidate.id === currentId)")
+  && view.includes("next.words + next.sentences"));
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')
   && view.includes('data-testid={`listen-queue-${value}`}')

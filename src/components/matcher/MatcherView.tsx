@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import {
   MATCHER_BOARD_SIZE,
   buildMatcherBoard,
+  buildMatcherMixedBoard,
   buildMatcherQueue,
   dealColumns,
   getMatcherCursor,
   getMatcherKind,
+  getMatcherBothCounts,
   getMatcherMissed,
   matcherDifficulty,
   matcherMissedPairs,
@@ -17,6 +19,7 @@ import {
   rememberMiss,
   setMatcherCursor,
   setMatcherKind,
+  setMatcherBothCounts,
   setMatcherMissed,
   type MatcherKind,
   type MatcherPair,
@@ -77,6 +80,7 @@ export function MatcherView({
   // the cursor is: opening on Words and then swapping to the remembered list
   // would flash the wrong one every single time.
   const [kind, setKind] = useState<MatcherKind>(() => getMatcherKind(getLearningDirection(), profile));
+  const [bothCounts, setBothCounts] = useState(() => getMatcherBothCounts(getLearningDirection(), profile));
   const [picked, setPicked] = useState<{ side: "de" | "en"; id: string } | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
@@ -115,6 +119,9 @@ export function MatcherView({
   );
 
   const direction = useMemo(() => getLearningDirection(), []);
+  useEffect(() => {
+    setBothCounts(getMatcherBothCounts(direction, profile));
+  }, [direction, profile?.id]);
 
   /**
    * Where you got to, not where the list starts.
@@ -162,12 +169,12 @@ export function MatcherView({
   const difficulty = useMemo(() => matcherDifficulty(knownStreak), [knownStreak]);
   // The missed round is a redo, not an escalation: normal board size, and it
   // deals from the missed pairs rather than from the course queue.
-  const board = useMemo(
-    () => (reviewing
-      ? buildMatcherBoard(missedPairs, 0, MATCHER_BOARD_SIZE)
-      : buildMatcherBoard(queue, from, difficulty.boardSize)),
-    [reviewing, missedPairs, queue, from, difficulty.boardSize]
-  );
+  const board = useMemo(() => {
+    if (kind === "both") return reviewing
+      ? buildMatcherMixedBoard(missedPairs, 0, bothCounts)
+      : buildMatcherMixedBoard(queue, from, bothCounts);
+    return reviewing ? buildMatcherBoard(missedPairs, 0, MATCHER_BOARD_SIZE) : buildMatcherBoard(queue, from, difficulty.boardSize);
+  }, [kind, reviewing, missedPairs, queue, from, difficulty.boardSize, bothCounts]);
   const columns = useMemo(() => dealColumns(board.pairs), [board.pairs]);
 
   // The notice is only there so a mark can be taken back; left on screen it
@@ -573,6 +580,10 @@ export function MatcherView({
                 {ui(label)}
               </button>
             ))}
+            {kind === "both" && <div className="flex flex-wrap items-center gap-2 text-xs">
+              <label className="flex items-center gap-1.5 font-bold text-[var(--text-2)]">{ui("Words on each board")} <input aria-label={ui("Words on each board")} data-testid="matcher-both-words" type="number" min={1} max={Math.max(1, 10 - bothCounts.sentences)} value={bothCounts.words} onChange={(e) => setBothCounts(setMatcherBothCounts({ ...bothCounts, words: Math.min(Number(e.target.value), 10 - bothCounts.sentences) }, direction, profile))} className="h-8 w-12 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2 text-center font-black text-[var(--text-1)]" /></label>
+              <label className="flex items-center gap-1.5 font-bold text-[var(--text-2)]">{ui("Sentences on each board")} <input aria-label={ui("Sentences on each board")} data-testid="matcher-both-sentences" type="number" min={1} max={Math.max(1, 10 - bothCounts.words)} value={bothCounts.sentences} onChange={(e) => setBothCounts(setMatcherBothCounts({ ...bothCounts, sentences: Math.min(Number(e.target.value), 10 - bothCounts.words) }, direction, profile))} className="h-8 w-12 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-2 text-center font-black text-[var(--text-1)]" /></label>
+            </div>}
             {/* Redo just the ones you got wrong. Disabled rather than hidden
                 when there are none, so it does not appear and vanish. */}
             <button

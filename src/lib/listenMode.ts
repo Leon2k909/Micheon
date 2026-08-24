@@ -69,6 +69,7 @@ const LOOP_PASSES_KEY = "gl-listen-loop-passes";
 const BACKGROUND_PLAYBACK_KEY = "gl-listen-background-playback-v1";
 const PET_BILINGUAL_CAPTIONS_KEY = "gl-listen-pet-bilingual-captions-v1";
 const CONTENT_SOURCE_KEY = "gl-listen-content-source";
+const MIXED_COUNTS_KEY = "gl-listen-mixed-counts-v1";
 const QUEUE_ORDER_KEY = "gl-listen-queue-order";
 // v2 deliberately separates cursors by queue order. The original key only
 // included course + content source, so changing from adaptive/least-heard to
@@ -83,6 +84,24 @@ const MAX_LANGUAGE_GAP_MS = 30_000;
 export const DEFAULT_GERMAN_REPEATS = 2;
 export const DEFAULT_ENGLISH_REPEATS = 1;
 export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
+export type ListenMixedCounts = { words: number; sentences: number };
+export const DEFAULT_LISTEN_MIXED_COUNTS: ListenMixedCounts = { words: 1, sentences: 2 };
+export function normalizeListenMixedCounts(value: Partial<ListenMixedCounts> | null | undefined): ListenMixedCounts {
+  const words = Number.isFinite(value?.words) ? Math.max(1, Math.min(11, Math.round(value?.words as number))) : DEFAULT_LISTEN_MIXED_COUNTS.words;
+  const sentences = Number.isFinite(value?.sentences) ? Math.max(1, Math.min(12 - words, Math.round(value?.sentences as number))) : DEFAULT_LISTEN_MIXED_COUNTS.sentences;
+  return { words, sentences };
+}
+export function getListenMixedCounts(direction: LearningDirection = getLearningDirection()): ListenMixedCounts {
+  try {
+    const raw = window.localStorage.getItem(courseSettingKey(MIXED_COUNTS_KEY, direction));
+    return normalizeListenMixedCounts(raw ? JSON.parse(raw) : null);
+  } catch { return DEFAULT_LISTEN_MIXED_COUNTS; }
+}
+export function setListenMixedCounts(counts: Partial<ListenMixedCounts>, direction: LearningDirection = getLearningDirection()): ListenMixedCounts {
+  const next = normalizeListenMixedCounts(counts);
+  try { window.localStorage.setItem(courseSettingKey(MIXED_COUNTS_KEY, direction), JSON.stringify(next)); } catch { /* storage unavailable */ }
+  return next;
+}
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
@@ -560,6 +579,19 @@ export type ListenItem = {
   kind: "sentence" | "word";
   popularity: number;
 };
+
+export function arrangeListenMixedQueue(queue: ListenItem[], counts: ListenMixedCounts = DEFAULT_LISTEN_MIXED_COUNTS): ListenItem[] {
+  const wanted = normalizeListenMixedCounts(counts);
+  const words = queue.filter((item) => item.kind === "word");
+  const sentences = queue.filter((item) => item.kind === "sentence");
+  const out: ListenItem[] = [];
+  let wi = 0; let si = 0;
+  while (wi < words.length || si < sentences.length) {
+    for (let i = 0; i < wanted.words && wi < words.length; i += 1) out.push(words[wi++]);
+    for (let i = 0; i < wanted.sentences && si < sentences.length; i += 1) out.push(sentences[si++]);
+  }
+  return out;
+}
 
 export function formatListenPetCaption(
   item: Pick<ListenItem, "de" | "en">,

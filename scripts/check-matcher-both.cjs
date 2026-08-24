@@ -22,8 +22,8 @@ const built = esbuild.buildSync({
     contents: [
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
-      'export { buildMatcherQueue, buildMatcherBoard, getMatcherKind, setMatcherKind,',
-      '  getMatcherCursor, setMatcherCursor, MATCHER_BOARD_SIZE } from "./src/lib/matcher.ts";',
+      'export { buildMatcherQueue, buildMatcherBoard, buildMatcherMixedBoard, getMatcherBothCounts, setMatcherBothCounts, DEFAULT_MATCHER_BOTH_COUNTS, getMatcherKind, setMatcherKind,',
+      '  getMatcherCursor, setMatcherCursor, matcherDifficulty, MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE } from "./src/lib/matcher.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "matcher-both-entry.ts",
@@ -49,7 +49,9 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const {
   allPartBlueprints, buildApiPartFromResolved, buildMatcherQueue, buildMatcherBoard,
-  getMatcherKind, setMatcherKind, getMatcherCursor, setMatcherCursor, MATCHER_BOARD_SIZE,
+  buildMatcherMixedBoard, getMatcherBothCounts, setMatcherBothCounts, DEFAULT_MATCHER_BOTH_COUNTS,
+  getMatcherKind, setMatcherKind, getMatcherCursor, setMatcherCursor, matcherDifficulty,
+  MATCHER_BOARD_SIZE, MATCHER_MAX_BOARD_SIZE,
 } = compiled.exports;
 
 const parts = {};
@@ -99,8 +101,67 @@ assert.strictEqual(board.pairs.length, MATCHER_BOARD_SIZE,
   `a mixed board dealt ${board.pairs.length} of ${MATCHER_BOARD_SIZE} pairs`);
 assert.ok(board.pairs.every((pair) => pair.de && pair.en), "a mixed board dealt a blank side");
 
+for (const counts of [{ words: 3, sentences: 3 }, { words: 2, sentences: 4 }, { words: 4, sentences: 2 }]) {
+  for (const from of [0, 1, 17, 143, both.length - 3]) {
+    const mixedBoard = buildMatcherMixedBoard(both, from, counts);
+    assert.strictEqual(mixedBoard.pairs.filter((pair) => pair.kind === "word").length, counts.words,
+      `Both did not deal ${counts.words} words from ${from}`);
+    assert.strictEqual(mixedBoard.pairs.filter((pair) => pair.kind === "sentence").length, counts.sentences,
+      `Both did not deal ${counts.sentences} sentences from ${from}`);
+    assert.notStrictEqual(mixedBoard.nextFrom, ((from % both.length) + both.length) % both.length,
+      `Both did not advance from ${from}`);
+  }
+}
+const collisionFixture = [
+  { id: "w1", de: "Bank", en: "bank", aliases: [], kind: "word" },
+  { id: "s1", de: "Bank", en: "bench", aliases: [], kind: "sentence" },
+  { id: "w2", de: "Haus", en: "house", aliases: [], kind: "word" },
+  { id: "s2", de: "Guten Tag", en: "hello", aliases: [], kind: "sentence" },
+  { id: "s3", de: "Bis bald", en: "see you", aliases: [], kind: "sentence" },
+];
+const collisionBoard = buildMatcherMixedBoard(collisionFixture, 0, { words: 2, sentences: 2 });
+assert.ok(!(collisionBoard.pairs.some((pair) => pair.id === "w1") && collisionBoard.pairs.some((pair) => pair.id === "s1")),
+  "Both exposed two cards with the same visible German key");
+const punctuationCollision = buildMatcherMixedBoard([
+  { id: "pw1", de: "Hallo.", en: "hello", aliases: [], kind: "word" },
+  { id: "ps1", de: "Hallo!", en: "hi there", aliases: [], kind: "sentence" },
+  { id: "pw2", de: "Haus", en: "house", aliases: [], kind: "word" },
+  { id: "ps2", de: "Bis bald", en: "see you", aliases: [], kind: "sentence" },
+  { id: "ps3", de: "Guten Tag", en: "good day", aliases: [], kind: "sentence" },
+], 0, { words: 2, sentences: 2 });
+assert.ok(!(punctuationCollision.pairs.some((pair) => pair.id === "pw1")
+  && punctuationCollision.pairs.some((pair) => pair.id === "ps1")),
+  "Both ignored the Matcher's punctuation-normalised visible-key collision rules");
+const shortLaneBoard = buildMatcherMixedBoard([
+  { id: "only-word", de: "Haus", en: "house", aliases: [], kind: "word" },
+  { id: "sentence-a", de: "Guten Tag", en: "hello", aliases: [], kind: "sentence" },
+  { id: "sentence-b", de: "Bis bald", en: "see you", aliases: [], kind: "sentence" },
+], 0, { words: 3, sentences: 2 });
+assert.strictEqual(shortLaneBoard.pairs.length, 3,
+  "Both exceeded a scarce lane's available safe items instead of showing fewer");
+assert.notStrictEqual(shortLaneBoard.nextFrom, 0,
+  "Both stalled when one lane could not fill its configured quota");
+
 // ── it is remembered, and it keeps its own place ────────────────────────────
 stored.clear();
+assert.deepStrictEqual(getMatcherBothCounts("learn-de", learner), DEFAULT_MATCHER_BOTH_COUNTS,
+  "Both count defaults changed unexpectedly");
+setMatcherBothCounts({ words: 2, sentences: 4 }, "learn-de", learner);
+setMatcherBothCounts({ words: 4, sentences: 2 }, "learn-en", learner);
+const otherLearner = { id: "two", email: "two@example.com" };
+assert.deepStrictEqual(getMatcherBothCounts("learn-de", learner), { words: 2, sentences: 4 },
+  "Both counts did not persist for the course/profile");
+assert.deepStrictEqual(getMatcherBothCounts("learn-en", learner), { words: 4, sentences: 2 },
+  "Both counts leaked between courses");
+assert.deepStrictEqual(getMatcherBothCounts("learn-de", otherLearner), DEFAULT_MATCHER_BOTH_COUNTS,
+  "Both counts leaked between profiles");
+setMatcherBothCounts({ words: 50, sentences: 50 }, "learn-de", otherLearner);
+assert.deepStrictEqual(getMatcherBothCounts("learn-de", otherLearner), { words: MATCHER_MAX_BOARD_SIZE - 1, sentences: 1 },
+  "Both counts did not clamp to the maximum board size");
+const otherCountsKey = [...stored.keys()].find((key) => key.includes("gl-matcher-both-counts-v1:learn-de") && key.includes("two"));
+stored.set(otherCountsKey, "not-json");
+assert.deepStrictEqual(getMatcherBothCounts("learn-de", otherLearner), DEFAULT_MATCHER_BOTH_COUNTS,
+  "corrupt Both counts did not fall back to defaults");
 setMatcherKind("both", "learn-de", learner);
 assert.strictEqual(getMatcherKind("learn-de", learner), "both",
   "choosing Both does not survive, so every visit reopens on Words");
@@ -116,6 +177,14 @@ const fs = require("fs");
 const view = fs.readFileSync(path.join(root, "src/components/matcher/MatcherView.tsx"), "utf8");
 assert.ok(/\["both",\s*"Both"\]/.test(view),
   "the list is buildable but there is no button to choose it");
+assert.ok(view.includes('data-testid="matcher-both-words"')
+  && view.includes('data-testid="matcher-both-sentences"'),
+  "Both does not expose separate word and sentence count controls");
+assert.ok(view.includes('if (kind === "both") return reviewing')
+  && view.includes("buildMatcherMixedBoard(queue, from, bothCounts)"),
+  "Both still uses adaptive board growth instead of the configured exact split");
+assert.ok(matcherDifficulty(10_000).boardSize === MATCHER_MAX_BOARD_SIZE,
+  "the high-streak test is not exercising adaptive growth");
 
 // ── and there is a way through it other than starting again ─────────────────
 // Start over was the only exit from a place you did not want to be, which at

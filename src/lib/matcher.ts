@@ -1,5 +1,5 @@
 import { buildListenQueue, type ListenItem } from "@/lib/listenMode";
-import { takeMatchingSafe } from "@/lib/germanTextMatch";
+import { matchingVisibleKeys, takeMatchingSafe } from "@/lib/germanTextMatch";
 import { loadGradeStore } from "@/lib/activity";
 import {
   getAuthUser,
@@ -33,6 +33,7 @@ export type MatcherPair = {
   en: string;
   /** Every key this item is stored under, so a grade lands on all of them. */
   aliases: string[];
+  kind: "word" | "sentence";
   /** The pack's register warning, where it has one. Shown on the tile. */
   tierNote?: string;
 };
@@ -62,6 +63,7 @@ export function buildMatcherQueue(
       en: String(item.en ?? "").trim(),
       tierNote: item.tierNote,
       aliases: [...(item.aliases ?? [])],
+      kind: (item.kind === "word" ? "word" : "sentence") as MatcherPair["kind"],
     }))
     .filter((pair) => pair.de && pair.en);
 }
@@ -70,6 +72,23 @@ export function buildMatcherQueue(
 export const MATCHER_BOARD_SIZE = 6;
 /** Ten is the most that still fits without the board becoming a scroll. */
 export const MATCHER_MAX_BOARD_SIZE = 10;
+export type MatcherBothCounts = { words: number; sentences: number };
+export const DEFAULT_MATCHER_BOTH_COUNTS: MatcherBothCounts = { words: 3, sentences: 3 };
+const MATCHER_BOTH_COUNTS_KEY = "gl-matcher-both-counts-v1";
+export function getMatcherBothCounts(direction: LearningDirection = getLearningDirection(), profile: UserProfile | null = getAuthUser()): MatcherBothCounts {
+  return normalizeMatcherBothCounts(loadScopedJson<Partial<MatcherBothCounts> | null>(`${MATCHER_BOTH_COUNTS_KEY}:${direction}`, null, profile));
+}
+export function setMatcherBothCounts(counts: Partial<MatcherBothCounts>, direction: LearningDirection = getLearningDirection(), profile: UserProfile | null = getAuthUser()): MatcherBothCounts {
+  const next = normalizeMatcherBothCounts(counts);
+  saveScopedJson(`${MATCHER_BOTH_COUNTS_KEY}:${direction}`, next, profile);
+  return next;
+}
+
+export function normalizeMatcherBothCounts(value: Partial<MatcherBothCounts> | null | undefined): MatcherBothCounts {
+  const words = Number.isFinite(value?.words) ? Math.max(1, Math.min(MATCHER_MAX_BOARD_SIZE - 1, Math.round(value?.words as number))) : DEFAULT_MATCHER_BOTH_COUNTS.words;
+  const sentences = Number.isFinite(value?.sentences) ? Math.max(1, Math.min(MATCHER_MAX_BOARD_SIZE - words, Math.round(value?.sentences as number))) : DEFAULT_MATCHER_BOTH_COUNTS.sentences;
+  return { words, sentences };
+}
 
 /**
  * Pressing Know it over and over is a complaint: this is too easy.
@@ -331,6 +350,36 @@ export function buildMatcherBoard(
   const lastTaken = pairs[pairs.length - 1];
   const offset = ordered.indexOf(lastTaken);
   return { pairs, nextFrom: (start + offset + 1) % queue.length };
+}
+
+export function buildMatcherMixedBoard(
+  queue: MatcherPair[],
+  from: number,
+  counts: MatcherBothCounts = DEFAULT_MATCHER_BOTH_COUNTS
+): { pairs: MatcherPair[]; nextFrom: number } {
+  if (!queue.length) return { pairs: [], nextFrom: 0 };
+  const wanted = normalizeMatcherBothCounts(counts);
+  const start = ((from % queue.length) + queue.length) % queue.length;
+  const picked: MatcherPair[] = [];
+  const usedIds = new Set<string>();
+  const usedKeys = new Set<string>();
+  let words = 0; let sentences = 0; let inspected = 0;
+  while (inspected < queue.length && (words < wanted.words || sentences < wanted.sentences)) {
+    const pair = queue[(start + inspected) % queue.length]; inspected += 1;
+    if (pair.kind === "word" && words >= wanted.words) continue;
+    if (pair.kind === "sentence" && sentences >= wanted.sentences) continue;
+    const keys = matchingVisibleKeys(pair.de, pair.en);
+    if (keys.length !== 2 || keys.some((key) => usedKeys.has(key)) || usedIds.has(pair.id)) continue;
+    picked.push(pair);
+    usedIds.add(pair.id);
+    keys.forEach((key) => usedKeys.add(key));
+    if (pair.kind === "word") words += 1; else sentences += 1;
+  }
+  const inspectedNext = (start + Math.max(1, inspected)) % queue.length;
+  const nextFrom = inspectedNext === start && queue.length > 1
+    ? (start + 1) % queue.length
+    : inspectedNext;
+  return { pairs: picked, nextFrom };
 }
 
 /**
