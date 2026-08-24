@@ -11479,11 +11479,23 @@ html[data-theme="dark"] {
 /* Folders in Create, and the three ways to move a set.
    Token-only: the accent is the learner's to change, so nothing here paints a
    brand green a custom accent could not reach. */
+.create-folders-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .create-folder {
-  border-radius: 20px;
+  min-width: 0;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surface-2);
-  padding: 14px;
+  padding: 6px;
+}
+
+.create-folder.is-expanded {
+  grid-column: 1 / -1;
+  padding: 10px;
 }
 
 .create-folder.is-drop-target,
@@ -11502,8 +11514,26 @@ html[data-theme="dark"] {
 .create-folder__head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 5px;
+}
+
+.create-folder__toggle {
+  display: flex;
+  min-width: 0;
+  height: 34px;
+  flex: 1;
+  align-items: center;
+  gap: 7px;
+  border-radius: 10px;
+  padding: 0 7px;
+  color: var(--text-2);
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.create-folder__toggle:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
 }
 
 .create-folder__name {
@@ -11517,7 +11547,7 @@ html[data-theme="dark"] {
 }
 
 .create-folder__count {
-  margin-right: auto;
+  margin-left: auto;
   font-size: 11px;
   font-weight: 850;
   color: var(--text-3);
@@ -11534,7 +11564,7 @@ html[data-theme="dark"] {
 }
 
 .create-folder__empty {
-  padding: 10px 2px;
+  padding: 8px 2px 2px;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-3);
@@ -11545,6 +11575,10 @@ html[data-theme="dark"] {
   flex: 1;
   align-items: center;
   gap: 6px;
+}
+
+.create-folder__body {
+  padding-top: 8px;
 }
 
 .create-folder__input {
@@ -11582,7 +11616,9 @@ html[data-theme="dark"] {
 }
 
 .create-folder__input:focus-visible,
+.create-folder__toggle:focus-visible,
 .create-folder__btn:focus-visible,
+.create-set__delete:focus-visible,
 .create-set__nudge:focus-visible,
 .create-set__folder:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
@@ -11592,11 +11628,17 @@ html[data-theme="dark"] {
 /* The move row. The grip only says "this card can be dragged" — every action
    it hints at is also on a button or the select beside it, because native
    drag never fires from touch. */
+.create-set {
+  position: relative;
+  isolation: isolate;
+}
+
 .create-set__move {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-bottom: 8px;
+  padding-right: 30px;
 }
 
 .create-set__grip {
@@ -11617,6 +11659,55 @@ html[data-theme="dark"] {
 .create-set.is-drop-target .create-set__grip {
   color: var(--accent);
   opacity: 1;
+}
+
+.create-set__drop-preview {
+  position: absolute;
+  z-index: 4;
+  inset: 6px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px dashed var(--accent);
+  border-radius: 14px;
+  background-color: color-mix(in srgb, var(--surface) 88%, var(--accent));
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--accent-strong);
+  pointer-events: none;
+}
+
+.create-set__drop-preview span {
+  border-radius: 999px;
+  background: var(--accent);
+  padding: 7px 12px;
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 5px 16px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.create-set__delete {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--text-3);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.create-set__delete:hover {
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 
 .create-set__nudge {
@@ -11653,8 +11744,14 @@ html[data-theme="dark"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .create-folder__toggle,
   .create-folder__btn,
+  .create-set__delete,
   .create-set__nudge { transition: none; }
+}
+
+@media (max-width: 680px) {
+  .create-folders-grid { grid-template-columns: 1fr; }
 }
 
 .matcher-tile { position: relative; }

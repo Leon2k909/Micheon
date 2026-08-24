@@ -789,6 +789,20 @@ assert.ok(
   assert.ok(view.includes('dropSet === set.id && "is-drop-target"')
     && styles.includes(".create-set.is-drop-target"),
   "the dragged set has no visible destination before it is dropped");
+  assert.ok(view.includes('className="create-set__drop-preview"')
+    && view.includes('{ui("Drop here")}')
+    && styles.includes(".create-set__drop-preview")
+    && styles.includes("background-size: 22px 22px"),
+  "the destination is only a subtle outline instead of a card-sized grid preview");
+  assert.ok(view.includes("const [expandedFolders, setExpandedFolders]")
+    && view.includes('className="create-folder__toggle"')
+    && view.includes("aria-expanded={expanded}")
+    && styles.includes(".create-folders-grid"),
+  "folders still occupy the full page instead of rendering as compact pressable tiles");
+  assert.ok(view.includes('aria-label={ui("Delete set")}')
+    && view.includes('className="create-set__delete"')
+    && view.includes('<X className="h-3.5 w-3.5" />'),
+  "set deletion still consumes a full action-row button instead of the top-right close control");
   assert.ok(view.includes('aria-label={ui("Move to folder")}') && view.includes("<select"),
     "a set can only be filed by dragging, which never fires from touch");
   // Bound to the resolved folder, never the raw field: a select whose value

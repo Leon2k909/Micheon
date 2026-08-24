@@ -8,6 +8,7 @@ import {
   Plus,
   CheckSquare,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Folder as FolderIcon,
   FolderPlus,
@@ -19,6 +20,7 @@ import {
   Timer,
   Trash2,
   Trophy,
+  X,
 } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -100,6 +102,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   // Selecting sets, for when several want deleting at once.
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [folders, setFolders] = useState<StudyFolder[]>(() => loadStudyFolders());
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameTo, setRenameTo] = useState("");
   const [confirmFolder, setConfirmFolder] = useState<string | null>(null);
@@ -117,6 +120,15 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   const persistFolders = useCallback((next: StudyFolder[]) => {
     setFolders(next);
     saveStudyFolders(next);
+  }, []);
+
+  const toggleFolder = useCallback((id: string) => {
+    setExpandedFolders((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }, []);
 
   const addFolder = useCallback(() => {
@@ -147,6 +159,11 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     const next = unfileFolder(sets, folders, id, Date.now());
     persist(next.sets);
     persistFolders(next.folders);
+    setExpandedFolders((current) => {
+      const updated = new Set(current);
+      updated.delete(id);
+      return updated;
+    });
     setConfirmFolder(null);
   }, [folders, persist, persistFolders, sets]);
 
@@ -303,7 +320,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
           return (
             <div
               className={cn(
-                "card create-set flex flex-col p-5 transition-shadow",
+                "card create-set flex flex-col p-4 transition-shadow",
                 picked.has(set.id) && "ring-1 ring-[var(--accent)]",
                 draggedSet?.id === set.id && "is-dragging",
                 dropSet === set.id && "is-drop-target"
@@ -346,6 +363,22 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 reorderDraggedSet(scope, id, set.id);
               }}
             >
+              <button
+                aria-label={ui("Delete set")}
+                className="create-set__delete"
+                onClick={() => setConfirmDelete(set.id)}
+                title={ui("Delete set")}
+                type="button"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+
+              {dropSet === set.id && draggedSet && (
+                <div aria-hidden="true" className="create-set__drop-preview">
+                  <span>{ui("Drop here")}</span>
+                </div>
+              )}
+
               {/*
                 Three ways to move one set, because they are not the same job
                 and one of them must not need a pointer. The handle and the
@@ -467,11 +500,10 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 ))}
               </div>
 
-              {/*
-                And the three that were icons alone: "it should be more
-                clear what these buttons do". A pencil, two squares and a
-                bin are a guessing game, so they say what they are.
-              */}
+              {/* Edit and duplicate stay labelled. Delete is the familiar
+                  top-right close action so it no longer consumes a third of
+                  this row; its accessible label still says exactly what it
+                  does. */}
               <div className="mt-2 flex items-center gap-2">
                 <button
                   type="button"
@@ -488,14 +520,6 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 >
                   <Copy className="h-3.5 w-3.5" />
                   {ui("Duplicate")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(set.id)}
-                  className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--surface-2)] text-xs font-black text-[var(--text-3)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {ui("Delete")}
                 </button>
               </div>
 
@@ -646,14 +670,26 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
           which are on every card either way, because reordering is half the
           ask and has nothing to do with whether anybody uses folders.
         */}
+        {folders.length > 0 && (
+        <div className="create-folders-grid">
         {folders.map((folder) => {
           const mine = filtered.filter((set) => resolvedFolderId(set, folders) === folder.id);
           if (query.trim() && mine.length === 0) return null;
+          const expanded = query.trim().length > 0 || expandedFolders.has(folder.id);
+          const bodyId = `create-folder-${folder.id}`;
           return (
             <section
-              className={cn("create-folder", dropFolder === folder.id && "is-drop-target")}
+              className={cn(
+                "create-folder",
+                expanded && "is-expanded",
+                dropFolder === folder.id && "is-drop-target"
+              )}
               key={folder.id}
-              onDragLeave={() => setDropFolder(null)}
+              onDragLeave={(event) => {
+                const next = event.relatedTarget;
+                if (next instanceof Node && event.currentTarget.contains(next)) return;
+                setDropFolder(null);
+              }}
               onDragOver={(event) => {
                 if (!isSetDrag(event.dataTransfer)) return;
                 event.preventDefault();
@@ -689,11 +725,22 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                   </form>
                 ) : (
                   <>
-                    <FolderIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--accent)]" />
-                    <h3 className="create-folder__name">{folder.name}</h3>
-                    <span className="create-folder__count">
-                      {mine.length} {ui(mine.length === 1 ? "set" : "sets")}
-                    </span>
+                    <button
+                      aria-controls={bodyId}
+                      aria-expanded={expanded}
+                      className="create-folder__toggle"
+                      onClick={() => toggleFolder(folder.id)}
+                      type="button"
+                    >
+                      {expanded
+                        ? <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0" />
+                        : <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />}
+                      <FolderIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      <span className="create-folder__name">{folder.name}</span>
+                      <span className="create-folder__count">
+                        {mine.length} {ui(mine.length === 1 ? "set" : "sets")}
+                      </span>
+                    </button>
                     <button
                       aria-label={ui("Rename folder")}
                       className="create-folder__btn"
@@ -740,18 +787,22 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 </div>
               )}
 
-              {mine.length === 0 ? (
-                <p className="create-folder__empty">
-                  {ui("Empty. Drag a set here, or use \"Move to folder\" on any card.")}
-                </p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {mine.map((set, at) => renderCard(set, folder.id, at, mine.length))}
-                </div>
-              )}
+              <div className="create-folder__body" hidden={!expanded} id={bodyId}>
+                {mine.length === 0 ? (
+                  <p className="create-folder__empty">
+                    {ui("Empty. Drag a set here, or use \"Move to folder\" on any card.")}
+                  </p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {mine.map((set, at) => renderCard(set, folder.id, at, mine.length))}
+                  </div>
+                )}
+              </div>
             </section>
           );
         })}
+        </div>
+        )}
 
         {folders.length > 0 && unfiled.length > 0 && (
           <h3 className="create-folder__label">{ui("Not in a folder")}</h3>
