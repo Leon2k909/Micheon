@@ -4487,8 +4487,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-feature-host .mastery-ring {
   position: relative;
   isolation: isolate;
-  width: 112px !important;
-  height: 112px !important;
+  /* 124, not 112: the drawing inside is 100px, so this is what sets the gap
+     around it. Six pixels read as almost touching against a 26px corner. */
+  width: 124px !important;
+  height: 124px !important;
   align-self: stretch;
   overflow: hidden;
   border: 1px solid rgba(72, 168, 72, 0.24);
@@ -4519,7 +4521,8 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
 .np-feature-host .mastery-ring > svg {
   display: block;
-  inset: 6px;
+  /* 12 on every side: 12 + the drawing's 100 + 12 is the tile's 124. */
+  inset: 12px;
 }
 
 .np-feature-host .mastery-ring__label {
