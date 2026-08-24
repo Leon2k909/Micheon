@@ -11420,6 +11420,61 @@ html[data-theme="dark"] {
   outline-offset: 1px;
 }
 
+/* Keep page movement together, then give the exact-position form its own
+   aligned column. At narrow widths the two groups intentionally become rows;
+   the page buttons still share a line so they read as one control. */
+.matcher-nav {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  gap: 8px 16px;
+}
+
+.matcher-nav__pages {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.matcher-nav__page {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.matcher-nav__jump {
+  min-width: 0;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.matcher-nav__go { min-width: 3.25rem; }
+
+@media (max-width: 600px) {
+  .matcher-nav {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+
+  .matcher-nav__pages { width: 100%; }
+  .matcher-nav__page {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+  .matcher-nav__jump { justify-content: flex-start; }
+}
+
+@media (max-width: 360px) {
+  .matcher-nav__pages { gap: 6px; }
+  .matcher-nav__page {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+  .matcher-nav__jump { gap: 6px; }
+  .matcher-nav__input { width: 4.75rem; }
+}
+
 
 /* Folders in Create, and the three ways to move a set.
    Token-only: the accent is the learner's to change, so nothing here paints a

@@ -695,37 +695,41 @@ export function MatcherView({
         </section>
       )}
 
-      <section className="card flex items-start gap-3 p-5">
-        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
-        <p className="text-xs font-semibold leading-5 text-[var(--text-3)]">
-          <Volume2 className="mr-1 inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" />
-          {ui("It remembers where you got to, so opening it again carries on rather than starting over — words and sentences each keep their own place, and the list comes back round for review when you reach the end. Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.")}
-        </p>
+      <section className="card p-5">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+          <p className="text-xs font-semibold leading-5 text-[var(--text-3)]">
+            <Volume2 className="mr-1 inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" />
+            {ui("It remembers where you got to, so opening it again carries on rather than starting over — words and sentences each keep their own place, and the list comes back round for review when you reach the end. Tapping a card speaks it, at whatever volume you set for that language. Matching itself changes nothing — both answers are on screen, so it is recognition. Know it and the level menu do write, the same as anywhere else, and keep saying you know them deals bigger boards from further down the queue.")}
+          </p>
+        </div>
 
         {/* A page is a board, because that is the unit the mode deals in;
             moving by anything else would land mid-board and deal a different
             six than the ones just left behind. The box is for the position you
             can name — 16,324 items is far too many for an arrow to reach. */}
         {!reviewing && queue.length > pageSize && (
-          <div className="matcher-nav mt-3" data-testid="matcher-nav">
-            <button
-              aria-label={ui("Previous page")}
-              className="matcher-nav__page"
-              onClick={() => goToPosition(position - pageSize)}
-              type="button"
-            >
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-              {ui("Back a page")}
-            </button>
-            <button
-              aria-label={ui("Next page")}
-              className="matcher-nav__page"
-              onClick={() => goToPosition(position + pageSize)}
-              type="button"
-            >
-              {ui("On a page")}
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
-            </button>
+          <div className="matcher-nav mt-4" data-testid="matcher-nav">
+            <div className="matcher-nav__pages">
+              <button
+                aria-label={ui("Previous page")}
+                className="matcher-nav__page"
+                onClick={() => goToPosition(position - pageSize)}
+                type="button"
+              >
+                <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                {ui("Back a page")}
+              </button>
+              <button
+                aria-label={ui("Next page")}
+                className="matcher-nav__page"
+                onClick={() => goToPosition(position + pageSize)}
+                type="button"
+              >
+                {ui("On a page")}
+                <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              </button>
+            </div>
             <form
               className="matcher-nav__jump"
               onSubmit={(event) => {
