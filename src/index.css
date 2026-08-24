@@ -3256,11 +3256,22 @@ a { color: inherit; text-decoration: none; }
   transform: translateX(-50%);
   cursor: default;
   text-align: left;
+  /* Never wider than the window it has to fit inside. */
+  max-width: min(280px, calc(100vw - 20px));
   /* A long note scrolls inside the panel rather than running down the
      screen. "ihr" is three different words and its note says so. */
   max-height: min(320px, 60vh);
   overflow-y: auto;
 }
+/* Downward, for a sentence sitting too near the top of the window to have
+   room overhead — which is where Listen puts it. Chosen when the panel is
+   opened, not by media query: the same component sits high on one screen and
+   low on another. */
+:is(.guided-session, .fs-tappable-sentence) .fs-word-popover.is-below {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
 :is(.guided-session, .fs-tappable-sentence) .fs-word-popover-word {
   color: var(--fs-text, var(--text-1));
   font-size: 14px;

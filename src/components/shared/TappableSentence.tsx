@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { placeWordPopover } from "@/lib/popoverPlacement";
 import { tts } from "@/lib/voice";
 import { germanWordGloss } from "@/lib/germanWordGloss";
 import { englishWordGloss } from "@/lib/englishWordGloss";
@@ -53,6 +54,22 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
   const playingTimer = useRef<number | undefined>(undefined);
   const [popoverIndex, setPopoverIndex] = useState<number | null>(null);
   const [popoverSaved, setPopoverSaved] = useState(false);
+  /**
+   * Which way the panel opened, and how far sideways it had to move.
+   *
+   * It used to always open upward. That was itself a fix — opening downward
+   * ran it into the bottom of a lesson card — but it only moved the problem:
+   * in Listen the sentence sits near the TOP of the window, so upward put the
+   * panel behind the header, or off the screen entirely, and the word and its
+   * meaning were the parts that went. Neither direction is right for every
+   * place this component is used, so the direction is measured.
+   *
+   * Sideways is the same story at the ends of a line: the panel is centred on
+   * its word, and a word near an edge centred a 190px panel half outside the
+   * window.
+   */
+  const [popoverPlace, setPopoverPlace] = useState<{ below: boolean; shift: number }>({ below: false, shift: 0 });
+  const anchorRefs = useRef<Array<HTMLElement | null>>([]);
   const openTimer = useRef<number | undefined>(undefined);
   const closeTimer = useRef<number | undefined>(undefined);
 
@@ -81,6 +98,14 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
 
   const openPopover = (index: number) => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    const anchor = anchorRefs.current[index];
+    if (anchor && typeof anchor.getBoundingClientRect === "function") {
+      const box = anchor.getBoundingClientRect();
+      setPopoverPlace(placeWordPopover(
+        { top: box.top, left: box.left, width: box.width },
+        typeof window === "undefined" ? 0 : window.innerWidth
+      ));
+    }
     setPopoverIndex(index);
     setPopoverSaved(wordIsSaved(words[index]));
   };
@@ -189,6 +214,7 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
               className="fs-word-anchor"
               onPointerEnter={() => scheduleOpen(i)}
               onPointerLeave={scheduleClose}
+              ref={(node) => { anchorRefs.current[i] = node; }}
             >
               <span
                 role="button"
@@ -218,10 +244,11 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
               </span>
               {popoverOpen && (
                 <span
-                  className="fs-word-popover"
+                  className={cn("fs-word-popover", popoverPlace.below && "is-below")}
                   onPointerEnter={cancelClose}
                   onPointerLeave={scheduleClose}
                   role="group"
+                  style={popoverPlace.shift ? { marginLeft: `${popoverPlace.shift}px` } : undefined}
                   aria-label={`${bareWord(w)}`}
                 >
                   <span className="fs-word-popover-word">{bareWord(w)}</span>
