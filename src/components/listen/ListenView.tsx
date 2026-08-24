@@ -1248,6 +1248,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="mt-3 text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
             {item.en}
           </p>
+          {/* Which of the word's meanings this card is on. A heard word brings
+              no context with it, so "weiter" spoken aloud and glossed "further"
+              leaves the learner who was thinking of "carry on" unable to tell
+              whether they were wrong. Two or three words settle it while the
+              card is still up; the use note underneath explains it afterwards. */}
+          {item.kind === "word" && item.senseTag ? (
+            <p className="mt-2 flex justify-center">
+              <span className="sense-note">
+                {uiFmt("Meaning here: {sense}", { sense: item.senseTag })}
+              </span>
+            </p>
+          ) : null}
           {yourTurn ? (
             <p
               aria-live="polite"

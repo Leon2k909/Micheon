@@ -1633,6 +1633,7 @@ const DE: Record<string, string> = {
   "Also": "Auch",
   "Same meaning as “{word}” — used less often.": "Gleiche Bedeutung wie „{word}“ — wird seltener verwendet.",
   "Same meaning — the most common word leads this card.": "Gleiche Bedeutung — das häufigste Wort steht vorn.",
+  "Meaning here: {sense}": "Hier gemeint: {sense}",
 
   // ── Curriculum labels shown as interface metadata ──
   "Starter basics": "Erste Grundlagen",

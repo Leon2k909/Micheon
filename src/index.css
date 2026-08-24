@@ -11785,6 +11785,20 @@ html[data-theme="dark"] {
   color: var(--text-2);
 }
 
+/* Which meaning a word card is on. Deliberately quieter than the register
+   note it can sit beside: that one warns, this one only helps you place a
+   word you have just heard out of context. */
+.sense-note {
+  display: inline-block;
+  border-radius: 999px;
+  border: 1px dashed var(--border);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--text-3);
+}
+
 .matcher-tile-note {
   margin-top: 6px;
   font-size: 10px;

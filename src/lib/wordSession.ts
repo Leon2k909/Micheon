@@ -25,6 +25,7 @@ import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
 import { lessonMixForBacklog } from "@/session";
 import { canonicalWordSenseFor } from "@/lib/canonicalWordSenses";
+import { wordSenseTagFor } from "@/lib/wordSenseTags";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 import {
   extraSynonymGroupKey,
@@ -52,6 +53,10 @@ export type WordItem = {
   /** "noun" | "verb" | ... when the author said so. */
   pos?: string;
   use?: string;
+  /** Which of the word's meanings this card is teaching, in two or three
+   * words. Only words that carry more than one meaning have it — see
+   * wordSenseTags.ts. */
+  senseTag?: string;
   /** Authored as the word's primary sense — see VocabSeed.core. */
   core?: boolean;
   /** False when contextual packs disagree and no standalone meaning has yet
@@ -231,6 +236,10 @@ export function buildWordCatalog(
       // standalone sense, so contextual alternatives must not hide it.
       word.listenSafe = Boolean(word.core) || (authoredGlosses.get(word.id)?.size ?? 0) <= 1;
     }
+
+    // A word the packs claim with two meanings needs the meaning it is being
+    // taught in named on the card, because Listen speaks it with no context.
+    word.senseTag = wordSenseTagFor(word.lookup || word.de);
 
     const visibleKey = sentenceIdentityKey(word.de).toLocaleLowerCase("de-DE");
     const existing = visibleWords.get(visibleKey);

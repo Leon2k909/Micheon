@@ -562,6 +562,10 @@ export type ListenItem = {
   de: string;
   en: string;
   use?: string;
+  /** Which of the word's meanings this card teaches, in two or three words.
+   * A heard word carries no context, so a card for a word that means more
+   * than one thing says which meaning it is on — see wordSenseTags.ts. */
+  senseTag?: string;
   /** Less common same-meaning words folded into this card (see wordSynonymGroups.ts).
    * Shown on the card so the group stays visible; only the common face is spoken.
    * `label` is the word's own frequency tier — absent when the bank does not
@@ -693,6 +697,7 @@ export function buildListenQueue(
       de: primaryAnswer(word.de),
       en: primaryAnswer(word.en),
       use: word.use,
+      senseTag: word.senseTag,
       tierNote: packMeta(word.partKey).note,
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
