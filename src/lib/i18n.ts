@@ -1196,6 +1196,8 @@ const DE: Record<string, string> = {
   "Startup, close button, and update checks.": "Start, Schließen-Verhalten und Updates.",
   "Learning options": "Lernoptionen",
   "Learning style and words learned elsewhere.": "Lernstil und anderswo gelernte Wörter.",
+  "Learning style, flashcards, and words learned elsewhere.":
+    "Lernstil, Lernkarten und anderswo gelernte Wörter.",
   "Which side shows first and how cards behave.": "Welche Seite zuerst erscheint und wie sich die Karten verhalten.",
   "Language & voice": "Sprache & Stimme",
   "English spelling, app language, and the speaking voice.": "Englische Schreibweise, App-Sprache und die Stimme.",

@@ -119,7 +119,7 @@ check(
 // raw count meant adding a collapsible anywhere on the page broke this.
 const settingsCategoryTitles = [
   "Appearance", "Accessibility", "Desktop app & updates",
-  "Learning options", "Flashcards", "Language & voice", "Pet & mascot",
+  "Learning options", "Language & voice", "Pet & mascot",
   "Data & storage",
 ];
 check(
@@ -135,11 +135,21 @@ check(
     && !/<h2[^>]*>\{ui\("Milestones"\)\}/.test(profile)
 );
 check(
-  "appearance, accessibility, desktop, learning, flashcards, language, and pet all have a category",
+  "appearance, accessibility, desktop, learning, language, and pet all have a category",
   ['title={ui("Appearance")}', 'title={ui("Accessibility")}', 'title={ui("Desktop app & updates")}',
-    'title={ui("Learning options")}', 'title={ui("Flashcards")}', 'title={ui("Language & voice")}',
+    'title={ui("Learning options")}', 'title={ui("Language & voice")}',
     'title={ui("Pet & mascot")}']
     .every((marker) => profile.includes(marker))
+);
+// Flashcards is not a category any more. Two controls stood at the rank of
+// Appearance and Data & storage while answering the question the learning
+// options already ask, so they moved in there - which only helps if they
+// really are inside that category rather than loose on the page below it.
+const learningBlock = /title=\{ui\("Learning options"\)\}[\s\S]*?<\/SettingsCategory>/.exec(profile);
+check(
+  "the flashcard picker sits inside Learning options, not in a category of its own",
+  !profile.includes('title={ui("Flashcards")}')
+    && !!learningBlock && learningBlock[0].includes("<FlashcardModePicker")
 );
 check(
   "the pet picker only loads once its category is opened",

@@ -68,22 +68,19 @@ assert.ok(
   "Account details prints its own heading again under the one the category draws"
 );
 
-// Flashcards keeps its heading for the standalone use and drops it in the
-// category — a boolean, not a deletion.
+// The flashcard heading stays a boolean rather than a deletion, because the
+// picker is drawn in two places and both of them need the label now.
 assert.ok(/titled\?: boolean/.test(picker), "FlashcardModePicker should take a titled prop");
 assert.ok(/\{titled && \(/.test(picker), "the flashcard heading should be conditional");
-assert.ok(
-  /<FlashcardModePicker[\s\S]{0,400}?titled=\{false\}/.test(gamification),
-  "the Flashcards settings category must pass titled={false}, or it says Flashcards twice"
-);
-// ...and the other use must NOT pass it, or that card loses the label that
-// distinguishes it from the learning-mode picker above it.
+// Flashcards has no category of its own to draw the heading for it any more.
+// It sits inside Learning options beside the learning-mode picker, so both
+// uses now have a neighbour to be told apart from and both keep their label.
 const pickerUses = [...gamification.matchAll(/<FlashcardModePicker[\s\S]{0,400}?\/>/g)].map((m) => m[0]);
 assert.strictEqual(pickerUses.length, 2, `expected 2 FlashcardModePicker uses, found ${pickerUses.length}`);
 assert.strictEqual(
   pickerUses.filter((use) => use.includes("titled={false}")).length,
-  1,
-  "exactly one use is inside a settings category; the standalone card keeps its heading"
+  0,
+  "a flashcard picker drops its heading, but neither place has a category drawing one"
 );
 
 // The description says what a category holds, and it was cut off after one

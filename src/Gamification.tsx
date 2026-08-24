@@ -24,7 +24,6 @@ import {
   Palette,
   Pipette,
   Monitor,
-  Layers,
   HardDrive,
   PawPrint,
   Eye,
@@ -420,8 +419,10 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   Appearance: "theme dark mode light night colour color accent green button brand lesson background scenery monkey garden dawn plain canvas wallpaper zoom bigger smaller text size",
   Accessibility: "high contrast motion reduce animation calmer speech speed slower faster voice rate readable",
   "Desktop app & updates": "startup launch login boot close button tray minimise minimize quit update version install check",
-  "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode",
-  Flashcards: "flashcard card side front back reveal flip order behaviour",
+  // Flashcards were a category of their own once. The search terms came into
+  // this one along with the setting, so typing flip or front still lands on
+  // the drawer it now lives in.
+  "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode flashcard card side front back reveal flip order behaviour",
   "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr export import transfer backup",
@@ -1509,9 +1510,9 @@ export default function GamificationPanel({
                 </SettingsCategory>
 
                 <SettingsCategory
-                  description={ui("Learning style and words learned elsewhere.")}
+                  description={ui("Learning style, flashcards, and words learned elsewhere.")}
                   forceOpen={settingsTerms.length > 0}
-                  hidden={!matchesSearch(ui("Learning options"), ui("Learning style and words learned elsewhere."))}
+                  hidden={!matchesSearch(ui("Learning options"), ui("Learning style, flashcards, and words learned elsewhere."))}
                   icon={BookOpen}
                   title={ui("Learning options")}
                 >
@@ -1535,6 +1536,19 @@ export default function GamificationPanel({
                   </div>
 
                   <LearningModePicker value={learningMode} onChange={updateLearningMode} />
+
+                  {/* Flashcards had a category to themselves, sitting between
+                      the learning options above and the language settings below.
+                      Two controls are not a section of the same rank as the rest,
+                      and they answer the same question the options above answer:
+                      how the learning is done. Inside one they keep their own
+                      heading, which the standalone category used to draw for them. */}
+                  <FlashcardModePicker
+                    face={flashcardFace}
+                    mode={flashcardMode}
+                    onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
+                    onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
+                  />
                 </SettingsCategory>
               </div>
             </div>
@@ -1546,25 +1560,10 @@ export default function GamificationPanel({
               {settingsTerms.length > 0 && (
                 <>
                   <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Flashcard and language settings.")}</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("English spelling, app language, and the speaking voice.")}</p>
                 </>
               )}
 
-                <SettingsCategory
-                  description={ui("Which side shows first and how cards behave.")}
-                  forceOpen={settingsTerms.length > 0}
-                  hidden={!matchesSearch(ui("Flashcards"), ui("Which side shows first and how cards behave."))}
-                  icon={Layers}
-                  title={ui("Flashcards")}
-                >
-                  <FlashcardModePicker
-                    face={flashcardFace}
-                    mode={flashcardMode}
-                    onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
-                    onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
-                    titled={false}
-                  />
-                </SettingsCategory>
 
                 <SettingsCategory
                   description={ui("English spelling, app language, and the speaking voice.")}
