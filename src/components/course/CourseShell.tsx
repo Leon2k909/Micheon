@@ -107,17 +107,20 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
                 <div className="mb-2 flex items-center gap-2 px-1">
                   <span
                     aria-hidden="true"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                     style={{ backgroundColor: look.colour + "26", color: look.colour }}
                   >
-                    <ChapterIcon className="h-3.5 w-3.5" />
+                    <ChapterIcon className="h-5 w-5" />
                   </span>
                   {/* The heading takes the icon's colour so the eye can find a
                       chapter without reading it. It wraps rather than
                       truncating — a cut-off chapter name is worse than two
                       lines of it. */}
+                  {/* text-sm rather than an arbitrary pixel value: this
+                      project emits no rule for text-[10.5px], so the heading
+                      was inheriting its size rather than setting one. */}
                   <p
-                    className="min-w-0 text-[10.5px] font-black uppercase leading-tight tracking-wide"
+                    className="min-w-0 text-sm font-black uppercase leading-tight tracking-wide"
                     style={{ color: look.colour }}
                   >
                     {section}
@@ -134,10 +137,13 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
                         onClick={() => go(l.id)}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[12.5px] font-semibold transition-colors",
+                          // No border in any state — the surface tint already
+                          // separates a card from the rail, and the outline
+                          // made the column read as a stack of boxes.
+                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-colors",
                           active
-                            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                            : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--border-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                            ? "bg-[var(--accent)] text-white"
+                            : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
                         )}
                       >
                         {/* Wraps: the old rail truncated every long title, so
