@@ -31,7 +31,7 @@ export const lifeInTheUkCourse: Course = {
   id: "life-in-the-uk",
   kind: "citizenship",
   name: "United Kingdom – Land and Culture",
-  tagline: "History, government and traditions — how the country works.",
+  tagline: "History, government and traditions — how life in the UK works.",
   icon: "🏛️",
   available: true,
   lessons: [
