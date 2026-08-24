@@ -5,10 +5,13 @@
  * She was explicit about the pictures: "Ganz wichtig: Meine drei
  * bereitgestellten Bilder sollen tatsächlich verwendet werden. Keine
  * Ersatzbilder, keine Stockbilder und keine neu generierten Bilder." So this
- * checks that the three files are still in the tree, still imported, and
- * still used in the three places she named — the banner behind the mascot,
- * the face of the language card, the face of the country card. Swapping one
- * for a stand-in is the failure this exists to catch.
+ * checks that the files are still in the tree, still imported, and still
+ * used in the places she named — the banner behind the mascot, the face of
+ * the language card, the face of the country card. Swapping one for a
+ * stand-in is the failure this exists to catch.
+ *
+ * The country card carries two pictures rather than one, because she asked
+ * for its artwork to follow the country you pick.
  *
  * And the order, which is the other half of the brief: banner, question, the
  * two cards, then the figures.
@@ -28,30 +31,59 @@ const i18n = read("src/lib/i18n.ts");
 // Stored as WebP: the same pictures, re-encoded through the browser's own
 // encoder because the startup guard rightly refuses megabyte PNGs on the
 // first screen — 6.4MB of source became 327KB with the artwork unchanged.
+// The country card is not in this table any more: it draws one of two
+// pictures depending on the country selected, so it is pinned below.
 const PICTURES = [
   ["home-skyline-de-v1.webp", "homeSkylineImage", "np-home-banner-sky"],
   ["home-languages-de-v2.webp", "homeLanguagesImage", "np-course-art"],
-  ["home-country-de-v1.webp", "homeCountryImage", "np-home-choice-art"],
 ];
 
-for (const [file, binding, className] of PICTURES) {
+/** In the tree, the real thing rather than a placeholder, and imported. */
+function pinPicture(file, binding) {
   const full = path.join(root, "src/prototype/assets", file);
-  assert.ok(fs.existsSync(full), `${file} is missing — the home page would fall back to nothing`);
+  assert.ok(fs.existsSync(full), file + " is missing — the home page would fall back to nothing");
   // Around 100KB each once encoded. A file that suddenly weighs a few
   // kilobytes is a placeholder that got committed.
   assert.ok(
     fs.statSync(full).size > 40_000,
-    `${file} is only ${Math.round(fs.statSync(full).size / 1024)}KB — that is not the picture that was supplied`
+    file + " is only " + Math.round(fs.statSync(full).size / 1024) + "KB — that is not the picture that was supplied"
   );
   assert.ok(
-    shell.includes(`import ${binding} from "./assets/${file}"`),
-    `${file} is in the tree but nothing imports it`
+    shell.includes("import " + binding + ' from "./assets/' + file + '"'),
+    file + " is in the tree but nothing imports it"
   );
+}
+
+for (const [file, binding, className] of PICTURES) {
+  pinPicture(file, binding);
   assert.ok(
     new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell),
     `${binding} is imported but not drawn as ${className}`
   );
 }
+
+// ── the country card wears the country you picked ─────────────────────────
+// One picture served both countries and it draws Berlin — the Brandenburg
+// Gate, the Fernsehturm, a yellow Deutsche Post box — so choosing the United
+// Kingdom left that scene sitting under a Union Jack. Pinned as a mapping
+// rather than as two loose files, because the failure worth catching is not
+// a missing picture but a card that has stopped following the selection.
+pinPicture("home-country-de-v1.webp", "homeCountryArtDe");
+pinPicture("home-country-uk-v1.webp", "homeCountryArtUk");
+for (const line of [
+  "const COUNTRY_ART: Record<CountryId, string> = {",
+  "  de: homeCountryArtDe,",
+  "  uk: homeCountryArtUk,",
+]) {
+  assert.ok(
+    shell.includes(line),
+    "COUNTRY_ART no longer maps each country to its own artwork: " + line
+  );
+}
+assert.ok(
+  shell.includes('className="np-home-choice-art" decoding="async" loading="eager" src={COUNTRY_ART[pack.id]}'),
+  "the country card is not drawing COUNTRY_ART[pack.id] — its picture has stopped following the selected country"
+);
 
 // ── the mascot still stands in front of the skyline ───────────────────────
 assert.ok(
@@ -128,6 +160,6 @@ assert.ok(Math.min(...stops) <= 20, "the top of the card must be nearly clear, o
 assert.ok(Math.max(...stops) < 100, "no stop may be fully opaque");
 
 console.log(
-  "check-home-layout: her three pictures are used where she put them, the mascot stands in front of the skyline, "
+  "check-home-layout: her pictures are used where she put them, the country card follows the country, the mascot stands in front of the skyline, "
   + "the page runs banner → question → cards → figures, and the cards let their pictures show"
 );

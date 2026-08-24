@@ -169,7 +169,8 @@ import heroImage from "./assets/micheon-monkey-v1.webp";
  */
 import homeSkylineImage from "./assets/home-skyline-de-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
-import homeCountryImage from "./assets/home-country-de-v1.webp";
+import homeCountryArtDe from "./assets/home-country-de-v1.webp";
+import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
 import flameReward from "./assets/rewards-v3/flame.webp";
@@ -2132,6 +2133,24 @@ function LanguageCard({
   );
 }
 
+/**
+ * The Country studies artwork, one per country.
+ *
+ * There used to be a single picture here and it draws Berlin — the
+ * Brandenburg Gate, the Fernsehturm, a yellow Deutsche Post box. Choosing the
+ * United Kingdom left that scene sitting under a Union Jack roundel, which
+ * says the card does not know which country you picked.
+ *
+ * Keyed by pack id rather than branched on, so a third country is one line
+ * here and no new condition. The artwork lives in the view, not on the pack:
+ * src/lib holds the material, and a bundler asset import does not belong in
+ * a data module that other modules load for the questions alone.
+ */
+const COUNTRY_ART: Record<CountryId, string> = {
+  de: homeCountryArtDe,
+  uk: homeCountryArtUk,
+};
+
 function CountryCard({
   onOpen,
   onSwitchCountry,
@@ -2161,7 +2180,7 @@ function CountryCard({
           are drawn as one choice with two sides, and splitting only one of them
           would leave the row lopsided. */}
       <div className="np-home-choice-hero">
-        <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={homeCountryImage} />
+        <img alt="" className="np-home-choice-art" decoding="async" loading="eager" src={COUNTRY_ART[pack.id]} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
           <span className="np-home-choice-flag"><FlagRoundel id={pack.flagId} /></span>
