@@ -1267,6 +1267,8 @@ const DE: Record<string, string> = {
   "You have reached every current milestone.": "Du hast alle aktuellen Meilensteine erreicht.",
   "This week": "Diese Woche",
   "Quick read on your practice rhythm.": "Ein kurzer Überblick über deinen Lernrhythmus.",
+  "Days this week": "Tage diese Woche",
+  "Starts again every Monday.": "Beginnt jeden Montag neu.",
   "Sessions": "Sitzungen",
   "Words tracked": "Erfasste Wörter",
   "Keep short daily blocks going before adding longer review sessions.": "Bleib bei kurzen täglichen Einheiten, bevor du längere Wiederholungen hinzufügst.",

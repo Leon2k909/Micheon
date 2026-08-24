@@ -19,6 +19,7 @@ import {
   Zap,
   Languages,
   MoonStar,
+  Star,
   Paintbrush,
   Palette,
   Pipette,
@@ -31,6 +32,8 @@ import {
   UserRound,
 } from "lucide-react";
 import { setAuthUser, UserProfile } from "@/lib/profileStorage";
+import { loadActivitySessions } from "@/lib/activity";
+import { weekRhythm, type WeekDay } from "@/lib/weekRhythm";
 
 /** Read an image file, downscale it, and return a small JPEG data URL for local storage. */
 async function fileToAvatarDataUrl(file: File, max = 256): Promise<string> {
@@ -491,7 +494,7 @@ function ProgressSummaryCard({
         {[
           { label: "XP", value: uiNumber(stats.totalXp) },
           { label: ui("Words"), value: uiNumber(words) },
-          { label: ui("Milestones"), value: `${earned}/6` },
+          { label: ui("Milestones"), value: `${uiNumber(earned)}/${uiNumber(MILESTONES.length)}` },
         ].map((item) => (
           <div className="rounded-[18px] bg-[var(--surface-2)] p-3" key={item.label}>
             <p className="text-lg font-black leading-none text-[var(--text-1)]">{item.value}</p>
@@ -518,7 +521,132 @@ function ProgressSummaryCard({
   );
 }
 
-function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: number; earned: number }) {
+/**
+ * One mark per day of the week. Filled where she practised, ringed on today,
+ * faded for the days still ahead — so a Tuesday reads as a week in progress
+ * rather than a week with five holes in it.
+ */
+function WeekDayMarks({ days, tone }: { days: WeekDay[]; tone: string }) {
+  return (
+    <div aria-hidden="true" className="flex items-end gap-[3px]">
+      {days.map((day) => (
+        <span
+          className="w-[7px] rounded-full"
+          key={day.dayStart}
+          style={{
+            height: day.sessions > 0 ? 24 : 10,
+            background: day.sessions > 0 ? tone : "var(--surface-3)",
+            opacity: day.isFuture ? 0.3 : 1,
+            boxShadow: day.isToday ? `0 0 0 2px color-mix(in srgb, ${tone} 45%, transparent)` : undefined,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Sessions per day, scaled to the busiest day rather than to a fixed ceiling,
+ * so a quiet week still has a shape instead of being a flat line.
+ */
+function WeekBars({ busiest, days, tone }: { busiest: number; days: WeekDay[]; tone: string }) {
+  const top = Math.max(1, busiest);
+  return (
+    <div aria-hidden="true" className="flex items-end gap-[3px]">
+      {days.map((day) => (
+        <span
+          className="w-[7px] rounded-full"
+          key={day.dayStart}
+          style={{
+            height: day.sessions === 0 ? 5 : Math.round(8 + (day.sessions / top) * 20),
+            background: day.sessions > 0 ? tone : "var(--surface-3)",
+            opacity: day.isFuture ? 0.3 : 1,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * What is behind you and the one you are walking towards. Only the last few
+ * steps are drawn: a row of twelve dots is decoration, not a figure.
+ */
+function MilestoneTrack({ earned, tone, total }: { earned: number; tone: string; total: number }) {
+  const steps = 5;
+  const last = Math.max(steps, Math.min(total, earned + 1));
+  const first = last - steps + 1;
+  return (
+    <div aria-hidden="true" className="flex items-center">
+      {Array.from({ length: steps }, (_, i) => {
+        const step = first + i;
+        const done = step <= earned;
+        const current = step === earned + 1;
+        return (
+          <React.Fragment key={step}>
+            {i > 0 && (
+              <span className="h-[2px] w-2.5" style={{ background: done ? tone : "var(--surface-3)" }} />
+            )}
+            <span
+              className="grid h-[18px] w-[18px] place-items-center rounded-full"
+              style={{
+                background: done ? tone : "var(--surface-3)",
+                color: done ? "var(--accent-text)" : "var(--text-3)",
+                boxShadow: current ? `0 0 0 3px color-mix(in srgb, ${tone} 32%, transparent)` : undefined,
+              }}
+            >
+              {done ? <Check className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
+            </span>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function ActivitySidePanel({ earned, user, words }: { earned: number; user: UserProfile | null; words: number }) {
+  // Recomputed when a lesson lands, so finishing one moves the week without a
+  // reload — and on a plain interval too, because a week that ends at midnight
+  // on Sunday has to start again while the app is still open.
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setRevision((value) => value + 1);
+    window.addEventListener("activity-updated", refresh);
+    const midnight = window.setInterval(refresh, 60_000);
+    return () => {
+      window.removeEventListener("activity-updated", refresh);
+      window.clearInterval(midnight);
+    };
+  }, []);
+  const week = useMemo(() => weekRhythm(loadActivitySessions(user)), [user, revision]);
+
+  const rows = [
+    {
+      art: <WeekDayMarks days={week.days} tone="var(--orange)" />,
+      icon: CalendarDays,
+      key: "days",
+      label: ui("Days this week"),
+      tone: "var(--orange)",
+      value: `${uiNumber(week.daysPractised)}/7`,
+    },
+    {
+      art: <WeekBars busiest={week.busiestDay} days={week.days} tone="var(--yellow)" />,
+      icon: BookOpen,
+      key: "sessions",
+      label: ui("Sessions"),
+      tone: "var(--yellow)",
+      value: uiNumber(week.sessions),
+    },
+    {
+      art: <MilestoneTrack earned={earned} tone="var(--accent)" total={MILESTONES.length} />,
+      icon: Trophy,
+      key: "milestones",
+      label: ui("Milestones"),
+      tone: "var(--accent)",
+      value: `${uiNumber(earned)}/${uiNumber(MILESTONES.length)}`,
+    },
+  ];
+
   return (
     <aside className="card flex min-w-0 flex-col justify-between p-5 sm:p-6">
       <div>
@@ -526,26 +654,49 @@ function ActivitySidePanel({ stats, words, earned }: { stats: Stats; words: numb
           <div className="min-w-0">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("This week")}</p>
             <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">{ui("Quick read on your practice rhythm.")}</p>
+            <p className="mt-0.5 text-[11px] font-bold text-[var(--text-3)]">{ui("Starts again every Monday.")}</p>
           </div>
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
             <CalendarDays className="h-5 w-5" />
           </div>
         </div>
 
-        <div className="mt-6 space-y-3">
-          {[
-            { label: ui("Day streak"), value: `${stats.streak}`, tone: "bg-[var(--orange)]" },
-            { label: ui("Sessions"), value: `${stats.sessionsCompleted}`, tone: "bg-[var(--mint)]" },
-            { label: ui("Milestones"), value: `${earned}/6`, tone: "bg-[var(--accent)]" },
-          ].map((item) => (
-            <div className="rounded-[18px] bg-[var(--surface-2)] p-4" key={item.label}>
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold text-[var(--text-3)]">{item.label}</p>
-                <span className={`h-2.5 w-2.5 rounded-full ${item.tone}`} />
+        <div className="mt-5 space-y-3">
+          {rows.map((row) => {
+            const RowIcon = row.icon;
+            return (
+              <div
+                className="relative flex min-w-0 items-center gap-3 rounded-[18px] p-3.5 sm:gap-4"
+                key={row.key}
+                style={{
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${row.tone} 13%, var(--surface-2)) 0%, var(--surface-2) 62%)`,
+                  border: `1px solid color-mix(in srgb, ${row.tone} 18%, transparent)`,
+                }}
+              >
+                <span
+                  className="absolute right-3 top-3 h-2 w-2 rounded-full"
+                  style={{ background: row.tone }}
+                />
+                <span
+                  className="grid h-11 w-11 flex-none place-items-center rounded-full"
+                  style={{
+                    background: `color-mix(in srgb, ${row.tone} 18%, transparent)`,
+                    color: row.tone,
+                    boxShadow: `0 0 0 1px color-mix(in srgb, ${row.tone} 26%, transparent)`,
+                  }}
+                >
+                  <RowIcon className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-[var(--text-3)]">{row.label}</p>
+                  <p className="mt-0.5 text-2xl font-black leading-none tracking-tight text-[var(--text-1)]">
+                    {row.value}
+                  </p>
+                </div>
+                <div className="ml-auto hidden flex-none pl-2 sm:block">{row.art}</div>
               </div>
-              <p className="mt-2 text-2xl font-black tracking-tight text-[var(--text-1)]">{item.value}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1555,7 +1706,7 @@ export default function GamificationPanel({
 
         <section className="grid gap-4 md:grid-cols-2">
           <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
-          <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
+          <ActivitySidePanel earned={earned} user={user} words={vocab} />
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1678,7 +1829,7 @@ export default function GamificationPanel({
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
         <ActivityCard className="min-w-0" progressStats={stats} />
         <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
-        <ActivitySidePanel earned={earned} stats={stats} words={vocab} />
+        <ActivitySidePanel earned={earned} user={user} words={vocab} />
       </section>
 
       <section className="card overflow-hidden">
