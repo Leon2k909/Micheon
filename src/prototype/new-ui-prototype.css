@@ -165,7 +165,7 @@
 /* Slide-select: press a nav button, keep the mouse down, run down the list
    and release on the one you want. Text selection is off mid-slide so the
    gesture does not highlight the labels instead. */
-.np-sidebar::-webkit-scrollbar { display: none; }
+.np-side-nav::-webkit-scrollbar { display: none; }
 
 .np-sidebar.is-slide-selecting {
   user-select: none;
@@ -211,11 +211,10 @@
 }
 
 .np-sidebar {
-  /* Still reachable when the window is short, but without a visible bar
-     down the edge of the menu. */
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
+  /* The mark stays put and the rows travel under it, so the scroll lives on
+     .np-side-nav rather than here. Visible overflow also lets the resize
+     handle sit its 9px past the right edge without being clipped. */
+  overflow: visible;
   position: sticky;
   top: 0;
   display: flex;
@@ -310,6 +309,24 @@
   line-height: 1.25;
 }
 
+.np-sidebar.is-brand-compact .np-brand-icon {
+  width: 46px;
+  height: 46px;
+  flex-basis: 46px;
+  border-radius: 15px;
+}
+
+.np-sidebar.is-brand-compact .np-brand-icon img {
+  width: 46px;
+  height: 46px;
+}
+
+/* Wrapping, not hiding: two short lines are better than the line disappearing
+   the moment the window is dragged in. */
+.np-sidebar.is-brand-compact .np-brand small > span {
+  white-space: normal;
+}
+
 .np-sidebar:is(.is-brand-compact, .is-brand-stacked) .np-brand small > span {
   display: block;
   white-space: nowrap;
@@ -346,6 +363,14 @@
 .np-side-nav {
   display: grid;
   gap: 9px;
+  /* Still reachable when the window is short, but without a visible bar down
+     the edge of the menu. min-height lets a flex child shrink below its
+     content, which is what makes it scroll instead of pushing the column. */
+  min-height: 0;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
 }
 
 .np-side-nav button {
@@ -5554,10 +5579,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
   .np-brand {
     padding-inline: 8px;
-  }
-
-  .np-brand small {
-    display: none;
   }
 
   .np-header {

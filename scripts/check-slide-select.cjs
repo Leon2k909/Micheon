@@ -74,12 +74,21 @@ if (!/\.np-sidebar\.is-slide-selecting[\s\S]{0,120}user-select: none/.test(proto
 }
 
 // ── the scrollbar down the menu is gone ───────────────────────────────────
-const sidebar = proto.slice(proto.indexOf(".np-sidebar {"), proto.indexOf(".np-sidebar {") + 500);
-if (!/scrollbar-width: none/.test(sidebar) || !/\.np-sidebar::-webkit-scrollbar \{ display: none; \}/.test(proto)) {
-  failures.push("the sidebar still shows a scrollbar down its edge");
+// The rows scroll, not the sidebar: that is what keeps the mark at the top
+// still while the menu travels under it.
+const nav = proto.slice(proto.indexOf(".np-side-nav {"), proto.indexOf(".np-side-nav {") + 500);
+if (!/scrollbar-width: none/.test(nav) || !/\.np-side-nav::-webkit-scrollbar \{ display: none; \}/.test(proto)) {
+  failures.push("the menu still shows a scrollbar down its edge");
 }
-if (!/overflow-y: auto/.test(sidebar)) {
+if (!/overflow-y: auto/.test(nav)) {
   failures.push("hiding the scrollbar also made the menu unreachable on a short window");
+}
+if (!/min-height: 0/.test(nav)) {
+  failures.push("the menu cannot shrink below its content, so it pushes the column instead of scrolling");
+}
+const sidebar = proto.slice(proto.indexOf(".np-sidebar {"), proto.indexOf(".np-sidebar {") + 500);
+if (/overflow-y: auto/.test(sidebar)) {
+  failures.push("the sidebar scrolls again, so the logo scrolls away with the menu");
 }
 
 // ── and the gesture it replaced is gone, not merely unused ────────────────
@@ -96,4 +105,4 @@ if (failures.length) {
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
-console.log("check-slide-select: a plain click stays a plain click, a slide opens what you released over, the menu highlights as you pass it, and the scrollbar is gone without making the menu unreachable");
+console.log("check-slide-select: a plain click stays a plain click, a slide opens what you released over, the menu highlights as you pass it, the scrollbar is gone without making the menu unreachable, and the logo above it holds still");
