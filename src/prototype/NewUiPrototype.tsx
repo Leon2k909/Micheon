@@ -136,7 +136,7 @@ import {
   type CurrencyCode,
   type PriceTier,
 } from "@/lib/currency";
-import { loadActivitySessions } from "@/lib/activity";
+import { countLearningDays, loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
 import { activePackProgress, upcomingPackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
@@ -202,7 +202,9 @@ type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games"
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
-type PrototypeStats = GamificationStats;
+// Days learned is not part of the shared stats object because it is not
+// stored — it is counted from the records each time it is shown.
+type PrototypeStats = GamificationStats & { learningDays: number };
 
 type PrototypeSearchItem = {
   id: string;
@@ -1483,7 +1485,7 @@ function Header({
         <span>{ui("Ready to learn today?")}</span>
       </div>
       <div className="np-header-stats">
-        <StatChip kind="flame" label={ui("Day streak")} value={uiNumber(stats.streak)} />
+        <StatChip kind="flame" label={ui("Days learned")} value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
             one chip look different from the two beside it for no gain — and
@@ -2873,7 +2875,7 @@ function ProgressPanel({
 
       <div className="np-progress-stats">
         <div><AchievementArt id="xp_500" /><strong>{uiNumber(stats.totalXp)}</strong><small>{ui("Total XP")}</small></div>
-        <div><AchievementArt id="streak_3" /><strong>{uiNumber(stats.streak)}</strong><small>{ui("Day streak")}</small></div>
+        <div><AchievementArt id="streak_3" /><strong>{uiNumber(stats.learningDays)}</strong><small>{ui("Days learned")}</small></div>
         <div><AchievementArt id="first_session" /><strong>{uiNumber(stats.sessionsCompleted)}</strong><small>{ui("Lessons done")}</small></div>
       </div>
 
@@ -3757,7 +3759,17 @@ export default function NewUiPrototype({
     totalReviews: loadScopedJson("totalReviews", 0, profile) as number,
     streak: getStreak(profile),
     externalWords: loadScopedJson("externalWords", profile?.externalWordsLearned ?? 0, profile) as number,
+    learningDays: countLearningDays(profile),
   }));
+  /**
+   * Finishing a lesson can add a day, and it is the kind of number you look
+   * at right after finishing one.
+   */
+  useEffect(() => {
+    const recount = () => setStats((current) => ({ ...current, learningDays: countLearningDays(profile) }));
+    window.addEventListener("activity-updated", recount);
+    return () => window.removeEventListener("activity-updated", recount);
+  }, [profile]);
   /**
    * The lesson count is kept per learning direction, so it has to be re-read
    * when the direction changes — otherwise the card prints the English count

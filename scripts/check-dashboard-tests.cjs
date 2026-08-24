@@ -25,9 +25,12 @@ check(
   // Formatted through uiNumber now rather than a bare toLocaleString, which
   // followed the machine's locale and wrote an English dashboard's totals the
   // German way — "18.935 XP" where an English reader expects "18,935".
-  "the dashboard names the streak rather than showing an unexplained day count",
-  dashboard.includes('label={ui("Day streak")}')
-    && dashboard.includes("uiNumber(stats.streak)")
+  // The figure is days learned rather than days in a row: a streak reads 0 the
+  // morning after one missed evening and erases the months behind it, which is
+  // the opposite of what a dashboard opening with a greeting should say.
+  "the dashboard names its day count rather than showing an unexplained number",
+  dashboard.includes('label={ui("Days learned")}')
+    && dashboard.includes("uiNumber(stats.learningDays)")
 );
 check(
   "the retired schedule is absent from the main dashboard",

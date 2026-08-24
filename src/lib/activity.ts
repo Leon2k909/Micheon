@@ -91,6 +91,41 @@ export function recordActivitySession(entry: ActivitySession, profile: UserProfi
   if (typeof window !== "undefined") window.dispatchEvent(new Event("activity-updated"));
 }
 
+/**
+ * How many separate days have any learning on them, all time.
+ *
+ * The streak answers "how many in a row", which is zero the morning after one
+ * missed evening. This answers "how many at all", so it only ever grows. A day
+ * counts once however much was done on it.
+ *
+ * Derived from what is already recorded rather than counted from now on: the
+ * session log, and the last time each item was graded or heard. That makes it
+ * right for everything already done instead of starting at zero. It is a floor
+ * rather than a tally — a grade record keeps only its latest timestamp, so a
+ * day whose every item was answered again later is not visible any more.
+ *
+ * Local calendar days, so a session at half past eleven belongs to the evening
+ * it happened in rather than to the next day in UTC.
+ */
+export function countLearningDays(profile: UserProfile | null = getAuthUser()): number {
+  const days = new Set<string>();
+  const add = (ms: number) => {
+    if (!Number.isFinite(ms) || ms <= 0) return;
+    const d = new Date(ms);
+    days.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  };
+  try {
+    for (const session of loadActivitySessions(profile)) add(Number(session?.ts));
+    for (const record of Object.values(loadGradeStore(profile))) {
+      if (record?.updatedAt) add(Date.parse(record.updatedAt));
+      if (record?.listenedAt) add(Date.parse(record.listenedAt));
+    }
+  } catch {
+    return days.size;
+  }
+  return days.size;
+}
+
 export function loadGradeStore(profile: UserProfile | null = getAuthUser()): GradeStore {
   if (typeof window !== "undefined") {
     const scopedKey = getScopedKey(COMPLETED_KEY, profile);

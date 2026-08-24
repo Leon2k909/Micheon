@@ -1235,6 +1235,7 @@ const DE: Record<string, string> = {
   "Lessons completed": "Abgeschlossene Lektionen",
   "Words marked known": "Als bekannt markierte Wörter",
   "Day streak": "Tage in Folge",
+  "Days learned": "Tage gelernt",
   "session": "Sitzung",
   "sessions": "Sitzungen",
   "item": "Eintrag",
