@@ -97,7 +97,7 @@ import {
   selectPracticeItem,
   type PracticeRecallState,
 } from "@/lib/practiceRecall";
-import { requestVocabFilter } from "@/lib/vocabFilterRequest";
+import { requestVocabFilter, requestVocabLibraryOpen } from "@/lib/vocabFilterRequest";
 
 import { getMasteredCount } from "@/lib/mastery";
 import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -990,7 +990,7 @@ function Sidebar({
                         aria-current={viewActive ? "page" : undefined}
                         className={viewActive ? "is-active" : ""}
                         key={row.label}
-                        onClick={() => { onNavigate(row.view); scrollToVocabularyLibrary(); }}
+                        onClick={() => { requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
                         onFocus={() => onPrefetch(row.view)}
                         onPointerEnter={() => onPrefetch(row.view)}
                         title={ui("Your vocabulary library, on the profile page.")}
@@ -4123,6 +4123,7 @@ export default function NewUiPrototype({
         onCycleCountry={cycleCountry}
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
+          requestVocabLibraryOpen();
           requestVocabFilter("fading");
           navigate("profile");
           scrollToVocabularyLibrary();

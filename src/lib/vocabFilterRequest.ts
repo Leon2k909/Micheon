@@ -30,6 +30,38 @@ export function requestVocabFilter(key: VocabFilterRequest) {
 }
 
 /**
+ * The vocabulary block on the profile page folds shut like the rest of that
+ * page. Two things navigate straight to it — the sidebar's own row, and the
+ * home page's fading line — and both would otherwise land on a closed box, so
+ * they say so here and it opens.
+ */
+type OpenListener = () => void;
+
+const openListeners = new Set<OpenListener>();
+let openPending = false;
+
+/** Ask the profile page to open its vocabulary block. */
+export function requestVocabLibraryOpen() {
+  if (openListeners.size === 0) {
+    openPending = true;
+    return;
+  }
+  for (const listener of openListeners) listener();
+}
+
+/** The block, listening while it is on the page. Returns the unsubscribe. */
+export function onVocabLibraryOpen(listener: OpenListener) {
+  openListeners.add(listener);
+  if (openPending) {
+    openPending = false;
+    listener();
+  }
+  return () => {
+    openListeners.delete(listener);
+  };
+}
+
+/**
  * The tracker listens while it is mounted, and picks up a waiting request on
  * the way in. Returns the unsubscribe.
  */

@@ -4,6 +4,8 @@ import {
   Activity,
   BarChart3,
   BookOpen,
+  ChevronDown,
+  WholeWord,
   CalendarDays,
   Camera,
   Check,
@@ -30,7 +32,8 @@ import {
   Contrast,
   UserRound,
 } from "lucide-react";
-import { setAuthUser, UserProfile } from "@/lib/profileStorage";
+import { loadScopedJson, saveScopedJson, setAuthUser, UserProfile } from "@/lib/profileStorage";
+import { onVocabLibraryOpen } from "@/lib/vocabFilterRequest";
 import { loadActivitySessions } from "@/lib/activity";
 import { weekRhythm, type WeekDay } from "@/lib/weekRhythm";
 
@@ -132,6 +135,77 @@ function scheduleProfileIdleWork(task: () => void, timeout = 1200): () => void {
   }
   const timer = window.setTimeout(task, 120);
   return () => window.clearTimeout(timer);
+}
+
+const PROFILE_FOLDS_KEY = "profile-folds";
+
+/**
+ * A block of this page that starts closed.
+ *
+ * The page used to carry everything it has at once — over three thousand
+ * pixels of it — so anything past the top meant scrolling through all of it to
+ * reach. Each block is a heading you open now, and how you left them is
+ * remembered per profile, so whichever one you actually use stays open.
+ *
+ * Closed by default is not only tidier: what is inside these is loaded when it
+ * is revealed, so a block nobody opens costs nothing to draw either.
+ */
+function ProfileFold({
+  children,
+  className,
+  icon: Icon,
+  id,
+  onOpenRequest,
+  subtitle,
+  title,
+  user,
+}: {
+  children: React.ReactNode;
+  /** Goes on the heading, so a jump from elsewhere lands on it either way. */
+  className?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  id: string;
+  /** Subscribes an "open yourself" signal, for blocks something navigates to. */
+  onOpenRequest?: (open: () => void) => () => void;
+  subtitle: string;
+  title: string;
+  user: UserProfile | null;
+}) {
+  const [open, setOpen] = useState(() => {
+    const stored = loadScopedJson<Record<string, boolean>>(PROFILE_FOLDS_KEY, {}, user);
+    return stored?.[id] === true;
+  });
+
+  const remember = (next: boolean) => {
+    const stored = loadScopedJson<Record<string, boolean>>(PROFILE_FOLDS_KEY, {}, user);
+    saveScopedJson(PROFILE_FOLDS_KEY, { ...(stored || {}), [id]: next }, user);
+  };
+
+  useEffect(() => {
+    if (!onOpenRequest) return undefined;
+    return onOpenRequest(() => setOpen(true));
+  }, [onOpenRequest]);
+
+  return (
+    <section className={cn("card overflow-hidden", className)}>
+      <button
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 p-5 text-left sm:p-6"
+        onClick={() => { setOpen((was) => { remember(!was); return !was; }); }}
+        type="button"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+          <Icon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-black tracking-tight text-[var(--text-1)]">{title}</span>
+          <span className="mt-0.5 block text-xs font-semibold text-[var(--text-3)]">{subtitle}</span>
+        </span>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-[var(--text-3)] transition-transform", open && "rotate-180")} />
+      </button>
+      {open && <div className="border-t border-[var(--border)] p-5 sm:p-6">{children}</div>}
+    </section>
+  );
 }
 
 function ProfileSectionLoading({ embedded = false, label }: { embedded?: boolean; label: string }) {
@@ -1688,17 +1762,33 @@ export default function GamificationPanel({
         </section>
         </SettingsCategoryLayout>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
-          <ActivitySidePanel earned={earned} user={user} words={vocab} />
-        </section>
+        <ProfileFold
+          icon={Trophy}
+          id="progress"
+          subtitle={ui("Mastery, this week and your milestones.")}
+          title={ui("Your progress")}
+          user={user}
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+            <ActivitySidePanel earned={earned} user={user} words={vocab} />
+          </div>
+        </ProfileFold>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
-          <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
-          <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
-          <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
-        </section>
+        <ProfileFold
+          icon={BarChart3}
+          id="totals"
+          subtitle={ui("XP, lessons, days learned and words tracked.")}
+          title={ui("Totals")}
+          user={user}
+        >
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+            <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+            <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
+            <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
+          </div>
+        </ProfileFold>
 
         {/* Collapsed, like its twin on the profile page: worth having, not
             worth the top third of the screen. */}
@@ -1737,8 +1827,20 @@ export default function GamificationPanel({
         {/* Named so the sidebar's Vocabulary row can land on the tracker
             rather than at the top of a long settings page. The class is the
             handle; nothing about the section itself changes. */}
-        <DeferredProfileSection
+        {/* The anchor rides on the fold's heading rather than on the content:
+            the sidebar's own row and the home page's fading line both jump
+            here, and a jump has to land on something that exists whether the
+            block is open or not. Both ask it to open on the way. */}
+        <ProfileFold
           className="np-vocabulary-anchor"
+          icon={WholeWord}
+          id="vocabulary"
+          onOpenRequest={onVocabLibraryOpen}
+          subtitle={ui("Every sentence and word you are tracking.")}
+          title={ui("Vocabulary library")}
+          user={user}
+        >
+        <DeferredProfileSection
           fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
           minHeight={360}
           onReveal={requestVocabTracker}
@@ -1788,6 +1890,7 @@ export default function GamificationPanel({
             )}
           </section>
         </DeferredProfileSection>
+        </ProfileFold>
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
           <div>
