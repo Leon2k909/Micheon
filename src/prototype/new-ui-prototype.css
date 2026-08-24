@@ -1899,8 +1899,8 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: relative;
   /* The quote is the only child in normal flow, so it sat at the top of the
      banner. Centred here rather than by padding, so it stays centred at any
-     banner height. The picture, the veil and the mascot are placed
-     absolutely and are not affected. */
+     banner height. The picture and the veil are placed absolutely and are not
+     affected. */
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -1940,24 +1940,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
       color-mix(in srgb, var(--accent) 11%, transparent) 58%,
       transparent 74%
     );
-}
-
-/* The mascot is a cut-out now, so the panel behind him is the app's own.
-   This used to draw the whole landscape banner and crop it to him with
-   object-fit: cover, which brought a rectangle of hillside onto the panel; a
-   radial mask feathered that rectangle away. With nothing to hide, that mask
-   would only fade his ears and tail, so it is gone — and contain replaces
-   cover, or the crop cuts him off. */
-.np-home-banner-mascot {
-  position: absolute;
-  z-index: 2;
-  right: 2%;
-  bottom: 0;
-  width: min(30%, 300px);
-  height: 100%;
-  object-fit: contain;
-  object-position: 100% 100%;
-  pointer-events: none;
 }
 
 .np-home-banner-copy {
@@ -2402,10 +2384,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   .np-home-banner-copy {
     max-width: 68%;
     padding: 22px 20px;
-  }
-
-  .np-home-banner-mascot {
-    width: min(40%, 200px);
   }
 }
 

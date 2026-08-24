@@ -85,27 +85,17 @@ assert.ok(
   "the country card is not drawing COUNTRY_ART[pack.id] — its picture has stopped following the selected country"
 );
 
-// ── the mascot still stands in front of the skyline ───────────────────────
+// ── the banner is the picture, the wash and the quote ───────────────────
+// The mascot stood in front of the skyline until she asked for him to come
+// off. Pinned as an absence, because he was a separate layer and putting one
+// back is a one-line change that nothing else would notice.
 assert.ok(
-  /className="np-home-banner-mascot"[^>]*src=\{heroImage\}/.test(shell),
-  "the mascot is gone from the banner — she asked for it to stay in front of the skyline"
-);
-// The mask existed to feather away the rectangle of hillside that came with
-// him when the banner was cropped out of the landscape art. He is a cut-out
-// now, so there is no rectangle — and the mask would fade his ears and tail
-// instead. Pinned as an absence, because reintroducing it would quietly eat
-// his edges without anything failing.
-assert.ok(
-  !/\.np-home-banner-mascot \{[\s\S]*?mask-image/.test(css),
-  "the mascot is a cut-out; a mask on it now only fades his own edges"
+  !/np-home-banner-mascot/.test(shell) && !/np-home-banner-mascot/.test(css),
+  "the mascot is back on the banner — she asked for it to come off"
 );
 assert.ok(
-  /\.np-home-banner-mascot \{[\s\S]*?object-fit: contain/.test(css),
-  "contain, not cover — cover crops the cut-out and takes his tail off"
-);
-assert.ok(
-  /\.np-home-banner-mascot \{[\s\S]*?height: 100%/.test(css),
-  "size the mascot by the banner's height — by width it grew past the top and lost its head to overflow"
+  !/micheon-monkey-v1\.webp/.test(shell),
+  "the banner imports the mascot artwork again"
 );
 
 // ── the order she listed ──────────────────────────────────────────────────
@@ -160,6 +150,6 @@ assert.ok(Math.min(...stops) <= 20, "the top of the card must be nearly clear, o
 assert.ok(Math.max(...stops) < 100, "no stop may be fully opaque");
 
 console.log(
-  "check-home-layout: her pictures are used where she put them, the country card follows the country, the mascot stands in front of the skyline, "
+  "check-home-layout: her pictures are used where she put them, the country card follows the country, the banner carries no mascot, "
   + "the page runs banner → question → cards → figures, and the cards let their pictures show"
 );

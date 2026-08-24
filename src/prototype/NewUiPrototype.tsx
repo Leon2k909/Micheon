@@ -157,7 +157,6 @@ import { hasLeonSocialPreview } from "@/lib/socialPreview";
 import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
-import heroImage from "./assets/micheon-monkey-v1.webp";
 /*
  * Supplied artwork for the home page, used exactly as given.
  *
@@ -1974,7 +1973,6 @@ function HomeBanner() {
       <div className="np-home-banner-copy">
         <p>{ui("Small steps every day add up to big results.")}</p>
       </div>
-      <img alt="" aria-hidden="true" className="np-home-banner-mascot" decoding="async" src={heroImage} />
     </section>
   );
 }

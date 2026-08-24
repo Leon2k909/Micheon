@@ -9,7 +9,6 @@ const vocabTracker = read("src/components/lab/VocabTracker.tsx");
 const petPicker = read("src/components/codexPets/CodexPetPicker.tsx");
 const dashboardArtwork = [
   "src/prototype/assets/micheon-hero-v3.webp",
-  "src/prototype/assets/micheon-monkey-v1.webp",
   "src/prototype/assets/achievements-v1/achievement-atlas-v3.webp",
   "src/prototype/assets/rewards-v3/backpack.webp",
   "src/prototype/assets/rewards-v3/flame.webp",
