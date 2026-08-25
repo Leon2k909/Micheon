@@ -5425,6 +5425,11 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
+/* Hidden wherever the sidebar is showing, because the sidebar says it too. */
+.np-feature-directory > button.np-more-only-narrow {
+  display: none;
+}
+
 .np-feature-directory > button:hover {
   border-color: rgba(79, 189, 81, 0.4);
   box-shadow:
@@ -6409,6 +6414,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
   .np-feature-directory > button {
     min-height: 104px;
+  }
+
+  .np-feature-directory > button.np-more-only-narrow {
+    display: grid;
   }
 
   .np-account-gate .np-primary-button {

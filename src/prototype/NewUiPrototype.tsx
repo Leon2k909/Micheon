@@ -1815,6 +1815,13 @@ function Header({
                   </div>
                 </div>
                 <div className="np-profile-menu-actions">
+                  {/* Progress leads the menu. It is the one thing here you
+                      look at daily; settings and the social preview are not. */}
+                  <button onClick={() => openProfileDestination("progress")} role="menuitem" type="button">
+                    <span><BarChart3 /></span>
+                    <div><strong>{ui("Your progress")}</strong><small>{ui("Levels, achievements, and activity")}</small></div>
+                    <ChevronRight />
+                  </button>
                   <button onClick={() => openProfileDestination("profile")} role="menuitem" type="button">
                     <span><CircleUserRound /></span>
                     <div><strong>{ui("Profile and settings")}</strong><small>{ui("Account, appearance, and preferences")}</small></div>
@@ -1827,11 +1834,6 @@ function Header({
                       <ChevronRight />
                     </button>
                   )}
-                  <button onClick={() => openProfileDestination("progress")} role="menuitem" type="button">
-                    <span><BarChart3 /></span>
-                    <div><strong>{ui("Your progress")}</strong><small>{ui("Levels, achievements, and activity")}</small></div>
-                    <ChevronRight />
-                  </button>
                   <button onClick={() => openProfileDestination("more")} role="menuitem" type="button">
                     <span><Menu /></span>
                     <div><strong>{ui("More options")}</strong><small>{ui("Courses and the full Micheon app")}</small></div>
@@ -3520,12 +3522,10 @@ function SocialView({ userName }: { userName: string }) {
 
 function MoreView({
   onNavigate,
-  onSwitchCourse,
   shopUnlocked,
   socialPreviewUnlocked,
 }: {
   onNavigate: (view: PrototypeView) => void;
-  onSwitchCourse: () => void;
   shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
 }) {
@@ -3545,6 +3545,7 @@ function MoreView({
     icon: ComponentType<{ className?: string }>;
     tone: string;
     action: () => void;
+    narrowOnly?: boolean;
   }> = [
     ...(socialPreviewUnlocked ? [{
       title: ui("Friends and leaderboard"),
@@ -3553,13 +3554,14 @@ function MoreView({
       tone: "mint",
       action: () => onNavigate("social"),
     }] : []),
-    // The mobile bar is a fixed five columns, so this is where a narrow window
-    // reaches the citizenship course.
-    { title: ui("Country studies"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", action: () => onNavigate("life-in-uk") },
+    // Only under 1280px, where the sidebar is gone and the mobile bar is a
+    // fixed five columns: this card is the sole way into the citizenship
+    // course there. Wider, the sidebar already lists it and the card repeated
+    // something two centimetres away.
+    { title: ui("Country studies"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", narrowOnly: true, action: () => onNavigate("life-in-uk") },
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
-    { title: ui("Courses and packs"), description: ui("Switch courses or browse every hardcoded lesson and phrase pack."), icon: Languages, tone: "blue", action: onSwitchCourse },
     { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
   ];
 
@@ -3632,7 +3634,7 @@ function MoreView({
         {features.map((feature) => {
           const Icon = feature.icon;
           return (
-            <button key={ui(feature.title)} onClick={feature.action} type="button">
+            <button className={feature.narrowOnly ? "np-more-only-narrow" : undefined} key={ui(feature.title)} onClick={feature.action} type="button">
               <span className={`np-feature-directory-icon np-feature-directory-icon--${feature.tone}`}><Icon /></span>
               <span><strong>{ui(feature.title)}</strong><small>{ui(feature.description)}</small></span>
               <ChevronRight />
@@ -4367,7 +4369,6 @@ export default function NewUiPrototype({
   ) : (
     <MoreView
       onNavigate={navigate}
-      onSwitchCourse={() => setCourseSwitcherOpen(true)}
       shopUnlocked={shopUnlocked}
       socialPreviewUnlocked={socialPreviewUnlocked}
     />
