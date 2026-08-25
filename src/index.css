@@ -12037,12 +12037,21 @@ html[data-theme="dark"] {
      the middle, where the optional lines appear. */
   display: flex;
   flex-direction: column;
-  /* A fixed height, not a minimum. A minimum still grows for a long
-     sentence, and growing is exactly what moves the button — 320px held the
-     ordinary range still but a three-line sentence pushed the row 49px down.
-     Fixed, the row cannot move at all, and the rare item that overruns
-     scrolls inside the card instead of walking the controls away. */
-  height: 360px;
+  /* A floor, not a ceiling.
+
+     It was fixed at 360px so the controls could not walk about, and the rare
+     item that overran was left to scroll inside the card. Measured, that item
+     is not rare: a word carrying a register pill, a two-line use note and a
+     list of synonyms needs 518px, and an ordinary one 358px. Anchoring the
+     top put all 160px of that overrun at the foot, where it took the two
+     grading buttons off the bottom of the card - the one thing on it that
+     has to be reachable.
+
+     So the card grows for the items that need it. The top still does not
+     move, which is what the anchoring was for; the controls now sit lower on
+     a full card than on a bare one, which is the price of their being on it
+     at all. */
+  min-height: 360px;
   overflow-y: auto;
   /* One gap for the whole card, set here rather than on each line.
 
