@@ -80,6 +80,16 @@ export type CountryPack = {
   flagId: string;
   /** Shown in the sidebar and as the heading of every section. */
   label: string;
+  /**
+   * The country on its own, for places too narrow for the full label.
+   *
+   * The home card used to work this out with a conditional — Germany, or
+   * else the United Kingdom — which was right while there were two
+   * countries and put a French flag beside "United Kingdom" as soon as
+   * there were three. A pack knows what it is; nothing should be deducing
+   * it.
+   */
+  country: string;
   /** The course this country teaches from. */
   course: Course;
   /** The practice pool, separate from the quizzes inside the lessons. */

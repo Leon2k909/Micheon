@@ -2537,6 +2537,7 @@ const DE: Record<string, string> = {
   "History, government and traditions — how life in the UK works.":
     "Geschichte, Regierung und Traditionen – wie das Leben in Großbritannien funktioniert.",
   Germany: "Deutschland",
+  France: "Frankreich",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
   "By topic": "Nach Thema",

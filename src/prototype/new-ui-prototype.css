@@ -12258,6 +12258,25 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   text-align: left;
 }
 
+/* The country rows carry a flag and a name and no line of explanation, so
+   they are two columns rather than two stacked lines. */
+.np-home-content-menu--country > button {
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 9px;
+}
+
+.np-home-country-flag {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+}
+
+.np-home-country-flag > * {
+  width: 100%;
+  height: 100%;
+}
+
 .np-home-content-menu > button:hover {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }

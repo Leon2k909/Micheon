@@ -2196,14 +2196,18 @@ const COUNTRY_ART: Record<CountryId, string> = {
 };
 
 function CountryCard({
+  countryMenuOpen,
   onOpen,
-  onSwitchCountry,
+  onPickCountry,
+  onToggleCountryMenu,
   pack,
   profile,
 }: {
+  countryMenuOpen: boolean;
   onOpen: () => void;
-  /** Moves to the next country. The card is the second way in, beside the nav. */
-  onSwitchCountry: () => void;
+  /** Chooses a country outright. The card is the second way in, beside the nav. */
+  onPickCountry: (id: CountryId) => void;
+  onToggleCountryMenu: () => void;
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
@@ -2231,15 +2235,56 @@ function CountryCard({
           <h2>{ui("Country studies")}</h2>
           <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
 
+          {/* A menu, not a button that steps to the next country. Stepping
+              was tolerable while there were two; with three it is a guessing
+              game, and the language card beside this one has offered a real
+              choice all along. Built from the same parts as its Lesson
+              content menu so the pair still reads as one control repeated. */}
           <div className="np-home-choice-panel">
-            <small>{ui("Selected country")}</small>
-            <span className="np-home-choice-value">
-              <FlagRoundel id={pack.flagId} />
-              <strong>{ui(pack.id === "de" ? "Germany" : "United Kingdom")}</strong>
-              <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
-                {ui("Change")}
-              </button>
-            </span>
+            <div className="np-home-choice-field np-home-choice-field--country">
+              <small>{ui("Selected country")}</small>
+              <span className="np-home-choice-value">
+                <FlagRoundel id={pack.flagId} />
+                {/* Off the pack. This was a two-way conditional, so the
+                    French course arrived wearing the words "United
+                    Kingdom" under a French flag. */}
+                <strong>{ui(pack.country)}</strong>
+                <button
+                  aria-expanded={countryMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={ui("Choose the country you are studying")}
+                  className="np-home-choice-change"
+                  onClick={onToggleCountryMenu}
+                  type="button"
+                >
+                  {ui("Change")}
+                  <ChevronDown aria-hidden="true" />
+                </button>
+              </span>
+
+              {countryMenuOpen && (
+                <div
+                  aria-label={ui("Choose the country you are studying")}
+                  className="np-home-content-menu np-home-content-menu--country"
+                  role="menu"
+                >
+                  {COUNTRY_PACKS.map((entry) => (
+                    <button
+                      aria-checked={entry.id === pack.id}
+                      key={entry.id}
+                      onClick={() => onPickCountry(entry.id)}
+                      role="menuitemradio"
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="np-home-country-flag">
+                        <FlagRoundel id={entry.flagId} />
+                      </span>
+                      <strong>{ui(entry.country)}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -3059,8 +3104,8 @@ function ProgressPanel({
 function HomeView({
   apiParts,
   countryId,
-  onCycleCountry,
   onOpenCountryCourse,
+  onPickCountry,
   onOpenFading,
   onPractice,
   onRequestCatalogue,
@@ -3073,10 +3118,10 @@ function HomeView({
   apiParts: Record<string, Part>;
   /** Which country studies country the card should show. */
   countryId: CountryId;
-  /** Moves the card to the next country. */
-  onCycleCountry: () => void;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
+  /** Chooses the card's country outright, from its own menu. */
+  onPickCountry: (id: CountryId) => void;
   /** The vocabulary library, opened on the items that are fading. */
   onOpenFading: () => void;
   onPractice: () => void;
@@ -3111,6 +3156,7 @@ function HomeView({
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
   // The menu closes the way every menu should: outside click or Escape.
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
@@ -3127,6 +3173,24 @@ function HomeView({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [contentMenuOpen]);
+  // The country menu closes the same way. Its own effect rather than a
+  // shared one: two menus on one card must not close each other, and a
+  // click inside the country field is outside the content field.
+  useEffect(() => {
+    if (!countryMenuOpen) return undefined;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!(event.target as Element | null)?.closest?.(".np-home-choice-field--country")) setCountryMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCountryMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [countryMenuOpen]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -3171,8 +3235,13 @@ function HomeView({
         />
 
         <CountryCard
+          countryMenuOpen={countryMenuOpen}
           onOpen={onOpenCountryCourse}
-          onSwitchCountry={onCycleCountry}
+          onPickCountry={(id) => {
+            onPickCountry(id);
+            setCountryMenuOpen(false);
+          }}
+          onToggleCountryMenu={() => setCountryMenuOpen((open) => !open)}
           pack={countryPack(countryId)}
           profile={profile}
         />
@@ -3939,17 +4008,19 @@ export default function NewUiPrototype({
   const activePack = countryPack(countryId);
 
   /**
-   * Move to the next country studies country.
+   * Choose which country studies country the app is on.
    *
-   * Cycling rather than opening a picker: the sidebar already has one, and a
-   * second dialog for the same choice is a dialog too many. The lesson being
-   * read is cleared because lesson ids do not cross countries.
+   * This used to step to the next one, on the argument that the sidebar
+   * already had a picker and a second one was a dialog too many. That held
+   * while there were two countries. At three, stepping means clicking until
+   * the right one comes round, and the card is not a dialog — it is a menu
+   * inside the card, the same as the one the language card beside it has.
+   *
+   * The lesson being read is still cleared, because lesson ids do not cross
+   * countries.
    */
-  const cycleCountry = useCallback(() => {
-    setCountryId((current) => {
-      const index = COUNTRY_PACKS.findIndex((entry) => entry.id === current);
-      return COUNTRY_PACKS[(index + 1) % COUNTRY_PACKS.length].id;
-    });
+  const pickCountry = useCallback((id: CountryId) => {
+    setCountryId(id);
     setUkLessonId(undefined);
     setUkReaderOpen(false);
   }, []);
@@ -4227,7 +4298,7 @@ export default function NewUiPrototype({
       <HomeView
         apiParts={apiParts}
         countryId={countryId}
-        onCycleCountry={cycleCountry}
+        onPickCountry={pickCountry}
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
           requestVocabLibraryOpen();
