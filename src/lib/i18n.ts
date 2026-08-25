@@ -505,7 +505,7 @@ const DE: Record<string, string> = {
   "Modern Britain": "Modernes Britannien",
   "Search the course": "Kurs durchsuchen",
   "People, years, events, places, terms or categories. Try a date.": "Personen, Jahreszahlen, Ereignisse, Orte, Begriffe oder Kategorien. Probiere ein Datum.",
-  "Search — try 1066, Churchill, Magna Carta": "Suche — probiere 1066, Churchill, Magna Carta",
+  "Search — try {examples}": "Suche — probiere {examples}",
   "Also showing everything tagged": "Außerdem alles mit dem Schlagwort",
   "Nothing found": "Nichts gefunden",
   "Try a year, a person or a place — the index covers all three.": "Probiere eine Jahreszahl, eine Person oder einen Ort — der Index kennt alle drei.",
@@ -2526,6 +2526,8 @@ const DE: Record<string, string> = {
   // are still named inside the lessons, where the name is the fact.
   "United Kingdom – Land and Culture": "Großbritannien – Land und Kultur",
   "Germany – Land and Culture": "Deutschland – Land und Kultur",
+  "France – Land and Culture": "Frankreich – Land und Kultur",
+  "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Werte, Institutionen und Alltag — wie das Land funktioniert.",
   // The line under each course name in the switcher. It goes through ui()
   // like the name above it, so without this key a German interface put an
   // English sentence between two German ones. The German course needs no

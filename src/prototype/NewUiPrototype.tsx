@@ -174,6 +174,7 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
+import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
@@ -2181,6 +2182,10 @@ function LanguageCard({
  */
 const COUNTRY_ART: Record<CountryId, string> = {
   de: homeCountryArtDe,
+  // Drawn as vectors rather than painted like the other two, so it reads a
+  // little flatter beside them. Same subject matter: a river, a skyline the
+  // country is known by, and the street furniture you actually walk past.
+  fr: homeCountryArtFr,
   uk: homeCountryArtUk,
 };
 
@@ -3919,9 +3924,9 @@ export default function NewUiPrototype({
   /**
    * Move to the next country studies country.
    *
-   * Cycling rather than opening a picker: there are two, and a dialog to
-   * choose between two things is a dialog too many. The lesson being read is
-   * cleared because lesson ids do not cross countries.
+   * Cycling rather than opening a picker: the sidebar already has one, and a
+   * second dialog for the same choice is a dialog too many. The lesson being
+   * read is cleared because lesson ids do not cross countries.
    */
   const cycleCountry = useCallback(() => {
     setCountryId((current) => {

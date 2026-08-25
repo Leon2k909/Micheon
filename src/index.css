@@ -12025,14 +12025,23 @@ html[data-theme="dark"] {
    reserve still grows the card — clipping one behind a scrollbar would be
    worse than a rare shift — but the ordinary range no longer moves at all. */
 .listen-card {
-  display: grid;
+  /* A column, anchored at both ends rather than centred.
+
+     Centred, the whole stack moved with its own height, and its height is
+     whatever the item happens to carry: a word with a use note and a list of
+     synonyms is five lines, a bare word is three. So the counter, the word
+     and its translation sat at a different height on every card, and reading
+     down a queue meant the eye chasing them up and down the box. The top is
+     fixed now and the controls are held at the foot; the slack collects in
+     the middle, where the optional lines appear. */
+  display: flex;
+  flex-direction: column;
   /* A fixed height, not a minimum. A minimum still grows for a long
      sentence, and growing is exactly what moves the button — 320px held the
      ordinary range still but a three-line sentence pushed the row 49px down.
      Fixed, the row cannot move at all, and the rare item that overruns
      scrolls inside the card instead of walking the controls away. */
   height: 360px;
-  align-content: center;
   overflow-y: auto;
   /* One gap for the whole card, set here rather than on each line.
 
@@ -12060,6 +12069,8 @@ html[data-theme="dark"] {
 /* The rule under the card's content gets the same gap on both sides, so the
    controls are as far below it as the last line is above it. */
 .listen-card-review {
+  /* Held at the foot, so the buttons are in the same place on every card. */
+  margin-top: auto;
   padding-top: 14px;
 }
 

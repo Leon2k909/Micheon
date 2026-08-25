@@ -18,6 +18,7 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   "english-us": "english amerikanisch american us usa color practice schedule englisch",
   "life-in-the-uk": "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office",
   "leben-in-deutschland": "leben in deutschland einbürgerungstest orientierungskurs integrationskurs staatsangehörigkeit grundgesetz politik geschichte gesellschaft bamf",
+  "vivre-en-france": "vivre en france examen civique naturalisation nationalite francaise laicite republique marianne institutions frankreich landeskunde staatsburgerschaft",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
   ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),
