@@ -8684,6 +8684,200 @@ html[data-theme="dark"] .np-premium-card {
   box-shadow: 0 0 0 1px rgba(98, 91, 84, 0.18);
 }
 
+/* Somebody never heard from at all, which is not the same as somebody who was
+   here yesterday: the row is real, the figures under it are not there yet. */
+.np-social-presence--away {
+  color: var(--np-muted);
+}
+
+.np-social-presence--away i {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba(98, 91, 84, 0.34);
+}
+
+/* ── pairing ──────────────────────────────────────────────────────────────
+   Two halves of one exchange, side by side because somebody has to go first
+   and neither person should have to hunt for their end of it. */
+.np-friend-pairing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 11px;
+  margin-top: 14px;
+}
+
+.np-friend-mycode,
+.np-friend-addcode {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid rgba(76, 66, 55, 0.09);
+  border-radius: 17px;
+  background: #fffefb;
+  box-shadow: 0 2px 0 rgba(96, 82, 66, 0.06);
+}
+
+.np-friend-mycode {
+  flex-wrap: wrap;
+}
+
+.np-friend-mycode small,
+.np-friend-addcode small {
+  display: block;
+  color: var(--np-muted);
+  font-size: var(--np-type-caption);
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The code gets read off one screen and typed into another, so it is set in a
+   monospace face at a size that survives being photographed. */
+.np-friend-mycode strong {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.np-friend-mycode button {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid rgba(76, 66, 55, 0.12);
+  border-radius: 11px;
+  background: var(--np-surface-2, #f6f4ee);
+  color: var(--np-ink, #2b2723);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.np-friend-mycode button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.np-friend-addcode label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.np-friend-addcode input {
+  width: 100%;
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--np-ink, #2b2723);
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  outline: none;
+}
+
+/* A stranger asking. Deliberately not a toast: it needs an answer, and one
+   that scrolls away on its own would answer it by default. */
+.np-friend-request {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 11px;
+  padding: 12px 14px;
+  border: 1px solid rgba(79, 128, 189, 0.28);
+  border-radius: 17px;
+  background: rgba(226, 238, 250, 0.6);
+}
+
+.np-friend-request strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.np-friend-request small {
+  grid-column: 1;
+  color: var(--np-muted);
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-size: var(--np-type-caption);
+  letter-spacing: 0.05em;
+}
+
+.np-friend-request > div {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  display: flex;
+  gap: 8px;
+}
+
+.np-friend-request button {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(76, 66, 55, 0.12);
+  border-radius: 11px;
+  background: #fffefb;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.np-friend-request button:first-child {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Whether the broker introduction is up. Said plainly rather than as a dot,
+   because "not connected" is the difference between out-of-date figures and
+   a broken list, and the person should be able to tell which they are. */
+.np-friend-net {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--np-surface-2, #f6f4ee);
+  color: var(--np-muted);
+  font-size: var(--np-type-caption);
+  font-weight: 850;
+}
+
+.np-friend-net--online {
+  background: var(--accent-dim);
+  color: var(--accent-strong, var(--accent));
+}
+
+.np-friend-net--error {
+  background: rgba(197, 84, 66, 0.13);
+  color: #9d3f2f;
+}
+
+@media (max-width: 900px) {
+  .np-friend-pairing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+html[data-theme="dark"] .np-friend-mycode,
+html[data-theme="dark"] .np-friend-addcode,
+html[data-theme="dark"] .np-friend-request button {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+html[data-theme="dark"] .np-friend-mycode button,
+html[data-theme="dark"] .np-friend-net {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+}
+
+html[data-theme="dark"] .np-friend-request {
+  border-color: rgba(120, 164, 214, 0.28);
+  background: rgba(46, 63, 84, 0.42);
+}
+
 .np-friend-identity > small {
   margin-top: 3px;
   overflow: hidden;
