@@ -1361,68 +1361,14 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 
 .micheon-update-actions {
   display: grid;
-  /* Restart, Keep learning, clock. While downloading there is no Restart, so
-     Hide takes the whole first track and the clock keeps its corner. */
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  /* Restart and Keep learning. While downloading there is no Restart, so Hide
+     takes the first track and the second collapses to nothing. */
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   margin-top: 14px;
 }
 
-.micheon-update-panel--downloading .micheon-update-actions {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
-/* A row under the buttons rather than a menu floating over them. The panel
-   clips its own overflow and is only 172px tall, so a popover opening upward
-   was cut off and sat on top of the sentence explaining the update. */
-.micheon-update-postpone {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-}
-
-/* Its own line: German asks for "Erinnere mich in", which alongside three
-   chips does not fit 368px. */
-.micheon-update-postpone__title {
-  grid-column: 1 / -1;
-  padding: 0 2px 2px;
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.micheon-update-postpone__item {
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  padding: 8px 6px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 750;
-  color: var(--text-2);
-  background: var(--surface);
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-}
-
-.micheon-update-postpone__item:hover {
-  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
-  background: var(--accent-dim);
-  color: var(--accent-strong);
-}
-
-.micheon-update-postpone__item:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  outline-offset: 1px;
-}
-
 .micheon-update-primary,
-.micheon-update-clock,
 .micheon-update-secondary {
   display: inline-flex;
   height: 40px;
@@ -1456,8 +1402,7 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 0 #195b24, 0 5px 10px rgba(32, 109, 44, 0.14);
 }
 
-.micheon-update-panel .micheon-update-secondary,
-.micheon-update-panel .micheon-update-clock {
+.micheon-update-panel .micheon-update-secondary {
   min-width: 88px;
   border: 1px solid rgba(66, 91, 58, 0.16);
   color: var(--text-3);
@@ -1466,19 +1411,7 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
   font-weight: 750;
 }
 
-/* Square, and without the secondary's text metrics. Same selector as the
-   rule above on purpose: the clock takes that rule's colours and overrides
-   only its shape, and a bare .micheon-update-clock could not — the panel
-   scoping above outranks it and the button came out 88px wide. */
-.micheon-update-panel .micheon-update-clock {
-  min-width: 0;
-  width: 40px;
-  padding: 0;
-}
-
-.micheon-update-panel .micheon-update-secondary:hover,
-.micheon-update-panel .micheon-update-clock:hover,
-.micheon-update-panel .micheon-update-clock[aria-expanded="true"] {
+.micheon-update-panel .micheon-update-secondary:hover {
   border-color: rgba(48, 130, 51, 0.23);
   color: var(--accent-strong);
   background: #edf7e7;
@@ -1486,8 +1419,6 @@ html[data-theme="dark"] .titlebar--prototype .titlebar-btn:hover:not(.titlebar-c
 }
 
 .micheon-update-primary:focus-visible,
-.micheon-update-clock:focus-visible,
-.micheon-update-postpone__item:focus-visible,
 .micheon-update-secondary:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
   outline-offset: 2px;
@@ -1524,28 +1455,17 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-icon {
 }
 
 html[data-theme="dark"] .micheon-update-version,
-html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary,
-html[data-theme="dark"] .micheon-update-panel .micheon-update-clock {
+html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary {
   border-color: rgba(207, 228, 203, 0.12);
   background: rgba(255, 255, 255, 0.035);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 2px 0 rgba(0, 0, 0, 0.14);
-}
-
-html[data-theme="dark"] .micheon-update-postpone {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-html[data-theme="dark"] .micheon-update-postpone__item {
-  background: rgba(255, 255, 255, 0.04);
 }
 
 html[data-theme="dark"] .micheon-update-download {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
-html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover,
-html[data-theme="dark"] .micheon-update-panel .micheon-update-clock:hover,
-html[data-theme="dark"] .micheon-update-panel .micheon-update-clock[aria-expanded="true"] {
+html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
   background: #272b32;
   color: #d7edd4;
 }
@@ -1553,9 +1473,7 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-clock[aria-expande
 @media (prefers-reduced-motion: reduce) {
   .micheon-update-panel .micheon-update-progress,
   .micheon-update-primary,
-  .micheon-update-secondary,
-  .micheon-update-clock,
-  .micheon-update-postpone__item {
+  .micheon-update-secondary {
     transition: none;
   }
 }
@@ -8631,26 +8549,20 @@ html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .miche
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 0 var(--accent-pressed, var(--np-green-dark)), 0 5px 10px rgba(var(--accent-hover-rgb), 0.14);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-clock,
 html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-secondary {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 2px 0 rgba(var(--accent-hover-rgb), 0.09);
 }
 
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock,
 html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary {
   border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover,
-html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-clock:hover,
-html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-clock[aria-expanded="true"] {
+html:not([data-theme="dark"])[data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover {
   border-color: rgba(var(--accent-hover-rgb), 0.23);
 }
 
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover,
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock:hover,
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock[aria-expanded="true"] {
+html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover {
   border-color: rgba(var(--accent-hover-rgb), 0.23);
 }
 
@@ -8660,14 +8572,11 @@ html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-upd
 }
 
 html[data-theme="dark"][data-accent="custom"] .micheon-update-version,
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock,
 html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary {
   border-color: rgba(var(--accent-rgb), 0.12);
 }
 
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover,
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock:hover,
-html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-clock[aria-expanded="true"] {
+html[data-theme="dark"][data-accent="custom"] .micheon-update-panel .micheon-update-secondary:hover {
   color: var(--accent-ink, var(--np-green));
 }
 

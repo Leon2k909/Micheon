@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CircleCheck, Clock, Download, Power } from "lucide-react";
+import { ArrowRight, CircleCheck, Download, Power } from "lucide-react";
 import {
   normaliseUpdatePercent,
   UPDATE_INSTALL_REQUEST_EVENT,
@@ -30,19 +30,6 @@ function developmentPreview(): UpdateStatus | null {
     percent: state === "ready" ? 100 : Number(search.get("update-percent") || 46),
   };
 }
-
-/**
- * How long "later" is.
- *
- * The same three the settings card offers, because they are the same
- * postponement — one preference, written from two places, so a postponement
- * made here shows there and vice versa.
- */
-const POSTPONE_FOR: ReadonlyArray<readonly [string, number]> = [
-  ["1 hour", 1],
-  ["Today", 8],
-  ["A week", 168],
-];
 
 const previewStatus = developmentPreview();
 const previewInstalling = import.meta.env.DEV
@@ -172,7 +159,6 @@ export function UpdateBanner() {
   const [status, setStatus] = useState<UpdateStatus | null>(previewStatus);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [installing, setInstalling] = useState(previewInstalling);
-  const [postponeOpen, setPostponeOpen] = useState(false);
   const installTimer = useRef<number | null>(null);
 
   const beginInstall = useCallback(() => {
@@ -182,25 +168,6 @@ export function UpdateBanner() {
       desktop?.installUpdate?.();
     }, reduceMotion ? 700 : 1700);
   }, [reduceMotion]);
-
-  /**
-   * Put it off, and have it stay put off.
-   *
-   * Written through the same desktop preference the settings card uses rather
-   * than to component state, so it survives the window closing — which is the
-   * whole difference between this and Keep learning, sitting next to it.
-   */
-  const postpone = useCallback(async (hours: number) => {
-    setPostponeOpen(false);
-    setDismissedFor(updateStatusKey(status));
-    try {
-      const next = await desktop?.setUpdatePreferences?.({ snoozeHours: hours });
-      if (next) setStatus(next);
-    } catch {
-      /* The panel is already closed; a failed write means it comes back, which
-         is the safe direction for something the learner has to be told about. */
-    }
-  }, [status]);
 
   useEffect(() => {
     const handleInstallRequest = () => beginInstall();
@@ -229,24 +196,8 @@ export function UpdateBanner() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!postponeOpen) return undefined;
-    const close = (event: Event) => {
-      if (event instanceof KeyboardEvent && event.key !== "Escape") return;
-      if (event.type === "pointerdown" && event.target instanceof Element
-        && event.target.closest(".micheon-update-postpone")) return;
-      setPostponeOpen(false);
-    };
-    window.addEventListener("pointerdown", close);
-    window.addEventListener("keydown", close);
-    return () => {
-      window.removeEventListener("pointerdown", close);
-      window.removeEventListener("keydown", close);
-    };
-  }, [postponeOpen]);
-
   /**
-   * Reopen when the postponement runs out.
+   * Reopen when a postponement made in settings runs out.
    *
    * The status only arrives when the updater has something to say, and it has
    * nothing to say at the moment an hour is up — so without this the panel
@@ -263,10 +214,6 @@ export function UpdateBanner() {
     );
     return () => window.clearTimeout(timer);
   }, [snoozedUntil]);
-
-  // Nothing to write the postponement to on the website, so it is not offered
-  // there. The dev preview is the exception, so the control can be looked at.
-  const canPostpone = Boolean(desktop?.setUpdatePreferences) || Boolean(previewStatus);
 
   const key = updateStatusKey(status);
   const open = updatePanelIsUseful(status) && dismissedFor !== key;
@@ -358,6 +305,11 @@ export function UpdateBanner() {
                 </button>
               )}
 
+              {/* One way to put the panel aside, not two. The clock beside
+                  this offered a lasting postponement, but both controls read
+                  as "not now" and nothing on screen said which was which —
+                  the difference only showed on the next launch. The lasting
+                  one lives in settings, where its durations are labelled. */}
               <button
                 className="micheon-update-secondary"
                 onClick={() => setDismissedFor(key)}
@@ -365,57 +317,7 @@ export function UpdateBanner() {
               >
                 {status.state === "downloading" ? ui("Hide") : ui("Keep learning")}
               </button>
-
-              {/* Keep learning hides this panel; the clock puts the update
-                  itself off. Only offered where there is somewhere to write
-                  that down — on the website the preference has no home, so it
-                  is not shown there and pretends nothing. The dev preview is
-                  the exception, so the control can be looked at. */}
-              {canPostpone && (
-                <button
-                  aria-controls="micheon-update-postpone"
-                  aria-expanded={postponeOpen}
-                  aria-label={ui("Remind me later")}
-                  className="micheon-update-clock"
-                  data-testid="update-postpone"
-                  onClick={() => setPostponeOpen((open) => !open)}
-                  title={ui("Remind me later")}
-                  type="button"
-                >
-                  <Clock aria-hidden="true" className="h-[18px] w-[18px]" />
-                </button>
-              )}
             </div>
-
-            {/* A row of its own rather than a menu floating over the panel.
-                The panel is 368px wide, clips its own overflow and has 115px
-                of room above these buttons — a popover needing 132 would have
-                been cut off at the top and would have covered the sentence
-                explaining what the update is. Opening a row grows the card,
-                which it is free to do: it is anchored to the corner, not to a
-                height. */}
-            {canPostpone && postponeOpen && (
-              <div
-                aria-label={ui("Remind me in")}
-                className="micheon-update-postpone"
-                id="micheon-update-postpone"
-                role="group"
-              >
-                <span className="micheon-update-postpone__title">
-                  {ui("Remind me in")}
-                </span>
-                {POSTPONE_FOR.map(([label, hours]) => (
-                  <button
-                    className="micheon-update-postpone__item"
-                    key={label}
-                    onClick={() => { void postpone(hours); }}
-                    type="button"
-                  >
-                    {ui(label)}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </motion.section>
       )}

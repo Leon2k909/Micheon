@@ -2715,8 +2715,6 @@ const DE: Record<string, string> = {
   "A week": "Eine Woche",
   "Try another filter, or clear the search.": "Probiere einen anderen Filter oder leere die Suche.",
   "Postpone for": "Aufschieben um",
-  "Remind me later": "Später erinnern",
-  "Remind me in": "Erinnere mich in",
   "Hide update notices": "Update-Hinweise ausblenden",
   "Updates still install. This panel and the ready banner stay out of the way.":
     "Updates werden weiterhin installiert. Nur diese Übersicht und das Hinweisband halten sich zurück.",
