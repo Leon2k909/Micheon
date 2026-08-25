@@ -167,14 +167,36 @@ export function ListenTest({
         ))}
       </div>
 
-      {verdicts.length > 0 && (
-        <p className="mt-6 text-center text-xs font-bold text-[var(--text-3)]">
-          <Check className="mr-1 inline h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-          {uiNumber(verdicts.filter((v) => v.chosen === v.answer).length)}
-          <X className="ml-3 mr-1 inline h-3.5 w-3.5 text-[var(--danger-text)]" aria-hidden="true" />
-          {uiNumber(verdicts.filter((v) => v.chosen !== v.answer).length)}
-        </p>
-      )}
+      {/*
+        The running score, as two things rather than four.
+
+        It was a tick, a number, a cross and a number loose in a paragraph,
+        relying on inline flow to keep them in one line — which it did not, and
+        the glyphs ended up down the left with the numbers stranded in the
+        middle. Each tally is one box now, laid out explicitly, so there is no
+        arrangement for the text flow to get wrong.
+
+        The wrong side only turns red once there is something to be red about:
+        a scarlet "0" for a clean run reads as a warning about nothing.
+      */}
+      {verdicts.length > 0 && (() => {
+        const right = verdicts.filter((v) => v.chosen === v.answer).length;
+        const wrong = verdicts.length - right;
+        return (
+          <div className="listen-test-score" data-testid="listen-test-score">
+            <span className={cn("listen-test-score__tally", right > 0 && "is-right")}>
+              <Check aria-hidden="true" className="h-3.5 w-3.5" />
+              {uiNumber(right)}
+              <span className="listen-test-score__label">{ui("right")}</span>
+            </span>
+            <span className={cn("listen-test-score__tally", wrong > 0 && "is-wrong")}>
+              <X aria-hidden="true" className="h-3.5 w-3.5" />
+              {uiNumber(wrong)}
+              <span className="listen-test-score__label">{ui("wrong")}</span>
+            </span>
+          </div>
+        );
+      })()}
     </section>
   );
 }

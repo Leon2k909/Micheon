@@ -149,6 +149,29 @@ for (const key of ["Test me", "Back to Listen", "The ones that got away"]) {
     `"${key}" has no German`);
 }
 
+// ── the running score is laid out, not left to the text flow ────────────────
+// It was a tick, a number, a cross and a number loose in a paragraph, which
+// broke: the glyphs ended up down the left of the card with their numbers
+// stranded in the middle. Two boxes, placed explicitly, cannot come apart
+// that way.
+{
+  const view = fs.readFileSync(path.join(root, "src/components/listen/ListenTest.tsx"), "utf8");
+  const styles = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
+  assert.ok(view.includes("data-testid=\"listen-test-score\""),
+    "the running score has no element of its own, so nothing can position it");
+  // Plain string matching rather than a regex: every needle here is dots and
+  // braces, and an unescaped regex quietly matches almost anything.
+  const scoreRule = styles.slice(styles.indexOf(".listen-test-score {"));
+  assert.ok(styles.includes(".listen-test-score {")
+    && scoreRule.slice(0, scoreRule.indexOf("}")).includes("display: flex"),
+    "the score relies on inline text flow again, which is what put the ticks down the left");
+  // A red nought for a clean run is a warning about nothing.
+  assert.ok(view.includes("wrong > 0 && \"is-wrong\""),
+    "the wrong tally is painted red even at zero");
+  // Tokens, so a custom accent and dark mode both work.
+  assert.ok(!/text-emerald-600/.test(view),
+    "the score still paints a hardcoded green that no theme can reach");
+}
 console.log(
   `check-listen-test: ${papers} papers over the real queue — every question answerable, `
   + "only heard items asked, the deal stable, and nothing graded"
