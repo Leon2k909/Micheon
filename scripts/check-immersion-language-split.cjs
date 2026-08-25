@@ -67,6 +67,7 @@ async function collect(lang, url, paragraphs) {
   const { window } = dom;
   let german = {};
   let english = {};
+  let lastWrite = 0;
   window.Highlight = FakeHighlight;
   window.CSS = { highlights: { set() {}, get: () => new Set() } };
   window.fetch = async () => ({ json: async () => JSON.parse(words) });
@@ -87,6 +88,7 @@ async function collect(lang, url, paragraphs) {
         set: async (patch) => {
           if (patch.missingVocab) german = patch.missingVocab;
           if (patch.missingEnglish) english = patch.missingEnglish;
+          if (patch.missingVocab || patch.missingEnglish) lastWrite = Date.now();
         },
         remove: async () => {},
       },
@@ -94,8 +96,17 @@ async function collect(lang, url, paragraphs) {
     },
   };
   window.eval(glossSource);
-  // The collector debounces its write; FLUSH_DELAY_MS is 4s.
-  await new Promise((resolve) => window.setTimeout(resolve, 6500));
+  // The collector debounces its write, so this waits for the write rather
+  // than for a duration. A fixed sleep sized against FLUSH_DELAY_MS passes on
+  // a fast machine and fails on a slow one, which is a check that reports the
+  // build agent's load as a bug in the extension.
+  const deadline = Date.now() + 60000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
+    // Settled: a write landed and nothing followed it for two seconds.
+    if (lastWrite && Date.now() - lastWrite > 2000) break;
+  }
+  assert.ok(lastWrite, "the collector never wrote anything at all in 60s — the harness is not scanning");
   return { german: Object.keys(german), english: Object.keys(english) };
 }
 
