@@ -47,7 +47,10 @@ import {
   type GuidedBackground,
 } from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
-import { learningEnglish } from "@/lib/direction";
+import { getLearningDirection, learningEnglish } from "@/lib/direction";
+import { courseSides } from "@/lib/courseLanguages";
+import { frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { matchFrenchSentence } from "@/lib/frenchTextMatch";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -330,6 +333,33 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
   );
 }
 
+/**
+ * The accent row under a typing box, for whichever language that box is in.
+ *
+ * German needs ä ö ü ß, French needs é è ê ç, English needs nothing at all.
+ * Which of the three belongs under a box depends on whether the box is asking
+ * for the target or for the meaning — and there are ten of them, which is ten
+ * chances to write `!learnEn` where a third course needs a third answer.
+ */
+// Written out per language rather than composed, so the German reads as
+// German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr", string> = {
+  de: "German words to arrange",
+  en: "English words to arrange",
+  fr: "French words to arrange",
+};
+
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+  if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
+  if (language === "de") return <CharBar onInsert={onInsert} />;
+  return null;
+}
+
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+  if (language === "en") return null;
+  return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
+}
+
 // French accent helper row for the French typing phase
 function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
@@ -542,6 +572,15 @@ function renderKeyWord(sentence: string, lookup?: string) {
   );
 }
 
+// The short label on a stage square, one per language. Written out rather
+// than built from the name so the two-letter code is a real word in the
+// translations rather than a fragment.
+const RECALL_STAGE_LABEL: Record<string, string> = {
+  German: "Recall DE",
+  English: "Recall EN",
+  French: "Recall FR",
+};
+
 function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English") {
   if (withFrench && p === "Type") return "German";
   if (p === "MeaningPick") return "Meaning";
@@ -553,8 +592,8 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
   if (p === "Gap") return "Fill in";
   if (p === "Order") return "Reorder";
   if (p === "WriteFromMemory") return "Write it";
-  if (p === "RecallTarget") return targetLabel === "German" ? "Recall DE" : "Recall EN";
-  if (p === "RecallMeaning") return meaningLabel === "German" ? "Recall DE" : "Recall EN";
+  if (p === "RecallTarget") return RECALL_STAGE_LABEL[targetLabel] ?? "Recall";
+  if (p === "RecallMeaning") return RECALL_STAGE_LABEL[meaningLabel] ?? "Recall";
   if (p === "RecallBoth") return "Recall both";
   return p;
 }
@@ -1059,8 +1098,10 @@ function LangBlock({ label, text, active, onHear, onKnown, onStruggle }: {
   );
 }
 
-function guidedTargetLanguageTag(): "de-DE" | "en-GB" | "en-US" {
-  if (!learningEnglish()) return "de-DE";
+function guidedTargetLanguageTag(): "de-DE" | "en-GB" | "en-US" | "fr-FR" {
+  const direction = getLearningDirection();
+  if (direction === "learn-fr") return "fr-FR";
+  if (direction !== "learn-en") return "de-DE";
   return resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US";
 }
 
@@ -1615,31 +1656,46 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // meaning (item.en). When learning English, the session builder has already
   // swapped the fields, so item.de IS the English target — we just need the right
   // TTS/speech language and labels.
-  const learnEn = useMemo(() => learningEnglish(), []);
+  const direction = useMemo(() => getLearningDirection(), []);
+  const learnEn = direction === "learn-en";
+  const learnFr = direction === "learn-fr";
+  // Only the German course teaches German. The umlaut bar, the German matcher
+  // and the German synonym groups all hang off this, and every one of them is
+  // wrong beside a French sentence — which is why it is asked as its own
+  // question rather than as !learnEn.
+  const targetIsGermanCourse = direction === "learn-de";
+  const targetLanguage: "de" | "en" | "fr" = learnFr ? "fr" : learnEn ? "en" : "de";
+  // Which language the meaning column is written in: German in the English
+  // course, and in the French course whenever the app itself is in German.
+  const meaningLanguage: "de" | "en" = learnFr
+    ? frenchMeaningLanguage()
+    : learnEn ? "de" : "en";
+  const meaningIsGerman = meaningLanguage === "de";
   // A picture of the word, where we have an honest one. It is a cue to the
   // MEANING, so any stage whose job is to produce or choose the meaning has to
   // go without: an apple beside "der Apfel" answers Translate before the
   // question is asked. Two thirds of the catalogue is abstract and comes back
   // empty — see wordPictures.ts for why that is deliberate.
   //
-  // Learning English swaps de and en on the step, as the note above says, so
-  // the gloss this is keyed on moves to item.de.
+  // Keyed on the ENGLISH gloss wherever the card has one: learning English
+  // moves it to item.de, and a French card whose meaning column is German has
+  // no English on it at all.
   const picture = isWordItem
-    ? wordPicture(learnEn ? item?.de : item?.en, item?.pos)
+    ? wordPicture(learnEn ? item?.de : meaningIsGerman ? "" : item?.en, item?.pos)
     : null;
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.
   const targetLang = guidedTargetLanguageTag();
-  const targetLabel = learnEn ? "English" : "German";
-  const meaningLabel = learnEn ? "German" : "English";
+  const targetLabel = learnFr ? "French" : learnEn ? "English" : "German";
+  const meaningLabel = meaningIsGerman ? "German" : "English";
   // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
   const gap = useMemo(() => computeGap(item.de), [item.de]);
   // The meaning text (item.en) is already English in normal mode (apply spelling
   // variant) but is German when learning English (show as-is).
   const displayEnglish = useMemo(
-    () => (learnEn ? item.en : formatEnglishText(item.en, englishVariant)),
-    [item.en, englishVariant, learnEn]
+    () => (meaningIsGerman ? item.en : formatEnglishText(item.en, englishVariant)),
+    [item.en, englishVariant, meaningIsGerman]
   );
   const listeningChoices = useMemo(
     () => buildListeningChoices(item.de, listeningChoicePool),
@@ -1660,7 +1716,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     && choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
-  const matchTarget = learnEn ? matchEnglish : matchGermanSentence;
+  const matchTarget = learnFr ? matchFrenchSentence : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
   // two results means the shown answer is the one people say, without punishing
@@ -1677,7 +1733,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       // typing one of them is a right answer, not a near miss. German-course
       // only: in the English course the target is English, where the merged
       // " / " alternatives already do this job.
-      if (!learnEn && item.kind === "word") {
+      if (targetIsGermanCourse && item.kind === "word") {
         for (const entry of item.synonyms ?? []) {
           const alt = matchTarget(typed, entry.de);
           if (alt.ok) return alt;
@@ -1685,7 +1741,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       }
       return primary;
     },
-    [item.de, item.long, item.kind, item.synonyms, learnEn, matchTarget]
+    [item.de, item.long, item.kind, item.synonyms, targetIsGermanCourse, matchTarget]
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
@@ -1702,24 +1758,25 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // stays correct in both learning directions.
   const matchMeaning = React.useCallback(
     (typed: string) => {
-      if (learnEn && isWordItem) {
+      if (meaningIsGerman && isWordItem) {
         const primary = matchGermanMeaning(typed, displayEnglish);
         if (primary.ok) return primary;
-        // English course, combined synonym card: the meaning side is German,
-        // and any word of the group is that meaning.
+        // Combined synonym card with a German meaning side: any word of the
+        // group is that meaning. Only the German course carries them, so this
+        // loop is empty in the French one.
         for (const entry of item.synonyms ?? []) {
           const alt = matchGermanMeaning(typed, entry.de);
           if (alt.ok) return alt;
         }
         return primary;
       }
-      return learnEn
+      return meaningIsGerman
         ? matchGermanSentence(typed, displayEnglish)
         : isWordItem
           ? matchEnglishMeaning(typed, displayEnglish)
           : matchEnglish(typed, displayEnglish);
     },
-    [displayEnglish, isWordItem, item.synonyms, learnEn]
+    [displayEnglish, isWordItem, item.synonyms, meaningIsGerman]
   );
   const recallTargetResult = useMemo(
     () => matchEither(recallTargetInput),
@@ -1739,17 +1796,17 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // the answer is German — each direction gets its own synonym/coach matcher.
   const shownEnglish = useMemo(
     () => isWordItem
-      ? learnEn ? primaryGermanMeaning(displayEnglish) : primaryEnglishMeaning(displayEnglish)
+      ? meaningIsGerman ? primaryGermanMeaning(displayEnglish) : primaryEnglishMeaning(displayEnglish)
       : primaryAnswer(displayEnglish),
-    [displayEnglish, isWordItem, learnEn]
+    [displayEnglish, isWordItem, meaningIsGerman]
   );
   const meaningSelectPool = useMemo(
     () => translationChoicePool.map((value) => {
-      const displayValue = learnEn ? value : formatEnglishText(value, englishVariant);
+      const displayValue = meaningIsGerman ? value : formatEnglishText(value, englishVariant);
       if (!isWordItem) return primaryAnswer(displayValue);
-      return learnEn ? primaryGermanMeaning(displayValue) : primaryEnglishMeaning(displayValue);
+      return meaningIsGerman ? primaryGermanMeaning(displayValue) : primaryEnglishMeaning(displayValue);
     }),
-    [translationChoicePool, learnEn, englishVariant, isWordItem]
+    [translationChoicePool, meaningIsGerman, englishVariant, isWordItem]
   );
   const meaningSelectChoices = useMemo(
     () => buildListeningChoices(shownEnglish, meaningSelectPool, 3),
@@ -1776,7 +1833,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     () => matchMeaning(recallBothMeaningInput),
     [recallBothMeaningInput, matchMeaning]
   );
-  const meaningLang = learnEn
+  const meaningLang = meaningIsGerman
     ? "de-DE"
     : resolveEnglishVariant(englishVariant) === "american" ? "en-US" : "en-GB";
   // Gap stage: the typed answer just needs to contain each missing word
@@ -1793,7 +1850,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // French companion: tested as an extra phase when enabled and the item has French
   // — only in the German-learning direction.
   const companion = useMemo(() => getCompanion(), []);
-  const hasFr = companion === "fr" && !learnEn && typeof item.fr === "string" && item.fr.trim().length > 0;
+  const hasFr = companion === "fr" && targetIsGermanCourse && typeof item.fr === "string" && item.fr.trim().length > 0;
   const frResult = useMemo(() => match(frInput, item.fr ?? ""), [frInput, item.fr]);
   const memDeResult = useMemo(() => matchEither(memDeInput), [memDeInput, matchEither]);
   const memFrResult = useMemo(() => match(memFrInput, item.fr ?? ""), [memFrInput, item.fr]);
@@ -2879,18 +2936,25 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         </div>
       )}
 
-        {/* Register (du/Sie) + usage context — the German lives in item.en when learning English */}
+        {/* Register (du/Sie) + usage context. The chip is read off the GERMAN,
+            which moves about: learning English puts it in item.en, and a French
+            card keeps it in originalDe. Handing this the French instead would
+            not merely find nothing — "Je voudrais du pain" contains the token
+            "du", and a German register detector would call it informal on the
+            strength of a French partitive article. The register itself still
+            applies, because the French was translated to match it. */}
         {phase !== "MeaningPick" && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && !isClosedBookPhase(phase) && (
           <UsageChips
-            de={learnEn ? item.en : item.de}
+            de={learnFr ? String(item.originalDe ?? "") : learnEn ? item.en : item.de}
             use={item.use ? formatEnglishText(item.use, englishVariant) : item.use}
-            lookup={item.lookup}
+            // The synonym note names other GERMAN words for the same thing.
+            lookup={learnFr ? undefined : item.lookup}
             tierNote={item.tierNote ? formatEnglishText(item.tierNote, englishVariant) : item.tierNote}
-            short={learnEn ? undefined : item.short}
-            shortLabel={learnEn ? undefined : item.shortLabel}
-            long={learnEn || phase === "Read" ? undefined : item.long}
+            short={targetIsGermanCourse ? item.short : undefined}
+            shortLabel={targetIsGermanCourse ? item.shortLabel : undefined}
+            long={targetIsGermanCourse && phase !== "Read" ? item.long : undefined}
             hideUse={phase === "Translate" || phase === "TranslateAgain"}
-            synonyms={item.synonyms}
+            synonyms={targetIsGermanCourse ? item.synonyms : undefined}
           />
         )}
 
@@ -2966,7 +3030,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
             </div>
             <div className="fs-trow">
-              <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+              <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
               <p>{shownEnglish}</p>
             </div>
           </>
@@ -3061,13 +3125,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <AnimatePresence>
               {phase !== "Read" && phase !== "Translate" && phase !== "TranslateAgain" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
-                  <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+                  <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
                   <p>{shownEnglish}</p>
                 </motion.div>
               )}
               {(phase === "Translate" || phase === "TranslateAgain") && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
-                  <span className="fs-chip">{learnEn ? "DE" : "EN"}</span>
+                  <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
                   <p className="text-sm">
                     {uiIsGerman() ? `Was bedeutet das auf ${ui(meaningLabel)}?` : `What does this mean in ${meaningLabel}?`}
                   </p>
@@ -3375,11 +3439,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     </button>
                   </div>
                 </motion.div>
-                {!learnEn && (
-                  <div className="fs-charsrow">
-                    <CharBar onInsert={(character) => insertAt(listeningInputRef.current, character, setListeningInput)} />
-                  </div>
-                )}
+                <AccentRow language={targetLanguage} onInsert={(character) => insertAt(listeningInputRef.current, character, setListeningInput)} />
 
                 <AnimatePresence>
                   {listeningTypeChecked && (
@@ -3664,7 +3724,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </button>
               </div>
             </motion.div>
-            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} /></div>}
+            <AccentRow language={targetLanguage} onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} />
             {!(sayChecked && sayResult.ok) && (
               <RecallHelp key={`${item.id}-write-${phase}`} answer={item.de} />
             )}
@@ -3748,7 +3808,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </button>
               </div>
             </motion.div>
-            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallTargetRef.current, character, setRecallTargetInput)} /></div>}
+            <AccentRow language={targetLanguage} onInsert={(character) => insertAt(recallTargetRef.current, character, setRecallTargetInput)} />
             {!(recallTargetChecked && recallTargetResult.ok) && (
               <RecallHelp
                 key={`${item.id}-recall-target`}
@@ -3819,7 +3879,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </button>
               </div>
             </motion.div>
-            {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallMeaningRef.current, character, setRecallMeaningInput)} /></div>}
+            <AccentRow language={meaningLanguage} onInsert={(character) => insertAt(recallMeaningRef.current, character, setRecallMeaningInput)} />
             {!(recallMeaningChecked && recallMeaningResult.ok) && (
               <RecallHelp
                 key={`${item.id}-recall-meaning`}
@@ -3852,10 +3912,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <motion.div key="recall-both" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {ui(
-                learnEn
-                  ? "English is ready to type. You can answer either box first; a correct English answer moves focus to German."
-                  : "German is ready to type. You can answer either box first; a correct German answer moves focus to English."
+              {uiFmt(
+                "{target} is ready to type. You can answer either box first; a correct {target} answer moves focus to {meaning}.",
+                { target: ui(targetLabel), meaning: ui(meaningLabel) }
               )}
             </p>
             <div className="fs-recall-pair">
@@ -3889,7 +3948,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   />
                 </div>
                 <div className="fs-recall-char-slot">
-                  {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothTargetRef.current, character, setRecallBothTargetInput)} /></div>}
+                  <AccentRow language={targetLanguage} onInsert={(character) => insertAt(recallBothTargetRef.current, character, setRecallBothTargetInput)} />
                 </div>
                 {!recallBothTargetReady && (
                   <RecallHelp
@@ -3930,7 +3989,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   />
                 </div>
                 <div className="fs-recall-char-slot">
-                  {learnEn && <div className="fs-charsrow"><CharBar onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} /></div>}
+                  <AccentRow language={meaningLanguage} onInsert={(character) => insertAt(recallBothMeaningRef.current, character, setRecallBothMeaningInput)} />
                 </div>
                 {!(recallBothChecked && recallBothMeaningResult.ok) && (
                   <RecallHelp
@@ -3999,8 +4058,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {phase === "TypeAgain" ? `Type the ${targetLabel} once more — build the memory.`
-                : hasFr ? "Now type the German sentence." : "Now type the sentence exactly."}
+              {/* Both of these were written as bare strings, so a German
+                  interface showed them in English even though the translation
+                  for the second one has been sitting in i18n all along. */}
+              {phase === "TypeAgain"
+                ? uiFmt("Type the {language} once more — build the memory.", { language: ui(targetLabel) })
+                : hasFr ? ui("Now type the German sentence.") : ui("Now type the sentence exactly.")}
             </p>
 
             <motion.div animate={shakeControls}>
@@ -4027,7 +4090,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </button>
               </div>
             </motion.div>
-            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} /></div>}
+            <AccentRow language={targetLanguage} onInsert={c => insertAt(inputRef.current, c, setInput)} />
 
             {/* Feedback */}
             <AnimatePresence>
@@ -4190,7 +4253,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       </button>
                     </div>
                   </motion.div>
-                  {learnEn && <div className="fs-charsrow"><CharBar onInsert={c => insertAt(enInputRef.current, c, setEnInput)} /></div>}
+                  <AccentRow language={meaningLanguage} onInsert={c => insertAt(enInputRef.current, c, setEnInput)} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -4276,7 +4339,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </button>
               </div>
             </motion.div>
-            {!learnEn && <div className="fs-charsrow"><CharBar onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} /></div>}
+            <AccentRow language={targetLanguage} onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} />
             {!(gapChecked && gapResult.ok) && (
               <RecallHelp
                 key={`${item.id}-gap`}
@@ -4327,18 +4390,23 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <div
                 className="fs-order-list"
                 role="group"
-                aria-label={ui(learnEn ? "English words to arrange" : "German words to arrange")}
+                aria-label={ui(WORDS_TO_ARRANGE_LABEL[targetLanguage])}
               >
                 {orderTokens.map((token, tokenIndex) => {
                   // The tiles are shuffled, so where a token sits now says
                   // nothing. What matters is whether it opens the SENTENCE:
                   // any other capital is a noun.
-                  const hoverGloss = learnEn
-                    ? englishWordGloss(token.text)
-                    : germanWordGloss(token.text, {
-                      midSentenceCapital: /^\p{Lu}/u.test(token.text)
-                        && token.text !== String(item.de).trim().split(/\s+/)[0],
-                    });
+                  // A word hover explains the word in the language it is in.
+                  // There is no French glossary, so a French tile carries no
+                  // hover rather than a German one about a French word.
+                  const hoverGloss = learnFr
+                    ? undefined
+                    : learnEn
+                      ? englishWordGloss(token.text)
+                      : germanWordGloss(token.text, {
+                        midSentenceCapital: /^\p{Lu}/u.test(token.text)
+                          && token.text !== String(item.de).trim().split(/\s+/)[0],
+                      });
                   return (
                     <button
                       key={token.id}
@@ -4656,20 +4724,24 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const missingLineHandled = useRef(false);
   const line = lines[lineIdx];
   const isLast = lineIdx >= lines.length - 1;
-  const learnEn = useMemo(() => learningEnglish(), []);
+  const sides = courseSides();
+  const learnEn = sides.target.code === "en";
+  const learnFr = sides.target.code === "fr";
   const result = useMemo(
-    () => learnEn
-      ? matchEnglish(input, line?.de ?? "")
-      : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, line]
+    () => learnFr
+      ? matchFrenchSentence(input, line?.de ?? "")
+      : learnEn
+        ? matchEnglish(input, line?.de ?? "")
+        : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
+    [input, learnEn, learnFr, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.
-  const targetLang = learnEn
-    ? (resolveEnglishVariant(getEnglishVariant()) === "british" ? "en-GB" : "en-US")
-    : "de-DE";
-  const companionFr = useMemo(() => getCompanion() === "fr" && !learnEn, [learnEn]);
+  const targetLang = sides.target.voice;
+  // The companion is the SECOND language beside German. It has nothing to
+  // offer a course whose first language is already French.
+  const companionFr = useMemo(() => getCompanion() === "fr" && sides.target.code === "de", [sides.target.code]);
 
   useEffect(() => {
     if (line?.de) tts(line.de, 0.88, targetLang);
@@ -4821,10 +4893,14 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
         <div className="flex items-start gap-3">
           <div className="h-8 w-8 rounded-full bg-[var(--accent-dim)] flex items-center justify-center text-[11px] font-black text-[var(--accent)] shrink-0">{line.speaker}</div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">Type this in {learnEn ? "English" : "German"}</p>
+            <p className="text-[11px] font-black uppercase tracking-wide text-zinc-400">
+              {uiFmt("Type this in {language}", { language: ui(sides.target.label) })}
+            </p>
             <div className="mt-0.5 text-xl font-black leading-tight tracking-tight text-zinc-950 sm:text-2xl">{line.en}</div>
             <div className="mt-1.5">
-              <UsageChips de={learnEn ? line.en : line.de} />
+              {/* Register is read off the German — see the note on the other
+                  UsageChips. A French line keeps it in originalDe. */}
+              <UsageChips de={learnFr ? String(line.originalDe ?? "") : learnEn ? line.en : line.de} />
             </div>
             {companionFr && line.fr && (
               <div className="mt-1 text-sm font-black tracking-tight text-[var(--accent)]">
@@ -4848,7 +4924,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
           onKeyDown={e => e.key === "Enter" && (checked && result.ok ? nextLine() : checkLine())}
           disabled={checked && result.ok}
         />
-        {!learnEn && <CharBar onInsert={c => insertAt(inputRef.current, c, setInput)} />}
+        <AccentKeys language={sides.target.code} onInsert={c => insertAt(inputRef.current, c, setInput)} />
         {!(checked && result.ok) && (
           <RecallHelp key={`${lineGradeId}-dialogue`} answer={line.de} />
         )}
@@ -5238,32 +5314,38 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
 // Section
 type SessionPreviewCard = {
   id: string;
-  german: string;
-  english: string;
+  /** The language being learned — item.de, whichever language that now is. */
+  target: string;
+  /** What it means, in the learner's own language — item.en after the swap. */
+  meaning: string;
   use?: string;
   review: boolean;
 };
 
 function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
-  const learnEn = learningEnglish();
+  const sides = courseSides();
   const englishVariant = getEnglishVariant();
   const seen = new Set<string>();
   const cards: SessionPreviewCard[] = [];
 
   for (const step of steps) {
     if (step?.type !== "sentence" || !step.item) continue;
-    const german = String(learnEn ? step.item.en : step.item.de).trim();
-    const englishSource = String(learnEn ? step.item.de : step.item.en).trim();
-    const english = formatEnglishText(englishSource, englishVariant);
-    if (!german || !english) continue;
-    const keys = matchingVisibleKeys(german, english);
+    // The swap has already run, so the target is item.de and the meaning is
+    // item.en in every course. The spelling variant applies to whichever of
+    // the two is English, which is not always the same one.
+    const rawTarget = String(step.item.de ?? "").trim();
+    const rawMeaning = String(step.item.en ?? "").trim();
+    const target = sides.target.code === "en" ? formatEnglishText(rawTarget, englishVariant) : rawTarget;
+    const meaning = sides.meaning.code === "en" ? formatEnglishText(rawMeaning, englishVariant) : rawMeaning;
+    if (!target || !meaning) continue;
+    const keys = matchingVisibleKeys(target, meaning);
     if (keys.length !== 2 || keys.some((key) => seen.has(key))) continue;
     keys.forEach((key) => seen.add(key));
     const key = keys.join("\u0000");
     cards.push({
       id: String(step.item.id ?? key),
-      german,
-      english,
+      target,
+      meaning,
       use: step.item.use ? formatEnglishText(step.item.use, englishVariant) : step.item.use,
       review: Boolean(step.review),
     });
@@ -5356,7 +5438,7 @@ function SessionFlashcardPreview({
 }) {
   const card = cards[Math.min(index, cards.length - 1)];
   const isLast = index === cards.length - 1;
-  const englishVoice = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
+  const sides = courseSides();
 
   // One way in for every bit of speech on this screen. tts() already no-ops
   // when muted and stops whatever was playing, so rapid taps don't stack.
@@ -5398,16 +5480,15 @@ function SessionFlashcardPreview({
   // only speaks the side actually facing them — and it speaks the TARGET
   // language, which for a German speaker learning English is the English.
   useEffect(() => {
-    const learnEnglish = learningEnglish();
-    const spoken = learnEnglish ? card?.english : card?.german;
+    const spoken = card?.target;
     if (!spoken) return;
     const showingTarget = mode !== "flip"
       ? true
       : face === "target" ? !flipped : flipped;
     if (!showingTarget) return;
-    const timer = window.setTimeout(() => speak(spoken, learnEnglish ? englishVoice : "de-DE"), 180);
+    const timer = window.setTimeout(() => speak(spoken, sides.target.voice), 180);
     return () => window.clearTimeout(timer);
-  }, [card?.id, card?.german, card?.english, englishVoice, mode, face, flipped]);
+  }, [card?.id, card?.target, sides.target.voice, mode, face, flipped]);
 
   // In the two-language layout the sentence remains a generous speech target.
   // On a flip card, a sentence click belongs to the card itself; the dedicated
@@ -5440,13 +5521,11 @@ function SessionFlashcardPreview({
       </button>
     </div>
   );
-  const germanRow = () => languageRow("German", card.german, "de-DE", "de");
-  const englishRow = () => languageRow("English", card.english, englishVoice, "en");
   // "Target" means the language being LEARNED, which is not always German. A
   // German speaker learning English was shown the German side first with the
   // English hidden behind the flip — the card testing her on her own language.
-  const targetRow = () => (learningEnglish() ? englishRow() : germanRow());
-  const meaningRow = () => (learningEnglish() ? germanRow() : englishRow());
+  const targetRow = () => languageRow(sides.target.label, card.target, sides.target.voice, sides.target.htmlLang);
+  const meaningRow = () => languageRow(sides.meaning.label, card.meaning, sides.meaning.voice, sides.meaning.htmlLang);
   const frontSide = face === "target" ? targetRow() : meaningRow();
   const backSide = face === "target" ? meaningRow() : targetRow();
 
@@ -5490,7 +5569,7 @@ function SessionFlashcardPreview({
           <p className="fs-sub">{ui("Review both languages before sentence practice.")}</p>
           <div className="fs-preview-summary" aria-label={ui("Lesson preview")}>
             <span><BookOpen className="h-4 w-4" />{cards.length} {ui("Phrases")}</span>
-            <span><Languages className="h-4 w-4" />{ui("German")} + {ui("English")}</span>
+            <span><Languages className="h-4 w-4" />{ui(sides.target.label)} + {ui(sides.meaning.label)}</span>
           </div>
         </div>
         <span className="fs-preview-count">
@@ -5570,11 +5649,11 @@ function SessionFlashcardPreview({
               />
             ) : (
               <>
-                {germanRow()}
+                {targetRow()}
                 <div className="fs-flashcard-divider" aria-hidden>
                   <span>{ui("means")}</span>
                 </div>
-                {englishRow()}
+                {meaningRow()}
               </>
             )}
           </div>
@@ -5617,20 +5696,21 @@ function SessionFlashcardPreview({
   );
 }
 
-type MatchDirection = "en-de" | "de-en";
+/** Which column is read first — the meaning, or the language being learned. */
+type MatchDirection = "meaning-target" | "target-meaning";
 type MatchingItem = SessionPreviewCard & { matchId: string };
 
 function buildMatchingItems(cards: SessionPreviewCard[]): MatchingItem[] {
   const safeCards = takeMatchingSafe(
     cards,
     cards.length,
-    (card) => ({ german: card.german, english: card.english })
+    (card) => ({ german: card.target, english: card.meaning })
   );
   return safeCards.map((card, index) => ({
     ...card,
     matchId: `${card.id}-${index}`,
-    german: primaryAnswer(card.german),
-    english: primaryAnswer(card.english),
+    target: primaryAnswer(card.target),
+    meaning: primaryAnswer(card.meaning),
   }));
 }
 
@@ -5661,8 +5741,12 @@ function SessionMatchingPairs({
   onComplete: () => void;
 }) {
   const items = useMemo(() => buildMatchingItems(cards), [cards]);
+  const sides = courseSides();
+  // Start from the learner's own language, which is the easier way round —
+  // except in the English course, which opened the other way before this and
+  // keeps doing so.
   const [direction, setDirection] = useState<MatchDirection>(
-    () => learningEnglish() ? "de-en" : "en-de"
+    () => learningEnglish() ? "target-meaning" : "meaning-target"
   );
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [targetId, setTargetId] = useState<string | null>(null);
@@ -5675,10 +5759,11 @@ function SessionMatchingPairs({
     () => shuffledMatchTargets(items, direction),
     [items, direction]
   );
-  const sourceLanguage = direction === "en-de" ? "English" : "German";
-  const targetLanguage = direction === "en-de" ? "German" : "English";
-  const sourceText = (item: MatchingItem) => direction === "en-de" ? item.english : item.german;
-  const targetText = (item: MatchingItem) => direction === "en-de" ? item.german : item.english;
+  const readingMeaningFirst = direction === "meaning-target";
+  const sourceSide = readingMeaningFirst ? sides.meaning : sides.target;
+  const targetSide = readingMeaningFirst ? sides.target : sides.meaning;
+  const sourceText = (item: MatchingItem) => readingMeaningFirst ? item.meaning : item.target;
+  const targetText = (item: MatchingItem) => readingMeaningFirst ? item.target : item.meaning;
   const complete = items.length > 0 && matchedIds.size === items.length;
 
   useEffect(() => {
@@ -5728,9 +5813,9 @@ function SessionMatchingPairs({
   // was silent, so the one screen where you meet both sides of a phrase gave
   // you no idea how either of them sounds. tts() already no-ops when muted and
   // cancels whatever was playing, so tapping down a column doesn't stack up.
-  const speakCard = (text: string, language: string) => {
+  const speakCard = (text: string, voice: string) => {
     if (!text) return;
-    void tts(text, 0.95, language === "German" ? "de-DE" : "en-US").catch(() => {
+    void tts(text, 0.95, voice).catch(() => {
       /* a missing voice must never block the match itself */
     });
   };
@@ -5738,7 +5823,7 @@ function SessionMatchingPairs({
   const selectSource = (matchId: string) => {
     if (resolving || matchedIds.has(matchId)) return;
     const item = items.find((candidate) => candidate.matchId === matchId);
-    if (item) speakCard(sourceText(item), sourceLanguage);
+    if (item) speakCard(sourceText(item), sourceSide.voice);
     setSourceId(matchId);
     if (targetId) checkPair(matchId, targetId);
   };
@@ -5746,7 +5831,7 @@ function SessionMatchingPairs({
   const selectTarget = (matchId: string) => {
     if (resolving || matchedIds.has(matchId)) return;
     const item = items.find((candidate) => candidate.matchId === matchId);
-    if (item) speakCard(targetText(item), targetLanguage);
+    if (item) speakCard(targetText(item), targetSide.voice);
     setTargetId(matchId);
     if (sourceId) checkPair(sourceId, matchId);
   };
@@ -5763,34 +5848,34 @@ function SessionMatchingPairs({
         <div className="fs-match-direction" role="group" aria-label={ui("Matching direction")}>
           <button
             type="button"
-            aria-pressed={direction === "en-de"}
-            className={direction === "en-de" ? "is-active" : undefined}
-            onClick={() => resetRound("en-de")}
+            aria-pressed={readingMeaningFirst}
+            className={readingMeaningFirst ? "is-active" : undefined}
+            onClick={() => resetRound("meaning-target")}
           >
-            <span>EN</span>
+            <span>{sides.meaning.code.toUpperCase()}</span>
             <ArrowRight className="h-3.5 w-3.5" />
-            <span>DE</span>
-            <small>{ui("English to German")}</small>
+            <span>{sides.target.code.toUpperCase()}</span>
+            <small>{uiFmt("{from} to {to}", { from: ui(sides.meaning.label), to: ui(sides.target.label) })}</small>
           </button>
           <button
             type="button"
-            aria-pressed={direction === "de-en"}
-            className={direction === "de-en" ? "is-active" : undefined}
-            onClick={() => resetRound("de-en")}
+            aria-pressed={!readingMeaningFirst}
+            className={!readingMeaningFirst ? "is-active" : undefined}
+            onClick={() => resetRound("target-meaning")}
           >
-            <span>DE</span>
+            <span>{sides.target.code.toUpperCase()}</span>
             <ArrowRight className="h-3.5 w-3.5" />
-            <span>EN</span>
-            <small>{ui("German to English")}</small>
+            <span>{sides.meaning.code.toUpperCase()}</span>
+            <small>{uiFmt("{from} to {to}", { from: ui(sides.target.label), to: ui(sides.meaning.label) })}</small>
           </button>
         </div>
       </div>
 
       <div className="fs-match-board">
         <div className="fs-match-column-head">
-          <span>{ui(sourceLanguage)}</span>
+          <span>{ui(sourceSide.label)}</span>
           <ArrowLeftRight className="h-4 w-4" />
-          <span>{ui(targetLanguage)}</span>
+          <span>{ui(targetSide.label)}</span>
         </div>
 
         <div className="fs-match-grid">

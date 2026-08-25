@@ -38,20 +38,27 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // French is the third course made of this same material. The app holds
+  // German↔French translations for around a third of the catalogue — some
+  // written inline on the entry, the rest in frenchTranslations.ts — and the
+  // course is NARROWED to those rather than served with two cards in three
+  // blank. What is left is roughly seven thousand words, phrases and dialogue
+  // lines, all of which have an answer. See frenchCourse.ts.
+  {
+    id: "french",
+    kind: "language",
+    name: "French",
+    tagline: "Read, listen, type and translate real French.",
+    icon: "🇫🇷",
+    available: true,
+    builtIn: true,
+  },
   {
     id: "spanish",
     kind: "language",
     name: "Spanish",
     tagline: "Coming soon.",
     icon: "🇪🇸",
-    available: false,
-  },
-  {
-    id: "french",
-    kind: "language",
-    name: "French",
-    tagline: "Coming soon.",
-    icon: "🇫🇷",
     available: false,
   },
   // Everything else people might come looking for. Listed, searchable and
@@ -79,10 +86,10 @@ const PLANNED_IDS = new Set(PLANNED_LANGUAGES.map((language) => language.id));
 /**
  * Which language rows the picker draws before anyone asks for more.
  *
- * Eighty-four of the eighty-seven say Coming soon, and drawing all of them
- * cost 123 ms of render on every open — 12,324px of list inside a window that
- * shows about six hundred. So the ones that can be chosen, plus the two
- * written out by hand with their own flags, are drawn straight away and the
+ * All but a handful of the eighty-eight say Coming soon, and drawing all of
+ * them cost 123 ms of render on every open — 12,324px of list inside a window
+ * that shows about six hundred. So the ones that can be chosen, plus the one
+ * written out by hand with its own flag, are drawn straight away and the
  * catalogue waits to be asked for.
  *
  * Searching overrides that completely, because finding your language is the

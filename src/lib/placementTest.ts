@@ -1,4 +1,5 @@
 import { orderParts } from "@/lib/curriculum";
+import type { LearningDirection } from "@/lib/direction";
 
 /**
  * A placement test that keeps going while you keep being right.
@@ -22,7 +23,7 @@ import { orderParts } from "@/lib/curriculum";
  */
 
 export type Cefr = "A1" | "A2" | "B1" | "B2" | "C1";
-export type PlacementDirection = "learn-de" | "learn-en";
+export type PlacementDirection = LearningDirection;
 
 export const PLACEMENT_LEVELS: Cefr[] = ["A1", "A2", "B1", "B2", "C1"];
 
@@ -157,8 +158,72 @@ const EN: PlacementQuestion[] = [
   q("en-c1-8", "C1", "What does this mean?", "with the benefit of hindsight", ["im Nachhinein betrachtet", "mit gutem Willen", "mit Weitblick", "zum Vorteil aller"], 0, "hindsight — understanding after the event."),
 ];
 
+// ── Learning French ─────────────────────────────────────────────────────────
+//
+// Every option here is FRENCH, which the other two banks are not: the German
+// bank answers in English and the English one answers in German, because each
+// knows what its learner already speaks. The French course does not — it is
+// taken by German speakers and English speakers both, and its meaning column
+// follows the interface language. A bank written in either of them would be
+// unanswerable for half the people sitting it, so the questions ask about
+// French from inside French: which form is right, and which word means the
+// same thing. That is also how the real French placement tests are written.
+const FR: PlacementQuestion[] = [
+  // A1
+  q("fr-a1-1", "A1", "Which is correct?", "___ m'appelle Marie.", ["Je", "Tu", "Il", "Nous"], 0, "Je m'appelle — the verb form goes with je."),
+  q("fr-a1-2", "A1", "What does this mean?", "Bonsoir", ["le soir", "le matin", "la nuit", "à midi"], 0, "Bonsoir is the evening greeting; bonjour covers the rest of the day."),
+  q("fr-a1-3", "A1", "Which article does it take?", "___ maison", ["la", "le", "les", "du"], 0, "Maison is feminine: la maison."),
+  q("fr-a1-4", "A1", "Which is correct?", "Nous ___ français.", ["parlons", "parlez", "parle", "parlent"], 0, "-ons is the nous ending of an -er verb."),
+  q("fr-a1-5", "A1", "What does this mean?", "merci beaucoup", ["un grand merci", "de rien", "s'il te plaît", "au revoir"], 0, "beaucoup makes the thanks bigger, not the reply to it."),
+  q("fr-a1-6", "A1", "Which is correct?", "Il ___ trois chats.", ["a", "as", "ai", "ont"], 0, "il a — third person singular of avoir."),
+  q("fr-a1-7", "A1", "What is the number?", "quarante-deux", ["42", "24", "52", "72"], 0, "quarante = 40, deux = 2."),
+  q("fr-a1-8", "A1", "Which is correct?", "Elle habite ___ Paris.", ["à", "en", "au", "dans le"], 0, "à before a city; en and au are for countries."),
+
+  // A2
+  q("fr-a2-1", "A2", "Which is correct?", "Hier, je ___ au cinéma.", ["suis allé", "ai allé", "vais", "serai allé"], 0, "aller takes être in the passé composé."),
+  q("fr-a2-2", "A2", "Which preposition?", "Je pense ___ toi.", ["à", "de", "en", "pour"], 0, "penser à quelqu'un — to have someone in mind."),
+  q("fr-a2-3", "A2", "What does this mean?", "avoir envie de", ["vouloir", "devoir", "pouvoir", "oublier"], 0, "avoir envie de — to feel like, to want."),
+  q("fr-a2-4", "A2", "Which is correct?", "Ce sont ___ amies.", ["mes", "mon", "ma", "me"], 0, "A plural noun takes the plural possessive."),
+  q("fr-a2-5", "A2", "Which is correct?", "Je n'ai ___ compris.", ["rien", "personne", "aucun", "nulle part"], 0, "ne … rien for a thing; personne is for a person."),
+  q("fr-a2-6", "A2", "What is the past tense?", "je prends", ["j'ai pris", "j'ai prendu", "j'ai prené", "je prenais pris"], 0, "prendre has the irregular participle pris."),
+  q("fr-a2-7", "A2", "Which is correct?", "Elle est plus grande ___ moi.", ["que", "de", "comme", "à"], 0, "plus … que is the comparison."),
+  q("fr-a2-8", "A2", "What does this mean?", "tout de suite", ["immédiatement", "plus tard", "parfois", "rarement"], 0, "tout de suite — right away."),
+
+  // B1
+  q("fr-b1-1", "B1", "Which is correct?", "Il faut que tu ___ là à huit heures.", ["sois", "es", "seras", "étais"], 0, "il faut que takes the subjunctive."),
+  q("fr-b1-2", "B1", "What does this mean?", "ça vaut le coup", ["ça en vaut la peine", "ça coûte cher", "c'est un coup de chance", "c'est raté"], 0, "valoir le coup — to be worth it."),
+  q("fr-b1-3", "B1", "Which is correct?", "Les fleurs que j'ai ___ sont belles.", ["achetées", "acheté", "achetés", "achetée"], 0, "With avoir the participle agrees with a direct object that comes first."),
+  q("fr-b1-4", "B1", "Which preposition?", "Je m'occupe ___ ça.", ["de", "à", "en", "pour"], 0, "s'occuper de — to take care of."),
+  q("fr-b1-5", "B1", "What does this mean?", "faire la grasse matinée", ["dormir tard", "prendre un gros petit-déjeuner", "travailler le matin", "sauter un repas"], 0, "It is about a long lie-in, not about breakfast."),
+  q("fr-b1-6", "B1", "Which is correct?", "Si j'avais le temps, je ___ plus souvent.", ["viendrais", "viendrai", "venais", "serais venu"], 0, "si + imparfait pairs with the conditional."),
+  q("fr-b1-7", "B1", "Which is correct?", "C'est le livre ___ je t'ai parlé.", ["dont", "que", "qui", "lequel"], 0, "parler DE quelque chose, so the relative pronoun is dont."),
+  q("fr-b1-8", "B1", "What does this mean?", "du coup", ["donc", "d'un seul coup", "malgré tout", "en revanche"], 0, "du coup is the spoken so/therefore."),
+
+  // B2
+  q("fr-b2-1", "B2", "Which is correct?", "Bien qu'il ___ tard, ils continuent.", ["soit", "est", "sera", "était"], 0, "bien que takes the subjunctive."),
+  q("fr-b2-2", "B2", "What does this mean?", "tirer les vers du nez à quelqu'un", ["lui soutirer des informations", "le soigner", "le taquiner", "le dénoncer"], 0, "It is getting someone to talk, question by question."),
+  q("fr-b2-3", "B2", "Which is correct?", "Je m'attendais à ce qu'il ___.", ["vienne", "vient", "viendra", "venait"], 0, "à ce que takes the subjunctive."),
+  q("fr-b2-4", "B2", "Which is the passive?", "On a annulé le concert.", ["Le concert a été annulé.", "Le concert s'est annulé.", "Le concert est en annulation.", "On est annulé le concert."], 0, "être + past participle, agreeing with the subject."),
+  q("fr-b2-5", "B2", "What does this mean?", "quitte à", ["au risque de", "à condition de", "à part", "en partant de"], 0, "quitte à — even if it means."),
+  q("fr-b2-6", "B2", "Which is correct?", "___ que je sache, personne n'a appelé.", ["Autant", "Tant", "Aussi", "Si loin"], 0, "autant que je sache — as far as I know."),
+  q("fr-b2-7", "B2", "What does this mean?", "revoir sa copie", ["reprendre son travail depuis le début", "relire une lettre", "copier sur quelqu'un", "changer d'avis d'un coup"], 0, "The plan goes back to the drawing board."),
+  q("fr-b2-8", "B2", "Which is correct?", "Il est parti sans que je m'en ___.", ["rende compte", "rends compte", "rendrai compte", "rendais compte"], 0, "sans que takes the subjunctive."),
+
+  // C1
+  q("fr-c1-1", "C1", "What does this mean?", "battre en brèche", ["réfuter", "renforcer", "contourner", "abattre un mur"], 0, "battre en brèche — to demolish an argument."),
+  q("fr-c1-2", "C1", "Which is correct?", "Encore ___ le dossier soit complet.", ["faut-il que", "il faut que", "faut que", "faudrait-il"], 0, "Encore fronted forces the inversion faut-il."),
+  q("fr-c1-3", "C1", "What does this mean?", "prêcher le faux pour savoir le vrai", ["dire une contre-vérité pour faire réagir", "mentir par habitude", "défendre une cause perdue", "faire un sermon"], 0, "You float something wrong so the other person corrects you."),
+  q("fr-c1-4", "C1", "Which is correct?", "Il n'est pas exclu qu'elle ___ déjà partie.", ["soit", "est", "serait", "était"], 0, "il n'est pas exclu que takes the subjunctive."),
+  q("fr-c1-5", "C1", "What does this mean?", "avoir maille à partir avec quelqu'un", ["avoir un différend avec lui", "partager quelque chose avec lui", "s'en aller avec lui", "lui devoir de l'argent"], 0, "maille here is an old coin, not a stitch — it is a quarrel."),
+  q("fr-c1-6", "C1", "Which is correct?", "___ eu plus de temps, nous aurions terminé.", ["Eussions-nous", "Aurions-nous", "Ayons-nous", "Serions-nous"], 0, "The literary conditional inverts the pluperfect subjunctive."),
+  q("fr-c1-7", "C1", "What does this mean?", "à l'aune de", ["à la mesure de", "à la place de", "au lieu de", "à l'écart de"], 0, "An aune was a measuring rod; the phrase means measured against."),
+  q("fr-c1-8", "C1", "Which is correct?", "Les mesures qu'il a ___ prendre étaient impopulaires.", ["dû", "dues", "due", "dus"], 0, "dû before an infinitive stays invariable."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
-  return direction === "learn-en" ? EN : DE;
+  if (direction === "learn-en") return EN;
+  if (direction === "learn-fr") return FR;
+  return DE;
 }
 
 export function placementRound(

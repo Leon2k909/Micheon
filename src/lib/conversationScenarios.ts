@@ -1,4 +1,6 @@
 import { conversationPriorityScore } from "@/lib/conversationPriority";
+import { courseSides } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 
 /**
@@ -61,6 +63,13 @@ const LEARNER_SIDE = "B";
 export const MIN_SCENARIO_TURNS = 4;
 
 export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
+  // The dialogues are German with an English line under each one. The French
+  // course reads the same exchanges with the French on top — an exchange one
+  // of whose turns the tables do not reach is left out, because a conversation
+  // that changes language halfway through is not one.
+  const sides = courseSides();
+  const french = sides.target.code === "fr";
+  const meaningIsGerman = sides.meaning.code === "de";
   const scenarios: Scenario[] = [];
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
     const dialogues: RawDialogue[] = (part as any)?.dialogues ?? [];
@@ -72,10 +81,12 @@ export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
         const de = String(line?.de ?? "").trim();
         const en = String(line?.en ?? "").trim();
         if (!de || !en) { turns.length = 0; break; }
+        const translated = french ? frenchFor(de, line?.fr) : null;
+        if (french && !translated) { turns.length = 0; break; }
         turns.push({
           side: String(line?.speaker ?? "").toUpperCase() === LEARNER_SIDE ? "you" : "them",
-          de,
-          en,
+          de: translated ?? de,
+          en: french && meaningIsGerman ? de : en,
           fr: line?.fr ? String(line.fr) : undefined,
         });
       }

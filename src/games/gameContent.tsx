@@ -15,6 +15,8 @@ import {
   getLearningDirection,
   type LearningDirection,
 } from "@/lib/direction";
+import { courseSides, type CourseLanguage, type VoiceTag } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { buildWordCatalog } from "@/lib/wordSession";
@@ -49,11 +51,11 @@ const FALLBACK_ITEMS: CatalogItem[] = [
 
 export type GameContentEntry = CatalogItem & {
   clue: string;
-  clueLanguage: "de" | "en";
+  clueLanguage: CourseLanguage;
   letters: string[];
   target: string;
-  targetLanguage: "de" | "en";
-  targetLocale: "de-DE" | "en-GB" | "en-US";
+  targetLanguage: CourseLanguage;
+  targetLocale: VoiceTag;
 };
 
 /**
@@ -75,12 +77,12 @@ export type GameWordEntry = {
   article?: string;
   /** The other language, shown as the clue. */
   clue: string;
-  clueLanguage: "de" | "en";
+  clueLanguage: CourseLanguage;
   letters: string[];
   /** The catalogue's own form ("der Apfel"), which is what progress is keyed on. */
   de: string;
   target: string;
-  targetLocale: "de-DE" | "en-GB" | "en-US";
+  targetLocale: VoiceTag;
 };
 
 type GameContentContextValue = {
@@ -110,7 +112,8 @@ function buildGameEntries(
   const catalog = buildCatalog(apiParts);
   const source = catalog.length > 0 ? catalog : FALLBACK_ITEMS;
   const seen = new Set<string>();
-  const learnsEnglish = learningDirection === "learn-en";
+  const sides = courseSides(learningDirection);
+  const learnsFrench = sides.target.code === "fr";
   const entries: GameContentEntry[] = [];
 
   for (const item of source) {
@@ -122,20 +125,26 @@ function buildGameEntries(
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const target = learnsEnglish ? en : de;
+    // The catalogue is German either way round, so the French course looks its
+    // target up rather than reading it off the entry. A sentence with no
+    // French cannot be played in this course and leaves the pool.
+    const french = learnsFrench ? frenchFor(de, (item as { fr?: string }).fr) : null;
+    if (learnsFrench && !french) continue;
+
+    const target = french ?? (sides.target.code === "en" ? en : de);
     const letters = gameLetters(target);
     if (letters.length === 0) continue;
 
     entries.push({
       ...item,
-      clue: learnsEnglish ? de : en,
-      clueLanguage: learnsEnglish ? "de" : "en",
+      clue: sides.meaning.code === "de" ? de : en,
+      clueLanguage: sides.meaning.code,
       de,
       en,
       letters,
       target,
-      targetLanguage: learnsEnglish ? "en" : "de",
-      targetLocale: learnsEnglish ? englishVoiceLang() : "de-DE",
+      targetLanguage: sides.target.code,
+      targetLocale: sides.target.voice,
     });
   }
 
@@ -144,6 +153,10 @@ function buildGameEntries(
 
 const LEADING_ARTICLE = /^(der|die|das)\s+/i;
 const LEADING_INFINITIVE = /^to\s+/i;
+// French nouns are taught with their article, and a spelling board asking for
+// LECHIEN would be asking for two words. Elision counts as an article too:
+// l'été is one article and one word, with no space between them.
+const LEADING_FRENCH_ARTICLE = /^(le|la|les|un|une|l['’])\s*/i;
 
 /**
  * The longest word worth spelling on a twenty-column board.
@@ -158,7 +171,9 @@ export function buildGameWords(
   apiParts: Record<string, unknown>,
   learningDirection: LearningDirection
 ): GameWordEntry[] {
-  const learnsEnglish = learningDirection === "learn-en";
+  const sides = courseSides(learningDirection);
+  const learnsEnglish = sides.target.code === "en";
+  const learnsFrench = sides.target.code === "fr";
   const seen = new Set<string>();
   const words: GameWordEntry[] = [];
 
@@ -167,14 +182,19 @@ export function buildGameWords(
     const en = primaryVariant(String((word as { en?: unknown })?.en ?? ""));
     if (!de || !en) continue;
 
+    const french = learnsFrench ? frenchFor(de) : null;
+    if (learnsFrench && !french) continue;
+
     const article = LEADING_ARTICLE.exec(de);
     const bareDe = article ? de.slice(article[0].length).trim() : de;
     // "to go" is one word wearing an infinitive marker; the marker is English
     // grammar, not part of the spelling.
     const bareEn = en.replace(LEADING_INFINITIVE, "").trim();
+    const frenchArticle = french ? LEADING_FRENCH_ARTICLE.exec(french) : null;
+    const bareFr = french && frenchArticle ? french.slice(frenchArticle[0].length).trim() : french;
 
-    const target = learnsEnglish ? bareEn : bareDe;
-    const clue = learnsEnglish ? de : en;
+    const target = learnsFrench ? (bareFr ?? "") : learnsEnglish ? bareEn : bareDe;
+    const clue = sides.meaning.code === "de" ? de : en;
 
     // One token only. "sich freuen" spelled SICHFREUEN reads as a typo rather
     // than a word, and the space is gone by the time it reaches the board.
@@ -189,13 +209,15 @@ export function buildGameWords(
     words.push({
       id: String((word as { id?: unknown })?.id ?? key),
       spelling: target,
-      article: !learnsEnglish && article ? article[1].toLowerCase() : undefined,
+      article: learnsFrench
+        ? frenchArticle?.[1].toLowerCase()
+        : !learnsEnglish && article ? article[1].toLowerCase() : undefined,
       clue,
-      clueLanguage: learnsEnglish ? "de" : "en",
+      clueLanguage: sides.meaning.code,
       letters,
       de,
       target,
-      targetLocale: learnsEnglish ? englishVoiceLang() : "de-DE",
+      targetLocale: sides.target.voice,
     });
   }
 
@@ -213,10 +235,9 @@ export function GameContentProvider({
   const learningMode = useLearningMode();
 
   useEffect(() => {
-    const updateDirection = (event: Event) => {
-      const next = (event as CustomEvent<LearningDirection>).detail;
-      setLearningDirection(next === "learn-en" ? "learn-en" : "learn-de");
-    };
+    // Read back rather than trusting the event payload, so a direction the
+    // listener has not heard of cannot quietly become German.
+    const updateDirection = () => setLearningDirection(getLearningDirection());
     window.addEventListener(DIRECTION_CHANGE_EVENT, updateDirection);
     return () => window.removeEventListener(DIRECTION_CHANGE_EVENT, updateDirection);
   }, []);

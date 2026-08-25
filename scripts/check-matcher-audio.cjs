@@ -51,7 +51,7 @@ for (const scope of ["master", "english", "german"]) {
 // has to warm itself again when the mixer changes or the delay comes back.
 assert.ok(/AUDIO_SETTINGS_EVENT/.test(matcher),
   "the Matcher does not listen for mixer changes, so changing the speed leaves its warmed audio stale");
-assert.ok(/\[board\.pairs, englishLang, audioRevision\]/.test(matcher),
+assert.ok(/\[board\.pairs, sides\.target\.voice, sides\.meaning\.voice, audioRevision\]/.test(matcher),
   "the warm-up does not depend on the mixer, so a speed change would not re-warm the board");
 
 // ── the trigger is icon-only ────────────────────────────────────────────────

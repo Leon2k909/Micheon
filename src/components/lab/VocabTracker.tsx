@@ -12,8 +12,10 @@ import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
-import { learningEnglish, targetLangTag } from "@/lib/direction";
+import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { targetLangTag } from "@/lib/direction";
+import { courseSides, type CourseSides } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getLearningMode, useLearningMode } from "@/lib/learningMode";
 import {
@@ -199,7 +201,8 @@ type TrackerRowProps = {
    *  one would leave a stale row, so this deliberately errs the safe way. */
   recordSignature: string;
   selected: boolean;
-  learnsEnglish: boolean;
+  /** The two faces of this row, already resolved for the course. */
+  sides: CourseSides;
   germanUi: boolean;
   onToggleSelect: (id: string) => void;
   onApply: (item: CatalogItem, status: ItemStatus) => void;
@@ -209,11 +212,15 @@ type TrackerRowProps = {
 
 const TrackerRow = React.memo(
   function TrackerRow({
-    item, status, record, selected, learnsEnglish, germanUi,
+    item, status, record, selected, sides, germanUi,
     onToggleSelect, onApply, onSetStrength, onSetPermanent,
   }: TrackerRowProps) {
-    const primaryText = learnsEnglish ? item.en : item.de;
-    const meaningText = learnsEnglish ? item.de : item.en;
+    // The catalogue behind this list stays German whatever the course, because
+    // its ranking, its search and its progress ids are all keyed on the German.
+    // Only the two lines of text change hands.
+    const french = sides.target.code === "fr" ? frenchFor(item.de, item.fr) : null;
+    const primaryText = french ?? (sides.target.code === "en" ? item.en : item.de);
+    const meaningText = sides.meaning.code === "de" ? item.de : item.en;
     const listens = Number(record?.listens) || 0;
     return (
       <div className="tracker-row flex flex-wrap items-center gap-3 py-3">
@@ -225,7 +232,7 @@ const TrackerRow = React.memo(
         <button
           type="button"
           onClick={() => speak(primaryText)}
-          aria-label={ui(learnsEnglish ? "Play English audio" : "Play German audio")}
+          aria-label={uiFmt("Play {language} audio", { language: ui(sides.target.label) })}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
         >
           <Volume2 className="h-4 w-4" />
@@ -279,7 +286,8 @@ const TrackerRow = React.memo(
     a.item === b.item
     && a.status === b.status
     && a.selected === b.selected
-    && a.learnsEnglish === b.learnsEnglish
+    && a.sides.target.code === b.sides.target.code
+    && a.sides.meaning.code === b.sides.meaning.code
     && a.germanUi === b.germanUi
     && a.recordSignature === b.recordSignature
     && a.onToggleSelect === b.onToggleSelect
@@ -609,7 +617,8 @@ export function VocabTracker({
   const filterQuery = React.useDeferredValue(query);
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const learnsEnglish = learningEnglish();
+  const sides = courseSides();
+  const learnsEnglish = sides.target.code === "en";
   const learningMode = useLearningMode();
   const listRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -629,7 +638,13 @@ export function VocabTracker({
   const searchTextFor = (item: CatalogItem): string => {
     let text = searchIndex.get(item);
     if (text === undefined) {
-      text = buildCatalogSearchText(item);
+      // The index is built from the entry, whose French is only there when the
+      // pack happened to carry one inline. In the French course the row on
+      // screen is the TABLE's French, and searching for the words you can
+      // actually see has to find them.
+      text = buildCatalogSearchText(
+        sides.target.code === "fr" ? { ...item, fr: frenchFor(item.de, item.fr) ?? undefined } : item
+      );
       searchIndex.set(item, text);
     }
     return text;
@@ -1111,7 +1126,7 @@ export function VocabTracker({
                 record={record}
                 recordSignature={record ? JSON.stringify(record) : ""}
                 selected={selected.has(item.id)}
-                learnsEnglish={learnsEnglish}
+                sides={sides}
                 germanUi={uiIsGerman()}
                 onToggleSelect={toggleSelect}
                 onApply={apply}

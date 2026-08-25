@@ -29,7 +29,9 @@ import {
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
 import { tts } from "@/lib/voice";
-import { learningEnglish, targetLangTag } from "@/lib/direction";
+import { targetLangTag } from "@/lib/direction";
+import { courseSides } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import {
   WORD_PART_OF_SPEECH_FILTERS,
   wordMatchesPartOfSpeech,
@@ -255,8 +257,12 @@ export function WordsTracker({ apiParts, user }: {
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const learnsEnglish = learningEnglish();
-  const alphabetLanguage = learnsEnglish ? "en" : "de";
+  // The catalogue stays German — its frequency ranking, its part-of-speech
+  // tags and its progress ids all key on the German. Only the two lines of
+  // text on a row, and the alphabet they are indexed under, follow the course.
+  const sides = courseSides();
+  const learnsEnglish = sides.target.code === "en";
+  const alphabetLanguage = sides.target.code;
 
   // The catalogue depends on the learning style now: Conversation fronts the
   // word people say, exam practice the word people write. Memoising on the
@@ -536,8 +542,9 @@ export function WordsTracker({ apiParts, user }: {
           {visible.map((word) => {
             const status = statusForId(grades, word.id, word.aliases);
             const record = recordFor(word);
-            const primaryText = learnsEnglish ? word.en : word.de;
-            const meaningText = learnsEnglish ? word.de : word.en;
+            const french = sides.target.code === "fr" ? frenchFor(word.de) : null;
+            const primaryText = french ?? (learnsEnglish ? word.en : word.de);
+            const meaningText = sides.meaning.code === "de" ? word.de : word.en;
             const example = exampleIndex.exampleFor(word);
             return (
               <div key={word.id} className="tracker-row flex flex-wrap items-center gap-3 py-3">
@@ -549,7 +556,7 @@ export function WordsTracker({ apiParts, user }: {
                 <button
                   type="button"
                   onClick={() => tts(primaryText, 0.9, targetLangTag())}
-                  aria-label={ui(learnsEnglish ? "Play English audio" : "Play German audio")}
+                  aria-label={uiFmt("Play {language} audio", { language: ui(sides.target.label) })}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--accent)] hover:bg-[var(--surface-3)]"
                 >
                   <Volume2 className="h-4 w-4" />
@@ -618,6 +625,10 @@ export function WordsTracker({ apiParts, user }: {
                       title={ui("Example in context")}
                     >
                       {/* Quote marks follow the quoted sentence's language, not the UI's. */}
+                      {/* The example is a German sentence with an English
+                          translation. There is no French one on a word card, so
+                          the French course shows the pair the entry has rather
+                          than an example in a language it is not teaching. */}
                       <span className="italic">{learnsEnglish ? `“${example.en}”` : `„${example.de}“`}</span>
                       <span className="font-medium text-[var(--text-3)]"> — {learnsEnglish ? example.de : example.en}</span>
                     </p>

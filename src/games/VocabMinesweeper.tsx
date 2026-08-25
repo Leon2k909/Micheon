@@ -7,7 +7,8 @@ import {
   type GameContentEntry,
 } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
+import { courseSides, LANGUAGE_LABEL } from "@/lib/courseLanguages";
 
 // ── Vocab bank ────────────────────────────────────────────────
 // ── Difficulty presets ────────────────────────────────────────
@@ -512,7 +513,7 @@ export default function VocabMinesweeper() {
 
               <div className="mb-1 flex items-center justify-between">
                 <p className="text-xs text-[var(--text-3)]">
-                  {ui(learningDirection === "learn-en" ? "Translate to English" : "Translate to German")}
+                  {uiFmt("Translate to {language}", { language: ui(LANGUAGE_LABEL[courseSides(learningDirection).target.code]) })}
                 </p>
                 <span className={`text-sm font-bold ${timeLeft <= 3 ? "text-rose-400" : "text-[var(--text-3)]"}`}>
                   {timeLeft}s
@@ -528,7 +529,7 @@ export default function VocabMinesweeper() {
                     autoComplete="off"
                     className="flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-sm text-[var(--text-1)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
                     onChange={e => setAnswer(e.target.value)}
-                    placeholder={ui(learningDirection === "learn-en" ? "English translation..." : "German translation...")}
+                    placeholder={uiFmt("{language} translation...", { language: ui(LANGUAGE_LABEL[courseSides(learningDirection).target.code]) })}
                     type="text"
                     value={answer}
                   />

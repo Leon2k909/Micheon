@@ -60,7 +60,7 @@ check(
   placement.includes('useState<"choice" | "questions">("choice")')
     && choiceStart !== -1
     && resultStart > choiceStart
-    && placement.includes("Are you completely new to German?"),
+    && placement.includes("Are you completely new to {language}?"),
 );
 check(
   "total beginners bypass placement and start at the first module",

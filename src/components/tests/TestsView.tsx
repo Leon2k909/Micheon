@@ -29,6 +29,9 @@ import {
 import { cn } from "@/lib/utils";
 import { loadGradeStore, setItemStatus, setItemsStatus, statusForId, type ItemStatus } from "@/lib/activity";
 import { learningEnglish } from "@/lib/direction";
+import { courseSide, courseSides, LANGUAGE_LABEL, type CourseLanguage } from "@/lib/courseLanguages";
+import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { matchFrenchMeaning } from "@/lib/frenchTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
@@ -61,7 +64,24 @@ type TestPresetId =
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 
 type TestDirection = "course" | "reverse" | "mixed";
+/**
+ * Which SLOT on an item the answer comes from, not which language it is in.
+ *
+ * A test item carries `de` and `en`, and in the German and English courses
+ * those really are German and English. The French course puts the French in
+ * the `de` slot and the learner's own language in the `en` one, because that
+ * is how the rest of the app carries a swapped card. slotLanguages() below is
+ * the only thing that knows which is which, and everything that labels, reads
+ * aloud or grades an answer asks it.
+ */
 type AnswerLanguage = "de" | "en";
+
+function slotLanguages(): { de: CourseLanguage; en: CourseLanguage } {
+  const sides = courseSides();
+  return sides.target.code === "fr"
+    ? { de: "fr", en: sides.meaning.code }
+    : { de: "de", en: "en" };
+}
 type TestLibraryFilter = "all" | "practice" | "exam" | "advanced";
 
 type TestItem = {
@@ -916,6 +936,10 @@ function isDue(item: CatalogItem, grades: ReturnType<typeof loadGradeStore>) {
 }
 
 function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): TestItem[] {
+  // The bank is built from the German catalogue in every course; the French
+  // one swaps each item over at the end, exactly as a lesson step is swapped.
+  const frenchCourse = courseSides().target.code === "fr";
+  const meaningIsGerman = frenchCourse && frenchMeaningLanguage() === "de";
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -993,6 +1017,15 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     });
   }
 
+  // Paragraph translation needs a written French paragraph to grade against,
+  // and the eleven that exist are German with an English reference. Left out
+  // rather than asked in a language the item does not have.
+  if (frenchCourse) return bank.flatMap((item) => {
+    const french = frenchFor(item.de);
+    if (!french) return [];
+    return [{ ...item, de: french, en: meaningIsGerman ? item.de : item.en }];
+  });
+
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
     const dueAt = grades[paragraph.id]?.dueAt;
@@ -1020,6 +1053,8 @@ function shuffled<T>(items: T[]) {
 }
 
 function answerLanguageFor(direction: TestDirection, index: number): AnswerLanguage {
+  // The slot the language being LEARNED sits in: `en` only in the English
+  // course, because the French course keeps its target in `de`.
   const courseLanguage: AnswerLanguage = learningEnglish() ? "en" : "de";
   if (direction === "course") return courseLanguage;
   if (direction === "reverse") return courseLanguage === "de" ? "en" : "de";
@@ -1044,10 +1079,13 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
   // against one reference rejected most good answers. Grade it on meaning.
   if (item.kind === "paragraph") return matchParagraphAnswer(input, target, language);
   const alternatives = vocabularyAlternatives(target, item);
+  const answerLanguage = slotLanguages()[language];
   const matches = alternatives.map((alternative) =>
-    language === "de"
-      ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
-      : matchEnglishPhrase(input, alternative)
+    answerLanguage === "fr"
+      ? matchFrenchMeaning(input, alternative)
+      : answerLanguage === "de"
+        ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
+        : matchEnglishPhrase(input, alternative)
   );
   const accepted = matches.find((match) => match.ok);
   if (accepted) return accepted;
@@ -1057,7 +1095,7 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
   // "Sauer" must be accepted for "sauer". Sentence exercises still use the
   // strict matcher directly and continue teaching German noun capitalisation.
   if (
-    language === "de"
+    answerLanguage === "de"
     && item.kind === "vocabulary"
     && matches.some((match) => match.capitalizationError)
   ) {
@@ -1068,20 +1106,25 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
 }
 
 function getQuestionCopy(question: TestQuestion) {
-  const answerIsGerman = question.answerLanguage === "de";
+  const slots = slotLanguages();
+  const answerFromDeSlot = question.answerLanguage === "de";
+  const answerCode = answerFromDeSlot ? slots.de : slots.en;
+  const sourceCode = answerFromDeSlot ? slots.en : slots.de;
   return {
-    source: formatTestMeaning(answerIsGerman ? question.item.en : question.item.de, question.item),
-    sourceLanguage: answerIsGerman ? "en" : "de",
-    target: answerIsGerman ? question.item.de : question.item.en,
-    targetLabel: answerIsGerman ? "German" : "English",
+    source: formatTestMeaning(answerFromDeSlot ? question.item.en : question.item.de, question.item),
+    sourceLanguage: sourceCode,
+    sourceVoice: courseSide(sourceCode).voice,
+    target: answerFromDeSlot ? question.item.de : question.item.en,
+    targetLabel: LANGUAGE_LABEL[answerCode],
   } as const;
 }
 
 function directionLabel(direction: TestDirection) {
-  const german = ui("German");
-  const english = ui("English");
-  const course = learningEnglish() ? `${german} → ${english}` : `${english} → ${german}`;
-  const reverse = learningEnglish() ? `${english} → ${german}` : `${german} → ${english}`;
+  const slots = slotLanguages();
+  const targetName = ui(LANGUAGE_LABEL[learningEnglish() ? slots.en : slots.de]);
+  const meaningName = ui(LANGUAGE_LABEL[learningEnglish() ? slots.de : slots.en]);
+  const course = `${meaningName} → ${targetName}`;
+  const reverse = `${targetName} → ${meaningName}`;
   if (direction === "course") return course;
   if (direction === "reverse") return reverse;
   return ui("Both directions");
@@ -1431,7 +1474,7 @@ export function TestsView({
     void tts(
       currentCopy.source,
       0.88,
-      currentCopy.sourceLanguage === "de" ? "de-DE" : "en-GB"
+      currentCopy.sourceVoice
     );
   };
 

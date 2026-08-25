@@ -1,4 +1,5 @@
 import { Phrase } from "./types";
+import type { LearningDirection } from "./direction";
 
 /**
  * Hand-curated everyday German phrasebank.
@@ -15,7 +16,7 @@ export interface CuratedTopic {
   description: string;
   focus: string;
   phrases: Phrase[];
-  learningDirections?: Array<"learn-de" | "learn-en">;
+  learningDirections?: LearningDirection[];
   coachingLanguage?: "de" | "en" | "both";
 }
 

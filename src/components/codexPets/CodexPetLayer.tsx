@@ -66,7 +66,7 @@ import {
   type PetPosition,
 } from "@/lib/petPosition";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
-import { learningEnglish } from "@/lib/direction";
+import { courseSides, type CourseLanguage } from "@/lib/courseLanguages";
 import { ui, uiIsGerman } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { stopTts, tts } from "@/lib/voice";
@@ -277,6 +277,24 @@ const ENGLISH_PET_TIPS = [
   "English tip: “should not” becomes “shouldn't”. The same shortening gives “wouldn't”, “couldn't”, and “mustn't”.",
   "English tip: use “haven't” with I, you, we, or they, and “hasn't” with he, she, or it — “I haven't seen it yet”.",
 ];
+
+const FRENCH_PET_TIPS = [
+  "French tip: a noun comes with le or la, and there is no rule that always works — learn them together, “la table”, not just “table”.",
+  "French tip: in speech the “ne” of a negation usually disappears — “Je sais pas”. Keep it when you write.",
+  "French tip: describing words normally come after the thing — “une voiture rouge” — but petit, grand, bon, beau and jeune go in front.",
+  "French tip: “tu” is for one person you know; “vous” is for a stranger, someone older, or several people at once.",
+  "French tip: an adjective agrees with what it describes — “il est content”, “elle est contente”, “elles sont contentes”.",
+  "French tip: most verbs use avoir in the past — “j’ai mangé” — but aller, venir, partir and the rest of the coming-and-going verbs use être.",
+  "French tip: “à” and “de” glue onto le and les — à + le is “au”, de + les is “des”. Never write “à le”.",
+  "French tip: a question can just be a statement said upwards — “Tu viens ?” is as correct as “Est-ce que tu viens ?”.",
+];
+
+/** The tips for whichever language is being learned. */
+const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
+  de: GERMAN_PET_TIPS,
+  en: ENGLISH_PET_TIPS,
+  fr: FRENCH_PET_TIPS,
+};
 
 type PetBounds = {
   bottom: number;
@@ -1254,7 +1272,7 @@ export function CodexPetLayer() {
     if (!petEnabled || messagesMuted || !cadence) return;
     let tipTimer = 0;
     let active = true;
-    const languageTips = learningEnglish() ? ENGLISH_PET_TIPS : GERMAN_PET_TIPS;
+    const languageTips = LANGUAGE_TIPS[courseSides().target.code];
 
     const scheduleTip = (delay: number) => {
       if (!active) return;

@@ -6,7 +6,10 @@ const SETTINGS_KEY = "gl-audio-settings-v1";
 export const AUDIO_MUTE_EVENT = "gl-audio-mute-changed";
 export const AUDIO_SETTINGS_EVENT = AUDIO_MUTE_EVENT;
 
-export type TtsAudioLanguage = "english" | "german";
+// Every language the app can speak has its own mute, volume and speed. French
+// arrived with the French course; a voice with no controls of its own would
+// have been the one voice you could not turn down.
+export type TtsAudioLanguage = "english" | "german" | "french";
 
 export interface AudioSettings {
   muted: boolean;
@@ -14,13 +17,16 @@ export interface AudioSettings {
   sfxVolume: number;
   englishVolume: number;
   germanVolume: number;
+  frenchVolume: number;
   sfxMuted: boolean;
   englishMuted: boolean;
   germanMuted: boolean;
+  frenchMuted: boolean;
   /** Legacy shared value retained so older profiles migrate without a reset. */
   speechRate: number;
   englishSpeechRate: number;
   germanSpeechRate: number;
+  frenchSpeechRate: number;
 }
 
 type StoredAudioSettings = Omit<AudioSettings, "muted">;
@@ -30,12 +36,15 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   sfxVolume: 1,
   englishVolume: 1,
   germanVolume: 1,
+  frenchVolume: 1,
   sfxMuted: false,
   englishMuted: false,
   germanMuted: false,
+  frenchMuted: false,
   speechRate: 1,
   englishSpeechRate: 1,
   germanSpeechRate: 1,
+  frenchSpeechRate: 1,
 };
 
 /** Selectable speech-speed multipliers, applied on top of each clip's own pace. */
@@ -71,12 +80,15 @@ function readStoredSettings(): StoredAudioSettings {
       sfxVolume: clampVolume(parsed.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
       englishVolume: clampVolume(parsed.englishVolume, DEFAULT_SETTINGS.englishVolume),
       germanVolume: clampVolume(parsed.germanVolume, DEFAULT_SETTINGS.germanVolume),
+      frenchVolume: clampVolume(parsed.frenchVolume, DEFAULT_SETTINGS.frenchVolume),
       sfxMuted: parsed.sfxMuted === true,
       englishMuted: parsed.englishMuted === true,
       germanMuted: parsed.germanMuted === true,
+      frenchMuted: parsed.frenchMuted === true,
       speechRate: legacySpeechRate,
       englishSpeechRate: clampSpeechRate(parsed.englishSpeechRate, legacySpeechRate),
       germanSpeechRate: clampSpeechRate(parsed.germanSpeechRate, legacySpeechRate),
+      frenchSpeechRate: clampSpeechRate(parsed.frenchSpeechRate, legacySpeechRate),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -190,22 +202,22 @@ export function getSfxAudioVolume(settings: AudioSettings = getAudioSettings()):
   return settings.masterVolume * settings.sfxVolume;
 }
 
-/** The shared value while both voices match, otherwise there is no single rate. */
+/** The shared value while every voice matches, otherwise there is no single rate. */
 export function getMasterTtsSpeechRate(settings: AudioSettings = getAudioSettings()): number | null {
-  return Math.abs(settings.englishSpeechRate - settings.germanSpeechRate) < 0.01
-    ? settings.englishSpeechRate
-    : null;
+  const rates = [settings.englishSpeechRate, settings.germanSpeechRate, settings.frenchSpeechRate];
+  return rates.every((rate) => Math.abs(rate - rates[0]) < 0.01) ? rates[0] : null;
 }
 
 /** Absolute speech speed for one voice. Without a language, return the shared
  * rate when there is one and the legacy master value while the voices differ. */
 export function getTtsSpeechRate(lang?: string | TtsAudioLanguage): number {
   const settings = getAudioSettings();
-  const language = lang === "english" || lang === "german"
+  const language = lang === "english" || lang === "german" || lang === "french"
     ? lang
     : audioLanguageFromTag(lang ?? "");
   if (language === "english") return settings.englishSpeechRate;
   if (language === "german") return settings.germanSpeechRate;
+  if (language === "french") return settings.frenchSpeechRate;
   return getMasterTtsSpeechRate(settings) ?? settings.speechRate;
 }
 
@@ -219,19 +231,30 @@ export function setTtsSpeechRate(rate: number) {
     speechRate: nextRate,
     englishSpeechRate: nextRate,
     germanSpeechRate: nextRate,
+    frenchSpeechRate: nextRate,
   });
   emitAudioSettingsChanged();
 }
 
+/** The three fields each language owns, so nothing is keyed by an if/else. */
+const VOLUME_FIELD = { english: "englishVolume", german: "germanVolume", french: "frenchVolume" } as const;
+const MUTED_FIELD = { english: "englishMuted", german: "germanMuted", french: "frenchMuted" } as const;
+const RATE_FIELD = {
+  english: "englishSpeechRate",
+  german: "germanSpeechRate",
+  french: "frenchSpeechRate",
+} as const;
+
 export function setTtsLanguageSpeechRate(language: TtsAudioLanguage, rate: number) {
   const stored = readStoredSettings();
   const nextRate = clampSpeechRate(rate);
-  const next = language === "english"
-    ? { ...stored, englishSpeechRate: nextRate }
-    : { ...stored, germanSpeechRate: nextRate };
-  // Keep the old shared field useful to older builds whenever both channels
-  // have been brought back to the same value manually.
-  if (Math.abs(next.englishSpeechRate - next.germanSpeechRate) < 0.01) {
+  const next = { ...stored, [RATE_FIELD[language]]: nextRate };
+  // Keep the old shared field useful to older builds whenever every channel
+  // has been brought back to the same value manually.
+  if (
+    Math.abs(next.englishSpeechRate - next.germanSpeechRate) < 0.01
+    && Math.abs(next.englishSpeechRate - next.frenchSpeechRate) < 0.01
+  ) {
     next.speechRate = nextRate;
   }
   writeStoredSettings(next);
@@ -242,31 +265,24 @@ export function audioLanguageFromTag(lang: string): TtsAudioLanguage | null {
   const base = String(lang || "").trim().toLowerCase().split(/[-_]/)[0];
   if (base === "en") return "english";
   if (base === "de") return "german";
+  if (base === "fr") return "french";
   return null;
 }
 
 export function isTtsLanguageMuted(language: TtsAudioLanguage): boolean {
   const settings = readStoredSettings();
-  return language === "english"
-    ? settings.englishMuted || settings.englishVolume <= 0
-    : settings.germanMuted || settings.germanVolume <= 0;
+  return settings[MUTED_FIELD[language]] || settings[VOLUME_FIELD[language]] <= 0;
 }
 
 export function setTtsLanguageMuted(language: TtsAudioLanguage, muted: boolean) {
   const stored = readStoredSettings();
-  if (language === "english") {
-    writeStoredSettings({
-      ...stored,
-      englishMuted: muted,
-      englishVolume: !muted && stored.englishVolume <= 0 ? 0.8 : stored.englishVolume,
-    });
-  } else {
-    writeStoredSettings({
-      ...stored,
-      germanMuted: muted,
-      germanVolume: !muted && stored.germanVolume <= 0 ? 0.8 : stored.germanVolume,
-    });
-  }
+  const volume = stored[VOLUME_FIELD[language]];
+  writeStoredSettings({
+    ...stored,
+    [MUTED_FIELD[language]]: muted,
+    // Unmuting a voice whose slider is at zero would look broken.
+    [VOLUME_FIELD[language]]: !muted && volume <= 0 ? 0.8 : volume,
+  });
   emitAudioSettingsChanged();
 }
 
@@ -279,10 +295,11 @@ export function toggleTtsLanguageMuted(language: TtsAudioLanguage): boolean {
 export function setTtsLanguageVolume(language: TtsAudioLanguage, volume: number) {
   const stored = readStoredSettings();
   const nextVolume = clampVolume(volume);
-  const next = language === "english"
-    ? { ...stored, englishVolume: nextVolume, englishMuted: nextVolume > 0 ? false : stored.englishMuted }
-    : { ...stored, germanVolume: nextVolume, germanMuted: nextVolume > 0 ? false : stored.germanMuted };
-  writeStoredSettings(next);
+  writeStoredSettings({
+    ...stored,
+    [VOLUME_FIELD[language]]: nextVolume,
+    [MUTED_FIELD[language]]: nextVolume > 0 ? false : stored[MUTED_FIELD[language]],
+  });
   emitAudioSettingsChanged();
 }
 
@@ -290,13 +307,10 @@ export function setTtsLanguageVolume(language: TtsAudioLanguage, volume: number)
 export function getTtsAudioVolume(lang: string, settings: AudioSettings = getAudioSettings()): number {
   if (settings.muted || settings.masterVolume <= 0) return 0;
   const language = audioLanguageFromTag(lang);
-  if (language === "english") {
-    return settings.englishMuted ? 0 : settings.masterVolume * settings.englishVolume;
-  }
-  if (language === "german") {
-    return settings.germanMuted ? 0 : settings.masterVolume * settings.germanVolume;
-  }
-  return settings.masterVolume;
+  if (!language) return settings.masterVolume;
+  return settings[MUTED_FIELD[language]]
+    ? 0
+    : settings.masterVolume * settings[VOLUME_FIELD[language]];
 }
 
 // The desktop pet is rendered in a separate Electron window. Bridge native

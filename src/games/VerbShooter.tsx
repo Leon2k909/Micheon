@@ -5,7 +5,8 @@ import { speakGerman } from "@/lib/tts";
 import { englishVoiceLang } from "@/lib/englishVariant";
 import { useGameContent } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
+import { courseSides } from "@/lib/courseLanguages";
 import { tts } from "@/lib/voice";
 
 // ── Verb conjugation data ─────────────────────────────────────
@@ -36,6 +37,42 @@ const VERBS: { infinitive: string; en: string; pronoun: string; correct: string;
   { infinitive: "wissen", en: "to know", pronoun: "er",   correct: "weiß",  wrong: ["weißt", "wissen", "wisst"] },
 ];
 
+// The same drill in French. Written out rather than derived: the seven verbs
+// worth drilling first are all irregular, which is exactly why they are the
+// ones worth drilling, and a rule-based conjugator would get every one of
+// them wrong. The decoys are real forms of the same verb, so a wrong shot is
+// a wrong PERSON rather than a word that does not exist.
+const FRENCH_VERBS: typeof VERBS = [
+  { infinitive: "être",   en: "to be",    pronoun: "je",   correct: "suis",    wrong: ["es", "est", "sommes"] },
+  { infinitive: "être",   en: "to be",    pronoun: "tu",   correct: "es",      wrong: ["suis", "est", "êtes"] },
+  { infinitive: "être",   en: "to be",    pronoun: "il",   correct: "est",     wrong: ["suis", "es", "sont"] },
+  { infinitive: "être",   en: "to be",    pronoun: "nous", correct: "sommes",  wrong: ["suis", "est", "êtes"] },
+  { infinitive: "avoir",  en: "to have",  pronoun: "j'",   correct: "ai",      wrong: ["as", "a", "avons"] },
+  { infinitive: "avoir",  en: "to have",  pronoun: "tu",   correct: "as",      wrong: ["ai", "a", "avez"] },
+  { infinitive: "avoir",  en: "to have",  pronoun: "il",   correct: "a",       wrong: ["ai", "as", "ont"] },
+  { infinitive: "avoir",  en: "to have",  pronoun: "nous", correct: "avons",   wrong: ["ai", "a", "avez"] },
+  { infinitive: "aller",  en: "to go",    pronoun: "je",   correct: "vais",    wrong: ["vas", "va", "allons"] },
+  { infinitive: "aller",  en: "to go",    pronoun: "tu",   correct: "vas",     wrong: ["vais", "va", "allez"] },
+  { infinitive: "aller",  en: "to go",    pronoun: "il",   correct: "va",      wrong: ["vais", "vas", "vont"] },
+  { infinitive: "aller",  en: "to go",    pronoun: "nous", correct: "allons",  wrong: ["vais", "va", "allez"] },
+  { infinitive: "faire",  en: "to do",    pronoun: "je",   correct: "fais",    wrong: ["fait", "faites", "faisons"] },
+  { infinitive: "faire",  en: "to do",    pronoun: "tu",   correct: "fais",    wrong: ["fait", "faites", "font"] },
+  { infinitive: "faire",  en: "to do",    pronoun: "il",   correct: "fait",    wrong: ["fais", "faites", "font"] },
+  { infinitive: "faire",  en: "to do",    pronoun: "nous", correct: "faisons", wrong: ["fais", "fait", "faites"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "je",   correct: "viens",   wrong: ["vient", "venons", "viennent"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "tu",   correct: "viens",   wrong: ["vient", "venez", "viennent"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "il",   correct: "vient",   wrong: ["viens", "venez", "viennent"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "nous", correct: "venons",  wrong: ["viens", "vient", "venez"] },
+  { infinitive: "voir",   en: "to see",   pronoun: "je",   correct: "vois",    wrong: ["voit", "voyons", "voient"] },
+  { infinitive: "voir",   en: "to see",   pronoun: "tu",   correct: "vois",    wrong: ["voit", "voyez", "voient"] },
+  { infinitive: "voir",   en: "to see",   pronoun: "il",   correct: "voit",    wrong: ["vois", "voyez", "voient"] },
+  { infinitive: "voir",   en: "to see",   pronoun: "nous", correct: "voyons",  wrong: ["vois", "voit", "voyez"] },
+  { infinitive: "savoir", en: "to know",  pronoun: "je",   correct: "sais",    wrong: ["sait", "savons", "savent"] },
+  { infinitive: "savoir", en: "to know",  pronoun: "tu",   correct: "sais",    wrong: ["sait", "savez", "savent"] },
+  { infinitive: "savoir", en: "to know",  pronoun: "il",   correct: "sait",    wrong: ["sais", "savez", "savent"] },
+  { infinitive: "savoir", en: "to know",  pronoun: "nous", correct: "savons",  wrong: ["sais", "sait", "savez"] },
+];
+
 const COLS = 5;
 const CELL_W = 90;
 const W = COLS * CELL_W;
@@ -64,16 +101,20 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function pickVerb() {
-  return VERBS[Math.floor(Math.random() * VERBS.length)];
+function pickVerb(verbs: typeof VERBS) {
+  return verbs[Math.floor(Math.random() * verbs.length)];
 }
 
 export default function VerbShooter() {
   const { learningDirection } = useGameContent();
-  const learnsEnglish = learningDirection === "learn-en";
+  const sides = courseSides(learningDirection);
+  const learnsEnglish = sides.target.code === "en";
+  const learnsFrench = sides.target.code === "fr";
 
   const buildPrompt = useCallback(() => {
-    const source = pickVerb();
+    // French has its own table; English is derived from the German one,
+    // because the two are the same sentences read the other way round.
+    const source = pickVerb(learnsFrench ? FRENCH_VERBS : VERBS);
     if (!learnsEnglish) return source;
 
     const pronouns: Record<string, string> = {
@@ -103,7 +144,7 @@ export default function VerbShooter() {
       pronoun,
       wrong: Array.from(new Set(decoys.filter((value) => value !== correct))).slice(0, 3),
     };
-  }, [learnsEnglish]);
+  }, [learnsEnglish, learnsFrench]);
 
   const [verb, setVerb] = useState(() => buildPrompt());
   const [invaders, setInvaders] = useState<Invader[]>([]);
@@ -226,8 +267,12 @@ export default function VerbShooter() {
           try { localStorage.setItem("verbshooter-hs", String(newScore)); } catch {}
         }
         setTimeout(() => {
-          if (learnsEnglish) void tts(`${verb.pronoun} ${verb.correct}`, 0.9, englishVoiceLang());
-          else speakGerman(`${verb.pronoun} ${verb.correct}`);
+          // "j'" runs straight into its verb; every other pronoun takes a space.
+          const spoken = verb.pronoun.endsWith("'")
+            ? `${verb.pronoun}${verb.correct}`
+            : `${verb.pronoun} ${verb.correct}`;
+          if (learnsEnglish || learnsFrench) void tts(spoken, 0.9, sides.target.voice);
+          else speakGerman(spoken);
         }, 200);
         recordWordMastery(`${verb.infinitive}:${verb.pronoun}`);
         // Brief pause then next round
@@ -237,7 +282,7 @@ export default function VerbShooter() {
       }
     }, 50);
     return () => clearInterval(loopRef.current!);
-  }, [phase, highScore, learnsEnglish, nextRound]);
+  }, [phase, highScore, learnsEnglish, learnsFrench, sides.target.voice, nextRound]);
 
   // Keyboard
   useEffect(() => {
@@ -281,7 +326,7 @@ export default function VerbShooter() {
       <div className="card flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <div>
           <p className="text-xs text-[var(--text-3)]">
-            {ui(learnsEnglish ? "Complete the English sentence" : "Complete the German sentence")}
+            {uiFmt("Complete the {language} sentence", { language: ui(sides.target.label) })}
           </p>
           <p className="mt-1 text-xl font-bold text-[var(--text-1)]">
             <span className="text-[var(--accent)]">{verb.pronoun}</span>{" "}

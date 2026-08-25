@@ -46,16 +46,19 @@ function argumentsFor(source, fn, side) {
 
 // Playback passes them through a conditional; warming names each side
 // outright. Compare the values, not the spelling.
-const playback = /void tts\(text, side === "de" \? ([\d.]+) : ([\d.]+), side === "de" \? "de-DE" : (\w+)\)/.exec(matcher);
+// Each column is played in its OWN language, which is not always German and
+// English — so both the rate and the voice are compared as expressions rather
+// than as the two tags they used to be.
+const playback = /void tts\(text, side === "de" \? ([\d.]+) : ([\d.]+), side === "de" \? ([\w.]+) : ([\w.]+)\)/.exec(matcher);
 assert.ok(playback, "the Matcher's tts() call has changed shape; this check needs rewriting");
-const [, germanRate, englishRate, englishLangVar] = playback;
+const [, germanRate, englishRate, targetVoiceVar, meaningVoiceVar] = playback;
 
 const warmGerman = argumentsFor(matcher, "preloadTts", "de");
 const warmEnglish = argumentsFor(matcher, "preloadTts", "en");
-assert.strictEqual(warmGerman, `${germanRate},"de-DE"`,
-  `the German side is warmed at ${warmGerman} but played at ${germanRate}, "de-DE" — the warmed entry is never read`);
-assert.strictEqual(warmEnglish, `${englishRate},${englishLangVar}`,
-  `the English side is warmed at ${warmEnglish} but played at ${englishRate}, ${englishLangVar} — the warmed entry is never read`);
+assert.strictEqual(warmGerman, `${germanRate},${targetVoiceVar}`,
+  `the target side is warmed at ${warmGerman} but played at ${germanRate}, ${targetVoiceVar} — the warmed entry is never read`);
+assert.strictEqual(warmEnglish, `${englishRate},${meaningVoiceVar}`,
+  `the meaning side is warmed at ${warmEnglish} but played at ${englishRate}, ${meaningVoiceVar} — the warmed entry is never read`);
 
 // ── and it must stay a head start, never a blocker ──────────────────────────
 // preloadTts returns void and swallows its own failures; a tap has to work

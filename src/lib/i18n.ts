@@ -205,6 +205,7 @@ const DE: Record<string, string> = {
   "Build from memory": "Aus dem Gedächtnis",
   "Recall the German": "Deutsch aus dem Gedächtnis abrufen",
   "Recall the English": "Englisch aus dem Gedächtnis abrufen",
+  "Recall the French": "Französisch aus dem Gedächtnis abrufen",
   "Recall both sentences": "Beide Sätze aus dem Gedächtnis abrufen",
   "Recall both sides": "Beide Seiten aus dem Gedächtnis abrufen",
   // Stage names (tooltips)
@@ -223,6 +224,7 @@ const DE: Record<string, string> = {
   "Write it": "Schreiben",
   "Recall DE": "Deutsch abrufen",
   "Recall EN": "Englisch abrufen",
+  "Recall FR": "Französisch abrufen",
   "Recall both": "Beide abrufen",
   "New word": "Neues Wort",
   "Select the correct meaning": "Wähle die richtige Bedeutung",
@@ -346,6 +348,8 @@ const DE: Record<string, string> = {
   "Choose how soon this should appear in Continue Learning.": "Lege fest, wann dies wieder unter Weiterlernen erscheinen soll.",
   // Typed-phase prompts (built with target/meaning labels)
   "Now type the sentence exactly.": "Tippe jetzt den Satz genau ab.",
+  "Now type the German sentence.": "Tippe jetzt den deutschen Satz.",
+  "Type the {language} once more — build the memory.": "Tippe den Satz auf {language} noch einmal — so festigt er sich.",
   "Fill the blank — type the missing word.": "Fülle die Lücke — tippe das fehlende Wort.",
   "Fill the blank — type the missing words.": "Fülle die Lücke — tippe die fehlenden Wörter.",
   "Drag the words into the correct order. You can also select a word, then choose where to move it.": "Ziehe die Wörter in die richtige Reihenfolge. Du kannst auch ein Wort auswählen und danach seine neue Position.",
@@ -2998,6 +3002,51 @@ const DE: Record<string, string> = {
   "You read the concepts and typed the code. Keep the momentum going.":
     "Du hast die Grundlagen gelesen und den Code getippt. Bleib dran.",
   "Checking in on each other": "Nachfragen, wie es geht",
+
+  // ── The French course ────────────────────────────────────────────────────
+  // French is the third course made of the same material, so most of the
+  // chrome above already covers it. What is here is the wording that used to
+  // name German and English outright and now names whichever two languages
+  // the course actually has.
+  "Read, listen, type and translate real French.": "Lies, höre, tippe und übersetze echtes Französisch.",
+  "Mute French voice": "Französische Stimme stummschalten",
+  "Unmute French voice": "Französische Stimme einschalten",
+  "French voice is muted and will be skipped.": "Die französische Stimme ist stumm und wird übersprungen.",
+  "French repeats": "Französische Wiederholungen",
+  "French first": "Französisch zuerst",
+  "Your turn — say it in French": "Du bist dran — sag es auf Französisch",
+  "Your turn to say the French before it is spoken": "Deine Chance, das Französische selbst zu sagen, bevor es gesprochen wird",
+  "French words to arrange": "Französische Wörter zum Anordnen",
+  "Translate to French": "Ins Französische übersetzen",
+  "French translation...": "Französische Übersetzung ...",
+  "{meaning} {en}×, then {target} {de}×": "{meaning} {en}×, dann {target} {de}×",
+  "{target} {de}×, then {meaning} {en}×": "{target} {de}×, dann {meaning} {en}×",
+  "Set both voices together or tune {first} and {second} separately.": "Stelle beide Stimmen gemeinsam ein oder passe {first} und {second} getrennt an.",
+  "{target} is ready to type. You can answer either box first; a correct {target} answer moves focus to {meaning}.":
+    "Du kannst sofort auf {target} tippen. Du kannst mit jedem Feld beginnen; nach einer richtigen Antwort auf {target} springt der Fokus zu {meaning}.",
+  "Type this in {language}": "Tippe das auf {language}",
+  "{from} to {to}": "{from} zu {to}",
+  "Work through practical {language} in short blocks: read, listen, choose, type, and translate.": "Lerne praktisches {language} in kurzen Einheiten: lesen, hören, auswählen, tippen und übersetzen.",
+  "Search lessons, topics or a {language} word…": "Lektionen, Themen oder ein Wort auf {language} suchen …",
+  "{language} for real conversations": "{language} für echte Gespräche",
+  "French tip: a noun comes with le or la, and there is no rule that always works — learn them together, “la table”, not just “table”.": "Französisch-Tipp: Ein Substantiv kommt mit le oder la, und es gibt keine Regel, die immer stimmt — lerne beides zusammen, „la table“ statt nur „table“.",
+  "French tip: in speech the “ne” of a negation usually disappears — “Je sais pas”. Keep it when you write.": "Französisch-Tipp: Beim Sprechen fällt das „ne“ der Verneinung meist weg — „Je sais pas“. Beim Schreiben bleibt es stehen.",
+  "French tip: describing words normally come after the thing — “une voiture rouge” — but petit, grand, bon, beau and jeune go in front.": "Französisch-Tipp: Adjektive stehen normalerweise hinter dem Substantiv — „une voiture rouge“ — aber petit, grand, bon, beau und jeune stehen davor.",
+  "French tip: “tu” is for one person you know; “vous” is for a stranger, someone older, or several people at once.": "Französisch-Tipp: „tu“ ist für eine Person, die du kennst; „vous“ für Fremde, Ältere oder mehrere Menschen gleichzeitig.",
+  "French tip: an adjective agrees with what it describes — “il est content”, “elle est contente”, “elles sont contentes”.": "Französisch-Tipp: Ein Adjektiv richtet sich nach dem, was es beschreibt — „il est content“, „elle est contente“, „elles sont contentes“.",
+  "French tip: most verbs use avoir in the past — “j’ai mangé” — but aller, venir, partir and the rest of the coming-and-going verbs use être.": "Französisch-Tipp: Die meisten Verben bilden die Vergangenheit mit avoir — „j’ai mangé“ — aber aller, venir, partir und die übrigen Verben der Bewegung nehmen être.",
+  "French tip: “à” and “de” glue onto le and les — à + le is “au”, de + les is “des”. Never write “à le”.": "Französisch-Tipp: „à“ und „de“ verschmelzen mit le und les — à + le wird „au“, de + les wird „des“. „à le“ schreibt man nie.",
+  "French tip: a question can just be a statement said upwards — “Tu viens ?” is as correct as “Est-ce que tu viens ?”.": "Französisch-Tipp: Eine Frage kann einfach ein Satz mit steigender Betonung sein — „Tu viens ?“ ist genauso richtig wie „Est-ce que tu viens ?“.",
+  "Are you completely new to {language}?": "Bist du völlig neu in {language}?",
+  "Type the {language} word": "Tippe das Wort auf {language}",
+  "Complete the {language} sentence": "Vervollständige den Satz auf {language}",
+  "{language} Slither": "Slither {language}",
+  "Collect the {target} word or phrase that matches the {meaning} prompt!": "Sammle das Wort oder den Ausdruck auf {target}, der zum Hinweis auf {meaning} passt!",
+  "Read the {meaning} prompt, then steer into its {target} translation. Every correct answer gives you a new phrase. Avoid the wrong choices and enemy snakes.": "Lies den Hinweis auf {meaning} und steuere dann in die Übersetzung auf {target}. Jede richtige Antwort bringt dir einen neuen Ausdruck. Weiche falschen Antworten und gegnerischen Schlangen aus.",
+  "Move your mouse to steer. Hold click or Space to boost. Read the {meaning} prompt and collect its {target} translation. Wrong choices cost points; enemy snakes end the run.": "Steuere mit der Maus. Halte die Maustaste oder die Leertaste für Tempo. Lies den Hinweis auf {meaning} und sammle die Übersetzung auf {target}. Falsche Antworten kosten Punkte, gegnerische Schlangen beenden den Lauf.",
+  "{language} clue": "Hinweis auf {language}",
+  "Play {language} audio": "Audio auf {language} abspielen",
+  "{language} choices": "Antworten auf {language}",
 };
 
 /** Translate a UI string into the learner's interface language. */

@@ -36,6 +36,7 @@ import { preloadTts, tts, stopTts } from "@/lib/voice";
 import { MuteButton } from "@/components/MuteButton";
 import { AUDIO_SETTINGS_EVENT } from "@/lib/audioMute";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import { courseSides } from "@/lib/courseLanguages";
 import type { UserProfile } from "@/lib/profileStorage";
 
 /**
@@ -97,6 +98,10 @@ export function MatcherView({
   const [notice, setNotice] = useState<MatcherNotice | null>(null);
 
   const englishLang = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
+  // The left column is whatever is being learned and the right is what it
+  // means. Both used to be spelled out as German and English, which put a
+  // German voice on the French board.
+  const sides = courseSides();
 
   /**
    * What is currently armed, in a ref as well as in state.
@@ -304,8 +309,8 @@ export function MatcherView({
     // so this needs no mute logic of its own and cannot drift from the lesson.
     const text = side === "de" ? pair.de : pair.en;
     if (!text) return;
-    void tts(text, side === "de" ? 0.88 : 0.95, side === "de" ? "de-DE" : englishLang);
-  }, [englishLang]);
+    void tts(text, side === "de" ? 0.88 : 0.95, side === "de" ? sides.target.voice : sides.meaning.voice);
+  }, [sides.target.voice, sides.meaning.voice]);
 
   /**
    * Warm the board's audio while the learner is still reading it.
@@ -335,10 +340,10 @@ export function MatcherView({
   useEffect(() => {
     if (!board.pairs.length) return;
     for (const pair of board.pairs) {
-      if (pair.de) preloadTts(pair.de, 0.88, "de-DE");
-      if (pair.en) preloadTts(pair.en, 0.95, englishLang);
+      if (pair.de) preloadTts(pair.de, 0.88, sides.target.voice);
+      if (pair.en) preloadTts(pair.en, 0.95, sides.meaning.voice);
     }
-  }, [board.pairs, englishLang, audioRevision]);
+  }, [board.pairs, sides.target.voice, sides.meaning.voice, audioRevision]);
 
   const choose = useCallback((side: "de" | "en", id: string) => {
     if (solved.has(id)) return;

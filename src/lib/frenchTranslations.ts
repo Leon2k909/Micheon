@@ -4,8 +4,10 @@
  * There were already 3,868 French translations in the course, written inline
  * as an `fr:` field beside the German — good, idiomatic ones, matched for
  * register rather than translated word for word. Two problems with them:
- * nothing displayed them (getCompanion() returns "none" and setCompanion is a
- * no-op), and they covered 18% of the catalogue.
+ * nothing displayed them (the companion they were written for is switched
+ * off), and they covered 18% of the catalogue. This file is what closed the
+ * second gap, and the French COURSE — see frenchCourse.ts — is what closed
+ * the first: the whole of it is now a language you can learn.
  *
  * Adding the other 17,498 inline would mean editing megabytes of pack files
  * and reviewing a diff nobody could read. So new French lands here instead,

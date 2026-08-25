@@ -153,7 +153,7 @@ check("speaking a word can be announced, so a surface already playing can stand 
 
 const listen = read("src/components/listen/ListenView.tsx");
 check("Listen renders its sentence through the shared component",
-  /<TappableSentence text=\{item\.de\} lang="de-DE" meaningText=\{item\.en\} onWordAudio=\{pause\} \/>/.test(listen));
+  /<TappableSentence text=\{item\.de\} lang=\{targetLang\} meaningText=\{item\.en\} onWordAudio=\{pause\} \/>/.test(listen));
 check("and tapping a word pauses the loop rather than talking over it",
   /onWordAudio=\{pause\}/.test(listen));
 

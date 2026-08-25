@@ -19,6 +19,7 @@ import {
   snoozeForDays,
 } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
+import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
@@ -325,6 +326,7 @@ export function buildListenSpeechPlan({
   englishRepeats,
   languageOrder,
   englishLang,
+  targetLang = "de-DE",
   languageGapMs,
 }: {
   de: string;
@@ -333,11 +335,15 @@ export function buildListenSpeechPlan({
   englishRepeats: number;
   languageOrder: ListenLanguageOrder;
   englishLang: string;
+  /** Voice for the `de` side, which is the language being LEARNED — German
+   *  in the original course, French in the French one. Defaults to German so
+   *  the two courses that always were German need not say so. */
+  targetLang?: string;
   languageGapMs: number;
 }): ListenSpeechClip[] {
   const german: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, germanRepeats) },
-    () => ({ text: de, rate: 0.92, lang: "de-DE", side: "de" as const })
+    () => ({ text: de, rate: 0.92, lang: targetLang, side: "de" as const })
   );
   const english: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, englishRepeats) },
@@ -725,6 +731,26 @@ export function buildListenQueue(
     );
   } else {
     combined = sentences.length ? sentences : words;
+  }
+
+  // The French course reads this same catalogue, and the French is keyed by
+  // the German — so the swap happens here rather than in the player. An item
+  // the tables do not reach leaves the queue rather than being read out in a
+  // language this course is not teaching.
+  if (direction === "learn-fr") {
+    const meaning = frenchMeaningLanguage();
+    combined = combined.flatMap((item) => {
+      const french = frenchFor(item.de);
+      if (!french) return [];
+      return [{
+        ...item,
+        de: french,
+        en: meaning === "de" ? item.de : item.en,
+        // A synonym group is a group of GERMAN words for one meaning. There
+        // is no French equivalent of it on the card, so it goes.
+        synonyms: undefined,
+      }];
+    });
   }
 
   const recordFor = (item: ListenItem) =>

@@ -10,7 +10,8 @@ import {
   type GameContentEntry,
 } from '@/games/gameContent';
 import { recordWordMastery } from '@/lib/mastery';
-import { ui } from '@/lib/i18n';
+import { ui, uiFmt } from '@/lib/i18n';
+import { courseSides } from '@/lib/courseLanguages';
 
 // --- Game Constants ---
 const WORLD_SIZE = 4000;
@@ -221,7 +222,11 @@ function drawCenteredLines(
 export default function VocabSlither() {
   const { entries: trackerEntries, learningDirection } = useGameContent();
   const { next: nextTrackerEntry } = useGameDeck();
-  const learnsEnglish = learningDirection === "learn-en";
+  // The article rounds are a German drill: der, die, das. Every other course
+  // plays the translation round instead, which is built from the course's own
+  // pairs and so works whatever the two languages are.
+  const sides = courseSides(learningDirection);
+  const translationRound = sides.target.code !== "de";
   const categories = React.useMemo(() => CATEGORIES, []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -236,7 +241,7 @@ export default function VocabSlither() {
     try { return parseInt(localStorage.getItem('slither-hs') ?? '0', 10); } catch { return 0; }
   });
   const [currentCategory, setCurrentCategory] = useState(categories[0]);
-  const [englishTarget, setEnglishTarget] = useState<GameContentEntry>(() => trackerEntries[0] ?? nextTrackerEntry());
+  const [translationTarget, setEnglishTarget] = useState<GameContentEntry>(() => trackerEntries[0] ?? nextTrackerEntry());
   const [lastEatenWord, setLastEatenWord] = useState<string | null>(null);
   const [isBoosting, setIsBoosting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -268,7 +273,7 @@ export default function VocabSlither() {
   const highScoreRef = useRef(highScore);
   const growthPendingRef = useRef(0);
   const currentCategoryRef = useRef(currentCategory);
-  const englishTargetRef = useRef(englishTarget);
+  const englishTargetRef = useRef(translationTarget);
   const targetProgressRef = useRef(0);
 
   const addScore = (points: number) => {
@@ -322,7 +327,7 @@ export default function VocabSlither() {
     };
 
     // Init food
-    const initialFood: Food[] = learnsEnglish
+    const initialFood: Food[] = translationRound
       ? spawnEnglishTargetFoods(
           targetEntry,
           { x: startX, y: startY },
@@ -352,7 +357,7 @@ export default function VocabSlither() {
     setGameState('playing');
     setIsPaused(false);
     setLastEatenWord(null);
-  }, [categories, learnsEnglish, nextTrackerEntry]);
+  }, [categories, translationRound, nextTrackerEntry]);
 
   const spawnBot = (): BotSnake => {
       const x = Math.random() * WORLD_SIZE;
@@ -391,7 +396,7 @@ export default function VocabSlither() {
       y = Math.max(40, Math.min(WORLD_SIZE - 40, near.y + Math.sin(angle) * distance));
     }
 
-    if (learnsEnglish) {
+    if (translationRound) {
       const source = forcedEnglishEntry ?? nextTrackerEntry();
       const palette = ['#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#22c55e'];
       const colorIndex = Array.from(source.id).reduce((total, character) => total + character.charCodeAt(0), 0) % palette.length;
@@ -731,7 +736,7 @@ export default function VocabSlither() {
                 addScore(10);
                 growthPendingRef.current += 8;
             } else if (
-              learnsEnglish
+              translationRound
                 ? f.source?.id === englishTargetRef.current.id
                 : f.category === currentCategoryRef.current.target
             ) {
@@ -746,7 +751,7 @@ export default function VocabSlither() {
                 targetProgressRef.current = nextProgress;
                 setWordsEatenInCurrentTarget(nextProgress);
 
-                if (learnsEnglish) {
+                if (translationRound) {
                   const nextTarget = nextTrackerEntry();
                   changeEnglishTarget(nextTarget);
                   queuedEnglishTarget = nextTarget;
@@ -865,22 +870,22 @@ export default function VocabSlither() {
       ctx.beginPath(); ctx.arc(screenX, screenY, f.size, 0, Math.PI * 2); ctx.fill();
 
       // Keep long tracker phrases readable without filling the arena.
-      const labelWidth = learnsEnglish ? 156 : 190;
+      const labelWidth = translationRound ? 156 : 190;
       const labelY = screenY + f.size + 18;
-      if (learnsEnglish) {
+      if (translationRound) {
         ctx.fillStyle = 'rgba(10, 15, 30, 0.78)';
         ctx.beginPath();
         ctx.roundRect(screenX - labelWidth / 2 - 8, labelY - 14, labelWidth + 16, 38, 7);
         ctx.fill();
       }
       ctx.fillStyle = 'white';
-      ctx.font = learnsEnglish
+      ctx.font = translationRound
         ? '700 12px "Outfit", sans-serif'
         : 'bold 13px "Outfit", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       drawCenteredLines(ctx, f.word, screenX, labelY, labelWidth, 14, 2);
-      if (!learnsEnglish && f.translation && f.translation !== "..." && f.translation !== "Discovery") {
+      if (!translationRound && f.translation && f.translation !== "..." && f.translation !== "Discovery") {
           ctx.font = '600 11px "Outfit", sans-serif';
           ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
           drawCenteredLines(ctx, `(${f.translation})`, screenX, screenY + f.size + 48, 180, 13, 2);
@@ -1018,9 +1023,9 @@ export default function VocabSlither() {
   // Optionally augment the built-in catalogue once per renderer. The loader is
   // module-level, deduplicated, and capped, so reopening this game is free.
   useEffect(() => {
-    if (learnsEnglish) return;
+    if (translationRound) return;
     void loadRemoteDictionaryOnce();
-  }, [learnsEnglish]);
+  }, [translationRound]);
 
   // Sync state to ref for physics loop
   useEffect(() => {
@@ -1038,7 +1043,7 @@ export default function VocabSlither() {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [gameState, currentCategory, isPaused, categories, englishTarget]);
+  }, [gameState, currentCategory, isPaused, categories, translationTarget]);
 
   // Periodic Food Refresh to ensure variety
   useEffect(() => {
@@ -1054,7 +1059,7 @@ export default function VocabSlither() {
        }
     }, 15000);
     return () => clearInterval(interval);
-  }, [gameState, isPaused, learnsEnglish, englishTarget]);
+  }, [gameState, isPaused, translationRound, translationTarget]);
 
   useEffect(() => {
     if (gameState !== 'idle') {
@@ -1071,14 +1076,18 @@ export default function VocabSlither() {
           <div>
             <h2 className="text-3xl font-black text-white flex items-center gap-3">
                <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                 {ui(learnsEnglish ? "English Slither" : "Slither Deutsch")}
+                 {translationRound
+                   ? uiFmt("{language} Slither", { language: ui(sides.target.label) })
+                   : ui("Slither Deutsch")}
                </span>
                <Sparkles className="h-6 w-6 text-amber-400 fill-amber-400" />
             </h2>
             <p className="text-slate-400 text-sm mt-1">
-              {ui(learnsEnglish
-                ? "Collect the English word or phrase that matches the German prompt!"
-                : "Collect the correct articles to grow your snake!")}
+              {translationRound
+                ? uiFmt("Collect the {target} word or phrase that matches the {meaning} prompt!", {
+                  target: ui(sides.target.label), meaning: ui(sides.meaning.label),
+                })
+                : ui("Collect the correct articles to grow your snake!")}
             </p>
           </div>
           <div className="flex gap-4">
@@ -1146,11 +1155,13 @@ export default function VocabSlither() {
               className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 rounded-3xl shadow-2xl"
             >
               <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">
-                {ui(learnsEnglish ? "German prompt" : "Target Article")}
+                {translationRound
+                  ? uiFmt("{language} prompt", { language: ui(sides.meaning.label) })
+                  : ui("Target Article")}
               </p>
               <div className="flex items-center gap-5">
                 <span className={`max-w-sm rounded-xl border px-4 py-2 font-black ${
-                  learnsEnglish
+                  translationRound
                     ? 'border-violet-400/25 bg-violet-400/10 text-xl leading-tight text-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.18)]'
                     : currentCategory.target === 'der'
                     ? 'border-blue-400/20 bg-blue-400/10 text-4xl text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
@@ -1158,11 +1169,11 @@ export default function VocabSlither() {
                     ? 'border-pink-400/20 bg-pink-400/10 text-4xl text-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.2)]'
                     : 'border-emerald-400/20 bg-emerald-400/10 text-4xl text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
                 }`}>
-                  {learnsEnglish ? englishTarget.clue : currentCategory.target.toUpperCase()}
+                  {translationRound ? translationTarget.clue : currentCategory.target.toUpperCase()}
                 </span>
                 <div className="space-y-2">
                     <p className="text-xs text-slate-400 font-medium italic">
-                      {ui(learnsEnglish ? "Translations this round" : "Progression:")}
+                      {ui(translationRound ? "Translations this round" : "Progression:")}
                     </p>
                     <div className="flex gap-1.5">
                         {[...Array(5)].map((_, i) => (
@@ -1174,7 +1185,7 @@ export default function VocabSlither() {
                             />
                         ))}
                     </div>
-                    {learnsEnglish && (
+                    {translationRound && (
                       <p className="max-w-[14rem] text-xs font-semibold text-slate-400">
                         {ui("Find its English match in the arena.")}
                       </p>
@@ -1216,7 +1227,7 @@ export default function VocabSlither() {
                         <Volume2 className="h-5 w-5 text-accent" />
                     </div>
                     <span className="text-lg tracking-tight">
-                        {!learnsEnglish && (
+                        {!translationRound && (
                           <span className="opacity-50 font-medium mr-2">{currentCategory.target}</span>
                         )}
                         {lastEatenWord}
@@ -1274,9 +1285,11 @@ export default function VocabSlither() {
                 </motion.div>
                 <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">{ui("Enter the Arena")}</h3>
                 <p className="text-slate-400 mb-10 leading-relaxed text-lg">
-                  {ui(learnsEnglish
-                    ? "Read the German prompt, then steer into its English translation. Every correct answer gives you a new phrase. Avoid the wrong choices and enemy snakes."
-                    : "Master the German articles! Guide your snake to consume words that match your target. Watch out for world boundaries and enemy bots!")}
+                  {translationRound
+                    ? uiFmt("Read the {meaning} prompt, then steer into its {target} translation. Every correct answer gives you a new phrase. Avoid the wrong choices and enemy snakes.", {
+                      meaning: ui(sides.meaning.label), target: ui(sides.target.label),
+                    })
+                    : ui("Master the German articles! Guide your snake to consume words that match your target. Watch out for world boundaries and enemy bots!")}
                 </p>
                 <button 
                   onClick={initGame}
@@ -1358,22 +1371,24 @@ export default function VocabSlither() {
             <div>
                 <p className="text-lg font-black text-white mb-1">{ui("How to play")}</p>
                 <p className="text-sm text-slate-400 leading-relaxed">
-                    {ui(learnsEnglish
-                      ? "Move your mouse to steer. Hold click or Space to boost. Read the German prompt and collect its English translation. Wrong choices cost points; enemy snakes end the run."
-                      : "Move your mouse to steer. Hold click or Space to boost speed (costs score). Eat words matching the Target Article to grow. Avoid hitting Bots! If a bot hits your body, you get bonus points.")}
+                    {translationRound
+                      ? uiFmt("Move your mouse to steer. Hold click or Space to boost. Read the {meaning} prompt and collect its {target} translation. Wrong choices cost points; enemy snakes end the run.", {
+                        meaning: ui(sides.meaning.label), target: ui(sides.target.label),
+                      })
+                      : ui("Move your mouse to steer. Hold click or Space to boost speed (costs score). Eat words matching the Target Article to grow. Avoid hitting Bots! If a bot hits your body, you get bonus points.")}
                 </p>
             </div>
         </div>
         <div className="bg-slate-800/20 border border-slate-700/30 p-6 rounded-[2rem] flex items-center justify-around">
-            {learnsEnglish ? (
+            {translationRound ? (
               <>
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="w-8 h-8 rounded-full bg-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.55)]" />
-                  <span className="text-xs font-black text-slate-300">{ui("German clue")}</span>
+                  <span className="text-xs font-black text-slate-300">{uiFmt("{language} clue", { language: ui(sides.meaning.label) })}</span>
                 </div>
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="w-8 h-8 rounded-full bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.55)]" />
-                  <span className="text-xs font-black text-slate-300">{ui("English choices")}</span>
+                  <span className="text-xs font-black text-slate-300">{uiFmt("{language} choices", { language: ui(sides.target.label) })}</span>
                 </div>
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-500 px-2 text-xs font-black text-slate-950">+20</div>

@@ -224,7 +224,12 @@ const listenMode = fs.readFileSync(path.join(root, "src/lib/listenMode.ts"), "ut
 check(listenMode.includes("synonyms: word.synonyms"), "buildListenQueue drops synonyms from word cards");
 
 const guided = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
-check(guided.includes("synonyms={item.synonyms}"), "GuidedSession no longer passes synonyms to the usage chips");
+// A synonym group is a group of GERMAN words for one meaning, so it belongs to
+// the German course. The chips still get it there and nowhere else.
+check(
+  guided.includes("synonyms={targetIsGermanCourse ? item.synonyms : undefined}"),
+  "GuidedSession no longer passes synonyms to the usage chips"
+);
 check(guided.includes("groupSynonyms.map"), "UsageChips no longer renders the synonym chips");
 check(/for \(const entry of item\.synonyms \?\? \[\]\) \{\s*\n\s*const alt = matchTarget\(typed, entry\.de\);/u.test(guided),
   "GuidedSession no longer accepts a synonym as a typed answer");

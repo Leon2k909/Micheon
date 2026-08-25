@@ -1,10 +1,11 @@
 /**
  * Every language the switcher lists.
  *
- * Only German is taught. The rest are here so the picker answers the question
- * people actually arrive with — "is my language in here?" — instead of showing
- * three options and leaving them to guess. Each one says Coming soon and
- * cannot be selected, which is a straight answer rather than an implied no.
+ * Three are taught — German, English and French. The rest are here so the
+ * picker answers the question people actually arrive with — "is my language in
+ * here?" — instead of showing a handful of options and leaving them to guess.
+ * Each one says Coming soon and cannot be selected, which is a straight answer
+ * rather than an implied no.
  *
  * `search` holds the endonym and the common alternative spellings, so typing
  * "espanol", "nihongo" or "farsi" finds the right row. Written without

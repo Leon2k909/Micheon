@@ -163,7 +163,7 @@ for (const kind of ["words", "sentences"]) {
     "there is no way to clear the whole board at once");
 
   // Tapping a card speaks it, through the one door that honours the mixer.
-  assert.ok(/void tts\(text, side === "de" \? 0\.88 : 0\.95, side === "de" \? "de-DE" : englishLang\)/.test(view),
+  assert.ok(/void tts\(text, side === "de" \? 0\.88 : 0\.95, side === "de" \? sides\.target\.voice : sides\.meaning\.voice\)/.test(view),
     "tapping a card does not speak it");
   assert.ok(!/getTtsAudioVolume|audioMuted|masterVolume/.test(view),
     "the Matcher checks the volume itself instead of letting tts() do it — that is how a "
