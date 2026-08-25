@@ -14,6 +14,7 @@
  * have no English key to be found under.
  */
 export const FR: Record<string, string> = {
+  "Show {n} more languages": "Afficher {n} langues de plus",
   // ── Friends, once the list holds real people ──────────────────────────────
   "Their figures come straight from their app to yours. There is no account and no server holding them.": "Leurs chiffres viennent directement de leur application à la tienne. Il n'y a ni compte ni serveur qui les conserve.",
   "Your code": "Ton code",

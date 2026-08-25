@@ -6,7 +6,6 @@ import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn"
 import { VIVRE_EN_FRANCE_DE } from "@/lib/vivreEnFranceTranslationsDe";
 import { VIVRE_EN_FRANCE_EN } from "@/lib/vivreEnFranceTranslationsEn";
 import { CSHARP_COURSE_DE } from "@/lib/csharpCourseDe";
-import { uiIsGerman } from "@/lib/i18n";
 import type { Block, Course, Lesson } from "@/lib/courses";
 
 /**
@@ -170,9 +169,24 @@ export function useTranslationLanguage(): TranslationLanguage {
  * So a programming course follows the interface language, and everything else
  * keeps the choice it already had.
  */
+/**
+ * Which languages a programming course has actually been written in.
+ *
+ * A lookup rather than a test for German. Asking "is the app German" answers
+ * the wrong question: it says yes to the one language that happens to have a
+ * translation today, and no to every other reader without distinguishing
+ * "there is nothing written for you" from "you get English because you are not
+ * German". Adding French here is then a line of data rather than a second
+ * branch, and check-french-interface is refusing the branch on exactly that
+ * reasoning.
+ */
+const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<"en" | "de" | "fr", TranslationLanguage>> = {
+  de: "de",
+};
+
 export function courseReadingLanguage(course: Pick<Course, "kind">): TranslationLanguage {
   if (course.kind !== "programming") return "off";
-  return uiIsGerman() ? "de" : "off";
+  return PROGRAMMING_COURSE_TRANSLATIONS[resolveInterfaceLanguage()] ?? "off";
 }
 
 /** Translate, or keep the original when nothing is written for it yet. */
