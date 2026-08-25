@@ -3959,9 +3959,9 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   font-weight: 700;
 }
 
+/* The whole content column, the same width as the header above it. It used to
+   be a 920px card floating in the middle of a much wider page. */
 .np-progress-panel--standalone {
-  max-width: 920px;
-  margin: 0 auto;
   padding: 30px;
 }
 
@@ -4415,11 +4415,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   color: var(--text-1);
 }
 
-/* The folds under the progress panel share its column, so the screen reads as
-   one page rather than a narrow card sitting on a full-width one. */
+/* Only the gap. The folds take the same full column as the panel above them,
+   so the screen reads as one page rather than as stacked cards. */
 .np-progress-extras {
-  max-width: 920px;
-  margin: 19px auto 0;
+  margin-top: 19px;
 }
 
 .np-feature-host .card {

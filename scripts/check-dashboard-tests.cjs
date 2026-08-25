@@ -83,11 +83,20 @@ check(
 // their own on their own. The trap is the achievements heading, which already
 // held a "View all" button — folding from it would have put a button inside a
 // button, which is invalid and which screen readers flatten.
+//
+// The progress screen is the exception. The panel IS the page there, with
+// nothing beside it to hand the width back to, so the heading is only a
+// heading and the content is always open.
 check(
   "the panel folds from its own heading",
   /aria-expanded=\{sections\.panel\}/.test(dashboard)
     && /className="np-progress-title"/.test(dashboard)
-    && /\{sections\.panel && \(/.test(dashboard)
+    && /\{panelOpen && \(/.test(dashboard)
+    && /const panelOpen = standalone \|\| sections\.panel;/.test(dashboard)
+);
+check(
+  "on its own screen it does not fold, and its heading is not a control",
+  dashboard.includes('<div className="np-progress-title">{heading}</div>')
 );
 check(
   "achievements and recently-completed fold on their own",
@@ -116,6 +125,13 @@ check(
 check(
   "the folded rail keeps its heading readable, turned on its side",
   /\.np-progress-panel\.is-folded \.np-progress-title h2 \{[^}]*writing-mode: vertical-rl/.test(dashboardCss)
+);
+// Full bleed on its own screen: the column it sits in, the same width as the
+// header above it, rather than a narrow card floating in the middle of it.
+check(
+  "the progress screen fills its column rather than sitting in the middle of it",
+  !/\.np-progress-panel--standalone \{[^}]*max-width/.test(dashboardCss)
+    && !/\.np-progress-extras \{[^}]*max-width/.test(dashboardCss)
 );
 check(
   "the arrow points the way the panel will move, by swapping icon rather than rotating one",
