@@ -1820,6 +1820,7 @@ export const FR: Record<string, string> = {
   "Manage your contact details, learning preferences, and words you have already learned.": "Gère tes coordonnées, tes préférences d'apprentissage et les mots que tu connais déjà.",
   "Pick any colour": "Choisir n'importe quelle couleur",
   "Read full course": "Lire tout le cours",
+  "Show {n} more languages": "Afficher {n} autres langues",
   "Reset to green": "Revenir au vert",
   "{n} sections": "{n} sections",
   "Advanced: colour any part": "Avancé : colorer chaque élément",

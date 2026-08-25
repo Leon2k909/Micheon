@@ -6,7 +6,6 @@ import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn"
 import { VIVRE_EN_FRANCE_DE } from "@/lib/vivreEnFranceTranslationsDe";
 import { VIVRE_EN_FRANCE_EN } from "@/lib/vivreEnFranceTranslationsEn";
 import { CSHARP_COURSE_DE } from "@/lib/csharpCourseDe";
-import { uiIsGerman } from "@/lib/i18n";
 import type { Block, Course, Lesson } from "@/lib/courses";
 
 /**
@@ -158,6 +157,20 @@ export function useTranslationLanguage(): TranslationLanguage {
 // ── reading a course in the interface language ──────────────────────────────
 
 /**
+ * Which app languages have this course written out, and in what.
+ *
+ * A table rather than a German-or-not question. As a ternary it would hand a
+ * French reader the English course and call that correct; as a table it says
+ * what is actually true — German has a translation, and the day French does,
+ * the French app picks it up here without another branch. An app language
+ * with no table falls through to "off", which is the English the course is
+ * written in: the honest answer while nobody has written it.
+ */
+const COURSE_READING_BY_APP: Partial<Record<"en" | "de" | "fr", TranslationLanguage>> = {
+  de: "de",
+};
+
+/**
  * Which language a course's own text should be READ in.
  *
  * The tap-to-reveal above is the right shape for a language course: the
@@ -172,7 +185,7 @@ export function useTranslationLanguage(): TranslationLanguage {
  */
 export function courseReadingLanguage(course: Pick<Course, "kind">): TranslationLanguage {
   if (course.kind !== "programming") return "off";
-  return uiIsGerman() ? "de" : "off";
+  return COURSE_READING_BY_APP[resolveInterfaceLanguage()] ?? "off";
 }
 
 /** Translate, or keep the original when nothing is written for it yet. */
