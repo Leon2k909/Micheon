@@ -1358,6 +1358,7 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 
 function Header({
   avatar,
+  atHome,
   onSignOut,
   equippedBadge,
   onNavigate,
@@ -1371,6 +1372,8 @@ function Header({
   userName,
 }: {
   avatar?: string;
+  /** The figures belong beside the greeting, so they travel with it. */
+  atHome: boolean;
   onSignOut: () => void;
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
@@ -1504,7 +1507,11 @@ function Header({
         <p>Hi, {firstName}!</p>
         <span>{ui("Ready to learn today?")}</span>
       </div>
+      {/* The cell stays whether or not it has figures in it: it is the middle
+          column of a three-column header, and taking it out would move the
+          search and the avatar into its place instead of leaving them right. */}
       <div className="np-header-stats">
+        {atHome && <>
         <StatChip kind="flame" label={ui("Days learned")} value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
@@ -1513,6 +1520,7 @@ function Header({
             shown it bare, so this matches that too. */}
         <StatChip kind="star" label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
         <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+        </>}
       </div>
       <div className="np-header-actions">
         <div className="np-search-wrap" ref={searchWrapRef}>
@@ -4497,6 +4505,7 @@ export default function NewUiPrototype({
           />
           <div className="np-app-area">
             <Header
+              atHome={activeView === "home"}
               avatar={profile?.avatar}
               onSignOut={signOutOfPrototype}
               equippedBadge={shopUnlocked ? equippedShopBadge : null}
