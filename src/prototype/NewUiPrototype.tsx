@@ -169,12 +169,15 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
  *
  * All three belong to the German course for now — "Bitte erstelle jetzt noch
  * keine Logik für andere Sprachen" — so they are imported flat rather than
- * chosen per language. The skyline sits behind the mascot in the banner; the
+ * chosen per language - except the face of the language card, which now has
+ * a German picture of its own and falls back to the general one for any
+ * other course. The skyline sits behind the mascot in the banner; the
  * other two are the faces of the two cards under "Was möchtest du heute
  * lernen?".
  */
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
+import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
@@ -433,6 +436,16 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
   .flatMap((row) => (row.kind === "nav" ? [row.id] : []));
 
 /** Practice is a pencil in the sidebar; a speech bubble everywhere else. */
+/**
+ * The face of the language card.
+ *
+ * German has a picture of its own now. Every other course keeps the general
+ * one, so adding a language does not need artwork before it can be listed.
+ */
+function languageCardArt(learnsEnglish: boolean) {
+  return learnsEnglish ? homeLanguagesImage : homeLanguagesGermanImage;
+}
+
 const NAV_GROUP_ICONS: Partial<Record<PrototypeView, ComponentType<{ className?: string }>>> = {
   practice: Pencil,
 };
@@ -1933,7 +1946,7 @@ function CourseHero({
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(learnsEnglish)} width={1200} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
@@ -2089,7 +2102,7 @@ function LanguageCard({
           to its foot, so far more of the artwork is visible; progress and the
           button sit below it on the plain card. */}
       <div className="np-home-choice-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={homeLanguagesImage} width={1200} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code === "en")} width={1200} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
           <span aria-hidden="true" className="np-home-choice-flag"><FlagRoundel id={courseFlagId} /></span>

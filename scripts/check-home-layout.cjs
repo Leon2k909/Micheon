@@ -31,11 +31,11 @@ const i18n = read("src/lib/i18n.ts");
 // Stored as WebP: the same pictures, re-encoded through the browser's own
 // encoder because the startup guard rightly refuses megabyte PNGs on the
 // first screen — 6.4MB of source became 327KB with the artwork unchanged.
-// The country card is not in this table any more: it draws one of two
-// pictures depending on the country selected, so it is pinned below.
+// Neither card is in this table any more. Each draws one of two pictures -
+// the country card by the country selected, the language card by the
+// language being learned - so both are pinned below as mappings.
 const PICTURES = [
   ["home-banner-sunrise-v1.webp", "homeBannerImage", "np-home-banner-sky"],
-  ["home-languages-de-v2.webp", "homeLanguagesImage", "np-course-art"],
 ];
 
 /** In the tree, the real thing rather than a placeholder, and imported. */
@@ -61,6 +61,27 @@ for (const [file, binding, className] of PICTURES) {
     `${binding} is imported but not drawn as ${className}`
   );
 }
+
+// ── the language card wears the language you are learning ────────────────
+// German has a picture of its own. Every other course keeps the general one,
+// so a language can be listed before anybody has drawn anything for it. The
+// failure worth catching is not a missing file but a card that has stopped
+// following the course.
+pinPicture("home-languages-de-v2.webp", "homeLanguagesImage");
+pinPicture("home-languages-german-v1.webp", "homeLanguagesGermanImage");
+for (const line of [
+  "function languageCardArt(learnsEnglish: boolean) {",
+  "  return learnsEnglish ? homeLanguagesImage : homeLanguagesGermanImage;",
+]) {
+  assert.ok(
+    shell.includes(line),
+    "languageCardArt no longer picks the German picture for the German course: " + line
+  );
+}
+assert.ok(
+  (shell.match(/src=\{languageCardArt\(/g) || []).length === 2,
+  "both language cards should draw languageCardArt — one of them has gone back to a fixed picture"
+);
 
 // ── the country card wears the country you picked ─────────────────────────
 // One picture served both countries and it draws Berlin — the Brandenburg
