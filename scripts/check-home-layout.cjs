@@ -63,15 +63,19 @@ for (const [file, binding, className] of PICTURES) {
 }
 
 // ── the language card wears the language you are learning ────────────────
-// German has a picture of its own. Every other course keeps the general one,
-// so a language can be listed before anybody has drawn anything for it. The
-// failure worth catching is not a missing file but a card that has stopped
-// following the course.
+// German and British English each have a picture of their own. Anything else
+// keeps the general one, so a language can be listed before anybody has drawn
+// anything for it — French already is. Keyed on the language code rather than
+// on a German-or-not flag, because that flag handed French the German scene.
+// The failure worth catching is not a missing file but a card that has
+// stopped following the course.
 pinPicture("home-languages-de-v2.webp", "homeLanguagesImage");
 pinPicture("home-languages-german-v1.webp", "homeLanguagesGermanImage");
+pinPicture("home-languages-uk-v1.webp", "homeLanguagesUkImage");
 for (const line of [
-  "function languageCardArt(learnsEnglish: boolean) {",
-  "  return learnsEnglish ? homeLanguagesImage : homeLanguagesGermanImage;",
+  '  if (targetCode === "de") return homeLanguagesGermanImage;',
+  '  if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;',
+  "  return homeLanguagesImage;",
 ]) {
   assert.ok(
     shell.includes(line),

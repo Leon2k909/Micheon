@@ -178,6 +178,7 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
+import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
@@ -439,11 +440,17 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
 /**
  * The face of the language card.
  *
- * German has a picture of its own now. Every other course keeps the general
- * one, so adding a language does not need artwork before it can be listed.
+ * Keyed on the language being learned rather than on a German-or-not flag,
+ * because French is already listed and Spanish is next: an unknown code has
+ * to fall back rather than be handed the German picture. British and
+ * American English are the same course read with a different spelling, so
+ * they are told apart here too - the British one has its own scene, the
+ * American one keeps the general picture until somebody draws it one.
  */
-function languageCardArt(learnsEnglish: boolean) {
-  return learnsEnglish ? homeLanguagesImage : homeLanguagesGermanImage;
+function languageCardArt(targetCode: string, englishVariant: "british" | "american" | null) {
+  if (targetCode === "de") return homeLanguagesGermanImage;
+  if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
+  return homeLanguagesImage;
 }
 
 const NAV_GROUP_ICONS: Partial<Record<PrototypeView, ComponentType<{ className?: string }>>> = {
@@ -1946,7 +1953,7 @@ function CourseHero({
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(learnsEnglish)} width={1200} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
@@ -2093,6 +2100,9 @@ function LanguageCard({
   // round the learner is going, not by the stored course id — several accounts
   // store "german", and reading it alone showed some of them the wrong flag.
   const courseFlagId = learningFlagId(getActiveCourseId(profile));
+  // Which English, for the picture: the two spellings are one course, and the
+  // scene behind it is the one thing that can tell them apart on this card.
+  const englishVariant = sides.target.code === "en" ? resolveEnglishVariant(getEnglishVariant()) : null;
   const percent = packProgress ? packProgress.percent : 0;
 
   return (
@@ -2102,7 +2112,7 @@ function LanguageCard({
           to its foot, so far more of the artwork is visible; progress and the
           button sit below it on the plain card. */}
       <div className="np-home-choice-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code === "en")} width={1200} />
+        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
           <span aria-hidden="true" className="np-home-choice-flag"><FlagRoundel id={courseFlagId} /></span>
