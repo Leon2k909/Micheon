@@ -662,18 +662,6 @@ button { cursor: pointer; }
   outline-offset: 3px;
 }
 
-/* Settings chrome that must not paint when it has nothing to frame.
-   In sidebar mode a SettingsCategory renders null unless it is the selected
-   one, so a wrapper keeps its background and padding around no content at all
-   (a stray rounded bar), and a section that draws a leading separator draws a
-   rule with nothing above it. Both were reported as "random fake dividers".
-   Checking direct children was not enough: the left column group always
-   contains the nested "More settings" group, so with a category from the
-   OTHER column selected it kept its padded shell — the reported "random
-   rounded thing". A group earns its chrome only when a category actually
-   rendered inside it (.settings-category marks both render modes). */
-.settings-group:not(:has(.settings-category)) { display: none; }
-
 .settings-rule-above { margin-top: 1.25rem; }
 .settings-rule-above:not(:first-child) {
   border-top: 1px solid var(--border);
@@ -10819,173 +10807,45 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   box-shadow: none !important;
 }
 
-/* Settings: a sidebar of categories, one panel.
+/* Settings: one column of categories, each opening under its own row.
 
-   Ten collapsed cards down a page meant finding anything was a matter of
-   reading ten descriptions and guessing, then scrolling back when you guessed
-   wrong. Every category is visible at once now and one of them is open. */
-.settings-layout {
-  display: grid;
-  grid-template-columns: minmax(180px, 216px) minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
+   It was a sidebar with a panel beside it. That showed one category at a
+   time and put the name you pressed in a different column from the thing it
+   opened, so comparing two settings meant crossing the page and back. */
+.settings-layout { display: block; }
 
-.settings-nav {
-  position: sticky;
-  top: 12px;
-  display: grid;
-  gap: 3px;
-  padding: 8px;
-  border: 1px solid var(--card-edge, var(--border));
-  border-radius: 20px;
-  background: var(--surface-2);
-}
-
-/* Search lives at the top of the sidebar: finding a setting by typing and
-   finding it by picking are the same job, so they belong in the same place
-   rather than the search sitting above the entire page. */
-.settings-nav-search { margin-bottom: 6px; }
-.settings-nav-search .settings-search { margin: 0; }
-
-/* Filtering changes the panel contents, not the search control itself. Keeping
-   the field anchored means a learner can refine or clear a query without the
-   control disappearing after the first character. */
-.settings-layout.is-searching .settings-nav {
-  align-self: start;
-}
-
-.settings-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 11px;
-  border-radius: 13px;
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 800;
-  text-align: left;
-  transition: background 120ms ease, color 120ms ease;
-}
-
-.settings-nav-item:hover { background: var(--surface-3); color: var(--text-1); }
-
-.settings-nav-item.is-active {
-  background: var(--accent-dim);
-  color: var(--accent-ink, var(--accent));
-}
-
-.settings-nav-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
-  background: var(--surface);
-  color: inherit;
-}
-
-.settings-nav-item.is-active .settings-nav-icon { background: var(--surface); }
-
-.settings-nav-label { min-width: 0; overflow-wrap: anywhere; }
-
-.settings-panel { min-width: 0; }
+/* The search is the first row of the list rather than a banner over the
+   page: typing to find a setting and picking one out of the list are the
+   same job, so they read as one thing. */
+.settings-layout-search .settings-search { margin-top: 0; }
 
 .settings-panel-head {
   display: flex;
-  /* Top, not centre. Centred, the icon hung off the middle of a header whose
-     height depended on whether the description wrapped — two lines in most
-     categories, one in "Desktop app & updates" and "Learning options". So the
-     icon and title sat 26px down in five of them and 16px down in two, and
-     moved as you clicked between them. Anchored to the top they cannot. */
+  /* Top, not centre. Centred, the icon hangs off the middle of a row whose
+     height depends on whether the description wrapped, so it would sit lower
+     in some rows than in others all the way down the column. */
   align-items: flex-start;
   gap: 11px;
-  /* The gap under a category header belongs to the header, and is set once. */
-  margin-bottom: 14px;
-  padding: 12px 2px 0;
+  min-width: 0;
 }
 
 /* Two lines are reserved whether or not the description needs them, so every
-   header is the same height and the panel body starts at the same place in
-   every category. Without this the icon would be steady but the content under
-   it would still jump by 19px. `lh` rather than a pixel value, so it follows
-   the font size and the app zoom. */
+   row in the column is the same height. `lh` rather than a pixel value, so it
+   follows the font size and the app zoom. */
 .settings-panel-desc {
   min-height: 2lh;
 }
-
-/* In the sidebar, the group boxes are scaffolding you cannot see.
- *
- * The categories are wrapped in four of them, left over from when settings
- * were a page of stacked cards: two with p-5, one with no side padding and a
- * rule above it, one with px-5 pt-2. Only one category is on screen at a time
- * here, so the box adds nothing to read — except its own inset, which moved
- * the category inside it. Clicking from Account details to Appearance shifted
- * the icon and the title 20px sideways; Flashcards to Pet & mascot dropped
- * them 12px down.
- *
- * The header was already anchored inside its box (.settings-panel-head). This
- * is the other half of the same fix: now every box starts in the same place.
- *
- * Sidebar only. While searching, the categories are a list again and the
- * grouping is part of what you are reading, so the boxes stay.
- */
-.settings-layout:not(.is-searching) .settings-group {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-
-/* One gap under every category header.
- *
- * These categories were written before the sidebar layout existed, back when
- * each was a card that set its own spacing, and they still carried it: mt-3 in
- * Appearance, mt-5 in Learning options, nothing at all in the ones whose body
- * is a component like <DataAndStorage />. Stacked on the header's own margin
- * that produced 26px, 34px and 14px under three identical headers, which is
- * exactly as arbitrary as it looks when you click between them.
- *
- * The container owns it now. Scoped to `section` so it only applies in sidebar
- * mode — the search results still render the older card, where the body does
- * need its own gap from the button above it. */
-section.settings-category > div > :first-child { margin-top: 0; }
 
 .settings-panel-icon {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
   background: var(--accent-dim);
   color: var(--accent-ink, var(--accent));
-}
-
-/* On a narrow window the sidebar becomes a row above the panel rather than
-   squeezing both into a column that fits neither. */
-@media (max-width: 900px) {
-  .settings-layout { grid-template-columns: minmax(0, 1fr); }
-  .settings-nav {
-    position: static;
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .settings-nav::-webkit-scrollbar { display: none; }
-  .settings-nav-label { white-space: nowrap; }
-  .settings-layout.is-searching .settings-nav {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    overflow: visible;
-  }
-  .settings-layout.is-searching .settings-nav-search { margin: 0; }
 }
 
 /* Word-order is the tallest ordinary lesson stage. On a standard 1080p
@@ -11616,9 +11476,11 @@ html[data-theme="dark"] {
   outline: none;
 }
 
+/* Border only, like every other focused field here. A 0-blur shadow just
+   outside an accent border traces a second rounded rectangle in the same
+   colour, which is the double border check-settings-search exists to catch. */
 .create-library-select select:focus-visible {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .create-folders-grid {

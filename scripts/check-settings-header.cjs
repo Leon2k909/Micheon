@@ -78,31 +78,23 @@ if (suspects.length) {
   );
 }
 
-// ── 5. the group boxes do not move the category inside them ───────────────
-// Rules 1–3 hold the header steady inside its box. This one holds the box.
-//
-// The categories sit in four wrappers left over from the old stacked-card
-// page: two with p-5, one with no side padding and a rule above it, one with
-// px-5 pt-2. Only one category shows at a time in the sidebar, so a wrapper
-// contributes nothing to read there — only its inset, which moved whichever
-// category sat inside it. Measured in the running app with this reset lifted:
-// the icon sat at y=463 in the first seven categories and y=451 in the last
-// four, and Account details started 20px further right than Appearance.
-const flat = /\.settings-layout:not\(\.is-searching\)\s+\.settings-group\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
-if (!flat) {
+// ── 5. every row in the column is the same height ─────────────────────────
+// Rules 1–3 hold the header steady inside one row. This one holds the column:
+// with ten of them on screen at once, a description that wraps in five of them
+// and not in the other five would step the icons down the page. The reserved
+// two lines are what keep the rows level, so nothing may put a fixed height on
+// the row and undo it.
+const rowDesc = /\.settings-panel-desc\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+if (/\bheight:/.test(rowDesc) && !/min-height:/.test(rowDesc)) {
   failures.push(
-    "the group boxes are not flattened in the sidebar, so each category is offset by whichever wrapper "
-    + "it happens to sit in — 12px down between two of them, 20px sideways between two others"
+    "the description has a fixed height rather than a reserved minimum, so a long one is clipped "
+    + "instead of the short ones being padded out"
   );
-} else {
-  for (const prop of ["margin", "padding", "border"]) {
-    if (!new RegExp(prop + ":[ ]*0").test(flat)) {
-      failures.push(
-        "the sidebar group reset no longer zeroes " + prop + ", so that wrapper offsets its category again"
-      );
-    }
-  }
 }
+if (!/className="settings-panel-head/.test(component)) {
+  failures.push("SettingsCategory no longer renders .settings-panel-head, so the flex-start rule matches nothing");
+}
+
 
 if (failures.length) {
   console.error("FAIL check-settings-header");

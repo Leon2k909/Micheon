@@ -1,9 +1,5 @@
 import {
-  createContext,
-  useContext,
-  useEffect,
   useId,
-  useMemo,
   useState,
   type ComponentType,
   type ReactNode,
@@ -13,103 +9,33 @@ import { cn } from "@/lib/utils";
 import { ui } from "@/lib/i18n";
 
 /**
- * Settings as a list of categories with a sidebar, not a column of accordions.
+ * Settings as one column of categories, each opening under its own row.
  *
- * Ten collapsed cards stacked down a page means finding anything is a matter of
- * reading ten descriptions and guessing which one hides it, then scrolling back
- * up when you guessed wrong. A sidebar shows every category at once and keeps
- * one of them open, which is how settings work in most things people already
- * use.
+ * For a while this was a sidebar with a single panel beside it. That put the
+ * list and the thing you had just opened in two different columns and only
+ * ever showed one category at a time, so comparing two settings, or checking
+ * what you changed a moment ago, meant clicking back and forth across the
+ * page. A column of disclosures shows the same names and opens any number of
+ * them in place, under the name you pressed.
  *
- * The categories register themselves, so the sidebar is built from whatever is
- * actually rendered rather than from a second list that has to be kept in step
- * with it. That matters here because several categories are conditional.
+ * The search box sits above the list rather than over the whole page, because
+ * typing to find a setting and picking one out of the list are the same job.
  */
-type Registered = {
-  id: string;
-  title: string;
-  description: string;
-  icon: ComponentType<{ className?: string }>;
-  hidden: boolean;
-};
-
-type NavContext = {
-  register: (entry: Registered) => void;
-  unregister: (id: string) => void;
-  selected: string | null;
-  select: (id: string) => void;
-  /** Search is on: show every match at once instead of one category. */
-  listMode: boolean;
-};
-
-const SettingsNavContext = createContext<NavContext | null>(null);
-
-export function SettingsCategoryLayout({ children, searching, search }: {
+export function SettingsCategoryLayout({ children, search }: {
   children: ReactNode;
-  /** While searching, every matching category is shown in the panel. */
-  searching: boolean;
-  /** Rendered at the top of the sidebar: searching for a setting and
-   *  picking one from a list are the same job, so they belong together
-   *  rather than the search sitting above the whole page. */
+  /** Rendered above the categories, as part of the same list. */
   search?: ReactNode;
 }) {
-  const [entries, setEntries] = useState<Registered[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-
-  const value = useMemo<NavContext>(() => ({
-    register: (entry) => setEntries((current) => {
-      // Replace in place rather than re-appending: a category re-registers
-      // whenever its title or hidden state changes, and moving it to the end
-      // would shuffle the sidebar while you were looking at it. Mount order
-      // is DOM order for siblings, so first registration sets the position.
-      const at = current.findIndex((item) => item.id === entry.id);
-      if (at === -1) return [...current, entry];
-      const next = [...current];
-      next[at] = entry;
-      return next;
-    }),
-    unregister: (id) => setEntries((current) => current.filter((item) => item.id !== id)),
-    selected,
-    select: setSelected,
-    listMode: searching,
-  }), [selected, searching]);
-
-  const visible = entries.filter((entry) => !entry.hidden);
-  // Nothing chosen yet, or the chosen one disappeared: fall back to the first.
-  const active = visible.some((entry) => entry.id === selected) ? selected : visible[0]?.id ?? null;
-
   return (
-    <SettingsNavContext.Provider value={{ ...value, selected: active }}>
-      <div className={cn("settings-layout", searching && "is-searching")}>
-        <nav aria-label={ui("Settings categories")} className="settings-nav">
-          {search && <div className="settings-nav-search">{search}</div>}
-          {!searching && visible.map((entry) => (
-              <button
-                key={entry.id}
-                type="button"
-                aria-current={entry.id === active ? "page" : undefined}
-                className={cn("settings-nav-item", entry.id === active && "is-active")}
-                onClick={() => setSelected(entry.id)}
-              >
-                <span className="settings-nav-icon">
-                  <entry.icon aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <span className="settings-nav-label">{entry.title}</span>
-              </button>
-          ))}
-        </nav>
-        <div className="settings-panel">{children}</div>
-      </div>
-    </SettingsNavContext.Provider>
+    <div className="settings-layout">
+      {search && <div className="settings-layout-search">{search}</div>}
+      {children}
+    </div>
   );
 }
 
 /**
- * One settings category.
- *
- * Inside a layout it registers itself and renders only when chosen. Outside
- * one — and while a search is running — it falls back to the collapsible card
- * it has always been, so search results still read as a list of sections.
+ * One settings category: a row you press, and its panel underneath.
  */
 export function SettingsCategory({
   children,
@@ -135,40 +61,9 @@ export function SettingsCategory({
   const [open, setOpen] = useState(defaultOpen);
   const [everOpened, setEverOpened] = useState(defaultOpen);
   const panelId = useId();
-  const nav = useContext(SettingsNavContext);
-  const id = panelId;
-
-  useEffect(() => {
-    if (!nav) return;
-    nav.register({ id, title, description, icon: Icon, hidden });
-    return () => nav.unregister(id);
-    // register is stable per render of the layout; title/hidden are what change
-  }, [id, title, description, hidden]);
 
   if (hidden) return null;
 
-  // ── sidebar mode ────────────────────────────────────────────────────────
-  if (nav && !nav.listMode) {
-    if (nav.selected !== id) return null;
-    return (
-      <section aria-label={title} className="settings-category">
-        <header className="settings-panel-head">
-          <span className="settings-panel-icon">
-            <Icon aria-hidden="true" className="h-4 w-4" />
-          </span>
-          <span className="settings-panel-text min-w-0">
-            <span className="block text-sm font-black text-[var(--text-1)]">{title}</span>
-            {/* Named class, not a Tailwind selector: index.css reserves two
-                lines here so every category's header is the same height. */}
-            <span className="settings-panel-desc mt-0.5 block text-xs font-semibold text-[var(--text-3)]">{description}</span>
-          </span>
-        </header>
-        <div id={panelId}>{children}</div>
-      </section>
-    );
-  }
-
-  // ── the original card, used while searching ─────────────────────────────
   const isOpen = open || forceOpen;
   return (
     <div className="settings-category mt-3">
@@ -187,13 +82,17 @@ export function SettingsCategory({
         }}
         type="button"
       >
-        <span className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[var(--accent-dim)] text-[var(--accent)]">
+        {/* Named classes, not Tailwind selectors: index.css anchors the icon to
+            the top of the row and reserves two lines for the description, so
+            ten rows down the column are the same height whatever their text
+            does. */}
+        <span className="settings-panel-head min-w-0">
+          <span className="settings-panel-icon">
             <Icon aria-hidden="true" className="h-4 w-4" />
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-black text-[var(--text-1)]">{title}</span>
-            <span className="mt-0.5 block text-xs font-semibold leading-snug text-[var(--text-3)]">{description}</span>
+            <span className="settings-panel-desc mt-0.5 block text-xs font-semibold leading-snug text-[var(--text-3)]">{description}</span>
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-2">
