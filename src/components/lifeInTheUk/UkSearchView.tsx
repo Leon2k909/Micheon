@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useMemo, useState } from "react";
 import { BookOpen, CalendarClock, HelpCircle, Layers, Search } from "lucide-react";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { CountryPack } from "@/lib/countryStudies";
 import { UK_PACK } from "@/lib/countryPacks";
@@ -71,7 +71,9 @@ export function UkSearchView({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={ui("Search — try 1066, Churchill, Magna Carta")}
+            // Built from the pack rather than fixed, or the France course
+            // would invite you to search for Churchill.
+            placeholder={uiFmt("Search — try {examples}", { examples: examples.slice(0, 3).join(", ") })}
             className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-4 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
             type="search"
           />
