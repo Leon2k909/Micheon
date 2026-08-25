@@ -1427,6 +1427,8 @@ export default function GamificationPanel({
                       {([
                         ["monkey", "Monkey world", "Default \u2014 a calm lesson landscape with the monkey beside you."],
                         ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
+                        ["bubbles", "Speech bubbles", "Soft conversation bubbles drifting behind the lesson."],
+                        ["atlas", "Globe and flight path", "A wire globe, a dashed route and a small plane."],
                         ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
                         ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
                       ] as const).map(([value, label, note]) => {

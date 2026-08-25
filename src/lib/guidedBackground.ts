@@ -1,7 +1,7 @@
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 /** Visual backdrop used behind the focused guided lesson. */
-export type GuidedBackground = "monkey" | "garden" | "dawn" | "plain" | "custom";
+export type GuidedBackground = "monkey" | "garden" | "bubbles" | "atlas" | "dawn" | "plain" | "custom";
 
 export const GUIDED_BACKGROUND_KEY = "micheon-guided-background-v1";
 export const GUIDED_CUSTOM_BACKGROUND_KEY = "micheon-guided-custom-background-v1";
@@ -41,7 +41,10 @@ export function getGuidedCustomBackground(): string | null {
 export function getGuidedBackground(): GuidedBackground {
   const stored = readLocal(GUIDED_BACKGROUND_KEY);
   if (stored === "custom" && getGuidedCustomBackground()) return "custom";
-  return stored === "garden" || stored === "dawn" || stored === "plain" || stored === "monkey" ? stored : "monkey";
+  // Anything not on this list falls back, so a new backdrop that is not added
+  // here is chosen once and forgotten by the next reload.
+  const known = ["monkey", "garden", "bubbles", "atlas", "dawn", "plain"];
+  return known.includes(stored ?? "") ? (stored as GuidedBackground) : "monkey";
 }
 
 export function setGuidedBackground(background: GuidedBackground) {

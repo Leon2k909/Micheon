@@ -4377,6 +4377,18 @@ a { color: inherit; text-decoration: none; }
     url("./prototype/assets/guided-monkey-world-v1.png") center / cover no-repeat;
 }
 
+.guided-session.fs-app.prototype-guided-session.guided-background-bubbles {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='3' stroke-linejoin='round' opacity='.55'%3E%3Cg opacity='.9'%3E%3Crect x='78' y='96' width='214' height='126' rx='38'/%3E%3Cpath d='M124 222 l0 40 l43 -40'/%3E%3C/g%3E%3Cg opacity='.6'%3E%3Crect x='352' y='190' width='150' height='92' rx='28'/%3E%3Cpath d='M386 282 l0 29 l31 -29'/%3E%3C/g%3E%3Cg opacity='.75'%3E%3Crect x='846' y='108' width='232' height='138' rx='42'/%3E%3Cpath d='M898 246 l0 44 l47 -44'/%3E%3C/g%3E%3Cg opacity='.5'%3E%3Crect x='628' y='322' width='168' height='100' rx='30'/%3E%3Cpath d='M666 422 l0 32 l34 -32'/%3E%3C/g%3E%3Cg opacity='.8'%3E%3Crect x='126' y='470' width='196' height='118' rx='36'/%3E%3Cpath d='M170 588 l0 38 l40 -38'/%3E%3C/g%3E%3Cg opacity='.55'%3E%3Crect x='902' y='512' width='176' height='108' rx='32'/%3E%3Cpath d='M942 620 l0 35 l37 -35'/%3E%3C/g%3E%3Cg opacity='.45'%3E%3Crect x='456' y='596' width='138' height='86' rx='26'/%3E%3Cpath d='M488 682 l0 28 l29 -28'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.28'%3E%3Ccircle cx='150' cy='159' r='7'/%3E%3Ccircle cx='185' cy='159' r='7'/%3E%3Ccircle cx='220' cy='159' r='7'/%3E%3Ccircle cx='930' cy='177' r='7'/%3E%3Ccircle cx='962' cy='177' r='7'/%3E%3Ccircle cx='994' cy='177' r='7'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat,
+    linear-gradient(160deg, #fdfaf3 0%, #f6f4ee 52%, #eef4f6 100%);
+}
+
+.guided-session.fs-app.prototype-guided-session.guided-background-atlas {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='2.6' opacity='.5'%3E%3Ccircle cx='600' cy='400' r='168'/%3E%3Cellipse cx='600' cy='400' rx='40' ry='168'/%3E%3Cellipse cx='600' cy='400' rx='82' ry='168'/%3E%3Cellipse cx='600' cy='400' rx='124' ry='168'/%3E%3Cellipse cx='600' cy='288' rx='125' ry='15'/%3E%3Cellipse cx='600' cy='342' rx='158' ry='19'/%3E%3Cellipse cx='600' cy='400' rx='168' ry='20'/%3E%3Cellipse cx='600' cy='458' rx='158' ry='19'/%3E%3Cellipse cx='600' cy='512' rx='125' ry='15'/%3E%3C/g%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='3' stroke-linecap='round' stroke-dasharray='11 14' opacity='.55'%3E%3Cpath d='M196 566 Q 470 316 762 214'/%3E%3Cpath d='M446 690 Q 760 620 1046 452'/%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.5'%3E%3Ccircle cx='196' cy='566' r='9'/%3E%3Ccircle cx='446' cy='690' r='9'/%3E%3Ccircle cx='1046' cy='452' r='9'/%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.62' transform='translate(788 202) rotate(-20)'%3E%3Cellipse cx='0' cy='0' rx='50' ry='7'/%3E%3Cpath d='M10 -4 L-26 -36 L-12 -36 L26 -4 Z'/%3E%3Cpath d='M10 4 L-26 36 L-12 36 L26 4 Z'/%3E%3Cpath d='M-40 -3 L-56 -19 L-47 -19 L-29 -3 Z'/%3E%3Cpath d='M-40 3 L-56 19 L-47 19 L-29 3 Z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat,
+    linear-gradient(150deg, #f9fbfd 0%, #f3f4f2 54%, #f8f4ec 100%);
+}
+
 .guided-session.fs-app.prototype-guided-session.guided-background-dawn {
   background: linear-gradient(135deg, #fff8e9 0%, #f7f2e8 48%, #edf7e6 100%);
 }
@@ -6620,6 +6632,18 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-b
   background:
     linear-gradient(90deg, rgba(11, 14, 19, 0.86) 0%, rgba(11, 14, 19, 0.8) 46%, rgba(11, 14, 19, 0.74) 100%),
     url("./prototype/assets/guided-monkey-world-v1.png") center / cover no-repeat;
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-bubbles {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='3' stroke-linejoin='round' opacity='.55'%3E%3Cg opacity='.9'%3E%3Crect x='78' y='96' width='214' height='126' rx='38'/%3E%3Cpath d='M124 222 l0 40 l43 -40'/%3E%3C/g%3E%3Cg opacity='.6'%3E%3Crect x='352' y='190' width='150' height='92' rx='28'/%3E%3Cpath d='M386 282 l0 29 l31 -29'/%3E%3C/g%3E%3Cg opacity='.75'%3E%3Crect x='846' y='108' width='232' height='138' rx='42'/%3E%3Cpath d='M898 246 l0 44 l47 -44'/%3E%3C/g%3E%3Cg opacity='.5'%3E%3Crect x='628' y='322' width='168' height='100' rx='30'/%3E%3Cpath d='M666 422 l0 32 l34 -32'/%3E%3C/g%3E%3Cg opacity='.8'%3E%3Crect x='126' y='470' width='196' height='118' rx='36'/%3E%3Cpath d='M170 588 l0 38 l40 -38'/%3E%3C/g%3E%3Cg opacity='.55'%3E%3Crect x='902' y='512' width='176' height='108' rx='32'/%3E%3Cpath d='M942 620 l0 35 l37 -35'/%3E%3C/g%3E%3Cg opacity='.45'%3E%3Crect x='456' y='596' width='138' height='86' rx='26'/%3E%3Cpath d='M488 682 l0 28 l29 -28'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.28'%3E%3Ccircle cx='150' cy='159' r='7'/%3E%3Ccircle cx='185' cy='159' r='7'/%3E%3Ccircle cx='220' cy='159' r='7'/%3E%3Ccircle cx='930' cy='177' r='7'/%3E%3Ccircle cx='962' cy='177' r='7'/%3E%3Ccircle cx='994' cy='177' r='7'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat,
+    linear-gradient(160deg, #161a21 0%, #12161d 52%, #101820 100%);
+}
+
+html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-atlas {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='2.6' opacity='.5'%3E%3Ccircle cx='600' cy='400' r='168'/%3E%3Cellipse cx='600' cy='400' rx='40' ry='168'/%3E%3Cellipse cx='600' cy='400' rx='82' ry='168'/%3E%3Cellipse cx='600' cy='400' rx='124' ry='168'/%3E%3Cellipse cx='600' cy='288' rx='125' ry='15'/%3E%3Cellipse cx='600' cy='342' rx='158' ry='19'/%3E%3Cellipse cx='600' cy='400' rx='168' ry='20'/%3E%3Cellipse cx='600' cy='458' rx='158' ry='19'/%3E%3Cellipse cx='600' cy='512' rx='125' ry='15'/%3E%3C/g%3E%3Cg fill='none' stroke='%23767f8d' stroke-width='3' stroke-linecap='round' stroke-dasharray='11 14' opacity='.55'%3E%3Cpath d='M196 566 Q 470 316 762 214'/%3E%3Cpath d='M446 690 Q 760 620 1046 452'/%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.5'%3E%3Ccircle cx='196' cy='566' r='9'/%3E%3Ccircle cx='446' cy='690' r='9'/%3E%3Ccircle cx='1046' cy='452' r='9'/%3E%3C/g%3E%3Cg fill='%23767f8d' opacity='.62' transform='translate(788 202) rotate(-20)'%3E%3Cellipse cx='0' cy='0' rx='50' ry='7'/%3E%3Cpath d='M10 -4 L-26 -36 L-12 -36 L26 -4 Z'/%3E%3Cpath d='M10 4 L-26 36 L-12 36 L26 4 Z'/%3E%3Cpath d='M-40 -3 L-56 -19 L-47 -19 L-29 -3 Z'/%3E%3Cpath d='M-40 3 L-56 19 L-47 19 L-29 3 Z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat,
+    linear-gradient(150deg, #10151c 0%, #12151b 54%, #171a20 100%);
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-dawn {
