@@ -2900,36 +2900,51 @@ function ProgressPanel({
     });
   };
 
-  return (
-    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${sections.panel ? " is-open" : " is-folded"}`}>
-      {/* The heading is the control. Folded, the panel closes sideways into
-          a rail at the edge of the column rather than collapsing downwards, so
-          the title turns with it and stays readable. */}
-      <button
-        aria-expanded={sections.panel}
-        aria-label={ui("Your progress")}
-        className="np-progress-title"
-        onClick={() => toggleSection("panel")}
-        title={sections.panel ? ui("Fold away") : ui("Your progress")}
-        type="button"
-      >
-        {sections.panel
-          ? <ChevronRight aria-hidden="true" className="np-side-chevron" />
-          : <ChevronLeft aria-hidden="true" className="np-side-chevron" />}
-        <div>
-          <h2>{ui("Your progress")}</h2>
-          <p>
-            {uiFmt("{earned} of {total} achievements unlocked, {name}.", {
-              earned: earnedAchievements,
-              name: firstName,
-              total: MILESTONES.length,
-            })}
-          </p>
-        </div>
-        <AchievementArt id="week" />
-      </button>
+  // On the progress screen the panel is the page. Nothing sits beside it to
+  // hand the width back to, so there it neither folds nor offers to — the
+  // heading is a heading. In the right rail, where folding buys the page a
+  // whole column, the control stays.
+  const panelOpen = standalone || sections.panel;
+  const heading = (
+    <>
+      <div>
+        <h2>{ui("Your progress")}</h2>
+        <p>
+          {uiFmt("{earned} of {total} achievements unlocked, {name}.", {
+            earned: earnedAchievements,
+            name: firstName,
+            total: MILESTONES.length,
+          })}
+        </p>
+      </div>
+      <AchievementArt id="week" />
+    </>
+  );
 
-      {sections.panel && (
+  return (
+    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${panelOpen ? " is-open" : " is-folded"}`}>
+      {/* Folded, the panel closes sideways into a rail at the edge of the
+          column rather than collapsing downwards, so the title turns with it
+          and stays readable. */}
+      {standalone ? (
+        <div className="np-progress-title">{heading}</div>
+      ) : (
+        <button
+          aria-expanded={sections.panel}
+          aria-label={ui("Your progress")}
+          className="np-progress-title"
+          onClick={() => toggleSection("panel")}
+          title={sections.panel ? ui("Fold away") : ui("Your progress")}
+          type="button"
+        >
+          {sections.panel
+            ? <ChevronRight aria-hidden="true" className="np-side-chevron" />
+            : <ChevronLeft aria-hidden="true" className="np-side-chevron" />}
+          {heading}
+        </button>
+      )}
+
+      {panelOpen && (
         <>
 
       <div className="np-level-card">
