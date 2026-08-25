@@ -21,6 +21,7 @@ import {
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CatalogueImport } from "@/components/create/CatalogueImport";
+import { DelimitedImport } from "@/components/create/DelimitedImport";
 import { ListPager, LongListChoice, ScrollJump, ShowMore } from "@/components/create/LongList";
 import {
   CARD_PAGE_SIZE,
@@ -52,6 +53,31 @@ import {
 
 type Tab = "cards" | "catalogue" | "paste" | "settings" | "share";
 
+export type StudySetUndo = {
+  message: string;
+  restore: (current: StudySet) => StudySet;
+};
+
+const restoreCardsAt = (
+  current: StudyCard[],
+  removed: { card: StudyCard; index: number }[]
+) => {
+  const next = [...current];
+  for (const { card, index } of [...removed].sort((a, b) => a.index - b.index)) {
+    if (next.some((entry) => entry.id === card.id)) continue;
+    next.splice(Math.min(index, next.length), 0, card);
+  }
+  return next;
+};
+
+const removeImportedCards = (ids: string[]): StudySetUndo["restore"] => {
+  const imported = new Set(ids);
+  return (current) => ({
+    ...current,
+    cards: current.cards.filter((card) => !imported.has(card.id)),
+  });
+};
+
 /**
  * The editor.
  *
@@ -70,12 +96,14 @@ export function SetEditor({
   onChange,
   onStudy,
   apiParts,
+  savedAt,
 }: {
   set: StudySet;
   onBack: () => void;
-  onChange: (set: StudySet) => void;
+  onChange: (set: StudySet, undo?: StudySetUndo) => void;
   onStudy: () => void;
   apiParts?: Record<string, unknown>;
+  savedAt: number;
 }) {
   const [tab, setTab] = useState<Tab>("cards");
   const [pasteText, setPasteText] = useState("");
@@ -101,8 +129,8 @@ export function SetEditor({
     setCardsLoaded(CARD_PAGE_SIZE);
   }, []);
 
-  const patch = useCallback((changes: Partial<StudySet>) => {
-    onChange({ ...set, ...changes, updatedAt: new Date().toISOString() });
+  const patch = useCallback((changes: Partial<StudySet>, undo?: StudySetUndo) => {
+    onChange({ ...set, ...changes, updatedAt: new Date().toISOString() }, undo);
   }, [onChange, set]);
 
   const updateCard = useCallback((id: string, changes: Partial<StudyCard>) => {
@@ -110,7 +138,16 @@ export function SetEditor({
   }, [patch, set.cards]);
 
   const removeCard = useCallback((id: string) => {
-    patch({ cards: set.cards.filter((card) => card.id !== id) });
+    const index = set.cards.findIndex((card) => card.id === id);
+    if (index < 0) return;
+    const card = set.cards[index];
+    patch(
+      { cards: set.cards.filter((entry) => entry.id !== id) },
+      {
+        message: ui("Card deleted"),
+        restore: (current) => ({ ...current, cards: restoreCardsAt(current.cards, [{ card, index }]) }),
+      }
+    );
   }, [patch, set.cards]);
 
   const moveCard = useCallback((index: number, delta: number) => {
@@ -131,14 +168,35 @@ export function SetEditor({
   }, []);
 
   const removeSelected = useCallback(() => {
-    patch({ cards: set.cards.filter((card) => !selected.has(card.id)) });
+    const removed = set.cards.flatMap((card, index) => selected.has(card.id) ? [{ card, index }] : []);
+    if (removed.length === 0) return;
+    patch(
+      { cards: set.cards.filter((card) => !selected.has(card.id)) },
+      {
+        message: `${removed.length} ${ui(removed.length === 1 ? "card deleted" : "cards deleted")}`,
+        restore: (current) => ({ ...current, cards: restoreCardsAt(current.cards, removed) }),
+      }
+    );
     setSelected(new Set());
   }, [patch, selected, set.cards]);
 
   const moveSelected = useCallback((toTop: boolean) => {
     const picked = set.cards.filter((card) => selected.has(card.id));
+    if (picked.length === 0) return;
     const rest = set.cards.filter((card) => !selected.has(card.id));
-    patch({ cards: toTop ? [...picked, ...rest] : [...rest, ...picked] });
+    const before = set.cards.map((card) => card.id);
+    patch(
+      { cards: toTop ? [...picked, ...rest] : [...rest, ...picked] },
+      {
+        message: `${picked.length} ${ui(picked.length === 1 ? "card moved" : "cards moved")}`,
+        restore: (current) => {
+          const byId = new Map(current.cards.map((card) => [card.id, card]));
+          const restored = before.flatMap((id) => byId.has(id) ? [byId.get(id)!] : []);
+          const beforeIds = new Set(before);
+          return { ...current, cards: [...restored, ...current.cards.filter((card) => !beforeIds.has(card.id))] };
+        },
+      }
+    );
   }, [patch, selected, set.cards]);
 
   const addBlank = useCallback(() => {
@@ -160,19 +218,48 @@ export function SetEditor({
   }), []);
 
   const addFromCatalogue = useCallback((item: ImportItem) => {
-    patch({ cards: [...set.cards, cardFromImport(item)] });
+    const card = cardFromImport(item);
+    patch(
+      { cards: [...set.cards, card] },
+      { message: ui("1 card imported"), restore: removeImportedCards([card.id]) }
+    );
   }, [cardFromImport, patch, set.cards]);
 
   const addManyFromCatalogue = useCallback((items: ImportItem[]) => {
-    patch({ cards: [...set.cards, ...items.map(cardFromImport)] });
+    const cards = items.map(cardFromImport);
+    if (cards.length === 0) return;
+    patch(
+      { cards: [...set.cards, ...cards] },
+      {
+        message: `${cards.length} ${ui(cards.length === 1 ? "card imported" : "cards imported")}`,
+        restore: removeImportedCards(cards.map((card) => card.id)),
+      }
+    );
   }, [cardFromImport, patch, set.cards]);
   const commitPaste = useCallback(() => {
     const parsed = parsePastedCards(pasteText, Date.now());
     if (parsed.length === 0) return;
-    patch({ cards: [...set.cards, ...parsed] });
+    patch(
+      { cards: [...set.cards, ...parsed] },
+      {
+        message: `${parsed.length} ${ui(parsed.length === 1 ? "card imported" : "cards imported")}`,
+        restore: removeImportedCards(parsed.map((card) => card.id)),
+      }
+    );
     setPasteText("");
     setTab("cards");
   }, [pasteText, patch, set.cards]);
+
+  const commitDelimited = useCallback((cards: StudyCard[]) => {
+    patch(
+      { cards: [...set.cards, ...cards] },
+      {
+        message: `${cards.length} ${ui(cards.length === 1 ? "card imported" : "cards imported")}`,
+        restore: removeImportedCards(cards.map((card) => card.id)),
+      }
+    );
+    setTab("cards");
+  }, [patch, set.cards]);
 
   const toggleStage = useCallback((stage: StudyStage) => {
     const has = set.stages.includes(stage);
@@ -223,14 +310,24 @@ export function SetEditor({
     <div className="space-y-4">
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3.5 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {ui("All sets")}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3.5 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {ui("All sets")}
+            </button>
+            <span
+              aria-live="polite"
+              className="create-save-status"
+              data-saved-at={savedAt}
+            >
+              <Check className="h-3.5 w-3.5" />
+              {ui("Saved")}
+            </span>
+          </div>
           <button
             type="button"
             disabled={ready === 0}
@@ -453,9 +550,9 @@ export function SetEditor({
                       placeholder={ui("Hint or example (optional)")}
                       className="h-8 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 text-xs font-semibold text-[var(--text-3)] outline-none focus:border-[var(--border)] focus:bg-[var(--surface)]"
                     />
-                    {card.source === "catalogue" && (
+                    {(card.source === "catalogue" || card.source === "file") && (
                       <span className="shrink-0 rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-[10px] font-black uppercase text-[var(--accent)]">
-                        {ui("catalogue")}
+                        {ui(card.source === "file" ? "file" : "catalogue")}
                       </span>
                     )}
                   </div>
@@ -548,6 +645,7 @@ export function SetEditor({
             <Plus className="h-4 w-4" />
             {ui("Add")} {parsedPreview.length > 0 ? parsedPreview.length : ""} {ui("cards")}
           </button>
+          <DelimitedImport onImport={commitDelimited} />
         </section>
       )}
 
@@ -598,15 +696,24 @@ export function SetEditor({
                 disabled={usable.length === 0}
                 onClick={() => {
                   if (!parsed) return;
-                  patch({
-                    cards: [...set.cards, ...usable],
-                    // A received set may name its own ladder. Adopt it only if
-                    // this set is still on the default, or the sender would
-                    // silently overwrite a ladder you chose on purpose.
-                    stages: parsed.stages && set.stages.join() === DEFAULT_STAGES.join()
-                      ? parsed.stages
-                      : set.stages,
-                  });
+                  patch(
+                    {
+                      cards: [...set.cards, ...usable],
+                      // A received set may name its own ladder. Adopt it only if
+                      // this set is still on the default, or the sender would
+                      // silently overwrite a ladder you chose on purpose.
+                      stages: parsed.stages && set.stages.join() === DEFAULT_STAGES.join()
+                        ? parsed.stages
+                        : set.stages,
+                    },
+                    {
+                      message: `${usable.length} ${ui(usable.length === 1 ? "card imported" : "cards imported")}`,
+                      restore: (current) => ({
+                        ...removeImportedCards(usable.map((card) => card.id))(current),
+                        stages: set.stages,
+                      }),
+                    }
+                  );
                   setShareText("");
                   setTab("cards");
                 }}

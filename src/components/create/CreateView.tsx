@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft,
-  BookOpen,
+  Check,
   Copy,
   Layers,
   Pencil,
@@ -13,6 +12,7 @@ import {
   Folder as FolderIcon,
   FolderPlus,
   GripVertical,
+  Pin,
   Search,
   Sparkles,
   Square,
@@ -20,6 +20,7 @@ import {
   Timer,
   Trash2,
   Trophy,
+  Undo2,
   X,
 } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
@@ -36,17 +37,20 @@ import {
   resetStudyProgress,
   resolvedFolderId,
   saveStudyFolders,
+  saveStudyProgress,
   saveStudySets,
   setIsStudiable,
+  studySetLibraryStatus,
   studiableCards,
   summariseProgress,
   studyId,
   unfileFolder,
   type StudyFolder,
   type StudySet,
+  type StudySetProgress,
 } from "@/lib/studySets";
 import { isSetDrag, readSetDrag, startSetDrag } from "@/lib/setDrag";
-import { SetEditor } from "@/components/create/SetEditor";
+import { SetEditor, type StudySetUndo } from "@/components/create/SetEditor";
 import { SetStudy, type StudyMode } from "@/components/create/SetStudy";
 
 /**
@@ -63,6 +67,26 @@ type Screen =
   | { name: "studyMany"; setIds: string[]; mode?: StudyMode }
   | { name: "edit"; setId: string }
   | { name: "study"; setId: string; mode?: StudyMode };
+
+type LibrarySort = "custom" | "recent" | "az";
+type LibraryFilter = "all" | "incomplete" | "learning" | "mastered" | "pinned";
+
+type UndoNotice = {
+  id: number;
+  message: string;
+};
+
+const restoreSetsAt = (
+  current: StudySet[],
+  removed: { set: StudySet; index: number }[]
+) => {
+  const next = [...current];
+  for (const { set, index } of [...removed].sort((a, b) => a.index - b.index)) {
+    if (next.some((entry) => entry.id === set.id)) continue;
+    next.splice(Math.min(index, next.length), 0, set);
+  }
+  return next;
+};
 
 /**
  * The four ways to study a set, on the set itself.
@@ -101,6 +125,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   const [sets, setSets] = useState<StudySet[]>(() => loadStudySets());
   const [screen, setScreen] = useState<Screen>({ name: "list" });
   const [query, setQuery] = useState("");
+  const [librarySort, setLibrarySort] = useState<LibrarySort>("custom");
+  const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   // Selecting sets, for when several want deleting at once.
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -114,16 +140,54 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   /** The card being moved and the card whose position it will take. */
   const [draggedSet, setDraggedSet] = useState<{ id: string; scope: string | null } | null>(null);
   const [dropSet, setDropSet] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState(() => Date.now());
+  const [undoNotice, setUndoNotice] = useState<UndoNotice | null>(null);
+  const undoAction = useRef<(() => void) | null>(null);
+  const undoSequence = useRef(0);
+  const setsRef = useRef(sets);
+  const foldersRef = useRef(folders);
+
+  setsRef.current = sets;
+  foldersRef.current = folders;
+
+  const markSaved = useCallback(() => setSavedAt(Date.now()), []);
 
   const persist = useCallback((next: StudySet[]) => {
+    setsRef.current = next;
     setSets(next);
     saveStudySets(next);
-  }, []);
+    markSaved();
+  }, [markSaved]);
 
   const persistFolders = useCallback((next: StudyFolder[]) => {
+    foldersRef.current = next;
     setFolders(next);
     saveStudyFolders(next);
+    markSaved();
+  }, [markSaved]);
+
+  const dismissUndo = useCallback(() => {
+    undoAction.current = null;
+    setUndoNotice(null);
   }, []);
+
+  const offerUndo = useCallback((message: string, action: () => void) => {
+    undoSequence.current += 1;
+    undoAction.current = action;
+    setUndoNotice({ id: undoSequence.current, message });
+  }, []);
+
+  const runUndo = useCallback(() => {
+    const action = undoAction.current;
+    dismissUndo();
+    action?.();
+  }, [dismissUndo]);
+
+  useEffect(() => {
+    if (!undoNotice) return undefined;
+    const timer = window.setTimeout(dismissUndo, 10000);
+    return () => window.clearTimeout(timer);
+  }, [dismissUndo, undoNotice]);
 
   const toggleFolder = useCallback((id: string) => {
     setExpandedFolders((current) => {
@@ -159,6 +223,9 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
    * folder that no longer does.
    */
   const removeFolder = useCallback((id: string) => {
+    const folderIndex = folders.findIndex((folder) => folder.id === id);
+    const removedFolder = folders[folderIndex];
+    const memberIds = new Set(sets.filter((set) => set.folderId === id).map((set) => set.id));
     const next = unfileFolder(sets, folders, id, Date.now());
     persist(next.sets);
     persistFolders(next.folders);
@@ -168,7 +235,23 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
       return updated;
     });
     setConfirmFolder(null);
-  }, [folders, persist, persistFolders, sets]);
+    if (removedFolder) {
+      offerUndo(ui("Folder deleted"), () => {
+        const restoredFolders = [...foldersRef.current];
+        if (!restoredFolders.some((folder) => folder.id === id)) {
+          restoredFolders.splice(Math.min(folderIndex, restoredFolders.length), 0, removedFolder);
+        }
+        // The folder must exist on disk before its sets point back to it.
+        persistFolders(restoredFolders);
+        persist(setsRef.current.map((set) => (
+          memberIds.has(set.id) && !set.folderId
+            ? { ...set, folderId: id, updatedAt: new Date().toISOString() }
+            : set
+        )));
+        setExpandedFolders((current) => new Set(current).add(id));
+      });
+    }
+  }, [folders, offerUndo, persist, persistFolders, sets]);
 
   /** File a set into a folder, or out of every folder when given undefined. */
   const fileInto = useCallback((setId: string, folderId: string | undefined) => {
@@ -209,13 +292,16 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
       : entry)));
   }, [folders, persist, sets]);
 
-  const updateSet = useCallback((updated: StudySet) => {
-    setSets((current) => {
-      const next = current.map((entry) => (entry.id === updated.id ? updated : entry));
-      saveStudySets(next);
-      return next;
+  const updateSet = useCallback((updated: StudySet, undo?: StudySetUndo) => {
+    persist(setsRef.current.map((entry) => (entry.id === updated.id ? updated : entry)));
+    if (!undo) return;
+    offerUndo(undo.message, () => {
+      const at = new Date().toISOString();
+      persist(setsRef.current.map((entry) => (
+        entry.id === updated.id ? { ...undo.restore(entry), updatedAt: at } : entry
+      )));
     });
-  }, []);
+  }, [offerUndo, persist]);
 
   const createSet = useCallback(() => {
     const now = Date.now();
@@ -231,6 +317,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
       ...source,
       id: studyId("set", now),
       title: `${source.title} (copy)`,
+      pinned: false,
       createdAt: at,
       updatedAt: at,
       // New ids, or the copy would share progress with the original.
@@ -240,10 +327,18 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   }, [persist, sets]);
 
   const deleteSet = useCallback((id: string) => {
+    const index = sets.findIndex((entry) => entry.id === id);
+    const deleted = sets[index];
+    if (!deleted) return;
+    const progress = loadStudyProgress(id);
     resetStudyProgress(id);
     persist(sets.filter((entry) => entry.id !== id));
     setConfirmDelete(null);
-  }, [persist, sets]);
+    offerUndo(ui("Set deleted"), () => {
+      saveStudyProgress(id, progress);
+      persist(restoreSetsAt(setsRef.current, [{ set: deleted, index }]));
+    });
+  }, [offerUndo, persist, sets]);
 
   const togglePicked = useCallback((id: string) => {
     setPicked((current) => {
@@ -255,21 +350,69 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   }, []);
 
   const deletePicked = useCallback(() => {
-    picked.forEach((id) => resetStudyProgress(id));
+    const removed = sets.flatMap((set, index) => picked.has(set.id) ? [{ set, index }] : []);
+    if (removed.length === 0) return;
+    const progress = new Map<string, StudySetProgress>();
+    removed.forEach(({ set }) => {
+      progress.set(set.id, loadStudyProgress(set.id));
+      resetStudyProgress(set.id);
+    });
     persist(sets.filter((entry) => !picked.has(entry.id)));
     setPicked(new Set());
-  }, [persist, picked, sets]);
+    offerUndo(
+      `${removed.length} ${ui(removed.length === 1 ? "set deleted" : "sets deleted")}`,
+      () => {
+        progress.forEach((value, id) => saveStudyProgress(id, value));
+        persist(restoreSetsAt(setsRef.current, removed));
+      }
+    );
+  }, [offerUndo, persist, picked, sets]);
+
+  const togglePinned = useCallback((id: string) => {
+    const source = sets.find((entry) => entry.id === id);
+    if (!source) return;
+    const pinning = !source.pinned;
+    const updated = { ...source, pinned: pinning, updatedAt: new Date().toISOString() };
+    let next = sets.map((entry) => entry.id === id ? updated : entry);
+    if (pinning) {
+      const scope = resolvedFolderId(source, folders);
+      next = next.filter((entry) => entry.id !== id);
+      const firstInScope = next.findIndex((entry) => resolvedFolderId(entry, folders) === scope);
+      next.splice(firstInScope < 0 ? next.length : firstInScope, 0, updated);
+    }
+    persist(next);
+  }, [folders, persist, sets]);
+
+  const libraryMeta = useMemo(() => new Map(sets.map((set) => {
+    const progress = loadStudyProgress(set.id);
+    return [set.id, {
+      summary: summariseProgress(set, progress),
+      status: studySetLibraryStatus(set, progress),
+    }] as const;
+  })), [screen.name, sets]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
-    if (!needle) return sets;
-    return sets.filter((set) =>
-      [set.title, set.description, ...set.cards.slice(0, 40).map((card) => `${card.term} ${card.definition}`)]
+    const matches = sets.filter((set) => {
+      if (needle && ![set.title, set.description, ...set.cards.slice(0, 40).map((card) => `${card.term} ${card.definition}`)]
         .join(" ")
         .toLocaleLowerCase()
-        .includes(needle)
-    );
-  }, [sets, query]);
+        .includes(needle)) return false;
+      if (libraryFilter === "pinned") return set.pinned === true;
+      if (libraryFilter !== "all" && libraryMeta.get(set.id)?.status !== libraryFilter) return false;
+      return true;
+    });
+    if (librarySort === "custom") return matches;
+    return [...matches].sort((a, b) => {
+      if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+      if (librarySort === "az") return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+    });
+  }, [libraryFilter, libraryMeta, librarySort, query, sets]);
+
+  const canReorder = librarySort === "custom" && libraryFilter === "all" && query.trim() === "";
+  const hasViewConstraint = query.trim() !== "" || libraryFilter !== "all";
+  const pickedVisible = filtered.reduce((count, set) => count + Number(picked.has(set.id)), 0);
 
   /** Everything the search matched that is not inside a folder. */
   const unfiled = useMemo(
@@ -307,15 +450,37 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     ? sets.find((entry) => entry.id === screen.setId)
     : null;
 
+  const undoToast = undoNotice && (
+    <aside className="create-undo-toast" role="status" aria-live="polite">
+      <span className="min-w-0 flex-1 text-sm font-black text-[var(--text-1)]">{undoNotice.message}</span>
+      <button className="create-undo-toast__action" onClick={runUndo} type="button">
+        <Undo2 className="h-4 w-4" />
+        {ui("Undo")}
+      </button>
+      <button
+        aria-label={ui("Dismiss")}
+        className="create-undo-toast__close"
+        onClick={dismissUndo}
+        type="button"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </aside>
+  );
+
   if (screen.name === "edit" && active) {
     return (
-      <SetEditor
-        set={active}
-        onBack={() => setScreen({ name: "list" })}
-        onChange={updateSet}
-        onStudy={() => setScreen({ name: "study", setId: active.id })}
-        apiParts={apiParts}
-      />
+      <>
+        <SetEditor
+          set={active}
+          onBack={() => setScreen({ name: "list" })}
+          onChange={updateSet}
+          onStudy={() => setScreen({ name: "study", setId: active.id })}
+          apiParts={apiParts}
+          savedAt={savedAt}
+        />
+        {undoToast}
+      </>
     );
   }
 
@@ -342,14 +507,17 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
 
   if (screen.name === "study" && active) {
     return (
-      <SetStudy
-        set={active}
-        // Picked on the card, so the mode menu is skipped rather than shown
-        // and immediately dismissed. Back still lands on it.
-        initialMode={screen.mode}
-        onBack={() => setScreen({ name: "list" })}
-        onEdit={() => setScreen({ name: "edit", setId: active.id })}
-      />
+      <>
+        <SetStudy
+          set={active}
+          // Picked on the card, so the mode menu is skipped rather than shown
+          // and immediately dismissed. Back still lands on it.
+          initialMode={screen.mode}
+          onBack={() => setScreen({ name: "list" })}
+          onEdit={() => setScreen({ name: "edit", setId: active.id })}
+        />
+        {undoToast}
+      </>
     );
   }
 
@@ -366,8 +534,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
    * arrows need to know which list they are walking.
    */
   const renderCard = (set: StudySet, scope: string | null, at: number, ofScope: number) => {
-          const progress = loadStudyProgress(set.id);
-          const summary = summariseProgress(set, progress);
+          const summary = libraryMeta.get(set.id)?.summary
+            ?? summariseProgress(set, loadStudyProgress(set.id));
           const ready = setIsStudiable(set);
           return (
             <div
@@ -390,7 +558,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 setDropSet((current) => (current === set.id ? null : current));
               }}
               onDragOver={(event) => {
-                if (!isSetDrag(event.dataTransfer)
+                if (!canReorder
+                  || !isSetDrag(event.dataTransfer)
                   || draggedSet?.scope !== scope
                   || draggedSet.id === set.id) return;
                 event.preventDefault();
@@ -406,6 +575,13 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
               }}
               onDrop={(event) => {
                 const id = readSetDrag(event.dataTransfer);
+                if (!canReorder) {
+                  if (id && draggedSet?.scope === scope) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }
+                  return;
+                }
                 if (!id || draggedSet?.scope !== scope || id === set.id) return;
                 event.preventDefault();
                 event.stopPropagation();
@@ -440,6 +616,16 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 always work, at every width.
               */}
               <div className="create-set__move">
+                <button
+                  aria-label={ui(set.pinned ? "Unpin set" : "Pin set")}
+                  aria-pressed={set.pinned === true}
+                  className="create-set__pin"
+                  onClick={() => togglePinned(set.id)}
+                  title={ui(set.pinned ? "Unpin set" : "Pin set")}
+                  type="button"
+                >
+                  <Pin className={cn("h-3.5 w-3.5", set.pinned && "fill-current")} />
+                </button>
                 <GripVertical
                   aria-hidden="true"
                   className="create-set__grip h-3.5 w-3.5"
@@ -447,8 +633,9 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 <button
                   aria-label={ui("Move up")}
                   className="create-set__nudge"
-                  disabled={at === 0}
+                  disabled={!canReorder || at === 0}
                   onClick={() => moveWithinScope(scope, at, at - 1)}
+                  title={!canReorder ? ui("Choose Custom order and show All sets to reorder") : undefined}
                   type="button"
                 >
                   <ChevronUp className="h-3.5 w-3.5" />
@@ -456,8 +643,9 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 <button
                   aria-label={ui("Move down")}
                   className="create-set__nudge"
-                  disabled={at >= ofScope - 1}
+                  disabled={!canReorder || at >= ofScope - 1}
                   onClick={() => moveWithinScope(scope, at, at + 1)}
+                  title={!canReorder ? ui("Choose Custom order and show All sets to reorder") : undefined}
                   type="button"
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
@@ -613,6 +801,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
   };
 
   return (
+    <>
     <div className="space-y-4">
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -623,6 +812,14 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <span
+              aria-live="polite"
+              className="create-save-status"
+              data-saved-at={savedAt}
+            >
+              <Check className="h-3.5 w-3.5" />
+              {ui("Saved")}
+            </span>
             {/* Secondary, and only worth offering once there is something to
                 file: a folder button on an empty page is a chore before the
                 thing it organises exists. */}
@@ -643,17 +840,61 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
           </div>
         </div>
 
-        {sets.length > 3 && (
-          <label className="relative mt-4 block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={ui("Search your sets")}
-              className="h-11 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] pl-11 pr-4 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
-              type="search"
-            />
-          </label>
+        {sets.length > 1 && (
+          <div className="create-library-tools">
+            <label className="create-library-search">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-3)]" />
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setPicked(new Set());
+                }}
+                placeholder={ui("Search your sets")}
+                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] pl-10 pr-3 text-xs font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+                type="search"
+              />
+            </label>
+            <label className="create-library-select">
+              <span>{ui("Sort")}</span>
+              <select
+                aria-label={ui("Sort study sets")}
+                data-testid="library-sort"
+                onChange={(event) => {
+                  setLibrarySort(event.target.value as LibrarySort);
+                  setPicked(new Set());
+                }}
+                value={librarySort}
+              >
+                <option value="custom">{ui("Custom order")}</option>
+                <option value="recent">{ui("Recently edited")}</option>
+                <option value="az">{ui("A-Z")}</option>
+              </select>
+            </label>
+            <label className="create-library-select">
+              <span>{ui("Show")}</span>
+              <select
+                aria-label={ui("Filter study sets")}
+                data-testid="library-filter"
+                onChange={(event) => {
+                  setLibraryFilter(event.target.value as LibraryFilter);
+                  setPicked(new Set());
+                }}
+                value={libraryFilter}
+              >
+                <option value="all">{ui("All sets")}</option>
+                <option value="incomplete">{ui("Incomplete")}</option>
+                <option value="learning">{ui("Learning")}</option>
+                <option value="mastered">{ui("Mastered")}</option>
+                <option value="pinned">{ui("Pinned")}</option>
+              </select>
+            </label>
+          </div>
+        )}
+        {!canReorder && sets.length > 1 && (
+          <p className="mt-2 text-[11px] font-bold text-[var(--text-3)]">
+            {ui("Switch to Custom order and All sets to reorder by dragging or arrows.")}
+          </p>
         )}
       </section>
 
@@ -663,17 +904,29 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
             <Layers className="h-6 w-6" />
           </div>
           <h3 className="mt-4 text-lg font-black text-[var(--text-1)]">
-            {sets.length === 0 ? ui("No sets yet") : ui("Nothing matches that")}
+            {sets.length === 0 ? ui("No sets yet") : ui("No sets in this view")}
           </h3>
           <p className="mx-auto mt-2 max-w-sm text-sm font-semibold leading-6 text-[var(--text-3)]">
             {sets.length === 0
               ? ui("Make a set for whatever keeps slipping — irregular verbs, words from a conversation, anything. You can pull cards from the catalogue instead of typing them.")
-              : ui("Try a different word, or clear the search.")}
+              : ui("Try a different search or filter.")}
           </p>
           {sets.length === 0 && (
             <button type="button" onClick={createSet} className="accent-btn mt-5 inline-flex h-11 items-center gap-2 px-5 text-sm">
               <Plus className="h-4 w-4" />
               {ui("Make your first set")}
+            </button>
+          )}
+          {sets.length > 0 && hasViewConstraint && (
+            <button
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-2)] px-4 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+              onClick={() => {
+                setQuery("");
+                setLibraryFilter("all");
+              }}
+              type="button"
+            >
+              {ui("Clear search and filters")}
             </button>
           )}
         </section>
@@ -684,14 +937,14 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
             <button
               type="button"
               onClick={() => setPicked(
-                picked.size === filtered.length ? new Set() : new Set(filtered.map((entry) => entry.id))
+                pickedVisible === filtered.length ? new Set() : new Set(filtered.map((entry) => entry.id))
               )}
               className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
             >
-              {picked.size === filtered.length
+              {pickedVisible === filtered.length
                 ? <CheckSquare className="h-3.5 w-3.5" />
                 : <Square className="h-3.5 w-3.5" />}
-              {ui(picked.size === filtered.length ? "Select none" : "Select all")}
+              {ui(pickedVisible === filtered.length ? "Select none" : "Select all")}
             </button>
             {picked.size > 0 && (
               <>
@@ -782,8 +1035,8 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
         <div className="create-folders-grid">
         {folders.map((folder) => {
           const mine = filtered.filter((set) => resolvedFolderId(set, folders) === folder.id);
-          if (query.trim() && mine.length === 0) return null;
-          const expanded = query.trim().length > 0 || expandedFolders.has(folder.id);
+          if (hasViewConstraint && mine.length === 0) return null;
+          const expanded = hasViewConstraint || expandedFolders.has(folder.id);
           const bodyId = `create-folder-${folder.id}`;
           return (
             <section
@@ -946,5 +1199,7 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
         </section>
       )}
     </div>
+    {undoToast}
+    </>
   );
 }

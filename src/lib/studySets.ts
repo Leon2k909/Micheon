@@ -23,7 +23,7 @@ export const STUDY_PROGRESS_PREFIX = "study-progress:v1";
 /** Folders live beside the sets rather than inside them — see StudyFolder. */
 export const STUDY_FOLDERS_KEY = "study-folders:v1";
 
-export type StudyCardSource = "manual" | "catalogue" | "paste";
+export type StudyCardSource = "manual" | "catalogue" | "paste" | "file";
 
 export type StudyCard = {
   id: string;
@@ -69,6 +69,8 @@ export type StudySet = {
    * has filed.
    */
   folderId?: string;
+  /** Pinned sets can be isolated quickly and lead non-custom sort views. */
+  pinned?: boolean;
   cards: StudyCard[];
   /** ISO timestamps, stamped by the caller so this module stays pure. */
   createdAt: string;
@@ -172,6 +174,7 @@ export function loadStudySets(profile: UserProfile | null = getAuthUser()): Stud
     // function never sees the folder list — so that question belongs to
     // resolvedFolderId, which does.
     folderId: typeof set.folderId === "string" && set.folderId ? set.folderId : undefined,
+    pinned: set.pinned === true,
     masteryTarget: clampMastery(set.masteryTarget),
     roundSize: clampRoundSize(set.roundSize),
     demoteOnWrong: set.demoteOnWrong !== false,
@@ -257,6 +260,7 @@ export function makeSet(title: string, now: number): StudySet {
     id: studyId("set", now),
     title: title.trim() || "Untitled set",
     description: "",
+    pinned: false,
     cards: [],
     createdAt: at,
     updatedAt: at,
@@ -553,6 +557,20 @@ export function summariseProgress(set: StudySet, progress: StudySetProgress): St
     untouched: Math.max(0, total - mastered - learning),
     percent: total === 0 ? 0 : Math.round((mastered / total) * 100),
   };
+}
+
+export type StudySetLibraryStatus = "incomplete" | "learning" | "mastered";
+
+/** A single library status, so filters do not overlap or leave a set behind. */
+export function studySetLibraryStatus(
+  set: StudySet,
+  progress: StudySetProgress
+): StudySetLibraryStatus {
+  const summary = summariseProgress(set, progress);
+  if (summary.total === 0 || incompleteCards(set).length > 0) return "incomplete";
+  if (summary.mastered === summary.total) return "mastered";
+  if (summary.learning > 0 || summary.mastered > 0) return "learning";
+  return "incomplete";
 }
 
 /**
