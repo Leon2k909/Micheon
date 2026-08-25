@@ -60,7 +60,7 @@
     "check:startup-performance": "node scripts/check-startup-performance.cjs",
     "check:windows-settings": "node scripts/check-windows-settings.cjs",
     "check:desktop-polish": "node scripts/check-desktop-polish.cjs",
-    "check:immersion-extension": "node scripts/check-immersion-extension.cjs && node scripts/check-immersion-x-runtime.cjs",
+    "check:immersion-extension": "node scripts/check-immersion-extension.cjs && node scripts/check-immersion-x-runtime.cjs && node scripts/check-immersion-language-split.cjs",
     "export:immersion-words": "node scripts/export-immersion-words.cjs",
     "pack:immersion-extension": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pack-immersion-extension.ps1",
     "sync:immersion-extension": "npm run export:immersion-words && npm run pack:immersion-extension",

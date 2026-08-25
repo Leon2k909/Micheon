@@ -28,7 +28,8 @@ async function reconcileCurrentCatalogue() {
 
 async function loadState() {
   await reconcileCurrentCatalogue();
-  const { settings, missingVocab } = await chrome.storage.local.get(["settings", "missingVocab"]);
+  const { settings, missingVocab, missingEnglish } = await chrome.storage.local
+    .get(["settings", "missingVocab", "missingEnglish"]);
   const merged = { ...DEFAULT_SETTINGS, ...(settings || {}) };
   for (const id of checkboxIds) {
     document.getElementById(id).checked = Boolean(merged[id]);
@@ -39,6 +40,7 @@ async function loadState() {
   // sentence, so counting "entries with an example" just repeated the word
   // count and read as a bug.
   document.getElementById("sentenceCount").textContent = new Set(entries.flatMap(examplesForEntry)).size;
+  document.getElementById("englishCount").textContent = Object.keys(missingEnglish || {}).length;
 }
 
 // A bare "0" reads as "broken". Say what this extension is actually doing
@@ -102,22 +104,31 @@ function download(filename, dataObj) {
   URL.revokeObjectURL(url);
 }
 
-async function exportList() {
-  await reconcileCurrentCatalogue();
-  const { missingVocab = {} } = await chrome.storage.local.get("missingVocab");
-  const ranked = Object.entries(missingVocab)
+function rank(store, lang) {
+  return Object.entries(store)
     .sort((a, b) => b[1].count - a[1].count)
     .map(([word, entry]) => {
       const examples = examplesForEntry(entry);
-      return { word, count: entry.count, example: examples[0] || "", examples };
+      return { word, lang, count: entry.count, example: examples[0] || "", examples };
     });
+}
+
+async function exportList() {
+  await reconcileCurrentCatalogue();
+  const { missingVocab = {}, missingEnglish = {} } = await chrome.storage.local
+    .get(["missingVocab", "missingEnglish"]);
+  // Two lists in one file, each labelled. German is a word the course does
+  // not teach; English is a word the reader met and the course cannot say --
+  // the same gap seen from the other side, and useless if the two are mixed.
+  const ranked = [...rank(missingVocab, "de"), ...rank(missingEnglish, "en")];
   download(`micheon-missing-vocab-${new Date().toISOString().slice(0, 10)}.json`, ranked);
 }
 
 async function clearList() {
-  await chrome.storage.local.remove("missingVocab");
+  await chrome.storage.local.remove(["missingVocab", "missingEnglish"]);
   document.getElementById("missingCount").textContent = "0";
   document.getElementById("sentenceCount").textContent = "0";
+  document.getElementById("englishCount").textContent = "0";
 }
 
 for (const id of checkboxIds) {
