@@ -148,9 +148,12 @@ const wordsTracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTr
 for (const [name, source] of [["word and sentence tracker", vocabTracker], ["words tracker", wordsTracker]]) {
   check(
     `${name} shows the language being learned first`,
-    source.includes("const learnsEnglish = learningEnglish()")
-      && source.includes("const primaryText = learnsEnglish ?")
-      && source.includes("const meaningText = learnsEnglish ?")
+    // Asked of courseSides() rather than of a learning-English boolean: with
+    // three courses the first line is not "English or German", it is whichever
+    // language this course teaches.
+    source.includes("courseSides()")
+      && /const primaryText = (french \?\? \()?learnsEnglish \?|const primaryText = french \?\?/.test(source)
+      && source.includes("const meaningText = sides.meaning.code === \"de\" ? ")
       && !source.includes("const primaryText = uiIsGerman()")
   );
 }

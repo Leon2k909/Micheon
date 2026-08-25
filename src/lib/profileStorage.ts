@@ -414,10 +414,18 @@ const DIRECTION_SCOPED_KEYS = new Set([
 // so nothing written since is overwritten.
 const DIRECTION_SPLIT_KEY = "gl-direction-split-v2";
 
+// Read straight from storage rather than through direction.ts: that module
+// imports this one for the shared mirror, so asking it here would be a cycle
+// that runs before either side is initialised. Keep this list in step with
+// LearningDirection — a direction missing from it silently shares the German
+// course's progress instead of getting its own.
+const KNOWN_DIRECTIONS = new Set(["learn-de", "learn-en", "learn-fr"]);
+
 function currentDirection(): string {
   if (typeof window === "undefined") return "learn-de";
   try {
-    return window.localStorage.getItem("gl-direction") === "learn-en" ? "learn-en" : "learn-de";
+    const stored = window.localStorage.getItem("gl-direction");
+    return stored && KNOWN_DIRECTIONS.has(stored) ? stored : "learn-de";
   } catch {
     return "learn-de";
   }

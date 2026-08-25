@@ -2570,6 +2570,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   height: 46%;
   background: #3c3b6e;
 }
+/* French is a vertical tricolore, so it is drawn as a gradient like the two
+   English flags rather than as the three horizontal bands German uses. */
+.np-language-badge.is-french {
+  background: linear-gradient(90deg, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%);
+}
+
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }

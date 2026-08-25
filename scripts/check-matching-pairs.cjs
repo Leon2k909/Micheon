@@ -136,7 +136,7 @@ check(
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
 check(
   "preview cards use the same visible-answer collision keys as Quick Match",
-  guidedSource.includes("const keys = matchingVisibleKeys(german, english);")
+  guidedSource.includes("const keys = matchingVisibleKeys(target, meaning);")
     && guidedSource.includes("const safeCards = takeMatchingSafe(")
 );
 check(

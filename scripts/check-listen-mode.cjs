@@ -696,7 +696,7 @@ check("the Listen view stays mounted behind the catalogue gate across dashboard 
   && prototype.includes("<ListenView")
   && prototype.includes('active={activeView === "listen"}')
   && prototype.includes('className={activeView === "listen" ? "np-main" : "hidden"}')
-  && prototype.includes('learningDirection={learningEnglish() ? "learn-en" : "learn-de"}'));
+  && prototype.includes("learningDirection={getLearningDirection()}"));
 
 const view = read("src/components/listen/ListenView.tsx");
 const sides = (options) => plan(options).map((clip) => clip.side).join(" ");
@@ -712,9 +712,13 @@ check("German and English repeat independently",
   && sides({ germanRepeats: 1, englishRepeats: 4 }) === "en en en en de");
 check("reviewed word cards explain important secondary meanings on screen",
   view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
+// The plan sentence names the two languages rather than spelling them out:
+// the third course made "English ..., then German ..." a sentence that is
+// simply false on screen. The counts and the order still have to be visible,
+// which is what this was always for.
 check("the playback plan, order switch, and typed repeat counts are visible",
-  view.includes('"English {en}×, then German {de}×"')
-  && view.includes('"German {de}×, then English {en}×"')
+  view.includes('"{meaning} {en}×, then {target} {de}×"')
+  && view.includes('"{target} {de}×, then {meaning} {en}×"')
   && view.includes('data-testid={`listen-order-${value}`}')
   && view.includes('testId="listen-german-repeats"')
   && view.includes('testId="listen-english-repeats"'));
@@ -837,8 +841,8 @@ check("both trackers surface the exposure count",
 const i18n = read("src/lib/i18n.ts");
 for (const key of [
   "Both languages repeat in small learning loops while you do something else.",
-  "German {de}×, then English {en}×",
-  "English {en}×, then German {de}×",
+  "{meaning} {en}×, then {target} {de}×",
+  "{target} {de}×, then {meaning} {en}×",
   "{items}-item loop, {passes} passes",
   "Learning pass {pass} of {passes}",
   "What you hear",

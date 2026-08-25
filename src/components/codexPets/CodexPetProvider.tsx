@@ -54,13 +54,16 @@ const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
-export type CodexPetVoiceLanguage = "de-DE" | "en-US";
+export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR";
 
 export type CodexPetQuestion = {
   aliases?: string[];
-  answerLanguage: "de" | "en";
+  /** Which of the three fields below the learner is being asked to produce. */
+  answerLanguage: "de" | "en" | "fr";
   de: string;
   en: string;
+  /** Set by the French course, where the answer is neither of the other two. */
+  fr?: string;
   itemId: string;
   /** Sequence of the scheduled memory question, persisted across app restarts. */
   recallSequence?: number;
@@ -298,7 +301,12 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
       text: messageText,
       voiceLang: options.voiceLang
         ?? (question
-          ? question.answerLanguage === "en" ? "de-DE" : "en-US"
+          // The QUESTION is asked in the language the answer is not, so this
+          // reads off the opposite side. French is never the question's own
+          // language, so it falls to whichever the app is written in.
+          ? question.answerLanguage === "en" ? "de-DE"
+            : question.answerLanguage === "fr" ? (uiIsGerman() ? "de-DE" : "en-US")
+              : "en-US"
           : uiIsGerman() ? "de-DE" : "en-US"),
     };
     upsertHistory(message);
@@ -320,7 +328,11 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (!entry?.question) return;
 
     const question = entry.question;
-    const target = question.answerLanguage === "de" ? question.de : question.en;
+    const target = question.answerLanguage === "de"
+      ? question.de
+      : question.answerLanguage === "fr"
+        ? (question.fr ?? question.de)
+        : question.en;
 
     const nextEntry: CodexPetSpeech = {
       ...entry,

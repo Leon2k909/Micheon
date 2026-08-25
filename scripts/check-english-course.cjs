@@ -50,10 +50,12 @@ if (!/learningEnglish\(\)[\s\S]{0,200}"english-us"[\s\S]{0,60}"english-uk"/.test
 if (/ui\("Switch course, currently German"\)/.test(shell)) {
   failures.push("the course chip still hardcodes German");
 }
-if (!/learnsEnglish \? ui\("English"\) : ui\("German"\)/.test(shell)) {
+// Named from the course rather than chosen between two spellings: with a third
+// course, "English or German" is a question with a missing answer.
+if (!/<strong>\{ui\(sides\.target\.label\)\}<\/strong>/.test(shell)) {
   failures.push("the course chip does not name the course you are actually on");
 }
-if (!/learnsEnglish \? ui\("English for real conversations"\)/.test(shell)) {
+if (!/uiFmt\("\{language\} for real conversations"/.test(shell)) {
   failures.push("the hero headline still says German whatever you are learning");
 }
 if (!/\.np-language-badge\.is-english/.test(css)) {

@@ -14,7 +14,8 @@ import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isR
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
-import { DIRECTION_CHANGE_EVENT, learningEnglish } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman } from "@/lib/direction";
+import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
   type Register, type RegisterState,
@@ -44,7 +45,7 @@ import { ui } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { getPrioritizedPetRecallItem } from "@/lib/petRecall";
 import { finishLessonAndQueueNext } from "@/lib/lessonFlow";
-import { swapStepForEnglish } from "@/lib/learningDirectionStep";
+import { stepsForLearningDirection } from "@/lib/learningDirectionStep";
 import { useLearningMode } from "@/lib/learningMode";
 import { countKnownVocab } from "@/lib/fluency";
 import { ActiveStudyTimer, recordCompletedLearningSession } from "@/lib/learningTime";
@@ -69,11 +70,13 @@ const REGISTER_KEY = "register-checks";
  * a register, and only when a question is due. Typing a sentence right proves
  * nothing about knowing who to say it to.
  *
- * Skipped entirely for German speakers learning English: the du/Sie split is
- * the thing they already have and English lacks.
+ * Skipped entirely whenever German is not what is being learned: the du/Sie
+ * split is the thing a German speaker learning English already has, and the
+ * question is read off the German sentence, which a French card no longer
+ * carries — detectRegister() on "Tu viens ?" answers about the wrong language.
  */
 function withRegisterCheck(steps: any[], user: any): any[] {
-  if (learningEnglish()) return steps;
+  if (!targetIsGerman()) return steps;
   const registers = Array.from(
     new Set(
       steps
@@ -223,7 +226,12 @@ export default function GuidedLearningSession() {
 
     let questionTimer: number | undefined;
     let active = true;
-    const learnsEnglish = learningEnglish();
+    const direction = getLearningDirection();
+    const learnsEnglish = direction === "learn-en";
+    const learnsFrench = direction === "learn-fr";
+    // The catalogue is German either way round, so the French course has to
+    // ask for the French rather than for whichever column happens to be there.
+    const meaningIsGerman = learnsEnglish || (learnsFrench && frenchMeaningLanguage() === "de");
 
     const scheduleQuestion = (delayMs: number) => {
       if (!active) return;
@@ -277,25 +285,34 @@ export default function GuidedLearningSession() {
       // seeing only one gets stale. Deterministic alternation, no coin flips.
       const reverse = petQuizReverse.current;
       petQuizReverse.current = !petQuizReverse.current;
-      const question = learnsEnglish
+      const french = learnsFrench ? frenchFor(item.de, item.fr) : null;
+      // A word the tables do not reach cannot be asked about in this course.
+      if (learnsFrench && !french) {
+        scheduleQuestion(cadence.intervalMs);
+        return;
+      }
+      const meaning = meaningIsGerman ? item.de : item.en;
+      const target = learnsFrench ? french! : learnsEnglish ? item.en : item.de;
+      const question = meaningIsGerman
         ? (reverse
-            ? `Weißt du noch, was „${item.en}“ bedeutet?`
-            : `Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?`)
+            ? `Weißt du noch, was „${target}“ bedeutet?`
+            : `Erinnerst du dich, wie man „${meaning}“ auf ${learnsFrench ? "Französisch" : "Englisch"} sagt?`)
         : (reverse
-            ? `Do you remember what “${item.de}” means?`
-            : `Do you remember how to say “${item.en}” in German?`);
-      const answerLanguage = learnsEnglish
-        ? (reverse ? "de" : "en")
-        : (reverse ? "en" : "de");
+            ? `Do you remember what “${target}” means?`
+            : `Do you remember how to say “${meaning}” in ${learnsFrench ? "French" : "German"}?`);
+      const answerLanguage = reverse
+        ? (meaningIsGerman ? "de" : "en")
+        : (learnsFrench ? "fr" : learnsEnglish ? "en" : "de");
       petSpeak(question, {
         durationMs: 20000,
         mood: "greeting",
-        voiceLang: learnsEnglish ? "de-DE" : "en-US",
+        voiceLang: meaningIsGerman ? "de-DE" : "en-US",
         question: {
           aliases: item.aliases,
           answerLanguage,
           de: item.de,
           en: item.en,
+          fr: french ?? undefined,
           itemId: item.id,
         },
       });
@@ -476,14 +493,22 @@ export default function GuidedLearningSession() {
       );
       // Session steps may already be direction-swapped. Convert them back to
       // named language pairs and block both columns: Quick Match can be flipped
-      // after the replacement is made.
-      const learnsEnglish = learningEnglish();
+      // after the replacement is made. The candidates below are un-swapped
+      // German entries, so a French card has to be read back through the
+      // German it was built from — blocking on the French would match nothing
+      // and let the same sentence appear twice.
+      const swapDirection = getLearningDirection();
       const blockedPairs = current
         .filter((step, index) => index !== replaceAt && step?.type === "sentence")
-        .map((step) => ({
-          de: String((learnsEnglish ? step.item?.en : step.item?.de) ?? ""),
-          en: String((learnsEnglish ? step.item?.de : step.item?.en) ?? ""),
-        }));
+        .map((step) => {
+          if (swapDirection === "learn-en") {
+            return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
+          }
+          if (swapDirection === "learn-fr") {
+            return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
+          }
+          return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };
+        });
       const grades = loadGradeStore(user);
       // A word card is replaced by a WORD, a sentence card by a sentence.
       // The pool used to be the sentence catalogue unconditionally, so
@@ -577,7 +602,11 @@ export default function GuidedLearningSession() {
           ...(chainedReplacement ? { chainedFromLesson: true } : {}),
         },
       };
-      if (learningEnglish()) replacementStep = swapStepForEnglish(replacementStep);
+      // A replacement with no French leaves the preview card as it was: a
+      // blank slot is worse than the card the learner asked to swap out.
+      const [directed] = stepsForLearningDirection([replacementStep]);
+      if (!directed) return current;
+      replacementStep = directed;
 
       const next = [...current];
       next[replaceAt] = replacementStep;
@@ -729,7 +758,8 @@ export default function GuidedLearningSession() {
         const rankedWords = rankWordCatalog(buildWordCatalog(activeParts), corpusIndex);
         let wordSteps: any[] = buildWordSitting(rankedWords, reviewState);
         if (wordSteps.length > 0) {
-          if (learningEnglish()) wordSteps = wordSteps.map(swapStepForEnglish);
+          wordSteps = stepsForLearningDirection(wordSteps);
+          if (wordSteps.length === 0) return;
           const id = wordSteps[0]?.item?.partKey ?? keys[0] ?? activePart;
           setActivePart(id);
           saveScopedJson("active-part", id, user);
@@ -1097,7 +1127,9 @@ export default function GuidedLearningSession() {
         sentenceSlots.freshSlots,
         sentenceSlots.reviewSlots,
         reinforcementReviews,
-        learningEnglish() ? "en" : "de"
+        // The steps here are still un-swapped, so the target sits in `en` only
+        // for the English course. French reads its text off the German too.
+        getLearningDirection() === "learn-en" ? "en" : "de"
       );
       // Every base served gets its extension in the very next slot.
       //
@@ -1165,8 +1197,8 @@ export default function GuidedLearningSession() {
         // New material first, then the word slots when "Both" is chosen,
         // then reviews — words sit between so a mixed sitting reads as one
         // lesson rather than two stapled together.
-        let steps = [...freshSteps, ...mixedWords, ...reviews, { type: "complete" }];
-        if (learningEnglish()) steps = steps.map(swapStepForEnglish);
+        let steps = stepsForLearningDirection([...freshSteps, ...mixedWords, ...reviews]);
+        steps = [...steps, { type: "complete" }];
         setActivePart(id);
         saveScopedJson("active-part", id, user);
         setSessionSteps(withRegisterCheck(steps, user));
@@ -1191,7 +1223,7 @@ export default function GuidedLearningSession() {
     // German speaker learning English: show the same content the other way round
     // (English is the target you type/hear; German is the meaning). IDs are left
     // untouched so progress tracking stays consistent in either direction.
-    if (learningEnglish()) steps = steps.map(swapStepForEnglish);
+    steps = stepsForLearningDirection(steps);
     const hasContent = steps.some(s => s.type === "sentence" || s.type === "dialogue");
 
     if (!hasContent) {
@@ -1225,8 +1257,7 @@ export default function GuidedLearningSession() {
         // All course lessons are completed — replay requested part in review mode (without wiping COMPLETED_KEY)
         setActivePart(id);
         saveScopedJson("active-part", id, user);
-        let reviewSteps = buildSession(partWithKey, items, {}, 0);
-        if (learningEnglish()) reviewSteps = reviewSteps.map(swapStepForEnglish);
+        let reviewSteps = stepsForLearningDirection(buildSession(partWithKey, items, {}, 0));
         setSessionSteps(withRegisterCheck(reviewSteps, user));
       }
     } else {

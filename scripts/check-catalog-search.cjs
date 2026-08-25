@@ -155,7 +155,7 @@ check(
   // opening the library, and none of it was needed until someone searched.
   "the tracker filters the full catalog through the guarded search path",
   trackerSource.includes("catalogItemMatchesQuery(item, q, searchTextFor(item))")
-    && trackerSource.includes("text = buildCatalogSearchText(item);")
+    && trackerSource.includes("text = buildCatalogSearchText(")
 );
 check(
   "the search index is built lazily, not while the library is opening",

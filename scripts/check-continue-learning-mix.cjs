@@ -483,9 +483,12 @@ check(
 );
 check(
   "preview replacement blocks both named language columns after direction swaps",
+  // The candidates are un-swapped German entries, so every direction has to be
+  // read back to that pair — a French card through the originalDe it kept.
   labSource.includes("const blockedPairs = current")
-    && labSource.includes("learnsEnglish ? step.item?.en : step.item?.de")
-    && labSource.includes("learnsEnglish ? step.item?.de : step.item?.en")
+    && labSource.includes('if (swapDirection === "learn-en")')
+    && labSource.includes('if (swapDirection === "learn-fr")')
+    && labSource.includes("String(step.item?.originalDe ?? \"\")")
 );
 
 let queuedAfterStorageFailure = 0;
@@ -524,8 +527,8 @@ check(
 check(
   "the proactive desktop pet remains responsible for later memory questions",
   labSource.includes('getCodexPetCadence("questions", petCoachingFrequencies.questions)')
-    && labSource.includes('Do you remember how to say “${item.en}” in German?')
-    && labSource.includes('Erinnerst du dich, wie man „${item.de}“ auf Englisch sagt?')
+    && labSource.includes('Do you remember how to say “${meaning}” in ${learnsFrench ? "French" : "German"}?')
+    && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${learnsFrench ? "Französisch" : "Englisch"} sagt?')
     && petProviderSource.includes("setItemStatus(")
     && petProviderSource.includes('answer === "yes" ? "known" : "struggle"')
 );

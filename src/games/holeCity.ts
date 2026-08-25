@@ -33,46 +33,48 @@ export type PropSpec = {
   roof?: string;
   de: string;
   en: string;
+  /** Named in all three courses, so the caption is never the wrong language. */
+  fr: string;
   /** Where in the city this belongs. */
   place: "pavement" | "road" | "block";
 };
 
 export const PROP_SPECS: PropSpec[] = [
   // Tier 1 — litter. What a brand new hole can manage.
-  { kind: "bottle", size: 9, tier: 1, color: "#4ade80", de: "die Flasche", en: "bottle", place: "pavement" },
-  { kind: "can", size: 8, tier: 1, color: "#f87171", de: "die Dose", en: "can", place: "pavement" },
-  { kind: "litter", size: 7, tier: 1, color: "#fbbf24", de: "der Müll", en: "litter", place: "pavement" },
-  { kind: "cone", size: 12, tier: 1, color: "#fb923c", de: "der Kegel", en: "traffic cone", place: "road" },
+  { kind: "bottle", size: 9, tier: 1, color: "#4ade80", de: "die Flasche", en: "bottle", fr: "la bouteille", place: "pavement" },
+  { kind: "can", size: 8, tier: 1, color: "#f87171", de: "die Dose", en: "can", fr: "la canette", place: "pavement" },
+  { kind: "litter", size: 7, tier: 1, color: "#fbbf24", de: "der Müll", en: "litter", fr: "les déchets", place: "pavement" },
+  { kind: "cone", size: 12, tier: 1, color: "#fb923c", de: "der Kegel", en: "traffic cone", fr: "le plot", place: "road" },
 
   // Tier 2 — street furniture.
-  { kind: "hydrant", size: 15, tier: 2, color: "#ef4444", de: "der Hydrant", en: "fire hydrant", place: "pavement" },
-  { kind: "sign", size: 17, tier: 2, color: "#60a5fa", de: "das Schild", en: "sign", place: "pavement" },
-  { kind: "bin", size: 20, tier: 2, color: "#64748b", de: "der Mülleimer", en: "bin", place: "pavement" },
-  { kind: "postbox", size: 22, tier: 2, color: "#dc2626", de: "der Briefkasten", en: "postbox", place: "pavement" },
-  { kind: "lamp", size: 24, tier: 2, color: "#fcd34d", de: "die Laterne", en: "street lamp", place: "pavement" },
-  { kind: "bench", size: 28, tier: 2, color: "#a16207", de: "die Bank", en: "bench", place: "pavement" },
+  { kind: "hydrant", size: 15, tier: 2, color: "#ef4444", de: "der Hydrant", en: "fire hydrant", fr: "la bouche d'incendie", place: "pavement" },
+  { kind: "sign", size: 17, tier: 2, color: "#60a5fa", de: "das Schild", en: "sign", fr: "le panneau", place: "pavement" },
+  { kind: "bin", size: 20, tier: 2, color: "#64748b", de: "der Mülleimer", en: "bin", fr: "la poubelle", place: "pavement" },
+  { kind: "postbox", size: 22, tier: 2, color: "#dc2626", de: "der Briefkasten", en: "postbox", fr: "la boîte aux lettres", place: "pavement" },
+  { kind: "lamp", size: 24, tier: 2, color: "#fcd34d", de: "die Laterne", en: "street lamp", fr: "le lampadaire", place: "pavement" },
+  { kind: "bench", size: 28, tier: 2, color: "#a16207", de: "die Bank", en: "bench", fr: "le banc", place: "pavement" },
 
   // Tier 3 — people and small vehicles.
-  { kind: "person", size: 16, tier: 3, color: "#f9a8d4", de: "die Person", en: "person", place: "pavement" },
-  { kind: "scooter", size: 22, tier: 3, color: "#22d3ee", de: "der Roller", en: "scooter", place: "pavement" },
-  { kind: "bike", size: 30, tier: 3, color: "#06b6d4", de: "das Fahrrad", en: "bicycle", place: "road" },
+  { kind: "person", size: 16, tier: 3, color: "#f9a8d4", de: "die Person", en: "person", fr: "la personne", place: "pavement" },
+  { kind: "scooter", size: 22, tier: 3, color: "#22d3ee", de: "der Roller", en: "scooter", fr: "la trottinette", place: "pavement" },
+  { kind: "bike", size: 30, tier: 3, color: "#06b6d4", de: "das Fahrrad", en: "bicycle", fr: "le vélo", place: "road" },
 
   // Tier 4 — cars.
-  { kind: "car", size: 46, tier: 4, color: "#3b82f6", de: "das Auto", en: "car", place: "road" },
-  { kind: "taxi", size: 48, tier: 4, color: "#facc15", de: "das Taxi", en: "taxi", place: "road" },
-  { kind: "van", size: 58, tier: 4, color: "#e2e8f0", de: "der Lieferwagen", en: "van", place: "road" },
+  { kind: "car", size: 46, tier: 4, color: "#3b82f6", de: "das Auto", en: "car", fr: "la voiture", place: "road" },
+  { kind: "taxi", size: 48, tier: 4, color: "#facc15", de: "das Taxi", en: "taxi", fr: "le taxi", place: "road" },
+  { kind: "van", size: 58, tier: 4, color: "#e2e8f0", de: "der Lieferwagen", en: "van", fr: "la camionnette", place: "road" },
 
   // Tier 5 — big vehicles and trees.
-  { kind: "tree", size: 62, tier: 5, color: "#16a34a", de: "der Baum", en: "tree", place: "pavement" },
-  { kind: "bus", size: 88, tier: 5, color: "#f97316", de: "der Bus", en: "bus", place: "road" },
-  { kind: "truck", size: 96, tier: 5, color: "#8b5cf6", de: "der Lastwagen", en: "lorry", place: "road" },
+  { kind: "tree", size: 62, tier: 5, color: "#16a34a", de: "der Baum", en: "tree", fr: "l'arbre", place: "pavement" },
+  { kind: "bus", size: 88, tier: 5, color: "#f97316", de: "der Bus", en: "bus", fr: "le bus", place: "road" },
+  { kind: "truck", size: 96, tier: 5, color: "#8b5cf6", de: "der Lastwagen", en: "lorry", fr: "le camion", place: "road" },
 
   // Tier 6 — buildings.
-  { kind: "shop", size: 130, tier: 6, color: "#f472b6", roof: "#be185d", de: "der Laden", en: "shop", place: "block" },
-  { kind: "house", size: 150, tier: 6, color: "#fbbf24", roof: "#b45309", de: "das Haus", en: "house", place: "block" },
+  { kind: "shop", size: 130, tier: 6, color: "#f472b6", roof: "#be185d", de: "der Laden", en: "shop", fr: "le magasin", place: "block" },
+  { kind: "house", size: 150, tier: 6, color: "#fbbf24", roof: "#b45309", de: "das Haus", en: "house", fr: "la maison", place: "block" },
 
   // Tier 7 — the thing you are working towards.
-  { kind: "tower", size: 230, tier: 7, color: "#6366f1", roof: "#3730a3", de: "das Hochhaus", en: "tower block", place: "block" },
+  { kind: "tower", size: 230, tier: 7, color: "#6366f1", roof: "#3730a3", de: "das Hochhaus", en: "tower block", fr: "la tour", place: "block" },
 ];
 
 export function specsForPlace(place: PropSpec["place"]): PropSpec[] {

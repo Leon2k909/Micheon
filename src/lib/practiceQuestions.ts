@@ -1,4 +1,6 @@
-import { learningEnglish, targetLangTag } from "@/lib/direction";
+import { targetLangTag } from "@/lib/direction";
+import { courseSides } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import type { CatalogItem } from "@/session";
 
 /**
@@ -25,7 +27,8 @@ export type PracticeQuestion = {
   options: PracticeOption[];
   prompt: string;
   /** Translation key for the prompt's language: "German" or "English". */
-  promptLanguageKey: "English" | "German";
+  /** The name of the language the prompt is written in, for the chip above it. */
+  promptLanguageKey: string;
 };
 
 /**
@@ -91,13 +94,19 @@ function usable(text: unknown): text is string {
  * German one, which practises the language they already have.
  */
 export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandidate[] {
-  const toEnglish = learningEnglish();
+  const sides = courseSides();
+  const toEnglish = sides.target.code === "en";
+  const toFrench = sides.target.code === "fr";
   const seen = new Set<string>();
   const out: PracticeCandidate[] = [];
   for (const item of items) {
     if (!item || (item.kind !== "phrase" && item.kind !== "dialogue")) continue;
-    const answer = firstWording((toEnglish ? item.en : item.de) ?? "");
-    const prompt = firstWording((toEnglish ? item.de : item.en) ?? "");
+    // The catalogue is German either way round, so the French course looks the
+    // answer up. A card the tables do not reach is not askable here.
+    const french = toFrench ? frenchFor(item.de ?? "", item.fr) : null;
+    if (toFrench && !french) continue;
+    const answer = firstWording(french ?? ((toEnglish ? item.en : item.de) ?? ""));
+    const prompt = firstWording((sides.meaning.code === "de" ? item.de : item.en) ?? "");
     if (!usable(answer) || !usable(prompt)) continue;
     // Same wording on both sides teaches nothing and reads as a bug.
     if (answer.toLowerCase() === prompt.toLowerCase()) continue;
@@ -176,6 +185,6 @@ export function buildPracticeQuestion(
     id: answer.id,
     options,
     prompt: answer.prompt,
-    promptLanguageKey: learningEnglish() ? "German" : "English",
+    promptLanguageKey: courseSides().meaning.label,
   };
 }

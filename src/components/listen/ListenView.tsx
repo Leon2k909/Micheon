@@ -28,6 +28,7 @@ import {
   AUDIO_SETTINGS_EVENT,
   getAudioSettings,
   isMasterAudioSilent,
+  isTtsLanguageMuted,
   setMasterAudioVolume,
   setTtsLanguageVolume,
   toggleAudioMuted,
@@ -85,6 +86,8 @@ import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
+import { AUDIO_LANGUAGE, courseSide, type CourseLanguage } from "@/lib/courseLanguages";
+import { frenchMeaningLanguage } from "@/lib/frenchCourse";
 import type { UserProfile } from "@/lib/profileStorage";
 import {
   loadMiniPlayerPosition,
@@ -94,7 +97,7 @@ import {
   type MiniPlayerPosition,
 } from "@/lib/miniPlayerPosition";
 import type { LearningDirection } from "@/lib/direction";
-import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
+import { useCodexPets, type CodexPetVoiceLanguage } from "@/components/codexPets/CodexPetProvider";
 
 type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
 
@@ -269,6 +272,65 @@ function NumberSetting({
  * deliberately damped; the explicit level picker is the place for a strong
  * tracker correction.
  */
+/**
+ * What the player says while it holds the gap open.
+ *
+ * A map rather than a ternary because the answer is one of three languages
+ * now, and because the sentence has to be written out in full for the
+ * translations to find it.
+ */
+const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
+  de: "Your turn — say it in German",
+  en: "Your turn — say it in English",
+  fr: "Your turn — say it in French",
+};
+
+const REPEATS_LABEL: Record<CourseLanguage, string> = {
+  de: "German repeats",
+  en: "English repeats",
+  fr: "French repeats",
+};
+
+const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
+  de: "German voice is muted and will be skipped.",
+  en: "English voice is muted and will be skipped.",
+  fr: "French voice is muted and will be skipped.",
+};
+
+const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
+  de: "Your turn to say the German before it is spoken",
+  en: "Your turn to say the English before it is spoken",
+  fr: "Your turn to say the French before it is spoken",
+};
+
+const FIRST_LABEL: Record<CourseLanguage, string> = {
+  de: "German first",
+  en: "English first",
+  fr: "French first",
+};
+
+// Written out rather than composed from a "{language} voice" pattern, because
+// German inflects the adjective: die deutsche Stimme, die französische Stimme.
+const VOICE_LABEL: Record<CourseLanguage, string> = {
+  de: "German voice",
+  en: "English voice",
+  fr: "French voice",
+};
+
+const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
+  de: "Mute German voice",
+  en: "Mute English voice",
+  fr: "Mute French voice",
+};
+
+const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
+  de: "Unmute German voice",
+  en: "Unmute English voice",
+  fr: "Unmute French voice",
+};
+
+const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume" } as const;
+
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
   apiParts: Record<string, any>;
@@ -445,10 +507,23 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     return heardIds.map((id) => byId.get(id)).filter((entry): entry is ListenItem => Boolean(entry));
   }, [heardIds, queue]);
 
-  const englishLang = resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
+  // Listen's two slots are named after the only two languages it ever had:
+  // `de` is the one being learned and `en` is the meaning beside it. That
+  // held while the courses were German and English — Listen plays the same
+  // German and English either way round, and only the repeat counts differ.
+  // The French course puts French in the first slot and whichever language
+  // the app explains itself in beside it, so the labels, the voices and the
+  // mute state all ask what is in each slot rather than assuming.
+  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } = learningDirection === "learn-fr"
+    ? { de: "fr", en: frenchMeaningLanguage() }
+    : { de: "de", en: "en" };
+  const targetSlot = courseSide(slotLanguage.de);
+  const meaningSlot = courseSide(slotLanguage.en);
+  const targetLang = targetSlot.voice;
+  const englishLang = meaningSlot.voice;
   const masterMuted = isMasterAudioSilent(audioSettings);
-  const englishMuted = audioSettings.englishMuted || audioSettings.englishVolume <= 0;
-  const germanMuted = audioSettings.germanMuted || audioSettings.germanVolume <= 0;
+  const englishMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.en]);
+  const germanMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.de]);
   const petCaptionsAvailable = Boolean(selectedPet)
     && selectedPetKey !== "off"
     && visiblePetKeys.includes(selectedPetKey);
@@ -540,7 +615,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     };
     window.addEventListener(TTS_SPEAKING_EVENT, markSpeechStarted);
 
-    const mirrorOnPet = (text: string, voiceLang: "de-DE" | "en-US") => {
+    const mirrorOnPet = (text: string, voiceLang: CodexPetVoiceLanguage) => {
       if (!petCaptionsAvailable) return;
       const caption = formatListenPetCaption(item, text, petBilingualCaptions);
       petSpeak(caption, {
@@ -560,9 +635,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       germanRepeats,
       languageGapMs,
       languageOrder,
+      targetLang,
     }).map((clip) => ({
       ...clip,
-      onStart: () => mirrorOnPet(clip.text, clip.side === "de" ? "de-DE" : "en-US"),
+      onStart: () => mirrorOnPet(clip.text, clip.side === "de" ? targetLang : englishLang),
       onPause: (holding: boolean) => setYourTurn(holding && runRef.current === run),
     }));
     void ttsSequence(sequence).then(() => {
@@ -587,7 +663,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       setYourTurn(false);
       stopTts();
     };
-  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, englishLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, englishLang, targetLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -1215,8 +1291,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
             <span>
               {languageOrder === "english-first"
-                ? uiFmt("English {en}×, then German {de}×", { de: germanRepeats, en: englishRepeats })
-                : uiFmt("German {de}×, then English {en}×", { de: germanRepeats, en: englishRepeats })}
+                ? uiFmt("{meaning} {en}×, then {target} {de}×", {
+                  de: germanRepeats, en: englishRepeats,
+                  meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
+                })
+                : uiFmt("{target} {de}×, then {meaning} {en}×", {
+                  de: germanRepeats, en: englishRepeats,
+                  meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
+                })}
             </span>
             {languageGapMs > 0 && (
               <>
@@ -1242,10 +1324,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               would otherwise stay blocked — and knowing what it meant is only
               half of it, since the next thing you want is to keep it.
               Tapping a word pauses the loop rather than talking over it. */}
-          <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang="de">
-            <TappableSentence text={item.de} lang="de-DE" meaningText={item.en} onWordAudio={pause} />
+          <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang={targetSlot.htmlLang}>
+            <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={pause} />
           </p>
-          <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang="en">
+          <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang={meaningSlot.htmlLang}>
             {item.en}
           </p>
           {/* Which of the word's meanings this card is on. A heard word brings
@@ -1267,9 +1349,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               data-testid="listen-your-turn"
               style={{ "--gap-duration": `${languageGapMs}ms` } as React.CSSProperties}
             >
-              {ui(languageOrder === "english-first"
-                ? "Your turn — say it in German"
-                : "Your turn — say it in English")}
+              {ui(YOUR_TURN_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
               <span aria-hidden="true" className="listen-your-turn__bar">
                 <span className="listen-your-turn__fill" />
               </span>
@@ -1541,9 +1621,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               ? "All app audio is muted. Use the sliders below to turn it back on."
               : englishMuted && germanMuted
                 ? "Both language voices are muted and will be skipped."
-                : englishMuted
-                  ? "English voice is muted and will be skipped."
-                  : "German voice is muted and will be skipped.")}
+                : MUTED_VOICE_LABEL[englishMuted ? slotLanguage.en : slotLanguage.de])}
           </div>
         )}
 
@@ -1695,30 +1773,36 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 unmuteLabel={ui("Unmute all audio")}
                 value={audioSettings.masterVolume}
               />
+              {/* Named after the SLOT, not the language: "listen-german" is
+                  the row for whatever the first slot plays, which in the
+                  French course is the French. Two rows rather than three,
+                  because two are all this player ever speaks. */}
               <ListenVolumeRow
-                label={ui("German voice")}
-                muteLabel={ui("Mute German voice")}
+                label={ui(VOICE_LABEL[slotLanguage.de])}
+                muteLabel={ui(MUTE_VOICE_LABEL[slotLanguage.de])}
                 muted={germanMuted}
-                onChange={(value) => setTtsLanguageVolume("german", value)}
-                onToggleMuted={() => toggleTtsLanguageMuted("german")}
+                onChange={(value) => setTtsLanguageVolume(AUDIO_LANGUAGE[slotLanguage.de], value)}
+                onToggleMuted={() => toggleTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.de])}
                 testId="listen-german"
-                unmuteLabel={ui("Unmute German voice")}
-                value={audioSettings.germanVolume}
+                unmuteLabel={ui(UNMUTE_VOICE_LABEL[slotLanguage.de])}
+                value={audioSettings[VOLUME_SETTING[slotLanguage.de]]}
               />
               <ListenVolumeRow
-                label={ui("English voice")}
-                muteLabel={ui("Mute English voice")}
+                label={ui(VOICE_LABEL[slotLanguage.en])}
+                muteLabel={ui(MUTE_VOICE_LABEL[slotLanguage.en])}
                 muted={englishMuted}
-                onChange={(value) => setTtsLanguageVolume("english", value)}
-                onToggleMuted={() => toggleTtsLanguageMuted("english")}
+                onChange={(value) => setTtsLanguageVolume(AUDIO_LANGUAGE[slotLanguage.en], value)}
+                onToggleMuted={() => toggleTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.en])}
                 testId="listen-english"
-                unmuteLabel={ui("Unmute English voice")}
-                value={audioSettings.englishVolume}
+                unmuteLabel={ui(UNMUTE_VOICE_LABEL[slotLanguage.en])}
+                value={audioSettings[VOLUME_SETTING[slotLanguage.en]]}
               />
             </div>
             <div className="listen-speech-speed-card">
               <SpeechSpeedControl
-                description={ui("Set both voices together or tune English and German separately.")}
+                description={uiFmt("Set both voices together or tune {first} and {second} separately.", {
+                  first: ui(targetSlot.label), second: ui(meaningSlot.label),
+                })}
                 testId="listen-speech-speed"
               />
             </div>
@@ -1733,8 +1817,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([
-                  ["english-first", "English first"],
-                  ["german-first", "German first"],
+                  ["english-first", FIRST_LABEL[slotLanguage.en]],
+                  ["german-first", FIRST_LABEL[slotLanguage.de]],
                 ] as const).map(([value, label]) => {
                   const active = languageOrder === value;
                   return (
@@ -1770,7 +1854,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </p>
               <div className="mt-2 space-y-2">
                 <NumberSetting
-                  label={ui("German repeats")}
+                  label={ui(REPEATS_LABEL[slotLanguage.de])}
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
@@ -1780,7 +1864,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   value={germanRepeats}
                 />
                 <NumberSetting
-                  label={ui("English repeats")}
+                  label={ui(REPEATS_LABEL[slotLanguage.en])}
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
@@ -1793,11 +1877,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   label={ui("Pause between languages")}
                   max={30}
                   min={0}
-                  note={ui(
-                    languageOrder === "english-first"
-                      ? "Your turn to say the German before it is spoken"
-                      : "Your turn to say the English before it is spoken"
-                  )}
+                  note={ui(SAY_IT_FIRST_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
                   onCommit={commitLanguageGapSeconds}
                   step={0.5}
                   suffix={ui("sec")}

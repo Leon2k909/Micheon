@@ -6,7 +6,8 @@ import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
 import { cefrOrder, cefrTier, type CefrTier } from "@/lib/cefr";
-import { ui, uiIsGerman, uiOr } from "@/lib/i18n";
+import { ui, uiFmt, uiIsGerman, uiOr } from "@/lib/i18n";
+import { courseSides } from "@/lib/courseLanguages";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMutedPacks, setPackMuted, setPacksMuted } from "@/lib/mutedPacks";
 
@@ -211,9 +212,12 @@ export function LearnView({
           <div>
             <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui("Lessons")}</h1>
             <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--text-2)]">
-              {ui(uiIsGerman()
-                ? "Work through practical English in short blocks: read, listen, choose, type, and translate."
-                : "Work through practical German in short blocks: read, listen, choose, type, and translate.")}
+              {/* Named from the course, not from the interface language. Those
+                  two used to line up — a German interface meant learning
+                  English — and the French course broke the coincidence. */}
+              {uiFmt("Work through practical {language} in short blocks: read, listen, choose, type, and translate.", {
+                language: ui(courseSides().target.label),
+              })}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -240,7 +244,9 @@ export function LearnView({
             <input
               className="learn-library-search h-12 w-full rounded-[16px] border-2 border-[var(--border)] bg-[var(--surface)] pl-11 pr-11 text-sm font-bold text-[var(--text-1)] outline-none transition-colors placeholder:font-semibold placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={ui("Search lessons, topics or a German word…")}
+              placeholder={uiFmt("Search lessons, topics or a {language} word…", {
+                language: ui(courseSides().target.label),
+              })}
               type="search"
               value={query}
             />

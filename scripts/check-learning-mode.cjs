@@ -764,7 +764,7 @@ check(
 check(
   "context-specific spoken alternatives can replace the generic People say label",
   guidedSource.includes("shortLabel ? uiOr(shortLabel")
-    && guidedSource.includes("shortLabel={learnEn ? undefined : item.shortLabel}")
+    && guidedSource.includes("shortLabel={targetIsGermanCourse ? item.shortLabel : undefined}")
 );
 check(
   "guided sentence tracking keeps German umlauts visually distinct",

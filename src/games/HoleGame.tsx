@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Maximize, Minimize, RotateCcw, Trophy } from "lucide-react";
 import { recordWordMastery } from "@/lib/mastery";
 import { useGameContent } from "@/games/gameContent";
+import { courseSides } from "@/lib/courseLanguages";
 import { ui } from "@/lib/i18n";
 import {
   areaForRadius,
@@ -77,7 +78,10 @@ const BOT_COLOURS = ["#7c3aed", "#0891b2", "#be123c", "#15803d", "#b45309"];
 
 export default function HoleGame() {
   const { learningDirection } = useGameContent();
-  const learnsEnglish = learningDirection === "learn-en";
+  // The city's props are named in all three languages, so the caption picks
+  // the two sides the course is actually teaching rather than assuming the
+  // pair is German and English.
+  const sides = courseSides(learningDirection);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,7 +91,7 @@ export default function HoleGame() {
   const [rank, setRank] = useState(1);
   const [secondsLeft, setSecondsLeft] = useState(ROUND_SECONDS);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastEaten, setLastEaten] = useState<{ de: string; en: string } | null>(null);
+  const [lastEaten, setLastEaten] = useState<{ target: string; clue: string } | null>(null);
   const [board, setBoard] = useState<{ name: string; score: number; isPlayer: boolean; colour: string }[]>([]);
   const [best, setBest] = useState(() => {
     try { return parseInt(localStorage.getItem("hole-hs") ?? "0", 10) || 0; } catch { return 0; }
@@ -342,7 +346,8 @@ export default function HoleGame() {
           if (owner.isPlayer) {
             scoreRef.current = owner.score;
             setScore(owner.score);
-            setLastEaten({ de: prop.spec.de, en: prop.spec.en });
+            setLastEaten({ target: sides.target.code === "fr" ? prop.spec.fr : sides.target.code === "en" ? prop.spec.en : prop.spec.de,
+              clue: sides.meaning.code === "de" ? prop.spec.de : prop.spec.en });
             recordWordMastery(prop.spec.de);
           }
           continue; // swallowed — drop it
@@ -757,15 +762,15 @@ export default function HoleGame() {
         <AnimatePresence>
           {phase === "playing" && lastEaten && (
             <motion.div
-              key={lastEaten.de + score}
+              key={lastEaten.target + score}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-2xl bg-black/60 px-4 py-2.5 text-center backdrop-blur-sm"
             >
-              <p className="text-base font-black text-white">{learnsEnglish ? lastEaten.en : lastEaten.de}</p>
-              <p className="text-[11px] font-bold text-white/70">{learnsEnglish ? lastEaten.de : lastEaten.en}</p>
+              <p className="text-base font-black text-white">{lastEaten.target}</p>
+              <p className="text-[11px] font-bold text-white/70">{lastEaten.clue}</p>
             </motion.div>
           )}
         </AnimatePresence>

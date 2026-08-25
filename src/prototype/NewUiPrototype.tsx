@@ -85,7 +85,8 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { DIRECTION_CHANGE_EVENT, learningEnglish, setLearningDirection } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, setLearningDirection } from "@/lib/direction";
+import { courseSides } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { buildCatalog } from "@/session";
@@ -1895,10 +1896,15 @@ function CourseHero({
           : placementPart === "part11" ? ["B1", ui("Independent speaker")]
             : ["A2", ui("Everyday speaker")];
 
-  const learnsEnglish = learningEnglish();
+  const sides = courseSides();
+  const learnsEnglish = sides.target.code === "en";
   // The learner's chosen English variant decides the flag: a US-English
   // course must not wear a Union Jack.
   const englishVariant = learnsEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
+  // German is three <i> bands; English and French are drawn in CSS.
+  const badgeClass = learnsEnglish
+    ? ` is-english is-${englishVariant}`
+    : sides.target.code === "fr" ? " is-french" : "";
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
@@ -1909,16 +1915,16 @@ function CourseHero({
             <span className="np-course-kicker">{ui("Language learning")}</span>
             {/* The chip was hardcoded to German, so someone learning English
                 was told their active course was German on every visit. */}
-            <button aria-label={uiFmt("Switch course, currently {course}", { course: learnsEnglish ? ui("English") : ui("German") })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
-              <span aria-hidden="true" className={"np-language-badge" + (learnsEnglish ? ` is-english is-${englishVariant}` : "")}>
-                {learnsEnglish ? null : <><i /><i /><i /></>}
+            <button aria-label={uiFmt("Switch course, currently {course}", { course: ui(sides.target.label) })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
+              <span aria-hidden="true" className={"np-language-badge" + badgeClass}>
+                {badgeClass ? null : <><i /><i /><i /></>}
               </span>
-              <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
+              <strong>{ui(sides.target.label)}</strong>
               <ChevronDown />
             </button>
           </div>
           <div className="np-course-title-row">
-            <h1>{learnsEnglish ? ui("English for real conversations") : ui("German for real conversations")}</h1>
+            <h1>{uiFmt("{language} for real conversations", { language: ui(sides.target.label) })}</h1>
           </div>
           <div className="np-level-line">
             <strong>{needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })}</strong>
@@ -2044,10 +2050,10 @@ function LanguageCard({
   profile: UserProfile | null;
   stats: PrototypeStats;
 }) {
-  const learnsEnglish = learningEnglish();
-  // Same rule as the rail: the German/English pair is told apart by which way
-  // round the learner is going, not by the stored course id — both accounts
-  // store "german", and reading it alone showed one of them the wrong flag.
+  const sides = courseSides();
+  // Same rule as the rail: the built-in courses are told apart by which way
+  // round the learner is going, not by the stored course id — several accounts
+  // store "german", and reading it alone showed some of them the wrong flag.
   const courseFlagId = learningFlagId(getActiveCourseId(profile));
   const percent = packProgress ? packProgress.percent : 0;
 
@@ -2073,7 +2079,7 @@ function LanguageCard({
               <small>{ui("Current language")}</small>
               <span className="np-home-choice-value">
                 <FlagRoundel id={courseFlagId} />
-                <strong>{learnsEnglish ? ui("English") : ui("German")}</strong>
+                <strong>{ui(sides.target.label)}</strong>
                 <button className="np-home-choice-change" onClick={onSwitchCourse} type="button">
                   {ui("Change")}
                 </button>
@@ -3789,10 +3795,10 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId.startsWith("english"))
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId.startsWith("english"))
     ? (learningEnglish()
         ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
-        : "german")
+        : learningFrench() ? "french" : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
@@ -4047,9 +4053,9 @@ export default function NewUiPrototype({
   };
 
   const selectCourse = (courseId: string) => {
-    // German and English are the same built-in course read in opposite
-    // directions, so picking one has to move the direction as well as the id.
-    // Without this, choosing English left the app teaching German.
+    // German, English and French are the same built-in course read three ways,
+    // so picking one has to move the direction as well as the id. Without
+    // this, choosing English left the app teaching German.
     // The two English courses are the same course with a different spelling
     // and accent, so picking one sets both. Doing it here means the choice is
     // made once, in the place you choose the language, instead of being a
@@ -4059,6 +4065,7 @@ export default function NewUiPrototype({
       setEnglishVariant(courseId === "english-uk" ? "british" : "american");
     }
     else if (courseId === "german") setLearningDirection("learn-de");
+    else if (courseId === "french") setLearningDirection("learn-fr");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);
@@ -4529,8 +4536,8 @@ export default function NewUiPrototype({
                     <ListenView
                       active={activeView === "listen"}
                       apiParts={apiParts}
-                      key={`${profile?.id ?? "default"}:${learningEnglish() ? "learn-en" : "learn-de"}`}
-                      learningDirection={learningEnglish() ? "learn-en" : "learn-de"}
+                      key={`${profile?.id ?? "default"}:${getLearningDirection()}`}
+                      learningDirection={getLearningDirection()}
                       onOpen={() => navigate("listen")}
                       profile={profile}
                     />

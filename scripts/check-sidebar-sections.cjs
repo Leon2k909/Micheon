@@ -164,11 +164,19 @@ export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
   assert.strictEqual(learningFlagId("german"), "english-us", "and the variant she chose is the flag she gets");
   setEnglishVariant("british");
 
-  // A language course of its own names itself, whichever way the pair is set.
-  for (const direction of ["learn-de", "learn-en"]) {
+  // French is the third reading of the same material, so it belongs to the
+  // direction like the other two: the stored id may still say "german" on an
+  // install that has been through the switcher, and the direction is what says
+  // which language is actually being learned.
+  setLearningDirection("learn-fr");
+  assert.strictEqual(learningFlagId("german"), "french", "the French course flies the French flag");
+  assert.strictEqual(learningFlagId("french"), "french", "...whichever of its two names is stored");
+
+  // A language course of its OWN — one that is not part of the reversible set
+  // — names itself, whichever way the set is pointed.
+  for (const direction of ["learn-de", "learn-en", "learn-fr"]) {
     setLearningDirection(direction);
     assert.strictEqual(learningFlagId("spanish"), "spanish", "Spanish is Spanish either way");
-    assert.strictEqual(learningFlagId("french"), "french", "so is French");
   }
 
   // And the two courses that are not languages never reach the globe.

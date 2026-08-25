@@ -4,7 +4,8 @@ import { ArrowRight, Check, Gauge, TrendingUp, X } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getAuthUser, saveScopedJson } from "@/lib/profileStorage";
-import { learningEnglish } from "@/lib/direction";
+import { getLearningDirection } from "@/lib/direction";
+import { courseSides } from "@/lib/courseLanguages";
 import {
   PLACEMENT_LEVELS,
   PLACEMENT_PASS,
@@ -41,7 +42,8 @@ export function PlacementLadder({
   onClose: () => void;
   onPlaced?: (level: Cefr | null, partKey: string | null) => void;
 }) {
-  const direction = learningEnglish() ? "learn-en" : "learn-de";
+  const direction = getLearningDirection();
+  const sides = courseSides(direction);
   const [level, setLevel] = useState<Cefr>("A1");
   const [questions, setQuestions] = useState<PlacementQuestion[]>(() => placementRound(direction, "A1"));
   const [index, setIndex] = useState(0);
@@ -171,7 +173,7 @@ export function PlacementLadder({
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            {ui("Placement test")} · {direction === "learn-en" ? ui("English") : ui("German")}
+            {ui("Placement test")} · {ui(sides.target.label)}
           </p>
           <h2 className="mt-1 text-lg font-black tracking-tight text-[var(--text-1)]">
             {uiFmt("Level {level} — question {n} of {total}", { level, n: index + 1, total: questions.length })}
@@ -210,7 +212,7 @@ export function PlacementLadder({
         {ui(question.instruction)}
       </p>
       <h3 className="mt-2 text-2xl font-black leading-snug tracking-tight text-[var(--text-1)]"
-          lang={direction === "learn-en" ? "en" : "de"}>
+          lang={sides.target.htmlLang}>
         {question.prompt}
       </h3>
 

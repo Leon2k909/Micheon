@@ -10,6 +10,7 @@ import {
   type ScenarioTurn,
 } from "@/lib/conversationScenarios";
 import { tts, stopTts } from "@/lib/voice";
+import { courseSides } from "@/lib/courseLanguages";
 import { MuteButton } from "@/components/MuteButton";
 
 /**
@@ -42,12 +43,15 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
 
   const scenario = scenarios.find((s) => s.id === openId) ?? null;
 
+  // The line on top is whichever language the course teaches — see
+  // buildScenarios, which puts it there. The voice has to follow it.
+  const sides = courseSides();
   const say = useCallback((text: string) => {
     if (!text) return;
     // tts() is the one door to the mixer: it checks the master and per-language
     // volumes itself, so this needs no mute logic of its own.
-    void tts(text, 0.9, "de-DE");
-  }, []);
+    void tts(text, 0.9, sides.target.voice);
+  }, [sides.target.voice]);
 
   const open = useCallback((next: Scenario) => {
     stopTts();
@@ -141,7 +145,7 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
                 })}
                 {entry.level ? ` · ${entry.level}` : ""}
               </p>
-              <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[var(--text-3)]" lang="de">
+              <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[var(--text-3)]" lang={sides.target.htmlLang}>
                 {entry.turns[0]?.de}
               </p>
             </button>
@@ -206,7 +210,7 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
                 <Volume2 className="h-3 w-3" aria-hidden="true" />
               </button>
               <div className="min-w-0">
-                <p className="conversation-line__de" lang="de">{turn.de}</p>
+                <p className="conversation-line__de" lang={sides.target.htmlLang}>{turn.de}</p>
                 <p className="conversation-line__en">{turn.en}</p>
               </div>
             </div>

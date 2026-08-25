@@ -33,11 +33,14 @@ export const WORD_TRACKER_SORTS: ReadonlyArray<{ key: WordTrackerSort; label: st
 ];
 
 type RecordForWord = (word: WordItem) => GradeRecord | undefined;
-type AlphabetLanguage = "de" | "en";
+type AlphabetLanguage = "de" | "en" | "fr";
 
 const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   de: new Intl.Collator("de", { numeric: true, sensitivity: "base" }),
   en: new Intl.Collator("en", { numeric: true, sensitivity: "base" }),
+  // sensitivity "base" folds é onto e, which is what an A–Z index wants: a
+  // French learner looking under E expects to find "école" there.
+  fr: new Intl.Collator("fr", { numeric: true, sensitivity: "base" }),
 };
 
 const parsedTime = (value: string | undefined) => {

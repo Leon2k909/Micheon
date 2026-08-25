@@ -8,19 +8,24 @@ import { Progress } from "@/components/ui/progress";
 import { allPartBlueprints } from "@/lib/data";
 import { normalize } from "@/lib/api";
 import { learningEnglish } from "@/lib/direction";
-import { ui } from "@/lib/i18n";
+import { courseSides } from "@/lib/courseLanguages";
+import { matchFrenchPhrase } from "@/lib/frenchTextMatch";
+import { ui, uiFmt } from "@/lib/i18n";
 
+// Three words per row, so the same ten questions work whichever of the three
+// is being learned. The French is the ordinary dictionary form with its
+// article, because that is how the course teaches a noun.
 const QUESTIONS = [
-  { part: "part1", de: "Haus", en: "House", level: "A1" },
-  { part: "part2", de: "Bahnhof", en: "Station", level: "A1" },
-  { part: "part3", de: "Arbeit", en: "Work", level: "A1-A2" },
-  { part: "part4", de: "Wochenende", en: "Weekend", level: "A2" },
-  { part: "part6", de: "Straße", en: "Street", level: "A1-A2" },
-  { part: "part7", de: "Familie", en: "Family", level: "A1-A2" },
-  { part: "part9", de: "Küche", en: "Kitchen", level: "A2" },
-  { part: "part10", de: "Plan", en: "Plan", level: "A2-B1" },
-  { part: "part11", de: "interessant", en: "Interesting", level: "B1" },
-  { part: "part12", de: "vergessen", en: "to forget", level: "B1" },
+  { part: "part1", de: "Haus", en: "House", fr: "la maison", level: "A1" },
+  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", level: "A1" },
+  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", level: "A1-A2" },
+  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", level: "A2" },
+  { part: "part6", de: "Straße", en: "Street", fr: "la rue", level: "A1-A2" },
+  { part: "part7", de: "Familie", en: "Family", fr: "la famille", level: "A1-A2" },
+  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", level: "A2" },
+  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", level: "A2-B1" },
+  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", level: "B1" },
+  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", level: "B1" },
 ];
 
 export function PlacementTest({ onComplete }: { onComplete: (partKey: string) => void }) {
@@ -32,9 +37,19 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
 
   const current = QUESTIONS[index];
   const progress = ((index + 1) / QUESTIONS.length) * 100;
+  const sides = courseSides();
+  const learnFr = sides.target.code === "fr";
   const reverse = learningEnglish();
-  const prompt = reverse ? current.de : current.en;
-  const target = reverse ? current.en : current.de;
+  const prompt = learnFr
+    ? (sides.meaning.code === "de" ? current.de : current.en)
+    : reverse ? current.de : current.en;
+  const target = learnFr ? current.fr : reverse ? current.en : current.de;
+  // A missing accent is a spelling slip in French, not a wrong answer — see
+  // frenchTextMatch.ts. normalize() would mark "la gare" typed as "gare"
+  // wrong too, which is why the French course grades through the matcher.
+  const isRight = (typed: string) => learnFr
+    ? matchFrenchPhrase(typed, target).ok
+    : normalize(typed) === normalize(target);
 
   const recordAnswer = (isCorrect: boolean) => {
     setAnswers([...answers, isCorrect]);
@@ -49,11 +64,11 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    recordAnswer(normalize(input) === normalize(target));
+    recordAnswer(isRight(input));
   };
 
   useEffect(() => {
-    if (input.trim() && normalize(input) === normalize(target)) recordAnswer(true);
+    if (input.trim() && isRight(input)) recordAnswer(true);
     // The answer transition intentionally owns the current question snapshot.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
@@ -80,7 +95,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
                 {ui("Your starting point")}
               </p>
               <h2 className="mt-1 text-[28px] font-black leading-tight tracking-[-0.025em] text-[var(--text-1)]">
-                {ui(reverse ? "Are you completely new to English?" : "Are you completely new to German?")}
+                {uiFmt("Are you completely new to {language}?", { language: ui(sides.target.label) })}
               </h2>
             </div>
           </div>
@@ -176,7 +191,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-3)]">{ui("Starting point check")}</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-1)]">{ui(reverse ? "Translate to English" : "Translate to German")}</h2>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-1)]">{uiFmt("Translate to {language}", { language: ui(sides.target.label) })}</h2>
           </div>
           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--accent)]">
             <Languages className="h-5 w-5" />
@@ -192,7 +207,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
         </div>
 
         <div className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-7 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-3)]">{ui(reverse ? "German prompt" : "English prompt")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-3)]">{uiFmt("{language} prompt", { language: ui(sides.meaning.label) })}</p>
           <p className="mt-3 text-4xl font-semibold tracking-tight text-[var(--text-1)]">{prompt}</p>
         </div>
 
@@ -201,7 +216,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
             autoFocus
             className="h-12 rounded-lg border-[var(--border)] bg-[var(--surface)] px-4 text-base font-semibold text-[var(--text-1)] shadow-none placeholder:text-[var(--text-3)] focus-visible:border-[var(--accent)] focus-visible:bg-[var(--surface)] focus-visible:ring-4 focus-visible:ring-[var(--accent)]/15"
             onChange={(event) => setInput(event.target.value)}
-            placeholder={ui(reverse ? "Type the English word" : "Type the German word")}
+            placeholder={uiFmt("Type the {language} word", { language: ui(sides.target.label) })}
             value={input}
           />
           <Button

@@ -163,8 +163,8 @@ check(
 );
 check(
   "the target-first order follows the selected learning direction",
-  guided.includes('? "English is ready to type. You can answer either box first; a correct English answer moves focus to German."')
-    && guided.includes(': "German is ready to type. You can answer either box first; a correct German answer moves focus to English."')
+  guided.includes('"{target} is ready to type. You can answer either box first; a correct {target} answer moves focus to {meaning}."')
+    && guided.includes("{ target: ui(targetLabel), meaning: ui(meaningLabel) }")
 );
 check(
   "two correct recall answers advance without a Check both click",
