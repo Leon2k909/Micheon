@@ -60,10 +60,9 @@ import {
   UsersRound,
   Volume2,
   X,
-  MessagesSquare,
-
   ScrollText,
-  FlaskConical,} from "lucide-react";
+  FlaskConical,
+} from "lucide-react";
 import {
   lazy,
   Fragment,
@@ -196,7 +195,6 @@ const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboa
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
-const ConversationView = lazy(() => import("@/components/conversation/ConversationView").then((module) => ({ default: module.ConversationView })));
 const CreateView = lazy(() => import("@/components/create/CreateView").then((module) => ({ default: module.CreateView })));
 const DuoPathView = lazy(() => import("@/components/duo/DuoPathView").then((module) => ({ default: module.DuoPathView })));
 const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
@@ -204,7 +202,7 @@ const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then
 const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
 const UkSearchView = lazy(() => import("@/components/lifeInTheUk/UkSearchView").then((module) => ({ default: module.UkSearchView })));
 
-type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "passages" | "shop" | "progress" | "profile" | "more" | "life-in-uk" | "create" | "conversation";
+type PrototypeView = "home" | "path" | "learn" | "practice" | "listen" | "games" | "social" | "tests" | "grammar" | "passages" | "shop" | "progress" | "profile" | "more" | "life-in-uk" | "create";
 type RewardKind = "heart" | "flame" | "star" | "trophy" | "backpack";
 type ShopBadgeId = "leaf" | RewardKind | "crown";
 
@@ -270,9 +268,9 @@ const LEARN_PATH_NAVIGATION_ITEM: NavigationItem = { id: "path", label: "Learn",
 // Passages is a reading exercise still finding its shape, so it sits with the
 // beta entries rather than in the Practice hub everyone sees.
 const PASSAGES_NAVIGATION_ITEM: NavigationItem = { id: "passages", label: "Passages", icon: ScrollText };
-// Conversation is the newest of these and the roughest: it plays an authored
-// dialogue one turn at a time and asks the learner to pick their own reply.
-const CONVERSATION_NAVIGATION_ITEM: NavigationItem = { id: "conversation", label: "Conversation", icon: MessagesSquare };
+// Conversation has no nav entry of its own: it is the fourth way into Learn,
+// beside the guided session, the path and the Matcher, because it is another
+// way through the same course rather than a separate place to be.
 
 /**
  * Every destination that can appear in a nav, for looking a hidden one up.
@@ -705,7 +703,6 @@ const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "li
 
 function Sidebar({
   courseFlagId,
-  conversationUnlocked,
   createUnlocked,
   learnPathUnlocked,
   passagesUnlocked,
@@ -726,7 +723,6 @@ function Sidebar({
   activeView: PrototypeView;
   /** The course being learned — decides the first flag, nothing else. */
   courseFlagId: string;
-  conversationUnlocked: boolean;
   createUnlocked: boolean;
   learnPathUnlocked: boolean;
   passagesUnlocked: boolean;
@@ -847,7 +843,6 @@ function Sidebar({
   const betaItems = [
     ...(learnPathUnlocked ? [LEARN_PATH_NAVIGATION_ITEM] : []),
     ...(passagesUnlocked ? [PASSAGES_NAVIGATION_ITEM] : []),
-    ...(conversationUnlocked ? [CONVERSATION_NAVIGATION_ITEM] : []),
     ...(createUnlocked ? [CREATE_NAVIGATION_ITEM] : []),
     ...(gamesUnlocked ? [NAVIGATION.find((item) => item.id === "games")!] : []),
     ...(socialPreviewUnlocked ? [SOCIAL_NAVIGATION_ITEM] : []),
@@ -1026,7 +1021,7 @@ function Sidebar({
                   if (!item) return null;
                   const Icon = NAV_GROUP_ICONS[item.id] ?? item.icon;
                   const active = item.id === activeView
-                    || (item.id === "practice" && (activeView === "tests" || activeView === "grammar" || activeView === "passages"));
+                    || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"));
                   return (
                     <button
                       aria-current={active ? "page" : undefined}
@@ -2460,20 +2455,26 @@ function PracticeCard({
 }
 
 /**
- * The way back out of a Practice tool.
+ * The way back out of a feature that fills the page.
  *
- * Tests, Grammar and Passages are opened from the Practice hub and then fill
- * the page on their own. The sidebar keeps Practice lit while you are in one,
- * so the app already treats them as somewhere you went INTO — but there was
- * nothing to come back with, and the sidebar entry is a different gesture from
- * undoing a step.
+ * Tests and Grammar are opened from the Practice hub; Passages from the beta
+ * entries in the nav. Each then fills the page on its own, and the nav keeps
+ * the place it came from lit — so the app already treats them as somewhere
+ * you went INTO, but there was nothing to come back with. The nav entry is a
+ * different gesture from undoing the step you just took, and on a narrow
+ * window the sidebar is not even on screen.
+ *
+ * The caption names its destination because they no longer share one. A
+ * control reading "Back to Practice" that lands you Home is worse than no
+ * control at all: it is the only thing on screen claiming to know where you
+ * came from, and it is wrong.
  */
-function FeatureBackBar({ label, onBack }: { label: string; onBack: () => void }) {
+function FeatureBackBar({ back, label, onBack }: { back?: string; label: string; onBack: () => void }) {
   return (
     <div className="np-feature-back">
       <button className="np-feature-back__btn" onClick={onBack} type="button">
         <ArrowLeft aria-hidden="true" />
-        {ui("Back to Practice")}
+        {back ?? ui("Back to Practice")}
       </button>
       <span className="np-feature-back__where">{label}</span>
     </div>
@@ -2484,13 +2485,10 @@ function PracticeHub({
   apiParts,
   onNavigate,
   onRequestCatalogue,
-  passagesUnlocked,
 }: {
   apiParts: Record<string, Part>;
   onNavigate: (view: PrototypeView) => void;
   onRequestCatalogue: () => void;
-  /** Passages is beta, so the card is not offered where it cannot be opened. */
-  passagesUnlocked: boolean;
 }) {
   const tools = [
     {
@@ -2509,14 +2507,6 @@ function PracticeHub({
       tone: "yellow",
       view: "grammar" as const,
     },
-    ...(passagesUnlocked ? [{
-      description: ui("Real messages and notes in German. Read the whole thing, then put it into English — hover any word you do not know."),
-      icon: ScrollText,
-      label: ui("Passages"),
-      meta: ui("Read and translate"),
-      tone: "violet",
-      view: "passages" as const,
-    }] : []),
   ];
 
   return (
@@ -3562,10 +3552,13 @@ function SocialView({ userName }: { userName: string }) {
 
 function MoreView({
   onNavigate,
+  passagesUnlocked,
   shopUnlocked,
   socialPreviewUnlocked,
 }: {
   onNavigate: (view: PrototypeView) => void;
+  /** Beta, and its only other entry is the sidebar, which narrow windows hide. */
+  passagesUnlocked: boolean;
   shopUnlocked: boolean;
   socialPreviewUnlocked: boolean;
 }) {
@@ -3599,6 +3592,16 @@ function MoreView({
     // course there. Wider, the sidebar already lists it and the card repeated
     // something two centimetres away.
     { title: ui("Country studies"), description: ui("Lessons, timed exam simulations, a timeline and searchable history."), icon: Landmark, tone: "yellow", narrowOnly: true, action: () => onNavigate("life-in-uk") },
+    // Same reasoning, and narrow only for the same reason: wider, the beta
+    // list in the sidebar already carries it.
+    ...(passagesUnlocked ? [{
+      title: ui("Passages"),
+      description: ui("Real messages and notes in German. Read the whole thing, then put it into English."),
+      icon: ScrollText,
+      tone: "violet",
+      narrowOnly: true,
+      action: () => onNavigate("passages"),
+    }] : []),
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
@@ -3758,13 +3761,14 @@ function MobileNav({ activeView, gamesUnlocked, onNavigate }: { activeView: Prot
       {MOBILE_NAVIGATION.filter((item) => (item.id !== "games" || gamesUnlocked) && !hidden.includes(item.id)).map((item) => {
         const Icon = item.icon;
         const active = item.id === activeView
-          || (item.id === "practice" && (activeView === "tests" || activeView === "grammar" || activeView === "passages"))
+          || (item.id === "practice" && (activeView === "tests" || activeView === "grammar"))
           // Kept as its own clause: check-social-preview pins the list below
           // verbatim, because that list is the gate routing the private
           // preview through More. Life in the UK is not gated, so it is added
           // here rather than by editing the pinned literal.
           || (item.id === "more" && ["social", "shop", "progress", "profile"].includes(activeView))
-          || (item.id === "more" && activeView === "life-in-uk");
+          || (item.id === "more" && activeView === "life-in-uk")
+          || (item.id === "more" && activeView === "passages");
         return (
           <button aria-current={active ? "page" : undefined} className={active ? "is-active" : ""} key={item.id} onClick={() => onNavigate(item.id)} type="button">
             <Icon />
@@ -3874,7 +3878,6 @@ export default function NewUiPrototype({
   // keeps them (badged Beta); every other account sees no Games tab and a
   // coming-soon card if it lands on the view another way.
   const gamesUnlocked = leonOnlyFeaturesUnlocked;
-  const conversationUnlocked = leonOnlyFeaturesUnlocked;
   const createUnlocked = leonOnlyFeaturesUnlocked;
   const learnPathUnlocked = leonOnlyFeaturesUnlocked;
   const passagesUnlocked = leonOnlyFeaturesUnlocked;
@@ -3983,11 +3986,10 @@ export default function NewUiPrototype({
     // on a view that no longer has a way back to itself.
     if (!learnPathUnlocked && activeView === "path") setActiveView("home");
     if (!createUnlocked && activeView === "create") setActiveView("home");
-    if (!conversationUnlocked && activeView === "conversation") setActiveView("home");
     // Passages moved into beta the same way, so the same rule applies: an
     // account that cannot open it must not be left looking at it.
-    if (!passagesUnlocked && activeView === "passages") setActiveView("practice");
-  }, [activeView, conversationUnlocked, createUnlocked, learnPathUnlocked, passagesUnlocked, shopUnlocked, socialPreviewUnlocked]);
+    if (!passagesUnlocked && activeView === "passages") setActiveView("home");
+  }, [activeView, createUnlocked, learnPathUnlocked, passagesUnlocked, shopUnlocked, socialPreviewUnlocked]);
 
   // Pointer over a nav item, or keyboard focus on it, is intent. Start the
   // catalogue and pull the chunk now rather than at the click. Both calls are
@@ -4223,7 +4225,6 @@ export default function NewUiPrototype({
       apiParts={apiParts}
       onNavigate={navigate}
       onRequestCatalogue={requestParts}
-      passagesUnlocked={passagesUnlocked}
     />
   ) : activeView === "listen" ? (
     <div className="np-feature-host">
@@ -4260,7 +4261,7 @@ export default function NewUiPrototype({
     </div>
   ) : activeView === "passages" && passagesUnlocked ? (
     <div className="np-feature-host">
-      <FeatureBackBar label={ui("Passages")} onBack={() => navigate("practice")} />
+      <FeatureBackBar back={ui("Back to Home")} label={ui("Passages")} onBack={() => navigate("home")} />
       <Suspense fallback={<FeatureLoading />}>
         <PassagesView />
       </Suspense>
@@ -4318,12 +4319,6 @@ export default function NewUiPrototype({
         </Suspense>
       </div>
     ) : <AccountGate onRequestSignIn={onRequestSignIn} />
-  ) : activeView === "conversation" ? (
-    <div className="np-feature-host">
-      <Suspense fallback={<FeatureLoading />}>
-        <ConversationView apiParts={apiParts} />
-      </Suspense>
-    </div>
   ) : activeView === "create" ? (
     <div className="np-feature-host">
       <Suspense fallback={<FeatureLoading />}>
@@ -4448,6 +4443,7 @@ export default function NewUiPrototype({
   ) : (
     <MoreView
       onNavigate={navigate}
+      passagesUnlocked={passagesUnlocked}
       shopUnlocked={shopUnlocked}
       socialPreviewUnlocked={socialPreviewUnlocked}
     />
@@ -4465,7 +4461,6 @@ export default function NewUiPrototype({
           <Sidebar
             activeView={activeView}
             courseFlagId={learningFlagId(activeCourseId)}
-            conversationUnlocked={conversationUnlocked}
             createUnlocked={createUnlocked}
             learnPathUnlocked={learnPathUnlocked}
             passagesUnlocked={passagesUnlocked}

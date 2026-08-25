@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Lock, Play, Shuffle, Star, Zap } from "lucide-react";
+import { Check, ChevronRight, Lock, MessagesSquare, Play, Shuffle, Star, Zap } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildDuoPath, type DuoNode } from "@/lib/duoPath";
 import { DuoLesson } from "@/components/duo/DuoLesson";
 import { MatcherView } from "@/components/matcher/MatcherView";
+import { ConversationView } from "@/components/conversation/ConversationView";
 
 /**
- * Three ways in, side by side.
+ * Four ways in, side by side.
  *
  * The app already had one: a button that hands you the next thing you should
  * see. It is efficient and it is opaque — you cannot tell where you are, what
@@ -32,6 +33,7 @@ export function DuoPathView({
 }) {
   const [activeNode, setActiveNode] = useState<DuoNode | null>(null);
   const [matching, setMatching] = useState(false);
+  const [conversing, setConversing] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   // Rebuilt after a lesson so finished nodes fill in without a reload.
@@ -43,6 +45,22 @@ export function DuoPathView({
 
   if (matching) {
     return <MatcherView apiParts={apiParts} profile={null} onExit={() => setMatching(false)} />;
+  }
+
+  if (conversing) {
+    return (
+      <div className="space-y-4">
+        <button
+          className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--surface-2)] px-3.5 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+          onClick={() => setConversing(false)}
+          type="button"
+        >
+          <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+          {ui("Back")}
+        </button>
+        <ConversationView apiParts={apiParts} />
+      </div>
+    );
   }
 
   if (activeNode) {
@@ -60,8 +78,8 @@ export function DuoPathView({
 
   return (
     <div className="space-y-4">
-      {/* The two ways in. */}
-      <section className="grid gap-3 sm:grid-cols-3">
+      {/* The ways in, side by side. */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <button
           type="button"
           onClick={onGuidedSession}
@@ -137,6 +155,35 @@ export function DuoPathView({
             </strong>
             <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
               {ui("German against English, six pairs at a time — words or sentences, refilling until you stop.")}
+            </span>
+          </span>
+          <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
+            {ui("Start")} <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+        {/*
+          The fourth: a conversation rather than a drill. The other three teach
+          a phrase; this one puts somebody in front of you saying something and
+          asks what you say back, which is the only one of the four that is
+          about knowing WHEN to use what you know.
+        */}
+        <button
+          type="button"
+          onClick={() => setConversing(true)}
+          className="card card-hover flex flex-col items-start gap-3 p-5 text-left"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+            <MessagesSquare className="h-5 w-5" />
+          </span>
+          <span>
+            <span className="block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {ui("Conversation")}
+            </span>
+            <strong className="mt-1 block text-lg font-black tracking-tight text-[var(--text-1)]">
+              {ui("Say something back")}
+            </strong>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+              {ui("A shop, a station, a doctor — they speak, you choose your reply, one turn at a time.")}
             </span>
           </span>
           <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">

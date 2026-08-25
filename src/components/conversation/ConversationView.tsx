@@ -119,7 +119,7 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
             <input
               className="min-w-0 flex-1 bg-transparent text-sm font-bold text-[var(--text-1)] outline-none"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={ui("Find a scene — a shop, the doctor, a party")}
+              placeholder={ui("Search")}
               value={query}
             />
           </label>
