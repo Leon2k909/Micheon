@@ -67,7 +67,7 @@ import {
 } from "@/lib/petPosition";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { courseSides, type CourseLanguage } from "@/lib/courseLanguages";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiSpeechLang } from "@/lib/i18n";
 import { getCodexPetCadence } from "@/lib/codexPetCoaching";
 import { stopTts, tts } from "@/lib/voice";
 
@@ -1104,7 +1104,7 @@ export function CodexPetLayer() {
     void tts(
       speech.text,
       0.9,
-      speech.voiceLang ?? (uiIsGerman() ? "de-DE" : "en-US")
+      speech.voiceLang ?? uiSpeechLang()
     ).finally(() => {
       if (activePetTtsId.current === speech.id) activePetTtsId.current = "";
     });

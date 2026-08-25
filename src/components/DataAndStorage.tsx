@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { AlertTriangle, Download, HardDrive, RefreshCw, Trash2, Upload } from "lucide-react";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import {
   clearAllData,
   clearDataCategory,
@@ -55,7 +55,9 @@ export function DataAndStorage() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const say = (english: string, german: string) => setNote(uiIsGerman() ? german : english);
+  // One argument now: the English is the key, and the dictionary answers for
+  // every other language rather than the call site carrying one of each.
+  const say = (english: string) => setNote(ui(english));
 
   const remove = (id: DataCategoryId | "all") => {
     if (arming !== id) { setArming(id); setNote(""); return; }
@@ -63,8 +65,9 @@ export function DataAndStorage() {
     const removed = id === "all" ? clearAllData(profile) : clearDataCategory(id, profile);
     setArming(null);
     refresh();
-    say(`Deleted ${removed} ${removed === 1 ? "entry" : "entries"}.`,
-        `${removed} ${removed === 1 ? "Eintrag" : "Einträge"} gelöscht.`);
+    setNote(removed === 1
+      ? uiFmt("Deleted {count} entry.", { count: removed })
+      : uiFmt("Deleted {count} entries.", { count: removed }));
     // Progress feeds most of the app; a reload is cleaner than leaving every
     // screen holding numbers that no longer exist.
     if (id === "all" || id === "progress") window.setTimeout(() => window.location.reload(), 900);
@@ -77,8 +80,7 @@ export function DataAndStorage() {
     const ok = await bridge.clearAppCache().catch(() => false);
     setBusy(false);
     refresh();
-    say(ok ? "Cache cleared." : "Could not clear the cache.",
-        ok ? "Cache geleert." : "Cache konnte nicht geleert werden.");
+    say(ok ? "Cache cleared." : "Could not clear the cache.");
   };
 
   const exportData = async () => {
@@ -95,9 +97,9 @@ export function DataAndStorage() {
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      say("Data exported. Keep this file somewhere safe.", "Daten exportiert. Bewahre diese Datei sicher auf.");
+      say("Data exported. Keep this file somewhere safe.");
     } catch {
-      say("Could not export your data.", "Deine Daten konnten nicht exportiert werden.");
+      say("Could not export your data.");
     } finally {
       setTransferBusy(null);
     }
@@ -116,10 +118,10 @@ export function DataAndStorage() {
       if (!confirmed) return;
       await applyDataImport(archive, getAuthUser());
       await importPortablePetBundles(archive.pets);
-      say("Data imported. Micheon will reload now.", "Daten importiert. Micheon wird jetzt neu geladen.");
+      say("Data imported. Micheon will reload now.");
       window.setTimeout(() => window.location.reload(), 650);
     } catch {
-      say("Could not import that file. Choose a Micheon data export for this profile.", "Diese Datei konnte nicht importiert werden. Wähle einen Micheon-Export für dieses Profil.");
+      say("Could not import that file. Choose a Micheon data export for this profile.");
     } finally {
       setTransferBusy(null);
     }
@@ -162,9 +164,7 @@ export function DataAndStorage() {
           </p>
         )}
         <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
-          {uiIsGerman()
-            ? "Zu den Sprachen: Der Deutschkurs ist fest in das Programm eingebaut, nicht separat installiert — es gibt also nichts zu deinstallieren, was Platz sparen würde. Die anderen Sprachen sind noch nicht da; sie belegen keinen Platz."
-            : "About languages: the German course is built into the program rather than installed separately, so there is nothing to uninstall that would save you space. The other languages are not here yet, and take up nothing."}
+          {ui("About languages: the German course is built into the program rather than installed separately, so there is nothing to uninstall that would save you space. The other languages are not here yet, and take up nothing.")}
         </p>
       </div>
 
@@ -228,13 +228,13 @@ export function DataAndStorage() {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="flex items-center gap-1.5 text-sm font-black text-[var(--text-1)]">
-                      {uiIsGerman() ? row.labelDe : row.label}
+                      {ui(row.label)}
                       {row.irreplaceable && (
                         <AlertTriangle aria-label={ui("Cannot be recovered")} className="h-3.5 w-3.5 text-amber-500" />
                       )}
                     </p>
                     <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {uiIsGerman() ? row.detailDe : row.detail}
+                      {ui(row.detail)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -259,9 +259,7 @@ export function DataAndStorage() {
           <div className="min-w-0">
             <p className="text-sm font-black text-[var(--text-1)]">{ui("Delete all my data")}</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-              {uiIsGerman()
-                ? "Alles oben, für dieses Konto auf diesem Gerät. Dein Konto bleibt bestehen, andere Profile auf diesem Rechner bleiben unberührt. Das lässt sich nicht rückgängig machen."
-                : "Everything above, for this account on this device. Your account stays, and other profiles on this computer are untouched. This cannot be undone."}
+              {ui("Everything above, for this account on this device. Your account stays, and other profiles on this computer are untouched. This cannot be undone.")}
             </p>
           </div>
           <button

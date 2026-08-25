@@ -18,8 +18,12 @@ export const INTERFACE_LANGUAGE_CHANGE_EVENT = "gl-interface-language-change";
  *
  * "auto" keeps the old derivation, so nobody's app changes language because
  * this shipped.
+ *
+ * French is a third choice rather than a third derivation: no course makes the
+ * app French on its own, because the people learning French from here are
+ * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr";
 
 let inMemory: InterfaceLanguage = "auto";
 
@@ -27,7 +31,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
   if (typeof window === "undefined") return "auto";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "en" || stored === "de" ? stored : "auto";
+    inMemory = stored === "en" || stored === "de" || stored === "fr" ? stored : "auto";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }
@@ -35,7 +39,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
 }
 
 /** The language actually in force, with "auto" resolved against the course. */
-export function resolveInterfaceLanguage(): "en" | "de" {
+export function resolveInterfaceLanguage(): "en" | "de" | "fr" {
   const chosen = getInterfaceLanguage();
   if (chosen !== "auto") return chosen;
   return learningEnglish() ? "de" : "en";
@@ -83,6 +87,6 @@ function subscribe(onStoreChange: () => void) {
  * when the language changes. Calling this near the root is what turns a
  * setting change into a re-render instead of a reload.
  */
-export function useInterfaceLanguage(): "en" | "de" {
+export function useInterfaceLanguage(): "en" | "de" | "fr" {
   return useSyncExternalStore(subscribe, resolveInterfaceLanguage, () => "en");
 }
