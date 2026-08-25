@@ -72,11 +72,11 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       <motion.div animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl" initial={{ opacity: 0, y: 12 }}>
         <div className="rounded-[26px] border border-[var(--border)] bg-[var(--surface-2)] p-7 text-[var(--text-1)] shadow-[0_24px_70px_var(--shadow)] sm:p-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 shadow-[inset_0_0_0_1px] shadow-emerald-500/30 dark:text-emerald-300">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-700 shadow-[inset_0_0_0_1px] shadow-emerald-500/35">
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--accent)]">
                 {ui("Your starting point")}
               </p>
               <h2 className="mt-1 text-[28px] font-black leading-tight tracking-[-0.025em] text-[var(--text-1)]">
@@ -99,12 +99,12 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
                 <BookOpen className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <strong className="block text-base font-black text-emerald-800 dark:text-emerald-200">{ui("Yes, start from the beginning")}</strong>
-                <span className="mt-1 block text-sm font-semibold leading-5 text-emerald-900/70 dark:text-emerald-200/70">
+                <strong className="block text-base font-black text-[var(--text-1)]">{ui("Yes, start from the beginning")}</strong>
+                <span className="mt-1 block text-sm font-semibold leading-5 text-[var(--text-2)]">
                   {ui("Begin with greetings, basic questions, numbers, and everyday phrases.")}
                 </span>
               </span>
-              <ArrowRight className="h-5 w-5 shrink-0 text-emerald-700 transition-transform dark:text-emerald-300 group-hover:translate-x-0.5" />
+              <ArrowRight className="h-5 w-5 shrink-0 text-[var(--text-2)] transition-transform group-hover:translate-x-0.5" />
             </button>
 
             <button

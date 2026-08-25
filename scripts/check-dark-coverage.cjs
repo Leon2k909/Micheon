@@ -159,6 +159,20 @@ for (const rel of FIRST_RUN_FILES) {
   }
 }
 
+// And no dark: variant in those files either.
+//
+// Nothing binds that variant to the app's theme here - there is no custom
+// variant declared, so it falls back to the desktop's own setting. On a dark
+// desktop with the app in light mode it fires anyway, which is how the green
+// option ended up pale green on pale green and unreadable. The tokens
+// already know which theme is on; a variant is not needed and not honest.
+for (const rel of FIRST_RUN_FILES) {
+  const markup = fs.readFileSync(path.join(root, rel), "utf8");
+  if (markup.includes("dark:")) {
+    failures.push(rel + ": uses a dark: variant, which follows the desktop here rather than the app");
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-dark-coverage");
   [...new Set(failures)].forEach((line) => console.error("  " + line));
