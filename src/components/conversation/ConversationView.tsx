@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
-import { ArrowLeft, Check, MessageSquareText, RotateCcw, Volume2, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Check, Eye, EyeOff, MessageSquareText, RotateCcw, Volume2, X } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +11,11 @@ import {
 } from "@/lib/conversationScenarios";
 import { tts, stopTts } from "@/lib/voice";
 import { courseSides } from "@/lib/courseLanguages";
+import {
+  CONVERSATION_TRANSLATION_EVENT,
+  getConversationTranslationHidden,
+  setConversationTranslationHidden,
+} from "@/lib/conversationTranslation";
 import { MuteButton } from "@/components/MuteButton";
 
 /**
@@ -40,6 +45,20 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
   const [wrong, setWrong] = useState<string[]>([]);
   const [missteps, setMissteps] = useState(0);
   const [query, setQuery] = useState("");
+  /**
+   * Whether the meaning line under each turn is shown.
+   *
+   * Read from the stored preference rather than defaulting, and kept in step
+   * with the event, because the same setting can be changed from another
+   * window — and a scene showing the translation while the setting says hide
+   * would look like the button had not worked.
+   */
+  const [translationHidden, setTranslationHidden] = useState(getConversationTranslationHidden);
+  useEffect(() => {
+    const sync = () => setTranslationHidden(getConversationTranslationHidden());
+    window.addEventListener(CONVERSATION_TRANSLATION_EVENT, sync);
+    return () => window.removeEventListener(CONVERSATION_TRANSLATION_EVENT, sync);
+  }, []);
 
   const scenario = scenarios.find((s) => s.id === openId) ?? null;
 
@@ -181,6 +200,21 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
                 {uiNumber(missteps)}
               </span>
             )}
+            {/* The icon is the state, the label is what pressing it does —
+                the same way the mute control beside it reads. */}
+            <button
+              aria-pressed={translationHidden}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+              data-testid="conversation-translation-toggle"
+              aria-label={translationHidden ? ui("Show the translation") : ui("Hide the translation")}
+              onClick={() => setConversationTranslationHidden(!translationHidden)}
+              title={translationHidden ? ui("Show the translation") : ui("Hide the translation")}
+              type="button"
+            >
+              {translationHidden
+                ? <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                : <Eye aria-hidden="true" className="h-3.5 w-3.5" />}
+            </button>
             <MuteButton
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)]"
               iconClassName="h-3.5 w-3.5"
@@ -211,7 +245,7 @@ export function ConversationView({ apiParts }: { apiParts?: Record<string, unkno
               </button>
               <div className="min-w-0">
                 <p className="conversation-line__de" lang={sides.target.htmlLang}>{turn.de}</p>
-                <p className="conversation-line__en">{turn.en}</p>
+                {!translationHidden && <p className="conversation-line__en">{turn.en}</p>}
               </div>
             </div>
           ))}

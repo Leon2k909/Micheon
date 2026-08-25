@@ -22,6 +22,8 @@ const DE: Record<string, string> = {
   "More Know it options": "Weitere Optionen für „Kann ich“",
   "Struggle": "Schwierig",
   "Hear it": "Anhören",
+  "Hide the translation": "Übersetzung ausblenden",
+  "Show the translation": "Übersetzung einblenden",
   "Read and listen — it plays automatically.": "Lies und hör zu — es wird automatisch abgespielt.",
   "Read the sentence, then continue.": "Lies den Satz und fahre dann fort.",
   "Read the German and French sentences, then continue.": "Lies die deutschen und französischen Sätze und fahre dann fort.",
