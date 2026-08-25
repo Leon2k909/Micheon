@@ -3,6 +3,7 @@ import { csharpCourse } from "@/lib/csharpCourse";
 import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
+import { localiseCourse } from "@/lib/courseTranslation";
 
 // The native German experience is "built in" — selecting it returns to the
 // normal app. Other courses render through the in-app course shell.
@@ -77,8 +78,17 @@ export const COURSES: Course[] = [
   lebenInDeutschlandCourse,
 ];
 
+/**
+ * One lookup, so one place decides what language the course is read in.
+ *
+ * Every screen that shows a course — the dashboard, the lesson list, the
+ * reader, the session and its quizzes — gets its Course from here. Localising
+ * at the lookup means none of them has to know, and none of them can be the
+ * one screen somebody forgot.
+ */
 export function getCourse(id: string): Course | undefined {
-  return COURSES.find((c) => c.id === id);
+  const course = COURSES.find((c) => c.id === id);
+  return course && localiseCourse(course);
 }
 
 const PLANNED_IDS = new Set(PLANNED_LANGUAGES.map((language) => language.id));

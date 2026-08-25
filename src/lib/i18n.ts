@@ -1902,6 +1902,7 @@ const DE: Record<string, string> = {
   "Manage your contact details, learning preferences, and words you have already learned.": "Verwalte deine Kontaktdaten sowie deine Lerneinstellungen und Wörter, die du schon gelernt hast.",
   "Pick any colour": "Beliebige Farbe wählen",
   "Read full course": "Ganzen Kurs lesen",
+  "Show {n} more languages": "{n} weitere Sprachen anzeigen",
   "Reset to green": "Auf Grün zurücksetzen",
   "{n} sections": "{n} Abschnitte",
   // ── Advanced: colour any part ──

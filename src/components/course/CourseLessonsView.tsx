@@ -6,7 +6,7 @@ import { loadCourseProgress } from "@/lib/courses";
 import { CODE_BACKGROUND_LABEL, getCodeBackground, setCodeBackground, type CodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
 import { ui, uiFmt } from "@/lib/i18n";
-import { translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
+import { courseReadingLanguage, translateCourseText, useTranslationLanguage } from "@/lib/courseTranslation";
 
 /**
  * "lesson 16" beside "Fertig" is the worst of both languages, so the numbered
@@ -29,11 +29,21 @@ const BACKGROUND_OPTIONS: { key: CodeBackground; label: string; sub: string }[] 
   { key: "new", label: "🌱 I'm new to coding", sub: "No comparisons — plain-English explanations" },
 ];
 
-// Course tagline adapted to the learner's background.
+/**
+ * Course tagline adapted to the learner's background.
+ *
+ * The alternates are written here rather than on the course, so they are the
+ * one string on this screen that never passed through the course lookup — and
+ * a German reader who said they came from JavaScript got a German course under
+ * an English tagline. They go through the reading language too.
+ */
 function taglineFor(course: Course, bg: CodeBackground | null): string {
   if (course.id !== "csharp" || !bg || bg === "python") return course.tagline;
-  if (bg === "js") return "Learn C# from JavaScript, then build games in s&box.";
-  return "Learn C# from scratch, then build games in s&box.";
+  const reading = courseReadingLanguage(course);
+  const english = bg === "js"
+    ? "Learn C# from JavaScript, then build games in s&box."
+    : "Learn C# from scratch, then build games in s&box.";
+  return translateCourseText(english, reading) ?? english;
 }
 
 export function CourseLessonsView({
