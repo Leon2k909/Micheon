@@ -31,7 +31,10 @@ import {
   summariseProgress,
   type StudyCard,
   type StudySet,
+  combinedProgress,
+  recordCombinedAnswer,
   type StudySetProgress,
+  type CombinedStudy,
   type StudyStage,
 } from "@/lib/studySets";
 
@@ -66,20 +69,50 @@ export function SetStudy({
   onBack,
   onEdit,
   initialMode,
+  combined,
 }: {
   set: StudySet;
   onBack: () => void;
   onEdit: () => void;
   /** Chosen on the set card; the menu is still one Back away. */
   initialMode?: StudyMode;
+  /**
+   * Present when several sets are being studied together.
+   *
+   * The set above is then a throwaway holding everybody's cards, and its id
+   * is not a place progress may be written: a session under it would leave
+   * all three sets untouched and a stray blob behind. Every answer is routed
+   * to the set the card actually came from instead, using that set's own
+   * ladder — how many right answers promote a card, and whether a miss knocks
+   * it back, belong to the set it lives in.
+   */
+  combined?: CombinedStudy;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode ?? "menu");
-  const [progress, setProgress] = useState<StudySetProgress>(() => loadStudyProgress(set.id));
+  const [progress, setProgress] = useState<StudySetProgress>(
+    () => (combined
+      ? combinedProgress(combined, (id) => loadStudyProgress(id))
+      : loadStudyProgress(set.id))
+  );
 
   const cards = useMemo(() => studiableCards(set), [set]);
   const summary = useMemo(() => summariseProgress(set, progress), [set, progress]);
 
   const record = useCallback((cardId: string, correct: boolean) => {
+    if (combined) {
+      // Written to the owning set, and mirrored into the session's own view so
+      // the round and the counters keep working off one map.
+      const landed = recordCombinedAnswer(combined, cardId, correct, (id) => loadStudyProgress(id));
+      if (landed) saveStudyProgress(landed.setId, landed.progress);
+      setProgress((current) => ({
+        ...current,
+        [cardId]: applyAnswer(current[cardId], correct, set.stages.length, {
+          masteryTarget: set.masteryTarget,
+          demoteOnWrong: set.demoteOnWrong,
+        }),
+      }));
+      return;
+    }
     setProgress((current) => {
       const next = {
         ...current,
@@ -91,12 +124,19 @@ export function SetStudy({
       saveStudyProgress(set.id, next);
       return next;
     });
-  }, [set.id, set.stages.length, set.masteryTarget, set.demoteOnWrong]);
+  }, [combined, set.id, set.stages.length, set.masteryTarget, set.demoteOnWrong]);
 
   const reset = useCallback(() => {
-    resetStudyProgress(set.id);
+    // Reset means every set in the session, not the throwaway that holds
+    // their cards — resetting that would clear the screen and leave the real
+    // progress exactly where it was.
+    if (combined) {
+      for (const id of Object.keys(combined.members)) resetStudyProgress(id);
+    } else {
+      resetStudyProgress(set.id);
+    }
     setProgress({});
-  }, [set.id]);
+  }, [combined, set.id]);
 
   const speak = useCallback((text: string) => {
     if (!set.speak) return;

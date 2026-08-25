@@ -370,6 +370,134 @@ export function parsePastedCards(text: string, now = 0): StudyCard[] {
 }
 
 /** A set is only studiable when enough cards have both sides filled in. */
+/**
+ * Several sets studied as one, with every card still belonging to its own.
+ *
+ * A study mode takes one set and writes its progress under that set's id. The
+ * obvious way to study three at once — glue the cards into a throwaway set —
+ * writes the whole session's progress under the throwaway's id instead, so
+ * the learner works through forty cards and none of the three sets moves. It
+ * also leaves a progress blob behind for every combination anybody ever tried.
+ *
+ * So the combined set carries an ownership map beside it, and every card id is
+ * prefixed with the set it came from. The prefix is not decoration: card ids
+ * are only unique within a set — two made in different sittings can collide —
+ * and a collision here would silently merge two cards' progress.
+ *
+ * The session needs ONE shape, so the first set's promptSide, stages and round
+ * size decide it. A card's MASTERY is a different question and stays with its
+ * own set: how many right answers promote it, and whether a miss knocks it
+ * back, are settings its set was given deliberately.
+ */
+export const COMBINED_ID_PREFIX = "combined";
+const OWNER_SEPARATOR = "::";
+
+export type CombinedStudy = {
+  set: StudySet;
+  /** Combined card id → the id of the set it really belongs to. */
+  owners: Record<string, string>;
+  /** The sets that went in, by id, for their mastery settings. */
+  members: Record<string, StudySet>;
+};
+
+/** Split a combined card id back into the set that owns it and its real id. */
+export function splitCombinedCardId(cardId: string): { setId: string; cardId: string } | null {
+  const at = cardId.indexOf(OWNER_SEPARATOR);
+  if (at < 0) return null;
+  return { setId: cardId.slice(0, at), cardId: cardId.slice(at + OWNER_SEPARATOR.length) };
+}
+
+export function combineStudySets(sets: StudySet[], now: number): CombinedStudy | null {
+  const usable = sets.filter((set) => studiableCards(set).length > 0);
+  if (usable.length === 0) return null;
+  const lead = usable[0];
+  const owners: Record<string, string> = {};
+  const members: Record<string, StudySet> = {};
+  const cards: StudyCard[] = [];
+  for (const set of usable) {
+    members[set.id] = set;
+    for (const card of studiableCards(set)) {
+      const id = `${set.id}${OWNER_SEPARATOR}${card.id}`;
+      owners[id] = set.id;
+      cards.push({ ...card, id });
+    }
+  }
+  const at = new Date(now).toISOString();
+  return {
+    owners,
+    members,
+    set: {
+      id: `${COMBINED_ID_PREFIX}-${usable.map((set) => set.id).join("+")}`,
+      title: usable.length === 1
+        ? lead.title
+        : `${usable.length} sets together`,
+      description: usable.map((set) => set.title).join(" · "),
+      cards,
+      createdAt: at,
+      updatedAt: at,
+      // The session's shape comes from the first set chosen. Anything else
+      // would need a rule for reconciling three sets that disagree, and there
+      // is no honest one — a set that deliberately left out the typed stage
+      // should not have it back because another set kept it.
+      promptSide: lead.promptSide,
+      speak: lead.speak,
+      stages: lead.stages,
+      masteryTarget: lead.masteryTarget,
+      roundSize: lead.roundSize,
+      demoteOnWrong: lead.demoteOnWrong,
+    },
+  };
+}
+
+/** Is this a combined session rather than a real, saved set? */
+export function isCombinedSet(set: Pick<StudySet, "id">): boolean {
+  return set.id.startsWith(`${COMBINED_ID_PREFIX}-`);
+}
+
+/**
+ * One card's answer, written to the set that actually owns the card.
+ *
+ * Returns the progress blob for that owning set, so the caller saves one set's
+ * progress rather than a merged map nothing can read back.
+ */
+export function recordCombinedAnswer(
+  combined: CombinedStudy,
+  combinedCardId: string,
+  correct: boolean,
+  loadFor: (setId: string) => StudySetProgress
+): { setId: string; progress: StudySetProgress } | null {
+  const split = splitCombinedCardId(combinedCardId);
+  if (!split) return null;
+  const owner = combined.members[split.setId];
+  if (!owner) return null;
+  const current = loadFor(split.setId);
+  return {
+    setId: split.setId,
+    progress: {
+      ...current,
+      [split.cardId]: applyAnswer(current[split.cardId], correct, owner.stages.length, {
+        masteryTarget: owner.masteryTarget,
+        demoteOnWrong: owner.demoteOnWrong,
+      }),
+    },
+  };
+}
+
+/** Every member's saved progress, re-keyed onto the combined card ids. */
+export function combinedProgress(
+  combined: CombinedStudy,
+  loadFor: (setId: string) => StudySetProgress
+): StudySetProgress {
+  const out: StudySetProgress = {};
+  for (const [combinedId, setId] of Object.entries(combined.owners)) {
+    const split = splitCombinedCardId(combinedId);
+    if (!split) continue;
+    const entry = loadFor(setId)[split.cardId];
+    if (entry) out[combinedId] = entry;
+  }
+  return out;
+}
+
 export function studiableCards(set: StudySet): StudyCard[] {
   return set.cards.filter((card) => card.term.trim() && card.definition.trim());
 }

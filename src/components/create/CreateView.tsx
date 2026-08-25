@@ -22,9 +22,10 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { ui } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  combineStudySets,
   insertCopyAfterSource,
   loadStudyFolders,
   loadStudyProgress,
@@ -58,6 +59,8 @@ const UNFILED = "unfiled-zone";
 
 type Screen =
   | { name: "list" }
+  /** Several sets at once. The ids are the selection, in the order chosen. */
+  | { name: "studyMany"; setIds: string[]; mode?: StudyMode }
   | { name: "edit"; setId: string }
   | { name: "study"; setId: string; mode?: StudyMode };
 
@@ -274,7 +277,35 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
     [filtered, folders]
   );
 
-  const active = screen.name === "list" ? null : sets.find((entry) => entry.id === screen.setId);
+  /**
+   * The picked sets that have something to study, in the order they are shown.
+   *
+   * Order matters: the first one decides the session's shape — which side is
+   * asked first, which stages run — so it has to be the order on screen
+   * rather than the order they happened to be clicked in.
+   */
+  const pickedStudiable = useMemo(
+    () => filtered.filter((entry) => picked.has(entry.id) && setIsStudiable(entry)),
+    [filtered, picked]
+  );
+  const pickedCardCount = useMemo(
+    () => pickedStudiable.reduce((total, entry) => total + studiableCards(entry).length, 0),
+    [pickedStudiable]
+  );
+
+  /** File everything picked into one folder, or out of every folder. */
+  const filePickedInto = useCallback((folderId: string | undefined) => {
+    const at = new Date().toISOString();
+    persist(sets.map((entry) => (picked.has(entry.id)
+      ? { ...entry, folderId, updatedAt: at }
+      : entry)));
+  }, [persist, picked, sets]);
+
+  // studyMany has a LIST of ids rather than one, so it has no single active
+  // set — it builds its own throwaway from the selection instead.
+  const active = screen.name === "edit" || screen.name === "study"
+    ? sets.find((entry) => entry.id === screen.setId)
+    : null;
 
   if (screen.name === "edit" && active) {
     return (
@@ -286,6 +317,27 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
         apiParts={apiParts}
       />
     );
+  }
+
+  if (screen.name === "studyMany") {
+    const chosen = screen.setIds
+      .map((id) => sets.find((entry) => entry.id === id))
+      .filter((entry): entry is StudySet => Boolean(entry));
+    const combined = combineStudySets(chosen, Date.now());
+    // Everything picked could have been emptied or deleted since; falling back
+    // to the list is better than a study screen with no cards in it.
+    if (combined) {
+      return (
+        <SetStudy
+          combined={combined}
+          initialMode={screen.mode}
+          onBack={() => setScreen({ name: "list" })}
+          // There is no one set to edit from here, so Edit returns to the list.
+          onEdit={() => setScreen({ name: "list" })}
+          set={combined.set}
+        />
+      );
+    }
   }
 
   if (screen.name === "study" && active) {
@@ -646,6 +698,62 @@ export function CreateView({ apiParts }: { apiParts?: Record<string, unknown> })
                 <span className="text-xs font-black text-[var(--accent)]">
                   {picked.size} {ui("selected")}
                 </span>
+
+                {/*
+                  Everything a single set offers, offered for the selection.
+                  Deleting used to be the only thing a selection was good for,
+                  which made picking sets feel like arming something rather
+                  than choosing what to work on.
+
+                  Studiable sets only: an empty set contributes no cards, and
+                  counting it would promise a session bigger than it is.
+                */}
+                {pickedStudiable.length > 0 && STUDY_LAUNCHERS.map(({ mode, label, icon: Icon, primary }) => (
+                  <button
+                    className={cn(
+                      "inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-xs font-black transition-colors",
+                      primary
+                        ? "bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110"
+                        : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+                    )}
+                    key={mode}
+                    onClick={() => setScreen({
+                      name: "studyMany",
+                      setIds: pickedStudiable.map((entry) => entry.id),
+                      mode,
+                    })}
+                    type="button"
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {ui(label)}
+                  </button>
+                ))}
+
+                {pickedStudiable.length > 0 && (
+                  <span className="text-xs font-bold text-[var(--text-3)]">
+                    {uiFmt("{n} cards", { n: pickedCardCount })}
+                  </span>
+                )}
+
+                {folders.length > 0 && (
+                  <select
+                    aria-label={ui("Move selected to folder")}
+                    className="create-set__folder h-9"
+                    onChange={(event) => {
+                      const to = event.target.value;
+                      filePickedInto(to === "none" ? undefined : to);
+                      event.target.value = "";
+                    }}
+                    value=""
+                  >
+                    <option disabled value="">{ui("Move to folder")}</option>
+                    <option value="none">{ui("No folder")}</option>
+                    {folders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>{folder.name}</option>
+                    ))}
+                  </select>
+                )}
+
                 <button
                   type="button"
                   onClick={deletePicked}
