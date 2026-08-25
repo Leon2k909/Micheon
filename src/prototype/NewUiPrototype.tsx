@@ -1343,9 +1343,15 @@ function Sidebar({
   );
 }
 
-function StatChip({ kind, value, label }: { kind: RewardKind; value: string; label: string }) {
+function StatChip({ kind, value, label, shared = false }: {
+  kind: RewardKind;
+  value: string;
+  label: string;
+  /** Counts every course rather than the one you are on. */
+  shared?: boolean;
+}) {
   return (
-    <div className="np-stat-chip">
+    <div className="np-stat-chip" title={shared ? ui("Counts every course together.") : undefined}>
       <span aria-hidden="true" className={`np-stat-chip__art np-stat-chip__art--${kind}`}>
         <RewardIcon kind={kind} />
       </span>
@@ -1513,13 +1519,13 @@ function Header({
           search and the avatar into its place instead of leaving them right. */}
       <div className="np-header-stats">
         {atHome && <>
-        <StatChip kind="flame" label={ui("Days learned")} value={uiNumber(stats.learningDays)} />
+        <StatChip kind="flame" label={ui("Days learned")} shared value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
             one chip look different from the two beside it for no gain — and
             said XP twice. The stats strip further down the page has always
             shown it bare, so this matches that too. */}
-        <StatChip kind="star" label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+        <StatChip kind="star" label={ui("Total XP")} shared value={uiNumber(stats.totalXp)} />
         <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
         </>}
       </div>
@@ -2662,9 +2668,11 @@ function FluencyOutlook({ onOpenFading, profile, vocab }: {
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1);
     window.addEventListener("activity-updated", refresh);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, refresh);
     window.addEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
     return () => {
       window.removeEventListener("activity-updated", refresh);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, refresh);
       window.removeEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
     };
   }, []);
@@ -2734,6 +2742,15 @@ function FluencyOutlook({ onOpenFading, profile, vocab }: {
           <div>
             <h2>{ui("Your path to fluent conversations")}</h2>
             <p>{ui("A realistic outlook based on useful words and phrases you can recall.")}</p>
+            {/* Progress is kept per course, so switching from English to German
+                drops this from 11% to 1% — both true, and baffling next to a
+                total XP that counts them together. Naming the course is the
+                cheapest way to make the number mean what it says. */}
+            <p className="np-fluency-course">
+              {uiFmt("Counts your {language} course only", {
+                language: learningEnglish() ? ui("English") : ui("German"),
+              })}
+            </p>
           </div>
         </div>
 

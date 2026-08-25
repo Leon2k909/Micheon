@@ -2472,6 +2472,8 @@ const DE: Record<string, string> = {
   "Opens your vocabulary library on these items.": "Öffnet deine Wortschatz-Bibliothek bei genau diesen Einträgen.",
   "About {hours} hours to fluent": "Noch etwa {hours} Stunden bis fließend",
   "Your path to fluent conversations": "Dein Weg zu flüssigen Gesprächen",
+  "Counts your {language} course only": "Zählt nur deinen {language}-Kurs",
+  "Counts every course together.": "Zählt alle Kurse zusammen.",
   "Your private social preview": "Deine private soziale Vorschau",
   "Your progress": "Dein Fortschritt",
   "Mastery, this week and your milestones.": "Meisterschaft, diese Woche und deine Meilensteine.",

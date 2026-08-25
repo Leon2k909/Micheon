@@ -6993,6 +6993,13 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   line-height: 1.08;
 }
 
+.np-fluency-course {
+  margin-top: 5px;
+  color: var(--np-muted);
+  font-size: var(--np-type-micro);
+  font-weight: 800;
+}
+
 .np-fluency-heading p {
   margin: 4px 0 0;
   color: var(--np-muted);
