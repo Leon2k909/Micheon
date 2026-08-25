@@ -27,6 +27,40 @@
  */
 
 export const FRENCH_BY_GERMAN: Record<string, string> = {
+  // ── the lines that lengthened the conversation scenes ─────────────────────
+  // Scenes that ran to four turns now run to eight, and the new lines land in
+  // the first 500 items a learner meets. Several are keyed to the spoken form
+  // the queue serves rather than the sentence as the dialogue writes it.
+  "Kein Problem. Ich komm mit.": "Pas de problème. Je viens avec toi.",
+  "Gut, wir halten dir einen Platz frei.": "D'accord, on te garde une place.",
+  "Mach ich gleich.": "Je fais ça tout de suite.",
+  "Sollen wir schon mal bestellen?": "On commande déjà ?",
+  "Das passt mir gut.": "Ça me va bien.",
+  "Sollen wir zu Fuß gehen?": "On y va à pied ?",
+  "Warte, eine Sache noch.": "Attends, encore une chose.",
+  "Das schaff ich. Ich hol dich um acht ab.": "Je peux faire ça. Je passe te prendre à huit heures.",
+  "Soll ich dich einfach in Ruhe lassen?": "Tu préfères que je te laisse tranquille ?",
+  "Ja, bestellt für mich bitte mit.": "Oui, commandez pour moi aussi, s'il vous plaît.",
+  "Mach ich. Lass uns nächste Woche reden.": "Je fais ça. On en parle la semaine prochaine.",
+  "Brauchst du Hilfe beim Tragen?": "Tu veux un coup de main pour porter ?",
+  "Du bleibst echt ruhig.": "Tu restes vraiment calme.",
+  "Moment, das Fenster ist noch offen.": "Attends, la fenêtre est encore ouverte.",
+  "Gut, ich bin rechtzeitig da.": "D'accord, je serai là à l'heure.",
+  "Sind wir wieder gut?": "C'est bon entre nous ?",
+  "Und wenn ich wieder einen Fehler mach?": "Et si je refais une erreur ?",
+  "Dann machen wir es einfach noch mal.": "Alors on le refait, c'est tout.",
+  "Dann frag ich nächste Woche nach.": "Alors je redemande la semaine prochaine.",
+  "Danke, dass du das sagst.": "Merci de me le dire.",
+  "Alles klar. Melde dich wenn du so weit bist.": "D'accord. Fais-moi signe quand tu seras prêt.",
+  "Gut, dann nehmen wir den Bus.": "D'accord, on prend le bus alors.",
+  "Ja, alles wieder gut.": "Oui, c'est bon entre nous.",
+  "Stell dir vor, du kommst zu spät zum Termin.": "Imagine que tu arrives en retard au rendez-vous.",
+  "Gut. Dann melde ich mich morgen.": "D'accord. Je te fais signe demain, alors.",
+  "Sollen wir ohne dich anfangen?": "On commence sans toi ?",
+  "Noch nicht, aber mir fällt etwas ein.": "Pas encore, mais je vais trouver une idée.",
+  "Wann bekommst du das Ergebnis?": "Tu reçois le résultat quand ?",
+  "Dann sagen wir um drei.": "Disons trois heures, alors.",
+  "Wann genau ist der Termin?": "C'est quand exactement, le rendez-vous ?",
   // ── the front of the queue ────────────────────────────────────────────────
   // The 600 items a learner meets soonest that had no French at all. Coverage
   // measured against the queue people actually walk was 24%, and 330 of the
