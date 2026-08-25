@@ -1284,7 +1284,7 @@ export default function GuidedLearningSession() {
   };
 
   if (showPlacementTest) return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50 p-6">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-[var(--surface)] p-6">
       <PlacementTest onComplete={(key) => {
         setActivePart(key);
         setShowPlacementTest(false);

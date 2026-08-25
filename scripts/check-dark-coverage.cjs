@@ -140,6 +140,25 @@ for (const { rel, selector, classes, targets } of lightPainters) {
   failures.push(`${rel}: "${selector}" paints a light background with no dark-mode rule for it`);
 }
 
+// Everything above walks stylesheets. A screen can paint itself light
+// without one: the first-run starting-point screen set every colour in the
+// markup - a cream card, white panels, near-black text - so it came up in
+// full daylight inside a dark app, and no rule existed for this to find.
+//
+// These two files are token-driven now. The literals below are the ones they
+// used to carry, and any of them coming back means the screen has stopped
+// following the theme again.
+const FIRST_RUN_FILES = ["src/components/PlacementTest.tsx", "src/guided_learning_session.tsx"];
+const LIGHT_PAINT = ["bg-white", "bg-zinc-50", "bg-zinc-100", "text-zinc-950", "text-zinc-600", "text-zinc-500", "border-zinc-200", "border-zinc-300"];
+for (const rel of FIRST_RUN_FILES) {
+  const markup = fs.readFileSync(path.join(root, rel), "utf8");
+  for (const literal of LIGHT_PAINT) {
+    if (markup.includes(literal)) {
+      failures.push(rel + ': paints "' + literal + '" into the markup, which no dark rule can answer');
+    }
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-dark-coverage");
   [...new Set(failures)].forEach((line) => console.error("  " + line));
