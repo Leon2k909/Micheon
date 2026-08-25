@@ -59,6 +59,23 @@ const DEPRECATED_SHARED_KEYS = new Set([
 // itself is local now, which is what makes them two accounts at all.
 const SESSION_LOCAL_KEYS = new Set([AUTH_USER_KEY, SIGNED_OUT_KEY]);
 
+// What the surface looks like stays on that surface.
+//
+// The accent and the hand-picked part colours are global keys — nothing scopes
+// them to a profile — and they start with "gl-", so they travelled through the
+// mirror alongside the progress. That is one colour for the desktop app and
+// the browser together, and the tie is broken by a merge that cannot see
+// individual keys: readSharedStorage in server/index.js compares one timestamp
+// per FILE and then applies that whole file over the other. The packaged app
+// writes only the AppData copy, so while it is open its copy is always the
+// newer one. Every load of the web build pulled the app's accent back over
+// whatever had been chosen in the browser, which meant the colour could not be
+// changed there at all — it reverted on the next reload, every time.
+//
+// The learning data still travels. Only the paint is local now, which is what
+// lets one machine run the app in one colour and the browser in another.
+const APPEARANCE_LOCAL_KEYS = new Set(["gl-accent-colour", "gl-custom-colours"]);
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -152,6 +169,7 @@ export function getAuthUser(): UserProfile | null {
 
 function shouldSyncKey(key: string) {
   if (SESSION_LOCAL_KEYS.has(key)) return false;
+  if (APPEARANCE_LOCAL_KEYS.has(key)) return false;
   return SHARED_SYNC_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
@@ -267,6 +285,15 @@ export async function hydrateLocalStorageFromSharedStorage() {
       if (items[key] !== undefined) staleSession[key] = null;
     }
     queueSharedItems(staleSession);
+    // Same for the colour an older build mirrored. It is ignored on the way in
+    // now, but leaving it in the file keeps a copy of the app's accent sitting
+    // there for any build still reading it. Clearing it there leaves the
+    // colour on this device untouched.
+    const staleAppearance: Record<string, string | null> = {};
+    for (const key of APPEARANCE_LOCAL_KEYS) {
+      if (items[key] !== undefined) staleAppearance[key] = null;
+    }
+    queueSharedItems(staleAppearance);
     let changed = false;
     let gradesChanged = false;
     let activityChanged = false;
