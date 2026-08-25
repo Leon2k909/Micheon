@@ -2,7 +2,8 @@ import React, { useId, useEffect } from "react";
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { VOCAB_MILESTONES } from "@/lib/data";
 import { effectsReduced } from "@/lib/effects";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { UiText } from "@/components/UiText";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 
 const VOCAB_TARGET = 16000;
 
@@ -131,20 +132,20 @@ export function MasteryCard({ vocab, embedded = false }: { vocab: number; embedd
             <p className="mastery-card__next mt-1 text-xs text-[var(--text-3)]">
               {/* Items, not words: this count has always included phrases and
                   whole sentences, and the card now says so in its name. */}
-              {uiIsGerman() ? (
-                <>
-                  <span className="text-[var(--text-2)]">{uiNumber((nextMilestone.value - mastered))} Einträge</span>
-                  {" bis "}
-                  <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
-                  {": "}{ui(nextMilestone.detail)}
-                </>
-              ) : (
-                <>
-                  <span className="text-[var(--text-2)]">{uiNumber((nextMilestone.value - mastered))} items</span> to{" "}
-                  <span className="font-medium" style={{ color: nextMilestone.color }}>{nextMilestone.label}</span>
-                  {": "}{nextMilestone.detail}
-                </>
-              )}
+              <UiText
+                text="{count} to {milestone}: {detail}"
+                values={{
+                  count: (
+                    <span className="text-[var(--text-2)]">
+                      {uiFmt("{count} items", { count: uiNumber(nextMilestone.value - mastered) })}
+                    </span>
+                  ),
+                  milestone: (
+                    <span className="font-medium" style={{ color: nextMilestone.color }}>{ui(nextMilestone.label)}</span>
+                  ),
+                  detail: ui(nextMilestone.detail),
+                }}
+              />
             </p>
           )}
         </div>

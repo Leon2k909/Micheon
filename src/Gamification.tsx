@@ -115,7 +115,7 @@ import {
   setGuidedBackground as saveGuidedBackground,
   type GuidedBackground,
 } from "@/lib/guidedBackground";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
   .then((module) => ({ default: module.CodexPetPicker })));
@@ -1794,6 +1794,7 @@ export default function GamificationPanel({
                       </option>
                       <option value="en">English</option>
                       <option value="de">Deutsch</option>
+                      <option value="fr">Français</option>
                     </select>
                   </div>
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
@@ -1801,9 +1802,9 @@ export default function GamificationPanel({
                       <div>
                         <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                         <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                          {false
-                            ? ui("Learning English as a German speaker. German is shown as the meaning.")
-                            : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
+                          {uiFmt("Auto uses your browser/keyboard language. Current: {variant}.", {
+                            variant: ui(englishVariantLabel(resolvedEnglishVariant)),
+                          })}
                         </p>
                       </div>
                       <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
@@ -1985,6 +1986,7 @@ export default function GamificationPanel({
                 </option>
                 <option value="en">English</option>
                 <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
               </select>
             </div>
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
@@ -1992,9 +1994,9 @@ export default function GamificationPanel({
                 <div>
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    {false
-                      ? ui("Learning English as a German speaker. German is shown as the meaning.")
-                      : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
+                    {uiFmt("Auto uses your browser/keyboard language. Current: {variant}.", {
+                      variant: ui(englishVariantLabel(resolvedEnglishVariant)),
+                    })}
                   </p>
                 </div>
                 <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">

@@ -28,7 +28,7 @@ import {
   saveScopedJson,
   syncLocalStorageItem,
 } from "@/lib/profileStorage";
-import { uiIsGerman } from "@/lib/i18n";
+import { uiFmt, uiSpeechLang } from "@/lib/i18n";
 import {
   CODEX_PET_DISPLAY_MODE_EVENT,
   CODEX_PET_DISPLAY_MODE_KEY,
@@ -305,9 +305,9 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
           // reads off the opposite side. French is never the question's own
           // language, so it falls to whichever the app is written in.
           ? question.answerLanguage === "en" ? "de-DE"
-            : question.answerLanguage === "fr" ? (uiIsGerman() ? "de-DE" : "en-US")
+            : question.answerLanguage === "fr" ? uiSpeechLang()
               : "en-US"
-          : uiIsGerman() ? "de-DE" : "en-US"),
+          : uiSpeechLang()),
     };
     upsertHistory(message);
     showSpeech(message, options.durationMs);
@@ -350,14 +350,12 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (answer === "yes" && !question.confirm) {
       window.setTimeout(() => {
         speak(
-          uiIsGerman()
-            ? `Es heißt „${target}“ — hattest du es wirklich?`
-            : `It's “${target}” — did you have it?`,
+          uiFmt("It's “{target}” — did you have it?", { target }),
           {
             durationMs: 30000,
             mood: "greeting",
             question: { ...question, confirm: true },
-            voiceLang: uiIsGerman() ? "de-DE" : "en-US",
+            voiceLang: uiSpeechLang(),
           }
         );
       }, 180);
@@ -375,31 +373,21 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
     if (!announce) return;
     const response = answer === "yes"
       ? recallOutcome === "reinforcement"
-        ? uiIsGerman()
-          ? `Gut — „${target}“ sitzt schon besser.`
-          : `Nice — “${target}” is getting stronger.`
-        : uiIsGerman()
-          ? `Geschafft — „${target}“ sitzt jetzt.`
-          : `You’ve got it — “${target}” is secure now.`
+        ? uiFmt("Nice — “{target}” is getting stronger.", { target })
+        : uiFmt("You’ve got it — “{target}” is secure now.", { target })
       : recallOutcome === "handed-over"
         // Asking a third time would just be the same question again. The
         // lesson can show the answer and drill it, so it goes there and the
         // pet moves on to something else.
-        ? uiIsGerman()
-          ? `Die Antwort ist „${target}“. Das üben wir in der nächsten Lektion richtig.`
-          : `The answer is “${target}”. I’ve put it at the front of your next lesson so we can practise it properly.`
-        : question.confirm
-          ? uiIsGerman()
-            ? `Kein Problem — die Antwort ist „${target}“.`
-            : `No problem — the answer is “${target}”.`
-          : uiIsGerman()
-            ? `Kein Problem — die Antwort ist „${target}“.`
-            : `No problem — the answer is “${target}”.`;
+        ? uiFmt("The answer is “{target}”. I’ve put it at the front of your next lesson so we can practise it properly.", { target })
+        // Confirmed or not, there is nothing different to say once the answer
+        // has been shown.
+        : uiFmt("No problem — the answer is “{target}”.", { target });
     window.setTimeout(() => {
       speak(response, {
         durationMs: 5600,
         mood: answer === "yes" ? "success" : "encourage",
-        voiceLang: uiIsGerman() ? "de-DE" : "en-US",
+        voiceLang: uiSpeechLang(),
       });
     }, 180);
   }, [speak, upsertHistory]);

@@ -22,10 +22,9 @@ export type DataCategoryId =
 
 export type DataCategory = {
   id: DataCategoryId;
+  /** English, and a key into the interface dictionary — see ui(). */
   label: string;
-  labelDe: string;
   detail: string;
-  detailDe: string;
   bytes: number;
   entries: number;
   /** Losing this cannot be undone by using the app again. */
@@ -66,44 +65,32 @@ const CATEGORY_RULES: { id: DataCategoryId; prefixes: string[] }[] = [
 const LABELS: Record<DataCategoryId, Omit<DataCategory, "id" | "bytes" | "entries">> = {
   progress: {
     label: "Learning progress",
-    labelDe: "Lernfortschritt",
     detail: "Everything you have learned, your review schedule, streak and XP.",
-    detailDe: "Alles Gelernte, dein Wiederholungsplan, deine Serie und XP.",
     irreplaceable: true,
   },
   activity: {
     label: "Lesson history",
-    labelDe: "Lektionsverlauf",
     detail: "The record of individual sittings behind the activity chart.",
-    detailDe: "Die einzelnen Lerneinheiten hinter dem Aktivitätsdiagramm.",
     irreplaceable: true,
   },
   custom: {
     label: "Your own words and packs",
-    labelDe: "Deine eigenen Wörter und Packs",
     detail: "Anything you typed in yourself. Nothing here can be recovered.",
-    detailDe: "Alles, was du selbst eingetragen hast. Nichts davon lässt sich wiederherstellen.",
     irreplaceable: true,
   },
   games: {
     label: "Game high scores",
-    labelDe: "Spiel-Highscores",
     detail: "Best scores from the practice games. Safe to clear.",
-    detailDe: "Bestwerte aus den Übungsspielen. Kann bedenkenlos gelöscht werden.",
     irreplaceable: false,
   },
   settings: {
     label: "Settings and appearance",
-    labelDe: "Einstellungen und Aussehen",
     detail: "Theme, accent colour, voice and learning preferences.",
-    detailDe: "Design, Akzentfarbe, Stimme und Lerneinstellungen.",
     irreplaceable: false,
   },
   other: {
     label: "Everything else",
-    labelDe: "Sonstiges",
     detail: "Odds and ends Micheon keeps that do not fit the groups above.",
-    detailDe: "Kleinigkeiten, die in keine der Gruppen oben passen.",
     irreplaceable: false,
   },
 };

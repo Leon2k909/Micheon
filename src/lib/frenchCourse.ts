@@ -34,7 +34,10 @@ import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
 
 /** Which language the French course explains itself in. */
 export function frenchMeaningLanguage(): "de" | "en" {
-  return resolveInterfaceLanguage();
+  // A French interface says nothing about which language to explain French in
+  // — it would explain French in French. English is the catalogue's own
+  // language and the honest fallback.
+  return resolveInterfaceLanguage() === "de" ? "de" : "en";
 }
 
 /**

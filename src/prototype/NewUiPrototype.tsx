@@ -2895,7 +2895,13 @@ function AchievementBadge({ achievement, standalone, stats }: { achievement: Mil
       <small>{ui(achievement.label)}</small>
       {standalone && (
         <span className="np-achievement-detail">
-          {unlocked ? "Unlocked" : `${progress} / ${achievement.target} ${achievement.unit}`}
+          {unlocked
+            ? ui("Unlocked")
+            : uiFmt("{progress} / {target} {unit}", {
+              progress,
+              target: achievement.target,
+              unit: ui(achievement.unit),
+            })}
         </span>
       )}
     </div>
@@ -3046,7 +3052,7 @@ function ProgressPanel({
             <ChevronDown aria-hidden="true" className={`np-fold-chevron${sections.achievements ? " is-open" : ""}`} />
           </button>
           {standalone ? (
-            <span className="np-achievement-count">{earnedAchievements} unlocked</span>
+            <span className="np-achievement-count">{uiFmt("{count} unlocked", { count: earnedAchievements })}</span>
           ) : (
             <button onClick={onViewAllAchievements} type="button">{ui("View all")}</button>
           )}

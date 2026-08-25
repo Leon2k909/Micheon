@@ -34,7 +34,7 @@ import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { matchFrenchMeaning } from "@/lib/frenchTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import type { Part } from "@/lib/types";
 import { tts } from "@/lib/voice";
@@ -1071,7 +1071,7 @@ function vocabularyAlternatives(value: string, item: TestItem) {
 
 function formatTestMeaning(value: string, item: TestItem) {
   const alternatives = vocabularyAlternatives(value, item);
-  return alternatives.join(uiIsGerman() ? " ODER " : " OR ");
+  return alternatives.join(` ${ui("OR")} `);
 }
 
 function matchTestAnswer(input: string, target: string, language: AnswerLanguage, item: TestItem) {
@@ -1821,7 +1821,7 @@ export function TestsView({
                   data-testid="test-answer"
                   disabled={Boolean(feedback)}
                   onChange={(event) => setAnswer(event.target.value)}
-                  placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
+                  placeholder={uiFmt("Answer in {language}...", { language: ui(currentCopy.targetLabel) })}
                   value={answer}
                 />
               ) : (
@@ -1844,7 +1844,7 @@ export function TestsView({
                     if (feedback) nextQuestion();
                     else if (answer.trim()) gradeAnswer();
                   }}
-                  placeholder={uiIsGerman() ? `Auf ${ui(currentCopy.targetLabel)} antworten...` : `Answer in ${ui(currentCopy.targetLabel)}...`}
+                  placeholder={uiFmt("Answer in {language}...", { language: ui(currentCopy.targetLabel) })}
                   value={answer}
                 />
               )}

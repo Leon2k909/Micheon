@@ -9,7 +9,7 @@ import {
   type UpdateState,
   type UpdateStatus,
 } from "@/lib/updateStatus";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import { MicheonLogo } from "@/components/MicheonLogo";
 
 // Desktop bridge (electron/preload.cjs). Undefined on the website.
@@ -40,14 +40,10 @@ const previewInstalling = import.meta.env.DEV
 // and settings has its own inline feedback), so only two states need copy.
 function panelCopy(status: UpdateStatus): string {
   if (status.state === "downloading") {
-    return uiIsGerman()
-      ? "Lerne weiter, während Micheon die neue Version vorbereitet."
-      : "Keep learning while Micheon prepares the new version.";
+    return ui("Keep learning while Micheon prepares the new version.");
   }
   const version = status.version ? ` v${status.version}` : "";
-  return uiIsGerman()
-    ? `Starte Micheon neu, um das Update${version} zu installieren. Du kannst auch weiterlernen.`
-    : `Restart Micheon to install update${version}. You can also keep learning.`;
+  return uiFmt("Restart Micheon to install update{version}. You can also keep learning.", { version });
 }
 
 function panelTitle(state: UpdateState): string {

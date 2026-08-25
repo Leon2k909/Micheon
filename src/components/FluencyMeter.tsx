@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { getFluency, FLUENCY_STAGES } from "@/lib/fluency";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { UiText } from "@/components/UiText";
+import { ui, uiNumber } from "@/lib/i18n";
 import { estimateFluencyHours, loadLearningTimeStats } from "@/lib/learningTime";
 
 function CompactStudyTimeEstimate({ knownUnits, remainingUnits }: { knownUnits: number; remainingUnits: number }) {
@@ -116,19 +117,14 @@ export function FluencyMeter({
       <p className="mt-3 text-xs font-semibold leading-5 text-[var(--text-3)]">
         {f.next ? (
           <>
-            {uiIsGerman() ? (
-              <>
-                Noch <span className="font-black text-[var(--text-1)]">{uiNumber(f.toFluent)}</span> Wörter und Sätze
-                bis du <span className="font-black text-[var(--text-2)]">wirklich fließend</span> mit Muttersprachlern
-                mithalten kannst. Nächste Stufe: „{ui(f.next.label)}“.
-              </>
-            ) : (
-              <>
-                <span className="font-black text-[var(--text-1)]">{uiNumber(f.toFluent)}</span> more words &amp; phrases
-                until you're <span className="font-black text-[var(--text-2)]">fully fluent</span> — able to keep up with real
-                natives. Next stage: “{f.next.label}”.
-              </>
-            )}
+            <UiText
+              text="{count} more words & phrases until you're {fluent} — able to keep up with real natives. Next stage: “{stage}”."
+              values={{
+                count: <span className="font-black text-[var(--text-1)]">{uiNumber(f.toFluent)}</span>,
+                fluent: <span className="font-black text-[var(--text-2)]">{ui("fully fluent")}</span>,
+                stage: ui(f.next.label),
+              }}
+            />
           </>
         ) : (
           ui("You've reached fluent — keep it sharp with daily review.")
