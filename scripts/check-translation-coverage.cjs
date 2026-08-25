@@ -68,8 +68,13 @@ assert.ok(entries.length > 20000, `only found ${entries.length} taught entries â
  * is a failure rather than a silent zero.
  */
 const FLOORS = {
-  fr: 33,
+  fr: 35,
 };
+
+// This percentage is of EVERYTHING, which is the wrong shape on its own: 600
+// translations move 21,666 entries by two points, and two points say nothing
+// about whether a learner meets French or German. What the learner meets is
+// floored separately, by queue position, in check-french-front.
 
 /**
  * A string that cannot be in the target language, so translating it as itself
