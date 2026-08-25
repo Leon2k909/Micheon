@@ -1,3 +1,5 @@
+import { syncLocalStorageItem } from "@/lib/profileStorage";
+
 const KEY = "gl-direction";
 export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 
@@ -15,6 +17,13 @@ export function getLearningDirection(): LearningDirection {
 export function setLearningDirection(d: LearningDirection) {
   if (typeof window !== "undefined") {
     localStorage.setItem(KEY, d);
+    // ...and into the shared mirror, which every other setting reaches
+    // through saveScopedJson. This one wrote locally only, and the key
+    // starts with gl-, so the mirror carries it: it was read back over the
+    // new value on the next load and on every window focus. Choosing German
+    // held until the window closed and then went back to English on its own,
+    // because the direction is what the two built-in courses are read from.
+    syncLocalStorageItem(KEY, d);
     window.dispatchEvent(new CustomEvent(DIRECTION_CHANGE_EVENT, { detail: d }));
   }
 }

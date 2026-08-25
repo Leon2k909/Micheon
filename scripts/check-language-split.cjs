@@ -108,6 +108,25 @@ check(
 const app = fs.readFileSync(path.join(root, "src/App.tsx"), "utf8");
 check("the app subscribes to the interface language", /useInterfaceLanguage\(\)/.test(app));
 
+// The course has to survive the window being closed.
+//
+// Which of the two built-in courses is showing is read from the direction,
+// and the direction was written to this device only. Its key starts with gl-,
+// which the shared mirror carries, and the mirror is read back over local
+// storage on load and on every window focus - so choosing German held until
+// the window closed and then went back to English on its own, with nothing
+// on screen to explain it. The mirror never heard about the change.
+const directionSource = fs.readFileSync(path.join(root, "src/lib/direction.ts"), "utf8");
+check(
+  "setting the course reaches the shared mirror, not only this device",
+  directionSource.includes("syncLocalStorageItem(KEY, d)")
+);
+const storageSource = fs.readFileSync(path.join(root, "src/lib/profileStorage.ts"), "utf8");
+check(
+  "and the mirror really does carry that key, which is what made a local-only write lose it",
+  storageSource.includes('"gl-"')
+);
+
 if (failures) {
   console.error(`\n${failures} language-split regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
