@@ -377,16 +377,21 @@ function scrollToVocabularyLibrary() {
       return;
     }
     const box = target.getBoundingClientRect();
-    // Landed: near the top of the window, and staying there.
-    if (box.top >= 0 && box.top < 160) return;
-    // "auto", not "smooth": a smooth scroll issued while the view is still
-  // being built never started here — eleven of them in a row left the page at
-  // the top, measured with window.scrollTo hooked. A jump also matches what
-  // navigating does everywhere else in the shell.
-    window.scrollTo({ behavior: "auto", top: box.top + window.scrollY - 24 });
-    // Everything above the card is still loading and still growing, so one
-    // scroll lands short — measured at 2,154px short the first time. Correct
-    // for a couple of seconds, then leave the page alone whatever happened.
+    // Near the top of the window is where it belongs — but a reading that says
+    // so is not the end of it. The section sits first on the page now, so it
+    // starts near the top and is pushed down as the settings above it load. A
+    // single check here declared victory and left the card 900px down the page.
+    if (box.top < 0 || box.top >= 160) {
+      // "auto", not "smooth": a smooth scroll issued while the view is still
+      // being built never started here — eleven of them in a row left the page
+      // at the top, measured with window.scrollTo hooked. A jump also matches
+      // what navigating does everywhere else in the shell.
+      window.scrollTo({ behavior: "auto", top: box.top + window.scrollY - 24 });
+    }
+    // Everything around the card is still loading and still growing, so one
+    // scroll lands short — measured at 2,154px short the first time. Keep
+    // watching for a couple of seconds, then leave the page alone whatever
+    // happened.
     if (corrections++ < 10) window.setTimeout(land, 300);
   };
   window.setTimeout(land, 60);
