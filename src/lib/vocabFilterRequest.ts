@@ -30,7 +30,7 @@ export function requestVocabFilter(key: VocabFilterRequest) {
 }
 
 /**
- * The vocabulary block on the profile page folds shut like the rest of that
+ * The vocabulary block on the progress page folds shut like the rest of that
  * page. Two things navigate straight to it — the sidebar's own row, and the
  * home page's fading line — and both would otherwise land on a closed box, so
  * they say so here and it opens.
@@ -40,7 +40,7 @@ type OpenListener = () => void;
 const openListeners = new Set<OpenListener>();
 let openPending = false;
 
-/** Ask the profile page to open its vocabulary block. */
+/** Ask the progress page to open its vocabulary block. */
 export function requestVocabLibraryOpen() {
   if (openListeners.size === 0) {
     openPending = true;

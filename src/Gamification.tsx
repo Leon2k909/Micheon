@@ -776,6 +776,7 @@ export default function GamificationPanel({
   user,
   onUpdateStats,
   profileOnly = false,
+  progressOnly = false,
   apiParts = {},
   onRequestCatalogue,
   onSwitchCourse,
@@ -785,6 +786,7 @@ export default function GamificationPanel({
   user: UserProfile;
   onUpdateStats?: (next: Partial<Stats>) => void;
   profileOnly?: boolean;
+  progressOnly?: boolean;
   apiParts?: Record<string, any>;
   onRequestCatalogue?: () => void;
   onSwitchCourse?: () => void;
@@ -918,22 +920,25 @@ export default function GamificationPanel({
   // far cheaper and simply happens on mount when its tab is chosen — it no
   // longer waits on Sätze's heavy prep the way the old stacked layout did.
   const [trackerTab, setTrackerTab] = useState<"sentences" | "words">("sentences");
+  // Either standalone panel can be the one holding the tracker, so the two
+  // idle-work hooks below warm it for both rather than for settings alone.
+  const panelOnly = profileOnly || progressOnly;
 
   // Preload only the small tracker component while the browser is idle. The
   // multi-megabyte lesson catalogue stays deferred until its section is
   // actually reached.
   useEffect(() => {
-    if (!profileOnly) return undefined;
+    if (!panelOnly) return undefined;
     return scheduleProfileIdleWork(() => {
       void loadVocabTrackerModule();
     });
-  }, [profileOnly]);
+  }, [panelOnly]);
 
   // Once the learner reaches the tracker, build its immutable indexes during
   // browser idle time before mounting the interactive list. This avoids a
   // visible main-thread hitch in the middle of a scroll.
   useEffect(() => {
-    if (!profileOnly || !trackerRequested || !catalogueReady) return undefined;
+    if (!panelOnly || !trackerRequested || !catalogueReady) return undefined;
     let cancelled = false;
     setTrackerPrepared(false);
     const cancelIdle = scheduleProfileIdleWork(() => {
@@ -947,7 +952,7 @@ export default function GamificationPanel({
       cancelled = true;
       cancelIdle();
     };
-  }, [apiParts, catalogueReady, profileOnly, trackerRequested]);
+  }, [apiParts, catalogueReady, panelOnly, trackerRequested]);
 
   const saveName = () => {
     if (!newName.trim()) return;
@@ -1032,6 +1037,146 @@ export default function GamificationPanel({
   const updateLanguageSelection = (value: string) => {
     updateEnglishVariant(value as EnglishVariant);
   };
+
+  // What the account menu's "Your progress" opens. Mastery, this week, the
+  // totals and the vocabulary tracker used to sit at the bottom of the
+  // settings page — several screens below the last thing anyone would call a
+  // setting, and nowhere near the menu entry named after them.
+  if (progressOnly) {
+    return (
+      <div className="space-y-5">
+        {/* Named so the sidebar's Vocabulary row can land on the tracker
+            rather than at the top of the page holding it. The class is the
+            handle; nothing about the section itself changes. */}
+        {/* The anchor rides on the fold's heading rather than on the content:
+            the sidebar's own row and the home page's fading line both jump
+            here, and a jump has to land on something that exists whether the
+            block is open or not. Both ask it to open on the way. */}
+        <ProfileFold
+          className="np-vocabulary-anchor"
+          icon={WholeWord}
+          id="vocabulary"
+          onOpenRequest={onVocabLibraryOpen}
+          subtitle={ui("Every sentence and word you are tracking.")}
+          title={ui("Vocabulary library")}
+          user={user}
+        >
+        <DeferredProfileSection
+          fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
+          minHeight={360}
+          onReveal={requestVocabTracker}
+        >
+          {/* One card, one tab bar, one piece of content at a time — Sätze
+              and Wörter used to be two full cards stacked down the page,
+              which meant scrolling past one to reach the other even though
+              they're the same kind of thing. The tab bar owns the card's
+              chrome; VocabTracker/WordsTracker each render only their INNER
+              content now (see the comment atop WordsTracker.tsx) so nesting
+              them here does not double up a border/shadow inside another. */}
+          <section className="card p-5 sm:p-6">
+            <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label={ui("Tracker")}>
+              {([
+                ["sentences", "Sentences"],
+                ["words", "Words"],
+              ] as const).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={trackerTab === tab}
+                  onClick={() => setTrackerTab(tab)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-xs font-black transition-colors",
+                    trackerTab === tab
+                      ? "bg-[var(--accent)] text-white"
+                      : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  {ui(label)}
+                </button>
+              ))}
+            </div>
+            {catalogueReady ? (
+              <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
+                {trackerTab === "sentences" ? (
+                  trackerPrepared
+                    ? <VocabTracker apiParts={apiParts} user={user} />
+                    : <ProfileSectionLoading label={ui("Loading vocabulary library")} />
+                ) : (
+                  <WordsTracker apiParts={apiParts} user={user} />
+                )}
+              </Suspense>
+            ) : (
+              <ProfileSectionLoading label={ui("Loading vocabulary library")} />
+            )}
+          </section>
+        </DeferredProfileSection>
+        </ProfileFold>
+
+        <ProfileFold
+          icon={Trophy}
+          id="progress"
+          subtitle={ui("Mastery, this week and your milestones.")}
+          title={ui("Your progress")}
+          user={user}
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+            <ActivitySidePanel earned={earned} user={user} words={vocab} />
+          </div>
+        </ProfileFold>
+
+        <ProfileFold
+          icon={BarChart3}
+          id="totals"
+          subtitle={ui("XP, lessons, days learned and words tracked.")}
+          title={ui("Totals")}
+          user={user}
+        >
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+            <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+            <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
+            <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
+          </div>
+        </ProfileFold>
+
+        {/* Collapsed like the folds above it: worth having, not worth the top
+            third of the screen. */}
+        <SettingsCategory
+          description={`${earned} ${ui("of")} ${MILESTONES.length} ${ui("reached")}`}
+          icon={Trophy}
+          title={ui("Milestones")}
+        >
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {MILESTONES.map((item) => {
+              const ok = item.check(stats);
+              return (
+                <motion.div
+                  className={cn(
+                    "rounded-[20px] border p-4",
+                    ok ? "border-[var(--accent)] bg-[var(--accent-dim)]" : "border-[var(--border)] bg-[var(--surface-2)]"
+                  )}
+                  key={item.id}
+                  whileHover={{ y: -2 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", ok ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--text-3)]")}>
+                      {ok ? <Check className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-[var(--text-1)]">{ui(item.label)}</p>
+                      <p className="text-xs font-semibold text-[var(--text-3)]">{ui(item.desc)}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </SettingsCategory>
+      </div>
+    );
+  }
 
   if (profileOnly) {
     return (
@@ -1763,136 +1908,6 @@ export default function GamificationPanel({
           </div>
         </section>
         </SettingsCategoryLayout>
-
-        {/* Named so the sidebar's Vocabulary row can land on the tracker
-            rather than at the top of a long settings page. The class is the
-            handle; nothing about the section itself changes. */}
-        {/* The anchor rides on the fold's heading rather than on the content:
-            the sidebar's own row and the home page's fading line both jump
-            here, and a jump has to land on something that exists whether the
-            block is open or not. Both ask it to open on the way. */}
-        <ProfileFold
-          className="np-vocabulary-anchor"
-          icon={WholeWord}
-          id="vocabulary"
-          onOpenRequest={onVocabLibraryOpen}
-          subtitle={ui("Every sentence and word you are tracking.")}
-          title={ui("Vocabulary library")}
-          user={user}
-        >
-        <DeferredProfileSection
-          fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}
-          minHeight={360}
-          onReveal={requestVocabTracker}
-        >
-          {/* One card, one tab bar, one piece of content at a time — Sätze
-              and Wörter used to be two full cards stacked down the page,
-              which meant scrolling past one to reach the other even though
-              they're the same kind of thing. The tab bar owns the card's
-              chrome; VocabTracker/WordsTracker each render only their INNER
-              content now (see the comment atop WordsTracker.tsx) so nesting
-              them here does not double up a border/shadow inside another. */}
-          <section className="card p-5 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label={ui("Tracker")}>
-              {([
-                ["sentences", "Sentences"],
-                ["words", "Words"],
-              ] as const).map(([tab, label]) => (
-                <button
-                  key={tab}
-                  type="button"
-                  role="tab"
-                  aria-selected={trackerTab === tab}
-                  onClick={() => setTrackerTab(tab)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-xs font-black transition-colors",
-                    trackerTab === tab
-                      ? "bg-[var(--accent)] text-white"
-                      : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-3)]"
-                  )}
-                >
-                  {ui(label)}
-                </button>
-              ))}
-            </div>
-            {catalogueReady ? (
-              <Suspense fallback={<ProfileSectionLoading label={ui("Loading vocabulary library")} />}>
-                {trackerTab === "sentences" ? (
-                  trackerPrepared
-                    ? <VocabTracker apiParts={apiParts} user={user} />
-                    : <ProfileSectionLoading label={ui("Loading vocabulary library")} />
-                ) : (
-                  <WordsTracker apiParts={apiParts} user={user} />
-                )}
-              </Suspense>
-            ) : (
-              <ProfileSectionLoading label={ui("Loading vocabulary library")} />
-            )}
-          </section>
-        </DeferredProfileSection>
-        </ProfileFold>
-
-        <ProfileFold
-          icon={Trophy}
-          id="progress"
-          subtitle={ui("Mastery, this week and your milestones.")}
-          title={ui("Your progress")}
-          user={user}
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
-            <ActivitySidePanel earned={earned} user={user} words={vocab} />
-          </div>
-        </ProfileFold>
-
-        <ProfileFold
-          icon={BarChart3}
-          id="totals"
-          subtitle={ui("XP, lessons, days learned and words tracked.")}
-          title={ui("Totals")}
-          user={user}
-        >
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard color="bg-[var(--accent)]" icon={BarChart3} label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
-            <StatCard color="bg-[var(--mint)]" icon={BookOpen} label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
-            <StatCard color="bg-[var(--orange)]" icon={Flame} label={ui("Day streak")} value={uiNumber(stats.streak)} />
-            <StatCard color="bg-[var(--ink)]" icon={Target} label={ui("Words tracked")} value={uiNumber(vocab)} />
-          </div>
-        </ProfileFold>
-
-        {/* Collapsed, like its twin on the profile page: worth having, not
-            worth the top third of the screen. */}
-        <SettingsCategory
-          description={`${earned} ${ui("of")} ${MILESTONES.length} ${ui("reached")}`}
-          icon={Trophy}
-          title={ui("Milestones")}
-        >
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {MILESTONES.map((item) => {
-              const ok = item.check(stats);
-              return (
-                <motion.div
-                  className={cn(
-                    "rounded-[20px] border p-4",
-                    ok ? "border-[var(--accent)] bg-[var(--accent-dim)]" : "border-[var(--border)] bg-[var(--surface-2)]"
-                  )}
-                  key={item.id}
-                  whileHover={{ y: -2 }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", ok ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--text-3)]")}>
-                      {ok ? <Check className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-[var(--text-1)]">{ui(item.label)}</p>
-                      <p className="text-xs font-semibold text-[var(--text-3)]">{ui(item.desc)}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </SettingsCategory>
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
           <div>

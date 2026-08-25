@@ -24,6 +24,11 @@ const settingsStore = require(path.join(root, "electron/desktop-settings.cjs"));
 const profileStart = gamification.indexOf("if (profileOnly)");
 const profileEnd = gamification.indexOf("\n  return (", profileStart);
 const profile = gamification.slice(profileStart, profileEnd);
+// The other standalone render of the same component: the progress screen, which
+// holds mastery, totals, the vocabulary tracker and the milestones. All four
+// used to be the tail of the settings page, below the last actual setting.
+const progressStart = gamification.indexOf("if (progressOnly)");
+const progress = progressStart >= 0 ? gamification.slice(progressStart, profileStart) : "";
 
 let failures = 0;
 function check(name, condition) {
@@ -128,11 +133,18 @@ check(
     && !profile.includes("defaultOpen")
 );
 // Milestones is worth having and not worth the top of the screen, so it uses
-// the same collapsible and starts closed like everything else here.
+// the same collapsible and starts closed like everything else here — on the
+// progress screen now, beside the rest of what "Your progress" promises.
 check(
   "milestones are collapsed rather than filling the screen",
-  profile.includes('title={ui("Milestones")}')
-    && !/<h2[^>]*>\{ui\("Milestones"\)\}/.test(profile)
+  progress.includes('title={ui("Milestones")}')
+    && !/<h2[^>]*>\{ui\("Milestones"\)\}/.test(progress)
+    && !profile.includes('title={ui("Milestones")}')
+);
+check(
+  "progress holds mastery, totals and the vocabulary tracker, and settings does not",
+  ['title={ui("Your progress")}', 'title={ui("Totals")}', 'title={ui("Vocabulary library")}']
+    .every((marker) => progress.includes(marker) && !profile.includes(marker))
 );
 check(
   "appearance, accessibility, desktop, learning, language, and pet all have a category",

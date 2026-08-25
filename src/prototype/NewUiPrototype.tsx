@@ -350,18 +350,17 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "nav", id: "practice" },
   { kind: "nav", id: "listen" },
   { kind: "soon", icon: MessageCircleMore, label: "Speaking" },
-  { kind: "view", icon: WholeWord, label: "Vocabulary library", view: "profile" },
+  { kind: "view", icon: WholeWord, label: "Vocabulary library", view: "progress" },
 ];
 
 /**
  * Land on the vocabulary tracker, not at the top of the page holding it.
  *
- * The tracker — Sätze and Wörter — has always lived on the profile page, and
- * the row that opened it dropped you at the top of a long settings page to
- * find it yourself, so the row was taken out. It is back now, arriving at the
- * card instead of near it. The section loads when it is scrolled to, which is
- * why this keeps looking for a few seconds rather than once.
- * why this keeps looking for a few seconds rather than once.
+ * The tracker — Sätze and Wörter — sits on the progress page, and the row that
+ * opens it used to drop you at the top of the page to find it yourself. It
+ * arrives at the card instead of near it now. The section loads when it is
+ * scrolled to, which is why this keeps looking for a few seconds rather than
+ * once.
  */
 function scrollToVocabularyLibrary() {
   if (typeof window === "undefined") return;
@@ -998,7 +997,7 @@ function Sidebar({
                         onClick={() => { requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
                         onFocus={() => onPrefetch(row.view)}
                         onPointerEnter={() => onPrefetch(row.view)}
-                        title={ui("Your vocabulary library, on the profile page.")}
+                        title={ui("Your vocabulary library, on the progress page.")}
                         type="button"
                         {...dragProps(ROW_VOCABULARY)}
                       >
@@ -4132,7 +4131,7 @@ export default function NewUiPrototype({
         onOpenFading={() => {
           requestVocabLibraryOpen();
           requestVocabFilter("fading");
-          navigate("profile");
+          navigate("progress");
           scrollToVocabularyLibrary();
         }}
         onPractice={openGuidedSession}
@@ -4227,7 +4226,26 @@ export default function NewUiPrototype({
       ownedBadges={ownedShopBadges}
     />
   ) : activeView === "progress" ? (
-    <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+    <>
+      <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+      {/* The vocabulary library, mastery, totals and milestones, which used to
+          be the tail of the settings page. Signed out there is nothing of the
+          sort to show, so the panel above stands on its own. */}
+      {profile && (
+        <div className="np-feature-host np-progress-extras">
+          <Suspense fallback={<FeatureLoading />}>
+            <GamificationPanel
+              apiParts={apiParts}
+              onRequestCatalogue={requestParts}
+              onUpdateStats={updateStats}
+              progressOnly
+              stats={stats}
+              user={profile}
+            />
+          </Suspense>
+        </div>
+      )}
+    </>
   ) : activeView === "profile" ? (
     profile ? (
       <div className="np-feature-host">

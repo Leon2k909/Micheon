@@ -82,7 +82,7 @@ check(
     // the work has started before the learner arrives instead of on arrival.
     && /rootMargin: "\d+px 0px"/.test(gamification)
     && gamification.includes("const [trackerRequested, setTrackerRequested] = useState(false)")
-    && gamification.includes("if (!profileOnly || !trackerRequested || !catalogueReady)")
+    && gamification.includes("if (!panelOnly || !trackerRequested || !catalogueReady)")
     && gamification.includes("module.prepareVocabTrackerData(apiParts)")
     && gamification.includes("onReveal={requestVocabTracker}")
     && petPicker.includes("galleryOpen ? (")

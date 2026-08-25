@@ -4352,6 +4352,13 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   color: var(--text-1);
 }
 
+/* The folds under the progress panel share its column, so the screen reads as
+   one page rather than a narrow card sitting on a full-width one. */
+.np-progress-extras {
+  max-width: 920px;
+  margin: 19px auto 0;
+}
+
 .np-feature-host .card {
   border-color: var(--border);
   border-radius: 25px;

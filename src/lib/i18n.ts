@@ -2185,7 +2185,7 @@ const DE: Record<string, string> = {
   "{shown} of {total}": "{shown} von {total}",
   "{from}-{to} of {total}": "{from}–{to} von {total}",
   "Vocabulary library": "Wortschatz",
-  "Your vocabulary library, on the profile page.": "Deine Wortschatz-Bibliothek auf der Profilseite.",
+  "Your vocabulary library, on the progress page.": "Deine Wortschatz-Bibliothek auf der Fortschrittsseite.",
   "Not built yet.": "Gibt es noch nicht.",
   "Soon": "Bald",
   "Country studies": "Landeskunde",
