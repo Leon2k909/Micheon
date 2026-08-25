@@ -137,6 +137,22 @@ function scheduleProfileIdleWork(task: () => void, timeout = 1200): () => void {
   return () => window.clearTimeout(timer);
 }
 
+/**
+ * The scenery behind a guided lesson: value, name, and what it looks like.
+ *
+ * One list, read twice — the dropdown's options and the line under it that
+ * describes whichever is chosen. "custom" is not here: it exists only once an
+ * image has been put there, and the row below the dropdown owns that.
+ */
+const GUIDED_SCENES = [
+  ["monkey", "Monkey world", "Default — a calm lesson landscape with the monkey beside you."],
+  ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
+  ["bubbles", "Speech bubbles", "Soft conversation bubbles drifting behind the lesson."],
+  ["atlas", "Globe and flight path", "A wire globe, a dashed route and a small plane."],
+  ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
+  ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
+] as const satisfies ReadonlyArray<readonly [GuidedBackground, string, string]>;
+
 const PROFILE_FOLDS_KEY = "profile-folds";
 
 /**
@@ -1568,36 +1584,28 @@ export default function GamificationPanel({
                         </p>
                       </div>
                     </div>
-                    <div aria-label={ui("Guided lesson background")} className="mt-3 grid gap-2 sm:grid-cols-2" role="radiogroup">
-                      {([
-                        ["monkey", "Monkey world", "Default \u2014 a calm lesson landscape with the monkey beside you."],
-                        ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
-                        ["bubbles", "Speech bubbles", "Soft conversation bubbles drifting behind the lesson."],
-                        ["atlas", "Globe and flight path", "A wire globe, a dashed route and a small plane."],
-                        ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
-                        ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
-                      ] as const).map(([value, label, note]) => {
-                        const active = guidedBackground === value;
-                        return (
-                          <button
-                            aria-checked={active}
-                            className={cn(
-                              "rounded-2xl border px-3 py-3 text-left transition-colors",
-                              active
-                                ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
-                                : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]/50"
-                            )}
-                            key={value}
-                            onClick={() => updateGuidedBackground(value)}
-                            role="radio"
-                            type="button"
-                          >
-                            <span className="block text-sm font-black">{ui(label)}</span>
-                            <span className="mt-1 block text-[11px] font-semibold leading-4 text-[var(--text-3)]">{ui(note)}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {/* One line instead of six tiles. Six of them took more of
+                        this page than the setting is worth, and they will only
+                        multiply. The description follows the choice so nothing
+                        that was on those tiles is lost — you read one at a time
+                        rather than all of them. */}
+                    <select
+                      aria-label={ui("Guided lesson background")}
+                      className="mt-3 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+                      onChange={(event) => updateGuidedBackground(event.target.value as GuidedBackground)}
+                      value={guidedBackground}
+                    >
+                      {GUIDED_SCENES.map(([value, label]) => (
+                        <option key={value} value={value}>{ui(label)}</option>
+                      ))}
+                      {/* Only once there is one to choose — the row below is
+                          where an image is put there in the first place. */}
+                      {guidedCustomBackground && <option value="custom">{ui("Your own image")}</option>}
+                    </select>
+                    <p className="mt-2 text-[11px] font-semibold leading-4 text-[var(--text-3)]">
+                      {ui(GUIDED_SCENES.find(([value]) => value === guidedBackground)?.[2]
+                        ?? "Use your saved image behind every guided lesson.")}
+                    </p>
                     <div className={cn(
                       "mt-2 flex flex-wrap items-center gap-3 rounded-2xl border p-3",
                       guidedBackground === "custom"
