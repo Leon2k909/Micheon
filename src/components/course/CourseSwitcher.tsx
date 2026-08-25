@@ -353,7 +353,13 @@ export function CourseSwitcher({
 
               {citizenship.length > 0 && (
                 <>
-                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Living in the UK")}</p>
+                  {/* Not "Living in the UK": this section lists every country
+                      course, and there are two of them. Country studies is the
+                      name the rest of the app already uses for this area — the
+                      home card, the sidebar group, the settings heading — so
+                      reusing it keeps one name for one thing rather than
+                      inventing a second. */}
+                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Country studies")}</p>
                   <div className="mt-2 grid gap-2">
                     {citizenship.map((c) => <Card key={c.id} {...c} />)}
                   </div>

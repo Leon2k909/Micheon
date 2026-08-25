@@ -2503,6 +2503,12 @@ const DE: Record<string, string> = {
   // are still named inside the lessons, where the name is the fact.
   "United Kingdom – Land and Culture": "Großbritannien – Land und Kultur",
   "Germany – Land and Culture": "Deutschland – Land und Kultur",
+  // The line under each course name in the switcher. It goes through ui()
+  // like the name above it, so without this key a German interface put an
+  // English sentence between two German ones. The German course needs no
+  // entry here because its own tagline is already written in German.
+  "History, government and traditions — how life in the UK works.":
+    "Geschichte, Regierung und Traditionen – wie das Leben in Großbritannien funktioniert.",
   Germany: "Deutschland",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
@@ -2704,7 +2710,6 @@ const DE: Record<string, string> = {
     "Derselbe Kurs, zwei Schreibweisen und Akzente. Wähl eine — du kannst jederzeit wechseln.",
   "Pick a language, a programming track or a country course.":
     "Wähle eine Sprache, einen Programmierkurs oder einen Länderkurs.",
-  "Living in the UK": "Leben im Vereinigten Königreich",
   "No matching course": "Kein passender Kurs",
   "Search by name, language code, or the name in that language — Deutsch, español, 日本語.":
     "Suche nach Name, Sprachcode oder dem Namen in der jeweiligen Sprache — Deutsch, español, 日本語.",
