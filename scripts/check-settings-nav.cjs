@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Settings you can navigate, and a header that survives a longer language.
+ * Settings you can read straight down, and a header that survives a longer
+ * language.
  *
- * Ten collapsed cards down a page meant finding anything was reading ten
- * descriptions and guessing which one hid it. The categories now build a
- * sidebar by registering themselves, so it is made from what is actually
- * rendered rather than a second list that has to be kept in step -- several of
- * those categories are conditional, and a hand-written list would go stale.
+ * The categories were a sidebar with one panel beside it for a while. That
+ * showed one of them at a time and put the name you pressed in a different
+ * column from the thing it opened. They are one column of disclosures now:
+ * every name is on screen, any number of them open, each under its own row.
  */
 const fs = require("fs");
 const path = require("path");
@@ -18,54 +18,51 @@ const settings = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8"
 const css = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
 const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
 
-// ── the sidebar is built from what renders ────────────────────────────────
+// ── the list reads straight down ──────────────────────────────────────────
 if (!/export function SettingsCategoryLayout/.test(category)) {
-  failures.push("there is no settings layout, so the categories are a stack of accordions again");
-}
-if (!/nav\.register\(/.test(category) || !/nav\.unregister\(/.test(category)) {
-  failures.push("categories do not register themselves, so the sidebar would need a hand-written list that goes stale");
+  failures.push("there is no settings layout, so the search has nothing to sit in");
 }
 if (!/<SettingsCategoryLayout/.test(settings)) {
   failures.push("the settings page does not use the layout");
 }
-// Only the chosen category renders, or it is a stack with a sidebar bolted on.
-if (!/if \(nav\.selected !== id\) return null;/.test(category)) {
-  failures.push("every category renders at once, so the sidebar selects nothing");
+// No selection and no registry: every category renders, always.
+if (/nav\.selected/.test(category) || /SettingsNavContext/.test(category)) {
+  failures.push("a category still asks a sidebar whether it is the chosen one, so only one of them renders");
 }
-// Search has to keep showing every match, not one.
-if (!/listMode/.test(category) || !/searching=\{settingsTerms\.length > 0\}/.test(settings)) {
-  failures.push("search does not fall back to showing every match");
+// Each row opens its own panel, directly underneath itself.
+if (!/aria-controls=\{panelId\}/.test(category) || !/aria-expanded=\{isOpen\}/.test(category)) {
+  failures.push("the rows are not disclosures, so nothing says what they open");
 }
-if (!/className=\{cn\("settings-layout", searching && "is-searching"\)\}/.test(category) ||
-    !/\{search && <div className="settings-nav-search">\{search\}<\/div>\}/.test(category)) {
-  failures.push("typing replaces the settings layout and makes the search control disappear");
+if (!/<div hidden=\{!isOpen\} id=\{panelId\}>/.test(category)) {
+  failures.push("a category's panel is not the thing its own row controls");
 }
-if (/\{searching \? \(/.test(category)) {
-  failures.push("search still swaps out the whole settings layout after the first character");
+// Search filters the same list rather than replacing it.
+if (!/forceOpen/.test(category) || !/hidden=\{!matchesSearch\(/.test(settings)) {
+  failures.push("search does not open the matches inside the list it is already showing");
 }
-// A category that disappears must not leave the panel blank.
-if (!/visible\.some\(\(entry\) => entry\.id === selected\)/.test(category)) {
-  failures.push("a category that becomes hidden would leave the panel empty with nothing selected");
+if (!/\{search && <div className="settings-layout-search">\{search\}<\/div>\}/.test(category)) {
+  failures.push("the search box is not the first row of the list");
 }
-if (!/\.settings-nav-item\b/.test(css) || !/\.settings-layout\b/.test(css)) {
-  failures.push("the sidebar has no styling");
+if (!/\.settings-layout\b/.test(css) || !/\.settings-panel-icon\b/.test(css)) {
+  failures.push("the list has no styling");
 }
-// It has to survive a narrow window rather than squeezing two columns.
-if (!/max-width:\s*900px[\s\S]{0,400}\.settings-layout \{ grid-template-columns: minmax\(0, 1fr\); \}/.test(css)) {
-  failures.push("the sidebar keeps its column on a narrow window instead of becoming a row");
+// The sidebar is gone; nothing should be left styling one.
+if (/\.settings-nav\b/.test(css) || /\.settings-nav-item\b/.test(css)) {
+  failures.push("the sidebar CSS outlived the sidebar");
 }
 
 // Account details used to sit above everything, permanently, while the things
 // you might actually be looking for were behind a search box. It is a
-// category like the rest now, and the search is in the sidebar with them,
-// because typing to find a setting and picking one from a list are the same
-// job.
+// category like the rest now, and the search is the row above them all,
+// because typing to find a setting and picking one out of the list are the
+// same job.
 if (!/<SettingsCategory[\s\S]{0,400}title=\{ui\("Account details"\)\}/.test(settings)) {
   failures.push("Account details is not a category, so it is pinned above every other setting");
 }
-if (!/search=\{\(/.test(settings) || !/settings-nav-search/.test(category)) {
-  failures.push("the settings search is not in the sidebar with the categories");
+if (!/search=\{\(/.test(settings)) {
+  failures.push("the settings page does not hand the layout its search box");
 }
+
 
 // ── the header stats survive German ───────────────────────────────────────
 const chipStrong = /\.np-stat-chip strong \{([^}]*)\}/.exec(proto)?.[1] ?? "";
@@ -88,4 +85,4 @@ if (failures.length) {
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
-console.log("check-settings-nav: settings has a sidebar built from the categories that render, search still lists every match, and the header stats wrap instead of overflowing");
+console.log("check-settings-nav: settings is one column of disclosures with the search at its head, each row opening its own panel, and the header stats wrap instead of overflowing");

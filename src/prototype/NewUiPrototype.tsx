@@ -174,6 +174,7 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
+import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
@@ -1342,9 +1343,15 @@ function Sidebar({
   );
 }
 
-function StatChip({ kind, value, label }: { kind: RewardKind; value: string; label: string }) {
+function StatChip({ kind, value, label, shared = false }: {
+  kind: RewardKind;
+  value: string;
+  label: string;
+  /** Counts every course rather than the one you are on. */
+  shared?: boolean;
+}) {
   return (
-    <div className="np-stat-chip">
+    <div className="np-stat-chip" title={shared ? ui("Counts every course together.") : undefined}>
       <span aria-hidden="true" className={`np-stat-chip__art np-stat-chip__art--${kind}`}>
         <RewardIcon kind={kind} />
       </span>
@@ -1358,6 +1365,7 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 
 function Header({
   avatar,
+  atHome,
   onSignOut,
   equippedBadge,
   onNavigate,
@@ -1371,6 +1379,8 @@ function Header({
   userName,
 }: {
   avatar?: string;
+  /** The figures belong beside the greeting, so they travel with it. */
+  atHome: boolean;
   onSignOut: () => void;
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
@@ -1504,15 +1514,20 @@ function Header({
         <p>Hi, {firstName}!</p>
         <span>{ui("Ready to learn today?")}</span>
       </div>
+      {/* The cell stays whether or not it has figures in it: it is the middle
+          column of a three-column header, and taking it out would move the
+          search and the avatar into its place instead of leaving them right. */}
       <div className="np-header-stats">
-        <StatChip kind="flame" label={ui("Days learned")} value={uiNumber(stats.learningDays)} />
+        {atHome && <>
+        <StatChip kind="flame" label={ui("Days learned")} shared value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
             one chip look different from the two beside it for no gain — and
             said XP twice. The stats strip further down the page has always
             shown it bare, so this matches that too. */}
-        <StatChip kind="star" label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
+        <StatChip kind="star" label={ui("Total XP")} shared value={uiNumber(stats.totalXp)} />
         <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
+        </>}
       </div>
       <div className="np-header-actions">
         <div className="np-search-wrap" ref={searchWrapRef}>
@@ -2173,18 +2188,26 @@ function LanguageCard({
  */
 const COUNTRY_ART: Record<CountryId, string> = {
   de: homeCountryArtDe,
+  // Drawn as vectors rather than painted like the other two, so it reads a
+  // little flatter beside them. Same subject matter: a river, a skyline the
+  // country is known by, and the street furniture you actually walk past.
+  fr: homeCountryArtFr,
   uk: homeCountryArtUk,
 };
 
 function CountryCard({
+  countryMenuOpen,
   onOpen,
-  onSwitchCountry,
+  onPickCountry,
+  onToggleCountryMenu,
   pack,
   profile,
 }: {
+  countryMenuOpen: boolean;
   onOpen: () => void;
-  /** Moves to the next country. The card is the second way in, beside the nav. */
-  onSwitchCountry: () => void;
+  /** Chooses a country outright. The card is the second way in, beside the nav. */
+  onPickCountry: (id: CountryId) => void;
+  onToggleCountryMenu: () => void;
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
@@ -2212,15 +2235,56 @@ function CountryCard({
           <h2>{ui("Country studies")}</h2>
           <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
 
+          {/* A menu, not a button that steps to the next country. Stepping
+              was tolerable while there were two; with three it is a guessing
+              game, and the language card beside this one has offered a real
+              choice all along. Built from the same parts as its Lesson
+              content menu so the pair still reads as one control repeated. */}
           <div className="np-home-choice-panel">
-            <small>{ui("Selected country")}</small>
-            <span className="np-home-choice-value">
-              <FlagRoundel id={pack.flagId} />
-              <strong>{ui(pack.id === "de" ? "Germany" : "United Kingdom")}</strong>
-              <button className="np-home-choice-change" onClick={onSwitchCountry} type="button">
-                {ui("Change")}
-              </button>
-            </span>
+            <div className="np-home-choice-field np-home-choice-field--country">
+              <small>{ui("Selected country")}</small>
+              <span className="np-home-choice-value">
+                <FlagRoundel id={pack.flagId} />
+                {/* Off the pack. This was a two-way conditional, so the
+                    French course arrived wearing the words "United
+                    Kingdom" under a French flag. */}
+                <strong>{ui(pack.country)}</strong>
+                <button
+                  aria-expanded={countryMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={ui("Choose the country you are studying")}
+                  className="np-home-choice-change"
+                  onClick={onToggleCountryMenu}
+                  type="button"
+                >
+                  {ui("Change")}
+                  <ChevronDown aria-hidden="true" />
+                </button>
+              </span>
+
+              {countryMenuOpen && (
+                <div
+                  aria-label={ui("Choose the country you are studying")}
+                  className="np-home-content-menu np-home-content-menu--country"
+                  role="menu"
+                >
+                  {COUNTRY_PACKS.map((entry) => (
+                    <button
+                      aria-checked={entry.id === pack.id}
+                      key={entry.id}
+                      onClick={() => onPickCountry(entry.id)}
+                      role="menuitemradio"
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="np-home-country-flag">
+                        <FlagRoundel id={entry.flagId} />
+                      </span>
+                      <strong>{ui(entry.country)}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -2649,9 +2713,11 @@ function FluencyOutlook({ onOpenFading, profile, vocab }: {
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1);
     window.addEventListener("activity-updated", refresh);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, refresh);
     window.addEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
     return () => {
       window.removeEventListener("activity-updated", refresh);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, refresh);
       window.removeEventListener(LEARNING_TIME_UPDATED_EVENT, refresh);
     };
   }, []);
@@ -2721,6 +2787,15 @@ function FluencyOutlook({ onOpenFading, profile, vocab }: {
           <div>
             <h2>{ui("Your path to fluent conversations")}</h2>
             <p>{ui("A realistic outlook based on useful words and phrases you can recall.")}</p>
+            {/* Progress is kept per course, so switching from English to German
+                drops this from 11% to 1% — both true, and baffling next to a
+                total XP that counts them together. Naming the course is the
+                cheapest way to make the number mean what it says. */}
+            <p className="np-fluency-course">
+              {uiFmt("Counts your {language} course only", {
+                language: learningEnglish() ? ui("English") : ui("German"),
+              })}
+            </p>
           </div>
         </div>
 
@@ -2820,7 +2895,13 @@ function AchievementBadge({ achievement, standalone, stats }: { achievement: Mil
       <small>{ui(achievement.label)}</small>
       {standalone && (
         <span className="np-achievement-detail">
-          {unlocked ? "Unlocked" : `${progress} / ${achievement.target} ${achievement.unit}`}
+          {unlocked
+            ? ui("Unlocked")
+            : uiFmt("{progress} / {target} {unit}", {
+              progress,
+              target: achievement.target,
+              unit: ui(achievement.unit),
+            })}
         </span>
       )}
     </div>
@@ -2892,36 +2973,51 @@ function ProgressPanel({
     });
   };
 
-  return (
-    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${sections.panel ? " is-open" : " is-folded"}`}>
-      {/* The heading is the control. Folded, the panel closes sideways into
-          a rail at the edge of the column rather than collapsing downwards, so
-          the title turns with it and stays readable. */}
-      <button
-        aria-expanded={sections.panel}
-        aria-label={ui("Your progress")}
-        className="np-progress-title"
-        onClick={() => toggleSection("panel")}
-        title={sections.panel ? ui("Fold away") : ui("Your progress")}
-        type="button"
-      >
-        {sections.panel
-          ? <ChevronRight aria-hidden="true" className="np-side-chevron" />
-          : <ChevronLeft aria-hidden="true" className="np-side-chevron" />}
-        <div>
-          <h2>{ui("Your progress")}</h2>
-          <p>
-            {uiFmt("{earned} of {total} achievements unlocked, {name}.", {
-              earned: earnedAchievements,
-              name: firstName,
-              total: MILESTONES.length,
-            })}
-          </p>
-        </div>
-        <AchievementArt id="week" />
-      </button>
+  // On the progress screen the panel is the page. Nothing sits beside it to
+  // hand the width back to, so there it neither folds nor offers to — the
+  // heading is a heading. In the right rail, where folding buys the page a
+  // whole column, the control stays.
+  const panelOpen = standalone || sections.panel;
+  const heading = (
+    <>
+      <div>
+        <h2>{ui("Your progress")}</h2>
+        <p>
+          {uiFmt("{earned} of {total} achievements unlocked, {name}.", {
+            earned: earnedAchievements,
+            name: firstName,
+            total: MILESTONES.length,
+          })}
+        </p>
+      </div>
+      <AchievementArt id="week" />
+    </>
+  );
 
-      {sections.panel && (
+  return (
+    <section className={`np-progress-panel${standalone ? " np-progress-panel--standalone" : ""}${panelOpen ? " is-open" : " is-folded"}`}>
+      {/* Folded, the panel closes sideways into a rail at the edge of the
+          column rather than collapsing downwards, so the title turns with it
+          and stays readable. */}
+      {standalone ? (
+        <div className="np-progress-title">{heading}</div>
+      ) : (
+        <button
+          aria-expanded={sections.panel}
+          aria-label={ui("Your progress")}
+          className="np-progress-title"
+          onClick={() => toggleSection("panel")}
+          title={sections.panel ? ui("Fold away") : ui("Your progress")}
+          type="button"
+        >
+          {sections.panel
+            ? <ChevronRight aria-hidden="true" className="np-side-chevron" />
+            : <ChevronLeft aria-hidden="true" className="np-side-chevron" />}
+          {heading}
+        </button>
+      )}
+
+      {panelOpen && (
         <>
 
       <div className="np-level-card">
@@ -2956,7 +3052,7 @@ function ProgressPanel({
             <ChevronDown aria-hidden="true" className={`np-fold-chevron${sections.achievements ? " is-open" : ""}`} />
           </button>
           {standalone ? (
-            <span className="np-achievement-count">{earnedAchievements} unlocked</span>
+            <span className="np-achievement-count">{uiFmt("{count} unlocked", { count: earnedAchievements })}</span>
           ) : (
             <button onClick={onViewAllAchievements} type="button">{ui("View all")}</button>
           )}
@@ -3014,8 +3110,8 @@ function ProgressPanel({
 function HomeView({
   apiParts,
   countryId,
-  onCycleCountry,
   onOpenCountryCourse,
+  onPickCountry,
   onOpenFading,
   onPractice,
   onRequestCatalogue,
@@ -3028,10 +3124,10 @@ function HomeView({
   apiParts: Record<string, Part>;
   /** Which country studies country the card should show. */
   countryId: CountryId;
-  /** Moves the card to the next country. */
-  onCycleCountry: () => void;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
+  /** Chooses the card's country outright, from its own menu. */
+  onPickCountry: (id: CountryId) => void;
   /** The vocabulary library, opened on the items that are fading. */
   onOpenFading: () => void;
   onPractice: () => void;
@@ -3066,6 +3162,7 @@ function HomeView({
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
   // The menu closes the way every menu should: outside click or Escape.
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
@@ -3082,6 +3179,24 @@ function HomeView({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [contentMenuOpen]);
+  // The country menu closes the same way. Its own effect rather than a
+  // shared one: two menus on one card must not close each other, and a
+  // click inside the country field is outside the content field.
+  useEffect(() => {
+    if (!countryMenuOpen) return undefined;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!(event.target as Element | null)?.closest?.(".np-home-choice-field--country")) setCountryMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCountryMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [countryMenuOpen]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -3126,8 +3241,13 @@ function HomeView({
         />
 
         <CountryCard
+          countryMenuOpen={countryMenuOpen}
           onOpen={onOpenCountryCourse}
-          onSwitchCountry={onCycleCountry}
+          onPickCountry={(id) => {
+            onPickCountry(id);
+            setCountryMenuOpen(false);
+          }}
+          onToggleCountryMenu={() => setCountryMenuOpen((open) => !open)}
           pack={countryPack(countryId)}
           profile={profile}
         />
@@ -3894,17 +4014,19 @@ export default function NewUiPrototype({
   const activePack = countryPack(countryId);
 
   /**
-   * Move to the next country studies country.
+   * Choose which country studies country the app is on.
    *
-   * Cycling rather than opening a picker: there are two, and a dialog to
-   * choose between two things is a dialog too many. The lesson being read is
-   * cleared because lesson ids do not cross countries.
+   * This used to step to the next one, on the argument that the sidebar
+   * already had a picker and a second one was a dialog too many. That held
+   * while there were two countries. At three, stepping means clicking until
+   * the right one comes round, and the card is not a dialog — it is a menu
+   * inside the card, the same as the one the language card beside it has.
+   *
+   * The lesson being read is still cleared, because lesson ids do not cross
+   * countries.
    */
-  const cycleCountry = useCallback(() => {
-    setCountryId((current) => {
-      const index = COUNTRY_PACKS.findIndex((entry) => entry.id === current);
-      return COUNTRY_PACKS[(index + 1) % COUNTRY_PACKS.length].id;
-    });
+  const pickCountry = useCallback((id: CountryId) => {
+    setCountryId(id);
     setUkLessonId(undefined);
     setUkReaderOpen(false);
   }, []);
@@ -4182,7 +4304,7 @@ export default function NewUiPrototype({
       <HomeView
         apiParts={apiParts}
         countryId={countryId}
-        onCycleCountry={cycleCountry}
+        onPickCountry={pickCountry}
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
           requestVocabLibraryOpen();
@@ -4497,6 +4619,7 @@ export default function NewUiPrototype({
           />
           <div className="np-app-area">
             <Header
+              atHome={activeView === "home"}
               avatar={profile?.avatar}
               onSignOut={signOutOfPrototype}
               equippedBadge={shopUnlocked ? equippedShopBadge : null}

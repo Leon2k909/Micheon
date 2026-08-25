@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { BookOpen, CalendarDays, CheckCircle2, ChevronDown, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadActivitySessions, loadGradeStore, summarizeActivity } from "@/lib/activity";
-import { ui, uiIsGerman, uiLocale } from "@/lib/i18n";
+import { ui, uiFmt, uiLocale } from "@/lib/i18n";
 
 type ProgressStats = {
   totalXp: number;
@@ -102,9 +102,9 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
         {hasData ? (
           <>
             <div className="absolute left-0 top-0 rounded-full bg-[var(--ink)] px-2 py-1 text-[10px] font-bold text-[var(--ink-text)]">
-              {uiIsGerman()
-                ? `${summary.activeDays} ${summary.activeDays === 1 ? "aktiver Tag" : "aktive Tage"}`
-                : `${summary.activeDays} active ${summary.activeDays === 1 ? "day" : "days"}`}
+              {summary.activeDays === 1
+                ? uiFmt("{count} active day", { count: summary.activeDays })
+                : uiFmt("{count} active days", { count: summary.activeDays })}
             </div>
             <div className="flex h-full items-end gap-2 pt-6">
               {chartBuckets.map((bucket, index) => {

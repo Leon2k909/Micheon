@@ -166,6 +166,41 @@ assert.strictEqual(compound.length, 1);
 assert.strictEqual(compound[0].term, "der Lkw", "only the FIRST separator splits the line");
 assert.strictEqual(compound[0].definition, "Lastkraftwagen - lorry");
 
+// A real file can quote separators, line breaks, and quotes. It also needs
+// editable defaults rather than assuming everybody names columns the same.
+const D = loadModule("src/lib/delimitedCards.ts");
+const csv = D.parseDelimitedFile([
+  "German,English,Hint",
+  '"der Apfel, rot","red apple","Say ""rot"""',
+  '"Guten\\nMorgen",good morning,greeting',
+].join("\r\n").replace("\\n", "\n"), "cards.csv");
+assert.strictEqual(csv.delimiter, ",", "a CSV extension must choose commas");
+assert.strictEqual(csv.rows.length, 3, "a quoted line break belongs to its field, not a new row");
+assert.strictEqual(csv.rows[1][0], "der Apfel, rot", "a quoted comma must stay inside the term");
+assert.strictEqual(csv.rows[1][2], 'Say "rot"', "doubled quotes must be unescaped");
+assert.strictEqual(csv.rows[2][0], "Guten\nMorgen");
+assert.ok(D.rowLooksLikeHeader(csv.rows[0]), "German, English, Hint should be recognised as headings");
+const mapped = D.suggestDelimitedMapping(csv.rows[0]);
+assert.strictEqual(mapped.term, 0);
+assert.strictEqual(mapped.definition, 1);
+assert.strictEqual(mapped.hint, 2);
+const headerless = D.suggestDelimitedMapping([]);
+assert.strictEqual(headerless.term, 0);
+assert.strictEqual(headerless.definition, 1, "a headerless file should default to its first two columns");
+const fileCards = D.makeCardsFromDelimited(csv.rows.slice(1), mapped, 100);
+assert.strictEqual(fileCards.length, 2);
+assert.ok(fileCards.every((card) => card.source === "file"), "file cards should retain their source");
+assert.strictEqual(fileCards[0].hint, 'Say "rot"');
+
+const tsv = D.parseDelimitedFile("Term\tDefinition\ngehen\tto go", "cards.tsv");
+assert.strictEqual(tsv.delimiter, "\t", "a TSV extension must choose tabs");
+assert.strictEqual(tsv.rows[1][1], "to go");
+assert.throws(
+  () => D.parseDelimitedText('Term,Definition\n"unfinished,answer', ","),
+  /quoted value/,
+  "a broken quoted file needs an error instead of a partial import"
+);
+
 // ── sets and rounds ─────────────────────────────────────────────────────────
 const set = M.makeSet("Test set", 1000);
 assert.ok(set.id && set.title === "Test set");
@@ -220,6 +255,23 @@ assert.strictEqual(summary.untouched, 1);
 assert.strictEqual(summary.percent, 33);
 const empty = M.summariseProgress({ ...set, cards: [] }, {});
 assert.strictEqual(empty.percent, 0, "an empty set must not divide by zero");
+
+const statusSet = {
+  ...M.makeSet("Library status", 2000),
+  cards: [
+    M.makeCard("eins", "one", { now: 1 }),
+    M.makeCard("zwei", "two", { now: 2 }),
+  ],
+};
+assert.strictEqual(M.studySetLibraryStatus(statusSet, {}), "incomplete",
+  "a set that has not been started belongs under incomplete");
+assert.strictEqual(M.studySetLibraryStatus(statusSet, {
+  [statusSet.cards[0].id]: { streak: 1, correct: 1, wrong: 0, stage: 0, mastered: false },
+}), "learning", "a set with active progress belongs under learning");
+assert.strictEqual(M.studySetLibraryStatus(statusSet, Object.fromEntries(statusSet.cards.map((card) => [
+  card.id,
+  { streak: 0, correct: 6, wrong: 0, stage: 2, mastered: true },
+]))), "mastered", "a set only becomes mastered when every card is mastered");
 
 // ── stage config ────────────────────────────────────────────────────────────
 assert.ok(M.ALL_STAGES.length >= 4, "there should be a real choice of stages");
@@ -479,8 +531,9 @@ assert.ok(
 assert.ok(createSource.includes("const [picked, setPicked]"), "the set list needs selection");
 assert.ok(createSource.includes("const deletePicked"), "selected sets must be deletable in bulk");
 assert.ok(
-  createSource.includes("picked.forEach((id) => resetStudyProgress(id))"),
-  "deleting sets in bulk must take their progress with them, as single deletion does"
+  createSource.includes("resetStudyProgress(set.id)")
+    && createSource.includes("progress.forEach((value, id) => saveStudyProgress(id, value))"),
+  "bulk deletion must clear each set's progress and let Undo restore it"
 );
 
 // Import: tick some results and add only those.
@@ -803,6 +856,25 @@ assert.ok(
     && view.includes('className="create-set__delete"')
     && view.includes('<X className="h-3.5 w-3.5" />'),
   "set deletion still consumes a full action-row button instead of the top-right close control");
+  assert.ok(view.includes('data-testid="library-sort"')
+    && view.includes('<option value="recent">')
+    && view.includes('<option value="az">'),
+  "the library cannot be sorted by recently edited or A-Z");
+  for (const filter of ["incomplete", "learning", "mastered", "pinned"]) {
+    assert.ok(view.includes(`<option value="${filter}">`), `the library is missing its ${filter} filter`);
+  }
+  assert.ok(view.includes('aria-label={ui(set.pinned ? "Unpin set" : "Pin set")}'),
+    "sets cannot be pinned from their card");
+  assert.ok(view.includes('className="create-save-status"')
+    && view.includes('className="create-undo-toast"'),
+    "Create has no saved state or undo feedback");
+  const editor = fs.readFileSync(path.join(root, "src/components/create/SetEditor.tsx"), "utf8");
+  const fileImport = fs.readFileSync(path.join(root, "src/components/create/DelimitedImport.tsx"), "utf8");
+  assert.ok(editor.includes("<DelimitedImport onImport={commitDelimited} />")
+    && fileImport.includes('data-testid="delimited-file-input"')
+    && fileImport.includes("Term column")
+    && fileImport.includes("Definition column"),
+    "CSV and TSV files cannot be mapped and imported from the existing paste tab");
   assert.ok(view.includes('aria-label={ui("Move to folder")}') && view.includes("<select"),
     "a set can only be filed by dragging, which never fires from touch");
   // Bound to the resolved folder, never the raw field: a select whose value

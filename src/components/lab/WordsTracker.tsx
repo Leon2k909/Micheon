@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiIsEnglish, uiLocale, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
@@ -106,9 +106,9 @@ function StrengthMeter({
           <button
             key={n}
             type="button"
-            title={uiIsGerman()
-              ? `Auf ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "Tag" : "Tage"} Wiederholungsabstand setzen (Stufe ${n}/5)`
-              : `Come back in ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "day" : "days"} (level ${n} of 5)`}
+            title={REVIEW_INTERVALS_DAYS[n - 1] === 1
+              ? uiFmt("Come back in {days} day (level {level} of 5)", { days: REVIEW_INTERVALS_DAYS[n - 1], level: n })
+              : uiFmt("Come back in {days} days (level {level} of 5)", { days: REVIEW_INTERVALS_DAYS[n - 1], level: n })}
             onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
             className="cursor-pointer p-1 -m-1"
           >
@@ -161,13 +161,17 @@ function StrengthMeter({
       {decay.fading && (
         <span
           className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-600"
-          title={uiIsGerman()
-            ? `Seit ${Math.round(decay.overdueDays)} Tagen überfällig, also wird angenommen, dass du dich noch an ${Math.round(decay.weight * 100)}% davon erinnerst — so viel zählt es gerade zu deiner Gesamtzahl. Es halbiert sich alle ${Math.round(decay.halfLifeDays)} Tage in Richtung ${Math.round(decay.floor * 100)}% und fällt nie darunter. Einmal richtig abrufen setzt es auf 100% zurück.`
-            : `${Math.round(decay.overdueDays)} days past its review, so you are assumed to still recall ${Math.round(decay.weight * 100)}% of it — that is how much it counts towards your total right now. It halves every ${Math.round(decay.halfLifeDays)} days towards ${Math.round(decay.floor * 100)}% and never drops below that. Getting it right once puts it back to 100%.`}
+          title={uiFmt("{days} days past its review, so you are assumed to still recall {kept}% of it — that is how much it counts towards your total right now. It halves every {halfLife} days towards {floor}% and never drops below that. Getting it right once puts it back to 100%.", {
+            days: Math.round(decay.overdueDays),
+            kept: Math.round(decay.weight * 100),
+            halfLife: Math.round(decay.halfLifeDays),
+            floor: Math.round(decay.floor * 100),
+          })}
         >
-          {uiIsGerman()
-            ? `${Math.round(decay.overdueDays)} Tage überfällig · ${Math.round(decay.weight * 100)}% behalten`
-            : `${Math.round(decay.overdueDays)} days overdue · ${Math.round(decay.weight * 100)}% remembered`}
+          {uiFmt("{days} days overdue · {kept}% remembered", {
+            days: Math.round(decay.overdueDays),
+            kept: Math.round(decay.weight * 100),
+          })}
         </span>
       )}
       {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
@@ -447,9 +451,7 @@ export function WordsTracker({ apiParts, user }: {
           onClick={toggleSelectAllFiltered}
           label={allFilteredSelected
             ? ui("Deselect all")
-            : uiIsGerman()
-              ? `Alle ${filtered.length} angezeigten Einträge auswählen`
-              : `Select all ${filtered.length} shown`}
+            : uiFmt("Select all {count} shown", { count: filtered.length })}
           size="h-8 w-8"
         />
         {FILTERS.map((f) => (
@@ -571,8 +573,8 @@ export function WordsTracker({ apiParts, user }: {
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
-                    {!uiIsGerman() && word.use ? ` · ${ui(word.use)}` : ""}
-                    {!uiIsGerman() && (() => {
+                    {uiIsEnglish() && word.use ? ` · ${ui(word.use)}` : ""}
+                    {uiIsEnglish() && (() => {
                         const note = packMeta(word.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
                       })()}
@@ -590,7 +592,7 @@ export function WordsTracker({ apiParts, user }: {
                       <span
                         className="font-black text-violet-500"
                         title={ui("Put off — it returns to lessons, Listen and reviews on this date.")}
-                      > · {ui("put off until")} {new Date(record.snoozedUntil).toLocaleDateString(uiIsGerman() ? "de-DE" : "en-GB", { day: "numeric", month: "short" })}</span>
+                      > · {ui("put off until")} {new Date(record.snoozedUntil).toLocaleDateString(uiLocale(), { day: "numeric", month: "short" })}</span>
                     )}
                   </p>
                   {(word.synonyms?.length ?? 0) > 0 && (

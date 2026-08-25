@@ -12,7 +12,7 @@ import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
-import { ui, uiFmt, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { courseSides, type CourseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
@@ -203,7 +203,8 @@ type TrackerRowProps = {
   selected: boolean;
   /** The two faces of this row, already resolved for the course. */
   sides: CourseSides;
-  germanUi: boolean;
+  /** These notes exist only in English, so only an English app shows them. */
+  englishUi: boolean;
   onToggleSelect: (id: string) => void;
   onApply: (item: CatalogItem, status: ItemStatus) => void;
   onSetStrength: (item: CatalogItem, level: number) => void;
@@ -212,7 +213,7 @@ type TrackerRowProps = {
 
 const TrackerRow = React.memo(
   function TrackerRow({
-    item, status, record, selected, sides, germanUi,
+    item, status, record, selected, sides, englishUi,
     onToggleSelect, onApply, onSetStrength, onSetPermanent,
   }: TrackerRowProps) {
     // The catalogue behind this list stays German whatever the course, because
@@ -241,14 +242,14 @@ const TrackerRow = React.memo(
           <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
           <p className="truncate text-xs font-semibold text-[var(--text-3)]">
             {meaningText} · {ui(item.partLabel)}
-            {!germanUi && item.use ? ` · ${ui(item.use)}` : ""}
-            {!germanUi && (() => {
+            {englishUi && item.use ? ` · ${ui(item.use)}` : ""}
+            {englishUi && (() => {
                 const syn = synonymNote(item.lookup);
                 if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
                 const f = frequencyInfo(item.lookup);
                 return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
               })()}
-            {!germanUi && (() => {
+            {englishUi && (() => {
                 const note = packMeta(item.partKey).note;
                 return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
               })()}
@@ -288,7 +289,7 @@ const TrackerRow = React.memo(
     && a.selected === b.selected
     && a.sides.target.code === b.sides.target.code
     && a.sides.meaning.code === b.sides.meaning.code
-    && a.germanUi === b.germanUi
+    && a.englishUi === b.englishUi
     && a.recordSignature === b.recordSignature
     && a.onToggleSelect === b.onToggleSelect
     && a.onApply === b.onApply
@@ -315,9 +316,9 @@ function StrengthMeter({
           <button
             key={n}
             type="button"
-            title={uiIsGerman()
-              ? `Auf ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "Tag" : "Tage"} Wiederholungsabstand setzen (Stufe ${n}/5)`
-              : `Come back in ${REVIEW_INTERVALS_DAYS[n - 1]} ${REVIEW_INTERVALS_DAYS[n - 1] === 1 ? "day" : "days"} (level ${n} of 5)`}
+            title={REVIEW_INTERVALS_DAYS[n - 1] === 1
+              ? uiFmt("Come back in {days} day (level {level} of 5)", { days: REVIEW_INTERVALS_DAYS[n - 1], level: n })
+              : uiFmt("Come back in {days} days (level {level} of 5)", { days: REVIEW_INTERVALS_DAYS[n - 1], level: n })}
             onClick={(e) => { e.stopPropagation(); onSetLevel(n); }}
             className="cursor-pointer p-1 -m-1"
           >
@@ -375,13 +376,17 @@ function StrengthMeter({
       {decay.fading && (
         <span
           className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-600"
-          title={uiIsGerman()
-            ? `Seit ${Math.round(decay.overdueDays)} Tagen überfällig, also wird angenommen, dass du dich noch an ${Math.round(decay.weight * 100)}% davon erinnerst — so viel zählt es gerade zu deiner Gesamtzahl. Es halbiert sich alle ${Math.round(decay.halfLifeDays)} Tage in Richtung ${Math.round(decay.floor * 100)}% und fällt nie darunter. Einmal richtig abrufen setzt es auf 100% zurück.`
-            : `${Math.round(decay.overdueDays)} days past its review, so you are assumed to still recall ${Math.round(decay.weight * 100)}% of it — that is how much it counts towards your total right now. It halves every ${Math.round(decay.halfLifeDays)} days towards ${Math.round(decay.floor * 100)}% and never drops below that. Getting it right once puts it back to 100%.`}
+          title={uiFmt("{days} days past its review, so you are assumed to still recall {kept}% of it — that is how much it counts towards your total right now. It halves every {halfLife} days towards {floor}% and never drops below that. Getting it right once puts it back to 100%.", {
+            days: Math.round(decay.overdueDays),
+            kept: Math.round(decay.weight * 100),
+            halfLife: Math.round(decay.halfLifeDays),
+            floor: Math.round(decay.floor * 100),
+          })}
         >
-          {uiIsGerman()
-            ? `${Math.round(decay.overdueDays)} Tage überfällig · ${Math.round(decay.weight * 100)}% behalten`
-            : `${Math.round(decay.overdueDays)} days overdue · ${Math.round(decay.weight * 100)}% remembered`}
+          {uiFmt("{days} days overdue · {kept}% remembered", {
+            days: Math.round(decay.overdueDays),
+            kept: Math.round(decay.weight * 100),
+          })}
         </span>
       )}
       {!s.permanent && !s.due && s.dueInDays != null && s.level > 0 && (
@@ -417,9 +422,9 @@ function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFadi
         </button>
         {fading > 0 && (
           <p className="text-xs font-bold text-[var(--text-2)]">
-            {uiIsGerman()
-              ? `${uiNumber(fading)} ${fading === 1 ? "Eintrag verblasst" : "Einträge verblassen"} gerade.`
-              : `${uiNumber(fading)} ${fading === 1 ? "item is" : "items are"} fading right now.`}
+            {fading === 1
+              ? uiFmt("{count} item is fading right now.", { count: uiNumber(fading) })
+              : uiFmt("{count} items are fading right now.", { count: uiNumber(fading) })}
             {" "}
             <button type="button" onClick={onShowFading} className="font-black text-[var(--accent)] underline underline-offset-2">
               {ui("Show them")}
@@ -435,34 +440,22 @@ function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFadi
               to read it. Four short answers to the four questions actually
               being asked, and one concrete example instead of a formula. */}
           <p>
-            {uiIsGerman()
-              ? "Diese Zahl schätzt, woran du dich JETZT erinnerst — nicht, was du irgendwann einmal gesehen hast."
-              : "This number is an estimate of what you'd remember right now — not a tally of everything you have ever seen."}
+            {ui("This number is an estimate of what you'd remember right now — not a tally of everything you have ever seen.")}
           </p>
           <p>
-            {uiIsGerman()
-              ? "Was du gerade gelernt hast, zählt voll. Was du lange nicht gesehen hast, zählt weniger, weil du davon wahrscheinlich weniger behalten hast. Deshalb kann die Zahl auch sinken."
-              : "Something you learned recently counts as a whole item. Something you have not seen for a long time counts as less, because you probably remember less of it. That is why the number can go down as well as up."}
+            {ui("Something you learned recently counts as a whole item. Something you have not seen for a long time counts as less, because you probably remember less of it. That is why the number can go down as well as up.")}
           </p>
           <p className="rounded-xl bg-[var(--surface-3)] px-3 py-2">
-            {uiIsGerman()
-              ? "Beispiel: Du konntest „Guten Morgen“ vor zwei Monaten sicher. Seitdem nicht mehr gesehen — es zählt jetzt als 0,8 statt 1. Einmal richtig beantwortet, zählt es sofort wieder voll."
-              : "For example: you had “Guten Morgen” down two months ago and have not seen it since, so it counts as 0.8 rather than 1. Answer it correctly once and it counts fully again, immediately."}
+            {ui("For example: you had “Guten Morgen” down two months ago and have not seen it since, so it counts as 0.8 rather than 1. Answer it correctly once and it counts fully again, immediately.")}
           </p>
           <p>
-            {uiIsGerman()
-              ? "Je öfter du etwas sicher abgerufen hast, desto langsamer verblasst es. Und nichts fällt je auf null: etwas wieder aufzufrischen geht viel schneller, als es neu zu lernen."
-              : "The more times you have recalled something correctly, the more slowly it slips. And nothing ever falls to zero — coming back to a word you once knew is far quicker than meeting it new."}
+            {ui("The more times you have recalled something correctly, the more slowly it slips. And nothing ever falls to zero — coming back to a word you once knew is far quicker than meeting it new.")}
           </p>
           <p>
-            {uiIsGerman()
-              ? "„Fällig“ heißt: heute ist der Wiederholungstag. „Verblasst“ heißt: der Tag ist vorbei. Dieselben Einträge, nur später — deshalb steht pro Zeile immer nur eins von beidem."
-              : "“Due” means today is its review day. “Fading” means that day has been and gone. Same items, just later — which is why a row shows one or the other, never both."}
+            {ui("“Due” means today is its review day. “Fading” means that day has been and gone. Same items, just later — which is why a row shows one or the other, never both.")}
           </p>
           <p className="text-[var(--text-3)]">
-            {uiIsGerman()
-              ? "Nie verblassen: mit Stern markierte Einträge, von Hand als gemeistert gesetzte Wörter und alles, was du außerhalb der App gelernt hast — dafür gibt es keinen Wiederholungsplan. Dieselbe Zahl steht auf der Startseite, im Profil und bei den Spielen."
-              : "Never fades: starred items, words you marked mastered by hand, and anything you learned outside the app — there is no review schedule to measure those against. This is the same number your dashboard, profile and games use."}
+            {ui("Never fades: starred items, words you marked mastered by hand, and anything you learned outside the app — there is no review schedule to measure those against. This is the same number your dashboard, profile and games use.")}
           </p>
         </div>
       )}
@@ -1004,9 +997,7 @@ export function VocabTracker({
           onClick={toggleSelectAllFiltered}
           label={allFilteredSelected
             ? ui("Deselect all")
-            : uiIsGerman()
-              ? `Alle ${filtered.length} angezeigten Einträge auswählen`
-              : `Select all ${filtered.length} shown`}
+            : uiFmt("Select all {count} shown", { count: filtered.length })}
           size="h-8 w-8"
         />
         {FILTERS.map((f) => (
@@ -1127,7 +1118,7 @@ export function VocabTracker({
                 recordSignature={record ? JSON.stringify(record) : ""}
                 selected={selected.has(item.id)}
                 sides={sides}
-                germanUi={uiIsGerman()}
+                englishUi={uiIsEnglish()}
                 onToggleSelect={toggleSelect}
                 onApply={apply}
                 onSetStrength={applyStrength}

@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from "react";
+import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
 import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
+import { VIVRE_EN_FRANCE_DE } from "@/lib/vivreEnFranceTranslationsDe";
+import { VIVRE_EN_FRANCE_EN } from "@/lib/vivreEnFranceTranslationsEn";
 import { CSHARP_COURSE_DE } from "@/lib/csharpCourseDe";
 import { uiIsGerman } from "@/lib/i18n";
 import type { Block, Course, Lesson } from "@/lib/courses";
@@ -9,12 +12,16 @@ import type { Block, Course, Lesson } from "@/lib/courses";
 /**
  * Tap a card, read it in your own language.
  *
- * This is deliberately NOT the interface language. A German speaker learning
- * English often wants the app itself in English — that is the point of
- * practising — while still wanting a translation when a card defeats her. And
- * someone Polish wanting an English app with Polish help has no way to say so
- * if the two settings are one setting. So this is its own choice, defaulting
- * to "off" for people who do not need it.
+ * The only help on offer is the app's own language, and the only other
+ * choice is none. It used to be independent of the interface language, on
+ * the reasoning that someone might run the app in English and still want
+ * German help. In practice that produced the opposite: an English app
+ * offering a German translation to someone who may not read a word of
+ * German, and a German app offering English. The language you set the app
+ * to is already your statement of what you read, so it decides this too.
+ *
+ * It still defaults to "off" — help is offered, never imposed — and it is
+ * still stored separately, so turning it off does not disturb the interface.
  *
  * Adding a language is one file and two lines: export a Record<string, string>
  * keyed on the SOURCE text, and register it in TRANSLATIONS below. The keys
@@ -22,11 +29,17 @@ import type { Block, Course, Lesson } from "@/lib/courses";
  * entry degrades to showing the original rather than to a crash or an empty
  * panel.
  *
- * A table also says which language it translates FROM. Country studies now
- * holds two courses written in two languages: Life in the UK is English and
- * offers German, Leben in Deutschland is German and offers English. Without
- * "from", the picker would offer a German learner a German translation of
- * German cards and appear broken.
+ * A table also says which language it translates FROM. Country studies holds
+ * three courses written in three languages: Life in the UK is English, Leben
+ * in Deutschland is German, Vivre en France is French. Without "from", the
+ * picker would offer a German learner a German translation of German cards and
+ * appear broken. French, being neither of the app's own two languages, offers
+ * both — so "from" is a LIST rather than a single language.
+ *
+ * The tables for one target language are merged into one lookup, because a
+ * table is keyed by its course's own source text and two courses written in
+ * two different languages cannot produce the same key. check-fr-translations
+ * fails the build if they ever do.
  */
 
 const KEY = "gl-course-translation";
@@ -36,33 +49,42 @@ export const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
 export type TranslationLanguage = "off" | "de" | "en";
 
 /** The language a course is written in, which decides what can be offered. */
-export type ContentLanguage = "en" | "de";
+export type ContentLanguage = "en" | "de" | "fr";
 
 export const TRANSLATION_LANGUAGES: Array<{
   id: TranslationLanguage;
   label: string;
   endonym: string;
-  /** null for "off", which belongs in every list. */
-  from: ContentLanguage | null;
+  /** The course languages this table can be offered beside. null for "off",
+   *  which belongs in every list. */
+  from: ContentLanguage[] | null;
 }> = [
   { id: "off", label: "No translation", endonym: "No translation", from: null },
-  { id: "de", label: "German", endonym: "Deutsch", from: "en" },
-  { id: "en", label: "English", endonym: "English", from: "de" },
+  { id: "de", label: "German", endonym: "Deutsch", from: ["en", "fr"] },
+  { id: "en", label: "English", endonym: "English", from: ["de", "fr"] },
 ];
 
 const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>> = {
-  de: { ...LIFE_IN_THE_UK_DE, ...CSHARP_COURSE_DE },
-  en: LEBEN_IN_DEUTSCHLAND_EN,
+  de: { ...LIFE_IN_THE_UK_DE, ...VIVRE_EN_FRANCE_DE, ...CSHARP_COURSE_DE },
+  en: { ...LEBEN_IN_DEUTSCHLAND_EN, ...VIVRE_EN_FRANCE_EN },
 };
 
 /**
  * What to offer beside a course written in this language.
  *
- * Always includes "off", so there is a way to turn it back off, and never
- * includes a table that reads the same language the course is already in.
+ * Two entries at most: "off", which is always there so help can be turned
+ * back off, and the language the app itself is in — but only when a table
+ * can actually read this course. A German app beside the German course
+ * offers nothing but off, which leaves one entry, and the picker hides
+ * itself rather than showing a menu with a single choice.
  */
 export function translationLanguagesFor(contentLang: ContentLanguage) {
-  return TRANSLATION_LANGUAGES.filter((language) => language.from === null || language.from === contentLang);
+  const appLanguage = resolveInterfaceLanguage();
+  return TRANSLATION_LANGUAGES.filter(
+    (language) =>
+      language.from === null ||
+      (language.id === appLanguage && language.from.includes(contentLang))
+  );
 }
 
 let inMemory: TranslationLanguage = "off";
@@ -75,7 +97,12 @@ export function getTranslationLanguage(): TranslationLanguage {
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }
-  return inMemory;
+  // A stored choice can outlive the app language that made it offerable:
+  // pick German help, switch the app to English, and the picker is gone
+  // while the cards keep answering in German. Clamped here rather than at
+  // each card, so what is shown can never disagree with what is offered.
+  // The stored value is left alone — switching back restores the choice.
+  return inMemory === "off" || inMemory === resolveInterfaceLanguage() ? inMemory : "off";
 }
 
 export function setTranslationLanguage(language: TranslationLanguage) {
@@ -92,9 +119,9 @@ export function setTranslationLanguage(language: TranslationLanguage) {
 }
 
 /**
- * The translation for one English string, or null when there is none.
+ * The translation for one source string, or null when there is none.
  *
- * Null rather than the English text, so a caller can tell "not translated yet"
+ * Null rather than the source text, so a caller can tell "not translated yet"
  * apart from "translates to the same words" and say so in the interface.
  */
 export function translateCourseText(english: string, language: TranslationLanguage = getTranslationLanguage()): string | null {

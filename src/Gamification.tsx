@@ -115,7 +115,7 @@ import {
   setGuidedBackground as saveGuidedBackground,
   type GuidedBackground,
 } from "@/lib/guidedBackground";
-import { ui, uiIsGerman, uiNumber } from "@/lib/i18n";
+import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 
 const CodexPetPicker = lazy(() => import("@/components/codexPets/CodexPetPicker")
   .then((module) => ({ default: module.CodexPetPicker })));
@@ -1232,9 +1232,9 @@ export default function GamificationPanel({
         </section>
 
         <SettingsCategoryLayout
-          searching={settingsTerms.length > 0}
           search={(
-                  <label className="settings-search mt-4 block">
+                <>
+                  <label className="settings-search block">
                     <Search aria-hidden="true" className="settings-search__icon" />
                     <input
                       aria-label={ui("Search settings")}
@@ -1263,11 +1263,17 @@ export default function GamificationPanel({
                       </button>
                     )}
                   </label>
+                {settingsTerms.length > 0 && (
+                  <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
+                    {searchHits.length === 0
+                      ? ui("Nothing matches that. Try “theme”, “voice”, or “pet”.")
+                      : `${searchHits.length} ${searchHits.length === 1 ? ui("section") : ui("sections")} ${ui("match")}`}
+                  </p>
+                )}
+                </>
           )}
         >
-        <section className="card overflow-hidden">
-          <div className="grid items-start gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_1fr]">
-            <div className="settings-group rounded-[24px] bg-[var(--surface-2)] p-5">
+        <section className="card overflow-hidden p-5 sm:p-6">
               {/* Account details used to sit above everything, permanently, while
                   the things you might actually be looking for were behind a search
                   box. It is a category like the rest now. */}
@@ -1352,29 +1358,6 @@ export default function GamificationPanel({
               </div>
               </SettingsCategory>
 
-              {/* Both guards, because this wrapper fails in both directions:
-                  with another category selected every section inside it is
-                  null, so it drew a rule around nothing; and when it IS the
-                  only thing showing, the rule had nothing above it. */}
-              <div className="settings-group settings-rule-above">
-                {/* This framing ("a list of closed sections, open one") only
-                    describes what search actually shows. Outside a search,
-                    the sidebar already has one category open \u2014 the heading
-                    sat above it anyway, reading as a stray label rather
-                    than a description of anything on screen. */}
-                {settingsTerms.length > 0 && (
-                  <>
-                    <h3 className="text-sm font-black text-[var(--text-1)]">{ui("More settings")}</h3>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                      {ui("Sections you'll rarely need day to day. Open one to change it.")}
-                    </p>
-                    <p className="mt-2 text-xs font-semibold text-[var(--text-3)]">
-                      {searchHits.length === 0
-                        ? ui("Nothing matches that. Try \u201ctheme\u201d, \u201cvoice\u201d, or \u201cpet\u201d.")
-                        : `${searchHits.length} ${searchHits.length === 1 ? ui("section") : ui("sections")} ${ui("match")}`}
-                    </p>
-                  </>
-                )}
                 <SettingsCategory
                   description={ui("Theme, lesson background, and app zoom.")}
                   forceOpen={settingsTerms.length > 0}
@@ -1779,19 +1762,6 @@ export default function GamificationPanel({
                     onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
                   />
                 </SettingsCategory>
-              </div>
-            </div>
-
-            <div className="settings-group rounded-[24px] bg-[var(--surface-2)] p-5">
-              {/* Same fix as "More settings" above: this heading describes
-                  a list of closed sections, which is only what's on screen
-                  while searching. */}
-              {settingsTerms.length > 0 && (
-                <>
-                  <h2 className="text-xl font-black tracking-tight text-[var(--text-1)]">{ui("Preferences")}</h2>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("English spelling, app language, and the speaking voice.")}</p>
-                </>
-              )}
 
 
                 <SettingsCategory
@@ -1824,6 +1794,7 @@ export default function GamificationPanel({
                       </option>
                       <option value="en">English</option>
                       <option value="de">Deutsch</option>
+                      <option value="fr">Français</option>
                     </select>
                   </div>
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
@@ -1831,9 +1802,9 @@ export default function GamificationPanel({
                       <div>
                         <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                         <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                          {false
-                            ? ui("Learning English as a German speaker. German is shown as the meaning.")
-                            : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
+                          {uiFmt("Auto uses your browser/keyboard language. Current: {variant}.", {
+                            variant: ui(englishVariantLabel(resolvedEnglishVariant)),
+                          })}
                         </p>
                       </div>
                       <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">
@@ -1856,16 +1827,13 @@ export default function GamificationPanel({
                     <VoicePicker />
                   </div>
                 </SettingsCategory>
-            </div>
 
             <DeferredProfileSection
-              className="lg:col-span-2"
               // Keep a 1px observer target so this group still reveals when it
               // reaches the viewport, without bringing back the visible pill.
               fallback={<div aria-hidden="true" className="h-px w-full" />}
               minHeight={1}
             >
-              <div className="settings-group rounded-[24px] bg-[var(--surface-2)] px-5 pb-5 pt-2">
                 <SettingsCategory
                   description={ui("Pick a desk pet and choose how often it talks.")}
                   forceOpen={settingsTerms.length > 0}
@@ -1911,9 +1879,7 @@ export default function GamificationPanel({
                 >
                   <ActivityCard className="mt-3 min-w-0" progressStats={stats} />
                 </SettingsCategory>
-              </div>
             </DeferredProfileSection>
-          </div>
         </section>
         </SettingsCategoryLayout>
 
@@ -2020,6 +1986,7 @@ export default function GamificationPanel({
                 </option>
                 <option value="en">English</option>
                 <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
               </select>
             </div>
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
@@ -2027,9 +1994,9 @@ export default function GamificationPanel({
                 <div>
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("English spelling and accent")}</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
-                    {false
-                      ? ui("Learning English as a German speaker. German is shown as the meaning.")
-                      : `Auto uses your browser/keyboard language. Current: ${resolvedEnglishVariant === "british" ? "British" : "American"} English.`}
+                    {uiFmt("Auto uses your browser/keyboard language. Current: {variant}.", {
+                      variant: ui(englishVariantLabel(resolvedEnglishVariant)),
+                    })}
                   </p>
                 </div>
                 <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-black text-[var(--text-2)]">

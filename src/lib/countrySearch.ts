@@ -215,4 +215,5 @@ export function searchCountry(pack: CountryPack, query: string, limit = 40): Cou
 export const COUNTRY_SEARCH_EXAMPLES: Record<CountryId, string[]> = {
   uk: ["1066", "Churchill", "Magna Carta", "Stonehenge", "NHS", "devolution", "Scotland", "suffrage"],
   de: ["1949", "Grundgesetz", "Mauerfall", "Bundesrat", "Weimar", "Föderalismus", "Bismarck", "Euro"],
+  fr: ["1789", "laïcité", "Marianne", "Bastille", "Sénat", "outre-mer", "Schœlcher", "Maastricht"],
 };

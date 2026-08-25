@@ -68,34 +68,47 @@ check("a postponement that has run out lets the panel back",
 check("no postponement is not a postponement",
   updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 0 })
   && updatePanelIsUseful({ state: "downloading" }));
-// The learner has to be able to reach it without opening settings, which is
-// the whole of the request: a clock on the panel itself.
-check("the panel offers the postponement, not just settings",
-  banner.includes('data-testid="update-postpone"')
-  && banner.includes('ui("Remind me later")')
-  && /<Clock\b/.test(banner));
-// Written to the desktop preference rather than to component state, or it is
-// Keep learning again under a different icon.
-check("postponing writes the preference the settings card writes",
-  /setUpdatePreferences\?\.\(\{\s*snoozeHours: hours\s*\}\)/.test(banner)
-  && card.includes("snoozeHours"));
-check("the panel and settings offer the same postponements",
-  ["1 hour", "Today", "A week"].every((label) => banner.includes(`["${label}"`))
+// ── one way to set the panel aside, not two ─────────────────────────────────
+// The panel used to carry a clock beside Keep learning, so that a lasting
+// postponement could be reached without opening settings. Both controls read
+// as "not now" and nothing on screen distinguished them: one hid the panel
+// until the next launch, the other wrote a preference, and the difference
+// only showed itself the next time Micheon started. Two controls for one
+// intention is a worse answer than one, so the clock is gone and the lasting
+// postponement is settings' alone, where its durations carry labels.
+check("the panel offers one way to set it aside",
+  (banner.match(/className="micheon-update-secondary"/g) ?? []).length === 1
+  && !banner.includes('data-testid="update-postpone"')
+  && !banner.includes("micheon-update-clock")
+  && !/<Clock\b/.test(banner));
+check("nothing on the panel writes the postponement any more",
+  !/setUpdatePreferences/.test(banner)
+  && !banner.includes("micheon-update-postpone"));
+// Removed from the panel, not from the app: this is the control that survives
+// a restart, and it would be a real loss if it went with the clock.
+check("settings still offers the lasting postponement",
+  card.includes("snoozeHours")
   && ["1 hour", "Today", "A week"].every((label) => card.includes(`["${label}"`)));
-// The panel clips its own overflow and leaves 115px above the buttons, so a
-// popover needing 132 was cut off at the top and covered the sentence saying
-// what the update is. The choices open as a row instead, and the card grows.
-check("the postponement choices do not float over a panel that clips them",
-  !styles.includes(".micheon-update-postpone__menu")
-  && !/\.micheon-update-postpone\s*\{[^}]*position: absolute/.test(styles)
-  && /\.micheon-update-postpone\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/.test(styles));
-check("the postponement label gets its own line, because German is longer",
-  /\.micheon-update-postpone__title\s*\{[^}]*grid-column: 1 \/ -1/.test(styles));
-check("the third control has a column of its own",
-  /\.micheon-update-actions\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) auto auto/.test(styles)
-  && /\.micheon-update-panel--downloading \.micheon-update-actions\s*\{[^}]*minmax\(0, 1fr\) auto;/.test(styles));
-check("the postponement speaks German too",
-  updateStatus !== null && i18nTable.includes('"Remind me later": "') && i18nTable.includes('"Remind me in": "'));
+// The panel reads the preference even though it can no longer write it — a
+// postponement set in settings has to silence the panel, and let it back when
+// it runs out. The three checks above this cover the reading itself.
+check("the panel still respects a postponement made in settings",
+  banner.includes("snoozedUntil"));
+check("the clock's styling went with it",
+  !styles.includes("micheon-update-clock")
+  && !styles.includes("micheon-update-postpone"));
+// Scoped to this rule rather than searched for across the sheet: a bare
+// "minmax(0, 1fr) auto auto" also appears inside an unrelated five-track grid,
+// so a blanket search here fails on a stylesheet that is perfectly correct.
+check("the two remaining controls share the row",
+  /\.micheon-update-actions\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) auto;/.test(styles)
+  && !/\.micheon-update-actions\s*\{[^}]*minmax\(0, 1fr\) auto auto/.test(styles)
+  // With no third control the downloading state needs no override of its own.
+  && !styles.includes(".micheon-update-panel--downloading .micheon-update-actions"));
+check("the strings the clock used are gone from the table",
+  updateStatus !== null
+  && !i18nTable.includes('"Remind me later": "')
+  && !i18nTable.includes('"Remind me in": "'));
 
 check("startup uses the in-app updater path", /autoUpdater\.checkForUpdates\(\)/.test(main));
 check("startup does not invoke the native notification updater", !/autoUpdater\.checkForUpdatesAndNotify\s*\(/.test(main));

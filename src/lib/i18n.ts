@@ -1,4 +1,5 @@
 import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
+import { FR } from "@/lib/i18nFr";
 
 // UI language follows the learning direction: a German speaker learning
 // English (learn-en) gets the app chrome in German. English UI is the source
@@ -22,6 +23,8 @@ const DE: Record<string, string> = {
   "More Know it options": "Weitere Optionen für „Kann ich“",
   "Struggle": "Schwierig",
   "Hear it": "Anhören",
+  "Hide the translation": "Übersetzung ausblenden",
+  "Show the translation": "Übersetzung einblenden",
   "Read and listen — it plays automatically.": "Lies und hör zu — es wird automatisch abgespielt.",
   "Read the sentence, then continue.": "Lies den Satz und fahre dann fort.",
   "Read the German and French sentences, then continue.": "Lies die deutschen und französischen Sätze und fahre dann fort.",
@@ -503,7 +506,7 @@ const DE: Record<string, string> = {
   "Modern Britain": "Modernes Britannien",
   "Search the course": "Kurs durchsuchen",
   "People, years, events, places, terms or categories. Try a date.": "Personen, Jahreszahlen, Ereignisse, Orte, Begriffe oder Kategorien. Probiere ein Datum.",
-  "Search — try 1066, Churchill, Magna Carta": "Suche — probiere 1066, Churchill, Magna Carta",
+  "Search — try {examples}": "Suche — probiere {examples}",
   "Also showing everything tagged": "Außerdem alles mit dem Schlagwort",
   "Nothing found": "Nichts gefunden",
   "Try a year, a person or a place — the index covers all three.": "Probiere eine Jahreszahl, eine Person oder einen Ort — der Index kennt alle drei.",
@@ -2471,6 +2474,8 @@ const DE: Record<string, string> = {
   "Opens your vocabulary library on these items.": "Öffnet deine Wortschatz-Bibliothek bei genau diesen Einträgen.",
   "About {hours} hours to fluent": "Noch etwa {hours} Stunden bis fließend",
   "Your path to fluent conversations": "Dein Weg zu flüssigen Gesprächen",
+  "Counts your {language} course only": "Zählt nur deinen {language}-Kurs",
+  "Counts every course together.": "Zählt alle Kurse zusammen.",
   "Your private social preview": "Deine private soziale Vorschau",
   "Your progress": "Dein Fortschritt",
   "Mastery, this week and your milestones.": "Meisterschaft, diese Woche und deine Meilensteine.",
@@ -2525,6 +2530,8 @@ const DE: Record<string, string> = {
   // are still named inside the lessons, where the name is the fact.
   "United Kingdom – Land and Culture": "Großbritannien – Land und Kultur",
   "Germany – Land and Culture": "Deutschland – Land und Kultur",
+  "France – Land and Culture": "Frankreich – Land und Kultur",
+  "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Werte, Institutionen und Alltag — wie das Land funktioniert.",
   // The line under each course name in the switcher. It goes through ui()
   // like the name above it, so without this key a German interface put an
   // English sentence between two German ones. The German course needs no
@@ -2532,6 +2539,7 @@ const DE: Record<string, string> = {
   "History, government and traditions — how life in the UK works.":
     "Geschichte, Regierung und Traditionen – wie das Leben in Großbritannien funktioniert.",
   Germany: "Deutschland",
+  France: "Frankreich",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
   "By topic": "Nach Thema",
@@ -2716,8 +2724,6 @@ const DE: Record<string, string> = {
   "A week": "Eine Woche",
   "Try another filter, or clear the search.": "Probiere einen anderen Filter oder leere die Suche.",
   "Postpone for": "Aufschieben um",
-  "Remind me later": "Später erinnern",
-  "Remind me in": "Erinnere mich in",
   "Hide update notices": "Update-Hinweise ausblenden",
   "Updates still install. This panel and the ready banner stay out of the way.":
     "Updates werden weiterhin installiert. Nur diese Übersicht und das Hinweisband halten sich zurück.",
@@ -3048,11 +3054,91 @@ const DE: Record<string, string> = {
   "{language} clue": "Hinweis auf {language}",
   "Play {language} audio": "Audio auf {language} abspielen",
   "{language} choices": "Antworten auf {language}",
+  // ── moved here out of German/English ternaries in the components ──
+  "It's “{target}” — did you have it?": "Es heißt „{target}“ — hattest du es wirklich?",
+  "Nice — “{target}” is getting stronger.": "Gut — „{target}“ sitzt schon besser.",
+  "You’ve got it — “{target}” is secure now.": "Geschafft — „{target}“ sitzt jetzt.",
+  "The answer is “{target}”. I’ve put it at the front of your next lesson so we can practise it properly.": "Die Antwort ist „{target}“. Das üben wir in der nächsten Lektion richtig.",
+  "No problem — the answer is “{target}”.": "Kein Problem — die Antwort ist „{target}“.",
+  "Learning progress": "Lernfortschritt",
+  "Everything you have learned, your review schedule, streak and XP.": "Alles Gelernte, dein Wiederholungsplan, deine Serie und XP.",
+  "Lesson history": "Lektionsverlauf",
+  "The record of individual sittings behind the activity chart.": "Die einzelnen Lerneinheiten hinter dem Aktivitätsdiagramm.",
+  "Your own words and packs": "Deine eigenen Wörter und Packs",
+  "Anything you typed in yourself. Nothing here can be recovered.": "Alles, was du selbst eingetragen hast. Nichts davon lässt sich wiederherstellen.",
+  "Game high scores": "Spiel-Highscores",
+  "Best scores from the practice games. Safe to clear.": "Bestwerte aus den Übungsspielen. Kann bedenkenlos gelöscht werden.",
+  "Settings and appearance": "Einstellungen und Aussehen",
+  "Theme, accent colour, voice and learning preferences.": "Design, Akzentfarbe, Stimme und Lerneinstellungen.",
+  "Everything else": "Sonstiges",
+  "Odds and ends Micheon keeps that do not fit the groups above.": "Kleinigkeiten, die in keine der Gruppen oben passen.",
+  "Deleted {count} entry.": "{count} Eintrag gelöscht.",
+  "Deleted {count} entries.": "{count} Einträge gelöscht.",
+  "Cache cleared.": "Cache geleert.",
+  "Could not clear the cache.": "Cache konnte nicht geleert werden.",
+  "About languages: the German course is built into the program rather than installed separately, so there is nothing to uninstall that would save you space. The other languages are not here yet, and take up nothing.": "Zu den Sprachen: Der Deutschkurs ist fest in das Programm eingebaut, nicht separat installiert — es gibt also nichts zu deinstallieren, was Platz sparen würde. Die anderen Sprachen sind noch nicht da; sie belegen keinen Platz.",
+  "Everything above, for this account on this device. Your account stays, and other profiles on this computer are untouched. This cannot be undone.": "Alles oben, für dieses Konto auf diesem Gerät. Dein Konto bleibt bestehen, andere Profile auf diesem Rechner bleiben unberührt. Das lässt sich nicht rückgängig machen.",
+  "{count} more words & phrases until you're {fluent} — able to keep up with real natives. Next stage: “{stage}”.": "Noch {count} Wörter und Sätze, bis du {fluent} mit Muttersprachlern mithalten kannst. Nächste Stufe: „{stage}“.",
+  "fully fluent": "wirklich fließend",
+  "{count} to {milestone}: {detail}": "{count} bis {milestone}: {detail}",
+  "{count} items": "{count} Einträge",
+  "{count} active day": "{count} aktiver Tag",
+  "{count} active days": "{count} aktive Tage",
+  "Come back in {days} day (level {level} of 5)": "Auf {days} Tag Wiederholungsabstand setzen (Stufe {level}/5)",
+  "Come back in {days} days (level {level} of 5)": "Auf {days} Tage Wiederholungsabstand setzen (Stufe {level}/5)",
+  "{days} days past its review, so you are assumed to still recall {kept}% of it — that is how much it counts towards your total right now. It halves every {halfLife} days towards {floor}% and never drops below that. Getting it right once puts it back to 100%.": "Seit {days} Tagen überfällig, also wird angenommen, dass du dich noch an {kept}% davon erinnerst — so viel zählt es gerade zu deiner Gesamtzahl. Es halbiert sich alle {halfLife} Tage in Richtung {floor}% und fällt nie darunter. Einmal richtig abrufen setzt es auf 100% zurück.",
+  "{days} days overdue · {kept}% remembered": "{days} Tage überfällig · {kept}% behalten",
+  "{count} item is fading right now.": "{count} Eintrag verblasst gerade.",
+  "{count} items are fading right now.": "{count} Einträge verblassen gerade.",
+  "This number is an estimate of what you'd remember right now — not a tally of everything you have ever seen.": "Diese Zahl schätzt, woran du dich JETZT erinnerst — nicht, was du irgendwann einmal gesehen hast.",
+  "Something you learned recently counts as a whole item. Something you have not seen for a long time counts as less, because you probably remember less of it. That is why the number can go down as well as up.": "Was du gerade gelernt hast, zählt voll. Was du lange nicht gesehen hast, zählt weniger, weil du davon wahrscheinlich weniger behalten hast. Deshalb kann die Zahl auch sinken.",
+  "For example: you had “Guten Morgen” down two months ago and have not seen it since, so it counts as 0.8 rather than 1. Answer it correctly once and it counts fully again, immediately.": "Beispiel: Du konntest „Guten Morgen“ vor zwei Monaten sicher. Seitdem nicht mehr gesehen — es zählt jetzt als 0,8 statt 1. Einmal richtig beantwortet, zählt es sofort wieder voll.",
+  "The more times you have recalled something correctly, the more slowly it slips. And nothing ever falls to zero — coming back to a word you once knew is far quicker than meeting it new.": "Je öfter du etwas sicher abgerufen hast, desto langsamer verblasst es. Und nichts fällt je auf null: etwas wieder aufzufrischen geht viel schneller, als es neu zu lernen.",
+  "“Due” means today is its review day. “Fading” means that day has been and gone. Same items, just later — which is why a row shows one or the other, never both.": "„Fällig“ heißt: heute ist der Wiederholungstag. „Verblasst“ heißt: der Tag ist vorbei. Dieselben Einträge, nur später — deshalb steht pro Zeile immer nur eins von beidem.",
+  "Never fades: starred items, words you marked mastered by hand, and anything you learned outside the app — there is no review schedule to measure those against. This is the same number your dashboard, profile and games use.": "Nie verblassen: mit Stern markierte Einträge, von Hand als gemeistert gesetzte Wörter und alles, was du außerhalb der App gelernt hast — dafür gibt es keinen Wiederholungsplan. Dieselbe Zahl steht auf der Startseite, im Profil und bei den Spielen.",
+  "Select all {count} shown": "Alle {count} angezeigten Einträge auswählen",
+  "Both the German and the English are needed.": "Deutsch und Englisch werden beide gebraucht.",
+  "Added — it will come up in Continue learning.": "Hinzugefügt — es kommt beim Weiterlernen dran.",
+  "You already have that one.": "Das hast du schon.",
+  "Nothing could be read from that.": "Daraus ließ sich nichts lesen.",
+  "Added {count}.": "{count} hinzugefügt.",
+  "{count} already there.": "{count} schon vorhanden.",
+  "{count} line(s) could not be read.": "{count} Zeile(n) unlesbar.",
+  "Delete “{name}” and its {count} entries?": "„{name}“ mit {count} Einträgen löschen?",
+  "This only decides when the pack gets served, so an honest guess is enough.": "Das steuert nur, wann der Pack drankommt — eine ehrliche Schätzung reicht.",
+  "…and {count} more": "… und {count} weitere",
+  "Select lessons to pause several at once": "Lektionen auswählen, um mehrere auf einmal zu pausieren",
+  "OR": "ODER",
+  "Answer in {language}...": "Auf {language} antworten...",
+  "Keep learning while Micheon prepares the new version.": "Lerne weiter, während Micheon die neue Version vorbereitet.",
+  "Restart Micheon to install update{version}. You can also keep learning.": "Starte Micheon neu, um das Update{version} zu installieren. Du kannst auch weiterlernen.",
+  "What does this mean in {language}?": "Was bedeutet das auf {language}?",
+  "{done} of {total} steps done · takes 30 seconds": "{done} von {total} Schritten geschafft · dauert 30 Sekunden",
+  // ── moved here out of German/English ternaries in the components ──
+  "Auto uses your browser/keyboard language. Current: {variant}.": "Automatisch nach deiner Browser-/Tastatursprache. Aktuell: {variant}.",
+  // ── moved here out of German/English ternaries in the components ──
+  "{progress} / {target} {unit}": "{progress} / {target} {unit}",
+  "{count} unlocked": "{count} freigeschaltet",
 };
+
+/**
+ * The table for the language in force, or null when the app is in English.
+ *
+ * English is the source language, so it has no table: a key IS its English
+ * text. Every other language is one lookup away, which is why adding French
+ * was a table and a line here rather than a second code path.
+ */
+function table(): Record<string, string> | null {
+  const language = resolveInterfaceLanguage();
+  if (language === "de") return DE;
+  if (language === "fr") return FR;
+  return null;
+}
 
 /** Translate a UI string into the learner's interface language. */
 export function ui(s: string): string {
-  return uiIsGerman() ? DE[s] ?? s : s;
+  const chosen = table();
+  return chosen ? chosen[s] ?? s : s;
 }
 
 /**
@@ -3067,9 +3153,49 @@ export function uiFmt(pattern: string, values: Record<string, string | number>):
   return ui(pattern).replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 }
 
-/** Translate UI copy, replacing unmapped English metadata with a German fallback. */
+export type UiPart = { kind: "text"; value: string } | { kind: "slot"; name: string };
+
+/**
+ * A translated sentence, broken at its slots so markup can go inside it.
+ *
+ * Some sentences have a bold number or a coloured stage name in the middle
+ * of them. Those were written as a German block of JSX beside an English
+ * one, which reads fine until a third language arrives and there is nowhere
+ * to put it. Splitting the translated sentence instead keeps ONE key for the
+ * whole thing — so the translation decides where the bold part goes, which
+ * is the entire reason uiFmt exists — and hands the pieces back for the
+ * caller to wrap. <UiText> is the component that does the wrapping.
+ */
+export function uiParts(pattern: string): UiPart[] {
+  const translated = ui(pattern);
+  const parts: UiPart[] = [];
+  let cursor = 0;
+  for (const match of translated.matchAll(/\{(\w+)\}/g)) {
+    const at = match.index ?? 0;
+    if (at > cursor) parts.push({ kind: "text", value: translated.slice(cursor, at) });
+    parts.push({ kind: "slot", name: match[1] });
+    cursor = at + match[0].length;
+  }
+  if (cursor < translated.length) parts.push({ kind: "text", value: translated.slice(cursor) });
+  return parts;
+}
+
+/**
+ * Translate UI copy, replacing unmapped English metadata with a German fallback.
+ *
+ * The fallback is content metadata rather than interface copy — a theme name
+ * out of the catalogue — so there is no English key to translate and the
+ * German is written at the call site. French cannot be written there without
+ * a second argument at fourteen call sites, so the GERMAN fallback doubles as
+ * a key: the French table holds those few German strings and answers for
+ * them. If it does not, the German shows, which is what happened before
+ * French existed anyway.
+ */
 export function uiOr(s: string, germanFallback: string): string {
-  return uiIsGerman() ? DE[s] ?? germanFallback : s;
+  const language = resolveInterfaceLanguage();
+  if (language === "de") return DE[s] ?? germanFallback;
+  if (language === "fr") return FR[s] ?? FR[germanFallback] ?? germanFallback;
+  return s;
 }
 
 /**
@@ -3084,9 +3210,40 @@ export function uiIsGerman(): boolean {
   return resolveInterfaceLanguage() === "de";
 }
 
+/**
+ * True when the app chrome is in English, its source language.
+ *
+ * A handful of places show catalogue metadata — a usage note, a synonym tier,
+ * a pack note — that only exists in English. They were hidden behind
+ * `!uiIsGerman()`, which meant "not German" and therefore "English" while
+ * there were two languages. With French added, "not German" would have let
+ * that English metadata through into a French app.
+ */
+export function uiIsEnglish(): boolean {
+  return resolveInterfaceLanguage() === "en";
+}
+
 /** Locale used for UI-only dates and number formatting. */
 export function uiLocale(): string {
-  return uiIsGerman() ? "de-DE" : "en-GB";
+  const language = resolveInterfaceLanguage();
+  if (language === "de") return "de-DE";
+  if (language === "fr") return "fr-FR";
+  return "en-GB";
+}
+
+/**
+ * The voice tag for anything the app SAYS in its own language.
+ *
+ * The pet talks, and it talks in the language the app is written in rather
+ * than the one being studied — it is app furniture, not a lesson. This was
+ * written as `uiIsGerman() ? "de-DE" : "en-US"` at every one of those sites,
+ * which made French silently English the moment French existed.
+ */
+export function uiSpeechLang(): "de-DE" | "fr-FR" | "en-US" {
+  const language = resolveInterfaceLanguage();
+  if (language === "de") return "de-DE";
+  if (language === "fr") return "fr-FR";
+  return "en-US";
 }
 
 /**

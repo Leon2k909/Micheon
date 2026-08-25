@@ -6,7 +6,7 @@ import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore, statusForId } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
 import { cefrOrder, cefrTier, type CefrTier } from "@/lib/cefr";
-import { ui, uiFmt, uiIsGerman, uiOr } from "@/lib/i18n";
+import { ui, uiFmt, uiOr } from "@/lib/i18n";
 import { courseSides } from "@/lib/courseLanguages";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMutedPacks, setPackMuted, setPacksMuted } from "@/lib/mutedPacks";
@@ -340,16 +340,12 @@ export function LearnView({
                   onClick={toggleSelectAllVisible}
                   label={allVisibleSelected
                     ? ui("Deselect all")
-                    : uiIsGerman()
-                      ? `Alle ${visible.length} angezeigten Lektionen auswählen`
-                      : `Select all ${visible.length} shown`}
+                    : uiFmt("Select all {count} shown", { count: visible.length })}
                 />
                 <p className="text-xs font-bold text-[var(--text-3)]">
                   {selected.size > 0
                     ? `${selected.size} ${ui("selected")}`
-                    : uiIsGerman()
-                      ? "Lektionen auswählen, um mehrere auf einmal zu pausieren"
-                      : "Select lessons to pause several at once"}
+                    : ui("Select lessons to pause several at once")}
                 </p>
                 <div className="ml-auto flex flex-wrap items-center gap-1.5">
                   {selected.size > 0 && (

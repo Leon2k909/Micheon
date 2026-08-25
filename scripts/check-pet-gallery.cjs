@@ -112,18 +112,17 @@ check(
     && serverRoutes.includes('app.delete("/api/codex-pets/:source/:id"')
 );
 check(
-  "profile settings distribute account controls before preferences",
-  profile.includes("grid items-start gap-6")
-    && profile.indexOf('ui("Appearance")') < profile.indexOf('ui("Preferences")')
-    && profile.indexOf('ui("External word count")') < profile.indexOf('ui("Preferences")')
-    && profile.indexOf("<LearningModePicker") < profile.indexOf('ui("Preferences")')
+  "profile settings are one column of categories, account details first",
+  profile.indexOf('ui("Account details")') < profile.indexOf('ui("Appearance")')
+    && profile.indexOf('ui("Appearance")') < profile.indexOf('ui("Language & voice")')
+    && !profile.includes("lg:grid-cols-[1fr_1fr]")
 );
 check(
-  "the pet manager spans both profile columns below the balanced settings row",
-  /<DeferredProfileSection[\s\S]*?className="lg:col-span-2"[\s\S]*?<CodexPetPicker className="mt-0 border-t-0 pt-0" \/>/.test(profile)
+  "the pet manager is deferred until it is scrolled to, below the settings above it",
+  /<DeferredProfileSection[\s\S]*?<CodexPetPicker className="mt-0 border-t-0 pt-0" \/>/.test(profile)
     && profile.includes('<CodexPetPicker className="mt-0 border-t-0 pt-0" />')
     && profile.indexOf('<CodexPetPicker className="mt-0 border-t-0 pt-0" />')
-      > profile.indexOf('ui("Preferences")')
+      > profile.indexOf('ui("Language & voice")')
 );
 
 if (failures) {

@@ -31,6 +31,7 @@ const built = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildBundledParts, filterPartsForLearningDirection } from "./src/lib/contentBank.ts";',
       'export { buildScenarios, learnerLines, replyOptions, learnerTurnIndexes, MIN_SCENARIO_TURNS } from "./src/lib/conversationScenarios.ts";',
+      'export { frenchFor } from "./src/lib/frenchCourse.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "conversation-entry.ts",
@@ -56,7 +57,7 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
   filterPartsForLearningDirection, buildScenarios, learnerLines, replyOptions,
-  learnerTurnIndexes, MIN_SCENARIO_TURNS } = compiled.exports;
+  learnerTurnIndexes, MIN_SCENARIO_TURNS, frenchFor } = compiled.exports;
 
 const blueprint = {};
 for (const [key, bp] of Object.entries(allPartBlueprints)) {
@@ -147,9 +148,75 @@ assert.ok(!shell.includes("CONVERSATION_NAVIGATION_ITEM") && !shell.includes("co
   "Conversation has a nav entry as well as its card in Learn — one room, two doors, and the "
   + "nav copy is dead code the moment the card moves");
 
+// ── scenes are being lengthened, and stay lengthened ────────────────────────
+// Almost every authored dialogue was four lines, which is two turns for the
+// learner — a question and an answer, twice. They are being extended to eight
+// a batch at a time. This floor is a ratchet: it rises with each batch, and
+// its job is to notice a later edit quietly trimming them back.
+const LONG_SCENES = 28;
+const long = scenarios.filter((s) => s.turns.length >= 8);
+assert.ok(long.length >= LONG_SCENES,
+  `only ${long.length} scenes run to eight turns or more, and ${LONG_SCENES} did — extended `
+  + "dialogues have been shortened again");
+for (const scenario of long) {
+  assert.ok(learnerTurnIndexes(scenario).length >= 4,
+    `"${scenario.title}" runs to ${scenario.turns.length} turns but the learner speaks only `
+    + `${learnerTurnIndexes(scenario).length} of them, so the extra length is somebody else talking`);
+}
+
+// ── and lengthening one has not dropped it from the French course ───────────
+// buildScenarios refuses a dialogue outright when any single line has no
+// French, because a conversation that changes language halfway through is not
+// one. So adding a German line to a scene the French course DOES show removes
+// the whole scene, silently, from a course nothing else here exercises. The
+// rule that keeps it honest: extend a fully-French dialogue, translate what
+// you added.
+const FULLY_FRENCH = 158;
+let fullyFrench = 0;
+for (const part of Object.values(parts)) {
+  for (const dialogue of (part?.dialogues ?? [])) {
+    const lines = dialogue?.lines ?? [];
+    if (!lines.length) continue;
+    if (lines.every((line) => line?.de && frenchFor(line.de, line.fr ?? null))) fullyFrench += 1;
+  }
+}
+assert.ok(fullyFrench >= FULLY_FRENCH,
+  `${fullyFrench} dialogues survive into the French course and ${FULLY_FRENCH} did. A line was `
+  + "added to one of them without its French, which drops the entire scene rather than that line");
+
+// ── the meaning line can be put away, and only that line ────────────────────
+// Each turn prints the language being learned and, under it, the same line in
+// a language the learner already reads. That second line is the point early on
+// and a spoiler later: it answers the question before the German has been
+// read. So it can be hidden — and the failure worth guarding is hiding the
+// WRONG one, which leaves a turn with nothing on it at all.
+const view = fs.readFileSync(path.join(root, "src/components/conversation/ConversationView.tsx"), "utf8");
+assert.ok(view.includes('data-testid="conversation-translation-toggle"'),
+  "there is no way to put the translation away");
+assert.ok(view.includes("{!translationHidden && <p className=\"conversation-line__en\">{turn.en}</p>}"),
+  "the toggle does not actually hide the meaning line");
+assert.ok(/<p className="conversation-line__de" lang=\{sides\.target\.htmlLang\}>\{turn\.de\}<\/p>/.test(view),
+  "the line being practised is printed conditionally — hide that and the turn says nothing at all");
+
+// A preference, not a mood: written through the stored setting rather than to
+// component state, or it is forgotten the moment the scene closes.
+assert.ok(view.includes("setConversationTranslationHidden(!translationHidden)")
+  && view.includes("useState(getConversationTranslationHidden)"),
+  "the setting is component state, so it resets every time a scene is opened");
+assert.ok(view.includes("CONVERSATION_TRANSLATION_EVENT"),
+  "a change made elsewhere leaves this scene showing the opposite of the setting");
+const prefs = fs.readFileSync(path.join(root, "src/lib/conversationTranslation.ts"), "utf8");
+assert.ok(prefs.includes("syncLocalStorageItem"),
+  "the setting is written to this device only, unlike the app's other preferences");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+assert.ok(i18n.includes('"Hide the translation":') && i18n.includes('"Show the translation":'),
+  "the control has no German");
+
 console.log(
   `check-conversation-scenarios: ${scenarios.length} scenarios, ${questions} questions, every one `
-  + "answerable — four distinct replies with exactly one that fits"
+  + `answerable — four distinct replies with exactly one that fits. ${long.length} scenes run to `
+  + `eight turns with the learner speaking four, ${fullyFrench} survive into the French course, `
+  + "and the meaning line can be put away without taking the practised line with it"
 );
 // esbuild's service keeps sockets open after buildSync returns; say the check
 // is finished rather than letting the event loop decide.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * One gap under every settings category header, and one title.
+ * One header shape for every settings category, and one title each.
  *
  * The spacing under settings category headers was inconsistent, and by a
  * lot. These categories were written before the sidebar layout existed, back
@@ -31,24 +31,23 @@ const gamification = read("src/Gamification.tsx");
 const picker = read("src/components/FlashcardModePicker.tsx");
 const category = read("src/components/SettingsCategory.tsx");
 
-// ── the container owns the gap ──────────────────────────────────────────────
-assert.ok(
-  /section\.settings-category > div > :first-child \{[^}]*margin-top:\s*0/.test(css),
-  "the category body's first child must not add its own top margin — that is what made the gap "
-  + "depend on which category you opened"
-);
-// Scoped to `section` on purpose: search results still render the older card,
-// where the body does need a gap from the button above it.
-assert.ok(
-  !/^\.settings-category > div > :first-child/m.test(css),
-  "the rule must stay scoped to section.settings-category, or it also flattens the search-result cards"
-);
+// ── the header owns its own geometry ────────────────────────────────────────
+// The gap used to be set on a panel header that only the sidebar drew, and the
+// bodies underneath each carried their own margin on top of it: mt-3 in
+// Appearance, mt-5 in Learning options, nothing at all in the ones whose body
+// is a component. Every row draws the same header now, and the gap under it
+// belongs to that header rather than to whatever happens to be inside.
 const head = /\.settings-panel-head \{([^}]*)\}/.exec(css);
-assert.ok(head, "the settings panel header rule is missing");
+assert.ok(head, "the settings category header rule is missing");
 assert.ok(
-  /margin-bottom:\s*14px/.test(head[1]),
-  "the header should carry the whole gap in one place"
+  /align-items:\s*flex-start/.test(head[1]),
+  "the header must anchor to the top, or the icon drifts with the height of the row it is in"
 );
+assert.ok(
+  !/\.settings-layout:not\(\.is-searching\)/.test(css),
+  "a rule still switches the layout between a searching and a non-searching mode, which no longer exist"
+);
+
 
 // ── a category says its name once ───────────────────────────────────────────
 // SettingsCategory draws the title and description itself, so nothing inside
@@ -93,6 +92,6 @@ assert.ok(
 );
 
 console.log(
-  "check-settings-spacing: one 14px gap under every category header, "
+  "check-settings-spacing: every category header anchors to the top and owns its own gap, "
   + "and no category prints its own title twice"
 );

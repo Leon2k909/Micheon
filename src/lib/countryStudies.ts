@@ -3,7 +3,7 @@ import type { Course } from "@/lib/courses";
 /**
  * What a country in Country studies is made of.
  *
- * Germany sits beside the UK, built to the same pattern: same
+ * Germany and France sit beside the UK, built to the same pattern: same
  * navigation, same category types, same presentation, same learning logic,
  * same quiz structure, same progress logic, same user flow — only the content
  * differs. So the views and the progress engine had to stop naming one country
@@ -20,7 +20,7 @@ import type { Course } from "@/lib/courses";
  * entfernt werden."
  */
 
-export type CountryId = "uk" | "de";
+export type CountryId = "uk" | "de" | "fr";
 
 export type CountryLevel = "easy" | "medium" | "hard";
 
@@ -80,6 +80,16 @@ export type CountryPack = {
   flagId: string;
   /** Shown in the sidebar and as the heading of every section. */
   label: string;
+  /**
+   * The country on its own, for places too narrow for the full label.
+   *
+   * The home card used to work this out with a conditional — Germany, or
+   * else the United Kingdom — which was right while there were two
+   * countries and put a French flag beside "United Kingdom" as soon as
+   * there were three. A pack knows what it is; nothing should be deducing
+   * it.
+   */
+  country: string;
   /** The course this country teaches from. */
   course: Course;
   /** The practice pool, separate from the quizzes inside the lessons. */
@@ -103,7 +113,7 @@ export type CountryPack = {
     passMark: number;
   };
   /** The language the material is written in — the language of the real test. */
-  contentLang: "en" | "de";
+  contentLang: "en" | "de" | "fr";
 };
 
 export const COUNTRY_LEVELS: CountryLevel[] = ["easy", "medium", "hard"];

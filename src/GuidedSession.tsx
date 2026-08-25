@@ -81,7 +81,7 @@ import { pronounNote } from "@/lib/pronounNotes";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { toSpokenGerman } from "@/lib/spokenGerman";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
-import { ui, uiIsGerman, uiOr, uiFmt } from "@/lib/i18n";
+import { ui, uiOr, uiFmt } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -3133,7 +3133,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
                   <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
                   <p className="text-sm">
-                    {uiIsGerman() ? `Was bedeutet das auf ${ui(meaningLabel)}?` : `What does this mean in ${meaningLabel}?`}
+                    {uiFmt("What does this mean in {language}?", { language: ui(meaningLabel) })}
                   </p>
                 </motion.div>
               )}
@@ -5242,9 +5242,7 @@ function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
           <div className="text-2xl"></div>
           <div className="text-xl font-semibold text-zinc-950">{ui("Quick reflection")}</div>
           <div className="text-xs text-zinc-500">
-            {uiIsGerman()
-              ? `${stepsCompleted} von ${totalSteps} Schritten geschafft · dauert 30 Sekunden`
-              : `${stepsCompleted} of ${totalSteps} steps done · takes 30 seconds`}
+            {uiFmt("{done} of {total} steps done · takes 30 seconds", { done: stepsCompleted, total: totalSteps })}
           </div>
         </div>
 

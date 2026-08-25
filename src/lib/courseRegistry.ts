@@ -2,6 +2,7 @@ import type { Course } from "@/lib/courses";
 import { csharpCourse } from "@/lib/csharpCourse";
 import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
+import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -76,6 +77,7 @@ export const COURSES: Course[] = [
   csharpCourse,
   lifeInTheUkCourse,
   lebenInDeutschlandCourse,
+  vivreEnFranceCourse,
 ];
 
 /**

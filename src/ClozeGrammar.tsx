@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, ChevronRight, Lightbulb, BookOpen, Search } from "lucide-react";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { learningEnglish } from "@/lib/direction";
+import { ui } from "@/lib/i18n";
 
 type GrammarExample = { de: string; en: string };
 type GrammarTip = {
@@ -1616,7 +1617,11 @@ function normalize(t: unknown) {
 
 // ── ClozeTab component ────────────────────────────────────────────────────────
 export function ClozeTab() {
-  const learnsEnglish = uiIsGerman();
+  // Which grammar to drill is a question about the COURSE, not about the
+  // language of the buttons. It read the interface language, which was the
+  // same answer back when one setting decided both — so an English speaker
+  // studying English got German exercises, and a French app would have too.
+  const learnsEnglish = learningEnglish();
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -1763,7 +1768,8 @@ const ORDERED_GERMAN_GRAMMAR_TIPS = orderGrammarTopics(GRAMMAR_TIPS);
 const ORDERED_ENGLISH_GRAMMAR_TIPS = orderGrammarTopics(ENGLISH_GRAMMAR_TIPS);
 
 export function GrammarTab() {
-  const learnsEnglish = uiIsGerman();
+  // Same as ClozeTab: the course decides which grammar, not the chrome.
+  const learnsEnglish = learningEnglish();
   const tips = learnsEnglish ? ORDERED_ENGLISH_GRAMMAR_TIPS : ORDERED_GERMAN_GRAMMAR_TIPS;
   const [selected, setSelected] = useState(tips[0].id);
   const [query, setQuery] = useState("");

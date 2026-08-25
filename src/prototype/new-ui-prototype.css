@@ -3959,9 +3959,9 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   font-weight: 700;
 }
 
+/* The whole content column, the same width as the header above it. It used to
+   be a 920px card floating in the middle of a much wider page. */
 .np-progress-panel--standalone {
-  max-width: 920px;
-  margin: 0 auto;
   padding: 30px;
 }
 
@@ -4415,11 +4415,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   color: var(--text-1);
 }
 
-/* The folds under the progress panel share its column, so the screen reads as
-   one page rather than a narrow card sitting on a full-width one. */
+/* Only the gap. The folds take the same full column as the panel above them,
+   so the screen reads as one page rather than as stacked cards. */
 .np-progress-extras {
-  max-width: 920px;
-  margin: 19px auto 0;
+  margin-top: 19px;
 }
 
 .np-feature-host .card {
@@ -6992,6 +6991,13 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   font-weight: 950;
   letter-spacing: -0.025em;
   line-height: 1.08;
+}
+
+.np-fluency-course {
+  margin-top: 5px;
+  color: var(--np-muted);
+  font-size: var(--np-type-micro);
+  font-weight: 800;
 }
 
 .np-fluency-heading p {
@@ -12250,6 +12256,25 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   background: transparent;
   cursor: pointer;
   text-align: left;
+}
+
+/* The country rows carry a flag and a name and no line of explanation, so
+   they are two columns rather than two stacked lines. */
+.np-home-content-menu--country > button {
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 9px;
+}
+
+.np-home-country-flag {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+}
+
+.np-home-country-flag > * {
+  width: 100%;
+  height: 100%;
 }
 
 .np-home-content-menu > button:hover {

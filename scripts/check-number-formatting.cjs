@@ -54,8 +54,16 @@ const i18n = fs.readFileSync(path.join(source, "lib/i18n.ts"), "utf8");
 assert.ok(/export function uiNumber\b/.test(i18n), "uiNumber has gone missing");
 assert.ok(/uiNumber[\s\S]{0,400}toLocaleString\(uiLocale\(\)/.test(i18n),
   "uiNumber must format with uiLocale(), or it is the same bug with a new name");
-assert.ok(/uiIsGerman\(\) \? "de-DE" : "en-GB"/.test(i18n),
+// Three languages now, so this is a lookup rather than a ternary. What has to
+// hold is unchanged: uiLocale asks the interface language, and answers with a
+// real locale for every language it can be given.
+const uiLocale = i18n.slice(i18n.indexOf("export function uiLocale"), i18n.indexOf("export function uiLocale") + 400);
+assert.ok(/resolveInterfaceLanguage\(\)/.test(uiLocale),
   "uiLocale must follow the interface language");
+for (const tag of ["de-DE", "fr-FR", "en-GB"]) {
+  assert.ok(uiLocale.includes(`"${tag}"`),
+    `uiLocale no longer answers ${tag}, so that language formats its numbers for another one`);
+}
 
 // The reported case, end to end: an English interface writes thousands with a
 // comma, a German one with a full stop.

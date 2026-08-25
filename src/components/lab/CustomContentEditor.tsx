@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, Upload, X as XIcon, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ui, uiIsGerman } from "@/lib/i18n";
+import { ui, uiFmt } from "@/lib/i18n";
 import {
   addCustomEntries,
   createCustomPack,
@@ -24,36 +24,33 @@ import {
  * actually asking, in terms of what you can DO at that level. This only
  * decides when the pack gets served, so an honest guess is enough.
  */
-const LEVELS: { value: string; label: string; blurb: string; blurbDe: string }[] = [
+// blurb is English and a dictionary key both, so a third language is a
+// column in the table rather than a field here.
+const LEVELS: { value: string; label: string; blurb: string }[] = [
   {
     value: "A1-A2",
     label: "A1–A2 · Beginner",
     blurb: "Everyday basics: greetings, ordering, simple questions about yourself.",
-    blurbDe: "Alltagsgrundlagen: Begrüßungen, Bestellen, einfache Fragen zu dir selbst.",
   },
   {
     value: "B1",
     label: "B1 · Getting by",
     blurb: "Handling ordinary situations alone — appointments, plans, opinions in short.",
-    blurbDe: "Alltagssituationen allein bewältigen — Termine, Pläne, kurz gesagte Meinungen.",
   },
   {
     value: "B2",
     label: "B2 · Conversational",
     blurb: "Keeping up with natives on familiar topics, and arguing a point.",
-    blurbDe: "Mit Muttersprachlern über vertraute Themen mithalten und einen Standpunkt vertreten.",
   },
   {
     value: "C1",
     label: "C1 · Advanced",
     blurb: "Fluent and precise, including work, study and abstract subjects.",
-    blurbDe: "Fließend und präzise, auch zu Beruf, Studium und abstrakten Themen.",
   },
   {
     value: "C2",
     label: "C2 · Near-native",
     blurb: "Anything a native handles: idiom, nuance, humour, fast speech.",
-    blurbDe: "Alles, was Muttersprachler können: Redewendungen, Nuancen, Humor, schnelles Sprechen.",
   },
 ];
 
@@ -99,11 +96,11 @@ export function CustomContentEditor() {
   const preview = useMemo(() => (showBulk ? parseBulkEntries(bulk) : null), [bulk, showBulk]);
 
   const selectedLevel = LEVELS.find((l) => l.value === newPackLevel) ?? LEVELS[0];
-  const say = (english: string, german: string) => setStatus(uiIsGerman() ? german : english);
+  const say = (english: string) => setStatus(ui(english));
 
   const addOne = () => {
     if (!de.trim() || !en.trim()) {
-      say("Both the German and the English are needed.", "Deutsch und Englisch werden beide gebraucht.");
+      say("Both the German and the English are needed.");
       return;
     }
     const target = activePack ?? createCustomPack("My words");
@@ -112,9 +109,9 @@ export function CustomContentEditor() {
       setDe("");
       setEn("");
       setNote("");
-      say("Added — it will come up in Continue learning.", "Hinzugefügt — es kommt beim Weiterlernen dran.");
+      say("Added — it will come up in Continue learning.");
     } else if (skipped) {
-      say("You already have that one.", "Das hast du schon.");
+      say("You already have that one.");
     }
     setPackId(target.id);
     refresh();
@@ -123,16 +120,17 @@ export function CustomContentEditor() {
   const importBulk = () => {
     const parsed = parseBulkEntries(bulk);
     if (!parsed.entries.length) {
-      say("Nothing could be read from that.", "Daraus ließ sich nichts lesen.");
+      say("Nothing could be read from that.");
       return;
     }
     const target = activePack ?? createCustomPack("My words");
     const { added, skipped } = addCustomEntries(parsed.entries, target.id);
     const bad = parsed.rejected.length;
-    say(
-      `Added ${added}.${skipped ? ` ${skipped} already there.` : ""}${bad ? ` ${bad} line(s) could not be read.` : ""}`,
-      `${added} hinzugefügt.${skipped ? ` ${skipped} schon vorhanden.` : ""}${bad ? ` ${bad} Zeile(n) unlesbar.` : ""}`
-    );
+    setStatus([
+      uiFmt("Added {count}.", { count: added }),
+      skipped ? uiFmt("{count} already there.", { count: skipped }) : "",
+      bad ? uiFmt("{count} line(s) could not be read.", { count: bad }) : "",
+    ].filter(Boolean).join(" "));
     if (added) setBulk("");
     setPackId(target.id);
     refresh();
@@ -214,9 +212,10 @@ export function CustomContentEditor() {
                 // Deleting a whole pack throws away work, so it asks first —
                 // unlike removing a single entry, which is one click to re-add.
                 const ok = window.confirm(
-                  uiIsGerman()
-                    ? `„${activePack.name}“ mit ${activePack.entries.length} Einträgen löschen?`
-                    : `Delete "${activePack.name}" and its ${activePack.entries.length} entries?`
+                  uiFmt("Delete “{name}” and its {count} entries?", {
+                    name: activePack.name,
+                    count: activePack.entries.length,
+                  })
                 );
                 if (!ok) return;
                 deleteCustomPack(activePack.id);
@@ -282,12 +281,10 @@ export function CustomContentEditor() {
       <p className="mt-1.5 text-xs font-semibold leading-relaxed text-[var(--text-3)]">
         <strong className="font-black text-[var(--text-2)]">{ui(selectedLevel.label)}</strong>
         {" — "}
-        {uiIsGerman() ? selectedLevel.blurbDe : selectedLevel.blurb}
+        {ui(selectedLevel.blurb)}
         {" "}
         <span className="opacity-80">
-          {uiIsGerman()
-            ? "Das steuert nur, wann der Pack drankommt — eine ehrliche Schätzung reicht."
-            : "This only decides when the pack gets served, so an honest guess is enough."}
+          {ui("This only decides when the pack gets served, so an honest guess is enough.")}
         </span>
       </p>
 
@@ -371,7 +368,7 @@ export function CustomContentEditor() {
                 <li key={index} className="truncate">· {line.line}</li>
               ))}
               {preview.rejected.length > 8 && (
-                <li>{uiIsGerman() ? `… und ${preview.rejected.length - 8} weitere` : `…and ${preview.rejected.length - 8} more`}</li>
+                <li>{uiFmt("…and {count} more", { count: preview.rejected.length - 8 })}</li>
               )}
             </ul>
           )}

@@ -121,11 +121,11 @@ for (const term of KEEP_GERMAN) {
 // ── the picker can reach it ───────────────────────────────────────────────
 const lib = fs.readFileSync(path.join(root, "src/lib/courseTranslation.ts"), "utf8");
 assert.ok(
-  /id: "en"[^}]*from: "de"/.test(lib),
+  /id: "en"[^}]*from: \[[^\]]*"de"/.test(lib),
   "English must be registered as translating FROM German, or it is never offered beside this course"
 );
 assert.ok(
-  /en: LEBEN_IN_DEUTSCHLAND_EN/.test(lib),
+  /en: \{[^}]*LEBEN_IN_DEUTSCHLAND_EN/.test(lib),
   "the table is not registered in TRANSLATIONS, so nothing would ever look it up"
 );
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
