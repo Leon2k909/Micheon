@@ -4320,6 +4320,63 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-achievement-art--words_200 { background-position: 50% 100%; }
 .np-achievement-art--week { background-position: 100% 100%; }
 
+/* The way back out of a Practice tool. Sits above the tool rather than
+   inside it, because the three tools are three different components and one
+   of them is two components stacked — a bar each would be three bars to keep
+   in step. */
+.np-feature-back {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.np-feature-back__btn {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 11px;
+  border: 1px solid var(--np-line, rgba(255,255,255,0.12));
+  background: var(--np-surface-2, rgba(255,255,255,0.04));
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--np-text-2, inherit);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.np-feature-back__btn:hover {
+  /* Tokens only. A literal green here is a colour a custom accent cannot
+     reach, which is what check-accent-coverage exists to catch. */
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: var(--accent-dim);
+  color: var(--accent-strong);
+}
+
+.np-feature-back__btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  outline-offset: 2px;
+}
+
+.np-feature-back__btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.np-feature-back__where {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--np-text-3, inherit);
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .np-feature-back__btn { transition: none; }
+}
+
 .np-feature-host {
   --bg: transparent;
   --surface: #ffffff;
