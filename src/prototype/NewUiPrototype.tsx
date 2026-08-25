@@ -159,6 +159,8 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
+import { FriendsPanel } from "@/components/social/FriendsPanel";
+import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
 import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
 
@@ -599,21 +601,14 @@ type SocialLeaderboardEntry = {
   current?: boolean;
 };
 
-const SOCIAL_FRIENDS: SocialFriend[] = [
-  { id: "michelle", name: "Michelle", initials: "M", level: "Confident speaker", status: "Learning now", statusKind: "online", streak: 14, weeklyXp: 2_840, tone: "rose" },
-  { id: "jonas", name: "Jonas Weber", initials: "JW", level: "Everyday speaker", status: "Active today", statusKind: "today", streak: 9, weeklyXp: 1_970, tone: "blue" },
-  { id: "sophie", name: "Sophie Klein", initials: "SK", level: "Conversation builder", status: "Active today", statusKind: "today", streak: 6, weeklyXp: 1_420, tone: "gold" },
-  { id: "felix", name: "Felix Braun", initials: "FB", level: "Getting started", status: "Active yesterday", statusKind: "recent", streak: 3, weeklyXp: 870, tone: "violet" },
-];
-
-const SOCIAL_LEADERBOARD: SocialLeaderboardEntry[] = [
-  { id: "michelle", name: "Michelle", initials: "M", weeklyXp: 2_840, streak: 14, movement: "+1", tone: "rose" },
-  { id: "leon", name: "Leon", initials: "L", weeklyXp: 2_315, streak: 7, movement: "+2", tone: "green", current: true },
-  { id: "jonas", name: "Jonas Weber", initials: "JW", weeklyXp: 1_970, streak: 9, movement: "-1", tone: "blue" },
-  { id: "sophie", name: "Sophie Klein", initials: "SK", weeklyXp: 1_420, streak: 6, movement: "Same", tone: "gold" },
-  { id: "felix", name: "Felix Braun", initials: "FB", weeklyXp: 870, streak: 3, movement: "+1", tone: "violet" },
-  { id: "emilia", name: "Emilia Koch", initials: "EK", weeklyXp: 720, streak: 4, movement: "-2", tone: "rose" },
-];
+/*
+ * There is no table of people here any more.
+ *
+ * Four invented friends with invented streaks sat at this spot, and every
+ * button under them said the action was a preview. The list is what other
+ * copies of the app have actually sent now, so the only names on screen are
+ * of people who chose to connect — see components/social/FriendsPanel.
+ */
 
 function isShopBadgeId(value: unknown): value is ShopBadgeId {
   return typeof value === "string" && SHOP_ITEMS.some((item) => item.id === value);
@@ -3460,27 +3455,46 @@ function SocialAvatar({ initials, tone }: { initials: string; tone: SocialLeader
   return <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>{initials}</span>;
 }
 
-function SocialView({ userName }: { userName: string }) {
+function SocialView({ stats, userName }: { stats: PrototypeStats; userName: string }) {
   const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
-  const [friendQuery, setFriendQuery] = useState("");
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "Leon";
-  const friends = useMemo(() => {
-    const query = normalizeCatalogSearchText(friendQuery);
-    if (!query) return SOCIAL_FRIENDS;
-    return SOCIAL_FRIENDS.filter((friend) => normalizeCatalogSearchText([
-      friend.name,
-      // Both, so searching works whichever language is on screen — typing
-      // "heute" finds someone the list shows as "Heute aktiv".
-      friend.level,
-      friend.status,
-      ui(friend.level),
-      ui(friend.status),
-    ].join(" ")).includes(query));
-  }, [friendQuery]);
-  const leaderboard = useMemo(() => SOCIAL_LEADERBOARD.map((entry) => (
-    entry.current ? { ...entry, name: firstName } : entry
-  )), [firstName]);
+  const levelLabel = getLevelInfo(stats.totalXp).cur.label;
+  /**
+   * The real list, kept here as well because the leaderboard ranks the same
+   * people. It follows the store's event for the same reason the panel does:
+   * the peer connection writes to it and knows nothing about React.
+   */
+  const [realFriends, setRealFriends] = useState(() => loadFriends());
+  useEffect(() => {
+    const sync = () => setRealFriends(loadFriends());
+    window.addEventListener(FRIENDS_EVENT, sync);
+    return () => window.removeEventListener(FRIENDS_EVENT, sync);
+  }, []);
+  /**
+   * You and your friends, ranked on the figure everybody actually has.
+   *
+   * It was a weekly table, which the app cannot honestly fill: sessions are
+   * recorded without an XP figure, so there is no way to say what anyone
+   * earned in the last seven days — not for a friend, and not even for
+   * yourself. Total XP is a real number on both sides.
+   */
+  const leaderboard = useMemo(() => {
+    const rows = [
+      { id: "me", name: firstName, initials: firstName.slice(0, 1).toUpperCase(), weeklyXp: stats.totalXp, streak: stats.streak, movement: "", tone: "green" as const, current: true },
+      ...realFriends.map((friend) => ({
+        id: friend.code,
+        name: friend.profile?.name ?? friend.name,
+        initials: (friend.profile?.name ?? friend.name).slice(0, 1).toUpperCase(),
+        weeklyXp: friend.profile?.totalXp ?? 0,
+        streak: friend.profile?.streak ?? 0,
+        movement: "",
+        tone: "blue" as const,
+        current: false,
+      })),
+    ];
+    return rows.sort((a, b) => b.weeklyXp - a.weeklyXp);
+  }, [firstName, realFriends, stats.streak, stats.totalXp]);
   const podium = [leaderboard[1], leaderboard[0], leaderboard[2]];
 
   const showPreviewNotice = (action: string) => {
@@ -3512,7 +3526,7 @@ function SocialView({ userName }: { userName: string }) {
           type="button"
         >
           <UsersRound aria-hidden="true" />
-          <span><strong>{ui("Friends")}</strong><small>{uiFmt("{n} learning partners", { n: SOCIAL_FRIENDS.length })}</small></span>
+          <span><strong>{ui("Friends")}</strong><small>{uiFmt("{n} learning partners", { n: realFriends.length })}</small></span>
         </button>
         <button
           aria-controls="social-leaderboard-panel"
@@ -3523,7 +3537,7 @@ function SocialView({ userName }: { userName: string }) {
           type="button"
         >
           <Medal aria-hidden="true" />
-          <span><strong>{ui("Leaderboard")}</strong><small>{ui("Friends league this week")}</small></span>
+          <span><strong>{ui("Leaderboard")}</strong><small>{ui("You and your friends by total XP")}</small></span>
         </button>
       </div>
 
@@ -3545,54 +3559,12 @@ function SocialView({ userName }: { userName: string }) {
 
       {activeSection === "friends" ? (
         <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
-          <section className="np-social-panel np-friends-panel">
-            <div className="np-social-panel-heading">
-              <div><span>{ui("Your circle")}</span><h2>{ui("Friends")}</h2><p>{ui("See who is learning and keep each other moving.")}</p></div>
-              <button className="np-social-primary-button" onClick={() => showPreviewNotice(ui("Add friend"))} type="button"><UserPlus /> {ui("Add friend")}</button>
-            </div>
-            <label className="np-social-search">
-              <Search aria-hidden="true" />
-              <input
-                aria-label={ui("Search friends")}
-                onChange={(event) => setFriendQuery(event.target.value)}
-                placeholder={ui("Search your friends")}
-                type="search"
-                value={friendQuery}
-              />
-              {friendQuery && <button aria-label={ui("Clear friend search")} onClick={() => setFriendQuery("")} type="button"><X /></button>}
-            </label>
-
-            <div className="np-friend-list">
-              {friends.length > 0 ? friends.map((friend) => (
-                <article className="np-friend-row" key={friend.id}>
-                  <SocialAvatar initials={friend.initials} tone={friend.tone} />
-                  <div className="np-friend-identity">
-                    <strong>{friend.name}</strong>
-                    <span className={`np-social-presence np-social-presence--${friend.statusKind}`}><i />{ui(friend.status)}</span>
-                    <small>{ui(friend.level)}</small>
-                  </div>
-                  <div className="np-friend-stat">
-                    <RewardIcon kind="flame" />
-                    <span><strong>{friend.streak} days</strong><small>{ui("Current streak")}</small></span>
-                  </div>
-                  <div className="np-friend-stat">
-                    <RewardIcon kind="star" />
-                    <span><strong>{uiNumber(friend.weeklyXp)} XP</strong><small>{ui("This week")}</small></span>
-                  </div>
-                  <button className="np-social-secondary-button" onClick={() => showPreviewNotice(uiFmt("Message {name}", { name: friend.name }))} type="button">
-                    <MessageCircleMore aria-hidden="true" /><span>{ui("Message")}</span>
-                  </button>
-                </article>
-              )) : (
-                <div className="np-social-empty">
-                  <Search aria-hidden="true" />
-                  <strong>{ui("No friend matches that search")}</strong>
-                  <span>{ui("Try another name or clear the search.")}</span>
-                  <button onClick={() => setFriendQuery("")} type="button">{ui("Clear search")}</button>
-                </div>
-              )}
-            </div>
-          </section>
+          <FriendsPanel
+            levelLabel={levelLabel}
+            onNotice={(message) => setPreviewNotice(message)}
+            stats={stats}
+            userName={userName}
+          />
 
           <aside className="np-social-side-stack">
             <section className="np-social-side-card np-social-side-card--invite">
@@ -4378,7 +4350,7 @@ export default function NewUiPrototype({
       </div>
     </section>
   ) : activeView === "social" && socialPreviewUnlocked ? (
-    <SocialView userName={profile?.name ?? PREVIEW_PROFILE.name} />
+    <SocialView stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
       <FeatureBackBar label={ui("Tests")} onBack={() => navigate("practice")} />

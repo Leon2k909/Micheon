@@ -157,16 +157,17 @@ export function useTranslationLanguage(): TranslationLanguage {
 // ── reading a course in the interface language ──────────────────────────────
 
 /**
- * Which app languages have this course written out, and in what.
+ * Which languages a programming course has actually been written in.
  *
- * A table rather than a German-or-not question. As a ternary it would hand a
- * French reader the English course and call that correct; as a table it says
- * what is actually true — German has a translation, and the day French does,
- * the French app picks it up here without another branch. An app language
- * with no table falls through to "off", which is the English the course is
- * written in: the honest answer while nobody has written it.
+ * A lookup rather than a test for German. Asking "is the app German" answers
+ * the wrong question: it says yes to the one language that happens to have a
+ * translation today, and no to every other reader without distinguishing
+ * "there is nothing written for you" from "you get English because you are not
+ * German". Adding French here is then a line of data rather than a second
+ * branch, and check-french-interface is refusing the branch on exactly that
+ * reasoning.
  */
-const COURSE_READING_BY_APP: Partial<Record<"en" | "de" | "fr", TranslationLanguage>> = {
+const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<"en" | "de" | "fr", TranslationLanguage>> = {
   de: "de",
 };
 
@@ -185,7 +186,7 @@ const COURSE_READING_BY_APP: Partial<Record<"en" | "de" | "fr", TranslationLangu
  */
 export function courseReadingLanguage(course: Pick<Course, "kind">): TranslationLanguage {
   if (course.kind !== "programming") return "off";
-  return COURSE_READING_BY_APP[resolveInterfaceLanguage()] ?? "off";
+  return PROGRAMMING_COURSE_TRANSLATIONS[resolveInterfaceLanguage()] ?? "off";
 }
 
 /** Translate, or keep the original when nothing is written for it yet. */
