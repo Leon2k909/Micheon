@@ -10812,7 +10812,13 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
    It was a sidebar with a panel beside it. That showed one category at a
    time and put the name you pressed in a different column from the thing it
    opened, so comparing two settings meant crossing the page and back. */
-.settings-layout { display: block; }
+.settings-layout {
+  display: grid;
+  /* The same 1.25rem the page puts between every other pair of cards. The
+     search sat flush on the card below it and 1.25rem under the one above,
+     so it read as the card’s lid rather than a row of its own. */
+  gap: 1.25rem;
+}
 
 /* The search is the first row of the list rather than a banner over the
    page: typing to find a setting and picking one out of the list are the
