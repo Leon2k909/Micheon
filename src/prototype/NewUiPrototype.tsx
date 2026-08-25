@@ -366,6 +366,10 @@ const LANGUAGE_SECTION_ROWS: LanguageRow[] = [
   { kind: "view", icon: WholeWord, label: "Vocabulary library", view: "progress" },
 ];
 
+/** Anything the learner does with the page. None of these fire for a
+ *  programmatic scroll, which a scroll listener could not tell apart. */
+const HANDS_ON_EVENTS = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+
 /**
  * Land on the vocabulary tracker, not at the top of the page holding it.
  *
@@ -379,20 +383,35 @@ function scrollToVocabularyLibrary() {
   if (typeof window === "undefined") return;
   let waited = 0;
   let corrections = 0;
+  let timer = 0;
+  let stopped = false;
+  // The corrections below run for seconds after the click, and they were
+  // fighting the learner for the page: scroll up to read something and the
+  // next correction hauled you back down to the card. The moment a hand is on
+  // the page, this stops and stays stopped.
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    window.clearTimeout(timer);
+    for (const name of HANDS_ON_EVENTS) window.removeEventListener(name, stop);
+  };
+  for (const name of HANDS_ON_EVENTS) window.addEventListener(name, stop, { passive: true });
   const land = () => {
+    if (stopped) return;
     const target = document.querySelector(".np-vocabulary-anchor");
     if (!target) {
-      // The page is lazy twice over — the profile view, then the sections
-      // inside it — and the tracker is near the bottom of a long one, so the
-      // card can be several seconds behind the click.
-      if (waited++ < 200) window.setTimeout(land, 50);
+      // The page is lazy twice over — the progress view, then the folds
+      // inside it — and the tracker only mounts once its fold is reached, so
+      // the card can be several seconds behind the click.
+      if (waited++ < 200) timer = window.setTimeout(land, 50);
+      else stop();
       return;
     }
     const box = target.getBoundingClientRect();
     // Near the top of the window is where it belongs — but a reading that says
-    // so is not the end of it. The section sits first on the page now, so it
-    // starts near the top and is pushed down as the settings above it load. A
-    // single check here declared victory and left the card 900px down the page.
+    // so is not the end of it. The fold is the first of four, so it starts
+    // near the top and is pushed down as the panel above it settles. A single
+    // check here declared victory and left the card 900px down the page.
     if (box.top < 0 || box.top >= 160) {
       // "auto", not "smooth": a smooth scroll issued while the view is still
       // being built never started here — eleven of them in a row left the page
@@ -404,9 +423,10 @@ function scrollToVocabularyLibrary() {
     // scroll lands short — measured at 2,154px short the first time. Keep
     // watching for a couple of seconds, then leave the page alone whatever
     // happened.
-    if (corrections++ < 10) window.setTimeout(land, 300);
+    if (corrections++ < 10) timer = window.setTimeout(land, 300);
+    else stop();
   };
-  window.setTimeout(land, 60);
+  timer = window.setTimeout(land, 60);
 }
 
 const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
