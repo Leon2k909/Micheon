@@ -18,6 +18,21 @@
   --text-3: #8b909b;
   --accent: #7834f7;
   --accent-dim: #efe7ff;
+  /* One colour per settings category, the way a folder has one. It says
+     which of ten you are looking at, so unlike the rest of the paint here it
+     does not follow the learner's accent: ten cards in one accent are ten
+     tiles you cannot tell apart. Saturated enough to carry a white glyph on
+     either theme, so there is one definition rather than two. */
+  --tone-account: #9333ea;
+  --tone-look: #e0397a;
+  --tone-access: #7c5cf5;
+  --tone-desktop: #2b8ae6;
+  --tone-learn: #4560e8;
+  --tone-voice: #17a06a;
+  --tone-pet: #ef8f22;
+  --tone-data: #10a99e;
+  --tone-browser: #2b7de6;
+  --tone-activity: #dc3f96;
   --accent-text: #ffffff;
   --accent-hover: #6425df;
   --mint: #46d59a;
@@ -10816,7 +10831,7 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   display: grid;
   /* The same 1.25rem the page puts between every other pair of cards. The
      search sat flush on the card below it and 1.25rem under the one above,
-     so it read as the card’s lid rather than a row of its own. */
+     so it read as the card's lid rather than a row of its own. */
   gap: 1.25rem;
 }
 
@@ -10825,21 +10840,87 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
    same job, so they read as one thing. */
 .settings-layout-search .settings-search { margin-top: 0; }
 
+.settings-list {
+  --settings-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--settings-gap);
+  align-items: start;
+}
+
+/* The deferred half of the board is a grid of its own rather than
+   display: contents, because the observer that holds it back until you scroll
+   to it needs a box to watch, and a box with no display has none. Same
+   columns and same gap, so the seam between the two does not show. */
+.settings-list-group {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--settings-gap);
+  align-items: start;
+}
+
+/* Open, a category takes the width back: a colour picker or a voice list in
+   half a column is not a setting anyone can use. */
+.settings-category.is-open {
+  grid-column: 1 / -1;
+}
+
+.settings-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 16px;
+  background: var(--surface-2);
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.settings-row:hover {
+  border-color: var(--border-2);
+  background: var(--surface-3);
+}
+
+.settings-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .settings-panel-head {
   display: flex;
-  /* Top, not centre. Centred, the icon hangs off the middle of a row whose
+  min-width: 0;
+  flex: 1 1 auto;
+  /* Top, not centre. Centred, the icon hangs off the middle of a card whose
      height depends on whether the description wrapped, so it would sit lower
-     in some rows than in others all the way down the column. */
+     in some cards than in others across the board. */
   align-items: flex-start;
   gap: 11px;
-  min-width: 0;
+}
+
+.settings-row-text { min-width: 0; }
+
+.settings-row-title {
+  display: block;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 /* Two lines are reserved whether or not the description needs them, so every
-   row in the column is the same height. `lh` rather than a pixel value, so it
+   card on the board is the same height. `lh` rather than a pixel value, so it
    follows the font size and the app zoom. */
 .settings-panel-desc {
+  display: block;
   min-height: 2lh;
+  margin-top: 2px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .settings-panel-icon {
@@ -10847,11 +10928,65 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--accent-dim);
-  color: var(--accent-ink, var(--accent));
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--tone, var(--accent));
+  color: #fff;
+}
+
+.settings-panel-icon[data-tone="account"] { --tone: var(--tone-account); }
+.settings-panel-icon[data-tone="look"] { --tone: var(--tone-look); }
+.settings-panel-icon[data-tone="access"] { --tone: var(--tone-access); }
+.settings-panel-icon[data-tone="desktop"] { --tone: var(--tone-desktop); }
+.settings-panel-icon[data-tone="learn"] { --tone: var(--tone-learn); }
+.settings-panel-icon[data-tone="voice"] { --tone: var(--tone-voice); }
+.settings-panel-icon[data-tone="pet"] { --tone: var(--tone-pet); }
+.settings-panel-icon[data-tone="data"] { --tone: var(--tone-data); }
+.settings-panel-icon[data-tone="browser"] { --tone: var(--tone-browser); }
+.settings-panel-icon[data-tone="activity"] { --tone: var(--tone-activity); }
+
+.settings-row-go {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  color: var(--text-3);
+  transition: transform 160ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.settings-row[aria-expanded="true"] .settings-row-go {
+  transform: rotate(90deg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Open, the card and its panel are one box: the row loses its bottom corners
+   and the panel picks them up. */
+.settings-category.is-open .settings-row {
+  border-bottom-color: transparent;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.settings-panel {
+  padding: 2px 14px 14px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-top: 0;
+  border-radius: 0 0 16px 16px;
+  background: var(--surface-2);
+}
+
+/* One column below the width where two of these stop being readable. */
+@media (max-width: 720px) {
+  .settings-list,
+  .settings-list-group {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Word-order is the tallest ordinary lesson stage. On a standard 1080p

@@ -72,8 +72,12 @@ const setInJs = new Set([...accentTs.matchAll(/\["(--[a-z0-9-]+)"/gi)].map((m) =
  * Green that MEANS something stays green at every accent — a learner who
  * picks a red accent must not be told their correct answer is red. Same
  * exemption check-accent-coverage makes, for the same reason.
+ *
+ * --tone-* is the same argument in a different shape: one colour per settings
+ * category, the way a folder has one, and its whole job is telling ten cards
+ * apart. Following the accent would paint all ten the same and say nothing.
  */
-const SEMANTIC = /success|correct|good|right|positive|known|streak-on/i;
+const SEMANTIC = /success|correct|good|right|positive|known|streak-on|^--tone-/i;
 
 // A variable declared twice — once as a literal, once as var(--accent, …) —
 // is already coupled; the literal is just the fallback for the default green.

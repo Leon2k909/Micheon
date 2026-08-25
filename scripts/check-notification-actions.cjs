@@ -89,8 +89,10 @@ if (!/overflow-y-auto/.test(switcher)) {
 }
 
 // ── the settings categories have an edge ───────────────────────────────────
-const category = read("src/components/SettingsCategory.tsx");
-if (!/border border-\[color:var\(--card-edge\)\]/.test(category)) {
+// The card used to carry this as a utility class; it is a named rule now, so
+// the check follows it into the stylesheet. Same promise either way.
+const settingsCss = read("src/index.css");
+if (!/\.settings-row \{[^}]*border:[^;]*--card-edge/.test(settingsCss)) {
   failures.push("SettingsCategory: a white card on a near-white page needs a border to be visible at all");
 }
 

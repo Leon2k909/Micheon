@@ -1273,7 +1273,6 @@ export default function GamificationPanel({
                 </>
           )}
         >
-        <section className="card overflow-hidden p-5 sm:p-6">
               {/* Account details used to sit above everything, permanently, while
                   the things you might actually be looking for were behind a search
                   box. It is a category like the rest now. */}
@@ -1283,6 +1282,7 @@ export default function GamificationPanel({
                 hidden={!matchesSearch(ui("Account details"), ui("Your photo, display name, and login email."))}
                 icon={UserRound}
                 title={ui("Account details")}
+                tone="account"
               >
               {/* No heading here. SettingsCategory draws the title and the
                   description itself; these two lines were left behind when
@@ -1364,6 +1364,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Appearance"), ui("Theme, lesson background, and app zoom."))}
                   icon={Palette}
                   title={ui("Appearance")}
+                  tone="look"
                 >
                   <div className="mt-3 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex items-start gap-2">
@@ -1648,6 +1649,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Accessibility"), ui("High contrast, calmer motion, and speech speed."))}
                   icon={Eye}
                   title={ui("Accessibility")}
+                  tone="access"
                 >
                   <button
                     aria-pressed={highContrast}
@@ -1713,6 +1715,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Desktop app & updates"), ui("Startup, close button, and update checks."))}
                   icon={Monitor}
                   title={ui("Desktop app & updates")}
+                  tone="desktop"
                 >
                   <WindowsAppSettings />
 
@@ -1727,6 +1730,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Learning options"), ui("Learning style, flashcards, and words learned elsewhere."))}
                   icon={BookOpen}
                   title={ui("Learning options")}
+                  tone="learn"
                 >
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                     <p className="text-sm font-black text-[var(--text-1)]">{ui("External word count")}</p>
@@ -1770,6 +1774,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Language & voice"), ui("English spelling, app language, and the speaking voice."))}
                   icon={Languages}
                   title={ui("Language & voice")}
+                  tone="voice"
                 >
                   {/* Two questions, two answers. Which language you are learning, and
                       which language the app is written in. Deriving the second from the
@@ -1829,6 +1834,7 @@ export default function GamificationPanel({
                 </SettingsCategory>
 
             <DeferredProfileSection
+              className="settings-list-group"
               // Keep a 1px observer target so this group still reveals when it
               // reaches the viewport, without bringing back the visible pill.
               fallback={<div aria-hidden="true" className="h-px w-full" />}
@@ -1840,6 +1846,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Pet & mascot"), ui("Pick a desk pet and choose how often it talks."))}
                   icon={PawPrint}
                   title={ui("Pet & mascot")}
+                  tone="pet"
                 >
                   <Suspense fallback={<ProfileSectionLoading embedded label={ui("Loading pet settings")} />}>
                     <CodexPetPicker className="mt-0 border-t-0 pt-0" />
@@ -1852,6 +1859,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Data & storage"), ui("Space used, and deleting what Micheon has saved."))}
                   icon={HardDrive}
                   title={ui("Data & storage")}
+                  tone="data"
                 >
                   <DataAndStorage />
                 </SettingsCategory>
@@ -1862,6 +1870,7 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Browser extension"), ui("A companion for Chrome, Edge and Brave that keeps teaching you as you browse."))}
                   icon={BROWSER_EXTENSION_ICON}
                   title={ui("Browser extension")}
+                  tone="browser"
                 >
                   <BrowserExtension />
                 </SettingsCategory>
@@ -1876,11 +1885,11 @@ export default function GamificationPanel({
                   hidden={!matchesSearch(ui("Activity"), ui("Your streak, sessions, and this week's activity."))}
                   icon={Activity}
                   title={ui("Activity")}
+                  tone="activity"
                 >
                   <ActivityCard className="mt-3 min-w-0" progressStats={stats} />
                 </SettingsCategory>
             </DeferredProfileSection>
-        </section>
         </SettingsCategoryLayout>
 
         <section className="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">

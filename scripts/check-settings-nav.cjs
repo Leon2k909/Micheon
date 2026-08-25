@@ -33,7 +33,7 @@ if (/nav\.selected/.test(category) || /SettingsNavContext/.test(category)) {
 if (!/aria-controls=\{panelId\}/.test(category) || !/aria-expanded=\{isOpen\}/.test(category)) {
   failures.push("the rows are not disclosures, so nothing says what they open");
 }
-if (!/<div hidden=\{!isOpen\} id=\{panelId\}>/.test(category)) {
+if (!/<div className="settings-panel" hidden=\{!isOpen\} id=\{panelId\}>/.test(category)) {
   failures.push("a category's panel is not the thing its own row controls");
 }
 // Search filters the same list rather than replacing it.
