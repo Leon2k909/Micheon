@@ -108,8 +108,10 @@
   let germanConfidence = "none";
   let ytGermanFound = false;
   let xGermanFound = false;
-  let missingCounts = new Map();   // word -> count
-  let missingExamples = new Map(); // word -> up to four distinct real sentences
+  let missingCounts = new Map();   // German word -> count
+  let missingExamples = new Map(); // German word -> up to four distinct real sentences
+  let englishCounts = new Map();   // English word we hold no German for -> count
+  let englishExamples = new Map();
   let flushTimer = null;
   let ytScanTimer = null;
   let xScanTimer = null;
@@ -262,8 +264,41 @@
   // content, where the English half of a description polluted the candidate
   // list with "the", "and" and "app". Words are only collected when their
   // OWN sentence carries at least one German signal.
+  /**
+   * Does this sentence read as English?
+   *
+   * Needed because the German test could only ever vote yes. knownGermanSignal
+   * Count says "the glossary holds this token", and the glossary holds "in",
+   * "was", "will", "hat", "man", "so", "die", "war", "boot", "kind", "band",
+   * "fast", "arm" and "rock" -- every one of them an ordinary English word
+   * too. Two of those turn up in almost any English sentence, so English prose
+   * on a German page counted as German and its words were collected as German
+   * vocabulary. Measured on a real export: 123 of 346 entries came in that way.
+   *
+   * So English gets a vote of its own, from function words that CANNOT be
+   * German. Every candidate was checked against the other language before it
+   * went in -- "was", "will", "hat", "man", "in", "so", "die", "all", "also",
+   * "her", "bald", "an" and "am" are German words and are therefore absent,
+   * however English they look.
+   */
+  const ENGLISH_HINT_RE = /(?<![\p{L}])(?:the|of|and|to|is|it|that|for|you|with|this|but|have|from|they|we|are|been|would|there|which|their|when|your|were|what|about|his|him|she|its|our|out|not|one|as|at|by|or|if|on|no|do|does|did|than|then|them|these|those|being|into|only|just|more|most|some|any|each|other|over|after|before|because|while|where|who|whose|why|how|both|many|much|such|very|can|could|should|may|might|must|shall)(?![\p{L}])/gu;
+
+  function germanHintCount(sentence) {
+    return (String(sentence || "").toLowerCase().match(GERMAN_HINT_RE) || []).length;
+  }
+
+  function sentenceLooksEnglish(sentence) {
+    const sample = String(sentence || "").toLowerCase();
+    const englishHits = (sample.match(ENGLISH_HINT_RE) || []).length;
+    if (englishHits < 2) return false;
+    // German function words are the only thing that outranks them: a German
+    // sentence quoting an English phrase should still count as German.
+    return englishHits > (sample.match(GERMAN_HINT_RE) || []).length;
+  }
+
   function sentenceLooksGerman(sentence) {
     const sample = sentence.toLowerCase();
+    if (sentenceLooksEnglish(sample)) return false;
     const stopHits = (sample.match(GERMAN_HINT_RE) || []).length;
     if (stopHits >= 2) return true;
     const knownSignals = knownGermanSignalCount(sample);
@@ -529,6 +564,18 @@
     // Fragments and malformed product-page tokens that cannot become a
     // dependable glossary entry.
     "erst-", "handbgelenkauflage", "kasernenstr", "aktionsgerätes", "schnellstart-", "aktivierungs-",
+    // People, places, products and English tech words riding inside German
+    // sentences, from the 2026-08-25 export. Named one by one on purpose:
+    // German capitalises every noun, so "always capitalised" would have taken
+    // Demonstranten, Ärmelkanal, Schlauchboot and Schurkenstaat with it.
+    // Countries are still absent from this list -- Katar and die Ukraine are
+    // vocabulary a learner reading the news genuinely wants. "Echo" stays out
+    // too: das Echo is a real German noun, whatever it named on the page.
+    "amerikasee", "backend", "bnet", "britain", "cline", "compute", "dell", "diablo", "drogan",
+    "essex", "farage", "gemma", "groq", "haiku", "headless", "howard", "inspiron", "lineup",
+    "micheon", "nigel", "omarchy", "ontario", "philpott", "raze", "steam", "vice", "wardogs",
+    "concu", "backend-", "dialogue-first", "low-poly", "mock-up",
+    "alpha", "flash", "fran", "mac", "ontariosee", "ontariosees",
   ]);
 
   function looksLikeRealGermanCandidate(token) {
@@ -550,6 +597,63 @@
     // the export a reviewer reads with had, let, other, everyone and stood.
     if (ENGLISH_NEVER_GUESS.has(token.toLowerCase())) return false;
     return true;
+  }
+
+  /**
+   * Is this token a person, place or product rather than a word?
+   *
+   * Capitalisation cannot answer that. German capitalises EVERY noun, so a
+   * rule reading "always capitalised mid-sentence" throws away Demonstranten,
+   * Ärmelkanal, Schlauchboot, Schurkenstaat and Abstellgleis along with the
+   * names -- all real words a learner reading the news needs. NOT_VOCAB
+   * carries the ones worth naming outright; the only structural rule here is
+   * the one shape that cannot be a German noun: a capitalised word standing
+   * directly behind a title or a known first name is that person's surname.
+   */
+  function looksLikeName(token, sentence) {
+    if (!/^[A-ZÄÖÜ]/.test(token)) return false;
+    const text = String(sentence || "");
+    if (!text) return false;
+    const before = text.slice(0, text.indexOf(token));
+    const preceding = before.match(/([\p{Lu}][\p{L}]+)[\s.]+$/u);
+    if (!preceding) return false;
+    const lead = preceding[1].toLowerCase();
+    return NAME_LEAD_INS.has(lead) || NOT_VOCAB.has(lead);
+  }
+
+  // Words that introduce a name. A capitalised word after one of these is the
+  // person, not vocabulary -- "Präsident Trump", "Premierminister Farage".
+  const NAME_LEAD_INS = new Set([
+    "bundeskanzler", "bundeskanzlerin", "bundespräsident", "dr", "frau", "herr", "kanzler",
+    "kanzlerin", "minister", "ministerin", "premierminister", "präsident", "präsidentin",
+    "professor", "senator", "senatorin", "sir", "trainer", "trainerin",
+  ]);
+
+  /**
+   * An English word worth reporting as a gap in the course.
+   *
+   * Only reached when the reverse index already failed to find German for it,
+   * so by definition this is something the reader met and Micheon cannot say.
+   * Short words and the everyday filler are dropped: the useful signal is the
+   * topic word ("asylum", "trustworthiness", "monetized"), not "seeing".
+   */
+  function looksLikeEnglishTopicWord(token, lower) {
+    if (lower.length < 5 || lower.length > 24) return false;
+    if (!/^[a-z][a-z-]*[a-z]$/.test(lower)) return false;
+    if (/[äöüß]/.test(lower)) return false;
+    if (STOPWORDS.has(lower) || NOT_VOCAB.has(lower) || ENGLISH_NEVER_GUESS.has(lower)) return false;
+    // Already German, just lowercase and unknown to the glossary -- that is
+    // the other bucket's business, not this one.
+    return !byDeLowerAny.has(lower);
+  }
+
+  function noteMissing(counts, examples, word, sentence) {
+    counts.set(word, (counts.get(word) || 0) + 1);
+    const seen = examples.get(word) || new Set();
+    if (sentence) seen.add(sentence);
+    while (seen.size > 4) seen.delete(seen.values().next().value);
+    examples.set(word, seen);
+    scheduleFlush();
   }
 
   function examplesForMissing(entry) {
@@ -621,28 +725,40 @@
     flushTimer = setTimeout(flushMissingVocab, FLUSH_DELAY_MS);
   }
 
-  async function flushMissingVocab() {
-    flushTimer = null;
-    if (missingCounts.size === 0) return;
-    const { missingVocab = {} } = await chrome.storage.local.get("missingVocab");
-    for (const [word, count] of missingCounts) {
-      const prior = missingVocab[word];
-      const observed = missingExamples.get(word) || new Set();
-      const examples = [...new Set([...examplesForMissing(prior), ...observed])].slice(0, 4);
-      missingVocab[word] = {
+  function mergeInto(store, counts, examples) {
+    for (const [word, count] of counts) {
+      const prior = store[word];
+      const observed = examples.get(word) || new Set();
+      const merged = [...new Set([...examplesForMissing(prior), ...observed])].slice(0, 4);
+      store[word] = {
         count: (prior?.count || 0) + count,
-        example: examples[0] || "",
-        examples,
+        example: merged[0] || "",
+        examples: merged,
       };
     }
-    missingCounts = new Map();
-    missingExamples = new Map();
-    const trimmed = Object.fromEntries(
-      Object.entries(missingVocab)
+    return Object.fromEntries(
+      Object.entries(store)
         .sort((a, b) => b[1].count - a[1].count)
         .slice(0, MISSING_VOCAB_CAP)
     );
-    await chrome.storage.local.set({ missingVocab: trimmed });
+  }
+
+  async function flushMissingVocab() {
+    flushTimer = null;
+    if (missingCounts.size === 0 && englishCounts.size === 0) return;
+    const stored = await chrome.storage.local.get(["missingVocab", "missingEnglish"]);
+    const patch = {};
+    if (missingCounts.size) {
+      patch.missingVocab = mergeInto(stored.missingVocab || {}, missingCounts, missingExamples);
+    }
+    if (englishCounts.size) {
+      patch.missingEnglish = mergeInto(stored.missingEnglish || {}, englishCounts, englishExamples);
+    }
+    missingCounts = new Map();
+    missingExamples = new Map();
+    englishCounts = new Map();
+    englishExamples = new Map();
+    await chrome.storage.local.set(patch);
   }
 
   // ── tooltip ───────────────────────────────────────────────────────────
@@ -2011,18 +2127,35 @@
             continue;
           }
         }
-        if (!hit && collectMissing && settings.collectMissingVocab && looksLikeRealGermanCandidate(token)) {
+        if (!hit && collectMissing && settings.collectMissingVocab) {
           const sentence = extractSentence(node, match.index);
-          // YouTube and X containers may mix languages internally, so the
-          // candidate's own sentence still has to look German.
-          const trustPageLanguage = !IS_YOUTUBE && !IS_X && germanConfidence === "strong";
-          if (trustPageLanguage || sentenceLooksGerman(sentence)) {
-            missingCounts.set(lower, (missingCounts.get(lower) || 0) + 1);
-            const examples = missingExamples.get(lower) || new Set();
-            if (sentence) examples.add(sentence);
-            while (examples.size > 4) examples.delete(examples.values().next().value);
-            missingExamples.set(lower, examples);
-            scheduleFlush();
+          // A sentence that is German carries at least one German function
+          // word. Requiring that of an all-ASCII candidate closes the last
+          // hole: "casual", "inventions", "takeaway" and "somebody" all
+          // reached the German bucket through the weak known-word signal,
+          // where every "signal" was a word both languages own. A token
+          // spelt with an umlaut or ß needs no such corroboration.
+          const germanSpelt = /[äöüßÄÖÜ]/.test(token);
+          const isEnglish = sentenceLooksEnglish(sentence)
+            || (!germanSpelt && germanHintCount(sentence) === 0);
+          if (!isEnglish && looksLikeRealGermanCandidate(token) && !looksLikeName(token, sentence)) {
+            // YouTube and X containers may mix languages internally, so the
+            // candidate's own sentence still has to look German. A page that
+            // declares lang="de" is trusted for everything EXCEPT a sentence
+            // that reads as English -- half the web's German pages carry
+            // English quotes, and those words are not German vocabulary.
+            const trustPageLanguage = !IS_YOUTUBE && !IS_X && germanConfidence === "strong";
+            if (trustPageLanguage || sentenceLooksGerman(sentence)) {
+              noteMissing(missingCounts, missingExamples, lower, sentence);
+            }
+          } else if (isEnglish && looksLikeEnglishTopicWord(token, lower)
+              && !looksLikeName(token, sentence)) {
+            // Reading English is not a waste. An English word we hold no
+            // German for is the reader telling us what they read ABOUT and
+            // cannot yet say -- a gap in the course, pointed at from the
+            // other side. Kept in its own bucket so nothing here is ever
+            // mistaken for a German word we failed to teach.
+            noteMissing(englishCounts, englishExamples, lower, sentence);
           }
         }
         if (hit) {
