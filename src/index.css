@@ -479,6 +479,106 @@ button { cursor: pointer; }
 /* The running score in the Listen test. Laid out rather than left to inline
    flow, which put the tick and the cross down the left with their numbers
    stranded in the middle of the card. */
+/* Conversation: the script so far, and the four things you could say next.
+   Their turns sit left and yours right, the way every messaging app puts them,
+   so the shape of the exchange is readable without reading it. */
+.conversation-script {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conversation-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 86%;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 9px 12px;
+}
+
+.conversation-line.is-you {
+  align-self: flex-end;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--accent-dim);
+}
+
+.conversation-line__play {
+  display: inline-flex;
+  height: 20px;
+  width: 20px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  margin-top: 2px;
+  color: var(--text-3);
+  transition: color 120ms ease;
+}
+
+.conversation-line__play:hover { color: var(--accent-strong); }
+
+.conversation-line__de {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--text-1);
+}
+
+.conversation-line__en {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--text-3);
+}
+
+.conversation-option {
+  min-height: 56px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-1);
+  transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease;
+}
+
+.conversation-option:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.conversation-option.is-wrong {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  opacity: 0.6;
+}
+
+.conversation-missteps {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  color: var(--danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conversation-option,
+  .conversation-line__play { transition: none; }
+}
+
 .listen-test-score {
   display: flex;
   flex-wrap: wrap;
