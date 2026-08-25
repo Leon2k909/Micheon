@@ -2191,18 +2191,17 @@ const COUNTRY_ART: Record<CountryId, string> = {
 };
 
 function CountryCard({
-  countryMenuOpen,
+  onChangeCountry,
   onOpen,
-  onPickCountry,
-  onToggleCountryMenu,
   pack,
   profile,
 }: {
-  countryMenuOpen: boolean;
+  /**
+   * Opens the course chooser — the same dialog the language card opens,
+   * on her instruction that the two cards work identically.
+   */
+  onChangeCountry: () => void;
   onOpen: () => void;
-  /** Chooses a country outright. The card is the second way in, beside the nav. */
-  onPickCountry: (id: CountryId) => void;
-  onToggleCountryMenu: () => void;
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
@@ -2230,56 +2229,23 @@ function CountryCard({
           <h2>{ui("Country studies")}</h2>
           <p>{ui("Discover the history, culture and society of the country you are studying.")}</p>
 
-          {/* A menu, not a button that steps to the next country. Stepping
-              was tolerable while there were two; with three it is a guessing
-              game, and the language card beside this one has offered a real
-              choice all along. Built from the same parts as its Lesson
-              content menu so the pair still reads as one control repeated. */}
+          {/* Exactly the language card's control, down to the markup: a
+              label, the flag, the name, and a Change that opens the course
+              chooser. This had a dropdown of its own for one version, which
+              is a second control shaped like the first rather than the same
+              one — two places to learn, and two places to keep in step. */}
           <div className="np-home-choice-panel">
-            <div className="np-home-choice-field np-home-choice-field--country">
-              <small>{ui("Selected country")}</small>
-              <span className="np-home-choice-value">
-                <FlagRoundel id={pack.flagId} />
-                {/* Off the pack. This was a two-way conditional, so the
-                    French course arrived wearing the words "United
-                    Kingdom" under a French flag. */}
-                <strong>{ui(pack.country)}</strong>
-                <button
-                  aria-expanded={countryMenuOpen}
-                  aria-haspopup="menu"
-                  aria-label={ui("Choose the country you are studying")}
-                  className="np-home-choice-change"
-                  onClick={onToggleCountryMenu}
-                  type="button"
-                >
-                  {ui("Change")}
-                  <ChevronDown aria-hidden="true" />
-                </button>
-              </span>
-
-              {countryMenuOpen && (
-                <div
-                  aria-label={ui("Choose the country you are studying")}
-                  className="np-home-content-menu np-home-content-menu--country"
-                  role="menu"
-                >
-                  {COUNTRY_PACKS.map((entry) => (
-                    <button
-                      aria-checked={entry.id === pack.id}
-                      key={entry.id}
-                      onClick={() => onPickCountry(entry.id)}
-                      role="menuitemradio"
-                      type="button"
-                    >
-                      <span aria-hidden="true" className="np-home-country-flag">
-                        <FlagRoundel id={entry.flagId} />
-                      </span>
-                      <strong>{ui(entry.country)}</strong>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <small>{ui("Selected country")}</small>
+            <span className="np-home-choice-value">
+              <FlagRoundel id={pack.flagId} />
+              {/* Off the pack. This was a two-way conditional, so the
+                  French course arrived wearing the words "United
+                  Kingdom" under a French flag. */}
+              <strong>{ui(pack.country)}</strong>
+              <button className="np-home-choice-change" onClick={onChangeCountry} type="button">
+                {ui("Change")}
+              </button>
+            </span>
           </div>
         </div>
       </div>
@@ -3106,7 +3072,6 @@ function HomeView({
   apiParts,
   countryId,
   onOpenCountryCourse,
-  onPickCountry,
   onOpenFading,
   onPractice,
   onRequestCatalogue,
@@ -3121,8 +3086,6 @@ function HomeView({
   countryId: CountryId;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
-  /** Chooses the card's country outright, from its own menu. */
-  onPickCountry: (id: CountryId) => void;
   /** The vocabulary library, opened on the items that are fading. */
   onOpenFading: () => void;
   onPractice: () => void;
@@ -3157,7 +3120,6 @@ function HomeView({
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
-  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
   // The menu closes the way every menu should: outside click or Escape.
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
@@ -3174,24 +3136,6 @@ function HomeView({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [contentMenuOpen]);
-  // The country menu closes the same way. Its own effect rather than a
-  // shared one: two menus on one card must not close each other, and a
-  // click inside the country field is outside the content field.
-  useEffect(() => {
-    if (!countryMenuOpen) return undefined;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!(event.target as Element | null)?.closest?.(".np-home-choice-field--country")) setCountryMenuOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setCountryMenuOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [countryMenuOpen]);
   const needsStartingPoint = Boolean(profile)
     && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
   const placementPart = profile
@@ -3236,13 +3180,8 @@ function HomeView({
         />
 
         <CountryCard
-          countryMenuOpen={countryMenuOpen}
+          onChangeCountry={onSwitchCourse}
           onOpen={onOpenCountryCourse}
-          onPickCountry={(id) => {
-            onPickCountry(id);
-            setCountryMenuOpen(false);
-          }}
-          onToggleCountryMenu={() => setCountryMenuOpen((open) => !open)}
           pack={countryPack(countryId)}
           profile={profile}
         />
@@ -4149,6 +4088,20 @@ export default function NewUiPrototype({
   };
 
   const selectCourse = (courseId: string) => {
+    // A country course is not a language course. The dialog lists both,
+    // and picking one of the country rows used to set activeCourseId —
+    // which is what the language card reads for its flag and its lesson
+    // count. Choosing Germany there left the language side of the home
+    // page reporting progress through a citizenship course. Country
+    // choice has its own store; this routes it there and leaves the
+    // language alone.
+    const country = COUNTRY_PACKS.find((entry) => entry.course.id === courseId);
+    if (country) {
+      pickCountry(country.id);
+      setCourseSwitcherOpen(false);
+      navigate("home");
+      return;
+    }
     // German, English and French are the same built-in course read three ways,
     // so picking one has to move the direction as well as the id. Without
     // this, choosing English left the app teaching German.
@@ -4276,7 +4229,7 @@ export default function NewUiPrototype({
       <HomeView
         apiParts={apiParts}
         countryId={countryId}
-        onPickCountry={pickCountry}
+
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
           requestVocabLibraryOpen();
@@ -4648,6 +4601,7 @@ export default function NewUiPrototype({
         </div>
         <MobileNav activeView={activeView} gamesUnlocked={gamesUnlocked} onNavigate={navigate} />
         <CourseSwitcher
+          activeCountryCourseId={activePack.course.id}
           activeCourseId={activeCourseId}
           onClose={() => setCourseSwitcherOpen(false)}
           onSelect={selectCourse}

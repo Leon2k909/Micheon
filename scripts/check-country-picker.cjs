@@ -1,20 +1,25 @@
 #!/usr/bin/env node
 /**
- * The home card lets you pick a country, and calls it by its own name.
+ * Country studies is chosen exactly the way a language is.
  *
- * Two failures this exists to stop coming back.
+ * Identically, which means the same dialog rather than a second control
+ * shaped like it: the Change button on the country card opens the course
+ * chooser the language card opens, and the country rows in it behave like
+ * every other row.
+ *
+ * Three failures this exists to stop coming back.
  *
  * The card used to name the country with a conditional — Germany, or else the
- * United Kingdom. That was correct for exactly as long as there were two
- * countries. France arrived and the card showed a French flag, a French
- * course, and the words "United Kingdom" between them. So: the name comes off
- * the pack, every pack has one, and no country name is deduced from an id
- * anywhere in the card.
+ * United Kingdom. Correct for exactly as long as there were two countries.
+ * France arrived and the card showed a French flag, a French course, and the
+ * words "United Kingdom" between them.
  *
- * And the card used to change country by stepping to the next one. With three
- * that means clicking until the one you want comes round, so it opens a menu
- * over the real list instead — the same shape as the Lesson content menu on
- * the language card beside it.
+ * The card then grew a dropdown of its own, which is not what she asked for.
+ *
+ * And picking a country row in the chooser used to set the active COURSE id,
+ * which is what the language card reads for its flag and lesson count — so
+ * choosing Germany there left the language side of the home page counting
+ * through a citizenship course.
  */
 const assert = require("assert");
 const fs = require("fs");
@@ -23,6 +28,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8").replace(/\r/g, "");
 const shell = read("src/prototype/NewUiPrototype.tsx");
+const switcher = read("src/components/course/CourseSwitcher.tsx");
 const packs = read("src/lib/countryPacks.ts");
 const type = read("src/lib/countryStudies.ts");
 const i18n = read("src/lib/i18n.ts");
@@ -59,42 +65,48 @@ assert.ok(
 );
 assert.ok(
   !/pack\.id === "(?:de|uk|fr)" \? "/.test(shell),
-  "a country name is being deduced from a pack id again — that is what put "
-  + '"United Kingdom" under a French flag'
+  'a country name is being deduced from a pack id again — that is what put "United Kingdom" under a French flag'
 );
 
-// ── and offers the whole list rather than the next one ────────────────────
+// ── both cards change the same way, through the same dialog ───────────────
+const CHANGE = /<button className="np-home-choice-change" onClick=\{(\w+)\} type="button">/g;
+const handlers = [...shell.matchAll(CHANGE)].map((m) => m[1]);
 assert.ok(
-  !/onSwitchCountry/.test(shell),
-  "the card still takes a switch-to-next handler instead of choosing outright"
+  handlers.includes("onSwitchCourse") && handlers.includes("onChangeCountry"),
+  "the two cards no longer carry the same plain Change button: found " + JSON.stringify(handlers)
 );
 assert.ok(
-  /className="np-home-content-menu np-home-content-menu--country"/.test(shell)
-  && /role="menu"/.test(shell),
-  "the country field no longer opens a menu"
-);
-const menu = /np-home-content-menu--country[\s\S]{0,900}?\{COUNTRY_PACKS\.map\(\(entry\) => \(([\s\S]*?)\)\)\}/.exec(shell);
-assert.ok(menu, "the menu is not built from COUNTRY_PACKS, so a new country would not appear in it");
-assert.ok(
-  /role="menuitemradio"/.test(menu[1]) && /aria-checked=\{entry\.id === pack\.id\}/.test(menu[1]),
-  "the menu does not mark which country is the current one"
+  /onChangeCountry=\{onSwitchCourse\}/.test(shell),
+  "the country card's Change is wired to something other than the course chooser the language card opens"
 );
 assert.ok(
-  /\{ui\(entry\.country\)\}/.test(menu[1]),
-  "the menu names its options in some way other than the pack's own name"
+  !/np-home-content-menu--country/.test(shell),
+  "the country card has grown a dropdown of its own again instead of using the dialog"
 );
 
-// ── the menu can be closed the way every menu is ──────────────────────────
+// ── a country row in the dialog picks a country, not a language course ────
 assert.ok(
-  /closest\?\.\(".np-home-choice-field--country"\)/.test(shell),
-  "clicking outside the country menu no longer closes it"
+  /const country = COUNTRY_PACKS\.find\(\(entry\) => entry\.course\.id === courseId\);/.test(shell),
+  "selectCourse no longer recognises a country course, so choosing one would overwrite the language course"
+);
+const chosen = /const country = COUNTRY_PACKS[\s\S]{0,400}?\n {4}\}/.exec(shell)?.[0] ?? "";
+assert.ok(
+  /pickCountry\(country\.id\)/.test(chosen) && /return;/.test(chosen),
+  "a country course is not routed to the country choice and returned from early"
+);
+
+// ── and the dialog ticks the country you are on ───────────────────────────
+assert.ok(
+  /activeCountryCourseId=\{activePack\.course\.id\}/.test(shell),
+  "the dialog is not told which country course is current, so no country row would ever be ticked"
 );
 assert.ok(
-  /if \(!countryMenuOpen\) return undefined;/.test(shell),
-  "the close-on-outside-click effect does not guard on the country menu being open"
+  /const active = id === activeCourseId \|\| id === activeCountryCourseId;/.test(switcher),
+  "the dialog marks the active row from the language course alone again"
 );
 
 console.log(
-  `check-country-picker: ${ids.length} countries, each named by its own pack and `
-  + "translated, offered as a menu rather than stepped through"
+  `check-country-picker: ${ids.length} countries, each named by its own pack and translated, `
+  + "changed through the same dialog as a language, ticked there, and routed to the "
+  + "country choice rather than the language course"
 );

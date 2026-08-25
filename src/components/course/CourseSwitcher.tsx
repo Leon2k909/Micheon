@@ -67,11 +67,20 @@ function CourseArtwork({ id }: { id: string }) {
 
 export function CourseSwitcher({
   open,
+  activeCountryCourseId,
   activeCourseId,
   onSelect,
   onClose,
 }: {
   open: boolean;
+  /**
+   * The country course currently selected.
+   *
+   * Country studies keeps its own choice, separate from the language
+   * course, so activeCourseId never names one. Without this the country
+   * section drew three rows and a tick on none of them.
+   */
+  activeCountryCourseId: string;
   activeCourseId: string;
   onSelect: (courseId: string) => void;
   onClose: () => void;
@@ -140,7 +149,7 @@ export function CourseSwitcher({
   }, [open, onClose]);
 
   const Card = ({ id, name, tagline, available, builtIn }: (typeof COURSES)[number]) => {
-    const active = id === activeCourseId;
+    const active = id === activeCourseId || id === activeCountryCourseId;
     return (
       <button
         type="button"
