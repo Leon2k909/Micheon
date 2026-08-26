@@ -3605,25 +3605,30 @@ button.np-progress-title:focus-visible,
 
 .np-level-total {
   margin: 9px 0 0;
-  color: var(--np-muted);
+  /* The card's own text colour, softened. A fixed muted grey went invisible
+     on a saturated card. */
+  color: color-mix(in srgb, currentColor 76%, transparent);
   font-size: var(--np-type-caption);
   font-weight: 750;
   text-align: right;
 }
 
 .np-level-total b {
-  color: var(--accent);
+  color: inherit;
   font-weight: 950;
 }
 
 .np-progress-track--level {
   height: 12px;
-  background: color-mix(in srgb, var(--np-text) 14%, transparent);
+  /* Both drawn from the card's own ink, so the fill always stands against the
+     track and the track always against the card — at any accent, either theme.
+     Drawn in the accent, the fill vanished on a card painted in it. */
+  background: color-mix(in srgb, currentColor 16%, transparent);
   box-shadow: none;
 }
 
 .np-progress-track--level > span {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 62%, #fff), var(--accent));
+  background: color-mix(in srgb, currentColor 88%, transparent);
   box-shadow: none;
 }
 
@@ -3650,13 +3655,16 @@ button.np-progress-title:focus-visible,
 
 .np-level-copy > small {
   margin-top: 3px;
-  color: var(--np-muted);
+  color: color-mix(in srgb, currentColor 78%, transparent);
   font-size: var(--np-type-caption);
   font-weight: 700;
 }
 
 .np-level-copy > small b {
-  color: var(--accent);
+  /* Not the accent: with a chosen accent the card is painted in it, and this
+     sat colour-on-colour. Weight carries the emphasis instead, on whatever
+     the card turns out to be. */
+  color: inherit;
   font-weight: 950;
 }
 
@@ -10618,10 +10626,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-level-copy > small {
   color: var(--accent-ink, var(--np-green));
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-level-card > small {
-  color: var(--accent-text);
-}
-
 html:not([data-theme="dark"])[data-accent="custom"] .np-desktop-search.is-active {
   border-color: rgba(var(--accent-rgb), 0.4);
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.18), 0 9px 18px rgba(var(--accent-hover-rgb), 0.12);
@@ -11152,19 +11156,9 @@ html[data-theme="dark"][data-accent="custom"] .np-lesson-row--mint {
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-level-card {
-  border-color: rgba(var(--accent-rgb), 0.3);
-  background: linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)), var(--accent-pressed, var(--np-green-dark)));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-level-badge {
-  border-color: var(--np-green-soft, var(--accent-dim));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-level-copy > small,
-html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
-  color: var(--accent-text);
-}
+/* The level card takes no repaint for a chosen accent: it is already built
+   from var(--accent) over the theme's surface, and painting it solid put
+   accent-coloured copy on an accent-coloured card. */
 
 html[data-theme="dark"][data-accent="custom"] .np-achievement {
   background: var(--accent-pressed, var(--np-green-dark));
