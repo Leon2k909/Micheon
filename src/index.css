@@ -12254,6 +12254,23 @@ html[data-theme="dark"] {
   overflow-y: visible;
 }
 
+/* The word panel is not content either, and it opens upward into the same edge.
+
+   placeWordPopover turns the panel downward only when the WINDOW has no room
+   overhead. The window nearly always has room — Listen's sentence sits a third
+   of the way down it — so the panel opens upward, and the thing that cuts it is
+   not the window but this card, which scrolls and therefore clips on both axes.
+   The word being explained and its meaning are the top of the panel, so what
+   survived the cut was two buttons and nothing saying what they were for.
+
+   Widening that arithmetic to know about scrolling ancestors would put layout
+   the browser already does into a number we keep by hand. The card stops
+   clipping instead, for as long as a panel is open, exactly as it does for the
+   menu above. */
+.listen-card:has(.fs-word-popover) {
+  overflow-y: visible;
+}
+
 /* The rule under the card's content gets the same gap on both sides, so the
    controls are as far below it as the last line is above it. */
 .listen-card-review {
