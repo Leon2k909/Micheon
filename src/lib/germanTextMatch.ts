@@ -163,12 +163,55 @@ export function takeMatchingSafe<T>(
   return picked;
 }
 
+/**
+ * The clitic "'s" is "es", and both spellings are the same sentence.
+ *
+ * "Ich hab's" and "Ich hab es" are one sentence written two ways, and a
+ * learner who types it out in full has not made a mistake. This ran on a list
+ * of four verbs — machs, gibts, gehts, ists — and the content uses the clitic
+ * on 57 different stems, so "hab es" against "hab's" was marked wrong and the
+ * lesson would not move on.
+ *
+ * Expanded rather than collapsed, and BEFORE the apostrophe is dropped, since
+ * the apostrophe is what identifies it. Collapsing runs into "sehe es" and
+ * "seh's" reducing to different things; expanding does not.
+ *
+ * Case is ignored on purpose. The clitic attaches to verbs, which are
+ * lower-case mid-sentence and capitalised at the start of one — "Gibt's noch
+ * Kaffee?" — and all sixteen capitalised uses in the content are that. The
+ * German genitive apostrophe that this could otherwise catch ("Anna's") does
+ * not occur here, and is a spelling mistake in German besides.
+ */
+const CLITIC_S = /(\p{L})['’`´‘]s\b/gu;
+
+/**
+ * The same expansion for anyone who types it without the apostrophe.
+ *
+ * These have to agree: the target is expanded above whether or not the
+ * learner reaches for the apostrophe, so "habs" has to arrive at "hab es"
+ * too, or dropping the mark becomes a wrong answer. The stems are the ones
+ * the course actually uses a clitic on, and none of them is a German word in
+ * its own right with the s attached.
+ */
+const BARE_CLITIC_STEMS = [
+  "geht", "hab", "gibt", "wenn", "läuft", "lauft", "war", "kann", "hat", "wird",
+  "mach", "sag", "wie", "sieht", "steht", "reicht", "glaub", "krieg", "gib",
+  "darf", "ob", "halt", "stört", "will", "schmeckt", "klappt", "kommt", "seh",
+  "schaff", "kostet", "nehm", "nimm", "find", "stell", "versteh", "funktioniert",
+  "soll", "tut", "stimmt", "ist", "geb", "lad", "überleg", "uberleg",
+];
+// Case-insensitive: the same stem is capitalised when it opens a sentence,
+// and "Gibts noch Kaffee?" is the same typing shortcut as "gibts".
+const BARE_CLITIC = new RegExp(`\\b(${BARE_CLITIC_STEMS.join("|")})s\\b`, "giu");
+
 /** Normalize German learner input for comparison (typing or speech transcript). */
 
 export function normalizeGermanInput(t: string) {
   return String(t ?? "")
     .toLowerCase()
     .trim()
+    .replace(CLITIC_S, "$1 es")         // "hab's" == "hab es"
+    .replace(BARE_CLITIC, "$1 es")      // and "habs" too
     .replace(/[’'`´‘]/g, "")            // apostrophes don't matter: "don't" == "dont"
     .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces: "after-work" == "after work"
     .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop sentence punctuation incl. curly/German/French quotes
@@ -203,6 +246,12 @@ export function normalizeGermanLenient(t: string) {
 export function normalizeGermanInputCaseSensitive(t: string) {
   return String(t ?? "")
     .trim()
+    // The same clitic expansion as the case-folding path above. German
+    // matching is case-sensitive, so this normaliser decides most answers —
+    // teaching only the other one that "hab's" is "hab es" fixed the sentences
+    // that happen to reach it and left the rest marked wrong.
+    .replace(CLITIC_S, "$1 es")
+    .replace(BARE_CLITIC, "$1 es")
     .replace(/[’'`´‘]/g, "")            // apostrophes don't matter
     .replace(/[-–—/]/g, " ")            // hyphens, dashes, slashes act as spaces
     .replace(/[.!?,;:"()“”„«»…]/g, "")  // drop punctuation

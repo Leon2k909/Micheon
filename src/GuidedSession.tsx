@@ -111,6 +111,15 @@ function getAudioCtx(): AudioContext | null {
  *  fifth of a second; the context used to stay awake for the whole session
  *  after the first one, keeping the renderer exempt from throttling. */
 const SFX_IDLE_SUSPEND_MS = 4000;
+
+/**
+ * How long a correct answer waits before checking itself.
+ *
+ * Long enough that somebody still typing is not cut off — a short answer can
+ * be the opening of a longer one — and short enough that it does not read as
+ * the app hesitating over something it has already accepted.
+ */
+const AUTO_CHECK_PAUSE_MS = 450;
 let sfxIdleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleSfxIdleSuspend() {
@@ -2431,6 +2440,55 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setEnAttempts(a => a + 1);
     }
   };
+
+  /**
+   * A right answer moves on by itself.
+   *
+   * Typing the answer and then reaching for Enter is a second action for
+   * something already finished, and on a stage whose whole job is "write what
+   * you hear" it reads as the app not having noticed. So a correct answer
+   * checks itself.
+   *
+   * Only a CLEAN match, though. matchGermanSentence also accepts answers with
+   * something to say about them — a spelling slip, a capital letter, an
+   * English turn of phrase — and those come with a note the learner is meant
+   * to read. Skipping past the note would be a worse trade than the keystroke
+   * it saves, so those still wait to be checked deliberately.
+   *
+   * And only after a pause. A short answer can be a prefix of a longer one,
+   * so advancing on the keystroke that first matched would cut somebody off
+   * mid-word; carrying on typing cancels it, because each keystroke restarts
+   * the wait.
+   */
+  const autoCheckRef = useRef<number | null>(null);
+  useEffect(() => {
+    const clear = () => {
+      if (autoCheckRef.current === null) return;
+      window.clearTimeout(autoCheckRef.current);
+      autoCheckRef.current = null;
+    };
+    clear();
+    const clean = (outcome: { ok: boolean; spellingNote?: boolean; capitalizationError?: boolean; phrasingNote?: boolean }) =>
+      outcome.ok && !outcome.spellingNote && !outcome.capitalizationError && !outcome.phrasingNote;
+
+    let run: null | (() => void) = null;
+    if (phase === "ListenPick" && listeningMode === "type" && !listeningTypeChecked
+      && listeningInput.trim() && clean(listeningTypeResult)) run = checkListeningTyped;
+    else if ((phase === "Type" || phase === "TypeAgain") && !checked
+      && input.trim() && clean(result)) run = checkAnswer;
+    else if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type"
+      && !enChecked && translationAnswer.trim() && clean(enResult)) run = checkEnAnswer;
+    if (!run) return clear;
+
+    const go = run;
+    autoCheckRef.current = window.setTimeout(() => { autoCheckRef.current = null; go(); }, AUTO_CHECK_PAUSE_MS);
+    return clear;
+    // The handlers are rebuilt every render; the values they read are the
+    // dependencies that matter, and listing the handlers would re-arm the
+    // timer on every render instead of on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, listeningMode, listeningInput, listeningTypeChecked, listeningTypeResult,
+    input, checked, result, translationMode, translationAnswer, enChecked, enResult]);
 
   const retryEn = () => {
     setEnInput("");
