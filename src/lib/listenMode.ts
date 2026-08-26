@@ -64,9 +64,22 @@ import { getLearningDirection, type LearningDirection } from "@/lib/direction";
  *    signal a wrong answer leaves, so practice resurfaces it sooner.
  */
 
-const GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
-const ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
-const LANGUAGE_ORDER_KEY = "gl-listen-language-order";
+// Named for the two SIDES of a card, not for two languages.
+//
+// german/english was true while Listen only ever had those two and one of
+// them was always the one being learned. It stopped being true when the
+// English course arrived: there, "german repeats" was the setting for the
+// line the learner is NOT learning, and the code that read it had to know
+// which course it was in to know what it meant.
+//
+// The old keys are still read, once, mapped per course — see legacyRepeats —
+// so a count somebody chose does not change which line it applies to.
+const TARGET_REPEATS_KEY = "gl-listen-target-repeats";
+const MEANING_REPEATS_KEY = "gl-listen-meaning-repeats";
+const SIDE_ORDER_KEY = "gl-listen-side-order";
+const LEGACY_GERMAN_REPEATS_KEY = "gl-listen-german-repeats";
+const LEGACY_ENGLISH_REPEATS_KEY = "gl-listen-english-repeats";
+const LEGACY_ORDER_KEY = "gl-listen-language-order";
 const NEXT_CARD_DELAY_KEY = "gl-listen-next-card-delay-ms";
 const LANGUAGE_GAP_KEY = "gl-listen-language-gap-ms";
 const LOOP_ITEMS_KEY = "gl-listen-loop-items";
@@ -86,8 +99,8 @@ const MAX_LOOP_ITEMS = 12;
 const MAX_LOOP_PASSES = 6;
 const MAX_NEXT_CARD_DELAY_MS = 30_000;
 const MAX_LANGUAGE_GAP_MS = 30_000;
-export const DEFAULT_GERMAN_REPEATS = 2;
-export const DEFAULT_ENGLISH_REPEATS = 1;
+export const DEFAULT_TARGET_REPEATS = 2;
+export const DEFAULT_MEANING_REPEATS = 1;
 export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
 export type ListenMixedCounts = { words: number; sentences: number };
 export const DEFAULT_LISTEN_MIXED_COUNTS: ListenMixedCounts = { words: 1, sentences: 2 };
@@ -129,26 +142,20 @@ export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
  * Most common first is still in the picker for anyone who wants it back.
  */
 export const DEFAULT_LISTEN_QUEUE_ORDER: ListenQueueOrder = "level";
-export type ListenLanguageOrder = "english-first" | "german-first";
-export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "english-first";
-export const DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS = 1;
-export const DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS = 2;
-export const DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER: ListenLanguageOrder = "german-first";
+/**
+ * Which side of the card is spoken first.
+ *
+ * Meaning first by default in every course: hear what it means, have your go
+ * at saying it, then hear it said. The English course used to need its own
+ * defaults purely because the settings were named after languages and its
+ * languages sat the other way round. They are named after the sides now, so
+ * there is one set of defaults and every course reads it the same way.
+ */
+export type ListenLanguageOrder = "meaning-first" | "target-first";
+export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "meaning-first";
 
 function courseSettingKey(key: string, direction: LearningDirection): string {
   return `${key}:${direction}`;
-}
-
-function defaultGermanRepeats(direction: LearningDirection): number {
-  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS : DEFAULT_GERMAN_REPEATS;
-}
-
-function defaultEnglishRepeats(direction: LearningDirection): number {
-  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS : DEFAULT_ENGLISH_REPEATS;
-}
-
-function defaultLanguageOrder(direction: LearningDirection): ListenLanguageOrder {
-  return direction === "learn-en" ? DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER : DEFAULT_LISTEN_LANGUAGE_ORDER;
 }
 
 function readIntegerSetting(key: string, fallback: number, min: number, max: number): number {
@@ -188,61 +195,89 @@ function readCourseIntegerSetting(
     : fallback;
 }
 
-export function getListenGermanRepeats(direction: LearningDirection = getLearningDirection()): number {
-  return readCourseIntegerSetting(
-    GERMAN_REPEATS_KEY,
-    direction,
-    defaultGermanRepeats(direction),
-    1,
-    MAX_LANGUAGE_REPEATS
-  );
+function readOptionalRepeats(key: string): number | null {
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (stored == null || stored.trim() === "") return null;
+    const raw = Number(stored);
+    if (Number.isFinite(raw) && raw >= 1 && raw <= MAX_LANGUAGE_REPEATS) return Math.round(raw);
+  } catch { /* storage blocked: use the documented default */ }
+  return null;
 }
 
-export function setListenGermanRepeats(
+/**
+ * What this setting was worth under its old, language-shaped name.
+ *
+ * The English course led with its MEANING, so its old "english repeats" was
+ * the count for the line being learned and its "german repeats" the count for
+ * the translation. Every other course led with the target, so the two map the
+ * other way round. Read once and mapped rather than left behind, because a
+ * dropped setting is a learner's chosen playback silently reverting.
+ */
+function legacyRepeats(direction: LearningDirection, side: "target" | "meaning"): number | null {
+  const targetWasEnglish = direction === "learn-en";
+  const wantsEnglishKey = side === "target" ? targetWasEnglish : !targetWasEnglish;
+  const key = wantsEnglishKey ? LEGACY_ENGLISH_REPEATS_KEY : LEGACY_GERMAN_REPEATS_KEY;
+  const scoped = readOptionalRepeats(courseSettingKey(key, direction));
+  if (scoped != null) return scoped;
+  // Repeat counts existed before courses had separate playback plans, and
+  // that unscoped choice only ever belonged to the original German course.
+  return direction === "learn-de" ? readOptionalRepeats(key) : null;
+}
+
+/** How often the line being LEARNED is spoken on each card. */
+export function getListenTargetRepeats(direction: LearningDirection = getLearningDirection()): number {
+  return readOptionalRepeats(courseSettingKey(TARGET_REPEATS_KEY, direction))
+    ?? legacyRepeats(direction, "target")
+    ?? DEFAULT_TARGET_REPEATS;
+}
+
+export function setListenTargetRepeats(
   count: number,
   direction: LearningDirection = getLearningDirection()
 ): number {
-  return storeIntegerSetting(courseSettingKey(GERMAN_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
+  return storeIntegerSetting(courseSettingKey(TARGET_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
 }
 
-export function getListenEnglishRepeats(direction: LearningDirection = getLearningDirection()): number {
-  return readCourseIntegerSetting(
-    ENGLISH_REPEATS_KEY,
-    direction,
-    defaultEnglishRepeats(direction),
-    1,
-    MAX_LANGUAGE_REPEATS
-  );
+/** How often the translation beside it is spoken. */
+export function getListenMeaningRepeats(direction: LearningDirection = getLearningDirection()): number {
+  return readOptionalRepeats(courseSettingKey(MEANING_REPEATS_KEY, direction))
+    ?? legacyRepeats(direction, "meaning")
+    ?? DEFAULT_MEANING_REPEATS;
 }
 
-export function setListenEnglishRepeats(
+export function setListenMeaningRepeats(
   count: number,
   direction: LearningDirection = getLearningDirection()
 ): number {
-  return storeIntegerSetting(courseSettingKey(ENGLISH_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
+  return storeIntegerSetting(courseSettingKey(MEANING_REPEATS_KEY, direction), count, 1, MAX_LANGUAGE_REPEATS);
 }
 
 export function getListenLanguageOrder(
   direction: LearningDirection = getLearningDirection()
 ): ListenLanguageOrder {
   try {
-    const value = window.localStorage.getItem(courseSettingKey(LANGUAGE_ORDER_KEY, direction));
-    if (value === "english-first" || value === "german-first") return value;
-    if (direction === "learn-de") {
-      const legacyValue = window.localStorage.getItem(LANGUAGE_ORDER_KEY);
-      if (legacyValue === "english-first" || legacyValue === "german-first") return legacyValue;
+    const value = window.localStorage.getItem(courseSettingKey(SIDE_ORDER_KEY, direction));
+    if (value === "meaning-first" || value === "target-first") return value;
+    const legacy = window.localStorage.getItem(courseSettingKey(LEGACY_ORDER_KEY, direction))
+      ?? (direction === "learn-de" ? window.localStorage.getItem(LEGACY_ORDER_KEY) : null);
+    if (legacy === "english-first" || legacy === "german-first") {
+      // Same mapping as legacyRepeats, for the same reason: the old names say
+      // which LANGUAGE led, and which language that was depends on the course.
+      const legacyTargetFirst = direction === "learn-en" ? "english-first" : "german-first";
+      return legacy === legacyTargetFirst ? "target-first" : "meaning-first";
     }
   } catch { /* storage blocked: use the documented default */ }
-  return defaultLanguageOrder(direction);
+  return DEFAULT_LISTEN_LANGUAGE_ORDER;
 }
 
 export function setListenLanguageOrder(
   order: ListenLanguageOrder,
   direction: LearningDirection = getLearningDirection()
 ): ListenLanguageOrder {
-  const next = order === "german-first" ? "german-first" : "english-first";
+  const next = order === "target-first" ? "target-first" : "meaning-first";
   try {
-    window.localStorage.setItem(courseSettingKey(LANGUAGE_ORDER_KEY, direction), next);
+    window.localStorage.setItem(courseSettingKey(SIDE_ORDER_KEY, direction), next);
   } catch { /* keep Listen usable */ }
   return next;
 }
@@ -327,7 +362,7 @@ export type ListenSpeechClip = {
   text: string;
   rate: number;
   lang: string;
-  side: "de" | "en";
+  side: "target" | "meaning";
   /** Silence held before this clip. Set on exactly one clip per card. */
   pauseBeforeMs?: number;
 };
@@ -344,41 +379,44 @@ export type ListenSpeechClip = {
 export function buildListenSpeechPlan({
   de,
   en,
-  germanRepeats,
-  englishRepeats,
+  targetRepeats,
+  meaningRepeats,
   languageOrder,
-  englishLang,
+  meaningLang,
   targetLang = "de-DE",
   languageGapMs,
 }: {
+  /** The line being LEARNED. Named `de` for the field it comes from. */
   de: string;
+  /** The translation beside it. */
   en: string;
-  germanRepeats: number;
-  englishRepeats: number;
+  targetRepeats: number;
+  meaningRepeats: number;
   languageOrder: ListenLanguageOrder;
-  englishLang: string;
-  /** Voice for the `de` side, which is the language being LEARNED — German
-   *  in the original course, French in the French one. Defaults to German so
-   *  the two courses that always were German need not say so. */
+  /** Voice for the translation. */
+  meaningLang: string;
+  /** Voice for the line being learned. Defaults to German, so the course that
+   *  always was German need not say so. */
   targetLang?: string;
   languageGapMs: number;
 }): ListenSpeechClip[] {
-  const german: ListenSpeechClip[] = Array.from(
-    { length: Math.max(0, germanRepeats) },
-    () => ({ text: de, rate: 0.92, lang: targetLang, side: "de" as const })
+  const target: ListenSpeechClip[] = Array.from(
+    { length: Math.max(0, targetRepeats) },
+    () => ({ text: de, rate: 0.92, lang: targetLang, side: "target" as const })
   );
-  // A German word quoted inside the English line is read by the German voice.
-  // The side stays "en" — it is still the meaning half of the card, and the
-  // caption, the gap and the repeat count all belong to the line as a whole.
-  const englishOnce: ListenSpeechClip[] = borrowedWordSegments(en, de, englishLang, targetLang)
-    .map((segment) => ({ text: segment.text, rate: 0.95, lang: segment.lang, side: "en" as const }));
-  const english: ListenSpeechClip[] = Array.from(
-    { length: Math.max(0, englishRepeats) },
-    () => englishOnce
+  // A word of the language being learned, quoted inside the translation, is
+  // read by that language's voice. The side stays "meaning" — it is still the
+  // translation half of the card, and the caption, the gap and the repeat
+  // count all belong to the line as a whole.
+  const meaningOnce: ListenSpeechClip[] = borrowedWordSegments(en, de, meaningLang, targetLang)
+    .map((segment) => ({ text: segment.text, rate: 0.95, lang: segment.lang, side: "meaning" as const }));
+  const meaning: ListenSpeechClip[] = Array.from(
+    { length: Math.max(0, meaningRepeats) },
+    () => meaningOnce
   ).flat();
-  const [first, second] = languageOrder === "english-first"
-    ? [english, german]
-    : [german, english];
+  const [first, second] = languageOrder === "meaning-first"
+    ? [meaning, target]
+    : [target, meaning];
   // Repeats of one language are meant to run together — the pause is the
   // learner's turn to answer, and there is only one place on a card where
   // that is what the silence means.
@@ -592,7 +630,11 @@ export function setListenCurrentItemId(
 export type ListenItem = {
   id: string;
   aliases: string[];
+  /** The line being LEARNED, and the big line on the card. Named for the
+   *  field it is built from; it holds French in the French course and English
+   *  in the English one. */
   de: string;
+  /** What it means, in the language the app is written in. */
   en: string;
   use?: string;
   /** Which of the word's meanings this card teaches, in two or three words.
@@ -793,14 +835,17 @@ export function buildListenQueue(
   // lives in a table keyed by the German, so the slot has to be filled while
   // the German is still what the item carries.
   //
-  // The meaning slot is whatever the app itself is written in. It used to be
+  // `de` is always the language being learned and `en` always the meaning,
+  // whatever course this is. That is new: the English course used to put its
+  // German in the first slot, so the big line at the top of the card was the
+  // one language the learner was NOT there to learn.
+  //
+  // The meaning is whatever the app itself is written in. It used to be
   // English by construction, which was the same thing while the app only ever
   // spoke the two languages the catalogue holds, and stopped being the same
   // thing when French became something the app could be set to: a learner
   // reading a French app was still being told what her German meant in
-  // English. Which of the two slots holds the meaning differs by course — the
-  // English course keeps German in the first one — so this asks rather than
-  // assuming it is the second.
+  // English.
   //
   // An item the table cannot reach leaves the queue, exactly as it does in
   // the French course. A card that quietly falls back to another language is
@@ -808,9 +853,7 @@ export function buildListenQueue(
   // and the repeat count all name a language that card is not in.
   const target = targetLanguage(direction);
   const meaning = meaningLanguageFor(target);
-  const slots = direction === "learn-en"
-    ? { de: meaning, en: target }
-    : { de: target, en: meaning };
+  const slots = { de: target, en: meaning };
   if (slots.de !== "de" || slots.en !== "en") {
     const textFor = (item: ListenItem, language: CourseLanguage): string | null => {
       if (language === "de") return item.de;

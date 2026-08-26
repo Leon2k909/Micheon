@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -84,8 +84,8 @@ const {
   getListenContentSource, setListenContentSource,
   getListenQueueOrder, setListenQueueOrder,
   getListenCurrentItemId, setListenCurrentItemId,
-  getListenGermanRepeats, setListenGermanRepeats,
-  getListenEnglishRepeats, setListenEnglishRepeats,
+  getListenTargetRepeats, setListenTargetRepeats,
+  getListenMeaningRepeats, setListenMeaningRepeats,
   getListenLanguageOrder, setListenLanguageOrder,
   getListenLoopItems, setListenLoopItems,
   arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS,
@@ -95,9 +95,8 @@ const {
   getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan,
   setInterfaceLanguage, setLearningDirection, meaningLanguageFor, targetLanguage, frenchFor,
   ttsSequence, stopTts, DEFAULT_LANGUAGE_GAP_MS,
-  DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
-  DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
-  DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE,
+  DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
+  DEFAULT_LISTEN_CONTENT_SOURCE,
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId, buildWordCatalog, wordLadderRung,
@@ -412,22 +411,41 @@ check("and every card it serves really has that French, rather than falling back
   frenchApp.every((item) => Boolean(item.en && item.en.trim()))
   && frenchApp.length < englishApp.length);
 
-// The English course keeps the meaning in the FIRST slot — it plays the German
-// and then the English twice. So the French belongs there, not opposite it.
+// ── the first slot is the language being LEARNED, in every course ───────
+// The English course used to be the exception: it kept its German first, so
+// the big line at the top of the card was the one language the learner was
+// not there to learn, and the translation sat underneath it in small type.
+//
+// Asserted as one rule over all three courses rather than course by course,
+// and against the source text each side is built from, so it cannot pass by
+// reading a label.
+const germanOf = (id) => englishApp.find((row) => row.id === id)?.de ?? "";
+const englishOf = (id) => englishApp.find((row) => row.id === id)?.en ?? "";
+const LEADS_WITH = {
+  "learn-de": { target: germanOf, meaning: englishOf },
+  "learn-en": { target: englishOf, meaning: germanOf },
+  "learn-fr": { target: (id) => frenchFor(germanOf(id)), meaning: englishOf },
+};
+setInterfaceLanguage("en");
+for (const [direction, sides] of Object.entries(LEADS_WITH)) {
+  const queue = queueFor(direction, "en");
+  check(`${direction} leads with the language it teaches and explains it underneath`,
+    queue.length > 100
+    && queue.every((item) => item.de === sides.target(item.id))
+    && queue.every((item) => item.en === sides.meaning(item.id)));
+}
+// ...and the meaning underneath follows the app, in the courses that can.
 const englishCourseInFrench = queueFor("learn-en", "fr");
-check("the English course puts the French where its German was",
+check("the English course still leads with English when the app is French",
   englishCourseInFrench.length > 100
-  && englishCourseInFrench.every((item) => item.de === frenchFor(
-    englishApp.find((row) => row.id === item.id)?.de ?? ""
-  ))
-  && englishCourseInFrench.every((item) => item.en === englishApp.find((row) => row.id === item.id)?.en));
+  && englishCourseInFrench.every((item) => item.de === englishOf(item.id))
+  && englishCourseInFrench.every((item) => item.en === frenchFor(germanOf(item.id))));
 
-// Nothing changes for the courses as they were: this must not move a card the
-// two original pairings already read correctly.
+// The German course is untouched by any of this: it always led with German.
 setInterfaceLanguage("auto");
-for (const [direction, app] of [["learn-de", "en"], ["learn-de", "de"], ["learn-en", "en"], ["learn-en", "de"]]) {
-  const unchanged = queueFor(direction, app);
-  check(`${direction} in ${app === "de" ? "a German" : "an English"} app is the queue it always was`,
+for (const app of ["en", "de"]) {
+  const unchanged = queueFor("learn-de", app);
+  check(`learn-de in ${app === "de" ? "a German" : "an English"} app is the queue it always was`,
     unchanged.length === englishApp.length
     && unchanged[0]?.de === englishApp[0]?.de
     && unchanged[0]?.en === englishApp[0]?.en);
@@ -709,19 +727,41 @@ check("a timed Listen level returns the item when it is due",
 // ── settings and wiring, from source ────────────────────────────────────
 stored.clear();
 check("the German course defaults to English once, then German twice",
-  DEFAULT_GERMAN_REPEATS === 2
-  && DEFAULT_ENGLISH_REPEATS === 1
-  && DEFAULT_LISTEN_LANGUAGE_ORDER === "english-first"
-  && getListenGermanRepeats("learn-de") === 2
-  && getListenEnglishRepeats("learn-de") === 1
-  && getListenLanguageOrder("learn-de") === "english-first");
-check("the English course defaults to German once, then English twice",
-  DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS === 1
-  && DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS === 2
-  && DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER === "german-first"
-  && getListenGermanRepeats("learn-en") === 1
-  && getListenEnglishRepeats("learn-en") === 2
-  && getListenLanguageOrder("learn-en") === "german-first");
+  DEFAULT_TARGET_REPEATS === 2
+  && DEFAULT_MEANING_REPEATS === 1
+  && DEFAULT_LISTEN_LANGUAGE_ORDER === "meaning-first"
+  && getListenTargetRepeats("learn-de") === 2
+  && getListenMeaningRepeats("learn-de") === 1
+  && getListenLanguageOrder("learn-de") === "meaning-first");
+// One set of defaults for every course now. They needed their own only
+// because the settings were named after languages and the English course's
+// languages sat the other way round; named after the SIDES, the two courses
+// want the same thing and say so.
+check("every course defaults the same way, because the settings are about sides",
+  ["learn-en", "learn-fr"].every((direction) =>
+    getListenTargetRepeats(direction) === 2
+    && getListenMeaningRepeats(direction) === 1
+    && getListenLanguageOrder(direction) === "meaning-first"));
+// A count somebody chose under the old, language-shaped names still applies
+// to the line they chose it for. The English course is the one that moves:
+// its "english repeats" was the count for the line being learned.
+stored.clear();
+stored.set("gl-listen-german-repeats:learn-en", "1");
+stored.set("gl-listen-english-repeats:learn-en", "5");
+stored.set("gl-listen-language-order:learn-en", "german-first");
+stored.set("gl-listen-german-repeats:learn-de", "4");
+stored.set("gl-listen-english-repeats:learn-de", "3");
+stored.set("gl-listen-language-order:learn-de", "german-first");
+check("a count chosen under the old names still applies to the same line",
+  getListenTargetRepeats("learn-en") === 5
+  && getListenMeaningRepeats("learn-en") === 1
+  && getListenLanguageOrder("learn-en") === "meaning-first"
+  && getListenTargetRepeats("learn-de") === 4
+  && getListenMeaningRepeats("learn-de") === 3
+  && getListenLanguageOrder("learn-de") === "target-first");
+stored.clear();
+setLearningDirection("learn-de");
+setInterfaceLanguage("auto");
 check("the next card waits 1.1 seconds by default",
   DEFAULT_NEXT_CARD_DELAY_MS === 1100 && getListenNextCardDelayMs() === 1100);
 check("Listen defaults to a real learning loop rather than one-pass exposure",
@@ -791,26 +831,26 @@ const tailSet = Array.from(
 );
 check("a short final set repeats without wrapping early items into it",
   tailSet.join(",") === "0,1,2,0,1,2,3,4,3,4,0,1,2,0,1");
-setListenGermanRepeats(3, "learn-de");
-setListenEnglishRepeats(4, "learn-de");
-setListenLanguageOrder("german-first", "learn-de");
+setListenTargetRepeats(3, "learn-de");
+setListenMeaningRepeats(4, "learn-de");
+setListenLanguageOrder("target-first", "learn-de");
 setListenLoopItems(4, "learn-de");
 setListenLoopPasses(3, "learn-de");
-setListenGermanRepeats(5, "learn-en");
-setListenEnglishRepeats(6, "learn-en");
-setListenLanguageOrder("english-first", "learn-en");
+setListenTargetRepeats(5, "learn-en");
+setListenMeaningRepeats(6, "learn-en");
+setListenLanguageOrder("meaning-first", "learn-en");
 setListenLoopItems(6, "learn-en");
 setListenLoopPasses(4, "learn-en");
 stored.set("gl-listen-next-card-delay-ms", "2500");
 check("each course keeps its own language and learning-loop repetition plan",
-  getListenGermanRepeats("learn-de") === 3
-  && getListenEnglishRepeats("learn-de") === 4
-  && getListenLanguageOrder("learn-de") === "german-first"
+  getListenTargetRepeats("learn-de") === 3
+  && getListenMeaningRepeats("learn-de") === 4
+  && getListenLanguageOrder("learn-de") === "target-first"
   && getListenLoopItems("learn-de") === 4
   && getListenLoopPasses("learn-de") === 3
-  && getListenGermanRepeats("learn-en") === 5
-  && getListenEnglishRepeats("learn-en") === 6
-  && getListenLanguageOrder("learn-en") === "english-first"
+  && getListenTargetRepeats("learn-en") === 5
+  && getListenMeaningRepeats("learn-en") === 6
+  && getListenLanguageOrder("learn-en") === "meaning-first"
   && getListenLoopItems("learn-en") === 6
   && getListenLoopPasses("learn-en") === 4);
 check("the next-card delay is the learner's to change", getListenNextCardDelayMs() === 2500);
@@ -831,27 +871,32 @@ check("the gap writer clamps to safe limits",
   setListenLanguageGapMs(99_000) === 30_000 && setListenLanguageGapMs(-5) === 0);
 
 const plan = (options) => buildListenSpeechPlan({
-  de: "das Haus", en: "the house", englishLang: "en-GB",
-  germanRepeats: 2, englishRepeats: 2, languageGapMs: 3000,
-  languageOrder: "english-first", ...options,
+  de: "das Haus", en: "the house", meaningLang: "en-GB",
+  targetRepeats: 2, meaningRepeats: 2, languageGapMs: 3000,
+  languageOrder: "meaning-first", ...options,
 });
 const gapsIn = (clips) => clips.map((clip, index) => [index, clip.pauseBeforeMs])
   .filter(([, ms]) => ms != null);
 
 check("the gap is held once, where the card changes language",
   JSON.stringify(gapsIn(plan({}))) === JSON.stringify([[2, 3000]])
-  && plan({})[2].side === "de");
-check("German first puts the same gap ahead of the English",
-  JSON.stringify(gapsIn(plan({ languageOrder: "german-first" }))) === JSON.stringify([[2, 3000]])
-  && plan({ languageOrder: "german-first" })[2].side === "en");
+  && plan({})[2].side === "target");
+check("target first puts the same gap ahead of the meaning",
+  JSON.stringify(gapsIn(plan({ languageOrder: "target-first" }))) === JSON.stringify([[2, 3000]])
+  && plan({ languageOrder: "target-first" })[2].side === "meaning");
 check("repeats of one language stay back-to-back — the gap is not between them",
-  plan({ germanRepeats: 4, englishRepeats: 4 }).filter((clip) => clip.pauseBeforeMs).length === 1
-  && gapsIn(plan({ germanRepeats: 4, englishRepeats: 4 }))[0][0] === 4);
+  plan({ targetRepeats: 4, meaningRepeats: 4 }).filter((clip) => clip.pauseBeforeMs).length === 1
+  && gapsIn(plan({ targetRepeats: 4, meaningRepeats: 4 }))[0][0] === 4);
 check("a zero gap leaves the sequence exactly as it was",
   plan({ languageGapMs: 0 }).every((clip) => clip.pauseBeforeMs === undefined));
 check("a card with only one language has no switch to pause at",
-  plan({ germanRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined)
-  && plan({ englishRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined));
+  plan({ targetRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined)
+  && plan({ meaningRepeats: 0 }).every((clip) => clip.pauseBeforeMs === undefined));
+stored.set("gl-listen-target-repeats:learn-de", "99");
+stored.set("gl-listen-meaning-repeats:learn-de", "0");
+stored.set("gl-listen-side-order:learn-de", "invalid");
+// Corrupt under the old names too, so a bad legacy value cannot creep in
+// through the migration once the current one has been rejected.
 stored.set("gl-listen-german-repeats:learn-de", "99");
 stored.set("gl-listen-english-repeats:learn-de", "0");
 stored.set("gl-listen-language-order:learn-de", "invalid");
@@ -861,17 +906,17 @@ stored.set("gl-listen-loop-items:learn-de", "99");
 stored.set("gl-listen-loop-passes:learn-de", "0");
 stored.set("gl-listen-next-card-delay-ms", "999999");
 check("corrupt Listen settings fall back to documented defaults",
-  getListenGermanRepeats("learn-de") === 2
-  && getListenEnglishRepeats("learn-de") === 1
-  && getListenLanguageOrder("learn-de") === "english-first"
+  getListenTargetRepeats("learn-de") === 2
+  && getListenMeaningRepeats("learn-de") === 1
+  && getListenLanguageOrder("learn-de") === "meaning-first"
   && getListenContentSource("learn-de") === "mixed"
   && getListenQueueOrder("learn-de") === "level"
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2
   && getListenNextCardDelayMs() === 1100);
 check("Listen setting writers clamp typed values to safe limits",
-  setListenGermanRepeats(99, "learn-de") === 10
-  && setListenEnglishRepeats(-4, "learn-de") === 1
+  setListenTargetRepeats(99, "learn-de") === 10
+  && setListenMeaningRepeats(-4, "learn-de") === 1
   && setListenContentSource("invalid", "learn-de") === "mixed"
   && setListenQueueOrder("invalid", "learn-de") === "level"
   && setListenQueueOrder("level", "learn-de") === "level"
@@ -926,13 +971,13 @@ const sides = (options) => plan(options).map((clip) => clip.side).join(" ");
 check("both languages are scheduled in the learner-selected order",
   view.includes("ttsSequence(")
   && view.includes("buildListenSpeechPlan({")
-  && sides({}) === "en en de de"
-  && sides({ languageOrder: "german-first" }) === "de de en en"
+  && sides({}) === "meaning meaning target target"
+  && sides({ languageOrder: "target-first" }) === "target target meaning meaning"
   && plan({}).some((clip) => clip.lang === "de-DE")
   && plan({}).some((clip) => clip.lang === "en-GB"));
 check("German and English repeat independently",
-  sides({ germanRepeats: 3, englishRepeats: 1 }) === "en de de de"
-  && sides({ germanRepeats: 1, englishRepeats: 4 }) === "en en en en de");
+  sides({ targetRepeats: 3, meaningRepeats: 1 }) === "meaning target target target"
+  && sides({ targetRepeats: 1, meaningRepeats: 4 }) === "meaning meaning meaning meaning target");
 check("reviewed word cards explain important secondary meanings on screen",
   view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
 // The player has to agree with the queue about which slot holds which
@@ -943,8 +988,11 @@ check("reviewed word cards explain important secondary meanings on screen",
 check("the player reads its two languages from the course and the app, not from the slot names",
   view.includes("const courseLanguage = targetLanguage(learningDirection);")
   && view.includes("const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);")
-  && view.includes("? { de: meaningLanguage, en: courseLanguage }")
-  && view.includes(": { de: courseLanguage, en: meaningLanguage };")
+  // One form, no course-by-course branch: the first slot is the language
+  // being learned, always. A ternary here is how the English course came to
+  // lead with its German.
+  && view.includes("{ de: courseLanguage, en: meaningLanguage };")
+  && !/slotLanguage[^;]*?[^;]*{ de: meaningLanguage/.test(view)
   && view.includes("const appLanguage = useInterfaceLanguage();")
   && view.includes("meaningLanguage, profile, queueOrder]"));
 
@@ -956,8 +1004,8 @@ check("the playback plan, order switch, and typed repeat counts are visible",
   view.includes('"{meaning} {en}×, then {target} {de}×"')
   && view.includes('"{target} {de}×, then {meaning} {en}×"')
   && view.includes('data-testid={`listen-order-${value}`}')
-  && view.includes('testId="listen-german-repeats"')
-  && view.includes('testId="listen-english-repeats"'));
+  && view.includes('testId="listen-target-repeats"')
+  && view.includes('testId="listen-meaning-repeats"'));
 check("whole items return through a visible, learner-controlled learning loop",
   view.includes("listenQueueIndexForPlayhead(")
   && view.includes("listenPlayheadForQueueIndex(")

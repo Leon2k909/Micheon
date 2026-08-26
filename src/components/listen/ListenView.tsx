@@ -43,8 +43,8 @@ import {
   getListenBackgroundPlayback,
   getListenContentSource,
   getListenCurrentItemId,
-  getListenEnglishRepeats,
-  getListenGermanRepeats,
+  getListenMeaningRepeats,
+  getListenTargetRepeats,
   getListenLanguageGapMs,
   getListenLanguageOrder,
   getListenLoopItems,
@@ -61,8 +61,8 @@ import {
   setListenBackgroundPlayback,
   setListenContentSource,
   setListenCurrentItemId,
-  setListenEnglishRepeats,
-  setListenGermanRepeats,
+  setListenMeaningRepeats,
+  setListenTargetRepeats,
   setListenLanguageGapMs,
   setListenLanguageOrder,
   setListenLoopItems,
@@ -464,8 +464,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [dragPixels, setDragPixels] = useState<{ left: number; top: number } | null>(null);
   const [dragSize, setDragSize] = useState<{ width: number; height: number } | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [germanRepeats, setGermanRepeats] = useState(() => getListenGermanRepeats(learningDirection));
-  const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
+  const [targetRepeats, applyTargetRepeats] = useState(() => getListenTargetRepeats(learningDirection));
+  const [meaningRepeats, applyMeaningRepeats] = useState(() => getListenMeaningRepeats(learningDirection));
   const [languageOrder, setLanguageOrder] = useState(() => getListenLanguageOrder(learningDirection));
   const [nextCardDelayMs, setNextCardDelayMs] = useState(getListenNextCardDelayMs);
   const [languageGapMs, setLanguageGapMs] = useState(getListenLanguageGapMs);
@@ -532,23 +532,22 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   }, [heardIds, queue]);
 
   // Listen's two slots are named after the only two languages it ever had:
-  // `de` is the one being learned and `en` is the meaning beside it. That
-  // held while the courses were German and English — Listen plays the same
-  // German and English either way round, and only the repeat counts differ.
+  // `de` and `en`. Neither name is a language any more — the first slot is
+  // the language being LEARNED, the second is what it means in whatever the
+  // app is written in, and the labels, the voices and the mute state all ask
+  // what is in each slot rather than reading the name.
   //
-  // Neither name is a language any more. The meaning is whatever the app is
-  // written in, so a French app explains a German card in French; and the
-  // English course keeps its meaning in the FIRST slot, which is why the
-  // order is decided here and not by reading `de` as German. The labels, the
-  // voices and the mute state all ask what is in each slot instead. This has
-  // to agree with buildListenQueue, which fills the slots with the text.
-  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } = learningDirection === "learn-en"
-    ? { de: meaningLanguage, en: courseLanguage }
-    : { de: courseLanguage, en: meaningLanguage };
+  // The first slot is the target in every course now. The English course used
+  // to be the exception: it kept its German first, so the big line at the top
+  // of the card was the one language the learner was not there to learn, and
+  // the translation was the small line underneath it. This has to agree with
+  // buildListenQueue, which fills the slots with the text.
+  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } =
+    { de: courseLanguage, en: meaningLanguage };
   const targetSlot = courseSide(slotLanguage.de);
   const meaningSlot = courseSide(slotLanguage.en);
   const targetLang = targetSlot.voice;
-  const englishLang = meaningSlot.voice;
+  const meaningLang = meaningSlot.voice;
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.en]);
   const germanMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.de]);
@@ -561,8 +560,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     stopTts();
     setPlaying(false);
     setSessionActivated(false);
-    setGermanRepeats(getListenGermanRepeats(learningDirection));
-    setEnglishRepeats(getListenEnglishRepeats(learningDirection));
+    applyTargetRepeats(getListenTargetRepeats(learningDirection));
+    applyMeaningRepeats(getListenMeaningRepeats(learningDirection));
     setLanguageOrder(getListenLanguageOrder(learningDirection));
     setLoopItems(getListenLoopItems(learningDirection));
     setMixedCounts(getListenMixedCounts(learningDirection));
@@ -658,15 +657,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const sequence: SeqItem[] = buildListenSpeechPlan({
       de: item.de,
       en: item.en,
-      englishLang,
-      englishRepeats,
-      germanRepeats,
+      meaningLang,
+      meaningRepeats,
+      targetRepeats,
       languageGapMs,
       languageOrder,
       targetLang,
     }).map((clip) => ({
       ...clip,
-      onStart: () => mirrorOnPet(clip.text, clip.side === "de" ? targetLang : englishLang),
+      onStart: () => mirrorOnPet(clip.text, clip.side === "target" ? targetLang : meaningLang),
       onPause: (holding: boolean) => setYourTurn(holding && runRef.current === run),
     }));
     void ttsSequence(sequence).then(() => {
@@ -691,7 +690,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       setYourTurn(false);
       stopTts();
     };
-  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, englishLang, targetLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, targetRepeats, meaningRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, meaningLang, targetLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -1107,15 +1106,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setHiddenIds((current) => new Set(current).add(target.id));
   };
 
-  const commitGermanRepeats = (count: number) => {
-    const next = setListenGermanRepeats(count, learningDirection);
-    setGermanRepeats(next);
+  const commitTargetRepeats = (count: number) => {
+    const next = setListenTargetRepeats(count, learningDirection);
+    applyTargetRepeats(next);
     return next;
   };
 
-  const commitEnglishRepeats = (count: number) => {
-    const next = setListenEnglishRepeats(count, learningDirection);
-    setEnglishRepeats(next);
+  const commitMeaningRepeats = (count: number) => {
+    const next = setListenMeaningRepeats(count, learningDirection);
+    applyMeaningRepeats(next);
     return next;
   };
 
@@ -1318,13 +1317,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
             <span>
-              {languageOrder === "english-first"
+              {languageOrder === "meaning-first"
                 ? uiFmt("{meaning} {en}×, then {target} {de}×", {
-                  de: germanRepeats, en: englishRepeats,
+                  de: targetRepeats, en: meaningRepeats,
                   meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
                 })
                 : uiFmt("{target} {de}×, then {meaning} {en}×", {
-                  de: germanRepeats, en: englishRepeats,
+                  de: targetRepeats, en: meaningRepeats,
                   meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
                 })}
             </span>
@@ -1385,7 +1384,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               data-testid="listen-your-turn"
               style={{ "--gap-duration": `${languageGapMs}ms` } as React.CSSProperties}
             >
-              {ui(YOUR_TURN_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
+              {ui(YOUR_TURN_LABEL[languageOrder === "meaning-first" ? slotLanguage.de : slotLanguage.en])}
               <span aria-hidden="true" className="listen-your-turn__bar">
                 <span className="listen-your-turn__fill" />
               </span>
@@ -1855,8 +1854,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([
-                  ["english-first", FIRST_LABEL[slotLanguage.en]],
-                  ["german-first", FIRST_LABEL[slotLanguage.de]],
+                  ["meaning-first", FIRST_LABEL[slotLanguage.en]],
+                  ["target-first", FIRST_LABEL[slotLanguage.de]],
                 ] as const).map(([value, label]) => {
                   const active = languageOrder === value;
                   return (
@@ -1896,26 +1895,26 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
-                  onCommit={commitGermanRepeats}
+                  onCommit={commitTargetRepeats}
                   suffix="×"
-                  testId="listen-german-repeats"
-                  value={germanRepeats}
+                  testId="listen-target-repeats"
+                  value={targetRepeats}
                 />
                 <NumberSetting
                   label={ui(REPEATS_LABEL[slotLanguage.en])}
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
-                  onCommit={commitEnglishRepeats}
+                  onCommit={commitMeaningRepeats}
                   suffix="×"
-                  testId="listen-english-repeats"
-                  value={englishRepeats}
+                  testId="listen-meaning-repeats"
+                  value={meaningRepeats}
                 />
                 <NumberSetting
                   label={ui("Pause between languages")}
                   max={30}
                   min={0}
-                  note={ui(SAY_IT_FIRST_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
+                  note={ui(SAY_IT_FIRST_LABEL[languageOrder === "meaning-first" ? slotLanguage.de : slotLanguage.en])}
                   onCommit={commitLanguageGapSeconds}
                   step={0.5}
                   suffix={ui("sec")}

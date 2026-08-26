@@ -166,38 +166,38 @@ for (const card of changed) {
 const plan = buildListenSpeechPlan({
   de: "Der, die oder das?",
   en: "Der, die or das?",
-  germanRepeats: 1,
-  englishRepeats: 1,
-  languageOrder: "german-first",
-  englishLang: EN,
+  targetRepeats: 1,
+  meaningRepeats: 1,
+  languageOrder: "target-first",
+  meaningLang: EN,
   targetLang: DE,
   languageGapMs: 900,
 });
-const englishSide = plan.filter((clip) => clip.side === "en");
-assert.ok(englishSide.length > 1,
-  "the English side is still one clip, so the whole line goes to one voice however it was split");
-assert.ok(englishSide.some((clip) => clip.lang === DE), "no part of the English side reaches the German voice");
-assert.ok(englishSide.some((clip) => clip.lang === EN), "the whole English side was handed to the German voice");
+const meaningSide = plan.filter((clip) => clip.side === "meaning");
+assert.ok(meaningSide.length > 1,
+  "the meaning side is still one clip, so the whole line goes to one voice however it was split");
+assert.ok(meaningSide.some((clip) => clip.lang === DE), "no part of the English side reaches the German voice");
+assert.ok(meaningSide.some((clip) => clip.lang === EN), "the whole English side was handed to the German voice");
 // The pause is the learner's turn, and there is one of it.
 assert.strictEqual(plan.filter((clip) => clip.pauseBeforeMs).length, 1,
   "splitting the English side multiplied the pause, so the card now waits between fragments");
-assert.strictEqual(plan.find((clip) => clip.pauseBeforeMs), englishSide[0],
+assert.strictEqual(plan.find((clip) => clip.pauseBeforeMs), meaningSide[0],
   "the pause moved off the point where the card changes language");
 
 // A repeat repeats the whole line, not one fragment of it.
 const twice = buildListenSpeechPlan({
   de: "Der, die oder das?", en: "Der, die or das?",
-  germanRepeats: 1, englishRepeats: 2,
-  languageOrder: "german-first", englishLang: EN, targetLang: DE, languageGapMs: 0,
+  targetRepeats: 1, meaningRepeats: 2,
+  languageOrder: "target-first", meaningLang: EN, targetLang: DE, languageGapMs: 0,
 });
-assert.strictEqual(twice.filter((clip) => clip.side === "en").length, englishSide.length * 2,
+assert.strictEqual(twice.filter((clip) => clip.side === "meaning").length, meaningSide.length * 2,
   "asking for the English twice no longer says the whole line twice");
 
 // An ordinary card is untouched: one clip per side, as before.
 const ordinary = buildListenSpeechPlan({
   de: "Ich bin in der Stadt.", en: "I am in the city.",
-  germanRepeats: 1, englishRepeats: 1,
-  languageOrder: "german-first", englishLang: EN, targetLang: DE, languageGapMs: 900,
+  targetRepeats: 1, meaningRepeats: 1,
+  languageOrder: "target-first", meaningLang: EN, targetLang: DE, languageGapMs: 900,
 });
 assert.strictEqual(ordinary.length, 2, "an ordinary card no longer plays as two clips");
 assert.strictEqual(ordinary[1].lang, EN, "an ordinary English line was handed to the German voice");
