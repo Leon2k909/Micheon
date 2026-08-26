@@ -5,6 +5,7 @@ import { advancedWordPartBlueprints2 } from "./advancedWordPacks2";
 import { b2ExpansionPartBlueprints } from "./b2ExpansionPacks";
 import { everydayWordPartBlueprints } from "./everydayWordPacks";
 import { frequencyWordPartBlueprints } from "./frequencyWordPacks";
+import { roundingWordPartBlueprints } from "./roundingWordPacks";
 import { basicsWordPartBlueprints } from "./basicsWordPacks";
 import { immersionWordPartBlueprints } from "./immersionWordPacks";
 
@@ -8289,6 +8290,7 @@ export const allPartBlueprints: Record<string, Blueprint> = {
 ...immersionWordPartBlueprints,
 ...everydayWordPartBlueprints,
 ...frequencyWordPartBlueprints,
+...roundingWordPartBlueprints,
 ...basicsWordPartBlueprints,
 };
 
