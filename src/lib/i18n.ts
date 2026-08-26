@@ -1,4 +1,9 @@
-import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
+import { DIRECTION_CHANGE_EVENT } from "@/lib/direction";
+import {
+  INTERFACE_LANGUAGE_CHANGE_EVENT,
+  INTERFACE_STRINGS_READY_EVENT,
+  resolveInterfaceLanguage,
+} from "@/lib/interfaceLanguage";
 
 /**
  * The interface tables, fetched when the interface is in that language.
@@ -39,7 +44,16 @@ export function ensureInterfaceStrings(language: string): Promise<unknown> {
   const already = uiInFlight.get(language);
   if (already) return already;
   const request = UI_LOADERS[language]()
-    .then((table) => { UI_TABLES[language] = table; uiInFlight.delete(language); })
+    .then((table) => {
+      UI_TABLES[language] = table;
+      uiInFlight.delete(language);
+      // ui() is a plain lookup read during render, so nothing re-reads it on
+      // its own. Without this the table arrives into a screen that never
+      // redraws, and the fallback English stays on it.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent<string>(INTERFACE_STRINGS_READY_EVENT, { detail: language }));
+      }
+    })
     // A failed fetch shows English rather than nothing, and lets the next ask
     // try again. Never a blank screen over a translation.
     .catch((error) => { uiInFlight.delete(language); console.error("interface strings:", error); });
@@ -47,6 +61,30 @@ export function ensureInterfaceStrings(language: string): Promise<unknown> {
   return request;
 }
 
+
+/**
+ * Fetch the table for whatever language is in force now, whenever that changes.
+ *
+ * main.tsx fetches the one the app STARTS in, which was the whole job while
+ * both tables were compiled in and therefore always present. Downloaded per
+ * language, the language can change to one whose table was never fetched —
+ * from the picker in settings, or from switching course while the interface
+ * follows the course — and ui() then answers with its English key. The app
+ * turned English and stayed English until it was restarted, in whichever
+ * language was chosen next.
+ *
+ * These are the same four events the interface-language store subscribes to,
+ * deliberately: the fetch must not be triggered by fewer things than the
+ * re-render, or the app redraws in English while the table it needs is never
+ * asked for.
+ */
+if (typeof window !== "undefined") {
+  const follow = () => { void ensureInterfaceStrings(resolveInterfaceLanguage()); };
+  window.addEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, follow);
+  window.addEventListener(DIRECTION_CHANGE_EVENT, follow);
+  window.addEventListener("storage-sync-completed", follow);
+  window.addEventListener("storage", follow);
+}
 
 /**
  * The table for the language in force, or null when the app is in English.

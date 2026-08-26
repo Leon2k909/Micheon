@@ -70,6 +70,49 @@ for (const table of ["i18nDe", "i18nFr"]) {
 }
 
 /**
+ * ...AND IT FOLLOWS THE LANGUAGE AFTER STARTUP, NOT ONLY AT IT.
+ *
+ * main.tsx fetches the table the app STARTS in. That was the whole job while
+ * both tables were compiled in and therefore always present. Fetched per
+ * language, the language can change to one whose table was never asked for —
+ * from the picker in settings, or from switching course while the interface
+ * follows the course — and ui() then answers with its English key.
+ *
+ * Measured before this was pinned: a German app set to French turned ENGLISH,
+ * not French, and stayed English through every further change until it was
+ * restarted. Nothing about it reads as a fault from inside the code; it looks
+ * like an app somebody forgot to translate.
+ *
+ * Both halves are held here because either one alone is silent. A fetch with
+ * no redraw lands a table into a screen that never reads it again; a redraw
+ * with no fetch redraws in English.
+ */
+const interfaceLanguage = fs.readFileSync(path.join(src, "lib", "interfaceLanguage.ts"), "utf8");
+
+// The fetch. Both events, because the language can change without the picker:
+// on "auto" it is derived from the course.
+for (const event of ["INTERFACE_LANGUAGE_CHANGE_EVENT", "DIRECTION_CHANGE_EVENT"]) {
+  assert.ok(i18n.includes(`addEventListener(${event}`),
+    `i18n.ts does not follow ${event}, so a language change asks ui() for a table nobody `
+    + "fetched. The app falls back to English and stays there until it is restarted");
+}
+assert.ok(/ensureInterfaceStrings\(resolveInterfaceLanguage\(\)\)/.test(i18n),
+  "i18n.ts listens for the language changing but does not fetch the table for the language now "
+  + "in force, which is the only thing that listening was for");
+
+// The redraw. ui() is a plain lookup read during render: a table landing
+// changes nothing on screen unless the tree is told.
+assert.ok(/dispatchEvent\([^)]*INTERFACE_STRINGS_READY_EVENT/.test(i18n),
+  "a landed interface table announces nothing, so the app keeps rendering the English it fell "
+  + "back to while the German or French it fetched sits there unread");
+assert.ok(interfaceLanguage.includes("addEventListener(INTERFACE_STRINGS_READY_EVENT"),
+  "the interface-language store ignores a table arriving, so nothing re-renders when it does");
+assert.ok(!/useSyncExternalStore\(\s*subscribe,\s*resolveInterfaceLanguage/.test(interfaceLanguage),
+  "the store's snapshot is the language alone. It does not change when the table for that "
+  + "language arrives — it was already \"fr\" — so React compares the two snapshots, finds them "
+  + "equal and skips the render that would have shown French");
+
+/**
  * The German table did not lose entries on the way out of i18n.ts.
  *
  * It was moved wholesale, and the file it came from is edited on essentially
