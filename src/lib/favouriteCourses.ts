@@ -13,6 +13,20 @@ const KEY = "favourite-courses";
 /** Fired when the list changes, so an open switcher redraws both sections. */
 export const FAVOURITE_COURSES_EVENT = "favourite-courses-changed";
 
+/**
+ * Whether the section is open. Open to begin with: the point of putting them
+ * at the top is being able to see them.
+ */
+const OPEN_KEY = "favourite-courses-open";
+
+export function getFavouritesOpen(profile: UserProfile | null = getAuthUser()): boolean {
+  return loadScopedJson<unknown>(OPEN_KEY, true, profile) !== false;
+}
+
+export function setFavouritesOpen(open: boolean, profile: UserProfile | null = getAuthUser()) {
+  saveScopedJson(OPEN_KEY, open, profile);
+}
+
 export function getFavouriteCourses(profile: UserProfile | null = getAuthUser()): string[] {
   const raw = loadScopedJson<unknown>(KEY, [], profile);
   return Array.isArray(raw) ? raw.filter((id): id is string => typeof id === "string" && id.length > 0) : [];

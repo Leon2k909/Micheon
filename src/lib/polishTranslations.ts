@@ -207,6 +207,10 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "hinten": "z tyłu",
   "links": "na lewo",
   "rechts": "na prawo",
+  // The noun, glossed "the left" — the side and the politics both, which is
+  // what "lewa strona" and "lewica" split between them in Polish. The card is
+  // a general one, so it takes the side.
+  "die Linke": "lewa strona",
   "geradeaus": "prosto",
   "drinnen": "w środku",
   "draußen": "na zewnątrz",
@@ -251,6 +255,7 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "klar": "jasne",
   "genau": "dokładnie",
   "wirklich": "naprawdę",
+  "unbedingt": "koniecznie",
   "echt": "serio",
   "einfach": "po prostu",
   "kurz": "krótko",
@@ -1184,6 +1189,7 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "geschlossen": "zamknięty",
   "teuer": "drogi",
   "billig": "tani",
+  "billiger": "tańszy",
   "günstig": "korzystny cenowo",
   "kostenlos": "darmowy",
   "richtig": "poprawny",
@@ -6488,6 +6494,7 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "Die Überstunden baue ich nächste Woche ab.": "Nadgodziny odbiorę w przyszłym tygodniu.",
   "Beschreib die Beschwerden so genau wie möglich.": "Opisz dolegliwości tak dokładnie, jak się da.",
   "planen": "planować",
+  "geplant": "zaplanowany",
   "Danach informierst du den Vermieter, schriftlich.": "Potem informujesz wynajmującego, pisemnie.",
   "Wadenwickel helfen besser, als man denkt.": "Chłodne okłady na łydki pomagają lepiej, niż się sądzi.",
   "Die Bestellung soll in zwanzig Minuten da sein.": "Zamówienie ma być za dwadzieścia minut.",
