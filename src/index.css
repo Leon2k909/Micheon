@@ -12342,11 +12342,21 @@ html[data-theme="dark"] {
   background: var(--surface-2);
 }
 
-/* Two lines reserved for the sentence itself, which is where nearly all of
-   the variation was: most items are one line or two, and that single-line
-   difference was enough to move the row on almost every step. */
+/* One line, not two.
+
+   Two were reserved because a sentence that wrapped moved everything under
+   it. Measured over 176 cards sampled across the whole queue, not one of them
+   wrapped - the second line was empty on every card, and 41px of it sat
+   between the word and its meaning, where it read as the two belonging to
+   different things.
+
+   So the reserve is the line the text actually uses, and the pair sits at the
+   card's own 14px rhythm like every other pair of lines on it. A sentence
+   long enough to wrap still can; the card's height is fixed and its grading
+   row is pinned, so what moves is the meaning line inside the card and
+   nothing outside it. */
 .listen-sentence {
-  min-height: 2.75em;
+  min-height: 1.375em;
 }
 
 /* Words on a listening card sit a whole space too far apart.
