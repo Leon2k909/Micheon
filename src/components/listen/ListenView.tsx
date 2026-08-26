@@ -106,6 +106,11 @@ import {
 import type { LearningDirection } from "@/lib/direction";
 import { useCodexPets, type CodexPetVoiceLanguage } from "@/components/codexPets/CodexPetProvider";
 import { useInterfaceLanguage } from "@/lib/interfaceLanguage";
+import {
+  ensureTranslations,
+  isTranslationLoaded,
+  TRANSLATIONS_LOADED_EVENT,
+} from "@/lib/translations";
 
 type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
 
@@ -416,6 +421,30 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const courseLanguage = targetLanguage(learningDirection);
   const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);
 
+  /**
+   * The meaning's table, if it is one that has to be fetched.
+   *
+   * The catalogue is built with every table this setup needs already in hand,
+   * so on a cold start there is nothing to wait for here. Switching the app's
+   * language while Listen is OPEN is the case this covers: the queue rebuilds
+   * on the new meaning language immediately, and a card whose translation has
+   * not arrived is dropped — so without this the screen goes empty for as long
+   * as the download takes and then fills in, which reads as a fault.
+   */
+  const [translationsRevision, setTranslationsRevision] = useState(0);
+  useEffect(() => {
+    if (meaningLanguage !== "fr" && meaningLanguage !== "pl") return undefined;
+    if (isTranslationLoaded(meaningLanguage)) return undefined;
+    let live = true;
+    const onLoaded = () => { if (live) setTranslationsRevision((n) => n + 1); };
+    window.addEventListener(TRANSLATIONS_LOADED_EVENT, onLoaded);
+    void ensureTranslations(meaningLanguage);
+    return () => {
+      live = false;
+      window.removeEventListener(TRANSLATIONS_LOADED_EVENT, onLoaded);
+    };
+  }, [meaningLanguage]);
+
   const baseQueue = useMemo<ListenItem[]>(
     () => (everOpened
       ? buildListenQueue(apiParts, loadGradeStore(profile), {
@@ -424,7 +453,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         order: queueOrder,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder, translationsRevision]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(

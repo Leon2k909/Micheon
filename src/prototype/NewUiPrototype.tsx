@@ -86,7 +86,7 @@ import {
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
 import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, setLearningDirection } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
+import { courseSides, translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { buildCatalog } from "@/session";
@@ -3910,7 +3910,7 @@ function usePrototypeParts(requested: boolean) {
       }
 
       /**
-       * The course's own language before the course.
+       * Every language on screen before anything is built from it.
        *
        * French and Polish are read out of a table that is fetched rather than
        * bundled, so that a learner doing German alone never downloads them.
@@ -3918,11 +3918,15 @@ function usePrototypeParts(requested: boolean) {
        * still in flight and every entry it would have translated is dropped,
        * which shows up as a course that is simply missing lessons rather than
        * as anything that looks like an error.
+       *
+       * The COURSE is not the only thing that reads those tables. Listen
+       * explains a card in whatever the app is written in, so a German course
+       * in a French app needs French as much as the French course does —
+       * asking the course alone answered "nothing" and left Listen empty.
        */
       const rebuild = async () => {
         if (!active) return;
-        const needed = direction.translationLanguageFor(direction.getLearningDirection());
-        if (needed) await translations.ensureTranslations(needed);
+        await Promise.all(translationLanguagesNeeded().map(translations.ensureTranslations));
         if (!active) return;
         setApiParts(curriculum.orderParts(contentBank.filterPartsForLearningDirection({
           ...resolved,
@@ -3936,9 +3940,13 @@ function usePrototypeParts(requested: boolean) {
       const onRebuild = () => { void rebuild(); };
       window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
       window.addEventListener("gl-direction-change", onRebuild);
+      // Changing the app's language changes which table is needed, not just
+      // which words are on the buttons.
+      window.addEventListener("gl-interface-language-change", onRebuild);
       removeListeners = () => {
         window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
         window.removeEventListener("gl-direction-change", onRebuild);
+        window.removeEventListener("gl-interface-language-change", onRebuild);
       };
     };
 

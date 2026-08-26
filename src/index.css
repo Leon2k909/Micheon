@@ -12261,21 +12261,24 @@ html[data-theme="dark"] {
      the middle, where the optional lines appear. */
   display: flex;
   flex-direction: column;
-  /* A floor, not a ceiling.
+  /* One height, taken once.
 
-     It was fixed at 360px so the controls could not walk about, and the rare
-     item that overran was left to scroll inside the card. Measured, that item
-     is not rare: a word carrying a register pill, a two-line use note and a
-     list of synonyms needs 518px, and an ordinary one 358px. Anchoring the
-     top put all 160px of that overrun at the foot, where it took the two
-     grading buttons off the bottom of the card - the one thing on it that
-     has to be reachable.
+     A floor was tried, and a floor is not enough: measured over 176 cards
+     sampled across the whole queue, the card came out 360px on 122 of them,
+     370 on 36, 388 on 14, 411 on 2 and 425 on 2. Every one of those steps
+     moved Play, Back and Next down the page, so pressing Next repeatedly
+     means clicking where the button was a moment ago.
 
-     So the card grows for the items that need it. The top still does not
-     move, which is what the anchoring was for; the controls now sit lower on
-     a full card than on a bare one, which is the price of their being on it
-     at all. */
-  min-height: 360px;
+     440px covers the 99th percentile of that sample with room over it, and
+     the card takes it whether or not this item needs it. Most cards carry
+     some empty space above the grading row now; that is the cost of nothing
+     below the card ever moving, and it is worth paying.
+
+     The rarer item still overruns - a word with a register pill, a two-line
+     use note AND a list of synonyms reaches 518px - and scrolls inside the
+     card. The grading row is sticky, so it stays on screen while that
+     happens: it is the only thing here that has to be reachable. */
+  height: 440px;
   overflow-y: auto;
   /* One gap for the whole card, set here rather than on each line.
 
@@ -12323,6 +12326,13 @@ html[data-theme="dark"] {
   /* Held at the foot, so the buttons are in the same place on every card. */
   margin-top: auto;
   padding-top: 14px;
+  /* ...and held there while the card scrolls, for the one item in a thousand
+     that overruns the reserve. Grading is the only thing on this card that
+     has to be reachable, and a fixed height without this put it below the
+     fold on exactly the items that are hardest to judge. */
+  position: sticky;
+  bottom: 0;
+  background: var(--surface-2);
 }
 
 /* Two lines reserved for the sentence itself, which is where nearly all of
@@ -12332,11 +12342,27 @@ html[data-theme="dark"] {
   min-height: 2.75em;
 }
 
+/* Words on a listening card sit a whole space too far apart.
+   Every word is its own box so it can be hovered, and that box carries
+   0.08em of padding on each side to keep the hover highlight off the
+   letters. Padding is width, so at this size the gap between two words was a
+   space plus 0.16em - about half a space again - and "Setz dich doch" read
+   as three separate things rather than a sentence.
+   The padding stays and stops counting: a matching negative margin takes it
+   back out of the layout, so the highlight is still padded and the words
+   advance at the width the font asked for. */
+.listen-sentence .fs-word {
+  margin-inline: -0.08em;
+}
+
 @media (max-width: 640px) {
   /* Narrower lines wrap more, so the reserve is deeper rather than the card
-     being allowed to breathe up and down on a phone. */
+     being allowed to breathe up and down on a phone. Measured the same way at
+     430px wide, the same 176 cards run to 494px. This said 340px, which
+     min-height overrode: the card was 360px there and the tallest items were
+     scrolling nearly half their content out of sight. */
   .listen-card {
-    height: 340px;
+    height: 500px;
   }
 }
 
