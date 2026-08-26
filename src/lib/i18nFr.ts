@@ -2484,6 +2484,7 @@ export const FR: Record<string, string> = {
   "No favourites yet.": "Aucun favori pour l'instant.",
   "Save to favourites": "Ajouter aux favoris",
   "Remove from favourites": "Retirer des favoris",
+  "Add to favourites": "Ajouter aux favoris",
   "Leave session": "Quitter la séance",
   "Question {n} of {total}": "Question {n} sur {total}",
   "Wrong {n}x": "{n} fois fausse",

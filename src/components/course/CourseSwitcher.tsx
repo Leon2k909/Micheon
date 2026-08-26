@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Lock, Search } from "lucide-react";
+import { X, Check, Lock, Search, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
+import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, toggleFavouriteCourse } from "@/lib/favouriteCourses";
 import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
@@ -148,11 +149,47 @@ export function CourseSwitcher({
    * still find Persian without pressing anything first.
    */
   const [showAllLanguages, setShowAllLanguages] = useState(false);
+  /**
+   * Starred courses, newest last. Read on mount and kept in step through the
+   * event, so starring in one place redraws both sections at once.
+   */
+  const [favourites, setFavourites] = useState<string[]>(() => getFavouriteCourses());
+  useEffect(() => {
+    const refresh = () => setFavourites(getFavouriteCourses());
+    window.addEventListener(FAVOURITE_COURSES_EVENT, refresh);
+    return () => window.removeEventListener(FAVOURITE_COURSES_EVENT, refresh);
+  }, []);
+  const isFavourite = (id: string) => favourites.includes(id);
+  const star = (id: string) => setFavourites(toggleFavouriteCourse(id));
   const searching = Boolean(normalizedQuery);
-  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages });
-  const hiddenLanguageCount = languages.length - shownLanguages.length;
-  const programming = visibleCourses.filter((c) => c.kind === "programming");
-  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
+  /**
+   * Starred courses come out of their own section and go to the top.
+   *
+   * Not while searching: then the question is whether a language is in here at
+   * all, and an answer split across two sections is half hidden.
+   *
+   * English is one card standing for two ids, so it counts as starred if
+   * either spelling is — and it is starred under the UK id, which is the one
+   * the card hands to the store.
+   */
+  const englishStarred = Boolean(mergedEnglish) && (isFavourite("english-uk") || isFavourite("english-us"));
+  const groupFavourites = !searching && favourites.length > 0;
+  const isPickedOut = (id: string) => groupFavourites && isFavourite(id);
+
+  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages })
+    .filter((c) => !isPickedOut(c.id));
+  const hiddenLanguageCount = languages.length - visibleLanguageRows(languages, { searching, showAll: showAllLanguages }).length;
+  const programming = visibleCourses.filter((c) => c.kind === "programming" && !isPickedOut(c.id));
+  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship" && !isPickedOut(c.id));
+
+  /** In the order they were starred, so the section does not reshuffle. */
+  const favouriteCourses = groupFavourites
+    ? favourites
+        .filter((id) => !(mergedEnglish && (id === "english-uk" || id === "english-us")))
+        .map((id) => visibleCourses.find((c) => c.id === id))
+        .filter((c): c is (typeof COURSES)[number] => Boolean(c))
+    : [];
+  const favouriteRowCount = favouriteCourses.length + (groupFavourites && englishStarred ? 1 : 0);
   const countryOnly = scope === "country";
 
   useEffect(() => {
@@ -168,6 +205,38 @@ export function CourseSwitcher({
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open, onClose]);
+
+  /**
+   * A span with a button role rather than a button: the card around it is
+   * already one, and a button inside a button is invalid markup that screen
+   * readers flatten. The sidebar's pressable flag is built the same way.
+   */
+  const FavouriteStar = ({ id }: { id: string }) => {
+    const on = isFavourite(id);
+    const label = on ? ui("Remove from favourites") : ui("Add to favourites");
+    return (
+      <span
+        aria-label={label}
+        aria-pressed={on}
+        className={cn(
+          "grid h-7 w-7 shrink-0 place-items-center rounded-full transition-colors",
+          on ? "text-[var(--np-yellow,#f0b429)]" : "text-[var(--text-3)] hover:text-[var(--text-1)]"
+        )}
+        onClick={(event) => { event.stopPropagation(); star(id); }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          star(id);
+        }}
+        role="button"
+        tabIndex={0}
+        title={label}
+      >
+        <Star className={cn("h-4 w-4", on && "fill-current")} />
+      </span>
+    );
+  };
 
   const Card = ({ id, name, tagline, available, builtIn }: (typeof COURSES)[number]) => {
     const active = id === activeCourseId || id === activeCountryCourseId;
@@ -199,6 +268,7 @@ export function CourseSwitcher({
           </span>
           <span className="mt-1 block text-[13px] font-bold leading-5 text-[var(--text-3)]">{ui(tagline)}</span>
         </span>
+        {available && <FavouriteStar id={id} />}
         {active ? (
           <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />
         ) : !available ? (
@@ -251,6 +321,7 @@ export function CourseSwitcher({
               {ui("Same course, two spellings and accents. Pick one — you can swap any time.")}
             </span>
           </span>
+          <FavouriteStar id={uk.id} />
           {activeVariant && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
         </div>
 
@@ -350,6 +421,21 @@ export function CourseSwitcher({
             </label>
 
             <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
+              {favouriteRowCount > 0 && (
+                <>
+                  <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
+                    {ui("Favourites")}
+                    <span className="ml-2 font-bold normal-case tracking-normal opacity-70">
+                      {favouriteRowCount}
+                    </span>
+                  </p>
+                  <div className="mt-2 grid gap-2">
+                    {englishStarred && mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
+                    {favouriteCourses.map((c) => <Card key={c.id} {...c} />)}
+                  </div>
+                </>
+              )}
+
               {!countryOnly && languageRowCount > 0 && (
                 <>
                   <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
@@ -362,7 +448,7 @@ export function CourseSwitcher({
                     {/* English sits at the top of the list: it is the one a
                         German speaker here is most likely to want, and the
                         merged card is taller than the rest. */}
-                    {mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
+                    {mergedEnglish && !(groupFavourites && englishStarred) && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
                     {shownLanguages.map((c) => <Card key={c.id} {...c} />)}
                   </div>
                   {hiddenLanguageCount > 0 && (

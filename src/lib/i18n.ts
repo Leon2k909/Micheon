@@ -2623,6 +2623,7 @@ const DE: Record<string, string> = {
   "No favourites yet.": "Noch keine Favoriten.",
   "Save to favourites": "Zu Favoriten hinzufügen",
   "Remove from favourites": "Aus Favoriten entfernen",
+  "Add to favourites": "Zu Favoriten hinzufügen",
   "Leave session": "Runde verlassen",
   "Question {n} of {total}": "Frage {n} von {total}",
   "Wrong {n}x": "{n}× falsch",
