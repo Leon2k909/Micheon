@@ -127,6 +127,30 @@ check(
   storageSource.includes('"gl-"')
 );
 
+// The header's three figures all belong to one course.
+//
+// The lesson counter already did. XP and the session log did not, so the same
+// header could say both that nothing had been done in this course and that a
+// life had: 221 lessons dropped to 0 on the way to German while 13,860 XP and
+// 16 days stayed put.
+const storage = fs.readFileSync(path.join(root, "src/lib/profileStorage.ts"), "utf8");
+for (const key of ['"totalXp"', '"activity-log"', '"sessionsCompleted"']) {
+  const at = storage.indexOf("DIRECTION_SCOPED_KEYS");
+  const set = storage.slice(at, storage.indexOf("]);", at));
+  check(
+    key + " belongs to the course that earned it",
+    set.includes(key)
+  );
+}
+// And the re-run hands the pre-split store to the course that earned it, not
+// to whichever one is open. Getting this wrong credits a course the learner
+// has not started with a life's worth of lessons.
+check(
+  "the split re-run copies into the direction an earlier run recorded",
+  storage.includes("earlierSplitDirection(profileId) ?? currentDirection()")
+    && storage.includes('const EARLIER_SPLIT_KEYS = ["gl-direction-split-v2", "gl-direction-split"];')
+);
+
 if (failures) {
   console.error(`\n${failures} language-split regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

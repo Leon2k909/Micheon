@@ -219,12 +219,16 @@ check("completed active time persists per profile", loaded.totalActiveMs === 600
 check("completed lesson count persists", loaded.completedLessons === 1);
 check("known-item progress persists", loaded.totalProgressGained === 4);
 check("lesson identity is retained for diagnostics", loaded.samples[0]?.lessonId === "part-test");
-const activityLog = JSON.parse(storage.getItem("activity-log:timing-test") || "[]");
+// The session log is kept per course now, the same as the grades and the
+// lesson counter, so its key carries the direction. Nothing is set here, and
+// learn-de is what an unset direction resolves to.
+const ACTIVITY_LOG_TEST_KEY = "activity-log@learn-de:timing-test";
+const activityLog = JSON.parse(storage.getItem(ACTIVITY_LOG_TEST_KEY) || "[]");
 check("timing reuses the shared activity log", activityLog.length === 1);
 check("new records are marked as active-timed", activityLog[0]?.activeTimed === true);
 check("legacy wall-clock records cannot be mistaken for active timing", activityLog[0]?.timingVersion === 1);
 check("record returns the same persisted aggregate", JSON.stringify(stored) === JSON.stringify(loaded));
-storage.setItem("activity-log:timing-test", JSON.stringify([
+storage.setItem(ACTIVITY_LOG_TEST_KEY, JSON.stringify([
   ...activityLog,
   { ts: 999, durationSec: 900, sentences: 20, dialogues: 0, activeTimed: true },
 ]));

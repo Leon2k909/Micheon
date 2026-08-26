@@ -405,6 +405,15 @@ const DIRECTION_SCOPED_KEYS = new Set([
   // and showing that beside 0% of a pack nobody has opened in this direction
   // is the same contradiction, one line further down.
   "sessionsCompleted",
+  // And the two figures beside it in the header. They were the last ones
+  // still counting a life rather than a course, which read as a loss the
+  // moment the course changed: 221 lessons went to 0 while 13,860 XP and 16
+  // days stayed, so the same header said both that nothing had been done here
+  // and that a great deal had. XP carries the level and the milestones with
+  // it, and the session log carries this week, the activity card and the pace
+  // estimate - all of them answers about one course.
+  "totalXp",
+  "activity-log",
 ]);
 
 /** Marker for the one-time copy described at the top of this file. */
@@ -412,7 +421,19 @@ const DIRECTION_SCOPED_KEYS = new Set([
 // otherwise never be handed to the direction that earned it. Bumping this
 // re-runs the copy, and the copy skips any target that already has a value,
 // so nothing written since is overwritten.
-const DIRECTION_SPLIT_KEY = "gl-direction-split-v2";
+const DIRECTION_SPLIT_KEY = "gl-direction-split-v3";
+
+/**
+ * The markers left by earlier runs, newest first.
+ *
+ * A re-run must hand the pre-split store to the course that EARNED it, not to
+ * whichever one happens to be open. Those are the same thing only on the run
+ * that first split a profile; by v3 a learner may well have moved on, and
+ * copying a life's XP onto a course they have not started would credit them
+ * for lessons they never did. The earlier marker recorded the direction it
+ * ran for, which is exactly that answer.
+ */
+const EARLIER_SPLIT_KEYS = ["gl-direction-split-v2", "gl-direction-split"];
 
 // Read straight from storage rather than through direction.ts: that module
 // imports this one for the shared mirror, so asking it here would be a cycle
@@ -444,13 +465,27 @@ export function getScopedKey(key: string, profile: UserProfile | null) {
  * later switch to the other direction — cannot claim the same data twice.
  * Runs lazily on first read so no startup order has to be arranged for it.
  */
+/** Which direction an earlier split ran for, if one did. */
+function earlierSplitDirection(profileId: string): string | null {
+  if (typeof window === "undefined") return null;
+  for (const earlier of EARLIER_SPLIT_KEYS) {
+    try {
+      const recorded = window.localStorage.getItem(`${earlier}:${profileId}`);
+      if (recorded && KNOWN_DIRECTIONS.has(recorded)) return recorded;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 function migrateDirectionScoped(profile: UserProfile | null) {
   if (typeof window === "undefined") return;
   const profileId = profile?.id || "default";
   const marker = `${DIRECTION_SPLIT_KEY}:${profileId}`;
   try {
     if (window.localStorage.getItem(marker)) return;
-    const direction = currentDirection();
+    const direction = earlierSplitDirection(profileId) ?? currentDirection();
     window.localStorage.setItem(marker, direction);
     for (const key of DIRECTION_SCOPED_KEYS) {
       const legacy = window.localStorage.getItem(`${key}:${profileId}`);
