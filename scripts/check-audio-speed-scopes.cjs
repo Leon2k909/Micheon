@@ -110,7 +110,16 @@ assert(
   !guided.includes("<SpeechSpeedControl") && /<MuteButton[\s\S]{0,200}panelClassName="prototype-audio-mixer"/.test(guided),
   "the lesson lost its route to speech speed — the audio mixer must stay in its header"
 );
-assert(voice.includes("rate * getTtsSpeechRate(lang)"), "playback ignores the clip language's speed");
+// Matched inside effectiveRate rather than as one exact line: what matters is
+// that the clip's pace is multiplied by the language's own setting, not what
+// the left-hand operand is called. It is no longer plain `rate` — a word short
+// enough that the authored slowdown would spoil it drops that slowdown first —
+// and the learner's setting must survive that, which check-short-word-pace
+// asserts by running the arithmetic rather than by reading it.
+assert(
+  /function effectiveRate\([\s\S]{0,400}\* getTtsSpeechRate\(lang\)/.test(voice),
+  "playback ignores the clip language's speed"
+);
 
 console.log("per-language speech speed, legacy migration, Master batching, and all speed surfaces passed");
 })().catch((error) => {

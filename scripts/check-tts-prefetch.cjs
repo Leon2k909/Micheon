@@ -29,8 +29,20 @@ const matcher = fs.readFileSync(path.join(root, "src/components/matcher/MatcherV
 // or it warms a different cache from the one a tap reads.
 assert.ok(/export function preloadTts\(/.test(voice), "preloadTts is gone");
 const preloadBody = voice.slice(voice.indexOf("export function preloadTts("));
-assert.ok(/getAudioUrl\(spokenText, effectiveRate\(rate, lang\), lang\)/.test(preloadBody.slice(0, 600)),
+// The text is part of that agreement, not decoration. A word short enough that
+// the authored slowdown would spoil it is spoken at a different rate from the
+// one this would otherwise work out, so a preload that omits the text warms an
+// entry under the wrong key — and warms it for exactly the short words the
+// warming was added to help.
+assert.ok(/getAudioUrl\(spokenText, effectiveRate\(rate, lang, spokenText\), lang\)/.test(preloadBody.slice(0, 700)),
   "preloadTts no longer fills the cache playback reads, so warming it achieves nothing");
+
+// And the other side of the same agreement: playback must work the rate out
+// from the same three things. Pinned here as well because this check's whole
+// purpose is that the two calls match, and reading only one of them would let
+// them drift apart with this still green.
+assert.ok(/const rate = effectiveRate\(item\.rate \?\? DEFAULT_RATE, lang, text\);/.test(voice),
+  "playback works its rate out from different inputs than the preload, so the warmed entry is never the one read");
 
 // ── the Matcher board warms itself ──────────────────────────────────────────
 assert.ok(/preloadTts/.test(matcher), "the Matcher board never warms its audio");
