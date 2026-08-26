@@ -144,8 +144,31 @@ assert.ok(
   "the dialog marks the active row from the language course alone again"
 );
 
+// ── and flies its own flag there ─────────────────────────────────────────
+// The artwork picks by course id. A country course's id is in neither the
+// gradient list nor the flag art keyed by language, so all three rows fell
+// through to the globe placeholder — three identical rows for three
+// countries, in a dialog whose whole job is telling them apart.
+assert.ok(
+  /const countryFlagId = COUNTRY_PACKS\.find\(\(entry\) => entry\.course\.id === id\)\?\.flagId;/.test(switcher)
+  && /if \(countryFlagId\) return <FlagRoundel id=\{countryFlagId\} \/>;/.test(switcher),
+  "a country row in the dialog no longer takes its flag from the pack, so it would show a globe"
+);
+const flagIds = [...packs.matchAll(/\n {2}flagId: "([a-z-]+)",/g)].map((m) => m[1]);
+assert.strictEqual(
+  flagIds.length, ids.length,
+  `${ids.length} country packs but ${flagIds.length} flags — a country would fall back to the globe`
+);
+const flagArt = read("src/components/course/FlagRoundel.tsx");
+for (const flagId of flagIds) {
+  assert.ok(
+    new RegExp(`\\n {2}"?${flagId}"?:`).test(flagArt),
+    `"${flagId}" has no flag drawing, so that country would show a globe instead`
+  );
+}
+
 console.log(
   `check-country-picker: ${ids.length} countries, each named by its own pack and translated, `
-  + "changed through the same dialog as a language, ticked there, and routed to the "
-  + "country choice rather than the language course"
+  + "flying its own flag in the dialog, changed through the same dialog as a language, "
+  + "ticked there, and routed to the country choice rather than the language course"
 );

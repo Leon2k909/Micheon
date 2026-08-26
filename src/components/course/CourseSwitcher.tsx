@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
+import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
 import { ui, uiFmt } from "@/lib/i18n";
@@ -30,6 +31,14 @@ function foldForSearch(value: string) {
 }
 
 function CourseArtwork({ id }: { id: string }) {
+  // A country course is not a language, so its id appears in neither the
+  // gradient list below nor the flag art keyed by language — every one of
+  // them fell through to the globe placeholder. The pack knows which flag
+  // its country flies, which is the same one the sidebar and the home card
+  // already draw for it.
+  const countryFlagId = COUNTRY_PACKS.find((entry) => entry.course.id === id)?.flagId;
+  if (countryFlagId) return <FlagRoundel id={countryFlagId} />;
+
   if (id === "csharp") {
     return (
       <img
