@@ -136,7 +136,13 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // apprenticeship, the building site, the workshop, the materials, the verbs a
 // quote lists and the invoice that follows. 26 fold into synonym cards, so the
 // faces move 8,603 -> 8,689.
-assert.equal(taughtWords, 9386, "the reviewed sense fixes changed the standalone word count");
+// 9386 -> 9492: parts 625-630 answer the mountain and the wood at 70 per cent.
+// 107 words for the climb, the way-marking, a night under canvas, the country
+// a walk crosses, what lives there, and the weather that turns it dangerous.
+// Only 5 fold into existing synonym cards - the highest yield of the six
+// blocks, because almost nothing up a mountain has a second name in a course
+// written around a town. The faces move 8,689 -> 8,791.
+assert.equal(taughtWords, 9492, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
