@@ -62,10 +62,15 @@ const catalog = buildWordCatalog(parts);
 // quietly hide a lost word behind a smaller catalogue.
 const absorbedSynonyms = catalog.flatMap((word) => word.synonyms ?? []);
 const taughtWordCount = catalog.length + absorbedSynonyms.length;
-// Eight thousand, and a floor rather than a target: the inventory only ever
-// grows, and a drop means a pack was dropped or a seed stopped resolving
-// rather than that anybody decided to teach less. Raise it when it rises.
-assert(taughtWordCount >= 8000, `only ${taughtWordCount} taught words — the word inventory has shrunk`);
+// A floor rather than a target: the inventory only ever grows, and a drop
+// means a pack was dropped or a seed stopped resolving rather than that
+// anybody decided to teach less. Raise it when it rises.
+assert(taughtWordCount >= 8554, `only ${taughtWordCount} taught words — the word inventory has shrunk`);
+// The number the learner reads is the CARD count, which is what the tracker
+// lists one per row — 8,000 of them, and the floor is here rather than only on
+// the inventory because a fold that swallowed a card would leave the inventory
+// untouched and the library visibly shorter.
+assert(catalog.length >= 8000, `only ${catalog.length} word cards — the tracker has lost rows`);
 assert(catalog.every((w) => w.id.startsWith(WORD_ID_PREFIX)), "a word id escaped the vw- namespace");
 assert(catalog.every((w) => w.en.trim().length > 0), "a word without a gloss is being taught");
 assert(catalog.every((word) => {

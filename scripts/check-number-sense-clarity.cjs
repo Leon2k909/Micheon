@@ -97,7 +97,17 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // cards that already existed, so the faces move 7,330 -> 7,468 while the words
 // taught move by 155: drucken is the one that does not arrive at all, dropped
 // by the catalogue's own filters before it becomes a card.
-assert.equal(taughtWords, 8000, "the reviewed sense fixes changed the standalone word count");
+// 8000 -> 8554: parts 561-584 take the TRACKER to eight thousand cards, which
+// is the number a learner reads — the inventory had already been rounded, but
+// it counts synonyms that share a face and the library still said 7,468. 570
+// authored words, every one checked against the built catalogue rather than
+// the pack files, so a word already taught under another spelling did not
+// count as new: the courtroom and the letting agent, the building site and the
+// toolbox, the farm and the wood, the kitchen and the label on the packet, the
+// stage, the canvas and the forge. 16 never arrive — the catalogue's own
+// filters drop them — and 22 of the 554 that do fold into synonym cards that
+// already existed, so the faces move 7,468 -> 8,000 exactly.
+assert.equal(taughtWords, 8554, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
