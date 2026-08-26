@@ -182,6 +182,7 @@ import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
+import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
@@ -444,7 +445,7 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
  * The face of the language card.
  *
  * Keyed on the language being learned rather than on a German-or-not flag,
- * which handed French the German scene for as long as it lasted. All three
+ * which handed French the German scene for as long as it lasted. All four
  * courses have their own now, and an unknown code still falls back rather
  * than being given somebody else's country. British and
  * American English are the same course read with a different spelling, so
@@ -454,9 +455,8 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
 function languageCardArt(targetCode: string, englishVariant: "british" | "american" | null) {
   if (targetCode === "de") return homeLanguagesGermanImage;
   if (targetCode === "fr") return homeLanguagesFrImage;
+  if (targetCode === "pl") return homeLanguagesPlImage;
   if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
-  // Polish has no painting of its own yet and falls through to the default,
-  // which is the one thing about the course that is still borrowed.
   return homeLanguagesImage;
 }
 
