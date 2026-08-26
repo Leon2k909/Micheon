@@ -155,7 +155,15 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // sending it back, the warehouse behind the shop, a border crossing, the cover
 // a German household is expected to have, and the paperwork either side of the
 // money. 14 fold into synonym cards, so the faces move 8,790 -> 8,865.
-assert.equal(taughtWords, 9573, "the reviewed sense fixes changed the standalone word count");
+// 9573 -> 9715: parts 638-648 close the six blocks on exactly nine thousand
+// cards. Health probed at 75 per cent and the first pass found only 51 new
+// words, so the block widened into what the field touches: the body past a
+// first course, the test results, the ambulance, the pharmacy, the recovery
+// and the German health system in its own words. 149 words, 18 of which fold
+// into synonym cards. The last four - das Blutdruckmessgeraet, das
+// Desinfektionsmittel, die Waermflasche, die Arzthelferin - were written after
+// a count came in at 8,996, because nine thousand was the number asked for.
+assert.equal(taughtWords, 9715, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
