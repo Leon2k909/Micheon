@@ -78,7 +78,16 @@ const M = load([
   'export { audioLanguageFromTag, isTtsLanguageMuted, setTtsLanguageMuted, getTtsAudioVolume } from "./src/lib/audioMute.ts";',
   'export { learningFlagId } from "./src/lib/learningFlag.ts";',
   'export { translationCount } from "./src/lib/translations.ts";',
+  'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+  'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+  'export { primeTranslations } from "./src/lib/translations.ts";',
 ].join("\n"));
+
+// The tables are fetched at runtime so a German-only learner never downloads
+// them; here every language is wanted at once, and there is no event loop to
+// await one on.
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 const failures = [];
 function check(what, ok) {

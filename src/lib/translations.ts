@@ -1,6 +1,3 @@
-import { FRENCH_BY_GERMAN } from "@/lib/frenchTranslations";
-import { POLISH_BY_GERMAN } from "@/lib/polishTranslations";
-
 /**
  * One translation layer for every language, so adding one is adding a file.
  *
@@ -25,6 +22,23 @@ import { POLISH_BY_GERMAN } from "@/lib/polishTranslations";
  * tell "laut" the preposition (selon) from "laut" the adjective (bruyant).
  * Those belong on the entry itself, where the context is known — which is
  * exactly what the inline fields are for, and why inline always wins below.
+ *
+ * WHY THE TABLES ARE FETCHED, NOT IMPORTED. They used to be two static
+ * imports, which put every language into one chunk that the entry chunk
+ * pulled in — so a learner doing German alone downloaded French and Polish at
+ * startup and never opened either. Measured at 786 KB, growing by roughly
+ * 450 KB per language added. The design above says a language should be one
+ * more file; eagerly importing it made a language one more file EVERYBODY
+ * pays for.
+ *
+ * So a table arrives when its course does. translate() stays synchronous —
+ * it is called from render — and answers null for a table not yet here,
+ * which is the same answer it already gave for a word a table does not
+ * cover, so no caller needed changing. What DOES need care is asking for the
+ * table before the course is built: a French lesson assembled while the
+ * table is still in flight would quietly come out short, because entries
+ * without a translation are dropped rather than shown in German. That is
+ * what ensureTranslations is for, and why the course boot awaits it.
  */
 
 /** A language we hold translations for. Add the code when you add the table. */
@@ -33,17 +47,89 @@ export type TranslationLanguage = "fr" | "pl";
 /** German text → that language's translation. */
 export type TranslationTable = Record<string, string>;
 
-const TABLES: Record<TranslationLanguage, TranslationTable> = {
-  fr: FRENCH_BY_GERMAN,
-  pl: POLISH_BY_GERMAN,
+/**
+ * How to fetch each table. The import is inside the function on purpose: a
+ * top-level one is resolved at build time and lands in the startup chunk,
+ * which is the whole fault being fixed.
+ */
+const LOADERS: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
+  fr: () => import("@/lib/frenchTranslations").then((m) => m.FRENCH_BY_GERMAN),
+  pl: () => import("@/lib/polishTranslations").then((m) => m.POLISH_BY_GERMAN),
 };
 
-export const TRANSLATION_LANGUAGES = Object.keys(TABLES) as TranslationLanguage[];
+export const TRANSLATION_LANGUAGES = Object.keys(LOADERS) as TranslationLanguage[];
 
 export const TRANSLATION_LANGUAGE_NAMES: Record<TranslationLanguage, string> = {
   fr: "French",
   pl: "Polish",
 };
+
+/** Tables that have arrived. Empty until a course asks for one. */
+const TABLES: Partial<Record<TranslationLanguage, TranslationTable>> = {};
+/** In-flight requests, so ten callers at once cause one download. */
+const inFlight = new Map<TranslationLanguage, Promise<TranslationTable>>();
+
+/** Fired when a table lands, so anything already on screen can draw again. */
+export const TRANSLATIONS_LOADED_EVENT = "gl-translations-loaded";
+
+export function isTranslationLoaded(language: TranslationLanguage): boolean {
+  return Boolean(TABLES[language]);
+}
+
+/**
+ * Have a language's table ready, fetching it once if it is not.
+ *
+ * Await this before building anything for that course. Everything after it is
+ * synchronous, so the rest of the app is unchanged.
+ */
+export function ensureTranslations(language: TranslationLanguage): Promise<TranslationTable> {
+  const ready = TABLES[language];
+  if (ready) return Promise.resolve(ready);
+  const already = inFlight.get(language);
+  if (already) return already;
+  const load = LOADERS[language];
+  if (!load) return Promise.resolve({});
+  const request = load()
+    .then((table) => {
+      TABLES[language] = table;
+      inFlight.delete(language);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(TRANSLATIONS_LOADED_EVENT, { detail: { language } }));
+      }
+      return table;
+    })
+    .catch((error) => {
+      // A failed fetch must not wedge the language for the rest of the
+      // session: dropping the record lets the next ask try again, and the
+      // course meanwhile behaves as it does for an untranslated entry.
+      inFlight.delete(language);
+      console.error(`Could not load ${language} translations:`, error);
+      return {} as TranslationTable;
+    });
+  inFlight.set(language, request);
+  return request;
+}
+
+/** Every table at once — for build scripts and checks, never for the app. */
+export async function ensureAllTranslations(): Promise<void> {
+  await Promise.all(TRANSLATION_LANGUAGES.map(ensureTranslations));
+}
+
+/**
+ * Hand a table straight in, for the build scripts and the gate.
+ *
+ * Those run as synchronous CommonJS with no event loop to wait on, and they
+ * genuinely do want every language at once — measuring coverage across all of
+ * them is the job. They import the tables themselves and prime them here,
+ * which keeps the awaiting version honest for the app instead of adding a
+ * synchronous path nothing in the browser should take.
+ *
+ * check-language-loading refuses any call to this from src/, so it cannot
+ * quietly become the way the app loads a language.
+ */
+export function primeTranslations(language: TranslationLanguage, table: TranslationTable): void {
+  TABLES[language] = table;
+}
 
 /**
  * The translation for an entry, preferring whatever the entry itself carries.
@@ -83,11 +169,14 @@ export function translationCount(language: TranslationLanguage): number {
  *   1. Write src/lib/<name>Translations.ts exporting a Record<string, string>
  *      keyed by the German, to the standard in frenchTranslations.ts — what a
  *      speaker would actually say, at the register the German uses.
- *   2. Import it here, add the code to TranslationLanguage, and put it in
- *      TABLES and TRANSLATION_LANGUAGE_NAMES.
- *   3. check-translation-coverage walks TRANSLATION_LANGUAGES, so the new language
- *      is measured and floored from its first run without any change to the
- *      gate.
+ *   2. Add the code to TranslationLanguage, then put a loader in LOADERS and
+ *      a name in TRANSLATION_LANGUAGE_NAMES. The loader must keep its import
+ *      inside the arrow, or the table joins the startup chunk and every
+ *      learner downloads it.
+ *   3. check-translation-coverage walks TRANSLATION_LANGUAGES, so the new
+ *      language is measured and floored from its first run without any change
+ *      to the gate. check-language-loading refuses a static import of any
+ *      table, so step 2 cannot be got wrong quietly.
  *
  * No pack file is edited at any point, which is the whole design.
  */

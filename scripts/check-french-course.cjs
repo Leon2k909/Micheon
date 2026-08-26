@@ -75,7 +75,15 @@ const M = load([
   'export { buildScenarios } from "./src/lib/conversationScenarios.ts";',
   'export { audioLanguageFromTag, isTtsLanguageMuted, setTtsLanguageMuted, getTtsAudioVolume } from "./src/lib/audioMute.ts";',
   'export { learningFlagId } from "./src/lib/learningFlag.ts";',
+  'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+  'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+  'export { primeTranslations } from "./src/lib/translations.ts";',
 ].join("\n"));
+// The tables are fetched on demand in the app, so a German-only learner
+// never downloads them. A check has no event loop to await one on and wants
+// every language at once, so it hands them in directly.
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 const failures = [];
 function check(what, ok) {

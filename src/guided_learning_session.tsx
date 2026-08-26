@@ -14,7 +14,8 @@ import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isR
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman, translationLanguageFor } from "@/lib/direction";
+import { ensureTranslations } from "@/lib/translations";
 import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import {
@@ -361,18 +362,26 @@ export default function GuidedLearningSession() {
     // The learner's own words go in last so they are packs like any other:
     // lessons, tracker, search and tests all read this one map, so nothing
     // downstream needs to know where a phrase came from.
-    const rebuild = () =>
+    // The course's own translation table is fetched rather than bundled, so
+    // that German-only learners never download it. Built before it lands, a
+    // French or Polish catalogue silently comes out short: an entry the table
+    // does not cover is dropped, not shown in German.
+    const rebuild = async () => {
+      const needed = translationLanguageFor(getLearningDirection());
+      if (needed) await ensureTranslations(needed);
       setApiParts(orderParts(filterPartsForLearningDirection({
         ...resolved,
         ...buildBundledParts(),
         ...buildTatoebaParts(),
         ...buildCustomParts(),
       })));
-    rebuild();
-    window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-    window.addEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    };
+    const onRebuild = () => { void rebuild(); };
+    onRebuild();
+    window.addEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, onRebuild);
     return () => {
-      window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
+      window.removeEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
       window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
     };
   }, []);

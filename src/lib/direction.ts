@@ -13,6 +13,23 @@ export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 // polishCourse.ts, which is frenchCourse.ts with its own vocabulary.
 export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl";
 
+/**
+ * Which translation table a direction cannot be built without.
+ *
+ * German and English are both written on the entry, so they need nothing.
+ * The others are read out of a table keyed by the German, and an entry the
+ * table does not cover is DROPPED rather than shown untranslated — so a
+ * course assembled before its table arrives is not merely unstyled, it is
+ * short. Anything building a catalogue awaits this first.
+ */
+export function translationLanguageFor(
+  direction: LearningDirection
+): "fr" | "pl" | null {
+  if (direction === "learn-fr") return "fr";
+  if (direction === "learn-pl") return "pl";
+  return null;
+}
+
 const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */

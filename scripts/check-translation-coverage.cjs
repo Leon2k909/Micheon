@@ -23,7 +23,14 @@ const root = path.resolve(__dirname, "..");
 
 const built = esbuild.buildSync({
   stdin: {
-    contents: 'export * from "./src/lib/translations.ts";',
+    contents: [
+      'export * from "./src/lib/translations.ts";',
+      // Imported here rather than fetched: the tables load on demand in the
+      // app so a German-only learner never downloads them, and this measures
+      // every language at once with no event loop to await one on.
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+    ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
   },
@@ -41,6 +48,12 @@ compiled.filename = path.join(root, ".translations.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const { TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, translate, translationTable } = compiled.exports;
+// The tables are fetched at runtime so a German-only learner never
+// downloads them; here every language is wanted at once, and there is no
+// event loop to await one on.
+const M = compiled.exports;
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');

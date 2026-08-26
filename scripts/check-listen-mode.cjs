@@ -59,6 +59,9 @@ const result = esbuild.buildSync({
       'export { buildCatalog } from "./src/session.ts";',
       'export { cefrRung, cefrRungLabel } from "./src/lib/cefr.ts";',
       'export { wordDifficultyRung } from "./src/lib/wordSession.ts";',
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -106,6 +109,12 @@ const {
   buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
+// The tables are fetched on demand in the app, so a German-only learner
+// never downloads them. A check has no event loop to await one on and wants
+// every language at once, so it hands them in directly.
+const M = compiled.exports;
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 // Asked for rather than assembled: lesson state is stored per learning
 // direction now, so the address is "session-completed@learn-de:default" and

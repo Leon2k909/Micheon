@@ -34,6 +34,9 @@ const built = esbuild.buildSync({
       'export { buildListenQueue } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore } from "./src/lib/activity.ts";',
       'export { translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES } from "./src/lib/translations.ts";',
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { primeTranslations } from "./src/lib/translations.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
     ].join("\n"),
@@ -63,6 +66,12 @@ const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
   filterPartsForLearningDirection, buildListenQueue, loadGradeStore,
   translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, buildCatalog,
   buildWordCatalog } = compiled.exports;
+// The tables are fetched at runtime so a German-only learner never
+// downloads them; here every language is wanted at once, and there is no
+// event loop to await one on.
+const M = compiled.exports;
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 /**
  * How far in each band reaches, and how much of it must be translated.

@@ -32,6 +32,9 @@ const built = esbuild.buildSync({
       'export { buildBundledParts, filterPartsForLearningDirection } from "./src/lib/contentBank.ts";',
       'export { buildScenarios, learnerLines, replyOptions, learnerTurnIndexes, MIN_SCENARIO_TURNS } from "./src/lib/conversationScenarios.ts";',
       'export { frenchFor } from "./src/lib/frenchCourse.ts";',
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "conversation-entry.ts",
@@ -58,6 +61,12 @@ compiled._compile(built.outputFiles[0].text, compiled.filename);
 const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
   filterPartsForLearningDirection, buildScenarios, learnerLines, replyOptions,
   learnerTurnIndexes, MIN_SCENARIO_TURNS, frenchFor } = compiled.exports;
+// The tables are fetched on demand in the app, so a German-only learner
+// never downloads them. A check has no event loop to await one on and wants
+// every language at once, so it hands them in directly.
+const M = compiled.exports;
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 const blueprint = {};
 for (const [key, bp] of Object.entries(allPartBlueprints)) {

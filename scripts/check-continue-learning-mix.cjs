@@ -32,6 +32,9 @@ const result = esbuild.buildSync({
       } from "./src/lib/memoryStrength.ts";
       export { gradeEntryForId, setCanonicalGradeRecord } from "./src/lib/activity.ts";
       export { finishLessonAndQueueNext } from "./src/lib/lessonFlow.ts";
+      export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";
+      export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";
+      export { primeTranslations } from "./src/lib/translations.ts";
     `,
     resolveDir: root,
     sourcefile: "continue-learning-check-entry.ts",
@@ -72,6 +75,12 @@ const {
   recordAnswerPerformance,
   setStrengthLevel,
 } = compiled.exports;
+// The tables are fetched on demand in the app, so a German-only learner
+// never downloads them. A check has no event loop to await one on and wants
+// every language at once, so it hands them in directly.
+const M = compiled.exports;
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 let failures = 0;
 function check(name, condition) {

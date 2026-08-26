@@ -3878,12 +3878,14 @@ function usePrototypeParts(requested: boolean) {
     let removeListeners = () => {};
 
     const load = async () => {
-      const [api, curriculum, contentBank, customContent, data] = await Promise.all([
+      const [api, curriculum, contentBank, customContent, data, translations, direction] = await Promise.all([
         import("@/lib/api"),
         import("@/lib/curriculum"),
         import("@/lib/contentBank"),
         import("@/lib/customContent"),
         import("@/lib/data"),
+        import("@/lib/translations"),
+        import("@/lib/direction"),
       ]);
       if (!active) return;
 
@@ -3892,7 +3894,20 @@ function usePrototypeParts(requested: boolean) {
         resolved[key] = api.buildApiPartFromResolved(blueprint as Blueprint, {});
       }
 
-      const rebuild = () => {
+      /**
+       * The course's own language before the course.
+       *
+       * French and Polish are read out of a table that is fetched rather than
+       * bundled, so that a learner doing German alone never downloads them.
+       * The cost of that is this await: build the catalogue while the table is
+       * still in flight and every entry it would have translated is dropped,
+       * which shows up as a course that is simply missing lessons rather than
+       * as anything that looks like an error.
+       */
+      const rebuild = async () => {
+        if (!active) return;
+        const needed = direction.translationLanguageFor(direction.getLearningDirection());
+        if (needed) await translations.ensureTranslations(needed);
         if (!active) return;
         setApiParts(curriculum.orderParts(contentBank.filterPartsForLearningDirection({
           ...resolved,
@@ -3902,12 +3917,13 @@ function usePrototypeParts(requested: boolean) {
         })));
       };
 
-      rebuild();
-      window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
-      window.addEventListener("gl-direction-change", rebuild);
+      void rebuild();
+      const onRebuild = () => { void rebuild(); };
+      window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
+      window.addEventListener("gl-direction-change", onRebuild);
       removeListeners = () => {
-        window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
-        window.removeEventListener("gl-direction-change", rebuild);
+        window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
+        window.removeEventListener("gl-direction-change", onRebuild);
       };
     };
 

@@ -1,0 +1,150 @@
+#!/usr/bin/env node
+/**
+ * A language is downloaded by the people learning it, and nobody else.
+ *
+ * The translation tables are the biggest thing in the app that most learners
+ * never need: French is 443 KB of source and Polish 474 KB, and there are 84
+ * languages planned. They used to be two static imports in translations.ts,
+ * which put every language into one chunk that the ENTRY chunk pulled in — so
+ * a learner doing German alone downloaded all of them at startup, measured at
+ * 786 KB, growing by roughly 450 KB with each one added.
+ *
+ * They are fetched on demand now. One line undoes that: a static import of a
+ * table anywhere the app can reach turns it back into part of the bundle, and
+ * nothing about the app looks different when it happens — it is simply slower
+ * to start, for everyone, for ever.
+ *
+ * So this reads the built output rather than the intent. The entry chunk is
+ * followed through its imports, and the tables must not be reachable from it.
+ */
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+
+const root = path.resolve(__dirname, "..");
+const src = path.join(root, "src");
+const dist = path.join(root, "dist", "assets");
+
+// ── the source says what it means ───────────────────────────────────────────
+const TABLES = ["frenchTranslations", "polishTranslations"];
+const walk = (dir, out = []) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full, out);
+    else if (/\.tsx?$/.test(entry.name)) out.push(full);
+  }
+  return out;
+};
+const sources = walk(src);
+
+for (const file of sources) {
+  const text = fs.readFileSync(file, "utf8");
+  for (const table of TABLES) {
+    const staticImport = new RegExp(`^\\s*import\\s[^\\n]*from\\s+["']@?[./\\w]*${table}["']`, "m");
+    assert.ok(!staticImport.test(text),
+      `${path.relative(root, file)} imports ${table} statically. That is ~450 KB welded into the `
+      + "bundle for every learner, including the ones who will never open that course — use the "
+      + "loader in translations.ts, whose import sits inside a function on purpose");
+  }
+}
+
+// The loaders themselves have to stay inside the arrow, or they resolve at
+// build time and the table joins the startup chunk anyway.
+const translations = fs.readFileSync(path.join(src, "lib", "translations.ts"), "utf8");
+for (const table of TABLES) {
+  assert.ok(new RegExp(`\\(\\) => import\\("@/lib/${table}"\\)`).test(translations),
+    `${table} has no lazy loader in translations.ts, so nothing fetches it on demand`);
+}
+
+// A course cannot be built before its table lands: an entry the table does
+// not cover is DROPPED, so the lesson comes out short rather than untranslated.
+assert.ok(/export function translationLanguageFor/.test(
+  fs.readFileSync(path.join(src, "lib", "direction.ts"), "utf8")),
+  "nothing says which table a direction needs, so a catalogue can be built without it");
+for (const file of ["prototype/NewUiPrototype.tsx", "guided_learning_session.tsx"]) {
+  const text = fs.readFileSync(path.join(src, file), "utf8");
+  assert.ok(text.includes("ensureTranslations"),
+    `${file} builds a catalogue without waiting for the course's translations, so a French or `
+    + "Polish course assembled at startup silently comes out short");
+}
+
+// primeTranslations is the synchronous door for build scripts. The app must
+// never take it, or the tables are back in the bundle by another name.
+for (const file of sources) {
+  if (file.endsWith(path.join("lib", "translations.ts"))) continue;
+  assert.ok(!fs.readFileSync(file, "utf8").includes("primeTranslations"),
+    `${path.relative(root, file)} calls primeTranslations, which is for the gate and the build `
+    + "scripts — in the app it means handing in a table that had to be bundled to be handed in");
+}
+
+// ── and the build agrees ────────────────────────────────────────────────────
+// Intent is not enough: a re-export somewhere else can drag a table back into
+// the startup path without a static import ever appearing above.
+if (!fs.existsSync(dist)) {
+  console.log("check-language-loading: source is correct; no dist to measure (run the build first)");
+  process.exit(0);
+}
+const html = fs.readFileSync(path.join(root, "dist", "index.html"), "utf8");
+const entry = [...html.matchAll(/assets\/([A-Za-z0-9_-]+\.js)/g)].map((m) => m[1]);
+assert.ok(entry.length > 0, "no entry scripts found in dist/index.html");
+
+const chunkText = new Map();
+const read = (name) => {
+  if (!chunkText.has(name)) {
+    const full = path.join(dist, name);
+    chunkText.set(name, fs.existsSync(full) ? fs.readFileSync(full, "utf8") : "");
+  }
+  return chunkText.get(name);
+};
+
+/** Everything the entry can reach without a user doing anything. */
+const reachable = new Set();
+const queue = [...entry];
+while (queue.length) {
+  const name = queue.pop();
+  if (reachable.has(name)) continue;
+  reachable.add(name);
+  const text = read(name);
+  for (const match of text.matchAll(/["'.\/]([A-Za-z0-9_-]+-[A-Za-z0-9_]{8}\.js)["']/g)) {
+    if (!reachable.has(match[1])) queue.push(match[1]);
+  }
+}
+
+/**
+ * A phrase from inside each table, not the name of its export.
+ *
+ * "POLISH_BY_GERMAN" was tried first and it reports the wrong thing: the
+ * loader reads that property off the module it fetches, so the name is
+ * written into the chunk holding the LOADER, which is exactly the chunk that
+ * is supposed to be reachable. Only the content proves the table itself came
+ * along.
+ */
+const FINGERPRINTS = [
+  ["French", "Qu'est-ce que tu veux"],
+  ["Polish", "przynajmniej"],
+];
+const carrying = [];
+for (const name of reachable) {
+  const text = read(name);
+  for (const [language, needle] of FINGERPRINTS) {
+    // data-*.js legitimately holds inline French written onto entries; it is
+    // the TABLE that must not be reachable.
+    if (name.startsWith("data-")) continue;
+    if (text.includes(needle)) carrying.push(`${language} in ${name}`);
+  }
+}
+assert.deepStrictEqual(carrying, [],
+  "a translation table is reachable from the entry chunk, so every learner downloads it at "
+  + `startup whatever course they are taking: ${carrying.join(", ")}`);
+
+const startup = [...reachable].reduce((total, name) => {
+  const full = path.join(dist, name);
+  return total + (fs.existsSync(full) ? fs.statSync(full).size : 0);
+}, 0);
+
+console.log(
+  `check-language-loading: no table is imported statically, each has a loader, both catalogue `
+  + `boots wait for it, and none of the ${reachable.size} chunks reachable at startup `
+  + `(${(startup / 1024).toFixed(0)} KB) carries one`
+);
+process.exit(0);

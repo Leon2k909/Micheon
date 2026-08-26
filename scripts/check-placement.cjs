@@ -28,6 +28,9 @@ const built = esbuild.buildSync({
       'export * from "./src/lib/placementTest.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "placement-entry.ts",
@@ -47,6 +50,11 @@ compiled.filename = path.join(root, ".placement.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const M = compiled.exports;
+// The tables are fetched on demand in the app, so a German-only learner
+// never downloads them. A check has no event loop to await one on and wants
+// every language at once, so it hands them in directly.
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 // ── the question bank ───────────────────────────────────────────────────────
 const LEVELS = M.PLACEMENT_LEVELS;
