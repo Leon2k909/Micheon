@@ -121,13 +121,27 @@ for (const [guard, what] of [
     `${what} still shows when the chooser was opened to change a country — which is how "change the country" ends up changing the language`
   );
 }
-// Favourites are one list across the whole catalogue, and the section that
-// shows them sits above everything else. Unscoped it puts a starred LANGUAGE
-// at the top of the country picker, past the guards above — a language row in
-// a dialog for choosing a country, one click from changing the wrong thing.
+// The two halves do not overlap: the catalogue itself is filtered before any
+// section, any favourite or any search result is worked out. Guarding each
+// section separately left the favourites — which sit above them all — showing
+// a starred language at the top of the country picker, and left the country
+// courses listed in the language one.
 assert.ok(
-  /\.filter\(\(c\) => !countryOnly \|\| c\.kind === "citizenship"\)/.test(switcher),
-  "the favourites section is not scoped, so a starred language would head the country picker"
+  /const inScope = useCallback\(/.test(switcher)
+  && /\(course: \(typeof COURSES\)\[number\]\) => \(scope === "country"/.test(switcher)
+  && /\? course\.kind === "citizenship"/.test(switcher)
+  && /: course\.kind !== "citizenship"\),/.test(switcher),
+  "the catalogue is no longer split by scope, so each dialog can show the other one's courses"
+);
+assert.ok(
+  /const scopedCourses = useMemo\(\(\) => COURSES\.filter\(inScope\), \[inScope\]\);/.test(switcher)
+  && /if \(!normalizedQuery\) return scopedCourses;/.test(switcher)
+  && /return scopedCourses\.filter\(\(course\) => \{/.test(switcher),
+  "the sections or the search still read the unscoped catalogue"
+);
+assert.ok(
+  !/\.filter\(\(c\) => !countryOnly \|\| c\.kind === "citizenship"\)/.test(switcher),
+  "the favourites carry their own scope filter as well — one place to get this right, not two"
 );
 assert.ok(
   /const englishStarred = !countryOnly && Boolean\(mergedEnglish\)/.test(switcher),
@@ -140,6 +154,17 @@ assert.ok(
   /countryOnly \? citizenship\.length \+ favouriteRowCount === 0/.test(switcher),
   "the empty state ignores favourites, so starring every country would claim there are none"
 );
+// And the language dialog says what it now actually offers.
+assert.ok(
+  /: "Pick a language or a programming track."\)\}/.test(switcher),
+  "the language dialog still offers a country course in its own subtitle"
+);
+for (const table of ["src/lib/i18nDe.ts", "src/lib/i18nFr.ts"]) {
+  assert.ok(
+    read(table).includes('"Pick a language or a programming track."'),
+    `${table} has no translation for the language dialog's subtitle, so it would show in English`
+  );
+}
 
 assert.ok(
   !/np-home-content-menu--country/.test(shell),
