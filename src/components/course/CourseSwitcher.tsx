@@ -215,10 +215,14 @@ export function CourseSwitcher({
   }, []);
   const isFavourite = (id: string) => favourites.includes(id);
   const star = (id: string) => setFavourites(toggleFavouriteCourse(id));
-  const [favouritesOpen, setFavouritesOpenState] = useState(() => getFavouritesOpen());
+  // Keyed on the scope, so the two dialogs fold independently — and reset
+  // when the dialog is reopened in the other scope, which is what the key
+  // in the state is for.
+  const [favouritesOpen, setFavouritesOpenState] = useState(() => getFavouritesOpen(scope));
+  useEffect(() => setFavouritesOpenState(getFavouritesOpen(scope)), [scope]);
   const toggleFavourites = () => {
     setFavouritesOpenState((was) => {
-      setFavouritesOpen(!was);
+      setFavouritesOpen(!was, scope);
       return !was;
     });
   };

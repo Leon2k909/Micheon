@@ -166,6 +166,29 @@ for (const table of ["src/lib/i18nDe.ts", "src/lib/i18nFr.ts"]) {
   );
 }
 
+// ── each dialog folds its own favourites ─────────────────────────────────
+// The two sections hold different lists, so one shared open/shut flag folded
+// the languages away when you folded the countries — in a dialog you were not
+// looking at, and only noticed the next time you opened it.
+const favourites = read("src/lib/favouriteCourses.ts");
+assert.ok(
+  /export type FavouritesSection = "all" \| "country";/.test(favourites),
+  "the favourites section has no notion of which dialog it is in"
+);
+assert.ok(
+  /"favourite-courses-open-country"/.test(favourites)
+  && /"favourite-courses-open"/.test(favourites),
+  "the two dialogs no longer keep their fold state under separate keys"
+);
+assert.ok(
+  /getFavouritesOpen\(scope\)/.test(switcher) && /setFavouritesOpen\(!was, scope\)/.test(switcher),
+  "the switcher reads or writes the fold state without saying which dialog it is"
+);
+assert.ok(
+  /useEffect\(\(\) => setFavouritesOpenState\(getFavouritesOpen\(scope\)\), \[scope\]\);/.test(switcher),
+  "reopening the dialog in the other scope keeps the fold state of the one before it"
+);
+
 assert.ok(
   !/np-home-content-menu--country/.test(shell),
   "the country card has grown a dropdown of its own again instead of using the dialog"
