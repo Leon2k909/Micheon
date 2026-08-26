@@ -16,15 +16,32 @@ export const FAVOURITE_COURSES_EVENT = "favourite-courses-changed";
 /**
  * Whether the section is open. Open to begin with: the point of putting them
  * at the top is being able to see them.
+ *
+ * Per dialog, not per app. The switcher shows favourites twice — once among
+ * the languages and once among the countries — and they are different
+ * lists. One shared flag meant folding the countries away folded the
+ * languages away too, in a dialog you were not even looking at. The
+ * language dialog keeps the original key so nobody's section springs back
+ * open because this shipped.
  */
-const OPEN_KEY = "favourite-courses-open";
+export type FavouritesSection = "all" | "country";
 
-export function getFavouritesOpen(profile: UserProfile | null = getAuthUser()): boolean {
-  return loadScopedJson<unknown>(OPEN_KEY, true, profile) !== false;
+const openKey = (section: FavouritesSection) =>
+  (section === "country" ? "favourite-courses-open-country" : "favourite-courses-open");
+
+export function getFavouritesOpen(
+  section: FavouritesSection = "all",
+  profile: UserProfile | null = getAuthUser()
+): boolean {
+  return loadScopedJson<unknown>(openKey(section), true, profile) !== false;
 }
 
-export function setFavouritesOpen(open: boolean, profile: UserProfile | null = getAuthUser()) {
-  saveScopedJson(OPEN_KEY, open, profile);
+export function setFavouritesOpen(
+  open: boolean,
+  section: FavouritesSection = "all",
+  profile: UserProfile | null = getAuthUser()
+) {
+  saveScopedJson(openKey(section), open, profile);
 }
 
 export function getFavouriteCourses(profile: UserProfile | null = getAuthUser()): string[] {
