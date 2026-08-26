@@ -43,6 +43,7 @@ import {
   LogOut,
   Menu,
   MessageCircleMore,
+  PawPrint,
   Pencil,
   MessageSquareText,
   Play,
@@ -3688,7 +3689,10 @@ function MoreView({
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
     { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
-    { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: UserRound, tone: "mint", action: () => onNavigate("profile") },
+    // A paw, not a person. One mark has to stand for both halves, and it is
+    // the pets half that has a shape of its own — the same paw the Haustier
+    // category wears, so the card and where it lands agree.
+    { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: PawPrint, tone: "mint", action: () => onNavigate("profile") },
   ];
 
   return (
