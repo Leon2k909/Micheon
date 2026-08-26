@@ -130,7 +130,13 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // the ship, the harbour, the water, what lives in it, fishing and diving, and
 // what goes wrong out there. 15 fold into synonym cards, so the faces move
 // 8,488 -> 8,603.
-assert.equal(taughtWords, 9281, "the reviewed sense fixes changed the standalone word count");
+// 9281 -> 9386: parts 618-624 answer the third-worst field, the trades at 65
+// per cent - der Schreiner, der Geselle and die Innung missing while the
+// toolbox itself was nearly complete. 112 words for the trades, the German
+// apprenticeship, the building site, the workshop, the materials, the verbs a
+// quote lists and the invoice that follows. 26 fold into synonym cards, so the
+// faces move 8,603 -> 8,689.
+assert.equal(taughtWords, 9386, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
