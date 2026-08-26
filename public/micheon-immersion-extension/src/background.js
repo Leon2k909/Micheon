@@ -7,6 +7,12 @@ const DEFAULT_SETTINGS = {
   ttsOnHover: true,
   ttsOnClick: true,
   youtubeAutoDub: true,
+  // How long the pointer must rest on a word before its meaning opens.
+  // Zero is the old behaviour and still available; the default is a short
+  // dwell because reading a paragraph drags the pointer across dozens of
+  // glossed words on the way to the one being looked at, and each of them
+  // used to open a card.
+  hoverDelayMs: 200,
 };
 let latestTtsRequest = 0;
 let lastForwardedText = "";

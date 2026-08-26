@@ -814,6 +814,33 @@ checkLatestAudioWins().then(() => {
   assert.ok(popupJs.includes('chrome.storage.local.set({ panelSize: size })'),
     "the chosen size must be remembered, or picking it every time is worse than a fixed one");
 
+  // The dwell before a word's card opens. Reading drags the pointer across
+  // every word between where it was and where the reader is looking, and
+  // without a wait each of those opens a card on the way past.
+  assert.ok(popupHtml.includes('id="hoverDelayMs"'), "the popup has no control for the hover wait");
+  assert.ok(/<option value="0"/.test(popupHtml),
+    "the wait cannot be turned off, so anyone who preferred it instant has lost that");
+  assert.ok(/hoverDelayMs:\s*\d+/.test(background),
+    "the hover wait has no default in the background script");
+  assert.ok(/hoverDelayMs:\s*\d+/.test(gloss),
+    "the content script has no fallback wait for a page loaded before settings arrive");
+  // saveSettings rebuilds the settings object from the panel, so a control
+  // left out of the lists it walks is silently dropped on the next toggle of
+  // anything else. This is the failure that looks like "it forgot my choice".
+  assert.ok(/const choiceIds = \[[^\]]*"hoverDelayMs"/.test(popupJs),
+    "the wait is not in the list saveSettings walks, so it is dropped whenever another setting changes");
+  assert.ok(popupJs.includes("[...checkboxIds, ...choiceIds]"),
+    "changing the wait does not save it: nothing listens to the control");
+  // The dwell applies to hovering only. Clicking a word is a choice already
+  // made, and making somebody hold the pointer still after clicking would be
+  // an answer to a question nobody asked.
+  assert.ok(gloss.includes("requestTipForEntry(entry)"),
+    "the pointer path does not go through the wait");
+  assert.ok(/function requestTipForEntry[\s\S]{0,700}pendingHoverEntry === entry/.test(gloss),
+    "a word already waiting must keep its timer, or an unsteady hand never finishes the wait");
+  assert.ok(/hideTip\(\)\s*\{[\s\S]{0,200}clearPendingHoverTip\(\)/.test(gloss),
+    "hiding the card leaves a timer running, which reopens it over an empty spot");
+
   console.log(
     `check-immersion-extension: ${byEn.size.toLocaleString()} English words reach German, `
     + "function words included, and the popup is grouped and resizable"

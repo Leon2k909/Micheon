@@ -83,7 +83,7 @@
   ];
   const X_CHROME_SELECTOR = X_REINFORCEMENT_SELECTORS.join(", ");
 
-  let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true };
+  let settings = { glossEnabled: true, collectMissingVocab: true, ttsOnHover: true, ttsOnClick: true, hoverDelayMs: 200 };
   // German capitalises every noun and nothing else, so a word's authored
   // case IS its part-of-speech signal -- "Daten" (data, a noun) and "daten"
   // (to date someone, a verb) are different words that happen to share
@@ -1825,8 +1825,62 @@
     }, HOVER_SPEAK_DELAY_MS);
   }
 
+  /**
+   * How long the pointer rests on a word before its card opens.
+   *
+   * Reading drags the pointer over every word between where it was and where
+   * the reader is looking, and each of those used to open a card and take the
+   * page's attention on the way past. A dwell means only the word actually
+   * being looked at answers.
+   *
+   * Read from settings on each use rather than captured, so changing it in
+   * the popup takes effect on the page already open. Clamped because it is a
+   * stored value and a wrong one should be a poor choice, not a word that
+   * never answers at all.
+   */
+  const HOVER_TIP_DELAY_MAX = 2000;
+  let pendingHoverTip = null;
+  let pendingHoverEntry = null;
+
+  function hoverTipDelay() {
+    const raw = Number(settings.hoverDelayMs);
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    return Math.min(raw, HOVER_TIP_DELAY_MAX);
+  }
+
+  function clearPendingHoverTip() {
+    if (pendingHoverTip) {
+      clearTimeout(pendingHoverTip);
+      pendingHoverTip = null;
+    }
+    pendingHoverEntry = null;
+  }
+
+  /**
+   * Ask for a word's card, subject to the dwell.
+   *
+   * A word already waiting keeps its own timer rather than being restarted by
+   * the next mousemove over the same word — a hand is never perfectly still,
+   * and restarting on every sample means the wait never finishes.
+   */
+  function requestTipForEntry(entry) {
+    if (entry === activeEntry) { clearPendingHoverTip(); return; }
+    const delay = hoverTipDelay();
+    if (!delay) { clearPendingHoverTip(); showTipForEntry(entry); return; }
+    if (pendingHoverEntry === entry) return;
+    clearPendingHoverTip();
+    pendingHoverEntry = entry;
+    pendingHoverTip = setTimeout(() => {
+      pendingHoverTip = null;
+      const waited = pendingHoverEntry;
+      pendingHoverEntry = null;
+      if (waited) showTipForEntry(waited);
+    }, delay);
+  }
+
   function hideTip() {
     clearPendingHoverSpeech();
+    clearPendingHoverTip();
     anchorRect = null;
     activeEntry = null;
     paintTip(false);
@@ -1921,8 +1975,13 @@
       pointerSample = null;
       if (!sample) return;
       const entry = glossAtPoint(sample.x, sample.y);
-      if (entry) showTipForEntry(entry);
-      else hideWhenPointerLeaves(sample.x, sample.y);
+      // Hovering waits; clicking below does not. Asking for a word and
+      // choosing one are different intentions.
+      if (entry) requestTipForEntry(entry);
+      else {
+        clearPendingHoverTip();
+        hideWhenPointerLeaves(sample.x, sample.y);
+      }
     };
     document.addEventListener("mousemove", (e) => {
       if (e.target?.closest?.(".micheon-gloss-tip")) return; // browsing the tip itself
