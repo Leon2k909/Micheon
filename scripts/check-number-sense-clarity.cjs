@@ -89,7 +89,15 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // and five strong verbs the new principal-parts table needs to point at
 // (befehlen, fliehen, geschehen, stechen, zurückkommen). All 92 stand alone;
 // none folded into an existing synonym card.
-assert.equal(taughtWords, 7845, "the reviewed sense fixes changed the standalone word count");
+// 7845 -> 8000: parts 545-550 round the inventory to eight thousand with 156
+// words read out of the immersion gap list and the extension glossary — news
+// and software vocabulary (der Börsengang, die Eilmeldung, das Ratenlimit, der
+// Mehrspielermodus) and the ordinary things between them (der Kumpel, die
+// Landkarte, die Großtante, das Lehrbuch). 18 of the 156 fold into synonym
+// cards that already existed, so the faces move 7,330 -> 7,468 while the words
+// taught move by 155: drucken is the one that does not arrive at all, dropped
+// by the catalogue's own filters before it becomes a card.
+assert.equal(taughtWords, 8000, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
