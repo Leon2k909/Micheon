@@ -8473,6 +8473,49 @@ html[data-theme="dark"] .np-premium-card {
   font-weight: 700;
 }
 
+/* What the Friends list says about itself. Same shape as the preview notice
+   below, because it occupies the same slot, and deliberately WITHOUT that
+   one's "UI preview only" heading: this is a working feature reporting a real
+   outcome, and labelling it a preview made it read as a mock-up of itself. */
+.np-social-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  margin: 17px 30px 0;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 15px;
+  color: var(--accent-strong, var(--accent));
+  background: var(--accent-dim);
+}
+
+.np-social-notice > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.np-social-notice small {
+  display: block;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.np-social-notice > button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 9px;
+  color: inherit;
+}
+
+.np-social-notice > button > svg {
+  width: 15px;
+  height: 15px;
+}
+
 .np-social-preview-notice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -8858,8 +8901,8 @@ html[data-theme="dark"] .np-premium-card {
   padding: 0 12px;
   border: 1px solid rgba(76, 66, 55, 0.12);
   border-radius: 11px;
-  background: var(--np-surface-2, #f6f4ee);
-  color: var(--np-ink, #2b2723);
+  background: var(--surface-2);
+  color: var(--text-1);
   font-size: 12px;
   font-weight: 850;
 }
@@ -8879,7 +8922,7 @@ html[data-theme="dark"] .np-premium-card {
   margin-top: 4px;
   border: 0;
   background: transparent;
-  color: var(--np-ink, #2b2723);
+  color: var(--text-1);
   font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
   font-size: 14px;
   font-weight: 800;
@@ -8945,7 +8988,7 @@ html[data-theme="dark"] .np-premium-card {
   align-items: center;
   padding: 5px 11px;
   border-radius: 999px;
-  background: var(--np-surface-2, #f6f4ee);
+  background: var(--surface-2);
   color: var(--np-muted);
   font-size: var(--np-type-caption);
   font-weight: 850;
@@ -8972,12 +9015,6 @@ html[data-theme="dark"] .np-friend-addcode,
 html[data-theme="dark"] .np-friend-request button {
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.035);
-}
-
-html[data-theme="dark"] .np-friend-mycode button,
-html[data-theme="dark"] .np-friend-net {
-  background: rgba(255, 255, 255, 0.06);
-  color: inherit;
 }
 
 html[data-theme="dark"] .np-friend-request {

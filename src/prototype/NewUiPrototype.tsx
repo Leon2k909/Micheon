@@ -161,6 +161,7 @@ import {
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
 import { FriendsPanel } from "@/components/social/FriendsPanel";
+import { formatFriendCode, getFriendCode } from "@/lib/friendCode";
 import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
 import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
@@ -3508,6 +3509,16 @@ function SocialAvatar({ initials, tone }: { initials: string; tone: SocialLeader
 function SocialView({ stats, userName }: { stats: PrototypeStats; userName: string }) {
   const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
+  /**
+   * Two different things were being said in one banner.
+   *
+   * "Add friend is a preview in this release" and "that code is twenty letters"
+   * are not the same kind of message: the first says nothing happened, the
+   * second is a real app telling you what you typed. Both went through
+   * previewNotice, so the working Friends list reported itself under the
+   * heading "UI preview only" and read as a mock-up of itself.
+   */
+  const [notice, setNotice] = useState<string | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "Leon";
   const levelLabel = getLevelInfo(stats.totalXp).cur.label;
   /**
@@ -3592,6 +3603,19 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       </div>
 
       <AnimatePresence initial={false}>
+        {notice && (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="np-social-notice"
+            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -6 }}
+            role="status"
+          >
+            <CheckCircle2 aria-hidden="true" />
+            <span><small>{notice}</small></span>
+            <button aria-label={ui("Dismiss message")} onClick={() => setNotice(null)} type="button"><X /></button>
+          </motion.div>
+        )}
         {previewNotice && (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -3611,7 +3635,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
         <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
           <FriendsPanel
             levelLabel={levelLabel}
-            onNotice={(message) => setPreviewNotice(message)}
+            onNotice={(message) => setNotice(message)}
             stats={stats}
             userName={userName}
           />
@@ -3621,16 +3645,16 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
               <span className="np-social-side-icon"><UserPlus /></span>
               <small>{ui("Grow your circle")}</small>
               <h2>{ui("Invite a learning partner")}</h2>
-              <p>{ui("Practising feels easier when someone is learning alongside you.")}</p>
-              <button onClick={() => showPreviewNotice(ui("Invite friend"))} type="button">{ui("Preview invite")} <ChevronRight /></button>
-            </section>
-            <section className="np-social-side-card">
-              <span className="np-social-side-icon np-social-side-icon--blue"><Swords /></span>
-              <small>{ui("Friendly challenge")}</small>
-              <h2>{ui("Reach 500 XP together")}</h2>
-              <p>{ui("You and Michelle are 68% of the way to a shared weekly target.")}</p>
-              <div className="np-social-progress"><span style={{ width: "68%" }} /></div>
-              <button onClick={() => showPreviewNotice(ui("Challenge Michelle"))} type="button">{ui("Open challenge")} <ChevronRight /></button>
+              <p>{ui("Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.")}</p>
+              <button
+                onClick={() => {
+                  void navigator.clipboard?.writeText(formatFriendCode(getFriendCode()));
+                  setNotice(ui("Your code is copied. Send it to whoever you are adding."));
+                }}
+                type="button"
+              >
+                {ui("Copy your code")} <ChevronRight />
+              </button>
             </section>
           </aside>
         </div>

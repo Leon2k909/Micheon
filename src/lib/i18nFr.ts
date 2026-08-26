@@ -14,6 +14,10 @@
  * have no English key to be found under.
  */
 export const FR: Record<string, string> = {
+  // ── Friends: the working list, saying so in its own words ─────────────────
+  "Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.": "Donne-leur ton code. Leur application demande à la tienne de se connecter, tu acceptes, et ensuite vos chiffres passent directement de l'une à l'autre.",
+  "Copy your code": "Copier ton code",
+  "Your code is copied. Send it to whoever you are adding.": "Ton code est copié. Envoie-le à la personne que tu ajoutes.",
   "Show {n} more languages": "Afficher {n} langues de plus",
   // ── Friends, once the list holds real people ──────────────────────────────
   "Their figures come straight from their app to yours. There is no account and no server holding them.": "Leurs chiffres viennent directement de leur application à la tienne. Il n'y a ni compte ni serveur qui les conserve.",

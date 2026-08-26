@@ -6,6 +6,10 @@ import { FR } from "@/lib/i18nFr";
 // key; anything not in the table falls through unchanged, so missing strings
 // degrade gracefully instead of breaking.
 const DE: Record<string, string> = {
+  // ── Friends: the working list, saying so in its own words ─────────────────
+  "Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.": "Gib ihnen deinen Code. Ihre App fragt bei deiner an, du stimmst zu, und danach gehen eure Zahlen direkt zwischen den beiden hin und her.",
+  "Copy your code": "Deinen Code kopieren",
+  "Your code is copied. Send it to whoever you are adding.": "Dein Code ist kopiert. Schick ihn der Person, die du hinzufügen möchtest.",
   // ── Friends, once the list holds real people ──────────────────────────────
   "Their figures come straight from their app to yours. There is no account and no server holding them.": "Ihre Zahlen kommen direkt von ihrer App zu deiner. Es gibt kein Konto und keinen Server, der sie speichert.",
   "Your code": "Dein Code",
