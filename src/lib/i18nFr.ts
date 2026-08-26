@@ -2211,6 +2211,8 @@ export const FR: Record<string, string> = {
   "Grow your circle": "Agrandis ton cercle",
   "Hear the German phrase": "Écouter la phrase allemande",
   "Highest level reached": "Niveau le plus élevé atteint",
+  "to level {level}": "jusqu’au niveau {level}",
+  "XP level": "Niveau",
   "Home": "Accueil",
   "How leagues work": "Comment fonctionnent les ligues",
   "Independent learner": "Apprend en autonomie",

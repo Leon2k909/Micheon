@@ -2958,11 +2958,14 @@ function describeSessionContent(sentences: number, dialogues: number): string {
 }
 
 function ProgressPanel({
+  onNavigate,
   onViewAllAchievements,
   standalone = false,
   stats,
   userName,
 }: {
+  /** Each figure is a way in; without this they are numbers with no arrow. */
+  onNavigate?: (view: PrototypeView) => void;
   onViewAllAchievements?: () => void;
   standalone?: boolean;
   stats: PrototypeStats;
@@ -3041,21 +3044,64 @@ function ProgressPanel({
         <>
 
       <div className="np-level-card">
-        <span className="np-level-badge">L{cur.level}</span>
+        <span aria-hidden="true" className="np-level-card__weave" />
+        <span className="np-level-badge">
+          {/* Not ui("Level"): that string means a CEFR level elsewhere and is
+              "Niveau" in German, which clashed with the "Stufe" on the line
+              beside it. */}
+          <small>{ui("XP level")}</small>
+          <strong>{cur.level}</strong>
+        </span>
         <div className="np-level-copy">
           <strong>{ui(cur.label)}</strong>
-          {/* Formatted like every other count — a raw 4065 beside 18,935 XP
-              two lines above reads as a different kind of number. */}
-          <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: uiNumber(nxt.xpRequired - stats.totalXp), level: nxt.level }) : ui("Highest level reached")}</small>
-          <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
+          {/* Two pieces rather than one sentence: the remaining XP carries the
+              accent, and a colour cannot be given to half a text node. Both
+              halves are translated; "XP" is the same word in all three. */}
+          <small>
+            {nxt ? (
+              <>
+                <b>{uiNumber(nxt.xpRequired - stats.totalXp)} XP</b>
+                {" "}
+                {uiFmt("to level {level}", { level: nxt.level })}
+              </>
+            ) : ui("Highest level reached")}
+          </small>
+          <div className="np-progress-track np-progress-track--level"><span style={{ width: `${pct}%` }} /></div>
+          {/* Where the bar has got to, in the same numbers the bar is drawn
+              from: the total on its own said nothing about how far it is. */}
+          <p className="np-level-total">
+            <b>{uiNumber(stats.totalXp)}</b>
+            {nxt ? ` / ${uiNumber(nxt.xpRequired)} XP` : " XP"}
+          </p>
         </div>
-        <small>{uiFmt("{xp} total XP", { xp: uiNumber(stats.totalXp) })}</small>
       </div>
 
+      {/* Each figure leads somewhere: the two about progress to the progress
+          page, the lesson count to the lessons. The arrow is only drawn when
+          there is somewhere to go, so it never promises a click that does
+          nothing. */}
       <div className="np-progress-stats">
-        <div><AchievementArt id="xp_500" /><strong>{uiNumber(stats.totalXp)}</strong><small>{ui("Total XP")}</small></div>
-        <div><AchievementArt id="streak_3" /><strong>{uiNumber(stats.learningDays)}</strong><small>{ui("Days learned")}</small></div>
-        <div><AchievementArt id="first_session" /><strong>{uiNumber(stats.sessionsCompleted)}</strong><small>{ui("Lessons done")}</small></div>
+        {([
+          ["xp_500", uiNumber(stats.totalXp), "Total XP", "gold", "progress"],
+          ["streak_3", uiNumber(stats.learningDays), "Days learned", "green", "progress"],
+          ["first_session", uiNumber(stats.sessionsCompleted), "Lessons done", "accent", "learn"],
+        ] as const).map(([art, value, label, tone, target]) => {
+          const body = (
+            <>
+              <span className="np-progress-stat__art"><AchievementArt id={art} /></span>
+              <strong>{value}</strong>
+              <small>{ui(label)}</small>
+              {onNavigate && <span aria-hidden="true" className="np-progress-stat__go"><ArrowRight /></span>}
+            </>
+          );
+          return onNavigate ? (
+            <button className="np-progress-stat" data-tone={tone} key={label} onClick={() => onNavigate(target)} type="button">
+              {body}
+            </button>
+          ) : (
+            <div className="np-progress-stat" data-tone={tone} key={label}>{body}</div>
+          );
+        })}
       </div>
 
       <div className="np-badges-block">
@@ -4417,7 +4463,7 @@ export default function NewUiPrototype({
     />
   ) : activeView === "progress" ? (
     <>
-      <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+      <ProgressPanel onNavigate={navigate} standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
       {/* The vocabulary library, mastery, totals and milestones, which used to
           be the tail of the settings page. Signed out there is nothing of the
           sort to show, so the panel above stands on its own. */}
@@ -4673,6 +4719,7 @@ export default function NewUiPrototype({
               {showRightRail && (
                 <aside className="np-right-rail">
                   <ProgressPanel
+                    onNavigate={navigate}
                     onViewAllAchievements={() => navigate("progress")}
                     stats={stats}
                     userName={profile?.name ?? PREVIEW_PROFILE.name}

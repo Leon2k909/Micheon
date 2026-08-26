@@ -2322,6 +2322,8 @@ const DE: Record<string, string> = {
   "Grow your circle": "Erweitere deinen Kreis",
   "Hear the German phrase": "Den deutschen Satz anhören",
   "Highest level reached": "Höchste erreichte Stufe",
+  "to level {level}": "bis Stufe {level}",
+  "XP level": "Stufe",
   "Home": "Start",
   "How leagues work": "So funktionieren Ligen",
   "Independent learner": "Selbstständig Lernende",
