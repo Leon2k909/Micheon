@@ -32,7 +32,10 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const view = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 const styles = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 
 // ── every feature that fills the page can be left ───────────────────────────
 for (const label of ["Tests", "Grammar"]) {

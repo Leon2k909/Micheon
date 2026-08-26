@@ -201,7 +201,10 @@ assert(tracker.includes("exampleIndex.exampleFor(word)"), "WordsTracker does not
 assert(tracker.includes('ui("Example in context")'), "WordsTracker is missing the translated example label");
 
 // 9. The label is translated.
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 assert(i18n.includes('"Example in context": "Beispiel im Kontext"'), "missing German translation for the example label");
 
 console.log("word context examples passed");

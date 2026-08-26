@@ -1136,7 +1136,10 @@ const wordsTracker = read("src/components/lab/WordsTracker.tsx");
 check("both trackers surface the exposure count",
   vocabTracker.includes('ui("heard")') && wordsTracker.includes('ui("heard")'));
 
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 for (const key of [
   "Both languages repeat in small learning loops while you do something else.",
   "{meaning} {en}×, then {target} {de}×",

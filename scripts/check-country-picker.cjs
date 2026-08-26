@@ -31,7 +31,10 @@ const shell = read("src/prototype/NewUiPrototype.tsx");
 const switcher = read("src/components/course/CourseSwitcher.tsx");
 const packs = read("src/lib/countryPacks.ts");
 const type = read("src/lib/countryStudies.ts");
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 
 // ── every pack says what country it is ────────────────────────────────────
 assert.ok(

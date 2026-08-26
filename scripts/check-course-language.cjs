@@ -208,7 +208,10 @@ assert.ok(/translateCourseText\(english, reading\)/.test(lessonsView),
   + "JavaScript gets a German course under an English tagline");
 
 // ── the chrome around it is German too ──────────────────────────────────────
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 const known = new Set([...i18n.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map((m) => m[1]));
 const unescapeKey = (raw) => raw.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 const missingChrome = new Set();

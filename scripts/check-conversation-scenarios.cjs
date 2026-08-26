@@ -217,7 +217,10 @@ assert.ok(view.includes("CONVERSATION_TRANSLATION_EVENT"),
 const prefs = fs.readFileSync(path.join(root, "src/lib/conversationTranslation.ts"), "utf8");
 assert.ok(prefs.includes("syncLocalStorageItem"),
   "the setting is written to this device only, unlike the app's other preferences");
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 assert.ok(i18n.includes('"Hide the translation":') && i18n.includes('"Show the translation":'),
   "the control has no German");
 

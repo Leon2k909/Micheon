@@ -26,7 +26,10 @@ const src = path.join(root, "src");
 const dist = path.join(root, "dist", "assets");
 
 // ── the source says what it means ───────────────────────────────────────────
-const TABLES = ["frenchTranslations", "polishTranslations"];
+// i18nFr is the interface chrome rather than course content, and it is here
+// for the same reason: an English app has no use for it and was downloading
+// it anyway.
+const TABLES = ["frenchTranslations", "polishTranslations", "i18nDe", "i18nFr"];
 const walk = (dir, out = []) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -50,11 +53,43 @@ for (const file of sources) {
 
 // The loaders themselves have to stay inside the arrow, or they resolve at
 // build time and the table joins the startup chunk anyway.
+// Two kinds of table, loaded from two places: course content is fetched by
+// translations.ts, the interface chrome by i18n.ts.
 const translations = fs.readFileSync(path.join(src, "lib", "translations.ts"), "utf8");
-for (const table of TABLES) {
+for (const table of TABLES.filter((t) => !t.startsWith("i18n"))) {
   assert.ok(new RegExp(`\\(\\) => import\\("@/lib/${table}"\\)`).test(translations),
     `${table} has no lazy loader in translations.ts, so nothing fetches it on demand`);
 }
+
+const i18n = fs.readFileSync(path.join(src, "lib", "i18n.ts"), "utf8");
+for (const table of ["i18nDe", "i18nFr"]) {
+  assert.ok(i18n.includes(`() => import("@/lib/${table}")`),
+    `the ${table} interface table has no lazy loader in i18n.ts, so every app downloads the chrome `
+    + "of a language it is not written in — and ui() is imported by every screen, so there is no "
+    + "arrangement of chunks that leaves an inline table out");
+}
+
+/**
+ * The German table did not lose entries on the way out of i18n.ts.
+ *
+ * It was moved wholesale, and the file it came from is edited on essentially
+ * every commit — so the move can collide with somebody adding a key, and the
+ * way that fails is silent: the app falls back to the English source string
+ * and looks like a screen somebody forgot to translate. A floor catches a
+ * merge that drops a run of them.
+ */
+// Measured at the move: 2,928 keys went in and 2,928 came out. The margin
+// below that leaves room for a string legitimately retired with the feature
+// that used it, while a merge dropping a run of them still fails here.
+const GERMAN_KEYS_FLOOR = 2880;
+const germanKeys = (fs.readFileSync(path.join(src, "lib", "i18nDe.ts"), "utf8")
+  .match(/^\s*"(?:[^"\\]|\\.)*"\s*:/gm) || []).length;
+assert.ok(germanKeys >= GERMAN_KEYS_FLOOR,
+  `the German interface table holds ${germanKeys} keys and ${GERMAN_KEYS_FLOOR} was the floor. `
+  + "Entries were lost, which shows as English text in a German app rather than as an error");
+assert.ok(fs.readFileSync(path.join(src, "main.tsx"), "utf8").includes("ensureInterfaceStrings"),
+  "the app renders before its interface table lands, so a French reader sees a screen of English "
+  + "and then watches it change");
 
 // A course cannot be built before its table lands: an entry the table does
 // not cover is DROPPED, so the lesson comes out short rather than untranslated.
@@ -67,6 +102,27 @@ for (const file of ["prototype/NewUiPrototype.tsx", "guided_learning_session.tsx
     `${file} builds a catalogue without waiting for the course's translations, so a French or `
     + "Polish course assembled at startup silently comes out short");
 }
+
+/**
+ * The desktop search index is only offered for the languages it holds.
+ *
+ * catalogue.db is built from the catalogue in its default direction: its
+ * columns are `de` and `en` and its FTS covers those. Searching it for a
+ * French or Polish word returns nothing — measured, for every word tried —
+ * and an empty answer is treated as authoritative, because the reason to wait
+ * for the index is to avoid running the in-memory search as well.
+ *
+ * So a French learner on the desktop typing French saw an empty tracker,
+ * while the same search in a browser worked. Nothing about that looks like a
+ * fault: it reads as a course with no matching words.
+ */
+const tracker = fs.readFileSync(path.join(src, "components", "lab", "VocabTracker.tsx"), "utf8");
+assert.ok(/const indexHolds = sides\.target\.code === "de" \|\| sides\.target\.code === "en";/.test(tracker),
+  "the tracker offers the desktop search index to every course. It holds German and English "
+  + "only, and an empty result from it is final — so a French or Polish learner searching their "
+  + "own language gets an empty tracker rather than the in-memory search that would have worked");
+assert.ok(tracker.includes("if (!indexHolds) return null;"),
+  "the index is still reached for a course it cannot answer for");
 
 // primeTranslations is the synchronous door for build scripts. The app must
 // never take it, or the tables are back in the bundle by another name.
@@ -120,8 +176,14 @@ while (queue.length) {
  * along.
  */
 const FINGERPRINTS = [
-  ["French", "Qu'est-ce que tu veux"],
-  ["Polish", "przynajmniej"],
+  ["French content", "Qu'est-ce que tu veux"],
+  ["Polish content", "przynajmniej"],
+  // The INTERFACE tables are the same fault a layer up: English is the source
+  // key and needs no table at all, yet an English app was downloading every
+  // other language's chrome — 235 KB of German and 227 KB of French, on every
+  // start, growing by roughly 230 KB with each interface language added.
+  ["German interface", "Geordie-Grundlagen"],
+  ["French interface", "L'essentiel du geordie"],
 ];
 const carrying = [];
 for (const name of reachable) {

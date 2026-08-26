@@ -708,13 +708,31 @@ export function VocabTracker({
    * main process answers null rather than an empty list when it has no
    * database — an empty list is a real answer meaning "nothing matched".
    */
-  /** The desktop app ships the index; a browser does not. */
+  /**
+   * The desktop app ships the index; a browser does not.
+   *
+   * And the index only holds German and English. It is built from the
+   * catalogue in its default direction, so its columns are `de` and `en` and
+   * its FTS covers those — searching it for "toujours" or "przynajmniej"
+   * returns nothing, measured, for every word tried.
+   *
+   * That matters because an empty answer here is treated as authoritative:
+   * the whole point of waiting for the index is not to run the in-memory
+   * search as well. So a French or Polish learner typing their own language
+   * saw an empty tracker on the desktop and a full one in the browser.
+   *
+   * The index is an accelerator, so the fix is to decline it for the courses
+   * it cannot accelerate. Those fall back to the in-memory search, which
+   * reads whichever language the card is actually in.
+   */
   const indexedSearch = useMemo(() => {
+    const indexHolds = sides.target.code === "de" || sides.target.code === "en";
+    if (!indexHolds) return null;
     const bridge = typeof window === "undefined" ? undefined : (window as any).germDesktop;
     return typeof bridge?.searchCatalogue === "function"
       ? (query: string) => Promise.resolve(bridge.searchCatalogue(query))
       : null;
-  }, []);
+  }, [sides.target.code]);
 
   const [indexedMatches, setIndexedMatches] = useState<{ ids: Set<string>; query: string } | null>(null);
   /** The last list actually shown, held while a newer one is a few ms away. */

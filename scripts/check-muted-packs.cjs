@@ -13,7 +13,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const session = read("src/guided_learning_session.tsx");
 const learnView = read("src/components/lab/LearnView.tsx");
 const lib = read("src/lib/mutedPacks.ts");
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 
 let failures = 0;
 function check(name, condition, detail = "") {
