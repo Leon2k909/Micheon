@@ -10889,7 +10889,6 @@ export const FRENCH_BY_GERMAN: Record<string, string> = {
   "das Mosaik": "la mosaïque",
   "das Buntglas": "le vitrail",
   "die Schmiede": "la forge",
-  "die Esse": "le foyer de forge",
   "der Blasebalg": "le soufflet",
   "die Gravur": "la gravure",
   "der Edelstein": "la pierre précieuse",

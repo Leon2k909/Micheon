@@ -130,7 +130,15 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // the ship, the harbour, the water, what lives in it, fishing and diving, and
 // what goes wrong out there. 15 fold into synonym cards, so the faces move
 // 8,488 -> 8,603.
-assert.equal(taughtWords, 9281, "the reviewed sense fixes changed the standalone word count");
+// 9281 -> 9280: die Esse is dropped, the only word this ledger has ever lost.
+// It is a smith's hearth, taught in a pack that already teaches die Schmiede
+// as "forge", and English has no everyday word for the fire inside a forge as
+// distinct from the forge itself — so its gloss had to be "smith's hearth",
+// which is a dictionary entry rather than anything a reader would recognise.
+// It also happens to be spelled like the plural of das Essen, which is a
+// separate fault and fixed separately; a word is not dropped for being awkward
+// to count.
+assert.equal(taughtWords, 9280, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

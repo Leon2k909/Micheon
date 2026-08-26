@@ -589,7 +589,6 @@ export const moreWordPartBlueprints: Record<string, Blueprint> = {
     noun("das", "Mosaik", "mosaic"),
     noun("das", "Buntglas", "stained glass"),
     noun("die", "Schmiede", "forge"),
-    noun("die", "Esse", "smith's hearth"),
     noun("der", "Blasebalg", "bellows"),
     noun("die", "Gravur", "engraving"),
     noun("der", "Edelstein", "gemstone"),

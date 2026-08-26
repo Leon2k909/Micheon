@@ -66,8 +66,15 @@ const saidAsNoun = (word) => index.nounCount.get(corpusKey(word)) ?? 0;
 
 check("the catalogue's own words are indexed, or the guard matches nothing", () => {
   assert.ok(index.headwords.size > 4000, `only ${index.headwords.size} headwords indexed`);
+  // das Essen is the word being protected FROM having its count taken. The
+  // word that was taking it, die Esse, has since been dropped from the course
+  // — it was a smith's hearth in a pack that already teaches "forge", and no
+  // English gloss for it read as English. The rule is not about that word
+  // though, so it is still probed below as an untaught spelling: nothing may
+  // collect das Essen's mentions by being spelled like its plural, whether the
+  // course happens to teach it or not.
   assert.ok(index.headwords.has("essen"), "das Essen is not indexed as a word in its own right");
-  assert.ok(index.headwords.has("esse"), "die Esse is not indexed as a word in its own right");
+  assert.ok(index.headwords.has("link"), "der Link is not indexed as a word in its own right");
 });
 
 // ── the false inheritance ───────────────────────────────────────────────────
