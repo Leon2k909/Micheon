@@ -214,7 +214,9 @@ export function CourseSwitcher({
    * either spelling is — and it is starred under the UK id, which is the one
    * the card hands to the store.
    */
-  const englishStarred = Boolean(mergedEnglish) && (isFavourite("english-uk") || isFavourite("english-us"));
+  const countryOnly = scope === "country";
+  const englishStarred = !countryOnly && Boolean(mergedEnglish)
+    && (isFavourite("english-uk") || isFavourite("english-us"));
   const groupFavourites = !searching && favourites.length > 0;
   const isPickedOut = (id: string) => groupFavourites && isFavourite(id);
 
@@ -224,15 +226,25 @@ export function CourseSwitcher({
   const programming = visibleCourses.filter((c) => c.kind === "programming" && !isPickedOut(c.id));
   const citizenship = visibleCourses.filter((c) => c.kind === "citizenship" && !isPickedOut(c.id));
 
-  /** In the order they were starred, so the section does not reshuffle. */
+  /**
+   * In the order they were starred, so the section does not reshuffle.
+   *
+   * Scoped, because the dialog is not always showing the whole catalogue.
+   * Favourites are one list across everything, and unscoped they put a
+   * starred language at the top of the country picker — a language row in
+   * a dialog for choosing a country, one click from changing the wrong
+   * thing. The starring itself stays global: a course is a favourite
+   * wherever it appears, it simply does not appear where it does not
+   * belong.
+   */
   const favouriteCourses = groupFavourites
     ? favourites
         .filter((id) => !(mergedEnglish && (id === "english-uk" || id === "english-us")))
         .map((id) => visibleCourses.find((c) => c.id === id))
         .filter((c): c is (typeof COURSES)[number] => Boolean(c))
+        .filter((c) => !countryOnly || c.kind === "citizenship")
     : [];
   const favouriteRowCount = favouriteCourses.length + (groupFavourites && englishStarred ? 1 : 0);
-  const countryOnly = scope === "country";
 
   useEffect(() => {
     if (!open) return;
@@ -595,7 +607,7 @@ export function CourseSwitcher({
                 </>
               )}
 
-              {(countryOnly ? citizenship.length === 0 : visibleCourses.length === 0) && (
+              {(countryOnly ? citizenship.length + favouriteRowCount === 0 : visibleCourses.length === 0) && (
                 <div className="mt-5 rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-5 py-8 text-center">
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching course")}</p>
                   <p className="mt-1 text-[13px] font-bold text-[var(--text-3)]">

@@ -121,6 +121,26 @@ for (const [guard, what] of [
     `${what} still shows when the chooser was opened to change a country — which is how "change the country" ends up changing the language`
   );
 }
+// Favourites are one list across the whole catalogue, and the section that
+// shows them sits above everything else. Unscoped it puts a starred LANGUAGE
+// at the top of the country picker, past the guards above — a language row in
+// a dialog for choosing a country, one click from changing the wrong thing.
+assert.ok(
+  /\.filter\(\(c\) => !countryOnly \|\| c\.kind === "citizenship"\)/.test(switcher),
+  "the favourites section is not scoped, so a starred language would head the country picker"
+);
+assert.ok(
+  /const englishStarred = !countryOnly && Boolean\(mergedEnglish\)/.test(switcher),
+  "the merged English row can still be starred into the country picker"
+);
+// A starred country is lifted out of its section. With every country starred
+// the section empties, and an unadjusted empty test put "no matching course"
+// beside a full list of favourites.
+assert.ok(
+  /countryOnly \? citizenship\.length \+ favouriteRowCount === 0/.test(switcher),
+  "the empty state ignores favourites, so starring every country would claim there are none"
+);
+
 assert.ok(
   !/np-home-content-menu--country/.test(shell),
   "the country card has grown a dropdown of its own again instead of using the dialog"
