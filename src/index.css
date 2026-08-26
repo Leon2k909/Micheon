@@ -774,19 +774,22 @@ button { cursor: pointer; }
   outline-offset: 2px;
 }
 .listen-background-toggle__copy { min-width: 0; }
+/* These two lines explain what a switch will do before it is touched, which
+   makes them the last thing that should be shrunk to save room. The card has
+   no fixed height, so the space they need is space they can have. */
 .listen-background-toggle__copy strong {
   display: block;
   color: var(--text-1);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 850;
 }
 .listen-background-toggle__copy small {
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
   color: var(--text-3);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 650;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .listen-background-toggle__switch {
   position: relative;
