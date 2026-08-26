@@ -57,7 +57,8 @@ const result = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
-      'export { cefrOrder } from "./src/lib/cefr.ts";',
+      'export { cefrRung, cefrRungLabel } from "./src/lib/cefr.ts";',
+      'export { wordDifficultyRung } from "./src/lib/wordSession.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -102,7 +103,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
-  buildCatalog, cefrOrder,
+  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 
@@ -212,15 +213,15 @@ check("most-common-first genuinely uses shared popularity order",
 // looking at the screen, that is a beginner being read sentences four levels
 // above them with nothing to say so.
 //
-// The level of a card is its pack's CEFR label, read off the card itself —
-// the same label the lesson list shows. Rebuilding the lookup here was tried
-// and was wrong: a sentence can sit in more than one pack, so a map keyed by
-// id answers for whichever pack was walked last rather than for the pack the
-// queue actually took the card from.
-const levelRank = (item) => cefrOrder(item.level);
-check("every card in the queue knows which level it came from",
+// Every card carries the rung it was sorted on, so the order can be checked
+// against the thing it actually used rather than against a lookup rebuilt
+// beside it. That was tried first and was wrong twice over: a sentence can
+// sit in more than one pack, so a map keyed by id answers for whichever pack
+// was walked last — and for a word the pack is the wrong question entirely.
+const rungOf = (item) => item.rung;
+check("every card in the queue knows how hard it is",
   buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" })
-    .filter((item) => !item.level).length === 0);
+    .filter((item) => !item.rung).length === 0);
 
 check("Listen starts at the easiest level by default", DEFAULT_LISTEN_QUEUE_ORDER === "level");
 
@@ -228,27 +229,66 @@ const byLevel = buildListenQueue(parts, {}, { contentSource: "mixed", order: "le
 const byCommon = buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" });
 check("easiest-first never puts a harder card before an easier one",
   byLevel.length === byCommon.length
-  && byLevel.every((item, index, rows) => index === 0 || levelRank(rows[index - 1]) <= levelRank(item)));
-// The point of asking level FIRST rather than instead: commonality still
-// decides the order inside a level, so "teach what people actually say" is
+  && byLevel.every((item, index, rows) => index === 0 || rungOf(rows[index - 1]) <= rungOf(item)));
+// The point of asking the rung FIRST rather than instead: commonality still
+// decides the order inside a rung, so "teach what people actually say" is
 // kept and simply asked second.
-const firstLevel = levelRank(byLevel[0]);
-const sameLevel = byLevel.filter((item) => levelRank(item) === firstLevel).map((item) => item.id);
-const commonPositions = sameLevel.map((id) => byCommon.findIndex((item) => item.id === id));
-check("and inside one level it is still most-common-first",
-  sameLevel.length > 50
+const firstRung = rungOf(byLevel[0]);
+const sameRung = byLevel.filter((item) => rungOf(item) === firstRung).map((item) => item.id);
+const commonPositions = sameRung.map((id) => byCommon.findIndex((item) => item.id === id));
+check("and inside one rung it is still most-common-first",
+  sameRung.length > 50
   && commonPositions.every((position, index) => index === 0 || commonPositions[index - 1] < position));
 // The failure this replaces, asserted as the thing it was: nothing hard may
 // sit in front of a beginner's material any more.
-const firstHard = byLevel.findIndex((item) => levelRank(item) >= 40);
-const easyBehindIt = byLevel.slice(firstHard).filter((item) => levelRank(item) < 20).length;
-check(`no A1 card waits behind a B2 one (${easyBehindIt} did, first hard card was at ${byCommon.findIndex((item) => levelRank(item) >= 40)})`,
+const firstHard = byLevel.findIndex((item) => rungOf(item) >= 4);
+const easyBehindIt = byLevel.slice(firstHard).filter((item) => rungOf(item) <= 1).length;
+check(`no A1 card waits behind a B2 one (${easyBehindIt} did, first hard card was at ${byCommon.findIndex((item) => rungOf(item) >= 4)})`,
   firstHard > 0 && easyBehindIt === 0);
-// Unlevelled packs apply everywhere, so they have no rung — they must land at
-// the back rather than in front of A1, which is what a 0 default would do.
-check("a pack with no level sorts last instead of ahead of A1",
-  byLevel.every((item, index, rows) => index === 0 || levelRank(rows[index - 1]) <= levelRank(item))
-  && (levelRank(byLevel[byLevel.length - 1]) >= levelRank(byLevel[0])));
+// A pack with no level at all has no rung to sit on. It lands mid-ladder
+// rather than at either end: first would push unlabelled material in front of
+// A1, last would hide it entirely.
+check("a pack with no level lands mid-ladder rather than ahead of A1",
+  cefrRung(undefined) === 3 && cefrRung("") === 3 && cefrRung("nonsense") === 3);
+// A range reads as its low end, except B2-C1, which gets a rung of its own.
+check("a range is placed by where it starts, not by how far it reaches",
+  cefrRung("A1-B2") === 1 && cefrRung("A2-C1") === 2 && cefrRung("B1-B2") === 3
+  && cefrRung("B2-C1") === 5 && cefrRung("C1") === 6
+  && cefrRungLabel(1) === "A1" && cefrRungLabel(6) === "C1\–C2");
+
+// A word's rung is its own, not its pack's.
+//
+// The regression this exists to prevent, and it shipped once: sorting words
+// by the pack's CEFR label put haben at 1,045, bitte at 3,372 and k\önnen at
+// 3,370 of a queue that had just promised to start with the easiest thing it
+// had. Those words are taught inside A2 packs because the LESSON is A2; the
+// words themselves are among the first fifty in the language.
+const wordQueue = buildListenQueue(parts, {}, { contentSource: "words", order: "level" });
+const wordAt = (text) => wordQueue.findIndex((item) => item.de === text) + 1;
+const coreWords = ["haben", "sein", "k\önnen", "m\üssen", "machen", "bitte", "geben", "gut"];
+const worst = coreWords.map((text) => [text, wordAt(text)]).sort((a, b) => b[1] - a[1])[0];
+check(`the commonest words in the language open the queue (worst: ${worst[0]} at ${worst[1]})`,
+  coreWords.every((text) => wordAt(text) > 0 && wordAt(text) <= 40));
+// Asserted through the rung as well as the position, so this still fails if
+// the ordering changes but the difficulty question does not.
+check("a core word is on the A1 rung even when its pack says A2",
+  wordDifficultyRung({ level: "A2", lookup: "haben", de: "haben" }) === 1
+  && wordDifficultyRung({ level: "A2-B2", lookup: "bitte", de: "bitte" }) === 1
+  // ...and the rescue is narrow: an ordinary A2 noun stays where its pack put
+  // it, whether the frequency bank ranks it low or has never heard of it.
+  && wordDifficultyRung({ level: "A2", lookup: "Kollege", de: "der Kollege" }) === 2
+  && wordDifficultyRung({ level: "A2", lookup: "Handtuch", de: "das Handtuch" }) === 2);
+// A connector is core vocabulary whatever pack teaches it, and the frequency
+// bank does not list them at all - so nothing but the function-word list
+// rescues obwohl and nachdem from the B1-B2 pack they are taught in.
+check("a connector taught in a B1-B2 pack is still core vocabulary",
+  wordDifficultyRung({ level: "B1-B2", lookup: "obwohl", de: "obwohl" }) === 1
+  && wordDifficultyRung({ level: "B1-B2", lookup: "nachdem", de: "nachdem" }) === 1);
+// A sentence has no frequency rank of its own to be rescued by, so it is only
+// as easy as the lesson it belongs to.
+check("a sentence is placed by its pack, which is the only level it has",
+  buildListenQueue(parts, {}, { contentSource: "sentences", order: "level" })
+    .every((item) => item.rung >= 1 && item.rung <= 6));
 
 queue = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
 check("sentence source only serves sentence-tracker ids", queue.length > 1000
@@ -870,8 +910,8 @@ check("Both exposes independent word and sentence loop counts and preserves the 
   && view.includes("next.words + next.sentences"));
 // Easiest first is the default order now, and a walk up through the levels is
 // only a walk if you can see which rung you are on.
-check("the card says which level it is on, and the picker offers the order by name",
-  view.includes("{item.level ? <> · {item.level}</> : null}")
+check("the card says which rung it is on, and the picker offers the order by name",
+  view.includes("{item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}")
   && view.includes('"level", "Easiest first (A1 → C1)",'));
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')

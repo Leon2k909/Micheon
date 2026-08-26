@@ -81,6 +81,7 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
+import { cefrRungLabel } from "@/lib/cefr";
 import { ListenTest } from "@/components/listen/ListenTest";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
@@ -1349,7 +1350,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
             {ui(item.kind === "word" ? "Word" : "Sentence")}
-            {item.level ? <> · {item.level}</> : null}
+            {item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
             {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>

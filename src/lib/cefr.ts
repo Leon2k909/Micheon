@@ -49,6 +49,46 @@ export function cefrLabel(tier: CefrTier): string {
  */
 const CEFR_RANK: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 };
 
+/**
+ * A level label as a difficulty RUNG, 1 to 6.
+ *
+ * cefrOrder above answers "where does this sit in a sorted list of labels",
+ * which is a finer question than anyone teaching needs: it keeps A1, A1-A2
+ * and A1-B1 apart, and for choosing what to play next they are the same rung.
+ * Six rungs is what wordLadderRung has always used, and this is that banding
+ * pulled out so a sentence can be put on the same ladder as a word.
+ *
+ * A range reads as its LOW end, matching cefrOrder: "A1-B2" is a beginner
+ * lesson that reaches far, not a B2 one. The exception is B2-C1, which gets a
+ * rung of its own between them — the two ends are far enough apart that
+ * folding it either way misplaces it.
+ */
+export function cefrRung(level: string | undefined): number {
+  const text = String(level ?? "").toUpperCase();
+  if (/^C/.test(text)) return 6;
+  if (text.startsWith("B2-C")) return 5;
+  if (text.startsWith("B2")) return 4;
+  if (text.startsWith("B1")) return 3;
+  if (text.startsWith("A1")) return 1;
+  if (text.startsWith("A2")) return 2;
+  // No level, or something unrecognised. Middle of the ladder rather than
+  // either end: putting it first would push unlabelled material in front of
+  // A1, and putting it last would hide it entirely.
+  return 3;
+}
+
+/** What to call a rung on screen. Named for the band it actually covers. */
+export function cefrRungLabel(rung: number): string {
+  switch (rung) {
+    case 1: return "A1";
+    case 2: return "A2";
+    case 3: return "B1";
+    case 4: return "B2";
+    case 5: return "B2–C1";
+    default: return "C1–C2";
+  }
+}
+
 export function cefrOrder(level: string | undefined): number {
   const found = String(level ?? "").toUpperCase().match(/[ABC][12]/g);
   if (!found?.length) return 99;

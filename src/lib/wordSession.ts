@@ -17,6 +17,7 @@
  * "Prost!", "Genau!" — which are sentences by intent: things you say on
  * their own.
  */
+import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
 import { packMeta } from "@/lib/curriculum";
@@ -606,12 +607,7 @@ export function rankWordCatalog(
       word,
       index,
       rank: speakingRank(word, frequencyRank(word.lookup || word.de)),
-      // A connector is core vocabulary whatever pack happens to teach it.
-      // obwohl and nachdem are taught in a B1-B2 pack and are missing from
-      // the 2,500-word frequency bank, so ordering by the pack's level alone
-      // sent two of the commonest words in German to positions 4,900 and
-      // 5,000 — behind der Aimbot. The function-word list already names them.
-      rung: isCoreFunctionWord(word.lookup || word.de) ? 1 : wordLadderRung(word),
+      rung: wordDifficultyRung(word),
       commonality: wordCommonality(word.lookup || word.de, corpusIndex),
       uses: corpusUses(word.lookup || word.de, corpusIndex),
     }))
@@ -654,16 +650,34 @@ export function rankWordCatalog(
  */
 export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">): number {
   const level = String(word.level ?? "").toUpperCase();
-  if (/^C/.test(level)) return 6;
-  if (level.startsWith("B2-C")) return 5;
-  if (level.startsWith("B2")) return 4;
-  if (level.startsWith("B1")) return 3;
+  const band = cefrRung(level);
+  // B1 and up is settled by the label alone. The frequency bank is a list of
+  // 2,500 everyday words and has nothing to say about that end of the ladder.
+  if (band >= 3 && /^[BC]/.test(level)) return band;
   // The A1-B1 mass is where nearly everything lives; the frequency bank is
   // what separates "sein" from a mid-pack A2 noun.
   const rank = frequencyRank(word.lookup || word.de);
   if (rank <= 300) return 1;
   if (rank <= 1200) return 2;
-  return level.startsWith("A1") ? 1 : level.startsWith("A2") ? 2 : 3;
+  return band;
+}
+
+/**
+ * The rung a word ACTUALLY sits on — the question anything ordering by
+ * difficulty should ask.
+ *
+ * A word's rung is not its pack's level. haben, sein, machen and bitte are
+ * taught in A2 packs, because the LESSON around them is A2; the words
+ * themselves are the first fifty words of the language. Ordering Listen by
+ * the pack label put haben at 1,045 and bitte at 3,372 of a queue that had
+ * just promised to start with the easiest thing it had.
+ *
+ * Connectors get the same treatment for the opposite reason: obwohl and
+ * nachdem are taught in a B1-B2 pack and are missing from the frequency bank
+ * entirely, so nothing else would rescue them.
+ */
+export function wordDifficultyRung(word: Pick<WordItem, "level" | "lookup" | "de">): number {
+  return isCoreFunctionWord(word.lookup || word.de) ? 1 : wordLadderRung(word);
 }
 
 /**

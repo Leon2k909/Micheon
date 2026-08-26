@@ -25,10 +25,10 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
-import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
+import { buildWordCatalog, rankWordCatalog, wordDifficultyRung } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
-import { cefrOrder } from "@/lib/cefr";
+import { cefrRung } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta } from "@/lib/curriculum";
 import {
@@ -614,13 +614,13 @@ export type ListenItem = {
    */
   tierNote?: string;
   /**
-   * The CEFR label of the pack this card came from — "A1", "A2-B1", "B2".
+   * How hard this card is, 1 (A1) to 6 (C1-C2) — see cefrRung.
    *
-   * What "easiest first" sorts on, and empty for a pack that carries no level
-   * at all. Read from the item rather than recomputed, so the order can be
-   * checked against the thing it actually used.
+   * What "easiest first" sorts on, and what the card shows through
+   * cefrRungLabel. Read from the item rather than recomputed, so the order
+   * can be checked against the thing it actually used.
    */
-  level?: string;
+  rung?: number;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -687,13 +687,21 @@ export function buildListenQueue(
     const rank = packRank.get(String(partKey ?? ""));
     if (rank != null && !itemPackRank.has(id)) itemPackRank.set(id, rank);
   };
-  // A card's difficulty is its pack's CEFR label — the same one the lesson
-  // list and the level filter read, so "A1 first" means the same A1 the rest
-  // of the app shows. Carried ON the item rather than looked up beside it: a
-  // sentence can appear in more than one pack, and the catalogue has already
-  // decided which one this card came from. A map rebuilt afterwards answers
-  // for whichever pack was seen last, which is a different card's level.
-  const levelOf = (partKey: unknown) => String(parts[String(partKey ?? "")]?.level ?? "");
+  // How hard a card is, as a rung from 1 (A1) to 6 (C1-C2).
+  //
+  // For a SENTENCE that is its pack's CEFR level, because a sentence is only
+  // as easy as the lesson it belongs to. For a WORD it is not: haben, sein,
+  // machen and bitte are taught inside A2 packs, since the lesson around them
+  // is A2, and the words themselves are among the first fifty in the
+  // language. Ordering words by the pack label put haben at 1,045 and bitte
+  // at 3,372 of a queue that had just promised to start with the easiest
+  // thing it had — so a word is asked for its own rung instead.
+  //
+  // Carried ON the item rather than looked up beside it: a sentence can
+  // appear in more than one pack, and the catalogue has already decided which
+  // one this card came from. A map rebuilt afterwards answers for whichever
+  // pack was walked last, which is a different card's level.
+  const partRung = (partKey: unknown) => cefrRung(parts[String(partKey ?? "")]?.level);
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
@@ -718,7 +726,7 @@ export function buildListenQueue(
       de: primaryAnswer(item.de),
       en: primaryAnswer(item.en),
       tierNote: item.tierNote,
-      level: levelOf(item.partKey),
+      rung: partRung(item.partKey),
       kind: "sentence" as const,
       // A percentile makes sentence and word popularity comparable in the
       // mixed queue even though their underlying scorers use different
@@ -748,7 +756,7 @@ export function buildListenQueue(
       use: word.use,
       senseTag: word.senseTag,
       tierNote: packMeta(word.partKey).note,
-      level: levelOf(word.partKey),
+      rung: wordDifficultyRung(word),
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
@@ -866,12 +874,9 @@ export function buildListenQueue(
   // it 99): it applies everywhere, so there is no rung to put it on, and
   // guessing one would push unlevelled material in front of A1.
   if (order === "level") {
-    // cefrOrder once per card rather than once per comparison: this runs over
-    // twenty thousand of them every time a Listen setting changes.
-    const rank = new Map(available.map((entry) => [entry.item.id, cefrOrder(entry.item.level)]));
     return available
       .sort((a, b) =>
-        (rank.get(a.item.id) ?? 99) - (rank.get(b.item.id) ?? 99)
+        (a.item.rung ?? 3) - (b.item.rung ?? 3)
         || a.index - b.index
       )
       .map((entry) => entry.item);
