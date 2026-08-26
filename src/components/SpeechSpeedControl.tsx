@@ -117,7 +117,7 @@ export function SpeechSpeedControl({
         })}
       </div>
       {scope === "master" && rate === null ? (
-        <p className="speech-speed-mixed-note">{ui("English and German currently use different speeds. Choose a speed here to set both.")}</p>
+        <p className="speech-speed-mixed-note">{ui("The voices currently use different speeds. Choose a speed here to set them all.")}</p>
       ) : null}
     </div>
   );

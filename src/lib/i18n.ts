@@ -1115,7 +1115,7 @@ const DE: Record<string, string> = {
   "Choose which voice speed to change": "Wähle, welches Sprechtempo du ändern möchtest",
   "Set both voices together or tune English and German separately.": "Stelle beide Stimmen gemeinsam ein oder passe Englisch und Deutsch getrennt an.",
   "Set both voices together or tune English and German separately. Changes also apply to lessons, games, and the companion.": "Stelle beide Stimmen gemeinsam ein oder passe Englisch und Deutsch getrennt an. Die Änderungen gelten auch für Lektionen, Spiele und die Begleiterin.",
-  "English and German currently use different speeds. Choose a speed here to set both.": "Englisch und Deutsch verwenden gerade unterschiedliche Tempi. Wähle hier ein Tempo, um beide gleich einzustellen.",
+  "The voices currently use different speeds. Choose a speed here to set them all.": "Die Stimmen verwenden gerade unterschiedliche Tempi. Wähle hier ein Tempo, um alle gleich einzustellen.",
   "Practice this word": "Dieses Wort üben",
   "In your words": "In deinen Wörtern",
   "Right-click to change speed": "Rechtsklick zum Ändern des Tempos",
