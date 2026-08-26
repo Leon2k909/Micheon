@@ -62,6 +62,34 @@ export function onVocabLibraryOpen(listener: OpenListener) {
 }
 
 /**
+ * Whether the vocabulary card is what was asked for, rather than the progress
+ * page it happens to sit on.
+ *
+ * The panel holding the card loads separately from the page, so it arrives
+ * after the page has already drawn its top: measured at 1.5s the first time
+ * and 0.85s after that, during which the learner watched the progress panel
+ * and then the page jumped 1,189px down to the card. Asked for by name, the
+ * card goes first, so there is nothing above it to sit through and nothing to
+ * jump past. Arrive any other way and the page keeps its usual order.
+ *
+ * Taken rather than read: it describes one arrival, not a setting, so the next
+ * visit to the progress page is the ordinary one again.
+ */
+let libraryFirst = false;
+
+/** Say that the vocabulary card is the destination, before navigating. */
+export function requestVocabLibraryFirst() {
+  libraryFirst = true;
+}
+
+/** Answer once, and forget: was the card the destination of this arrival? */
+export function takeVocabLibraryFirst() {
+  const asked = libraryFirst;
+  libraryFirst = false;
+  return asked;
+}
+
+/**
  * The tracker listens while it is mounted, and picks up a waiting request on
  * the way in. Returns the unsubscribe.
  */

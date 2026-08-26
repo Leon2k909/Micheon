@@ -4,6 +4,15 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 const KEY = "gl-interface-language";
 export const INTERFACE_LANGUAGE_CHANGE_EVENT = "gl-interface-language-change";
+/**
+ * A table for some language has arrived.
+ *
+ * The tables are downloaded per language now, so the language changing and
+ * the app being able to speak it are two separate moments. This is the second
+ * one. It is declared here rather than in i18n.ts so that the dependency
+ * stays one-way: i18n reads this file already.
+ */
+export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
 
 /**
  * Which language the app itself is written in.
@@ -58,9 +67,29 @@ export function setInterfaceLanguage(language: InterfaceLanguage) {
   }
 }
 
+/**
+ * How many tables have landed since the app started.
+ *
+ * The snapshot below carries it because the LANGUAGE does not change when its
+ * table arrives — it was already "fr". React compares snapshots to decide
+ * whether to re-render, so without this the table lands into an app that
+ * never redraws and the screen stays in the English it fell back to.
+ */
+let stringsArrived = 0;
+
+/** The language in force, and whether anything has arrived since. */
+function currentSnapshot(): string {
+  return `${resolveInterfaceLanguage()}|${stringsArrived}`;
+}
+
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
   const onChange = () => onStoreChange();
+  const onStringsReady = () => {
+    stringsArrived += 1;
+    onStoreChange();
+  };
+  window.addEventListener(INTERFACE_STRINGS_READY_EVENT, onStringsReady);
   const onStorage = (event: StorageEvent) => {
     if (event.key === KEY || event.key === null) onStoreChange();
   };
@@ -73,6 +102,7 @@ function subscribe(onStoreChange: () => void) {
   // not fire, and announces the finished batch with this event instead.
   window.addEventListener("storage-sync-completed", onChange);
   return () => {
+    window.removeEventListener(INTERFACE_STRINGS_READY_EVENT, onStringsReady);
     window.removeEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, onChange);
     window.removeEventListener(DIRECTION_CHANGE_EVENT, onChange);
     window.removeEventListener("storage", onStorage);
@@ -88,5 +118,6 @@ function subscribe(onStoreChange: () => void) {
  * setting change into a re-render instead of a reload.
  */
 export function useInterfaceLanguage(): "en" | "de" | "fr" {
-  return useSyncExternalStore(subscribe, resolveInterfaceLanguage, () => "en");
+  const snapshot = useSyncExternalStore(subscribe, currentSnapshot, () => "en|0");
+  return snapshot.slice(0, snapshot.indexOf("|")) as "en" | "de" | "fr";
 }

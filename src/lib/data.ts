@@ -8,6 +8,8 @@ import { frequencyWordPartBlueprints } from "./frequencyWordPacks";
 import { roundingWordPartBlueprints } from "./roundingWordPacks";
 import { basicsWordPartBlueprints } from "./basicsWordPacks";
 import { immersionWordPartBlueprints } from "./immersionWordPacks";
+import { moreWordPartBlueprints } from "./moreWordPacks";
+import { sheetWordPartBlueprints } from "./sheetWordPacks";
 
 export const GERMAN_SPECIAL_CHARACTERS = ["Ä", "ä", "É", "é", "Ö", "ö", "Ü", "ü", "ß"];
 
@@ -8292,6 +8294,8 @@ export const allPartBlueprints: Record<string, Blueprint> = {
 ...frequencyWordPartBlueprints,
 ...roundingWordPartBlueprints,
 ...basicsWordPartBlueprints,
+...moreWordPartBlueprints,
+...sheetWordPartBlueprints,
 };
 
 export const verbConjugations: Record<string, Record<string, string>> = {

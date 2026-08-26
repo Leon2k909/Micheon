@@ -1338,7 +1338,7 @@ export const DE: Record<string, string> = {
   "Lesson content": "Lektionsinhalt",
   "Due review": "Fällige Wiederholung",
   "Sort by": "Sortieren nach",
-  "German or English…": "Deutsch oder Englisch…",
+  "{target} or {meaning}…": "{target} oder {meaning}…",
   "Alphabetical": "Alphabetisch",
   "Needs attention first": "Braucht Aufmerksamkeit zuerst",
   "Single words from vocabulary lessons. Sentences live in the tracker above — the two never mix.":
@@ -2114,7 +2114,7 @@ export const DE: Record<string, string> = {
   "Least heard first": "Am seltensten gehört zuerst",
   "Newest first": "Neueste zuerst",
   "Show both languages on the pet": "Beide Sprachen beim Haustier anzeigen",
-  "Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.": "Deutsch und Englisch gemeinsam in der Sprechblase anzeigen. Schalte dies aus, um nur den gerade gesprochenen Satz zu sehen.",
+  "Keep {target} and {meaning} together in the pet bubble. Turn this off to show only the line currently being spoken.": "{target} und {meaning} gemeinsam in der Sprechblase anzeigen. Schalte dies aus, um nur den gerade gesprochenen Satz zu sehen.",
   "Listen player": "Hörmodus-Player",
   "Playing in the background": "Läuft im Hintergrund",
   "Listen is paused": "Hörmodus pausiert",

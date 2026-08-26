@@ -1,6 +1,7 @@
 import { targetLangTag } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
+import { polishFor } from "@/lib/polishCourse";
 import type { CatalogItem } from "@/session";
 
 /**
@@ -97,15 +98,24 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
   const sides = courseSides();
   const toEnglish = sides.target.code === "en";
   const toFrench = sides.target.code === "fr";
+  const toPolish = sides.target.code === "pl";
   const seen = new Set<string>();
   const out: PracticeCandidate[] = [];
   for (const item of items) {
     if (!item || (item.kind !== "phrase" && item.kind !== "dialogue")) continue;
-    // The catalogue is German either way round, so the French course looks the
-    // answer up. A card the tables do not reach is not askable here.
+    // The catalogue is German either way round, so the table-backed courses look
+    // the answer up. A card the tables do not reach is not askable here.
+    //
+    // Polish went without this and the card never appeared: the answer fell
+    // through to item.de, which is the German — the same string the German
+    // prompt uses — so every candidate was dropped as "same wording on both
+    // sides" and the pool never reached its minimum. It read as a screen still
+    // loading rather than as a course that could not build a question.
     const french = toFrench ? frenchFor(item.de ?? "", item.fr) : null;
     if (toFrench && !french) continue;
-    const answer = firstWording(french ?? ((toEnglish ? item.en : item.de) ?? ""));
+    const polish = toPolish ? polishFor(item.de ?? "") : null;
+    if (toPolish && !polish) continue;
+    const answer = firstWording(french ?? polish ?? ((toEnglish ? item.en : item.de) ?? ""));
     const prompt = firstWording((sides.meaning.code === "de" ? item.de : item.en) ?? "");
     if (!usable(answer) || !usable(prompt)) continue;
     // Same wording on both sides teaches nothing and reads as a bug.
