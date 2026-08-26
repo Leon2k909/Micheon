@@ -125,7 +125,12 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // bathroom were complete. 98 words were written for it, of which 16 fold into
 // synonym cards that already existed, so the faces move 8,406 -> 8,488 while
 // the words taught move by 97: die Auswertung already had its French.
-assert.equal(taughtWords, 9153, "the reviewed sense fixes changed the standalone word count");
+// 9153 -> 9281: parts 611-617 answer the second-worst field, the sea at 60 per
+// cent - der Anker, das Segel and der Leuchtturm all missing. 130 words for
+// the ship, the harbour, the water, what lives in it, fishing and diving, and
+// what goes wrong out there. 15 fold into synonym cards, so the faces move
+// 8,488 -> 8,603.
+assert.equal(taughtWords, 9281, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
