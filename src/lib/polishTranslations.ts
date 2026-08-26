@@ -8666,4 +8666,6 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "Ich hab mein Passwort schon wieder vergessen.": "Znowu zapomniałem hasła.",
   "Die Operation ist gut verlaufen.": "Operacja przebiegła pomyślnie.",
   "Hier. Was kostet das?": "Proszę. Ile to kosztuje?",
+
+  "Leck": "przeciek",
 };
