@@ -124,6 +124,45 @@ assert.ok(/const indexHolds = sides\.target\.code === "de" \|\| sides\.target\.c
 assert.ok(tracker.includes("if (!indexHolds) return null;"),
   "the index is still reached for a course it cannot answer for");
 
+/**
+ * A language is something a device HAS, and can give back.
+ *
+ * The tables ship as content packs — the same data as JSON, built by
+ * build-content-packs and verified byte-identical to the bundled copy. Reading
+ * the pack rather than importing the module is what makes a language
+ * removable: a JavaScript chunk, once downloaded, is the browser's to keep.
+ *
+ * Nobody is asked to install anything. Opening the course fetches its pack and
+ * keeps it; the bundled copy answers if the pack cannot be had at all, so a
+ * first run with no network still teaches.
+ */
+assert.ok(translations.includes("fromPackOrBundle"),
+  "the tables are imported rather than read from their pack, so a language is part of the app "
+  + "again and cannot be removed");
+assert.ok(/packs\.installPack\(pack\.url\)/.test(translations),
+  "the pack is read but never kept, so every start downloads the language again");
+assert.ok(/return BUNDLED\[language\]\(\)/.test(translations),
+  "there is no fallback to the bundled table, so a first run with no network has no course");
+
+// Removable from BOTH places somebody would look: the screen about storage,
+// and the picker where the course was chosen in the first place.
+const storage = fs.readFileSync(path.join(src, "components", "DataAndStorage.tsx"), "utf8");
+assert.ok(storage.includes("removePack") && storage.includes("Downloaded languages"),
+  "Data and storage lists what is on the device but cannot remove a language from it");
+const picker = fs.readFileSync(path.join(src, "components", "course", "CourseSwitcher.tsx"), "utf8");
+assert.ok(picker.includes("removePack") && picker.includes("DownloadedBadge"),
+  "the course picker cannot remove a download, so the only way to undo one is elsewhere in "
+  + "settings");
+// Every delete on the storage screen arms first; this is a delete too.
+for (const [where, text, armed] of [
+  ["Data and storage", storage, `arming !== \`lang:\${pack.id}\``],
+  ["the course picker", picker, "const asking = removing === id;"],
+]) {
+  assert.ok(text.includes(armed),
+    `${where} removes a language on a single click. Every other delete in this app asks first, `
+    + "and this one sits beside the button that chooses the course");
+}
+
 // primeTranslations is the synchronous door for build scripts. The app must
 // never take it, or the tables are back in the bundle by another name.
 for (const file of sources) {

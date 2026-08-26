@@ -3,11 +3,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search, Star, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
+import { availablePacks, removePack } from "@/lib/contentPacks";
 import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, getFavouritesOpen, setFavouritesOpen, toggleFavouriteCourse } from "@/lib/favouriteCourses";
 import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
 import { ui, uiFmt } from "@/lib/i18n";
+
+/**
+ * Which course a language pack belongs to.
+ *
+ * The manifest names packs by language code, because that is what the tables
+ * are keyed by; the picker lists courses. One map rather than a guess at every
+ * use, and adding a language means a line here beside the one in
+ * translations.ts.
+ */
+const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish" };
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",
@@ -150,6 +161,30 @@ export function CourseSwitcher({
    */
   const [showAllLanguages, setShowAllLanguages] = useState(false);
   /**
+   * Downloads this device is holding, by the course that pulled them in.
+   *
+   * The manifest names packs by language code and the picker lists courses, so
+   * the two are married here rather than at every use. Only languages have
+   * packs today; a course with none simply shows nothing.
+   */
+  const [installedPacks, setInstalledPacks] = useState<Array<{ course: string; url: string }>>([]);
+  const [removing, setRemoving] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void availablePacks()
+      .then(({ languages, installed }) => {
+        if (!live) return;
+        setInstalledPacks(languages
+          .filter((pack) => installed.some((entry) => entry.endsWith(pack.url)))
+          .map((pack) => ({ course: COURSE_BY_PACK[pack.id] ?? pack.id, url: pack.url }))
+          .filter((entry) => Boolean(entry.course)));
+      })
+      // No manifest means the build emitted no packs, which is a real state:
+      // the app runs on its bundled content and nothing is removable.
+      .catch(() => { if (live) setInstalledPacks([]); });
+    return () => { live = false; };
+  }, []);
+  /**
    * Starred courses, newest last. Read on mount and kept in step through the
    * event, so starring in one place redraws both sections at once.
    */
@@ -218,6 +253,57 @@ export function CourseSwitcher({
    * already one, and a button inside a button is invalid markup that screen
    * readers flatten. The sidebar's pressable flag is built the same way.
    */
+  /**
+   * Give a language back from where you chose it.
+   *
+   * Only on the courses that HAVE a download — which today is at most two, so
+   * the picker stays a list of things to learn rather than a list of things
+   * to manage. A Remove on every row would be noise on rows with nothing to
+   * remove, and a "manage downloads" button somewhere else means leaving the
+   * picker in the middle of choosing.
+   *
+   * Armed like the deletes in Data and storage: one press asks, the second
+   * does it. Nothing is lost for good — opening the course fetches it again —
+   * but a stray click beside the course you were about to pick should not
+   * quietly throw away a download either.
+   */
+  const DownloadedBadge = ({ id }: { id: string }) => {
+    const pack = installedPacks.find((entry) => entry.course === id);
+    if (!pack) return null;
+    const asking = removing === id;
+    const label = asking ? ui("Tap again to remove") : ui("Downloaded — remove");
+    const drop = () => {
+      if (!asking) { setRemoving(id); return; }
+      setRemoving(null);
+      void removePack(pack.url).then(() => {
+        setInstalledPacks((current) => current.filter((entry) => entry.course !== id));
+      });
+    };
+    return (
+      <span
+        aria-label={label}
+        className={cn(
+          "grid shrink-0 place-items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black uppercase tracking-wide transition-colors",
+          asking
+            ? "bg-[var(--surface-3)] text-[var(--text-1)]"
+            : "bg-[var(--surface-3)] text-[var(--text-3)] hover:text-[var(--text-1)]"
+        )}
+        onClick={(event) => { event.stopPropagation(); drop(); }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          drop();
+        }}
+        role="button"
+        tabIndex={0}
+        title={label}
+      >
+        {asking ? ui("Remove?") : ui("Downloaded")}
+      </span>
+    );
+  };
+
   const FavouriteStar = ({ id }: { id: string }) => {
     const on = isFavourite(id);
     const label = on ? ui("Remove from favourites") : ui("Add to favourites");
@@ -272,6 +358,7 @@ export function CourseSwitcher({
                 {ui("Built-in")}
               </span>
             )}
+            <DownloadedBadge id={id} />
           </span>
           <span className="mt-1 block text-[13px] font-bold leading-5 text-[var(--text-3)]">{ui(tagline)}</span>
         </span>

@@ -20,6 +20,16 @@
 // key; anything not in the table falls through unchanged, so missing strings
 // degrade gracefully instead of breaking.
 export const DE: Record<string, string> = {
+  // ── the picker, for a language already on this device ─────────────────────
+  "Downloaded": "Heruntergeladen",
+  "Remove?": "Entfernen?",
+  "Downloaded — remove": "Heruntergeladen — entfernen",
+  // ── content a device has downloaded, and can give back ────────────────────
+  "Downloaded languages": "Heruntergeladene Sprachen",
+  "A language downloads itself when you open its course. Remove one to get the space back — opening the course again brings it straight back.": "Eine Sprache lädt sich selbst herunter, sobald du ihren Kurs öffnest. Entferne eine, um den Platz zurückzubekommen — beim nächsten Öffnen ist sie sofort wieder da.",
+  "Tap again to remove": "Zum Entfernen erneut tippen",
+  "{name} removed. Opening the course downloads it again.": "{name} entfernt. Beim Öffnen des Kurses wird sie erneut geladen.",
+  "Could not remove {name}.": "{name} konnte nicht entfernt werden.",
   // ── Friends: the working list, saying so in its own words ─────────────────
   "Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.": "Gib ihnen deinen Code. Ihre App fragt bei deiner an, du stimmst zu, und danach gehen eure Zahlen direkt zwischen den beiden hin und her.",
   "Copy your code": "Deinen Code kopieren",

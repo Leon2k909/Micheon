@@ -14,6 +14,16 @@
  * have no English key to be found under.
  */
 export const FR: Record<string, string> = {
+  // ── the picker, for a language already on this device ─────────────────────
+  "Downloaded": "Téléchargée",
+  "Remove?": "Retirer ?",
+  "Downloaded — remove": "Téléchargée — retirer",
+  // ── content a device has downloaded, and can give back ────────────────────
+  "Downloaded languages": "Langues téléchargées",
+  "A language downloads itself when you open its course. Remove one to get the space back — opening the course again brings it straight back.": "Une langue se télécharge d'elle-même quand tu ouvres son cours. Retires-en une pour récupérer la place — en rouvrant le cours, elle revient aussitôt.",
+  "Tap again to remove": "Appuie encore pour retirer",
+  "{name} removed. Opening the course downloads it again.": "{name} retirée. En ouvrant le cours, elle se télécharge à nouveau.",
+  "Could not remove {name}.": "Impossible de retirer {name}.",
   // ── Friends: the working list, saying so in its own words ─────────────────
   "Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.": "Donne-leur ton code. Leur application demande à la tienne de se connecter, tu acceptes, et ensuite vos chiffres passent directement de l'une à l'autre.",
   "Copy your code": "Copier ton code",

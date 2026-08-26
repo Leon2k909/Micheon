@@ -52,10 +52,54 @@ export type TranslationTable = Record<string, string>;
  * top-level one is resolved at build time and lands in the startup chunk,
  * which is the whole fault being fixed.
  */
-const LOADERS: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
+/**
+ * The bundled copy, used when the pack cannot be had.
+ *
+ * A dynamic import so it stays its own chunk and is only fetched if it is
+ * actually needed — a first run with no network, or a browser with storage
+ * turned off. The pack is preferred because a pack can be REMOVED: a chunk,
+ * once downloaded, is the browser's to keep.
+ */
+const BUNDLED: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
   fr: () => import("@/lib/frenchTranslations").then((m) => m.FRENCH_BY_GERMAN),
   pl: () => import("@/lib/polishTranslations").then((m) => m.POLISH_BY_GERMAN),
 };
+
+/**
+ * Where each language's table is fetched from, and what to fall back on.
+ *
+ * The pack is the same table as plain JSON, built by build-content-packs and
+ * verified byte-identical to the bundled copy by check-content-packs. Reading
+ * it here rather than importing the module is what makes a language something
+ * a learner HAS rather than something the app is made of — installed by
+ * opening the course, and removable in Data and storage.
+ *
+ * readPack answers null for anything it cannot produce — no manifest, no
+ * cache, no network — and the bundled copy answers instead. Nothing about
+ * this can leave a course without its translations.
+ */
+const LOADERS: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
+  fr: () => fromPackOrBundle("fr"),
+  pl: () => fromPackOrBundle("pl"),
+};
+
+async function fromPackOrBundle(language: TranslationLanguage): Promise<TranslationTable> {
+  try {
+    const packs = await import("@/lib/contentPacks");
+    const manifest = await packs.loadContentManifest();
+    const pack = manifest?.languages?.find((entry) => entry.id === language);
+    if (pack) {
+      // Keeping it is what makes it removable later; a failed keep still
+      // reads, it is simply fetched again next time.
+      if (!(await packs.isPackInstalled(pack.url))) await packs.installPack(pack.url);
+      const table = await packs.readPack<TranslationTable>(pack.url);
+      if (table && Object.keys(table).length) return table;
+    }
+  } catch {
+    // Any failure at all falls through to the copy inside the app.
+  }
+  return BUNDLED[language]();
+}
 
 export const TRANSLATION_LANGUAGES = Object.keys(LOADERS) as TranslationLanguage[];
 
