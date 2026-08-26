@@ -9280,6 +9280,12 @@ html[data-theme="dark"] .np-friend-request {
     linear-gradient(180deg, #fbfff7, #f5f1e9);
 }
 
+/* Two people have no middle place to raise, so the row is two columns wide
+   rather than leaving a third standing empty beside them. */
+.np-leaderboard-podium[data-places="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .np-podium-place {
   position: relative;
   display: flex;

@@ -118,6 +118,7 @@ import {
 import { getCourse } from "@/lib/courseRegistry";
 import { FlagRoundel } from "@/components/course/FlagRoundel";
 import { learningFlagId } from "@/lib/learningFlag";
+import { arrangePodium } from "@/lib/leaderboardPodium";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import {
   HIDDEN_NAV_EVENT,
@@ -3556,7 +3557,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
     ];
     return rows.sort((a, b) => b.weeklyXp - a.weeklyXp);
   }, [firstName, realFriends, stats.streak, stats.totalXp]);
-  const podium = [leaderboard[1], leaderboard[0], leaderboard[2]];
+  const podium = arrangePodium(leaderboard);
 
   const showPreviewNotice = (action: string) => {
     setPreviewNotice(uiFmt("{action} is a preview in this release. Nothing was sent or changed.", { action }));
@@ -3666,20 +3667,26 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
               <div className="np-leaderboard-time"><Clock3 /><span><strong>{ui("3 days left")}</strong><small>{ui("Resets Monday")}</small></span></div>
             </div>
 
-            <div aria-label={ui("Top three friends")} className="np-leaderboard-podium">
-              {podium.map((entry) => {
-                const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
-                return (
-                  <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
-                    <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
-                    <SocialAvatar initials={entry.initials} tone={entry.tone} />
-                    <strong>{entry.name}</strong>
-                    <small>{uiNumber(entry.weeklyXp)} XP</small>
-                    <i aria-hidden="true" />
-                  </div>
-                );
-              })}
-            </div>
+            {podium.length ? (
+              <div
+                aria-label={ui("You and your friends by total XP")}
+                className="np-leaderboard-podium"
+                data-places={podium.length}
+              >
+                {podium.map((entry) => {
+                  const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
+                  return (
+                    <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
+                      <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
+                      <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                      <strong>{entry.name}</strong>
+                      <small>{uiNumber(entry.weeklyXp)} XP</small>
+                      <i aria-hidden="true" />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
 
             <div className="np-leaderboard-list">
               {leaderboard.map((entry, index) => (
