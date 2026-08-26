@@ -14,6 +14,8 @@
  * have no English key to be found under.
  */
 export const FR: Record<string, string> = {
+  // ── the written form of a line the course teaches as it is said ───────────
+  "Written": "À l'écrit",
   // ── the picker, for a language already on this device ─────────────────────
   "Downloaded": "Téléchargée",
   "Remove?": "Retirer ?",

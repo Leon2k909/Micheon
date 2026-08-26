@@ -1365,6 +1365,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang={meaningSlot.htmlLang}>
             {item.en}
           </p>
+          {/* How the same sentence is WRITTEN, when the card teaches how it is
+              said. The course teaches the spoken form because that is what
+              people say — "Ich hab das nicht ganz verstanden" — and in print
+              it is "habe". Somebody who only ever hears it has no idea how to
+              spell it, which is the half of the language Listen cannot teach
+              on its own. The lesson has shown this for a while; this is the
+              same line, in the mode where it is most needed. */}
+          {item.long && item.long.trim() !== item.de.trim() ? (
+            <p className="flex justify-center">
+              <span className="written-note" lang={targetSlot.htmlLang}>
+                <b>{ui("Written")}</b>
+                {item.long}
+              </span>
+            </p>
+          ) : null}
           {/* Which of the word's meanings this card is on. A heard word brings
               no context with it, so "weiter" spoken aloud and glossed "further"
               leaves the learner who was thinking of "carry on" unable to tell

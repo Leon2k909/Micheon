@@ -209,6 +209,29 @@ check("the default queue combines sentence and word trackers",
   && queue.some((item) => item.kind === "sentence")
   && queue.some((item) => item.kind === "word")
   && queue.slice(0, 40).some((item) => item.kind === "word"));
+/**
+ * A spoken line still says how it is written.
+ *
+ * The course teaches what people say — "Ich hab das nicht ganz verstanden" —
+ * and in print it is "habe". Somebody who only ever hears a card has no idea
+ * how to spell it, which is the half of the language Listen cannot teach on
+ * its own. The lesson has shown this for a while and Listen dropped the field
+ * on the way through, which is the kind of loss nothing reports: the card
+ * looks complete either way.
+ */
+{
+  const written = queue.filter((item) => item.long && item.long.trim());
+  check("the written form survives into the Listen queue",
+    written.length > 800);
+  check("no card offers a written form identical to the line it teaches",
+    written.every((item) => item.long.trim() !== item.de.trim()));
+  const view = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+  check("the Listen card shows it",
+    view.includes("written-note") && view.includes("item.long"));
+  check("and only when it differs from the line being taught",
+    view.includes("item.long.trim() !== item.de.trim()"));
+}
+
 check("most-common-first genuinely uses shared popularity order",
   buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
     .slice(0, 200)

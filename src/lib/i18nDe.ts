@@ -20,6 +20,8 @@
 // key; anything not in the table falls through unchanged, so missing strings
 // degrade gracefully instead of breaking.
 export const DE: Record<string, string> = {
+  // ── the written form of a line the course teaches as it is said ───────────
+  "Written": "Geschrieben",
   // ── the picker, for a language already on this device ─────────────────────
   "Downloaded": "Heruntergeladen",
   "Remove?": "Entfernen?",

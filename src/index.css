@@ -12022,6 +12022,35 @@ html[data-theme="dark"] {
   color: var(--text-3);
 }
 
+/* The written form of a spoken line. A solid edge rather than the dashed one
+   above, because this is the sentence itself rather than a note about it —
+   and the label leads so the pill reads as "Written: …" at a glance without
+   being mistaken for a second thing to learn. */
+.written-note {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: 100%;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.4;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.written-note > b {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .matcher-tile-note {
   margin-top: 6px;
   font-size: 10px;

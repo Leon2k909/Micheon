@@ -656,6 +656,15 @@ export type ListenItem = {
    */
   tierNote?: string;
   /**
+   * The same sentence as it is WRITTEN, when the card teaches how it is said.
+   *
+   * The course teaches the spoken form — "Ich hab das nicht ganz verstanden"
+   * — because that is what people say. In print it is "habe", and a learner
+   * who only ever meets the spoken one has no idea how to write it. The
+   * lesson has shown this for a while; Listen dropped it on the way through.
+   */
+  long?: string;
+  /**
    * How hard this card is, 1 (A1) to 6 (C1-C2) — see cefrRung.
    *
    * What "easiest first" sorts on, and what the card shows through
@@ -768,6 +777,7 @@ export function buildListenQueue(
       de: primaryAnswer(item.de),
       en: primaryAnswer(item.en),
       tierNote: item.tierNote,
+      long: item.long,
       rung: partRung(item.partKey),
       kind: "sentence" as const,
       // A percentile makes sentence and word popularity comparable in the
