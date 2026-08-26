@@ -63,7 +63,7 @@ for (const [file, binding, className] of PICTURES) {
 }
 
 // ── the language card wears the language you are learning ────────────────
-// German and British English each have a picture of their own. Anything else
+// German, British English and French each have a picture of their own. Anything
 // keeps the general one, so a language can be listed before anybody has drawn
 // anything for it — French already is. Keyed on the language code rather than
 // on a German-or-not flag, because that flag handed French the German scene.
@@ -72,14 +72,16 @@ for (const [file, binding, className] of PICTURES) {
 pinPicture("home-languages-de-v2.webp", "homeLanguagesImage");
 pinPicture("home-languages-german-v1.webp", "homeLanguagesGermanImage");
 pinPicture("home-languages-uk-v1.webp", "homeLanguagesUkImage");
+pinPicture("home-languages-fr-v1.webp", "homeLanguagesFrImage");
 for (const line of [
   '  if (targetCode === "de") return homeLanguagesGermanImage;',
+  '  if (targetCode === "fr") return homeLanguagesFrImage;',
   '  if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;',
   "  return homeLanguagesImage;",
 ]) {
   assert.ok(
     shell.includes(line),
-    "languageCardArt no longer picks the German picture for the German course: " + line
+    "languageCardArt no longer gives each course its own picture: " + line
   );
 }
 assert.ok(
