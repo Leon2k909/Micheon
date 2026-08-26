@@ -1059,7 +1059,7 @@ export const FR: Record<string, string> = {
   "Choose which voice speed to change": "Choisis la vitesse de voix à modifier",
   "Set both voices together or tune English and German separately.": "Règle les deux voix ensemble, ou ajuste l'anglais et l'allemand séparément.",
   "Set both voices together or tune English and German separately. Changes also apply to lessons, games, and the companion.": "Règle les deux voix ensemble, ou ajuste l'anglais et l'allemand séparément. Les changements valent aussi pour les leçons, les jeux et la compagne.",
-  "English and German currently use different speeds. Choose a speed here to set both.": "L'anglais et l'allemand utilisent actuellement des vitesses différentes. Choisis une vitesse ici pour régler les deux.",
+  "The voices currently use different speeds. Choose a speed here to set them all.": "Les voix utilisent actuellement des vitesses différentes. Choisis une vitesse ici pour toutes les régler.",
   "Practice this word": "Travailler ce mot",
   "In your words": "Dans tes mots",
   "Right-click to change speed": "Clic droit pour changer la vitesse",
