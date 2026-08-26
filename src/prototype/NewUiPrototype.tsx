@@ -1382,15 +1382,11 @@ function Sidebar({
   );
 }
 
-function StatChip({ kind, value, label, shared = false }: {
-  kind: RewardKind;
-  value: string;
-  label: string;
-  /** Counts every course rather than the one you are on. */
-  shared?: boolean;
-}) {
+function StatChip({ kind, value, label }: { kind: RewardKind; value: string; label: string }) {
   return (
-    <div className="np-stat-chip" title={shared ? ui("Counts every course together.") : undefined}>
+    /* No note about scope any more: every figure here counts the chosen
+       language, so there is nothing to warn about. */
+    <div className="np-stat-chip">
       <span aria-hidden="true" className={`np-stat-chip__art np-stat-chip__art--${kind}`}>
         <RewardIcon kind={kind} />
       </span>
@@ -1569,13 +1565,13 @@ function Header({
           search and the avatar into its place instead of leaving them right. */}
       <div className="np-header-stats">
         {view === "home" && <>
-        <StatChip kind="flame" label={ui("Days learned")} shared value={uiNumber(stats.learningDays)} />
+        <StatChip kind="flame" label={ui("Days learned")} value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
             one chip look different from the two beside it for no gain — and
             said XP twice. The stats strip further down the page has always
             shown it bare, so this matches that too. */}
-        <StatChip kind="star" label={ui("Total XP")} shared value={uiNumber(stats.totalXp)} />
+        <StatChip kind="star" label={ui("Total XP")} value={uiNumber(stats.totalXp)} />
         <StatChip kind="trophy" label={ui("Lessons done")} value={uiNumber(stats.sessionsCompleted)} />
         </>}
       </div>
@@ -2812,7 +2808,10 @@ function FluencyOutlook({ onOpenFading, profile, vocab }: {
                 cheapest way to make the number mean what it says. */}
             <p className="np-fluency-course">
               {uiFmt("Counts your {language} course only", {
-                language: learningEnglish() ? ui("English") : ui("German"),
+                /* A third language arrived after this line was written. Asking
+                   "is it English?" and calling everything else German labelled
+                   a French course German. */
+                language: ui(learningEnglish() ? "English" : learningFrench() ? "French" : "German"),
               })}
             </p>
           </div>
@@ -3951,16 +3950,22 @@ export default function NewUiPrototype({
     return () => window.removeEventListener("activity-updated", recount);
   }, [profile]);
   /**
-   * The lesson count is kept per learning direction, so it has to be re-read
-   * when the direction changes — otherwise the card prints the English count
-   * over a German pack that has nothing done in it. XP, reviews and the streak
-   * are shared across both and are deliberately left alone.
+   * These are kept per learning direction, so they have to be re-read when it
+   * changes — otherwise the header prints one language's figures over another
+   * that has nothing done in it. XP joined the lesson count in being kept per
+   * course, and only the lesson count was being re-read, so switching language
+   * left the old XP on screen until the app was restarted.
+   *
+   * Days learned is counted from the records rather than stored, so it is
+   * recounted here rather than re-read.
    */
   useEffect(() => {
     const sync = () => {
       setStats((current) => ({
         ...current,
         sessionsCompleted: loadScopedJson("sessionsCompleted", 0, profile) as number,
+        totalXp: loadScopedJson("totalXp", 0, profile) as number,
+        learningDays: countLearningDays(profile),
       }));
     };
     window.addEventListener(DIRECTION_CHANGE_EVENT, sync);
