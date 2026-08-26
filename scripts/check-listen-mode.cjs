@@ -56,6 +56,8 @@ const result = esbuild.buildSync({
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
+      'export { buildCatalog } from "./src/session.ts";',
+      'export { cefrOrder } from "./src/lib/cefr.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -100,6 +102,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
+  buildCatalog, cefrOrder,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 
@@ -197,11 +200,55 @@ check("the default queue combines sentence and word trackers",
   && queue.some((item) => item.kind === "sentence")
   && queue.some((item) => item.kind === "word")
   && queue.slice(0, 40).some((item) => item.kind === "word"));
-check("the default queue genuinely uses shared popularity order",
-  DEFAULT_LISTEN_QUEUE_ORDER === "common"
-  && buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
+check("most-common-first genuinely uses shared popularity order",
+  buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
     .slice(0, 200)
     .every((item, index, rows) => index === 0 || rows[index - 1].popularity <= item.popularity));
+
+// ── easiest first, and it is the default ────────────────────────────────
+// Frequency is not difficulty, and Listen defaulted to frequency. Measured on
+// the French course before this: a B2 card arrived at position 190 with about
+// fifteen hundred A1 cards still queued behind it. In a mode built for not
+// looking at the screen, that is a beginner being read sentences four levels
+// above them with nothing to say so.
+//
+// The level of a card is its pack's CEFR label, read off the card itself —
+// the same label the lesson list shows. Rebuilding the lookup here was tried
+// and was wrong: a sentence can sit in more than one pack, so a map keyed by
+// id answers for whichever pack was walked last rather than for the pack the
+// queue actually took the card from.
+const levelRank = (item) => cefrOrder(item.level);
+check("every card in the queue knows which level it came from",
+  buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" })
+    .filter((item) => !item.level).length === 0);
+
+check("Listen starts at the easiest level by default", DEFAULT_LISTEN_QUEUE_ORDER === "level");
+
+const byLevel = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" });
+const byCommon = buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" });
+check("easiest-first never puts a harder card before an easier one",
+  byLevel.length === byCommon.length
+  && byLevel.every((item, index, rows) => index === 0 || levelRank(rows[index - 1]) <= levelRank(item)));
+// The point of asking level FIRST rather than instead: commonality still
+// decides the order inside a level, so "teach what people actually say" is
+// kept and simply asked second.
+const firstLevel = levelRank(byLevel[0]);
+const sameLevel = byLevel.filter((item) => levelRank(item) === firstLevel).map((item) => item.id);
+const commonPositions = sameLevel.map((id) => byCommon.findIndex((item) => item.id === id));
+check("and inside one level it is still most-common-first",
+  sameLevel.length > 50
+  && commonPositions.every((position, index) => index === 0 || commonPositions[index - 1] < position));
+// The failure this replaces, asserted as the thing it was: nothing hard may
+// sit in front of a beginner's material any more.
+const firstHard = byLevel.findIndex((item) => levelRank(item) >= 40);
+const easyBehindIt = byLevel.slice(firstHard).filter((item) => levelRank(item) < 20).length;
+check(`no A1 card waits behind a B2 one (${easyBehindIt} did, first hard card was at ${byCommon.findIndex((item) => levelRank(item) >= 40)})`,
+  firstHard > 0 && easyBehindIt === 0);
+// Unlevelled packs apply everywhere, so they have no rung — they must land at
+// the back rather than in front of A1, which is what a 0 default would do.
+check("a pack with no level sorts last instead of ahead of A1",
+  byLevel.every((item, index, rows) => index === 0 || levelRank(rows[index - 1]) <= levelRank(item))
+  && (levelRank(byLevel[byLevel.length - 1]) >= levelRank(byLevel[0])));
 
 queue = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
 check("sentence source only serves sentence-tracker ids", queue.length > 1000
@@ -604,9 +651,9 @@ check("corrupt Both counts fall back safely",
   JSON.stringify(getListenMixedCounts("learn-de")) === JSON.stringify({ words: 1, sentences: 2 }));
 check("Both count writers keep at least one of each and cap the combined loop at twelve",
   JSON.stringify(setListenMixedCounts({ words: 20, sentences: 20 }, "learn-de")) === JSON.stringify({ words: 11, sentences: 1 }));
-check("Listen defaults to both trackers in real most-common-first order",
+check("Listen defaults to both trackers, easiest level first",
   getListenContentSource("learn-de") === "mixed"
-  && getListenQueueOrder("learn-de") === "common");
+  && getListenQueueOrder("learn-de") === "level");
 setListenContentSource("words", "learn-de");
 setListenQueueOrder("least-heard", "learn-de");
 setListenContentSource("sentences", "learn-en");
@@ -716,7 +763,7 @@ check("corrupt Listen settings fall back to documented defaults",
   && getListenEnglishRepeats("learn-de") === 1
   && getListenLanguageOrder("learn-de") === "english-first"
   && getListenContentSource("learn-de") === "mixed"
-  && getListenQueueOrder("learn-de") === "common"
+  && getListenQueueOrder("learn-de") === "level"
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2
   && getListenNextCardDelayMs() === 1100);
@@ -724,7 +771,9 @@ check("Listen setting writers clamp typed values to safe limits",
   setListenGermanRepeats(99, "learn-de") === 10
   && setListenEnglishRepeats(-4, "learn-de") === 1
   && setListenContentSource("invalid", "learn-de") === "mixed"
-  && setListenQueueOrder("invalid", "learn-de") === "common"
+  && setListenQueueOrder("invalid", "learn-de") === "level"
+  && setListenQueueOrder("level", "learn-de") === "level"
+  && setListenQueueOrder("newest", "learn-de") === "newest"
   && setListenLoopItems(99, "learn-de") === 12
   && setListenLoopPasses(0, "learn-de") === 1
   && setListenNextCardDelayMs(99_000) === 30_000);
@@ -819,6 +868,11 @@ check("Both exposes independent word and sentence loop counts and preserves the 
   && view.includes("const currentId = item?.id")
   && view.includes("nextQueue.findIndex((candidate) => candidate.id === currentId)")
   && view.includes("next.words + next.sentences"));
+// Easiest first is the default order now, and a walk up through the levels is
+// only a walk if you can see which rung you are on.
+check("the card says which level it is on, and the picker offers the order by name",
+  view.includes("{item.level ? <> · {item.level}</> : null}")
+  && view.includes('"level", "Easiest first (A1 → C1)",'));
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')
   && view.includes('data-testid={`listen-queue-${value}`}')
@@ -958,7 +1012,8 @@ for (const key of [
   "Content source",
   "Choose whether Listen pulls from the sentence tracker, word tracker, or both.",
   "Queue order",
-  "Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.",
+  "Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.",
+  "Easiest first (A1 → C1)",
   "Newest first",
   "Reviews & struggles first",
   "Least heard first",

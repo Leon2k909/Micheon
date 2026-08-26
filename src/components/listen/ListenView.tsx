@@ -1333,8 +1333,16 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         </div>
 
         <div className="listen-card mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
+          {/* The level sits in the line that already says what this card is,
+              because the default order is now a walk up through the levels and
+              there was no way to see where in that walk you were. A CEFR label
+              is the same word in every language, so it is printed rather than
+              translated; a pack with no level simply omits it instead of
+              printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
+            {ui(item.kind === "word" ? "Word" : "Sentence")}
+            {item.level ? <> · {item.level}</> : null}
+            {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
           {/* A word at a time, with the same popover the lesson uses: the
@@ -1694,7 +1702,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
+                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
@@ -1702,6 +1710,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([[
+                  "level", "Easiest first (A1 → C1)",
+                ], [
                   "common", "Most common first",
                 ], [
                   "learning", "Reviews & struggles first",

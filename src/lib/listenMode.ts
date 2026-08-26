@@ -26,6 +26,7 @@ import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
+import { cefrOrder } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta } from "@/lib/curriculum";
 import {
@@ -108,9 +109,24 @@ export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
 export type ListenContentSource = "sentences" | "words" | "mixed";
-export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest";
+export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
+export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest"];
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
-export const DEFAULT_LISTEN_QUEUE_ORDER: ListenQueueOrder = "common";
+/**
+ * A1 first, then A2, then B1 — the order a course is taught in.
+ *
+ * The default used to be most-common-first, which sounds like the same thing
+ * and is not. Frequency and difficulty are different axes: measured against
+ * the French course, a B2 item arrived at position 190 with one and a half
+ * thousand A1 items still queued behind it. Someone who has just started is
+ * being read sentences from four levels above them, in a mode whose whole
+ * point is that you are not looking at the screen to notice.
+ *
+ * Commonality still decides the order WITHIN a level, so nothing about "teach
+ * what people actually say" is lost — it is asked second instead of first.
+ * Most common first is still in the picker for anyone who wants it back.
+ */
+export const DEFAULT_LISTEN_QUEUE_ORDER: ListenQueueOrder = "level";
 export type ListenLanguageOrder = "english-first" | "german-first";
 export const DEFAULT_LISTEN_LANGUAGE_ORDER: ListenLanguageOrder = "english-first";
 export const DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS = 1;
@@ -255,7 +271,7 @@ export function getListenQueueOrder(
 ): ListenQueueOrder {
   try {
     const value = window.localStorage.getItem(courseSettingKey(QUEUE_ORDER_KEY, direction));
-    if (value === "common" || value === "learning" || value === "least-heard" || value === "newest") return value;
+    if (LISTEN_QUEUE_ORDERS.includes(value as ListenQueueOrder)) return value as ListenQueueOrder;
   } catch { /* storage blocked: use the documented default */ }
   return DEFAULT_LISTEN_QUEUE_ORDER;
 }
@@ -264,7 +280,10 @@ export function setListenQueueOrder(
   order: ListenQueueOrder,
   direction: LearningDirection = getLearningDirection()
 ): ListenQueueOrder {
-  const next = order === "learning" || order === "least-heard" || order === "newest" ? order : "common";
+  // Written against the list rather than a chain of comparisons, which is how
+  // an order could be added to the picker and silently fall back to the
+  // default the moment it was chosen.
+  const next = LISTEN_QUEUE_ORDERS.includes(order) ? order : DEFAULT_LISTEN_QUEUE_ORDER;
   try {
     window.localStorage.setItem(courseSettingKey(QUEUE_ORDER_KEY, direction), next);
   } catch { /* keep Listen usable */ }
@@ -587,6 +606,14 @@ export type ListenItem = {
    * which room that sentence belongs in.
    */
   tierNote?: string;
+  /**
+   * The CEFR label of the pack this card came from — "A1", "A2-B1", "B2".
+   *
+   * What "easiest first" sorts on, and empty for a pack that carries no level
+   * at all. Read from the item rather than recomputed, so the order can be
+   * checked against the thing it actually used.
+   */
+  level?: string;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -653,6 +680,13 @@ export function buildListenQueue(
     const rank = packRank.get(String(partKey ?? ""));
     if (rank != null && !itemPackRank.has(id)) itemPackRank.set(id, rank);
   };
+  // A card's difficulty is its pack's CEFR label — the same one the lesson
+  // list and the level filter read, so "A1 first" means the same A1 the rest
+  // of the app shows. Carried ON the item rather than looked up beside it: a
+  // sentence can appear in more than one pack, and the catalogue has already
+  // decided which one this card came from. A map rebuilt afterwards answers
+  // for whichever pack was seen last, which is a different card's level.
+  const levelOf = (partKey: unknown) => String(parts[String(partKey ?? "")]?.level ?? "");
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
@@ -677,6 +711,7 @@ export function buildListenQueue(
       de: primaryAnswer(item.de),
       en: primaryAnswer(item.en),
       tierNote: item.tierNote,
+      level: levelOf(item.partKey),
       kind: "sentence" as const,
       // A percentile makes sentence and word popularity comparable in the
       // mixed queue even though their underlying scorers use different
@@ -706,6 +741,7 @@ export function buildListenQueue(
       use: word.use,
       senseTag: word.senseTag,
       tierNote: packMeta(word.partKey).note,
+      level: levelOf(word.partKey),
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
@@ -814,6 +850,24 @@ export function buildListenQueue(
     .filter((entry) => entry.bucket >= 0);
 
   if (order === "common") return available.map((entry) => entry.item);
+
+  // Easiest first. `available` is already in commonality order, so falling
+  // back to its index is what keeps "the most useful A1 card" ahead of the
+  // rest of A1 — the level is asked first and frequency second, rather than
+  // one replacing the other. A pack with no level sorts last (cefrOrder gives
+  // it 99): it applies everywhere, so there is no rung to put it on, and
+  // guessing one would push unlevelled material in front of A1.
+  if (order === "level") {
+    // cefrOrder once per card rather than once per comparison: this runs over
+    // twenty thousand of them every time a Listen setting changes.
+    const rank = new Map(available.map((entry) => [entry.item.id, cefrOrder(entry.item.level)]));
+    return available
+      .sort((a, b) =>
+        (rank.get(a.item.id) ?? 99) - (rank.get(b.item.id) ?? 99)
+        || a.index - b.index
+      )
+      .map((entry) => entry.item);
+  }
 
   // Newest first exists because "Most common first" structurally cannot reach
   // new content: a freshly added word is by definition one the frequency bank
