@@ -102,7 +102,7 @@ import {
   selectPracticeItem,
   type PracticeRecallState,
 } from "@/lib/practiceRecall";
-import { requestVocabFilter, requestVocabLibraryOpen } from "@/lib/vocabFilterRequest";
+import { requestVocabFilter, requestVocabLibraryFirst, requestVocabLibraryOpen, takeVocabLibraryFirst } from "@/lib/vocabFilterRequest";
 
 import { getMasteredCount } from "@/lib/mastery";
 import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -1050,7 +1050,7 @@ function Sidebar({
                         aria-current={viewActive ? "page" : undefined}
                         className={viewActive ? "is-active" : ""}
                         key={row.label}
-                        onClick={() => { requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
+                        onClick={() => { requestVocabLibraryFirst(); requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
                         onFocus={() => onPrefetch(row.view)}
                         onPointerEnter={() => onPrefetch(row.view)}
                         title={ui("Your vocabulary library, on the progress page.")}
@@ -4212,12 +4212,18 @@ export default function NewUiPrototype({
     VIEW_PREFETCH[view]?.();
   };
 
+  // Which way round the progress page is built this visit. The vocabulary
+  // card is the last thing on that page and the thing two rows are named
+  // after, so those rows ask for it first — see takeVocabLibraryFirst.
+  const [vocabFirst, setVocabFirst] = useState(false);
+
   const navigate = (view: PrototypeView) => {
     if ((view === "social" && !socialPreviewUnlocked) || (view === "shop" && !shopUnlocked)) {
       setActiveView("home");
       return;
     }
     if (["path", "learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
+    setVocabFirst(view === "progress" && takeVocabLibraryFirst());
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -4382,6 +4388,28 @@ export default function NewUiPrototype({
     })) : []),
   ];
 
+  // The vocabulary library, mastery, totals and milestones, which used to be
+  // the tail of the settings page. Signed out there is nothing of the sort to
+  // show, so the progress panel stands on its own. Written here rather than
+  // where it is used because it goes above or below that panel depending on
+  // what was asked for: the panel is 1,189px tall and the card is under it,
+  // so a learner who asked for the card by name spent a second and a half
+  // looking at something else and then watched the page jump.
+  const progressExtras = profile ? (
+    <div className="np-feature-host np-progress-extras">
+      <Suspense fallback={<FeatureLoading />}>
+        <GamificationPanel
+          apiParts={apiParts}
+          onRequestCatalogue={requestParts}
+          onUpdateStats={updateStats}
+          progressOnly
+          stats={stats}
+          user={profile}
+        />
+      </Suspense>
+    </div>
+  ) : null;
+
   const mainView = activeView === "home" ? (
     courseHasReader && activeCourse ? (
       <div className="np-feature-host">
@@ -4401,6 +4429,7 @@ export default function NewUiPrototype({
 
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
+          requestVocabLibraryFirst();
           requestVocabLibraryOpen();
           requestVocabFilter("fading");
           navigate("progress");
@@ -4507,24 +4536,9 @@ export default function NewUiPrototype({
     />
   ) : activeView === "progress" ? (
     <>
+      {vocabFirst ? progressExtras : null}
       <ProgressPanel onNavigate={navigate} standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
-      {/* The vocabulary library, mastery, totals and milestones, which used to
-          be the tail of the settings page. Signed out there is nothing of the
-          sort to show, so the panel above stands on its own. */}
-      {profile && (
-        <div className="np-feature-host np-progress-extras">
-          <Suspense fallback={<FeatureLoading />}>
-            <GamificationPanel
-              apiParts={apiParts}
-              onRequestCatalogue={requestParts}
-              onUpdateStats={updateStats}
-              progressOnly
-              stats={stats}
-              user={profile}
-            />
-          </Suspense>
-        </div>
-      )}
+      {vocabFirst ? null : progressExtras}
     </>
   ) : activeView === "profile" ? (
     profile ? (
