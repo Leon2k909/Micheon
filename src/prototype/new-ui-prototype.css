@@ -8764,12 +8764,23 @@ html[data-theme="dark"] .np-premium-card {
   transform: translateY(-1px);
 }
 
+/* A friend's own photo, where they have shared one, filling the tile the
+   initials would otherwise sit in. It arrives already square and already
+   small, so this only has to stop it painting over the rounded corner. */
+.np-social-avatar-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 .np-social-avatar {
   display: grid;
   width: 48px;
   height: 48px;
   flex: 0 0 48px;
   place-items: center;
+  overflow: hidden;
   border: 3px solid rgba(255, 255, 255, 0.88);
   border-radius: 16px;
   color: #fff;

@@ -119,6 +119,8 @@ import { getCourse } from "@/lib/courseRegistry";
 import { FlagRoundel } from "@/components/course/FlagRoundel";
 import { learningFlagId } from "@/lib/learningFlag";
 import { arrangePodium } from "@/lib/leaderboardPodium";
+import { duoUnitAnchorId, scrollToAnchorWhenReady } from "@/lib/scrollToAnchor";
+import { buildDuoPath } from "@/lib/duoPath";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import {
   HIDDEN_NAV_EVENT,
@@ -227,7 +229,7 @@ type PrototypeSearchItem = {
   id: string;
   title: string;
   subtitle: string;
-  group: "Page" | "Lesson" | "Word bank" | "Game" | "Country studies";
+  group: "Page" | "Unit" | "Lesson" | "Word bank" | "Game" | "Country studies";
   actionLabel: "Open" | "Start";
   searchText: string;
   onSelect: () => void;
@@ -3503,11 +3505,15 @@ function ShopView({
   );
 }
 
-function SocialAvatar({ initials, tone }: { initials: string; tone: SocialLeaderboardEntry["tone"] }) {
-  return <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>{initials}</span>;
+function SocialAvatar({ initials, photo, tone }: { initials: string; photo?: string; tone: SocialLeaderboardEntry["tone"] }) {
+  return (
+    <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>
+      {photo ? <img alt="" className="np-social-avatar-photo" src={photo} /> : initials}
+    </span>
+  );
 }
 
-function SocialView({ stats, userName }: { stats: PrototypeStats; userName: string }) {
+function SocialView({ avatar, stats, userName }: { avatar?: string; stats: PrototypeStats; userName: string }) {
   const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   /**
@@ -3543,11 +3549,12 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
    */
   const leaderboard = useMemo(() => {
     const rows = [
-      { id: "me", name: firstName, initials: firstName.slice(0, 1).toUpperCase(), weeklyXp: stats.totalXp, streak: stats.streak, movement: "", tone: "green" as const, current: true },
+      { id: "me", name: firstName, initials: firstName.slice(0, 1).toUpperCase(), photo: avatar, weeklyXp: stats.totalXp, streak: stats.streak, movement: "", tone: "green" as const, current: true },
       ...realFriends.map((friend) => ({
         id: friend.code,
         name: friend.profile?.name ?? friend.name,
         initials: (friend.profile?.name ?? friend.name).slice(0, 1).toUpperCase(),
+        photo: friend.profile?.photo,
         weeklyXp: friend.profile?.totalXp ?? 0,
         streak: friend.profile?.streak ?? 0,
         movement: "",
@@ -3556,7 +3563,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       })),
     ];
     return rows.sort((a, b) => b.weeklyXp - a.weeklyXp);
-  }, [firstName, realFriends, stats.streak, stats.totalXp]);
+  }, [avatar, firstName, realFriends, stats.streak, stats.totalXp]);
   const podium = arrangePodium(leaderboard);
 
   const showPreviewNotice = (action: string) => {
@@ -3635,6 +3642,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       {activeSection === "friends" ? (
         <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
           <FriendsPanel
+            avatar={avatar}
             levelLabel={levelLabel}
             onNotice={(message) => setNotice(message)}
             stats={stats}
@@ -3678,7 +3686,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
                   return (
                     <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
                       <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
-                      <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                      <SocialAvatar initials={entry.initials} photo={entry.photo} tone={entry.tone} />
                       <strong>{entry.name}</strong>
                       <small>{uiNumber(entry.weeklyXp)} XP</small>
                       <i aria-hidden="true" />
@@ -3692,7 +3700,7 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
               {leaderboard.map((entry, index) => (
                 <article className={entry.current ? "is-current" : ""} key={entry.id}>
                   <strong className="np-leaderboard-rank">{index + 1}</strong>
-                  <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                  <SocialAvatar initials={entry.initials} photo={entry.photo} tone={entry.tone} />
                   <span className="np-leaderboard-person">
                     <strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong>
                     <small>{uiFmt("{days}-day streak", { days: entry.streak })}</small>
@@ -4151,6 +4159,22 @@ export default function NewUiPrototype({
     ]),
   })), [apiParts]);
 
+  /**
+   * The path's units, flattened for search.
+   *
+   * Built from the same buildDuoPath the path view uses rather than a second
+   * reading of the packs, so a unit found here is the unit that is actually
+   * there — numbering included, which is derived from pack order and would
+   * drift the moment two places worked it out separately.
+   */
+  const searchableUnits = useMemo(() => buildDuoPath(apiParts).units.map((unit) => ({
+    number: unit.number,
+    title: unit.title,
+    level: unit.level,
+    percent: unit.percent,
+    nodeTitles: unit.nodes.map((node) => node.title),
+  })), [apiParts]);
+
   useEffect(() => {
     const previousTitle = document.title;
     document.documentElement.classList.add("is-ui-prototype");
@@ -4383,6 +4407,34 @@ export default function NewUiPrototype({
       actionLabel: "Start" as const,
       onSelect: () => openGuidedLesson(lesson.id),
     })),
+    // The path's units. A lesson was already findable by name, but the unit
+    // holding it was not, so "unit 12" or the name of a unit reached nothing
+    // and the only way to a unit was scrolling the path to it.
+    //
+    // The nodes inside each unit go into the same search text: they are what
+    // the unit is FOR, and somebody looking for the unit that teaches the
+    // dative is looking for a word that appears on a node, not in the title.
+    ...searchableUnits.map((unit) => ({
+      id: `unit-${unit.number}`,
+      title: `${uiFmt("Unit {n}", { n: unit.number })} · ${unit.title}`,
+      // The percentage rather than "3 of 5 units", which is what the nearest
+      // existing phrase says and would be counting the wrong thing: these are
+      // the lessons inside one unit. The unit's own card prints this figure.
+      subtitle: [unit.level, `${unit.percent}%`].filter(Boolean).join(" · "),
+      group: "Unit" as const,
+      actionLabel: "Open" as const,
+      searchText: buildCatalogSearchText([
+        unit.title,
+        unit.level,
+        `unit ${unit.number}`,
+        uiFmt("Unit {n}", { n: unit.number }),
+        ...unit.nodeTitles,
+      ]),
+      onSelect: () => {
+        navigate("path");
+        scrollToAnchorWhenReady(duoUnitAnchorId(unit.number));
+      },
+    })),
     // Games only surface in search on the account that can open them.
     ...(gamesUnlocked ? PROTOTYPE_SEARCH_GAMES.map(([title, subtitle]) => ({
       id: `game-${title.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -4509,7 +4561,7 @@ export default function NewUiPrototype({
       </div>
     </section>
   ) : activeView === "social" && socialPreviewUnlocked ? (
-    <SocialView stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+    <SocialView avatar={profile?.avatar} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
       <FeatureBackBar label={ui("Tests")} onBack={() => navigate("practice")} />

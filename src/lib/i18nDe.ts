@@ -110,6 +110,7 @@ export const DE: Record<string, string> = {
   "German": "Deutsch",
   "English": "Englisch",
   "Lesson": "Lektion",
+  "Unit": "Einheit",
   "of": "von",
   "Choose any lesson": "Lektion auswählen",
   "Move freely without marking unfinished lessons as complete.": "Wechsle frei, ohne unfertige Lektionen als abgeschlossen zu markieren.",
