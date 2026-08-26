@@ -10,6 +10,7 @@ import { onVocabFilterRequest, type VocabFilterRequest } from "@/lib/vocabFilter
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
+import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 import { ui, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
@@ -248,6 +249,17 @@ const TrackerRow = React.memo(
                 if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
                 const f = frequencyInfo(item.lookup);
                 return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
+              })()}
+            {/* Which "you" the German uses. Read off item.de rather than off
+                the displayed text, which may be the French or the English —
+                and shown only while German is the language being produced,
+                since that is when choosing the wrong one is a mistake the
+                learner can make. */}
+            {(() => {
+                const register = sides.target.code === "de" ? detectRegister(item.de) : null;
+                return register
+                  ? <span className={`font-black ${REGISTER_TONE[register]}`} title={ui("German picks a different \"you\" for friends, for a group, and for politeness. English uses one word for all three.")}> · {ui(REGISTER_SHORT[register])}</span>
+                  : null;
               })()}
             {englishUi && (() => {
                 const note = packMeta(item.partKey).note;

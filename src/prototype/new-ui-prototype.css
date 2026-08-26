@@ -375,6 +375,14 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
+  /* Room for a hovered row's shadow, taken back out again with the margin.
+     Scrolling clips at the padding box, and the hover shadow reaches about
+     9px past the button on every side — so on the FIRST row, Home, the top
+     of that shadow was cut off in a straight line across the pill. The
+     negative margin means nothing moves: the nav occupies the same space it
+     did, and only the overflow it was hiding comes back. */
+  padding: 10px;
+  margin: -10px;
 }
 
 .np-side-nav button {
@@ -729,16 +737,26 @@
   box-shadow: none;
 }
 
+/* A row that carries a Soon pill gets a third track for it, so the pill
+   sits at the end of the label's own line. It used to be a third child of a
+   two-column grid, which put it on a row of its own underneath the word:
+   the pill hung under "Speaking" with the whole row taller to hold it, and
+   read as a separate thing rather than as a note on that entry. The track is
+   auto, so it takes the width of the word — "Bald" and "Bientôt" included —
+   and the label keeps whatever is left. */
+.np-side-nav button.is-soon {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+
+.np-sidebar.is-brand-compact .np-side-nav button.is-soon {
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+}
+
 .np-nav-soon {
-  /* Third child of a two-column grid, so it falls to row 2. Without a column
-     of its own it lands in column 1 — the 24px icon track — which held the
-     pill to 24px while "Bald" needed 38.7px and the word spilled out of it.
-     Column 2 sits it under the label; justify-self keeps it the width of its
-     own text instead of stretching across the track, so the pill fits the
-     word whatever the word turns out to be. A long one wraps and the pill
-     grows taller rather than the text escaping it. */
-  grid-column: 2;
-  justify-self: start;
+  grid-column: 3;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
   padding: 2px 7px;
   border-radius: 999px;
   color: var(--text-3);

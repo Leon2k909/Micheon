@@ -92,22 +92,65 @@ assert.ok(
   + "and a pointer resting over the sidebar during boot would drag 3.9 MB back into it"
 );
 
-// ── the "Soon" pill fits its own word ───────────────────────────────────────
-// The nav button is a two-column grid and the pill is its third child, so it
-// falls to row 2. Without a column of its own it takes column 1 — the icon
-// track — and the pill renders exactly as wide as an icon whatever the word
-// says: 24px of bubble around 38.7px of "Bald", measured. Both declarations
-// below are what stop that, and neither reads as load-bearing.
 const prototypeCss = read("src/prototype/new-ui-prototype.css");
+// ── a hovered row is not sliced off by its own scroller ─────────────────────
+// The nav scrolls, so it clips at its padding box. Hovering a row lifts it a
+// couple of pixels and paints a shadow around it, and on the FIRST row —
+// Home — that lift went straight out of the top of the box and came back
+// sliced flat across the pill.
+//
+// The padding is the room for it and the negative margin gives the space
+// back, so nothing moves and only the overflow returns. Both halves are read
+// here, and the padding is compared against the LIFT rather than a number
+// typed twice: raise the hover and this says so instead of quietly clipping
+// again.
+{
+  const navRule = /\.np-side-nav \{([\s\S]*?)\}/.exec(prototypeCss);
+  assert.ok(navRule, "the .np-side-nav rule could not be found");
+  assert.ok(/overflow-y:\s*auto/.test(navRule[1]),
+    "the nav no longer scrolls, so this check is guarding a clip that cannot happen — and the "
+    + "padding it asks for is now unexplained");
+  const padding = /padding:\s*(\d+)px/.exec(navRule[1]);
+  const margin = /margin:\s*-(\d+)px/.exec(navRule[1]);
+  assert.ok(padding && margin,
+    "the nav has no padding-and-negative-margin pair, so a hovered row is clipped at the top of "
+    + "the scroll box again");
+  assert.strictEqual(padding[1], margin[1],
+    `the nav pads ${padding[1]}px and pulls back ${margin[1]}px, so the menu has moved rather than `
+    + "simply stopped clipping");
+  const lift = /\.np-side-nav button:hover[\s\S]{0,400}?transform:\s*translateY\(-(\d+)px\)/.exec(prototypeCss);
+  assert.ok(lift, "the hover lift could not be found, so the padding cannot be checked against it");
+  assert.ok(Number(padding[1]) >= Number(lift[1]),
+    `a hovered row rises ${lift[1]}px and the scroller only allows ${padding[1]}px, so the top of `
+    + "the first row is cut off again");
+}
+
+// ── the "Soon" pill fits its own word, beside the label ─────────────────────
+// The pill is the button's third child. On a two-column grid that dropped it
+// to row 2, and without a column of its own it took column 1 — the icon
+// track — rendering exactly as wide as an icon whatever the word said: 24px
+// of bubble around 38.7px of "Bald", measured.
+//
+// A row carrying one now gets a third track instead, so the pill sits at the
+// end of the label's own line rather than orphaned underneath it. The track
+// is `auto`, which is what keeps the original fault fixed: the pill is the
+// width of its word, and "Bald" and "Bientôt" get as much room as "Soon".
 const soonRule = /\.np-nav-soon \{([\s\S]*?)\}/.exec(prototypeCss);
 assert.ok(soonRule, "the .np-nav-soon rule could not be found");
 assert.ok(
-  /grid-column:\s*2/.test(soonRule[1]),
-  "the Soon pill needs grid-column: 2, or it falls into the 24px icon track and clips its own word"
+  /grid-column:\s*3/.test(soonRule[1]) && /grid-row:\s*1/.test(soonRule[1]),
+  "the Soon pill has left row 1 column 3, so it is back on a line of its own under the label — "
+  + "or worse, in the icon track, where it renders 24px wide whatever the word says"
+);
+const soonTrack = /\.np-side-nav button\.is-soon \{([\s\S]*?)\}/.exec(prototypeCss);
+assert.ok(soonTrack, "no rule gives a Soon row its third track, so the pill has no column to sit in");
+assert.ok(
+  /grid-template-columns:[^;]*\bauto\s*;/.test(soonTrack[1]),
+  "the Soon row's third track is not auto, so the pill no longer follows the width of its own word"
 );
 assert.ok(
-  /justify-self:\s*start/.test(soonRule[1]),
-  "the Soon pill needs justify-self: start, or it stretches across the label track instead of fitting its word"
+  /justify-self:\s*end/.test(soonRule[1]),
+  "the Soon pill needs justify-self: end, or it stretches across its track instead of fitting its word"
 );
 assert.ok(
   !/\bwidth:\s*\d/.test(soonRule[1]),

@@ -28,6 +28,7 @@ import {
 } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
+import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
@@ -574,6 +575,12 @@ export function WordsTracker({ apiParts, user }: {
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
                     {uiIsEnglish() && word.use ? ` · ${ui(word.use)}` : ""}
+                    {(() => {
+                        const register = sides.target.code === "de" ? detectRegister(primaryText) : null;
+                        return register
+                          ? <span className={`font-black ${REGISTER_TONE[register]}`} title={ui("German picks a different \"you\" for friends, for a group, and for politeness. English uses one word for all three.")}> · {ui(REGISTER_SHORT[register])}</span>
+                          : null;
+                      })()}
                     {uiIsEnglish() && (() => {
                         const note = packMeta(word.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;

@@ -1,3 +1,4 @@
+import { borrowedWordSegments } from "@/lib/borrowedWords";
 import {
   gradeEntryForId,
   loadGradeStore,
@@ -346,10 +347,15 @@ export function buildListenSpeechPlan({
     { length: Math.max(0, germanRepeats) },
     () => ({ text: de, rate: 0.92, lang: targetLang, side: "de" as const })
   );
+  // A German word quoted inside the English line is read by the German voice.
+  // The side stays "en" — it is still the meaning half of the card, and the
+  // caption, the gap and the repeat count all belong to the line as a whole.
+  const englishOnce: ListenSpeechClip[] = borrowedWordSegments(en, de, englishLang, targetLang)
+    .map((segment) => ({ text: segment.text, rate: 0.95, lang: segment.lang, side: "en" as const }));
   const english: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, englishRepeats) },
-    () => ({ text: en, rate: 0.95, lang: englishLang, side: "en" as const })
-  );
+    () => englishOnce
+  ).flat();
   const [first, second] = languageOrder === "english-first"
     ? [english, german]
     : [german, english];
