@@ -58,7 +58,7 @@ const result = esbuild.buildSync({
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { cefrRung, cefrRungLabel } from "./src/lib/cefr.ts";',
-      'export { wordDifficultyRung } from "./src/lib/wordSession.ts";',
+      'export { wordDifficultyRung, spokenWordRung } from "./src/lib/wordSession.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "listen-check-entry.ts",
@@ -103,7 +103,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
-  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung,
+  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung, spokenWordRung,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 
@@ -289,6 +289,68 @@ check("a connector taught in a B1-B2 pack is still core vocabulary",
 check("a sentence is placed by its pack, which is the only level it has",
   buildListenQueue(parts, {}, { contentSource: "sentences", order: "level" })
     .every((item) => item.rung >= 1 && item.rung <= 6));
+// ── the promise, pinned so it cannot drift back ─────────────────────────
+// Everything above says the order is right today. These say it stays right:
+// the failures they catch are the two that already happened, plus the two
+// ways a rule like this dies quietly — by collapsing into no rule at all, and
+// by widening until it lets the wrong words through.
+
+// 1. The ladder is GRADED, not flattened. A rung function that returned the
+//    same answer for everything would satisfy "never harder before easier"
+//    perfectly, and teach nothing.
+const rungCounts = new Map();
+for (const item of byLevel) rungCounts.set(item.rung, (rungCounts.get(item.rung) || 0) + 1);
+const firstRungShare = (rungCounts.get(1) || 0) / byLevel.length;
+check(`the ladder has real rungs on it (${[...rungCounts.keys()].sort().join("/")}, A1 is ${Math.round(firstRungShare * 100)}%)`,
+  [1, 2, 3, 4, 5, 6].every((rung) => (rungCounts.get(rung) || 0) > 0)
+  && firstRungShare > 0.03 && firstRungShare < 0.30);
+
+// 2. Every rung is entered from ACROSS the course, not pack by pack. This is
+//    the half that has never had a check: "the most useful words from every
+//    category" is a promise about spread, and an order that walked the packs
+//    one at a time would pass every other assertion here.
+const packOfId = new Map();
+for (const word of buildWordCatalog(parts)) packOfId.set(word.id, word.partKey);
+for (const line of buildCatalog(parts)) if (!packOfId.has(line.id)) packOfId.set(line.id, line.partKey);
+for (const source of ["words", "sentences", "mixed"]) {
+  const graded = buildListenQueue(parts, {}, { contentSource: source, order: "level" });
+  const spreads = [1, 2, 3].map((rung) => new Set(
+    graded.filter((item) => item.rung === rung).slice(0, 60).map((item) => packOfId.get(item.id))
+  ).size);
+  check(`each level of ${source} opens with cards from across the course (${spreads.join(", ")} packs)`,
+    spreads.every((packs) => packs >= 8));
+}
+
+// 3. The words this course says most are ALL on the first rung — the whole
+//    of the promise, asserted as one statement rather than as a hand-picked
+//    list that could be trimmed until it passed.
+const spokenOrder = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
+const strandedCore = spokenOrder.slice(0, 300).filter((item) => item.rung !== 1);
+check(`the 300 words this course says most all sit on the first rung (${strandedCore.length} did not: ${strandedCore.slice(0, 5).map((item) => item.de).join(", ")})`,
+  strandedCore.length === 0);
+check("and the queue opens with three hundred cards of them before anything harder",
+  buildListenQueue(parts, {}, { contentSource: "words", order: "level" })
+    .slice(0, 300).every((item) => item.rung === 1));
+
+// 4. ...and the rescue that does that stays NARROW. The written frequency
+//    bank ranks entsprechend 111th, die Ma\ßnahme 198th and darstellen 206th:
+//    that is news and web German, and reading it as "easy" would put office
+//    vocabulary on the same rung as haben. Only what the course itself SAYS
+//    may promote a word, so a word it never says cannot be promoted at all.
+const officeWords = ["entsprechend", "die M\öglichkeit", "durchf\ühren", "darstellen", "die Ma\ßnahme"];
+const wordRungOf = new Map(wordQueue.map((item) => [item.de, item.rung]));
+check("office German the course never says is not rescued onto the A1 rung",
+  officeWords.every((text) => (wordRungOf.get(text) ?? 0) >= 4));
+check("a word with no spoken evidence keeps the rung its pack gave it",
+  spokenWordRung({ level: "B1", lookup: "finden", de: "finden" }, 0, null) === 3
+  && spokenWordRung({ level: "C1", lookup: "darstellen", de: "darstellen" }, 0, null) === 6);
+// ...while an everyday word taught inside a B1 lesson is rescued by it. These
+// are real: finden, das Problem, die T\ür, trinken and die Hilfe are all
+// taught in B1 packs and are all in the three hundred this course says most.
+const rescued = ["finden", "das Problem", "die T\ür", "trinken", "die Hilfe", "vergessen"];
+const worstRescued = rescued.map((text) => [text, wordAt(text)]).sort((a, b) => b[1] - a[1])[0];
+check(`an everyday word taught in a B1 lesson is still taught first (worst: ${worstRescued[0]} at ${worstRescued[1]})`,
+  rescued.every((text) => wordRungOf.get(text) === 1 && wordAt(text) > 0 && wordAt(text) <= 400));
 
 queue = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
 check("sentence source only serves sentence-tracker ids", queue.length > 1000

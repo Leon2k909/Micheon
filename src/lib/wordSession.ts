@@ -681,6 +681,46 @@ export function wordDifficultyRung(word: Pick<WordItem, "level" | "lookup" | "de
 }
 
 /**
+ * How many of the most-said words count as core vocabulary whatever pack
+ * teaches them, and how many as no harder than A2.
+ *
+ * The same two-tier shape wordLadderRung applies to the written bank, asked
+ * of the spoken evidence instead. The written bank cannot answer this: its
+ * top 300 is news and web German, and reading it as "easy" promotes
+ * entsprechend, die Maßnahme, durchführen and darstellen to the rung haben
+ * is on. The course's own conversational text says none of them.
+ */
+const SPOKEN_CORE = 300;
+const SPOKEN_EVERYDAY = 1200;
+
+/**
+ * The rung a word sits on once you know how much this course actually SAYS it.
+ *
+ * A pack level is a LESSON's difficulty, and for a word it is only ever a
+ * guess. finden, das Problem, die Tür, trinken, vergessen and die Hilfe are
+ * taught in B1 packs and are among the three hundred words this course says
+ * most often — ordering Listen by the pack alone left finden at 3,986 of a
+ * queue that had promised the easiest thing first.
+ *
+ * `rankAmongSpoken` is the word's position in rankWordCatalog's output, which
+ * is that ranking. Only a word the corpus has actually SEEN can be rescued by
+ * it: in a mode that ranks by the written bank instead, an unguarded rule
+ * would read a written ordering as a spoken one and do the exact thing the
+ * paragraph above says not to.
+ */
+export function spokenWordRung(
+  word: Pick<WordItem, "level" | "lookup" | "de">,
+  rankAmongSpoken: number,
+  corpusIndex: CorpusIndex | null
+): number {
+  const own = wordDifficultyRung(word);
+  if (!corpusIndex || corpusUses(word.lookup || word.de, corpusIndex) === 0) return own;
+  if (rankAmongSpoken < SPOKEN_CORE) return 1;
+  if (rankAmongSpoken < SPOKEN_EVERYDAY) return Math.min(own, 2);
+  return own;
+}
+
+/**
  * Where the learner currently stands — read from DECLARED knowns only.
  *
  * The rung used to count every known word, so simply learning a lot put a

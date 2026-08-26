@@ -25,7 +25,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
-import { buildWordCatalog, rankWordCatalog, wordDifficultyRung } from "@/lib/wordSession";
+import { buildWordCatalog, rankWordCatalog, spokenWordRung } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { cefrRung } from "@/lib/cefr";
@@ -756,7 +756,10 @@ export function buildListenQueue(
       use: word.use,
       senseTag: word.senseTag,
       tierNote: packMeta(word.partKey).note,
-      rung: wordDifficultyRung(word),
+      // `index` is this word's place in the ranking above, which is the
+      // course's own count of how often it says the word — the evidence that
+      // decides whether a pack label is the last word on how hard it is.
+      rung: spokenWordRung(word, index, corpusIndex),
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
