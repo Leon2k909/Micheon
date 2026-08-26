@@ -118,7 +118,14 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // then left out rather than shipped dead: the progress id strips umlauts, so
 // sägen collides with sagen, träge with die Trage and waschbar with der
 // Waschbär, and the second of each pair can never become a card.
-assert.equal(taughtWords, 9056, "the reviewed sense fixes changed the standalone word count");
+// 9056 -> 9153: parts 605-610 stop mining sources and start from the gap.
+// Thirty everyday fields were probed with twenty ordinary words each against
+// the built catalogue; Naturwissenschaft answered worst at 35 per cent, with
+// der Magnet, die Saeure and das Molekuel missing while the kitchen and the
+// bathroom were complete. 98 words were written for it, of which 16 fold into
+// synonym cards that already existed, so the faces move 8,406 -> 8,488 while
+// the words taught move by 97: die Auswertung already had its French.
+assert.equal(taughtWords, 9153, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
