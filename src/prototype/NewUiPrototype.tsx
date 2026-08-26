@@ -1402,9 +1402,20 @@ function StatChip({ kind, value, label, shared = false }: {
   );
 }
 
+/**
+ * The line under the greeting, per screen.
+ *
+ * Only the profile page differs so far: it is the one place you arrive at to
+ * change something rather than to learn. Anything not named here keeps the
+ * invitation, which is what the rest of the app is.
+ */
+const HEADER_SUBTITLES: Partial<Record<PrototypeView, string>> = {
+  profile: "What would you like to change?",
+};
+
 function Header({
   avatar,
-  atHome,
+  view,
   onSignOut,
   equippedBadge,
   onNavigate,
@@ -1418,8 +1429,8 @@ function Header({
   userName,
 }: {
   avatar?: string;
-  /** The figures belong beside the greeting, so they travel with it. */
-  atHome: boolean;
+  /** Where you are: the greeting's second line and the figures both follow it. */
+  view: PrototypeView;
   onSignOut: () => void;
   equippedBadge: ShopBadgeId | null;
   onNavigate: (view: PrototypeView) => void;
@@ -1551,13 +1562,13 @@ function Header({
     <header className="np-header">
       <div className="np-greeting">
         <p>Hi, {firstName}!</p>
-        <span>{ui("Ready to learn today?")}</span>
+        <span>{ui(HEADER_SUBTITLES[view] ?? "Ready to learn today?")}</span>
       </div>
       {/* The cell stays whether or not it has figures in it: it is the middle
           column of a three-column header, and taking it out would move the
           search and the avatar into its place instead of leaving them right. */}
       <div className="np-header-stats">
-        {atHome && <>
+        {view === "home" && <>
         <StatChip kind="flame" label={ui("Days learned")} shared value={uiNumber(stats.learningDays)} />
         {/* No " XP" on the value. Its neighbours are bare numbers and the
             label underneath already reads "Total XP", so the unit made this
@@ -4609,7 +4620,7 @@ export default function NewUiPrototype({
           />
           <div className="np-app-area">
             <Header
-              atHome={activeView === "home"}
+              view={activeView}
               avatar={profile?.avatar}
               onSignOut={signOutOfPrototype}
               equippedBadge={shopUnlocked ? equippedShopBadge : null}

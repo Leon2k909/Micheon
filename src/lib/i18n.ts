@@ -2406,6 +2406,7 @@ const DE: Record<string, string> = {
   "Quick links": "Schnellzugriffe",
   "Reach 500 XP together": "Gemeinsam 500 XP erreichen",
   "Ready to learn today?": "Bereit, heute zu lernen?",
+  "What would you like to change?": "Was möchtest du ändern?",
   "Recently completed": "Zuletzt abgeschlossen",
   "Resets Monday": "Setzt montags zurück",
   "Resize sidebar": "Seitenleiste anpassen",

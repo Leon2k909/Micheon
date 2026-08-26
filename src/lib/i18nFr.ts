@@ -2293,6 +2293,7 @@ export const FR: Record<string, string> = {
   "Quick links": "Accès rapides",
   "Reach 500 XP together": "Atteindre 500 XP ensemble",
   "Ready to learn today?": "Prêt à apprendre aujourd'hui ?",
+  "What would you like to change?": "Que souhaites-tu modifier  ?",
   "Recently completed": "Terminées récemment",
   "Resets Monday": "Remise à zéro le lundi",
   "Resize sidebar": "Redimensionner la barre latérale",
