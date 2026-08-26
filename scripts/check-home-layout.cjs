@@ -141,6 +141,14 @@ assert.ok(
   !home.includes("<HomeStats") && !home.includes("np-course-launch") && !home.includes("<LessonPath"),
   "none of the removed sections comes back without her asking"
 );
+// The rail is decided in the shell rather than inside HomeView, so this reads
+// the whole file: the condition must not name the home view again.
+const railCondition = (shell.match(/const showRightRail = [^;]+;/) || [""])[0];
+assert.ok(railCondition, "the right rail's condition has moved or gone");
+assert.ok(
+  !/activeView === "home"/.test(railCondition),
+  "the progress rail is back on the home page"
+);
 let at = -1;
 for (const marker of order) {
   const next = home.indexOf(marker, at + 1);

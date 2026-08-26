@@ -4565,7 +4565,10 @@ export default function NewUiPrototype({
     />
   );
 
-  const showRightRail = !courseHasReader && (activeView === "home" || activeView === "practice");
+  // Not on home: she asked for it off the opening screen, which has been
+  // getting shorter deliberately. It stays on Üben, and the achievements page
+  // it links to is still reachable from the avatar menu, More and search.
+  const showRightRail = !courseHasReader && activeView === "practice";
 
   return (
     <div className="new-ui-prototype">
