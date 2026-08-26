@@ -1,3 +1,5 @@
+import { safeSharedPhoto } from "@/lib/friendPhoto";
+
 /**
  * What one app tells another about the person using it.
  *
@@ -8,6 +10,10 @@
  *
  * Every figure here is one the app already shows the learner about themselves
  * on the home page. Nothing is computed specially for other people to see.
+ *
+ * The photo is the one thing here that is not a figure the home page prints,
+ * and it is handled as its own problem in friendPhoto: shrunk to a thumbnail
+ * before it is sent, and proved to be a raster image before it is drawn.
  */
 export type FriendProfile = {
   /** Protocol version, so an old build meeting a new one can say so. */
@@ -20,6 +26,12 @@ export type FriendProfile = {
   streak: number;
   totalXp: number;
   learningDays: number;
+  /**
+   * A small square made from their profile photo, if they have set one.
+   * Optional for ever: an older build sends none, and a photo that will not
+   * shrink is simply left off rather than holding up the rest.
+   */
+  photo?: string;
   /** Epoch ms on the SENDER's clock — see freshness handling in friendStore. */
   sentAt: number;
 };
@@ -89,6 +101,7 @@ export function readFriendProfile(input: unknown): FriendProfile | null {
     totalXp: safeCount(raw.totalXp),
     learningDays: safeCount(raw.learningDays),
     sentAt: safeTime(raw.sentAt),
+    photo: safeSharedPhoto(raw.photo),
   };
 }
 

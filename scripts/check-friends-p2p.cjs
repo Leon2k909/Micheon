@@ -111,9 +111,16 @@ assert.ok(hostile.name.length <= 40 && hostile.level.length <= 60,
 assert.strictEqual(hostile.streak, 0, "a negative streak survived");
 assert.ok(hostile.totalXp <= 100_000_000, "an unbounded XP figure survived");
 assert.strictEqual(hostile.learningDays, 0, "a non-numeric count survived as something other than zero");
+// The whole wire format, pinned. `photo` was added deliberately and carries
+// its own rules in friendPhoto — a thumbnail going out, a proved raster image
+// coming back. Everything else here is a figure the home page already shows a
+// learner about themselves. Widening this list is the moment to ask whether
+// the new field should be leaving the machine at all.
 assert.deepStrictEqual(Object.keys(hostile).sort(),
-  ["code", "learningDays", "level", "name", "sentAt", "streak", "totalXp", "v"],
+  ["code", "learningDays", "level", "name", "photo", "sentAt", "streak", "totalXp", "v"],
   "fields nobody declared came through from the wire — the profile is being spread rather than rebuilt");
+assert.strictEqual(hostile.photo, undefined,
+  "a profile with no photo still produced one, so the field is not being read from the wire");
 
 assert.strictEqual(readFriendMessage({ type: "nonsense", profile: {} }), null,
   "an unknown message type was accepted");

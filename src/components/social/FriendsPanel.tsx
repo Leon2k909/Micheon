@@ -3,6 +3,7 @@ import { Check, Copy, Search, UserPlus, X } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { formatFriendCode, getFriendCode, normaliseFriendCode } from "@/lib/friendCode";
 import { initialsFor, type FriendProfile } from "@/lib/friendProfile";
+import { shrinkPhotoForSharing } from "@/lib/friendPhoto";
 import {
   addFriend,
   FRIENDS_EVENT,
@@ -59,11 +60,13 @@ function toneFor(code: string): string {
 }
 
 export function FriendsPanel({
+  avatar,
   levelLabel,
   onNotice,
   stats,
   userName,
 }: {
+  avatar?: string;
   levelLabel: string;
   onNotice: (message: string) => void;
   stats: { streak: number; totalXp: number; learningDays: number };
@@ -78,6 +81,21 @@ export function FriendsPanel({
   const [entry, setEntry] = useState("");
   const [copied, setCopied] = useState(false);
   const myCode = useMemo(() => getFriendCode(), []);
+  /**
+   * The thumbnail of my own photo, made once when it changes.
+   *
+   * Shrinking reads a canvas and so cannot be done inside profileSource,
+   * which is called synchronously on every send. Held here instead, and
+   * simply absent until it is ready — a profile that goes out a moment
+   * early arrives without a picture, not late.
+   */
+  const [sharePhoto, setSharePhoto] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    let live = true;
+    if (!avatar) { setSharePhoto(undefined); return () => { live = false; }; }
+    void shrinkPhotoForSharing(avatar).then((small) => { if (live) setSharePhoto(small); });
+    return () => { live = false; };
+  }, [avatar]);
 
   /**
    * Read fresh rather than threaded through: the store is also written by the
@@ -100,7 +118,8 @@ export function FriendsPanel({
     totalXp: stats.totalXp,
     learningDays: stats.learningDays,
     sentAt: Date.now(),
-  }), [levelLabel, myCode, stats.learningDays, stats.streak, stats.totalXp, userName]);
+    photo: sharePhoto,
+  }), [levelLabel, myCode, sharePhoto, stats.learningDays, stats.streak, stats.totalXp, userName]);
 
   useEffect(() => {
     let live = true;
@@ -240,7 +259,9 @@ export function FriendsPanel({
           return (
             <article className="np-friend-row" key={friend.code}>
               <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${toneFor(friend.code)}`}>
-                {initialsFor(friend.profile?.name ?? friend.name)}
+                {friend.profile?.photo
+                  ? <img alt="" className="np-social-avatar-photo" src={friend.profile.photo} />
+                  : initialsFor(friend.profile?.name ?? friend.name)}
               </span>
               <div className="np-friend-identity">
                 <strong>{friend.profile?.name ?? friend.name}</strong>
