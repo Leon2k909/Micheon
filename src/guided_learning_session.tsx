@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 
 import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
@@ -77,6 +77,44 @@ const REGISTER_KEY = "register-checks";
  * question is read off the German sentence, which a French card no longer
  * carries — detectRegister() on "Tu viens ?" answers about the wrong language.
  */
+/**
+ * The Listen player, on the lesson screen.
+ *
+ * ListenView draws either the full Listen screen or, when it is not the
+ * active view, a small draggable player — and nothing at all unless a
+ * session is live. So the whole of what is wanted here is the same component
+ * told it is not active.
+ *
+ * Lazy for the same reason it is lazy on the main screen: a learner who
+ * never opens Listen should not pay for it, and least of all on the screen
+ * they came here to use.
+ */
+const ListenView = lazy(() => import("@/components/listen/ListenView").then((m) => ({ default: m.ListenView })));
+
+function BackgroundListen({ apiParts, learningDirection, profile }: {
+  apiParts: Record<string, any>;
+  learningDirection: any;
+  profile: any;
+}) {
+  return (
+    <ListenView
+      active={false}
+      apiParts={apiParts}
+      learningDirection={learningDirection}
+      onOpen={() => {
+        // Tapping the player opens Listen properly, which means leaving the
+        // lesson the way the Back button does rather than stacking one
+        // full-screen surface on top of another.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("guided");
+        url.searchParams.set("tab", "listen");
+        window.location.assign(url.toString());
+      }}
+      profile={profile}
+    />
+  );
+}
+
 function withRegisterCheck(steps: any[], user: any): any[] {
   if (!targetIsGerman()) return steps;
   const registers = Array.from(
@@ -1368,7 +1406,26 @@ export default function GuidedLearningSession() {
   );
 
   if (showGuidedSession) return (
-    <GuidedSession
+    <>
+      {/*
+        Listen, carried into the lesson.
+
+        Opening a lesson is a page navigation rather than a change of view,
+        so the app around Listen is torn down and this one is built in its
+        place. Mounted here as well, a session the learner left running comes
+        back with its player rather than ending because they went to study.
+
+        active={false}: this is the small player, never the full screen. It
+        draws nothing at all unless there is a live session to show.
+      */}
+      <Suspense fallback={null}>
+        <BackgroundListen
+          apiParts={apiParts}
+          learningDirection={getLearningDirection()}
+          profile={user}
+        />
+      </Suspense>
+      <GuidedSession
       onCancel={(completedUpTo?: number) => {
         // Each non-skipped step is persisted as it is left. Replaying the
         // whole prefix here would accidentally grade any skipped steps.
@@ -1421,7 +1478,8 @@ export default function GuidedLearningSession() {
         saveScopedJson(REGISTER_KEY, recordRegisterAnswer(state, id, correct), user);
       }}
       steps={sessionSteps}
-    />
+      />
+    </>
   );
 
   return (

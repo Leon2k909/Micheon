@@ -35,6 +35,7 @@ import {
   toggleTtsLanguageMuted,
   type AudioSettings,
 } from "@/lib/audioMute";
+import { MuteButton } from "@/components/MuteButton";
 import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 import {
   buildListenQueue,
@@ -86,6 +87,7 @@ import { ListenTest } from "@/components/listen/ListenTest";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
+import { readListenSession, writeListenSession } from "@/lib/listenSession";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   AUDIO_LANGUAGE,
@@ -447,7 +449,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     );
   });
   const [playing, setPlaying] = useState(false);
-  const [sessionActivated, setSessionActivated] = useState(false);
+  /**
+   * Read back rather than started at false.
+   *
+   * Opening a lesson is a page navigation, so this component is destroyed
+   * and rebuilt around it. Starting closed meant a session the learner had
+   * not closed disappeared the moment they went to do the thing the app is
+   * for.
+   */
+  const [sessionActivated, setSessionActivated] = useState(() => readListenSession().live);
   const [backgroundPlayback, setBackgroundPlayback] = useState(
     () => getListenBackgroundPlayback(profile)
   );
@@ -924,6 +934,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     pause();
   }, [active, backgroundPlayback]);
 
+  /**
+   * Tell the rest of the app what Listen is doing.
+   *
+   * Two things read this. A lesson asks whether to keep quiet before speaking
+   * a word on its own, and this component asks on its next page load whether
+   * there was a session to come back to.
+   *
+   * Only written when background play is on: a session that is not allowed to
+   * outlive this screen has nothing to say to anything on another one.
+   */
+  useEffect(() => {
+    const live = sessionActivated && backgroundPlayback;
+    writeListenSession({ live, playing: live && playing });
+  }, [backgroundPlayback, playing, sessionActivated]);
+
   const mediaAvailable = Boolean(item)
     && (active || (backgroundPlayback && sessionActivated));
 
@@ -1248,24 +1273,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </span>
         </button>
         <div className="listen-mini-player__controls">
+          {/*
+            The same speaker every other screen has, rather than a mute button
+            and a volume slider that only this player had.
+
+            The two controls here did what they said and stopped there: the one
+            thing a listening session actually wants adjusting mid-play is how
+            fast a language is read, and that lived three screens away in
+            settings. The shared control carries the master and per-language
+            speeds with it, opens on hover, and behaves the way the speaker in
+            the top bar already taught everybody it behaves.
+          */}
           <div className="listen-mini-player__volume">
-            <button
-              aria-label={ui(masterMuted ? "Unmute all app audio" : "Mute all app audio")}
-              aria-pressed={masterMuted}
-              onClick={() => toggleAudioMuted()}
-              type="button"
-            >
-              <VolumeGlyph className="h-4 w-4" muted={masterMuted} volume={audioSettings.masterVolume} />
-            </button>
-            <input
-              aria-label={ui("App volume")}
-              max="100"
-              min="0"
-              onChange={(event) => setMasterAudioVolume(Number(event.target.value) / 100)}
-              step="1"
-              type="range"
-              value={Math.round(audioSettings.masterVolume * 100)}
-            />
+            <MuteButton iconClassName="h-4 w-4" />
           </div>
           <button aria-label={ui("Previous item")} className="listen-mini-player__step" onClick={() => step(-1)} type="button">
             <ChevronLeft />

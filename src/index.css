@@ -992,6 +992,13 @@ button { cursor: pointer; }
   padding-right: 8px;
   border-right: 1px solid var(--border);
 }
+/* The slider that used to sit beside the speaker moved into the mixer the
+   speaker opens, so this holds one control now rather than two. The divider
+   stays: it still separates sound from transport.
+
+   The mixer itself needs nothing here. It is portalled to the body, positions
+   itself against the viewport, and already sits at a z-index far above the
+   player — an override here would only push it back down. */
 .listen-mini-player__volume input[type="range"] {
   width: 72px;
   accent-color: var(--accent);

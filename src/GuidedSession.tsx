@@ -83,6 +83,27 @@ import { pronounNote } from "@/lib/pronounNotes";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { toSpokenGerman } from "@/lib/spokenGerman";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
+import { listenIsHoldingAudio } from "@/lib/listenSession";
+
+/**
+ * The speech a lesson makes on its own, as opposed to when it is asked.
+ *
+ * Listen can be left running while a lesson is opened, and then two things
+ * want the speakers. tts() stops whatever is playing before it starts, so a
+ * card reading itself aloud did not talk over a Listen session, it ended one —
+ * a sentence at a time, silently, for as long as the lesson lasted.
+ *
+ * Between the two, Listen wins while it is playing, because it is the thing
+ * the learner deliberately started and left running. The lesson is not
+ * silenced: it stops volunteering. Every button that says a word out loud
+ * still says it, because pressing one is a request and answering it is not
+ * talking over anybody. Pausing or closing the Listen player hands the voice
+ * straight back.
+ */
+function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
+  if (listenIsHoldingAudio()) return Promise.resolve();
+  return tts(text, rate, lang);
+}
 import { ui, uiOr, uiFmt } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
@@ -1941,9 +1962,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useEffect(() => {
     if (audioMuted) return;
     if (phase !== "Read" && phase !== "ListenPick") return;
-    if (phase === "ListenPick") tts(item.de, 0.88, targetLang);
+    if (phase === "ListenPick") lessonSpeak(item.de, 0.88, targetLang);
     else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
-    else tts(item.de, 0.88, targetLang);
+    else lessonSpeak(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
 
   // Focus input when entering Type or Translate phase
@@ -2085,7 +2106,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         setMeaningChecked(true);
         reactToAnswer(ok);
         if (ok) {
-          tts(item.de, 0.88, targetLang);
+          lessonSpeak(item.de, 0.88, targetLang);
           window.setTimeout(advanceOrFinish, 900);
         }
         return;
@@ -2099,7 +2120,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       const ok = choiceKey(option) === choiceKey(item.de);
       reactToAnswer(ok);
       if (ok) {
-        tts(item.de, 0.88, targetLang);
+        lessonSpeak(item.de, 0.88, targetLang);
         window.setTimeout(advanceOrFinish, 900);
       }
     };
@@ -2193,7 +2214,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setMissingWordChecked(true);
       reactToAnswer(ok);
       if (ok) {
-        tts(item.de, 0.88, targetLang);
+        lessonSpeak(item.de, 0.88, targetLang);
         window.setTimeout(advanceOrFinish, 900);
       }
     };
@@ -2402,7 +2423,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setWrongLanguageNotice(null);
     setChecked(true);
     reactToAnswer(result.ok, !!result.phrasingNote);
-    tts(item.de, result.ok ? 0.88 : 0.75, targetLang);
+    lessonSpeak(item.de, result.ok ? 0.88 : 0.75, targetLang);
     if (result.ok) {
       setTimeout(advance, 900);
     } else {
@@ -2528,7 +2549,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMeaningChecked(true);
     reactToAnswer(ok);
     if (ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
   };
@@ -2564,7 +2585,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const retryListening = () => {
     setListeningChoice(null);
     setListeningChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
   };
 
   const checkListeningTyped = () => {
@@ -2581,18 +2602,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningTypeChecked(true);
     reactToAnswer(listeningTypeResult.ok, !!listeningTypeResult.phrasingNote);
     if (listeningTypeResult.ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     } else {
       setListeningMisses((misses) => misses + 1);
-      tts(item.de, 0.75, targetLang);
+      lessonSpeak(item.de, 0.75, targetLang);
     }
   };
 
   const retryListeningTyped = () => {
     setListeningInput("");
     setListeningTypeChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
     setTimeout(() => listeningInputRef.current?.focus(), 50);
   };
 
@@ -2608,7 +2629,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setGrade("struggle");
       if (item?.id) onGradeItem?.(item.id, "struggle");
     }
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
   };
 
   const backToListeningTyping = () => {
@@ -2616,7 +2637,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningMode("type");
     setListeningChoice(null);
     setListeningChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
     setTimeout(() => listeningInputRef.current?.focus(), 50);
   };
 
@@ -2628,14 +2649,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMissingWordChecked(true);
     reactToAnswer(ok);
     if (ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
   };
 
   const previewMissingWord = (choice: string) => {
     setMissingWordPreview(choice);
-    tts(choice, 0.78, targetLang);
+    lessonSpeak(choice, 0.78, targetLang);
   };
 
   const retryMissingWord = () => {
@@ -2648,7 +2669,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (!gapInput.trim() || gapChecked) return;
     setGapChecked(true);
     reactToAnswer(gapResult.ok);
-    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
+    if (gapResult.ok) { lessonSpeak(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
   };
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
@@ -2695,7 +2716,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // confirm success without scaling the entire drag surface under the cursor.
     reactToAnswer(orderIsCorrect, false, !orderIsCorrect);
     if (orderIsCorrect) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       if (orderAdvanceTimerRef.current !== null) {
         window.clearTimeout(orderAdvanceTimerRef.current);
       }
@@ -2728,7 +2749,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setSayChecked(true);
     reactToAnswer(sayResult.ok, !!sayResult.phrasingNote);
     if (sayResult.ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       setTimeout(advanceOrFinish, 900);
     }
   };
@@ -2744,7 +2765,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       recallTransitionPendingRef.current = true;
       setRecallTransitionPending(true);
       const advanceToken = ++recallAdvanceTokenRef.current;
-      void tts(item.de, 0.88, targetLang).finally(() => {
+      void lessonSpeak(item.de, 0.88, targetLang).finally(() => {
         if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
       });
     } else {
@@ -2767,7 +2788,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       recallTransitionPendingRef.current = true;
       setRecallTransitionPending(true);
       const advanceToken = ++recallAdvanceTokenRef.current;
-      void tts(shownEnglish, 0.88, meaningLang).finally(() => {
+      void lessonSpeak(shownEnglish, 0.88, meaningLang).finally(() => {
         if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
       });
     } else {
@@ -2863,7 +2884,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (!frInput.trim() || frChecked) return;
     setFrChecked(true);
     reactToAnswer(frResult.ok);
-    tts(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
+    lessonSpeak(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
     if (frResult.ok) {
       setTimeout(hasFr ? advance : onNext, 900);
     } else {
@@ -2881,7 +2902,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMemFrChecked(true);
     const bothOk = memDeResult.ok && memFrResult.ok;
     reactToAnswer(bothOk);
-    if (memDeResult.ok) tts(item.de, 0.88, "de-DE");
+    if (memDeResult.ok) lessonSpeak(item.de, 0.88, "de-DE");
     if (bothOk) setTimeout(onNext, 1000);
   };
   const retryMemory = () => {
@@ -4842,7 +4863,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const companionFr = useMemo(() => getCompanion() === "fr" && sides.target.code === "de", [sides.target.code]);
 
   useEffect(() => {
-    if (line?.de) tts(line.de, 0.88, targetLang);
+    if (line?.de) lessonSpeak(line.de, 0.88, targetLang);
   }, [line?.de, targetLang]);
   useEffect(() => {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 80);
@@ -4862,7 +4883,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
     if (!input.trim() || checked) return;
     setChecked(true);
     onAnswer?.(result.ok);
-    tts(line?.de ?? "", 0.88, targetLang);
+    lessonSpeak(line?.de ?? "", 0.88, targetLang);
     if (result.ok) setTimeout(nextLine, 900);
   };
 
