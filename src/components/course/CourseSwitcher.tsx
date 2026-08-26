@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Lock, Search, Star } from "lucide-react";
+import { X, Check, Lock, Search, Star, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
-import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, toggleFavouriteCourse } from "@/lib/favouriteCourses";
+import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, getFavouritesOpen, setFavouritesOpen, toggleFavouriteCourse } from "@/lib/favouriteCourses";
 import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
@@ -161,6 +161,13 @@ export function CourseSwitcher({
   }, []);
   const isFavourite = (id: string) => favourites.includes(id);
   const star = (id: string) => setFavourites(toggleFavouriteCourse(id));
+  const [favouritesOpen, setFavouritesOpenState] = useState(() => getFavouritesOpen());
+  const toggleFavourites = () => {
+    setFavouritesOpenState((was) => {
+      setFavouritesOpen(!was);
+      return !was;
+    });
+  };
   const searching = Boolean(normalizedQuery);
   /**
    * Starred courses come out of their own section and go to the top.
@@ -423,16 +430,30 @@ export function CourseSwitcher({
             <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
               {favouriteRowCount > 0 && (
                 <>
-                  <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
+                  {/* The heading is the switch, like the sidebar's sections.
+                      The count stays visible while it is shut, so the section
+                      still says what is in it. */}
+                  <button
+                    aria-expanded={favouritesOpen}
+                    className="mt-4 flex w-full items-center gap-2 text-xs font-black uppercase tracking-wide text-[var(--text-3)] transition-colors hover:text-[var(--text-1)]"
+                    onClick={toggleFavourites}
+                    type="button"
+                  >
                     {ui("Favourites")}
-                    <span className="ml-2 font-bold normal-case tracking-normal opacity-70">
+                    <span className="font-bold normal-case tracking-normal opacity-70">
                       {favouriteRowCount}
                     </span>
-                  </p>
-                  <div className="mt-2 grid gap-2">
-                    {englishStarred && mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
-                    {favouriteCourses.map((c) => <Card key={c.id} {...c} />)}
-                  </div>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={cn("h-3.5 w-3.5 transition-transform", !favouritesOpen && "-rotate-90")}
+                    />
+                  </button>
+                  {favouritesOpen && (
+                    <div className="mt-2 grid gap-2">
+                      {englishStarred && mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
+                      {favouriteCourses.map((c) => <Card key={c.id} {...c} />)}
+                    </div>
+                  )}
                 </>
               )}
 
