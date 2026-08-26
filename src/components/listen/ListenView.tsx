@@ -1677,8 +1677,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         )}
 
         {/* Both settings panels fold away behind their headers — the player is
-            the page; the knobs are a drawer you open when you want them. */}
-        <div className="mt-3 grid items-start gap-x-4 lg:grid-cols-2">
+            the page; the knobs are a drawer you open when you want them.
+            settings-board is what keeps the two headers side by side when one
+            of them opens: the panel takes the full width underneath the pair
+            rather than the header taking it and changing places. */}
+        <div className="settings-board mt-3 grid items-start gap-x-4 lg:grid-cols-2">
           <SettingsCategory
             description={ui("Which items Listen plays, in what order, and how often they come back.")}
             icon={ListMusic}
