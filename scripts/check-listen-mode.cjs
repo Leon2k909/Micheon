@@ -1203,7 +1203,7 @@ for (const key of [
   "Reviews & struggles first",
   "Least heard first",
   "Show both languages on the pet",
-  "Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.",
+  "Keep {target} and {meaning} together in the pet bubble. Turn this off to show only the line currently being spoken.",
   "Playing in the background",
   "Listen is paused",
   "Previous item",

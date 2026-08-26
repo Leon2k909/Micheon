@@ -309,6 +309,40 @@ check("and the right answer is not always the first option",
 
 M.setLearningDirection("learn-de");
 
+// ── the two table-backed courses travel together ───────────────────────────
+//
+// French and Polish are built the same way: the catalogue stays German and the
+// course looks its own text up. So a file that consults one table and not the
+// other is not a style difference, it is a screen that answers for French and
+// silently falls back to German for Polish.
+//
+// That is exactly how it went wrong. Practice looked up French, and for Polish
+// let the answer fall through to the German — which is also what the German
+// prompt uses, so every candidate was dropped as "same wording on both sides"
+// and the screen sat on "Getting the next phrases ready…" forever. The two
+// trackers listed the German instead of the Polish. Nothing failed; the build
+// was green through all of it.
+//
+// Named exceptions rather than a pattern, because each one has a reason and a
+// new file should have to state its own.
+const FRENCH_ONLY = new Set([
+  // The French implementation itself; polishCourse.ts is its twin.
+  "src/lib/frenchCourse.ts",
+]);
+const sourceDir = path.join(root, "src");
+const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  const full = path.join(dir, entry.name);
+  return entry.isDirectory() ? walk(full) : /\.tsx?$/.test(entry.name) ? [full] : [];
+});
+const lopsided = walk(sourceDir)
+  .map((file) => ({ rel: path.relative(root, file).replace(/\\/g, "/"), text: fs.readFileSync(file, "utf8") }))
+  .filter(({ rel, text }) => !FRENCH_ONLY.has(rel) && text.includes("frenchFor(") && !text.includes("polishFor("))
+  .map(({ rel }) => rel);
+check(
+  `every file that looks a phrase up in French looks it up in Polish too${lopsided.length ? ` — ${lopsided.join(", ")}` : ""}`,
+  lopsided.length === 0
+);
+
 if (failures.length) {
   console.error(`\n${failures.length} Polish course regression${failures.length === 1 ? "" : "s"}`);
   process.exit(1);

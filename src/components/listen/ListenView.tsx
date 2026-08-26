@@ -90,6 +90,7 @@ import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   AUDIO_LANGUAGE,
   courseSide,
+  courseSides,
   meaningLanguageFor,
   targetLanguage,
   type CourseLanguage,
@@ -1965,7 +1966,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             />
             <span className="listen-background-toggle__copy">
               <strong>{ui("Show both languages on the pet")}</strong>
-              <small>{ui("Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.")}</small>
+              <small>{uiFmt("Keep {target} and {meaning} together in the pet bubble. Turn this off to show only the line currently being spoken.", {
+                target: ui(courseSides().target.label),
+                meaning: ui(courseSides().meaning.label),
+              })}</small>
             </span>
             <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
           </label>
