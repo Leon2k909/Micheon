@@ -68,7 +68,7 @@ assert.ok(entries.length > 20000, `only found ${entries.length} taught entries â
  * is a failure rather than a silent zero.
  */
 const FLOORS = {
-  fr: 35,
+  fr: 46,
 };
 
 // This percentage is of EVERYTHING, which is the wrong shape on its own: 600

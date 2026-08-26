@@ -62,11 +62,21 @@ const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
   filterPartsForLearningDirection, buildListenQueue, loadGradeStore,
   translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, buildCatalog } = compiled.exports;
 
-/** How far in each band reaches, and how much of it must be translated. */
+/**
+ * How far in each band reaches, and how much of it must be translated.
+ *
+ * The bands used to stop at 2,000 because that was as far as the coverage
+ * went. The first five thousand are complete now — a real course, not a
+ * sampler — so the floor follows, and the two bands past it hold the ground
+ * that was won rather than the ground that was there.
+ */
 const BANDS = [
   { upTo: 500, floor: 100 },
-  { upTo: 1000, floor: 88 },
-  { upTo: 2000, floor: 55 },
+  { upTo: 1000, floor: 100 },
+  { upTo: 2000, floor: 100 },
+  { upTo: 5000, floor: 100 },
+  { upTo: 8000, floor: 72 },
+  { upTo: 12000, floor: 55 },
 ];
 
 const blueprint = {};
@@ -97,6 +107,7 @@ const summary = [];
 for (const language of TRANSLATION_LANGUAGES) {
   const name = TRANSLATION_LANGUAGE_NAMES[language] ?? language;
   const missingAt = [];
+  let complete = 0;
   queue.forEach((item, index) => {
     const de = String(item.de || "");
     if (!de) return;
@@ -113,8 +124,14 @@ for (const language of TRANSLATION_LANGUAGES) {
       + missing.slice(0, 8).map((m) => `    ${m.at}  ${m.de}  (${m.en})`).join("\n")
       + "\n  These are the commonest things in the language — a learner opening the course "
       + "in this language meets them before anything else.");
-    if (band.upTo === 500) summary.push(`${name} ${covered.toFixed(0)}% of the first 500`);
+    // Report how DEEP the language reaches rather than the first band alone.
+    // "100% of the first 500" said the same thing when the five hundredth card
+    // was the last one translated and when the five thousandth was.
+    if (covered >= 100) complete = band.upTo;
   }
+  summary.push(complete
+    ? `${name} 100% of the first ${complete.toLocaleString("en-GB")}`
+    : `${name} has gaps in its first ${BANDS[0].upTo}`);
 }
 
 console.log(`check-french-front: ${summary.join("; ")} — measured by queue position, `
