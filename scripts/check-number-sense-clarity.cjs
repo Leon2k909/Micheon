@@ -136,7 +136,13 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // apprenticeship, the building site, the workshop, the materials, the verbs a
 // quote lists and the invoice that follows. 26 fold into synonym cards, so the
 // faces move 8,603 -> 8,689.
-// 9386 -> 9385: die Esse is dropped, the only word this ledger has ever lost.
+// 9386 -> 9492: parts 625-630 answer the mountain and the wood at 70 per cent.
+// 107 words for the climb, the way-marking, a night under canvas, the country
+// a walk crosses, what lives there, and the weather that turns it dangerous.
+// Only 5 fold into existing synonym cards - the highest yield of the six
+// blocks, because almost nothing up a mountain has a second name in a course
+// written around a town. The faces move 8,689 -> 8,791.
+// 9492 -> 9491: die Esse is dropped, the only word this ledger has ever lost.
 // It is a smith's hearth, taught in a pack that already teaches die Schmiede
 // as "forge", and English has no everyday word for the fire inside a forge as
 // distinct from the forge itself — so its gloss had to be "smith's hearth",
@@ -144,7 +150,7 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // It also happens to be spelled like the plural of das Essen, which is a
 // separate fault and fixed separately; a word is not dropped for being awkward
 // to count.
-assert.equal(taughtWords, 9385, "the reviewed sense fixes changed the standalone word count");
+assert.equal(taughtWords, 9491, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
