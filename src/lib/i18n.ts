@@ -2759,6 +2759,8 @@ const DE: Record<string, string> = {
   "the talking pet": "zum sprechenden Pet",
   "Same course, two spellings and accents. Pick one — you can swap any time.":
     "Derselbe Kurs, zwei Schreibweisen und Akzente. Wähl eine — du kannst jederzeit wechseln.",
+  "Pick the country whose history and society you want to study.":
+    "Wähle das Land, dessen Geschichte und Gesellschaft du lernen möchtest.",
   "Pick a language, a programming track or a country course.":
     "Wähle eine Sprache, einen Programmierkurs oder einen Länderkurs.",
   "No matching course": "Kein passender Kurs",

@@ -76,9 +76,48 @@ assert.ok(
   "the two cards no longer carry the same plain Change button: found " + JSON.stringify(handlers)
 );
 assert.ok(
-  /onChangeCountry=\{onSwitchCourse\}/.test(shell),
-  "the country card's Change is wired to something other than the course chooser the language card opens"
+  /onChangeCountry=\{\(\) => openCourseSwitcher\("country"\)\}/.test(shell),
+  "the country card's Change no longer opens the course chooser on the country courses"
 );
+assert.ok(
+  /onSwitchCourse=\{\(\) => openCourseSwitcher\("all"\)\}/.test(shell),
+  "the language card's Change no longer opens the course chooser on the whole catalogue"
+);
+// Every opener states its scope. One that did not would inherit whichever
+// scope was set last — ask to change your language from another screen after
+// changing a country, and you would be handed the country list.
+const opens = (shell.match(/setCourseSwitcherOpen\(true\)/g) || []).length;
+assert.strictEqual(
+  opens, 1,
+  `the chooser is opened from ${opens} places instead of the one helper that sets a scope first`
+);
+assert.ok(
+  /const openCourseSwitcher = useCallback\(\(next: "all" \| "country"\) => \{\s*setCourseSwitcherScope\(next\);\s*setCourseSwitcherOpen\(true\);/.test(shell),
+  "the one opener does not set the scope before opening"
+);
+assert.ok(
+  /scope=\{courseSwitcherScope\}/.test(shell),
+  "the chooser is not told which scope to open on"
+);
+
+// ── and the country scope really does hide the languages ─────────────────
+assert.ok(
+  /scope: "all" \| "country";/.test(switcher),
+  "the chooser has no scope, so opening it to change a country lists every language first"
+);
+assert.ok(
+  /const countryOnly = scope === "country";/.test(switcher),
+  "the chooser does not work out whether it is showing countries only"
+);
+for (const [guard, what] of [
+  [/\{!countryOnly && languageRowCount > 0 && \(/, "the language section"],
+  [/\{!countryOnly && programming\.length > 0 && \(/, "the programming section"],
+]) {
+  assert.ok(
+    guard.test(switcher),
+    `${what} still shows when the chooser was opened to change a country — which is how "change the country" ends up changing the language`
+  );
+}
 assert.ok(
   !/np-home-content-menu--country/.test(shell),
   "the country card has grown a dropdown of its own again instead of using the dialog"

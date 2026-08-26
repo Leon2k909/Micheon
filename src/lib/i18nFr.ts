@@ -2586,6 +2586,7 @@ export const FR: Record<string, string> = {
   "Make": "Faire de",
   "the talking pet": "le compagnon qui parle",
   "Same course, two spellings and accents. Pick one — you can swap any time.": "Le même cours, deux orthographes et deux accents. Choisis-en un — tu peux changer à tout moment.",
+  "Pick the country whose history and society you want to study.": "Choisis le pays dont tu veux étudier l’histoire et la société.",
   "Pick a language, a programming track or a country course.": "Choisis une langue, un parcours de programmation ou un cours de civilisation.",
   "No matching course": "Aucun cours correspondant",
   "Search by name, language code, or the name in that language — Deutsch, español, 日本語.": "Cherche par nom, par code de langue ou par le nom dans cette langue — Deutsch, español, 日本語.",

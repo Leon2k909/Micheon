@@ -71,6 +71,7 @@ export function CourseSwitcher({
   activeCourseId,
   onSelect,
   onClose,
+  scope,
 }: {
   open: boolean;
   /**
@@ -84,6 +85,16 @@ export function CourseSwitcher({
   activeCourseId: string;
   onSelect: (courseId: string) => void;
   onClose: () => void;
+  /**
+   * What the dialog is being opened to change.
+   *
+   * "all" is the whole catalogue, which is right when the question is
+   * "what do you want to learn". "country" narrows it to the country
+   * courses, because opening it from the country card and landing on a
+   * list of eighty-seven languages makes the obvious click the wrong
+   * one — you set out to change the country and changed the language.
+   */
+  scope: "all" | "country";
 }) {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -133,6 +144,7 @@ export function CourseSwitcher({
   const hiddenLanguageCount = languages.length - shownLanguages.length;
   const programming = visibleCourses.filter((c) => c.kind === "programming");
   const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
+  const countryOnly = scope === "country";
 
   useEffect(() => {
     if (!open) return;
@@ -286,7 +298,11 @@ export function CourseSwitcher({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black tracking-tight text-[var(--text-1)]">{ui("Switch course")}</h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">{ui("Pick a language, a programming track or a country course.")}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
+                  {ui(countryOnly
+                    ? "Pick the country whose history and society you want to study."
+                    : "Pick a language, a programming track or a country course.")}
+                </p>
               </div>
               <button
                 type="button"
@@ -325,7 +341,7 @@ export function CourseSwitcher({
             </label>
 
             <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
-              {languageRowCount > 0 && (
+              {!countryOnly && languageRowCount > 0 && (
                 <>
                   <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
                     {ui("Languages")}
@@ -352,7 +368,7 @@ export function CourseSwitcher({
                 </>
               )}
 
-              {programming.length > 0 && (
+              {!countryOnly && programming.length > 0 && (
                 <>
                   <p className="mt-5 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">{ui("Programming")}</p>
                   <div className="mt-2 grid gap-2">
@@ -376,7 +392,7 @@ export function CourseSwitcher({
                 </>
               )}
 
-              {visibleCourses.length === 0 && (
+              {(countryOnly ? citizenship.length === 0 : visibleCourses.length === 0) && (
                 <div className="mt-5 rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-5 py-8 text-center">
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching course")}</p>
                   <p className="mt-1 text-[13px] font-bold text-[var(--text-3)]">

@@ -3118,6 +3118,7 @@ function ProgressPanel({
 function HomeView({
   apiParts,
   countryId,
+  onChangeCountry,
   onOpenCountryCourse,
   onOpenFading,
   onPractice,
@@ -3131,6 +3132,8 @@ function HomeView({
   apiParts: Record<string, Part>;
   /** Which country studies country the card should show. */
   countryId: CountryId;
+  /** Opens the course chooser on the country courses. */
+  onChangeCountry: () => void;
   /** The citizenship course, opened from the second card. */
   onOpenCountryCourse: () => void;
   /** The vocabulary library, opened on the items that are fading. */
@@ -3227,7 +3230,7 @@ function HomeView({
         />
 
         <CountryCard
-          onChangeCountry={onSwitchCourse}
+          onChangeCountry={onChangeCountry}
           onOpen={onOpenCountryCourse}
           pack={countryPack(countryId)}
           profile={profile}
@@ -3876,6 +3879,14 @@ export default function NewUiPrototype({
 }) {
   const [activeView, setActiveView] = useState<PrototypeView>("home");
   const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
+  // Which half of the catalogue the chooser opens on. Set by whichever
+  // card asked for it, so changing the country does not begin with a list
+  // of languages.
+  const [courseSwitcherScope, setCourseSwitcherScope] = useState<"all" | "country">("all");
+  const openCourseSwitcher = useCallback((next: "all" | "country") => {
+    setCourseSwitcherScope(next);
+    setCourseSwitcherOpen(true);
+  }, []);
   const [storedCourseId, setActiveCourseId] = useState(() => getActiveCourseId(profile));
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
@@ -4291,7 +4302,8 @@ export default function NewUiPrototype({
         onRequestCatalogue={requestParts}
         onViewAllLessons={() => navigate("learn")}
         profile={profile}
-        onSwitchCourse={() => setCourseSwitcherOpen(true)}
+        onChangeCountry={() => openCourseSwitcher("country")}
+        onSwitchCourse={() => openCourseSwitcher("all")}
         stats={stats}
         vocab={knownVocab}
       />
@@ -4414,7 +4426,7 @@ export default function NewUiPrototype({
             activeCourseName={activeCourseName}
             apiParts={apiParts}
             onRequestCatalogue={requestParts}
-            onSwitchCourse={() => setCourseSwitcherOpen(true)}
+            onSwitchCourse={() => openCourseSwitcher("all")}
             onUpdateStats={updateStats}
             profileOnly
             stats={stats}
@@ -4583,7 +4595,7 @@ export default function NewUiPrototype({
               setUkTab(tab);
               navigate("life-in-uk");
             }}
-            onSwitchCourse={() => setCourseSwitcherOpen(true)}
+            onSwitchCourse={() => openCourseSwitcher("all")}
             onPrefetch={prefetchView}
             onResize={resizeSidebar}
             profile={profile}
@@ -4653,6 +4665,7 @@ export default function NewUiPrototype({
         <CourseSwitcher
           activeCountryCourseId={activePack.course.id}
           activeCourseId={activeCourseId}
+          scope={courseSwitcherScope}
           onClose={() => setCourseSwitcherOpen(false)}
           onSelect={selectCourse}
           open={courseSwitcherOpen}
