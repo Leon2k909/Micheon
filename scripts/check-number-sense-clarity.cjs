@@ -107,7 +107,18 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // stage, the canvas and the forge. 16 never arrive — the catalogue's own
 // filters drop them — and 22 of the 554 that do fold into synonym cards that
 // already existed, so the faces move 7,468 -> 8,000 exactly.
-assert.equal(taughtWords, 8554, "the reviewed sense fixes changed the standalone word count");
+// 8554 -> 9056: parts 585-604 teach 502 words read out of an eight-thousand-row
+// spreadsheet of German words with their articles. The sheet holds 2,495 words
+// spread over 8,000 rows — an adjective once per case ending, a verb once per
+// participle form, so froh arrives five times and sagen seven — and 1,696 of
+// them the course already taught. 94 of the 502 fold into synonym cards that
+// already existed (die Fahrkarte onto das Ticket, downloaden onto
+// herunterladen, die Kundin onto der Kunde), so the faces move 8,000 -> 8,406
+// while the words taught move by the full 502. Eight more were written and
+// then left out rather than shipped dead: the progress id strips umlauts, so
+// sägen collides with sagen, träge with die Trage and waschbar with der
+// Waschbär, and the second of each pair can never become a card.
+assert.equal(taughtWords, 9056, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");
