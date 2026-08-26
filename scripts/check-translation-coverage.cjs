@@ -69,6 +69,12 @@ assert.ok(entries.length > 20000, `only found ${entries.length} taught entries â
  */
 const FLOORS = {
   fr: 58,
+  // Polish reads lower than French and means something different: it is a
+  // quarter of the catalogue, but the quarter it covers is the opening
+  // stretch of the curriculum in full. What the learner actually meets is
+  // floored by check-polish-course, which counts the cards the course serves
+  // and requires every one of them to have an answer.
+  pl: 25,
 };
 
 // This percentage is of EVERYTHING, which is the wrong shape on its own: 600

@@ -10,22 +10,24 @@ import { normalize } from "@/lib/api";
 import { learningEnglish } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { matchFrenchPhrase } from "@/lib/frenchTextMatch";
+import { matchPolishPhrase } from "@/lib/polishTextMatch";
 import { ui, uiFmt } from "@/lib/i18n";
 
-// Three words per row, so the same ten questions work whichever of the three
-// is being learned. The French is the ordinary dictionary form with its
-// article, because that is how the course teaches a noun.
+// One word per language per row, so the same ten questions work whichever
+// course is being learned. The French is the ordinary dictionary form with its
+// article, because that is how the course teaches a noun; Polish has no
+// article to carry, so it is the bare dictionary form.
 const QUESTIONS = [
-  { part: "part1", de: "Haus", en: "House", fr: "la maison", level: "A1" },
-  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", level: "A1" },
-  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", level: "A1-A2" },
-  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", level: "A2" },
-  { part: "part6", de: "Straße", en: "Street", fr: "la rue", level: "A1-A2" },
-  { part: "part7", de: "Familie", en: "Family", fr: "la famille", level: "A1-A2" },
-  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", level: "A2" },
-  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", level: "A2-B1" },
-  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", level: "B1" },
-  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", level: "B1" },
+  { part: "part1", de: "Haus", en: "House", fr: "la maison", pl: "dom", level: "A1" },
+  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", pl: "dworzec", level: "A1" },
+  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", pl: "praca", level: "A1-A2" },
+  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", pl: "weekend", level: "A2" },
+  { part: "part6", de: "Straße", en: "Street", fr: "la rue", pl: "ulica", level: "A1-A2" },
+  { part: "part7", de: "Familie", en: "Family", fr: "la famille", pl: "rodzina", level: "A1-A2" },
+  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", pl: "kuchnia", level: "A2" },
+  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", pl: "plan", level: "A2-B1" },
+  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", pl: "ciekawy", level: "B1" },
+  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", pl: "zapominać", level: "B1" },
 ];
 
 export function PlacementTest({ onComplete }: { onComplete: (partKey: string) => void }) {
@@ -39,17 +41,21 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const progress = ((index + 1) / QUESTIONS.length) * 100;
   const sides = courseSides();
   const learnFr = sides.target.code === "fr";
+  const learnPl = sides.target.code === "pl";
   const reverse = learningEnglish();
-  const prompt = learnFr
+  const prompt = learnFr || learnPl
     ? (sides.meaning.code === "de" ? current.de : current.en)
     : reverse ? current.de : current.en;
-  const target = learnFr ? current.fr : reverse ? current.en : current.de;
-  // A missing accent is a spelling slip in French, not a wrong answer — see
-  // frenchTextMatch.ts. normalize() would mark "la gare" typed as "gare"
-  // wrong too, which is why the French course grades through the matcher.
+  const target = learnFr ? current.fr : learnPl ? current.pl : reverse ? current.en : current.de;
+  // A missing accent is a spelling slip in French, and a missing ą or ł is one
+  // in Polish — see frenchTextMatch.ts and polishTextMatch.ts. normalize()
+  // would mark "la gare" typed as "gare" wrong too, which is why both
+  // table-backed courses grade through their own matcher.
   const isRight = (typed: string) => learnFr
     ? matchFrenchPhrase(typed, target).ok
-    : normalize(typed) === normalize(target);
+    : learnPl
+      ? matchPolishPhrase(typed, target).ok
+      : normalize(typed) === normalize(target);
 
   const recordAnswer = (isCorrect: boolean) => {
     setAnswers([...answers, isCorrect]);

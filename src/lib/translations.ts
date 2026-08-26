@@ -1,4 +1,5 @@
 import { FRENCH_BY_GERMAN } from "@/lib/frenchTranslations";
+import { POLISH_BY_GERMAN } from "@/lib/polishTranslations";
 
 /**
  * One translation layer for every language, so adding one is adding a file.
@@ -27,19 +28,21 @@ import { FRENCH_BY_GERMAN } from "@/lib/frenchTranslations";
  */
 
 /** A language we hold translations for. Add the code when you add the table. */
-export type TranslationLanguage = "fr";
+export type TranslationLanguage = "fr" | "pl";
 
 /** German text → that language's translation. */
 export type TranslationTable = Record<string, string>;
 
 const TABLES: Record<TranslationLanguage, TranslationTable> = {
   fr: FRENCH_BY_GERMAN,
+  pl: POLISH_BY_GERMAN,
 };
 
 export const TRANSLATION_LANGUAGES = Object.keys(TABLES) as TranslationLanguage[];
 
 export const TRANSLATION_LANGUAGE_NAMES: Record<TranslationLanguage, string> = {
   fr: "French",
+  pl: "Polish",
 };
 
 /**
@@ -82,7 +85,7 @@ export function translationCount(language: TranslationLanguage): number {
  *      speaker would actually say, at the register the German uses.
  *   2. Import it here, add the code to TranslationLanguage, and put it in
  *      TABLES and TRANSLATION_LANGUAGE_NAMES.
- *   3. check-french-coverage walks TRANSLATION_LANGUAGES, so the new language
+ *   3. check-translation-coverage walks TRANSLATION_LANGUAGES, so the new language
  *      is measured and floored from its first run without any change to the
  *      gate.
  *

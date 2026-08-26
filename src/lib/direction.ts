@@ -9,9 +9,11 @@ export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 // the target you read/hear/type, German becomes the meaning). "learn-fr" makes
 // French the target: the same catalogue again, narrowed to the entries French
 // has been written for, with the learner's own language as the meaning.
-export type LearningDirection = "learn-de" | "learn-en" | "learn-fr";
+// "learn-pl" is that same shape once more, over the Polish table — see
+// polishCourse.ts, which is frenchCourse.ts with its own vocabulary.
+export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl";
 
-const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr"];
+const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */
 export function asLearningDirection(value: unknown): LearningDirection {
@@ -47,6 +49,10 @@ export function learningFrench(): boolean {
   return getLearningDirection() === "learn-fr";
 }
 
+export function learningPolish(): boolean {
+  return getLearningDirection() === "learn-pl";
+}
+
 /**
  * Is the text being learned German?
  *
@@ -65,6 +71,7 @@ export function targetLangTag(): string {
   switch (getLearningDirection()) {
     case "learn-en": return "en-US";
     case "learn-fr": return "fr-FR";
+    case "learn-pl": return "pl-PL";
     default: return "de-DE";
   }
 }

@@ -2576,6 +2576,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   background: linear-gradient(90deg, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%);
 }
 
+/* Polish is two horizontal halves, white over red — a gradient again rather
+   than the three <i> bands, since there are only two of them. */
+.np-language-badge.is-polish {
+  background: linear-gradient(180deg, #ffffff 0 50%, #dc143c 50% 100%);
+}
+
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }

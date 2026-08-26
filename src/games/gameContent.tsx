@@ -17,6 +17,7 @@ import {
 } from "@/lib/direction";
 import { courseSides, type CourseLanguage, type VoiceTag } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
+import { polishFor } from "@/lib/polishCourse";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { buildWordCatalog } from "@/lib/wordSession";
@@ -114,6 +115,7 @@ function buildGameEntries(
   const seen = new Set<string>();
   const sides = courseSides(learningDirection);
   const learnsFrench = sides.target.code === "fr";
+  const learnsPolish = sides.target.code === "pl";
   const entries: GameContentEntry[] = [];
 
   for (const item of source) {
@@ -125,13 +127,15 @@ function buildGameEntries(
     if (seen.has(key)) continue;
     seen.add(key);
 
-    // The catalogue is German either way round, so the French course looks its
-    // target up rather than reading it off the entry. A sentence with no
-    // French cannot be played in this course and leaves the pool.
+    // The catalogue is German either way round, so a table-backed course looks
+    // its target up rather than reading it off the entry. A sentence with no
+    // translation cannot be played in that course and leaves the pool.
     const french = learnsFrench ? frenchFor(de, (item as { fr?: string }).fr) : null;
     if (learnsFrench && !french) continue;
+    const polish = learnsPolish ? polishFor(de) : null;
+    if (learnsPolish && !polish) continue;
 
-    const target = french ?? (sides.target.code === "en" ? en : de);
+    const target = french ?? polish ?? (sides.target.code === "en" ? en : de);
     const letters = gameLetters(target);
     if (letters.length === 0) continue;
 
@@ -173,6 +177,7 @@ export function buildGameWords(
 ): GameWordEntry[] {
   const sides = courseSides(learningDirection);
   const learnsEnglish = sides.target.code === "en";
+  const learnsPolish = sides.target.code === "pl";
   const learnsFrench = sides.target.code === "fr";
   const seen = new Set<string>();
   const words: GameWordEntry[] = [];
@@ -184,6 +189,10 @@ export function buildGameWords(
 
     const french = learnsFrench ? frenchFor(de) : null;
     if (learnsFrench && !french) continue;
+    // Polish nouns carry no article, so there is nothing to strip off the
+    // front of one before it reaches a spelling board.
+    const polish = learnsPolish ? polishFor(de) : null;
+    if (learnsPolish && !polish) continue;
 
     const article = LEADING_ARTICLE.exec(de);
     const bareDe = article ? de.slice(article[0].length).trim() : de;
@@ -193,7 +202,7 @@ export function buildGameWords(
     const frenchArticle = french ? LEADING_FRENCH_ARTICLE.exec(french) : null;
     const bareFr = french && frenchArticle ? french.slice(frenchArticle[0].length).trim() : french;
 
-    const target = learnsFrench ? (bareFr ?? "") : learnsEnglish ? bareEn : bareDe;
+    const target = learnsFrench ? (bareFr ?? "") : learnsPolish ? (polish ?? "") : learnsEnglish ? bareEn : bareDe;
     const clue = sides.meaning.code === "de" ? de : en;
 
     // One token only. "sich freuen" spelled SICHFREUEN reads as a typo rather

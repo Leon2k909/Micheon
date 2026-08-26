@@ -23,12 +23,14 @@ const SAMPLES: Record<string, string> = {
   de: "Guten Tag! Wollen wir anfangen?",
   en: "Hello! Shall we make a start?",
   fr: "Bonjour ! On commence ?",
+  pl: "Dzień dobry! Zaczynamy?",
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
   de: "German voice",
   en: "English voice",
   fr: "French voice",
+  pl: "Polish voice",
 };
 
 export function VoicePicker() {
@@ -43,7 +45,7 @@ export function VoicePicker() {
   }, []);
 
   useEffect(() => {
-    setChosen({ de: voiceForLang("de-DE"), en: voiceForLang("en-GB"), fr: voiceForLang("fr-FR") });
+    setChosen({ de: voiceForLang("de-DE"), en: voiceForLang("en-GB"), fr: voiceForLang("fr-FR"), pl: voiceForLang("pl-PL") });
   }, [catalog]);
 
   const british = resolveEnglishVariant(getEnglishVariant()) === "british";
@@ -60,6 +62,7 @@ export function VoicePicker() {
       { lang: "de", voices: choices["de-DE"] ?? [], fallback: catalog.defaults?.["de-DE"] },
       { lang: "en", voices: english, fallback: catalog.defaults?.[british ? "en-GB" : "en-US"] },
       { lang: "fr", voices: choices["fr-FR"] ?? [], fallback: catalog.defaults?.["fr-FR"] },
+      { lang: "pl", voices: choices["pl-PL"] ?? [], fallback: catalog.defaults?.["pl-PL"] },
     ].filter((group) => group.voices.length > 0);
   }, [british, catalog]);
 
@@ -67,7 +70,10 @@ export function VoicePicker() {
   // before previewing — so what you hear here is what a lesson will sound like.
   const preview = (lang: string) => {
     setPlaying(lang);
-    const tag = lang === "en" ? (british ? "en-GB" : "en-US") : lang === "de" ? "de-DE" : "fr-FR";
+    const tag = lang === "en" ? (british ? "en-GB" : "en-US")
+      : lang === "de" ? "de-DE"
+      : lang === "pl" ? "pl-PL"
+      : "fr-FR";
     tts(SAMPLES[lang] ?? SAMPLES.en, 0.95, tag).finally(() => setPlaying(""));
   };
 

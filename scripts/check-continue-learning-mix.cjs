@@ -484,10 +484,11 @@ check(
 check(
   "preview replacement blocks both named language columns after direction swaps",
   // The candidates are un-swapped German entries, so every direction has to be
-  // read back to that pair — a French card through the originalDe it kept.
+  // read back to that pair — a French or Polish card through the originalDe it
+  // kept. Both table-backed courses take that same route, so they share a branch.
   labSource.includes("const blockedPairs = current")
     && labSource.includes('if (swapDirection === "learn-en")')
-    && labSource.includes('if (swapDirection === "learn-fr")')
+    && labSource.includes('if (swapDirection === "learn-fr" || swapDirection === "learn-pl")')
     && labSource.includes("String(step.item?.originalDe ?? \"\")")
 );
 
@@ -527,8 +528,13 @@ check(
 check(
   "the proactive desktop pet remains responsible for later memory questions",
   labSource.includes('getCodexPetCadence("questions", petCoachingFrequencies.questions)')
-    && labSource.includes('Do you remember how to say “${meaning}” in ${learnsFrench ? "French" : "German"}?')
-    && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${learnsFrench ? "Französisch" : "Englisch"} sagt?')
+    // The question names the course it is asking about, in whichever interface
+    // language the learner reads — four courses now, so the name is picked once
+    // and dropped into both sentences rather than spelled out inside each.
+    && labSource.includes('const askedLanguageDe = learnsFrench ? "Französisch" : learnsPolish ? "Polnisch" : "Englisch";')
+    && labSource.includes('const askedLanguageEn = learnsFrench ? "French" : learnsPolish ? "Polish" : "German";')
+    && labSource.includes('Do you remember how to say “${meaning}” in ${askedLanguageEn}?')
+    && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${askedLanguageDe} sagt?')
     && petProviderSource.includes("setItemStatus(")
     && petProviderSource.includes('answer === "yes" ? "known" : "struggle"')
 );

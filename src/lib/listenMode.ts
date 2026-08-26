@@ -21,6 +21,7 @@ import {
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { meaningLanguageFor, targetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
+import { polishFor } from "@/lib/polishCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
@@ -797,6 +798,7 @@ export function buildListenQueue(
     const textFor = (item: ListenItem, language: CourseLanguage): string | null => {
       if (language === "de") return item.de;
       if (language === "en") return item.en;
+      if (language === "pl") return polishFor(item.de);
       return frenchFor(item.de);
     };
     combined = combined.flatMap((item) => {
@@ -808,8 +810,8 @@ export function buildListenQueue(
         de,
         en,
         // A synonym group is a group of GERMAN words for one meaning. There
-        // is no French equivalent of it on the card, so it goes when the
-        // German does.
+        // is no French or Polish equivalent of it on the card, so it goes when
+        // the German does.
         synonyms: slots.de === "de" ? item.synonyms : undefined,
       }];
     });

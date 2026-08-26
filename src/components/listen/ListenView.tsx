@@ -289,30 +289,35 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn — say it in German",
   en: "Your turn — say it in English",
   fr: "Your turn — say it in French",
+  pl: "Your turn — say it in Polish",
 };
 
 const REPEATS_LABEL: Record<CourseLanguage, string> = {
   de: "German repeats",
   en: "English repeats",
   fr: "French repeats",
+  pl: "Polish repeats",
 };
 
 const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice is muted and will be skipped.",
   en: "English voice is muted and will be skipped.",
   fr: "French voice is muted and will be skipped.",
+  pl: "Polish voice is muted and will be skipped.",
 };
 
 const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn to say the German before it is spoken",
   en: "Your turn to say the English before it is spoken",
   fr: "Your turn to say the French before it is spoken",
+  pl: "Your turn to say the Polish before it is spoken",
 };
 
 const FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "German first",
   en: "English first",
   fr: "French first",
+  pl: "Polish first",
 };
 
 // Written out rather than composed from a "{language} voice" pattern, because
@@ -321,21 +326,24 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice",
   en: "English voice",
   fr: "French voice",
+  pl: "Polish voice",
 };
 
 const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Mute German voice",
   en: "Mute English voice",
   fr: "Mute French voice",
+  pl: "Mute Polish voice",
 };
 
 const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Unmute German voice",
   en: "Unmute English voice",
   fr: "Unmute French voice",
+  pl: "Unmute Polish voice",
 };
 
-const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume" } as const;
+const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume", pl: "polishVolume" } as const;
 
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
