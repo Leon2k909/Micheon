@@ -10874,14 +10874,19 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   padding: 12px 14px;
   border: 1px solid var(--card-edge, var(--border));
   border-radius: 16px;
-  background: var(--surface-2);
+  /* The same surface every card on this page uses, Sign out included. On
+     --surface-2 these rows were a shade lighter than everything around them,
+     which read as a hole rather than a card. */
+  background: var(--surface);
   text-align: left;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .settings-row:hover {
   border-color: var(--border-2);
-  background: var(--surface-3);
+  /* One shade up from the new resting colour, so the lift is the same size it
+     was rather than twice it. */
+  background: var(--surface-2);
 }
 
 .settings-row:focus-visible {
