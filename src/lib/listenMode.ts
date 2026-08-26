@@ -19,7 +19,8 @@ import {
   snoozeForDays,
 } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
-import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { meaningLanguageFor, targetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
+import { frenchFor } from "@/lib/frenchCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog } from "@/lib/wordSession";
@@ -733,22 +734,47 @@ export function buildListenQueue(
     combined = sentences.length ? sentences : words;
   }
 
-  // The French course reads this same catalogue, and the French is keyed by
-  // the German — so the swap happens here rather than in the player. An item
-  // the tables do not reach leaves the queue rather than being read out in a
-  // language this course is not teaching.
-  if (direction === "learn-fr") {
-    const meaning = frenchMeaningLanguage();
+  // Which language is in each of Listen's two slots, filled here rather than
+  // in the player — because for French the text is not on the card at all. It
+  // lives in a table keyed by the German, so the slot has to be filled while
+  // the German is still what the item carries.
+  //
+  // The meaning slot is whatever the app itself is written in. It used to be
+  // English by construction, which was the same thing while the app only ever
+  // spoke the two languages the catalogue holds, and stopped being the same
+  // thing when French became something the app could be set to: a learner
+  // reading a French app was still being told what her German meant in
+  // English. Which of the two slots holds the meaning differs by course — the
+  // English course keeps German in the first one — so this asks rather than
+  // assuming it is the second.
+  //
+  // An item the table cannot reach leaves the queue, exactly as it does in
+  // the French course. A card that quietly falls back to another language is
+  // one the settings beside it are lying about: the voice, the mute switch
+  // and the repeat count all name a language that card is not in.
+  const target = targetLanguage(direction);
+  const meaning = meaningLanguageFor(target);
+  const slots = direction === "learn-en"
+    ? { de: meaning, en: target }
+    : { de: target, en: meaning };
+  if (slots.de !== "de" || slots.en !== "en") {
+    const textFor = (item: ListenItem, language: CourseLanguage): string | null => {
+      if (language === "de") return item.de;
+      if (language === "en") return item.en;
+      return frenchFor(item.de);
+    };
     combined = combined.flatMap((item) => {
-      const french = frenchFor(item.de);
-      if (!french) return [];
+      const de = textFor(item, slots.de);
+      const en = textFor(item, slots.en);
+      if (!de || !en) return [];
       return [{
         ...item,
-        de: french,
-        en: meaning === "de" ? item.de : item.en,
+        de,
+        en,
         // A synonym group is a group of GERMAN words for one meaning. There
-        // is no French equivalent of it on the card, so it goes.
-        synonyms: undefined,
+        // is no French equivalent of it on the card, so it goes when the
+        // German does.
+        synonyms: slots.de === "de" ? item.synonyms : undefined,
       }];
     });
   }

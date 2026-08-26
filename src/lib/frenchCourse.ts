@@ -1,5 +1,5 @@
+import { meaningLanguageFor } from "@/lib/courseLanguages";
 import { getLearningDirection } from "@/lib/direction";
-import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
 import { translate } from "@/lib/translations";
 import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
 
@@ -32,12 +32,17 @@ import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
  * answer.
  */
 
-/** Which language the French course explains itself in. */
+/**
+ * Which language the French course explains itself in.
+ *
+ * The rule is no longer this course's own: every course now explains itself
+ * in the app's language, so it is asked in courseLanguages.ts and answered
+ * the same way for all three. This narrows the type back down, because for a
+ * French target the fallback rules French out — an interface in French says
+ * nothing about which language to explain French in.
+ */
 export function frenchMeaningLanguage(): "de" | "en" {
-  // A French interface says nothing about which language to explain French in
-  // — it would explain French in French. English is the catalogue's own
-  // language and the honest fallback.
-  return resolveInterfaceLanguage() === "de" ? "de" : "en";
+  return meaningLanguageFor("fr") === "de" ? "de" : "en";
 }
 
 /**

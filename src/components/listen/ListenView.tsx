@@ -86,8 +86,13 @@ import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
-import { AUDIO_LANGUAGE, courseSide, type CourseLanguage } from "@/lib/courseLanguages";
-import { frenchMeaningLanguage } from "@/lib/frenchCourse";
+import {
+  AUDIO_LANGUAGE,
+  courseSide,
+  meaningLanguageFor,
+  targetLanguage,
+  type CourseLanguage,
+} from "@/lib/courseLanguages";
 import type { UserProfile } from "@/lib/profileStorage";
 import {
   loadMiniPlayerPosition,
@@ -98,6 +103,7 @@ import {
 } from "@/lib/miniPlayerPosition";
 import type { LearningDirection } from "@/lib/direction";
 import { useCodexPets, type CodexPetVoiceLanguage } from "@/components/codexPets/CodexPetProvider";
+import { useInterfaceLanguage } from "@/lib/interfaceLanguage";
 
 type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
 
@@ -391,6 +397,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     if (active) setEverOpened(true);
   }, [active]);
 
+  // The meaning is baked into the queue, not read off the card at render
+  // time, so changing the app language has to rebuild it. Subscribed here
+  // rather than leaning on the root: re-rendering alone would move the labels
+  // and the voice to the new language and leave the lines themselves in the
+  // old one, which is the one state worse than not following the setting.
+  const appLanguage = useInterfaceLanguage();
+  const courseLanguage = targetLanguage(learningDirection);
+  const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);
+
   const baseQueue = useMemo<ListenItem[]>(
     () => (everOpened
       ? buildListenQueue(apiParts, loadGradeStore(profile), {
@@ -399,7 +414,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         order: queueOrder,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, profile, queueOrder]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -511,12 +526,16 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   // `de` is the one being learned and `en` is the meaning beside it. That
   // held while the courses were German and English — Listen plays the same
   // German and English either way round, and only the repeat counts differ.
-  // The French course puts French in the first slot and whichever language
-  // the app explains itself in beside it, so the labels, the voices and the
-  // mute state all ask what is in each slot rather than assuming.
-  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } = learningDirection === "learn-fr"
-    ? { de: "fr", en: frenchMeaningLanguage() }
-    : { de: "de", en: "en" };
+  //
+  // Neither name is a language any more. The meaning is whatever the app is
+  // written in, so a French app explains a German card in French; and the
+  // English course keeps its meaning in the FIRST slot, which is why the
+  // order is decided here and not by reading `de` as German. The labels, the
+  // voices and the mute state all ask what is in each slot instead. This has
+  // to agree with buildListenQueue, which fills the slots with the text.
+  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } = learningDirection === "learn-en"
+    ? { de: meaningLanguage, en: courseLanguage }
+    : { de: courseLanguage, en: meaningLanguage };
   const targetSlot = courseSide(slotLanguage.de);
   const meaningSlot = courseSide(slotLanguage.en);
   const targetLang = targetSlot.voice;

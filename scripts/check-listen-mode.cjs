@@ -46,6 +46,10 @@ const result = esbuild.buildSync({
     contents: [
       'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenGermanRepeats, setListenGermanRepeats, getListenEnglishRepeats, setListenEnglishRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS, DEFAULT_ENGLISH_COURSE_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
+      'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
+      'export { setLearningDirection } from "./src/lib/direction.ts";',
+      'export { meaningLanguageFor, targetLanguage } from "./src/lib/courseLanguages.ts";',
+      'export { frenchFor } from "./src/lib/frenchCourse.ts";',
       'export { getScopedKey } from "./src/lib/profileStorage.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
       'export { ttsSequence, stopTts } from "./src/lib/voice.ts";',
@@ -86,6 +90,7 @@ const {
   listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead,
   getListenNextCardDelayMs, setListenNextCardDelayMs,
   getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan,
+  setInterfaceLanguage, setLearningDirection, meaningLanguageFor, targetLanguage, frenchFor,
   ttsSequence, stopTts, DEFAULT_LANGUAGE_GAP_MS,
   DEFAULT_GERMAN_REPEATS, DEFAULT_ENGLISH_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
   DEFAULT_ENGLISH_COURSE_GERMAN_REPEATS, DEFAULT_ENGLISH_COURSE_ENGLISH_REPEATS,
@@ -225,6 +230,73 @@ const heardFirstFour = Object.fromEntries(commonSentences.slice(0, 4).map((item)
 queue = buildListenQueue(parts, heardFirstFour, { contentSource: "sentences", order: "least-heard" });
 check("least-heard order genuinely rotates material with less Listen exposure to the front",
   queue[0]?.id === commonSentences[4]?.id);
+
+// ── the meaning is whatever the app is written in ───────────────────────
+// A Listen card is two slots: the language being learned, and what it means in
+// a language the learner already reads. The second one was English by
+// construction — the same thing as "the app's language" while the app only
+// ever spoke English or German, and no longer the same thing at all now it can
+// be set to French. A learner reading a French app was still being told what
+// her German meant in English, with nothing on screen to say why.
+//
+// Asserted from the queue rather than from the labels around it, because the
+// queue is where the meaning text is decided; labels that name a language the
+// lines are not in is the exact failure this pairing has to rule out.
+const queueFor = (direction, app, contentSource = "sentences") => {
+  setLearningDirection(direction);
+  setInterfaceLanguage(app);
+  return buildListenQueue(parts, {}, { contentSource, direction, order: "common" });
+};
+
+const englishApp = queueFor("learn-de", "en");
+const frenchApp = queueFor("learn-de", "fr");
+check("the app's language is what a card is explained in",
+  targetLanguage("learn-de") === "de"
+  && meaningLanguageFor("de") === "fr"
+  && meaningLanguageFor("en") === "fr"
+  && meaningLanguageFor("fr") === "en");
+check("a German course in a French app is explained in French, not English",
+  frenchApp.length > 100
+  && frenchApp.every((item) => item.en === frenchFor(item.de))
+  && frenchApp.every((item) => item.de === englishApp.find((row) => row.id === item.id)?.de));
+check("and every card it serves really has that French, rather than falling back",
+  frenchApp.every((item) => Boolean(item.en && item.en.trim()))
+  && frenchApp.length < englishApp.length);
+
+// The English course keeps the meaning in the FIRST slot — it plays the German
+// and then the English twice. So the French belongs there, not opposite it.
+const englishCourseInFrench = queueFor("learn-en", "fr");
+check("the English course puts the French where its German was",
+  englishCourseInFrench.length > 100
+  && englishCourseInFrench.every((item) => item.de === frenchFor(
+    englishApp.find((row) => row.id === item.id)?.de ?? ""
+  ))
+  && englishCourseInFrench.every((item) => item.en === englishApp.find((row) => row.id === item.id)?.en));
+
+// Nothing changes for the courses as they were: this must not move a card the
+// two original pairings already read correctly.
+setInterfaceLanguage("auto");
+for (const [direction, app] of [["learn-de", "en"], ["learn-de", "de"], ["learn-en", "en"], ["learn-en", "de"]]) {
+  const unchanged = queueFor(direction, app);
+  check(`${direction} in ${app === "de" ? "a German" : "an English"} app is the queue it always was`,
+    unchanged.length === englishApp.length
+    && unchanged[0]?.de === englishApp[0]?.de
+    && unchanged[0]?.en === englishApp[0]?.en);
+}
+
+// Nothing explains a language in itself, so the French course in a French app
+// keeps the English it had rather than printing the answer twice.
+const frenchCourseInFrench = queueFor("learn-fr", "fr");
+const frenchCourseInEnglish = queueFor("learn-fr", "en");
+check("the French course in a French app still explains itself in English",
+  frenchCourseInFrench.length > 100
+  && frenchCourseInFrench.every((item) => item.de !== item.en)
+  && frenchCourseInFrench.length === frenchCourseInEnglish.length
+  && frenchCourseInFrench[0]?.en === frenchCourseInEnglish[0]?.en);
+
+setLearningDirection("learn-de");
+setInterfaceLanguage("auto");
+stored.clear();
 
 // ── newly added content has to be reachable, not just present ───────────
 // The problem this order exists for: words added from real reading were in
@@ -712,6 +784,19 @@ check("German and English repeat independently",
   && sides({ germanRepeats: 1, englishRepeats: 4 }) === "en en en en de");
 check("reviewed word cards explain important secondary meanings on screen",
   view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
+// The player has to agree with the queue about which slot holds which
+// language, or the labels, the voice and the mute switch all name a language
+// the lines are not in. And the queue has to rebuild when the app language
+// changes: the meaning is baked into the item, so re-rendering alone leaves
+// French labels reading English text.
+check("the player reads its two languages from the course and the app, not from the slot names",
+  view.includes("const courseLanguage = targetLanguage(learningDirection);")
+  && view.includes("const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);")
+  && view.includes("? { de: meaningLanguage, en: courseLanguage }")
+  && view.includes(": { de: courseLanguage, en: meaningLanguage };")
+  && view.includes("const appLanguage = useInterfaceLanguage();")
+  && view.includes("meaningLanguage, profile, queueOrder]"));
+
 // The plan sentence names the two languages rather than spelling them out:
 // the third course made "English ..., then German ..." a sentence that is
 // simply false on screen. The counts and the order still have to be visible,
