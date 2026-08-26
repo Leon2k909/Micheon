@@ -1401,12 +1401,14 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 /**
  * The line under the greeting, per screen.
  *
- * Only the profile page differs so far: it is the one place you arrive at to
- * change something rather than to learn. Anything not named here keeps the
- * invitation, which is what the rest of the app is.
+ * Two screens differ: you arrive at settings to change something and at
+ * progress to look back, and neither is an invitation to start a lesson.
+ * Anything not named here keeps the invitation, which is what the rest of the
+ * app is.
  */
 const HEADER_SUBTITLES: Partial<Record<PrototypeView, string>> = {
   profile: "What would you like to change?",
+  progress: "How far have you come?",
 };
 
 function Header({
