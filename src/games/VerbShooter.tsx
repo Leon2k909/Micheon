@@ -73,6 +73,42 @@ const FRENCH_VERBS: typeof VERBS = [
   { infinitive: "savoir", en: "to know",  pronoun: "nous", correct: "savons",  wrong: ["sais", "sait", "savez"] },
 ];
 
+// And in Polish. Same principle as the French table: the eight verbs worth
+// drilling first are the irregular ones, a rule-based conjugator would get
+// every one of them wrong, and each decoy is a real form of the same verb —
+// so a wrong shot is a wrong PERSON rather than a word that does not exist.
+const POLISH_VERBS: typeof VERBS = [
+  { infinitive: "być",       en: "to be",    pronoun: "ja", correct: "jestem",   wrong: ["jesteś", "jest", "jesteśmy"] },
+  { infinitive: "być",       en: "to be",    pronoun: "ty", correct: "jesteś",   wrong: ["jestem", "jest", "jesteście"] },
+  { infinitive: "być",       en: "to be",    pronoun: "on", correct: "jest",     wrong: ["jestem", "jesteś", "są"] },
+  { infinitive: "być",       en: "to be",    pronoun: "my", correct: "jesteśmy", wrong: ["jestem", "jest", "jesteście"] },
+  { infinitive: "mieć",      en: "to have",  pronoun: "ja", correct: "mam",      wrong: ["masz", "ma", "mamy"] },
+  { infinitive: "mieć",      en: "to have",  pronoun: "ty", correct: "masz",     wrong: ["mam", "ma", "macie"] },
+  { infinitive: "mieć",      en: "to have",  pronoun: "on", correct: "ma",       wrong: ["mam", "masz", "mają"] },
+  { infinitive: "mieć",      en: "to have",  pronoun: "my", correct: "mamy",     wrong: ["mam", "ma", "macie"] },
+  { infinitive: "iść",       en: "to go",    pronoun: "ja", correct: "idę",      wrong: ["idziesz", "idzie", "idziemy"] },
+  { infinitive: "iść",       en: "to go",    pronoun: "ty", correct: "idziesz",  wrong: ["idę", "idzie", "idziecie"] },
+  { infinitive: "iść",       en: "to go",    pronoun: "on", correct: "idzie",    wrong: ["idę", "idziesz", "idą"] },
+  { infinitive: "iść",       en: "to go",    pronoun: "my", correct: "idziemy",  wrong: ["idę", "idzie", "idziecie"] },
+  { infinitive: "jechać",    en: "to drive", pronoun: "ja", correct: "jadę",     wrong: ["jedziesz", "jedzie", "jedziemy"] },
+  { infinitive: "jechać",    en: "to drive", pronoun: "ty", correct: "jedziesz", wrong: ["jadę", "jedzie", "jedziecie"] },
+  { infinitive: "jechać",    en: "to drive", pronoun: "on", correct: "jedzie",   wrong: ["jadę", "jedziesz", "jadą"] },
+  { infinitive: "robić",     en: "to do",    pronoun: "ja", correct: "robię",    wrong: ["robisz", "robi", "robimy"] },
+  { infinitive: "robić",     en: "to do",    pronoun: "ty", correct: "robisz",   wrong: ["robię", "robi", "robicie"] },
+  { infinitive: "robić",     en: "to do",    pronoun: "on", correct: "robi",     wrong: ["robię", "robisz", "robią"] },
+  { infinitive: "robić",     en: "to do",    pronoun: "my", correct: "robimy",   wrong: ["robię", "robi", "robicie"] },
+  { infinitive: "móc",       en: "can",      pronoun: "ja", correct: "mogę",     wrong: ["możesz", "może", "możemy"] },
+  { infinitive: "móc",       en: "can",      pronoun: "ty", correct: "możesz",   wrong: ["mogę", "może", "możecie"] },
+  { infinitive: "móc",       en: "can",      pronoun: "on", correct: "może",     wrong: ["mogę", "możesz", "mogą"] },
+  { infinitive: "móc",       en: "can",      pronoun: "my", correct: "możemy",   wrong: ["mogę", "może", "możecie"] },
+  { infinitive: "chcieć",    en: "to want",  pronoun: "ja", correct: "chcę",     wrong: ["chcesz", "chce", "chcemy"] },
+  { infinitive: "chcieć",    en: "to want",  pronoun: "ty", correct: "chcesz",   wrong: ["chcę", "chce", "chcecie"] },
+  { infinitive: "chcieć",    en: "to want",  pronoun: "on", correct: "chce",     wrong: ["chcę", "chcesz", "chcą"] },
+  { infinitive: "wiedzieć",  en: "to know",  pronoun: "ja", correct: "wiem",     wrong: ["wiesz", "wie", "wiemy"] },
+  { infinitive: "wiedzieć",  en: "to know",  pronoun: "ty", correct: "wiesz",    wrong: ["wiem", "wie", "wiecie"] },
+  { infinitive: "wiedzieć",  en: "to know",  pronoun: "on", correct: "wie",      wrong: ["wiem", "wiesz", "wiedzą"] },
+];
+
 const COLS = 5;
 const CELL_W = 90;
 const W = COLS * CELL_W;
@@ -110,11 +146,13 @@ export default function VerbShooter() {
   const sides = courseSides(learningDirection);
   const learnsEnglish = sides.target.code === "en";
   const learnsFrench = sides.target.code === "fr";
+  const learnsPolish = sides.target.code === "pl";
 
   const buildPrompt = useCallback(() => {
-    // French has its own table; English is derived from the German one,
-    // because the two are the same sentences read the other way round.
-    const source = pickVerb(learnsFrench ? FRENCH_VERBS : VERBS);
+    // French and Polish each have their own table; English is derived from the
+    // German one, because the two are the same sentences read the other way
+    // round.
+    const source = pickVerb(learnsFrench ? FRENCH_VERBS : learnsPolish ? POLISH_VERBS : VERBS);
     if (!learnsEnglish) return source;
 
     const pronouns: Record<string, string> = {
@@ -144,7 +182,7 @@ export default function VerbShooter() {
       pronoun,
       wrong: Array.from(new Set(decoys.filter((value) => value !== correct))).slice(0, 3),
     };
-  }, [learnsEnglish, learnsFrench]);
+  }, [learnsEnglish, learnsFrench, learnsPolish]);
 
   const [verb, setVerb] = useState(() => buildPrompt());
   const [invaders, setInvaders] = useState<Invader[]>([]);
@@ -271,7 +309,7 @@ export default function VerbShooter() {
           const spoken = verb.pronoun.endsWith("'")
             ? `${verb.pronoun}${verb.correct}`
             : `${verb.pronoun} ${verb.correct}`;
-          if (learnsEnglish || learnsFrench) void tts(spoken, 0.9, sides.target.voice);
+          if (learnsEnglish || learnsFrench || learnsPolish) void tts(spoken, 0.9, sides.target.voice);
           else speakGerman(spoken);
         }, 200);
         recordWordMastery(`${verb.infinitive}:${verb.pronoun}`);
@@ -282,7 +320,7 @@ export default function VerbShooter() {
       }
     }, 50);
     return () => clearInterval(loopRef.current!);
-  }, [phase, highScore, learnsEnglish, learnsFrench, sides.target.voice, nextRound]);
+  }, [phase, highScore, learnsEnglish, learnsFrench, learnsPolish, sides.target.voice, nextRound]);
 
   // Keyboard
   useEffect(() => {

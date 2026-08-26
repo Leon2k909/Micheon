@@ -78,6 +78,9 @@ audio.setTtsLanguageSpeechRate("german", 0.75);
 assert.equal(audio.getMasterTtsSpeechRate(), null, "one channel still at its old speed keeps this Mixed");
 audio.setTtsLanguageSpeechRate("french", 0.75);
 assert.equal(audio.getTtsSpeechRate("fr-FR"), 0.75, "French is a channel of its own, not the fallback");
+assert.equal(audio.getMasterTtsSpeechRate(), null, "Polish still at its old speed keeps this Mixed");
+audio.setTtsLanguageSpeechRate("polish", 0.75);
+assert.equal(audio.getTtsSpeechRate("pl-PL"), 0.75, "Polish is a channel of its own, not the fallback");
 assert.equal(audio.getMasterTtsSpeechRate(), 0.75, "matching channels should restore one Master value");
 audio.setTtsLanguageSpeechRate("german", 99);
 assert.equal(audio.getTtsSpeechRate("de-DE"), 2, "language speed should respect the server ceiling");
@@ -93,7 +96,7 @@ const profile = read("src/Gamification.tsx");
 const guided = read("src/GuidedSession.tsx");
 const voice = read("src/lib/voice.ts");
 
-for (const scope of ["master", "english", "german"]) {
+for (const scope of ["master", "english", "german", "french", "polish"]) {
   assert(control.includes(`value: "${scope}"`), `missing ${scope} speed scope`);
 }
 assert(mute.includes("<SpeechSpeedControl"), "global audio mixer lacks scoped speed");

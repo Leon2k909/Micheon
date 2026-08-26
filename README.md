@@ -84,8 +84,8 @@ It ships as a Windows installer with automatic updates. Under the hood it's a Re
 | **Grammar drills** | Cloze (fill-in-the-blank) exercises and grammar notes for the patterns behind the sentences. |
 | **Fluency meter & gamification** | Track known-word count toward a fluency estimate, earn XP, keep a daily streak, level up, and unlock milestones. |
 | **Micheon appearance** | Choose light, dark, or system mode, then use a curated accent preset or any custom colour. Micheon derives readable text, hover, pressed, and soft-selection shades from your choice and saves it on your device. |
-| **Learning direction** | Switch between *learn German* and *learn English*; the interface, prompts, and lesson make-up follow the language you pick. |
-| **Multiple courses** | German is the flagship; the course registry also carries Spanish and French tracks and a bonus C# course, selectable from the course switcher. |
+| **Learning direction** | Switch between *learn German*, *learn English*, *learn French* and *learn Polish*; the interface, prompts, and lesson make-up follow the language you pick. |
+| **Multiple courses** | German is the flagship; English, French and Polish are taught from the same catalogue, narrowed to what each language covers, and the course registry also carries a Spanish track and a bonus C# course, selectable from the course switcher. |
 | **Local accounts** | Per-machine profiles keep each person's progress separate and sync across browser/app restarts — no account server involved. |
 
 ---

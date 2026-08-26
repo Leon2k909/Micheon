@@ -2594,6 +2594,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   background: linear-gradient(90deg, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%);
 }
 
+/* Polish is two horizontal halves, white over red — a gradient again rather
+   than the three <i> bands, since there are only two of them. */
+.np-language-badge.is-polish {
+  background: linear-gradient(180deg, #ffffff 0 50%, #dc143c 50% 100%);
+}
+
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }
@@ -3548,34 +3554,95 @@ button.np-progress-title:focus-visible,
      heading rather than another card, and its last line ends flush against
      its own bottom edge. */
   margin-top: 18px;
+  position: relative;
+  overflow: hidden;
   display: grid;
-  min-height: 94px;
-  grid-template-columns: 65px 1fr;
+  min-height: 118px;
+  grid-template-columns: 84px minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
-  padding: 12px;
-  border: 1px solid rgba(80, 182, 62, 0.24);
-  border-radius: 20px;
-  background: linear-gradient(135deg, #d9f6bd, #c9eea9);
-  box-shadow:
-    0 4px 0 rgba(70, 157, 55, 0.18),
-    0 10px 19px rgba(70, 157, 55, 0.12);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 24px;
+  /* An accent wash over the theme's own surface, so this reads as one card in
+     a light app and in a dark one. The old card was painted green by hand and
+     stayed green whatever accent was chosen. */
+  background:
+    radial-gradient(130% 150% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, var(--surface)) 0%, var(--surface) 72%);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* The chevrons in the corner of the design. Drawn rather than shipped: it is
+   a repeating gradient, faded out towards the copy so it never fights it. */
+.np-level-card__weave {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 0;
+  width: 48%;
+  background: repeating-linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--accent) 26%, transparent) 0 3px,
+    transparent 3px 21px
+  );
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 78%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 78%);
+  pointer-events: none;
+}
+
+.np-level-card > *:not(.np-level-card__weave) {
+  position: relative;
+  z-index: 1;
 }
 
 .np-level-badge {
   display: grid;
-  width: 62px;
-  height: 67px;
-  place-items: center;
-  border: 5px solid #fff;
-  border-radius: 20px 20px 24px 24px;
+  width: 84px;
+  height: 92px;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   color: #fff;
-  background: linear-gradient(180deg, #7bdd59, #3db640);
-  box-shadow:
-    inset 0 -4px 0 rgba(28, 126, 40, 0.24),
-    0 5px 10px rgba(41, 125, 46, 0.2);
-  font-size: 23px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff), var(--accent));
+}
+
+.np-level-badge small {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  opacity: 0.82;
+  text-transform: uppercase;
+}
+
+.np-level-badge strong {
+  font-size: 30px;
   font-weight: 950;
+  line-height: 1;
+}
+
+.np-level-total {
+  margin: 9px 0 0;
+  color: var(--np-muted);
+  font-size: var(--np-type-caption);
+  font-weight: 750;
+  text-align: right;
+}
+
+.np-level-total b {
+  color: var(--accent);
+  font-weight: 950;
+}
+
+.np-progress-track--level {
+  height: 12px;
+  background: color-mix(in srgb, var(--np-text) 14%, transparent);
+  box-shadow: none;
+}
+
+.np-progress-track--level > span {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 62%, #fff), var(--accent));
+  box-shadow: none;
 }
 
 .np-level-copy {
@@ -3588,33 +3655,31 @@ button.np-progress-title:focus-visible,
 }
 
 .np-level-copy strong {
-  overflow: hidden;
+  /* Not clipped to one line: in the rail beside a lesson this card is about
+     300px wide, and an ellipsis turned "Du hältst mit" into "Du hält…". */
   font-size: 16px;
   font-weight: 950;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.np-level-copy > strong {
+  font-size: 19px;
 }
 
 .np-level-copy > small {
-  margin-top: 2px;
-  color: #4e6f43;
+  margin-top: 3px;
+  color: var(--np-muted);
   font-size: var(--np-type-caption);
-  font-weight: 650;
+  font-weight: 700;
+}
+
+.np-level-copy > small b {
+  color: var(--accent);
+  font-weight: 950;
 }
 
 .np-level-copy .np-progress-track {
-  height: 8px;
-  margin-top: 9px;
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.np-level-card > small {
-  grid-column: 2;
-  margin-top: -8px;
-  color: #4a6841;
-  font-size: var(--np-type-caption);
-  font-weight: 700;
-  text-align: right;
+  margin-top: 11px;
 }
 
 .np-progress-stats {
@@ -3624,26 +3689,63 @@ button.np-progress-title:focus-visible,
   margin-top: 13px;
 }
 
-.np-progress-stats > div {
+/* Each figure is its own card: a ringed picture, the number, what it counts,
+   and the way in. The tone is per figure, as in the design. */
+.np-progress-stat {
   display: grid;
   min-width: 0;
-  min-height: 98px;
   grid-template-columns: 1fr;
-  grid-template-rows: 46px 18px 28px;
   place-items: center;
   align-content: start;
-  gap: 3px;
-  padding: 9px 5px;
+  gap: 5px;
+  padding: 15px 8px 9px;
   border: 1px solid var(--np-line);
-  border-radius: 16px;
-  background: #fffdf8;
-  box-shadow: 0 4px 10px rgba(89, 75, 59, 0.07);
+  border-radius: 20px;
+  color: inherit;
+  background: color-mix(in srgb, var(--np-tone, var(--accent)) 5%, var(--surface));
+  font: inherit;
+  text-align: center;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.np-progress-stat[data-tone="gold"] { --np-tone: var(--np-yellow, #f0b429); }
+.np-progress-stat[data-tone="green"] { --np-tone: #4fbf63; }
+.np-progress-stat[data-tone="accent"] { --np-tone: var(--accent); }
+
+button.np-progress-stat {
+  cursor: pointer;
+}
+
+button.np-progress-stat:hover,
+button.np-progress-stat:focus-visible {
+  border-color: color-mix(in srgb, var(--np-tone) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+.np-progress-stat__art {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--np-tone) 15%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--np-tone) 34%, transparent);
 }
 
 .np-progress-stats .np-achievement-art {
-  width: 46px;
-  height: 46px;
-  grid-row: 1;
+  width: 42px;
+  height: 42px;
+}
+
+.np-progress-stat__go {
+  display: grid;
+  place-items: center;
+  color: var(--np-tone);
+}
+
+.np-progress-stat__go svg {
+  width: 15px;
+  height: 15px;
 }
 
 .np-desktop-search.is-active {
@@ -7567,22 +7669,9 @@ html[data-theme="dark"] .np-lesson-number {
   background: rgba(16, 20, 27, 0.64);
 }
 
-html[data-theme="dark"] .np-level-card {
-  border-color: rgba(88, 199, 95, 0.3);
-  background: linear-gradient(135deg, #24432a, #1d3722);
-  box-shadow:
-    0 4px 0 rgba(0, 0, 0, 0.23),
-    0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-html[data-theme="dark"] .np-level-badge {
-  border-color: #dff2dd;
-}
-
-html[data-theme="dark"] .np-level-copy > small,
-html[data-theme="dark"] .np-level-card > small {
-  color: #b4d0b6;
-}
+/* No dark repaint of the level card: it is an accent wash over --surface,
+   which is already the dark surface in this theme. The old rule painted it a
+   fixed green whatever accent had been chosen. */
 
 html[data-theme="dark"] .np-progress-stats > div,
 html[data-theme="dark"] .np-badges-block,
@@ -10534,22 +10623,8 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-lesson-row--mint {
   background: var(--np-green-soft, var(--accent-dim));
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-level-card {
-  border: 1px solid rgba(var(--accent-rgb), 0.24);
-  background: linear-gradient(135deg, var(--np-green-soft, var(--accent-dim)), var(--np-green-soft, var(--accent-dim)));
-  box-shadow: 0 4px 0 rgba(var(--accent-rgb), 0.18),
-    0 10px 19px rgba(var(--accent-rgb), 0.12);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-level-card {
-  border: 1px solid rgba(var(--accent-rgb), 0.24);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-level-badge {
-  background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green));
-  box-shadow: inset 0 -4px 0 rgba(var(--accent-hover-rgb), 0.24),
-    0 5px 10px rgba(var(--accent-hover-rgb), 0.2);
-}
+/* The card and its badge are built from var(--accent) directly, so a custom
+   accent needs no special case; these used to reach for the green tokens. */
 
 html[data-theme="dark"][data-accent="custom"] .np-level-badge {
   background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green));

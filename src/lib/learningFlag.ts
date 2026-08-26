@@ -23,15 +23,17 @@ import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
  * French joined the set for the same reason English did: it is the same
  * material read a third way, so "french" as a course id and learn-fr as a
  * direction are two names for one thing and either may be the one that is
- * right in hand.
+ * right in hand. Polish is there on the same terms.
  */
 export function learningFlagId(activeCourseId: string): string {
   const reversible = activeCourseId === "german"
     || activeCourseId === "french"
+    || activeCourseId === "polish"
     || activeCourseId.startsWith("english-");
   if (reversible || !hasFlagArt(activeCourseId)) {
     const direction = getLearningDirection();
     if (direction === "learn-fr") return "french";
+    if (direction === "learn-pl") return "polish";
     if (direction !== "learn-en") return "german";
     return resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk";
   }

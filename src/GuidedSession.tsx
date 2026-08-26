@@ -50,7 +50,9 @@ import { getCompanion } from "@/lib/companion";
 import { getLearningDirection, learningEnglish } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchFrenchSentence } from "@/lib/frenchTextMatch";
+import { matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -336,26 +338,29 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
 /**
  * The accent row under a typing box, for whichever language that box is in.
  *
- * German needs ä ö ü ß, French needs é è ê ç, English needs nothing at all.
+ * German needs ä ö ü ß, French needs é è ê ç, Polish needs ą ć ę ł ń ó ś ź ż,
+ * and English needs nothing at all.
  * Which of the three belongs under a box depends on whether the box is asking
  * for the target or for the meaning — and there are ten of them, which is ten
  * chances to write `!learnEn` where a third course needs a third answer.
  */
 // Written out per language rather than composed, so the German reads as
 // German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
-const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr", string> = {
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl", string> = {
   de: "German words to arrange",
   en: "English words to arrange",
   fr: "French words to arrange",
+  pl: "Polish words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
+  if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
   if (language === "en") return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
@@ -368,6 +373,30 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           title={`${c} · Alt + ${FRENCH_ALT_CODES[c]}`}
           aria-keyshortcuts={`Alt+${FRENCH_ALT_CODES[c]}`}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Polish accent helper row.
+ *
+ * No Alt+NNNN hint beside the letters, unlike the German and French rows.
+ * Those codes address the active Windows ANSI code page, and a Western one
+ * holds ä ö ü ß é è ç but not ą ć ę ł ń ś ź ż — Alt+0185 there produces ¹, not
+ * ą. A wrong instruction is worse than a missing one, so the buttons are the
+ * whole answer here.
+ */
+function PolishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {POLISH_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
           onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
           {c}
@@ -1128,7 +1157,10 @@ function PromptLanguageBadge({ label }: { label: string }) {
   // profile's English-variant setting so British learners see their own flag.
   const stored = useEnglishVariant();
   const englishVariant = isEnglish ? resolveEnglishVariant(stored) : null;
-  const shortLabel = label.slice(0, 2).toUpperCase();
+  // The first two letters of the name happen to be the code for French and
+  // German; they are not for Polish, which would read PO. A code is a code.
+  const shortLabel = ({ German: "DE", English: "EN", French: "FR", Polish: "PL" } as Record<string, string>)[label]
+    ?? label.slice(0, 2).toUpperCase();
   const title = englishVariant
     // The flag already says which variant you are being
     // marked against, so it is the obvious thing to press to change it —
@@ -1659,16 +1691,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const direction = useMemo(() => getLearningDirection(), []);
   const learnEn = direction === "learn-en";
   const learnFr = direction === "learn-fr";
+  const learnPl = direction === "learn-pl";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
   // question rather than as !learnEn.
   const targetIsGermanCourse = direction === "learn-de";
-  const targetLanguage: "de" | "en" | "fr" = learnFr ? "fr" : learnEn ? "en" : "de";
+  const targetLanguage: "de" | "en" | "fr" | "pl" = learnFr ? "fr" : learnPl ? "pl" : learnEn ? "en" : "de";
   // Which language the meaning column is written in: German in the English
   // course, and in the French course whenever the app itself is in German.
   const meaningLanguage: "de" | "en" = learnFr
     ? frenchMeaningLanguage()
+    : learnPl ? polishMeaningLanguage()
     : learnEn ? "de" : "en";
   const meaningIsGerman = meaningLanguage === "de";
   // A picture of the word, where we have an honest one. It is a cue to the
@@ -1716,7 +1750,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     && choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
-  const matchTarget = learnFr ? matchFrenchSentence : learnEn ? matchEnglish : matchGermanSentence;
+  const matchTarget = learnFr
+    ? matchFrenchSentence
+    : learnPl ? matchPolishSentence
+    : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
   // two results means the shown answer is the one people say, without punishing
@@ -4727,13 +4764,16 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const sides = courseSides();
   const learnEn = sides.target.code === "en";
   const learnFr = sides.target.code === "fr";
+  const learnPl = sides.target.code === "pl";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
-      : learnEn
-        ? matchEnglish(input, line?.de ?? "")
-        : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, line]
+      : learnPl
+        ? matchPolishSentence(input, line?.de ?? "")
+        : learnEn
+          ? matchEnglish(input, line?.de ?? "")
+          : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
+    [input, learnEn, learnFr, learnPl, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which

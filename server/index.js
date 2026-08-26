@@ -41,6 +41,8 @@ const VOICE_BY_LANG = {
   de: "de-DE-KatjaNeural",
   "fr-FR": "fr-FR-DeniseNeural",
   fr: "fr-FR-DeniseNeural",
+  "pl-PL": "pl-PL-ZofiaNeural",
+  pl: "pl-PL-ZofiaNeural",
   "en-US": "en-US-AvaNeural",
   "en-GB": "en-GB-SoniaNeural",
   "en-AU": "en-AU-NatashaNeural",
@@ -92,6 +94,10 @@ const VOICE_CHOICES = {
     { id: "fr-FR-HenriNeural", label: "Henri", note: "French — male" },
     { id: "fr-FR-EloiseNeural", label: "Eloise", note: "French — female" },
     { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne", note: "French — female, multilingual" },
+  ],
+  "pl-PL": [
+    { id: "pl-PL-ZofiaNeural", label: "Zofia", note: "Polish — female" },
+    { id: "pl-PL-MarekNeural", label: "Marek", note: "Polish — male" },
   ],
 };
 

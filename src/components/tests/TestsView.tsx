@@ -32,6 +32,8 @@ import { learningEnglish } from "@/lib/direction";
 import { courseSide, courseSides, LANGUAGE_LABEL, type CourseLanguage } from "@/lib/courseLanguages";
 import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { matchFrenchMeaning } from "@/lib/frenchTextMatch";
+import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
+import { matchPolishMeaning } from "@/lib/polishTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
@@ -78,8 +80,8 @@ type AnswerLanguage = "de" | "en";
 
 function slotLanguages(): { de: CourseLanguage; en: CourseLanguage } {
   const sides = courseSides();
-  return sides.target.code === "fr"
-    ? { de: "fr", en: sides.meaning.code }
+  return sides.target.code === "fr" || sides.target.code === "pl"
+    ? { de: sides.target.code, en: sides.meaning.code }
     : { de: "de", en: "en" };
 }
 type TestLibraryFilter = "all" | "practice" | "exam" | "advanced";
@@ -936,10 +938,13 @@ function isDue(item: CatalogItem, grades: ReturnType<typeof loadGradeStore>) {
 }
 
 function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): TestItem[] {
-  // The bank is built from the German catalogue in every course; the French
-  // one swaps each item over at the end, exactly as a lesson step is swapped.
+  // The bank is built from the German catalogue in every course; the two
+  // table-backed ones swap each item over at the end, exactly as a lesson step
+  // is swapped.
   const frenchCourse = courseSides().target.code === "fr";
-  const meaningIsGerman = frenchCourse && frenchMeaningLanguage() === "de";
+  const polishCourse = courseSides().target.code === "pl";
+  const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
+    || (polishCourse && polishMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -1025,6 +1030,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!french) return [];
     return [{ ...item, de: french, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (polishCourse) return bank.flatMap((item) => {
+    const polish = polishFor(item.de);
+    if (!polish) return [];
+    return [{ ...item, de: polish, en: meaningIsGerman ? item.de : item.en }];
+  });
 
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
@@ -1054,7 +1064,7 @@ function shuffled<T>(items: T[]) {
 
 function answerLanguageFor(direction: TestDirection, index: number): AnswerLanguage {
   // The slot the language being LEARNED sits in: `en` only in the English
-  // course, because the French course keeps its target in `de`.
+  // course, because the French and Polish courses keep their target in `de`.
   const courseLanguage: AnswerLanguage = learningEnglish() ? "en" : "de";
   if (direction === "course") return courseLanguage;
   if (direction === "reverse") return courseLanguage === "de" ? "en" : "de";
@@ -1083,7 +1093,9 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
   const matches = alternatives.map((alternative) =>
     answerLanguage === "fr"
       ? matchFrenchMeaning(input, alternative)
-      : answerLanguage === "de"
+      : answerLanguage === "pl"
+        ? matchPolishMeaning(input, alternative)
+        : answerLanguage === "de"
         ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
         : matchEnglishPhrase(input, alternative)
   );
@@ -1094,6 +1106,8 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
   // capital is natural even when the dictionary form is an adjective:
   // "Sauer" must be accepted for "sauer". Sentence exercises still use the
   // strict matcher directly and continue teaching German noun capitalisation.
+  // Only the GERMAN course teaches noun capitals; the "de" slot holds Polish
+  // on a Polish course, where a lower-case noun is simply correct.
   if (
     answerLanguage === "de"
     && item.kind === "vocabulary"

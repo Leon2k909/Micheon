@@ -35,6 +35,7 @@ const built = esbuild.buildSync({
       'export { loadGradeStore } from "./src/lib/activity.ts";',
       'export { translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES } from "./src/lib/translations.ts";',
       'export { buildCatalog } from "./src/session.ts";',
+      'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "french-front-entry.ts",
@@ -60,14 +61,15 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
   filterPartsForLearningDirection, buildListenQueue, loadGradeStore,
-  translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, buildCatalog } = compiled.exports;
+  translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, buildCatalog,
+  buildWordCatalog } = compiled.exports;
 
 /**
  * How far in each band reaches, and how much of it must be translated.
  *
  * The bands used to stop at 2,000 because that was as far as the coverage
  * went. The first five thousand are complete now — a real course, not a
- * sampler — so the floor follows, and the two bands past it hold the ground
+ * sampler — so the floor follows, and the bands past it hold the ground
  * that was won rather than the ground that was there.
  */
 const BANDS = [
@@ -75,9 +77,23 @@ const BANDS = [
   { upTo: 1000, floor: 100 },
   { upTo: 2000, floor: 100 },
   { upTo: 5000, floor: 100 },
-  { upTo: 8000, floor: 72 },
-  { upTo: 12000, floor: 55 },
+  { upTo: 8000, floor: 82 },
+  { upTo: 12000, floor: 68 },
+  { upTo: 16000, floor: 60 },
 ];
+
+/**
+ * How much of the word tracker the French course is allowed to be missing.
+ *
+ * Every single word the German course teaches has French, so the two trackers
+ * hold the same list. That is not a coincidence to be rediscovered later: a
+ * German word added without French silently shrinks the French course, and
+ * nothing else in the build would say so.
+ *
+ * Short of 100 because a word added on one side and translated on the next
+ * commit should not stop a release — but a handful, not a category.
+ */
+const WORD_PARITY_FLOOR = 99;
 
 const blueprint = {};
 for (const [key, bp] of Object.entries(allPartBlueprints)) {
@@ -134,8 +150,24 @@ for (const language of TRANSLATION_LANGUAGES) {
     : `${name} has gaps in its first ${BANDS[0].upTo}`);
 }
 
+// The word tracker is its own catalogue — the queue above mixes sentences and
+// words, so a word missing its French disappears into a percentage there. The
+// tracker lists them one per row, and an untranslated one is a card the French
+// course simply does not have.
+const germanWords = buildWordCatalog(parts);
+const bareWords = germanWords.filter((word) => !translate(String(word.de), "fr", word.fr));
+const wordParity = ((germanWords.length - bareWords.length) / germanWords.length) * 100;
+assert.ok(wordParity >= WORD_PARITY_FLOOR,
+  `the word tracker teaches ${germanWords.length.toLocaleString("en-GB")} German words and `
+  + `${wordParity.toFixed(1)}% of them have French — the floor is ${WORD_PARITY_FLOOR}%. `
+  + `${bareWords.length} are bare, starting with:\n`
+  + bareWords.slice(0, 8).map((word) => `    ${word.de}  (${word.en})`).join("\n")
+  + "\n  Add them to FRENCH_BY_GERMAN in src/lib/frenchTranslations.ts. A German word with no "
+  + "French is not a gap in a percentage — it is a word the French course does not teach at all.");
+
 console.log(`check-french-front: ${summary.join("; ")} — measured by queue position, `
-  + "because that is what decides which cards a learner actually meets");
+  + "because that is what decides which cards a learner actually meets. "
+  + `Word tracker: ${wordParity.toFixed(1)}% of ${germanWords.length.toLocaleString("en-GB")} words`);
 // esbuild's service keeps sockets open after buildSync returns; say the check
 // is finished rather than letting the event loop decide.
 process.exit(0);

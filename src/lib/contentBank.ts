@@ -4,6 +4,7 @@ import { normalize } from "./api";
 import tatoebaRaw from "./tatoeba.de-en.json";
 import { getLearningDirection, type LearningDirection } from "./direction";
 import { frenchParts, hasFrench } from "./frenchCourse";
+import { hasPolish, polishParts } from "./polishCourse";
 
 /**
  * Bundled, always-available content.
@@ -653,8 +654,8 @@ export function buildBundledParts(direction: LearningDirection = getLearningDire
  *
  * Two jobs, because both have to happen before anything reads a pack and this
  * is the one place every pack goes through. A pack written for one direction
- * is dropped in the others; and in the French course every pack is NARROWED to
- * the entries French actually covers, so lessons, the tracker, search, tests
+ * is dropped in the others; and in the French and Polish courses every pack is
+ * NARROWED to the entries that language covers, so lessons, the tracker, search, tests
  * and the games all see a catalogue whose every card has an answer instead of
  * discovering the gaps one blank card at a time.
  */
@@ -667,7 +668,9 @@ export function filterPartsForLearningDirection<T extends Part>(
       !part.learningDirections || part.learningDirections.includes(direction)
     )
   ) as Record<string, T>;
-  return direction === "learn-fr" ? frenchParts(forDirection) : forDirection;
+  if (direction === "learn-fr") return frenchParts(forDirection);
+  if (direction === "learn-pl") return polishParts(forDirection);
+  return forDirection;
 }
 
 /** Flat pool of every bundled sentence (curated only) for games / review. */
@@ -677,7 +680,9 @@ export function getAllBundledSentences(direction: LearningDirection = getLearnin
     .flatMap((topic) => topic.phrases);
   // Games and review draw straight from this pool, so it has to answer for the
   // course being studied rather than for the catalogue as a whole.
-  return direction === "learn-fr" ? phrases.filter(hasFrench) : phrases;
+  if (direction === "learn-fr") return phrases.filter(hasFrench);
+  if (direction === "learn-pl") return phrases.filter(hasPolish);
+  return phrases;
 }
 
 /** Count of bundled sentences, for stats/labels. */

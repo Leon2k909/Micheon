@@ -289,30 +289,35 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn — say it in German",
   en: "Your turn — say it in English",
   fr: "Your turn — say it in French",
+  pl: "Your turn — say it in Polish",
 };
 
 const REPEATS_LABEL: Record<CourseLanguage, string> = {
   de: "German repeats",
   en: "English repeats",
   fr: "French repeats",
+  pl: "Polish repeats",
 };
 
 const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice is muted and will be skipped.",
   en: "English voice is muted and will be skipped.",
   fr: "French voice is muted and will be skipped.",
+  pl: "Polish voice is muted and will be skipped.",
 };
 
 const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn to say the German before it is spoken",
   en: "Your turn to say the English before it is spoken",
   fr: "Your turn to say the French before it is spoken",
+  pl: "Your turn to say the Polish before it is spoken",
 };
 
 const FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "German first",
   en: "English first",
   fr: "French first",
+  pl: "Polish first",
 };
 
 // Written out rather than composed from a "{language} voice" pattern, because
@@ -321,21 +326,24 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice",
   en: "English voice",
   fr: "French voice",
+  pl: "Polish voice",
 };
 
 const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Mute German voice",
   en: "Mute English voice",
   fr: "Mute French voice",
+  pl: "Mute Polish voice",
 };
 
 const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Unmute German voice",
   en: "Unmute English voice",
   fr: "Unmute French voice",
+  pl: "Unmute Polish voice",
 };
 
-const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume" } as const;
+const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume", pl: "polishVolume" } as const;
 
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
@@ -1333,8 +1341,16 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         </div>
 
         <div className="listen-card mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
+          {/* The level sits in the line that already says what this card is,
+              because the default order is now a walk up through the levels and
+              there was no way to see where in that walk you were. A CEFR label
+              is the same word in every language, so it is printed rather than
+              translated; a pack with no level simply omits it instead of
+              printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
+            {ui(item.kind === "word" ? "Word" : "Sentence")}
+            {item.level ? <> · {item.level}</> : null}
+            {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
           {/* A word at a time, with the same popover the lesson uses: the
@@ -1694,7 +1710,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
+                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
@@ -1702,6 +1718,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([[
+                  "level", "Easiest first (A1 → C1)",
+                ], [
                   "common", "Most common first",
                 ], [
                   "learning", "Reviews & struggles first",
