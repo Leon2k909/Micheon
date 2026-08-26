@@ -64,6 +64,36 @@ if (!/search=\{\(/.test(settings)) {
 }
 
 
+// ── pressing a card does not rearrange the board ──────────────────────────
+// An open category used to span both columns. That took the card you pressed
+// out of its own slot and dealt every card after it into the other column:
+// measured on a board of six, pressing the third sent it from 614px to
+// 1240px and swapped the sides of the three below it. The PANEL spans now
+// and the card stays put, which only holds while all three of these do.
+if (/\.settings-category\.is-open \{[^}]*grid-column/.test(css)) {
+  failures.push(
+    "an open category spans the board again, so the card you press leaves its slot and the cards after it change column"
+  );
+}
+if (!/\.settings-panel \{[^}]*grid-column:\s*1 \/ -1/.test(css)) {
+  failures.push("the panel no longer takes the width, so it opens in half a column");
+}
+for (const board of [".settings-list", ".settings-list-group", ".settings-board"]) {
+  const rule = new RegExp(`\\${board} \\{[^}]*grid-auto-flow:\\s*row dense`);
+  if (!rule.test(css)) {
+    failures.push(`${board} does not backfill, so the card beside an open panel drops to a row of its own`);
+  }
+}
+// Only children of a board are lifted into it. Milestones is a category on
+// its own inside a spaced stack, and a box with no display takes no margin.
+if (/^\.settings-category \{\s*display: contents/m.test(css)) {
+  failures.push("every category is lifted into its parent, including the ones that are not on a board");
+}
+const listen = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+if (!/className="settings-board mt-3 grid/.test(listen)) {
+  failures.push("Listen's two drawers are not on a board, so opening one moves the other");
+}
+
 // ── the header stats survive German ───────────────────────────────────────
 const chipStrong = /\.np-stat-chip strong \{([^}]*)\}/.exec(proto)?.[1] ?? "";
 const chipSmall = /\.np-stat-chip small \{([^}]*)\}/.exec(proto)?.[1] ?? "";

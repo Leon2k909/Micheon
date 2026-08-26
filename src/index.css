@@ -10854,8 +10854,16 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   --settings-gap: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row dense;
   gap: var(--settings-gap);
   align-items: start;
+}
+
+/* Listen keeps its two drawers on a grid of its own rather than the settings
+   board, and it needs the same backfill: without it, opening the left drawer
+   pushes the right one onto a row of its own. */
+.settings-board {
+  grid-auto-flow: row dense;
 }
 
 /* The deferred half of the board is a grid of its own rather than
@@ -10866,14 +10874,31 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row dense;
   gap: var(--settings-gap);
   align-items: start;
 }
 
-/* Open, a category takes the width back: a colour picker or a voice list in
-   half a column is not a setting anyone can use. */
-.settings-category.is-open {
-  grid-column: 1 / -1;
+/* A panel opens under its ROW, and the card you pressed keeps its place.
+   Open, a category used to take the width back by spanning both columns —
+   which moved the card itself out of its slot and dealt every card after it
+   into the other column. Measured on a board of six: pressing the third card
+   sent it from half width to full, and the three cards below it each swapped
+   sides. The reason for the full width still stands, so it is the PANEL that
+   spans now, not the card: `display: contents` lifts the row and the panel
+   into the board's own grid, and `dense` backfills the slot beside the panel
+   so the order of the cards does not unravel. Nothing on the board changes
+   column or width any more; only what sits below the opened row moves down,
+   which is what opening something is supposed to do.
+
+   Only on a board. A category used on its own — Milestones, on the profile
+   page — sits in a stack that spaces its children, and a box with no display
+   takes no margin, so lifting that one into its parent would leave it flush
+   against the block above it. */
+.settings-list > .settings-category,
+.settings-list-group > .settings-category,
+.settings-board > .settings-category {
+  display: contents;
 }
 
 .settings-row {
@@ -10980,20 +11005,41 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
   color: var(--accent);
 }
 
-/* Open, the card and its panel are one box: the row loses its bottom corners
-   and the panel picks them up. */
+/* Open, the card wears the accent. The panel below is the width of the board
+   and its own box, so a card in the right-hand column is not touching the
+   thing it opened — the outline is what says which card that is. */
 .settings-category.is-open .settings-row {
-  border-bottom-color: transparent;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  border-color: var(--accent);
 }
 
+/* Fades in rather than appearing. The height it takes is instant either way —
+   the rows below have to move — but the panel itself arriving over 140ms
+   turns a flash into something the eye can follow. Held to opacity and a few
+   pixels: animating the HEIGHT would make everything below jitter for the
+   whole of it, which is the opposite of the point. */
 .settings-panel {
+  grid-column: 1 / -1;
+  margin-top: 2px;
   padding: 2px 14px 14px;
   border: 1px solid var(--card-edge, var(--border));
-  border-top: 0;
-  border-radius: 0 0 16px 16px;
+  border-radius: 16px;
   background: var(--surface-2);
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 140ms ease, translate 140ms ease;
+}
+
+@starting-style {
+  .settings-panel {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-panel {
+    transition: none;
+  }
 }
 
 /* One column below the width where two of these stop being readable. */
@@ -12222,21 +12268,24 @@ html[data-theme="dark"] {
      the middle, where the optional lines appear. */
   display: flex;
   flex-direction: column;
-  /* A floor, not a ceiling.
+  /* One height, taken once.
 
-     It was fixed at 360px so the controls could not walk about, and the rare
-     item that overran was left to scroll inside the card. Measured, that item
-     is not rare: a word carrying a register pill, a two-line use note and a
-     list of synonyms needs 518px, and an ordinary one 358px. Anchoring the
-     top put all 160px of that overrun at the foot, where it took the two
-     grading buttons off the bottom of the card - the one thing on it that
-     has to be reachable.
+     A floor was tried, and a floor is not enough: measured over 176 cards
+     sampled across the whole queue, the card came out 360px on 122 of them,
+     370 on 36, 388 on 14, 411 on 2 and 425 on 2. Every one of those steps
+     moved Play, Back and Next down the page, so pressing Next repeatedly
+     means clicking where the button was a moment ago.
 
-     So the card grows for the items that need it. The top still does not
-     move, which is what the anchoring was for; the controls now sit lower on
-     a full card than on a bare one, which is the price of their being on it
-     at all. */
-  min-height: 360px;
+     440px covers the 99th percentile of that sample with room over it, and
+     the card takes it whether or not this item needs it. Most cards carry
+     some empty space above the grading row now; that is the cost of nothing
+     below the card ever moving, and it is worth paying.
+
+     The rarer item still overruns - a word with a register pill, a two-line
+     use note AND a list of synonyms reaches 518px - and scrolls inside the
+     card. The grading row is sticky, so it stays on screen while that
+     happens: it is the only thing here that has to be reachable. */
+  height: 440px;
   overflow-y: auto;
   /* One gap for the whole card, set here rather than on each line.
 
@@ -12284,6 +12333,13 @@ html[data-theme="dark"] {
   /* Held at the foot, so the buttons are in the same place on every card. */
   margin-top: auto;
   padding-top: 14px;
+  /* ...and held there while the card scrolls, for the one item in a thousand
+     that overruns the reserve. Grading is the only thing on this card that
+     has to be reachable, and a fixed height without this put it below the
+     fold on exactly the items that are hardest to judge. */
+  position: sticky;
+  bottom: 0;
+  background: var(--surface-2);
 }
 
 /* Two lines reserved for the sentence itself, which is where nearly all of
@@ -12293,11 +12349,27 @@ html[data-theme="dark"] {
   min-height: 2.75em;
 }
 
+/* Words on a listening card sit a whole space too far apart.
+   Every word is its own box so it can be hovered, and that box carries
+   0.08em of padding on each side to keep the hover highlight off the
+   letters. Padding is width, so at this size the gap between two words was a
+   space plus 0.16em - about half a space again - and "Setz dich doch" read
+   as three separate things rather than a sentence.
+   The padding stays and stops counting: a matching negative margin takes it
+   back out of the layout, so the highlight is still padded and the words
+   advance at the width the font asked for. */
+.listen-sentence .fs-word {
+  margin-inline: -0.08em;
+}
+
 @media (max-width: 640px) {
   /* Narrower lines wrap more, so the reserve is deeper rather than the card
-     being allowed to breathe up and down on a phone. */
+     being allowed to breathe up and down on a phone. Measured the same way at
+     430px wide, the same 176 cards run to 494px. This said 340px, which
+     min-height overrode: the card was 360px there and the tallest items were
+     scrolling nearly half their content out of sight. */
   .listen-card {
-    height: 340px;
+    height: 500px;
   }
 }
 

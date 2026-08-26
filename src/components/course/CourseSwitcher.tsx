@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search, Star, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -120,9 +120,28 @@ export function CourseSwitcher({
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const normalizedQuery = foldForSearch(query.trim());
+  /**
+   * The half of the catalogue this dialog is for.
+   *
+   * Country studies and language learning are two separate choices, so
+   * the dialog that changes one does not list the other — not in its
+   * sections, not in its favourites, and not in its search results. It
+   * used to show the country courses in both, which is how choosing a
+   * country and choosing a language kept reaching each other.
+   *
+   * Filtered at the catalogue rather than at each section, so a section
+   * added later cannot forget to ask.
+   */
+  const inScope = useCallback(
+    (course: (typeof COURSES)[number]) => (scope === "country"
+      ? course.kind === "citizenship"
+      : course.kind !== "citizenship"),
+    [scope]
+  );
+  const scopedCourses = useMemo(() => COURSES.filter(inScope), [inScope]);
   const visibleCourses = useMemo(() => {
-    if (!normalizedQuery) return COURSES;
-    return COURSES.filter((course) => {
+    if (!normalizedQuery) return scopedCourses;
+    return scopedCourses.filter((course) => {
       const corpus = [
         course.id,
         course.name,
@@ -134,7 +153,7 @@ export function CourseSwitcher({
       const folded = foldForSearch(corpus);
       return normalizedQuery.split(/\s+/).every((term) => folded.includes(term));
     });
-  }, [normalizedQuery]);
+  }, [normalizedQuery, scopedCourses]);
   const allLanguages = visibleCourses.filter((c) => c.kind === "language");
   // The two English rows are folded into one card — see EnglishCard. They are
   // pulled out here rather than filtered inside the list so the count above
@@ -242,7 +261,6 @@ export function CourseSwitcher({
         .filter((id) => !(mergedEnglish && (id === "english-uk" || id === "english-us")))
         .map((id) => visibleCourses.find((c) => c.id === id))
         .filter((c): c is (typeof COURSES)[number] => Boolean(c))
-        .filter((c) => !countryOnly || c.kind === "citizenship")
     : [];
   const favouriteRowCount = favouriteCourses.length + (groupFavourites && englishStarred ? 1 : 0);
 
@@ -487,7 +505,7 @@ export function CourseSwitcher({
                 <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
                   {ui(countryOnly
                     ? "Pick the country whose history and society you want to study."
-                    : "Pick a language, a programming track or a country course.")}
+                    : "Pick a language or a programming track.")}
                 </p>
               </div>
               <button

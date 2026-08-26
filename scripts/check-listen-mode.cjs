@@ -48,7 +48,7 @@ const result = esbuild.buildSync({
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
-      'export { meaningLanguageFor, targetLanguage } from "./src/lib/courseLanguages.ts";',
+      'export { meaningLanguageFor, targetLanguage, translationLanguagesNeeded } from "./src/lib/courseLanguages.ts";',
       'export { frenchFor } from "./src/lib/frenchCourse.ts";',
       'export { getScopedKey } from "./src/lib/profileStorage.ts";',
       'export { recordSuccess, isDueForReview } from "./src/lib/memoryStrength.ts";',
@@ -105,7 +105,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
-  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung, spokenWordRung,
+  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 // The tables are fetched on demand in the app, so a German-only learner
@@ -430,6 +430,23 @@ const queueFor = (direction, app, contentSource = "sentences") => {
 
 const englishApp = queueFor("learn-de", "en");
 const frenchApp = queueFor("learn-de", "fr");
+// The tables are fetched now, not bundled, and a card the table cannot reach
+// leaves the queue — so whatever asks for them has to name the app's language
+// as well as the course's. It named only the course's, and a German course in
+// a French app fetched nothing, dropped all twenty thousand cards for want of
+// a translation, and opened empty.
+setLearningDirection("learn-de");
+setInterfaceLanguage("fr");
+const needsFrench = translationLanguagesNeeded("learn-de");
+setInterfaceLanguage("en");
+const needsNothing = translationLanguagesNeeded("learn-de");
+const needsForFrenchCourse = translationLanguagesNeeded("learn-fr");
+setInterfaceLanguage("fr");
+check("a German course in a French app asks for the French table, which the course alone would not",
+  needsFrench.join(",") === "fr"
+  && needsNothing.length === 0
+  && needsForFrenchCourse.join(",") === "fr");
+
 check("the app's language is what a card is explained in",
   targetLanguage("learn-de") === "de"
   && meaningLanguageFor("de") === "fr"
@@ -1024,9 +1041,14 @@ check("the player reads its two languages from the course and the app, not from 
   // being learned, always. A ternary here is how the English course came to
   // lead with its German.
   && view.includes("{ de: courseLanguage, en: meaningLanguage };")
-  && !/slotLanguage[^;]*?[^;]*{ de: meaningLanguage/.test(view)
+  && !view.includes("? { de: meaningLanguage")
   && view.includes("const appLanguage = useInterfaceLanguage();")
-  && view.includes("meaningLanguage, profile, queueOrder]"));
+  && view.includes("meaningLanguage, profile, queueOrder, translationsRevision]")
+  // ...and it redraws when a fetched table lands, so switching the app's
+  // language while Listen is open does not blank the screen for the length of
+  // a download and then fill it in.
+  && view.includes("TRANSLATIONS_LOADED_EVENT")
+  && view.includes("void ensureTranslations(meaningLanguage);"));
 
 // The plan sentence names the two languages rather than spelling them out:
 // the third course made "English ..., then German ..." a sentence that is
@@ -1354,6 +1376,38 @@ void (async () => {
   check(
     "no line inside the card carries a margin of its own",
     !/className="[^"]*\bmt-\d/.test(cardMarkup)
+  );
+  // ── nothing below the card moves when the queue advances ──────────────
+  // A floor is not enough, and a floor was what shipped: measured over 176
+  // cards from across the queue, the card came out at five different heights
+  // — 360, 370, 388, 411 and 425 — and every one of those steps walked Play,
+  // Back and Next down the page. Someone pressing Next repeatedly clicks
+  // where the button was. One height now, taken whether the item needs it.
+  check(
+    "the listen card is one height, not a floor it can grow past",
+    cardBlock.includes("height: 440px;") && !cardBlock.includes("min-height:")
+  );
+  // ...and the one control that must stay reachable does, on the rarer item
+  // that still overruns and scrolls inside the card.
+  const reviewRule = listenCss.slice(
+    listenCss.indexOf(".listen-card-review {"),
+    listenCss.indexOf("}", listenCss.indexOf(".listen-card-review {"))
+  );
+  check(
+    "the grading row stays on screen while a long card scrolls",
+    reviewRule.includes("position: sticky;")
+    && reviewRule.includes("bottom: 0;")
+    && reviewRule.includes("background: var(--surface-2);")
+  );
+  // Every word is its own box so it can be hovered, and a box has padding.
+  // Padding is width: at this size it put half a space again between every
+  // pair of words, and "Setz dich doch" read as three separate things. The
+  // padding stays and stops counting.
+  check(
+    "a word's hover padding does not push the next word along",
+    listenCss.includes(".listen-sentence .fs-word {")
+    && listenCss.slice(listenCss.indexOf(".listen-sentence .fs-word {"), listenCss.indexOf(".listen-sentence .fs-word {") + 200).includes("margin-inline: -0.08em;")
+    && listenCss.includes("padding: 0.1em 0.08em 0.14em;")
   );
   if (failures > 0) {
     console.error(`\n${failures} listen-mode check(s) failed`);

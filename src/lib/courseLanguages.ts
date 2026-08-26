@@ -90,6 +90,34 @@ export function meaningLanguageFor(
   return target === "en" ? "de" : "en";
 }
 
+/**
+ * Every translation table this setup cannot be built without.
+ *
+ * The course's own is the obvious one, and direction.ts already answers it:
+ * a course read out of a table comes out SHORT without it, because an entry
+ * the table does not cover is dropped rather than shown in German.
+ *
+ * The app's language is the one that was missed. Listen explains a card in
+ * whatever the app is written in, and it reads that out of the same tables —
+ * so a GERMAN course in a French app needs French, and asking the course
+ * alone answers "nothing". The queue then drops every card it cannot
+ * translate, which is all of them, and Listen opens empty with nothing on
+ * screen to say why.
+ *
+ * Two at most today, and deduplicated, because the French course in a French
+ * app explains itself in English and needs the one table.
+ */
+export function translationLanguagesNeeded(
+  direction: LearningDirection = getLearningDirection()
+): Array<"fr" | "pl"> {
+  const target = targetLanguage(direction);
+  const wanted = new Set<"fr" | "pl">();
+  for (const code of [target, meaningLanguageFor(target)]) {
+    if (code === "fr" || code === "pl") wanted.add(code);
+  }
+  return [...wanted];
+}
+
 export function courseSides(direction: LearningDirection = getLearningDirection()): CourseSides {
   if (direction === "learn-en") return { target: courseSide("en"), meaning: courseSide("de") };
   if (direction === "learn-fr") return { target: courseSide("fr"), meaning: courseSide(meaningLanguageFor("fr")) };

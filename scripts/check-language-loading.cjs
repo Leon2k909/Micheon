@@ -139,11 +139,29 @@ assert.ok(fs.readFileSync(path.join(src, "main.tsx"), "utf8").includes("ensureIn
 assert.ok(/export function translationLanguageFor/.test(
   fs.readFileSync(path.join(src, "lib", "direction.ts"), "utf8")),
   "nothing says which table a direction needs, so a catalogue can be built without it");
+
+// ...and the COURSE is not the only thing that reads one. Listen explains a
+// card in whatever language the app is written in, out of the same tables, so
+// a German course in a French app needs French. Asking the course alone
+// answered "nothing", every card was dropped for want of a translation, and
+// Listen opened empty with nothing on screen to say why.
+assert.ok(/export function translationLanguagesNeeded/.test(
+  fs.readFileSync(path.join(src, "lib", "courseLanguages.ts"), "utf8")),
+  "nothing asks which tables a SETUP needs — only which one the course needs — so an app "
+  + "language that is read out of a table is never fetched");
 for (const file of ["prototype/NewUiPrototype.tsx", "guided_learning_session.tsx"]) {
   const text = fs.readFileSync(path.join(src, file), "utf8");
   assert.ok(text.includes("ensureTranslations"),
     `${file} builds a catalogue without waiting for the course's translations, so a French or `
     + "Polish course assembled at startup silently comes out short");
+  // The CALL, not the import: keeping the name in the import list while
+  // asking the course again is exactly the shape this regressed from.
+  assert.ok(text.includes("Promise.all(translationLanguagesNeeded().map("),
+    `${file} waits for the COURSE's table only, so a German course in a French app builds `
+    + "before French arrives and Listen comes out empty");
+  assert.ok(text.includes("gl-interface-language-change"),
+    `${file} does not rebuild when the app's language changes, so switching to French mid-`
+    + "session never fetches the table that language needs");
 }
 
 /**

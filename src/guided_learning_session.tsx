@@ -14,7 +14,8 @@ import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isR
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman, translationLanguageFor } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman } from "@/lib/direction";
+import { translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { ensureTranslations } from "@/lib/translations";
 import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
@@ -400,13 +401,14 @@ export default function GuidedLearningSession() {
     // The learner's own words go in last so they are packs like any other:
     // lessons, tracker, search and tests all read this one map, so nothing
     // downstream needs to know where a phrase came from.
-    // The course's own translation table is fetched rather than bundled, so
-    // that German-only learners never download it. Built before it lands, a
+    // The translation tables are fetched rather than bundled, so that
+    // German-only learners never download them. Built before one lands, a
     // French or Polish catalogue silently comes out short: an entry the table
-    // does not cover is dropped, not shown in German.
+    // does not cover is dropped, not shown in German. The app's own language
+    // counts as well as the course's — Listen explains a card in it, out of
+    // the same tables.
     const rebuild = async () => {
-      const needed = translationLanguageFor(getLearningDirection());
-      if (needed) await ensureTranslations(needed);
+      await Promise.all(translationLanguagesNeeded().map(ensureTranslations));
       setApiParts(orderParts(filterPartsForLearningDirection({
         ...resolved,
         ...buildBundledParts(),
@@ -418,9 +420,13 @@ export default function GuidedLearningSession() {
     onRebuild();
     window.addEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
     window.addEventListener(DIRECTION_CHANGE_EVENT, onRebuild);
+    // Changing the app's language changes which table is needed, not just
+    // which words are on the buttons.
+    window.addEventListener("gl-interface-language-change", onRebuild);
     return () => {
       window.removeEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
-      window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, onRebuild);
+      window.removeEventListener("gl-interface-language-change", onRebuild);
     };
   }, []);
 
