@@ -1187,7 +1187,14 @@ function Sidebar({
                       <span aria-hidden="true" className="np-nav-visual">
                         <FlagRoundel id={entry.flagId} />
                       </span>
-                      <span>{ui(entry.label)}</span>
+                      {/* The country, not the course title. The title says
+                          "– Land und Kultur" after every one of them, which
+                          the group heading above already says once, and in a
+                          menu this narrow it cost three lines a row and broke
+                          Großbritannien in half. The card and the course
+                          chooser keep the full title; they have the room and
+                          the reader is choosing a course there. */}
+                      <span>{ui(entry.country)}</span>
                       {selected && <Check aria-hidden="true" className="np-nav-country-tick" />}
                     </button>
                   );
