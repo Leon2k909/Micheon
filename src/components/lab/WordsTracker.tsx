@@ -28,10 +28,12 @@ import {
 } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { packMeta } from "@/lib/curriculum";
+import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
+import { polishFor } from "@/lib/polishCourse";
 import {
   WORD_PART_OF_SPEECH_FILTERS,
   wordMatchesPartOfSpeech,
@@ -506,7 +508,7 @@ export function WordsTracker({ apiParts, user }: {
             <input
               value={query}
               onChange={(event) => { setQuery(event.target.value); reset(); }}
-              placeholder={ui("German or English…")}
+              placeholder={uiFmt("{target} or {meaning}…", { target: ui(sides.target.label), meaning: ui(sides.meaning.label) })}
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
             />
           </span>
@@ -545,7 +547,8 @@ export function WordsTracker({ apiParts, user }: {
             const status = statusForId(grades, word.id, word.aliases);
             const record = recordFor(word);
             const french = sides.target.code === "fr" ? frenchFor(word.de) : null;
-            const primaryText = french ?? (learnsEnglish ? word.en : word.de);
+            const polish = sides.target.code === "pl" ? polishFor(word.de) : null;
+            const primaryText = french ?? polish ?? (learnsEnglish ? word.en : word.de);
             const meaningText = sides.meaning.code === "de" ? word.de : word.en;
             const example = exampleIndex.exampleFor(word);
             return (
@@ -574,6 +577,12 @@ export function WordsTracker({ apiParts, user }: {
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
                     {uiIsEnglish() && word.use ? ` · ${ui(word.use)}` : ""}
+                    {(() => {
+                        const register = sides.target.code === "de" ? detectRegister(primaryText) : null;
+                        return register
+                          ? <span className={`font-black ${REGISTER_TONE[register]}`} title={ui("German picks a different \"you\" for friends, for a group, and for politeness. English uses one word for all three.")}> · {ui(REGISTER_SHORT[register])}</span>
+                          : null;
+                      })()}
                     {uiIsEnglish() && (() => {
                         const note = packMeta(word.partKey).note;
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;

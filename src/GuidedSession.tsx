@@ -50,7 +50,9 @@ import { getCompanion } from "@/lib/companion";
 import { getLearningDirection, learningEnglish } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchFrenchSentence } from "@/lib/frenchTextMatch";
+import { matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -81,6 +83,27 @@ import { pronounNote } from "@/lib/pronounNotes";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { toSpokenGerman } from "@/lib/spokenGerman";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
+import { listenIsHoldingAudio } from "@/lib/listenSession";
+
+/**
+ * The speech a lesson makes on its own, as opposed to when it is asked.
+ *
+ * Listen can be left running while a lesson is opened, and then two things
+ * want the speakers. tts() stops whatever is playing before it starts, so a
+ * card reading itself aloud did not talk over a Listen session, it ended one —
+ * a sentence at a time, silently, for as long as the lesson lasted.
+ *
+ * Between the two, Listen wins while it is playing, because it is the thing
+ * the learner deliberately started and left running. The lesson is not
+ * silenced: it stops volunteering. Every button that says a word out loud
+ * still says it, because pressing one is a request and answering it is not
+ * talking over anybody. Pausing or closing the Listen player hands the voice
+ * straight back.
+ */
+function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
+  if (listenIsHoldingAudio()) return Promise.resolve();
+  return tts(text, rate, lang);
+}
 import { ui, uiOr, uiFmt } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
@@ -109,6 +132,15 @@ function getAudioCtx(): AudioContext | null {
  *  fifth of a second; the context used to stay awake for the whole session
  *  after the first one, keeping the renderer exempt from throttling. */
 const SFX_IDLE_SUSPEND_MS = 4000;
+
+/**
+ * How long a correct answer waits before checking itself.
+ *
+ * Long enough that somebody still typing is not cut off — a short answer can
+ * be the opening of a longer one — and short enough that it does not read as
+ * the app hesitating over something it has already accepted.
+ */
+const AUTO_CHECK_PAUSE_MS = 450;
 let sfxIdleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleSfxIdleSuspend() {
@@ -336,26 +368,29 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
 /**
  * The accent row under a typing box, for whichever language that box is in.
  *
- * German needs ä ö ü ß, French needs é è ê ç, English needs nothing at all.
+ * German needs ä ö ü ß, French needs é è ê ç, Polish needs ą ć ę ł ń ó ś ź ż,
+ * and English needs nothing at all.
  * Which of the three belongs under a box depends on whether the box is asking
  * for the target or for the meaning — and there are ten of them, which is ten
  * chances to write `!learnEn` where a third course needs a third answer.
  */
 // Written out per language rather than composed, so the German reads as
 // German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
-const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr", string> = {
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl", string> = {
   de: "German words to arrange",
   en: "English words to arrange",
   fr: "French words to arrange",
+  pl: "Polish words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
+  if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
   if (language === "en") return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
@@ -368,6 +403,30 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           title={`${c} · Alt + ${FRENCH_ALT_CODES[c]}`}
           aria-keyshortcuts={`Alt+${FRENCH_ALT_CODES[c]}`}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Polish accent helper row.
+ *
+ * No Alt+NNNN hint beside the letters, unlike the German and French rows.
+ * Those codes address the active Windows ANSI code page, and a Western one
+ * holds ä ö ü ß é è ç but not ą ć ę ł ń ś ź ż — Alt+0185 there produces ¹, not
+ * ą. A wrong instruction is worse than a missing one, so the buttons are the
+ * whole answer here.
+ */
+function PolishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {POLISH_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
           onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
           {c}
@@ -1128,7 +1187,10 @@ function PromptLanguageBadge({ label }: { label: string }) {
   // profile's English-variant setting so British learners see their own flag.
   const stored = useEnglishVariant();
   const englishVariant = isEnglish ? resolveEnglishVariant(stored) : null;
-  const shortLabel = label.slice(0, 2).toUpperCase();
+  // The first two letters of the name happen to be the code for French and
+  // German; they are not for Polish, which would read PO. A code is a code.
+  const shortLabel = ({ German: "DE", English: "EN", French: "FR", Polish: "PL" } as Record<string, string>)[label]
+    ?? label.slice(0, 2).toUpperCase();
   const title = englishVariant
     // The flag already says which variant you are being
     // marked against, so it is the obvious thing to press to change it —
@@ -1659,16 +1721,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const direction = useMemo(() => getLearningDirection(), []);
   const learnEn = direction === "learn-en";
   const learnFr = direction === "learn-fr";
+  const learnPl = direction === "learn-pl";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
   // question rather than as !learnEn.
   const targetIsGermanCourse = direction === "learn-de";
-  const targetLanguage: "de" | "en" | "fr" = learnFr ? "fr" : learnEn ? "en" : "de";
+  const targetLanguage: "de" | "en" | "fr" | "pl" = learnFr ? "fr" : learnPl ? "pl" : learnEn ? "en" : "de";
   // Which language the meaning column is written in: German in the English
   // course, and in the French course whenever the app itself is in German.
   const meaningLanguage: "de" | "en" = learnFr
     ? frenchMeaningLanguage()
+    : learnPl ? polishMeaningLanguage()
     : learnEn ? "de" : "en";
   const meaningIsGerman = meaningLanguage === "de";
   // A picture of the word, where we have an honest one. It is a cue to the
@@ -1716,7 +1780,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     && choiceKey(missingWordChoice) === choiceKey(missingWord.answer);
   // In learn-English mode the target text is English — use the English matcher
   // so contractions ("it's" == "it is") and spelling variants are accepted.
-  const matchTarget = learnFr ? matchFrenchSentence : learnEn ? matchEnglish : matchGermanSentence;
+  const matchTarget = learnFr
+    ? matchFrenchSentence
+    : learnPl ? matchPolishSentence
+    : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
   // two results means the shown answer is the one people say, without punishing
@@ -1895,9 +1962,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useEffect(() => {
     if (audioMuted) return;
     if (phase !== "Read" && phase !== "ListenPick") return;
-    if (phase === "ListenPick") tts(item.de, 0.88, targetLang);
+    if (phase === "ListenPick") lessonSpeak(item.de, 0.88, targetLang);
     else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
-    else tts(item.de, 0.88, targetLang);
+    else lessonSpeak(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
 
   // Focus input when entering Type or Translate phase
@@ -2039,7 +2106,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         setMeaningChecked(true);
         reactToAnswer(ok);
         if (ok) {
-          tts(item.de, 0.88, targetLang);
+          lessonSpeak(item.de, 0.88, targetLang);
           window.setTimeout(advanceOrFinish, 900);
         }
         return;
@@ -2053,7 +2120,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       const ok = choiceKey(option) === choiceKey(item.de);
       reactToAnswer(ok);
       if (ok) {
-        tts(item.de, 0.88, targetLang);
+        lessonSpeak(item.de, 0.88, targetLang);
         window.setTimeout(advanceOrFinish, 900);
       }
     };
@@ -2147,7 +2214,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setMissingWordChecked(true);
       reactToAnswer(ok);
       if (ok) {
-        tts(item.de, 0.88, targetLang);
+        lessonSpeak(item.de, 0.88, targetLang);
         window.setTimeout(advanceOrFinish, 900);
       }
     };
@@ -2356,7 +2423,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setWrongLanguageNotice(null);
     setChecked(true);
     reactToAnswer(result.ok, !!result.phrasingNote);
-    tts(item.de, result.ok ? 0.88 : 0.75, targetLang);
+    lessonSpeak(item.de, result.ok ? 0.88 : 0.75, targetLang);
     if (result.ok) {
       setTimeout(advance, 900);
     } else {
@@ -2394,6 +2461,55 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setEnAttempts(a => a + 1);
     }
   };
+
+  /**
+   * A right answer moves on by itself.
+   *
+   * Typing the answer and then reaching for Enter is a second action for
+   * something already finished, and on a stage whose whole job is "write what
+   * you hear" it reads as the app not having noticed. So a correct answer
+   * checks itself.
+   *
+   * Only a CLEAN match, though. matchGermanSentence also accepts answers with
+   * something to say about them — a spelling slip, a capital letter, an
+   * English turn of phrase — and those come with a note the learner is meant
+   * to read. Skipping past the note would be a worse trade than the keystroke
+   * it saves, so those still wait to be checked deliberately.
+   *
+   * And only after a pause. A short answer can be a prefix of a longer one,
+   * so advancing on the keystroke that first matched would cut somebody off
+   * mid-word; carrying on typing cancels it, because each keystroke restarts
+   * the wait.
+   */
+  const autoCheckRef = useRef<number | null>(null);
+  useEffect(() => {
+    const clear = () => {
+      if (autoCheckRef.current === null) return;
+      window.clearTimeout(autoCheckRef.current);
+      autoCheckRef.current = null;
+    };
+    clear();
+    const clean = (outcome: { ok: boolean; spellingNote?: boolean; capitalizationError?: boolean; phrasingNote?: boolean }) =>
+      outcome.ok && !outcome.spellingNote && !outcome.capitalizationError && !outcome.phrasingNote;
+
+    let run: null | (() => void) = null;
+    if (phase === "ListenPick" && listeningMode === "type" && !listeningTypeChecked
+      && listeningInput.trim() && clean(listeningTypeResult)) run = checkListeningTyped;
+    else if ((phase === "Type" || phase === "TypeAgain") && !checked
+      && input.trim() && clean(result)) run = checkAnswer;
+    else if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type"
+      && !enChecked && translationAnswer.trim() && clean(enResult)) run = checkEnAnswer;
+    if (!run) return clear;
+
+    const go = run;
+    autoCheckRef.current = window.setTimeout(() => { autoCheckRef.current = null; go(); }, AUTO_CHECK_PAUSE_MS);
+    return clear;
+    // The handlers are rebuilt every render; the values they read are the
+    // dependencies that matter, and listing the handlers would re-arm the
+    // timer on every render instead of on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, listeningMode, listeningInput, listeningTypeChecked, listeningTypeResult,
+    input, checked, result, translationMode, translationAnswer, enChecked, enResult]);
 
   const retryEn = () => {
     setEnInput("");
@@ -2433,7 +2549,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMeaningChecked(true);
     reactToAnswer(ok);
     if (ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
   };
@@ -2469,7 +2585,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const retryListening = () => {
     setListeningChoice(null);
     setListeningChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
   };
 
   const checkListeningTyped = () => {
@@ -2486,18 +2602,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningTypeChecked(true);
     reactToAnswer(listeningTypeResult.ok, !!listeningTypeResult.phrasingNote);
     if (listeningTypeResult.ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     } else {
       setListeningMisses((misses) => misses + 1);
-      tts(item.de, 0.75, targetLang);
+      lessonSpeak(item.de, 0.75, targetLang);
     }
   };
 
   const retryListeningTyped = () => {
     setListeningInput("");
     setListeningTypeChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
     setTimeout(() => listeningInputRef.current?.focus(), 50);
   };
 
@@ -2513,7 +2629,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setGrade("struggle");
       if (item?.id) onGradeItem?.(item.id, "struggle");
     }
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
   };
 
   const backToListeningTyping = () => {
@@ -2521,7 +2637,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningMode("type");
     setListeningChoice(null);
     setListeningChecked(false);
-    tts(item.de, 0.88, targetLang);
+    lessonSpeak(item.de, 0.88, targetLang);
     setTimeout(() => listeningInputRef.current?.focus(), 50);
   };
 
@@ -2533,14 +2649,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMissingWordChecked(true);
     reactToAnswer(ok);
     if (ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     }
   };
 
   const previewMissingWord = (choice: string) => {
     setMissingWordPreview(choice);
-    tts(choice, 0.78, targetLang);
+    lessonSpeak(choice, 0.78, targetLang);
   };
 
   const retryMissingWord = () => {
@@ -2553,7 +2669,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (!gapInput.trim() || gapChecked) return;
     setGapChecked(true);
     reactToAnswer(gapResult.ok);
-    if (gapResult.ok) { tts(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
+    if (gapResult.ok) { lessonSpeak(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
   };
   const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
@@ -2600,7 +2716,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // confirm success without scaling the entire drag surface under the cursor.
     reactToAnswer(orderIsCorrect, false, !orderIsCorrect);
     if (orderIsCorrect) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       if (orderAdvanceTimerRef.current !== null) {
         window.clearTimeout(orderAdvanceTimerRef.current);
       }
@@ -2633,7 +2749,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setSayChecked(true);
     reactToAnswer(sayResult.ok, !!sayResult.phrasingNote);
     if (sayResult.ok) {
-      tts(item.de, 0.88, targetLang);
+      lessonSpeak(item.de, 0.88, targetLang);
       setTimeout(advanceOrFinish, 900);
     }
   };
@@ -2649,7 +2765,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       recallTransitionPendingRef.current = true;
       setRecallTransitionPending(true);
       const advanceToken = ++recallAdvanceTokenRef.current;
-      void tts(item.de, 0.88, targetLang).finally(() => {
+      void lessonSpeak(item.de, 0.88, targetLang).finally(() => {
         if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
       });
     } else {
@@ -2672,7 +2788,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       recallTransitionPendingRef.current = true;
       setRecallTransitionPending(true);
       const advanceToken = ++recallAdvanceTokenRef.current;
-      void tts(shownEnglish, 0.88, meaningLang).finally(() => {
+      void lessonSpeak(shownEnglish, 0.88, meaningLang).finally(() => {
         if (advanceToken === recallAdvanceTokenRef.current) advanceOrFinish();
       });
     } else {
@@ -2768,7 +2884,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (!frInput.trim() || frChecked) return;
     setFrChecked(true);
     reactToAnswer(frResult.ok);
-    tts(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
+    lessonSpeak(item.fr, frResult.ok ? 0.9 : 0.78, "fr-FR");
     if (frResult.ok) {
       setTimeout(hasFr ? advance : onNext, 900);
     } else {
@@ -2786,7 +2902,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMemFrChecked(true);
     const bothOk = memDeResult.ok && memFrResult.ok;
     reactToAnswer(bothOk);
-    if (memDeResult.ok) tts(item.de, 0.88, "de-DE");
+    if (memDeResult.ok) lessonSpeak(item.de, 0.88, "de-DE");
     if (bothOk) setTimeout(onNext, 1000);
   };
   const retryMemory = () => {
@@ -4727,13 +4843,16 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const sides = courseSides();
   const learnEn = sides.target.code === "en";
   const learnFr = sides.target.code === "fr";
+  const learnPl = sides.target.code === "pl";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
-      : learnEn
-        ? matchEnglish(input, line?.de ?? "")
-        : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, line]
+      : learnPl
+        ? matchPolishSentence(input, line?.de ?? "")
+        : learnEn
+          ? matchEnglish(input, line?.de ?? "")
+          : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
+    [input, learnEn, learnFr, learnPl, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
@@ -4744,7 +4863,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const companionFr = useMemo(() => getCompanion() === "fr" && sides.target.code === "de", [sides.target.code]);
 
   useEffect(() => {
-    if (line?.de) tts(line.de, 0.88, targetLang);
+    if (line?.de) lessonSpeak(line.de, 0.88, targetLang);
   }, [line?.de, targetLang]);
   useEffect(() => {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 80);
@@ -4764,7 +4883,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
     if (!input.trim() || checked) return;
     setChecked(true);
     onAnswer?.(result.ok);
-    tts(line?.de ?? "", 0.88, targetLang);
+    lessonSpeak(line?.de ?? "", 0.88, targetLang);
     if (result.ok) setTimeout(nextLine, 900);
   };
 

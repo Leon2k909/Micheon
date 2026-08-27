@@ -24,7 +24,10 @@ const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8").replace(/\r/g, "");
 const shell = read("src/prototype/NewUiPrototype.tsx");
 const css = read("src/prototype/new-ui-prototype.css");
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 
 // ── her three pictures, present and used where she put them ───────────────
 

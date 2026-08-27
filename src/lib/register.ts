@@ -41,3 +41,28 @@ export const REGISTER_LABEL: Record<Exclude<Register, null>, string> = {
   plural: "ihr · a group — you all, not one person",
   formal: "Sie · polite — strangers, staff, elders",
 };
+
+/**
+ * The same three, short enough to sit on a list row.
+ *
+ * The labels above are written for a lesson card, which has a line to spare
+ * and one sentence to explain. A tracker row has neither: it is already
+ * carrying the meaning, the part of speech and whatever else the word has
+ * collected, and "du · casual — friends & family" appended to that pushes the
+ * meaning off the end. These say the same thing in three words.
+ *
+ * The pronoun leads in both, because that is the part a learner is looking
+ * for: "Wie geht es dir?" is answered by seeing "du", not by reading "casual".
+ */
+export const REGISTER_SHORT: Record<Exclude<Register, null>, string> = {
+  informal: "du — friends",
+  plural: "ihr — a group",
+  formal: "Sie — polite",
+};
+
+/** Which colour each one wears, so the three read the same way everywhere. */
+export const REGISTER_TONE: Record<Exclude<Register, null>, string> = {
+  informal: "text-emerald-600",
+  plural: "text-amber-600",
+  formal: "text-indigo-500",
+};

@@ -189,10 +189,13 @@ if (listenView.includes('uiFmt("Meaning here: {sense}"')) {
 } else {
   fail("the meaning tag must be rendered through uiFmt so a German app reads German");
 }
-if (read("src/lib/i18n.ts").includes('"Meaning here: {sense}": ')) {
+// The German table lives in i18nDe.ts so it can be fetched rather than
+// bundled — ui() is imported by every screen, so inline it had to load with
+// them. i18n.ts holds the machinery now.
+if (read("src/lib/i18nDe.ts").includes('"Meaning here: {sense}": ')) {
   ok("the meaning tag label has a German translation");
 } else {
-  fail("i18n.ts is missing the German translation for the meaning tag label");
+  fail("the German table is missing the translation for the meaning tag label");
 }
 if (read("src/index.css").includes(".sense-note {")) {
   ok("the meaning tag has its own styling");

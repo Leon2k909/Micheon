@@ -35,7 +35,7 @@ const readTable = (file, marker) => {
   return Function("return " + src.slice(start, end + 2))();
 };
 
-const DE = readTable("src/lib/i18n.ts", "const DE");
+const DE = readTable("src/lib/i18nDe.ts", "export const DE");
 const FR = readTable("src/lib/i18nFr.ts", "export const FR");
 
 // ── the two tables hold the same keys ────────────────────────────────────

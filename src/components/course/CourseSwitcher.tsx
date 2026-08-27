@@ -1,12 +1,24 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Lock, Search } from "lucide-react";
+import { X, Check, Lock, Search, Star, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
+import { availablePacks, removePack } from "@/lib/contentPacks";
+import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, getFavouritesOpen, setFavouritesOpen, toggleFavouriteCourse } from "@/lib/favouriteCourses";
 import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
 import { ui, uiFmt } from "@/lib/i18n";
+
+/**
+ * Which course a language pack belongs to.
+ *
+ * The manifest names packs by language code, because that is what the tables
+ * are keyed by; the picker lists courses. One map rather than a guess at every
+ * use, and adding a language means a line here beside the one in
+ * translations.ts.
+ */
+const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish" };
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",
@@ -108,9 +120,28 @@ export function CourseSwitcher({
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const normalizedQuery = foldForSearch(query.trim());
+  /**
+   * The half of the catalogue this dialog is for.
+   *
+   * Country studies and language learning are two separate choices, so
+   * the dialog that changes one does not list the other — not in its
+   * sections, not in its favourites, and not in its search results. It
+   * used to show the country courses in both, which is how choosing a
+   * country and choosing a language kept reaching each other.
+   *
+   * Filtered at the catalogue rather than at each section, so a section
+   * added later cannot forget to ask.
+   */
+  const inScope = useCallback(
+    (course: (typeof COURSES)[number]) => (scope === "country"
+      ? course.kind === "citizenship"
+      : course.kind !== "citizenship"),
+    [scope]
+  );
+  const scopedCourses = useMemo(() => COURSES.filter(inScope), [inScope]);
   const visibleCourses = useMemo(() => {
-    if (!normalizedQuery) return COURSES;
-    return COURSES.filter((course) => {
+    if (!normalizedQuery) return scopedCourses;
+    return scopedCourses.filter((course) => {
       const corpus = [
         course.id,
         course.name,
@@ -122,7 +153,7 @@ export function CourseSwitcher({
       const folded = foldForSearch(corpus);
       return normalizedQuery.split(/\s+/).every((term) => folded.includes(term));
     });
-  }, [normalizedQuery]);
+  }, [normalizedQuery, scopedCourses]);
   const allLanguages = visibleCourses.filter((c) => c.kind === "language");
   // The two English rows are folded into one card — see EnglishCard. They are
   // pulled out here rather than filtered inside the list so the count above
@@ -148,12 +179,94 @@ export function CourseSwitcher({
    * still find Persian without pressing anything first.
    */
   const [showAllLanguages, setShowAllLanguages] = useState(false);
+  /**
+   * Downloads this device is holding, by the course that pulled them in.
+   *
+   * The manifest names packs by language code and the picker lists courses, so
+   * the two are married here rather than at every use. Only languages have
+   * packs today; a course with none simply shows nothing.
+   */
+  const [installedPacks, setInstalledPacks] = useState<Array<{ course: string; url: string }>>([]);
+  const [removing, setRemoving] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void availablePacks()
+      .then(({ languages, installed }) => {
+        if (!live) return;
+        setInstalledPacks(languages
+          .filter((pack) => installed.some((entry) => entry.endsWith(pack.url)))
+          .map((pack) => ({ course: COURSE_BY_PACK[pack.id] ?? pack.id, url: pack.url }))
+          .filter((entry) => Boolean(entry.course)));
+      })
+      // No manifest means the build emitted no packs, which is a real state:
+      // the app runs on its bundled content and nothing is removable.
+      .catch(() => { if (live) setInstalledPacks([]); });
+    return () => { live = false; };
+  }, []);
+  /**
+   * Starred courses, newest last. Read on mount and kept in step through the
+   * event, so starring in one place redraws both sections at once.
+   */
+  const [favourites, setFavourites] = useState<string[]>(() => getFavouriteCourses());
+  useEffect(() => {
+    const refresh = () => setFavourites(getFavouriteCourses());
+    window.addEventListener(FAVOURITE_COURSES_EVENT, refresh);
+    return () => window.removeEventListener(FAVOURITE_COURSES_EVENT, refresh);
+  }, []);
+  const isFavourite = (id: string) => favourites.includes(id);
+  const star = (id: string) => setFavourites(toggleFavouriteCourse(id));
+  // Keyed on the scope, so the two dialogs fold independently — and reset
+  // when the dialog is reopened in the other scope, which is what the key
+  // in the state is for.
+  const [favouritesOpen, setFavouritesOpenState] = useState(() => getFavouritesOpen(scope));
+  useEffect(() => setFavouritesOpenState(getFavouritesOpen(scope)), [scope]);
+  const toggleFavourites = () => {
+    setFavouritesOpenState((was) => {
+      setFavouritesOpen(!was, scope);
+      return !was;
+    });
+  };
   const searching = Boolean(normalizedQuery);
-  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages });
-  const hiddenLanguageCount = languages.length - shownLanguages.length;
-  const programming = visibleCourses.filter((c) => c.kind === "programming");
-  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship");
+  /**
+   * Starred courses come out of their own section and go to the top.
+   *
+   * Not while searching: then the question is whether a language is in here at
+   * all, and an answer split across two sections is half hidden.
+   *
+   * English is one card standing for two ids, so it counts as starred if
+   * either spelling is — and it is starred under the UK id, which is the one
+   * the card hands to the store.
+   */
   const countryOnly = scope === "country";
+  const englishStarred = !countryOnly && Boolean(mergedEnglish)
+    && (isFavourite("english-uk") || isFavourite("english-us"));
+  const groupFavourites = !searching && favourites.length > 0;
+  const isPickedOut = (id: string) => groupFavourites && isFavourite(id);
+
+  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages })
+    .filter((c) => !isPickedOut(c.id));
+  const hiddenLanguageCount = languages.length - visibleLanguageRows(languages, { searching, showAll: showAllLanguages }).length;
+  const programming = visibleCourses.filter((c) => c.kind === "programming" && !isPickedOut(c.id));
+  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship" && !isPickedOut(c.id));
+
+  /**
+   * In the order they were starred, so the section does not reshuffle.
+   *
+   * Scoped, because the dialog is not always showing the whole catalogue.
+   * Favourites are one list across everything, and unscoped they put a
+   * starred language at the top of the country picker — a language row in
+   * a dialog for choosing a country, one click from changing the wrong
+   * thing. The starring itself stays global: a course is a favourite
+   * wherever it appears, it simply does not appear where it does not
+   * belong.
+   */
+  const favouriteCourses = groupFavourites
+    ? favourites
+        .filter((id) => !(mergedEnglish && (id === "english-uk" || id === "english-us")))
+        .map((id) => visibleCourses.find((c) => c.id === id))
+        .filter((c): c is (typeof COURSES)[number] => Boolean(c))
+    : [];
+  const favouriteRowCount = favouriteCourses.length + (groupFavourites && englishStarred ? 1 : 0);
 
   useEffect(() => {
     if (!open) return;
@@ -168,6 +281,89 @@ export function CourseSwitcher({
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open, onClose]);
+
+  /**
+   * A span with a button role rather than a button: the card around it is
+   * already one, and a button inside a button is invalid markup that screen
+   * readers flatten. The sidebar's pressable flag is built the same way.
+   */
+  /**
+   * Give a language back from where you chose it.
+   *
+   * Only on the courses that HAVE a download — which today is at most two, so
+   * the picker stays a list of things to learn rather than a list of things
+   * to manage. A Remove on every row would be noise on rows with nothing to
+   * remove, and a "manage downloads" button somewhere else means leaving the
+   * picker in the middle of choosing.
+   *
+   * Armed like the deletes in Data and storage: one press asks, the second
+   * does it. Nothing is lost for good — opening the course fetches it again —
+   * but a stray click beside the course you were about to pick should not
+   * quietly throw away a download either.
+   */
+  const DownloadedBadge = ({ id }: { id: string }) => {
+    const pack = installedPacks.find((entry) => entry.course === id);
+    if (!pack) return null;
+    const asking = removing === id;
+    const label = asking ? ui("Tap again to remove") : ui("Downloaded — remove");
+    const drop = () => {
+      if (!asking) { setRemoving(id); return; }
+      setRemoving(null);
+      void removePack(pack.url).then(() => {
+        setInstalledPacks((current) => current.filter((entry) => entry.course !== id));
+      });
+    };
+    return (
+      <span
+        aria-label={label}
+        className={cn(
+          "grid shrink-0 place-items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black uppercase tracking-wide transition-colors",
+          asking
+            ? "bg-[var(--surface-3)] text-[var(--text-1)]"
+            : "bg-[var(--surface-3)] text-[var(--text-3)] hover:text-[var(--text-1)]"
+        )}
+        onClick={(event) => { event.stopPropagation(); drop(); }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          drop();
+        }}
+        role="button"
+        tabIndex={0}
+        title={label}
+      >
+        {asking ? ui("Remove?") : ui("Downloaded")}
+      </span>
+    );
+  };
+
+  const FavouriteStar = ({ id }: { id: string }) => {
+    const on = isFavourite(id);
+    const label = on ? ui("Remove from favourites") : ui("Add to favourites");
+    return (
+      <span
+        aria-label={label}
+        aria-pressed={on}
+        className={cn(
+          "grid h-7 w-7 shrink-0 place-items-center rounded-full transition-colors",
+          on ? "text-[var(--np-yellow,#f0b429)]" : "text-[var(--text-3)] hover:text-[var(--text-1)]"
+        )}
+        onClick={(event) => { event.stopPropagation(); star(id); }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          star(id);
+        }}
+        role="button"
+        tabIndex={0}
+        title={label}
+      >
+        <Star className={cn("h-4 w-4", on && "fill-current")} />
+      </span>
+    );
+  };
 
   const Card = ({ id, name, tagline, available, builtIn }: (typeof COURSES)[number]) => {
     const active = id === activeCourseId || id === activeCountryCourseId;
@@ -196,9 +392,11 @@ export function CourseSwitcher({
                 {ui("Built-in")}
               </span>
             )}
+            <DownloadedBadge id={id} />
           </span>
           <span className="mt-1 block text-[13px] font-bold leading-5 text-[var(--text-3)]">{ui(tagline)}</span>
         </span>
+        {available && <FavouriteStar id={id} />}
         {active ? (
           <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />
         ) : !available ? (
@@ -251,6 +449,7 @@ export function CourseSwitcher({
               {ui("Same course, two spellings and accents. Pick one — you can swap any time.")}
             </span>
           </span>
+          <FavouriteStar id={uk.id} />
           {activeVariant && <Check className="h-4 w-4 shrink-0 text-[var(--accent)]" />}
         </div>
 
@@ -310,7 +509,7 @@ export function CourseSwitcher({
                 <p className="mt-1 text-sm font-semibold text-[var(--text-3)]">
                   {ui(countryOnly
                     ? "Pick the country whose history and society you want to study."
-                    : "Pick a language, a programming track or a country course.")}
+                    : "Pick a language or a programming track.")}
                 </p>
               </div>
               <button
@@ -350,6 +549,35 @@ export function CourseSwitcher({
             </label>
 
             <div className="-mr-2 mt-1 min-h-0 flex-1 overflow-y-auto pr-2">
+              {favouriteRowCount > 0 && (
+                <>
+                  {/* The heading is the switch, like the sidebar's sections.
+                      The count stays visible while it is shut, so the section
+                      still says what is in it. */}
+                  <button
+                    aria-expanded={favouritesOpen}
+                    className="mt-4 flex w-full items-center gap-2 text-xs font-black uppercase tracking-wide text-[var(--text-3)] transition-colors hover:text-[var(--text-1)]"
+                    onClick={toggleFavourites}
+                    type="button"
+                  >
+                    {ui("Favourites")}
+                    <span className="font-bold normal-case tracking-normal opacity-70">
+                      {favouriteRowCount}
+                    </span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={cn("h-3.5 w-3.5 transition-transform", !favouritesOpen && "-rotate-90")}
+                    />
+                  </button>
+                  {favouritesOpen && (
+                    <div className="mt-2 grid gap-2">
+                      {englishStarred && mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
+                      {favouriteCourses.map((c) => <Card key={c.id} {...c} />)}
+                    </div>
+                  )}
+                </>
+              )}
+
               {!countryOnly && languageRowCount > 0 && (
                 <>
                   <p className="mt-4 text-xs font-black uppercase tracking-wide text-[var(--text-3)]">
@@ -362,7 +590,7 @@ export function CourseSwitcher({
                     {/* English sits at the top of the list: it is the one a
                         German speaker here is most likely to want, and the
                         merged card is taller than the rest. */}
-                    {mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
+                    {mergedEnglish && !(groupFavourites && englishStarred) && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
                     {shownLanguages.map((c) => <Card key={c.id} {...c} />)}
                   </div>
                   {hiddenLanguageCount > 0 && (
@@ -401,7 +629,7 @@ export function CourseSwitcher({
                 </>
               )}
 
-              {(countryOnly ? citizenship.length === 0 : visibleCourses.length === 0) && (
+              {(countryOnly ? citizenship.length + favouriteRowCount === 0 : visibleCourses.length === 0) && (
                 <div className="mt-5 rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-2)] px-5 py-8 text-center">
                   <p className="text-sm font-black text-[var(--text-1)]">{ui("No matching course")}</p>
                   <p className="mt-1 text-[13px] font-bold text-[var(--text-3)]">

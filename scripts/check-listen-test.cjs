@@ -145,7 +145,10 @@ assert.ok(/setHeardIds/.test(listen),
   "nothing records what the sitting played, so the test cannot be about it");
 
 for (const key of ["Test me", "Back to Listen", "The ones that got away"]) {
-  assert.ok(fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8").includes(`"${key}":`),
+  assert.ok(fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8").includes(`"${key}":`),
     `"${key}" has no German`);
 }
 

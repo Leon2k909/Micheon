@@ -17,10 +17,10 @@ import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
  * So the question is asked in one place. A fourth course is one more case
  * here rather than a hunt through six screens.
  */
-export type CourseLanguage = "de" | "en" | "fr";
+export type CourseLanguage = "de" | "en" | "fr" | "pl";
 
 /** Every BCP-47 tag the app asks a voice for. */
-export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR";
+export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL";
 
 export type CourseSide = {
   code: CourseLanguage;
@@ -38,6 +38,7 @@ export const LANGUAGE_LABEL: Record<CourseLanguage, string> = {
   de: "German",
   en: "English",
   fr: "French",
+  pl: "Polish",
 };
 
 /** The name the audio mixer knows each language by. */
@@ -45,6 +46,7 @@ export const AUDIO_LANGUAGE: Record<CourseLanguage, TtsAudioLanguage> = {
   de: "german",
   en: "english",
   fr: "french",
+  pl: "polish",
 };
 
 export function courseSide(code: CourseLanguage): CourseSide {
@@ -52,7 +54,7 @@ export function courseSide(code: CourseLanguage): CourseSide {
   return {
     code,
     label: LANGUAGE_LABEL[code],
-    voice: code === "de" ? "de-DE" : code === "fr" ? "fr-FR" : englishVoice,
+    voice: code === "de" ? "de-DE" : code === "fr" ? "fr-FR" : code === "pl" ? "pl-PL" : englishVoice,
     htmlLang: code,
   };
 }
@@ -61,6 +63,7 @@ export function courseSide(code: CourseLanguage): CourseSide {
 export function targetLanguage(direction: LearningDirection = getLearningDirection()): CourseLanguage {
   if (direction === "learn-en") return "en";
   if (direction === "learn-fr") return "fr";
+  if (direction === "learn-pl") return "pl";
   return "de";
 }
 
@@ -87,8 +90,44 @@ export function meaningLanguageFor(
   return target === "en" ? "de" : "en";
 }
 
+/**
+ * Every translation table this setup cannot be built without.
+ *
+ * The course's own is the obvious one, and direction.ts already answers it:
+ * a course read out of a table comes out SHORT without it, because an entry
+ * the table does not cover is dropped rather than shown in German.
+ *
+ * The app's language is the one that was missed. Listen explains a card in
+ * whatever the app is written in, and it reads that out of the same tables —
+ * so a GERMAN course in a French app needs French, and asking the course
+ * alone answers "nothing". The queue then drops every card it cannot
+ * translate, which is all of them, and Listen opens empty with nothing on
+ * screen to say why.
+ *
+ * Two at most today, and deduplicated, because the French course in a French
+ * app explains itself in English and needs the one table.
+ */
+export function translationLanguagesNeeded(
+  direction: LearningDirection = getLearningDirection()
+): Array<"fr" | "pl"> {
+  const target = targetLanguage(direction);
+  const wanted = new Set<"fr" | "pl">();
+  for (const code of [target, meaningLanguageFor(target)]) {
+    if (code === "fr" || code === "pl") wanted.add(code);
+  }
+  return [...wanted];
+}
+
 export function courseSides(direction: LearningDirection = getLearningDirection()): CourseSides {
   if (direction === "learn-en") return { target: courseSide("en"), meaning: courseSide("de") };
   if (direction === "learn-fr") return { target: courseSide("fr"), meaning: courseSide(meaningLanguageFor("fr")) };
+  if (direction === "learn-pl") {
+    // Narrowed to the two columns every entry carries. A French interface
+    // would otherwise ask for a French meaning beside a Polish card, and the
+    // Polish table is keyed by the German — there is no French to put there,
+    // so the row would be labelled French and filled with English.
+    const app = meaningLanguageFor("pl");
+    return { target: courseSide("pl"), meaning: courseSide(app === "de" ? "de" : "en") };
+  }
   return { target: courseSide("de"), meaning: courseSide("en") };
 }

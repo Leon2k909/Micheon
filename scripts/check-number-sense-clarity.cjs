@@ -89,7 +89,81 @@ const taughtWords = words.reduce((count, word) => count + 1 + (word.synonyms?.le
 // and five strong verbs the new principal-parts table needs to point at
 // (befehlen, fliehen, geschehen, stechen, zurückkommen). All 92 stand alone;
 // none folded into an existing synonym card.
-assert.equal(taughtWords, 7845, "the reviewed sense fixes changed the standalone word count");
+// 7845 -> 8000: parts 545-550 round the inventory to eight thousand with 156
+// words read out of the immersion gap list and the extension glossary — news
+// and software vocabulary (der Börsengang, die Eilmeldung, das Ratenlimit, der
+// Mehrspielermodus) and the ordinary things between them (der Kumpel, die
+// Landkarte, die Großtante, das Lehrbuch). 18 of the 156 fold into synonym
+// cards that already existed, so the faces move 7,330 -> 7,468 while the words
+// taught move by 155: drucken is the one that does not arrive at all, dropped
+// by the catalogue's own filters before it becomes a card.
+// 8000 -> 8554: parts 561-584 take the TRACKER to eight thousand cards, which
+// is the number a learner reads — the inventory had already been rounded, but
+// it counts synonyms that share a face and the library still said 7,468. 570
+// authored words, every one checked against the built catalogue rather than
+// the pack files, so a word already taught under another spelling did not
+// count as new: the courtroom and the letting agent, the building site and the
+// toolbox, the farm and the wood, the kitchen and the label on the packet, the
+// stage, the canvas and the forge. 16 never arrive — the catalogue's own
+// filters drop them — and 22 of the 554 that do fold into synonym cards that
+// already existed, so the faces move 7,468 -> 8,000 exactly.
+// 8554 -> 9056: parts 585-604 teach 502 words read out of an eight-thousand-row
+// spreadsheet of German words with their articles. The sheet holds 2,495 words
+// spread over 8,000 rows — an adjective once per case ending, a verb once per
+// participle form, so froh arrives five times and sagen seven — and 1,696 of
+// them the course already taught. 94 of the 502 fold into synonym cards that
+// already existed (die Fahrkarte onto das Ticket, downloaden onto
+// herunterladen, die Kundin onto der Kunde), so the faces move 8,000 -> 8,406
+// while the words taught move by the full 502. Eight more were written and
+// then left out rather than shipped dead: the progress id strips umlauts, so
+// sägen collides with sagen, träge with die Trage and waschbar with der
+// Waschbär, and the second of each pair can never become a card.
+// 9056 -> 9153: parts 605-610 stop mining sources and start from the gap.
+// Thirty everyday fields were probed with twenty ordinary words each against
+// the built catalogue; Naturwissenschaft answered worst at 35 per cent, with
+// der Magnet, die Saeure and das Molekuel missing while the kitchen and the
+// bathroom were complete. 98 words were written for it, of which 16 fold into
+// synonym cards that already existed, so the faces move 8,406 -> 8,488 while
+// the words taught move by 97: die Auswertung already had its French.
+// 9153 -> 9281: parts 611-617 answer the second-worst field, the sea at 60 per
+// cent - der Anker, das Segel and der Leuchtturm all missing. 130 words for
+// the ship, the harbour, the water, what lives in it, fishing and diving, and
+// what goes wrong out there. 15 fold into synonym cards, so the faces move
+// 8,488 -> 8,603.
+// 9281 -> 9386: parts 618-624 answer the third-worst field, the trades at 65
+// per cent - der Schreiner, der Geselle and die Innung missing while the
+// toolbox itself was nearly complete. 112 words for the trades, the German
+// apprenticeship, the building site, the workshop, the materials, the verbs a
+// quote lists and the invoice that follows. 26 fold into synonym cards, so the
+// faces move 8,603 -> 8,689.
+// 9386 -> 9492: parts 625-630 answer the mountain and the wood at 70 per cent.
+// 107 words for the climb, the way-marking, a night under canvas, the country
+// a walk crosses, what lives there, and the weather that turns it dangerous.
+// Only 5 fold into existing synonym cards - the highest yield of the six
+// blocks, because almost nothing up a mountain has a second name in a course
+// written around a town. The faces move 8,689 -> 8,791.
+// 9492 -> 9491: die Esse is dropped, the only word this ledger has ever lost.
+// It is a smith's hearth, taught in a pack that already teaches die Schmiede
+// as "forge", and English has no everyday word for the fire inside a forge as
+// distinct from the forge itself — so its gloss had to be "smith's hearth",
+// which is a dictionary entry rather than anything a reader would recognise.
+// It also happens to be spelled like the plural of das Essen, which is a
+// separate fault and fixed separately; a word is not dropped for being awkward
+// to count.
+// 9492 -> 9574: parts 631-637 answer post and insurance at 75 and 80 per cent.
+// 89 words for the counter at the post office, packing a parcel, ordering and
+// sending it back, the warehouse behind the shop, a border crossing, the cover
+// a German household is expected to have, and the paperwork either side of the
+// money. 14 fold into synonym cards, so the faces move 8,790 -> 8,865.
+// 9573 -> 9715: parts 638-648 close the six blocks on exactly nine thousand
+// cards. Health probed at 75 per cent and the first pass found only 51 new
+// words, so the block widened into what the field touches: the body past a
+// first course, the test results, the ambulance, the pharmacy, the recovery
+// and the German health system in its own words. 149 words, 18 of which fold
+// into synonym cards. The last four - das Blutdruckmessgeraet, das
+// Desinfektionsmittel, die Waermflasche, die Arzthelferin - were written after
+// a count came in at 8,996, because nine thousand was the number asked for.
+assert.equal(taughtWords, 9715, "the reviewed sense fixes changed the standalone word count");
 
 const million = byLookup("Million");
 assert(million, "die Million is missing from the shipped word catalog");

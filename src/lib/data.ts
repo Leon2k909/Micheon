@@ -5,8 +5,12 @@ import { advancedWordPartBlueprints2 } from "./advancedWordPacks2";
 import { b2ExpansionPartBlueprints } from "./b2ExpansionPacks";
 import { everydayWordPartBlueprints } from "./everydayWordPacks";
 import { frequencyWordPartBlueprints } from "./frequencyWordPacks";
+import { roundingWordPartBlueprints } from "./roundingWordPacks";
 import { basicsWordPartBlueprints } from "./basicsWordPacks";
 import { immersionWordPartBlueprints } from "./immersionWordPacks";
+import { moreWordPartBlueprints } from "./moreWordPacks";
+import { sheetWordPartBlueprints } from "./sheetWordPacks";
+import { fieldWordPartBlueprints } from "./fieldWordPacks";
 
 export const GERMAN_SPECIAL_CHARACTERS = ["Ä", "ä", "É", "é", "Ö", "ö", "Ü", "ü", "ß"];
 
@@ -8289,7 +8293,11 @@ export const allPartBlueprints: Record<string, Blueprint> = {
 ...immersionWordPartBlueprints,
 ...everydayWordPartBlueprints,
 ...frequencyWordPartBlueprints,
+...roundingWordPartBlueprints,
 ...basicsWordPartBlueprints,
+...moreWordPartBlueprints,
+...sheetWordPartBlueprints,
+...fieldWordPartBlueprints,
 };
 
 export const verbConjugations: Record<string, Record<string, string>> = {

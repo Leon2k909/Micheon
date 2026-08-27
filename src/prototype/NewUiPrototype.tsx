@@ -85,8 +85,8 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, setLearningDirection } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, setLearningDirection } from "@/lib/direction";
+import { courseSides, translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { buildCatalog } from "@/session";
@@ -102,7 +102,7 @@ import {
   selectPracticeItem,
   type PracticeRecallState,
 } from "@/lib/practiceRecall";
-import { requestVocabFilter, requestVocabLibraryOpen } from "@/lib/vocabFilterRequest";
+import { requestVocabFilter, requestVocabLibraryFirst, requestVocabLibraryOpen, takeVocabLibraryFirst } from "@/lib/vocabFilterRequest";
 
 import { getMasteredCount } from "@/lib/mastery";
 import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
@@ -118,6 +118,9 @@ import {
 import { getCourse } from "@/lib/courseRegistry";
 import { FlagRoundel } from "@/components/course/FlagRoundel";
 import { learningFlagId } from "@/lib/learningFlag";
+import { arrangePodium } from "@/lib/leaderboardPodium";
+import { duoUnitAnchorId, scrollToAnchorWhenReady } from "@/lib/scrollToAnchor";
+import { buildDuoPath } from "@/lib/duoPath";
 import { UK_TIMELINE } from "@/lib/lifeInTheUkTimeline";
 import {
   HIDDEN_NAV_EVENT,
@@ -161,6 +164,7 @@ import {
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
 import { FriendsPanel } from "@/components/social/FriendsPanel";
+import { formatFriendCode, getFriendCode } from "@/lib/friendCode";
 import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
 import { PlusSquare } from "lucide-react";
 import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/lessonContent";
@@ -181,6 +185,7 @@ import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
+import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v1.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
@@ -224,7 +229,7 @@ type PrototypeSearchItem = {
   id: string;
   title: string;
   subtitle: string;
-  group: "Page" | "Lesson" | "Word bank" | "Game" | "Country studies";
+  group: "Page" | "Unit" | "Lesson" | "Word bank" | "Game" | "Country studies";
   actionLabel: "Open" | "Start";
   searchText: string;
   onSelect: () => void;
@@ -443,7 +448,7 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
  * The face of the language card.
  *
  * Keyed on the language being learned rather than on a German-or-not flag,
- * which handed French the German scene for as long as it lasted. All three
+ * which handed French the German scene for as long as it lasted. All four
  * courses have their own now, and an unknown code still falls back rather
  * than being given somebody else's country. British and
  * American English are the same course read with a different spelling, so
@@ -453,6 +458,7 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
 function languageCardArt(targetCode: string, englishVariant: "british" | "american" | null) {
   if (targetCode === "de") return homeLanguagesGermanImage;
   if (targetCode === "fr") return homeLanguagesFrImage;
+  if (targetCode === "pl") return homeLanguagesPlImage;
   if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
   return homeLanguagesImage;
 }
@@ -1047,7 +1053,7 @@ function Sidebar({
                         aria-current={viewActive ? "page" : undefined}
                         className={viewActive ? "is-active" : ""}
                         key={row.label}
-                        onClick={() => { requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
+                        onClick={() => { requestVocabLibraryFirst(); requestVocabLibraryOpen(); onNavigate(row.view); scrollToVocabularyLibrary(); }}
                         onFocus={() => onPrefetch(row.view)}
                         onPointerEnter={() => onPrefetch(row.view)}
                         title={ui("Your vocabulary library, on the progress page.")}
@@ -1959,10 +1965,11 @@ function CourseHero({
   // The learner's chosen English variant decides the flag: a US-English
   // course must not wear a Union Jack.
   const englishVariant = learnsEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
-  // German is three <i> bands; English and French are drawn in CSS.
+  // German is three <i> bands; English, French and Polish are drawn in CSS.
   const badgeClass = learnsEnglish
     ? ` is-english is-${englishVariant}`
-    : sides.target.code === "fr" ? " is-french" : "";
+    : sides.target.code === "fr" ? " is-french"
+    : sides.target.code === "pl" ? " is-polish" : "";
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
@@ -2958,11 +2965,14 @@ function describeSessionContent(sentences: number, dialogues: number): string {
 }
 
 function ProgressPanel({
+  onNavigate,
   onViewAllAchievements,
   standalone = false,
   stats,
   userName,
 }: {
+  /** Each figure is a way in; without this they are numbers with no arrow. */
+  onNavigate?: (view: PrototypeView) => void;
   onViewAllAchievements?: () => void;
   standalone?: boolean;
   stats: PrototypeStats;
@@ -3041,21 +3051,64 @@ function ProgressPanel({
         <>
 
       <div className="np-level-card">
-        <span className="np-level-badge">L{cur.level}</span>
+        <span aria-hidden="true" className="np-level-card__weave" />
+        <span className="np-level-badge">
+          {/* Not ui("Level"): that string means a CEFR level elsewhere and is
+              "Niveau" in German, which clashed with the "Stufe" on the line
+              beside it. */}
+          <small>{ui("XP level")}</small>
+          <strong>{cur.level}</strong>
+        </span>
         <div className="np-level-copy">
           <strong>{ui(cur.label)}</strong>
-          {/* Formatted like every other count — a raw 4065 beside 18,935 XP
-              two lines above reads as a different kind of number. */}
-          <small>{nxt ? uiFmt("{xp} XP to level {level}", { xp: uiNumber(nxt.xpRequired - stats.totalXp), level: nxt.level }) : ui("Highest level reached")}</small>
-          <div className="np-progress-track"><span style={{ width: `${pct}%` }} /></div>
+          {/* Two pieces rather than one sentence: the remaining XP carries the
+              accent, and a colour cannot be given to half a text node. Both
+              halves are translated; "XP" is the same word in all three. */}
+          <small>
+            {nxt ? (
+              <>
+                <b>{uiNumber(nxt.xpRequired - stats.totalXp)} XP</b>
+                {" "}
+                {uiFmt("to level {level}", { level: nxt.level })}
+              </>
+            ) : ui("Highest level reached")}
+          </small>
+          <div className="np-progress-track np-progress-track--level"><span style={{ width: `${pct}%` }} /></div>
+          {/* Where the bar has got to, in the same numbers the bar is drawn
+              from: the total on its own said nothing about how far it is. */}
+          <p className="np-level-total">
+            <b>{uiNumber(stats.totalXp)}</b>
+            {nxt ? ` / ${uiNumber(nxt.xpRequired)} XP` : " XP"}
+          </p>
         </div>
-        <small>{uiFmt("{xp} total XP", { xp: uiNumber(stats.totalXp) })}</small>
       </div>
 
+      {/* Each figure leads somewhere: the two about progress to the progress
+          page, the lesson count to the lessons. The arrow is only drawn when
+          there is somewhere to go, so it never promises a click that does
+          nothing. */}
       <div className="np-progress-stats">
-        <div><AchievementArt id="xp_500" /><strong>{uiNumber(stats.totalXp)}</strong><small>{ui("Total XP")}</small></div>
-        <div><AchievementArt id="streak_3" /><strong>{uiNumber(stats.learningDays)}</strong><small>{ui("Days learned")}</small></div>
-        <div><AchievementArt id="first_session" /><strong>{uiNumber(stats.sessionsCompleted)}</strong><small>{ui("Lessons done")}</small></div>
+        {([
+          ["xp_500", uiNumber(stats.totalXp), "Total XP", "gold", "progress"],
+          ["streak_3", uiNumber(stats.learningDays), "Days learned", "green", "progress"],
+          ["first_session", uiNumber(stats.sessionsCompleted), "Lessons done", "accent", "learn"],
+        ] as const).map(([art, value, label, tone, target]) => {
+          const body = (
+            <>
+              <span className="np-progress-stat__art"><AchievementArt id={art} /></span>
+              <strong>{value}</strong>
+              <small>{ui(label)}</small>
+              {onNavigate && <span aria-hidden="true" className="np-progress-stat__go"><ArrowRight /></span>}
+            </>
+          );
+          return onNavigate ? (
+            <button className="np-progress-stat" data-tone={tone} key={label} onClick={() => onNavigate(target)} type="button">
+              {body}
+            </button>
+          ) : (
+            <div className="np-progress-stat" data-tone={tone} key={label}>{body}</div>
+          );
+        })}
       </div>
 
       <div className="np-badges-block">
@@ -3452,13 +3505,27 @@ function ShopView({
   );
 }
 
-function SocialAvatar({ initials, tone }: { initials: string; tone: SocialLeaderboardEntry["tone"] }) {
-  return <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>{initials}</span>;
+function SocialAvatar({ initials, photo, tone }: { initials: string; photo?: string; tone: SocialLeaderboardEntry["tone"] }) {
+  return (
+    <span aria-hidden="true" className={`np-social-avatar np-social-avatar--${tone}`}>
+      {photo ? <img alt="" className="np-social-avatar-photo" src={photo} /> : initials}
+    </span>
+  );
 }
 
-function SocialView({ stats, userName }: { stats: PrototypeStats; userName: string }) {
+function SocialView({ avatar, stats, userName }: { avatar?: string; stats: PrototypeStats; userName: string }) {
   const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
+  /**
+   * Two different things were being said in one banner.
+   *
+   * "Add friend is a preview in this release" and "that code is twenty letters"
+   * are not the same kind of message: the first says nothing happened, the
+   * second is a real app telling you what you typed. Both went through
+   * previewNotice, so the working Friends list reported itself under the
+   * heading "UI preview only" and read as a mock-up of itself.
+   */
+  const [notice, setNotice] = useState<string | null>(null);
   const firstName = userName.trim().split(/\s+/)[0] || "Leon";
   const levelLabel = getLevelInfo(stats.totalXp).cur.label;
   /**
@@ -3482,11 +3549,12 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
    */
   const leaderboard = useMemo(() => {
     const rows = [
-      { id: "me", name: firstName, initials: firstName.slice(0, 1).toUpperCase(), weeklyXp: stats.totalXp, streak: stats.streak, movement: "", tone: "green" as const, current: true },
+      { id: "me", name: firstName, initials: firstName.slice(0, 1).toUpperCase(), photo: avatar, weeklyXp: stats.totalXp, streak: stats.streak, movement: "", tone: "green" as const, current: true },
       ...realFriends.map((friend) => ({
         id: friend.code,
         name: friend.profile?.name ?? friend.name,
         initials: (friend.profile?.name ?? friend.name).slice(0, 1).toUpperCase(),
+        photo: friend.profile?.photo,
         weeklyXp: friend.profile?.totalXp ?? 0,
         streak: friend.profile?.streak ?? 0,
         movement: "",
@@ -3495,8 +3563,8 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       })),
     ];
     return rows.sort((a, b) => b.weeklyXp - a.weeklyXp);
-  }, [firstName, realFriends, stats.streak, stats.totalXp]);
-  const podium = [leaderboard[1], leaderboard[0], leaderboard[2]];
+  }, [avatar, firstName, realFriends, stats.streak, stats.totalXp]);
+  const podium = arrangePodium(leaderboard);
 
   const showPreviewNotice = (action: string) => {
     setPreviewNotice(uiFmt("{action} is a preview in this release. Nothing was sent or changed.", { action }));
@@ -3543,6 +3611,19 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       </div>
 
       <AnimatePresence initial={false}>
+        {notice && (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="np-social-notice"
+            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -6 }}
+            role="status"
+          >
+            <CheckCircle2 aria-hidden="true" />
+            <span><small>{notice}</small></span>
+            <button aria-label={ui("Dismiss message")} onClick={() => setNotice(null)} type="button"><X /></button>
+          </motion.div>
+        )}
         {previewNotice && (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -3561,8 +3642,9 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
       {activeSection === "friends" ? (
         <div className="np-social-layout" id="social-friends-panel" role="tabpanel">
           <FriendsPanel
+            avatar={avatar}
             levelLabel={levelLabel}
-            onNotice={(message) => setPreviewNotice(message)}
+            onNotice={(message) => setNotice(message)}
             stats={stats}
             userName={userName}
           />
@@ -3572,16 +3654,16 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
               <span className="np-social-side-icon"><UserPlus /></span>
               <small>{ui("Grow your circle")}</small>
               <h2>{ui("Invite a learning partner")}</h2>
-              <p>{ui("Practising feels easier when someone is learning alongside you.")}</p>
-              <button onClick={() => showPreviewNotice(ui("Invite friend"))} type="button">{ui("Preview invite")} <ChevronRight /></button>
-            </section>
-            <section className="np-social-side-card">
-              <span className="np-social-side-icon np-social-side-icon--blue"><Swords /></span>
-              <small>{ui("Friendly challenge")}</small>
-              <h2>{ui("Reach 500 XP together")}</h2>
-              <p>{ui("You and Michelle are 68% of the way to a shared weekly target.")}</p>
-              <div className="np-social-progress"><span style={{ width: "68%" }} /></div>
-              <button onClick={() => showPreviewNotice(ui("Challenge Michelle"))} type="button">{ui("Open challenge")} <ChevronRight /></button>
+              <p>{ui("Send them your code. Their app asks yours to connect, you accept, and after that your figures pass straight between the two.")}</p>
+              <button
+                onClick={() => {
+                  void navigator.clipboard?.writeText(formatFriendCode(getFriendCode()));
+                  setNotice(ui("Your code is copied. Send it to whoever you are adding."));
+                }}
+                type="button"
+              >
+                {ui("Copy your code")} <ChevronRight />
+              </button>
             </section>
           </aside>
         </div>
@@ -3593,26 +3675,32 @@ function SocialView({ stats, userName }: { stats: PrototypeStats; userName: stri
               <div className="np-leaderboard-time"><Clock3 /><span><strong>{ui("3 days left")}</strong><small>{ui("Resets Monday")}</small></span></div>
             </div>
 
-            <div aria-label={ui("Top three friends")} className="np-leaderboard-podium">
-              {podium.map((entry) => {
-                const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
-                return (
-                  <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
-                    <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
-                    <SocialAvatar initials={entry.initials} tone={entry.tone} />
-                    <strong>{entry.name}</strong>
-                    <small>{uiNumber(entry.weeklyXp)} XP</small>
-                    <i aria-hidden="true" />
-                  </div>
-                );
-              })}
-            </div>
+            {podium.length ? (
+              <div
+                aria-label={ui("You and your friends by total XP")}
+                className="np-leaderboard-podium"
+                data-places={podium.length}
+              >
+                {podium.map((entry) => {
+                  const rank = leaderboard.findIndex((candidate) => candidate.id === entry.id) + 1;
+                  return (
+                    <div className={`np-podium-place np-podium-place--${rank}`} key={entry.id}>
+                      <span className="np-podium-rank">{rank === 1 ? <Medal aria-label={ui("First place")} /> : rank}</span>
+                      <SocialAvatar initials={entry.initials} photo={entry.photo} tone={entry.tone} />
+                      <strong>{entry.name}</strong>
+                      <small>{uiNumber(entry.weeklyXp)} XP</small>
+                      <i aria-hidden="true" />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
 
             <div className="np-leaderboard-list">
               {leaderboard.map((entry, index) => (
                 <article className={entry.current ? "is-current" : ""} key={entry.id}>
                   <strong className="np-leaderboard-rank">{index + 1}</strong>
-                  <SocialAvatar initials={entry.initials} tone={entry.tone} />
+                  <SocialAvatar initials={entry.initials} photo={entry.photo} tone={entry.tone} />
                   <span className="np-leaderboard-person">
                     <strong>{entry.name}{entry.current && <small>{ui("You")}</small>}</strong>
                     <small>{uiFmt("{days}-day streak", { days: entry.streak })}</small>
@@ -3805,12 +3893,14 @@ function usePrototypeParts(requested: boolean) {
     let removeListeners = () => {};
 
     const load = async () => {
-      const [api, curriculum, contentBank, customContent, data] = await Promise.all([
+      const [api, curriculum, contentBank, customContent, data, translations, direction] = await Promise.all([
         import("@/lib/api"),
         import("@/lib/curriculum"),
         import("@/lib/contentBank"),
         import("@/lib/customContent"),
         import("@/lib/data"),
+        import("@/lib/translations"),
+        import("@/lib/direction"),
       ]);
       if (!active) return;
 
@@ -3819,7 +3909,24 @@ function usePrototypeParts(requested: boolean) {
         resolved[key] = api.buildApiPartFromResolved(blueprint as Blueprint, {});
       }
 
-      const rebuild = () => {
+      /**
+       * Every language on screen before anything is built from it.
+       *
+       * French and Polish are read out of a table that is fetched rather than
+       * bundled, so that a learner doing German alone never downloads them.
+       * The cost of that is this await: build the catalogue while the table is
+       * still in flight and every entry it would have translated is dropped,
+       * which shows up as a course that is simply missing lessons rather than
+       * as anything that looks like an error.
+       *
+       * The COURSE is not the only thing that reads those tables. Listen
+       * explains a card in whatever the app is written in, so a German course
+       * in a French app needs French as much as the French course does —
+       * asking the course alone answered "nothing" and left Listen empty.
+       */
+      const rebuild = async () => {
+        if (!active) return;
+        await Promise.all(translationLanguagesNeeded().map(translations.ensureTranslations));
         if (!active) return;
         setApiParts(curriculum.orderParts(contentBank.filterPartsForLearningDirection({
           ...resolved,
@@ -3829,12 +3936,17 @@ function usePrototypeParts(requested: boolean) {
         })));
       };
 
-      rebuild();
-      window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
-      window.addEventListener("gl-direction-change", rebuild);
+      void rebuild();
+      const onRebuild = () => { void rebuild(); };
+      window.addEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
+      window.addEventListener("gl-direction-change", onRebuild);
+      // Changing the app's language changes which table is needed, not just
+      // which words are on the buttons.
+      window.addEventListener("gl-interface-language-change", onRebuild);
       removeListeners = () => {
-        window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, rebuild);
-        window.removeEventListener("gl-direction-change", rebuild);
+        window.removeEventListener(customContent.CUSTOM_CONTENT_EVENT, onRebuild);
+        window.removeEventListener("gl-direction-change", onRebuild);
+        window.removeEventListener("gl-interface-language-change", onRebuild);
       };
     };
 
@@ -3903,10 +4015,10 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId.startsWith("english"))
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId.startsWith("english"))
     ? (learningEnglish()
         ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
-        : learningFrench() ? "french" : "german")
+        : learningFrench() ? "french" : learningPolish() ? "polish" : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
@@ -4055,6 +4167,22 @@ export default function NewUiPrototype({
     ]),
   })), [apiParts]);
 
+  /**
+   * The path's units, flattened for search.
+   *
+   * Built from the same buildDuoPath the path view uses rather than a second
+   * reading of the packs, so a unit found here is the unit that is actually
+   * there — numbering included, which is derived from pack order and would
+   * drift the moment two places worked it out separately.
+   */
+  const searchableUnits = useMemo(() => buildDuoPath(apiParts).units.map((unit) => ({
+    number: unit.number,
+    title: unit.title,
+    level: unit.level,
+    percent: unit.percent,
+    nodeTitles: unit.nodes.map((node) => node.title),
+  })), [apiParts]);
+
   useEffect(() => {
     const previousTitle = document.title;
     document.documentElement.classList.add("is-ui-prototype");
@@ -4123,12 +4251,18 @@ export default function NewUiPrototype({
     VIEW_PREFETCH[view]?.();
   };
 
+  // Which way round the progress page is built this visit. The vocabulary
+  // card is the last thing on that page and the thing two rows are named
+  // after, so those rows ask for it first — see takeVocabLibraryFirst.
+  const [vocabFirst, setVocabFirst] = useState(false);
+
   const navigate = (view: PrototypeView) => {
     if ((view === "social" && !socialPreviewUnlocked) || (view === "shop" && !shopUnlocked)) {
       setActiveView("home");
       return;
     }
     if (["path", "learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
+    setVocabFirst(view === "progress" && takeVocabLibraryFirst());
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -4181,8 +4315,8 @@ export default function NewUiPrototype({
       navigate("home");
       return;
     }
-    // German, English and French are the same built-in course read three ways,
-    // so picking one has to move the direction as well as the id. Without
+    // German, English, French and Polish are the same built-in course read four
+    // ways, so picking one has to move the direction as well as the id. Without
     // this, choosing English left the app teaching German.
     // The two English courses are the same course with a different spelling
     // and accent, so picking one sets both. Doing it here means the choice is
@@ -4194,6 +4328,7 @@ export default function NewUiPrototype({
     }
     else if (courseId === "german") setLearningDirection("learn-de");
     else if (courseId === "french") setLearningDirection("learn-fr");
+    else if (courseId === "polish") setLearningDirection("learn-pl");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);
@@ -4280,6 +4415,34 @@ export default function NewUiPrototype({
       actionLabel: "Start" as const,
       onSelect: () => openGuidedLesson(lesson.id),
     })),
+    // The path's units. A lesson was already findable by name, but the unit
+    // holding it was not, so "unit 12" or the name of a unit reached nothing
+    // and the only way to a unit was scrolling the path to it.
+    //
+    // The nodes inside each unit go into the same search text: they are what
+    // the unit is FOR, and somebody looking for the unit that teaches the
+    // dative is looking for a word that appears on a node, not in the title.
+    ...searchableUnits.map((unit) => ({
+      id: `unit-${unit.number}`,
+      title: `${uiFmt("Unit {n}", { n: unit.number })} · ${unit.title}`,
+      // The percentage rather than "3 of 5 units", which is what the nearest
+      // existing phrase says and would be counting the wrong thing: these are
+      // the lessons inside one unit. The unit's own card prints this figure.
+      subtitle: [unit.level, `${unit.percent}%`].filter(Boolean).join(" · "),
+      group: "Unit" as const,
+      actionLabel: "Open" as const,
+      searchText: buildCatalogSearchText([
+        unit.title,
+        unit.level,
+        `unit ${unit.number}`,
+        uiFmt("Unit {n}", { n: unit.number }),
+        ...unit.nodeTitles,
+      ]),
+      onSelect: () => {
+        navigate("path");
+        scrollToAnchorWhenReady(duoUnitAnchorId(unit.number));
+      },
+    })),
     // Games only surface in search on the account that can open them.
     ...(gamesUnlocked ? PROTOTYPE_SEARCH_GAMES.map(([title, subtitle]) => ({
       id: `game-${title.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -4291,6 +4454,28 @@ export default function NewUiPrototype({
       onSelect: () => navigate("games"),
     })) : []),
   ];
+
+  // The vocabulary library, mastery, totals and milestones, which used to be
+  // the tail of the settings page. Signed out there is nothing of the sort to
+  // show, so the progress panel stands on its own. Written here rather than
+  // where it is used because it goes above or below that panel depending on
+  // what was asked for: the panel is 1,189px tall and the card is under it,
+  // so a learner who asked for the card by name spent a second and a half
+  // looking at something else and then watched the page jump.
+  const progressExtras = profile ? (
+    <div className="np-feature-host np-progress-extras">
+      <Suspense fallback={<FeatureLoading />}>
+        <GamificationPanel
+          apiParts={apiParts}
+          onRequestCatalogue={requestParts}
+          onUpdateStats={updateStats}
+          progressOnly
+          stats={stats}
+          user={profile}
+        />
+      </Suspense>
+    </div>
+  ) : null;
 
   const mainView = activeView === "home" ? (
     courseHasReader && activeCourse ? (
@@ -4311,6 +4496,7 @@ export default function NewUiPrototype({
 
         onOpenCountryCourse={() => navigate("life-in-uk")}
         onOpenFading={() => {
+          requestVocabLibraryFirst();
           requestVocabLibraryOpen();
           requestVocabFilter("fading");
           navigate("progress");
@@ -4383,7 +4569,7 @@ export default function NewUiPrototype({
       </div>
     </section>
   ) : activeView === "social" && socialPreviewUnlocked ? (
-    <SocialView stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+    <SocialView avatar={profile?.avatar} stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
   ) : activeView === "tests" ? (
     <div className="np-feature-host">
       <FeatureBackBar label={ui("Tests")} onBack={() => navigate("practice")} />
@@ -4417,24 +4603,9 @@ export default function NewUiPrototype({
     />
   ) : activeView === "progress" ? (
     <>
-      <ProgressPanel standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
-      {/* The vocabulary library, mastery, totals and milestones, which used to
-          be the tail of the settings page. Signed out there is nothing of the
-          sort to show, so the panel above stands on its own. */}
-      {profile && (
-        <div className="np-feature-host np-progress-extras">
-          <Suspense fallback={<FeatureLoading />}>
-            <GamificationPanel
-              apiParts={apiParts}
-              onRequestCatalogue={requestParts}
-              onUpdateStats={updateStats}
-              progressOnly
-              stats={stats}
-              user={profile}
-            />
-          </Suspense>
-        </div>
-      )}
+      {vocabFirst ? progressExtras : null}
+      <ProgressPanel onNavigate={navigate} standalone stats={stats} userName={profile?.name ?? PREVIEW_PROFILE.name} />
+      {vocabFirst ? null : progressExtras}
     </>
   ) : activeView === "profile" ? (
     profile ? (
@@ -4673,6 +4844,7 @@ export default function NewUiPrototype({
               {showRightRail && (
                 <aside className="np-right-rail">
                   <ProgressPanel
+                    onNavigate={navigate}
                     onViewAllAchievements={() => navigate("progress")}
                     stats={stats}
                     userName={profile?.name ?? PREVIEW_PROFILE.name}

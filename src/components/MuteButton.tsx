@@ -212,6 +212,7 @@ export function MuteButton({
   const englishMuted = isTtsLanguageMuted("english");
   const germanMuted = isTtsLanguageMuted("german");
   const frenchMuted = isTtsLanguageMuted("french");
+  const polishMuted = isTtsLanguageMuted("polish");
   const triggerTitle = `${ui(masterMuted ? "Unmute audio" : "Mute audio")} · ${ui("Hover or right-click for audio settings.")}`;
 
   const setLanguageVolume = (language: TtsAudioLanguage, value: number) => {
@@ -296,6 +297,16 @@ export function MuteButton({
         testId="french"
         unmuteLabel={ui("Unmute French voice")}
         value={settings.frenchVolume}
+      />
+      <VolumeRow
+        label={ui("Polish voice")}
+        muteLabel={ui("Mute Polish voice")}
+        muted={polishMuted}
+        onChange={(value) => setLanguageVolume("polish", value)}
+        onToggleMuted={() => toggleTtsLanguageMuted("polish")}
+        testId="polish"
+        unmuteLabel={ui("Unmute Polish voice")}
+        value={settings.polishVolume}
       />
       <div className="audio-mixer-divider" />
       <SpeechSpeedControl className="audio-mixer-row" testId="speech-speed" />

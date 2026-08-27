@@ -55,6 +55,19 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Polish is the fourth, on exactly the same terms — polishTranslations.ts
+  // holds German↔Polish for a quarter of the catalogue, and polishCourse.ts
+  // narrows the packs to it. The opening stretch of the curriculum survives
+  // whole, which is what a beginner actually meets.
+  {
+    id: "polish",
+    kind: "language",
+    name: "Polish",
+    tagline: "Read, listen, type and translate real Polish.",
+    icon: "🇵🇱",
+    available: true,
+    builtIn: true,
+  },
   {
     id: "spanish",
     kind: "language",

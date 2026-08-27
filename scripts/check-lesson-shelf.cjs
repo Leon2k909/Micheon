@@ -173,13 +173,27 @@ assert.ok(/Show finished \({count}\)/.test(view) && /Hide finished \({count}\)/.
 assert.ok(view.includes("setHideFinished(setHideFinishedLessons(false));"),
   "clearing the filters leaves the shelf on, so a cleared list stays short for no visible reason");
 
-// Both labels and both explanations have to exist in German and in French, or
-// the button reads English on a German screen.
-const de = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
-const fr = fs.readFileSync(path.join(root, "src/lib/i18nFr.ts"), "utf8");
-for (const key of ["Hide finished ({count})", "Show finished ({count})", "{count} fading"]) {
-  assert.ok(de.includes(`"${key}":`), `"${key}" has no German`);
-  assert.ok(fr.includes(`"${key}":`), `"${key}" has no French`);
+// Every label and every explanation has to exist in each interface language,
+// or the button reads English on a screen that is not.
+//
+// Read from whichever files hold the tables today rather than from a name
+// pinned here: the tables have already moved once, into per-language files
+// fetched on demand, and a check pointing at the old home would go quietly
+// green while the button read English.
+const tables = fs.readdirSync(path.join(root, "src/lib"))
+  .filter((name) => /^i18n[A-Z][a-z]\.ts$/.test(name));
+assert.ok(tables.length >= 2,
+  `only found ${tables.length} interface table(s) — the naming changed and this check is now looking at nothing`);
+for (const file of tables) {
+  const table = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
+  for (const key of [
+    "Hide finished ({count})",
+    "Show finished ({count})",
+    "{count} fading",
+    "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.",
+  ]) {
+    assert.ok(table.includes(`"${key}":`), `"${key}" is missing from ${file}`);
+  }
 }
 
 // ── and the screen really draws it ──────────────────────────────────────────

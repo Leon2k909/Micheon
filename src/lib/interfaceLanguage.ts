@@ -4,6 +4,15 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 const KEY = "gl-interface-language";
 export const INTERFACE_LANGUAGE_CHANGE_EVENT = "gl-interface-language-change";
+/**
+ * A table for some language has arrived.
+ *
+ * The tables are downloaded per language now, so the language changing and
+ * the app being able to speak it are two separate moments. This is the second
+ * one. It is declared here rather than in i18n.ts so that the dependency
+ * stays one-way: i18n reads this file already.
+ */
+export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
 
 /**
  * Which language the app itself is written in.
@@ -23,7 +32,7 @@ export const INTERFACE_LANGUAGE_CHANGE_EVENT = "gl-interface-language-change";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl";
 
 let inMemory: InterfaceLanguage = "auto";
 
@@ -31,7 +40,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
   if (typeof window === "undefined") return "auto";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "en" || stored === "de" || stored === "fr" ? stored : "auto";
+    inMemory = stored === "en" || stored === "de" || stored === "fr" || stored === "pl" ? stored : "auto";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }
@@ -39,7 +48,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
 }
 
 /** The language actually in force, with "auto" resolved against the course. */
-export function resolveInterfaceLanguage(): "en" | "de" | "fr" {
+export function resolveInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
   const chosen = getInterfaceLanguage();
   if (chosen !== "auto") return chosen;
   return learningEnglish() ? "de" : "en";
@@ -58,9 +67,29 @@ export function setInterfaceLanguage(language: InterfaceLanguage) {
   }
 }
 
+/**
+ * How many tables have landed since the app started.
+ *
+ * The snapshot below carries it because the LANGUAGE does not change when its
+ * table arrives — it was already "fr". React compares snapshots to decide
+ * whether to re-render, so without this the table lands into an app that
+ * never redraws and the screen stays in the English it fell back to.
+ */
+let stringsArrived = 0;
+
+/** The language in force, and whether anything has arrived since. */
+function currentSnapshot(): string {
+  return `${resolveInterfaceLanguage()}|${stringsArrived}`;
+}
+
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
   const onChange = () => onStoreChange();
+  const onStringsReady = () => {
+    stringsArrived += 1;
+    onStoreChange();
+  };
+  window.addEventListener(INTERFACE_STRINGS_READY_EVENT, onStringsReady);
   const onStorage = (event: StorageEvent) => {
     if (event.key === KEY || event.key === null) onStoreChange();
   };
@@ -73,6 +102,7 @@ function subscribe(onStoreChange: () => void) {
   // not fire, and announces the finished batch with this event instead.
   window.addEventListener("storage-sync-completed", onChange);
   return () => {
+    window.removeEventListener(INTERFACE_STRINGS_READY_EVENT, onStringsReady);
     window.removeEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, onChange);
     window.removeEventListener(DIRECTION_CHANGE_EVENT, onChange);
     window.removeEventListener("storage", onStorage);
@@ -87,6 +117,7 @@ function subscribe(onStoreChange: () => void) {
  * when the language changes. Calling this near the root is what turns a
  * setting change into a re-render instead of a reload.
  */
-export function useInterfaceLanguage(): "en" | "de" | "fr" {
-  return useSyncExternalStore(subscribe, resolveInterfaceLanguage, () => "en");
+export function useInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
+  const snapshot = useSyncExternalStore(subscribe, currentSnapshot, () => "en|0");
+  return snapshot.slice(0, snapshot.indexOf("|")) as "en" | "de" | "fr" | "pl";
 }

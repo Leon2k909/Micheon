@@ -178,7 +178,10 @@ const theme = fs.readFileSync(path.join(root, "src/lib/theme.ts"), "utf8");
 assert.ok(theme.includes("applyCustomColours"),
   "switching between light and dark does not swap the colours, which are stored per theme");
 
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 for (const part of PAINTABLE_PARTS) {
   assert.ok(i18n.includes(`"${part.name}":`), `"${part.name}" is not translated`);
   assert.ok(i18n.includes(`"${part.description}":`), `the description of ${part.name} is not translated`);

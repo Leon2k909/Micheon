@@ -220,9 +220,77 @@ const FR: PlacementQuestion[] = [
   q("fr-c1-8", "C1", "Which is correct?", "Les mesures qu'il a ___ prendre étaient impopulaires.", ["dû", "dues", "due", "dus"], 0, "dû before an infinitive stays invariable."),
 ];
 
+
+// ── Learning Polish ─────────────────────────────────────────────────────────
+//
+// Written the way the French bank is, and for the same reason: every option is
+// POLISH. The German bank answers in English and the English one answers in
+// German, because each knows what its learner already speaks. The Polish
+// course does not — it is taken by German speakers and English speakers both,
+// and its meaning column follows the interface language. A bank written in
+// either would be unanswerable for half the people sitting it, so the
+// questions ask about Polish from inside Polish.
+//
+// One difference from the French bank: the right answer moves around. The
+// options are rendered in the order they are written and nothing shuffles
+// them, so a bank whose answer is always first can be passed without reading
+// past the first line.
+const PL: PlacementQuestion[] = [
+  // A1
+  q("pl-a1-1", "A1", "Which is correct?", "Jak ___ nazywasz?", ["siebie", "się", "sobie", "sam"], 1, "nazywać się — the reflexive pronoun is się."),
+  q("pl-a1-2", "A1", "What does this mean?", "Dobry wieczór", ["rano", "w południe", "wieczorem", "w nocy"], 2, "Dobry wieczór is the evening greeting; dzień dobry covers the rest of the day."),
+  q("pl-a1-3", "A1", "Which is correct?", "To ___ moja siostra.", ["są", "jest", "być", "jesteś"], 1, "jest — third person singular of być."),
+  q("pl-a1-4", "A1", "Which is correct?", "Mam dwa ___.", ["psa", "psów", "psy", "pies"], 2, "After dwa the noun takes the plural: dwa psy."),
+  q("pl-a1-5", "A1", "What is the number?", "czterdzieści dwa", ["24", "42", "52", "72"], 1, "czterdzieści = 40, dwa = 2."),
+  q("pl-a1-6", "A1", "What does this mean?", "dziękuję bardzo", ["proszę", "do widzenia", "wielkie dzięki", "nie ma za co"], 2, "bardzo makes the thanks bigger, not the reply to it."),
+  q("pl-a1-7", "A1", "Which is correct?", "Ona ___ po polsku.", ["mówię", "mówi", "mówisz", "mówią"], 1, "ona mówi — third person singular."),
+  q("pl-a1-8", "A1", "Which is correct?", "Mieszkam ___ Warszawie.", ["do", "z", "w", "na"], 2, "w + locative for living in a city."),
+
+  // A2
+  q("pl-a2-1", "A2", "Which is correct?", "Wczoraj ___ do kina.", ["idę", "pójdę", "chodzę", "poszedłem"], 3, "poszedłem — one finished trip in the past."),
+  q("pl-a2-2", "A2", "Which preposition?", "Czekam ___ autobus.", ["do", "na", "o", "za"], 1, "czekać na — to wait for."),
+  q("pl-a2-3", "A2", "What does this mean?", "mieć ochotę na coś", ["musieć coś zrobić", "umieć coś", "chcieć czegoś", "zapomnieć o czymś"], 2, "mieć ochotę na — to feel like, to fancy."),
+  q("pl-a2-4", "A2", "Which is correct?", "Nie lubię ___.", ["kawa", "kawę", "kawy", "kawą"], 2, "A negated verb takes the genitive: lubię kawę, but nie lubię kawy."),
+  q("pl-a2-5", "A2", "What does this mean?", "Przepraszam.", ["proszę bardzo", "bardzo mi przykro", "dziękuję", "na razie"], 1, "Przepraszam does both apologising and getting attention."),
+  q("pl-a2-6", "A2", "Which is correct?", "Idę ___ sklepu.", ["do", "na", "w", "przy"], 0, "do + genitive for going into a place."),
+  q("pl-a2-7", "A2", "What does this mean?", "Wszystko mi jedno.", ["mam wszystko", "wszystko jest gotowe", "jestem sam", "nie ma dla mnie znaczenia"], 3, "Wszystko mi jedno — it makes no difference to me."),
+  q("pl-a2-8", "A2", "Which is correct?", "Ona jest ___ ode mnie.", ["wysoko", "wyżej", "wyższa", "najwyższa"], 2, "A comparison of two people takes the comparative adjective: wyższa."),
+
+  // B1
+  q("pl-b1-1", "B1", "Which is correct?", "Zawsze ___ gazetę rano.", ["przeczytam", "czytam", "przeczytałem", "poczytam"], 1, "A habit takes the imperfective: zawsze czytam."),
+  q("pl-b1-2", "B1", "What does this mean?", "Nie mam pojęcia.", ["nie chcę", "nie mogę", "nie wiem", "nie pamiętam"], 2, "pojęcie — notion; nie mam pojęcia is the everyday I have no idea."),
+  q("pl-b1-3", "B1", "Which case follows?", "Nie widzę ___.", ["samochód", "samochodu", "samochodem", "samochodzie"], 1, "Negation turns the accusative object into a genitive one."),
+  q("pl-b1-4", "B1", "What does this mean?", "To zależy.", ["to na pewno", "to niemożliwe", "to koniec", "zobaczymy, jak będzie"], 3, "To zależy — it depends."),
+  q("pl-b1-5", "B1", "Which is correct?", "Chciałbym wiedzieć, ___ on przyjdzie.", ["że", "czy", "jeśli", "jak"], 1, "czy introduces an indirect yes/no question."),
+  q("pl-b1-6", "B1", "What does this mean?", "przyzwyczaić się do czegoś", ["oswoić się z czymś", "zapomnieć o czymś", "zrezygnować z czegoś", "polubić kogoś"], 0, "przyzwyczaić się — to get used to something."),
+  q("pl-b1-7", "B1", "Which is correct?", "Im więcej się uczę, ___ lepiej rozumiem.", ["niż", "jak", "tym", "tak"], 2, "im … tym — the more … the more."),
+  q("pl-b1-8", "B1", "What does this mean?", "To się nie opłaca.", ["nie warto", "to jest zabronione", "to nie pasuje", "to jest darmowe"], 0, "opłacać się — to be worth it."),
+
+  // B2
+  q("pl-b2-1", "B2", "Which is correct?", "Zachowywał się tak, ___ nic nie słyszał.", ["chociaż", "jakby", "żeby", "więc"], 1, "jakby — as if."),
+  q("pl-b2-2", "B2", "What does this mean?", "To nie ulega wątpliwości.", ["to jest wątpliwe", "to jest pytanie", "to jest pewne", "to jest niemożliwe"], 2, "ulegać wątpliwości — to be in doubt, so the negative says beyond doubt."),
+  q("pl-b2-3", "B2", "Which is the passive?", "Dom ___ zbudowany w zeszłym roku.", ["ma", "został", "miał", "będzie mieć"], 1, "zostać + past participle forms the passive: został zbudowany."),
+  q("pl-b2-4", "B2", "What does this mean?", "pogodzić się z czymś", ["znaleźć coś", "zapłacić za coś", "zorganizować coś", "zaakceptować coś"], 3, "pogodzić się z czymś — to come to terms with something."),
+  q("pl-b2-5", "B2", "Which is correct?", "Chodzi ___ nieporozumienie.", ["o", "na", "za", "po"], 0, "chodzi o — it is a matter of."),
+  q("pl-b2-6", "B2", "What does this mean?", "To rodzi pytanie.", ["to daje odpowiedź", "to każe zapytać", "to kończy dyskusję", "to powtarza pytanie"], 1, "rodzić pytanie — to raise a question."),
+  q("pl-b2-7", "B2", "Which is correct?", "Zależy mi ___ tym.", ["o", "na", "w", "za"], 1, "zależeć komuś na czymś — to care about something."),
+  q("pl-b2-8", "B2", "What does this mean?", "mieć czegoś powyżej uszu", ["słyszeć coś dobrze", "wiedzieć o czymś", "mieć czegoś dosyć", "lubić coś bardzo"], 2, "mieć czegoś powyżej uszu — to be fed up with something."),
+
+  // C1
+  q("pl-c1-1", "C1", "What does this mean?", "owijać w bawełnę", ["mówić szczerze", "mówić nie wprost", "milczeć", "mówić głośno"], 1, "owijać w bawełnę — to beat about the bush."),
+  q("pl-c1-2", "C1", "Which is correct?", "Bez względu ___ okoliczności zachował spokój.", ["o", "w", "za", "na"], 3, "bez względu na — regardless of."),
+  q("pl-c1-3", "C1", "What does this mean?", "naciągany", ["mało wiarygodny", "dobrze uzasadniony", "napięty", "świeży"], 0, "naciągany — far-fetched."),
+  q("pl-c1-4", "C1", "Which register is formal written Polish?", "Pick the formal wording.", ["Dajcie znać.", "Napisz mi coś.", "Uprzejmie proszę o informację.", "No to jak, piszecie?"], 2, "Uprzejmie proszę o … is the standard formal request."),
+  q("pl-c1-5", "C1", "What does this mean?", "przelać czarę goryczy", ["rozlać napój", "przepełnić miarę", "osłodzić coś", "zakończyć spór"], 1, "przelać czarę goryczy — the last straw."),
+  q("pl-c1-6", "C1", "Which is correct?", "Postawiła ___ swoim.", ["po", "za", "na", "w"], 2, "postawić na swoim — to get one's way."),
+  q("pl-c1-7", "C1", "What does this mean?", "stać pod znakiem zapytania", ["być pewnym", "być zapisanym", "być zakończonym", "być niepewnym"], 3, "stać pod znakiem zapytania — to be in question."),
+  q("pl-c1-8", "C1", "What does this mean?", "rzucać słowa na wiatr", ["obiecywać bez pokrycia", "mówić bardzo głośno", "mówić o pogodzie", "szybko odpowiadać"], 0, "rzucać słowa na wiatr — to make empty promises."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
+  if (direction === "learn-pl") return PL;
   return DE;
 }
 

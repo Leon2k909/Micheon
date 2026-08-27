@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 
 import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
@@ -15,7 +15,10 @@ import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman } from "@/lib/direction";
+import { translationLanguagesNeeded } from "@/lib/courseLanguages";
+import { ensureTranslations } from "@/lib/translations";
 import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
+import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
   type Register, type RegisterState,
@@ -75,6 +78,44 @@ const REGISTER_KEY = "register-checks";
  * question is read off the German sentence, which a French card no longer
  * carries — detectRegister() on "Tu viens ?" answers about the wrong language.
  */
+/**
+ * The Listen player, on the lesson screen.
+ *
+ * ListenView draws either the full Listen screen or, when it is not the
+ * active view, a small draggable player — and nothing at all unless a
+ * session is live. So the whole of what is wanted here is the same component
+ * told it is not active.
+ *
+ * Lazy for the same reason it is lazy on the main screen: a learner who
+ * never opens Listen should not pay for it, and least of all on the screen
+ * they came here to use.
+ */
+const ListenView = lazy(() => import("@/components/listen/ListenView").then((m) => ({ default: m.ListenView })));
+
+function BackgroundListen({ apiParts, learningDirection, profile }: {
+  apiParts: Record<string, any>;
+  learningDirection: any;
+  profile: any;
+}) {
+  return (
+    <ListenView
+      active={false}
+      apiParts={apiParts}
+      learningDirection={learningDirection}
+      onOpen={() => {
+        // Tapping the player opens Listen properly, which means leaving the
+        // lesson the way the Back button does rather than stacking one
+        // full-screen surface on top of another.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("guided");
+        url.searchParams.set("tab", "listen");
+        window.location.assign(url.toString());
+      }}
+      profile={profile}
+    />
+  );
+}
+
 function withRegisterCheck(steps: any[], user: any): any[] {
   if (!targetIsGerman()) return steps;
   const registers = Array.from(
@@ -229,9 +270,12 @@ export default function GuidedLearningSession() {
     const direction = getLearningDirection();
     const learnsEnglish = direction === "learn-en";
     const learnsFrench = direction === "learn-fr";
-    // The catalogue is German either way round, so the French course has to
-    // ask for the French rather than for whichever column happens to be there.
-    const meaningIsGerman = learnsEnglish || (learnsFrench && frenchMeaningLanguage() === "de");
+    const learnsPolish = direction === "learn-pl";
+    // The catalogue is German either way round, so a table-backed course has to
+    // ask for its own text rather than for whichever column happens to be there.
+    const meaningIsGerman = learnsEnglish
+      || (learnsFrench && frenchMeaningLanguage() === "de")
+      || (learnsPolish && polishMeaningLanguage() === "de");
 
     const scheduleQuestion = (delayMs: number) => {
       if (!active) return;
@@ -286,23 +330,26 @@ export default function GuidedLearningSession() {
       const reverse = petQuizReverse.current;
       petQuizReverse.current = !petQuizReverse.current;
       const french = learnsFrench ? frenchFor(item.de, item.fr) : null;
+      const polish = learnsPolish ? polishFor(item.de) : null;
       // A word the tables do not reach cannot be asked about in this course.
-      if (learnsFrench && !french) {
+      if ((learnsFrench && !french) || (learnsPolish && !polish)) {
         scheduleQuestion(cadence.intervalMs);
         return;
       }
       const meaning = meaningIsGerman ? item.de : item.en;
-      const target = learnsFrench ? french! : learnsEnglish ? item.en : item.de;
+      const target = learnsFrench ? french! : learnsPolish ? polish! : learnsEnglish ? item.en : item.de;
+      const askedLanguageDe = learnsFrench ? "Französisch" : learnsPolish ? "Polnisch" : "Englisch";
+      const askedLanguageEn = learnsFrench ? "French" : learnsPolish ? "Polish" : "German";
       const question = meaningIsGerman
         ? (reverse
             ? `Weißt du noch, was „${target}“ bedeutet?`
-            : `Erinnerst du dich, wie man „${meaning}“ auf ${learnsFrench ? "Französisch" : "Englisch"} sagt?`)
+            : `Erinnerst du dich, wie man „${meaning}“ auf ${askedLanguageDe} sagt?`)
         : (reverse
             ? `Do you remember what “${target}” means?`
-            : `Do you remember how to say “${meaning}” in ${learnsFrench ? "French" : "German"}?`);
+            : `Do you remember how to say “${meaning}” in ${askedLanguageEn}?`);
       const answerLanguage = reverse
         ? (meaningIsGerman ? "de" : "en")
-        : (learnsFrench ? "fr" : learnsEnglish ? "en" : "de");
+        : (learnsFrench ? "fr" : learnsPolish ? "pl" : learnsEnglish ? "en" : "de");
       petSpeak(question, {
         durationMs: 20000,
         mood: "greeting",
@@ -313,6 +360,7 @@ export default function GuidedLearningSession() {
           de: item.de,
           en: item.en,
           fr: french ?? undefined,
+          pl: polish ?? undefined,
           itemId: item.id,
         },
       });
@@ -353,19 +401,32 @@ export default function GuidedLearningSession() {
     // The learner's own words go in last so they are packs like any other:
     // lessons, tracker, search and tests all read this one map, so nothing
     // downstream needs to know where a phrase came from.
-    const rebuild = () =>
+    // The translation tables are fetched rather than bundled, so that
+    // German-only learners never download them. Built before one lands, a
+    // French or Polish catalogue silently comes out short: an entry the table
+    // does not cover is dropped, not shown in German. The app's own language
+    // counts as well as the course's — Listen explains a card in it, out of
+    // the same tables.
+    const rebuild = async () => {
+      await Promise.all(translationLanguagesNeeded().map(ensureTranslations));
       setApiParts(orderParts(filterPartsForLearningDirection({
         ...resolved,
         ...buildBundledParts(),
         ...buildTatoebaParts(),
         ...buildCustomParts(),
       })));
-    rebuild();
-    window.addEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-    window.addEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+    };
+    const onRebuild = () => { void rebuild(); };
+    onRebuild();
+    window.addEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
+    window.addEventListener(DIRECTION_CHANGE_EVENT, onRebuild);
+    // Changing the app's language changes which table is needed, not just
+    // which words are on the buttons.
+    window.addEventListener("gl-interface-language-change", onRebuild);
     return () => {
-      window.removeEventListener(CUSTOM_CONTENT_EVENT, rebuild);
-      window.removeEventListener(DIRECTION_CHANGE_EVENT, rebuild);
+      window.removeEventListener(CUSTOM_CONTENT_EVENT, onRebuild);
+      window.removeEventListener(DIRECTION_CHANGE_EVENT, onRebuild);
+      window.removeEventListener("gl-interface-language-change", onRebuild);
     };
   }, []);
 
@@ -504,7 +565,7 @@ export default function GuidedLearningSession() {
           if (swapDirection === "learn-en") {
             return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
           }
-          if (swapDirection === "learn-fr") {
+          if (swapDirection === "learn-fr" || swapDirection === "learn-pl") {
             return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
           }
           return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };
@@ -1351,7 +1412,26 @@ export default function GuidedLearningSession() {
   );
 
   if (showGuidedSession) return (
-    <GuidedSession
+    <>
+      {/*
+        Listen, carried into the lesson.
+
+        Opening a lesson is a page navigation rather than a change of view,
+        so the app around Listen is torn down and this one is built in its
+        place. Mounted here as well, a session the learner left running comes
+        back with its player rather than ending because they went to study.
+
+        active={false}: this is the small player, never the full screen. It
+        draws nothing at all unless there is a live session to show.
+      */}
+      <Suspense fallback={null}>
+        <BackgroundListen
+          apiParts={apiParts}
+          learningDirection={getLearningDirection()}
+          profile={user}
+        />
+      </Suspense>
+      <GuidedSession
       onCancel={(completedUpTo?: number) => {
         // Each non-skipped step is persisted as it is left. Replaying the
         // whole prefix here would accidentally grade any skipped steps.
@@ -1404,7 +1484,8 @@ export default function GuidedLearningSession() {
         saveScopedJson(REGISTER_KEY, recordRegisterAnswer(state, id, correct), user);
       }}
       steps={sessionSteps}
-    />
+      />
+    </>
   );
 
   return (

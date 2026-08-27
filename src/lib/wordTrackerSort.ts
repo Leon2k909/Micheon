@@ -33,7 +33,7 @@ export const WORD_TRACKER_SORTS: ReadonlyArray<{ key: WordTrackerSort; label: st
 ];
 
 type RecordForWord = (word: WordItem) => GradeRecord | undefined;
-type AlphabetLanguage = "de" | "en" | "fr";
+type AlphabetLanguage = "de" | "en" | "fr" | "pl";
 
 const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   de: new Intl.Collator("de", { numeric: true, sensitivity: "base" }),
@@ -41,6 +41,9 @@ const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   // sensitivity "base" folds é onto e, which is what an A–Z index wants: a
   // French learner looking under E expects to find "école" there.
   fr: new Intl.Collator("fr", { numeric: true, sensitivity: "base" }),
+  // Polish files ą after a and ż last, and "base" folds them back onto the
+  // plain letter for the index — a learner looking under Z expects żaba.
+  pl: new Intl.Collator("pl", { numeric: true, sensitivity: "base" }),
 };
 
 const parsedTime = (value: string | undefined) => {

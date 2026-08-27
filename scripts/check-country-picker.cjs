@@ -31,7 +31,10 @@ const shell = read("src/prototype/NewUiPrototype.tsx");
 const switcher = read("src/components/course/CourseSwitcher.tsx");
 const packs = read("src/lib/countryPacks.ts");
 const type = read("src/lib/countryStudies.ts");
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 
 // ── every pack says what country it is ────────────────────────────────────
 assert.ok(
@@ -118,6 +121,74 @@ for (const [guard, what] of [
     `${what} still shows when the chooser was opened to change a country — which is how "change the country" ends up changing the language`
   );
 }
+// The two halves do not overlap: the catalogue itself is filtered before any
+// section, any favourite or any search result is worked out. Guarding each
+// section separately left the favourites — which sit above them all — showing
+// a starred language at the top of the country picker, and left the country
+// courses listed in the language one.
+assert.ok(
+  /const inScope = useCallback\(/.test(switcher)
+  && /\(course: \(typeof COURSES\)\[number\]\) => \(scope === "country"/.test(switcher)
+  && /\? course\.kind === "citizenship"/.test(switcher)
+  && /: course\.kind !== "citizenship"\),/.test(switcher),
+  "the catalogue is no longer split by scope, so each dialog can show the other one's courses"
+);
+assert.ok(
+  /const scopedCourses = useMemo\(\(\) => COURSES\.filter\(inScope\), \[inScope\]\);/.test(switcher)
+  && /if \(!normalizedQuery\) return scopedCourses;/.test(switcher)
+  && /return scopedCourses\.filter\(\(course\) => \{/.test(switcher),
+  "the sections or the search still read the unscoped catalogue"
+);
+assert.ok(
+  !/\.filter\(\(c\) => !countryOnly \|\| c\.kind === "citizenship"\)/.test(switcher),
+  "the favourites carry their own scope filter as well — one place to get this right, not two"
+);
+assert.ok(
+  /const englishStarred = !countryOnly && Boolean\(mergedEnglish\)/.test(switcher),
+  "the merged English row can still be starred into the country picker"
+);
+// A starred country is lifted out of its section. With every country starred
+// the section empties, and an unadjusted empty test put "no matching course"
+// beside a full list of favourites.
+assert.ok(
+  /countryOnly \? citizenship\.length \+ favouriteRowCount === 0/.test(switcher),
+  "the empty state ignores favourites, so starring every country would claim there are none"
+);
+// And the language dialog says what it now actually offers.
+assert.ok(
+  /: "Pick a language or a programming track."\)\}/.test(switcher),
+  "the language dialog still offers a country course in its own subtitle"
+);
+for (const table of ["src/lib/i18nDe.ts", "src/lib/i18nFr.ts"]) {
+  assert.ok(
+    read(table).includes('"Pick a language or a programming track."'),
+    `${table} has no translation for the language dialog's subtitle, so it would show in English`
+  );
+}
+
+// ── each dialog folds its own favourites ─────────────────────────────────
+// The two sections hold different lists, so one shared open/shut flag folded
+// the languages away when you folded the countries — in a dialog you were not
+// looking at, and only noticed the next time you opened it.
+const favourites = read("src/lib/favouriteCourses.ts");
+assert.ok(
+  /export type FavouritesSection = "all" \| "country";/.test(favourites),
+  "the favourites section has no notion of which dialog it is in"
+);
+assert.ok(
+  /"favourite-courses-open-country"/.test(favourites)
+  && /"favourite-courses-open"/.test(favourites),
+  "the two dialogs no longer keep their fold state under separate keys"
+);
+assert.ok(
+  /getFavouritesOpen\(scope\)/.test(switcher) && /setFavouritesOpen\(!was, scope\)/.test(switcher),
+  "the switcher reads or writes the fold state without saying which dialog it is"
+);
+assert.ok(
+  /useEffect\(\(\) => setFavouritesOpenState\(getFavouritesOpen\(scope\)\), \[scope\]\);/.test(switcher),
+  "reopening the dialog in the other scope keeps the fold state of the one before it"
+);
+
 assert.ok(
   !/np-home-content-menu--country/.test(shell),
   "the country card has grown a dropdown of its own again instead of using the dialog"

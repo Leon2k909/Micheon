@@ -289,11 +289,23 @@ const FRENCH_PET_TIPS = [
   "French tip: a question can just be a statement said upwards — “Tu viens ?” is as correct as “Est-ce que tu viens ?”.",
 ];
 
+const POLISH_PET_TIPS = [
+  "Polish tip: there are no articles at all — “dom” is house, a house and the house, all at once.",
+  "Polish tip: a negated verb takes the genitive — “lubię kawę”, but “nie lubię kawy”.",
+  "Polish tip: the ending already says who — “idę” is I am going, so “ja idę” puts the stress on the I.",
+  "Polish tip: verbs come in pairs — “robić” is doing it, “zrobić” is getting it done.",
+  "Polish tip: to a stranger it is Pan or Pani, never ty — “Czy mówi Pan po angielsku?”.",
+  "Polish tip: the stress is almost always on the second-to-last syllable — dzię-KU-ję, ksią-ŻKA.",
+  "Polish tip: “ó” and “u” sound identical, and so do “rz” and “ż” — which is why Polish children are drilled on them too.",
+  "Polish tip: nouns change their ending for their job in the sentence — “to jest kawa”, but “piję kawę”.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
   en: ENGLISH_PET_TIPS,
   fr: FRENCH_PET_TIPS,
+  pl: POLISH_PET_TIPS,
 };
 
 type PetBounds = {

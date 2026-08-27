@@ -1,7 +1,7 @@
 /**
  * Every language the switcher lists.
  *
- * Three are taught — German, English and French. The rest are here so the
+ * Four are taught — German, English, French and Polish. The rest are here so the
  * picker answers the question people actually arrive with — "is my language in
  * here?" — instead of showing a handful of options and leaving them to guess.
  * Each one says Coming soon and cannot be selected, which is a straight answer
@@ -25,7 +25,9 @@ export const PLANNED_LANGUAGES: LanguageEntry[] = [
   { id: "italian", name: "Italian", icon: "🇮🇹", search: "it italiano italy italien" },
   { id: "portuguese", name: "Portuguese", icon: "🇵🇹", search: "pt portugues português portugal brazil brasil brazilian" },
   { id: "dutch", name: "Dutch", icon: "🇳🇱", search: "nl nederlands holland netherlands flemish vlaams" },
-  { id: "polish", name: "Polish", icon: "🇵🇱", search: "pl polski poland polska" },
+  // Polish left this list when it became a course you can start. Everything
+  // here is drawn only behind "Show more", which is the wrong place for a
+  // language you own — it is written out in courseRegistry.ts instead.
   { id: "russian", name: "Russian", icon: "🇷🇺", search: "ru russkiy русский russia" },
   { id: "ukrainian", name: "Ukrainian", icon: "🇺🇦", search: "uk ukrainska українська ukraine" },
   { id: "czech", name: "Czech", icon: "🇨🇿", search: "cs cestina čeština czechia bohemian" },

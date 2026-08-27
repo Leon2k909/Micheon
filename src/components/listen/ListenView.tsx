@@ -35,6 +35,7 @@ import {
   toggleTtsLanguageMuted,
   type AudioSettings,
 } from "@/lib/audioMute";
+import { MuteButton } from "@/components/MuteButton";
 import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 import {
   buildListenQueue,
@@ -43,8 +44,8 @@ import {
   getListenBackgroundPlayback,
   getListenContentSource,
   getListenCurrentItemId,
-  getListenEnglishRepeats,
-  getListenGermanRepeats,
+  getListenMeaningRepeats,
+  getListenTargetRepeats,
   getListenLanguageGapMs,
   getListenLanguageOrder,
   getListenLoopItems,
@@ -61,8 +62,8 @@ import {
   setListenBackgroundPlayback,
   setListenContentSource,
   setListenCurrentItemId,
-  setListenEnglishRepeats,
-  setListenGermanRepeats,
+  setListenMeaningRepeats,
+  setListenTargetRepeats,
   setListenLanguageGapMs,
   setListenLanguageOrder,
   setListenLoopItems,
@@ -81,14 +82,17 @@ import {
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
+import { cefrRungLabel } from "@/lib/cefr";
 import { ListenTest } from "@/components/listen/ListenTest";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
-import { stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
+import { preloadTts, stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
+import { readListenSession, writeListenSession } from "@/lib/listenSession";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   AUDIO_LANGUAGE,
   courseSide,
+  courseSides,
   meaningLanguageFor,
   targetLanguage,
   type CourseLanguage,
@@ -104,6 +108,11 @@ import {
 import type { LearningDirection } from "@/lib/direction";
 import { useCodexPets, type CodexPetVoiceLanguage } from "@/components/codexPets/CodexPetProvider";
 import { useInterfaceLanguage } from "@/lib/interfaceLanguage";
+import {
+  ensureTranslations,
+  isTranslationLoaded,
+  TRANSLATIONS_LOADED_EVENT,
+} from "@/lib/translations";
 
 type ListenMediaCommand = "previous" | "toggle" | "play" | "pause" | "next";
 
@@ -289,30 +298,35 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn — say it in German",
   en: "Your turn — say it in English",
   fr: "Your turn — say it in French",
+  pl: "Your turn — say it in Polish",
 };
 
 const REPEATS_LABEL: Record<CourseLanguage, string> = {
   de: "German repeats",
   en: "English repeats",
   fr: "French repeats",
+  pl: "Polish repeats",
 };
 
 const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice is muted and will be skipped.",
   en: "English voice is muted and will be skipped.",
   fr: "French voice is muted and will be skipped.",
+  pl: "Polish voice is muted and will be skipped.",
 };
 
 const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "Your turn to say the German before it is spoken",
   en: "Your turn to say the English before it is spoken",
   fr: "Your turn to say the French before it is spoken",
+  pl: "Your turn to say the Polish before it is spoken",
 };
 
 const FIRST_LABEL: Record<CourseLanguage, string> = {
   de: "German first",
   en: "English first",
   fr: "French first",
+  pl: "Polish first",
 };
 
 // Written out rather than composed from a "{language} voice" pattern, because
@@ -321,21 +335,24 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "German voice",
   en: "English voice",
   fr: "French voice",
+  pl: "Polish voice",
 };
 
 const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Mute German voice",
   en: "Mute English voice",
   fr: "Mute French voice",
+  pl: "Mute Polish voice",
 };
 
 const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   de: "Unmute German voice",
   en: "Unmute English voice",
   fr: "Unmute French voice",
+  pl: "Unmute Polish voice",
 };
 
-const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume" } as const;
+const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume", pl: "polishVolume" } as const;
 
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
@@ -406,6 +423,30 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const courseLanguage = targetLanguage(learningDirection);
   const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);
 
+  /**
+   * The meaning's table, if it is one that has to be fetched.
+   *
+   * The catalogue is built with every table this setup needs already in hand,
+   * so on a cold start there is nothing to wait for here. Switching the app's
+   * language while Listen is OPEN is the case this covers: the queue rebuilds
+   * on the new meaning language immediately, and a card whose translation has
+   * not arrived is dropped — so without this the screen goes empty for as long
+   * as the download takes and then fills in, which reads as a fault.
+   */
+  const [translationsRevision, setTranslationsRevision] = useState(0);
+  useEffect(() => {
+    if (meaningLanguage !== "fr" && meaningLanguage !== "pl") return undefined;
+    if (isTranslationLoaded(meaningLanguage)) return undefined;
+    let live = true;
+    const onLoaded = () => { if (live) setTranslationsRevision((n) => n + 1); };
+    window.addEventListener(TRANSLATIONS_LOADED_EVENT, onLoaded);
+    void ensureTranslations(meaningLanguage);
+    return () => {
+      live = false;
+      window.removeEventListener(TRANSLATIONS_LOADED_EVENT, onLoaded);
+    };
+  }, [meaningLanguage]);
+
   const baseQueue = useMemo<ListenItem[]>(
     () => (everOpened
       ? buildListenQueue(apiParts, loadGradeStore(profile), {
@@ -414,7 +455,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         order: queueOrder,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder, translationsRevision]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -437,7 +478,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     );
   });
   const [playing, setPlaying] = useState(false);
-  const [sessionActivated, setSessionActivated] = useState(false);
+  /**
+   * Read back rather than started at false.
+   *
+   * Opening a lesson is a page navigation, so this component is destroyed
+   * and rebuilt around it. Starting closed meant a session the learner had
+   * not closed disappeared the moment they went to do the thing the app is
+   * for.
+   */
+  const [sessionActivated, setSessionActivated] = useState(() => readListenSession().live);
   const [backgroundPlayback, setBackgroundPlayback] = useState(
     () => getListenBackgroundPlayback(profile)
   );
@@ -455,8 +504,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [dragPixels, setDragPixels] = useState<{ left: number; top: number } | null>(null);
   const [dragSize, setDragSize] = useState<{ width: number; height: number } | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [germanRepeats, setGermanRepeats] = useState(() => getListenGermanRepeats(learningDirection));
-  const [englishRepeats, setEnglishRepeats] = useState(() => getListenEnglishRepeats(learningDirection));
+  const [targetRepeats, applyTargetRepeats] = useState(() => getListenTargetRepeats(learningDirection));
+  const [meaningRepeats, applyMeaningRepeats] = useState(() => getListenMeaningRepeats(learningDirection));
   const [languageOrder, setLanguageOrder] = useState(() => getListenLanguageOrder(learningDirection));
   const [nextCardDelayMs, setNextCardDelayMs] = useState(getListenNextCardDelayMs);
   const [languageGapMs, setLanguageGapMs] = useState(getListenLanguageGapMs);
@@ -502,6 +551,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   );
   const loopPass = listenLoopPassForPlayhead(playhead, queue.length, effectiveLoopItems, loopPasses);
   const item = queue.length ? queue[queueIndex] : null;
+  const nextItem = queue.length ? queue[(queueIndex + 1) % queue.length] : null;
 
   /**
    * What this sitting has actually played, oldest first.
@@ -523,23 +573,43 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   }, [heardIds, queue]);
 
   // Listen's two slots are named after the only two languages it ever had:
-  // `de` is the one being learned and `en` is the meaning beside it. That
-  // held while the courses were German and English — Listen plays the same
-  // German and English either way round, and only the repeat counts differ.
+  // `de` and `en`. Neither name is a language any more — the first slot is
+  // the language being LEARNED, the second is what it means in whatever the
+  // app is written in, and the labels, the voices and the mute state all ask
+  // what is in each slot rather than reading the name.
   //
-  // Neither name is a language any more. The meaning is whatever the app is
-  // written in, so a French app explains a German card in French; and the
-  // English course keeps its meaning in the FIRST slot, which is why the
-  // order is decided here and not by reading `de` as German. The labels, the
-  // voices and the mute state all ask what is in each slot instead. This has
-  // to agree with buildListenQueue, which fills the slots with the text.
-  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } = learningDirection === "learn-en"
-    ? { de: meaningLanguage, en: courseLanguage }
-    : { de: courseLanguage, en: meaningLanguage };
+  // The first slot is the target in every course now. The English course used
+  // to be the exception: it kept its German first, so the big line at the top
+  // of the card was the one language the learner was not there to learn, and
+  // the translation was the small line underneath it. This has to agree with
+  // buildListenQueue, which fills the slots with the text.
+  const slotLanguage: { de: CourseLanguage; en: CourseLanguage } =
+    { de: courseLanguage, en: meaningLanguage };
   const targetSlot = courseSide(slotLanguage.de);
   const meaningSlot = courseSide(slotLanguage.en);
   const targetLang = targetSlot.voice;
-  const englishLang = meaningSlot.voice;
+  const meaningLang = meaningSlot.voice;
+
+  /**
+   * Fetch the next card's audio while this one is still playing.
+   *
+   * Every clip is generated by Microsoft on first request and cached after
+   * that: measured against this machine's own server, a clip nobody has asked
+   * for yet takes between half a second and three quarters of one to arrive,
+   * and the same clip afterwards takes two milliseconds. Listen plays a queue
+   * in a known order, so that wait is entirely avoidable — it was being paid
+   * at the start of every new card, which on a one-word card is a longer
+   * silence than the word.
+   *
+   * Both languages, because both are spoken. Failures are ignored by
+   * preloadTts itself: this is a head start, and a card that has to fetch its
+   * own audio is the behaviour that already existed.
+   */
+  useEffect(() => {
+    if (!playing || !nextItem) return;
+    if (nextItem.de) preloadTts(nextItem.de, 0.88, targetLang);
+    if (nextItem.en) preloadTts(nextItem.en, 0.88, meaningLang);
+  }, [meaningLang, nextItem, playing, targetLang]);
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.en]);
   const germanMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.de]);
@@ -552,8 +622,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     stopTts();
     setPlaying(false);
     setSessionActivated(false);
-    setGermanRepeats(getListenGermanRepeats(learningDirection));
-    setEnglishRepeats(getListenEnglishRepeats(learningDirection));
+    applyTargetRepeats(getListenTargetRepeats(learningDirection));
+    applyMeaningRepeats(getListenMeaningRepeats(learningDirection));
     setLanguageOrder(getListenLanguageOrder(learningDirection));
     setLoopItems(getListenLoopItems(learningDirection));
     setMixedCounts(getListenMixedCounts(learningDirection));
@@ -649,15 +719,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const sequence: SeqItem[] = buildListenSpeechPlan({
       de: item.de,
       en: item.en,
-      englishLang,
-      englishRepeats,
-      germanRepeats,
+      meaningLang,
+      meaningRepeats,
+      targetRepeats,
       languageGapMs,
       languageOrder,
       targetLang,
     }).map((clip) => ({
       ...clip,
-      onStart: () => mirrorOnPet(clip.text, clip.side === "de" ? targetLang : englishLang),
+      onStart: () => mirrorOnPet(clip.text, clip.side === "target" ? targetLang : meaningLang),
       onPause: (holding: boolean) => setYourTurn(holding && runRef.current === run),
     }));
     void ttsSequence(sequence).then(() => {
@@ -682,7 +752,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       setYourTurn(false);
       stopTts();
     };
-  }, [playing, playhead, germanRepeats, englishRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, englishLang, targetLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
+  }, [playing, playhead, targetRepeats, meaningRepeats, languageOrder, languageGapMs, nextCardDelayMs, item?.id, meaningLang, targetLang, queue.length, petBilingualCaptions, petCaptionsAvailable, petSpeak]);
 
   useEffect(() => () => {
     runRef.current += 1;
@@ -915,6 +985,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     pause();
   }, [active, backgroundPlayback]);
 
+  /**
+   * Tell the rest of the app what Listen is doing.
+   *
+   * Two things read this. A lesson asks whether to keep quiet before speaking
+   * a word on its own, and this component asks on its next page load whether
+   * there was a session to come back to.
+   *
+   * Only written when background play is on: a session that is not allowed to
+   * outlive this screen has nothing to say to anything on another one.
+   */
+  useEffect(() => {
+    const live = sessionActivated && backgroundPlayback;
+    writeListenSession({ live, playing: live && playing });
+  }, [backgroundPlayback, playing, sessionActivated]);
+
   const mediaAvailable = Boolean(item)
     && (active || (backgroundPlayback && sessionActivated));
 
@@ -1098,15 +1183,15 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setHiddenIds((current) => new Set(current).add(target.id));
   };
 
-  const commitGermanRepeats = (count: number) => {
-    const next = setListenGermanRepeats(count, learningDirection);
-    setGermanRepeats(next);
+  const commitTargetRepeats = (count: number) => {
+    const next = setListenTargetRepeats(count, learningDirection);
+    applyTargetRepeats(next);
     return next;
   };
 
-  const commitEnglishRepeats = (count: number) => {
-    const next = setListenEnglishRepeats(count, learningDirection);
-    setEnglishRepeats(next);
+  const commitMeaningRepeats = (count: number) => {
+    const next = setListenMeaningRepeats(count, learningDirection);
+    applyMeaningRepeats(next);
     return next;
   };
 
@@ -1239,24 +1324,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </span>
         </button>
         <div className="listen-mini-player__controls">
+          {/*
+            The same speaker every other screen has, rather than a mute button
+            and a volume slider that only this player had.
+
+            The two controls here did what they said and stopped there: the one
+            thing a listening session actually wants adjusting mid-play is how
+            fast a language is read, and that lived three screens away in
+            settings. The shared control carries the master and per-language
+            speeds with it, opens on hover, and behaves the way the speaker in
+            the top bar already taught everybody it behaves.
+          */}
           <div className="listen-mini-player__volume">
-            <button
-              aria-label={ui(masterMuted ? "Unmute all app audio" : "Mute all app audio")}
-              aria-pressed={masterMuted}
-              onClick={() => toggleAudioMuted()}
-              type="button"
-            >
-              <VolumeGlyph className="h-4 w-4" muted={masterMuted} volume={audioSettings.masterVolume} />
-            </button>
-            <input
-              aria-label={ui("App volume")}
-              max="100"
-              min="0"
-              onChange={(event) => setMasterAudioVolume(Number(event.target.value) / 100)}
-              step="1"
-              type="range"
-              value={Math.round(audioSettings.masterVolume * 100)}
-            />
+            <MuteButton iconClassName="h-4 w-4" />
           </div>
           <button aria-label={ui("Previous item")} className="listen-mini-player__step" onClick={() => step(-1)} type="button">
             <ChevronLeft />
@@ -1309,13 +1389,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs font-black text-[var(--text-2)]">
             <span>
-              {languageOrder === "english-first"
+              {languageOrder === "meaning-first"
                 ? uiFmt("{meaning} {en}×, then {target} {de}×", {
-                  de: germanRepeats, en: englishRepeats,
+                  de: targetRepeats, en: meaningRepeats,
                   meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
                 })
                 : uiFmt("{target} {de}×, then {meaning} {en}×", {
-                  de: germanRepeats, en: englishRepeats,
+                  de: targetRepeats, en: meaningRepeats,
                   meaning: ui(meaningSlot.label), target: ui(targetSlot.label),
                 })}
             </span>
@@ -1333,8 +1413,16 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         </div>
 
         <div className="listen-card mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
+          {/* The level sits in the line that already says what this card is,
+              because the default order is now a walk up through the levels and
+              there was no way to see where in that walk you were. A CEFR label
+              is the same word in every language, so it is printed rather than
+              translated; a pack with no level simply omits it instead of
+              printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-            {ui(item.kind === "word" ? "Word" : "Sentence")} · {queueIndex + 1} / {queue.length}
+            {ui(item.kind === "word" ? "Word" : "Sentence")}
+            {item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
+            {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>
           {/* A word at a time, with the same popover the lesson uses: the
@@ -1349,6 +1437,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang={meaningSlot.htmlLang}>
             {item.en}
           </p>
+          {/* How the same sentence is WRITTEN, when the card teaches how it is
+              said. The course teaches the spoken form because that is what
+              people say — "Ich hab das nicht ganz verstanden" — and in print
+              it is "habe". Somebody who only ever hears it has no idea how to
+              spell it, which is the half of the language Listen cannot teach
+              on its own. The lesson has shown this for a while; this is the
+              same line, in the mode where it is most needed. */}
+          {item.long && item.long.trim() !== item.de.trim() ? (
+            <p className="flex justify-center">
+              <span className="written-note" lang={targetSlot.htmlLang}>
+                <b>{ui("Written")}</b>
+                {item.long}
+              </span>
+            </p>
+          ) : null}
           {/* Which of the word's meanings this card is on. A heard word brings
               no context with it, so "weiter" spoken aloud and glossed "further"
               leaves the learner who was thinking of "carry on" unable to tell
@@ -1368,7 +1471,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               data-testid="listen-your-turn"
               style={{ "--gap-duration": `${languageGapMs}ms` } as React.CSSProperties}
             >
-              {ui(YOUR_TURN_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
+              {ui(YOUR_TURN_LABEL[languageOrder === "meaning-first" ? slotLanguage.de : slotLanguage.en])}
               <span aria-hidden="true" className="listen-your-turn__bar">
                 <span className="listen-your-turn__fill" />
               </span>
@@ -1645,8 +1748,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         )}
 
         {/* Both settings panels fold away behind their headers — the player is
-            the page; the knobs are a drawer you open when you want them. */}
-        <div className="mt-3 grid items-start gap-x-4 lg:grid-cols-2">
+            the page; the knobs are a drawer you open when you want them.
+            settings-board is what keeps the two headers side by side when one
+            of them opens: the panel takes the full width underneath the pair
+            rather than the header taking it and changing places. */}
+        <div className="settings-board mt-3 grid items-start gap-x-4 lg:grid-cols-2">
           <SettingsCategory
             description={ui("Which items Listen plays, in what order, and how often they come back.")}
             icon={ListMusic}
@@ -1694,7 +1800,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Most common first teaches the phrases and words people are most likely to use. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
+                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
@@ -1702,6 +1808,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([[
+                  "level", "Easiest first (A1 → C1)",
+                ], [
                   "common", "Most common first",
                 ], [
                   "learning", "Reviews & struggles first",
@@ -1836,8 +1944,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 role="radiogroup"
               >
                 {([
-                  ["english-first", FIRST_LABEL[slotLanguage.en]],
-                  ["german-first", FIRST_LABEL[slotLanguage.de]],
+                  ["meaning-first", FIRST_LABEL[slotLanguage.en]],
+                  ["target-first", FIRST_LABEL[slotLanguage.de]],
                 ] as const).map(([value, label]) => {
                   const active = languageOrder === value;
                   return (
@@ -1877,26 +1985,26 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
-                  onCommit={commitGermanRepeats}
+                  onCommit={commitTargetRepeats}
                   suffix="×"
-                  testId="listen-german-repeats"
-                  value={germanRepeats}
+                  testId="listen-target-repeats"
+                  value={targetRepeats}
                 />
                 <NumberSetting
                   label={ui(REPEATS_LABEL[slotLanguage.en])}
                   max={10}
                   min={1}
                   note={ui("Times spoken on every card")}
-                  onCommit={commitEnglishRepeats}
+                  onCommit={commitMeaningRepeats}
                   suffix="×"
-                  testId="listen-english-repeats"
-                  value={englishRepeats}
+                  testId="listen-meaning-repeats"
+                  value={meaningRepeats}
                 />
                 <NumberSetting
                   label={ui("Pause between languages")}
                   max={30}
                   min={0}
-                  note={ui(SAY_IT_FIRST_LABEL[languageOrder === "english-first" ? slotLanguage.de : slotLanguage.en])}
+                  note={ui(SAY_IT_FIRST_LABEL[languageOrder === "meaning-first" ? slotLanguage.de : slotLanguage.en])}
                   onCommit={commitLanguageGapSeconds}
                   step={0.5}
                   suffix={ui("sec")}
@@ -1932,7 +2040,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             />
             <span className="listen-background-toggle__copy">
               <strong>{ui("Show both languages on the pet")}</strong>
-              <small>{ui("Keep German and English together in the pet bubble. Turn this off to show only the line currently being spoken.")}</small>
+              <small>{uiFmt("Keep {target} and {meaning} together in the pet bubble. Turn this off to show only the line currently being spoken.", {
+                target: ui(courseSides().target.label),
+                meaning: ui(courseSides().meaning.label),
+              })}</small>
             </span>
             <span aria-hidden="true" className="listen-background-toggle__switch"><i /></span>
           </label>

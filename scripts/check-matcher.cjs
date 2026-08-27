@@ -187,7 +187,10 @@ for (const kind of ["words", "sentences"]) {
   assert.ok(cards.includes("<MatcherView"), "the Matcher card opens nothing");
 
   // German, because the app offers a German interface and this is new copy.
-  const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+  const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
   for (const key of [
     "Matcher", "Match and keep going", "Nothing to match yet",
     "Know all {n}", "Set level or put off", "Step {step}: {size} pairs, deeper in",

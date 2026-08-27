@@ -36,9 +36,55 @@ export type SeqItem = {
 
 const DEFAULT_RATE = 0.88;
 
-/** Each clip's own authored pace times that language's learner setting. */
-function effectiveRate(rate: number, lang: string): number {
-  return Math.min(2, Math.max(0.3, rate * getTtsSpeechRate(lang)));
+/**
+ * Roughly how many syllables, by counting runs of vowels.
+ *
+ * Not a pronunciation model and does not need to be: the only question asked
+ * of it is "one or two, or more than that", and vowel groups answer that for
+ * both languages. Umlauts and the sharp s are vowels and letters like any
+ * other here, so "Öl" is one and "Ehre" is two.
+ */
+export function roughSyllables(word: string): number {
+  const groups = word.toLowerCase().match(/[aeiouyäöüáéíóú]+/gu);
+  return groups ? groups.length : 0;
+}
+
+/**
+ * A word short enough that slowing it down spoils it.
+ *
+ * Every clip is authored at 0.88 — a deliberate slowdown that makes a sentence
+ * easier to follow. Spread over a sentence it is barely noticeable. Spread
+ * over one syllable it is the whole word: "go" comes back as 1.08 seconds of
+ * audio against 0.96 at normal pace, and a neural voice asked to hold a
+ * diphthong that long creaks at the end of it. Short words are also the ones a
+ * learner replays most, so it is the worst possible place for the artefact.
+ *
+ * By three syllables there is enough material for the pace to read as pace
+ * rather than as a stretched vowel, so the line is drawn under that.
+ *
+ * This file already carries the same idea for a single word: the server slows
+ * "occurrence" further because one voice compresses it into nonsense. Both are
+ * the same admission — a rate that suits a sentence is not always right for a
+ * word.
+ */
+export function slowingWouldSpoil(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed || /\s/u.test(trimmed)) return false;
+  const syllables = roughSyllables(trimmed);
+  return syllables > 0 && syllables <= 2;
+}
+
+/**
+ * Each clip's own authored pace times that language's learner setting.
+ *
+ * A short word keeps the learner's setting and loses only the authored
+ * slowdown: somebody who has deliberately turned German down to half speed
+ * still gets it at half speed, because that is an answer to a question they
+ * were asked. The 0.88 is a default nobody chose.
+ */
+export function effectiveRate(rate: number, lang: string, text = ""): number {
+  const authored = slowingWouldSpoil(text) ? Math.max(rate, 1) : rate;
+  return Math.min(2, Math.max(0.3, authored * getTtsSpeechRate(lang)));
 }
 
 /** Fired on window with detail=true when speech starts and detail=false when it
@@ -480,7 +526,7 @@ function playUrl(url: string, token: number, lang: string): Promise<boolean> {
 async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Promise<void> {
   const { lang } = item;
   const text = firstSpokenAlternative(item.text);
-  const rate = effectiveRate(item.rate ?? DEFAULT_RATE, lang);
+  const rate = effectiveRate(item.rate ?? DEFAULT_RATE, lang, text);
   if (!text || getTtsAudioVolume(lang) <= 0) return;
   let announced = false;
   const announceStart = () => {
@@ -587,6 +633,8 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
 export function preloadTts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): void {
   const spokenText = firstSpokenAlternative(text);
   if (!spokenText) return;
-  // Same multiplier as playback so the warmed cache entry is the one used.
-  getAudioUrl(spokenText, effectiveRate(rate, lang), lang).catch(() => {});
+  // Same multiplier as playback so the warmed cache entry is the one used —
+  // the text included, since a short word is spoken at a different rate from
+  // the one this would otherwise work out, and would warm the wrong entry.
+  getAudioUrl(spokenText, effectiveRate(rate, lang, spokenText), lang).catch(() => {});
 }

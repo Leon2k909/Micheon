@@ -17,6 +17,7 @@
  * "Prost!", "Genau!" — which are sentences by intent: things you say on
  * their own.
  */
+import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
 import { packMeta } from "@/lib/curriculum";
@@ -606,12 +607,7 @@ export function rankWordCatalog(
       word,
       index,
       rank: speakingRank(word, frequencyRank(word.lookup || word.de)),
-      // A connector is core vocabulary whatever pack happens to teach it.
-      // obwohl and nachdem are taught in a B1-B2 pack and are missing from
-      // the 2,500-word frequency bank, so ordering by the pack's level alone
-      // sent two of the commonest words in German to positions 4,900 and
-      // 5,000 — behind der Aimbot. The function-word list already names them.
-      rung: isCoreFunctionWord(word.lookup || word.de) ? 1 : wordLadderRung(word),
+      rung: wordDifficultyRung(word),
       commonality: wordCommonality(word.lookup || word.de, corpusIndex),
       uses: corpusUses(word.lookup || word.de, corpusIndex),
     }))
@@ -654,16 +650,74 @@ export function rankWordCatalog(
  */
 export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">): number {
   const level = String(word.level ?? "").toUpperCase();
-  if (/^C/.test(level)) return 6;
-  if (level.startsWith("B2-C")) return 5;
-  if (level.startsWith("B2")) return 4;
-  if (level.startsWith("B1")) return 3;
+  const band = cefrRung(level);
+  // B1 and up is settled by the label alone. The frequency bank is a list of
+  // 2,500 everyday words and has nothing to say about that end of the ladder.
+  if (band >= 3 && /^[BC]/.test(level)) return band;
   // The A1-B1 mass is where nearly everything lives; the frequency bank is
   // what separates "sein" from a mid-pack A2 noun.
   const rank = frequencyRank(word.lookup || word.de);
   if (rank <= 300) return 1;
   if (rank <= 1200) return 2;
-  return level.startsWith("A1") ? 1 : level.startsWith("A2") ? 2 : 3;
+  return band;
+}
+
+/**
+ * The rung a word ACTUALLY sits on — the question anything ordering by
+ * difficulty should ask.
+ *
+ * A word's rung is not its pack's level. haben, sein, machen and bitte are
+ * taught in A2 packs, because the LESSON around them is A2; the words
+ * themselves are the first fifty words of the language. Ordering Listen by
+ * the pack label put haben at 1,045 and bitte at 3,372 of a queue that had
+ * just promised to start with the easiest thing it had.
+ *
+ * Connectors get the same treatment for the opposite reason: obwohl and
+ * nachdem are taught in a B1-B2 pack and are missing from the frequency bank
+ * entirely, so nothing else would rescue them.
+ */
+export function wordDifficultyRung(word: Pick<WordItem, "level" | "lookup" | "de">): number {
+  return isCoreFunctionWord(word.lookup || word.de) ? 1 : wordLadderRung(word);
+}
+
+/**
+ * How many of the most-said words count as core vocabulary whatever pack
+ * teaches them, and how many as no harder than A2.
+ *
+ * The same two-tier shape wordLadderRung applies to the written bank, asked
+ * of the spoken evidence instead. The written bank cannot answer this: its
+ * top 300 is news and web German, and reading it as "easy" promotes
+ * entsprechend, die Maßnahme, durchführen and darstellen to the rung haben
+ * is on. The course's own conversational text says none of them.
+ */
+const SPOKEN_CORE = 300;
+const SPOKEN_EVERYDAY = 1200;
+
+/**
+ * The rung a word sits on once you know how much this course actually SAYS it.
+ *
+ * A pack level is a LESSON's difficulty, and for a word it is only ever a
+ * guess. finden, das Problem, die Tür, trinken, vergessen and die Hilfe are
+ * taught in B1 packs and are among the three hundred words this course says
+ * most often — ordering Listen by the pack alone left finden at 3,986 of a
+ * queue that had promised the easiest thing first.
+ *
+ * `rankAmongSpoken` is the word's position in rankWordCatalog's output, which
+ * is that ranking. Only a word the corpus has actually SEEN can be rescued by
+ * it: in a mode that ranks by the written bank instead, an unguarded rule
+ * would read a written ordering as a spoken one and do the exact thing the
+ * paragraph above says not to.
+ */
+export function spokenWordRung(
+  word: Pick<WordItem, "level" | "lookup" | "de">,
+  rankAmongSpoken: number,
+  corpusIndex: CorpusIndex | null
+): number {
+  const own = wordDifficultyRung(word);
+  if (!corpusIndex || corpusUses(word.lookup || word.de, corpusIndex) === 0) return own;
+  if (rankAmongSpoken < SPOKEN_CORE) return 1;
+  if (rankAmongSpoken < SPOKEN_EVERYDAY) return Math.min(own, 2);
+  return own;
 }
 
 /**

@@ -17,7 +17,10 @@ const preload = read("electron/preload.cjs");
 const gamification = read("src/Gamification.tsx");
 const category = read("src/components/SettingsCategory.tsx");
 const zoomControl = read("src/components/AppZoomControl.tsx");
-const i18n = read("src/lib/i18n.ts");
+const i18n = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 const zoomSteps = require(path.join(root, "electron/zoom-steps.cjs"));
 const settingsStore = require(path.join(root, "electron/desktop-settings.cjs"));
 

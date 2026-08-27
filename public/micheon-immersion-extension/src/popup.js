@@ -4,9 +4,19 @@ const DEFAULT_SETTINGS = {
   ttsOnHover: true,
   ttsOnClick: true,
   youtubeAutoDub: true,
+  hoverDelayMs: 200,
 };
 
 const checkboxIds = ["glossEnabled", "collectMissingVocab", "ttsOnHover", "ttsOnClick", "youtubeAutoDub"];
+/**
+ * Settings that are not a yes or a no.
+ *
+ * Kept as their own list because saveSettings rebuilds the whole object from
+ * what the panel shows: a setting missing from these lists is not saved as
+ * false, it is dropped entirely, and the next open reads the default back over
+ * whatever was chosen.
+ */
+const choiceIds = ["hoverDelayMs"];
 
 function examplesForEntry(entry) {
   return [...new Set([
@@ -33,6 +43,9 @@ async function loadState() {
   const merged = { ...DEFAULT_SETTINGS, ...(settings || {}) };
   for (const id of checkboxIds) {
     document.getElementById(id).checked = Boolean(merged[id]);
+  }
+  for (const id of choiceIds) {
+    document.getElementById(id).value = String(merged[id]);
   }
   const entries = Object.values(missingVocab || {});
   document.getElementById("missingCount").textContent = entries.length;
@@ -91,6 +104,9 @@ async function saveSettings() {
   for (const id of checkboxIds) {
     settings[id] = document.getElementById(id).checked;
   }
+  for (const id of choiceIds) {
+    settings[id] = Number(document.getElementById(id).value) || 0;
+  }
   await chrome.storage.local.set({ settings });
 }
 
@@ -131,7 +147,7 @@ async function clearList() {
   document.getElementById("englishCount").textContent = "0";
 }
 
-for (const id of checkboxIds) {
+for (const id of [...checkboxIds, ...choiceIds]) {
   document.getElementById(id).addEventListener("change", saveSettings);
 }
 document.getElementById("exportBtn").addEventListener("click", exportList);

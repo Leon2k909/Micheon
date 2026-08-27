@@ -7,6 +7,7 @@ import { buildDuoPath, type DuoNode } from "@/lib/duoPath";
 import { DuoLesson } from "@/components/duo/DuoLesson";
 import { MatcherView } from "@/components/matcher/MatcherView";
 import { ConversationView } from "@/components/conversation/ConversationView";
+import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
 
 /**
  * Four ways in, side by side.
@@ -214,7 +215,14 @@ export function DuoPathView({
           </section>
 
           {path.units.map((unit) => (
-            <section key={unit.number} className="card p-5 sm:p-6">
+            // The id is what search scrolls to. scroll-margin keeps the unit's
+            // own heading clear of the sticky header it would otherwise land
+            // under, which reads as having scrolled to the wrong unit.
+            <section
+              key={unit.number}
+              className="card scroll-mt-24 p-5 sm:p-6"
+              id={duoUnitAnchorId(unit.number)}
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">

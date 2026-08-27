@@ -119,7 +119,10 @@ if (!/course-switcher-search/.test(switcher)) {
 if (!/\.new-ui-prototype \.course-switcher-search:focus-visible[\s\S]{0,260}outline:\s*0\s*!important;/.test(css)) {
   failures.push("nothing clears the platform focus ring on the course switcher's search, so it draws two");
 }
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 if (!i18n.includes('"Search courses": "Kurse durchsuchen"') ||
     !i18n.includes('"Search languages or courses…": "Sprachen oder Kurse durchsuchen…"')) {
   failures.push("the German course picker still exposes its search control in English");

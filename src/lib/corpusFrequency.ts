@@ -28,6 +28,14 @@ export type CorpusIndex = {
   /** word -> occurrences at the start of a sentence, where the capital says nothing */
   initialCount: Map<string, number>;
   /**
+   * Every word the catalogue teaches in its own right, normalised.
+   *
+   * A guessed inflection is a guess about ONE word. When the form guessed is
+   * itself something the course teaches, it is not that word wearing another
+   * ending — it is a different word, and its count belongs to it.
+   */
+  headwords: Set<string>;
+  /**
    * word -> its place in this corpus by how often it is said, 1 = most.
    *
    * The written bank is a list of content words: jetzt, hier, dann, immer,
@@ -101,7 +109,24 @@ export function looksLikeGermanNoun(word: string | undefined): boolean {
  */
 const corpusCache = new WeakMap<object, CorpusIndex>();
 
-export function buildCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] }>): CorpusIndex {
+/**
+ * What the index is built from: the sentences this course says, and the words
+ * it teaches as entries in their own right.
+ */
+type CorpusParts = Record<string, {
+  phrases?: { de?: string }[];
+  seeds?: { de?: string; lookup?: string }[];
+}>;
+
+/** The shape every lookup here folds a word into before counting it. */
+export function corpusKey(word: string): string {
+  return String(word ?? "")
+    .toLocaleLowerCase("de-DE")
+    .replace(/^(der|die|das)\s+/, "")
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+export function buildCorpusIndex(parts: CorpusParts): CorpusIndex {
   const cacheable = Boolean(parts) && typeof parts === "object";
   if (cacheable) {
     const cached = corpusCache.get(parts);
@@ -112,13 +137,20 @@ export function buildCorpusIndex(parts: Record<string, { phrases?: { de?: string
   return built;
 }
 
-function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] }>): CorpusIndex {
+function computeCorpusIndex(parts: CorpusParts): CorpusIndex {
   const spread = new Map<string, number>();
   const count = new Map<string, number>();
   const nounCount = new Map<string, number>();
   const otherCount = new Map<string, number>();
   const initialCount = new Map<string, number>();
   const keys = Object.keys(parts);
+  const headwords = new Set<string>();
+  for (const key of keys) {
+    for (const seed of parts[key]?.seeds ?? []) {
+      const word = corpusKey(seed?.lookup ?? seed?.de ?? "");
+      if (word) headwords.add(word);
+    }
+  }
   for (const key of keys) {
     const seen = new Set<string>();
     for (const phrase of parts[key]?.phrases ?? []) {
@@ -147,7 +179,7 @@ function computeCorpusIndex(parts: Record<string, { phrases?: { de?: string }[] 
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "de-DE"))
     .forEach(([word], place) => spokenRank.set(word, place + 1));
 
-  return { spread, count, nounCount, otherCount, initialCount, spokenRank, packs: keys.length };
+  return { spread, count, nounCount, otherCount, initialCount, headwords, spokenRank, packs: keys.length };
 }
 
 /**
@@ -253,6 +285,16 @@ export function corpusUses(word: string, index: CorpusIndex | null): number {
   // conversations, on three real mentions.
   let uses = (shaped.get(key) ?? 0) + (index.initialCount.get(key) ?? 0);
   for (const candidate of lemmaCandidates(key, isNoun)) {
+    // A guessed ending is a guess about THIS word. Where the guess lands on
+    // something the course teaches in its own right, it is not this word
+    // inflected — it is a different word, and the count is its own.
+    //
+    // die Esse's plural really is die Essen, so no ending rule can tell it
+    // apart from das Essen; German simply spells them the same. The corpus
+    // says Esse nought times and Essen 24, and pooling handed all 24 over —
+    // enough to rank a smith's hearth 136th of 24,191 words and label a B2
+    // noun A1, on the strength of people talking about dinner.
+    if (candidate !== key && index.headwords.has(candidate)) continue;
     uses = Math.max(uses, shaped.get(candidate) ?? 0);
   }
   return uses;
@@ -278,10 +320,22 @@ export function corpusReach(word: string, index: CorpusIndex | null): number {
   // of mentions. A candidate only counts when the corpus has actually written
   // it in this word's shape.
   const shaped = looksLikeGermanNoun(word) ? index.nounCount : index.otherCount;
+  // NOTE: the word's OWN spread is not shape-tested, only the candidates are.
+  // spread is case-folded and keeps no noun/not-noun split, so die Esse still
+  // collects the packs that say "ich esse". Gating it the same way is right in
+  // principle and measured as zeroing 70 taught entries — some correctly (der
+  // Gefallen was collecting the packs for the verb gefallen), some through
+  // quirks in how a seed's own word is written. Left alone deliberately rather
+  // than changed on the way past a different fix.
   let reach = index.spread.get(key) ?? 0;
   for (const candidate of lemmaCandidates(key, looksLikeGermanNoun(word))) {
     if (candidate === key) continue;
     if (!(shaped.get(candidate) ?? 0)) continue;
+    // And the same rule as corpusUses: a form the course teaches separately
+    // is a word, not an ending. The shape test above cannot catch a noun
+    // reaching another NOUN — das Essen is written exactly as die Esse's
+    // plural would be — so the pack spread was inherited too.
+    if (index.headwords.has(candidate)) continue;
     reach = Math.max(reach, index.spread.get(candidate) ?? 0);
   }
   return reach;

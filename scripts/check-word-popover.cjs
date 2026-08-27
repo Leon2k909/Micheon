@@ -87,6 +87,22 @@ assert.ok(/\.fs-word-popover\.is-below\s*\{[^}]*top: calc\(100% \+ 8px\)[^}]*bot
 assert.ok(/\.fs-word-popover\s*\{[^}]*max-width: min\(280px, calc\(100vw - 20px\)\)/.test(styles),
   "the panel can still be drawn wider than the window it opens in");
 
+// ── and nothing between the word and the window cuts it ─────────────────────
+// Everything above measures the panel against the WINDOW, which is the whole
+// of what placeWordPopover knows. It is not the whole of what can cut the
+// panel: Listen's card scrolls, so it clips on both axes, and a sentence
+// sitting near its top edge opened the panel straight into it. The window had
+// room, the arithmetic was right, and the top of the panel was sliced off
+// anyway — the word and its meaning gone, two unlabelled buttons left.
+assert.ok(/\.listen-card\s*\{[^}]*overflow-y: auto/.test(styles),
+  "the listen card no longer scrolls, so this clipping guard is describing something that is gone");
+assert.ok(/\.listen-card:has\(\.fs-word-popover\)\s*\{[^}]*overflow-y: visible/.test(styles),
+  "the scrolling card clips the word panel again: nothing lifts its overflow while a panel is open");
+// The card must still clip when no panel is open, or the long-sentence
+// scrolling this escape is carved out of has been given away wholesale.
+assert.ok(!/\.listen-card\s*\{[^}]*overflow-y: visible/.test(styles),
+  "the card stopped clipping entirely, so a long sentence overruns it instead of scrolling");
+
 console.log(
   "check-word-popover: the word panel opens away from the edge it would cross — "
   + `downward within ${FLIP_AT}px of the top, and pulled back inside either side`

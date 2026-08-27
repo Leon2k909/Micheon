@@ -116,7 +116,10 @@ for (const key of ["rare", "easy", "hard", "alpha-desc", "weak", "strong", "rece
 const tracker = fs.readFileSync(path.join(root, "src/components/lab/WordsTracker.tsx"), "utf8");
 assert(tracker.includes("WORD_TRACKER_SORTS.map"), "WordsTracker does not render the shared sort options");
 assert(tracker.includes("sortWordTrackerRows("), "WordsTracker does not apply the tested sort helper");
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 for (const { label } of WORD_TRACKER_SORTS) {
   assert(i18n.includes(`${JSON.stringify(label)}:`), `missing German translation for ${label}`);
 }

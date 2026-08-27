@@ -10,12 +10,14 @@ import { onVocabFilterRequest, type VocabFilterRequest } from "@/lib/vocabFilter
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { itemDifficulty, type AbilityBand } from "@/lib/ability";
 import { packMeta } from "@/lib/curriculum";
+import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
 import { ui, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { courseSides, type CourseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
+import { polishFor } from "@/lib/polishCourse";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getLearningMode, useLearningMode } from "@/lib/learningMode";
 import {
@@ -220,7 +222,8 @@ const TrackerRow = React.memo(
     // its ranking, its search and its progress ids are all keyed on the German.
     // Only the two lines of text change hands.
     const french = sides.target.code === "fr" ? frenchFor(item.de, item.fr) : null;
-    const primaryText = french ?? (sides.target.code === "en" ? item.en : item.de);
+    const polish = sides.target.code === "pl" ? polishFor(item.de) : null;
+    const primaryText = french ?? polish ?? (sides.target.code === "en" ? item.en : item.de);
     const meaningText = sides.meaning.code === "de" ? item.de : item.en;
     const listens = Number(record?.listens) || 0;
     return (
@@ -248,6 +251,17 @@ const TrackerRow = React.memo(
                 if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
                 const f = frequencyInfo(item.lookup);
                 return f ? <span className="font-black text-sky-600" title={ui(f.hint)}> · {ui(f.label)}</span> : null;
+              })()}
+            {/* Which "you" the German uses. Read off item.de rather than off
+                the displayed text, which may be the French or the English —
+                and shown only while German is the language being produced,
+                since that is when choosing the wrong one is a mistake the
+                learner can make. */}
+            {(() => {
+                const register = sides.target.code === "de" ? detectRegister(item.de) : null;
+                return register
+                  ? <span className={`font-black ${REGISTER_TONE[register]}`} title={ui("German picks a different \"you\" for friends, for a group, and for politeness. English uses one word for all three.")}> · {ui(REGISTER_SHORT[register])}</span>
+                  : null;
               })()}
             {englishUi && (() => {
                 const note = packMeta(item.partKey).note;
@@ -632,11 +646,13 @@ export function VocabTracker({
     let text = searchIndex.get(item);
     if (text === undefined) {
       // The index is built from the entry, whose French is only there when the
-      // pack happened to carry one inline. In the French course the row on
-      // screen is the TABLE's French, and searching for the words you can
-      // actually see has to find them.
+      // pack happened to carry one inline, and which never carries Polish at
+      // all. In those courses the row on screen is the TABLE's text, and
+      // searching for the words you can actually see has to find them.
       text = buildCatalogSearchText(
-        sides.target.code === "fr" ? { ...item, fr: frenchFor(item.de, item.fr) ?? undefined } : item
+        sides.target.code === "fr" ? { ...item, fr: frenchFor(item.de, item.fr) ?? undefined }
+          : sides.target.code === "pl" ? { ...item, pl: polishFor(item.de) ?? undefined }
+          : item
       );
       searchIndex.set(item, text);
     }
@@ -696,13 +712,31 @@ export function VocabTracker({
    * main process answers null rather than an empty list when it has no
    * database — an empty list is a real answer meaning "nothing matched".
    */
-  /** The desktop app ships the index; a browser does not. */
+  /**
+   * The desktop app ships the index; a browser does not.
+   *
+   * And the index only holds German and English. It is built from the
+   * catalogue in its default direction, so its columns are `de` and `en` and
+   * its FTS covers those — searching it for "toujours" or "przynajmniej"
+   * returns nothing, measured, for every word tried.
+   *
+   * That matters because an empty answer here is treated as authoritative:
+   * the whole point of waiting for the index is not to run the in-memory
+   * search as well. So a French or Polish learner typing their own language
+   * saw an empty tracker on the desktop and a full one in the browser.
+   *
+   * The index is an accelerator, so the fix is to decline it for the courses
+   * it cannot accelerate. Those fall back to the in-memory search, which
+   * reads whichever language the card is actually in.
+   */
   const indexedSearch = useMemo(() => {
+    const indexHolds = sides.target.code === "de" || sides.target.code === "en";
+    if (!indexHolds) return null;
     const bridge = typeof window === "undefined" ? undefined : (window as any).germDesktop;
     return typeof bridge?.searchCatalogue === "function"
       ? (query: string) => Promise.resolve(bridge.searchCatalogue(query))
       : null;
-  }, []);
+  }, [sides.target.code]);
 
   const [indexedMatches, setIndexedMatches] = useState<{ ids: Set<string>; query: string } | null>(null);
   /** The last list actually shown, held while a newer one is a few ms away. */
@@ -1065,7 +1099,7 @@ export function VocabTracker({
               value={query}
               onFocus={() => { if (!indexedSearch) warmSearchIndex(); }}
               onChange={(e) => { setQuery(e.target.value); resetList(); }}
-              placeholder={ui("German or English…")}
+              placeholder={uiFmt("{target} or {meaning}…", { target: ui(sides.target.label), meaning: ui(sides.meaning.label) })}
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
             />
           </span>

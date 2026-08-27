@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { AlertTriangle, Download, HardDrive, RefreshCw, Trash2, Upload } from "lucide-react";
+import { availablePacks, removePack } from "@/lib/contentPacks";
 import { ui, uiFmt } from "@/lib/i18n";
 import {
   clearAllData,
@@ -45,9 +46,25 @@ export function DataAndStorage() {
   const [busy, setBusy] = useState(false);
   const [transferBusy, setTransferBusy] = useState<"export" | "import" | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  /**
+   * The languages this device has downloaded.
+   *
+   * A language arrives by opening its course — nobody is asked to install
+   * anything — but what arrives can be given back, which is the whole reason
+   * the tables are packs rather than part of the app. A chunk, once
+   * downloaded, is the browser's to keep.
+   */
+  const [languages, setLanguages] = useState<Array<{ id: string; name: string; url: string; bytes: number }>>([]);
 
   const refresh = useCallback(() => {
     setUsage(measureDataUsage());
+    void availablePacks()
+      .then(({ languages: all, installed }) => {
+        setLanguages(all.filter((pack) => installed.some((entry) => entry.endsWith(pack.url))));
+      })
+      // No manifest means the build emitted no packs, which is a real state:
+      // the app runs on its bundled content and there is nothing to remove.
+      .catch(() => setLanguages([]));
     const bridge = (window as any).germDesktop;
     if (typeof bridge?.getStorageUsage !== "function") return;
     bridge.getStorageUsage().then(setDisk).catch(() => setDisk(null));
@@ -71,6 +88,26 @@ export function DataAndStorage() {
     // Progress feeds most of the app; a reload is cleaner than leaving every
     // screen holding numbers that no longer exist.
     if (id === "all" || id === "progress") window.setTimeout(() => window.location.reload(), 900);
+  };
+
+  /**
+   * Give a language back.
+   *
+   * Armed like every other delete on this screen: one press asks, the second
+   * does it. Nothing is lost that cannot return — opening the course fetches
+   * it again — but it is still a download the learner chose to be rid of, and
+   * a stray click should not undo that decision either way.
+   */
+  const removeLanguage = async (pack: { id: string; name: string; url: string }) => {
+    if (arming !== `lang:${pack.id}`) { setArming(`lang:${pack.id}` as never); setNote(""); return; }
+    setArming(null);
+    setBusy(true);
+    const gone = await removePack(pack.url).catch(() => false);
+    setBusy(false);
+    refresh();
+    setNote(gone
+      ? uiFmt("{name} removed. Opening the course downloads it again.", { name: ui(pack.name) })
+      : uiFmt("Could not remove {name}.", { name: ui(pack.name) }));
   };
 
   const clearCache = async () => {
@@ -129,6 +166,38 @@ export function DataAndStorage() {
 
   return (
     <div className="mt-5 space-y-4">
+      {/* ── languages this device has downloaded ────────────────────────── */}
+      {languages.length > 0 && (
+        <div className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="text-sm font-black text-[var(--text-1)]">{ui("Downloaded languages")}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+            {ui("A language downloads itself when you open its course. Remove one to get the space back — opening the course again brings it straight back.")}
+          </p>
+          <div className="mt-3 space-y-2">
+            {languages.map((pack) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5"
+                key={pack.id}
+              >
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black text-[var(--text-1)]">{ui(pack.name)}</strong>
+                  <small className="block text-xs font-semibold text-[var(--text-3)]">{formatBytes(pack.bytes)}</small>
+                </span>
+                <button
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-3)] px-3 py-1.5 text-xs font-black text-[var(--text-2)] hover:opacity-90 disabled:opacity-60"
+                  disabled={busy}
+                  onClick={() => { void removeLanguage(pack); }}
+                  type="button"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {arming === `lang:${pack.id}` ? ui("Tap again to remove") : ui("Remove")}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── on disk ─────────────────────────────────────────────────────── */}
       <div className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

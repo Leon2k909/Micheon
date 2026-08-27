@@ -11,6 +11,8 @@ import { applyCustomColours } from "./lib/customColours";
 import { applyEffects, getEffects } from "./lib/effects";
 import { applyHighContrast, getHighContrast } from "./lib/highContrast";
 import { watchRuntimePerformance } from "./lib/runtimePerformance";
+import { ensureInterfaceStrings } from "./lib/i18n";
+import { resolveInterfaceLanguage } from "./lib/interfaceLanguage";
 
 const initialParams = new URLSearchParams(window.location.search);
 const isMainShell = (
@@ -71,15 +73,29 @@ installGlobalCrashHooks();
 
 const container = document.getElementById("root");
 if (container) {
-  createRoot(container).render(
-    <StrictMode>
-      <AppErrorBoundary>
-        <MotionGate>
-          <App />
-          {/* One explanation for every play button in the app. */}
-          <SilencedAudioPrompt />
-        </MotionGate>
-      </AppErrorBoundary>
-    </StrictMode>
-  );
+  const render = () => {
+    createRoot(container).render(
+      <StrictMode>
+        <AppErrorBoundary>
+          <MotionGate>
+            <App />
+            {/* One explanation for every play button in the app. */}
+            <SilencedAudioPrompt />
+          </MotionGate>
+        </AppErrorBoundary>
+      </StrictMode>
+    );
+  };
+  /**
+   * The interface language before the interface.
+   *
+   * Only a language whose table is fetched waits here, which today is French
+   * alone — English needs no table and German's is compiled in, so both render
+   * on the same tick they always did. Rendering first and swapping later would
+   * show a French reader a screen of English and then change it under them.
+   *
+   * finally, not then: a table that fails to arrive must still leave a usable
+   * app in English rather than an empty window.
+   */
+  void ensureInterfaceStrings(resolveInterfaceLanguage()).finally(render);
 }

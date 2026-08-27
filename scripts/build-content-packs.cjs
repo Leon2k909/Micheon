@@ -40,6 +40,9 @@ const built = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";',
       'export { TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, translate } from "./src/lib/translations.ts";',
+      'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
+      'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "content-packs-entry.ts",
@@ -59,6 +62,11 @@ compiled.filename = path.join(root, ".content-packs.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const M = compiled.exports;
+// The tables are fetched at runtime so a German-only learner never
+// downloads them; here every language is wanted at once, and there is no
+// event loop to await one on.
+M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
+M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 const resolved = Object.fromEntries(
   Object.entries(M.allPartBlueprints).map(([key, blueprint]) => [key, M.buildApiPartFromResolved(blueprint, {})])

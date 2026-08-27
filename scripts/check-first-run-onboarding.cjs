@@ -9,7 +9,10 @@ const login = read("src/components/LoginScreen.tsx");
 const placement = read("src/components/PlacementTest.tsx");
 const guided = read("src/guided_learning_session.tsx");
 const prototype = read("src/prototype/NewUiPrototype.tsx");
-const translations = read("src/lib/i18n.ts");
+const translations = read("src/lib/i18n.ts")
+  // The German table lives in its own file so it can be fetched rather than
+  // bundled; i18n.ts holds the machinery. Both are read so neither is lost.
+  + read("src/lib/i18nDe.ts");
 
 let failures = 0;
 function check(name, condition) {

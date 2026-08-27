@@ -111,9 +111,16 @@ assert.ok(hostile.name.length <= 40 && hostile.level.length <= 60,
 assert.strictEqual(hostile.streak, 0, "a negative streak survived");
 assert.ok(hostile.totalXp <= 100_000_000, "an unbounded XP figure survived");
 assert.strictEqual(hostile.learningDays, 0, "a non-numeric count survived as something other than zero");
+// The whole wire format, pinned. `photo` was added deliberately and carries
+// its own rules in friendPhoto — a thumbnail going out, a proved raster image
+// coming back. Everything else here is a figure the home page already shows a
+// learner about themselves. Widening this list is the moment to ask whether
+// the new field should be leaving the machine at all.
 assert.deepStrictEqual(Object.keys(hostile).sort(),
-  ["code", "learningDays", "level", "name", "sentAt", "streak", "totalXp", "v"],
+  ["code", "learningDays", "level", "name", "photo", "sentAt", "streak", "totalXp", "v"],
   "fields nobody declared came through from the wire — the profile is being spread rather than rebuilt");
+assert.strictEqual(hostile.photo, undefined,
+  "a profile with no photo still produced one, so the field is not being read from the wire");
 
 assert.strictEqual(readFriendMessage({ type: "nonsense", profile: {} }), null,
   "an unknown message type was accepted");
@@ -129,9 +136,9 @@ assert.strictEqual(loadFriends().length, 0, "the list grew from a message alone"
 assert.strictEqual(isFriend(CODE_OK), false, "an uninvited code counts as a friend");
 
 // ── and an invited one is kept ──────────────────────────────────────────────
-assert.strictEqual(addFriend(CODE_OK, "Michelle"), true, "an invited code was not added");
-assert.strictEqual(addFriend(CODE_OK, "Michelle"), false, "the same person can be added twice");
-assert.strictEqual(recordFriendProfile({ v: 1, code: CODE_OK, name: "Michelle", level: "Committed", streak: 14, totalXp: 2840, learningDays: 30, sentAt: 1 }), true,
+assert.strictEqual(addFriend(CODE_OK, "Anna Fischer"), true, "an invited code was not added");
+assert.strictEqual(addFriend(CODE_OK, "Anna Fischer"), false, "the same person can be added twice");
+assert.strictEqual(recordFriendProfile({ v: 1, code: CODE_OK, name: "Anna Fischer", level: "Committed", streak: 14, totalXp: 2840, learningDays: 30, sentAt: 1 }), true,
   "a profile from an accepted friend was refused");
 const [saved] = loadFriends();
 assert.strictEqual(saved.profile.totalXp, 2840, "the figures did not survive being stored");
@@ -165,7 +172,7 @@ assert.strictEqual(presenceFor(skewed, false, noon), "away",
   "a friend whose clock runs a day fast reads as recently active — freshness is being taken from "
   + "the sender's timestamp rather than from when this machine actually heard from them");
 
-assert.strictEqual(initialsFor("Michelle"), "M", "one name should give one initial");
+assert.strictEqual(initialsFor("Anna"), "A", "one name should give one initial");
 assert.strictEqual(initialsFor("Jonas Weber"), "JW", "two names should give two initials");
 assert.strictEqual(initialsFor("   "), "?", "a blank name should still render something");
 
@@ -176,6 +183,36 @@ assert.ok(!shell.includes("const SOCIAL_FRIENDS"),
 assert.ok(!/Jonas Weber|Sophie Klein|Felix Braun|Emilia Koch/.test(shell),
   "invented people are still named in the shell");
 assert.ok(shell.includes("<FriendsPanel"), "the Friends list is not the real one");
+
+// ── and it does not describe itself as a mock-up ────────────────────────────
+// The Friends list shares a screen with genuinely unbuilt things — leagues,
+// challenges — which announce themselves through a banner headed "UI preview
+// only". Its own messages were routed through that same banner, so a working
+// feature reported "that code is twenty letters" under a heading saying
+// nothing had happened. They are separate channels now, and the real one has
+// no such heading.
+assert.ok(shell.includes("const [notice, setNotice]"),
+  "the Friends list has no message channel of its own again");
+assert.ok(shell.includes("onNotice={(message) => setNotice(message)}"),
+  "the Friends list reports itself through the preview banner, so a working feature is labelled "
+  + "a preview of itself");
+{
+  const noticeBlock = shell.slice(shell.indexOf("{notice && ("), shell.indexOf("{previewNotice && ("));
+  assert.ok(noticeBlock.length > 40, "the two notices could not be told apart");
+  assert.ok(!noticeBlock.includes("UI preview only"),
+    "the real notice carries the preview heading");
+}
+
+// Nothing beside the real list may invent a figure about a real person. The
+// four made-up friends were removed for exactly this reason, and a progress
+// card quoting a percentage towards a shared target nobody set is the same
+// fault in the same aside — worse once the list beside it became true.
+assert.ok(!shell.includes("68% of the way to a shared weekly target"),
+  "an invented statistic about a named person sits beside the real Friends list");
+assert.ok(!/showPreviewNotice\(ui\("Invite friend"\)\)/.test(shell),
+  "the invite card still only previews an invite, next to a list that can actually add one");
+assert.ok(shell.includes("formatFriendCode(getFriendCode())"),
+  "the invite card does not offer the code it is inviting somebody with");
 
 const panel = fs.readFileSync(path.join(root, "src/components/social/FriendsPanel.tsx"), "utf8");
 assert.ok(panel.includes("loadFriends()"), "the panel does not read the stored friends");

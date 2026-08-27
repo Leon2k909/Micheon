@@ -30,7 +30,10 @@ const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"
 // string at a time: a German learner opened Profileinstellungen and read
 // "Manage your name, learning preferences…" underneath it.
 const settings = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8");
-const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8");
+// The table moved into its own file so it could be fetched rather than
+// bundled — ui() is imported by every screen, so inline it had to load with
+// them. Read from there; i18n.ts is the machinery now, not the words.
+const i18n = fs.readFileSync(path.join(root, "src/lib/i18nDe.ts"), "utf8");
 
 const translated = new Set([...i18n.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:/gm)].map((m) => m[1]));
 
@@ -179,6 +182,7 @@ const DELIBERATE = new Set([
   "Hello! Shall we make a start?",
   "Guten Tag! Wollen wir anfangen?",
   "Bonjour ! On commence ?",
+  "Dzień dobry! Zaczynamy?",
   // Both halves of a locale ternary; the German one is right there beside it.
   "Cache cleared.",
   "Cache geleert.",
