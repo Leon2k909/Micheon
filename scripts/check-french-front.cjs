@@ -186,8 +186,14 @@ assert.ok(wordParity >= WORD_PARITY_FLOOR,
  * today quietly disappearing because a translation was deleted or a German
  * word reworded out from under its key. So the floor is the number of German
  * word cards that have Polish. Raise it as each block lands; never lower it.
+ *
+ * As of this floor the narrowing narrows nothing: all 9,000 have Polish, so
+ * the two trackers hold the same list, exactly as French does. The count stays
+ * a count anyway. French is a parity language by decision and Polish is not,
+ * and the day a German block ships ahead of its Polish the percentage rule
+ * would stop the release while this one asks only that nothing was lost.
  */
-const POLISH_WORD_FLOOR = 8680;
+const POLISH_WORD_FLOOR = 8990;
 const withPolish = germanWords.filter((word) => translate(String(word.de), "pl", null));
 assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   `${withPolish.length.toLocaleString("en-GB")} of the ${germanWords.length.toLocaleString("en-GB")} `
