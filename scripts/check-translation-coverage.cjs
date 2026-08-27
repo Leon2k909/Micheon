@@ -106,7 +106,7 @@ const FLOORS = {
   // of it. What the learner actually meets is floored by check-polish-course,
   // which counts the cards the course serves and requires every one of them to
   // have an answer.
-  pl: 9700,
+  pl: 10000,
 };
 
 // The percentage is still reported, because it is the honest measure of how
