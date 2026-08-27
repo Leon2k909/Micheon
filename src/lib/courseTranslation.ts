@@ -167,7 +167,7 @@ export function useTranslationLanguage(): TranslationLanguage {
  * branch, and check-french-interface is refusing the branch on exactly that
  * reasoning.
  */
-const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<"en" | "de" | "fr", TranslationLanguage>> = {
+const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<"en" | "de" | "fr" | "pl", TranslationLanguage>> = {
   de: "de",
 };
 
