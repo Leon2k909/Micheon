@@ -197,3 +197,47 @@ console.log(
   "check-home-layout: her pictures are used where she put them, the country card follows the country, the banner carries no mascot, "
   + "the page runs banner → question → cards → figures, and the cards let their pictures show"
 );
+
+// ── the two cards fold outwards ───────────────────────────────────────────
+/**
+ * "sodass sprachenlernen nach links zuklappbar ist. und landeskunde nach
+ * rechts. der knopf dafür soll bei sprachen lernen links oben in der ecke und
+ * bei landeskunde rechts oben in der ecke sein."
+ *
+ * Which corner the handle sits in IS the feature: it says which way the card
+ * will go before you press it. Swapped, nothing errors and nothing looks
+ * broken — the cards simply fold the wrong way.
+ */
+assert.ok(
+  /\.np-home-choice--language \.np-home-choice-fold \{ left: /.test(css)
+    && /\.np-home-choice--country \.np-home-choice-fold \{ right: /.test(css),
+  "the fold handles are not in the outer corners: language left, country right"
+);
+
+// A flex row, not the auto-fit grid it replaced. auto-fit gives every column
+// the same width by definition, so a folded card would be as wide as the one
+// it just made room for.
+const choices = /\.np-home-choices \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+assert.ok(
+  /display: flex/.test(choices) && !/grid-template-columns/.test(choices),
+  "the cards are back in a grid of equal columns, so folding one cannot narrow it"
+);
+const railBasis = /\.np-home-choice\.is-folded \{\s*flex: 0 0 (\d+)px/.exec(css);
+assert.ok(railBasis, "a folded card has no width of its own — it would stay as wide as an open one");
+assert.ok(
+  Number(railBasis[1]) < 200,
+  `a folded card is ${railBasis[1]}px wide, which is a card rather than the rail it folds down to`
+);
+
+// Both handles, and the label that stays on the rail. A folded card with
+// nothing on it is a strip to work out rather than a thing to recognise.
+for (const needed of ["np-home-choice-fold", "np-home-choice-spine"]) {
+  assert.ok(shell.includes(needed), `the home cards no longer render ${needed}`);
+}
+assert.ok(
+  /getHomeCardOpen\("language"\)/.test(shell) && /getHomeCardOpen\("country"\)/.test(shell),
+  "the cards no longer read how they were left, so folding one is forgotten on the next start"
+);
+for (const key of ["Fold this card away", "Open this card"]) {
+  assert.ok(i18n.includes(`"${key}":`), `"${key}" has no German, so the handle would say it in English`);
+}

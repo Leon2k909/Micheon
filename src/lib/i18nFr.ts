@@ -2463,6 +2463,8 @@ export const FR: Record<string, string> = {
   "By topic": "Par thème",
   "My mistakes": "Mes erreurs",
   "Favourites": "Favoris",
+  "Fold this card away": "Replier cette carte",
+  "Open this card": "Déplier cette carte",
   "Practice sections": "Rubriques d'entraînement",
   "Smart review": "Révision intelligente",
   "Mock test": "Test blanc",

@@ -163,6 +163,7 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
+import { getHomeCardOpen, setHomeCardOpen, type HomeCard } from "@/lib/homeCards";
 import { FriendsPanel } from "@/components/social/FriendsPanel";
 import { formatFriendCode, getFriendCode } from "@/lib/friendCode";
 import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
@@ -2108,6 +2109,8 @@ function LanguageCard({
   onPickContent,
   onSwitchCourse,
   onToggleContentMenu,
+  onToggleFold,
+  open,
   packProgress,
   profile,
   stats,
@@ -2118,6 +2121,9 @@ function LanguageCard({
   onPickContent: (value: LessonContent) => void;
   onSwitchCourse: () => void;
   onToggleContentMenu: () => void;
+  /** Folds the card away to the left, and back out again. */
+  onToggleFold: () => void;
+  open: boolean;
   packProgress: PackProgress | null;
   profile: UserProfile | null;
   stats: PrototypeStats;
@@ -2133,7 +2139,30 @@ function LanguageCard({
   const percent = packProgress ? packProgress.percent : 0;
 
   return (
-    <article className="np-home-choice np-home-choice--language">
+    <article className={`np-home-choice np-home-choice--language${open ? "" : " is-folded"}`}>
+      {/* The handle sits in the corner the card folds towards, and the arrow
+          points the way it will go — so it turns round rather than becoming a
+          second icon. Outside the hero, because it has to stay put while
+          everything under it is folded away. */}
+      <button
+        aria-expanded={open}
+        aria-label={open ? ui("Fold this card away") : ui("Open this card")}
+        className="np-home-choice-fold"
+        onClick={onToggleFold}
+        title={open ? ui("Fold this card away") : ui("Open this card")}
+        type="button"
+      >
+        <ChevronLeft aria-hidden="true" />
+      </button>
+      {/* Folded, the card is a slice of its own picture with its flag and its
+          name down it. A blank strip would be a thing to work out rather than
+          a thing to recognise. */}
+      {!open && (
+        <span aria-hidden="true" className="np-home-choice-spine">
+          <span className="np-home-choice-spine-flag"><FlagRoundel id={courseFlagId} /></span>
+          <b>{ui("Language learning")}</b>
+        </span>
+      )}
       {/* Two halves. Only the heading and the current language stay in the
           picture; the building blocks and the continue row all sit below it.
           to its foot, so far more of the artwork is visible; progress and the
@@ -2260,6 +2289,8 @@ const COUNTRY_ART: Record<CountryId, string> = {
 function CountryCard({
   onChangeCountry,
   onOpen,
+  onToggleFold,
+  open,
   pack,
   profile,
 }: {
@@ -2269,6 +2300,9 @@ function CountryCard({
    */
   onChangeCountry: () => void;
   onOpen: () => void;
+  /** Folds the card away to the right, and back out again. */
+  onToggleFold: () => void;
+  open: boolean;
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
@@ -2284,7 +2318,25 @@ function CountryCard({
   const nextLesson = lessons.find((lesson) => !completed.includes(lesson.id));
 
   return (
-    <article className="np-home-choice np-home-choice--country">
+    <article className={`np-home-choice np-home-choice--country${open ? "" : " is-folded"}`}>
+      {/* The mirror of the language card's: this one folds right, so its
+          handle is in the right corner and its arrow points that way. */}
+      <button
+        aria-expanded={open}
+        aria-label={open ? ui("Fold this card away") : ui("Open this card")}
+        className="np-home-choice-fold"
+        onClick={onToggleFold}
+        title={open ? ui("Fold this card away") : ui("Open this card")}
+        type="button"
+      >
+        <ChevronRight aria-hidden="true" />
+      </button>
+      {!open && (
+        <span aria-hidden="true" className="np-home-choice-spine">
+          <span className="np-home-choice-spine-flag"><FlagRoundel id={pack.flagId} /></span>
+          <b>{ui("Country studies")}</b>
+        </span>
+      )}
       {/* Same two halves as LanguageCard. The pair has to keep matching — they
           are drawn as one choice with two sides, and splitting only one of them
           would leave the row lopsided. */}
@@ -3239,6 +3291,21 @@ function HomeView({
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  /**
+   * Which of the two cards is unfolded. Read once on mount and written on
+   * every change, so the page comes back the way it was left.
+   */
+  const [cardsOpen, setCardsOpen] = useState<Record<HomeCard, boolean>>(() => ({
+    language: getHomeCardOpen("language"),
+    country: getHomeCardOpen("country"),
+  }));
+  const foldCard = (card: HomeCard) => {
+    setCardsOpen((was) => {
+      const next = !was[card];
+      setHomeCardOpen(card, next);
+      return { ...was, [card]: next };
+    });
+  };
   // The menu closes the way every menu should: outside click or Escape.
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
@@ -3286,6 +3353,8 @@ function HomeView({
           contentMenuOpen={contentMenuOpen}
           lessonContent={lessonContent}
           onOpen={onPractice}
+          onToggleFold={() => foldCard("language")}
+          open={cardsOpen.language}
           onPickContent={(value) => {
             setLessonContent(value);
             setLessonContentState(value);
@@ -3301,6 +3370,8 @@ function HomeView({
         <CountryCard
           onChangeCountry={onChangeCountry}
           onOpen={onOpenCountryCourse}
+          onToggleFold={() => foldCard("country")}
+          open={cardsOpen.country}
           pack={countryPack(countryId)}
           profile={profile}
         />

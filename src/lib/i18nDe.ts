@@ -2610,6 +2610,8 @@ export const DE: Record<string, string> = {
   "By topic": "Nach Thema",
   "My mistakes": "Meine Fehler",
   "Favourites": "Favoriten",
+  "Fold this card away": "Diese Karte zuklappen",
+  "Open this card": "Diese Karte aufklappen",
   "Practice sections": "Übungsbereiche",
   "Smart review": "Intelligente Wiederholung",
   "Mock test": "Übungstest",
