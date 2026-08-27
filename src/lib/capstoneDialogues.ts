@@ -671,6 +671,222 @@ export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       ],
     },
   ],
+  "part624": [
+    {
+      title: "Der Kostenvoranschlag",
+      lines: [
+        { speaker: "A", de: "Der Handwerker war da. Hier ist der Kostenvoranschlag.", en: "The tradesman came by. Here's the estimate." },
+        { speaker: "B", de: "Materialkosten, Stundenlohn ... und was ist diese Pauschale?", en: "Cost of materials, hourly rate ... and what's this flat rate?" },
+        { speaker: "A", de: "Anfahrt und Kleinkram. Dafür gibt es Skonto, wenn wir schnell zahlen.", en: "Travel and odds and ends. In return there's a discount if we pay quickly." },
+        { speaker: "B", de: "Vierzehn Tage Zahlungsziel steht hier. Machen wir.", en: "Fourteen days to pay, it says here. Let's do it." },
+        { speaker: "A", de: "Und nach der Abnahme haben wir zwei Jahre Gewährleistung.", en: "And after sign-off we've got two years' warranty." },
+      ],
+    },
+  ],
+  "part625": [
+    {
+      title: "Am Einstieg vom Klettersteig",
+      lines: [
+        { speaker: "A", de: "Sitzt dein Klettergurt? Ich prüfe noch mal jeden Karabiner.", en: "Is your harness on right? I'm double-checking every carabiner." },
+        { speaker: "B", de: "Alles fest. Wie lang ist der Klettersteig?", en: "All secure. How long is the via ferrata?" },
+        { speaker: "A", de: "Zwei Stunden bis zum Grat, mit einer Stelle unterm Überhang.", en: "Two hours to the ridge, with one section under the overhang." },
+        { speaker: "B", de: "Und da oben? Trittsicherheit reicht, oder brauche ich mehr?", en: "And up top? Is sure-footedness enough, or do I need more?" },
+        { speaker: "A", de: "Reicht. Nur bei Regen wird der Fels ernst. Los jetzt.", en: "It's enough. Only in rain does the rock get serious. Off we go." },
+      ],
+    },
+  ],
+  "part626": [
+    {
+      title: "Der Wegweiser fehlt",
+      lines: [
+        { speaker: "A", de: "Hier stimmt was nicht. Auf der Wanderkarte ist ein Wegweiser.", en: "Something's off here. There's a signpost on the walking map." },
+        { speaker: "B", de: "Der liegt da drüben im Gras. Der Wind war wohl zu stark.", en: "It's lying over there in the grass. The wind must have been too strong." },
+        { speaker: "A", de: "Super. Also: Rundweg links oder Aussichtspunkt rechts?", en: "Great. So: circular route to the left or viewpoint to the right?" },
+        { speaker: "B", de: "Rechts, über die Serpentinen. Der Wanderführer schwärmt davon.", en: "Right, up the hairpins. The guidebook raves about it." },
+        { speaker: "A", de: "Gut. An der Baumgrenze machen wir Rast.", en: "Fine. We'll rest at the tree line." },
+      ],
+    },
+  ],
+  "part627": [
+    {
+      title: "Feuer im Regen",
+      lines: [
+        { speaker: "A", de: "Alles ist klamm. Kriegen wir das Lagerfeuer trotzdem an?", en: "Everything's damp. Can we still get the campfire going?" },
+        { speaker: "B", de: "Mit dem trockenen Zunder aus der Dose, ja. Brennholz liegt unter der Plane.", en: "With the dry tinder from the tin, yes. The firewood's under the tarp." },
+        { speaker: "A", de: "Gut mitgedacht. Und der Windschutz steht auch schon.", en: "Good thinking. And the windbreak's already up." },
+        { speaker: "B", de: "Dann Wasser in den Topf. Der Proviant reicht noch für zwei Tage.", en: "Then water in the pot. The provisions will last another two days." },
+        { speaker: "A", de: "Perfekt. Morgen füllen wir die Trinkflaschen an der Quelle auf.", en: "Perfect. Tomorrow we'll fill the water bottles up at the spring." },
+      ],
+    },
+  ],
+  "part628": [
+    {
+      title: "Rast auf der Alm",
+      lines: [
+        { speaker: "A", de: "Endlich oben. Die Almwiese ist ja schöner als jedes Foto.", en: "Top at last. The alpine meadow is lovelier than any photo." },
+        { speaker: "B", de: "Und die Sennhütte hat offen! Käse und Milch, direkt von hier.", en: "And the dairy hut is open! Cheese and milk, straight from here." },
+        { speaker: "A", de: "Danach der Abstieg durch den Nadelwald, am Wildbach entlang.", en: "Then the descent through the pine forest, along the mountain torrent." },
+        { speaker: "B", de: "Im Naturschutzgebiet bleiben wir auf dem Weg, klar.", en: "We'll stay on the path in the nature reserve, obviously." },
+        { speaker: "A", de: "Klar. Und unten im Weiher kühlen wir die Füße.", en: "Obviously. And down at the pond we'll cool our feet." },
+      ],
+    },
+  ],
+  "part629": [
+    {
+      title: "Was da geflogen ist",
+      lines: [
+        { speaker: "A", de: "Siehst du den großen Vogel über dem Hang? Ein Adler?", en: "Do you see the big bird over the slope? An eagle?" },
+        { speaker: "B", de: "Ein Bussard, glaube ich. Und hör mal: ein Specht.", en: "A buzzard, I think. And listen: a woodpecker." },
+        { speaker: "A", de: "Vorhin stand ein Murmeltier direkt am Weg.", en: "Earlier a marmot was standing right by the path." },
+        { speaker: "B", de: "Besser als eine Kreuzotter. Auf die Steine trete ich vorsichtig.", en: "Better than an adder. I'm stepping carefully on the stones." },
+        { speaker: "A", de: "Gute Idee. Die Gams da oben interessiert das alles gar nicht.", en: "Good idea. The chamois up there couldn't care less about any of it." },
+      ],
+    },
+  ],
+  "part630": [
+    {
+      title: "Wetterumschwung am Berg",
+      lines: [
+        { speaker: "A", de: "Der Aufwind wird kalt, und da hinten wird es schwarz.", en: "The updraught's turning cold, and it's going black over there." },
+        { speaker: "B", de: "Dann runter. Bei Gewitter hat man auf dem Grat nichts verloren.", en: "Down we go, then. In a thunderstorm you've no business being on the ridge." },
+        { speaker: "A", de: "Die Hütte meldet Graupel und Böen. Lawinengefahr ist zum Glück keine.", en: "The hut is reporting soft hail and gusts. Thankfully no avalanche risk." },
+        { speaker: "B", de: "Trotzdem: Steinschlag nach dem Regen. Helm auf.", en: "All the same: rockfall after rain. Helmet on." },
+        { speaker: "A", de: "Und falls was passiert, hat die Bergrettung heute sowieso viel zu tun.", en: "And if anything happens, mountain rescue has plenty on today anyway." },
+      ],
+    },
+  ],
+  "part631": [
+    {
+      title: "Das Paket nach Polen",
+      lines: [
+        { speaker: "A", de: "Guten Tag, dieses Paket soll nach Polen. Was kostet das Porto?", en: "Hello, this parcel is going to Poland. What's the postage?" },
+        { speaker: "B", de: "Neun Euro, mit Sendungsverfolgung. Als Warensendung ginge es billiger.", en: "Nine euros, with tracking. As a goods shipment it would be cheaper." },
+        { speaker: "A", de: "Nein, es soll schnell gehen. Wie viele Zustellversuche gibt es?", en: "No, it needs to be quick. How many delivery attempts are there?" },
+        { speaker: "B", de: "Zwei. Danach liegt es in der Filiale zur Abholung.", en: "Two. After that it waits at the branch for collection." },
+        { speaker: "A", de: "Gut. Und eine Empfangsbestätigung hätte ich gern dazu.", en: "Good. And I'd like proof of receipt with that, please." },
+      ],
+    },
+  ],
+  "part632": [
+    {
+      title: "Gut verpackt",
+      lines: [
+        { speaker: "A", de: "Reicht die Versandtasche, oder brauche ich einen Karton?", en: "Will the mailing bag do, or do I need a box?" },
+        { speaker: "B", de: "Für Gläser? Karton, Wellpappe und ordentlich Füllmaterial.", en: "For glasses? A box, corrugated cardboard and plenty of padding." },
+        { speaker: "A", de: "Und außen der Aufkleber mit dem Barcode?", en: "And the sticker with the barcode on the outside?" },
+        { speaker: "B", de: "Genau, gut sichtbar. Sonst zahlt bei einem Transportschaden keiner.", en: "Exactly, clearly visible. Otherwise nobody pays out if there's transit damage." },
+        { speaker: "A", de: "Verstanden. Der Versicherungswert steht ja auf dem Lieferschein.", en: "Understood. The insured value is on the delivery note anyway." },
+      ],
+    },
+  ],
+  "part633": [
+    {
+      title: "Die Rücksendung",
+      lines: [
+        { speaker: "A", de: "Die Jacke ist zu klein. Wie läuft die Rücksendung?", en: "The jacket's too small. How does the return work?" },
+        { speaker: "B", de: "Rücksendeetikett ausdrucken, drauf, abgeben. Das Rückgaberecht gilt vierzehn Tage.", en: "Print the return label, stick it on, drop it off. The right of return runs fourteen days." },
+        { speaker: "A", de: "Und wann kommt das Geld?", en: "And when does the money come back?" },
+        { speaker: "B", de: "Nach der Ankunft im Lager, meist in einer Woche.", en: "Once it arrives back at the warehouse — usually within a week." },
+        { speaker: "A", de: "Okay. Nächstes Mal bestelle ich zwei Größen und schicke eine zurück.", en: "Okay. Next time I'll order two sizes and send one back." },
+      ],
+    },
+  ],
+  "part634": [
+    {
+      title: "Im Versandlager",
+      lines: [
+        { speaker: "A", de: "Erster Tag im Lager? Ich zeige dir alles.", en: "First day in the warehouse? I'll show you around." },
+        { speaker: "B", de: "Gern. Was fahren die Gabelstapler da hin und her?", en: "Please. What are the forklifts shuttling back and forth?" },
+        { speaker: "A", de: "Paletten für den Großhandel. Der Einzelhandel läuft über das Band da.", en: "Pallets for wholesale. Retail runs over that belt there." },
+        { speaker: "B", de: "Und wann ist Inventur?", en: "And when is stocktaking?" },
+        { speaker: "A", de: "Ende des Jahres. Dann zählt jeder hier jeden Lagerbestand zweimal.", en: "End of the year. Then everyone here counts every stock item twice." },
+      ],
+    },
+  ],
+  "part635": [
+    {
+      title: "An der Zollkontrolle",
+      lines: [
+        { speaker: "A", de: "Ihr Paket kommt von außerhalb der EU. Das ist eine Einfuhr.", en: "Your parcel comes from outside the EU. That counts as an import." },
+        { speaker: "B", de: "Muss ich dann Zollgebühren zahlen?", en: "Do I have to pay customs charges, then?" },
+        { speaker: "A", de: "Kommt auf den Warenwert an. Die Zollinhaltserklärung fehlt leider.", en: "Depends on the value of the goods. The customs contents form is missing, unfortunately." },
+        { speaker: "B", de: "Die hat der Absender vergessen? Großartig.", en: "The sender forgot it? Wonderful." },
+        { speaker: "A", de: "Passiert oft. Er kann sie nachreichen, dann geht alles seinen Weg.", en: "Happens a lot. He can hand it in after the fact, and everything takes its course." },
+      ],
+    },
+  ],
+  "part636": [
+    {
+      title: "Welche Versicherung braucht man",
+      lines: [
+        { speaker: "A", de: "Welche Versicherungen brauche ich wirklich? Ehrlich jetzt.", en: "Which insurance policies do I really need? Honestly now." },
+        { speaker: "B", de: "Haftpflicht zuerst. Die zahlt, wenn du anderen etwas kaputt machst.", en: "Personal liability first. That pays when you break other people's things." },
+        { speaker: "A", de: "Und Hausrat?", en: "And contents insurance?" },
+        { speaker: "B", de: "Sinnvoll, sobald dir deine Sachen weh tun würden. Der Beitrag ist klein.", en: "Worth it as soon as losing your things would hurt. The premium is small." },
+        { speaker: "A", de: "Gut. Den Rechtsschutz hebe ich mir für später auf.", en: "Fine. I'll save legal cover for later." },
+      ],
+    },
+  ],
+  "part637": [
+    {
+      title: "Die Mahnung",
+      lines: [
+        { speaker: "A", de: "Hier ist eine Mahnung! Dabei war die Überweisung längst raus.", en: "There's a payment reminder here! And the transfer went out ages ago." },
+        { speaker: "B", de: "Steht die Rechnungsnummer im Verwendungszweck?", en: "Is the invoice number in the payment reference?" },
+        { speaker: "A", de: "Ähm ... nein. Nur mein Name.", en: "Um ... no. Just my name." },
+        { speaker: "B", de: "Deshalb. Ohne Nummer findet die Buchhaltung den Zahlungseingang nicht.", en: "That's why. Without the number, accounts can't find the incoming payment." },
+        { speaker: "A", de: "Dann rufe ich an und schicke den Beleg mit. Danke!", en: "Then I'll call and send the receipt along. Thanks!" },
+      ],
+    },
+  ],
+  "part638": [
+    {
+      title: "Seit gestern Schüttelfrost",
+      lines: [
+        { speaker: "A", de: "Was fehlt Ihnen denn?", en: "So what seems to be the trouble?" },
+        { speaker: "B", de: "Seit gestern Schüttelfrost, Herzrasen und ein Kribbeln in den Händen.", en: "Since yesterday: chills, a racing heart and tingling in my hands." },
+        { speaker: "A", de: "Schlafen Sie zurzeit schlecht?", en: "Are you sleeping badly at the moment?" },
+        { speaker: "B", de: "Kaum. Die Schlafstörung habe ich schon länger.", en: "Hardly at all. The sleep problems have been going on a while." },
+        { speaker: "A", de: "Dann schauen wir uns das gründlich an. Erst mal Blutdruck.", en: "Then we'll look at this properly. Blood pressure first." },
+      ],
+    },
+  ],
+  "part639": [
+    {
+      title: "Die Frage nach dem Impfpass",
+      lines: [
+        { speaker: "A", de: "Wir machen eine große Reise. Welche Impfungen brauchen wir?", en: "We're going on a big trip. Which vaccinations do we need?" },
+        { speaker: "B", de: "Zeigen Sie mal Ihren Impfpass. Tetanus ist Pflicht, das zuerst.", en: "Show me your vaccination record. Tetanus is a must — that first." },
+        { speaker: "A", de: "Und gegen Tollwut?", en: "And against rabies?" },
+        { speaker: "B", de: "Nur bei viel Kontakt mit Tieren. Malaria ist dort das größere Thema.", en: "Only if you'll have a lot of animal contact. Malaria is the bigger issue there." },
+        { speaker: "A", de: "Verstanden. Dann planen wir die Termine gleich durch.", en: "Understood. Then let's plan out the appointments right away." },
+      ],
+    },
+  ],
+  "part640": [
+    {
+      title: "Die verspannte Schulter",
+      lines: [
+        { speaker: "A", de: "Es zieht vom Nacken bis unters Schulterblatt.", en: "It pulls from my neck right down under my shoulder blade." },
+        { speaker: "B", de: "Der Muskel ist hart. Das Gewebe hier ist deutlich verspannt.", en: "The muscle is hard. The tissue here is clearly knotted up." },
+        { speaker: "A", de: "Ist das was mit einem Nerv?", en: "Is it something to do with a nerve?" },
+        { speaker: "B", de: "Eher nicht. Das Immunsystem hat damit nichts zu tun, die Haltung schon.", en: "Probably not. Your immune system has nothing to do with it — your posture does." },
+        { speaker: "A", de: "Also mehr Bewegung. Und weniger Schreibtisch.", en: "So more movement. And less desk." },
+      ],
+    },
+  ],
+  "part641": [
+    {
+      title: "Die Blutwerte sind da",
+      lines: [
+        { speaker: "A", de: "Ihre Laborwerte sind da. Der Blutzucker ist in Ordnung.", en: "Your lab results are in. Blood sugar is fine." },
+        { speaker: "B", de: "Und das Cholesterin?", en: "And the cholesterol?" },
+        { speaker: "A", de: "Leicht erhöht. Nichts, was Sport und Küche nicht regeln.", en: "Slightly raised. Nothing that exercise and cooking won't fix." },
+        { speaker: "B", de: "Puh. Und der Ultraschall von letzter Woche?", en: "Phew. And the ultrasound from last week?" },
+        { speaker: "A", de: "Ohne Befund. Die Früherkennung machen wir trotzdem jedes Jahr.", en: "All clear. We'll still do the screening every year." },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
