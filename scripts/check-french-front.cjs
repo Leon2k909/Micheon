@@ -187,7 +187,7 @@ assert.ok(wordParity >= WORD_PARITY_FLOOR,
  * word reworded out from under its key. So the floor is the number of German
  * word cards that have Polish. Raise it as each block lands; never lower it.
  */
-const POLISH_WORD_FLOOR = 6490;
+const POLISH_WORD_FLOOR = 6790;
 const withPolish = germanWords.filter((word) => translate(String(word.de), "pl", null));
 assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   `${withPolish.length.toLocaleString("en-GB")} of the ${germanWords.length.toLocaleString("en-GB")} `
