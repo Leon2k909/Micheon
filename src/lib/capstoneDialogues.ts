@@ -887,6 +887,222 @@ export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       ],
     },
   ],
+  "part642": [
+    {
+      title: "Wer hilft wobei",
+      lines: [
+        { speaker: "A", de: "Mein Rücken, mein Knie, meine Stimme — wohin zuerst?", en: "My back, my knee, my voice — where do I go first?" },
+        { speaker: "B", de: "Für Rücken und Knie zum Physiotherapeuten.", en: "For the back and knee, to the physiotherapist." },
+        { speaker: "A", de: "Und für die Stimme?", en: "And for the voice?" },
+        { speaker: "B", de: "Zum Logopäden. Und der Apotheker hat sicher noch Tee für dich.", en: "To the speech therapist. And the pharmacist will have some tea for you, no doubt." },
+        { speaker: "A", de: "Drei Profis für einen Menschen. Na dann, der Reihe nach.", en: "Three professionals for one person. Right then — one at a time." },
+      ],
+    },
+  ],
+  "part643": [
+    {
+      title: "Die Rettungsgasse",
+      lines: [
+        { speaker: "A", de: "Hinter uns: Blaulicht und Martinshorn. Alle fahren zur Seite.", en: "Behind us: blue lights and a siren. Everyone's pulling over." },
+        { speaker: "B", de: "Rettungsgasse! Du nach rechts, die linke Spur nach links.", en: "Emergency corridor! You go right, the left lane goes left." },
+        { speaker: "A", de: "Geschafft. Der Krankenwagen ist durch.", en: "Done. The ambulance is through." },
+        { speaker: "B", de: "Bei einem Notfall zählt jede Minute bis zur Notaufnahme.", en: "In an emergency, every minute to A&E counts." },
+        { speaker: "A", de: "Genau deshalb übt man das. Gut gemacht, alle hier.", en: "That's exactly why people practise it. Well done, everyone here." },
+      ],
+    },
+  ],
+  "part644": [
+    {
+      title: "Der Treppenlift für Oma",
+      lines: [
+        { speaker: "A", de: "Oma kommt nach der Operation nach Hause. Was braucht sie?", en: "Grandma's coming home after the operation. What does she need?" },
+        { speaker: "B", de: "Einen Treppenlift für den ersten Stock. Der Antrag läuft schon.", en: "A stairlift for the first floor. The application's already in." },
+        { speaker: "A", de: "Und die Wundnaht? Wer schaut danach?", en: "And the stitches? Who's keeping an eye on those?" },
+        { speaker: "B", de: "Der Pflegedienst, zweimal die Woche. Die Gehhilfe steht auch bereit.", en: "The care service, twice a week. The walking aid is ready and waiting too." },
+        { speaker: "A", de: "Dann fehlt nur noch ihre neue Brille — und ihr Sessel am Fenster.", en: "Then all that's missing is her new glasses — and her armchair by the window." },
+      ],
+    },
+  ],
+  "part645": [
+    {
+      title: "Erst die Packungsbeilage",
+      lines: [
+        { speaker: "A", de: "Diese Augentropfen — wie oft darf ich die nehmen?", en: "These eye drops — how often can I use them?" },
+        { speaker: "B", de: "Steht in der Packungsbeilage: dreimal täglich, ein Tropfen.", en: "It's in the leaflet: three times a day, one drop." },
+        { speaker: "A", de: "Und wenn ich mal einen vergesse?", en: "And if I forget one?" },
+        { speaker: "B", de: "Dann einfach normal weiter. Bloß nicht doppelt — eine Überdosis hilft niemandem.", en: "Then just carry on as normal. Only don't double up — an overdose helps nobody." },
+        { speaker: "A", de: "Verstanden. Die Rezeptgebühr zahle ich vorne an der Kasse?", en: "Understood. Do I pay the prescription charge at the till up front?" },
+      ],
+    },
+  ],
+  "part646": [
+    {
+      title: "Langsam wieder aufbauen",
+      lines: [
+        { speaker: "A", de: "Der Gips ist ab! Und jetzt?", en: "The cast is off! Now what?" },
+        { speaker: "B", de: "Jetzt kommt die Genesung: erst Dehnung, dann Muskelaufbau.", en: "Now comes the recovery: stretching first, then building the muscle back." },
+        { speaker: "A", de: "Ich gehe noch ziemlich langsam und schief.", en: "I'm still walking pretty slowly and crookedly." },
+        { speaker: "B", de: "Normal. Die Beweglichkeit kommt in Wochen zurück, nicht in Tagen.", en: "Normal. The mobility comes back in weeks, not days." },
+        { speaker: "A", de: "Und bis dahin Schonkost fürs Bein: Spazieren statt Fußball.", en: "And till then it's the gentle diet for the leg: walks instead of football." },
+      ],
+    },
+  ],
+  "part647": [
+    {
+      title: "Gut geplant für Opa",
+      lines: [
+        { speaker: "A", de: "Opa stürzt in letzter Zeit öfter. Ich mache mir Sorgen.", en: "Grandpa's been falling more often lately. I'm worried." },
+        { speaker: "B", de: "Die Sturzgefahr in der Wohnung lässt sich senken: mehr Licht, Teppiche weg.", en: "The risk of falls in the flat can be lowered: more light, rugs out." },
+        { speaker: "A", de: "Und wenn das nicht mehr reicht? Seniorenheim?", en: "And if that's no longer enough? A retirement home?" },
+        { speaker: "B", de: "Erst mal Betreuung zu Hause. Und die Vorsorgevollmacht sollte er jetzt regeln.", en: "Home care first. And he should sort out the lasting power of attorney now." },
+        { speaker: "A", de: "Stimmt. Das Gespräch führen wir am Sonntag, in Ruhe.", en: "True. We'll have that conversation on Sunday, calmly." },
+      ],
+    },
+  ],
+  "part648": [
+    {
+      title: "Kasse oder privat",
+      lines: [
+        { speaker: "A", de: "Zwei Wochen auf einen Termin! Als Privatpatient ginge es morgen.", en: "Two weeks for an appointment! As a private patient it would be tomorrow." },
+        { speaker: "B", de: "Als Kassenpatient zahlst du dafür keinen Eigenanteil für das Meiste.", en: "As a public patient you pay no excess for most things, mind." },
+        { speaker: "A", de: "Und diese Wahlleistungen im Krankenhaus, lohnt sich das?", en: "And those optional extras in hospital — are they worth it?" },
+        { speaker: "B", de: "Kommt drauf an. Das Zweibettzimmer ja, der Rest selten.", en: "Depends. The two-bed room yes, the rest rarely." },
+        { speaker: "A", de: "Na gut. Hauptsache, jemand hat Nachtdienst, wenn es ernst wird.", en: "Fair enough. The main thing is somebody's on night duty when it gets serious." },
+      ],
+    },
+  ],
+  "part545": [
+    {
+      title: "Der neue Mehrspielermodus",
+      lines: [
+        { speaker: "A", de: "Hast du das Update gesehen? Der Mehrspielermodus ist endlich da.", en: "Have you seen the update? Multiplayer mode is finally here." },
+        { speaker: "B", de: "Ja! Das Kampfsystem fühlt sich auf der Konsole viel besser an.", en: "Yes! The combat system feels much better on the console." },
+        { speaker: "A", de: "Bei mir hakt noch das Startprogramm, jedes Mal eine Korrektur.", en: "My launcher is still glitchy — a fix every single time." },
+        { speaker: "B", de: "Installier das Plug-in neu, danach lief es bei mir.", en: "Reinstall the plug-in — it ran fine for me after that." },
+        { speaker: "A", de: "Mach ich heute Abend. Der Aufschwung kam für das Spiel genau rechtzeitig.", en: "I'll do it tonight. The upturn came just in time for that game." },
+      ],
+    },
+  ],
+  "part546": [
+    {
+      title: "Die Landkarte der Großtante",
+      lines: [
+        { speaker: "A", de: "Schau, was ich beim Aufräumen gefunden habe: eine alte Landkarte.", en: "Look what I found while tidying up: an old map." },
+        { speaker: "B", de: "Von deiner Großtante? Der Anblick ist wirklich etwas Besonderes.", en: "From your great-aunt? It's really quite a sight." },
+        { speaker: "A", de: "Mein Kumpel meint, so etwas gehört mit Rahmen an die Wand.", en: "My mate says something like this belongs on the wall in a frame." },
+        { speaker: "B", de: "Recht hat er. Besser als jedes Diagramm im Arbeitszimmer.", en: "He's right. Better than any chart in the study." },
+        { speaker: "A", de: "Dann hängt sie ab morgen über dem Tisch — beim Abendessen schauen alle drauf.", en: "Then from tomorrow it hangs over the table — everyone can look at it during dinner." },
+      ],
+    },
+  ],
+  "part547": [
+    {
+      title: "Die Eilmeldung",
+      lines: [
+        { speaker: "A", de: "Eilmeldung auf dem Handy: eine Festnahme in der Innenstadt.", en: "Breaking news on my phone: an arrest in the city centre." },
+        { speaker: "B", de: "Schon wieder? Gestern war es noch der Börsengang, heute ein Verdächtiger.", en: "Again? Yesterday it was the stock market launch, today a suspect." },
+        { speaker: "A", de: "Die Empörung im Netz ist jedenfalls riesig.", en: "The outrage online is enormous, in any case." },
+        { speaker: "B", de: "Wie immer. Ich warte lieber auf die Ankündigung der Polizei.", en: "As always. I'd rather wait for the police announcement." },
+        { speaker: "A", de: "Vernünftig. Erst die Fakten, dann die Meinung.", en: "Sensible. Facts first, opinion after." },
+      ],
+    },
+  ],
+  "part548": [
+    {
+      title: "Was für ein Blödsinn",
+      lines: [
+        { speaker: "A", de: "Mein Nachbar glaubt an eine große Verschwörung. Wegen der Lampen an der Straße.", en: "My neighbour believes in a grand conspiracy. About the lamps along the street." },
+        { speaker: "B", de: "Was für ein Blödsinn. Und woher hat er das?", en: "What nonsense. And where's he got that from?" },
+        { speaker: "A", de: "Aus dem Internet. Er will jetzt sogar als Demonstrant auf die Straße.", en: "The internet. Now he even wants to take to the streets as a protester." },
+        { speaker: "B", de: "Dann leih ihm lieber ein gutes Lehrbuch.", en: "Better to lend him a good textbook instead." },
+        { speaker: "A", de: "Mache ich. Das kann er dann gern durchsuchen — Seite für Seite.", en: "I will. He's welcome to comb through that — page by page." },
+      ],
+    },
+  ],
+  "part549": [
+    {
+      title: "Umbenennen und aufräumen",
+      lines: [
+        { speaker: "A", de: "Tausend Dateien, alle heißen Dokument eins bis Dokument tausend.", en: "A thousand files, all named Document One through Document Thousand." },
+        { speaker: "B", de: "Dann bitte alle umbenennen. Und die Hälfte fliegt raus.", en: "Then rename them all, please. And half of them are going out." },
+        { speaker: "A", de: "Ich horte so etwas eben. Man weiß ja nie.", en: "I just hoard this stuff. You never know." },
+        { speaker: "B", de: "Erwäge es wenigstens. Halbieren wäre schon fantastisch.", en: "At least consider it. Halving it would already be fantastic." },
+        { speaker: "A", de: "Na gut. Aber die Fotos bleiben — unbedingt alle.", en: "Fine. But the photos stay — every last one, no question." },
+      ],
+    },
+  ],
+  "part586": [
+    {
+      title: "Wohin mit dem Sofa",
+      lines: [
+        { speaker: "A", de: "Das neue Sofa kommt Freitag. Nur: wie kommt es in die dritte Etage?", en: "The new sofa arrives Friday. Just one thing: how does it get to the third floor?" },
+        { speaker: "B", de: "Der Aufzug ist zu klein. Bleibt die Treppe.", en: "The lift is too small. That leaves the stairs." },
+        { speaker: "A", de: "Durch den Flur passt es, das habe ich gemessen.", en: "It fits through the hallway — I've measured." },
+        { speaker: "B", de: "Dann tragen wir es zu viert. Danach gibt es Kaffee aus der neuen Kaffeemaschine.", en: "Then the four of us will carry it. Afterwards there's coffee from the new coffee machine." },
+        { speaker: "A", de: "Abgemacht. Und das alte Sofa stellen wir in die Garage.", en: "Deal. And the old sofa goes in the garage." },
+      ],
+    },
+  ],
+  "part587": [
+    {
+      title: "Ohne Ausweis zum Bahnsteig",
+      lines: [
+        { speaker: "A", de: "Mist, mein Ausweis liegt zu Hause. Nur der Führerschein ist dabei.", en: "Damn, my ID card's at home. I've only got my driving licence on me." },
+        { speaker: "B", de: "Für die Fahrkarte reicht der. Welcher Bahnsteig ist es?", en: "That'll do for the ticket. Which platform is it?" },
+        { speaker: "A", de: "Sieben, durch die Bahnhofshalle und dann links.", en: "Seven — through the station concourse and then left." },
+        { speaker: "B", de: "Gut. Und vom Bahnhof nehmen wir ein Taxi zur Pension.", en: "Good. And from the station we'll take a taxi to the guesthouse." },
+        { speaker: "A", de: "Oder den Spaziergang durch die Gasse — die Kurve am Fluss ist schön.", en: "Or the walk through the lane — the bend by the river is lovely." },
+      ],
+    },
+  ],
+  "part588": [
+    {
+      title: "Mehr Pfeffer",
+      lines: [
+        { speaker: "A", de: "Probier mal die Soße. Fehlt da was?", en: "Try the sauce. Is something missing?" },
+        { speaker: "B", de: "Pfeffer. Und ein kleines bisschen Salz.", en: "Pepper. And a tiny bit of salt." },
+        { speaker: "A", de: "Der Reis ist fertig, die Nudeln auch. Beides da.", en: "The rice is done, the pasta too. Both ready." },
+        { speaker: "B", de: "Dann ist die Mahlzeit komplett. Käse noch drüber?", en: "Then the meal is complete. Cheese on top?" },
+        { speaker: "A", de: "Klar. Und danach Schokolade — der Hunger hat Platz für beides.", en: "Of course. And chocolate after — my appetite has room for both." },
+      ],
+    },
+  ],
+  "part589": [
+    {
+      title: "Die neue Trainerin",
+      lines: [
+        { speaker: "A", de: "Habt ihr eine neue Trainerin?", en: "Have you got a new coach?" },
+        { speaker: "B", de: "Ja, seit März. Vorher war sie selbst Spielerin, ziemlich gut sogar.", en: "Yes, since March. She used to play herself — pretty well, too." },
+        { speaker: "A", de: "Und wie findet die Mannschaft sie?", en: "And what does the team make of her?" },
+        { speaker: "B", de: "Alle sind begeistert. Sogar die Chefin vom Verein.", en: "Everyone's delighted. Even the club's boss." },
+        { speaker: "A", de: "Dann schaue ich Samstag zu — mit Großvater und Großmutter.", en: "Then I'll watch on Saturday — with grandad and grandma." },
+      ],
+    },
+  ],
+  "part590": [
+    {
+      title: "Das Turnier am See",
+      lines: [
+        { speaker: "A", de: "Samstag ist das Turnier: Volleyball, Badminton und Tennis.", en: "Saturday is the tournament: volleyball, badminton and tennis." },
+        { speaker: "B", de: "Ich bringe den Schläger mit. Und danach?", en: "I'll bring my racket. And afterwards?" },
+        { speaker: "A", de: "Picknick am See, mit Grill und Sonnenschirm.", en: "A picnic by the lake, with a barbecue and a parasol." },
+        { speaker: "B", de: "Perfekt. Zelt und Schlafsack auch, oder wird das zu viel?", en: "Perfect. Tent and sleeping bag too, or is that overdoing it?" },
+        { speaker: "A", de: "Bring sie mit. Aus einem Turnier wird bei uns gern Camping.", en: "Bring them. With us, a tournament has a way of turning into camping." },
+      ],
+    },
+  ],
+  "part591": [
+    {
+      title: "Das Geräusch im Scanner",
+      lines: [
+        { speaker: "A", de: "Der Scanner macht so ein komisches Geräusch beim Upload.", en: "The scanner makes such a strange noise during the upload." },
+        { speaker: "B", de: "Solange keine Flamme rauskommt, ist alles gut.", en: "As long as no flame comes out of it, we're fine." },
+        { speaker: "A", de: "Sehr witzig. Es ist unsere einzige Hardware für die Reservierung morgen.", en: "Very funny. It's our only hardware for tomorrow's reservation." },
+        { speaker: "B", de: "Dann behandeln wir es wie einen Notfall: ausschalten, abkühlen, neu starten.", en: "Then we'll treat it like an emergency: switch off, cool down, restart." },
+        { speaker: "A", de: "Und wenn das nichts hilft, hilft Konzentration — oder ein neues Gerät.", en: "And if that doesn't work, concentration will — or a new machine." },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
