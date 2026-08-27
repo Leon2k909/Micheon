@@ -1513,7 +1513,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
           <div
             aria-labelledby="listen-review-heading"
-            className="listen-card-review relative border-t border-[var(--border)]"
+            className="listen-card-review border-t border-[var(--border)]"
             onBlurCapture={(event) => {
               if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
               scheduleReviewPanelClose();
