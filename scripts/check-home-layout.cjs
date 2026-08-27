@@ -60,10 +60,43 @@ function pinPicture(file, binding) {
 for (const [file, binding, className] of PICTURES) {
   pinPicture(file, binding);
   assert.ok(
-    new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell),
+    new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell)
+      // The banner draws the chosen scenery and falls back to this one.
+      || (className === "np-home-banner-sky" && /className="np-home-banner-sky"[\s\S]{0,140}src=\{scenery\}/.test(shell)
+        && shell.includes(`?? ${binding};`)),
     `${binding} is imported but not drawn as ${className}`
   );
 }
+
+/**
+ * The banner wears the scenery chosen for a lesson.
+ *
+ * "aber der banner wechselt sich nicht. das müsste sich wechseln." Four scenes
+ * lend it their picture; plain canvas and monkey world do not — the first
+ * because it is the option for having no scenery, the second because the
+ * mascot is painted into that artwork and he was taken off this banner at her
+ * word. Pinned as a mapping, since the failure worth catching is a banner that
+ * has stopped following the choice, not a missing file.
+ */
+for (const [scene, binding] of [
+  ["bubbles", "scenerySpeechBubbles"],
+  ["atlas", "sceneryFlightPath"],
+  ["garden", "sceneryFlowerGarden"],
+  ["dawn", "scenerySoftDawn"],
+]) {
+  assert.ok(
+    new RegExp(`^  ${scene}: ${binding},$`, "m").test(shell),
+    `the ${scene} scene no longer lends the banner its picture`
+  );
+}
+assert.ok(
+  !/^  (?:monkey|plain):/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
+  "monkey world is lending the banner its picture, which is the mascot she had taken off it"
+);
+assert.ok(
+  shell.includes("window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh)"),
+  "the banner no longer hears the scenery change, so it would only follow after a restart"
+);
 
 // ── the language card wears the language you are learning ────────────────
 // German, British English and French each have a picture of their own. Anything

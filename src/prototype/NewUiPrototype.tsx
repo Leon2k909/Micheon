@@ -164,6 +164,12 @@ import {
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
 import { getHomeCardOpen, setHomeCardOpen, type HomeCard } from "@/lib/homeCards";
+import {
+  GUIDED_BACKGROUND_EVENT,
+  getGuidedBackground,
+  getGuidedCustomBackground,
+  type GuidedBackground,
+} from "@/lib/guidedBackground";
 import { FriendsPanel } from "@/components/social/FriendsPanel";
 import { formatFriendCode, getFriendCode } from "@/lib/friendCode";
 import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
@@ -182,6 +188,10 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
  * lernen?".
  */
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
+import scenerySpeechBubbles from "./assets/guided-speech-bubbles-v1.webp";
+import sceneryFlightPath from "./assets/guided-flight-path-v1.webp";
+import sceneryFlowerGarden from "./assets/guided-flower-garden-v1.webp";
+import scenerySoftDawn from "./assets/guided-soft-dawn-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
@@ -2063,7 +2073,52 @@ function CourseHero({
  * that picture is laid over the skyline behind a soft elliptical mask, so its
  * grass fades into the meadow the skyline already has on that side.
  */
+/**
+ * The picture each scene lends the banner.
+ *
+ * Two are missing on purpose. Plain canvas is the option for wanting no
+ * scenery, so it keeps the app's own banner. And monkey world has the mascot
+ * painted into it — he was taken off this banner at her word, and a setting is
+ * no way to put him back. Both fall through to the banner that has always been
+ * here.
+ */
+const BANNER_SCENERY: Partial<Record<GuidedBackground, string>> = {
+  bubbles: scenerySpeechBubbles,
+  atlas: sceneryFlightPath,
+  garden: sceneryFlowerGarden,
+  dawn: scenerySoftDawn,
+};
+
+/**
+ * The banner picture, following the scenery chosen for a lesson.
+ *
+ * Read on mount and kept in step through the event the setting fires, so
+ * choosing a scene changes this page while it is open rather than at the next
+ * start. A picture of your own is used here too: that is the whole point of
+ * having put one there.
+ */
+function useBannerScenery(): string {
+  const [scene, setScene] = useState<GuidedBackground>(() => getGuidedBackground());
+  const [own, setOwn] = useState<string | null>(() => getGuidedCustomBackground());
+  useEffect(() => {
+    const refresh = () => {
+      setScene(getGuidedBackground());
+      setOwn(getGuidedCustomBackground());
+    };
+    window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh);
+    // Another window of the same profile counts as well.
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(GUIDED_BACKGROUND_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+  if (scene === "custom" && own) return own;
+  return BANNER_SCENERY[scene] ?? homeBannerImage;
+}
+
 function HomeBanner() {
+  const scenery = useBannerScenery();
   return (
     <section className="np-home-banner">
       <img
@@ -2072,7 +2127,7 @@ function HomeBanner() {
         decoding="async"
         fetchPriority="high"
         loading="eager"
-        src={homeBannerImage}
+        src={scenery}
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
