@@ -35,6 +35,38 @@ export function cefrLabel(tier: CefrTier): string {
 }
 
 /**
+ * The same ladder, one rung finer: A1 and A2 kept apart.
+ *
+ * A tier folds them together because a LESSON list is short and reads better
+ * grouped — there are 18 packs at A1 against 175 at A2, and six headings over
+ * that is more scaffolding than the list can carry. A word list is nine
+ * thousand rows, where "show me the first hundred words" and "show me
+ * everything before B1" are different questions, and only one of them a tier
+ * can answer.
+ *
+ * Read from the top down like cefrTier, so a range counts as its higher end:
+ * "A1-A2" is A2, because it teaches A2 material and a learner asking for A1
+ * is asking for the very start.
+ */
+export type CefrStep = "a1" | "a2" | "b1" | "b2" | "c1" | "c2";
+
+export const CEFR_STEPS: CefrStep[] = ["a1", "a2", "b1", "b2", "c1", "c2"];
+
+export function cefrStep(level: string | undefined): CefrStep {
+  const text = String(level ?? "");
+  if (/C2/i.test(text)) return "c2";
+  if (/C1/i.test(text)) return "c1";
+  if (/B2/i.test(text)) return "b2";
+  if (/B1/i.test(text)) return "b1";
+  if (/A2/i.test(text)) return "a2";
+  return "a1";
+}
+
+export function cefrStepLabel(step: CefrStep): string {
+  return step.toUpperCase();
+}
+
+/**
  * Sort key for a level label, so a lesson list reads A1, A1-A2, A2, A2-B1,
  * B1, B1-B2, B2 … rather than in whatever order the catalogue was built.
  *
