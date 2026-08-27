@@ -146,10 +146,10 @@ function scheduleProfileIdleWork(task: () => void, timeout = 1200): () => void {
  */
 const GUIDED_SCENES = [
   ["monkey", "Monkey world", "Default — a calm lesson landscape with the monkey beside you."],
-  ["garden", "Garden frame", "Flowers and foliage around a quiet centre."],
-  ["bubbles", "Speech bubbles", "Soft conversation bubbles drifting behind the lesson."],
-  ["atlas", "Globe and flight path", "A wire globe, a dashed route and a small plane."],
-  ["dawn", "Soft dawn", "A warm, subtle colour wash with no artwork."],
+  ["garden", "Flower garden", "A walled rose garden at sunset."],
+  ["bubbles", "Speech bubbles", "A hello in many languages, over a watercolour world."],
+  ["atlas", "Globe and flight path", "A plane over the world map, its routes drawn in light."],
+  ["dawn", "Soft dawn", "Mist over a lake as the sun comes up."],
   ["plain", "Plain canvas", "The cleanest option for distraction-free study."],
 ] as const satisfies ReadonlyArray<readonly [GuidedBackground, string, string]>;
 
