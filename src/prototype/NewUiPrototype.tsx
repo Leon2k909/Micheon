@@ -186,7 +186,7 @@ import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
 import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
-import homeCountryArtDe from "./assets/home-country-de-v1.webp";
+import homeCountryArtDe from "./assets/home-country-de-v2.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";

@@ -98,7 +98,7 @@ assert.ok(
 // Kingdom left that scene sitting under a Union Jack. Pinned as a mapping
 // rather than as two loose files, because the failure worth catching is not
 // a missing picture but a card that has stopped following the selection.
-pinPicture("home-country-de-v1.webp", "homeCountryArtDe");
+pinPicture("home-country-de-v2.webp", "homeCountryArtDe");
 pinPicture("home-country-uk-v1.webp", "homeCountryArtUk");
 for (const line of [
   "const COUNTRY_ART: Record<CountryId, string> = {",
