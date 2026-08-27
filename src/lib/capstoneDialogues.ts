@@ -455,6 +455,222 @@ export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       ],
     },
   ],
+  "part606": [
+    {
+      title: "Die Sicherung ist raus",
+      lines: [
+        { speaker: "A", de: "Schon wieder alles dunkel! Die Sicherung ist raus.", en: "Everything's gone dark again! The fuse has tripped." },
+        { speaker: "B", de: "Dann ist zu viel auf einem Stromkreis. Was lief denn alles?", en: "Then there's too much on one circuit. What was running?" },
+        { speaker: "A", de: "Waschmaschine, Ofen und der Wasserkocher.", en: "Washing machine, oven and the kettle." },
+        { speaker: "B", de: "Na klar. Zu viel Stromstärke, der Widerstand macht das nicht mit.", en: "There you go. Too much current — the resistance can't take it." },
+        { speaker: "A", de: "Beim Schalter hat es sogar einen Funken gegeben. Das schaut sich ein Fachmann an.", en: "There was even a spark at the switch. A professional is looking at that." },
+      ],
+    },
+  ],
+  "part607": [
+    {
+      title: "Rost am Fahrrad",
+      lines: [
+        { speaker: "A", de: "Mein Fahrrad ist voller Rost. Was mache ich dagegen?", en: "My bike is covered in rust. What do I do about it?" },
+        { speaker: "B", de: "Der Lack ist ab, und Wasser plus Sauerstoff macht den Rest.", en: "The paint's come off, and water plus oxygen does the rest." },
+        { speaker: "A", de: "Hilft die Flüssigkeit hier? Auf der Flasche steht was von Säure.", en: "Will this liquid help? The bottle says something about acid." },
+        { speaker: "B", de: "Ja, aber vorsichtig — die Säure kann auch den Lack ätzen.", en: "Yes, but be careful — the acid can eat into the paint too." },
+        { speaker: "A", de: "Dann probiere ich das erst an einer kleinen Stelle am Rahmen aus.", en: "Then I'll try it out on one small spot on the frame first." },
+      ],
+    },
+  ],
+  "part608": [
+    {
+      title: "Die Dokumentation über den Wald",
+      lines: [
+        { speaker: "A", de: "Die Dokumentation gestern war stark. Es ging um die Nahrungskette im Wald.", en: "That documentary yesterday was great. It was about the food chain in the forest." },
+        { speaker: "B", de: "Mit den Pilzen und Bakterien im Boden?", en: "With the fungi and bacteria in the soil?" },
+        { speaker: "A", de: "Genau. Ohne die läuft gar nichts, jeder Keim hat seine Aufgabe.", en: "Exactly. Nothing works without them — every germ has its job." },
+        { speaker: "B", de: "Und die Photosynthese bringt die Energie für das Ganze.", en: "And photosynthesis provides the energy for the whole thing." },
+        { speaker: "A", de: "Am Ende hängt jedes Organ von jedem Blatt ab. Verrückt, oder?", en: "In the end every organ depends on every leaf. Crazy, isn't it?" },
+      ],
+    },
+  ],
+  "part609": [
+    {
+      title: "Fieber messen",
+      lines: [
+        { speaker: "A", de: "Das Thermometer zeigt 38,5. Stimmt die Skala überhaupt?", en: "The thermometer says 38.5. Is the scale even right?" },
+        { speaker: "B", de: "Natürlich. Miss noch mal, vorhin war die Auswertung anders.", en: "Of course. Take it again — the reading was different a moment ago." },
+        { speaker: "A", de: "Jetzt 38,7. Die Richtung ist klar, das ist Fieber.", en: "38.7 now. The direction's clear — that's a fever." },
+        { speaker: "B", de: "Dann Tee, Bett und morgen der Arzt.", en: "Tea, bed, and the doctor tomorrow then." },
+        { speaker: "A", de: "Und ich messe alle zwei Stunden nach, mit System.", en: "And I'll re-check every two hours, methodically." },
+      ],
+    },
+  ],
+  "part610": [
+    {
+      title: "Die Sonnenfinsternis",
+      lines: [
+        { speaker: "A", de: "Nächsten Monat gibt es eine Sonnenfinsternis, hast du das gelesen?", en: "There's a solar eclipse next month — did you read that?" },
+        { speaker: "B", de: "Ja! Und abends soll man sogar einen Kometen sehen können.", en: "Yes! And in the evening you're supposed to be able to see a comet too." },
+        { speaker: "A", de: "Dafür fahre ich raus aus der Stadt, weg vom Licht.", en: "For that I'm driving out of town, away from the lights." },
+        { speaker: "B", de: "Nimm mich mit. Seit dem Film über die Raumstation will ich mehr davon sehen.", en: "Take me with you. Ever since the film about the space station I've wanted to see more of this." },
+        { speaker: "A", de: "Abgemacht. Vielleicht erwischen wir sogar die Galaxie nebenan.", en: "Deal. Maybe we'll even catch the galaxy next door." },
+      ],
+    },
+  ],
+  "part611": [
+    {
+      title: "Einmal übers Deck",
+      lines: [
+        { speaker: "A", de: "Willkommen an Bord! Ich zeige dir kurz alles.", en: "Welcome aboard! I'll give you the quick tour." },
+        { speaker: "B", de: "Gern. Was ist vorne und was ist hinten?", en: "Please. Which end is the front and which is the back?" },
+        { speaker: "A", de: "Vorne ist der Bug, hinten das Heck. Und das hier ist das Steuerrad.", en: "The bow's at the front, the stern at the back. And this here is the wheel." },
+        { speaker: "B", de: "Und die Seiten? Da gab es doch diese Wörter.", en: "And the sides? There were those words for them." },
+        { speaker: "A", de: "Steuerbord rechts, backbord links. Und halt dich an der Reling fest.", en: "Starboard right, port left. And hold on to the railing." },
+      ],
+    },
+  ],
+  "part612": [
+    {
+      title: "Wer ist wer an Bord",
+      lines: [
+        { speaker: "A", de: "Der Mann am Steuer — ist das der Kapitän?", en: "The man at the wheel — is that the captain?" },
+        { speaker: "B", de: "Nein, das ist der Steuermann. Der Kapitän spricht gerade mit dem Lotsen.", en: "No, that's the helmsman. The captain's talking to the pilot right now." },
+        { speaker: "A", de: "Wozu braucht ein Schiff hier einen Lotsen?", en: "Why does a ship need a pilot here?" },
+        { speaker: "B", de: "Der kennt den Hafen. Ohne ihn fährt die Besatzung nicht rein.", en: "He knows the harbour. The crew won't take her in without him." },
+        { speaker: "A", de: "Und der Matrose da vorne macht die Leinen los?", en: "And the sailor up front is casting off the lines?" },
+      ],
+    },
+  ],
+  "part613": [
+    {
+      title: "Anlegen im Hafen",
+      lines: [
+        { speaker: "A", de: "Wo dürfen wir anlegen? Am Kai ist alles voll.", en: "Where are we allowed to dock? The quay is completely full." },
+        { speaker: "B", de: "Der Hafenmeister hat uns die Anlegestelle hinter der Mole gegeben.", en: "The harbourmaster gave us the berth behind the jetty." },
+        { speaker: "A", de: "Gut. Trag es ins Logbuch ein, mit Uhrzeit.", en: "Good. Enter it in the logbook, with the time." },
+        { speaker: "B", de: "Mache ich. Die Zollkontrolle kommt übrigens um vier an Bord.", en: "Will do. Customs are coming aboard at four, by the way." },
+        { speaker: "A", de: "Dann liegt bis dahin alles bereit. Nach der Verladung sind wir fertig.", en: "Then everything will be laid out ready by then. Once the loading's done, we're finished." },
+      ],
+    },
+  ],
+  "part614": [
+    {
+      title: "Ebbe und Flut",
+      lines: [
+        { speaker: "A", de: "Warum liegt das Boot auf einmal im Sand?", en: "Why is the boat suddenly sitting on the sand?" },
+        { speaker: "B", de: "Gezeiten. Bei Ebbe zieht sich das Wasser hier weit zurück.", en: "Tides. At low tide the water pulls a long way back here." },
+        { speaker: "A", de: "Und wann kommt es wieder?", en: "And when does it come back?" },
+        { speaker: "B", de: "In sechs Stunden. Dann steht sogar die Brandung wieder am Deich.", en: "In six hours. Then even the surf will be back at the sea wall." },
+        { speaker: "A", de: "Die Nordsee macht, was sie will. Beeindruckend.", en: "The North Sea does as it pleases. Impressive." },
+      ],
+    },
+  ],
+  "part615": [
+    {
+      title: "Am Fischstand",
+      lines: [
+        { speaker: "A", de: "Was ist heute frisch?", en: "What's fresh today?" },
+        { speaker: "B", de: "Kabeljau und Scholle, heute Morgen gefangen. Die Makrele ist aus dem Rauch.", en: "Cod and plaice, caught this morning. The mackerel is straight from the smoker." },
+        { speaker: "A", de: "Dann zwei Stück Kabeljau. Ist jede Fischgräte schon raus?", en: "Two pieces of cod, then. Is every fish bone already out?" },
+        { speaker: "B", de: "Bis auf die letzte Fischgräte. Dazu vielleicht Krabben aus der Region?", en: "Down to the last fish bone. Some local shrimp to go with it, maybe?" },
+        { speaker: "A", de: "Gern. Aber die Auster hebe ich mir für den Urlaub auf.", en: "Yes, please. But I'm saving the oyster for my holiday." },
+      ],
+    },
+  ],
+  "part616": [
+    {
+      title: "Der erste Tauchgang",
+      lines: [
+        { speaker: "A", de: "Morgen ist mein erster richtiger Tauchgang. Ich bin nervös.", en: "Tomorrow is my first proper dive. I'm nervous." },
+        { speaker: "B", de: "Alles halb so wild. Sitzt der Neoprenanzug?", en: "It's not half as scary as it seems. Does the wetsuit fit?" },
+        { speaker: "A", de: "Ja, und die Sauerstoffflasche ist geprüft.", en: "Yes, and the air tank has been checked." },
+        { speaker: "B", de: "Dann fehlen nur Flossen und Ruhe. Atmen, langsam schauen, fertig.", en: "Then all you need is fins and calm. Breathe, look around slowly, done." },
+        { speaker: "A", de: "Und danach erzähle ich dir, wie die Welt unten aussieht.", en: "And afterwards I'll tell you what the world looks like down there." },
+      ],
+    },
+  ],
+  "part617": [
+    {
+      title: "Die Übung der Seenotrettung",
+      lines: [
+        { speaker: "A", de: "Was ist da draußen los? Überall Boote!", en: "What's going on out there? Boats everywhere!" },
+        { speaker: "B", de: "Eine Übung der Seenotrettung. Die Küstenwache ist auch dabei.", en: "A sea-rescue exercise. The coastguard's taking part too." },
+        { speaker: "A", de: "Deshalb der Funkspruch vorhin. Und das Rettungsboot am Strand?", en: "So that's what the radio message earlier was. And the lifeboat on the beach?" },
+        { speaker: "B", de: "Gehört dazu. Sogar ein Wrack spielen sie durch, mit allem.", en: "Part of it. They're even running through a wreck scenario, the whole works." },
+        { speaker: "A", de: "Gut zu wissen, dass das geübt wird. Ich bleibe trotzdem im Strandkorb.", en: "Good to know they practise it. I'm staying in my beach chair all the same." },
+      ],
+    },
+  ],
+  "part618": [
+    {
+      title: "Wen rufen wir an?",
+      lines: [
+        { speaker: "A", de: "Das Bad ist fertig geplant. Wen brauchen wir jetzt alles?", en: "The bathroom's all planned. Who do we need now?" },
+        { speaker: "B", de: "Zuerst den Installateur für Wasser und Heizung.", en: "First the plumber, for water and heating." },
+        { speaker: "A", de: "Dann den Fliesenleger. Und für die neue Tür?", en: "Then the tiler. And for the new door?" },
+        { speaker: "B", de: "Den Schreiner. Das Glas oben macht der Glaser gleich mit.", en: "The joiner. The glazier will do the glass panel at the same time." },
+        { speaker: "A", de: "Drei Betriebe für ein kleines Bad. Gutes Handwerk hat seinen Preis.", en: "Three firms for one small bathroom. Good craftsmanship has its price." },
+      ],
+    },
+  ],
+  "part619": [
+    {
+      title: "Vom Lehrling zum Meister",
+      lines: [
+        { speaker: "A", de: "Mein Neffe fängt im August seine Ausbildung an. Drei Jahre!", en: "My nephew starts his apprenticeship in August. Three years!" },
+        { speaker: "B", de: "Mit Zwischenprüfung nach dem zweiten Ausbildungsjahr, wie immer.", en: "With the interim exam after the second year, as always." },
+        { speaker: "A", de: "Und nach der Abschlussprüfung ist er dann Geselle.", en: "And after the final exam he'll be a journeyman." },
+        { speaker: "B", de: "Genau. Der Meisterbrief kommt später, wenn er will.", en: "Exactly. The master's certificate comes later, if he wants it." },
+        { speaker: "A", de: "Die Innung hat ihm sogar schon einen Betrieb gezeigt.", en: "The guild has even pointed him to a firm already." },
+      ],
+    },
+  ],
+  "part620": [
+    {
+      title: "Auf der Baustelle nebenan",
+      lines: [
+        { speaker: "A", de: "Nebenan geht es los! Die Baugrube ist schon fertig.", en: "It's starting next door! The excavation pit is already done." },
+        { speaker: "B", de: "Dann kommt jetzt das Fundament. Der Betonmischer steht ja bereit.", en: "Then the foundation's next. The cement mixer's standing ready, after all." },
+        { speaker: "A", de: "Der Bauleiter meinte, der Rohbau steht vor dem Winter.", en: "The site manager said the shell will be up before winter." },
+        { speaker: "B", de: "Sportlich. Und der Innenausbau?", en: "Ambitious. And the interior fit-out?" },
+        { speaker: "A", de: "Im Frühjahr, alles in Trockenbau. Die Baugenehmigung hing übrigens am Bauzaun.", en: "In spring, all drywall. The planning permission was pinned to the site fence, by the way." },
+      ],
+    },
+  ],
+  "part621": [
+    {
+      title: "Ordnung in der Werkstatt",
+      lines: [
+        { speaker: "A", de: "Hast du die Schraubzwinge gesehen? Ich finde sie nicht.", en: "Have you seen the clamp? I can't find it." },
+        { speaker: "B", de: "Neben der Drehbank, unter deinem Overall.", en: "Next to the lathe, under your overalls." },
+        { speaker: "A", de: "Danke. Und das Sägeblatt für die Kettensäge?", en: "Thanks. And the blade for the chainsaw?" },
+        { speaker: "B", de: "Ist gerade beim Schleifen. Nimm solange Feile und Stemmeisen.", en: "It's off being sharpened. Take the file and the chisel for the time being." },
+        { speaker: "A", de: "Gut. Aber zuerst wird der Boden gefegt, die Sägespäne liegen überall.", en: "Fine. But the floor gets swept first — there's sawdust all over." },
+      ],
+    },
+  ],
+  "part622": [
+    {
+      title: "Das fehlende Ersatzteil",
+      lines: [
+        { speaker: "A", de: "Der Schrank wackelt. Da fehlt eine Schraube mit Unterlegscheibe.", en: "The cupboard wobbles. There's a screw and washer missing." },
+        { speaker: "B", de: "Schau in die Kiste — Gewinde in jeder Größe, Niete, Klammern.", en: "Look in the box — threads in every size, rivets, clips." },
+        { speaker: "A", de: "Gefunden. Und die Leiste hier? Die Maserung passt gar nicht zum Rest.", en: "Found one. And this strip here? The grain doesn't match the rest at all." },
+        { speaker: "B", de: "Das ist Furnier auf Spanplatte, kein echtes Holz.", en: "That's veneer on chipboard, not solid wood." },
+        { speaker: "A", de: "Deshalb! Dann klebe ich sie mit Leim fest und gut ist.", en: "That explains it! Then I'll fix it with wood glue and be done." },
+      ],
+    },
+  ],
+  "part623": [
+    {
+      title: "Erst grundieren, dann streichen",
+      lines: [
+        { speaker: "A", de: "Wand verputzen, schleifen, streichen — richtig?", en: "Plaster the wall, sand it, paint it — right?" },
+        { speaker: "B", de: "Fast. Nach dem Verputzen erst grundieren, sonst hält die Farbe nicht.", en: "Almost. After plastering, prime first — otherwise the paint won't hold." },
+        { speaker: "A", de: "Und das Regal? Zuschneiden und anschrauben?", en: "And the shelf? Cut to size and screw it on?" },
+        { speaker: "B", de: "Erst anzeichnen, dann zuschneiden, dann verschrauben. Und alles festziehen.", en: "Mark it out first, then cut, then bolt it together. And tighten everything." },
+        { speaker: "A", de: "Verstanden. Reparieren kann jeder — montieren ist eine Kunst.", en: "Understood. Anyone can repair — fitting is an art." },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
