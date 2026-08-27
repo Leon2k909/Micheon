@@ -2,6 +2,106 @@
 # Franzoesisch und Polnisch werden im Uebersetzungsdurchgang direkt an die Zeilen in
 # src/lib/capstoneDialogues.ts geschrieben (Felder fr/pl); diese Datei wird bei jedem
 # Block aus dem Katalogstand neu erzeugt und ist damit immer vollstaendig.
+part84	Die letzte Runde	Ich kann nicht mehr, ich bin komplett aus der Puste.
+part84	Die letzte Runde	Komm, letzte Runde, dann hast du es geschafft!
+part84	Die letzte Runde	Ich habe Seitenstechen und spüre Muskeln, von denen ich nichts wusste.
+part84	Die letzte Runde	Der Muskelkater kommt sowieso erst übermorgen. Durchziehen!
+part84	Die letzte Runde	Na gut. Aber nächsten Sonntag kicken wir nur im Park.
+part94	Rezeptfrei oder nicht	Guten Tag, haben Sie etwas gegen Halsschmerzen für ein Kind von fünf Jahren?
+part94	Rezeptfrei oder nicht	Ja, dieser Saft hier ist rezeptfrei. Einmal morgens, einmal abends.
+part94	Rezeptfrei oder nicht	Macht der müde? Sie hat morgen Schule.
+part94	Rezeptfrei oder nicht	Nein. Aber geben Sie ihn nach dem Essen, nicht vorher.
+part94	Rezeptfrei oder nicht	Gut. Und welche Apotheke hat heute Nacht Notdienst, falls was ist?
+part95	Der Notfalltermin	Guten Morgen, ich habe starke Zahnschmerzen. Geht heute noch ein Notfalltermin?
+part95	Der Notfalltermin	Um halb zwölf. Seit wann tut der Zahn denn weh?
+part95	Der Notfalltermin	Seit gestern Abend. Es pocht, und kalt trinken geht gar nicht mehr.
+part95	Der Notfalltermin	Welcher ist es denn?
+part95	Der Notfalltermin	Der hintere unten links. Mir ist da vor Jahren mal eine Füllung rausgefallen.
+part96	Der Anruf bei der 112	Notruf, was ist passiert?
+part96	Der Anruf bei der 112	Es hat einen Unfall gegeben, auf der B27 kurz vor der Ausfahrt.
+part96	Der Anruf bei der 112	Ist jemand verletzt?
+part96	Der Anruf bei der 112	Eine Person. Sie ist bewusstlos, atmet aber. Wir haben mit Erster Hilfe angefangen.
+part96	Der Anruf bei der 112	Gut gemacht. Bleiben Sie ruhig bei ihr, Hilfe ist unterwegs.
+part98	Das Gespräch übers Gehalt	Danke, dass Sie Zeit haben. Ich würde gern über mein Gehalt sprechen.
+part98	Das Gespräch übers Gehalt	Gern. Worum geht es konkret?
+part98	Das Gespräch übers Gehalt	Sie wissen ja: Seit zwei Jahren trage ich deutlich mehr Verantwortung.
+part98	Das Gespräch übers Gehalt	Das stimmt. An welche Größenordnung denken Sie?
+part98	Das Gespräch übers Gehalt	Zehn Prozent. Und zusätzlich zwei Tage pro Woche im Homeoffice.
+part114	Aufgeschoben	Wie verbringst du eigentlich deinen Sonntag, so ganz ehrlich?
+part114	Aufgeschoben	Ursprünglich wollte ich aufräumen. Ich schiebe das seit Wochen vor mir her.
+part114	Aufgeschoben	Kenne ich. Künftig machen wir das anders: erst eine Stunde arbeiten, dann frei.
+part114	Aufgeschoben	Das dauert bei mir höchstens zehn Minuten, so viel liegt da nicht.
+part114	Aufgeschoben	Dann nimm dir danach bewusst Zeit für was Schönes.
+part115	Nicht optimal, aber es geht	Und, wie findest du die neue Software generell?
+part115	Nicht optimal, aber es geht	Relativ einfach zu bedienen. Das Konzept überzeugt mich aber noch nicht.
+part115	Nicht optimal, aber es geht	Die Reaktion im Team war auch eher negativ.
+part115	Nicht optimal, aber es geht	Wir haben zwei Wochen intensiv geübt. Es ist nicht optimal, aber es geht.
+part115	Nicht optimal, aber es geht	Na immerhin. Effektiv ist es billiger als vorher, das zählt auch.
+part116	Der Antrag online	Guten Tag, ich habe den Antrag online gestellt. Wie lange dauert die Bearbeitung?
+part116	Der Antrag online	Etwa drei Wochen. Bringen Sie zum Termin bitte alle Dokumente mit.
+part116	Der Antrag online	Gilt der Bescheid dann bundesweit?
+part116	Der Antrag online	Ja. Nur eine Frage kann ich Ihnen aus Gründen des Datenschutzes nicht beantworten.
+part116	Der Antrag online	Verstehe. Können Sie mir wenigstens erläutern, welche Unterlagen noch fehlen?
+part117	Das kriegen wir hin	Darf ich kurz ergänzen? Ich habe das Problem schon länger beobachtet.
+part117	Das kriegen wir hin	Bitte, gern. Jeder Hinweis erleichtert die Sache erheblich.
+part117	Das kriegen wir hin	Wir müssen nur verhindern, dass es im Winter schlimmer wird.
+part117	Das kriegen wir hin	Da hat jeder andere Bedürfnisse. Aber gut: Sag Bescheid, wenn du Hilfe brauchst.
+part117	Das kriegen wir hin	Mach ich. Zusammen kriegen wir das hin.
+part121	Mehr Kunden für den Laden	Ich brauche endlich eine richtige Webseite für mein Geschäft.
+part121	Mehr Kunden für den Laden	Lass eine bauen und mach mehr Werbung. Wir werben fast nur noch online.
+part121	Mehr Kunden für den Laden	Und wie gewinnt ihr neue Kunden? Nur über Instagram?
+part121	Mehr Kunden für den Laden	Auch. Vor allem aber über sehr gute Bewertungen.
+part121	Mehr Kunden für den Laden	Gut. Schick mir ein Angebot — zahlbar innerhalb von vierzehn Tagen, wie immer?
+part122	Nur noch eine Folge	Ich habe die zweite Staffel gestern in einem Rutsch durchgeschaut.
+part122	Nur noch eine Folge	Verrate mir nichts! Ich bin erst bei Folge vier.
+part122	Nur noch eine Folge	Keine Sorge, kein Spoiler. Aber sie ist besser als die erste.
+part122	Nur noch eine Folge	Das reicht mir schon! Und danach? Was soll ich als Nächstes schauen?
+part122	Nur noch eine Folge	Ich schicke dir den Kanal, den ich abonniert habe. Kann ich echt empfehlen.
+part123	Stoßlüften, nicht kippen	Die Nachbarn haben sich beschwert? Wir sind doch gerade erst eingezogen.
+part123	Stoßlüften, nicht kippen	Wegen der Waschmaschine gestern Nacht. Ab zweiundzwanzig Uhr ist Ruhezeit.
+part123	Stoßlüften, nicht kippen	Steht das wirklich in der Hausordnung?
+part123	Stoßlüften, nicht kippen	Ja, und noch mehr: sonntags wird nicht gebohrt.
+part123	Stoßlüften, nicht kippen	Gut zu wissen. Der Hausmeister meinte auch noch: Stoßlüften, nicht kippen.
+part124	Endlich eingeschlafen	Leise, sie ist gerade eingeschlafen.
+part124	Endlich eingeschlafen	Endlich. Hat er auch durchgeschlafen?
+part124	Endlich eingeschlafen	Bis fünf. Dann hat er geschrien, und die Windel war natürlich voll.
+part124	Endlich eingeschlafen	Ich übernehme morgen früh. Du bringst sie in die Kita, ich wickle ihn.
+part124	Endlich eingeschlafen	Abgemacht. Und der Kinderwagen muss unten bleiben, er passt nicht in den Aufzug.
+part125	Die leere Batterie	Der Wagen springt nicht an. Ich glaube, die Batterie ist leer.
+part125	Die leere Batterie	Schon wieder? Kannst du mal Starthilfe geben lassen?
+part125	Die leere Batterie	Der Nachbar hilft gleich. Aber der Motor macht auch ein komisches Geräusch.
+part125	Die leere Batterie	Dann bring den Wagen diese Woche in die Werkstatt. Der TÜV ist eh bald fällig.
+part125	Die leere Batterie	Stimmt. Und tanken muss ich auch noch. Das Auto frisst gerade nur Geld.
+part126	Alles ein bisschen viel	Du wirkst gestresst. Alles okay bei dir?
+part126	Alles ein bisschen viel	Ehrlich? Ich bin gerade etwas überfordert. Das ist mir alles zu viel.
+part126	Alles ein bisschen viel	Das verstehe ich. Mich nervt die Woche auch langsam.
+part126	Alles ein bisschen viel	Wie bleibt deine Schwester eigentlich immer so gelassen?
+part126	Alles ein bisschen viel	Keine Ahnung. Aber ich bin froh, dass du so ehrlich bist.
+part127	Die Taufe im Frühling	Wir lassen den Kleinen im Frühling taufen.
+part127	Die Taufe im Frühling	Wie schön! In eurer Gemeinde?
+part127	Die Taufe im Frühling	Ja, der Gottesdienst fängt um zehn an, danach feiern wir im Garten.
+part127	Die Taufe im Frühling	Der Pfarrer hat bei eurer Hochzeit damals so schön gesprochen.
+part127	Die Taufe im Frühling	Genau der macht es wieder. Mein Glaube ist mir wichtig, das weißt du ja.
+part128	Der verstauchte Knöchel	Kommst du morgen joggen? Wir wollten doch dreimal die Woche trainieren.
+part128	Der verstauchte Knöchel	Ich kann nicht, ich habe mir den Knöchel verstaucht.
+part128	Der verstauchte Knöchel	Autsch. Beim Schwimmen gestern?
+part128	Der verstauchte Knöchel	Nein, auf der Treppe. Es tut vor allem beim Laufen weh.
+part128	Der verstauchte Knöchel	Dann mach diese Woche Pause. Ich wärme mich ab jetzt für zwei auf.
+part132	Der Ohrwurm	Ich habe seit Tagen einen Ohrwurm von deinem Lied.
+part132	Der Ohrwurm	Welches denn? Das, das wir im Chor proben?
+part132	Der Ohrwurm	Genau das. Ich kenne den Text inzwischen besser als du.
+part132	Der Ohrwurm	Dann sing doch mit! Wir proben jeden Donnerstag.
+part132	Der Ohrwurm	Mal sehen. Euer letzter Auftritt war jedenfalls richtig gut.
+part138	Samstag im Garten	Was steht heute an? Der Rasen?
+part138	Samstag im Garten	Mähen, ja. Und im Beet wächst nur noch Unkraut.
+part138	Samstag im Garten	Ich übernehme das Beet, und danach hältst du mir die Leiter fest.
+part138	Samstag im Garten	Für den Baum? Der muss wirklich geschnitten werden.
+part138	Samstag im Garten	Genau. Und abends gießen wir die Blumen und sind fertig.
+part140	Im Abteil nach Norden	Entschuldigung, ist dieses Abteil noch frei?
+part140	Im Abteil nach Norden	Ja, kommen Sie rein. Müssen Sie auch umsteigen?
+part140	Im Abteil nach Norden	Einmal, aber der Anschlusszug wartet. Wir wollen an die Küste, zelten.
+part140	Im Abteil nach Norden	Schön! Die Wellen sollen dieses Wochenende ziemlich hoch sein.
+part140	Im Abteil nach Norden	Perfekt für die Kinder. Zelt, Lagerfeuer, grillen — mehr brauchen wir nicht.
 part111	Vor dem Kunstwerk	Für moderne Kunst hast du doch nichts übrig — was machst du dann hier?
 part111	Vor dem Kunstwerk	Die Ausstellung hat meine Perspektive verändert, ehrlich.
 part111	Vor dem Kunstwerk	Welches Werk denn? Zeig mal.

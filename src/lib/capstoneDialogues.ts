@@ -35,6 +35,246 @@ import type { Blueprint, Dialogue } from "./types";
 export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
   // Keys are quoted so check-catalog-duplicates does not read this record as
   // a second DECLARATION of each pack — the packs live in data.ts alone.
+  "part84": [
+    {
+      title: "Die letzte Runde",
+      lines: [
+        { speaker: "A", de: "Ich kann nicht mehr, ich bin komplett aus der Puste.", en: "I can't go on — I'm completely out of breath." },
+        { speaker: "B", de: "Komm, letzte Runde, dann hast du es geschafft!", en: "Come on, last lap and you've done it!" },
+        { speaker: "A", de: "Ich habe Seitenstechen und spüre Muskeln, von denen ich nichts wusste.", en: "I've got a stitch and I'm feeling muscles I never knew I had." },
+        { speaker: "B", de: "Der Muskelkater kommt sowieso erst übermorgen. Durchziehen!", en: "The soreness won't hit till the day after tomorrow anyway. Push through!" },
+        { speaker: "A", de: "Na gut. Aber nächsten Sonntag kicken wir nur im Park.", en: "Fine. But next Sunday we're just having a kickabout in the park." },
+      ],
+    },
+  ],
+  "part94": [
+    {
+      title: "Rezeptfrei oder nicht",
+      lines: [
+        { speaker: "A", de: "Guten Tag, haben Sie etwas gegen Halsschmerzen für ein Kind von fünf Jahren?", en: "Hello, do you have something for a sore throat, for a five-year-old?" },
+        { speaker: "B", de: "Ja, dieser Saft hier ist rezeptfrei. Einmal morgens, einmal abends.", en: "Yes, this syrup here is available without prescription. Once in the morning, once at night." },
+        { speaker: "A", de: "Macht der müde? Sie hat morgen Schule.", en: "Does it make you drowsy? She's got school tomorrow." },
+        { speaker: "B", de: "Nein. Aber geben Sie ihn nach dem Essen, nicht vorher.", en: "No. But give it after food, not before." },
+        { speaker: "A", de: "Gut. Und welche Apotheke hat heute Nacht Notdienst, falls was ist?", en: "Good. And which pharmacy is on night duty tonight, just in case?" },
+      ],
+    },
+  ],
+  "part95": [
+    {
+      title: "Der Notfalltermin",
+      lines: [
+        { speaker: "A", de: "Guten Morgen, ich habe starke Zahnschmerzen. Geht heute noch ein Notfalltermin?", en: "Good morning, I've got bad toothache. Is there still an emergency appointment today?" },
+        { speaker: "B", de: "Um halb zwölf. Seit wann tut der Zahn denn weh?", en: "At half past eleven. How long has the tooth been hurting?" },
+        { speaker: "A", de: "Seit gestern Abend. Es pocht, und kalt trinken geht gar nicht mehr.", en: "Since last night. It's throbbing, and cold drinks are out of the question now." },
+        { speaker: "B", de: "Welcher ist es denn?", en: "Which one is it?" },
+        { speaker: "A", de: "Der hintere unten links. Mir ist da vor Jahren mal eine Füllung rausgefallen.", en: "The one at the back, bottom left. A filling fell out there years ago." },
+      ],
+    },
+  ],
+  "part96": [
+    {
+      title: "Der Anruf bei der 112",
+      lines: [
+        { speaker: "A", de: "Notruf, was ist passiert?", en: "Emergency services — what's happened?" },
+        { speaker: "B", de: "Es hat einen Unfall gegeben, auf der B27 kurz vor der Ausfahrt.", en: "There's been an accident, on the B27 just before the exit." },
+        { speaker: "A", de: "Ist jemand verletzt?", en: "Is anyone injured?" },
+        { speaker: "B", de: "Eine Person. Sie ist bewusstlos, atmet aber. Wir haben mit Erster Hilfe angefangen.", en: "One person. She's unconscious but breathing. We've started first aid." },
+        { speaker: "A", de: "Gut gemacht. Bleiben Sie ruhig bei ihr, Hilfe ist unterwegs.", en: "Well done. Stay with her and keep calm — help is on its way." },
+      ],
+    },
+  ],
+  "part98": [
+    {
+      title: "Das Gespräch übers Gehalt",
+      lines: [
+        { speaker: "A", de: "Danke, dass Sie Zeit haben. Ich würde gern über mein Gehalt sprechen.", en: "Thank you for making time. I'd like to talk about my salary." },
+        { speaker: "B", de: "Gern. Worum geht es konkret?", en: "Of course. What's it about, specifically?" },
+        { speaker: "A", de: "Sie wissen ja: Seit zwei Jahren trage ich deutlich mehr Verantwortung.", en: "As you know, I've been carrying considerably more responsibility for two years now." },
+        { speaker: "B", de: "Das stimmt. An welche Größenordnung denken Sie?", en: "That's true. What sort of figure do you have in mind?" },
+        { speaker: "A", de: "Zehn Prozent. Und zusätzlich zwei Tage pro Woche im Homeoffice.", en: "Ten per cent. And on top of that, two days a week working from home." },
+      ],
+    },
+  ],
+  "part114": [
+    {
+      title: "Aufgeschoben",
+      lines: [
+        { speaker: "A", de: "Wie verbringst du eigentlich deinen Sonntag, so ganz ehrlich?", en: "How do you actually spend your Sunday — be honest?" },
+        { speaker: "B", de: "Ursprünglich wollte ich aufräumen. Ich schiebe das seit Wochen vor mir her.", en: "Originally I meant to tidy up. I've been putting it off for weeks." },
+        { speaker: "A", de: "Kenne ich. Künftig machen wir das anders: erst eine Stunde arbeiten, dann frei.", en: "I know the feeling. From now on we'll do it differently: one hour of work first, then free time." },
+        { speaker: "B", de: "Das dauert bei mir höchstens zehn Minuten, so viel liegt da nicht.", en: "That'll take me ten minutes at most — there isn't that much lying around." },
+        { speaker: "A", de: "Dann nimm dir danach bewusst Zeit für was Schönes.", en: "Then set aside proper time afterwards for something nice." },
+      ],
+    },
+  ],
+  "part115": [
+    {
+      title: "Nicht optimal, aber es geht",
+      lines: [
+        { speaker: "A", de: "Und, wie findest du die neue Software generell?", en: "So what do you make of the new software, generally?" },
+        { speaker: "B", de: "Relativ einfach zu bedienen. Das Konzept überzeugt mich aber noch nicht.", en: "Relatively easy to use. The concept doesn't convince me yet, though." },
+        { speaker: "A", de: "Die Reaktion im Team war auch eher negativ.", en: "The team's reaction was on the negative side too." },
+        { speaker: "B", de: "Wir haben zwei Wochen intensiv geübt. Es ist nicht optimal, aber es geht.", en: "We practised intensively for two weeks. It's not ideal, but it works." },
+        { speaker: "A", de: "Na immerhin. Effektiv ist es billiger als vorher, das zählt auch.", en: "Well, that's something. In effect it's cheaper than before — that counts too." },
+      ],
+    },
+  ],
+  "part116": [
+    {
+      title: "Der Antrag online",
+      lines: [
+        { speaker: "A", de: "Guten Tag, ich habe den Antrag online gestellt. Wie lange dauert die Bearbeitung?", en: "Hello, I submitted the application online. How long does processing take?" },
+        { speaker: "B", de: "Etwa drei Wochen. Bringen Sie zum Termin bitte alle Dokumente mit.", en: "About three weeks. Please bring all your documents to the appointment." },
+        { speaker: "A", de: "Gilt der Bescheid dann bundesweit?", en: "Will the decision be valid nationwide?" },
+        { speaker: "B", de: "Ja. Nur eine Frage kann ich Ihnen aus Gründen des Datenschutzes nicht beantworten.", en: "Yes. There's just one question I can't answer, for data protection reasons." },
+        { speaker: "A", de: "Verstehe. Können Sie mir wenigstens erläutern, welche Unterlagen noch fehlen?", en: "I see. Could you at least explain to me which papers are still missing?" },
+      ],
+    },
+  ],
+  "part117": [
+    {
+      title: "Das kriegen wir hin",
+      lines: [
+        { speaker: "A", de: "Darf ich kurz ergänzen? Ich habe das Problem schon länger beobachtet.", en: "May I add something briefly? I've been watching this problem for a while." },
+        { speaker: "B", de: "Bitte, gern. Jeder Hinweis erleichtert die Sache erheblich.", en: "Please do. Every pointer makes this considerably easier." },
+        { speaker: "A", de: "Wir müssen nur verhindern, dass es im Winter schlimmer wird.", en: "We just have to stop it getting worse over the winter." },
+        { speaker: "B", de: "Da hat jeder andere Bedürfnisse. Aber gut: Sag Bescheid, wenn du Hilfe brauchst.", en: "Everyone's needs are different there. But fine: give me a shout if you need help." },
+        { speaker: "A", de: "Mach ich. Zusammen kriegen wir das hin.", en: "Will do. Together we'll manage it." },
+      ],
+    },
+  ],
+  "part121": [
+    {
+      title: "Mehr Kunden für den Laden",
+      lines: [
+        { speaker: "A", de: "Ich brauche endlich eine richtige Webseite für mein Geschäft.", en: "I finally need a proper website for my business." },
+        { speaker: "B", de: "Lass eine bauen und mach mehr Werbung. Wir werben fast nur noch online.", en: "Have one built and do more advertising. We advertise almost exclusively online these days." },
+        { speaker: "A", de: "Und wie gewinnt ihr neue Kunden? Nur über Instagram?", en: "And how do you win new customers? Just through Instagram?" },
+        { speaker: "B", de: "Auch. Vor allem aber über sehr gute Bewertungen.", en: "That too. But above all through very good reviews." },
+        { speaker: "A", de: "Gut. Schick mir ein Angebot — zahlbar innerhalb von vierzehn Tagen, wie immer?", en: "Fine. Send me a quote — payable within fourteen days, as usual?" },
+      ],
+    },
+  ],
+  "part122": [
+    {
+      title: "Nur noch eine Folge",
+      lines: [
+        { speaker: "A", de: "Ich habe die zweite Staffel gestern in einem Rutsch durchgeschaut.", en: "I binged the whole second season yesterday in one go." },
+        { speaker: "B", de: "Verrate mir nichts! Ich bin erst bei Folge vier.", en: "Don't tell me anything! I'm only on episode four." },
+        { speaker: "A", de: "Keine Sorge, kein Spoiler. Aber sie ist besser als die erste.", en: "Don't worry, no spoilers. But it's better than the first." },
+        { speaker: "B", de: "Das reicht mir schon! Und danach? Was soll ich als Nächstes schauen?", en: "That's already more than I needed! And afterwards? What should I watch next?" },
+        { speaker: "A", de: "Ich schicke dir den Kanal, den ich abonniert habe. Kann ich echt empfehlen.", en: "I'll send you the channel I've subscribed to. Really can recommend it." },
+      ],
+    },
+  ],
+  "part123": [
+    {
+      title: "Stoßlüften, nicht kippen",
+      lines: [
+        { speaker: "A", de: "Die Nachbarn haben sich beschwert? Wir sind doch gerade erst eingezogen.", en: "The neighbours have complained? We've only just moved in." },
+        { speaker: "B", de: "Wegen der Waschmaschine gestern Nacht. Ab zweiundzwanzig Uhr ist Ruhezeit.", en: "About the washing machine last night. Quiet hours start at ten p.m." },
+        { speaker: "A", de: "Steht das wirklich in der Hausordnung?", en: "Is that really in the house rules?" },
+        { speaker: "B", de: "Ja, und noch mehr: sonntags wird nicht gebohrt.", en: "Yes, and there's more: no drilling on Sundays." },
+        { speaker: "A", de: "Gut zu wissen. Der Hausmeister meinte auch noch: Stoßlüften, nicht kippen.", en: "Good to know. The caretaker also said: air the place properly, don't just tilt the window." },
+      ],
+    },
+  ],
+  "part124": [
+    {
+      title: "Endlich eingeschlafen",
+      lines: [
+        { speaker: "A", de: "Leise, sie ist gerade eingeschlafen.", en: "Quietly — she's just fallen asleep." },
+        { speaker: "B", de: "Endlich. Hat er auch durchgeschlafen?", en: "At last. Did he sleep through as well?" },
+        { speaker: "A", de: "Bis fünf. Dann hat er geschrien, und die Windel war natürlich voll.", en: "Till five. Then he screamed — and the nappy was full, of course." },
+        { speaker: "B", de: "Ich übernehme morgen früh. Du bringst sie in die Kita, ich wickle ihn.", en: "I'll take over tomorrow morning. You take her to nursery, I'll change him." },
+        { speaker: "A", de: "Abgemacht. Und der Kinderwagen muss unten bleiben, er passt nicht in den Aufzug.", en: "Deal. And the pram has to stay downstairs — it doesn't fit in the lift." },
+      ],
+    },
+  ],
+  "part125": [
+    {
+      title: "Die leere Batterie",
+      lines: [
+        { speaker: "A", de: "Der Wagen springt nicht an. Ich glaube, die Batterie ist leer.", en: "The car won't start. I think the battery's dead." },
+        { speaker: "B", de: "Schon wieder? Kannst du mal Starthilfe geben lassen?", en: "Again? Can you get someone to jump-start it?" },
+        { speaker: "A", de: "Der Nachbar hilft gleich. Aber der Motor macht auch ein komisches Geräusch.", en: "The neighbour's going to help in a minute. But the engine's making a strange noise too." },
+        { speaker: "B", de: "Dann bring den Wagen diese Woche in die Werkstatt. Der TÜV ist eh bald fällig.", en: "Then take the car to the garage this week. The MOT's due soon anyway." },
+        { speaker: "A", de: "Stimmt. Und tanken muss ich auch noch. Das Auto frisst gerade nur Geld.", en: "True. And I still need to fill up. The car's just eating money at the moment." },
+      ],
+    },
+  ],
+  "part126": [
+    {
+      title: "Alles ein bisschen viel",
+      lines: [
+        { speaker: "A", de: "Du wirkst gestresst. Alles okay bei dir?", en: "You seem stressed. Everything okay with you?" },
+        { speaker: "B", de: "Ehrlich? Ich bin gerade etwas überfordert. Das ist mir alles zu viel.", en: "Honestly? I'm a bit overwhelmed right now. It's all too much for me." },
+        { speaker: "A", de: "Das verstehe ich. Mich nervt die Woche auch langsam.", en: "I understand. This week's slowly getting on my nerves too." },
+        { speaker: "B", de: "Wie bleibt deine Schwester eigentlich immer so gelassen?", en: "How does your sister always stay so calm, anyway?" },
+        { speaker: "A", de: "Keine Ahnung. Aber ich bin froh, dass du so ehrlich bist.", en: "No idea. But I'm glad you're being so honest." },
+      ],
+    },
+  ],
+  "part127": [
+    {
+      title: "Die Taufe im Frühling",
+      lines: [
+        { speaker: "A", de: "Wir lassen den Kleinen im Frühling taufen.", en: "We're having the little one christened in the spring." },
+        { speaker: "B", de: "Wie schön! In eurer Gemeinde?", en: "How lovely! In your parish?" },
+        { speaker: "A", de: "Ja, der Gottesdienst fängt um zehn an, danach feiern wir im Garten.", en: "Yes, the service starts at ten, then we're celebrating in the garden." },
+        { speaker: "B", de: "Der Pfarrer hat bei eurer Hochzeit damals so schön gesprochen.", en: "The vicar spoke so beautifully at your wedding back then." },
+        { speaker: "A", de: "Genau der macht es wieder. Mein Glaube ist mir wichtig, das weißt du ja.", en: "It's him doing it again. My faith matters to me — you know that." },
+      ],
+    },
+  ],
+  "part128": [
+    {
+      title: "Der verstauchte Knöchel",
+      lines: [
+        { speaker: "A", de: "Kommst du morgen joggen? Wir wollten doch dreimal die Woche trainieren.", en: "Are you coming jogging tomorrow? We did say we'd train three times a week." },
+        { speaker: "B", de: "Ich kann nicht, ich habe mir den Knöchel verstaucht.", en: "I can't — I've sprained my ankle." },
+        { speaker: "A", de: "Autsch. Beim Schwimmen gestern?", en: "Ouch. Swimming yesterday?" },
+        { speaker: "B", de: "Nein, auf der Treppe. Es tut vor allem beim Laufen weh.", en: "No, on the stairs. It hurts most when I walk." },
+        { speaker: "A", de: "Dann mach diese Woche Pause. Ich wärme mich ab jetzt für zwei auf.", en: "Then take this week off. I'll be warming up for two from now on." },
+      ],
+    },
+  ],
+  "part132": [
+    {
+      title: "Der Ohrwurm",
+      lines: [
+        { speaker: "A", de: "Ich habe seit Tagen einen Ohrwurm von deinem Lied.", en: "I've had your song stuck in my head for days." },
+        { speaker: "B", de: "Welches denn? Das, das wir im Chor proben?", en: "Which one? The one we're rehearsing in choir?" },
+        { speaker: "A", de: "Genau das. Ich kenne den Text inzwischen besser als du.", en: "That's the one. I know the words better than you do by now." },
+        { speaker: "B", de: "Dann sing doch mit! Wir proben jeden Donnerstag.", en: "Then come and sing along! We rehearse every Thursday." },
+        { speaker: "A", de: "Mal sehen. Euer letzter Auftritt war jedenfalls richtig gut.", en: "We'll see. Your last performance was properly good, in any case." },
+      ],
+    },
+  ],
+  "part138": [
+    {
+      title: "Samstag im Garten",
+      lines: [
+        { speaker: "A", de: "Was steht heute an? Der Rasen?", en: "What's on today? The lawn?" },
+        { speaker: "B", de: "Mähen, ja. Und im Beet wächst nur noch Unkraut.", en: "Mowing, yes. And the bed's growing nothing but weeds." },
+        { speaker: "A", de: "Ich übernehme das Beet, und danach hältst du mir die Leiter fest.", en: "I'll take the bed, and afterwards you hold the ladder steady for me." },
+        { speaker: "B", de: "Für den Baum? Der muss wirklich geschnitten werden.", en: "For the tree? It really does need pruning." },
+        { speaker: "A", de: "Genau. Und abends gießen wir die Blumen und sind fertig.", en: "Exactly. And in the evening we water the flowers and we're done." },
+      ],
+    },
+  ],
+  "part140": [
+    {
+      title: "Im Abteil nach Norden",
+      lines: [
+        { speaker: "A", de: "Entschuldigung, ist dieses Abteil noch frei?", en: "Excuse me, is this compartment still free?" },
+        { speaker: "B", de: "Ja, kommen Sie rein. Müssen Sie auch umsteigen?", en: "Yes, come on in. Do you have to change trains as well?" },
+        { speaker: "A", de: "Einmal, aber der Anschlusszug wartet. Wir wollen an die Küste, zelten.", en: "Once, but the connecting train waits. We're heading to the coast, camping." },
+        { speaker: "B", de: "Schön! Die Wellen sollen dieses Wochenende ziemlich hoch sein.", en: "Lovely! The waves are supposed to be quite high this weekend." },
+        { speaker: "A", de: "Perfekt für die Kinder. Zelt, Lagerfeuer, grillen — mehr brauchen wir nicht.", en: "Perfect for the kids. Tent, campfire, barbecue — we don't need more than that." },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
