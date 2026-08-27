@@ -222,6 +222,14 @@ assert.ok(
   /display: flex/.test(choices) && !/grid-template-columns/.test(choices),
   "the cards are back in a grid of equal columns, so folding one cannot narrow it"
 );
+// Folded, the country rail sits at the RIGHT edge even when the language card
+// is folded too — with both shut there is no open card to push it there, and
+// the two rails stood side by side at the left.
+assert.ok(
+  /\.np-home-choice--country\.is-folded \{\s*margin-left: auto;/.test(css),
+  "a folded country card no longer keeps to the right edge, so with both cards shut the two rails "
+  + "stand together at the left with the page empty beside them"
+);
 const railBasis = /\.np-home-choice\.is-folded \{\s*flex: 0 0 (\d+)px/.exec(css);
 assert.ok(railBasis, "a folded card has no width of its own — it would stay as wide as an open one");
 assert.ok(

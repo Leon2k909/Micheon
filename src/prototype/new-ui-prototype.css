@@ -2056,6 +2056,17 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   flex: 0 0 74px;
 }
 
+/* Folded, this one lives at the right edge whatever else is on the row.
+   It already did while the language card was open — an open card takes the
+   space and pushes it there — but with both folded there was nothing doing
+   the pushing, and the two rails stood together at the left with the width
+   of the page empty beside them. The auto margin eats the free space when
+   there is any and is worth nothing when there is not, so the open case is
+   untouched. */
+.np-home-choice--country.is-folded {
+  margin-left: auto;
+}
+
 /* Everything but the picture, the handle and the rail's own label. Written as
    an exclusion so it keeps working when the card gains a part: the failure of
    naming them one by one is a new section that stays visible in a 74px rail. */
