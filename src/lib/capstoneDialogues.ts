@@ -275,6 +275,186 @@ export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       ],
     },
   ],
+  "part99": [
+    {
+      title: "Gelinde gesagt",
+      lines: [
+        { speaker: "A", de: "Und, was hältst du von seinem Vorschlag?", en: "So, what do you make of his proposal?" },
+        { speaker: "B", de: "Der ist, gelinde gesagt, unglücklich formuliert.", en: "It is, to put it mildly, unfortunately worded." },
+        { speaker: "A", de: "Ich will dir nicht zu nahe treten, aber der Text kam doch von euch.", en: "I don't want to step on your toes, but the text did come from your side." },
+        { speaker: "B", de: "Da würde ich stark differenzieren wollen: am ersten Teil, nicht am zweiten.", en: "I'd want to draw a sharp distinction there: on the first part, not the second." },
+        { speaker: "A", de: "Na gut. Das steht ohnehin auf einem anderen Blatt.", en: "Fair enough. That's another matter entirely anyway." },
+      ],
+    },
+  ],
+  "part129": [
+    {
+      title: "Fünf Minuten noch",
+      lines: [
+        { speaker: "A", de: "Bist du bald fertig im Bad? Ich muss mir noch die Zähne putzen.", en: "Are you nearly done in the bathroom? I still have to brush my teeth." },
+        { speaker: "B", de: "Fünf Minuten! Ich föhne mir nur kurz die Haare.", en: "Five minutes! I'm just quickly blow-drying my hair." },
+        { speaker: "A", de: "Dann hebe ich unterwegs Geld ab. Der Automat an der Ecke geht wieder.", en: "Then I'll get cash out on the way. The machine on the corner is working again." },
+        { speaker: "B", de: "Gut. Steht Milch eigentlich schon auf der Liste?", en: "Good. Is milk actually on the list yet?" },
+        { speaker: "A", de: "Ja, und alle Zutaten für morgen. Ich warte unten.", en: "Yes, and all the ingredients for tomorrow. I'll wait downstairs." },
+      ],
+    },
+  ],
+  "part130": [
+    {
+      title: "Der Kreisverkehr",
+      lines: [
+        { speaker: "A", de: "Ich glaube, wir sind falsch. Da vorne ist eine Umleitung.", en: "I think we've gone wrong. There's a diversion up ahead." },
+        { speaker: "B", de: "Nein, das passt. Fahr im Kreisverkehr die zweite Ausfahrt.", en: "No, this is right. Take the second exit at the roundabout." },
+        { speaker: "A", de: "Und dann? An der Kreuzung links abbiegen?", en: "And then? Turn left at the junction?" },
+        { speaker: "B", de: "Erst an der zweiten Ampel. Das Haus liegt direkt gegenüber der Post.", en: "Not till the second lights. The house is directly opposite the post office." },
+        { speaker: "A", de: "Hoffentlich. Die Straße danach ist nämlich eine Einbahnstraße.", en: "Let's hope so. Because the street after that is one-way." },
+      ],
+    },
+  ],
+  "part131": [
+    {
+      title: "Massives Holz",
+      lines: [
+        { speaker: "A", de: "Schau mal, der Tisch! Ist der aus massivem Holz?", en: "Look at that table! Is it solid wood?" },
+        { speaker: "B", de: "Ja, und die Stühle sind aus echtem Leder.", en: "Yes, and the chairs are real leather." },
+        { speaker: "A", de: "Passt der überhaupt? Das sind bestimmt zwei Meter.", en: "Will it even fit? That's got to be two metres." },
+        { speaker: "B", de: "Knapp. Und die Verpackung ist leider komplett aus Plastik.", en: "Just about. And the packaging is all plastic, unfortunately." },
+        { speaker: "A", de: "Egal, wir nehmen ihn. Vorsicht beim Tragen, das Holz ist empfindlich.", en: "Never mind, we'll take it. Careful carrying it — the wood is delicate." },
+      ],
+    },
+  ],
+  "part133": [
+    {
+      title: "Die Klassenarbeit",
+      lines: [
+        { speaker: "A", de: "Welche Note hast du in der Klassenarbeit bekommen?", en: "What mark did you get in the class test?" },
+        { speaker: "B", de: "Eine Zwei! Dabei ist Mathe echt nicht mein Fach.", en: "A B! And maths really isn't my subject." },
+        { speaker: "A", de: "Eine Zwei ist super. Hat wieder jemand abgeschrieben?", en: "A B is great. Did somebody copy again?" },
+        { speaker: "B", de: "Klar, und der Lehrer hat es sofort gemerkt.", en: "Of course — and the teacher noticed straight away." },
+        { speaker: "A", de: "Selber schuld. Das Zeugnis kommt ja schon nächste Woche.", en: "Their own fault. Reports are out next week, after all." },
+      ],
+    },
+  ],
+  "part137": [
+    {
+      title: "Verspannt vom Sitzen",
+      lines: [
+        { speaker: "A", de: "Mein Nacken ist total verspannt, und die Schulter tut auch weh.", en: "My neck is completely seized up, and my shoulder hurts too." },
+        { speaker: "B", de: "Zu viel am Schreibtisch? Beweg mal die Finger — tut da was weh?", en: "Too long at the desk? Move your fingers — does anything hurt?" },
+        { speaker: "A", de: "Nein, aber das Handgelenk ist ein bisschen geschwollen.", en: "No, but my wrist is a little swollen." },
+        { speaker: "B", de: "Dann leg heute eine Pause ein und kühl das Gelenk.", en: "Then take a break today and put something cold on the joint." },
+        { speaker: "A", de: "Mach ich. Muskelkater in den Waden habe ich auch noch.", en: "I will. And I've got sore calves as well." },
+      ],
+    },
+  ],
+  "part447": [
+    {
+      title: "Nicht mehr zu ertragen",
+      lines: [
+        { speaker: "A", de: "Hast du den Kommentar gesehen? Das macht mich echt wütend.", en: "Did you see the comment? It makes me properly angry." },
+        { speaker: "B", de: "Ich kann das auch nicht mehr ertragen. Wer hat das gepostet?", en: "I can't stand it any more either. Who posted it?" },
+        { speaker: "A", de: "Keine Ahnung, irgendein neues Konto. Ich dreh gleich durch.", en: "No idea — some new account. I'm about to lose it." },
+        { speaker: "B", de: "Melde es einfach und gut. Das ist meistens so bei denen.", en: "Just report it and be done. That's usually how it goes with them." },
+        { speaker: "A", de: "Stimmt. Ich freu mich schon drauf, wenn das Konto weg ist.", en: "True. I'm already looking forward to that account being gone." },
+      ],
+    },
+  ],
+  "part448": [
+    {
+      title: "Der Stellenabbau in den Nachrichten",
+      lines: [
+        { speaker: "A", de: "Hast du die Nachrichten gelesen? Es droht ein weiterer Stellenabbau.", en: "Have you read the news? More job cuts are looming." },
+        { speaker: "B", de: "Ja. Für die Region klingt das nach einer echten Bedrohung.", en: "Yes. For the region that sounds like a genuine threat." },
+        { speaker: "A", de: "Trifft es auch eure Firma?", en: "Is your company affected too?" },
+        { speaker: "B", de: "Noch nicht. Unser Produkt ist ein typischer Anwendungsfall für die neue Technik.", en: "Not yet. Our product is a typical use case for the new technology." },
+        { speaker: "A", de: "Dann hoffen wir, dass das so bleibt.", en: "Then let's hope it stays that way." },
+      ],
+    },
+  ],
+  "part449": [
+    {
+      title: "Die übersehene Mitteilung",
+      lines: [
+        { speaker: "A", de: "Du hast nicht geantwortet. Hast du meine Nachricht gesehen?", en: "You didn't reply. Did you see my message?" },
+        { speaker: "B", de: "Erst jetzt! Die Benachrichtigung war irgendwie weg.", en: "Only just now! The notification had somehow vanished." },
+        { speaker: "A", de: "Schon wieder? Bei mir war das auch mal so.", en: "Again? That happened to me once too." },
+        { speaker: "B", de: "Ich habe dann den Verlauf im Browser gelöscht, seitdem geht es.", en: "I cleared the browser history in the end — it's been fine since." },
+        { speaker: "A", de: "Gut. Ohne Premium-Abo bleibt eben manches komisch.", en: "Right. Without a premium subscription some things just stay odd." },
+      ],
+    },
+  ],
+  "part450": [
+    {
+      title: "Die Sammlung fürs Geschenk",
+      lines: [
+        { speaker: "A", de: "Wir sammeln Geld für ein Geschenk. Bist du dabei?", en: "We're collecting money for a present. Are you in?" },
+        { speaker: "B", de: "Klar. Für die Kollegin aus Schweden, oder?", en: "Of course. For the colleague from Sweden, right?" },
+        { speaker: "A", de: "Genau, sie geht zurück nach Schweden zu ihrer alten Firma.", en: "Exactly — she's going back to Sweden, to her old company." },
+        { speaker: "B", de: "Schade. Ich hab ihr versprochen, dass wir sie besuchen.", en: "A shame. I promised her we'd visit." },
+        { speaker: "A", de: "Dann halte das Versprechen. Schweden im Sommer soll wunderschön sein.", en: "Then keep the promise. Sweden in summer is supposed to be gorgeous." },
+      ],
+    },
+  ],
+  "part451": [
+    {
+      title: "Kommst du kurz raus?",
+      lines: [
+        { speaker: "A", de: "Kommst du kurz raus? Du musst dir das ansehen.", en: "Can you come outside for a second? You have to see this." },
+        { speaker: "B", de: "Was denn? Ich hab nichts gehört.", en: "What is it? I didn't hear anything." },
+        { speaker: "A", de: "Eben! Die ganze Straße ist leer, alle Autos sind weg.", en: "Exactly! The whole street is empty — all the cars are gone." },
+        { speaker: "B", de: "Das ist doch verrückt. So was hab ich noch nie gesehen.", en: "That's crazy. I've never seen anything like it." },
+        { speaker: "A", de: "Morgen wird gebaut, stand auf den Schildern. Wir brauchen einen Parkplatz.", en: "There's roadworks tomorrow — it was on the signs. We need somewhere to park." },
+      ],
+    },
+  ],
+  "part452": [
+    {
+      title: "Zurückgetreten",
+      lines: [
+        { speaker: "A", de: "Hast du es gehört? Er ist von seinem Amt zurückgetreten.", en: "Have you heard? He's resigned from his post." },
+        { speaker: "B", de: "Endlich. Das Ergebnis der Prüfung war ja auch enttäuschend.", en: "Finally. The result of the review was disappointing, after all." },
+        { speaker: "A", de: "Und die Angaben im Bericht waren unvollständig.", en: "And the figures in the report were incomplete." },
+        { speaker: "B", de: "Kann sein Nachfolger da überhaupt mithalten?", en: "Can his successor even keep up with all that?" },
+        { speaker: "A", de: "Mal sehen. Das Update zur Sache verzögert sich ja sowieso.", en: "We'll see. The update on the matter is delayed anyway." },
+      ],
+    },
+  ],
+  "part455": [
+    {
+      title: "Bestellt und bezahlt",
+      lines: [
+        { speaker: "A", de: "Ich habe die Maschine online bestellt. Ist die noch auf Lager?", en: "I've ordered the machine online. Is it still in stock?" },
+        { speaker: "B", de: "Ja, die Lieferung kommt Donnerstag. Der Versand ist kostenlos.", en: "Yes, delivery is Thursday. Shipping is free." },
+        { speaker: "A", de: "Sehr gut. Kann ich auch in Raten zahlen?", en: "Very good. Can I pay in instalments as well?" },
+        { speaker: "B", de: "Können Sie, drei oder sechs Monate. Und Sie können jederzeit kündigen.", en: "You can — three or six months. And you can cancel at any time." },
+        { speaker: "A", de: "Perfekt. Ist das Zubehör eigentlich im Preis mit drin?", en: "Perfect. Is the accessory kit actually included in the price?" },
+      ],
+    },
+  ],
+  "part456": [
+    {
+      title: "Kabellos oder nicht",
+      lines: [
+        { speaker: "A", de: "Ist der Lautsprecher eigentlich kabelgebunden oder kabellos?", en: "Is the speaker actually wired or wireless?" },
+        { speaker: "B", de: "Beides — das Kabel ist abnehmbar. Und der Klang ist überraschend gut.", en: "Both — the cable is detachable. And the sound is surprisingly good." },
+        { speaker: "A", de: "Ist er mit meinem Handy kompatibel?", en: "Is it compatible with my phone?" },
+        { speaker: "B", de: "Ja. In den Einstellungen lässt sich sogar die Helligkeit vom Display anpassen.", en: "Yes. In the settings you can even adjust the display brightness." },
+        { speaker: "A", de: "Gut. Dann fehlt mir nur noch das Zubehör dazu.", en: "Good. Then all I'm missing is the accessories to go with it." },
+      ],
+    },
+  ],
+  "part605": [
+    {
+      title: "Der Magnet am Kühlschrank",
+      lines: [
+        { speaker: "A", de: "Warum hält ein Magnet eigentlich am Kühlschrank, aber nicht an der Tür?", en: "Why does a magnet actually stick to the fridge, but not to the door?" },
+        { speaker: "B", de: "Die Tür ist aus Holz. Ein Magnetfeld zieht nur Metall an.", en: "The door is wood. A magnetic field only attracts metal." },
+        { speaker: "A", de: "Und warum fällt er nicht einfach runter?", en: "And why doesn't it simply fall down?" },
+        { speaker: "B", de: "Die Reibung hält ihn oben. Physik im Alltag.", en: "Friction keeps it up. Physics in everyday life." },
+        { speaker: "A", de: "Dann bist du dran mit dem Stromkreis von der Lampe. Erklären, bitte!", en: "Then you're up next with the lamp's circuit. Explain away, please!" },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
