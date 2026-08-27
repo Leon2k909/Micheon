@@ -24,6 +24,7 @@ import {
   type TtsAudioLanguage,
 } from "@/lib/audioMute";
 import { ui } from "@/lib/i18n";
+import { audioLanguagesInPlay } from "@/lib/audioLanguagesInPlay";
 import { SpeechSpeedControl } from "@/components/SpeechSpeedControl";
 
 type MixerPosition = { left: number; top: number };
@@ -213,6 +214,15 @@ export function MuteButton({
   const germanMuted = isTtsLanguageMuted("german");
   const frenchMuted = isTtsLanguageMuted("french");
   const polishMuted = isTtsLanguageMuted("polish");
+  /**
+   * Only the voices that can actually be heard.
+   *
+   * Re-read on every open rather than once: the course and the interface
+   * language can both change while the app is running, and a panel that
+   * still listed yesterday’s languages would be worse than one listing all
+   * four.
+   */
+  const inPlay = audioLanguagesInPlay();
   const triggerTitle = `${ui(masterMuted ? "Unmute audio" : "Mute audio")} · ${ui("Hover or right-click for audio settings.")}`;
 
   const setLanguageVolume = (language: TtsAudioLanguage, value: number) => {
@@ -268,46 +278,54 @@ export function MuteButton({
         value={settings.sfxVolume}
       />
       <div className="audio-mixer-divider" />
-      <VolumeRow
-        label={ui("English voice")}
-        muteLabel={ui("Mute English voice")}
-        muted={englishMuted}
-        onChange={(value) => setLanguageVolume("english", value)}
-        onToggleMuted={() => toggleTtsLanguageMuted("english")}
-        testId="english"
-        unmuteLabel={ui("Unmute English voice")}
-        value={settings.englishVolume}
-      />
-      <VolumeRow
-        label={ui("German voice")}
-        muteLabel={ui("Mute German voice")}
-        muted={germanMuted}
-        onChange={(value) => setLanguageVolume("german", value)}
-        onToggleMuted={() => toggleTtsLanguageMuted("german")}
-        testId="german"
-        unmuteLabel={ui("Unmute German voice")}
-        value={settings.germanVolume}
-      />
-      <VolumeRow
-        label={ui("French voice")}
-        muteLabel={ui("Mute French voice")}
-        muted={frenchMuted}
-        onChange={(value) => setLanguageVolume("french", value)}
-        onToggleMuted={() => toggleTtsLanguageMuted("french")}
-        testId="french"
-        unmuteLabel={ui("Unmute French voice")}
-        value={settings.frenchVolume}
-      />
-      <VolumeRow
-        label={ui("Polish voice")}
-        muteLabel={ui("Mute Polish voice")}
-        muted={polishMuted}
-        onChange={(value) => setLanguageVolume("polish", value)}
-        onToggleMuted={() => toggleTtsLanguageMuted("polish")}
-        testId="polish"
-        unmuteLabel={ui("Unmute Polish voice")}
-        value={settings.polishVolume}
-      />
+      {inPlay.includes("english") && (
+        <VolumeRow
+          label={ui("English voice")}
+          muteLabel={ui("Mute English voice")}
+          muted={englishMuted}
+          onChange={(value) => setLanguageVolume("english", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("english")}
+          testId="english"
+          unmuteLabel={ui("Unmute English voice")}
+          value={settings.englishVolume}
+        />
+      )}
+      {inPlay.includes("german") && (
+        <VolumeRow
+          label={ui("German voice")}
+          muteLabel={ui("Mute German voice")}
+          muted={germanMuted}
+          onChange={(value) => setLanguageVolume("german", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("german")}
+          testId="german"
+          unmuteLabel={ui("Unmute German voice")}
+          value={settings.germanVolume}
+        />
+      )}
+      {inPlay.includes("french") && (
+        <VolumeRow
+          label={ui("French voice")}
+          muteLabel={ui("Mute French voice")}
+          muted={frenchMuted}
+          onChange={(value) => setLanguageVolume("french", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("french")}
+          testId="french"
+          unmuteLabel={ui("Unmute French voice")}
+          value={settings.frenchVolume}
+        />
+      )}
+      {inPlay.includes("polish") && (
+        <VolumeRow
+          label={ui("Polish voice")}
+          muteLabel={ui("Mute Polish voice")}
+          muted={polishMuted}
+          onChange={(value) => setLanguageVolume("polish", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("polish")}
+          testId="polish"
+          unmuteLabel={ui("Unmute Polish voice")}
+          value={settings.polishVolume}
+        />
+      )}
       <div className="audio-mixer-divider" />
       <SpeechSpeedControl className="audio-mixer-row" testId="speech-speed" />
       <p className="audio-mixer-footnote">{ui("Sound effects control correct and incorrect answer sounds. Voice controls apply to all spoken audio, including lessons, games, and pet speech.")}</p>

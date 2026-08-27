@@ -11,6 +11,7 @@ import {
   type AudioSettings,
   type TtsAudioLanguage,
 } from "@/lib/audioMute";
+import { audioLanguagesInPlay } from "@/lib/audioLanguagesInPlay";
 import { ui } from "@/lib/i18n";
 
 export type TtsSpeechScope = "master" | TtsAudioLanguage;
@@ -55,9 +56,32 @@ export function SpeechSpeedControl({
 
   useEffect(() => setScope(defaultScope), [defaultScope]);
 
+  /**
+   * Master, plus only the voices that can be heard in this course.
+   *
+   * Master stays whatever the others are: it is the batch control, and it
+   * still means something when only one language is listed — that language
+   * plus the pet.
+   */
+  const inPlay = audioLanguagesInPlay();
+  const scopes = SCOPES.filter((option) => option.value === "master" || inPlay.includes(option.value));
+
+  /**
+   * A scope that has stopped applying must not stay selected.
+   *
+   * The panel remembers which voice was being adjusted, and the course can
+   * change underneath it. Left alone, somebody would be dragging a speed
+   * that belonged to a language no longer in the lesson, with no button on
+   * screen showing which.
+   */
+  useEffect(() => {
+    if (scope !== "master" && !inPlay.includes(scope)) setScope("master");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inPlay.join("|"), scope]);
+
   const rate = rateForScope(settings, scope);
   const status = rate === null ? ui("Mixed") : `${rate}×`;
-  const scopeLabel = ui(SCOPES.find((option) => option.value === scope)?.label ?? "Master");
+  const scopeLabel = ui(scopes.find((option) => option.value === scope)?.label ?? "Master");
 
   const chooseRate = (nextRate: number) => {
     if (scope === "master") setTtsSpeechRate(nextRate);
@@ -81,7 +105,7 @@ export function SpeechSpeedControl({
         className="speech-speed-scopes"
         role="radiogroup"
       >
-        {SCOPES.map((option) => (
+        {scopes.map((option) => (
           <button
             aria-checked={scope === option.value}
             className={cn("speech-speed-scope", scope === option.value && "is-active")}
