@@ -202,11 +202,38 @@ assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   + "count, so adding German cannot trip it: a card the Polish course used to teach no longer has "
   + "an answer in POLISH_BY_GERMAN.");
 
+/**
+ * And the count that is actually on screen: the cards the POLISH course builds.
+ *
+ * The floor above counts German cards that have Polish, and that is not the
+ * same number. It read 9,000 of 9,000 while the Polish tracker showed 8,997,
+ * because the gap was a level below a card: several SEEDS share one lemma, only
+ * the winner becomes a card, and a losing seed with no Polish is dropped by the
+ * narrowing — which changes which seed wins and how the synonyms fold. Three
+ * cards moved without a single card being untranslated.
+ *
+ * So this rebuilds the catalogue from the narrowed vocab and counts what comes
+ * out. Only vocab is narrowed here: buildWordCatalog reads nothing else, and
+ * running the real polishParts over every phrase and dialogue costs minutes.
+ */
+const POLISH_CARD_FLOOR = 8990;
+const polishParts = Object.fromEntries(Object.entries(parts).map(([key, part]) => [
+  key,
+  { ...part, vocab: (part.vocab ?? []).filter((word) => translate(String(word.de ?? ""), "pl", null)) },
+]));
+const polishCards = buildWordCatalog(polishParts);
+assert.ok(polishCards.length >= POLISH_CARD_FLOOR,
+  `the Polish word tracker builds ${polishCards.length.toLocaleString("en-GB")} cards against the German `
+  + `${germanWords.length.toLocaleString("en-GB")}, and the floor is ${POLISH_CARD_FLOOR.toLocaleString("en-GB")}. `
+  + "Every card having an answer is not enough: a seed that loses its lemma to another seed still has to "
+  + "be in POLISH_BY_GERMAN, or dropping it moves the fold and the tracker comes up short.");
+
 console.log(`check-french-front: ${summary.join("; ")} — measured by queue position, `
   + "because that is what decides which cards a learner actually meets. "
   + `Word tracker: ${wordParity.toFixed(1)}% of ${germanWords.length.toLocaleString("en-GB")} words `
-  + `have French, ${withPolish.length.toLocaleString("en-GB")} have Polish `
-  + `(floor ${POLISH_WORD_FLOOR.toLocaleString("en-GB")})`);
+  + `have French, ${withPolish.length.toLocaleString("en-GB")} have Polish, and the Polish tracker `
+  + `builds ${polishCards.length.toLocaleString("en-GB")} cards `
+  + `(floors ${POLISH_WORD_FLOOR.toLocaleString("en-GB")} / ${POLISH_CARD_FLOOR.toLocaleString("en-GB")})`);
 // esbuild's service keeps sockets open after buildSync returns; say the check
 // is finished rather than letting the event loop decide.
 process.exit(0);
