@@ -1788,6 +1788,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // learner will have met in a book stays correct too. Taking the better of the
   // two results means the shown answer is the one people say, without punishing
   // anyone who typed the one people write.
+  /**
+   * The longest answer the target side will accept, in characters.
+   *
+   * Every form matchEither will take: the card's own line, its written-out
+   * form where it has one, and the siblings of a combined synonym card. Once
+   * somebody has typed this many characters there is no longer answer left to
+   * be typing towards, which is the only thing the auto-check pause waits for.
+   */
+  const longestAcceptedAnswer = useMemo(() => {
+    const forms = [item.de, item.long, ...(item.synonyms ?? []).map((entry: { de?: string }) => entry.de)];
+    return forms.reduce((longest, form) => Math.max(longest, String(form ?? "").trim().length), 0);
+  }, [item.de, item.long, item.synonyms]);
+
   const matchEither = React.useCallback(
     (typed: string) => {
       const primary = matchTarget(typed, item.de);
@@ -2493,15 +2506,48 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       outcome.ok && !outcome.spellingNote && !outcome.capitalizationError && !outcome.phrasingNote;
 
     let run: null | (() => void) = null;
+    // What was typed, so a finished answer can be recognised as finished.
+    let typed = "";
+    let finishable = false;
     if (phase === "ListenPick" && listeningMode === "type" && !listeningTypeChecked
-      && listeningInput.trim() && clean(listeningTypeResult)) run = checkListeningTyped;
-    else if ((phase === "Type" || phase === "TypeAgain") && !checked
-      && input.trim() && clean(result)) run = checkAnswer;
-    else if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type"
-      && !enChecked && translationAnswer.trim() && clean(enResult)) run = checkEnAnswer;
+      && listeningInput.trim() && clean(listeningTypeResult)) {
+      run = checkListeningTyped;
+      typed = listeningInput;
+      finishable = true;
+    } else if ((phase === "Type" || phase === "TypeAgain") && !checked
+      && input.trim() && clean(result)) {
+      run = checkAnswer;
+      typed = input;
+      finishable = true;
+    } else if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type"
+      && !enChecked && translationAnswer.trim() && clean(enResult)) {
+      run = checkEnAnswer;
+    }
     if (!run) return clear;
 
+    /**
+     * Nothing to wait for once the answer cannot grow.
+     *
+     * The pause exists for one case: a correct short answer that is the
+     * opening of a longer correct one, where checking on the spot would cut
+     * somebody off mid-sentence. Writing out a whole dictated line is the
+     * opposite case — the answer is already as long as any accepted answer
+     * can be, so the wait protects nothing and reads as the app hesitating
+     * over something it has plainly accepted.
+     *
+     * Measured against the longest form the matcher would take, not against
+     * the one on screen: a card can also accept its written-out form and its
+     * synonyms, and any of those may be longer than what is being compared to.
+     */
+    const complete = finishable
+      && longestAcceptedAnswer > 0
+      && typed.trim().length >= longestAcceptedAnswer;
+
     const go = run;
+    if (complete) {
+      go();
+      return clear;
+    }
     autoCheckRef.current = window.setTimeout(() => { autoCheckRef.current = null; go(); }, AUTO_CHECK_PAUSE_MS);
     return clear;
     // The handlers are rebuilt every render; the values they read are the
@@ -2509,7 +2555,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // timer on every render instead of on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, listeningMode, listeningInput, listeningTypeChecked, listeningTypeResult,
-    input, checked, result, translationMode, translationAnswer, enChecked, enResult]);
+    input, checked, result, translationMode, translationAnswer, enChecked, enResult,
+    longestAcceptedAnswer]);
 
   const retryEn = () => {
     setEnInput("");

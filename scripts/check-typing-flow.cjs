@@ -159,6 +159,33 @@ for (const already of ["!listeningTypeChecked", "!checked", "!enChecked"]) {
 assert.ok(effect.includes("window.clearTimeout"),
   "the pending check is never cancelled, so it survives a keystroke and fires on stale input");
 
+// ── and a finished answer does not wait at all ──────────────────────────────
+// The pause is for one case: a correct short answer that is the opening of a
+// longer correct one. Writing out a whole dictated line is the opposite — the
+// answer is already as long as any accepted answer can be, so waiting protects
+// nothing and reads as the app hesitating over something it has accepted.
+const longest = /const longestAcceptedAnswer = useMemo\(\(\) => \{([\s\S]{0,400}?)\}, \[/.exec(session);
+assert.ok(longest, "nothing works out how long an accepted answer can be, so completeness cannot be judged");
+for (const [form, why] of [
+  ["item.de", "the card's own line"],
+  ["item.long", "the written-out form, which is longer than the spoken one it is compared against"],
+  ["item.synonyms", "the siblings of a combined synonym card, any of which may be the longer answer"],
+]) {
+  assert.ok(longest[1].includes(form),
+    `${why} is not counted, so an answer still being typed towards it would be cut off`);
+}
+assert.ok(/typed\.trim\(\)\.length >= longestAcceptedAnswer/.test(effect),
+  "completeness is not measured against the longest accepted answer — with > rather than >=, an "
+  + "answer of exactly the right length waits for a pause that can never help it");
+assert.ok(/if \(complete\) \{\s*go\(\);/.test(effect),
+  "a finished answer still goes through the timer, so it waits to be told what it already showed");
+// The pause must survive for everything else, or this is a removal wearing a
+// condition: a two-letter answer would check itself on its first keystroke.
+assert.ok(effect.includes("AUTO_CHECK_PAUSE_MS"),
+  "the pause is gone entirely, so a short answer that is the start of a longer one is cut off");
+assert.ok(/const complete = finishable/.test(effect),
+  "completeness is assumed rather than established for the stage being answered");
+
 console.log(
   `check-typing-flow: the clitic is accepted written either way, ${catalog.length} catalogue items `
   + `hold no new collisions, and a clean answer checks itself after ${pause}ms across five typing `
