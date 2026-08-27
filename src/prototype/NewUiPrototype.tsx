@@ -189,7 +189,7 @@ import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
 import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v2.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
-import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
+import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
 import flameReward from "./assets/rewards-v3/flame.webp";
