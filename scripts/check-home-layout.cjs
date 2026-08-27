@@ -95,20 +95,26 @@ assert.ok(
 // ── the country card wears the country you picked ─────────────────────────
 // One picture served both countries and it draws Berlin — the Brandenburg
 // Gate, the Fernsehturm, a yellow Deutsche Post box — so choosing the United
-// Kingdom left that scene sitting under a Union Jack. Pinned as a mapping
-// rather than as two loose files, because the failure worth catching is not
-// a missing picture but a card that has stopped following the selection.
-pinPicture("home-country-de-v2.webp", "homeCountryArtDe");
-pinPicture("home-country-uk-v1.webp", "homeCountryArtUk");
-for (const line of [
-  "const COUNTRY_ART: Record<CountryId, string> = {",
-  "  de: homeCountryArtDe,",
-  "  uk: homeCountryArtUk,",
-]) {
-  assert.ok(
-    shell.includes(line),
-    "COUNTRY_ART no longer maps each country to its own artwork: " + line
-  );
+// Kingdom left that scene sitting under a Union Jack.
+//
+// Read out of COUNTRY_ART rather than listed here. Listed, it named two of
+// the three countries and France went unchecked for as long as it existed —
+// which is the same shape of mistake as the card naming the country with a
+// conditional. Every entry is followed to its file, and every country pack
+// must have one.
+const artBlock = /const COUNTRY_ART: Record<CountryId, string> = \{([\s\S]*?)\n\};/.exec(shell);
+assert.ok(artBlock, "COUNTRY_ART is gone, so nothing decides which picture a country card draws");
+const art = new Map(
+  [...artBlock[1].matchAll(/\n {2}([a-z]+): (\w+),/g)].map((m) => [m[1], m[2]])
+);
+const packIds = [...read("src/lib/countryPacks.ts").matchAll(/\n {2}id: "([a-z]+)",/g)].map((m) => m[1]);
+assert.ok(packIds.length >= 3, `expected at least three country packs, found ${packIds.length}`);
+for (const id of packIds) {
+  const binding = art.get(id);
+  assert.ok(binding, `${id} has a country pack but no picture in COUNTRY_ART`);
+  const imported = new RegExp(`import ${binding} from "\\./assets/([\\w.-]+)"`).exec(shell);
+  assert.ok(imported, `${binding} is named in COUNTRY_ART but nothing imports it`);
+  pinPicture(imported[1], binding);
 }
 assert.ok(
   shell.includes('className="np-home-choice-art" decoding="async" loading="eager" src={COUNTRY_ART[pack.id]}'),

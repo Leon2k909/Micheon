@@ -2253,9 +2253,6 @@ function LanguageCard({
  */
 const COUNTRY_ART: Record<CountryId, string> = {
   de: homeCountryArtDe,
-  // Drawn as vectors rather than painted like the other two, so it reads a
-  // little flatter beside them. Same subject matter: a river, a skyline the
-  // country is known by, and the street furniture you actually walk past.
   fr: homeCountryArtFr,
   uk: homeCountryArtUk,
 };
