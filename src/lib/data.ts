@@ -11,6 +11,7 @@ import { immersionWordPartBlueprints } from "./immersionWordPacks";
 import { moreWordPartBlueprints } from "./moreWordPacks";
 import { sheetWordPartBlueprints } from "./sheetWordPacks";
 import { fieldWordPartBlueprints } from "./fieldWordPacks";
+import { withCapstoneDialogues } from "./capstoneDialogues";
 
 export const GERMAN_SPECIAL_CHARACTERS = ["Ä", "ä", "É", "é", "Ö", "ö", "Ü", "ü", "ß"];
 
@@ -73,7 +74,7 @@ export const REMOTE_GERMAN_WORD_LIST_URLS = [
 
 export const REMOTE_CATALOG_MAX_STORED = 2500;
 
-export const allPartBlueprints: Record<string, Blueprint> = {
+const partBlueprintsBase: Record<string, Blueprint> = {
   part1: {
     label: "Part 1", level: "A1", theme: "Starter basics",
     description: "Core first words, simple sentences, and survival phrases.",
@@ -8299,6 +8300,11 @@ export const allPartBlueprints: Record<string, Blueprint> = {
 ...sheetWordPartBlueprints,
 ...fieldWordPartBlueprints,
 };
+
+// The conversations for lessons that never had one are merged in here so
+// that block after block of them lands in capstoneDialogues.ts instead of
+// rewriting this file — see the comment atop that file for the rules.
+export const allPartBlueprints: Record<string, Blueprint> = withCapstoneDialogues(partBlueprintsBase);
 
 export const verbConjugations: Record<string, Record<string, string>> = {
   sein:     { ich: "bin",    du: "bist",    er: "ist",    wir: "sind",    ihr: "seid",    sie: "sind" },

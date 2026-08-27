@@ -1,0 +1,104 @@
+# Uebersetzungsvorlage fuer die Capstone-Dialoge: pro Zeile Lektion, Titel, deutscher Satz.
+# Franzoesisch und Polnisch werden im Uebersetzungsdurchgang direkt an die Zeilen in
+# src/lib/capstoneDialogues.ts geschrieben (Felder fr/pl); diese Datei wird bei jedem
+# Block aus dem Katalogstand neu erzeugt und ist damit immer vollstaendig.
+part73	Die Übergabe vor dem Urlaub	Bevor ich in den Urlaub gehe, machen wir noch die Übergabe.
+part73	Die Übergabe vor dem Urlaub	Gut. Wer macht deine Vertretung, während du weg bist?
+part73	Die Übergabe vor dem Urlaub	Der Kollege aus dem Büro nebenan, der hat noch Puffer.
+part73	Die Übergabe vor dem Urlaub	Und dein Resturlaub? Der ist sonst einfach weg.
+part73	Die Übergabe vor dem Urlaub	Schon eingetragen. Ab morgen habe ich Feierabend.
+part74	Schlechter Empfang	Hallo, hörst du mich? Der Empfang im Keller ist eine Katastrophe.
+part74	Schlechter Empfang	Halb. Bei dir hat es die ganze Zeit gerauscht.
+part74	Schlechter Empfang	Ich gehe mal rauf ans Fenster. Hörst du mich jetzt besser?
+part74	Schlechter Empfang	Ja, viel besser. Warum bist du vorhin nicht rangegangen?
+part74	Schlechter Empfang	Dein Anruf ist direkt auf die Mailbox gegangen, sorry.
+part75	Der Zug fällt aus	Entschuldigung, mein Zug fällt aus. Wie komme ich heute noch nach Köln?
+part75	Der Zug fällt aus	Es gibt einen Ersatzbus, der fährt in zehn Minuten vor dem Bahnhof ab.
+part75	Der Zug fällt aus	Und erreiche ich damit meinen Anschlusszug?
+part75	Der Zug fällt aus	Das wird knapp. Ab sechzig Minuten Verspätung kriegen Sie aber Geld zurück.
+part75	Der Zug fällt aus	Gut zu wissen. Dann fülle ich nachher gleich das Formular für die Verspätung aus.
+part77	Der Umtausch ohne Bon	Guten Tag, ich möchte das hier umtauschen. Da fehlt eine Schraube.
+part77	Der Umtausch ohne Bon	Haben Sie den Bon dabei?
+part77	Der Umtausch ohne Bon	Nein, aber ich habe mit Karte bezahlt. Sie sehen das sicher im System.
+part77	Der Umtausch ohne Bon	Moment, ich schaue nach ... ja, hier ist es. Möchten Sie das Geld zurück?
+part77	Der Umtausch ohne Bon	Lieber ein neues Gerät, wenn Sie hinten noch eins im Lager haben.
+part80	Der Neue im Haus	Hallo, ich bin der Neue aus dem dritten Stock.
+part80	Der Neue im Haus	Ah, willkommen im Haus! Schon richtig angekommen?
+part80	Der Neue im Haus	Fast. Eine Frage: Wann stellt man hier die Tonnen raus?
+part80	Der Neue im Haus	Immer montags. Und nach zehn bitte leise, die Wände sind dünn.
+part80	Der Neue im Haus	Versprochen. Wenn was ist, klingeln Sie einfach bei mir.
+part81	Kein Wort über die Serie	Guckst du die Serie auch? Alle reden davon.
+part81	Kein Wort über die Serie	Ja, aber kein Wort — ich bin erst bei der zweiten Folge.
+part81	Kein Wort über die Serie	Okay, ich sage nichts. Ich schicke dir nachher das Meme dazu.
+part81	Kein Wort über die Serie	Bitte nicht in den Gruppenchat, da liest es sonst jeder.
+part81	Kein Wort über die Serie	Gut. Und lade vorher dein Handy, sonst bist du gleich wieder raus.
+part82	Omas Neunzigster	Kommst du am Sonntag zur Familienfeier? Oma wird neunzig.
+part82	Omas Neunzigster	Klar. Und die ganze Verwandtschaft reist wieder an, nehme ich an?
+part82	Omas Neunzigster	Alle. Auch der Cousin aus Hamburg, den du noch nie getroffen hast.
+part82	Omas Neunzigster	Der, der dir so ähnlich sieht?
+part82	Omas Neunzigster	Genau der. Mama sagt, wir sind wie aus dem Gesicht geschnitten.
+part83	Dreißig Grad in der Wohnung	Sag ehrlich: Wie viel Grad hat deine Bude gerade?
+part83	Dreißig Grad in der Wohnung	Dreißig, mindestens. Ich habe die Rollläden den ganzen Tag unten gelassen.
+part83	Dreißig Grad in der Wohnung	Hilft das denn wirklich?
+part83	Dreißig Grad in der Wohnung	Ein bisschen. Abends mache ich dann alle Fenster auf.
+part83	Dreißig Grad in der Wohnung	Morgen soll ein Gewitter kommen, dann kühlt es endlich ab.
+part85	Die offenen zwölf Euro	Ich habe noch Schulden bei dir von gestern Abend.
+part85	Die offenen zwölf Euro	Ach ja, stimmt. Zwölf Euro, glaube ich.
+part85	Die offenen zwölf Euro	Geht das per Überweisung? Dann brauche ich deine IBAN.
+part85	Die offenen zwölf Euro	Mach dir keinen Stress, das hat Zeit bis zum Wochenende.
+part85	Die offenen zwölf Euro	Nein, nein, sonst vergesse ich es wieder. Halbe-halbe beim nächsten Mal?
+part86	Er frisst nicht	Guten Tag. Mein Hund frisst seit zwei Tagen kaum etwas.
+part86	Er frisst nicht	Dann schauen wir mal. Zieht er an der Leine noch wie immer?
+part86	Er frisst nicht	Nein, er ist viel ruhiger als sonst.
+part86	Er frisst nicht	Ich untersuche ihn kurz. Halten Sie ihn bitte gut fest.
+part86	Er frisst nicht	Kein Problem, er tut nichts. Er ist nur ein bisschen ängstlich.
+part87	Der Fleck auf dem Hemd	Mist, ich habe einen Fleck auf dem Hemd. Kriegt man den noch raus?
+part87	Der Fleck auf dem Hemd	Zeig mal. Oh je, das ist Fett — das geht so schnell nicht raus.
+part87	Der Fleck auf dem Hemd	Das war mein letztes sauberes Hemd.
+part87	Der Fleck auf dem Hemd	Dann nimm den Pulli, der ist frisch gewaschen.
+part87	Der Fleck auf dem Hemd	Der ist beim Waschen eingelaufen, der passt mir nicht mehr.
+part88	Morgens um halb acht	Schuhe an, wir sind spät dran!
+part88	Morgens um halb acht	Ich finde meine Brotdose nicht.
+part88	Morgens um halb acht	Die steht schon in deinem Rucksack. Und bitte nicht trödeln.
+part88	Morgens um halb acht	Krieg ich heute Nachmittag Zeit am Tablet?
+part88	Morgens um halb acht	Zehn Minuten nach den Hausaufgaben. Und jetzt los, ich zähle bis drei.
+part89	Der Abend vor der Klausur	Kannst du mich heute Abend abfragen? Morgen ist die Klausur.
+part89	Der Abend vor der Klausur	Klar. Wie läuft es mit dem Lernen?
+part89	Der Abend vor der Klausur	Ich bin seit Tagen dran, aber ich trete auf der Stelle.
+part89	Der Abend vor der Klausur	Du schaffst das. Letztes Mal hast du auch bestanden.
+part89	Der Abend vor der Klausur	Stimmt. Und diesmal lerne ich nicht erst auf den letzten Drücker.
+part90	Es klappert hinten	Guten Tag, beim Fahren klappert hinten irgendwas.
+part90	Es klappert hinten	Wann können Sie das Auto vorbeibringen?
+part90	Es klappert hinten	Geht Donnerstag? Der TÜV ist auch bald fällig.
+part90	Es klappert hinten	Donnerstag passt. Die Werkstatt ist ab sieben besetzt, kommen Sie einfach vorbei.
+part90	Es klappert hinten	Und die Winterreifen? Können Sie die gleich mit draufmachen?
+part91	Sonntag, halb eins	Schlechte Nachricht: Das Brot ist alle, und alles hat zu.
+part91	Sonntag, halb eins	Der Bäcker am Markt hat sonntags vormittags auf.
+part91	Sonntag, halb eins	Es ist schon halb eins.
+part91	Sonntag, halb eins	Dann bleibt wohl wieder nur die Tankstelle an der Ecke.
+part91	Sonntag, halb eins	Na gut. Aber danach geht es zurück auf die Couch.
+part92	Streit um den Film	Und? Wie fandest du den Film?
+part92	Streit um den Film	Ehrlich? Den Hype verstehe ich nicht.
+part92	Streit um den Film	Was? Am Ende habe ich fast geheult.
+part92	Streit um den Film	Na ja. Allein der Soundtrack war ganz gut.
+part92	Streit um den Film	Siehst du! Lies danach das Buch, das ist noch besser.
+part93	Dampf ablassen	Hast du kurz Zeit? Ich muss mal Dampf ablassen.
+part93	Dampf ablassen	Klar, immer. Wer hat dir denn den Tag versaut?
+part93	Dampf ablassen	Der Chef hat mich heute vor allen zusammengefaltet.
+part93	Dampf ablassen	Wie bitte? Das hast du nicht verdient.
+part93	Dampf ablassen	Danke. Jetzt platzt mir wenigstens nicht mehr gleich der Kragen.
+part101	Die App geht nicht auf	Die neue App lädt bei mir ewig und geht dann einfach nicht auf.
+part101	Die App geht nicht auf	Hast du das Update schon installiert?
+part101	Die App geht nicht auf	Nein, mein Speicher ist voll. Ich muss erst Dateien löschen.
+part101	Die App geht nicht auf	Sichere sie vorher irgendwo, sonst sind sie weg.
+part101	Die App geht nicht auf	Gute Idee. Danach erstelle ich das Konto neu und sichere alles doppelt.
+part102	Samstag ins Museum	Was machen wir am Samstag, bevor die Gäste kommen?
+part102	Samstag ins Museum	Im Museum läuft noch die Ausstellung, die du sehen wolltest.
+part102	Samstag ins Museum	Gute Idee. Ist der Eintritt für Schüler ermäßigt? Dann kommt dein Bruder mit.
+part102	Samstag ins Museum	Ja, aber für die Führung muss man sich vorher anmelden.
+part102	Samstag ins Museum	Das mache ich gleich online. Sonst ist am Ende alles voll.
+part76	Bestellen mit Allergie	Entschuldigung, ist in der Vorspeise Sahne drin? Ich bin allergisch.
+part76	Bestellen mit Allergie	In der Suppe ja, aber die Küche macht sie gern ohne Sahne.
+part76	Bestellen mit Allergie	Sehr gut. Gibt es das Tagesgericht auch vegetarisch?
+part76	Bestellen mit Allergie	Ja, mit extra Beilagen statt Fleisch. Soll ich das so bestellen?
+part76	Bestellen mit Allergie	Gern. Den Nachtisch suchen wir später von der Speisekarte aus.
