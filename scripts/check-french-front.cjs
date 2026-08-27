@@ -174,9 +174,33 @@ assert.ok(wordParity >= WORD_PARITY_FLOOR,
   + "\n  Add them to FRENCH_BY_GERMAN in src/lib/frenchTranslations.ts. A German word with no "
   + "French is not a gap in a percentage — it is a word the French course does not teach at all.");
 
+/**
+ * The same tracker, counted for Polish — and counted, not divided.
+ *
+ * Polish is a narrowing rather than a parity language: it teaches the cards it
+ * has an answer for, and the German course is allowed to run ahead of it. A
+ * percentage would therefore punish German for growing, which is the fault
+ * check-translation-coverage was moved off percentages to avoid.
+ *
+ * What must not happen is the other direction: Polish word cards that exist
+ * today quietly disappearing because a translation was deleted or a German
+ * word reworded out from under its key. So the floor is the number of German
+ * word cards that have Polish. Raise it as each block lands; never lower it.
+ */
+const POLISH_WORD_FLOOR = 6190;
+const withPolish = germanWords.filter((word) => translate(String(word.de), "pl", null));
+assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
+  `${withPolish.length.toLocaleString("en-GB")} of the ${germanWords.length.toLocaleString("en-GB")} `
+  + `German word cards have Polish, and the floor is ${POLISH_WORD_FLOOR.toLocaleString("en-GB")} — `
+  + `${(POLISH_WORD_FLOOR - withPolish.length).toLocaleString("en-GB")} have gone missing. This is a `
+  + "count, so adding German cannot trip it: a card the Polish course used to teach no longer has "
+  + "an answer in POLISH_BY_GERMAN.");
+
 console.log(`check-french-front: ${summary.join("; ")} — measured by queue position, `
   + "because that is what decides which cards a learner actually meets. "
-  + `Word tracker: ${wordParity.toFixed(1)}% of ${germanWords.length.toLocaleString("en-GB")} words`);
+  + `Word tracker: ${wordParity.toFixed(1)}% of ${germanWords.length.toLocaleString("en-GB")} words `
+  + `have French, ${withPolish.length.toLocaleString("en-GB")} have Polish `
+  + `(floor ${POLISH_WORD_FLOOR.toLocaleString("en-GB")})`);
 // esbuild's service keeps sockets open after buildSync returns; say the check
 // is finished rather than letting the event loop decide.
 process.exit(0);

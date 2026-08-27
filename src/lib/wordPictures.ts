@@ -607,6 +607,28 @@ const NOUNS: Record<string, string> = {
   acoustics: "🔊", millennium: "📅", eternity: "⏳",
   "the military": "🪖",
   europe: "🇪🇺", european: "🇪🇺",
+
+  // Parts 605-648 added five hundred concrete nouns to a map written before
+  // them, which pushed the share of nouns with a picture from 39.6% to 37.8%
+  // and under its floor. These are the ones a picture genuinely helps: an
+  // instrument, an animal, a boat, a tool. The abstract half of those parts -
+  // die Beitragsbemessung, der Wirkungsgrad - is meant to come back empty.
+  magnet: "🧲", microscope: "🔬", telescope: "🔭", "test tube": "🧪",
+  crystal: "💎", comet: "☄️", meteorite: "☄️", galaxy: "🌌",
+  "space station": "🛰️", "space travel": "🚀",
+  anchor: "⚓", sail: "⛵", yacht: "⛵", kayak: "🛶",
+  "cargo ship": "🚢", tanker: "🚢", trawler: "🚢",
+  "life jacket": "🦺", wetsuit: "🤿", snorkel: "🤿",
+  cod: "🐟", mackerel: "🐟", eel: "🐟", plaice: "🐟",
+  buzzard: "🦅", woodpecker: "🐦", newt: "🦎", adder: "🐍",
+  acorn: "🌰", larch: "🌲", "fir cone": "🌲", "ash tree": "🌳",
+  firewood: "🪵", driftwood: "🪵",
+  icicle: "🧊", blizzard: "🌨️",
+  "hard hat": "⛑️", chainsaw: "🪚", "forklift truck": "🚜",
+  plywood: "🪵", chipboard: "🪵", rivet: "🔩", washer: "🔩",
+  prosthesis: "🦿", "walking aid": "🦯", "spectacle frame": "👓",
+  "blood pressure monitor": "🩺", disinfectant: "🧴", "gauze bandage": "🩹",
+  compress: "🩹", stitches: "🩹", deckchair: "🏖️", "walking boot": "🥾",
 };
 
 /** Actions. Keyed without the leading "to". */

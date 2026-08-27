@@ -7,6 +7,11 @@
  * language is measured and floored from its first run without this file being
  * edited — which is the point of the table-per-language layer it sits on.
  *
+ * It reports a percentage and floors a COUNT, and the two are different jobs:
+ * the percentage says how much of the course a speaker can read, the floor
+ * says that no translation already written may be lost. See FLOORS below for
+ * why the floor stopped being a percentage.
+ *
  * The quality rules are narrow on purpose. The first draft flagged "au
  * Bürgeramt", "la Goethestraße" and "Kölle Alaaf" as untranslated German,
  * when those are exactly what a French speaker in Germany says, and flagged
@@ -75,25 +80,41 @@ for (const file of fs.readdirSync(dir).filter((n) => n.endsWith(".ts"))) {
 assert.ok(entries.length > 20000, `only found ${entries.length} taught entries — the scan is broken`);
 
 /**
- * Per-language floors. Raise as coverage climbs; never lower.
+ * Per-language floors, counted in ENTRIES rather than per cent. Raise as
+ * coverage climbs; never lower.
+ *
+ * A percentage floor punished the German course for growing. The denominator
+ * is every taught entry, so a block of new German words pushed French down a
+ * point without a single French translation being lost, and the build went red
+ * over work nobody had touched. The only way back was to translate the new
+ * German too — which makes adding German conditional on adding French, and
+ * that is not the trade this file exists to make.
+ *
+ * A count says what the floor is actually for: the translations that exist
+ * must not disappear. Deleting one fails; adding German does not. The numbers
+ * are the current totals less a small margin, so a German string being
+ * reworded — which drops its old key out of the table until the new one is
+ * written — costs a handful rather than the build.
  *
  * A language appears here the moment it has a table, so forgetting to add one
  * is a failure rather than a silent zero.
  */
 const FLOORS = {
-  fr: 58,
-  // Polish reads lower than French and means something different: it is a
-  // quarter of the catalogue, but the quarter it covers is the opening
-  // stretch of the curriculum in full. What the learner actually meets is
-  // floored by check-polish-course, which counts the cards the course serves
-  // and requires every one of them to have an answer.
-  pl: 25,
+  fr: 14500,
+  // Polish reads lower than French and means something different: it covers
+  // the opening stretch of the curriculum in full rather than a spread of all
+  // of it. What the learner actually meets is floored by check-polish-course,
+  // which counts the cards the course serves and requires every one of them to
+  // have an answer.
+  pl: 10000,
 };
 
-// This percentage is of EVERYTHING, which is the wrong shape on its own: 600
-// translations move 21,666 entries by two points, and two points say nothing
-// about whether a learner meets French or German. What the learner meets is
-// floored separately, by queue position, in check-french-front.
+// The percentage is still reported, because it is the honest measure of how
+// much of the course a speaker of that language can read. It is the wrong
+// thing to FAIL on: 600 translations move 23,000 entries by two points, and
+// two points say nothing about whether a learner meets French or German. What
+// the learner meets is floored separately, by queue position, in
+// check-french-front.
 
 /**
  * A string that cannot be in the target language, so translating it as itself
@@ -132,8 +153,11 @@ for (const language of TRANSLATION_LANGUAGES) {
   const tableCount = Object.keys(translationTable(language)).length;
 
   assert.ok(
-    percent >= floor,
-    `${name} coverage fell to ${percent.toFixed(1)}% — the floor is ${floor}%`
+    translated.length >= floor,
+    `${name} covers ${translated.length.toLocaleString()} entries and the floor is `
+    + `${floor.toLocaleString()} — ${(floor - translated.length).toLocaleString()} translations `
+    + "have gone missing. This counts translations, not percentage: adding German "
+    + "cannot trip it, so something that was translated no longer is."
   );
 
   let variants = 0;
@@ -174,7 +198,7 @@ for (const language of TRANSLATION_LANGUAGES) {
 
   summary.push(
     `${name}: ${translated.length.toLocaleString()}/${entries.length.toLocaleString()} `
-    + `(${percent.toFixed(1)}%, floor ${floor}%) — ${inlineCount.toLocaleString()} inline, `
+    + `(${percent.toFixed(1)}%, floor ${floor.toLocaleString()} entries) — ${inlineCount.toLocaleString()} inline, `
     + `${tableCount.toLocaleString()} in table, ${variants} context variants`
   );
 }

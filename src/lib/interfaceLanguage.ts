@@ -32,7 +32,7 @@ export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl";
 
 let inMemory: InterfaceLanguage = "auto";
 
@@ -40,7 +40,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
   if (typeof window === "undefined") return "auto";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "en" || stored === "de" || stored === "fr" ? stored : "auto";
+    inMemory = stored === "en" || stored === "de" || stored === "fr" || stored === "pl" ? stored : "auto";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }
@@ -48,7 +48,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
 }
 
 /** The language actually in force, with "auto" resolved against the course. */
-export function resolveInterfaceLanguage(): "en" | "de" | "fr" {
+export function resolveInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
   const chosen = getInterfaceLanguage();
   if (chosen !== "auto") return chosen;
   return learningEnglish() ? "de" : "en";
@@ -117,7 +117,7 @@ function subscribe(onStoreChange: () => void) {
  * when the language changes. Calling this near the root is what turns a
  * setting change into a re-render instead of a reload.
  */
-export function useInterfaceLanguage(): "en" | "de" | "fr" {
+export function useInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
   const snapshot = useSyncExternalStore(subscribe, currentSnapshot, () => "en|0");
-  return snapshot.slice(0, snapshot.indexOf("|")) as "en" | "de" | "fr";
+  return snapshot.slice(0, snapshot.indexOf("|")) as "en" | "de" | "fr" | "pl";
 }

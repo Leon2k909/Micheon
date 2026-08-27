@@ -1,15 +1,24 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, SquareCheck, X } from "lucide-react";
+import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, SquareCheck, TrendingDown, X } from "lucide-react";
 import { Part } from "@/lib/types";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
-import { loadGradeStore, statusForId } from "@/lib/activity";
+import { loadGradeStore } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
 import { cefrOrder, cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiFmt, uiOr } from "@/lib/i18n";
 import { courseSides } from "@/lib/courseLanguages";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
 import { getMutedPacks, setPackMuted, setPacksMuted } from "@/lib/mutedPacks";
+import {
+  getHideFinishedLessons,
+  isFinishedLesson,
+  lessonProgress,
+  passesFinishedShelf,
+  setHideFinishedLessons,
+  shelfCounts,
+  type LessonProgress,
+} from "@/lib/lessonShelf";
 
 type LevelFilter = "all" | CefrTier;
 type KindFilter = "all" | "core" | "wordbank";
@@ -101,6 +110,7 @@ export function LearnView({
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
+  const [hideFinished, setHideFinished] = useState<boolean>(getHideFinishedLessons);
   const [mutedPacks, setMutedPacks] = useState<Set<string>>(() => getMutedPacks());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   /**
@@ -145,17 +155,19 @@ export function LearnView({
     [apiParts]
   );
 
+  /**
+   * Learned, and how much of that has started to go.
+   *
+   * "Finished" is a claim about the past. The tracker already shows what an
+   * item is worth TODAY — an answer given once and never revisited decays past
+   * its review date — and a lesson list that only counted the past would keep
+   * calling a lesson done long after its words had faded. Same curve, same
+   * word for it, counted here per lesson.
+   */
   const progressByPart = useMemo(() => {
     const grades = loadGradeStore(getAuthUser());
-    const out = new Map<string, { done: number; total: number }>();
-    for (const [key, part] of parts) {
-      const phrases = part.phrases ?? [];
-      let done = 0;
-      phrases.forEach((phrase, index) => {
-        if (statusForId(grades, phrase.id ?? `${key}-phrase-${index}`) === "known") done += 1;
-      });
-      out.set(key, { done, total: phrases.length });
-    }
+    const out = new Map<string, LessonProgress>();
+    for (const [key, part] of parts) out.set(key, lessonProgress(key, part.phrases ?? [], grades));
     return out;
   }, [apiParts]);
 
@@ -166,9 +178,17 @@ export function LearnView({
     if (kindFilter === "wordbank" && !isBulkPartKey(key)) return false;
     if (levelFilter !== "all" && cefrTier(part.level) !== levelFilter) return false;
 
+    // The shelf, before the progress filter: a standing "put finished away"
+    // must not fight an explicit "show me the finished ones", so asking for
+    // them wins and passesFinishedShelf is told so.
+    if (!passesFinishedShelf(
+      progressByPart.get(key) ?? { done: 0, total: 0, fading: 0 },
+      { hideFinished, askedForFinished: progressFilter === "done" }
+    )) return false;
+
     if (progressFilter === "paused" && !mutedPacks.has(key)) return false;
     if (progressFilter !== "all" && progressFilter !== "paused") {
-      const progress = progressByPart.get(key) ?? { done: 0, total: 0 };
+      const progress = progressByPart.get(key) ?? { done: 0, total: 0, fading: 0 };
       const ratio = progress.total ? progress.done / progress.total : 0;
       if (progressFilter === "unstarted" && progress.done !== 0) return false;
       if (progressFilter === "started" && (progress.done === 0 || ratio >= 1)) return false;
@@ -179,10 +199,22 @@ export function LearnView({
     const corpus = corpora.get(key) ?? "";
     return terms.every((term) => corpus.includes(term));
   }).sort(([, a], [, b]) => cefrOrder(a.level) - cefrOrder(b.level)),
-  [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks]);
+  [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks, hideFinished]);
 
+  // Counted over every lesson, not the filtered ones: the button says how
+  // much is on the shelf, and that number must not move when a search does.
+  const shelf = useMemo(
+    () => shelfCounts(parts.map(([key]) => progressByPart.get(key) ?? { done: 0, total: 0, fading: 0 }),
+    ), [parts, progressByPart]);
+
+  const toggleHideFinished = () => setHideFinished(setHideFinishedLessons(!hideFinished));
+
+  // The shelf narrows the list like a filter does, so it says so in the count
+  // line and "Clear filters" brings the finished lessons back with everything
+  // else — a list that stayed short after clearing every filter would read as
+  // a bug rather than as a preference.
   const filtering = Boolean(terms.length) || levelFilter !== "all"
-    || kindFilter !== "all" || progressFilter !== "all";
+    || kindFilter !== "all" || progressFilter !== "all" || hideFinished;
 
   // "Select all" targets every FILTERED lesson, matching the words tracker.
   const allVisibleSelected = visible.length > 0 && visible.every(([key]) => selected.has(key));
@@ -196,6 +228,7 @@ export function LearnView({
     setLevelFilter("all");
     setKindFilter("all");
     setProgressFilter("all");
+    setHideFinished(setHideFinishedLessons(false));
   };
 
   const chip = (active: boolean) => [
@@ -305,6 +338,24 @@ export function LearnView({
                 {ui(option.label)}
               </button>
             ))}
+            {/* Carries its own count, so a shelf holding forty lessons says
+                so. A control that hides work silently is a control that gets
+                blamed for losing it. */}
+            {shelf.finished > 0 && (
+              <button
+                aria-pressed={hideFinished}
+                className={chip(hideFinished)}
+                onClick={toggleHideFinished}
+                title={ui(hideFinished
+                  ? "Finished lessons are put away — nothing is deleted, and any whose words have started to fade stay in the list so you can review them."
+                  : "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.")}
+                type="button"
+              >
+                {uiFmt(hideFinished ? "Show finished ({count})" : "Hide finished ({count})", {
+                  count: shelf.finished,
+                })}
+              </button>
+            )}
           </div>
 
           {filtering && (
@@ -412,8 +463,8 @@ export function LearnView({
             // The wide featured card only makes sense for an unfiltered list;
             // in search results every hit is equally relevant.
             const featured = index === 0 && !filtering;
-            const progress = progressByPart.get(key) ?? { done: 0, total: 0 };
-            const finished = progress.total > 0 && progress.done >= progress.total;
+            const progress = progressByPart.get(key) ?? { done: 0, total: 0, fading: 0 };
+            const finished = isFinishedLesson(progress);
             const paused = mutedPacks.has(key);
             return (
               <motion.div
@@ -459,6 +510,21 @@ export function LearnView({
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2.5 py-1 text-[11px] font-black text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-3 w-3" />
                         {ui("Finished")}
+                      </span>
+                    )}
+                    {/* The tracker's amber, and the tracker's word for it, so
+                        the same thing is called the same thing in both places.
+                        Sits beside "Finished" rather than replacing it: both
+                        are true, and they are about different times. */}
+                    {progress.fading > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-black text-amber-600 dark:text-amber-400"
+                        title={uiFmt("{count} of the items you learned here are past their review date, so you are assumed to have forgotten some of them. Answering them once each puts them back to full.", {
+                          count: progress.fading,
+                        })}
+                      >
+                        <TrendingDown className="h-3 w-3" />
+                        {uiFmt("{count} fading", { count: progress.fading })}
                       </span>
                     )}
                     <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[11px] font-black text-[var(--text-1)]">
