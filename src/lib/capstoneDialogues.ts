@@ -1103,6 +1103,212 @@ export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       ],
     },
   ],
+  "part585": [
+    {
+      title: "Der, die oder das",
+      lines: [
+        { speaker: "A", de: "Hilf mir mal: Heißt es der, die oder das Wörterbuch?", en: "Help me out: is it der, die or das Wörterbuch?" },
+        { speaker: "B", de: "Das Wörterbuch. Nomen lernst du am besten gleich mit Artikel.", en: "Das Wörterbuch. Nouns are best learned with their article from the start." },
+        { speaker: "A", de: "Und warum wird aus der Tisch auf einmal den Tisch?", en: "And why does der Tisch suddenly turn into den Tisch?" },
+        { speaker: "B", de: "Akkusativ. Der Nominativ nennt, wer handelt, der Akkusativ, wen es trifft.", en: "Accusative. The nominative names who acts, the accusative whom it affects." },
+        { speaker: "A", de: "Dann fehlen mir nur noch Dativ und Genitiv.", en: "Then I've only got the dative and the genitive to go." },
+        { speaker: "B", de: "Ein Fall pro Woche, und im Plural sind sowieso alle gleich nett.", en: "One case a week — and in the plural they're all equally kind anyway." },
+      ],
+    },
+  ],
+  "part592": [
+    {
+      title: "Erst entpacken, dann klicken",
+      lines: [
+        { speaker: "A", de: "Ich habe die Datei doch runtergeladen. Warum geht nichts?", en: "I did download the file. Why is nothing happening?" },
+        { speaker: "B", de: "Du musst sie erst entpacken. Dann das Programm anklicken.", en: "You have to unzip it first. Then click the program." },
+        { speaker: "A", de: "Ah. Und dann konfigurieren, oder?", en: "Ah. And then configure it, right?" },
+        { speaker: "B", de: "Genau, einmal durchklicken, am Ende exportieren. Fertig.", en: "Exactly — click through once, export at the end. Done." },
+        { speaker: "A", de: "Danach logge ich mich aus und schalte den Rechner aus. Versprochen.", en: "After that I'll log out and switch the computer off. Promise." },
+      ],
+    },
+  ],
+  "part593": [
+    {
+      title: "Selbst gemacht",
+      lines: [
+        { speaker: "A", de: "Der Stuhl wackelt nicht mehr! Was hast du gemacht?", en: "The chair's stopped wobbling! What did you do?" },
+        { speaker: "B", de: "Neu verleimt, geschliffen und poliert. Dann noch lackiert.", en: "Re-glued, sanded and polished. Then varnished on top." },
+        { speaker: "A", de: "Das sieht besser aus als neu. Und der Korb da?", en: "It looks better than new. And that basket there?" },
+        { speaker: "B", de: "Selbst gemacht — gewebt, aus alten Resten.", en: "Made it myself — woven, from old scraps." },
+        { speaker: "A", de: "Nächstes Wochenende bringst du mir das bei. Erst häkeln, dann weben.", en: "Next weekend you're teaching me. Crochet first, then weaving." },
+      ],
+    },
+  ],
+  "part594": [
+    {
+      title: "Das Zimmer neu gedacht",
+      lines: [
+        { speaker: "A", de: "Wir renovieren im Herbst. Erst streichen, dann neu möblieren.", en: "We're renovating in autumn. Paint first, then refurnish." },
+        { speaker: "B", de: "Und die dunkle Ecke? Da bekommt man doch nie Licht rein.", en: "And the dark corner? You never get any light in there." },
+        { speaker: "A", de: "Mit einem Spiegel vergrößern wir sie optisch. Alter Trick.", en: "We'll enlarge it visually with a mirror. Old trick." },
+        { speaker: "B", de: "Gut. Beim Tragen musst du dann aber in die Knie gehen, nicht in den Rücken.", en: "Fine. But when carrying, bend at the knees, not with your back." },
+        { speaker: "A", de: "Keine Sorge. Und abends wird verriegelt, die Leiter bleibt draußen.", en: "Don't worry. And at night we lock up — the ladder stays outside." },
+      ],
+    },
+  ],
+  "part595": [
+    {
+      title: "Säen, gießen, warten",
+      lines: [
+        { speaker: "A", de: "Ich habe im März gesät, und jetzt blüht das ganze Beet!", en: "I sowed in March, and now the whole bed is in bloom!" },
+        { speaker: "B", de: "Schön! Hast du gedüngt?", en: "Lovely! Did you fertilise?" },
+        { speaker: "A", de: "Nur mit Kompost. Recyceln für den Garten, sozusagen.", en: "Only with compost. Recycling for the garden, so to speak." },
+        { speaker: "B", de: "Und die Kinder? Helfen die mit?", en: "And the kids? Do they help?" },
+        { speaker: "A", de: "Sie buddeln vor allem. Aber pflücken können sie schon sehr gut.", en: "Mostly they dig. But they're already very good at picking." },
+      ],
+    },
+  ],
+  "part596": [
+    {
+      title: "Staunen und begreifen",
+      lines: [
+        { speaker: "A", de: "Ich habe gestern eine Stunde nur den Sternen zugeschaut. Ich staune immer noch.", en: "Yesterday I just watched the stars for an hour. I'm still in awe." },
+        { speaker: "B", de: "Das kann ich gut verstehen. Mich entspannt das auch.", en: "I can well understand that. It relaxes me too." },
+        { speaker: "A", de: "Und je mehr ich begreife, desto mehr bewundere ich das alles.", en: "And the more I grasp, the more I admire it all." },
+        { speaker: "B", de: "So soll Lernen sein. Besser als sich zu langweilen.", en: "That's how learning should be. Better than being bored." },
+        { speaker: "A", de: "Eben. Nächste Woche fange ich an zu musizieren. Ganz neues Staunen.", en: "Exactly. Next week I'm taking up music. A whole new kind of wonder." },
+      ],
+    },
+  ],
+  "part597": [
+    {
+      title: "Der Termin ist reserviert",
+      lines: [
+        { speaker: "A", de: "Ich habe den Tisch reserviert und den Ausflug terminiert.", en: "I've booked the table and scheduled the outing." },
+        { speaker: "B", de: "Du klingst wie ein Büro. Wir wollten uns entspannen!", en: "You sound like an office. We were supposed to be relaxing!" },
+        { speaker: "A", de: "Deshalb ja! Nichts wird verschwendet, auch keine Zeit.", en: "That's the point! Nothing gets wasted — not even time." },
+        { speaker: "B", de: "Gut. Samstag fahren wir am Fluss entlang und sonnen uns.", en: "Fine. Saturday we ride along the river and sun ourselves." },
+        { speaker: "A", de: "Und Sonntag ruhen wir. Das unterschreibe ich dir sogar.", en: "And Sunday we rest. I'll even put that in writing for you." },
+      ],
+    },
+  ],
+  "part598": [
+    {
+      title: "Zwei sehr verschiedene Brüder",
+      lines: [
+        { speaker: "A", de: "Deine Brüder sind wirklich verschieden, oder?", en: "Your brothers really are different, aren't they?" },
+        { speaker: "B", de: "Sehr. Der eine redselig und gesellig, der andere eher wortkarg.", en: "Very. One talkative and sociable, the other more a man of few words." },
+        { speaker: "A", de: "Aber beide liebevoll, das merkt man sofort.", en: "But both affectionate — you can tell straight away." },
+        { speaker: "B", de: "Ja. Der eine optimistisch, der andere vorsichtig. Zusammen perfekt.", en: "Yes. One optimistic, the other careful. Together they're perfect." },
+        { speaker: "A", de: "Hartnäckig sind sie beide. Das liegt dann wohl in der Familie.", en: "They're both stubborn, though. That must run in the family." },
+      ],
+    },
+  ],
+  "part599": [
+    {
+      title: "Unklar und undeutlich",
+      lines: [
+        { speaker: "A", de: "Die Ansage am Bahnhof war mal wieder völlig undeutlich.", en: "The station announcement was completely unclear again." },
+        { speaker: "B", de: "Wie immer. Und die Anzeige bleibt neutral: Verspätung unklar.", en: "As ever. And the display stays neutral: delay unclear." },
+        { speaker: "A", de: "Unrealistisch ist das nicht, aber unpräzise.", en: "It's not unrealistic, but it is imprecise." },
+        { speaker: "B", de: "Identisch mit letzter Woche. Konstant schlecht, immerhin.", en: "Identical to last week. Consistently bad, at least." },
+        { speaker: "A", de: "Logisch wäre eine klare Ansage. Aber das ist wohl undenkbar.", en: "The logical thing would be a clear announcement. But that's apparently unthinkable." },
+      ],
+    },
+  ],
+  "part600": [
+    {
+      title: "Essbar oder nicht",
+      lines: [
+        { speaker: "A", de: "Ist der Pilz da essbar?", en: "Is that mushroom edible?" },
+        { speaker: "B", de: "Keine Ahnung, und genau deshalb bleibt er stehen.", en: "No idea — and that's exactly why it stays where it is." },
+        { speaker: "A", de: "Gut. Das Wasser hier, ist das trinkbar?", en: "Fair. The water here — is it drinkable?" },
+        { speaker: "B", de: "Ja, steht auf dem Schild. Und die Beeren sind sogar messbar süßer als gekaufte.", en: "Yes, it says so on the sign. And the berries are measurably sweeter than shop-bought." },
+        { speaker: "A", de: "Dann ist das Picknick ja bezahlbar: alles umsonst.", en: "Then this picnic is affordable indeed: everything's free." },
+      ],
+    },
+  ],
+  "part601": [
+    {
+      title: "Unnötig kompliziert",
+      lines: [
+        { speaker: "A", de: "Das Formular ist unnötig kompliziert. Zehn Seiten!", en: "This form is needlessly complicated. Ten pages!" },
+        { speaker: "B", de: "Und unpraktisch: Feld drei passt nicht mal auf die Zeile.", en: "And impractical: field three doesn't even fit on the line." },
+        { speaker: "A", de: "Unfair ist es auch. Ohne Internet ist es fast unmöglich.", en: "It's unfair too. Without internet it's nearly impossible." },
+        { speaker: "B", de: "Unvorsichtig ausgefüllt wird es aber erst recht ungerecht.", en: "But filled in carelessly it gets more unjust still." },
+        { speaker: "A", de: "Also langsam und produktiv. Zart anfassen, das Papier ist spröde.", en: "Slow and productive it is, then. Handle it gently — the paper's brittle." },
+      ],
+    },
+  ],
+  "part602": [
+    {
+      title: "Die Anzeige für die Wohnung",
+      lines: [
+        { speaker: "A", de: "Wie beschreiben wir die Wohnung in der Anzeige?", en: "How do we describe the flat in the advert?" },
+        { speaker: "B", de: "Geräumig, renoviert, möbliert. Und die Lage: urban, aber wassernah.", en: "Spacious, renovated, furnished. And the location: urban, but close to the water." },
+        { speaker: "A", de: "Morgendliche Sonne im Schlafzimmer, abendliche auf dem Balkon.", en: "Morning sun in the bedroom, evening sun on the balcony." },
+        { speaker: "B", de: "Das Viertel ist belebt, aber nachts ruhig.", en: "The neighbourhood is lively, but quiet at night." },
+        { speaker: "A", de: "Perfekt. Altmodisch ist nur das Bad — das nennen wir charmant.", en: "Perfect. Only the bathroom is old-fashioned — we'll call that charming." },
+      ],
+    },
+  ],
+  "part603": [
+    {
+      title: "Freundlich zu allen",
+      lines: [
+        { speaker: "A", de: "Das neue Café ist wirklich kinderfreundlich. Und tierfreundlich!", en: "The new café is really child-friendly. And pet-friendly!" },
+        { speaker: "B", de: "Und behindertengerecht, habe ich gelesen. Breite Türen, keine Stufen.", en: "And accessible, I read. Wide doors, no steps." },
+        { speaker: "A", de: "Die Verpackung beim Mitnehmen ist umweltfreundlich.", en: "The takeaway packaging is environmentally friendly." },
+        { speaker: "B", de: "Benutzerfreundlich ist sogar die Karte: drei Seiten, klare Preise.", en: "Even the menu is user-friendly: three pages, clear prices." },
+        { speaker: "A", de: "Friedlich ist es auch noch. Da gehen wir jetzt immer hin.", en: "And it's peaceful on top of that. That's our place from now on." },
+      ],
+    },
+  ],
+  "part604": [
+    {
+      title: "Hellblau oder dunkelgrün",
+      lines: [
+        { speaker: "A", de: "Welche Farbe fürs Arbeitszimmer: hellblau oder dunkelgrün?", en: "Which colour for the study: light blue or dark green?" },
+        { speaker: "B", de: "Dunkelgrün, mit silbernen Rahmen an der Wand.", en: "Dark green, with silver frames on the wall." },
+        { speaker: "A", de: "Und der Teppich? Oval oder rechteckig?", en: "And the rug? Oval or rectangular?" },
+        { speaker: "B", de: "Rechteckig. Oval wirkt schnell altmodisch.", en: "Rectangular. Oval quickly looks dated." },
+        { speaker: "A", de: "Gut. Violett kommt mir jedenfalls nicht ins Haus.", en: "Fine. Violet, in any case, is not setting foot in this house." },
+      ],
+    },
+  ],
+  "part405": [
+    {
+      title: "Der Kompromiss",
+      lines: [
+        { speaker: "A", de: "Deine These kenne ich. Aber es gibt einen Einwand.", en: "I know your thesis. But there is an objection." },
+        { speaker: "B", de: "Dann her damit. Ohne Entgegnung wird das keine echte Verhandlung.", en: "Then let's hear it. Without a rejoinder this won't be a real negotiation." },
+        { speaker: "A", de: "Deine Behauptung stützt sich auf eine einzige Quelle.", en: "Your claim rests on a single source." },
+        { speaker: "B", de: "Das räume ich ein. Dafür ist es eine sehr gute Quelle.", en: "I'll concede that. In return, it's a very good source." },
+        { speaker: "A", de: "Na schön. Ich mache dir einen Kompromiss: Wir prüfen sie zusammen.", en: "Very well. I'll offer you a compromise: we examine it together." },
+      ],
+    },
+  ],
+  "part407": [
+    {
+      title: "Erleichterung",
+      lines: [
+        { speaker: "A", de: "Und? Wie war das Gespräch, vor dem du solche Angst hattest?", en: "Well? How was the conversation you were so afraid of?" },
+        { speaker: "B", de: "Die Beklommenheit war nach zwei Minuten weg. Danach: pure Erleichterung.", en: "The unease was gone after two minutes. After that: pure relief." },
+        { speaker: "A", de: "Siehst du! Deine Zuversicht war berechtigt.", en: "See! Your confidence was justified." },
+        { speaker: "B", de: "Ein bisschen Reue bleibt, dass ich so lange gewartet habe.", en: "A little regret remains that I waited so long." },
+        { speaker: "A", de: "Kein Neid auf Leute, die das leichter können — jeder hat sein Tempo.", en: "No envying people who find it easier — everyone has their own pace." },
+      ],
+    },
+  ],
+  "part409": [
+    {
+      title: "Der Lichtblick",
+      lines: [
+        { speaker: "A", de: "Das Projekt war viele Monate ein Teufelskreis: kein Geld, keine Leute.", en: "For many months the project was a vicious circle: no money, no people." },
+        { speaker: "B", de: "Und dann kam der Durchbruch?", en: "And then came the breakthrough?" },
+        { speaker: "A", de: "Erst ein Lichtblick: eine kleine Zusage. Dann der Wendepunkt.", en: "First a ray of hope: one small commitment. Then the turning point." },
+        { speaker: "B", de: "Der Knackpunkt war sicher das Geld.", en: "The sticking point was the money, surely." },
+        { speaker: "A", de: "Genau. Jetzt haben wir Spielraum — und ich etwas Fingerspitzengefühl mehr.", en: "Exactly. Now we've got room to move — and I've got a little more finesse." },
+        { speaker: "B", de: "Dann war die ganze Gratwanderung am Ende eine Sternstunde.", en: "Then the whole tightrope walk turned out to be a finest hour." },
+      ],
+    },
+  ],
   "part111": [
     {
       title: "Vor dem Kunstwerk",
