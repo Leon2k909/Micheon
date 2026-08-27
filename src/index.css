@@ -12340,6 +12340,20 @@ html[data-theme="dark"] {
   position: sticky;
   bottom: 0;
   background: var(--surface-2);
+  /* Sticky creates a stacking context whether or not you ask for one, so the
+     Know it menu's own z-index is sealed inside this element and cannot lift
+     it over anything outside. Without a z-index here the element lands among
+     its siblings at auto, and the queue scrubber that follows the card drew
+     its Go button straight through the open menu.
+
+     This was invisible in development for a while, which is the part worth
+     remembering: the element also carried Tailwind's `relative`, and which of
+     the two won came down to stylesheet order — `relative` in the dev server,
+     `sticky` in the built bundle. Relative does NOT create a stacking context,
+     so the menu was fine in dev and broken in the app people actually run. The
+     class is gone from the markup now; this rule is the only thing that says
+     where the grading row sits. */
+  z-index: 20;
 }
 
 /* One line, not two.
