@@ -48,13 +48,59 @@ let peer: PeerType | null = null;
 let live: typeof import("peerjs") | null = null;
 const open = new Map<string, DataConnection>();
 const pending = new Map<string, DataConnection>();
-let events: FriendPeerEvents = {};
+/**
+ * Listeners, plural, because the peer now outlives the screen that used to
+ * own it.
+ *
+ * It used to be a single handler set, replaced by whoever started the peer.
+ * That was fine while Friends was the only thing that ever started it, and
+ * wrong the moment the app itself does: opening Friends would have taken the
+ * events away from whatever was holding them, and closing it would have put
+ * back nothing.
+ */
+const listeners = new Set<FriendPeerEvents>();
+const events = {
+  onStatus(status: PeerStatus, detail?: string) {
+    for (const listener of listeners) listener.onStatus?.(status, detail);
+  },
+  onPairRequest(request: PairRequest) {
+    for (const listener of listeners) listener.onPairRequest?.(request);
+  },
+  onConnectedChange(codes: string[]) {
+    for (const listener of listeners) listener.onConnectedChange?.(codes);
+  },
+};
+
+/** Listen while a screen is open, and stop without taking the peer down. */
+export function addFriendPeerListener(handlers: FriendPeerEvents): () => void {
+  listeners.add(handlers);
+  return () => { listeners.delete(handlers); };
+}
+
+/**
+ * Requests that arrived while nothing was listening.
+ *
+ * Being reachable all the time means a stranger can ask at a moment when no
+ * screen is open to put the question. The connection is held, nothing is
+ * stored, and Friends asks when it opens — which is the same answer as
+ * before, just not lost in between.
+ */
+export function waitingPairRequests(): string[] {
+  return [...pending.keys()];
+}
+/** The last thing the peer said about itself, for a screen that opens later. */
+let lastStatus: PeerStatus = "idle";
+let lastDetail: string | undefined;
+export function friendPeerStatus(): { status: PeerStatus; detail?: string } {
+  return { status: lastStatus, detail: lastDetail };
+}
+
 let mine: () => FriendProfile = () => {
   throw new Error("friendPeer.start was not given a profile source");
 };
 
 function announce() {
-  events.onConnectedChange?.([...open.keys()]);
+  events.onConnectedChange([...open.keys()]);
 }
 
 function send(connection: DataConnection, message: FriendMessage) {
@@ -142,12 +188,13 @@ export async function startFriendPeer(
   profileSource: () => FriendProfile,
   handlers: FriendPeerEvents = {}
 ): Promise<string> {
-  events = handlers;
+  if (handlers.onStatus || handlers.onPairRequest || handlers.onConnectedChange) listeners.add(handlers);
   mine = profileSource;
   const code = getFriendCode();
   if (peer) return code;
 
-  events.onStatus?.("connecting");
+  lastStatus = "connecting";
+  events.onStatus("connecting");
   // Imported here rather than at module load: it opens a socket to the broker,
   // and an app started offline should not pay for that before Friends is even
   // opened.
@@ -155,10 +202,14 @@ export async function startFriendPeer(
   const created = new live.Peer(peerIdForCode(code), { ...DEFAULT_BROKER });
   peer = created;
 
-  created.on("open", () => events.onStatus?.("online"));
+  created.on("open", () => { lastStatus = "online"; events.onStatus("online"); });
   created.on("connection", (connection: DataConnection) => wire(connection));
-  created.on("disconnected", () => events.onStatus?.("offline"));
-  created.on("error", (error: Error) => events.onStatus?.("error", error?.message));
+  created.on("disconnected", () => { lastStatus = "offline"; events.onStatus("offline"); });
+  created.on("error", (error: Error) => {
+    lastStatus = "error";
+    lastDetail = error?.message;
+    events.onStatus("error", error?.message);
+  });
   return code;
 }
 

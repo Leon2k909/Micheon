@@ -5,6 +5,8 @@ import { applyAccentColour } from "@/lib/accentColour";
 import { CodexPetHistoryWindow } from "./components/codexPets/CodexPetHistoryWindow";
 import { CodexPetLayer } from "./components/codexPets/CodexPetLayer";
 import { CodexPetProvider, useCodexPets } from "./components/codexPets/CodexPetProvider";
+import { startFriendPeer, stopFriendPeer } from "@/lib/friendPeer";
+import { primeSharedPhoto, readOwnFriendProfile } from "@/lib/friendPresence";
 import { LoginScreen } from "./components/LoginScreen";
 import { TitleBar } from "./components/TitleBar";
 import { UpdateBanner } from "./components/UpdateBanner";
@@ -152,10 +154,43 @@ function MicheonSurface({ guided }: { guided: boolean }) {
             </Suspense>
           )}
           <MainWindowPetSurface signedIn={Boolean(user)} />
+          {user ? <FriendReachability user={user} /> : null}
         </CodexPetProvider>
       )}
     </>
   );
+}
+
+/**
+ * Reachable to friends for as long as the app is open.
+ *
+ * The peer used to be started by the Friends panel and destroyed when it
+ * closed, which made two apps able to reach each other only while BOTH were
+ * sitting on that one screen. Any other time a friend was told "could not
+ * connect", and their figures stayed at whenever the two screens last
+ * happened to be open together — which reads as a friend who has not opened
+ * the app in days.
+ *
+ * Being reachable is not the same as being open to anyone. An unknown peer
+ * still earns a question and nothing else: nothing is stored, and the
+ * connection waits until somebody answers it in Friends. That rule lives in
+ * decideIncoming and is untouched by this.
+ *
+ * Renders nothing. It is here for its lifetime, not its output.
+ */
+function FriendReachability({ user }: { user: { name?: string; avatar?: string } }) {
+  useEffect(() => {
+    let live = true;
+    void primeSharedPhoto(user?.avatar).finally(() => {
+      if (!live) return;
+      void startFriendPeer(() => readOwnFriendProfile(user));
+    });
+    return () => { live = false; };
+    // The photo is the only part that has to be prepared in advance; the
+    // figures are read fresh on every send.
+  }, [user?.avatar, user?.name]);
+  useEffect(() => () => stopFriendPeer(), []);
+  return null;
 }
 
 function PetOverlaySurface() {

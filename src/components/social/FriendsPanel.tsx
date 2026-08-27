@@ -17,8 +17,9 @@ import {
   broadcastProfile,
   connectToCode,
   declinePair,
+  addFriendPeerListener,
+  friendPeerStatus,
   startFriendPeer,
-  stopFriendPeer,
   type PairRequest,
   type PeerStatus,
 } from "@/lib/friendPeer";
@@ -121,9 +122,25 @@ export function FriendsPanel({
     photo: sharePhoto,
   }), [levelLabel, myCode, sharePhoto, stats.learningDays, stats.streak, stats.totalXp, userName]);
 
+  /**
+   * Listen while this screen is open, and let go without taking the peer
+   * down.
+   *
+   * This panel used to own the peer outright — it started it on open and
+   * destroyed it on close, which meant two people could only reach each other
+   * while both were looking at this exact screen. The app itself now keeps it
+   * running, so all that is wanted here is to hear about it.
+   *
+   * The status is read back rather than waited for: the peer has usually been
+   * up for a while by the time anybody opens Friends, so its "online" was
+   * announced long before this screen existed to be told.
+   */
   useEffect(() => {
     let live = true;
-    void startFriendPeer(profileSource, {
+    const current = friendPeerStatus();
+    setStatus(current.status);
+    setStatusDetail(current.detail);
+    const release = addFriendPeerListener({
       onStatus: (next, detail) => { if (live) { setStatus(next); setStatusDetail(detail); } },
       onConnectedChange: (codes) => { if (live) setConnected(codes); },
       onPairRequest: (request) => {
@@ -133,8 +150,10 @@ export function FriendsPanel({
         ));
       },
     });
-    return () => { live = false; stopFriendPeer(); };
-    // Started once. profileSource is read through the closure on every send.
+    // A profile source with this screen’s live figures, for as long as it is
+    // open. The app-level one reads the same values out of storage.
+    void startFriendPeer(profileSource);
+    return () => { live = false; release(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
