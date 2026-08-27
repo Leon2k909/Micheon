@@ -14,6 +14,12 @@
  * have no English key to be found under.
  */
 export const FR: Record<string, string> = {
+  "Hide finished ({count})": "Masquer les termin\u00e9es ({count})",
+  "Show finished ({count})": "Afficher les termin\u00e9es ({count})",
+  "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.": "Rangez les le\u00e7ons termin\u00e9es pour all\u00e9ger la liste. Rien n'est supprim\u00e9, et ce bouton les ram\u00e8ne aussit\u00f4t.",
+  "Finished lessons are put away \u2014 nothing is deleted, and any whose words have started to fade stay in the list so you can review them.": "Les le\u00e7ons termin\u00e9es sont rang\u00e9es \u2014 rien n'est supprim\u00e9, et celles dont les mots commencent \u00e0 s'estomper restent dans la liste pour que vous puissiez les r\u00e9viser.",
+  "{count} fading": "{count} en train de s'estomper",
+  "{count} of the items you learned here are past their review date, so you are assumed to have forgotten some of them. Answering them once each puts them back to full.": "{count} des \u00e9l\u00e9ments appris ici ont d\u00e9pass\u00e9 leur date de r\u00e9vision : on suppose donc que vous en avez oubli\u00e9 une partie. Une bonne r\u00e9ponse pour chacun les remet \u00e0 100 %.",
   "Show {n} more languages": "Afficher {n} langues de plus",
   // ── Friends, once the list holds real people ──────────────────────────────
   "Their figures come straight from their app to yours. There is no account and no server holding them.": "Leurs chiffres viennent directement de leur application à la tienne. Il n'y a ni compte ni serveur qui les conserve.",

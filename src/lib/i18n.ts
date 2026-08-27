@@ -6,6 +6,12 @@ import { FR } from "@/lib/i18nFr";
 // key; anything not in the table falls through unchanged, so missing strings
 // degrade gracefully instead of breaking.
 const DE: Record<string, string> = {
+  "Hide finished ({count})": "Fertige ausblenden ({count})",
+  "Show finished ({count})": "Fertige anzeigen ({count})",
+  "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.": "R\u00e4ume fertige Lektionen weg, damit die Liste \u00fcbersichtlich bleibt. Es wird nichts gel\u00f6scht, und dieser Knopf holt sie sofort zur\u00fcck.",
+  "Finished lessons are put away \u2014 nothing is deleted, and any whose words have started to fade stay in the list so you can review them.": "Fertige Lektionen sind wegger\u00e4umt \u2014 es wird nichts gel\u00f6scht, und alle, deren W\u00f6rter zu verblassen beginnen, bleiben in der Liste, damit du sie wiederholen kannst.",
+  "{count} fading": "{count} verblassen",
+  "{count} of the items you learned here are past their review date, so you are assumed to have forgotten some of them. Answering them once each puts them back to full.": "{count} der hier gelernten Eintr\u00e4ge sind \u00fcber ihr Wiederholungsdatum hinaus, es wird also angenommen, dass du einen Teil davon vergessen hast. Einmal richtig beantwortet, z\u00e4hlen sie wieder voll.",
   // ── Friends, once the list holds real people ──────────────────────────────
   "Their figures come straight from their app to yours. There is no account and no server holding them.": "Ihre Zahlen kommen direkt von ihrer App zu deiner. Es gibt kein Konto und keinen Server, der sie speichert.",
   "Your code": "Dein Code",
