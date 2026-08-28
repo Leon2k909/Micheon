@@ -7943,7 +7943,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "stichhaltig", lookup: "stichhaltig", fallbackEn: "sound (of an argument)", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Unterschied zwischen den Angeboten ist geringfügig, der Preisunterschied erheblich.", en: "The difference between the offers is negligible; the price difference is considerable.", use: "geringfügig and erheblich are this pack's two ends of the scale, set against each other around one comma." },
+
+      { de: "Ein umfassender Bericht liegt noch nicht vor, ein vorläufiger schon.", en: "A comprehensive report is not yet available — a provisional one is.", use: "The bare schon answers the negation again; vorläufig against endgültig is the pack's timeline pair." },
+
+      { de: "Ausreichend ist die Begründung, überzeugend ist sie nicht.", en: "The justification is sufficient; convincing it is not.", use: "Both adjectives front their clauses — German lets the predicate lead when the verdict is the news." },
+
+      { de: "Die Prüfer stuften die Unterlagen als mangelhaft ein.", en: "The examiners rated the documents as deficient.", use: "einstufen als = to classify as — the grading verb; mangelhaft is also the German school grade 5." },
+
+      { de: "Jedes dritte Formular ist überflüssig, behauptet die Studie.", en: "Every third form is superfluous, the study claims.", use: "The attribution trails after the comma (behauptet die Studie) — journalism word order, verb before subject." },
+
+      { de: "Ein gewisser Verlust ist unvermeidlich, entscheidend ist seine Größe.", en: "Some loss is inevitable; what matters is its size.", use: "ein gewisser = a certain amount of; entscheidend ist ... fronts the predicate for the pivot." },
+
+      { de: "Die Entscheidung ist endgültig und wird nicht noch einmal geprüft.", en: "The decision is final and will not be reviewed again.", use: "endgültig closes the door vorläufig left open; the passive future (wird geprüft) needs no agent." },
+
+      { de: "Ist diese Reaktion dem Anlass wirklich angemessen?", en: "Is this reaction really appropriate to the occasion?", use: "angemessen + Dativ — appropriate TO something takes the dative, no preposition." },
+
+      { de: "Die Quelle ist zweifelhaft, die Geschichte trotzdem überall zu lesen.", en: "The source is dubious, yet the story is everywhere.", use: "zu lesen sein = can be read — sein + zu once more; trotzdem sits inside the clause, not at its head." },
+
+      { de: "Glaubwürdig wird eine Entschuldigung erst durch geändertes Verhalten.", en: "An apology only becomes credible through changed behaviour.", use: "erst durch = only by means of; the adjective fronts and werden carries the becoming." },
+
+      { de: "Die Aussagen der beiden Zeugen sind in einem Punkt widersprüchlich.", en: "The two witnesses' statements contradict each other on one point.", use: "in einem Punkt = on one point; widersprüchlich describes the pair, not either statement alone." },
+
+      { de: "Formulieren Sie die Klausel eindeutig, Mehrdeutiges wird gegen Sie ausgelegt.", en: "Word the clause unambiguously — anything ambiguous will be interpreted against you.", use: "Mehrdeutiges — the nominalised adjective as a category: whatever is ambiguous. auslegen gegen = to construe against." },
+
+      { de: "Oberflächlich betrachtet wirkt alles in Ordnung.", en: "On the surface, everything looks fine.", use: "oberflächlich betrachtet = viewed superficially — a fixed participle opener that promises a 'but'." },
+
+      { de: "Der Bericht ist gründlich recherchiert und trotzdem gut lesbar.", en: "The report is thoroughly researched and still very readable.", use: "gründlich grades the participle recherchiert; trotzdem concedes that thorough usually means dry." },
+
+      { de: "Die Aufgabe ist anspruchsvoll, aber machbar.", en: "The task is demanding but doable.", use: "anspruchsvoll and machbar — the honest project assessment in four words; -bar builds doable from machen." },
+
+      { de: "Aufschlussreich ist vor allem, was der Bericht verschweigt.", en: "What is most revealing is what the report leaves unsaid.", use: "The was-clause as postponed subject; verschweigen — the deliberate omission again, one verb." },
+
+      { de: "Der Aufwand steht in keinem Verhältnis zum Ergebnis.", en: "The effort is out of all proportion to the result.", use: "in keinem Verhältnis stehen zu — the fixed phrase behind verhältnismäßig and unverhältnismäßig." },
+
+      { de: "Rentabel wird die Anlage erst nach zehn Jahren.", en: "The system only becomes profitable after ten years.", use: "erst + time span = not until; fronting rentabel makes profitability the topic under debate." },
+
+      { de: "Der Zeitplan ist machbar, die Finanzierung bleibt fragwürdig.", en: "The schedule is feasible; the funding remains questionable.", use: "bleiben holds the doubt in place — it was questionable and still is." },
+
+      { de: "Kein Konzept ist so einwandfrei, dass es keine Kritik verdient.", en: "No concept is so flawless that it deserves no criticism.", use: "so ... dass with double negation — kein ... so ..., dass ... keine: German stacks them without cancelling." },
+
+      { de: "Die Datenlage ist lückenhaft, für eine erste Einschätzung reicht sie dennoch.", en: "The data is patchy, yet it is enough for a first assessment.", use: "reichen für = to suffice for; dennoch — this pack's neighbour part404 will make a career of such connectors." },
+
+    ],
   },
   part404: {
     label: "Part 404", level: "B2", theme: "Connecting and hedging",
@@ -7992,7 +8036,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "schlimmstenfalls", lookup: "schlimmstenfalls", fallbackEn: "at worst", tip: "adverb" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Plan ist riskant, dennoch stimme ich zu.", en: "The plan is risky; nevertheless, I agree.", use: "dennoch takes first position and inverts: dennoch stimme ich zu. Stronger than trotzdem in written German." },
+
+      { de: "Das Hotel war günstig, allerdings auch laut.", en: "The hotel was cheap — however, it was also loud.", use: "allerdings concedes after praise — the German 'mind you'; it does not invert when it follows the clause it limits." },
+
+      { de: "Der Norden blieb trocken, der Süden hingegen versank im Regen.", en: "The north stayed dry; the south, by contrast, was drowning in rain.", use: "hingegen sits AFTER its noun (der Süden hingegen) — the contrast word that never takes first position comfortably." },
+
+      { de: "Er hat den Vertrag nicht gelesen, folglich kannte er die Klausel nicht.", en: "He had not read the contract; consequently, he did not know about the clause.", use: "folglich draws the logical conclusion and inverts the verb like every fronted adverb." },
+
+      { de: "Laut Fahrplan fährt der letzte Bus um elf, demnach schaffen wir es noch.", en: "According to the timetable, the last bus leaves at eleven — so we can still make it.", use: "demnach = according to that/so — it leans on something just cited, here the timetable." },
+
+      { de: "Das Angebot gilt nur online, im Laden gibt es den Rabatt somit nicht.", en: "The offer is online only; in the shop, therefore, there is no discount.", use: "somit can sit mid-clause after the topic — quieter than folglich, same logic." },
+
+      { de: "Einerseits lockt das Gehalt, andererseits schreckt die Pendelei ab.", en: "On the one hand the salary is tempting; on the other, the commuting puts me off.", use: "einerseits ... andererseits — the paired frame; abschrecken splits at the end of its clause." },
+
+      { de: "Die Wohnung ist klein, dagegen ist die Lage unschlagbar.", en: "The flat is small; on the other hand, the location is unbeatable.", use: "dagegen as a connector = by contrast — not to be read as 'against it' when it opens a clause." },
+
+      { de: "Der Einwand kam spät, gleichwohl wurde er noch berücksichtigt.", en: "The objection came late; it was nonetheless still taken into account.", use: "gleichwohl — the formal nonetheless, at home in minutes and judgments; the passive follows it comfortably." },
+
+      { de: "Insofern hatten Sie recht: Der Fehler lag nicht bei der Technik.", en: "In that respect you were right: the fault did not lie with the technology.", use: "insofern limits the concession to one respect; the colon then names it." },
+
+      { de: "Er war gewissermaßen der heimliche Chef der Abteilung.", en: "He was, in a sense, the department's unofficial boss.", use: "gewissermaßen hedges a bold label; heimlich here = unacknowledged rather than secretive." },
+
+      { de: "Vermutlich war es nur ein Versehen, ausschließen kann ich es aber nicht.", en: "Presumably it was just an oversight, but I cannot rule that out either way.", use: "The infinitive fronts in the second clause (ausschließen kann ich es nicht) — emphasis through inversion." },
+
+      { de: "Angeblich war der Brief nie angekommen, offenbar hatte ihn nur niemand geöffnet.", en: "Allegedly the letter had never arrived; evidently, nobody had simply opened it.", use: "angeblich marks the claim, offenbar the visible truth — two hedges with opposite loyalties in one line." },
+
+      { de: "Anscheinend haben wir denselben Weg, wir können zusammen gehen.", en: "It seems we are going the same way — we can walk together.", use: "anscheinend = to all appearances (and probably true); scheinbar would imply the appearance deceives." },
+
+      { de: "Zweifellos war es ein Fehler, aber keineswegs ein böswilliger.", en: "It was undoubtedly a mistake, but by no means a malicious one.", use: "ein böswilliger stands without its noun — the adjective plus -er carries Fehler; keineswegs blocks the harsher reading." },
+
+      { de: "Die Halle war größtenteils leer, nur vorne saßen ein paar Unentwegte.", en: "The hall was mostly empty; only at the front sat a few diehards.", use: "die Unentwegten — the undeterred, a nominalised participle German uses fondly for loyal stragglers." },
+
+      { de: "Die Rückmeldungen sind überwiegend positiv, kritisch sind vor allem die Langzeitnutzer.", en: "The feedback is predominantly positive; the long-term users are the critical ones.", use: "überwiegend measures the majority; the fronted kritisch flags where the minority sits." },
+
+      { de: "Allmählich verstehe ich, worauf Sie hinauswollen.", en: "I am gradually beginning to see what you are getting at.", use: "worauf ... hinauswollen = to be driving at — the wo(r)-compound absorbs the preposition of hinauswollen auf." },
+
+      { de: "Grundsätzlich ja, im Einzelfall entscheidet aber der Arzt.", en: "In principle yes — but in the individual case, the doctor decides.", use: "grundsätzlich = as a rule (with exceptions implied); the German yes that a but always follows." },
+
+      { de: "Er hat der Änderung nie ausdrücklich zugestimmt, nur stillschweigend.", en: "He never explicitly agreed to the change — only tacitly.", use: "ausdrücklich against stillschweigend — the legal pair for stated and silent consent, one adverb each." },
+
+      { de: "Schlimmstenfalls verlieren wir ein Jahr, im Gegenteil zu allem Gerede aber nicht das Projekt.", en: "At worst we lose a year — but contrary to all the talk, not the project.", use: "schlimmstenfalls opens with the worst case; im Gegenteil zu corrects the exaggerated rumour." },
+
+    ],
   },
   part405: {
     label: "Part 405", level: "B2-C1", theme: "Argument and debate",
